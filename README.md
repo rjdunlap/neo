@@ -1,6 +1,9 @@
 # Puddle Island (project Neo)
 
-A home-made iPad learning game for little kids, in the spirit of Jumpstart. Every picture and sound is generated in code: no sprites, no audio files. Design doc: <https://claude.ai/code/artifact/a7666bb8-0fdf-429b-b5df-2ab53a112913>
+A home-made iPad learning game for little kids, in the spirit of Jumpstart. Every picture and sound is generated in code: no sprites, no audio files.
+
+**Play it:** <https://rjdunlap.github.io/neo/> (every push to `main` redeploys via GitHub Actions)
+Design doc: <https://claude.ai/code/artifact/a7666bb8-0fdf-429b-b5df-2ab53a112913>
 
 ## Run it
 
@@ -14,7 +17,7 @@ npm run build      # type-check + production build into dist/
 ## Try it on the iPad
 
 - **Quick look, same Wi-Fi:** `npm run dev:lan`, then open the "Network" URL it prints in Safari on the iPad. Fine for playing; offline mode and "Add to Home Screen" as a full app need HTTPS (below).
-- **The real thing:** put `dist/` on any static HTTPS host (GitHub Pages, Netlify, Cloudflare Pages). Paths are relative, so a sub-folder works. On the iPad, open it in Safari → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off.
+- **The real thing:** open <https://rjdunlap.github.io/neo/> in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. New versions arrive the next time it's opened online.
 - **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app.
 
 ## Grown-up zone
