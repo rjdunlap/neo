@@ -28,12 +28,19 @@ class Store {
   }
 
   stats(gameId: string): GameStats {
-    return (this.data.games[gameId] ??= { plays: 0, level: 1, history: [] });
+    return (this.data.games[gameId] ??= { plays: 0, level: 1, pinned: null, history: [] });
   }
 
-  /** The level to play now, clamped to what the current band allows. */
+  /** The level to play now (a grown-up's pin wins), clamped to what the current band allows. */
   levelFor(gameId: string, range: LevelRange): number {
-    return nextLevel(this.stats(gameId).level, [], range);
+    const s = this.stats(gameId);
+    return nextLevel(s.pinned ?? s.level, [], range);
+  }
+
+  /** Stay on one level, or pass null to go back to automatic. */
+  pin(gameId: string, level: number | null) {
+    this.stats(gameId).pinned = level;
+    this.save();
   }
 
   recordRound(gameId: string, round: RoundRecord, range: LevelRange) {

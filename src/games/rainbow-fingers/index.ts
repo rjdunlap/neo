@@ -1,11 +1,12 @@
 import { Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent } from 'pixi.js';
 import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
+import type { Band } from '../../progress/bands';
 import { flower } from '../../art/shapes';
 import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
 import { stepFromUnit } from '../../audio/notes';
 import { sfx } from '../../audio/sfx';
-import { palmOnGlass } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -21,12 +22,42 @@ const SPACING = 5;
 /** Degrees of hue per unit of stroke: the rainbow comes from moving. */
 const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
+/** Level 1 paints rainbows; level 2 adds pots to pick a color from, each saying its name. */
+const LEVELS: Record<Band, { min: number; max: number }> = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 2 },
+  prek: { min: 2, max: 2 },
+};
+const POTS: (ColorName | 'rainbow')[] = ['rainbow', ...RAINBOW];
+
+/** A paint pot with its color on top; the rainbow pot is striped. */
+function paintPot(color: ColorName | 'rainbow'): Container {
+  const c = new Container();
+  const jar = new Graphics()
+    .roundRect(-30, -22, 60, 50, 12)
+    .fill(0xffffff)
+    .stroke({ width: 5, color: 0xb9b2a6 });
+  const top = new Graphics().ellipse(0, -22, 30, 12);
+  if (color === 'rainbow') {
+    top.fill(0xffffff);
+    RAINBOW.forEach((c2, i) => top.rect(-27 + i * 9, -32, 9, 20).fill(swatch[c2].fill));
+    top.ellipse(0, -22, 30, 12).stroke({ width: 4, color: 0xb9b2a6 });
+  } else {
+    top.fill(swatch[color].fill).stroke({ width: 4, color: swatch[color].line });
+  }
+  const drip = new Graphics().roundRect(10, -22, 8, 22, 4).fill(color === 'rainbow' ? swatch.purple.fill : swatch[color].fill);
+  c.addChild(jar, drip, top);
+  return c;
+}
 
 interface Stroke {
   x: number;
   y: number;
   /** Each finger runs its own rainbow. */
   hue: number;
+  /** A picked color, or null for rainbow. */
+  color: number | null;
   travelled: number;
   startedAt: number;
   lastStep: number;
@@ -53,6 +84,10 @@ class RainbowFingers implements Game {
   private readonly pool: Sprite[] = [];
   private readonly strokes = new Map<number, Stroke>();
   private readonly frameButton: RoundButton;
+  private readonly pots = new Container();
+  private readonly potRing = new Graphics();
+  /** The picked color, or null for rainbow. */
+  private brush: number | null = null;
   private rt: RenderTexture | null = null;
   private view: View;
   private hue = Math.random() * 360;
@@ -75,10 +110,36 @@ class RainbowFingers implements Game {
     this.frameButton = new RoundButton(frameIcon(), swatch.white, 52, () => void this.hangItUp());
     this.frameButton.visible = false;
     ctx.stage.addChild(this.backing, this.paper, this.frameButton);
+    if (ctx.level >= 2) this.buildPots();
   }
 
   start() {
-    void this.ctx.instruct('paint.start');
+    void this.ctx.instruct(this.ctx.level >= 2 ? 'paint.pots' : 'paint.start');
+  }
+
+  private buildPots() {
+    this.pots.addChild(this.potRing);
+    POTS.forEach((color, i) => {
+      const pot = paintPot(color);
+      pot.x = (i - (POTS.length - 1) / 2) * 92;
+      onTap(
+        pot,
+        () => {
+          this.brush = color === 'rainbow' ? null : swatch[color].fill;
+          this.potRing.position.set(pot.x, 0);
+          this.pots.children.forEach((p) => p !== this.potRing && (p.y = 0));
+          pot.y = -14;
+          sfx.bell(4 + i, 0.25);
+          void this.ctx.say(color === 'rainbow' ? 'paint.rainbow' : `color.${color}`);
+        },
+        { radius: 46, cooldown: 250 },
+      );
+      this.pots.addChild(pot);
+      if (i === 0) pot.y = -14;
+    });
+    this.potRing.circle(0, -6, 46).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 4, color: wood.line });
+    this.potRing.x = this.pots.children[1].x;
+    this.ctx.stage.addChild(this.pots);
   }
 
   resize(v: View) {
@@ -91,6 +152,7 @@ class RainbowFingers implements Game {
       .stroke({ width: 5, color: wood.line });
     this.paper.hitArea = new Rectangle(MARGIN, MARGIN, v.w - MARGIN * 2, v.h - MARGIN * 2);
     this.frameButton.position.set(v.w - 80, 80);
+    this.pots.position.set(v.w / 2, v.h - 58);
 
     // Grow the painting surface if the view got bigger, keeping what's already painted.
     const res = v.scale * Math.min(2, window.devicePixelRatio || 1);
@@ -133,9 +195,9 @@ class RainbowFingers implements Game {
     const p = this.paper.toLocal(e.global);
     const step = this.stepAt(p.y);
     this.hue = (this.hue + 70) % 360;
-    const stroke = { x: p.x, y: p.y, hue: this.hue, travelled: 0, startedAt: this.clock, lastStep: step, lastNoteAt: this.clock, sparkleIn: 30 };
+    const stroke = { x: p.x, y: p.y, hue: this.hue, color: this.brush, travelled: 0, startedAt: this.clock, lastStep: step, lastNoteAt: this.clock, sparkleIn: 30 };
     this.strokes.set(e.pointerId, stroke);
-    this.stamp(p.x, p.y, stroke.hue);
+    this.stamp(p.x, p.y, stroke.color ?? hsl(stroke.hue, 0.85, 0.62));
     sfx.bell(step, 0.14);
   }
 
@@ -150,7 +212,7 @@ class RainbowFingers implements Game {
     for (let i = 1; i <= n; i++) {
       const t = (i * SPACING) / dist;
       s.hue = (s.hue + SPACING * HUE_PER_UNIT) % 360;
-      this.stamp(s.x + (p.x - s.x) * t, s.y + (p.y - s.y) * t, s.hue);
+      this.stamp(s.x + (p.x - s.x) * t, s.y + (p.y - s.y) * t, s.color ?? hsl(s.hue, 0.85, 0.62));
     }
     if (n > 0) {
       const t = (n * SPACING) / dist;
@@ -186,11 +248,11 @@ class RainbowFingers implements Game {
     return stepFromUnit(1 - y / this.view.h, 4, 10);
   }
 
-  private stamp(x: number, y: number, hue: number) {
+  private stamp(x: number, y: number, tint: number) {
     const s = this.pool.pop() ?? new Sprite(textures().brush);
     s.anchor.set(0.5);
     s.position.set(x, y);
-    s.tint = hsl(hue, 0.85, 0.62);
+    s.tint = tint;
     s.scale.set((BRUSH_RADIUS * 2) / s.texture.width);
     this.stamps.addChild(s);
   }
@@ -226,6 +288,7 @@ class RainbowFingers implements Game {
     this.done = true;
     this.strokes.clear();
     void this.ctx.tw.to(this.frameButton.scale, { x: 0, y: 0 }, { duration: 0.2 });
+    this.pots.visible = false;
     const v = this.view;
     const k = 0.72;
     const [x0, y0, w, h] = [MARGIN - 14, MARGIN - 14, v.w - MARGIN * 2 + 28, v.h - MARGIN * 2 + 28];
@@ -325,7 +388,8 @@ export const rainbowFingers: GameModule = {
   region: 'treehouse',
   skills: ['fine-motor', 'creativity'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: () => ({ min: 1, max: 1 }),
+  levels: (band) => LEVELS[band],
+  describeLevel: (level) => (level >= 2 ? 'Paint pots: pick a color and hear its name' : 'Rainbow painting'),
   music: STYLES.paint,
   coplayHint: 'Guide {name}\'s finger in big swoops, then let go and watch.',
   offScreen: 'Finger-paint with yogurt and a drop of food coloring on the high-chair tray.',

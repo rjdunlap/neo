@@ -397,6 +397,12 @@ export const bubblePop: GameModule = {
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
+  describeLevel: (level) => {
+    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    if (p.mode === 'free') return `Pop anything, ${p.goal} pops`;
+    if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
+    return `Numbers in order, 1 to ${p.goal}`;
+  },
   music: STYLES.bubbles,
   coplayHint: 'Say "pop!" together, and name the colors as {name} pops them.',
   offScreen: 'Blow real bubbles outside and pop them together. Count the pops out loud.',

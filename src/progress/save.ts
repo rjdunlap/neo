@@ -10,7 +10,10 @@ export interface RoundRecord {
 
 export interface GameStats {
   plays: number;
+  /** Where adaptive difficulty has her now. */
   level: number;
+  /** A level a grown-up chose to stay on, or null for automatic. */
+  pinned: number | null;
   /** The most recent rounds, oldest first. */
   history: RoundRecord[];
 }
@@ -65,6 +68,7 @@ export function migrate(raw: unknown): SaveData {
       games[id] = {
         plays: Math.max(0, Math.floor(num(g.plays, 0))),
         level: Math.max(1, Math.floor(num(g.level, 1))),
+        pinned: typeof g.pinned === 'number' && Number.isFinite(g.pinned) ? Math.max(1, Math.floor(g.pinned)) : null,
         history: history.slice(-HISTORY_LENGTH).map((r) => ({
           level: num(r.level, 1),
           misses: num(r.misses, 0),

@@ -90,6 +90,12 @@ export function openParentPanel(onClose: () => void) {
     musicBox.checked = d.settings.music;
     root.querySelectorAll<HTMLButtonElement>('[data-band]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
     $('[data-week]').innerHTML = weekSummary();
+    root.querySelectorAll<HTMLSelectElement>('[data-pin]').forEach((sel) =>
+      sel.addEventListener('change', () => {
+        store.pin(sel.dataset.pin!, sel.value ? Number(sel.value) : null);
+        render();
+      }),
+    );
   };
   render();
 
@@ -156,23 +162,39 @@ export function openParentPanel(onClose: () => void) {
 
 function weekSummary(): string {
   const since = Date.now() - 7 * DAY;
-  const rows = GAMES.map((g) => {
-    const stats = store.data.games[g.id];
-    const recent = stats?.history.filter((r) => r.at >= since) ?? [];
+  const band = store.data.profile.band;
+  const games = GAMES.filter((g) => g.bands.includes(band));
+  const rows = games.map((g) => {
+    const stats = store.stats(g.id);
+    const recent = stats.history.filter((r) => r.at >= since);
     const seconds = recent.reduce((t, r) => t + r.seconds, 0);
     const minutes = seconds > 0 ? Math.max(1, Math.round(seconds / 60)) : 0;
-    return { g, rounds: recent.length, minutes, level: stats?.level ?? 1, total: stats?.plays ?? 0 };
+    const range = g.levels(band);
+    const now = store.levelFor(g.id, range);
+    const options = [`<option value="">Automatic</option>`];
+    for (let l = range.min; l <= range.max; l++) {
+      options.push(`<option value="${l}" ${stats.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`);
+    }
+    const picker =
+      range.max > range.min
+        ? `<select data-pin="${g.id}" aria-label="Level for ${esc(g.name)}">${options.join('')}</select>`
+        : '';
+    return `<tr>
+        <td><strong>${esc(g.name)}</strong><br><span class="muted">Level ${now}: ${esc(g.describeLevel(now))}</span>${picker ? `<br>${picker}` : ''}</td>
+        <td>${recent.length}</td><td>${minutes}</td>
+      </tr>`;
   });
-  const played = rows.filter((r) => r.rounds > 0);
+  const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
-  const ideas = (played.length ? played : rows).filter((r) => r.g.offScreen).slice(0, 2);
+  const ideas = (played.length ? played : games).filter((g) => g.offScreen).slice(0, 2);
   return `
+    <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Only games for the chosen age band are shown.</p>
     <table>
-      <tr><th>Game</th><th>Rounds</th><th>Minutes</th><th>Level</th></tr>
-      ${rows.map((r) => `<tr><td>${esc(r.g.name)}</td><td>${r.rounds}</td><td>${r.minutes}</td><td>${r.level}</td></tr>`).join('')}
+      <tr><th>Game and level</th><th>Rounds</th><th>Minutes</th></tr>
+      ${rows.join('')}
     </table>
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
-    ${ideas.map((r) => `<p><strong>Off-screen idea:</strong> ${esc(r.g.offScreen!)}</p>`).join('')}`;
+    ${ideas.map((g) => `<p><strong>Off-screen idea:</strong> ${esc(g.offScreen!)}</p>`).join('')}`;
 }
 
 async function exportBackup() {

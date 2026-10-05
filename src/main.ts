@@ -17,7 +17,10 @@ async function boot() {
   app.go = createRoutes(app);
   app.go.start();
   // A handle for poking at the running game from the browser console during development.
-  if (import.meta.env.DEV) Object.assign(window, { neo: app });
+  if (import.meta.env.DEV) {
+    Object.assign(window, { neo: app });
+    void import('./dev/testkit');
+  }
   registerSW({ immediate: true });
 }
 

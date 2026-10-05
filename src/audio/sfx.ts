@@ -1,6 +1,8 @@
 import { audio } from './engine';
-import { bell, marimba, noise, tone } from './instruments';
+import { bell, marimba, noise, tone, voiced } from './instruments';
 import { stepHz } from './notes';
+
+export type AnimalSound = 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop';
 
 /** A few cents of random detune so repeated sounds don't grate. */
 const jitter = (cents = 20) => Math.pow(2, ((Math.random() * 2 - 1) * cents) / 1200);
@@ -87,6 +89,67 @@ export const sfx = {
   tick() {
     const o = out();
     if (o) tone(o.ctx, o.dest, 'sine', 900, o.t, 0.12, 0.002, 0.05);
+  },
+
+  /** Cartoon animal voices, all synthesized. */
+  animal(kind: AnimalSound) {
+    const o = out();
+    if (!o) return;
+    const { ctx, dest, t } = o;
+    const j = jitter(40);
+    switch (kind) {
+      case 'moo':
+        voiced(ctx, dest, t, 0.95, [150 * j, 125 * j, 105 * j], [380, 760], 0.5, { vibrato: 3 });
+        break;
+      case 'quack':
+        [0, 0.2].forEach((d) => voiced(ctx, dest, t + d, 0.16, [520 * j, 430 * j], [1100, 2000], 0.45));
+        break;
+      case 'oink':
+        [0, 0.22].forEach((d) => {
+          voiced(ctx, dest, t + d, 0.17, [300 * j, 230 * j], [650, 1300], 0.4);
+          noise(ctx, dest, t + d, 0.12, 0.08, { type: 'bandpass', hz: 900, q: 2 });
+        });
+        break;
+      case 'meow':
+        voiced(ctx, dest, t, 0.6, [520 * j, 780 * j, 480 * j], [600, 1500], 0.4, { formantTo: [1100, 1900] });
+        break;
+      case 'woof':
+        [0, 0.24].forEach((d) => {
+          noise(ctx, dest, t + d, 0.06, 0.2, { type: 'lowpass', hz: 1400 });
+          voiced(ctx, dest, t + d, 0.15, [240 * j, 150 * j], [520, 1100], 0.55);
+        });
+        break;
+      case 'growl':
+        voiced(ctx, dest, t, 0.55, [120 * j, 105 * j, 95 * j], [480, 900], 0.35, { vibrato: 14 });
+        break;
+      case 'hop':
+        tone(ctx, dest, 'sine', 300, t, 0.3, 0.005, 0.18, 700);
+        tone(ctx, dest, 'sine', 360, t + 0.18, 0.25, 0.005, 0.16, 820);
+        break;
+    }
+  },
+
+  splash() {
+    const o = out();
+    if (!o) return;
+    noise(o.ctx, o.dest, o.t, 0.45, 0.28, { type: 'lowpass', hz: 3000, sweepTo: 500 });
+    [0, 0.06, 0.13].forEach((d, i) => tone(o.ctx, o.dest, 'sine', 500 + i * 180, o.t + d, 0.15, 0.003, 0.08, 1100 + i * 200));
+  },
+
+  /** A clean little squeak, rising with `step`. */
+  squeak(step = 8) {
+    const o = out();
+    if (!o) return;
+    const hz = stepHz(step) * jitter(30);
+    tone(o.ctx, o.dest, 'sine', hz, o.t, 0.12, 0.01, 0.09, hz * 1.25);
+  },
+
+  /** Something solid dropping into a box. */
+  clunk() {
+    const o = out();
+    if (!o) return;
+    tone(o.ctx, o.dest, 'sine', 140, o.t, 0.5, 0.003, 0.22, 70);
+    noise(o.ctx, o.dest, o.t, 0.08, 0.15, { type: 'lowpass', hz: 700 });
   },
 
   /** A sleepy descending hum. */

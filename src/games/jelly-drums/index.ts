@@ -327,6 +327,10 @@ export const jellyDrums: GameModule = {
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
+  describeLevel: (level) => {
+    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
+  },
   music: STYLES.jelly,
   coplayHint: 'Sing along! Big jellies sing low, little jellies sing high.',
   offScreen: 'Make a pots-and-pans band: big pot, low sound; small pot, high sound.',

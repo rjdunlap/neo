@@ -25,6 +25,8 @@ export interface GameModule {
   skills: string[];
   bands: Band[];
   levels(band: Band): LevelRange;
+  /** What a level plays like, in a few words for grown-ups ("Pop one color, 3 colors"). */
+  describeLevel(level: number): string;
   music: MusicStyle;
   /** A prompt for the grown-up in early bands. `{name}` is the child's name. */
   coplayHint?: string;

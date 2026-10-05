@@ -89,3 +89,51 @@ export function noise(
   src.stop(t + duration + 0.05);
   src.onended = () => g.disconnect();
 }
+
+/**
+ * A crude "voice": a buzzy source shaped by two vowel formants, with a pitch contour.
+ * Good enough for cartoon animals.
+ */
+export function voiced(
+  ctx: BaseAudioContext,
+  dest: AudioNode,
+  t: number,
+  duration: number,
+  pitch: number[],
+  formants: [number, number],
+  peak: number,
+  opts: { vibrato?: number; formantTo?: [number, number] } = {},
+) {
+  const o = ctx.createOscillator();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(pitch[0], t);
+  pitch.slice(1).forEach((p, i) => o.frequency.linearRampToValueAtTime(p, t + (duration * (i + 1)) / (pitch.length - 1)));
+  if (opts.vibrato) {
+    const lfo = ctx.createOscillator();
+    const depth = ctx.createGain();
+    lfo.frequency.value = 6;
+    depth.gain.value = opts.vibrato;
+    lfo.connect(depth).connect(o.frequency);
+    lfo.start(t);
+    lfo.stop(t + duration + 0.1);
+  }
+  const out = ctx.createGain();
+  out.gain.setValueAtTime(0.0001, t);
+  out.gain.exponentialRampToValueAtTime(peak, t + Math.min(0.05, duration / 4));
+  out.gain.setValueAtTime(peak, t + duration * 0.7);
+  out.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+  formants.forEach((hz, i) => {
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.setValueAtTime(hz, t);
+    if (opts.formantTo) f.frequency.linearRampToValueAtTime(opts.formantTo[i], t + duration);
+    f.Q.value = 5 + i * 3;
+    const g = ctx.createGain();
+    g.gain.value = i === 0 ? 1 : 0.5;
+    o.connect(f).connect(g).connect(out);
+  });
+  out.connect(dest);
+  o.start(t);
+  o.stop(t + duration + 0.05);
+  o.onended = () => out.disconnect();
+}

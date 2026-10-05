@@ -18,8 +18,13 @@ describe('migrate', () => {
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
     expect(save.settings).toEqual({ volume: 1, music: false, sessionMinutes: 10, coplayHints: true });
     expect(save.games['bubble-pop'].level).toBe(1);
+    expect(save.games['bubble-pop'].pinned).toBeNull();
     expect(save.games['bubble-pop'].history).toEqual([{ level: 1, misses: 2, hints: 0, seconds: 0, at: 0 }]);
     expect(save.stickers).toEqual([{ game: 'bubble-pop', seed: 5, at: 1 }]);
+  });
+
+  it('keeps a pinned level', () => {
+    expect(migrate({ games: { g: { level: 3, pinned: 5.7 } } }).games.g.pinned).toBe(5);
   });
 
   it('keeps only the last ten rounds', () => {

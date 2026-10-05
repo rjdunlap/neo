@@ -13,6 +13,11 @@ export const SCRIPT = {
   'game.jelly-drums': ['Jelly drums!'],
   'game.rainbow-fingers': ["Let's paint!"],
   'game.stickers': ['Your stickers!'],
+  'game.peekaboo-barn': ['Peekaboo!'],
+  'game.duck-pond': ['Duck pond!'],
+  'game.shape-sorter': ['Shapes!'],
+  'game.color-garden': ['The color garden!'],
+  'game.splish-splash': ['Bath time!'],
 
   praise: ['Yay!', 'You did it!', 'Wow!', 'Great job, {name}!', 'Hooray!'],
   sticker: ['A sticker for you!', 'You got a sticker!'],
@@ -36,6 +41,46 @@ export const SCRIPT = {
 
   'paint.start': ['Paint with your finger!'],
   'paint.done': ["I love it! Let's hang it up!", 'Beautiful painting!'],
+
+  'peek.free': ['Who is hiding? Tap to find out!'],
+  'peek.found': ['{word}! A {animal}!', "{word}! It's the {animal}!"],
+  'peek.look': ['Look who is hiding!', 'Look!'],
+  'peek.where': ['Where is the {animal}?', 'Can you find the {animal}?'],
+  'peek.yes': ['You found the {animal}!', "There's the {animal}!"],
+  'peek.notit': ["That's the {other}! Where is the {animal}?"],
+
+  'duck.along': ['Tap a duck to help it swim!'],
+  'duck.total': ['{n} ducks!', '{n} ducks swimming!'],
+  'duck.make': ['Put {n} in the pond!'],
+  'duck.made': ["That's {n}!", 'Yes, {n}!'],
+  'duck.extra': ["Oops, that's {count}! We need {n}."],
+  'duck.howmany': ['How many ducks?', 'How many ducks are swimming?'],
+  'duck.countus': ["Let's count together!"],
+  'duck.more': ['{a} ducks are swimming. {b} more come!'],
+  'duck.away': ['{a} ducks are swimming. {b} swim away!'],
+  'duck.now': ['How many now?'],
+
+  'shape.start': ['Put the shapes in the box!'],
+  'shape.wrong': ["That's the {hole} hole. Try another one!"],
+  'shape.done': ['All in! Yay!'],
+  'shape.circle': ['Circle!'],
+  'shape.square': ['Square!'],
+  'shape.triangle': ['Triangle!'],
+  'shape.star': ['Star!'],
+  'shape.heart': ['Heart!'],
+  'shape.hexagon': ['Hexagon!'],
+
+  'garden.start': ['Put each one in the basket that matches!'],
+  'garden.wrong': ['That one is {color}. Find the {color} basket!'],
+  'garden.done': ['All sorted! What a garden!'],
+
+  'bath.free': ['Pip is muddy! Scrub scrub!'],
+  'bath.part': ['Wash my {part}!', 'Now wash my {part}!'],
+  'bath.notthat': ["Hee hee! That's my {touched}! Wash my {part}!"],
+  'bath.clean': ['Squeaky clean!', 'All clean! Thank you!'],
+
+  'paint.pots': ['Pick a color and paint!'],
+  'paint.rainbow': ['Rainbow!'],
 
   'color.red': ['Red!'],
   'color.orange': ['Orange!'],

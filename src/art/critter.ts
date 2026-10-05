@@ -99,6 +99,11 @@ export class Critter extends Container {
     this.drawMood();
   }
 
+  /** Adds something that rides on the body (it squashes and hops along), in body coordinates. */
+  attach(child: Container) {
+    this.body.addChild(child);
+  }
+
   /** A surprised squish. */
   poke() {
     this.squashV += 4;
@@ -189,6 +194,8 @@ export class Critter extends Container {
       const m = Math.min(8, d * 0.04);
       tx = (dx / d) * m;
       ty = (dy / d) * m;
+      // A critter scaled to zero (popping in) has no inverse transform; don't let NaN stick in its eyes.
+      if (!Number.isFinite(tx) || !Number.isFinite(ty)) tx = ty = 0;
     } else if (this.clock > this.wander.next) {
       this.wander.next = this.clock + 1.5 + Math.random() * 2.5;
       const a = Math.random() * Math.PI * 2;
@@ -197,6 +204,7 @@ export class Critter extends Container {
       this.wander.y = Math.sin(a) * m * 0.6;
     }
     const f = Math.min(1, dt * 12);
+    if (!Number.isFinite(this.look.x) || !Number.isFinite(this.look.y)) this.look.x = this.look.y = 0;
     this.look.x += (tx - this.look.x) * f;
     this.look.y += (ty - this.look.y) * f;
     for (const p of this.pupils) p.position.set(this.look.x, 4 + this.look.y);
