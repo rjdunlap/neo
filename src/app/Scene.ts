@@ -1,0 +1,61 @@
+import { Container } from 'pixi.js';
+import { Particles } from '../art/particles';
+import { Tweener } from '../engine/tween';
+import type { View } from '../engine/view';
+import type { App } from './App';
+
+export interface Updatable {
+  update(dt: number): void;
+}
+
+/**
+ * One screen. Layers, bottom to top: `content`, `particles`, `ui`.
+ * Lifecycle: init() → resize(view) → enter() → update(dt)… → exit() → destroy().
+ */
+export abstract class Scene {
+  readonly root = new Container();
+  readonly content = new Container();
+  readonly particles = new Particles();
+  readonly ui = new Container();
+  readonly tw = new Tweener();
+  /** Whether time here counts against the session's screen-time budget. */
+  countsTime = true;
+  private readonly tracked = new Set<Updatable>();
+
+  constructor(protected readonly app: App) {
+    this.root.addChild(this.content, this.particles, this.ui);
+  }
+
+  get view(): View {
+    return this.app.view;
+  }
+
+  init(): void {}
+  resize(_view: View): void {}
+  enter(): void {}
+  exit(): void {}
+  /** Called once, a minute before the session's time is up. */
+  sleepyWarning(): void {}
+
+  /** Runs `obj.update(dt)` every frame while the scene is alive. */
+  track<T extends Updatable>(obj: T): T {
+    this.tracked.add(obj);
+    return obj;
+  }
+
+  untrack(obj: Updatable) {
+    this.tracked.delete(obj);
+  }
+
+  update(dt: number) {
+    this.tw.update(dt);
+    for (const u of this.tracked) u.update(dt);
+    this.particles.update(dt);
+  }
+
+  destroy() {
+    this.tw.clear();
+    this.tracked.clear();
+    this.root.destroy({ children: true });
+  }
+}

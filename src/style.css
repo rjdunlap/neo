@@ -1,0 +1,216 @@
+:root {
+  --cream: #fff4e3;
+  --ink: #2b2b3a;
+  --teal: #6fcfd0;
+  --teal-line: #3a9a9b;
+  --quiet: #6b6b7b;
+  --card: #ffffff;
+  --rule: #eadfcd;
+  font-family: 'Fredoka', ui-rounded, system-ui, sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--cream);
+  color: var(--ink);
+  /* Toddler-proofing: no text selection, no long-press menus, no pinch or double-tap zoom. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+#app,
+#app canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- Parent zone (plain HTML: grown-up UI doesn't need to be a game) ---------- */
+
+.parent {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgb(43 43 58 / 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  touch-action: pan-y;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.parent__sheet {
+  background: var(--cream);
+  border-radius: 24px;
+  width: min(720px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 24px 28px 28px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.25);
+  -webkit-overflow-scrolling: touch;
+}
+
+.parent__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.parent h1 {
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.parent h2 {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--quiet);
+  margin: 24px 0 8px;
+}
+
+.parent p {
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.parent .muted {
+  color: var(--quiet);
+  font-size: 14px;
+}
+
+.parent__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 17px;
+}
+
+.parent__row:first-of-type {
+  border-top: none;
+}
+
+.parent input[type='text'],
+.parent select {
+  font: inherit;
+  font-size: 17px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--rule);
+  background: var(--card);
+  color: var(--ink);
+  min-width: 180px;
+}
+
+.parent input[type='range'] {
+  width: 200px;
+  accent-color: var(--teal-line);
+}
+
+.parent input[type='checkbox'] {
+  width: 26px;
+  height: 26px;
+  accent-color: var(--teal-line);
+}
+
+.parent__bands {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.parent__bands button {
+  font: inherit;
+  padding: 10px 8px;
+  border-radius: 14px;
+  border: 2px solid var(--rule);
+  background: var(--card);
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.parent__bands button small {
+  display: block;
+  color: var(--quiet);
+  font-size: 13px;
+}
+
+.parent__bands button[aria-pressed='true'] {
+  border-color: var(--teal-line);
+  background: #e3f7f6;
+}
+
+.parent table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.parent th,
+.parent td {
+  text-align: left;
+  padding: 8px 4px;
+  border-top: 1px solid var(--rule);
+}
+
+.parent th {
+  color: var(--quiet);
+  font-weight: 500;
+  font-size: 14px;
+  border-top: none;
+}
+
+.parent button.btn {
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 18px;
+  border-radius: 14px;
+  border: 2px solid var(--teal-line);
+  background: var(--card);
+  color: var(--ink);
+}
+
+.parent button.btn--primary {
+  background: var(--teal);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.parent button.btn--danger {
+  border-color: #d14b4b;
+  color: #b23a3a;
+}
+
+.parent__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .parent__bands {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .parent__row {
+    flex-wrap: wrap;
+  }
+}

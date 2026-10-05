@@ -1,0 +1,27 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "neo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "neo-build",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "build-and-preview"
+      ],
+      "port": 4173
+    }
+  ]
+}
