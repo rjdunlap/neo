@@ -97,6 +97,46 @@ Effort is relative and includes content and verification: S = contained extensio
 | **Fairground Lift** | Put a counterweight in a bucket until a puppet rises to a window. | Equality and comparison; 4–8. A Seesaw Balance mode, not a new physics system. |
 | **Sound Detective** | Hear a short sequence—bell, splash, footsteps—and arrange three scene cards to show what happened. | Listening and event order; 4–8. Use synthesized sounds with unambiguous pictures; an extension of Story Steps. |
 | **Fold a Friend** | Fold one half of a paper creature over a visible crease, then unfold a matching pair of wings. | Symmetry and prediction; 4–7. Extend Bug Builder with a visible transformation. |
+| **Fossil Dig** | Brush sand away to uncover bones, then fit them into a skeleton outline; the dinosaur stretches and yawns. | Careful uncovering, part–whole and early science words; 3–8. Reuse Splish Splash's scrubbing and Puzzle Pals' pieces; review any facts about real dinosaurs. |
+| **Magnet Fishing** | A magnet on a fishing line lifts the keys and spoons but not the leaves and shells; sort what it catches. | Magnetic and non-magnetic materials; 4–8. A mode of the proposed Fishing Pond, treating guesses as unscored predictions, as in Sink or Float. |
+
+## More references for new kinds of play
+
+These were added by the [reference gap review](ARCADE-IDEAS.md#reference-gap-review-2026-10-06). Links are given where they were checked.
+
+| Reference | Useful design idea | Puddle Island translation |
+| --- | --- | --- |
+| Vectorpark's Windosill and Metamorphabet | Wordless, tactile scenes in which poking, pulling or turning anything causes a surprising change; Metamorphabet's letters grow into things that begin with them | A **lap toy shelf** where every object transforms when touched; later, a letter that grows into its word, which suits Word Monsters |
+| [Hidden Folks](https://hiddenfolks.com/press) | A busy hand-drawn scene where hundreds of things react to touch, with mouth-made sound effects, and a list of things to find | **Count the Peekers** and Critter Spotter: every bush rustles and every critter waves, so searching is fun before anything is found |
+| [Thinkrolls](https://apps.apple.com/us/app/917176209) | Logic puzzles about what objects do (squish, melt, float), with easy and hard modes | **Roll-a-Roll**: properties become the puzzle pieces, and a cave can have a second answer at the harder level |
+| Monument Valley | Paths that connect only from the right viewpoint | An 8–11 Peekaround Island mode; younger bands keep the four honest views |
+| [Chrome Music Lab's Kandinsky](https://musiclab.chromeexperiments.com/Kandinsky/) | Any drawing plays as music, and different shapes have different voices | **Draw a Song**: Rainbow Fingers-style strokes become pentatonic tunes |
+| [Blob Opera](https://experiments.withgoogle.com/blob-opera) | Drag a singer up or down and the others harmonize | **Sing Higher**: sliding pitch, snapped to pentatonic steps, as a Sound Garden mode |
+| Incredibox | Dressing characters adds layered loops that always fit together | **Hat Band**: hats are instruments, so dressing up is composing |
+| Pokémon Ranger (DS) | Draw loops around a creature to befriend it | **Lasso Loops**: a closed loop makes a group, the basis for counting groups and tens |
+| Art of Balance (WiiWare); Boom Blox | Stacking and toppling are the whole game | **Block Tower**: an explicit support rule, gentle topples, and a cheer for the crash |
+| Super Mario Galaxy's co-star mode; New Super Mario Bros. Wii's Super Guide | A second player helps through a simpler role; a stuck player can watch the way through | A grown-up **helper role** in more games, and demonstrated completion that still counts as finishing |
+| Unpacking; Wilmot's Warehouse | Putting belongings in sensible places tells a story; the player's own categories work if things can be found again | **Toy Drawer** and the pet treehouse: tidy by any sensible rule, then fetch what the pet asks for |
+
+## Gestures the island does not use yet
+
+Current games tap, drag, hold a basket, pull back, draw, steer and use two hands at once. Sesame Workshop's touch research found tapping and dragging easiest for preschoolers and pinching and flicking hard, so try each new gesture as a small scene before building a game around it.
+
+| Gesture | What it feels like | First scene | Fuller activity | Care points |
+| --- | --- | --- | --- | --- |
+| **Crank** (a circular drag) | Winding a music box | Wind the Music Box | Gear Garden | Measure the angle swept around the crank's center, not speed; any direction counts at first; a handle at least 100 units across; cancel cleanly when the finger leaves |
+| **Press and hold** | Filling a balloon; a slow breath | Balloon Breath | Belly Breaths | No required duration; letting go always does something pleasant; keep palm rejection |
+| **Pour** (drag to tilt) | Tipping a jug | Fill the Cups | Pour and Fill | The jug tilts with its handle, not the device; the flow slows near the line; overfilling spills into a tray that can be poured back |
+| **Loop** (a closed drawing) | Lassoing | Loop the Fireflies | Lasso Loops | Close generously (the end near the start); count things whose centers fall inside; reuse Letter Trails' and Dot Link's path capture |
+| **Sliding pitch** | Singing higher and lower | Sing Higher | A Sound Garden mode | Snap to pentatonic steps from `notes.ts` and show the step reached |
+| **Baton** (a rhythmic up-and-down drag) | Conducting | Wake the Band | Little Conductor | Take the tempo from turnarounds with heavy smoothing; never require a precise beat |
+| **Time scrub** (a large slider) | A time-lapse | Grow Overnight: drag the sun across the sky to watch a sprout grow | Moon Window, Caterpillar Week | Both directions work; there is no right speed |
+
+Leave out device tilt and shaking unless a grown-up opts in: Safari asks permission before a page can read motion, and on-screen controls must work without it. Microphone blowing stays out under the existing boundaries.
+
+### A third show: new gestures
+
+The first two Quick Tricks shows use one-finger drags and taps. A third show could try three new gestures before any becomes a full game: **Wind the Music Box** (turn the crank until a friend pops up), **Fill the Cups** (pour to each cup's line) and **Loop the Fireflies** (draw one loop around three fireflies). In the finale the fireflies light their jar while the music box plays. At toddler level any turn, pour or loop succeeds; preschool and pre-K add a named amount ("fill it to the line", "loop three"), and a 6–8 remix asks for "two whole turns" or "half full". Cranking and pouring cannot go wrong, since an overflowing cup spills into a tray and can be poured back; only a closed loop around the wrong number of fireflies counts as a miss. Accounting follows the earlier shows: one sticker for the show, misses summed across it, and at most one hint per trick. Watch whether small hands can crank and close a loop before building Gear Garden, Pour and Fill or Lasso Loops.
 
 ## A practical shortlist
 
@@ -104,6 +144,7 @@ Effort is relative and includes content and verification: S = contained extensio
 2. **Try Rhythm Neighbors as a music extension:** one character and a few phrases. It adds performance and conversation to the existing music activities.
 3. **Choose Shape Buddies or Peekaround Island for the next distinct interaction:** collaborative construction versus viewing a scene from another side. Both add something beyond another sorting/counting reskin.
 4. **Hold Silly Describer, Wobble Works, and Rule Parade for later scope decisions:** each needs authored behavior or deeper rules, and the last belongs in the older-child exploration.
+5. **Try new gestures in [a third show](#a-third-show-new-gestures)** before building the crank, pour and loop games proposed in the [gap review](ARCADE-IDEAS.md#reference-gap-review-2026-10-06).
 
 When observing a prototype, ask whether the child knows what to try, enjoys the result, can ask for help, and wants another variation. Try a fresh arrangement to distinguish understanding from memorizing one screen. Do not infer general cognitive gains from a completed microgame or a faster response.
 
