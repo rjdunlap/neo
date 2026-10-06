@@ -18,13 +18,26 @@ class Store {
     }
     // Ask Safari not to clear our storage when space is low.
     void navigator.storage?.persist?.();
+    // iPadOS may suspend a hidden web app before a pending write's timer runs.
+    document.addEventListener('visibilitychange', () => document.hidden && this.flush());
+    window.addEventListener('pagehide', () => this.flush());
   }
 
   save() {
     window.clearTimeout(this.timer);
-    this.timer = window.setTimeout(() => {
-      set(KEY, this.data).catch((e) => console.warn('Could not save progress', e));
-    }, 300);
+    this.timer = window.setTimeout(() => this.write(), 300);
+  }
+
+  /** Writes a pending save right away. */
+  flush() {
+    if (this.timer === undefined) return;
+    window.clearTimeout(this.timer);
+    this.write();
+  }
+
+  private write() {
+    this.timer = undefined;
+    set(KEY, this.data).catch((e) => console.warn('Could not save progress', e));
   }
 
   stats(gameId: string): GameStats {
@@ -78,8 +91,8 @@ class Store {
   }
 
   reset() {
-    const { profile, settings } = this.data;
-    this.data = { ...defaults(), profile, settings };
+    const { profile, settings, pet } = this.data;
+    this.data = { ...defaults(), profile, settings, pet };
     this.save();
   }
 }

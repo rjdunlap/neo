@@ -1,5 +1,5 @@
 import { Graphics, Texture, type Renderer } from 'pixi.js';
-import { musicNote, starPoints } from './shapes';
+import { musicNote, shapePath, starPoints } from './shapes';
 
 /** Small white shapes drawn once at boot and tinted at use. Sprites of these are much cheaper than live Graphics. */
 export interface TextureKit {
@@ -8,6 +8,7 @@ export interface TextureKit {
   confetti: Texture;
   ring: Texture;
   note: Texture;
+  heart: Texture;
   /** A round brush with a soft edge. */
   brush: Texture;
 }
@@ -26,6 +27,7 @@ export function initTextures(renderer: Renderer) {
     confetti: make(new Graphics().roundRect(-8, -4, 16, 8, 3).fill(0xffffff)),
     ring: make(new Graphics().circle(0, 0, 14).stroke({ width: 4, color: 0xffffff })),
     note: make(musicNote(new Graphics(), 40, 0xffffff)),
+    heart: make(shapePath(new Graphics(), 'heart', 16).fill(0xffffff)),
     brush: softCircle(64),
   };
 }

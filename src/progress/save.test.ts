@@ -33,4 +33,39 @@ describe('migrate', () => {
     expect(save.games.g.history).toHaveLength(10);
     expect(save.games.g.history[0].at).toBe(5);
   });
+
+  it('upgrades a version-one save without losing progress or earned stickers', () => {
+    const legacy = { version: 1, profile: { name: 'Mia', band: 'preschool' }, games: { 'bubble-pop': { plays: 7, level: 3, pinned: 2, history: [] } }, stickers: [{ game: 'bubble-pop', seed: 42, at: 10 }] };
+    const save = migrate(legacy);
+    expect(save.version).toBe(2);
+    expect(save.profile).toEqual(legacy.profile);
+    expect(save.games).toEqual(legacy.games);
+    expect(save.stickers).toEqual(legacy.stickers);
+    expect(save.pet).toEqual({ name: 'Pip', color: 'teal', hatched: false });
+    expect(save.world).toEqual({ opened: [], band: null });
+  });
+
+  it('repairs pet settings and opened regions from untrusted backups', () => {
+    const save = migrate({ pet: { name: '   ', color: 'ultraviolet', hatched: 'yes' }, world: { opened: ['treehouse', 'treehouse', 'missing', 4], band: 'not-a-band' } });
+    expect(save.pet).toEqual(defaults().pet);
+    expect(save.world).toEqual({ opened: ['treehouse'], band: null });
+    const valid = migrate({ pet: { name: ' Clover ', color: 'purple', hatched: true }, world: { opened: ['story-grove'], band: 'preschool' } });
+    expect(valid.pet).toEqual({ name: 'Clover', color: 'purple', hatched: true });
+    expect(valid.world.band).toBe('preschool');
+  });
+
+  it('preserves valid sticker placements, clamps positions, and removes invalid placements', () => {
+    const base = { game: 'memory-match', seed: 9, at: 22 };
+    const save = migrate({ stickers: [
+      { ...base, placement: { page: 'space', x: 0.3, y: 0.7 } },
+      { ...base, placement: { page: 'sea', x: -3, y: 4 } },
+      { ...base, placement: { page: 'bogus', x: 0, y: 1 } },
+      { ...base, placement: { page: 'meadow', x: NaN, y: Infinity } },
+    ] });
+    expect(save.stickers[0].placement).toEqual({ page: 'space', x: 0.3, y: 0.7 });
+    expect(save.stickers[1].placement).toEqual({ page: 'sea', x: 0, y: 1 });
+    expect(save.stickers[2]).toEqual(base);
+    expect(save.stickers[3]).toEqual(base);
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
 });

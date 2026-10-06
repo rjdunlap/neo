@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Text } from 'pixi.js';
-import { Critter, CRITTERS } from '../../art/critter';
+import { makePet, petSpec } from '../../art/pet';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
@@ -27,7 +27,7 @@ import { session } from '../session';
 export class GameScene extends Scene {
   private game!: Game;
   private readonly stage = new Container();
-  private readonly pet = new Critter(CRITTERS.pip);
+  private readonly pet = makePet();
   private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave());
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
@@ -68,6 +68,8 @@ export class GameScene extends Scene {
       particles: this.particles,
       renderer: this.app.renderer,
       pet: this.pet,
+      petSpec: petSpec(),
+      childName: store.data.profile.name,
       track: (o) => this.track(o),
       untrack: (o) => this.untrack(o),
       instruct: (id, vars) => {
@@ -115,7 +117,7 @@ export class GameScene extends Scene {
 
   private leave() {
     voice.stop();
-    this.app.go.hub();
+    this.app.go.region(this.mod.region);
   }
 
   private finish(result: RoundResult) {
@@ -140,7 +142,7 @@ export class GameScene extends Scene {
     veil.eventMode = 'static'; // nothing underneath can be tapped now
     veil.alpha = 0;
     const confetti = this.track(new Particles());
-    const star = this.track(new Critter(CRITTERS.pip));
+    const star = this.track(makePet());
     star.scale.set(0.8);
     star.position.set(v.w / 2, v.h + 280);
     layer.addChild(veil, star, confetti);
@@ -188,7 +190,7 @@ export class GameScene extends Scene {
     }
 
     const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id));
-    const home = new RoundButton(houseIcon(0xffffff), swatch.blue, 66, () => this.app.go.hub());
+    const home = new RoundButton(houseIcon(0xffffff), swatch.blue, 66, () => this.app.go.region(this.mod.region));
     again.position.set(v.w / 2 - 230, v.h * 0.72);
     home.position.set(v.w / 2 + 230, v.h * 0.72);
     for (const b of [again, home]) {

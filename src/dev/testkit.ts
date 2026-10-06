@@ -9,7 +9,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const canvas = () => document.querySelector('canvas')!;
 
 function touch(type: string, x: number, y: number, id: number) {
-  const target = type === 'pointerdown' ? canvas() : document;
+  const target = canvas(); // Pixi must receive pointerup as well as the global window listener.
   target.dispatchEvent(
     new PointerEvent(type, { clientX: x, clientY: y, pointerId: id, pointerType: 'touch', isPrimary: id === 1, bubbles: true, cancelable: true, buttons: type === 'pointerup' ? 0 : 1 }),
   );

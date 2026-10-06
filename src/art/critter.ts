@@ -5,7 +5,7 @@ import { bodyPath } from './shapes';
 
 export type Ears = 'round' | 'pointy' | 'floppy' | 'long' | 'none';
 export type Snout = 'none' | 'nose' | 'pig' | 'muzzle' | 'bill';
-export type Mood = 'happy' | 'surprised' | 'sing' | 'sleepy';
+export type Mood = 'happy' | 'surprised' | 'sing' | 'sleepy' | 'sad' | 'calm';
 
 /** Everything that makes one critter different from another. All parts share one body and face. */
 export interface CritterSpec {
@@ -61,6 +61,9 @@ export class Critter extends Container {
   private readonly pupils: Container[] = [];
   private readonly lids: Graphics[] = [];
   private readonly mouth = new Graphics();
+  /** Brows and a tear: only some moods draw anything here. */
+  private readonly brows = new Graphics();
+  private readonly eyeX: number;
   private readonly eyeY: number;
   private readonly mouthAt: { x: number; y: number; color: number } | null;
 
@@ -84,6 +87,7 @@ export class Critter extends Container {
     this.spec = spec;
     this.sw = swatch[spec.color];
     this.eyeY = spec.snout === 'muzzle' ? -150 : -142;
+    this.eyeX = spec.snout === 'muzzle' ? 35 : 40;
     this.mouthAt =
       spec.snout === 'bill'
         ? null
@@ -119,6 +123,11 @@ export class Critter extends Container {
   cheer() {
     this.hop(1.1);
     this.setMood('happy', 1);
+  }
+
+  /** The mood showing right now. */
+  get currentMood(): Mood {
+    return this.mood;
   }
 
   /** With `seconds`, the mood is temporary and the critter returns to its resting mood after. */
@@ -325,7 +334,7 @@ export class Critter extends Container {
     const s = this.spec;
     const sw = this.sw;
     this.body.addChild(this.face);
-    const eyeX = s.snout === 'muzzle' ? 35 : 40;
+    const eyeX = this.eyeX;
 
     for (const side of [-1, 1]) {
       const eye = new Container();
@@ -382,13 +391,28 @@ export class Critter extends Container {
       default:
         break;
     }
-    this.face.addChild(g, this.mouth);
+    this.face.addChild(g, this.mouth, this.brows);
   }
 
   private drawMood() {
     const sleepy = this.mood === 'sleepy';
     this.eyes.forEach((e) => (e.visible = !sleepy));
     this.lids.forEach((l) => (l.visible = sleepy));
+
+    // Brows read even on a bill, so every critter can look sad or surprised.
+    const b = this.brows.clear();
+    const browY = this.eyeY - 40;
+    for (const side of [-1, 1]) {
+      const x = side * this.eyeX;
+      if (this.mood === 'sad') b.moveTo(x - side * 20, browY - 8).lineTo(x + side * 18, browY + 4);
+      if (this.mood === 'surprised') b.moveTo(x - 18, browY + 2).quadraticCurveTo(x, browY - 14, x + 18, browY + 2);
+    }
+    if (this.mood === 'sad' || this.mood === 'surprised') b.stroke(stroke(this.sw.line, 5));
+    if (this.mood === 'sad') {
+      const x = this.eyeX + 14;
+      const y = this.eyeY + 34;
+      b.moveTo(x, y - 14).quadraticCurveTo(x + 9, y, x, y + 6).quadraticCurveTo(x - 9, y, x, y - 14).fill(swatch.blue.fill);
+    }
 
     const m = this.mouth.clear();
     const at = this.mouthAt;
@@ -408,6 +432,14 @@ export class Critter extends Container {
         break;
       case 'sleepy':
         m.ellipse(at.x, at.y, 5, 6).fill(MOUTH_DARK);
+        break;
+      case 'calm':
+        m.moveTo(at.x - 11, at.y).lineTo(at.x + 11, at.y).stroke(stroke(at.color, 5));
+        break;
+      case 'sad':
+        m.moveTo(at.x - 15, at.y + 6)
+          .quadraticCurveTo(at.x, at.y - 8, at.x + 15, at.y + 6)
+          .stroke(stroke(at.color, 5));
         break;
     }
   }

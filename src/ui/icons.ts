@@ -1,5 +1,11 @@
 import { Graphics } from 'pixi.js';
-import { ink } from '../art/palette';
+import { ink, swatch, wood } from '../art/palette';
+
+export function islandIcon(): Graphics {
+  return new Graphics().ellipse(0, 18, 30, 12).fill(swatch.blue.fill).ellipse(0, 12, 24, 10).fill(swatch.yellow.light)
+    .moveTo(0, 10).quadraticCurveTo(9, -8, 0, -22).stroke({ width: 6, color: wood.line })
+    .poly([0, -22, -28, -12, -14, -30, 0, -22, 27, -18, 12, -34]).fill(swatch.green.fill);
+}
 
 /** Simple pictograms for pre-readers, drawn about 60 units across, centered on (0, 0). */
 const line = (width = 7, color = ink) => ({ width, color, join: 'round' as const, cap: 'round' as const });

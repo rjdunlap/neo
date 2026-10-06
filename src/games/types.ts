@@ -1,6 +1,7 @@
 import type { Container, Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
-import type { Critter } from '../art/critter';
+import type { Critter, CritterSpec } from '../art/critter';
+import type { RegionId } from '../content/world';
 import type { Particles } from '../art/particles';
 import type { MusicStyle } from '../audio/music';
 import type { LineVars } from '../audio/voice';
@@ -21,7 +22,7 @@ export interface GameModule {
   name: string;
   /** Spoken when the game is picked. */
   titleLine: LineId;
-  region: string;
+  region: RegionId;
   skills: string[];
   bands: Band[];
   levels(band: Band): LevelRange;
@@ -55,6 +56,8 @@ export interface GameContext {
   renderer: Renderer;
   /** The guide in the corner. It cheers, and tapping it repeats the last instruction. */
   pet: Critter;
+  petSpec: CritterSpec;
+  childName: string;
   track<T extends Updatable>(obj: T): T;
   untrack(obj: Updatable): void;
   /** Speak an instruction; the pet repeats the latest one when tapped. */

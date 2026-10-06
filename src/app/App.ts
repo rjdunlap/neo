@@ -7,11 +7,14 @@ import { Tweener } from '../engine/tween';
 import { computeView, type View } from '../engine/view';
 import type { Scene } from './Scene';
 import { session } from './session';
+import type { RegionId } from '../content/world';
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
   start(): void;
   hub(): void;
+  region(id: RegionId): void;
+  hatch(): void;
   game(id: string): void;
   stickers(): void;
   goodnight(): void;

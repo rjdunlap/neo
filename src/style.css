@@ -230,3 +230,29 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* A small optional grown-up field below the spoken name choices. */
+.pet-name-form {
+  position: fixed;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: min(720px, 90%);
+  font-size: 16px;
+  touch-action: manipulation;
+}
+.pet-name-form input, .pet-name-form button {
+  font: inherit;
+  padding: 10px 14px;
+  border: 2px solid var(--teal-line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+}
+.pet-name-form input { width: 170px; user-select: text; -webkit-user-select: text; }

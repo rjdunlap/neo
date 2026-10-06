@@ -1,4 +1,11 @@
 import type { Band } from './bands';
+import { PET_COLORS, REGION_IDS, STICKER_PAGES, type PetColor, type RegionId, type StickerPage } from '../content/world';
+
+export interface StickerPlacement {
+  page: StickerPage;
+  x: number;
+  y: number;
+}
 
 export interface RoundRecord {
   level: number;
@@ -22,12 +29,16 @@ export interface StickerRecord {
   game: string;
   seed: number;
   at: number;
+  placement?: StickerPlacement;
 }
 
 /** Everything the app remembers, as one versioned record so a backup is a single file. */
 export interface SaveData {
-  version: 1;
+  version: 2;
   profile: { name: string; band: Band };
+  pet: { name: string; color: PetColor; hatched: boolean };
+  /** Highest band celebrated on the map; null before the first visit. */
+  world: { opened: RegionId[]; band: Band | null };
   settings: { volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
@@ -38,8 +49,10 @@ const BAND_IDS: Band[] = ['lap', 'toddler', 'preschool', 'prek'];
 
 export function defaults(): SaveData {
   return {
-    version: 1,
+    version: 2,
     profile: { name: '', band: 'lap' },
+    pet: { name: 'Pip', color: 'teal', hatched: false },
+    world: { opened: [], band: null },
     settings: { volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true },
     games: {},
     stickers: [],
@@ -51,6 +64,13 @@ const num = (v: unknown, fallback: number) => (typeof v === 'number' && Number.i
 const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback);
 const str = (v: unknown, fallback: string) => (typeof v === 'string' ? v : fallback);
 
+function placement(raw: unknown): StickerPlacement | undefined {
+  if (!isObj(raw)) return;
+  const page = STICKER_PAGES.find((p) => p === raw.page);
+  if (!page || typeof raw.x !== 'number' || !Number.isFinite(raw.x) || typeof raw.y !== 'number' || !Number.isFinite(raw.y)) return;
+  return { page, x: Math.max(0, Math.min(1, raw.x)), y: Math.max(0, Math.min(1, raw.y)) };
+}
+
 /** Accepts anything (old saves, hand-edited backups, garbage) and returns a valid save. */
 export function migrate(raw: unknown): SaveData {
   const d = defaults();
@@ -59,6 +79,8 @@ export function migrate(raw: unknown): SaveData {
   const profile = isObj(raw.profile) ? raw.profile : {};
   const band = BAND_IDS.find((b) => b === profile.band) ?? d.profile.band;
   const settings = isObj(raw.settings) ? raw.settings : {};
+  const pet = isObj(raw.pet) ? raw.pet : {};
+  const world = isObj(raw.world) ? raw.world : {};
 
   const games: Record<string, GameStats> = {};
   if (isObj(raw.games)) {
@@ -84,12 +106,24 @@ export function migrate(raw: unknown): SaveData {
     ? raw.stickers
         .filter(isObj)
         .filter((s) => typeof s.game === 'string')
-        .map((s) => ({ game: s.game as string, seed: num(s.seed, 1), at: num(s.at, 0) }))
+        .map((s) => {
+          const p = placement(s.placement);
+          return { game: s.game as string, seed: num(s.seed, 1), at: num(s.at, 0), ...(p ? { placement: p } : {}) };
+        })
     : [];
 
   return {
-    version: 1,
+    version: 2,
     profile: { name: str(profile.name, d.profile.name).slice(0, 40), band },
+    pet: {
+      name: str(pet.name, 'Pip').trim().slice(0, 40) || 'Pip',
+      color: PET_COLORS.find((c) => c === pet.color) ?? 'teal',
+      hatched: bool(pet.hatched, false),
+    },
+    world: {
+      opened: REGION_IDS.filter((id) => Array.isArray(world.opened) && world.opened.includes(id)),
+      band: BAND_IDS.find((b) => b === world.band) ?? null,
+    },
     settings: {
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
       music: bool(settings.music, d.settings.music),

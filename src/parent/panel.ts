@@ -4,6 +4,7 @@ import { voice } from '../audio/voice';
 import { GAMES } from '../games/registry';
 import { BANDS, type Band } from '../progress/bands';
 import { store } from '../progress/store';
+import { PET_COLORS, type PetColor } from '../content/world';
 
 const SESSION_CHOICES = [5, 10, 15, 20, 30, 0];
 const DAY = 24 * 60 * 60 * 1000;
@@ -15,7 +16,6 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
  * Settings apply when it closes, and the session timer restarts.
  */
 export function openParentPanel(onClose: () => void) {
-  const d = store.data;
   const root = document.createElement('div');
   root.className = 'parent';
   root.innerHTML = `
@@ -35,6 +35,15 @@ export function openParentPanel(onClose: () => void) {
         ${BANDS.map((b) => `<button type="button" data-band="${b.id}">${b.label}<small>${b.ages}</small></button>`).join('')}
       </div>
 
+      <h2>Your island friend</h2>
+      <div class="parent__row">
+        <label for="p-pet-name">Pet name</label>
+        <input id="p-pet-name" type="text" autocomplete="off" maxlength="40" />
+      </div>
+      <div class="parent__row">
+        <label for="p-pet-color">Pet color</label>
+        <select id="p-pet-color">${PET_COLORS.map((color) => `<option value="${color}">${color}</option>`).join('')}</select>
+      </div>
       <h2>Play time</h2>
       <div class="parent__row">
         <label for="p-session">Session length (then a goodnight scene)</label>
@@ -76,12 +85,17 @@ export function openParentPanel(onClose: () => void) {
 
   const $ = <T extends Element>(sel: string) => root.querySelector(sel) as T;
   const name = $<HTMLInputElement>('#p-name');
+  const petName = $<HTMLInputElement>('#p-pet-name');
+  const petColor = $<HTMLSelectElement>('#p-pet-color');
   const sessionSel = $<HTMLSelectElement>('#p-session');
   const tips = $<HTMLInputElement>('#p-tips');
   const volume = $<HTMLInputElement>('#p-volume');
   const musicBox = $<HTMLInputElement>('#p-music');
 
   const render = () => {
+    const d = store.data;
+    petName.value = d.pet.name;
+    petColor.value = d.pet.color;
     name.value = d.profile.name;
     sessionSel.value = String(d.settings.sessionMinutes);
     if (!sessionSel.value) sessionSel.value = '0';
@@ -98,6 +112,13 @@ export function openParentPanel(onClose: () => void) {
     );
   };
   render();
+
+  petName.addEventListener('input', () => {
+    store.data.pet.name = petName.value.trim().slice(0, 40) || 'Pip';
+    applySettings();
+    store.save();
+  });
+  petColor.addEventListener('change', () => { store.data.pet.color = petColor.value as PetColor; store.save(); });
 
   name.addEventListener('input', () => {
     store.data.profile.name = name.value.slice(0, 40);
@@ -187,12 +208,20 @@ function weekSummary(): string {
   const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
   const ideas = (played.length ? played : games).filter((g) => g.offScreen).slice(0, 2);
+  // Games for older bands sit under clouds on the map; say which band opens each one.
+  const rank = (id: Band) => BANDS.findIndex((b) => b.id === id);
+  const opensAt = (g: (typeof GAMES)[number]) => g.bands.find((b) => rank(b) > rank(band));
+  const later = BANDS.filter((b) => rank(b.id) > rank(band)).flatMap((b) => {
+    const opens = GAMES.filter((g) => !g.bands.includes(band) && opensAt(g) === b.id);
+    return opens.length ? [`<strong>${b.label}:</strong> ${opens.map((g) => esc(g.name)).join(', ')}`] : [];
+  });
   return `
     <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Only games for the chosen age band are shown.</p>
     <table>
       <tr><th>Game and level</th><th>Rounds</th><th>Minutes</th></tr>
       ${rows.join('')}
     </table>
+    ${later.length ? `<p class="muted" style="margin-top:8px">Waiting under the clouds until a later band: ${later.join('; ')}.</p>` : ''}
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
     ${ideas.map((g) => `<p><strong>Off-screen idea:</strong> ${esc(g.offScreen!)}</p>`).join('')}`;
 }

@@ -30,6 +30,7 @@ interface Plan {
   /** free: scrub it all off. parts: "wash my ears!", one body part at a time. */
   mode: 'free' | 'parts';
   parts: Part[];
+  shuffle?: boolean;
 }
 
 const PLANS: Plan[] = [
@@ -37,13 +38,14 @@ const PLANS: Plan[] = [
   { mode: 'free', parts: ['tummy', 'head', 'cheeks', 'ears'] },
   { mode: 'parts', parts: ['tummy', 'ears', 'head'] },
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks'] },
+  { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks'], shuffle: true },
 ];
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 4 },
   preschool: { min: 3, max: 4 },
-  prek: { min: 4, max: 4 },
+  prek: { min: 4, max: 5 },
 };
 
 const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
@@ -136,7 +138,7 @@ class SplishSplash implements Game {
   private readonly room = new Graphics();
   private readonly tubFront = new Graphics();
   private readonly foam = new Graphics();
-  private readonly pip = new Critter(CRITTERS.pip);
+  private readonly pip: Critter;
   private readonly rubberDuck = new Critter(CRITTERS.duck);
   private readonly scrubZone = new Container();
   private readonly eraser = new Sprite();
@@ -157,7 +159,9 @@ class SplishSplash implements Game {
   private readonly lift = (e: { pointerId: number }) => this.last.delete(e.pointerId);
 
   constructor(private readonly ctx: GameContext) {
+    this.pip = new Critter(ctx.petSpec);
     this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    if (this.plan.shuffle) this.plan = { ...this.plan, parts: ctx.rng.shuffle([...this.plan.parts]) };
     this.view = ctx.view;
     // Pip is the star of this one, so the corner guide steps out.
     ctx.pet.visible = false;
@@ -428,11 +432,11 @@ export const splishSplash: GameModule = {
   titleLine: 'game.splish-splash',
   region: 'cozy-village',
   skills: ['fine-motor', 'body-parts'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
     const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
-    return p.mode === 'free' ? 'Scrub all the mud off' : `Wash one body part at a time: ${p.parts.join(', ')}`;
+    return p.shuffle ? 'Wash four body parts in a different order each round' : p.mode === 'free' ? 'Scrub all the mud off' : `Wash one body part at a time: ${p.parts.join(', ')}`;
   },
   music: STYLES.paint,
   coplayHint: 'Name the body parts as {name} scrubs: "tummy", "ears", "cheeks".',

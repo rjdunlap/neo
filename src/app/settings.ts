@@ -8,4 +8,5 @@ export function applySettings() {
   audio.setVolume(s.volume);
   audio.setMusicOn(s.music);
   voice.name = store.data.profile.name.trim();
+  voice.pet = store.data.pet.name;
 }

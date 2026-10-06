@@ -1,5 +1,5 @@
-import { Container, Rectangle } from 'pixi.js';
-import { Critter, CRITTERS } from '../../art/critter';
+import { Container, Graphics, Rectangle } from 'pixi.js';
+import { drawEgg, makePet } from '../../art/pet';
 import { swatch } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { audio } from '../../audio/engine';
@@ -18,7 +18,8 @@ import { session } from '../session';
 export class StartScene extends Scene {
   countsTime = false;
   private backdrop!: Backdrop;
-  private readonly pip = new Critter(CRITTERS.pip);
+  private readonly pip = makePet();
+  private readonly egg = drawEgg(new Graphics());
   private readonly title = label('Puddle Island', 76, 0x2b2b3a);
   private readonly play = new RoundButton(playIcon(), swatch.green, 78, () => this.begin());
   private readonly everywhere = new Container();
@@ -32,7 +33,9 @@ export class StartScene extends Scene {
     this.title.style.stroke = { color: 0xffffff, width: 10, join: 'round' };
     this.pip.setMood('sleepy');
     onTap(this.everywhere, () => this.begin());
-    this.content.addChild(this.backdrop, this.everywhere, this.track(this.pip));
+    this.pip.visible = store.data.pet.hatched;
+    this.egg.visible = !store.data.pet.hatched;
+    this.content.addChild(this.backdrop, this.everywhere, this.track(this.pip), this.egg);
     this.ui.addChild(this.title, this.play);
   }
 
@@ -43,6 +46,7 @@ export class StartScene extends Scene {
     this.play.position.set(v.w / 2, v.h * 0.4);
     this.pip.position.set(v.w / 2, v.h - 40);
     this.pip.scale.set(0.95);
+    this.egg.position.set(v.w / 2, v.h - 180);
   }
 
   update(dt: number) {
@@ -64,6 +68,6 @@ export class StartScene extends Scene {
     sfx.giggle();
     void this.tw.to(this.play.scale, { x: 0, y: 0 }, { duration: 0.25 });
     void voice.say('start.hi');
-    void this.tw.wait(1.6).then(() => this.app.go.hub());
+    void this.tw.wait(1.6).then(() => store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch());
   }
 }

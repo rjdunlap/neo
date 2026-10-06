@@ -152,6 +152,37 @@ export const sfx = {
     noise(o.ctx, o.dest, o.t, 0.08, 0.15, { type: 'lowpass', hz: 700 });
   },
 
+  /** A soft falling "aww", for a sad face. Two scale notes, so it stays in key. */
+  sigh() {
+    const o = out();
+    if (!o) return;
+    voiced(o.ctx, o.dest, o.t, 0.5, [stepHz(4), stepHz(2)], [700, 1100], 0.28, { vibrato: 4 });
+    voiced(o.ctx, o.dest, o.t + 0.45, 0.6, [stepHz(2), stepHz(0)], [650, 1000], 0.22, { vibrato: 4 });
+  },
+
+  /** A wobbly low tummy rumble. */
+  rumble() {
+    const o = out();
+    if (!o) return;
+    voiced(o.ctx, o.dest, o.t, 0.9, [70, 90, 60, 80], [300, 600], 0.4, { vibrato: 9 });
+  },
+
+  /** One crunchy chomp. */
+  munch() {
+    const o = out();
+    if (!o) return;
+    noise(o.ctx, o.dest, o.t, 0.09, 0.3, { type: 'bandpass', hz: 1800 * jitter(80), q: 1.2 });
+    noise(o.ctx, o.dest, o.t + 0.12, 0.07, 0.22, { type: 'bandpass', hz: 1400 * jitter(80), q: 1.2 });
+    tone(o.ctx, o.dest, 'sine', 160, o.t, 0.25, 0.004, 0.12, 90);
+  },
+
+  /** A big, happy, low burp. */
+  burp() {
+    const o = out();
+    if (!o) return;
+    voiced(o.ctx, o.dest, o.t, 0.55, [110 * jitter(30), 85, 95], [420, 800], 0.5, { vibrato: 22 });
+  },
+
   /** A sleepy descending hum. */
   yawn() {
     const o = out();

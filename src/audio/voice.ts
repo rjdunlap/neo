@@ -12,6 +12,7 @@ const hasSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
 class Voice {
   /** The child's name, as it should be spoken. */
   name = '';
+  pet = 'Pip';
   private chosen: SpeechSynthesisVoice | null = null;
   private talking = 0;
 
@@ -32,7 +33,7 @@ class Voice {
   line(id: LineId, vars: LineVars = {}): string {
     const options: string[] = SCRIPT[id];
     const text = options[Math.floor(Math.random() * options.length)];
-    const all: LineVars = { name: this.name || 'friend', ...vars };
+    const all: LineVars = { name: this.name || 'friend', pet: this.pet || 'Pip', ...vars };
     return text.replace(/\{(\w+)\}/g, (_, key: string) => String(all[key] ?? ''));
   }
 

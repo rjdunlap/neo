@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
-import { Critter, CRITTERS } from '../../art/critter';
+import { makePet } from '../../art/pet';
 import { cheek, ink } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { starPoints } from '../../art/shapes';
@@ -21,7 +21,7 @@ export class GoodnightScene extends Scene {
   private readonly stars = new Container();
   private readonly moon = new Graphics();
   private readonly hills = new Graphics();
-  private readonly pip = new Critter(CRITTERS.pip);
+  private readonly pip = makePet();
   private readonly zzz: { t: Container; age: number }[] = [];
   private readonly gate = new ParentGate(() => this.wake());
   private clock = 0;
