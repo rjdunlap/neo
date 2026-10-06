@@ -4,7 +4,7 @@
 
 Puddle Island is a home-made iPad learning game for the developer's daughter, who is about to turn one in October 2026. Its current activities grow from lap play through roughly age six. The longer-term direction reaches elementary school through roughly grade 5 / age eleven, starting with a 6–8 pilot. The inspiration is the discovery and playful learning of JumpStart, the companion and world of Neopets, and the variety of small games found on Kongregate.
 
-The island is an age trail: each place contains the activities for its band. There are forty-three games. [ROADMAP.md](ROADMAP.md) separates completed milestones, work needing verification, and proposals. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) holds the game and world concepts with their learning goals and inspiration. This document describes current behavior, with future direction explicitly labeled below.
+The island is an age trail: each place contains the activities for its band. There are sixty-three games. [ROADMAP.md](ROADMAP.md) separates completed milestones, work needing verification, and proposals. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) holds the game and world concepts with their learning goals and inspiration. This document describes current behavior, with future direction explicitly labeled below.
 
 The developer is not an artist. All game artwork is generated in code with PixiJS Graphics, and sounds and music are synthesized with Web Audio. The visual direction should be achievable with the shared shape, animal, scenery, and particle builders, without sprites or an external asset pipeline.
 
@@ -20,13 +20,13 @@ The developer is not an artist. All game artwork is generated in code with PixiJ
 
 ## Current implementation
 
-The table describes the app with 62 games in five places. Everything through Tangram Town and the subject-card prototype was pushed to `main` in `17124e8`. The working tree adds the early-school band with Wonder Woods, Peekaround Island, Little Helpers level 6, and twelve newer games (Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall, Garden Grow, Clock Tower, Pixel Pictures, Goodnight Room, Animal Snack, Beat Builder, Rhyme Time, Stop and Go, Ramp Race, Critter Sort, Treasure Map, Opposites, Picture Graph) and longer ladders for Robot Path, Word Monsters, Duck Pond and Monster Munch. Automated checks are recorded in [VERIFICATION.md](VERIFICATION.md). The verification log records checks performed, rather than a guarantee about every subsequent local edit; judgments of fun and real-iPad checks for the newest games are still open in the [roadmap](ROADMAP.md).
+The table describes the app with 63 games in five places. Everything through Tangram Town and the subject-card prototype was pushed to `main` in `17124e8`; the early-school band with Wonder Woods, Peekaround Island, Little Helpers level 6, twenty newer games and the longer ladders described below were committed in `dfe08a3`. Automated checks are recorded in [VERIFICATION.md](VERIFICATION.md). The verification log records checks performed, rather than a guarantee about every subsequent local edit; judgments of fun and real-iPad checks for the newest games are still open in the [roadmap](ROADMAP.md).
 
 | Area | Current behavior |
 | --- | --- |
 | Platform | TypeScript, Vite, PixiJS 8; installable PWA with an offline asset cache |
 | Navigation | Start screen, hatching, an age-trail island map of five places, place scenes with every game for that age laid out, game host, sticker book, goodnight scene |
-| Games | All 62 are listed with modes and bands in the [README](../README.md#the-island-and-its-games); current registrations live in `src/games/registry.ts` |
+| Games | All 63 are listed with modes and bands in the [README](../README.md#the-island-and-its-games); current registrations live in `src/games/registry.ts` |
 | Progression | Per-game level ladders, automatic adjustment within age bands, grown-up level pins. Rainbow Fingers (6 levels) and Splish Splash (8) now reach pre-K with new modes rather than topping out early |
 | Pet | Four-tap hatching, eight colors, spoken name choices and grown-up name entry; customized guide shared across scenes |
 | Rewards | Five illustrated pages with free sticker placement and a paged tray; positions saved as page fractions |
@@ -34,7 +34,7 @@ The table describes the app with 62 games in five places. Everything through Tan
 | Grown-up controls | Child name, pet name and color, age band (her pet's home place and where play starts), session length, place layout, sound settings, play history, and level settings |
 | Audio | Synthesized sound effects and music, device speech driven by line IDs |
 
-The current age bands in `src/progress/bands.ts` are lap (18–24 months), toddler (2–3 years), preschool (3–4 years), and pre-K (5–6 years). These are application groupings, not developmental assessments.
+The current age bands in `src/progress/bands.ts` are lap (18–24 months), toddler (2–3 years), preschool (3–4 years), pre-K (5–6 years) and early school (`school`, 6–8 years). These are application groupings, not developmental assessments.
 
 Each game supplies level ranges for the bands it supports. Two consecutive smooth rounds at the current level (at most one miss and no hints) move up; two struggling rounds (at least four misses or at least two hints per round) move down. Both changes stay within the selected band's range. Modes can change the task itself, rather than merely adding more objects.
 
@@ -46,9 +46,9 @@ These systems and older age ranges are proposals, not current app behavior. The 
 
 **A home and journal give play a lasting personal result.** Start with one room and free furnishings, then add a place to display a sticker or drawing and play a saved tune. Discoveries have known sources and narrated observations. Keep local storage bounded and include new data in migration, backup, restore, and offline checks. Nothing deteriorates while away; possessions are never spent to continue playing. Preserve one sticker per completed round and prevent the story layer from awarding it twice.
 
-**Older play adds reasoning and expression.** Target 6–8 first: balancing quantities, equal sharing, clue-based stories, editable robot loops, and experiments with replay. Later modes can grow toward fractions/decimals, data, evidence in stories, reusable programs, and projects through upper elementary. Keep spoken support and large targets, and let children revise a plan, undo, or ask for a worked example. Reading can be practiced inside a game while navigation and explanations remain available aloud. No fifth band exists yet; a new selectable range needs support across levels, saves, parent controls, speech, and tests.
+**Older play adds reasoning and expression.** Target 6–8 first: balancing quantities, equal sharing, clue-based stories, editable robot loops, and experiments with replay. Later modes can grow toward fractions/decimals, data, evidence in stories, reusable programs, and projects through upper elementary. Keep spoken support and large targets, and let children revise a plan, undo, or ask for a worked example. Reading can be practiced inside a game while navigation and explanations remain available aloud. The early-school band (6–8) is the first step; any further band needs the same support across levels, saves, parent controls, speech, and tests.
 
-**Themed zones organize the growing world.** Wonder Woods, Maker Harbor, Storybook Square, Discovery Marsh, and Skywatch Isles are proposed places with different hosts, activities, and projects. Their identity should be separate from learning range so a place can welcome several levels and a game can appear in several places. Current `Place.band` and band-based return routes do not support this yet. Introduce explicit zone identity and launch/return context with the first elementary zone, preserving the original trail, stable game IDs, saved levels, and access to younger play.
+**Themed zones organize the growing world.** Wonder Woods now exists as the early-school trail place, still without a host or project; Maker Harbor, Storybook Square, Discovery Marsh, and Skywatch Isles are proposed places with different hosts, activities, and projects. Their identity should be separate from learning range so a place can welcome several levels and a game can appear in several places. Current `Place.band` and band-based return routes do not support this yet. Introduce explicit zone identity and launch/return context with the first elementary zone, preserving the original trail, stable game IDs, saved levels, and access to younger play.
 
 The design test for an activity is whether the skill changes the play: quantities fill plates, a clue finds a friend, a revised route reaches a destination. Creative choices and experimental predictions should not become incorrect answers. Fun can come from making, discovering, caring, and trying another solution as well as finishing a puzzle. Optional personal challenges must not withhold the story ending or ordinary reward.
 
@@ -107,7 +107,7 @@ Pattern Train advances from AB through AAB/ABB and ABC, animal patterns, missing
 
 Letter Trails defines all 26 capitals as ordered strokes. A firefly and moving beacon guide the finger; successive checkpoints enforce the trail while tolerating imprecise motion. Each finished letter becomes a code-drawn illustration with a spoken association. Top levels spell short words and the child's name. Accented Latin names normalize to A–Z; names with no supported letters fall back to PIP. Additional scripts would need their own stroke data.
 
-Robot Path uses a visible arrow program, a play button, and editable steps. Its six levels add turns, grid size, rocks, and longer routes. Every board has a tested solution within its program limit. The standard gentle mistake feedback and hint glow apply across the new games.
+Robot Path uses a visible arrow program, a play button, and editable steps. Its first six levels add turns, grid size, rocks, and longer routes. Every board has a tested solution within its program limit. The standard gentle mistake feedback and hint glow apply across the new games.
 
 The second expansion broadens toddler play and introduces measurement, symmetry, and causal storytelling. Each new game supports toddler, preschool, and pre-K and uses the existing save, adaptive difficulty, and reward systems; no save migration is needed.
 
@@ -139,7 +139,7 @@ The first arcade expansion adds Duckling Parade (steer a growing line), Scoop Sh
 
 ## Follow-on batch
 
-Ten more games broaden language, listening, pretend play, catching, cooperation and number-as-quantity. All span lap through pre-K, keep their rules in `logic.ts` with unit tests, and are covered by the `batch` browser suite. Their original briefs are in [the arcade notebook](ARCADE-IDEAS.md#follow-on-batch-built).
+Ten more games broaden language, listening, pretend play, catching, cooperation and number-as-quantity. All span lap through pre-K, keep their rules in `logic.ts` with unit tests, and are covered by the `batch` browser suite.
 
 - **Word Monsters (stories):** every letter is a little monster that says its sound. Tap to hear them, find a letter by name, then by its sound, match first sounds ("apple starts with aah"), then drag letters into slots to build three-letter words, at the top level from sounds alone with a spare letter. Lookalike letters are never neighbors. The sounds come from device speech (`sound.a`…`sound.z`), so they are stand-ins until checked on the iPad.
 - **Peg Garden (senses):** a pearl drops through a sea garden; each flower bud it touches blooms and chimes, and nothing is lost. Later levels ask for every flower, the orange ones, then aiming a launcher at a numbered flower and at 1, 2, 3 in order. `ball.ts` simulates every board, so each numbered peg is reachable by some aim.
@@ -152,7 +152,7 @@ Ten more games broaden language, listening, pretend play, catching, cooperation 
 - **Bounce Back (senses):** a slow, giggly ball between two big paddles, with no score: bounces are counted together toward a goal. A grown-up takes the left paddle on the play-together level, and the pet steps in when no second finger is there. Later levels aim through stars and count a rally of ten.
 - **Dot Link (colors and shapes):** tap dots to pop them, then drag a line through neighboring dots of one color; new dots drop in from the top. Later levels ask for one color, chains of four, and a closed square that clears every dot of that color. A move that counts always exists.
 
-## Newest four (in the working tree)
+## Seesaw Balance, Teddy Doctor, Bumper Garden and Quick Tricks
 
 Four more games: a 6–8-ready measurement game, pretend care, a pinball table, and the first microgame show. Each keeps its rules in `logic.ts` with unit tests and is covered by the `next` browser suite.
 
@@ -167,16 +167,16 @@ This local document maintains current design decisions from the original brief, 
 
 The [historical design artifact](https://claude.ai/code/artifact/a7666bb8-0fdf-429b-b5df-2ab53a112913) is retained only as a reference. Working on the project does not require access to that service. Keep current decisions and status in this repository.
 
-## Creative and sharing expansion (working tree, 2026-10-06)
+## Creative and sharing expansion (2026-10-06)
 
-Four more games bring the local catalog to 43. Their complete briefs are in the arcade notebook and browser coverage is in the `creative` suite.
+Four more games brought the catalog to 43; browser coverage is in the `creative` suite.
 
 - **Stamp Studio (art, lap–pre-K):** two simple lap modes stamp stars or animals. Later modes offer colors, moving stamps, two sizes, quarter-turn rotation and spoken garden/story invitations. Any picture is valid; the green arrow can finish after the first stamp. Undo removes the latest stamp, and 24 stamps bound the scene. Coordinates stay normalized when resizing. Pictures last only for the round; saved creations remain a proposal.
 - **Pet Kitchen (numbers, toddler–pre-K):** cut one or two sandwiches into halves or quarters, move equal pieces between plates, then serve. Both halves and quarters are accepted when they share the wholes equally. A round-arrow control restores the wholes to try another cut. The last two levels double two kinds of fruit on a picture recipe, with undo. Only unsuccessful serving checks count as misses; cutting, arranging and undo are exploration. Two misses highlight a useful next action.
 - **Rhythm Neighbors (music, lap–pre-K):** two lap modes let taps make a bird call and frog chorus. Later levels alternate a bird call with a different pictured frog reply, add a second frog voice, then short/long rhythm gaps. The relative-gap judge is shared with Sound Garden. Explicit submission avoids any deadline; replay demonstrates both parts. After two misses, or when help is requested, guided play highlights the next frog and accepts the correct sequence at any pace. Three exchanges finish with a short duet and one sticker.
 - **Tangram Town (colors/shapes, toddler–pre-K):** six authored house, boat, cottage and rocket puzzles use shuffled large pieces. Quarter-turn controls rotate the selected piece; identical triangles and symmetric rectangle/square rotations are accepted. Later silhouettes can reveal outlines and orient the next piece through help. Off-board drops and turning are exploration. Wrong placements on the picture get a spoken hint and a glow after two misses. Help affects hint accounting.
 
-## Deeper familiar play (working tree, 2026-10-06)
+## Deeper familiar play (2026-10-06)
 
 Quick Tricks keeps levels 1–3 intact and appends levels 4–6: **Parcel Turn**, **Picnic Places**, and **Last Berry** in a second three-trick show. Rotate and fit parcels; give each friend a bowl (the top level begins partly set); add to a visible starting quantity and undo extras to make four, five or six berries. Each trick has its own gentle hint after two misses, and the green arrow moves on when ready. The whole show still awards one sticker.
 
@@ -184,7 +184,7 @@ Seesaw Balance appends level 7: two identical hidden weights balance together; t
 
 Rainbow Fingers and Fluffy Salon widen lap play to include their existing second, unjudged free-play modes (color pots; all salon tools). Their first modes and later level numbers are unchanged. The two new lap-supporting games each also begin with two simple modes. Photo Safari and Teddy Doctor also open their level 2 to lap play: finding a named animal ("the pig") or body part ("on my ear"), the naming games a grown-up plays on the lap, with the usual boing, spoken hint and glow. Peg Garden stays at one lap level: its bloom level has no guaranteed finish if the same spot is tapped again and again.
 
-## Peekaround Island (working tree, 2026-10-06)
+## Peekaround Island (2026-10-06)
 
 - **Peekaround Island (puzzles, toddler–pre-K):** a round island seen from the side, with a big round tree in the middle and four friend spots a quarter turn apart. Turning is drawn, not 3D: each spot's angle projects onto an ellipse, depth sets scale and draw order, and anything behind the tree's crown is hidden and cannot be tapped. Flowers between the spots make each quarter turn visible. "In front of", "behind" and "next to" are always from the child's side, so turning changes them (`logic.ts` `whereIs`).
   - Levels 1–2 show arrow buttons; tapping the tree also turns it. Level 1 finds whoever hides behind the tree. Level 2 finds a named friend while two others stand in plain sight; tapping one of them is a miss, and two misses make the arrows glow.
@@ -193,11 +193,11 @@ Rainbow Fingers and Fluffy Salon widen lap play to include their existing second
   - Requests are always answerable whichever fitting spot is used (rule-tested). The hider never repeats back to back. The round ends with a full spin of the island.
 
 
-## Wonder Woods and the early-school band (working tree, 2026-10-06)
+## Wonder Woods and the early-school band (2026-10-06)
 
 The fifth band, `school` ("Early school", 6–8 years, 20-minute default session), is the trail's fifth place, **Wonder Woods**: pines, a hollow-tree post office and a signpost, above Starry Peak on the map (places still climb in band order). Saves accept `school` for the child and the celebrated trail position; older saves are unchanged. The parent panel shows five band buttons. Wonder Woods is the elementary roadmap's early-elementary place in its simplest form: no host character, project or keepsake yet, and it still maps one-to-one to a band. Separating zone identity from learning range remains for the first zone with mixed ranges.
 
-Thirty-five games play at Wonder Woods. Twenty-nine existing games join at the top of their ladders, where the decisions still challenge a six-year-old (simple toys such as Bubble Pop stay in the younger places, which remain open). Six newer games were designed to reach it.
+Thirty-five games played at Wonder Woods when it opened (44 now). Twenty-nine existing games join at the top of their ladders, where the decisions still challenge a six-year-old (simple toys such as Bubble Pop stay in the younger places, which remain open). Six newer games were designed to reach it.
 
 - **Light Lab (science, pre-K–school):** mirrors on a grid turn a sunbeam a quarter; tap one to tilt it. Flowers wake when the light reaches them and let it pass on; colored glass tints the beam, and a pink flower only wakes in pink light. Puzzles are built backwards from a random beam path, with spare mirrors and rocks placed off it, and start unsolved (rule-tested over hundreds of seeds, including that following hints always solves). Levels 1–2 show the beam live as mirrors turn (no misses possible); from level 3 the child plans and then taps the sun, which draws the beam cell by cell. A shine that misses is a miss, explained aloud (off the edge, a rock, the wrong color, one flower still asleep); two misses make the next wrong mirror on the known path glow.
 - **Penguin Slide (puzzles, preschool–school):** tap the ice in a direction and the penguin slides until a snowy rock, the pond's edge or soft snow stops it, eating fish it passes. Puzzles are generated and kept only when a breadth-first search over slides finds the planned shortest solution (1–2 moves at first, up to 4–6 with two fish and soft snow). Sliding is exploration: there are no misses. Undo steps back one slide. Three slides beyond the shortest bring a hint arrow showing a best next slide; if no route is left, the undo button glows.
@@ -211,7 +211,7 @@ Two more additions widen the younger end and an existing ladder:
 - **Garden Grow (colors and shapes, lap–preschool):** tap the soil and a seed grows into a smiling flower that sings when tapped. Level 2 adds the cloud: plant, then make it rain. Later levels plant the color asked for (a wrong packet shakes, as a miss), then exactly 2–5 seeds before the rain, then two colors with a number of each. A picture sign shows what was asked and each planted seed has a marker in its color. Tapping a planted seed takes it out; two misses make the sign and the beds still to plant glow.
 - **Little Helpers level 6** (see above) gives Wonder Woods an equal-groups step.
 
-### Longer ladders and two more games (working tree, 2026-10-06, evening)
+### Longer ladders and more games (2026-10-06, evening)
 
 - **Robot Path 7–10:** levels 1–6 are unchanged. Levels 7–8 hold *counted* steps: tapping the same arrow again makes "right ×4", so a long route fits in two or four slots. Levels 9–10 add a purple loop button that repeats the whole program ×2–×4 (a staircase is "right, down, ×4"). Each level has an authored solution; rule tests check that it works and that the plain route doesn't fit the slots without the new idea. Playback lights up the slot being carried out (step-through), and the hint follows the known solution: the arrow to tap again, the next arrow, the loop button, or clear.
 - **Word Monsters 7 (word families):** the ending (at, og, ig, un, op) already stands in the last two slots as monsters, and the child drags the first sound in to make hat, then cat, then bat. Most other choices are the same family's first sounds, so hearing decides it. Two families of three words per round. The "sun" picture (a big S) is hidden here so it doesn't give the answer away.
@@ -231,3 +231,4 @@ Two more additions widen the younger end and an existing ladder:
 - **Treasure Map (colors and shapes, pre-K–school):** a parchment grid where row 1 is at the bottom, as on maps and graphs. Levels: picture rows and colored columns ("the apple row, the red column"), letters and numbers ("B3"), putting a tree, house, boat or flag at a named square, and following directions from where the pet stands ("2 left, then 3 up"; the pet then walks it, counting). A sign shows each request in pictures or letters. A wrong dig leaves a mark and says what was right ("right column, now look along the row"); two misses glow the target's column and row.
 - **Opposites (stories, lap–pre-K):** eight concept pairs drawn in code: big and small (bears), happy and sad (cat moods), up and down (a balloon with arrows), open and closed (a box), full and empty (a glass), hot and cold (a steaming mug, an ice cube), day and night, fast and slow (a bunny, a snail). On the lap, tapping the picture flips it to its opposite while the word is spoken. Then find the one named, find the opposite among three, and match three opposite pairs. Wrong picks are gentle misses naming the words; two glow the answer.
 - **Picture Graph (numbers, pre-K–school):** critters play in a meadow; the child builds a bar graph below by tapping above a bar to add a block (tapping the bar takes one away), then checks it. A wrong bar is a miss ("count the ducks again"); two make that kind's critters glow. Then questions about the graph she built: which has the most and the fewest (tap a bar), how many more of one than another (number pads), and on the last level a finished graph to read (how many in all; which two bars are the same). Counts never tie where "most" or "fewest" is asked (rule-tested).
+- **Inchworm Measure (science, pre-K–school):** drag inchworms from a bucket onto a leaf, pencil, snake or stick; they snap end to end with no gaps or overlaps. Levels: lay worms along a leaf and count them; measure, then pick how many worms long; measure two things and say which is longer and by how many worms; and read a ruler, where every other question starts past 0 and the number at the end is offered as the tempting wrong answer. A worm that would hang off the end, or a wrong number, is a gentle miss with a spoken hint (count again; count the spaces; it did not start at 0); two misses glow the right number, the thing's end, or the ruler spaces it covers.

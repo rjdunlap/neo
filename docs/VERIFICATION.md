@@ -1,8 +1,23 @@
 # Puddle Island verification
 
-This is a dated record of checks, newest expansion first. The newest entry covers eleven more games and longer ladders (62, in the working tree); the next covers the early-school band, Wonder Woods and seven more games (51, in the working tree); the next covers Peekaround Island and a Little Helpers level, whose play-throughs are recorded in the newest entry; the next covers subject cards and four more games (43, pushed in `17124e8`, only partly checked); the next ones cover four games (39, in the working tree) and a combined run with rule tests for the original games, both on 2026-10-06; the follow-on batch below covers all 35 games deployed on 2026-10-05; earlier sections describe earlier snapshots and retired navigation. These results do not automatically validate later working-tree changes or establish what is deployed. Outstanding work and device checks are tracked in [ROADMAP.md](ROADMAP.md).
+This is a dated record of checks, newest expansion first. The newest entry covers Inchworm Measure (63 games), committed without an entry; the next covers eleven more games and longer ladders (62); the next covers the early-school band, Wonder Woods and seven more games (51); the next covers Peekaround Island and a Little Helpers level, whose play-throughs are recorded in the entry above it. Those four were checked in the working tree and committed in `dfe08a3`. Then come subject cards and four more games (43, pushed in `17124e8`, only partly checked); four games (39, later pushed in `17124e8`) and a combined run with rule tests for the original games, both on 2026-10-06; the follow-on batch below covers all 35 games deployed on 2026-10-05; earlier sections describe earlier snapshots and retired navigation. These results do not automatically validate later changes or establish what is deployed. Outstanding work and device checks are tracked in [ROADMAP.md](ROADMAP.md).
 
-## Pixel Pictures, Goodnight Room, and longer ladders (2026-10-06, evening; working tree, not committed)
+## Inchworm Measure (2026-10-06, late evening; committed in `dfe08a3`)
+
+Inchworm Measure (pre-K–school, four levels) was committed in `dfe08a3` with rule tests and a browser case but no entry here. These checks ran on that code in a Linux cloud container:
+
+- `npm run typecheck` passed. `npm test` passed 198 tests in 70 files, including Inchworm's rule tests. `npm run build` passed.
+- `BROWSER_SUITE=woods WOODS_ONLY=worm` against the dev server, in headless Chromium through `BROWSER_EXECUTABLE`, passed all four levels:
+  - Level 1 (lay worms and count) saved 0 misses and 0 hints.
+  - Levels 2 (say the length) and 4 (read a ruler) tapped two wrong numbers before the right one; level 3 (compare) dropped one worm too many on the shorter thing twice. Each saved 2 misses and 1 hint.
+  - Every level saved its round and sticker.
+- The level 3 hint screenshot (landscape) shows yellow lines at each thing's end, as intended.
+
+Observation for the iPad: the bucket worms' touch areas are 108×80 logical units and overlap where the worms stack, slightly under the 100-unit guideline in height.
+
+Not checked: portrait layout, reload persistence, the offline check, physical iPad touch and speech, and a child's play.
+
+## Pixel Pictures, Goodnight Room, and longer ladders (2026-10-06, evening; checked in the working tree, committed in `dfe08a3`)
 
 *Added later the same evening:*
 - **Animal Snack:** rule tests check that every animal has its own food and that questions are well formed. `WOODS_ONLY=snack` passed levels 1–5: animals and snacks tapped and dragged, wrong eaters and miscounts as misses, glow hints, saved scores and stickers.
@@ -35,7 +50,7 @@ This is a dated record of checks, newest expansion first. The newest entry cover
   - Portrait for these levels.
   - A real iPad, and judging fun.
 
-## Wonder Woods, the early-school band, and seven more games (2026-10-06, afternoon; working tree, not committed)
+## Wonder Woods, the early-school band, and seven more games (2026-10-06, afternoon; checked in the working tree, committed in `dfe08a3`)
 
 What changed:
 
@@ -75,7 +90,7 @@ Headless Chrome only; checks kept to what changed.
   - The combined browser flow.
   - Portrait for most new levels. Only Penguin Slide 3, Secret Code 4 and the subject cards were played in portrait; the others were seen in landscape screenshots only.
 
-## Peekaround Island and Little Helpers equal groups (2026-10-06, afternoon; working tree, not committed)
+## Peekaround Island and Little Helpers equal groups (2026-10-06, afternoon; checked in the working tree, committed in `dfe08a3`)
 
 Checks were deliberately limited to save usage; the grown-up plans browser testing after the usage reset.
 
@@ -113,7 +128,7 @@ Built by a Codex session that ran out of usage partway through checking; a Claud
   - The lap ranges of Photo Safari and Teddy Doctor (their level 2 play-throughs passed before, at other bands).
   - A real iPad, and judgments of fun and clarity.
 
-## Seesaw Balance, Teddy Doctor, Bumper Garden and Quick Tricks (2026-10-06; working tree, not committed)
+## Seesaw Balance, Teddy Doctor, Bumper Garden and Quick Tricks (2026-10-06; checked in the working tree, pushed in `17124e8`)
 
 Four new games (39 in the registry). Shared change: `engine/ball.ts` gained an optional ceiling and springy "kick" pegs (off unless a game sets them; the Peg Garden, Bounce Back and ball tests still pass). Checks were kept to what these changes touch, at the grown-up's request; headless Chrome only.
 

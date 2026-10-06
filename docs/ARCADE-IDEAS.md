@@ -2,7 +2,7 @@
 
 This is the design notebook for future Puddle Island play. Borrow mechanics and design lessons from classics, then give them original characters, art, stories, and puzzles. Entries here are proposals, not implementation instructions or a promise to build everything. [ROADMAP.md](ROADMAP.md) chooses the order; [DESIGN.md](DESIGN.md) describes the current app; [VERIFICATION.md](VERIFICATION.md) records checks actually performed.
 
-For the expanded **WarioWare / Quick Tricks** concept, twelve microgame seeds, and references such as Rhythm Heaven, Snipperclips, Captain Toad, Scribblenauts, and Baba Is You, see [MICROGAME-IDEAS.md](MICROGAME-IDEAS.md). It also develops cooperative shapes, rhythm conversations, changing viewpoints, descriptive language, and editable rules.
+For the expanded **WarioWare / Quick Tricks** concept, microgame seeds, and references such as Rhythm Heaven, Snipperclips, Captain Toad, Scribblenauts, and Baba Is You, see [MICROGAME-IDEAS.md](MICROGAME-IDEAS.md). It also develops cooperative shapes, rhythm conversations, changing viewpoints, descriptive language, and editable rules.
 
 The next direction is a more connected island: satisfying little games, characters with reasons to ask for help, a pet's home, and things the child can make and keep. Continue serving lap through pre-K, begin older play with a **6–8** pilot, and grow toward **upper elementary, about age eleven**. The [elementary roadmap](ELEMENTARY-ROADMAP.md) connects these ideas to game-family extensions and new themed zones. These are design ranges, not new implemented age bands or assessments.
 
@@ -53,7 +53,7 @@ Increase the number of meaningful decisions before increasing speed, visual clut
 
 ## Current inventory
 
-There are **62 games**. Peekaround Island (from the microgame notebook) and seven newer games are in the working tree: Light Lab and Secret Code from the recommended concepts here, plus Penguin Slide, Frog Hop, Market Stall, Garden Grow and Clock Tower. Eighteen came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch below, and a newer four (Seesaw Balance, Teddy Doctor, Bumper Garden and the first Quick Tricks show; in the working tree, not yet committed). All eighteen pass their rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work.
+There are **63 games**, all committed (the newest twenty in `dfe08a3`). Many came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch, Seesaw Balance, Teddy Doctor, Bumper Garden, both Quick Tricks shows, Peekaround Island, Light Lab and Secret Code. All have rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work. [DESIGN.md](DESIGN.md) describes what each built game does.
 
 | Game | Inspired by | Subject |
 | --- | --- | --- |
@@ -79,7 +79,7 @@ There are **62 games**. Peekaround Island (from the microgame notebook) and seve
 | Pet Kitchen | Cooking Mama, JumpStart cafeteria | Counting Cove |
 | Rhythm Neighbors | Rhythm Heaven, call-and-response songs | Music Mountain |
 | Tangram Town | Tangrams, silhouette puzzles | Rainbow Meadow |
-| Peekaround Island | Captain Toad: Treasure Tracker (see [MICROGAME-IDEAS.md](MICROGAME-IDEAS.md)) | Puzzle Peaks |
+| Peekaround Island | Captain Toad: Treasure Tracker, Fez (see [MICROGAME-IDEAS.md](MICROGAME-IDEAS.md)) | Puzzle Peaks |
 | Light Lab | Laser and mirror puzzles; the Light Lab concept below | Tinker Lab |
 | Penguin Slide | Ice-sliding puzzles in Pokémon and Zelda | Puzzle Peaks |
 | Secret Code | Mastermind, Neopets Time Tunnel | Puzzle Peaks |
@@ -98,8 +98,9 @@ There are **62 games**. Peekaround Island (from the microgame notebook) and seve
 | Treasure Map | Battleship, treasure-hunt maps | Rainbow Meadow |
 | Opposites | Concept board books, Sesame Street | Story Grove |
 | Picture Graph | Classroom picture graphs, tally charts | Counting Cove |
+| Inchworm Measure | Measuring with nonstandard units, classroom rulers | Tinker Lab |
 
-### Inventory by subject (62 games)
+### Inventory by subject (63 games)
 
 | Subject | Games | Count |
 | --- | --- | --- |
@@ -111,13 +112,13 @@ There are **62 games**. Peekaround Island (from the microgame notebook) and seve
 | Puzzle Peaks | Memory Match, Pattern Train, Puzzle Pals, Size Parade, Quick Tricks, Peekaround Island, Penguin Slide, Secret Code | 8 |
 | Rainbow Meadow | Color Garden, Shape Sorter, Dot Link, Tangram Town, Garden Grow, Treasure Map | 6 |
 | Story Grove | Letter Trails, Story Steps, Word Monsters, Photo Safari, Goodnight Room, Rhyme Time, Opposites | 7 |
-| Tinker Lab | Bouncy Launch, Bug Builder, Robot Path, Sink or Float, Seesaw Balance, Light Lab, Ramp Race | 7 |
+| Tinker Lab | Bouncy Launch, Bug Builder, Robot Path, Sink or Float, Seesaw Balance, Light Lab, Ramp Race, Inchworm Measure | 8 |
 | Treehouse | Rainbow Fingers, Fluffy Salon, Stamp Studio, Pixel Pictures | 4 |
 
 **Gaps that remain:**
 
 - **Literacy:** connected spoken stories, rhyme/blending, and using a clue's meaning. Word Monsters and Photo Safari address some sound and vocabulary work; they do not replace comprehension.
-- **Numbers:** measurement, place value, and practical combinations; Pet Kitchen now introduces equal parts and doubling. Duck Pond already includes adding and taking away; Little Helpers adds amounts used to carry loads.
+- **Numbers:** capacity, place value, and practical combinations. Inchworm Measure covers length with units, Seesaw Balance weight, Clock Tower time and Market Stall money; Pet Kitchen introduces equal parts and doubling. Duck Pond already includes adding and taking away; Little Helpers adds amounts used to carry loads.
 - **Creative work that persists:** keep a drawing, composition, or construction and use it in the pet's world. Fluffy Salon and Sound Garden broaden the activities, but a shared home/gallery is a separate system.
 - **Inquiry and planning:** gather evidence, revise a guess, and solve more than one valid way.
 - **Playing together:** deliberate cooperation on one screen, beyond a grown-up helping with controls.
@@ -143,26 +144,11 @@ There are **62 games**. Peekaround Island (from the microgame notebook) and seve
   - No microphone, camera or body tracking (Game Boy Camera, Kinect) unless a grown-up opts in.
   - No shooting or fighting. Space Invaders, Asteroids, Missile Command, Geometry Wars, Math Blaster, Worms and Castle Crashers are out, as are scary themes like Limbo. Their *motions* can survive in friendly form: aiming becomes tossing, and catching replaces defending.
 
-## Follow-on batch (built)
-
-These ideas from the earlier shortlist are now games (committed in `9648f35`). The table keeps the original design intent for judging them on the iPad; the README lists what each level actually does. Effort throughout this notebook is relative: S = a contained mode or small game; M = a new activity with rules and art; L = several scenes or persistent systems. It is not a time estimate and includes testing/content work.
-
-| Idea | Inspired by | First playable loop | Grows into (pre-K) | Fills | Effort |
-| --- | --- | --- | --- | --- | --- |
-| **Word Monsters** | Endless Alphabet, Reader Rabbit | Letters are little creatures that say their sound when dragged | Spell a word into its slots and watch it act the word out | Story Grove: letter sounds, vocabulary | M |
-| **Peg Garden** | Peggle, pachinko | Tap the top and a ball tumbles through pegs that light up and chime | Light all the orange pegs; count what lit; aim into a moving bucket | Bubble Beach: cause and effect, counting | M |
-| **Fluffy Salon** | Toca Hair Salon | Grow, comb, cut and color the pet's fluffy fur | "Make it short and blue", match a picture | Treehouse: creativity, pretend play | M |
-| **Sound Garden** | Electroplankton (DS) | Touch creatures and leaves that sing; drops bounce off leaves as notes | Arrange leaves so the drops play a tune you heard | Music Mountain: listening, cause and effect | M |
-| **Little Helpers** | Pikmin | Tap to send little helpers to carry fruit home | "This melon needs 3 helpers": send exactly enough, split helpers between two loads | Counting Cove: number as amount, adding | M |
-| **Egg Catch** | Big Bird's Egg Catch (Atari 2600), Kaboom!, Game & Watch "Fire" | Hens lay eggs that roll gently down chutes; move a basket under them | Catch only the brown eggs; tap gates to route eggs down the right chute | Barnyard: tracking, then prediction | S |
-| **Mail Carrier** | Paperboy | Drop letters into mailboxes; every house is happy | Deliver to house number 7; sort by street color; count letters left | Cozy Village: numerals, community helpers | S |
-| **Photo Safari** | Pokémon Snap (N64) | Tap to take a photo of animals going by | "Take a picture of the bunny *jumping*": verbs and positions (under, behind) | Story Grove: vocabulary, language | M |
-| **Bounce Back** | Pong, air hockey | A child and grown-up move big paddles; a slow ball returns gently | Keep a shared rally going; count and alternate bounces | Playing together: coordination, turn-taking | S |
-| **Dot Link** | Two Dots, Candy Crush | Tap dots to pop them, then join two of one color | Make a chain of four; close a square to clear a color | Rainbow Meadow: colors, counting | S |
+Effort throughout this notebook is relative: S = a contained mode or small game; M = a new activity with rules and art; L = several scenes or persistent systems. It is not a time estimate and includes testing and content work.
 
 ## Recommended next direction
 
-Judge the follow-on batch on the iPad and make the larger catalog easier to explore, then build **one short adventure and one pet room** before adding another large batch. This tests whether the games feel better when they belong to a place and a story. **Seesaw Balance** is now built through pre-K (up to finding the weight of one of two identical boxes); its 6–8 modes are the natural next step toward equations. Use Bounce Back to test cooperative play before building more two-player games.
+Judge the built games on the iPad and choose between the two place layouts, then build **one short adventure and one pet room** before adding another large batch. This tests whether the games feel better when they belong to a place and a story. Seesaw Balance's 6–8 modes (see the extensions below) are the natural next step toward equations. Use Bounce Back to test cooperative play before building more two-player games.
 
 ### Island Errands: a first adventure (4–8, L)
 
@@ -182,29 +168,24 @@ Later, show a saved drawing, play a saved Song Maker tune, and display a friend 
 
 | Idea / likely starting range | Play and educational action | Deeper 6–8 mode | Smallest useful version / effort |
 | --- | --- | --- | --- |
-| **Seesaw Balance / 3–8** — Hasee Bounce, balance toys (built through pre-K; the 6–8 column is still a proposal) | Place fruit or critters on a scale; feel the tip, compare heavier/lighter, predict and test | Make equal totals with different weights, then infer one hidden weight; fixed pan positions keep weight separate from lever distance | Two pans, three known weights, a prediction and replay button; M |
-| **Pet Kitchen / 3–8** — Cooking Mama, JumpStart cafeteria | Stir, pour, share, and follow a picture recipe; the meal animates when served | Halves/quarters of equal wholes; double a small recipe and show amounts physically | One sandwich or fruit platter, equal-piece sharing, reusable pieces; M |
-| **Market Stall / 5–8** — Neopets shops, pretend shops | Pack an order and pay with visible counters; combine values to match a price | Make the same total two ways; compare prices; give change with a number line | Three goods and values 1/2/5; fresh purse each round, no island economy; M |
 | **Critter Crossing / 5–8** — Zoombinis | Test who fits a bridge rule; compare accepted examples and waiting friends | Combine two attributes, then infer AND/OR rules with an evidence tray | Four friends, one visible rule then one hidden rule; everyone waits safely; M |
 | **Chain Reaction / 5–8** — The Incredible Machine | Arrange ramps and bumpers so a ball rings a bell; predict, run, and edit | Two destinations, compare paths, change one variable at a time; several valid designs | Three fixed parts and two movable pieces, reset and slow replay; M |
-| **Secret Code / 5–8** — Mastermind, Neopets Time Tunnel | Put shaped colored stones in a door; compare feedback with a visible guess history | Three positions with no repeats, then repeats; explain what a guess rules out | Two positions, shape plus color, unlimited guesses and a worked example; M |
 | **Story Theater / 4–8** — Living Books, JumpStart, puppet play | Choose characters, arrange events, then watch a narrated little show | Choose an ending supported by clues; change one event and compare its consequences | Extend Story Steps with one branching story and a replay stage; M |
 | **Habitat Helpers / 5–8** — Neopets collecting, Viva Piñata | Put shelter, food, and water in a garden to invite a known visitor; test a prediction | Meet two visitors' compatible needs; compare observations in the journal | Two stylized visitors and explicit needs; growth advances by actions, no real-time waiting; M |
-
-Time Tunnel provides color/position feedback for a four-stone code with a limited number of guesses. Secret Code would retain the deduction but start smaller and remove the attempt limit. ([Original game instructions](https://www.neopets.com/games/game.phtml?game_id=536))
 
 For each game, the educational action should cause the satisfying event: balancing lifts a gate, sharing fills the guests' plates, and a clue identifies a destination. Show why a construction or answer does not yet fit. Pure discovery and creative choices are never scored as errors. Reward effort and completed play consistently, regardless of help.
 
 ### Extend existing games before making duplicates
 
-These are proposed modes, including for the follow-on batch; none is a current implementation claim.
+These are proposed modes; none is a current implementation claim. Steps already built are noted so they are not proposed twice.
 
 | Existing activity | Proposed 6–8 extension | Later stretch, only if useful |
 | --- | --- | --- |
-| Robot Path | Repeat a short route with a loop; step through and repair one wrong command | 8–10: conditions, then nested loops, each with a visual trace |
-| Little Helpers / Monster Munch | Split a visible group two ways, then make equal groups and count them | 8–10: remainders represented as friends/items to redistribute, never discarded |
+| Seesaw Balance | Two different unknown weights; solve by doing the same thing to both pans (Box Balance in the gap review) | 8–10: lever distance as a separate step, as in PhET's Balancing Act |
+| Robot Path | Step through and repair one wrong command (counted steps and loops are built at levels 7–10) | 8–10: conditions, then nested loops, each with a visual trace |
+| Little Helpers / Monster Munch | Split a visible group two ways (equal groups and leftovers are built) | 8–10: remainders represented as friends/items to redistribute, never discarded |
 | Mail Carrier | Read a picture map, follow a legend, plan two deliveries, compare routes | 8–10: several route constraints; shortest route is an optional puzzle |
-| Word Monsters / Letter Trails | Blend a small set of clear sounds into words; build a word that fits a spoken clue | 8–10: word families and meaningful prefixes; content review before adding rules |
+| Word Monsters / Letter Trails | Blend a small set of clear sounds into words; build a word that fits a spoken clue (word families are built) | 8–10: word families and meaningful prefixes; content review before adding rules |
 | Song Maker / Sound Garden | Compose an answer to a phrase; alternate parts with the pet | Longer forms and rhythm changes; keep the shared pentatonic pitch system |
 | Peg Garden / Bouncy Launch | Predict a landing, compare two launches, and explain with replay | 8–10: controlled trials and a picture chart, with no claim that arcade physics models everything |
 | Rainbow Fingers / Bug Builder | Stamp a scene, rotate shapes into a tangram, save a design for the treehouse | 8–10: area on a large grid and equivalent shapes |
@@ -217,7 +198,6 @@ Do not stretch every ladder. Introduce a harder mode only when its controls, spo
 | Idea | Inspired by | First playable loop | Grows into (pre-K) | Fills | Effort |
 | --- | --- | --- | --- | --- | --- |
 | Number Merge | Threes, 2048 | Slide two dot-tiles together and they merge into one bigger number | "Make a 5": choose which tiles add up; no full-board loss | Counting Cove: adding | S |
-| Stamp Studio | Mario Paint, Kid Pix | (See Nintendo DS and Wii) | | Treehouse art | S |
 | Claw Catch | Claw machine | (See Arcade cabinets) | | Describing things | S |
 | Pin Roll | Wii Sports Bowling | (See Nintendo DS and Wii) | | Taking away | S |
 
@@ -252,7 +232,6 @@ This reference catalog preserves the wider pool of ideas. Repeated names refer t
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Seesaw Balance | Hasee Bounce (Neopets) | Built (toddler–pre-K) | Heavier and lighter; balance two sides (early measurement) | Tinker Lab |
 | Bubble Cannon | Faerie Bubbles (Neopets), Bust-a-Move, Zuma | Tap where to send a bubble; three of a color pop | Plan a shot to drop a whole cluster | Preschool and up |
 | Hill Roll | Turmac Roll, Snowmuncher (Neopets) | The pet rolls downhill; tap to hop and collect berries; bumps only bounce | Collect only red berries, or exactly five | Overlaps Tap to Flap |
 | Factory Sort | Freaky Factory (Neopets) | Toys ride a belt; tap a gate to send each to its bin | Sort by two rules at once | Overlaps Color Garden |
@@ -279,13 +258,11 @@ The 2600's Sesame Street titles (Children's Computer Workshop, 1983) were made f
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Egg Catch | Big Bird's Egg Catch, Kaboom! | Built (see the follow-on batch) | Route eggs through gates | Also inspired by Game & Watch "Fire" |
 | Trash Sort | Oscar's Trash Race | Toss each thing into the bin it goes in: paper, food scraps, bottles | Sort by two rules; count what's in each bin | Everyday life; merges the catalog's Tidy Up |
 | Castle Keys | Adventure | Carry the gold key to the gold castle door, and it opens on a surprise | Three keys and doors; remember which room the key was in | Color matching plus exploring |
 | Fishing Pond | Fishing Derby | Lower a line and a fish nibbles; reel it in | Catch fish numbered 1 to 5 in order, or by color | Merges the catalog's Letter Fishing (letters on the fish) |
 | Snow Slalom | Skiing, SkiFree (no yeti) | Steer down a snowy hill through flag gates | "Go left of the red flags": left and right | Spatial language |
 | Crossing Guard | Freeway, Frogger | Hold up the stop sign and the friendly cars stop so ducklings can cross | Wait for green; red, yellow and green lights | Road safety; cars always stop |
-| Secret Code | Codebreaker (Mastermind), Neopets Time Tunnel | See the recommended concepts | Compare color/shape and position clues | Roughly 5–8; unlimited guesses |
 | Brick Garden | Breakout | A slow ball bounces off a big paddle and pops flower bricks; a soft net catches it at the bottom | Pop only the blue bricks; count what's left | Lower priority |
 | Vine Swing | Pitfall! | Tap to swing on a vine over a pond; a splash just means climb out | Swing to the numbered lily pad | Lower priority |
 
@@ -310,7 +287,6 @@ The 2600's Sesame Street titles (Children's Computer Workshop, 1983) were made f
 | --- | --- | --- | --- | --- |
 | Shape Drop | Tetris | Big shapes float down slowly into a picture outline; tap to turn | Fill a silhouette in two different ways | Spatial; no stacking out |
 | Germ Wash | Dr. Mario | Drop colored bubbles onto matching germs and they wash away | Two-color bubbles; plan which way to turn | Colors |
-| Picross Pictures | Mario Picross | Fill a tiny 3×3 picture using shown rows | 5×5 grids with number clues and explainable deductions | Roughly 6–8; verify unique solutions |
 | Puff Float | Kirby's Dream Land | Hold to puff up and float, let go to drift down onto stars | Float through gaps or to a numbered star | Gentle timing |
 | Cookie Rows | Yoshi's Cookie | Slide rows and columns until a line of the same cookie forms | Two kinds at once | Pre-K |
 | Dig Down | Mr. Driller | Tap a block and every touching block of that color pops; dig toward treasure | Choose the color that clears the most | No air meter |
@@ -322,14 +298,11 @@ The 2600's Sesame Street titles (Children's Computer Workshop, 1983) were made f
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Peg Garden | Peggle | Built (see the follow-on batch) | Aim, count, and predict bounces | Bubble Beach |
 | Big Fish, Little Fish | Feeding Frenzy | Swim a little fish and gobble littler snacks to grow; big fish just swim by | Eat only things smaller than you; order fish by size | Size comparison; nobody gets eaten |
 | Piñata Garden | Viva Piñata | Plant flowers and fruit, and the critters who love them come to visit | Each visitor wants something; plan the garden to invite three | Nature and habitats; treehouse garden |
 | Block Builder | Minecraft, A Kingdom for Keflings | Tap to place soft blocks; a critter moves into whatever you build | Copy a little blueprint; count blocks per wall | Treehouse creativity |
 | Match the Card | Uno, Family Game Night | Take turns with the pet: play a card that matches the color or the number | Choose between two matches; count cards left | Playing together and turn-taking |
 | Four in a Row | Connect Four (Family Game Night) | Drop discs together to make a glowing line | Find a way to complete a line from a puzzle position | Roughly 5–8; cooperative puzzle first |
-| Turn the Tower | Fez | Turn a little tower to see each side and find who's hiding | "Who can see the bird?": seeing from another side | Pre-K perspective-taking |
-| Pinball Party | Pinball FX2 | Alias for Bumper Garden | See other near-term candidates | One concept, not a second game |
 | Puddle Boats | Hydro Thunder | Tap to paddle a boat; everyone waits at the finish and cheers | Paddle around buoys in number order | Lower priority |
 
 Out of bounds, but with a salvageable piece:
@@ -342,16 +315,11 @@ Out of bounds, but with a salvageable piece:
 | --- | --- | --- | --- | --- |
 | Cloud Path | Yoshi Touch & Go | A baby critter floats down; draw cloud lines to steer it past stars to a cushion | Collect the stars in number order | Drawing to control |
 | Rainbow Road | Kirby Canvas Curse, Line Rider | Draw a rainbow and a rolling critter rides it to a goal | Ramps, bridges and walls to turn it around | Merges Draw a Ramp |
-| Sound Garden | Electroplankton | Built (see the follow-on batch) | Arrange notes and listen | Music |
-| Little Helpers | Pikmin | Built (see the follow-on batch) | Split groups between loads | Counting Cove |
-| Stamp Studio | Mario Paint, Kid Pix | Stamp animals, shapes and stars onto a scene; a dynamite eraser goes *poof* | Make a scene from a spoken list ("three fish and a sun") | Treehouse; ties into Rainbow Fingers |
 | Bug Net | Animal Crossing | Swish a net to catch butterflies and bugs, then let them go | Sort catches into jars by kind or color; a little museum page | Science; nothing is kept in a jar forever |
 | Blob Roll | LocoRoco (PSP) | Tilt the land with two big buttons to roll a jelly blob that sings | Split the blob into 5 and merge them back ("2 and 3 make 5") | Part-whole numbers |
-| Pet Kitchen | Cooking Mama | See the recommended concepts | Share equal portions and scale a recipe | Cozy Village |
 | Find the Friend | Find Mii (Wii Play) | Find the friend who looks like this one in a little crowd | Find by two clues: hat *and* stripes | Visual discrimination |
 | Pin Roll | Wii Sports Bowling | Roll a ball and knock pins down | How many fell? How many are left? (taking away) | Counting Cove |
 | Puppy Pal | Nintendogs, Tamagotchi, Pou | Feed, wash and play fetch with a pet that's always happy to see you | Its routine: what comes after lunch? | Fits the planned treehouse room; no neglect states |
-| Quick Tricks | WarioWare: Touched!, Get It Together! | Built: one show (Umbrella Up, Sock Gobbler, Bridge Stretch). A little show of single-action scenes with funny payoffs, spoken prompts, and child-paced transitions | Remix familiar actions and visible conditions; one sticker per show | [Expanded concept and twelve seeds](MICROGAME-IDEAS.md#warioware-a-useful-model-for-quick-tricks) |
 | Rolly Ball | Katamari Damacy (PS2) | Roll a sticky ball; small things stick and it grows | Pick up things smaller than the ball first | Size comparison |
 
 ### 90s computer edutainment
@@ -362,7 +330,7 @@ These references span preschool through elementary school. Preserve exploration 
 | --- | --- | --- | --- | --- |
 | Busy Picture | Living Books | A storybook page where everything does something when tapped | Words light up as they're read; tap a word to hear it | Story Grove literacy |
 | Lost and Found | Putt-Putt, Freddi Fish, Pajama Sam | Help a friend find a lost thing across three little screens | Give each thing to the right friend (a bone for the dog) | Problem solving; short quests |
-| Critter Crossing | Zoombinis | Critters with hats, noses and feet line up; some can cross the bridge | Work out the secret rule for who can cross | Pre-K deduction; the critters never fall off |
+| Critter Crossing | Zoombinis | Critters with hats, noses and feet line up; some can cross the bridge | Work out the secret rule for who can cross | Pre-K deduction; the critters never fall off. Critter Sort's guess-the-rule level already covers naming a rule from sorted examples |
 | Chain Reaction | The Incredible Machine | Watch a ball roll through ramps, fans and springs to ring a bell | Place one or two missing parts to make it work | Tinker Lab; pre-K |
 | Follow the Leader | Lemmings | Little critters march along; place signs to guide them to the door | Split them between two doors; compare plans | Roughly 5–8; nobody falls (they turn around) |
 | Munch Maze | Cookie Monster Munch (Atari), Pac-Man | Carry cookies one at a time through a simple maze to the jar | Bring exactly 4; the ghosts are friendly and wave | Merges the catalog's Maze Walk |
@@ -543,19 +511,14 @@ This notebook is the local home for the earlier catalog too. Prefer a mode of an
 | Earlier name / idea | Keep it here | Scope decision |
 | --- | --- | --- |
 | Pizza Shop | Pet Kitchen for fractions; Scoop Shop for ordered toppings | Sharing equal pieces is different from stacking an order |
-| Market Stall | Recommended concepts | A small pretend shop first; connect to Little Farm only later |
 | Maze Walk | Munch Maze or a Robot Path board | Avoid another maze with the same decisions |
 | Tidy Up | Trash Sort | Sort familiar objects; explain categories without judging a family's routine |
 | Letter Fishing | Fishing Pond | A spoken sound/letter target can be a mode |
 | Word Builder | Word Monsters | Extend sound/word work after checking speech quality |
 | Sock Match / Shadow Match | Memory Match or Shape Sorter modes | Add attribute or silhouette reasoning if it is meaningfully new |
-| Rhyme Time | Future language mode alongside Word Monsters | Listen to two words and find a rhyming picture; later compare word families |
-| Tangram Town | Bug Builder extension, or a standalone silhouette puzzle | Rotate a few large pieces; later find multiple decompositions |
 | Lost and Found | A later Island Errands story | Keep one adventure system and a small authored cast |
 | Critter Friends / Piñata Garden / Puppy Pal | Habitat Helpers, journal, and pet treehouse | Befriending, inviting visitors, and pretend care share the persistent world |
-| Turn the Tower | Peekaround Island in [the microgame notebook](MICROGAME-IDEAS.md) | Expand the viewpoint puzzle with four code-drawn views; one concept |
-| Quick Tricks / short rhythm routines | Quick Tricks / Rhythm Neighbors in [the microgame notebook](MICROGAME-IDEAS.md) | A show can reuse learning rules without duplicating full game scenes or awarding per-scene stickers |
-| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level | Sound Garden already has a woodpecker rhythm to echo on a drum; Rhythm Neighbors should add call-and-response and performance rather than repeat it |
+| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
 | Color Train (JumpStart Baby) | A lap mode of Color Garden or Pattern Train | Needs the decision about lap levels outside a ladder's order |
 | Build-a-Bug counting | Bug Builder | A counting mode, not a second bug game |
 | Doghouse Directions / Bear Hunt Walk | Peekaround Island for positions; Bear Hunt Walk for movement along a route | Start as a Peekaround mode for in, on and under; build Bear Hunt Walk only if moving along a route proves to be the new decision |
@@ -571,15 +534,3 @@ This notebook is the local home for the earlier catalog too. Prefer a mode of an
 | Fantastic Contraption, Crayon Physics Deluxe | Chain Reaction and Rainbow Road | Additional references, not a separate contraption game |
 
 Before promoting a reference into the roadmap, specify a complete round, learning goal, support ladder, and verification plan. The source title is inspiration, not a design specification.
-
-## Creative and sharing expansion briefs (built locally, 2026-10-06)
-
-These briefs define four implemented playable slices. Recorded checks and remaining device judgments are in VERIFICATION.md.
-
-- **Stamp Studio — Treehouse, lap–pre-K.** Press a stamp to make a picture, then arrange it. Learning: cause and effect, composition, relative size, rotation, and telling a picture story. The first lap round puts a big star wherever the child touches; the second introduces animal stamps. Later modes add a color palette, movable stamps, size/quarter-turn controls, and a spoken scene invitation. Any picture is valid. A large green finish arrow appears after the first stamp; undo is available and the canvas has a bounded stamp count. Finishing awards one sticker. Creative choices and experiments never count as misses. Pictures last for the round; saved creations remain a separate planned feature.
-- **Pet Kitchen — Counting Cove, toddler–pre-K.** Cut a drawn sandwich into equal pieces and share them among friends; later double a small picture recipe. Learning: halves, quarters, equal shares and scaling visible quantities. Start with one sandwich, a single cut and two plates. Deeper rounds use quarters, multiple wholes, then two pictured ingredients doubled into a bowl. Every piece remains visible and can be moved back; a serve button checks the meal. An unequal serving gives a spoken comparison, retries and a helpful glow after two checks. Cutting and moving pieces are experiments, not misses. The meal animates when served and finishes once.
-- **Rhythm Neighbors — Music Mountain, lap–pre-K.** A woodpecker and frog chorus trade different musical parts, then perform together. Learning: cause and effect, turn-taking, instrument sequences and relative rhythm. Two lap rounds let taps make a call and a chorus. Later a visible score separates the bird's call from the child's frog reply; deeper replies alternate two instruments and long/short gaps. Replay and a guided response remain available. Reuse Sound Garden's forgiving relative-gap judge, with no round deadline. Incorrect submitted phrases get a demonstration and a glow after two tries; exploratory taps outside recording never count as misses. Three exchanges lead to a final duet and one sticker.
-- **Tangram Town — Rainbow Meadow, toddler–pre-K.** Drag large colored shapes into a house, boat or rocket silhouette, with quarter-turn buttons for the selected piece. Learning: shape composition and orientation. Start with two large pieces and visible outlines. Deeper puzzles use three or four pieces, rotation and a silhouette with optional outline help. Authored arrangements are seeded/shuffled; equivalent orientations of symmetric shapes are accepted. Off-board drops and rotating are experiments; a wrong placement inside a target gives a gentle hint and glow after two misses. A help button supplies the next orientation and target while preserving the child's placement action. The completed town picture comes alive and awards one sticker.
-
-
-The same local expansion appends Quick Tricks levels 4–6 (Parcel Turn, Picnic Places, Last Berry) and Seesaw Balance level 7 (two identical mystery boxes). Creative lap ranges now include both color-pot painting and all-tool salon play; the new Stamp Studio and Rhythm Neighbors each also have two lap modes. Saved-picture storage, new older bands and the connected pilots remain proposals.

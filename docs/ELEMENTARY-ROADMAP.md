@@ -49,13 +49,13 @@ Names and boundaries are working proposals. Each zone starts as one small place 
 
 | Proposed zone | Identity and recurring host | First small expansion | Later growth |
 | --- | --- | --- | --- |
-| **Wonder Woods** | A trail of hollow trees, streams, and signs; a curious squirrel postkeeper | Seesaw Balance, a Robot Path loop mode, a Mail Carrier map mode; **The Woodland Picnic** uses all three | Peekaround Island, listening clues, short stories, and gentle classification puzzles |
-| **Maker Harbor** | Floating workshops and a friendly ferry crew; a beaver builder | Extend Little Helpers into equal load groups and Mail Carrier into dock routes; add a constrained **Chain Reaction** activity | Shape Buddies, Wobble Works, area/volume blueprints, and a **Ferry Fair** project |
+| **Wonder Woods** | A trail of hollow trees, streams, and signs; a curious squirrel postkeeper | Seesaw Balance, a Robot Path loop mode (built), a Mail Carrier map mode; **The Woodland Picnic** uses all three | Older Peekaround Island modes, listening clues, short stories, and gentle classification puzzles |
+| **Maker Harbor** | Floating workshops and a friendly ferry crew; a beaver builder | Extend Little Helpers' equal groups (built at level 6) into dock loads and Mail Carrier into dock routes; add a constrained **Chain Reaction** activity | Shape Buddies, Wobble Works, area/volume blueprints, and a **Ferry Fair** project |
 | **Storybook Square** | A library, puppet stage, and post office; an owl storyteller | Extend Story Steps into clue-based endings and Word Monsters into meaningful word parts; add **Silly Describer** | Story Theater, alternative viewpoints, a locally saved illustrated newspaper, and **The Mixed-Up Invitations** mystery |
 | **Discovery Marsh** | Boardwalks, ponds, and an observation hut; a patient heron naturalist | Extend Photo Safari into observation records and Sink or Float into repeatable trials; add a small **Habitat Helpers** model | Compare habitat needs, chart observations, test one variable, and design a visitor garden with several valid solutions |
-| **Skywatch Isles** | Hilltop observatories and model-building decks; a moth astronomer | Extend Robot Path with a reusable routine and Bug Builder with a measured blueprint; add **Light Lab**, routing a beam with large mirror controls | Data stories, coordinate maps, a limited sun/shadow model, and **The Lantern Observatory** project |
+| **Skywatch Isles** | Hilltop observatories and model-building decks; a moth astronomer | Extend Robot Path with a reusable routine and Bug Builder with a measured blueprint; extend **Light Lab** (built at Wonder Woods) with predictions and replays | Data stories, coordinate maps, a limited sun/shadow model, and **The Lantern Observatory** project |
 
-**Light Lab** is a future 2D investigation: turn a mirror to send a beam onto a flower-shaped receiver, predict a change, then replay its path. Begin with a few authored layouts and large snapped angles. Any scientific explanation must match the simulated model; the first version does not need general optics.
+**Light Lab** is built (pre-K–school): tap mirrors to turn a sunbeam onto sleeping flowers on generated, rule-tested grids, with colored glass and plan-then-shine levels. A Skywatch Isles extension could ask where the beam will land before it shines, then compare two beam paths in a replay. Any scientific explanation must match the simulated model; the game does not need general optics.
 
 **The Woodland Picnic** is a later zone-specific use of the existing Windy Picnic pilot, not a second adventure framework. Other projects reuse the same pattern: a friend has a concrete need, two or three actions help, and the resulting scene remembers what the child made.
 
@@ -87,8 +87,8 @@ Exit milestone: familiar games remain easy to reach, one short project can resum
 
 ### E1 — Prove an early-elementary zone
 
-- [ ] Extend Seesaw Balance (now built for toddler–pre-K) and prototype Robot Path loops, then add the small Mail Carrier map mode that gives them a woodland context.
-- [x] Define the first older supported level ranges and the parent-facing descriptions (the `school` band; 35 games, with Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it). Reuse the existing pre-K range where it fits; add a new band only with navigation, save, voice, and test support.
+- [ ] Extend Seesaw Balance to its 6–8 modes and add the small Mail Carrier map mode that gives them a woodland context. (Robot Path loops with step-through playback are built: levels 7–10.)
+- [x] Define the first older supported level ranges and the parent-facing descriptions (the `school` band; 35 games at first, 44 now, with Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it). Reuse the existing pre-K range where it fits; add a new band only with navigation, save, voice, and test support.
 - [ ] Build Wonder Woods as the first thematic zone pilot (started as the 6–8 trail place; host, errand and zone identity separate from the band remain) and preserve launch/return context independently of the chosen difficulty.
 - [ ] Adapt the picnic story to the new zone; keep every participating game independently playable.
 - [ ] Check that a child can use hints, revise a route, leave partway, and return without losing progress or changing the other games' levels.
@@ -109,7 +109,7 @@ Exit milestone: the child can choose a subject or project, make a plan, change i
 
 - [ ] Build a small **Discovery Marsh** investigation before a broader habitat simulation; use explicit observations and a limited, explainable model.
 - [ ] Add upper-elementary number/geometry representations and story-evidence tasks where they fit existing families.
-- [ ] Pilot **Skywatch Isles** with one reusable robot routine, one blueprint mode, and Light Lab. Keep technical scope to code-drawn 2D scenes.
+- [ ] Pilot **Skywatch Isles** with one reusable robot routine, one blueprint mode, and Light Lab's older modes. Keep technical scope to code-drawn 2D scenes.
 - [ ] Add projects with several short sessions' worth of optional work, saved at meaningful steps; the child can stop after any step.
 - [ ] Let the child compare two results, identify a useful piece of evidence, or explain a choice through picture/word choices or optional writing. Spoken assistance remains available.
 
