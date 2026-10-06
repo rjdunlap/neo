@@ -30,11 +30,11 @@ There are twenty-one games. "Ages" lists the places each one appears in.
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
 | Bubble Pop | lap–pre-K | pop anything | pop one color, then numbers in order |
-| Rainbow Fingers | lap–pre-K | rainbow finger painting | paint pots that say their color |
+| Rainbow Fingers | lap–pre-K | rainbow finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl |
 | Jelly Drums | lap–pre-K | free play on five notes | copy a tune of 2 to 5 notes |
 | Song Maker | lap–pre-K | tap jellies on a looping beat | copy songs by shadows or a card, continue a pattern, find a tune by ear |
 | Peekaboo Barn | lap–pre-K | tap to find who's hiding | find an animal, then remember hiding places |
-| Splish Splash | lap–pre-K | scrub mud off the pet | named body parts, then a shuffled order at pre-K |
+| Splish Splash | lap–pre-K | scrub mud off the pet | named body parts in a shuffled order, two at once, then "first … then …" |
 | Feelings Faces | lap–pre-K | tap bubbles to see the pet feel happy, sad, sleepy or surprised | match and name faces, choose what helps, say why a feeling happened, find a friend's feeling |
 | Weather Wardrobe | lap–pre-K | tap the sky to change the weather | dress the pet for sun, rain or snow, then pack for a two-weather trip |
 | Duck Pond | lap–pre-K | count along as ducks hop in | put N in, how many?, adding and taking away |
@@ -112,7 +112,7 @@ With `npm run dev` running in another terminal:
 npm run test:browser
 ```
 
-This exercises hatching, the age trail and the parent gate; every level of Pattern Train, Memory Match, Robot Path and the nine games added after them; all 26 letter trails plus word/name modes; and sticker placement, removal, paging, and portrait resizing. It includes wrong answers, hints, saved rewards, reload persistence, and place scrolling. Single suites: `world` (hatching, the age trail, swiping, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. Screenshots go into ignored `test-results/`.
+This exercises hatching, the age trail and the parent gate; every level of Pattern Train, Memory Match, Robot Path and the nine games added after them; all 26 letter trails plus word/name modes; and sticker placement, removal, paging, and portrait resizing. It includes wrong answers, hints, saved rewards, reload persistence, and place scrolling. Single suites: `world` (hatching, the age trail, swiping, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (every level of Rainbow Fingers and Splish Splash), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. Screenshots go into ignored `test-results/`.
 
 With `npm run build-and-preview` running in another terminal:
 

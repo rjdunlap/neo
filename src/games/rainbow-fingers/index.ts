@@ -1,7 +1,7 @@
-import { Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent } from 'pixi.js';
+import { Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent, type Renderer } from 'pixi.js';
 import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import type { Band } from '../../progress/bands';
-import { flower } from '../../art/shapes';
+import { flower, starPoints } from '../../art/shapes';
 import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
 import { stepFromUnit } from '../../audio/notes';
@@ -13,6 +13,7 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { frameIcon } from '../../ui/icons';
 import type { Game, GameContext, GameModule } from '../types';
+import { Coverage, mix, pickThings, planFor, RECIPES, type PaintPlan, type Primary, type Thing } from './logic';
 
 const PAPER = 0xfffdf6;
 const MARGIN = 18;
@@ -22,14 +23,120 @@ const SPACING = 5;
 /** Degrees of hue per unit of stroke: the rainbow comes from moving. */
 const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
-/** Level 1 paints rainbows; level 2 adds pots to pick a color from, each saying its name. */
+/** Rainbows, then pots, then coloring pages: named colors, remembered colors, and mixed colors (`logic.ts`). */
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 2 },
-  prek: { min: 2, max: 2 },
+  toddler: { min: 1, max: 3 },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 3, max: 6 },
 };
 const POTS: (ColorName | 'rainbow')[] = ['rainbow', ...RAINBOW];
+const PRIMARIES: Primary[] = ['red', 'yellow', 'blue'];
+/** A picture counts as painted when this much of it is covered; then it fills in neatly. */
+const PAINTED = 0.7;
+const LINE = 0x5a4a3c;
+
+/** A coloring-page picture: an outline that stays on top of the paint, plus its painting progress. */
+class Picture {
+  readonly node = new Container();
+  readonly coverage: Coverage;
+  done = false;
+
+  constructor(
+    readonly thing: Thing,
+    readonly x: number,
+    readonly y: number,
+    readonly scale: number,
+    renderer: Renderer,
+  ) {
+    this.coverage = new Coverage(thing.circles);
+    // The outline is a ring around the union of circles: draw it fat, then erase the inside.
+    const pad = 12;
+    const x0 = Math.min(...thing.circles.map(([cx, , r]) => cx - r)) - pad;
+    const x1 = Math.max(...thing.circles.map(([cx, , r]) => cx + r)) + pad;
+    const y0 = Math.min(...thing.circles.map(([, cy, r]) => cy - r)) - pad;
+    const y1 = Math.max(...thing.circles.map(([, cy, r]) => cy + r)) + pad;
+    const rt = RenderTexture.create({ width: Math.ceil(x1 - x0), height: Math.ceil(y1 - y0), resolution: 2 });
+    const ring = new Graphics();
+    for (const [cx, cy, r] of thing.circles) ring.circle(cx - x0, cy - y0, r + 3);
+    ring.fill(LINE);
+    const hole = new Graphics();
+    for (const [cx, cy, r] of thing.circles) hole.circle(cx - x0, cy - y0, r - 3);
+    hole.fill(0xffffff);
+    hole.blendMode = 'erase';
+    // The erase has to happen inside the same render as the ring for the blend to apply.
+    const both = new Container();
+    both.addChild(ring, hole);
+    renderer.render({ container: both, target: rt, clear: true, clearColor: [0, 0, 0, 0] });
+    both.destroy({ children: true });
+    const outline = new Sprite(rt);
+    outline.position.set(x0, y0);
+    this.node.addChild(outline, decor(thing));
+    this.node.position.set(x, y);
+    this.node.scale.set(scale);
+  }
+
+  /** Paper coordinates to picture coordinates. */
+  local(px: number, py: number) {
+    return { x: (px - this.x) / this.scale, y: (py - this.y) / this.scale };
+  }
+
+  contains(px: number, py: number, reach = 0): boolean {
+    const p = this.local(px, py);
+    return this.thing.circles.some(([cx, cy, r]) => Math.hypot(p.x - cx, p.y - cy) <= r + reach / this.scale);
+  }
+
+  /** The neat solid fill, for baking into the painting when it's done. */
+  fill(): Graphics {
+    const sw = swatch[this.thing.color];
+    const g = new Graphics();
+    for (const [cx, cy, r] of this.thing.circles) g.circle(cx, cy, r);
+    g.fill(sw.fill);
+    g.position.set(this.x, this.y);
+    g.scale.set(this.scale);
+    return g;
+  }
+}
+
+/** Stems, rays and veins drawn on top of a picture. */
+function decor(thing: Thing): Graphics {
+  const g = new Graphics();
+  const line = { width: 6, color: LINE, cap: 'round' as const, join: 'round' as const };
+  switch (thing.id) {
+    case 'sun':
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2;
+        g.moveTo(Math.cos(a) * 100, Math.sin(a) * 100).lineTo(Math.cos(a) * 128, Math.sin(a) * 128);
+      }
+      g.stroke({ ...line, color: swatch.yellow.line, width: 9 });
+      break;
+    case 'apple':
+      g.moveTo(0, -46).quadraticCurveTo(4, -76, 14, -90).stroke({ ...line, color: wood.line, width: 9 });
+      g.moveTo(10, -74).quadraticCurveTo(44, -104, 66, -78).quadraticCurveTo(40, -58, 10, -74).fill(swatch.green.fill).stroke(line);
+      break;
+    case 'leaf':
+      g.moveTo(-132, 66).lineTo(96, -48).stroke(line);
+      for (const t of [-0.45, 0, 0.45]) {
+        const [x, y] = [t * 170, -t * 85];
+        g.moveTo(x, y).lineTo(x + 12, y + 30).moveTo(x, y).lineTo(x - 16, y - 28);
+      }
+      g.stroke({ ...line, width: 4 });
+      break;
+    case 'pumpkin':
+      g.moveTo(-20, -40).quadraticCurveTo(-30, 10, -20, 70).moveTo(20, -40).quadraticCurveTo(30, 10, 20, 70).stroke({ ...line, width: 4 });
+      g.roundRect(-10, -88, 20, 34, 6).fill(swatch.green.fill).stroke(line);
+      break;
+    case 'grapes':
+      g.moveTo(0, -72).quadraticCurveTo(4, -96, 20, -108).stroke({ ...line, color: wood.line, width: 9 });
+      g.moveTo(8, -88).quadraticCurveTo(-40, -120, -60, -84).quadraticCurveTo(-24, -70, 8, -88).fill(swatch.green.fill).stroke(line);
+      break;
+    case 'blueberry':
+      g.poly(starPoints(26, 11, 5).map((v, i) => v + (i % 2 ? -52 : 0))).fill(swatch.blue.line).stroke({ ...line, width: 4 });
+      g.ellipse(-34, -28, 16, 10).fill({ color: 0xffffff, alpha: 0.5 });
+      break;
+  }
+  return g;
+}
 
 /** A paint pot with its color on top; the rainbow pot is striped. */
 function paintPot(color: ColorName | 'rainbow'): Container {
@@ -86,8 +193,26 @@ class RainbowFingers implements Game {
   private readonly frameButton: RoundButton;
   private readonly pots = new Container();
   private readonly potRing = new Graphics();
+  private readonly potGlow = new Graphics();
+  private readonly potNodes = new Map<ColorName | 'rainbow', Container>();
+  private readonly bowl = new Container();
+  private readonly bowlPaint = new Graphics();
+  /** What's been poured into the mixing bowl (two at most). */
+  private poured: Primary[] = [];
+  private readonly plan: PaintPlan;
+  private readonly things: Thing[];
+  private readonly pictureLayer = new Container();
+  private pictures: Picture[] = [];
+  private current = 0;
+  private glowing: (ColorName | 'rainbow')[] = [];
+  private misses = 0;
+  private hints = 0;
+  private lastNag = -10;
+  private sinceAsk = 0;
+  private wrongs = 0;
   /** The picked color, or null for rainbow. */
   private brush: number | null = null;
+  private brushName: ColorName | null = null;
   private rt: RenderTexture | null = null;
   private view: View;
   private hue = Math.random() * 360;
@@ -99,7 +224,9 @@ class RainbowFingers implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.paper.eventMode = 'static';
-    this.paper.addChild(this.sheet, this.canvas, this.live);
+    this.plan = planFor(ctx.level);
+    this.things = pickThings(this.plan, ctx.rng);
+    this.paper.addChild(this.sheet, this.canvas, this.pictureLayer, this.live);
     this.paper.on('pointerdown', (e) => this.press(e));
     this.paper.on('globalpointermove', (e) => this.move(e));
     this.paper.on('pointerup', this.endStroke);
@@ -110,36 +237,198 @@ class RainbowFingers implements Game {
     this.frameButton = new RoundButton(frameIcon(), swatch.white, 52, () => void this.hangItUp());
     this.frameButton.visible = false;
     ctx.stage.addChild(this.backing, this.paper, this.frameButton);
-    if (ctx.level >= 2) this.buildPots();
+    if (this.plan.mode !== 'free') this.buildPots();
   }
 
   start() {
-    void this.ctx.instruct(this.ctx.level >= 2 ? 'paint.pots' : 'paint.start');
+    if (this.plan.mode === 'free') void this.ctx.instruct('paint.start');
+    else if (this.plan.mode === 'pots') void this.ctx.instruct('paint.pots');
+    else void this.ask();
+  }
+
+  private get picture(): Picture | undefined {
+    return this.pictures[this.current];
   }
 
   private buildPots() {
-    this.pots.addChild(this.potRing);
-    POTS.forEach((color, i) => {
+    const mixing = this.plan.mode === 'mix';
+    const list: (ColorName | 'rainbow')[] = mixing ? PRIMARIES : POTS;
+    const slots = list.length + (mixing ? 1.4 : 0);
+    this.pots.addChild(this.potGlow, this.potRing);
+    list.forEach((color, i) => {
       const pot = paintPot(color);
-      pot.x = (i - (POTS.length - 1) / 2) * 92;
-      onTap(
-        pot,
-        () => {
-          this.brush = color === 'rainbow' ? null : swatch[color].fill;
-          this.potRing.position.set(pot.x, 0);
-          this.pots.children.forEach((p) => p !== this.potRing && (p.y = 0));
-          pot.y = -14;
-          sfx.bell(4 + i, 0.25);
-          void this.ctx.say(color === 'rainbow' ? 'paint.rainbow' : `color.${color}`);
-        },
-        { radius: 46, cooldown: 250 },
-      );
+      pot.x = (i - (slots - 1) / 2) * 92;
+      onTap(pot, () => this.pick(color, pot, i), { radius: 46, cooldown: 250 });
       this.pots.addChild(pot);
-      if (i === 0) pot.y = -14;
+      this.potNodes.set(color, pot);
     });
     this.potRing.circle(0, -6, 46).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 4, color: wood.line });
-    this.potRing.x = this.pots.children[1].x;
+    if (mixing) {
+      this.potRing.visible = false;
+      const dish = new Graphics()
+        .moveTo(-66, -14)
+        .quadraticCurveTo(-60, 40, 0, 42)
+        .quadraticCurveTo(60, 40, 66, -14)
+        .closePath()
+        .fill(0xffffff)
+        .stroke({ width: 5, color: 0xb9b2a6, join: 'round' });
+      this.bowl.addChild(dish, this.bowlPaint);
+      this.bowl.x = (slots - 1) / 2 * 92 - 10;
+      this.drawBowl();
+      onTap(this.bowl, () => this.emptyBowl(), { radius: 70, cooldown: 300 });
+      this.pots.addChild(this.bowl);
+    } else {
+      this.pots.children[2].y = -14;
+      this.potRing.x = this.pots.children[2].x;
+    }
     this.ctx.stage.addChild(this.pots);
+  }
+
+  private pick(color: ColorName | 'rainbow', pot: Container, i: number) {
+    sfx.bell(4 + i, 0.25);
+    if (this.plan.mode === 'mix' && color !== 'rainbow') {
+      void this.pour(color as Primary, pot);
+      return;
+    }
+    this.setBrush(color === 'rainbow' ? null : color);
+    this.potRing.position.set(pot.x, 0);
+    this.potNodes.forEach((p) => (p.y = 0));
+    pot.y = -14;
+    void this.ctx.say(color === 'rainbow' ? 'paint.rainbow' : `color.${color}`);
+  }
+
+  private setBrush(color: ColorName | null) {
+    this.brushName = color;
+    this.brush = color ? swatch[color].fill : null;
+  }
+
+  /** Pour a primary into the bowl. Two make a new color; a third starts over. */
+  private async pour(color: Primary, pot: Container) {
+    if (this.poured.length >= 2) this.poured = [];
+    this.poured.push(color);
+    void this.ctx.tw.to(pot, { rotation: 0.5 }, { duration: 0.15 }).then(() => this.ctx.tw.to(pot, { rotation: 0 }, { duration: 0.2 }));
+    sfx.splash();
+    const made = this.poured.length === 2 ? mix(this.poured[0], this.poured[1]) : color;
+    this.setBrush(made);
+    this.drawBowl();
+    if (this.poured.length === 2) {
+      const p = this.ctx.stage.toLocal(this.bowl.getGlobalPosition());
+      this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [swatch[made].fill, 0xffffff], count: 10, speed: [80, 200], gravity: 0, life: [0.4, 0.8] });
+      sfx.sparkle();
+      await this.ctx.say(`color.${made}`);
+    } else {
+      await this.ctx.say(`color.${color}`);
+    }
+  }
+
+  private emptyBowl() {
+    if (this.poured.length === 0) return;
+    this.poured = [];
+    this.setBrush(null);
+    this.drawBowl();
+    sfx.whoosh();
+  }
+
+  private drawBowl() {
+    const g = this.bowlPaint.clear();
+    if (this.poured.length === 0) return;
+    if (this.poured.length === 1) {
+      g.ellipse(0, -10, 52, 14).fill(swatch[this.poured[0]].fill);
+    } else {
+      const made = swatch[mix(this.poured[0], this.poured[1])];
+      g.ellipse(0, -10, 56, 16).fill(made.fill).stroke({ width: 3, color: made.line });
+      g.circle(-22, -12, 5).circle(18, -8, 4).fill({ color: 0xffffff, alpha: 0.6 });
+    }
+  }
+
+  /** Lay the pictures out once, across the middle of the page above the pots. */
+  private layoutPictures(v: View) {
+    if (this.pictures.length || this.things.length === 0) return;
+    const n = this.things.length;
+    const top = MARGIN + 30;
+    const bottom = v.h - 130;
+    const slot = (v.w - MARGIN * 2 - 60) / n;
+    const scale = Math.min(1.25, slot / 280, (bottom - top) / 270);
+    this.pictures = this.things.map((thing, i) => {
+      const pic = new Picture(thing, MARGIN + 30 + slot * (i + 0.5), (top + bottom) / 2 + (i % 2 ? 24 : -24), scale, this.ctx.renderer);
+      this.pictureLayer.addChild(pic.node);
+      return pic;
+    });
+  }
+
+  private async ask() {
+    const pic = this.picture;
+    if (!pic) return;
+    this.sinceAsk = 0;
+    this.wrongs = 0;
+    const s = pic.scale;
+    void this.ctx.tw.to(pic.node.scale, { x: s * 1.12, y: s * 1.12 }, { duration: 0.25, ease: ease.outBack }).then(() => this.ctx.tw.to(pic.node.scale, { x: s, y: s }, { duration: 0.3 }));
+    const { id: thing, color } = pic.thing;
+    if (this.plan.mode === 'mix') {
+      const [a, b] = RECIPES[color]!;
+      await this.ctx.instruct('paint.mix', { thing, color, a, b });
+    } else if (this.plan.mode === 'recall') {
+      await this.ctx.instruct('paint.what', { thing });
+    } else {
+      await this.ctx.instruct('paint.ask', { thing, color });
+    }
+  }
+
+  /** The pots that make the asked-for color. */
+  private rightPots(): (ColorName | 'rainbow')[] {
+    const color = this.picture?.thing.color;
+    if (!color) return [];
+    return this.plan.mode === 'mix' ? [...RECIPES[color]!] : [color];
+  }
+
+  private showHint() {
+    this.hints++;
+    this.glowing = this.rightPots();
+  }
+
+  /** A dab of paint landed. On the asked-for picture, the right color fills it; any other nudges gently. */
+  private dab(x: number, y: number) {
+    const pic = this.picture;
+    if (!pic || pic.done || this.done || !pic.contains(x, y, BRUSH_RADIUS * 0.5)) return;
+    if (this.brushName === pic.thing.color) {
+      const p = pic.local(x, y);
+      this.sinceAsk = 0;
+      if (pic.coverage.paint(p.x, p.y, (BRUSH_RADIUS + 6) / pic.scale) >= PAINTED) void this.painted(pic);
+      return;
+    }
+    if (this.clock - this.lastNag < 4) return;
+    this.lastNag = this.clock;
+    const { id: thing, color } = pic.thing;
+    if (!this.brushName) {
+      void this.ctx.say(this.plan.mode === 'mix' ? 'paint.mixhow' : 'paint.pick', { color, ...this.recipeVars() });
+      return;
+    }
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    if (this.plan.mode === 'mix') void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
+    else void this.ctx.say('paint.wrong', { wrong: this.brushName, thing, color });
+    if (this.wrongs === 2) this.showHint();
+  }
+
+  private recipeVars(): Record<string, string> {
+    const r = this.picture && RECIPES[this.picture.thing.color];
+    return r ? { a: r[0], b: r[1] } : {};
+  }
+
+  private async painted(pic: Picture) {
+    pic.done = true;
+    this.glowing = [];
+    const fill = pic.fill();
+    if (this.rt) this.ctx.renderer.render({ container: fill, target: this.rt, clear: false });
+    fill.destroy();
+    this.ctx.particles.burst(pic.x, pic.y, { kind: 'star', colors: [swatch[pic.thing.color].fill, 0xffffff, 0xfff3a0], count: 16, speed: [120, 300], gravity: 0, life: [0.5, 0.9] });
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    this.current++;
+    await this.ctx.say('praise');
+    if (this.picture) await this.ask();
+    else await this.ctx.say('paint.finished');
   }
 
   resize(v: View) {
@@ -153,6 +442,7 @@ class RainbowFingers implements Game {
     this.paper.hitArea = new Rectangle(MARGIN, MARGIN, v.w - MARGIN * 2, v.h - MARGIN * 2);
     this.frameButton.position.set(v.w - 80, 80);
     this.pots.position.set(v.w / 2, v.h - 58);
+    this.layoutPictures(v);
 
     // Grow the painting surface if the view got bigger, keeping what's already painted.
     const res = v.scale * Math.min(2, window.devicePixelRatio || 1);
@@ -172,7 +462,15 @@ class RainbowFingers implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (!this.done && !this.frameButton.visible && (this.finished >= 5 || (this.finished >= 1 && this.clock > 25))) {
+    const coloring = this.pictures.length > 0;
+    const ready = coloring ? !this.picture : this.finished >= 5 || (this.finished >= 1 && this.clock > 25);
+    if (coloring && this.picture && !this.done) {
+      this.sinceAsk += dt;
+      // Stuck for a while: light up the right pot.
+      if (this.sinceAsk > 12 && this.glowing.length === 0) this.showHint();
+    }
+    this.drawGlow();
+    if (!this.done && !this.frameButton.visible && ready) {
       this.frameButton.visible = true;
       this.frameButton.scale.set(0);
       void this.ctx.tw.to(this.frameButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outBack });
@@ -182,11 +480,20 @@ class RainbowFingers implements Game {
     this.flush();
   }
 
+  private drawGlow() {
+    const g = this.potGlow.clear();
+    for (const color of this.glowing) {
+      const pot = this.potNodes.get(color);
+      if (pot) g.circle(pot.x, -6, 54 + 4 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.8 });
+    }
+  }
+
   destroy() {
     window.removeEventListener('pointerup', this.endStroke);
     window.removeEventListener('pointercancel', this.endStroke);
     this.pool.forEach((s) => s.destroy());
     this.stamps.destroy({ children: true });
+    for (const pic of this.pictures) pic.node.destroy({ children: true, texture: true, textureSource: true });
     this.rt?.destroy(true);
   }
 
@@ -198,6 +505,7 @@ class RainbowFingers implements Game {
     const stroke = { x: p.x, y: p.y, hue: this.hue, color: this.brush, travelled: 0, startedAt: this.clock, lastStep: step, lastNoteAt: this.clock, sparkleIn: 30 };
     this.strokes.set(e.pointerId, stroke);
     this.stamp(p.x, p.y, stroke.color ?? hsl(stroke.hue, 0.85, 0.62));
+    this.dab(p.x, p.y);
     sfx.bell(step, 0.14);
   }
 
@@ -213,6 +521,7 @@ class RainbowFingers implements Game {
       const t = (i * SPACING) / dist;
       s.hue = (s.hue + SPACING * HUE_PER_UNIT) % 360;
       this.stamp(s.x + (p.x - s.x) * t, s.y + (p.y - s.y) * t, s.color ?? hsl(s.hue, 0.85, 0.62));
+      if (i % 2 === 0) this.dab(s.x + (p.x - s.x) * t, s.y + (p.y - s.y) * t);
     }
     if (n > 0) {
       const t = (n * SPACING) / dist;
@@ -315,7 +624,7 @@ class RainbowFingers implements Game {
     sfx.sparkle();
     await this.ctx.say('paint.done');
     await this.ctx.tw.wait(0.6);
-    this.ctx.finish({ misses: 0, hints: 0 });
+    this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 }
 
@@ -389,7 +698,14 @@ export const rainbowFingers: GameModule = {
   skills: ['fine-motor', 'creativity'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
-  describeLevel: (level) => (level >= 2 ? 'Paint pots: pick a color and hear its name' : 'Rainbow painting'),
+  describeLevel: (level) => {
+    const p = planFor(level);
+    if (p.mode === 'free') return 'Rainbow painting';
+    if (p.mode === 'pots') return 'Paint pots: pick a color and hear its name';
+    if (p.mode === 'named') return `Coloring page: "paint the sun yellow", ${p.count} pictures`;
+    if (p.mode === 'recall') return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
+    return 'Mixing colors: red and yellow make orange';
+  },
   music: STYLES.paint,
   coplayHint: 'Guide {name}\'s finger in big swoops, then let go and watch.',
   offScreen: 'Finger-paint with yogurt and a drop of food coloring on the high-chair tray.',

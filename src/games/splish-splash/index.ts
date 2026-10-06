@@ -9,10 +9,8 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
+import { allowedParts, askedParts, planFor, type Part, type Plan } from './logic';
 
-type Part = 'tummy' | 'head' | 'cheeks' | 'ears';
-
-/** Where mud goes on Pip (x, y in Pip's own unscaled body coordinates) and how big the splotch is. */
 const PART_SPOTS: Record<Part, [number, number, number][]> = {
   tummy: [[0, -72, 1]],
   head: [[6, -214, 0.9]],
@@ -24,28 +22,14 @@ const PART_SPOTS: Record<Part, [number, number, number][]> = {
     [-74, -226, 0.7],
     [74, -226, 0.7],
   ],
+  nose: [[0, -112, 0.42]],
 };
-
-interface Plan {
-  /** free: scrub it all off. parts: "wash my ears!", one body part at a time. */
-  mode: 'free' | 'parts';
-  parts: Part[];
-  shuffle?: boolean;
-}
-
-const PLANS: Plan[] = [
-  { mode: 'free', parts: ['tummy', 'head', 'cheeks'] },
-  { mode: 'free', parts: ['tummy', 'head', 'cheeks', 'ears'] },
-  { mode: 'parts', parts: ['tummy', 'ears', 'head'] },
-  { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks'] },
-  { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks'], shuffle: true },
-];
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 4 },
-  preschool: { min: 3, max: 4 },
-  prek: { min: 4, max: 5 },
+  preschool: { min: 3, max: 7 },
+  prek: { min: 5, max: 8 },
 };
 
 const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
@@ -160,7 +144,7 @@ class SplishSplash implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.pip = new Critter(ctx.petSpec);
-    this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    this.plan = planFor(ctx.level);
     if (this.plan.shuffle) this.plan = { ...this.plan, parts: ctx.rng.shuffle([...this.plan.parts]) };
     this.view = ctx.view;
     // Pip is the star of this one, so the corner guide steps out.
@@ -234,7 +218,7 @@ class SplishSplash implements Game {
       if (this.sinceProgress > 7 && !this.hinted) {
         this.hinted = true;
         this.hints++;
-        for (const m of this.muds) if (m.part === this.target() && !m.clean) m.glow.visible = true;
+        for (const m of this.muds) if (this.allowed().includes(m.part) && !m.clean) m.glow.visible = true;
       }
     }
     for (const m of this.muds) if (m.glow.visible) m.glow.alpha = 0.5 + 0.4 * Math.sin(this.clock * 7);
@@ -247,14 +231,24 @@ class SplishSplash implements Game {
     this.eraser.destroy();
   }
 
-  private target(): Part {
-    return this.plan.parts[this.partIndex];
+  private asked(): Part[] {
+    return askedParts(this.plan, this.partIndex);
+  }
+
+  private partClean(part: Part): boolean {
+    return this.muds.filter((m) => m.part === part).every((m) => m.clean);
+  }
+
+  private allowed(): Part[] {
+    return allowedParts(this.plan, this.partIndex, (p) => this.partClean(p));
   }
 
   private async askForPart() {
     this.sinceProgress = 0;
     this.hinted = false;
-    await this.ctx.instruct('bath.part', { part: this.target() });
+    const [a, b] = this.asked();
+    if (!b) await this.ctx.instruct('bath.part', { part: a });
+    else await this.ctx.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', { a, b });
   }
 
   private scrubAt(e: FederatedPointerEvent) {
@@ -297,7 +291,7 @@ class SplishSplash implements Game {
       if (m.clean) continue;
       const l = m.sprite.toLocal(global);
       if (!m.near(l.x, l.y)) continue;
-      if (this.plan.mode === 'parts' && m.part !== this.target()) {
+      if (this.plan.mode === 'parts' && !this.allowed().includes(m.part)) {
         this.notThatPart(m.part);
         continue;
       }
@@ -312,7 +306,9 @@ class SplishSplash implements Game {
     if (this.clock - this.lastNag < 4) return;
     this.lastNag = this.clock;
     this.misses++;
-    void this.ctx.say('bath.notthat', { touched, part: this.target() });
+    const [a, b] = this.asked();
+    if (this.plan.ordered && touched === b) void this.ctx.say('bath.first', { a, b });
+    else void this.ctx.say('bath.notthat', { touched, part: b ? `${a} and my ${b}` : a });
   }
 
   private async cleaned(m: Mud) {
@@ -328,8 +324,8 @@ class SplishSplash implements Game {
       void this.finale();
       return;
     }
-    if (this.plan.mode === 'parts' && this.muds.filter((x) => x.part === this.target()).every((x) => x.clean)) {
-      this.partIndex++;
+    if (this.plan.mode === 'parts' && this.asked().every((p) => this.partClean(p))) {
+      this.partIndex += this.asked().length;
       sfx.sparkle();
       await this.ctx.say('praise');
       await this.askForPart();
@@ -435,8 +431,10 @@ export const splishSplash: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
-    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
-    return p.shuffle ? 'Wash four body parts in a different order each round' : p.mode === 'free' ? 'Scrub all the mud off' : `Wash one body part at a time: ${p.parts.join(', ')}`;
+    const p = planFor(level);
+    if (p.ordered) return 'Two-step directions in order: "first your nose, then your ears"';
+    if (p.pairs) return 'Two body parts at once: "wash my ears and my nose"';
+    return p.shuffle ? `Wash ${p.parts.length} body parts in a different order each round` : p.mode === 'free' ? 'Scrub all the mud off' : `Wash one body part at a time: ${p.parts.join(', ')}`;
   },
   music: STYLES.paint,
   coplayHint: 'Name the body parts as {name} scrubs: "tummy", "ears", "cheeks".',

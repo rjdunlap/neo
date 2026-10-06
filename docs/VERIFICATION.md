@@ -2,6 +2,17 @@
 
 Checked locally on 2026-10-05. The island expansion and second expansion are implemented: fifteen games, including the Robot Path stretch goal and the newer Size Parade, Bug Builder, and Story Steps. No commit, push, or deployment was performed.
 
+## Deeper ladders for Rainbow Fingers and Splish Splash (same day, later)
+
+Rainbow Fingers now has 6 levels and Splish Splash has 8, so preschool and pre-K no longer top out early.
+
+- `npm run typecheck` and `npm run build`: passed.
+- `npm test`: 57 tests across eighteen files passed. New tests cover color mixing, coloring pages (distinct colors; mixing pages use only mixable colors), coverage counting only inside a picture, and Splish Splash plans (every part asked once, pairs in any order, first-then pairs in order).
+- `BROWSER_SUITE=early` (new): all 14 levels passed in headless Chrome. Coloring levels check that rainbow paint only reminds, and that two wrong colors count as two misses and light the right pot. Bath levels check that the wrong part is noticed and isn't washed. Saved miss/hint counts and stickers match.
+- Full `npm run test:browser`: every suite before `early` passed. One `early` run failed on a test artifact (a wide scrub of the "then" part also cleaned the neighboring "first" part, which correctly unlocked it), so the test now wiggles only in the middle of the wrong part. `early` then passed twice, and `stickers` passed on its own.
+- Screenshots reviewed. Fixed on review: picture interiors drawn white over the paint (the outline's erase now renders in the same pass as the ring), and a leaf that read as a cloud.
+- Not checked: the offline PWA (no asset, navigation or persistence changes) and a real iPad. Pictures are laid out once, so rotating mid-page keeps the first layout.
+
 ## Age trail and fourth expansion (same day, later)
 
 The map became the age selection: four places on a switchback trail, every one open, each laying out all the games for its band. Song Maker, Puzzle Pals, Weather Wardrobe, and Sink or Float were added (twenty-one games).

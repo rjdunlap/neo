@@ -100,6 +100,13 @@ All three main additions support preschool and pre-K, with level ladders that in
 - [x] Song Maker, Puzzle Pals, Weather Wardrobe and Sink or Float, each from lap to pre-K with unit-tested rules.
 - [x] Browser suites updated for the trail (`world`, `expansion`, `third`) plus a new `fourth` suite; offline check rewritten for the trail.
 
+## 10. Deeper ladders for the first games
+
+- [x] Rainbow Fingers grows from 2 levels to 6: coloring pages with named colors (2, then 3 pictures), remembered colors ("paint the apple"), and mixing primaries in a bowl. Outlines stay above the paint; a picture fills in neatly once 70% is covered in the right color. Wrong colors are gentle misses, and the right pot glows after two, or after 12 quiet seconds. Bands: toddler 1–3, preschool 2–5, pre-K 3–6.
+- [x] Splish Splash grows from 5 levels to 8: five shuffled parts (adds the nose), two parts at once in any order, and "first … then …" in order. Bands: preschool 3–7, pre-K 5–8.
+- [x] Unit tests for both games' rules (`logic.ts`) and a `BROWSER_SUITE=early` play-through of every level with wrong answers, hints and saved scores.
+- [ ] Rule tests and browser play-throughs for the other original games (Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, Color Garden).
+
 ## Development direction after this expansion
 
 These are future candidates, not claims of implemented features:

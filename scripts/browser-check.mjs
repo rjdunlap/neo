@@ -610,6 +610,98 @@ async function fourth() {
   log('Puddle Lagoon shows all four, and saved progress survives a reload');
 }
 
+async function early() {
+  // Rainbow Fingers: free painting, pots, then coloring pages with a wrong color, a hint and mixing.
+  await page.evaluate(() => {
+    window.toScreen = (x, y) => { const p = neo.scene.game.paper.toGlobal({ x, y }); return [p.x, p.y]; };
+    window.scrubPicture = async (pic) => {
+      for (const [cx, cy, r] of pic.thing.circles) for (let dy = -r; dy <= r; dy += 24) {
+        const w = Math.sqrt(Math.max(0, r * r - dy * dy));
+        const a = toScreen(pic.x + (cx - w) * pic.scale, pic.y + (cy + dy) * pic.scale);
+        const b = toScreen(pic.x + (cx + w) * pic.scale, pic.y + (cy + dy) * pic.scale);
+        await kit.drag(kit.line(a, b, 8), 1, 8);
+        if (pic.done) return;
+      }
+    };
+  });
+  for (let level = 1; level <= 6; level++) {
+    await launch('rainbow-fingers', level);
+    await page.waitForTimeout(500);
+    const coloring = await page.evaluate(() => neo.scene.game.pictures.length > 0);
+    if (!coloring) {
+      await page.evaluate(async () => {
+        for (let i = 0; i < 5; i++) await kit.drag(kit.line(toScreen(150 + i * 120, 200), toScreen(250 + i * 120, 450), 10), 1, 10);
+      });
+    } else {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const pick = async (colors) => { for (const c of colors) { kit.tapOn(g.potNodes.get(c)); await kit.sleep(300); } };
+        const center = (pic) => toScreen(pic.x + pic.thing.circles[0][0] * pic.scale, pic.y + pic.thing.circles[0][1] * pic.scale);
+        // Rainbow paint on the picture only reminds; two wrong colors are misses and light the right pot.
+        await kit.drag(kit.line(center(g.picture), [center(g.picture)[0] + 30, center(g.picture)[1]], 4));
+        if (g.misses !== 0) throw new Error('Rainbow paint counted as a miss');
+        const wrong = g.plan.mode === 'mix' ? (g.picture.thing.color === 'green' ? ['red'] : ['blue']) : [['red', 'blue'].find((c) => c !== g.picture.thing.color)];
+        for (let i = 0; i < 2; i++) {
+          await kit.sleep(4200);
+          await pick(wrong);
+          await kit.drag(kit.line(center(g.picture), [center(g.picture)[0] + 30, center(g.picture)[1]], 4));
+        }
+        if (g.misses !== 2 || g.hints !== 1 || g.glowing.length === 0) throw new Error(`Paint hint missing: ${g.misses} ${g.hints}`);
+        while (g.picture) {
+          const pic = g.picture;
+          await pick(g.rightPots());
+          await scrubPicture(pic);
+          if (!await kit.until(() => g.picture !== pic, 8000)) throw new Error(`${pic.thing.id} never finished: ${pic.coverage.covered}`);
+        }
+      });
+    }
+    await page.waitForFunction(() => neo.scene.game.frameButton.visible, null, { timeout: 30000 });
+    await screenshot(`rainbow-fingers-${level}`);
+    await page.waitForTimeout(600);
+    await tap('neo.scene.game.frameButton');
+    await finished('rainbow-fingers');
+    const r = await page.evaluate(() => { const r = kit.store.stats('rainbow-fingers').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, coloring ? [2, 1] : [0, 0], `paint ${level} score`);
+    log(`Rainbow Fingers ${level}: painting${coloring ? ', wrong colors, hint, every picture' : ''} and sticker passed`);
+  }
+
+  // Splish Splash: free scrubbing, one part at a time, pairs, and first-then pairs with a wrong part.
+  await page.evaluate(() => {
+    window.scrubMud = async (m) => {
+      const p = m.sprite.getGlobalPosition();
+      const s = m.sprite.worldTransform.a * 40;
+      for (let dy = -s; dy <= s; dy += s / 3) await kit.drag(kit.line([p.x - s * 1.2, p.y + dy], [p.x + s * 1.2, p.y + dy], 8), 1, 8);
+    };
+  });
+  for (let level = 1; level <= 8; level++) {
+    await launch('splish-splash', level);
+    await page.waitForTimeout(500);
+    const parts = await page.evaluate(() => neo.scene.game.plan.mode === 'parts');
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (g.plan.mode === 'parts') {
+        // In first-then levels the "then" part is the wrong one to start with.
+        const wrongPart = g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p));
+        // A short wiggle in the middle, so it can't reach a neighboring part that is allowed.
+        const p = g.muds.find((m) => m.part === wrongPart).sprite.getGlobalPosition();
+        await kit.drag(kit.line([p.x - 12, p.y], [p.x + 12, p.y], 6), 1, 12);
+        if (g.misses !== 1) throw new Error('Wrong part not noticed');
+        if (g.muds.find((m) => m.part === wrongPart).clean) throw new Error('Wrong part got washed');
+      }
+      for (let guard = 0; guard < 40 && !g.finished; guard++) {
+        const next = g.muds.find((m) => !m.clean && (g.plan.mode === 'free' || g.allowed().includes(m.part)));
+        if (next) await scrubMud(next);
+        await kit.sleep(200);
+      }
+    });
+    if ([1, 6, 8].includes(level)) await screenshot(`splish-splash-${level}`);
+    await finished('splish-splash');
+    const r = await page.evaluate(() => { const r = kit.store.stats('splish-splash').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, parts ? [1, 0] : [0, 0], `bath ${level} score`);
+    log(`Splish Splash ${level}: ${parts ? 'wrong part, ' : ''}every part washed, sticker passed`);
+  }
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -628,6 +720,7 @@ try {
   if (suite === 'all' || suite === 'expansion') await expansion();
   if (suite === 'all' || suite === 'third') await third();
   if (suite === 'all' || suite === 'fourth') await fourth();
+  if (suite === 'all' || suite === 'early') await early();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);
