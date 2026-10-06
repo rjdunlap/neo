@@ -22,6 +22,12 @@ describe('game registry', () => {
     }
   });
 
+  it('keeps two unjudged creative modes available for lap co-play', () => {
+    for (const id of ['rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'rhythm-neighbors']) {
+      expect(GAMES.find(g => g.id === id)!.levels('lap')).toEqual({ min: 1, max: 2 });
+    }
+  });
+
   it('has something for every age band', () => {
     for (const b of BANDS) expect(GAMES.filter((g) => g.bands.includes(b.id)).length, b.id).toBeGreaterThanOrEqual(3);
   });

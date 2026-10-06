@@ -11,31 +11,12 @@ import type { View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { Jelly } from './jelly';
+import { makeTune, planFor, type JellyPlan } from './logic';
 
 /** Big jelly, low note: C D E G A from left to right. */
 const COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
 const STEPS = [0, 1, 2, 3, 4];
 const BULBS = 8;
-
-interface Plan {
-  mode: 'free' | 'echo';
-  /** Notes to play (free) or tunes to copy (echo). */
-  goal: number;
-  /** Tune length (echo). */
-  length: number;
-}
-
-const PLANS: Plan[] = [
-  { mode: 'free', goal: 24, length: 0 },
-  { mode: 'free', goal: 32, length: 0 },
-  { mode: 'free', goal: 40, length: 0 },
-  { mode: 'echo', goal: 4, length: 2 },
-  { mode: 'echo', goal: 4, length: 3 },
-  { mode: 'echo', goal: 5, length: 3 },
-  { mode: 'echo', goal: 4, length: 4 },
-  { mode: 'echo', goal: 5, length: 4 },
-  { mode: 'echo', goal: 5, length: 5 },
-];
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 3 },
@@ -47,7 +28,7 @@ const LEVELS: Record<Band, { min: number; max: number }> = {
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
 
 class JellyDrums implements Game {
-  private readonly plan: Plan;
+  private readonly plan: JellyPlan;
   private readonly sky = new Sprite(gradientTexture(0xa9c1ff, 0xffe3f1));
   private readonly mountains = new Graphics();
   private readonly stageG = new Graphics();
@@ -67,7 +48,7 @@ class JellyDrums implements Game {
   private clock = 0;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    this.plan = planFor(ctx.level);
     this.view = ctx.view;
     this.jellies = COLORS.map((c, i) => {
       const hw = 82 - i * 7;
@@ -204,12 +185,7 @@ class JellyDrums implements Game {
     this.phase = 'listen';
     this.at = 0;
     this.wrongThisTune = 0;
-    this.tune = [];
-    while (this.tune.length < this.plan.length) {
-      const i = this.ctx.rng.int(0, COLORS.length - 1);
-      if (this.tune.length && i === this.tune[this.tune.length - 1] && this.plan.length <= 3) continue;
-      this.tune.push(i);
-    }
+    this.tune = makeTune(this.ctx.rng, this.plan.length);
     await this.playTune(false);
     this.phase = 'turn';
     void this.ctx.instruct('jelly.turn');
@@ -328,7 +304,7 @@ export const jellyDrums: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
-    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    const p = planFor(level);
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },
   music: STYLES.jelly,

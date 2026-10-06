@@ -25,7 +25,7 @@ const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
 /** Rainbows, then pots, then coloring pages: named colors, remembered colors, and mixed colors (`logic.ts`). */
 const LEVELS: Record<Band, { min: number; max: number }> = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },

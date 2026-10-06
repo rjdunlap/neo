@@ -11,22 +11,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
-
-interface Plan {
-  colors: number;
-  items: number;
-  /** Fruit whose kind gives the color away (an apple is red); otherwise balloons and flowers. */
-  fruit: boolean;
-}
-
-const PLANS: Plan[] = [
-  { colors: 1, items: 4, fruit: true },
-  { colors: 2, items: 6, fruit: true },
-  { colors: 3, items: 6, fruit: true },
-  { colors: 4, items: 8, fruit: true },
-  { colors: 5, items: 10, fruit: true },
-  { colors: 6, items: 12, fruit: false },
-];
+import { basketAt, basketWidth, deal, planFor, type GardenPlan } from './logic';
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 1 },
@@ -104,7 +89,7 @@ class Basket extends Container {
 }
 
 class ColorGarden implements Game {
-  private readonly plan: Plan;
+  private readonly plan: GardenPlan;
   private readonly backdrop: Backdrop;
   private readonly tree = new Graphics();
   private readonly layer = new Container();
@@ -119,21 +104,16 @@ class ColorGarden implements Game {
   private finished = false;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    this.plan = planFor(ctx.level);
     this.view = ctx.view;
     this.backdrop = ctx.track(
       new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.62, clouds: 2, sun: true, seed: 44 }, ctx.view),
     );
-    const colors = ctx.rng.shuffle([...RAINBOW]).slice(0, this.plan.colors);
-    const width = this.plan.colors > 4 ? 130 : 160;
-    this.baskets = colors.map((c) => ctx.track(new Basket(c, width)));
+    const { colors, items } = deal(ctx.rng, this.plan);
+    this.baskets = colors.map((c) => ctx.track(new Basket(c, basketWidth(this.plan))));
     ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, this.layer);
 
-    // At least one of each color, then random; shuffled onto the tree.
-    const wanted = [...colors];
-    while (wanted.length < this.plan.items) wanted.push(ctx.rng.pick(colors));
-    ctx.rng.shuffle(wanted);
-    this.items = wanted.map((color, i) => {
+    this.items = items.map((color, i) => {
       const kind: PropKind = this.plan.fruit ? FRUIT_FOR[color]! : i % 2 ? 'balloon' : 'flower';
       const view = prop(kind, color);
       view.scale.set(ITEM_SCALE);
@@ -197,7 +177,7 @@ class ColorGarden implements Game {
   private drop(item: Item, x: number, y: number): boolean {
     if (this.finished) return false;
     // Anywhere over a basket (or just above it) counts.
-    const basket = this.baskets.find((b) => Math.abs(b.x - x) < b.w / 2 + 30 && y > b.y - 230);
+    const basket = basketAt(this.baskets, x, y);
     if (!basket) return false;
     if (basket.color === item.color) {
       void this.place(item, basket);
@@ -316,7 +296,7 @@ export const colorGarden: GameModule = {
   bands: ['toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
-    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    const p = planFor(level);
     if (p.colors === 1) return 'One basket: practice dragging';
     return `Sort ${p.items} ${p.fruit ? 'fruits' : 'balloons and flowers'} into ${p.colors} colors`;
   },

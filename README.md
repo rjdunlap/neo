@@ -1,6 +1,6 @@
 # Puddle Island (project Neo)
 
-A home-made iPad learning game in the spirit of JumpStart and Neopets: playful learning, a familiar pet, and an island to explore. Current age bands run from lap play through pre-K; future ideas extend into ages 6–8. Every picture and sound is generated in code: no sprites, no audio files.
+A home-made iPad learning game in the spirit of JumpStart and Neopets: playful learning, a familiar pet, and an island to explore. Current age bands run from lap play through pre-K; the long-term roadmap grows through elementary school, roughly grade 5 / age eleven. Every picture and sound is generated in code: no sprites, no audio files.
 
 **Play it:** <https://rjdunlap.github.io/neo/> (every push to `main` redeploys via GitHub Actions)
 
@@ -11,7 +11,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # unit tests: saves, difficulty, the age trail, game rules, tracing, matching
+npm test           # unit tests: saves, difficulty, the age trail, every game's rules, tracing, matching
 npm run build      # type-check + production build into dist/
 ```
 
@@ -25,12 +25,12 @@ npm run build      # type-check + production build into dist/
 
 The island is an **age trail**. It climbs from **Puddle Lagoon** (lap, 18–24 months) on the shore through **Daisy Meadow** (toddler) and **Bumpy Hills** (preschool) up to **Starry Peak** (pre-K). Each place lays out every game for that age, at that age's levels. A game that grows with her, like Bubble Pop, stands in each place it supports. The play button goes straight to her own place; the island button there opens the trail, where her pet waits by her place and every place is open to explore. When there are more games than fit, swipe the land sideways or tap the arrows. When a grown-up moves her up an age band, the pet has a birthday and walks up the trail.
 
-The recorded baseline has twenty-five games, listed below. More games are being implemented in the local working tree; see the [roadmap's current status](docs/ROADMAP.md#current-position) and verification log before treating additions as checked or deployed. "Ages" lists the places each baseline game appears in.
+There are forty-three games, listed below. "Ages" lists the places each game appears in. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest eighteen (see the [roadmap](docs/ROADMAP.md#1-finish-and-verify-the-current-work)).
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
 | Bubble Pop | lap–pre-K | pop anything | pop one color, then numbers in order |
-| Rainbow Fingers | lap–pre-K | rainbow finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl |
+| Rainbow Fingers | lap–pre-K | rainbow or color-pot finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl |
 | Jelly Drums | lap–pre-K | free play on five notes | copy a tune of 2 to 5 notes |
 | Song Maker | lap–pre-K | tap jellies on a looping beat | copy songs by shadows or a card, continue a pattern, find a tune by ear |
 | Peekaboo Barn | lap–pre-K | tap to find who's hiding | find an animal, then remember hiding places |
@@ -45,7 +45,21 @@ The recorded baseline has twenty-five games, listed below. More games are being 
 | Scoop Shop | lap–pre-K | tap tubs to pile scoops on a cone for a customer | one color, two scoops, "four blue scoops", three flavors stacked in order, then from memory |
 | Roundup | lap–pre-K | tap an animal and it hops into its pen | shoo animals through the gate with a finger, sort pigs and bunnies, put exactly N in and ring the bell |
 | Bouncy Launch | lap–pre-K | tap the spring and the pet boings onto a cloud | pull back farther to fly farther, land on the star cloud, then a numbered cloud, farther or nearer than last time |
+| Word Monsters | lap–pre-K | tap letter monsters to hear their sounds | find a letter by name, then by its sound, first sounds, then build three-letter words |
+| Peg Garden | lap–pre-K | tap the top and a pearl tumbles through flower pegs | bloom every flower, the four orange ones, aim for a numbered flower, then 1, 2, 3 in order |
+| Fluffy Salon | lap–pre-K | grow and color fur, then freely snip and curl | every tool (grow, snip, comb, curl, color), then requests like "short and blue", then copy a pictured style |
+| Sound Garden | lap–pre-K | tap garden friends to hear them sing | high or low, fast or slow, does the tune go up or down, echo a rhythm on the drum |
+| Little Helpers | lap–pre-K | tap a fruit and a helper carries it home | send enough helpers to lift it, exactly the number shown, then "how many more?" |
+| Egg Catch | lap–pre-K | tap a hen and her egg rolls into the basket | slide the basket to catch, catch only brown eggs, flip gates to route eggs |
+| Mail Carrier | lap–pre-K | tap any mailbox to post a letter | match colors, then dots, then house numbers 1 to 9 |
+| Photo Safari | lap–pre-K | tap any animal to take its photo | photograph the animal named, then "the bunny jumping", "the duck under the tree", and both |
+| Bounce Back | lap–pre-K | bounce a slow ball back to the pet with a huge paddle | keep a rally going, play with a grown-up on the other paddle, aim through stars, count to ten |
+| Dot Link | lap–pre-K | tap dots to pop them | join two dots of one color, pop one color, chains of four, then close a square |
+| Teddy Doctor | lap–pre-K | tap boo-boos to put on bandages | bandage the part a patient names, choose what helps a bump or sniffles, then what helps from a spoken clue, check-ups in order from a card or from what the patient says |
+| Bumper Garden | lap–pre-K | tap to launch a ladybug through flower bumpers | flip it back up until every flower blooms, bloom one color, bump numbered flowers in order |
 | Shape Sorter | toddler–pre-K | one circle hole | six plain holes, one color, tilted pieces |
+| Seesaw Balance | toddler–pre-K | put a big friend on the seesaw so a little one goes up | which friend is heavy enough, level it with blocks, find the heaviest look-alike present, match a weight two ways, weigh one mystery box, then infer one of two identical boxes |
+| Quick Tricks | toddler–pre-K | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle | which leaf covers two friends, matching socks and bridge lengths; a second show turns parcels, sets picnic places and completes berry totals |
 | Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers |
 | Size Parade | toddler–pre-K | tap the bigger or smaller friend | order three, then five friends in either direction |
 | Bug Builder | toddler–pre-K | decorate matching shape outlines | copy a model, then mirror six spots using shape and color |
@@ -53,11 +67,15 @@ The recorded baseline has twenty-five games, listed below. More games are being 
 | Pattern Train | preschool–pre-K | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps |
 | Memory Match | preschool–pre-K | four picture cards | sixteen cards, number↔dots, shape + color, A↔a |
 | Letter Trails | preschool–pre-K | follow a firefly along capital strokes | all 26 capitals, short words, the child's name |
+| Stamp Studio | lap–pre-K | press stars or animal stamps onto a picture | choose colors, arrange stamps, change size and orientation, tell a picture story; any creation can finish |
+| Pet Kitchen | toddler–pre-K | cut a sandwich in halves and share | quarters, sharing multiple wholes with alternative equal cuts, doubling a picture recipe |
+| Rhythm Neighbors | lap–pre-K | tap a bird and a frog chorus | trade different musical parts, follow two frog voices, play long/short replies with a guided option |
+| Tangram Town | toddler–pre-K | fit two big shapes into a house or boat | quarter-turn snaps, two triangles making a wall, a four-piece rocket, silhouettes with optional help |
 | Robot Path | pre-K | two steps to a star | turns, rocks, and programs of up to eight steps |
 
-Within a place, games are grouped by subject: senses, music, art, animals, numbers, everyday life, colors and shapes, puzzles, stories, and science.
+Within a place, games are grouped by subject: senses, music, art, animals, numbers, everyday life, colors and shapes, puzzles, stories, and science. Grown-ups → Finding games offers **Subject cards**, an optional prototype showing four large subject choices, then four games at a time. The original swiping path remains the default. Each layout remembers its own position for the session; returning from a game keeps the launching place and subject/page. Compare both on the iPad before choosing a default.
 
-A few notes on the newer games. In Memory Match, an incorrect pair counts as a miss only if the matching card was already known. Story Steps has four illustrated stories; its music-note button narrates the pictures already placed. In Feelings Faces and Weather Wardrobe the pet is the star, so tapping the big pet repeats the instruction. Monster Munch asks for a number, then lets her decide when to ring the bell; a full monster politely refuses more, and unfair shares come back to the tray. Song Maker's jellies sing on the music's beat, and the top level plays a tune to find by ear. Puzzle Pals pictures come alive when finished. In Sink or Float, guesses are never wrong answers: the water shows what happens.
+A few notes on the newer games. In Memory Match, an incorrect pair counts as a miss only if the matching card was already known. Story Steps has four illustrated stories; its music-note button narrates the pictures already placed. In Feelings Faces and Weather Wardrobe the pet is the star, so tapping the big pet repeats the instruction. Monster Munch asks for a number, then lets her decide when to ring the bell; a full monster politely refuses more, and unfair shares come back to the tray. Song Maker's jellies sing on the music's beat, and the top level plays a tune to find by ear. Puzzle Pals pictures come alive when finished. In Sink or Float, guesses are never wrong answers: the water shows what happens. Word Monsters speaks letter sounds ("buh", "mmm") through device speech, which approximates phonics sounds at best; listen on the iPad before relying on them. On Bounce Back's play-together level a grown-up takes the second paddle; when no grown-up finger is on it, the pet plays it. In Bumper Garden the ladybug never drains: past the flippers a flower pot pops it back up, and tapping either half of the screen flips that side. Quick Tricks is one show of three tricks with one sticker; the arrow moves on when she is ready. In Seesaw Balance, testing presents on the seesaw is never a wrong answer.
 
 Each game moves up a level after two easy rounds and down after two hard ones, inside the range for the place it was played in. In the grown-up zone you can see each game's current level and pin one.
 
@@ -71,11 +89,13 @@ Letter Trails uses capital A–Z stroke data. Accented Latin names are normalize
 
 ## Grown-up zone
 
-Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, volume, and see what she played this week. Backups save to Files.
+Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, place layout, volume, and see what she played this week. Backups save to Files.
 
 ## Where it could grow
 
-The next proposals connect the activities: a short **Windy Picnic** adventure, a **pet treehouse** to decorate, and a **discovery journal** for things made and learned. Older game ideas include Seesaw Balance, sharing recipes in Pet Kitchen, deduction in Secret Code, and building/debugging in Chain Reaction and Robot Path. These are future concepts, not features currently available. The [roadmap](docs/ROADMAP.md) puts verification and easier navigation first, then small world and ages 6–8 pilots. A few ages 8–10 extensions remain longer-term ideas.
+The [elementary roadmap](docs/ELEMENTARY-ROADMAP.md) plans a world that grows through kindergarten–grade 5: **Wonder Woods** for early exploration, **Maker Harbor** and **Storybook Square** for building and stories, then **Discovery Marsh** and **Skywatch Isles** for investigations and longer projects. Familiar games gain deeper modes—counting becomes sharing and fractions, routes become programs, and picture stories become evidence-based mysteries. Younger favorites remain available.
+
+These are future concepts, not features currently available. The [active roadmap](docs/ROADMAP.md) starts with current verification and easier navigation, small **Windy Picnic** and **pet room** pilots, then the first elementary zone. Each later expansion can deepen a few games, add one new interaction, and connect them through an optional project; it need not add an entire new zone.
 
 ## How it's built
 
@@ -122,7 +142,7 @@ npm run test:browser
 
 The script exercises hatching, navigation and the parent gate; game levels including all 26 capital letter trails and word/name modes; and sticker placement, removal, paging, and portrait resizing. Scenarios include wrong answers, hints, saved rewards, reload persistence, and place scrolling. The [verification log](docs/VERIFICATION.md) records which runs passed and their limits.
 
-Single suites: `world` (hatching, the age trail, swiping, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (Rainbow Fingers and Splish Splash), `arcade` (Duckling Parade, Scoop Shop, Roundup, Bouncy Launch; `ARCADE_ONLY=parade|scoop|roundup|launch` runs one), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. The local `batch` suite is being developed alongside the follow-on games; its presence does not mean it has passed. Screenshots go into ignored `test-results/`.
+Single suites: `world` (hatching, both place layouts, every subject/game card in all bands and both orientations, return memory, cancellation, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (Rainbow Fingers and Splish Splash; `EARLY_ONLY=paint|bath`), `arcade` (Duckling Parade, Scoop Shop, Roundup, Bouncy Launch; `ARCADE_ONLY=parade|scoop|roundup|launch` runs one), `batch` (the follow-on ten games; `BATCH_ONLY=monsters|pegs|salon|garden|helpers|eggs|mail|safari|bounce|dots` runs one), `originals` (Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, Color Garden; `ORIGINALS_ONLY=bubbles|jelly|peekaboo|ducks|shapes|garden` runs one), `next` (Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks; `NEXT_ONLY=seesaw|doctor|bumper|tricks` runs one), `creative` (Stamp Studio, Pet Kitchen, Rhythm Neighbors, Tangram Town; `CREATIVE_ONLY=stamps|kitchen|rhythm|tangram`), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. `FROM_LEVEL=n` starts `next` and `creative` at a later level. `TO_LEVEL=n` can limit the paint or salon loop for lap checks. Screenshots go into ignored `test-results/`.
 
 With `npm run build-and-preview` running in another terminal:
 
@@ -130,6 +150,6 @@ With `npm run build-and-preview` running in another terminal:
 npm run test:offline
 ```
 
-The production check installs the service worker, disconnects the browser, reloads, starts in her place on the trail, plays Monster Munch, earns a sticker, and verifies the save survives another offline reload. It also checks cached fonts and that the dev helpers are absent. Set `GAME_URL` to test another local port.
+The production check installs the service worker, disconnects the browser, reloads, starts in her place using subject cards, opens Counting Cove, plays Monster Munch, earns a sticker, and verifies the save survives another offline reload. It also checks cached fonts and that the dev helpers are absent. Set `GAME_URL` to test another local port.
 
 A real iPad check is still needed for device speech, touch feel, Guided Access, and Add to Home Screen behavior.

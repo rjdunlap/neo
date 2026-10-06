@@ -1,8 +1,87 @@
 # Puddle Island verification
 
-This is a dated record of checks, newest expansion first. The latest recorded game expansion below covers the 25-game baseline on 2026-10-05; earlier sections describe earlier snapshots and retired navigation. These results do not automatically validate later working-tree changes or establish what is deployed. Outstanding work and device checks are tracked in [ROADMAP.md](ROADMAP.md).
+This is a dated record of checks, newest expansion first. The newest entry covers subject cards and four more games (43, in the working tree, only partly checked); the next ones cover four games (39, in the working tree) and a combined run with rule tests for the original games, both on 2026-10-06; the follow-on batch below covers all 35 games deployed on 2026-10-05; earlier sections describe earlier snapshots and retired navigation. These results do not automatically validate later working-tree changes or establish what is deployed. Outstanding work and device checks are tracked in [ROADMAP.md](ROADMAP.md).
 
-## Follow-on batch in the working tree (2026-10-05, late evening; not committed or deployed)
+## Subject cards, Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town (2026-10-06, midday; working tree, partly checked)
+
+Built by a Codex session that ran out of usage partway through checking; a Claude session then recorded the state from the logs Codex left in `test-results/` and opened two more lap levels. Headless Chrome only. Checks were deliberately deferred to save usage.
+
+- **What changed:**
+  - Subject cards: grown-up Finding games → Place layout, saved as `settings.placeLayout` with a migration default.
+  - Four games: Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town.
+  - Quick Tricks 4–6 (a second show) and Seesaw Balance 7 were appended.
+  - Rainbow Fingers and Fluffy Salon open their second free-play modes to lap play.
+  - Photo Safari and Teddy Doctor open their level 2 to lap play.
+- **Passed after the last source edit:**
+  - `npm run typecheck` and `npm test` (142 tests across 50 files), rerun by the Claude session after the lap-range change.
+  - `BROWSER_SUITE=creative` (`creative-final.log`): every level of all four new games, without page errors.
+  - Quick Tricks levels 1–6 (`tricks-final.log`): without page errors.
+- **Failed, then possibly fixed:**
+  - `BROWSER_SUITE=world` (`world-subjects.log`) passed hatching, the trail, the parent gate, and reaching every game on subject cards in all four bands, in both orientations. That run predated the four new games.
+  - It then failed the cancellation step. After a pointer cancel, the next tap on a subject card did not open it.
+  - `SubjectPlaceScene.ts` was edited 30 seconds after Codex's probe (`test-results/probe-cancel.mjs`), presumably to fix this. The suite was not rerun.
+- **Not checked:**
+  - `npm run build`.
+  - `BROWSER_SUITE=world` after the fix and with 43 games.
+  - `npm run test:offline`, which now starts through subject cards.
+  - Seesaw Balance 7 in the `next` suite.
+  - The lap ranges of Photo Safari and Teddy Doctor (their level 2 play-throughs passed before, at other bands).
+  - A real iPad, and judgments of fun and clarity.
+
+## Seesaw Balance, Teddy Doctor, Bumper Garden and Quick Tricks (2026-10-06; working tree, not committed)
+
+Four new games (39 in the registry). Shared change: `engine/ball.ts` gained an optional ceiling and springy "kick" pegs (off unless a game sets them; the Peg Garden, Bounce Back and ball tests still pass). Checks were kept to what these changes touch, at the grown-up's request; headless Chrome only.
+
+- `npm run typecheck` and `npm run build`: passed. `npm test`: 130 tests across 45 files passed. New rule tests:
+  - **Seesaw Balance:** the seesaw leans toward the heavier side, more for a bigger difference, and is level only when equal; every round is winnable with a real choice (heavy enough or not, spare blocks, distinct presents, at least two ways to make each weight); counting rounds never repeat a number.
+  - **Teddy Doctor:** each ailment has its own cure; rounds always offer what helps, with no repeated patient or problem back to back; check-up orders differ round to round; every body part is found at its own spot on every patient.
+  - **Bumper Garden:** every flower spot can be bumped by some launch; no launch traps the ladybug (each comes back to the pot within 40 seconds); flowers never overlap; color and number levels set out the right flowers.
+  - **Quick Tricks:** one leaf keeps one friend dry, and only the big leaf covers two; exactly one partner sock, with color and pattern both deciding at pre-K; exactly one plank long enough.
+- `BROWSER_SUITE=next` (new; `NEXT_ONLY=seesaw|doctor|bumper|tricks`): every level passed, each game run on its own (some levels in a rerun from the fixed level onward after a fix; changes made after a level passed were visual only), with Seesaw Balance 6, Teddy Doctor 4, Bumper Garden 5 and Quick Tricks 3 in portrait. Input was driven like a finger:
+  - things dragged onto trays and back off;
+  - tools aimed at body parts;
+  - flips timed as the ladybug comes down;
+  - leaves, socks and planks dragged into place;
+  - the arrow tapped between tricks.
+
+  Each level checks its gentle misses and hints (comparing presents and testing are never misses), the saved score and the sticker. Bumper Garden's first goal shots are steered, using the simulation, onto paths that bloom nothing wanted, so the miss-then-hint path is tested every time.
+- `BROWSER_SUITE=world` passed with the larger places. `npm run test:offline` passed against a fresh build, after updating it for Monster Munch's move to index 14 in Daisy Meadow (Bumper Garden joined Bubble Beach, an earlier subject).
+- Screenshots were reviewed mid-round. Bugs found and fixed while testing:
+  - **Teddy Doctor:** a tap on one boo-boo could bandage its overlapping neighbour (taps now go to the nearest boo-boo), and on the clue level a tool aimed at the feet counted for a sore tummy (it now has to land nearest the part that hurts).
+  - **Quick Tricks:** the hint glow drawn over the partner sock swallowed the touch meant for it (overlay drawings now ignore touches); and the bridge drawing was destroyed with the scene before the finale, which froze the show.
+  - **Bumper Garden:** the right flipper was drawn mirrored the wrong way, and a bloomed flower's spin turned its number.
+  - **Seesaw Balance:** the sun crowded a raised tray.
+  - Springy bumpers kept the ladybug up for up to 48 seconds; a gentler kick keeps flights to about 18 seconds at most.
+- Not checked:
+  - A real iPad: tipping as weight, spoken-only clues, half-screen flipping for small hands, and whether the arrow between tricks is understood.
+  - The combined browser flow was not rerun for these additions.
+
+## Combined flow, and rules for the original games (2026-10-06)
+
+No new games. This pass finished the automated part of the roadmap's §1: the combined browser flow, plus rule tests and play-throughs for the seven earliest games that had no rule tests of their own. Headless Chrome only.
+
+- Combined `npm run test:browser` (every suite in one run) at `da6860b`, before this pass's code changes: **passed** in about 59½ minutes with no page errors. It ran against a detached worktree of that commit served on its own port, so edits elsewhere could not reload it.
+- Rules moved into `logic.ts` with unit tests for Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, Color Garden and Pattern Train. Every game now has rule tests. `npm test`: 118 tests across 41 files passed. New tests check:
+  - **Bubble Pop:** every bubble is a 100-unit target, color levels always send the asked-for color when none is showing, and a tap on overlapping bubbles goes to the right one.
+  - **Jelly Drums:** tunes use real jellies, are never one note over and over, and short tunes never repeat a jelly back to back.
+  - **Peekaboo Barn:** a different animal in each hiding place, the one asked for is there, and never the same one twice in a row.
+  - **Duck Pond:** lily pads offer three nearby numbers including the answer; adding and taking-away stories stay within 1–10, leave at least one duck, and fit the pond; there is always a spare duck on the bank.
+  - **Shape Sorter:** a piece for every hole; holes sit apart inside the lid, and a drop anywhere on a hole's rim lands in that hole.
+  - **Color Garden:** something for every basket; a drop anywhere over a basket lands in it, even with six baskets crowded together.
+  - **Pattern Train:** the visible cars repeat exactly the planned unit, so each empty car has one answer.
+- `BROWSER_SUITE=originals` (new; `ORIGINALS_ONLY=bubbles|jelly|peekaboo|ducks|shapes|garden`): all 48 levels passed in one run (about 20 minutes) without page errors, after each game had also passed on its own. Every level of the six is played the way a finger would: bubbles tapped where they drift, wrong pops at a spot clear of right bubbles, jellies tapped along a tune, hiding places, ducks and lily pads, and pieces and fruit dragged into holes and baskets. Each level checks two gentle misses and the hint where answers can be wrong, the saved miss/hint counts and the sticker. Bubble Pop 9, Duck Pond 9, Shape Sorter 7 and Color Garden 6 are played in portrait. The suite ends by reloading and checking every round's history. Bubble Pop's wrong-tap step was flaky at first (it waited for a wrong bubble well away from every right one); it now taps a spot on a wrong bubble that no right bubble reaches, and passed three runs in a row.
+- Bugs found and fixed:
+  - **A finished round and its sticker could be lost.** Saves wait 300 ms to batch changes; a reload in that window started the write as the page closed, and it never landed (3 of 3 tries). The shell now writes the round and sticker when it finishes (0 of 3 lost afterward).
+  - **Color Garden:** with six baskets, a fruit dropped near the edge of the right basket counted against its neighbour as a miss. The nearest basket now wins. The browser check fails with the old rule.
+  - **Bubble Pop:** in the finale, a bubble that floated off the top before its turn in the pop cascade was popped after being destroyed (a page error). Tapping where a wrong bubble overlapped the right one counted a miss; the right one now pops.
+  - **Shape Sorter:** the hint glow was switched off by an unmanaged `setTimeout`, which could run after leaving the game and cut a second hint short; it now counts down in the scene's update.
+  - **Peekaboo Barn** no longer asks for the same animal twice in a row, and **Jelly Drums** no longer plays a tune that is one jelly over and over.
+- After the fixes: `npm run typecheck` and `npm run build` passed, `npm run test:offline` passed against a fresh production build, and the `originals` suite passed as above. A second combined flow on the fixed code was stopped partway at the grown-up's request: every step through Song Maker 5 passed (world, pattern, memory, letters, robot, expansion, third and part of fourth); the rest of that run did not happen.
+- Not checked:
+  - A real iPad.
+  - Judgments of fun and clarity for the newest ten (see [ROADMAP.md](ROADMAP.md)).
+
+## Follow-on batch (2026-10-05, late evening; committed in `9648f35` and deployed)
 
 Ten games from the idea notebook's batch were implemented locally: Word Monsters, Peg Garden, Fluffy Salon, Sound Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, Bounce Back and Dot Link (35 in the registry). Shared additions: `engine/ball.ts` (deterministic ball and peg physics), a tweener guard for destroyed targets, and drum, knock, chirp and croak sounds. These results cover automated checks in headless Chrome only.
 

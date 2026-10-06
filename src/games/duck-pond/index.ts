@@ -11,33 +11,7 @@ import type { View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule } from '../types';
-
-type Mode = 'along' | 'make' | 'howmany' | 'add';
-
-interface Plan {
-  mode: Mode;
-  /** Sets (along) or questions (everything else). */
-  rounds: number;
-  /** along: ducks per set. Otherwise the numbers asked about run from `min` to `max`. */
-  max: number;
-  min: number;
-  /** make: show dots under the number on the sign. */
-  dots?: boolean;
-  /** add: mix in "some swim away". */
-  subtract?: boolean;
-}
-
-const PLANS: Plan[] = [
-  { mode: 'along', rounds: 2, min: 3, max: 3 },
-  { mode: 'along', rounds: 2, min: 5, max: 5 },
-  { mode: 'make', rounds: 4, min: 1, max: 3, dots: true },
-  { mode: 'make', rounds: 4, min: 2, max: 5, dots: true },
-  { mode: 'make', rounds: 4, min: 3, max: 6, dots: false },
-  { mode: 'howmany', rounds: 5, min: 1, max: 5 },
-  { mode: 'howmany', rounds: 5, min: 2, max: 8 },
-  { mode: 'add', rounds: 5, min: 1, max: 5 },
-  { mode: 'add', rounds: 5, min: 1, max: 10, subtract: true },
-];
+import { bankSize, padValues, planFor, SLOTS, story, type DuckPlan } from './logic';
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 2 },
@@ -49,20 +23,6 @@ const LEVELS: Record<Band, { min: number; max: number }> = {
 const WATER = 0x7cc4f2;
 const WATER_EDGE = 0x5aa9e0;
 const LILY = { fill: 0x7cc463, line: 0x4a9a35 };
-
-/** Where swimming ducks sit, relative to the middle of the pond. */
-const SLOTS: [number, number][] = [
-  [0, -52],
-  [-120, -48],
-  [120, -48],
-  [-60, 40],
-  [60, 40],
-  [-240, -36],
-  [240, -36],
-  [-180, 44],
-  [180, 44],
-  [0, 96],
-];
 
 const plural = (n: number) => `${n} duck${n === 1 ? '' : 's'}`;
 
@@ -159,7 +119,7 @@ class Pad extends Container {
 }
 
 class DuckPond implements Game {
-  private readonly plan: Plan;
+  private readonly plan: DuckPlan;
   private readonly backdrop: Backdrop;
   private readonly pond = new Graphics();
   private readonly sign = new Container();
@@ -181,7 +141,7 @@ class DuckPond implements Game {
   private finished = false;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    this.plan = planFor(ctx.level);
     this.view = ctx.view;
     this.backdrop = ctx.track(
       new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.42, clouds: 3, sun: true, seed: 33 }, ctx.view),
@@ -340,7 +300,7 @@ class DuckPond implements Game {
     if (p.mode === 'make') {
       this.want = rng.int(p.min, p.max);
       this.showSign(this.want, !!p.dots);
-      this.spawnBank(Math.min(7, p.max + 1));
+      this.spawnBank(bankSize(p));
       await this.ctx.instruct('duck.make', { n: plural(this.want) });
       this.busy = false;
       return;
@@ -354,18 +314,13 @@ class DuckPond implements Game {
       return;
     }
     // add / take away
-    const away = !!p.subtract && rng.chance(0.5);
+    const { a, b, away, answer } = story(rng, p);
+    this.answer = answer;
     if (away) {
-      const a = rng.int(2, Math.min(p.max, 7));
-      const b = rng.int(1, a - 1);
-      this.answer = a - b;
       await this.arrive(a);
       await this.ctx.say('duck.away', { a, b });
       await this.swimAway(this.swimmers.slice(-b));
     } else {
-      const a = rng.int(1, p.max - 1);
-      const b = rng.int(1, Math.min(p.max - a, 4));
-      this.answer = a + b;
       await this.arrive(a);
       await this.ctx.say('duck.more', { a, b });
       await this.arrive(b);
@@ -434,9 +389,7 @@ class DuckPond implements Game {
   }
 
   private showPads(answer: number) {
-    const rng = this.ctx.rng;
-    const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((v) => v >= 1 && v <= 10 && v !== answer);
-    const values = rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
+    const values = padValues(this.ctx.rng, answer);
     this.pads = values.map((v) => {
       const pad = new Pad(v);
       onTap(pad, () => void this.tapPad(pad), { cooldown: 400 });
@@ -560,7 +513,7 @@ export const duckPond: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
-    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    const p = planFor(level);
     if (p.mode === 'along') return `Count along as ${p.max} ducks hop in`;
     if (p.mode === 'make') return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
     if (p.mode === 'howmany') return `How many ducks? ${p.min} to ${p.max}`;

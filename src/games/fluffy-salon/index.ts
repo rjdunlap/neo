@@ -15,7 +15,7 @@ import type { Game, GameContext, GameModule } from '../types';
 import { describe, HAIR_COLORS, makeRequests, MAX_LENGTH, MIN_LENGTH, needs, planFor, toolFor, type Look, type Request, type SalonPlan, type Strand, type Tool } from './logic';
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },

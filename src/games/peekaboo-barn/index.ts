@@ -11,10 +11,9 @@ import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
+import { ANIMALS, deal, newcomer, pickTarget, planFor, type Animal, type PeekPlan } from './logic';
 
-type Animal = 'cow' | 'duck' | 'pig' | 'cat' | 'dog' | 'bunny' | 'bear';
-
-const ANIMALS: Record<Animal, { sound: AnimalSound; word: string }> = {
+const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
   cow: { sound: 'moo', word: 'Moo' },
   duck: { sound: 'quack', word: 'Quack quack' },
   pig: { sound: 'oink', word: 'Oink oink' },
@@ -23,29 +22,9 @@ const ANIMALS: Record<Animal, { sound: AnimalSound; word: string }> = {
   bunny: { sound: 'hop', word: 'Hop hop' },
   bear: { sound: 'growl', word: 'Grrr' },
 };
-const NAMES = Object.keys(ANIMALS) as Animal[];
 
 type CoverKind = 'hay' | 'bush' | 'crate' | 'door';
 const COVERS: CoverKind[] = ['hay', 'bush', 'door', 'crate'];
-
-interface Plan {
-  /** free: tap to reveal. find: animals peek, "where's the cow?". remember: they show, hide, then the question. */
-  mode: 'free' | 'find' | 'remember';
-  spots: number;
-  /** Reveals (free) or questions (find, remember). */
-  goal: number;
-}
-
-const PLANS: Plan[] = [
-  { mode: 'free', spots: 3, goal: 8 },
-  { mode: 'free', spots: 4, goal: 12 },
-  { mode: 'find', spots: 2, goal: 5 },
-  { mode: 'find', spots: 3, goal: 6 },
-  { mode: 'find', spots: 4, goal: 6 },
-  { mode: 'remember', spots: 2, goal: 5 },
-  { mode: 'remember', spots: 3, goal: 5 },
-  { mode: 'remember', spots: 4, goal: 6 },
-];
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 2 },
@@ -152,7 +131,7 @@ class Spot extends Container {
 }
 
 class PeekabooBarn implements Game {
-  private readonly plan: Plan;
+  private readonly plan: PeekPlan;
   private readonly backdrop: Backdrop;
   private readonly barn = new Graphics();
   private readonly spots: Spot[];
@@ -166,7 +145,7 @@ class PeekabooBarn implements Game {
   private finished = false;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    this.plan = planFor(ctx.level);
     this.view = ctx.view;
     this.backdrop = ctx.track(
       new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 21 }, ctx.view),
@@ -205,12 +184,12 @@ class PeekabooBarn implements Game {
 
   /** Different animals in each spot. */
   private dealAnimals() {
-    const picks = this.ctx.rng.shuffle([...NAMES]);
+    const picks = deal(this.ctx.rng, this.spots.length);
     this.spots.forEach((s, i) => s.setAnimal(picks[i]));
   }
 
   private say(animal: Animal) {
-    sfx.animal(ANIMALS[animal].sound);
+    sfx.animal(VOICES[animal].sound);
   }
 
   private async tapped(spot: Spot) {
@@ -262,7 +241,7 @@ class PeekabooBarn implements Game {
     const animal = spot.animal;
     void spot.go('out');
     this.say(animal);
-    void this.ctx.say('peek.found', { word: ANIMALS[animal].word, animal });
+    void this.ctx.say('peek.found', { word: VOICES[animal].word, animal });
     this.done++;
     if (this.done % 4 === 0) this.ctx.pet.cheer();
     if (this.done >= this.plan.goal) {
@@ -276,7 +255,7 @@ class PeekabooBarn implements Game {
     await spot.go('hidden');
     // Someone new sneaks in, never the same as a neighbour.
     const taken = this.spots.map((s) => s.animal);
-    spot.setAnimal(this.ctx.rng.pick(NAMES.filter((n) => !taken.includes(n))));
+    spot.setAnimal(newcomer(this.ctx.rng, taken));
   }
 
   private async question() {
@@ -284,7 +263,7 @@ class PeekabooBarn implements Game {
     this.missesThisQuestion = 0;
     this.dealAnimals();
     const present = this.spots.map((s) => s.animal);
-    this.target = this.ctx.rng.pick(present);
+    this.target = pickTarget(this.ctx.rng, present, this.target);
     if (this.plan.mode === 'find') {
       // Everyone peeks over the top, so there's something to look at.
       for (const s of this.spots) {
@@ -388,7 +367,7 @@ class BarnIcon extends Container {
     if (this.next <= 0) {
       this.next = 3;
       this.turn++;
-      const who = NAMES[this.turn % NAMES.length];
+      const who = ANIMALS[this.turn % ANIMALS.length];
       this.critter.destroy({ children: true });
       this.critter = new Critter(CRITTERS[who]);
       this.critter.scale.set(0.34);
@@ -405,7 +384,7 @@ class BarnIcon extends Container {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const who = new Critter(CRITTERS[rng.pick(NAMES)]);
+  const who = new Critter(CRITTERS[rng.pick(ANIMALS)]);
   who.alive = false;
   who.scale.set(CRITTER_SCALE);
   who.y = POSE.peek;
@@ -422,7 +401,7 @@ export const peekabooBarn: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
-    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    const p = planFor(level);
     if (p.mode === 'free') return `Tap to find who's hiding, ${p.spots} hiding places`;
     if (p.mode === 'find') return `"Where's the cow?" with ${p.spots} animals peeking`;
     return `Remember who hid where, ${p.spots} hiding places`;

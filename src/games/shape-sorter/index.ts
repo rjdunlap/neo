@@ -10,6 +10,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
+import { HOLE_R, holeAt, holeLayout, pieceKinds, planFor, type SorterPlan } from './logic';
 
 /** Each shape's own color, used while colors still help. */
 const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
@@ -21,28 +22,6 @@ const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
   hexagon: 'green',
 };
 
-interface Plan {
-  holes: ShapeKind[];
-  pieces: number;
-  /** Hole rims in the shape's color (a strong hint). */
-  coded: boolean;
-  /** Every piece the same color, so only the shape tells them apart. */
-  sameColor: boolean;
-  /** Pieces arrive tilted. */
-  tilt: boolean;
-}
-
-const FOUR: ShapeKind[] = ['circle', 'square', 'triangle', 'star'];
-const PLANS: Plan[] = [
-  { holes: ['circle'], pieces: 3, coded: true, sameColor: false, tilt: false },
-  { holes: ['circle', 'square'], pieces: 4, coded: true, sameColor: false, tilt: false },
-  { holes: ['circle', 'square', 'triangle'], pieces: 6, coded: true, sameColor: false, tilt: false },
-  { holes: FOUR, pieces: 6, coded: true, sameColor: false, tilt: false },
-  { holes: FOUR, pieces: 6, coded: false, sameColor: false, tilt: false },
-  { holes: [...FOUR, 'heart'], pieces: 7, coded: false, sameColor: true, tilt: false },
-  { holes: SHAPES, pieces: 8, coded: false, sameColor: true, tilt: true },
-];
-
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 5 },
@@ -51,8 +30,6 @@ const LEVELS: Record<Band, { min: number; max: number }> = {
 };
 
 const PIECE_R = 48;
-const HOLE_R = 54;
-const SNAP = 100;
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 function drawPiece(kind: ShapeKind, color: ColorName): Graphics {
@@ -83,15 +60,16 @@ class Box extends Container {
   private yum = 0;
   private shake = 0;
   private clock = 0;
+  /** Seconds left on a hole's hint glow. */
+  private glowFor = 0;
   readonly w: number;
   readonly lidH: number;
 
-  constructor(plan: Plan) {
+  constructor(plan: SorterPlan) {
     super();
-    const perRow = plan.holes.length <= 4 ? plan.holes.length : 3;
-    const rows = Math.ceil(plan.holes.length / perRow);
-    this.w = Math.max(300, perRow * 150 + 40);
-    this.lidH = rows * 136 + 24;
+    const layout = holeLayout(plan);
+    this.w = layout.w;
+    this.lidH = layout.lidH;
     const frontH = 120;
     const body = new Graphics()
       .roundRect(-this.w / 2, this.lidH - 10, this.w, frontH, 18)
@@ -102,12 +80,7 @@ class Box extends Container {
       .stroke(line(wood.line));
     this.addChild(body);
 
-    plan.holes.forEach((kind, i) => {
-      const row = Math.floor(i / perRow);
-      const inRow = Math.min(perRow, plan.holes.length - row * perRow);
-      const col = i % perRow;
-      const x = (col - (inRow - 1) / 2) * 150;
-      const y = 24 + row * 136 + 56;
+    layout.holes.forEach(({ kind, x, y }) => {
       const rim = plan.coded ? swatch[SHAPE_COLOR[kind]].fill : wood.line;
       const glow = shapePath(new Graphics(), kind, HOLE_R + 16).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.position.set(x, y);
@@ -147,8 +120,8 @@ class Box extends Container {
   }
 
   hint(kind: ShapeKind, seconds: number) {
-    for (const h of this.holes) if (h.kind === kind) h.glow.visible = true;
-    window.setTimeout(() => this.holes.forEach((h) => (h.glow.visible = false)), seconds * 1000);
+    for (const h of this.holes) h.glow.visible = h.kind === kind;
+    this.glowFor = seconds;
   }
 
   update(dt: number) {
@@ -159,6 +132,10 @@ class Box extends Container {
     this.shake = Math.max(0, this.shake - dt * 2.5);
     this.face.x = 10 * Math.sin(this.shake * 22) * this.shake;
     this.scale.set(1 + 0.04 * Math.sin(this.yum * Math.PI), 1 - 0.04 * Math.sin(this.yum * Math.PI));
+    if (this.glowFor > 0) {
+      this.glowFor -= dt;
+      if (this.glowFor <= 0) for (const h of this.holes) h.glow.visible = false;
+    }
     for (const h of this.holes) if (h.glow.visible) h.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 8);
   }
 
@@ -170,7 +147,7 @@ class Box extends Container {
 }
 
 class ShapeSorter implements Game {
-  private readonly plan: Plan;
+  private readonly plan: SorterPlan;
   private readonly bg = new Sprite(gradientTexture(0xfff1d6, 0xffe2b8));
   private readonly floor = new Graphics();
   private readonly layer = new Container();
@@ -184,15 +161,12 @@ class ShapeSorter implements Game {
   private finished = false;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    this.plan = planFor(ctx.level);
     this.box = ctx.track(new Box(this.plan));
     this.layer.addChild(this.box);
     ctx.stage.addChild(this.bg, this.floor, this.layer);
 
-    // Every hole gets at least one piece; the rest are random.
-    const kinds = [...this.plan.holes];
-    while (kinds.length < this.plan.pieces) kinds.push(ctx.rng.pick(this.plan.holes));
-    ctx.rng.shuffle(kinds);
+    const kinds = pieceKinds(ctx.rng, this.plan);
     const one: ColorName = ctx.rng.pick(['teal', 'purple', 'blue'] as ColorName[]);
     this.pieces = kinds.map((kind) => {
       const view = new Container();
@@ -249,11 +223,7 @@ class ShapeSorter implements Game {
 
   private drop(piece: Piece, x: number, y: number): boolean {
     if (this.finished) return false;
-    const holes = this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y }));
-    const near = holes
-      .map((o) => ({ ...o, d: Math.hypot(o.x - x, o.y - y) }))
-      .filter((o) => o.d < SNAP)
-      .sort((a, b) => a.d - b.d)[0];
+    const near = holeAt(this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })), x, y);
     if (!near) return false;
 
     if (near.h.kind === piece.kind) {
@@ -374,7 +344,7 @@ export const shapeSorter: GameModule = {
   bands: ['toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
-    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    const p = planFor(level);
     const n = p.holes.length;
     const shapes = `${n} shape${n === 1 ? '' : 's'}`;
     if (p.coded) return `${shapes}, color-matched holes`;

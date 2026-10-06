@@ -6,7 +6,7 @@ Shared guidance for human contributors and coding assistants. Paths below are re
 
 Puddle Island is an iPad learning game for the developer's daughter (about one year old in October 2026). Build a varied library of small, satisfying minigames that grow with her and feel part of a familiar island. The inspirations are JumpStart's playful learning and adventures, Neopets' companion and personal world, and the variety of classic arcade games.
 
-Current play spans `lap`, `toddler`, `preschool`, and `prek` (roughly through age six). Proposed extensions focus on ages 6–8, with selected 8–10 stretches. Short adventures, a pet treehouse, and a discovery journal are future directions; do not assume they or an older age band already exist.
+Current play spans `lap`, `toddler`, `preschool`, and `prek` (roughly through age six). The long-term direction is elementary school through roughly grade 5 / age eleven, beginning with a 6–8 pilot. Extend familiar game families alongside new themed zones and projects. Short adventures, a pet treehouse, a discovery journal, and elementary zones are future directions; do not assume they or older age bands already exist.
 
 Each activity should have a fun action and a clear learning purpose: sharing fills plates, a pattern moves a train, a revised route reaches a friend. Add variety through different decisions, movement, creativity, listening, and pretend play. Extend an existing game when the meaningful action is the same; create a new game when the learning or interaction warrants it. Games can start at an older band without an artificial toddler mode.
 
@@ -21,6 +21,7 @@ Read the README, design, and roadmap for context; consult the idea notebook when
 | [README.md](README.md) | Setup, documented game inventory, navigation, browser commands |
 | [docs/DESIGN.md](docs/DESIGN.md) | Current architecture, behavior, and explicitly labeled future direction |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Priorities, unfinished work, and completed milestones |
+| [docs/ELEMENTARY-ROADMAP.md](docs/ELEMENTARY-ROADMAP.md) | Long-term learning progression, game-family extensions, themed zones, and small expansion milestones through elementary school |
 | [docs/ARCADE-IDEAS.md](docs/ARCADE-IDEAS.md) | Game concepts, learning goals, inspiration, and overlaps; not a mandate to build every idea |
 | [docs/VERIFICATION.md](docs/VERIFICATION.md) | Checks actually performed and remaining gaps |
 | `src/games/registry.ts`, `src/games/types.ts` | Current registrations and the minigame contract |
@@ -55,7 +56,7 @@ Two smooth rounds (at most one miss, no hints) at the current level step up; two
 | App and scenes | `src/app/App.ts` owns Pixi, transitions, logical view, and the frame loop. `Scene` layers are `content` → `particles` → `ui`; `track(obj)` runs its update. `GameScene` owns the guide, home, co-play tip, saving, difficulty, stickers, and celebration. |
 | Age trail | `src/content/places.ts` defines Puddle Lagoon, Daisy Meadow, Bumpy Hills, and Starry Peak. Every place is open. `profile.band` sets the home place; advancing beyond saved `world.band` triggers the birthday walk once. |
 | Routes | `go.hub()` opens the map; `go.place(band)` opens a place; `go.game(id, band?)` plays its levels, defaulting to the profile band. Home returns to the launching place; start goes to the child's home place. |
-| Catalog layout | `GameModule.region` and `src/content/world.ts` `REGION_IDS` are subject IDs, not separate map destinations. `PlaceScene` groups games by subject on a swipeable two-row path with arrows and session scroll memory. Games squish on touch-down and launch on lift only if no swipe occurred. |
+| Catalog layout | `GameModule.region` and `src/content/world.ts` `REGION_IDS` are subject IDs, not separate map destinations. `PlaceScene` is the default swipeable two-row path. The grown-up `settings.placeLayout` can select `SubjectPlaceScene`, with four subject/game cards per page. Both retain session position per band, touch-down feedback and swipe cancellation. Keep both layouts reachable for the iPad comparison. |
 | Logical layout | `src/engine/view.ts` fits a 1024×768 design area and expands the spare dimension. Use `view.w`/`view.h` in `resize()`. Keep the bottom-left pet clear, e.g. `spread(n, 150, view.w - 40, gap)`. Home/island is top-left, the place's book button top-right; the map's two top corners form the parent gate. |
 | Save data | `src/progress/save.ts` defines version 2 data and `migrate()`; `src/progress/store.ts` persists through IndexedDB. Add defaults, repair behavior, and migration tests for new fields. Preserve old progress, level pins, and backup/restore. The retired `world.opened` list is not an unlock system. |
 | Pet and stickers | `src/art/pet.ts` builds the saved companion; voice lines support `{pet}`. Sticker placement is optional `{ page, x, y }` with normalized coordinates. Returning a sticker to the tray removes placement, never ownership. |
@@ -63,6 +64,8 @@ Two smooth rounds (at most one miss, no hints) at the current level step up; two
 Games must release their own drag handles, global listeners, timers, and render textures in `destroy()`. Stop or guard callbacks that could touch destroyed objects; untrack objects removed before the scene ends. Use scene-owned timing and update helpers rather than unmanaged loops.
 
 Future stories that carry a chosen object, amount, or tune need an explicit extension to the result contract; `{ misses, hints }` carries only round statistics. Save story steps so resuming cannot award twice. New rooms, journals, and creations need bounded storage and migration/backup checks. An older selectable band requires auditing band mappings, levels, places, routes, parent controls, voice, birthdays, and old saves together.
+
+The elementary plan separates future zone identity from learning range; current places still map one-to-one to bands. Introduce that separation with the first thematic zone and preserve existing return routes. Extend coherent game ladders without silently renumbering saved levels or pins; introduce separate mode progress only when branches need it. Older learning should not remove younger favorites or turn grades into access gates.
 
 ## Reuse before adding new helpers
 
@@ -90,7 +93,7 @@ npm run build-and-preview   # production build/preview, port 4173
 npm run test:offline         # with the production preview running
 ```
 
-For code changes, run typecheck, unit tests, and build. Exercise every new/changed game level in the browser, including wrong answers and hints where applicable, supported completion, saved results/rewards, reload, orientation, and reaching/returning from its place. Recheck production offline behavior after asset, navigation, or persistence changes. Shared engine or shell changes also need affected existing games checked.
+For code changes, run typecheck, unit tests, and build. Exercise every new/changed game level in the browser, including wrong answers and hints where applicable, supported completion, saved results/rewards, reload, orientation, and reaching/returning from its place. Recheck production offline behavior after asset, navigation, or persistence changes. Shared engine or shell changes also need affected existing games checked. Keep the checks proportionate: run the suite (or one-game filter) for what changed, not every suite. The combined flow takes about an hour; save it for occasional release checks.
 
 Browser setup, suite names, and filters live in [README.md](README.md#browser-checks) and `scripts/browser-check.mjs`; add cases there for new games instead of maintaining a second suite inventory here. `BROWSER_SUITE=<suite> npm run test:browser` selects one suite. Browser scripts use isolated contexts; never clear a real player's save. Documentation-only edits need link/consistency and diff checks, not a game test run.
 
@@ -100,7 +103,7 @@ Record only checks actually performed. Chrome automation does not establish phys
 
 Dev-only `neo` exposes the app (`neo.scene`, `neo.view`, `neo.go.game(id, band)`); `kit` in `src/dev/testkit.ts` provides `tap`, `tapOn`, `drag`, `dragTo`, `line`, `until`, `sleep`, and `store`. Start with a center tap and wait about three seconds for the transition before navigating. Set the test profile band and `kit.store.stats(id).level`, then drive the game and inspect `neo.scene.game`.
 
-Use scripted input for moving targets, then screenshots for visual review. Finish edits before a play-through: HMR can reload and kill a running script. Re-check `neo.scene` after reloads. To clear an isolated profile's test data only, use `(await import('/node_modules/.vite/deps/idb-keyval.js')).del('neo.save')`.
+Use scripted input for moving targets, then screenshots for visual review. Finish edits before a play-through: HMR can reload and kill a running script. To keep editing during the hour-long combined flow, serve a detached `git worktree` of HEAD on another port (with its own Vite `cacheDir`) and point `GAME_URL` at it. Re-check `neo.scene` after reloads. To clear an isolated profile's test data only, use `(await import('/node_modules/.vite/deps/idb-keyval.js')).del('neo.save')`.
 
 ### Input and rendering pitfalls
 
@@ -109,6 +112,9 @@ Use scripted input for moving targets, then screenshots for visual review. Finis
 - Hit areas and `onTap` radii use local object units. A critter at 0.3 scale with radius 80 only has a 24-unit screen radius, centered on its feet. Give it a body-centered area such as `new Circle(0, -120, 85 / scale)`.
 - Visible drawings can intercept hits even without listeners. Put full-screen input layers last, give them a `hitArea` only when they should catch taps, and set `eventMode = 'none'` on decorations over controls (bushes, flashes).
 - A zero-scale container has no inverse transform; guard `toLocal` calls against NaN.
+- Hit-testing uses the transforms from the last rendered frame. After a script moves an object, wait a frame before tapping it.
+- When tap or drop targets sit close together, resolve the touch to the nearest target rather than whichever is drawn on top (Bubble Pop's overlapping bubbles, Teddy Doctor's boo-boos and body parts).
+- Keep long-lived drawings (overlays, a bridge, a glow) out of containers a game clears between scenes, or they are destroyed while the frame loop still draws them.
 - `Graphics.arc()` joins to the previous point: `moveTo` its start first. Use `puffs()` instead of stroking overlapping circles with visible inner outlines.
 - Render parentless containers into textures: `renderer.render({ container, target, clear: false })`; erase with `blendMode = 'erase'`. Free game-owned textures when leaving.
 

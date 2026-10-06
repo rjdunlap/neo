@@ -17,7 +17,7 @@ import type { Game, GameContext, GameModule } from '../types';
 import { describe, makeScene, planFor, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },

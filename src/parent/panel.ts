@@ -58,6 +58,13 @@ export function openParentPanel(onClose: () => void) {
         <input id="p-tips" type="checkbox" />
       </div>
 
+      <h2>Finding games</h2>
+      <div class="parent__row">
+        <label for="p-layout">Place layout</label>
+        <select id="p-layout"><option value="path">Swiping path (original)</option><option value="subjects">Subject cards (try on iPad)</option></select>
+      </div>
+      <p class="muted">Subject cards show four large choices at a time. Try both layouts when finding and returning from a favorite game.</p>
+
       <h2>Sound</h2>
       <div class="parent__row">
         <label for="p-volume">Volume</label>
@@ -91,6 +98,7 @@ export function openParentPanel(onClose: () => void) {
   const petColor = $<HTMLSelectElement>('#p-pet-color');
   const sessionSel = $<HTMLSelectElement>('#p-session');
   const tips = $<HTMLInputElement>('#p-tips');
+  const layout = $<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
   const musicBox = $<HTMLInputElement>('#p-music');
 
@@ -101,6 +109,7 @@ export function openParentPanel(onClose: () => void) {
     name.value = d.profile.name;
     sessionSel.value = String(d.settings.sessionMinutes);
     if (!sessionSel.value) sessionSel.value = '0';
+    layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
     volume.value = String(d.settings.volume);
     musicBox.checked = d.settings.music;
@@ -141,6 +150,7 @@ export function openParentPanel(onClose: () => void) {
     store.data.settings.coplayHints = tips.checked;
     store.save();
   });
+  layout.addEventListener('change', () => { store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path'; store.save(); });
   volume.addEventListener('input', () => {
     store.data.settings.volume = Number(volume.value);
     applySettings();

@@ -33,6 +33,14 @@ import { mailCarrier } from './mail-carrier';
 import { photoSafari } from './photo-safari';
 import { bounceBack } from './bounce-back';
 import { dotLink } from './dot-link';
+import { seesawBalance } from './seesaw-balance';
+import { teddyDoctor } from './teddy-doctor';
+import { bumperGarden } from './bumper-garden';
+import { quickTricks } from './quick-tricks';
+import { stampStudio } from './stamp-studio';
+import { petKitchen } from './pet-kitchen';
+import { tangramTown } from './tangram-town';
+import { rhythmNeighbors } from './rhythm-neighbors';
 import type { GameModule } from './types';
 
 /**
@@ -74,6 +82,14 @@ export const GAMES: GameModule[] = [
   photoSafari,
   bounceBack,
   dotLink,
+  seesawBalance,
+  teddyDoctor,
+  bumperGarden,
+  quickTricks,
+  stampStudio,
+  petKitchen,
+  tangramTown,
+  rhythmNeighbors,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

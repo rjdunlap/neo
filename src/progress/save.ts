@@ -39,7 +39,7 @@ export interface SaveData {
   pet: { name: string; color: PetColor; hatched: boolean };
   /** Highest band celebrated on the map; null before the first visit. */
   world: { band: Band | null };
-  settings: { volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean };
+  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
 }
@@ -53,7 +53,7 @@ export function defaults(): SaveData {
     profile: { name: '', band: 'lap' },
     pet: { name: 'Pip', color: 'teal', hatched: false },
     world: { band: null },
-    settings: { volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true },
+    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true },
     games: {},
     stickers: [],
   };
@@ -125,6 +125,7 @@ export function migrate(raw: unknown): SaveData {
       band: BAND_IDS.find((b) => b === world.band) ?? null,
     },
     settings: {
+      placeLayout: settings.placeLayout === 'subjects' ? 'subjects' : 'path',
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
       music: bool(settings.music, d.settings.music),
       sessionMinutes: Math.max(0, num(settings.sessionMinutes, d.settings.sessionMinutes)),

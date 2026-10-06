@@ -134,6 +134,8 @@ export class GameScene extends Scene {
     );
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
+    // Save the round and its sticker now: a write that only starts as the page closes can be lost.
+    store.flush();
     void this.celebrate(seed);
   }
 

@@ -10,23 +10,12 @@ import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
+import { buildTrain, patternPlan, type PatternPlan } from './logic';
 
-interface Plan { pattern: number[]; kind: 'shape' | 'animal' | 'bell'; missing?: boolean; two?: boolean; name: string }
-export const PATTERN_PLANS: Plan[] = [
-  { pattern: [0, 1], kind: 'shape', name: 'AB: alternate two shapes' },
-  { pattern: [0, 0, 1], kind: 'shape', name: 'AAB: two of one, then another' },
-  { pattern: [0, 1, 1], kind: 'shape', name: 'ABB: one, then two of another' },
-  { pattern: [0, 1, 2], kind: 'shape', name: 'ABC: repeat three shapes' },
-  { pattern: [0, 1], kind: 'animal', name: 'Continue a pattern of animals' },
-  { pattern: [0, 1, 2], kind: 'animal', missing: true, name: 'Find the missing car in the middle' },
-  { pattern: [0, 1], kind: 'bell', name: 'Listen and continue two bell notes' },
-  { pattern: [0, 1, 2], kind: 'bell', name: 'Listen and continue three bell notes' },
-  { pattern: [0, 0, 1], kind: 'shape', two: true, name: 'Fill two cars in an AAB pattern' },
-];
 const LEVELS = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 } } satisfies Record<Band, { min: number; max: number }>;
 
 class PatternTrain implements Game {
-  readonly plan: Plan;
+  readonly plan: PatternPlan;
   readonly sequence: number[];
   readonly targets: number[];
   private target = 0;
@@ -49,11 +38,8 @@ class PatternTrain implements Game {
   private clock = 0;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, ctx.level - 1))];
-    const tokens = ctx.rng.shuffle([0, 1, 2]);
-    const length = this.plan.pattern.length * 2 + (this.plan.two ? 2 : 1);
-    this.sequence = Array.from({ length }, (_, i) => tokens[this.plan.pattern[i % this.plan.pattern.length]]);
-    this.targets = this.plan.two ? [length - 2, length - 1] : [this.plan.missing ? 2 : length - 1];
+    this.plan = patternPlan(ctx.level);
+    ({ sequence: this.sequence, targets: this.targets } = buildTrain(this.plan, ctx.rng));
     ctx.stage.addChild(this.background, this.tracks, this.scene);
     this.scene.addChild(this.glow, this.hintsGlow, this.selection);
     this.sequence.forEach((value, i) => {
@@ -156,7 +142,7 @@ class PatternTrain implements Game {
 export const patternTrain: GameModule = {
   id: 'pattern-train', name: 'Pattern Train', titleLine: 'game.pattern-train', region: 'puzzle-peaks',
   skills: ['patterns', 'sequencing', 'listening'], bands: ['preschool', 'prek'], levels: (b) => LEVELS[b],
-  describeLevel: (l) => PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, l - 1))].name,
+  describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly, offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
   hubIcon: () => new WigglyIcon(trainArt()), sticker: () => trainArt(), create: (ctx) => new PatternTrain(ctx),
 };

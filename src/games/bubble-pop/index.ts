@@ -12,34 +12,7 @@ import type { View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { Bubble, drawBubble } from './bubble';
-
-type Mode = 'free' | 'color' | 'count';
-
-interface Plan {
-  mode: Mode;
-  /** Pops (or numbers) needed before the rainbow bubble. */
-  goal: number;
-  /** Pixels per second. */
-  speed: number;
-  /** Most bubbles on screen at once. */
-  most: number;
-  /** Colors in play (color mode). */
-  colors: number;
-  radius: [number, number];
-}
-
-/** One entry per level. Lap levels are pure popping; then colors; then numbers in order. */
-const PLANS: Plan[] = [
-  { mode: 'free', goal: 12, speed: 55, most: 5, colors: 0, radius: [72, 96] },
-  { mode: 'free', goal: 15, speed: 65, most: 6, colors: 0, radius: [64, 90] },
-  { mode: 'free', goal: 18, speed: 75, most: 7, colors: 0, radius: [58, 84] },
-  { mode: 'color', goal: 8, speed: 55, most: 5, colors: 2, radius: [66, 86] },
-  { mode: 'color', goal: 10, speed: 60, most: 6, colors: 3, radius: [62, 82] },
-  { mode: 'color', goal: 12, speed: 70, most: 7, colors: 5, radius: [56, 76] },
-  { mode: 'count', goal: 5, speed: 35, most: 5, colors: 0, radius: [62, 74] },
-  { mode: 'count', goal: 7, speed: 42, most: 7, colors: 0, radius: [56, 68] },
-  { mode: 'count', goal: 10, speed: 48, most: 10, colors: 0, radius: [50, 60] },
-];
+import { choosePalette, isRight, meant, planFor, spawnTarget, TAP_REACH, type BubblePlan } from './logic';
 
 const LEVELS: Record<Band, { min: number; max: number }> = {
   lap: { min: 1, max: 3 },
@@ -51,7 +24,7 @@ const LEVELS: Record<Band, { min: number; max: number }> = {
 const FRIENDS: CritterName[] = ['duck', 'pig', 'cat', 'bunny', 'cow', 'bear', 'dog'];
 
 class BubblePop implements Game {
-  private readonly plan: Plan;
+  private readonly plan: BubblePlan;
   private readonly backdrop: Backdrop;
   private readonly layer = new Container();
   private bubbles: Bubble[] = [];
@@ -73,14 +46,14 @@ class BubblePop implements Game {
   private nextNumber = 1;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PLANS[Math.min(PLANS.length, Math.max(1, ctx.level)) - 1];
+    this.plan = planFor(ctx.level);
     this.view = ctx.view;
     this.backdrop = ctx.track(
       new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0x7cc4f2, 0xf6dfb0], horizon: 0.78, clouds: 3, sun: true, seed: 3 }, ctx.view),
     );
     ctx.stage.addChild(this.backdrop, this.layer);
     if (this.plan.mode === 'color') {
-      this.palette = ctx.rng.shuffle([...RAINBOW]).slice(0, this.plan.colors);
+      this.palette = choosePalette(ctx.rng, this.plan.colors);
       this.target = this.palette[0];
     }
   }
@@ -146,9 +119,7 @@ class BubblePop implements Game {
     let color: ColorName | null = null;
     if (p.mode === 'color') {
       const targetShowing = this.bubbles.some((b) => !b.popped && b.color === this.target);
-      // Errorless start: the first bubbles are always the right color.
-      const wantTarget = this.spawned < 2 || !targetShowing || rng.chance(0.55);
-      color = wantTarget ? this.target : rng.pick(this.palette.slice(1));
+      color = spawnTarget(this.spawned, targetShowing, rng) ? this.target : rng.pick(this.palette.slice(1));
     }
     if (p.mode === 'count') color = RAINBOW[((number ?? 1) - 1) % RAINBOW.length];
     const critter = p.mode === 'free' && rng.chance(0.3) ? rng.pick(FRIENDS) : undefined;
@@ -163,7 +134,7 @@ class BubblePop implements Game {
       b.position.set(rng.range(130 + r, v.w - 40 - r), v.h + r + 10);
       b.vy = -p.speed * rng.range(0.8, 1.25);
     }
-    onTap(b, () => this.tapped(b), { radius: r * 1.2, cooldown: 300 });
+    onTap(b, (e) => this.tapped(b, this.layer.toLocal(e.global)), { radius: r * TAP_REACH, cooldown: 300 });
     this.layer.addChild(b);
     this.bubbles.push(b);
     this.spawned++;
@@ -179,15 +150,20 @@ class BubblePop implements Game {
     if (b.y < y0 || b.y > y1) b.vy = Math.abs(b.vy) * (b.y < y0 ? 1 : -1);
   }
 
-  private tapped(b: Bubble) {
-    if (b.popped || this.phase === 'done') return;
-    if (b.rainbow) {
-      if (this.phase === 'finale') this.popRainbow(b);
+  private right(b: Bubble) {
+    return isRight(this.plan.mode, b, this.target, this.nextNumber);
+  }
+
+  private tapped(tapped: Bubble, at?: { x: number; y: number }) {
+    if (tapped.popped || this.phase === 'done') return;
+    if (tapped.rainbow) {
+      if (this.phase === 'finale') this.popRainbow(tapped);
       return;
     }
     const p = this.plan;
-    const right = p.mode === 'free' || (p.mode === 'color' ? b.color === this.target : b.number === this.nextNumber);
-    if (!right) {
+    const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
+    const b = at ? meant(tapped, live, at, (o) => this.right(o)) : tapped;
+    if (!this.right(b)) {
       this.wrong(b);
       return;
     }
@@ -219,10 +195,7 @@ class BubblePop implements Game {
       // Two misses in a row: light up the right ones.
       this.missStreak = 0;
       this.hints++;
-      for (const o of this.bubbles) {
-        const right = this.plan.mode === 'color' ? o.color === this.target : o.number === this.nextNumber;
-        if (right && !o.popped) o.glow = 3;
-      }
+      for (const o of this.bubbles) if (!o.popped && !o.rainbow && this.right(o)) o.glow = 3;
     }
   }
 
@@ -272,7 +245,8 @@ class BubblePop implements Game {
   private async finale() {
     this.phase = 'finale';
     const rest = this.bubbles.filter((b) => !b.popped);
-    rest.forEach((b, i) => void this.ctx.tw.wait(0.2 + i * 0.09).then(() => !b.popped && this.pop(b)));
+    // A straggler may float off the top (and be removed) before its turn comes.
+    rest.forEach((b, i) => void this.ctx.tw.wait(0.2 + i * 0.09).then(() => !b.popped && this.bubbles.includes(b) && this.pop(b)));
     await this.ctx.tw.wait(0.5 + rest.length * 0.09);
 
     const v = this.view;
@@ -398,7 +372,7 @@ export const bubblePop: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => LEVELS[band],
   describeLevel: (level) => {
-    const p = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+    const p = planFor(level);
     if (p.mode === 'free') return `Pop anything, ${p.goal} pops`;
     if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
     return `Numbers in order, 1 to ${p.goal}`;

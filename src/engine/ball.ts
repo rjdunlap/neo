@@ -14,6 +14,8 @@ export interface Peg {
   x: number;
   y: number;
   r: number;
+  /** A springy bumper: after a bounce the ball leaves at least this fast. */
+  kick?: number;
 }
 
 export interface BallWorld {
@@ -21,6 +23,8 @@ export interface BallWorld {
   /** Side walls; the ball bounces off them. */
   left: number;
   right: number;
+  /** An optional ceiling. */
+  top?: number;
   gravity: number;
   /** Fraction of speed kept along the normal after a bounce. */
   bounce: number;
@@ -45,6 +49,10 @@ export function stepBall(b: Ball, w: BallWorld, dt: number): number[] {
       b.x = w.right - b.r;
       b.vx = -Math.abs(b.vx) * w.bounce;
     }
+    if (w.top !== undefined && b.y - b.r < w.top) {
+      b.y = w.top + b.r;
+      b.vy = Math.abs(b.vy) * w.bounce;
+    }
     for (let i = 0; i < w.pegs.length; i++) {
       const p = w.pegs[i];
       const dx = b.x - p.x;
@@ -64,6 +72,13 @@ export function stepBall(b: Ball, w: BallWorld, dt: number): number[] {
         b.vy -= (1 + w.bounce) * vn * ny;
         // A tiny sideways nudge so a ball never balances forever on top of a peg.
         if (Math.abs(nx) < 0.05) b.vx += nx >= 0 ? 12 : -12;
+        if (p.kick) {
+          const speed = Math.hypot(b.vx, b.vy);
+          if (speed < p.kick) {
+            b.vx = (b.vx / (speed || 1)) * p.kick;
+            b.vy = (b.vy / (speed || 1)) * p.kick;
+          }
+        }
       }
       if (!hits.includes(i)) hits.push(i);
     }

@@ -28,7 +28,7 @@ For Puddle Island, each scene waits for the child. No fuse, countdown, lives, es
 | **Little show** | Roughly 3–6 | Three scenes with one gesture family, followed by a small finale. A picture strip shows the sequence; the child advances each scene. |
 | **Remix show** | Roughly 6–8 | Mix familiar actions and add one visible condition: turn the long parcel, share the red fruit, then copy the rhythm. Surprise comes from the scene, while the current rule stays clear. |
 
-Start with the Little Show: **Umbrella Up → Sock Gobbler → Bridge Stretch**. All three use a single-finger drag to change a visible relationship, yet produce different reactions. Add turning and other gestures after the individual scenes are understandable.
+Start with the Little Show: **Umbrella Up → Sock Gobbler → Bridge Stretch**. (Built as the first Quick Tricks game, three levels from toddler to pre-K; not yet judged with a child.) All three use a single-finger drag to change a visible relationship, yet produce different reactions. Add turning and other gestures after the individual scenes are understandable.
 
 The whole show is one round and earns one sticker. A scene inside it does not call the shell's finish function. Keep each scene's input, hints, and cleanup contained; report round statistics once at the end. Define miss/hint accounting before mixing tasks so a longer show does not automatically look like a struggling round. Replaying a prompt or demonstration is not a wrong answer. The first prototype can be one game with a few small scenes; it does not need a general microgame framework or dozens of map icons.
 
@@ -46,7 +46,7 @@ These are small scenes, not twelve promised standalone games. Some intentionally
 | **Last Berry / 4–7** | “Make five.” Add berries to a bowl that already holds three. | Five berries become a cheerful caterpillar and dance away. | Part–whole quantities; later make the same total two ways. Every berry stays countable. |
 | **Finish the Wiggle / 4–7** | “What comes next?” Choose the next pose in a short dance pattern. | The whole line of critters performs it. | Pattern continuation; later fill a missing middle pose. A possible Pattern Train extension. |
 | **What Changed? / 4–7** | “Something changed!” Look at a before/after pair of a pet dressing scene. | The changed hat turns into a tiny waving friend. | Careful comparison; later hide the before view behind a freely available Peek button. No exposure timer. |
-| **Echo Knock / 3–7** | “Your turn.” Echo a woodpecker's two or three knocks on a stump. | A sleepy tree opens its eyes and answers with a flourish. | Listening, order, and rhythm; later trade short/long patterns. Use synthesis, no microphone. |
+| **Echo Knock / 3–7** | “Your turn.” Echo a woodpecker's two or three knocks on a stump. | A sleepy tree opens its eyes and answers with a flourish. | Listening, order, and rhythm; later trade short/long patterns. Use synthesis, no microphone. Sound Garden's echo level already does the core of this; the new value would be the scene and its payoff. |
 | **Switch the Track / 4–7** | “Send it to the flower.” Turn one big track junction. | A seed wagon reaches a pot and a flower pops up. | Following a route and predicting consequences; later two junctions. A compact Robot Path relative. |
 | **Make Two Halves / 5–8** | “Share it equally.” Slide a dividing line across a square sandwich, then serve the two pieces. | Two guests unfold them into matching butterfly wings. | Equal parts of the same whole; later compare two valid ways to halve it. Snap to clear positions and show unequal pieces side by side. |
 | **Rhyme Picnic / 4–7** | “Who rhymes with bee?” Hear and choose between picture names such as tree and boat. | Bee and Tree sing their rhyming names together. | Sound comparison; later choose another member of a word family. Review pronunciations and give a replay for every picture. |
@@ -69,7 +69,7 @@ The source links describe the original mechanics. The Puddle Island translations
 
 ### Develop these into complete activities
 
-**Rhythm Neighbors — roughly 3–8; a new rhythm mode before a new music game.** Start with one stump, one bird, and three call-and-response phrases. The phrase can be replayed; taps always make a pleasant sound, and the bird demonstrates the intended rhythm again when needed. Later, separate “my part” and “your part,” then alternate them. The humor is a tree slowly becoming an enthusiastic drummer. Reuse Jelly Drums or Song Maker's timing/audio where it fits. Judge musical phrases with generous support; never make a late tap end play. M effort.
+**Rhythm Neighbors — roughly 3–8; a new rhythm mode before a new music game.** Start with one stump, one bird, and three call-and-response phrases. The phrase can be replayed; taps always make a pleasant sound, and the bird demonstrates the intended rhythm again when needed. Later, separate “my part” and “your part,” then alternate them. The humor is a tree slowly becoming an enthusiastic drummer. Reuse Jelly Drums or Song Maker's timing/audio and Sound Garden's forgiving rhythm-echo judge where they fit; Sound Garden's echo level is the closest existing activity. Judge musical phrases with generous support; never make a late tap end play. M effort.
 
 **Shape Buddies — roughly 4–8; spatial problem solving and cooperation.** Two paper creatures need to carry a rolling seed to a pot. Give them three reversible shape tools: flatten, scoop, and slope. A child can switch between both; a grown-up can take one side. Begin with one gap and one known workable construction. Later, solve with a different arrangement or combine two useful shapes. The first version uses a small set of predefined silhouettes, avoiding arbitrary cutting geometry. Keep multiple successful arrangements valid. M effort.
 
@@ -100,7 +100,7 @@ Effort is relative and includes content and verification: S = contained extensio
 
 ## A practical shortlist
 
-1. **Prototype one Quick Tricks show:** Umbrella Up, Sock Gobbler, Bridge Stretch. Keep the gesture family consistent, the scene count small, and every scene replayable. This tests whether a medley adds delight beyond individual games.
+1. **Prototype one Quick Tricks show** (built; see the README): Umbrella Up, Sock Gobbler, Bridge Stretch. Keep the gesture family consistent, the scene count small, and every scene replayable. This tests whether a medley adds delight beyond individual games.
 2. **Try Rhythm Neighbors as a music extension:** one character and a few phrases. It adds performance and conversation to the existing music activities.
 3. **Choose Shape Buddies or Peekaround Island for the next distinct interaction:** collaborative construction versus viewing a scene from another side. Both add something beyond another sorting/counting reskin.
 4. **Hold Silly Describer, Wobble Works, and Rule Parade for later scope decisions:** each needs authored behavior or deeper rules, and the last belongs in the older-child exploration.
@@ -108,3 +108,8 @@ Effort is relative and includes content and verification: S = contained extensio
 When observing a prototype, ask whether the child knows what to try, enjoys the result, can ask for help, and wants another variation. Try a fresh arrangement to distinguish understanding from memorizing one screen. Do not infer general cognitive gains from a completed microgame or a faster response.
 
 These candidates broaden the idea pool without replacing the roadmap's verification, navigation, adventure, or home work. Promote a small slice when it fits the next requested task; this brainstorming pass does not mark any game or new framework implemented.
+
+
+## Local implementation update (2026-10-06)
+
+Quick Tricks now contains the original Umbrella Up / Sock Gobbler / Bridge Stretch show at levels 1–3 and a second Parcel Turn / Picnic Places / Last Berry show at appended levels 4–6. Each show is one round and one sticker, with a child-controlled arrow between scenes. Rhythm Neighbors is also a standalone six-level game: different call and reply parts, two frog voices, optional forgiving rhythm judgment and guided replies. Both remain uncommitted and await iPad judgments; see VERIFICATION.md. Other ideas here remain proposals.
