@@ -55,4 +55,17 @@ describe('Monster Munch rounds', () => {
     expect(orderWords({ cookie: 2, apple: 1 })).toBe('2 cookies and 1 apple');
     expect(orderWords({ cookie: 0, apple: 2 }, true)).toBe('2 more apples');
   });
+
+  it('leftover rounds never share evenly, leave fewer cookies than monsters, and fit the tray', () => {
+    const plan = MUNCH_PLANS.find((p) => p.mode === 'leftover')!;
+    for (let seed = 1; seed <= 200; seed++) {
+      for (const r of munchRounds(plan, new Rng(seed))) {
+        expect(r.left).toBeGreaterThanOrEqual(1);
+        expect(r.left).toBeLessThan(r.monsters);
+        expect(r.tray.cookie).toBe(r.want.cookie * r.monsters + r.left!);
+        expect(r.tray.cookie).toBeLessThanOrEqual(TRAY_MAX);
+        expect(r.want.cookie).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
 });

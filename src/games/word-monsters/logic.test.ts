@@ -16,13 +16,16 @@ describe('Word Monsters', () => {
         for (const q of qs) {
           expect(q.monsters).toHaveLength(plan.choices);
           expect(new Set(q.monsters).size).toBe(q.monsters.length);
-          for (const l of q.answer) expect(q.monsters).toContain(l);
+          // Word families offer first sounds; the ending already stands in the slots.
+          if (plan.mode === 'family') expect(q.fixed).toBe(q.answer.slice(1)), expect(q.monsters).toContain(q.answer[0]);
+          else for (const l of q.answer) expect(q.monsters).toContain(l);
           // Spare letters never look like a letter already in play.
           const spares = q.monsters.filter((l) => !q.answer.includes(l));
           for (const s of spares) for (const o of q.monsters) expect(lookalike(s, o), `${s} ${o}`).toBe(false);
           if (plan.mode === 'first') expect(FIRST_WORDS[q.answer]).toBeDefined();
         }
         if (plan.mode !== 'build' && plan.mode !== 'spell' && plan.mode !== 'play') expect(new Set(qs.map((q) => q.answer)).size).toBe(qs.length);
+        if (plan.mode === 'family') expect(new Set(qs.map((q) => q.fixed)).size).toBe(2);
       }
     }
   });

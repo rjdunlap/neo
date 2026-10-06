@@ -107,8 +107,8 @@ class BugBuilder implements Game {
 }
 export const bugBuilder: GameModule = {
   id: 'bug-builder', name: 'Bug Builder', titleLine: 'game.bug-builder', region: 'tinker-lab',
-  skills: ['spatial-reasoning', 'symmetry', 'visual-matching'], bands: ['toddler', 'preschool', 'prek'],
-  levels: (b) => b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
+  skills: ['spatial-reasoning', 'symmetry', 'visual-matching'], bands: ['toddler', 'preschool', 'prek', 'school'],
+  levels: (b) => b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
   describeLevel: (l) => BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, coplayHint: 'Help {name} move a shape to a matching spot on the bug.',
   offScreen: 'Fold paper in half, dab paint on one side, and press it closed to make matching butterfly wings.',

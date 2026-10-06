@@ -9,7 +9,6 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule } from '../types';
 import {
@@ -28,11 +27,13 @@ import {
   type Side,
   type Thing,
 } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Partial<Record<Band, { min: number; max: number }>> = {
+const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 7 },
+  school: { min: 6, max: 7 },
 };
 
 /** From the middle of the seesaw to each tray's post. */
@@ -709,8 +710,8 @@ export const seesawBalance: GameModule = {
   titleLine: 'game.seesaw-balance',
   region: 'tinker-lab',
   skills: ['comparison', 'measurement', 'equality', 'counting'],
-  bands: ['toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band] ?? { min: 1, max: 1 },
+  bands: ['toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   coplayHint: 'Hold two things with {name}, one in each hand: which is heavier? Then try them on the seesaw.',

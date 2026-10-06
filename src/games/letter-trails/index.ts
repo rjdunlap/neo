@@ -9,6 +9,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { letterPicture, WORDS } from './pictures';
 import { advanceTrace, LETTERS, nameLetters, sampleStroke, type Point } from './strokes';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PLANS = [
   { letters: 'ILT', name: 'Follow straight strokes: I, L, T' },
@@ -20,7 +21,7 @@ const PLANS = [
   { letters: '', name: 'Trace a short word: CAT, DOG, or SUN' },
   { letters: '', name: 'Trace the child’s name in capitals' },
 ];
-const LEVELS = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 8 } };
+const LEVELS: BandLevels = { preschool: { min: 1, max: 6 }, prek: { min: 3, max: 8 }, school: { min: 7, max: 8 } };
 
 class LetterTrails implements Game {
   readonly word: string;
@@ -165,7 +166,7 @@ function trailArt(): Container {
 }
 export const letterTrails: GameModule = {
   id: 'letter-trails', name: 'Letter Trails', titleLine: 'game.letter-trails', region: 'story-grove',
-  skills: ['letters', 'fine-motor', 'writing'], bands: ['preschool', 'prek'], levels: (b) => LEVELS[b],
+  skills: ['letters', 'fine-motor', 'writing'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, offScreen: 'Draw large letters with a finger in sand or on a foggy window, saying the letter together.',
   hubIcon: () => new WigglyIcon(trailArt()), sticker: (seed) => letterPicture('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.abs(seed)) % 26]), create: (ctx) => new LetterTrails(ctx),

@@ -9,16 +9,17 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { Bubble, drawBubble } from './bubble';
-import { choosePalette, isRight, meant, planFor, spawnTarget, TAP_REACH, type BubblePlan } from './logic';
+import { bondNumbers, choosePalette, isRight, meant, planFor, spawnTarget, TAP_REACH, type BubblePlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 3 },
   toddler: { min: 1, max: 6 },
   preschool: { min: 4, max: 9 },
-  prek: { min: 6, max: 9 },
+  prek: { min: 6, max: 10 },
+  school: { min: 10, max: 11 },
 };
 
 const FRIENDS: CritterName[] = ['duck', 'pig', 'cat', 'bunny', 'cow', 'bear', 'dog'];
@@ -44,6 +45,8 @@ class BubblePop implements Game {
   private palette: ColorName[] = [];
   /** Count mode: the number to find next. */
   private nextNumber = 1;
+  /** Bonds mode: the bubble being held still while its partner is found. */
+  held: Bubble | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -66,6 +69,10 @@ class BubblePop implements Game {
       void this.ctx.instruct('bubble.count');
       for (let n = 1; n <= p.goal; n++) this.spawn(n);
     }
+    if (p.mode === 'bonds') {
+      void this.ctx.instruct('bubble.bonds', { n: p.sum! });
+      for (const n of bondNumbers(p.sum!, p.goal, this.ctx.rng)) this.spawn(n);
+    }
   }
 
   resize(view: View) {
@@ -76,7 +83,7 @@ class BubblePop implements Game {
   update(dt: number) {
     this.clock += dt;
     const p = this.plan;
-    if (this.phase === 'play' && p.mode !== 'count') {
+    if (this.phase === 'play' && p.mode !== 'count' && p.mode !== 'bonds') {
       this.spawnIn -= dt;
       const alive = this.bubbles.filter((b) => !b.popped).length;
       if (this.spawnIn <= 0 && alive < p.most) {
@@ -96,7 +103,8 @@ class BubblePop implements Game {
     for (const b of [...this.bubbles]) {
       if (b.popped) continue;
       b.update(dt);
-      if (b.rainbow || p.mode === 'count') {
+      if (b === this.held) continue;
+      if (b.rainbow || p.mode === 'count' || p.mode === 'bonds') {
         this.drift(b, dt);
       } else {
         b.vx *= 1 - 1.5 * dt;
@@ -121,11 +129,11 @@ class BubblePop implements Game {
       const targetShowing = this.bubbles.some((b) => !b.popped && b.color === this.target);
       color = spawnTarget(this.spawned, targetShowing, rng) ? this.target : rng.pick(this.palette.slice(1));
     }
-    if (p.mode === 'count') color = RAINBOW[((number ?? 1) - 1) % RAINBOW.length];
+    if (p.mode === 'count' || p.mode === 'bonds') color = RAINBOW[((number ?? 1) - 1) % RAINBOW.length];
     const critter = p.mode === 'free' && rng.chance(0.3) ? rng.pick(FRIENDS) : undefined;
 
     const b = new Bubble({ r, color, number, critter });
-    if (p.mode === 'count') {
+    if (p.mode === 'count' || p.mode === 'bonds') {
       b.position.set(rng.range(150 + r, v.w - 50 - r), rng.range(130 + r, v.h - 60 - r));
       const a = rng.range(0, Math.PI * 2);
       b.vx = Math.cos(a) * p.speed;
@@ -161,6 +169,12 @@ class BubblePop implements Game {
       return;
     }
     const p = this.plan;
+    if (p.mode === 'bonds') {
+      // Drifting bubbles overlap: the touch goes to the bubble whose middle is nearest the finger.
+      const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
+      const near = at ? live.reduce((best, o) => (Math.hypot(o.x - at.x, o.y - at.y) < Math.hypot(best.x - at.x, best.y - at.y) ? o : best), tapped) : tapped;
+      return void this.tapBond(near);
+    }
     const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
     const b = at ? meant(tapped, live, at, (o) => this.right(o)) : tapped;
     if (!this.right(b)) {
@@ -178,6 +192,53 @@ class BubblePop implements Game {
     }
     if (this.scored % 5 === 0) this.ctx.pet.cheer();
     if (this.phase === 'play' && this.scored >= p.goal) void this.finale();
+  }
+
+  /** Bonds: the first tap holds a bubble still; a second that makes the total pops them both. */
+  private tapBond(b: Bubble) {
+    if (this.phase !== 'play') return;
+    const sum = this.plan.sum!;
+    this.idle = 0;
+    if (!this.held) {
+      this.held = b;
+      b.glow = 1e6;
+      sfx.pop(5);
+      void this.ctx.say('count', { n: b.number! });
+      return;
+    }
+    const a = this.held;
+    if (a === b) {
+      // Tap it again to let it go.
+      a.glow = 0;
+      this.held = null;
+      return;
+    }
+    this.held = null;
+    a.glow = 0;
+    if (a.number! + b.number! === sum) {
+      this.missStreak = 0;
+      this.pop(a);
+      this.pop(b);
+      this.scored++;
+      void this.ctx.say('bubble.made', { a: a.number!, b: b.number!, n: sum });
+      if (this.scored % 2 === 0) this.ctx.pet.cheer();
+      if (this.scored >= this.plan.goal) void this.finale();
+      return;
+    }
+    b.bounce();
+    sfx.boing();
+    this.misses++;
+    this.missStreak++;
+    void this.ctx.say('bubble.notmade', { a: a.number!, b: b.number!, total: a.number! + b.number!, n: sum });
+    if (this.missStreak >= 2) {
+      // Light up a pair that works: the first bubble and its partner.
+      this.missStreak = 0;
+      this.hints++;
+      const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
+      const first = live.find((o) => live.some((x) => x !== o && x.number! + o.number! === sum));
+      const partner = first && live.find((x) => x !== first && x.number! + first.number! === sum);
+      for (const o of [first, partner]) if (o) o.glow = 4;
+    }
   }
 
   private wrong(b: Bubble) {
@@ -369,12 +430,13 @@ export const bubblePop: GameModule = {
   titleLine: 'game.bubble-pop',
   region: 'bubble-beach',
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.mode === 'free') return `Pop anything, ${p.goal} pops`;
     if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
+    if (p.mode === 'bonds') return `Pop two bubbles that make ${p.sum} together (${p.goal} pairs)`;
     return `Numbers in order, 1 to ${p.goal}`;
   },
   music: STYLES.bubbles,

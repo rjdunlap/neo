@@ -11,12 +11,12 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import type { Band } from '../../progress/bands';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { CHOICES, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, planFor, tune, type Answer, type Gap, type GardenPlan, type Question } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
@@ -475,7 +475,7 @@ export const soundGarden: GameModule = {
   region: 'music-mountain',
   skills: ['listening', 'pitch', 'tempo', 'rhythm'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   // Quiet music, so the listening questions are easy to hear.
   music: STYLES.lullaby,

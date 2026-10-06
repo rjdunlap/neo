@@ -9,9 +9,9 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { ANIMALS, deal, newcomer, pickTarget, planFor, type Animal, type PeekPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
   cow: { sound: 'moo', word: 'Moo' },
@@ -26,7 +26,7 @@ const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
 type CoverKind = 'hay' | 'bush' | 'crate' | 'door';
 const COVERS: CoverKind[] = ['hay', 'bush', 'door', 'crate'];
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 5 },
   preschool: { min: 4, max: 8 },
@@ -399,7 +399,7 @@ export const peekabooBarn: GameModule = {
   region: 'barnyard',
   skills: ['object-permanence', 'animal-words', 'memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.mode === 'free') return `Tap to find who's hiding, ${p.spots} hiding places`;

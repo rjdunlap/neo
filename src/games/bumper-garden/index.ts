@@ -8,7 +8,6 @@ import { stepBall, type Ball, type BallWorld } from '../../engine/ball';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
@@ -28,8 +27,9 @@ import {
   type BumperPlan,
   type FlipperSide,
 } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
@@ -424,7 +424,7 @@ export const bumperGarden: GameModule = {
   region: 'bubble-beach',
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Say "flip!" together, and count each flower as it blooms.',

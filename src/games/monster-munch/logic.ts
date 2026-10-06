@@ -3,7 +3,7 @@ import type { Rng } from '../../engine/random';
 export type Food = 'cookie' | 'apple';
 /** How many of each food: an order, a monster's tummy, or what is on the tray. */
 export type Order = Record<Food, number>;
-export type MunchMode = 'tap' | 'count' | 'each' | 'exact' | 'two' | 'share';
+export type MunchMode = 'tap' | 'count' | 'each' | 'exact' | 'two' | 'share' | 'leftover';
 
 export interface MunchPlan {
   mode: MunchMode;
@@ -26,6 +26,7 @@ export const MUNCH_PLANS: MunchPlan[] = [
   { mode: 'exact', rounds: 3, min: 3, max: 7, name: 'Feed 3 to 7 cookies (number only), then ring the bell' },
   { mode: 'two', rounds: 3, min: 1, max: 3, name: 'Feed cookies and apples, like "2 cookies and 1 apple"' },
   { mode: 'share', rounds: 2, min: 2, max: 3, monsters: [2, 3], name: 'Share cookies fairly, then say how many each monster got' },
+  { mode: 'leftover', rounds: 2, min: 2, max: 3, monsters: [2, 3], name: 'Share fairly when it does not come out even: how many each, and how many left over?' },
 ];
 
 export const munchPlan = (level: number) => MUNCH_PLANS[Math.max(0, Math.min(MUNCH_PLANS.length - 1, level - 1))];
@@ -35,6 +36,8 @@ export interface MunchRound {
   /** What one monster wants (exact and two); every monster's share (each and share). */
   want: Order;
   tray: Order;
+  /** Leftover levels: cookies that can't be shared fairly. */
+  left?: number;
 }
 
 const order = (cookie: number, apple = 0): Order => ({ cookie, apple });
@@ -72,6 +75,13 @@ export function munchRounds(plan: MunchPlan, rng: Rng): MunchRound[] {
       case 'share': {
         const each = rng.int(plan.min, Math.min(plan.max, Math.floor(9 / monsters)));
         rounds.push({ monsters, want: order(each), tray: order(each * monsters) });
+        break;
+      }
+      case 'leftover': {
+        // Fewer leftovers than monsters, and everything still fits on the tray.
+        const each = rng.int(plan.min, Math.min(plan.max, Math.floor((TRAY_MAX - (monsters - 1)) / monsters)));
+        const left = rng.int(1, monsters - 1);
+        rounds.push({ monsters, want: order(each), tray: order(each * monsters + left), left });
         break;
       }
     }

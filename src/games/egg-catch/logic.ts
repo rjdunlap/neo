@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * hens lay eggs that roll gently down to a basket. Missed eggs land in soft hay and hatch,
  * so nothing breaks. Later levels route eggs through chutes with flip gates.
  */
-export type EggMode = 'tap' | 'catch' | 'brown' | 'route' | 'sort';
+export type EggMode = 'tap' | 'catch' | 'brown' | 'route' | 'sort' | 'predict';
 
 export interface EggPlan {
   mode: EggMode;
@@ -22,7 +22,19 @@ export const PLANS: EggPlan[] = [
   { mode: 'brown', eggs: 5, fall: 3.2, name: 'Catch only the brown eggs; white ones hatch in the hay' },
   { mode: 'route', eggs: 4, fall: 0, name: 'Flip the gates so the egg rolls into the basket' },
   { mode: 'sort', eggs: 5, fall: 0, name: 'Route brown eggs to the basket and white eggs to the nest' },
+  { mode: 'predict', eggs: 5, fall: 0, name: 'The gates are set: tap where the egg will land, then watch it roll' },
 ];
+
+/** Predict levels: gate settings for each egg, never landing in the same place twice running. */
+export function predictGates(rng: Rng, count: number): [boolean, boolean, boolean][] {
+  const out: [boolean, boolean, boolean][] = [];
+  while (out.length < count) {
+    const g: [boolean, boolean, boolean] = [rng.chance(0.5), rng.chance(0.5), rng.chance(0.5)];
+    if (out.length && exitFor(g) === exitFor(out[out.length - 1])) continue;
+    out.push(g);
+  }
+  return out;
+}
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

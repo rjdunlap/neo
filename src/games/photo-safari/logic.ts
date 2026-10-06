@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * different places. Tap one to take its photo. Requests grow from naming the animal to
  * what it's doing ("jumping") and where it is ("under the tree"), for verbs and positions.
  */
-export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both';
+export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both' | 'not';
 export type Animal = 'cat' | 'dog' | 'bunny' | 'pig' | 'duck' | 'bear';
 export type Action = 'jumping' | 'sleeping' | 'eating' | 'dancing';
 export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
@@ -24,6 +24,7 @@ export const PLANS: SafariPlan[] = [
   { mode: 'doing', photos: 4, animals: 3, name: 'Action words: "the bunny jumping"' },
   { mode: 'where', photos: 4, animals: 3, name: 'Place words: "the duck under the tree"' },
   { mode: 'both', photos: 4, animals: 3, name: 'Both: "the cat sleeping behind the bush"' },
+  { mode: 'not', photos: 4, animals: 3, name: 'Not: "the animal that is not sleeping"' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -43,10 +44,12 @@ export interface Scene {
   sightings: Sighting[];
   /** Which sighting is asked for (-1 for free snapping). */
   target: number;
+  /** 'not' levels: what every other animal is doing. */
+  notAction?: Action;
 }
 
 /** What a request talks about at each level. */
-const keys = (mode: SafariMode): (keyof Sighting)[] => (mode === 'who' ? ['animal'] : mode === 'doing' ? ['animal', 'action'] : mode === 'where' ? ['animal', 'spot'] : mode === 'both' ? ['animal', 'action', 'spot'] : []);
+const keys = (mode: SafariMode): (keyof Sighting)[] => (mode === 'who' ? ['animal'] : mode === 'not' ? ['action'] : mode === 'doing' ? ['animal', 'action'] : mode === 'where' ? ['animal', 'spot'] : mode === 'both' ? ['animal', 'action', 'spot'] : []);
 
 /** Does a sighting match the target on everything the request mentions? */
 export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolean {
@@ -72,6 +75,11 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
         case 'where':
           s = { animal: target.animal, action: rng.pick(ACTIONS), spot };
           break;
+        case 'not':
+          // Everyone else is doing the same thing; only the target is doing something different.
+          s = { animal: rng.pick(ANIMALS), action: rng.pick(ACTIONS.filter((a) => a !== target.action)), spot };
+          if (sightings.length > 1) s.action = sightings[1].action;
+          break;
         case 'both':
           s = rng.chance(0.5)
             ? { animal: target.animal, action: target.action, spot }
@@ -86,7 +94,9 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
     const shuffled = order.map((i) => sightings[i]);
     const t = order.indexOf(0);
     if (plan.mode === 'snap') return { sightings: shuffled, target: -1 };
-    if (shuffled.filter((s) => matches(plan.mode, s, shuffled[t])).length === 1) return { sightings: shuffled, target: t };
+    if (shuffled.filter((s) => matches(plan.mode, s, shuffled[t])).length === 1) {
+      return { sightings: shuffled, target: t, notAction: plan.mode === 'not' ? sightings[1].action : undefined };
+    }
   }
   throw new Error('No scene');
 }
@@ -94,7 +104,13 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
 /** "the bunny jumping behind the bush", for the voice. */
 export function describe(mode: SafariMode, s: Sighting): string {
   const parts = [`the ${s.animal}`];
-  if (mode === 'doing' || mode === 'both' || mode === 'snap') parts.push(s.action);
+  if (mode === 'doing' || mode === 'both' || mode === 'snap' || mode === 'not') parts.push(s.action);
   if (mode === 'where' || mode === 'both') parts.push(PLACE_WORDS[s.spot]);
   return parts.join(' ');
+}
+
+/** What the voice asks for: the target's description, or on 'not' levels the thing it isn't doing. */
+export function request(mode: SafariMode, scene: Scene): string {
+  if (mode === 'not') return `the animal that is not ${scene.notAction}`;
+  return describe(mode, scene.sightings[scene.target]);
 }

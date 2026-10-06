@@ -63,6 +63,12 @@ describe('migrate', () => {
     expect(valid.world).toEqual({ band: 'preschool' });
   });
 
+  it('keeps the early-school band (Wonder Woods) for the child and the celebrated trail position', () => {
+    const save = migrate({ profile: { name: 'Mia', band: 'school' }, world: { band: 'school' } });
+    expect(save.profile.band).toBe('school');
+    expect(save.world).toEqual({ band: 'school' });
+  });
+
   it('preserves valid sticker placements, clamps positions, and removes invalid placements', () => {
     const base = { game: 'memory-match', seed: 9, at: 22 };
     const save = migrate({ stickers: [

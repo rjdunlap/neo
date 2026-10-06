@@ -8,17 +8,18 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { letterShows, mailboxShows, makeLetters, makeStreet, planFor, type House, type MailPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
+  school: { min: 4, max: 5 },
 };
 
 const NEIGHBORS: CritterName[] = ['cat', 'dog', 'bear', 'bunny', 'pig', 'cow'];
@@ -297,8 +298,8 @@ export const mailCarrier: GameModule = {
   titleLine: 'game.mail-carrier',
   region: 'cozy-village',
   skills: ['numerals', 'counting', 'colors', 'community'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Read the house numbers together as you pass them: "two, four, five..."',

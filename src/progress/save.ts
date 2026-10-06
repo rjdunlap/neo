@@ -45,7 +45,7 @@ export interface SaveData {
 }
 
 export const HISTORY_LENGTH = 10;
-const BAND_IDS: Band[] = ['lap', 'toddler', 'preschool', 'prek'];
+const BAND_IDS: Band[] = ['lap', 'toddler', 'preschool', 'prek', 'school'];
 
 export function defaults(): SaveData {
   return {

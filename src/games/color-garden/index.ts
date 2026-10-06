@@ -9,11 +9,11 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { basketAt, basketWidth, deal, planFor, type GardenPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 5 },
   preschool: { min: 3, max: 6 },
@@ -294,7 +294,7 @@ export const colorGarden: GameModule = {
   region: 'rainbow-meadow',
   skills: ['colors', 'sorting', 'fine-motor'],
   bands: ['toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.colors === 1) return 'One basket: practice dragging';

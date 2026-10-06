@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { caught, exitFor, gatesFor, LANES, makeEggs, PLANS, targetsFor } from './logic';
+import { caught, exitFor, gatesFor, LANES, makeEggs, PLANS, targetsFor, predictGates } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -31,5 +31,12 @@ describe('Egg Catch', () => {
     for (const t of targetsFor(PLANS[4], new Rng(2))) expect(t.nest).not.toBe(t.basket);
     expect(caught(100, 180)).toBe(true);
     expect(caught(100, 230)).toBe(false);
+  });
+
+  it('predict levels set the gates so the egg lands somewhere new each time', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const gs = predictGates(new Rng(seed), 8);
+      gs.slice(1).forEach((g, i) => expect(exitFor(g)).not.toBe(exitFor(gs[i])));
+    }
   });
 });

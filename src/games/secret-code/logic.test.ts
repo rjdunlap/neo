@@ -1,0 +1,63 @@
+import { describe, expect, it } from 'vitest';
+import { Rng } from '../../engine/random';
+import { candidates, ignoredClues, makeCode, PLANS, ruledOut, score, suggestion, type Guess } from './logic';
+
+describe('Secret Code', () => {
+  it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
+    expect(score([0, 1, 2], [0, 1, 2], true)).toEqual(['green', 'green', 'green']);
+    expect(score([0, 1, 2], [2, 0, 1], true)).toEqual(['yellow', 'yellow', 'yellow']);
+    expect(score([0, 1, 2], [0, 3, 1], true)).toEqual(['green', 'gray', 'yellow']);
+    // The code's only red is already green, so the second red is gray, not yellow.
+    expect(score([1, 0, 2], [0, 0, 3], true)).toEqual(['gray', 'green', 'gray']);
+    expect(score([0, 0, 1], [1, 0, 0], true)).toEqual(['yellow', 'green', 'yellow']);
+    expect(score([0, 0, 1], [0, 1, 1], true)).toEqual(['green', 'gray', 'green']);
+    // Early levels: just yes or no for each slot.
+    expect(score([0, 1, 2], [2, 0, 1], false)).toEqual(['gray', 'gray', 'gray']);
+  });
+
+  it('makes codes that fit the level: distinct colors, or a real repeat when repeats are the point', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 200; seed++) {
+        const code = makeCode(plan, new Rng(seed));
+        expect(code).toHaveLength(plan.slots);
+        for (const c of code) expect(c).toBeLessThan(plan.colors);
+        if (plan.repeats) expect(new Set(code).size).toBeLessThan(plan.slots);
+        else expect(new Set(code).size).toBe(plan.slots);
+      }
+    }
+  });
+
+  it('only counts a miss for ignoring a clue, and the real code never ignores one', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const rng = new Rng(seed);
+        const code = makeCode(plan, rng);
+        const history: Guess[] = [];
+        for (let turn = 0; turn < 4; turn++) {
+          const guess = Array.from({ length: plan.slots }, () => rng.int(0, plan.colors - 1));
+          history.push({ stones: guess, marks: score(code, guess, plan.yellow) });
+          expect(ignoredClues(plan, history, code)).toEqual([]);
+          for (let s = 0; s < plan.slots; s++) expect(ruledOut(plan, history, s).has(code[s])).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('suggested guesses agree with every clue, and following them opens the door', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const code = makeCode(plan, new Rng(seed));
+        const history: Guess[] = [];
+        let guesses = 0;
+        for (; guesses < 12; guesses++) {
+          const g = suggestion(plan, history, code);
+          expect(candidates(plan, history).map((c) => c.join())).toContain(g.join());
+          const marks = score(code, g, plan.yellow);
+          history.push({ stones: g, marks });
+          if (marks.every((m) => m === 'green')) break;
+        }
+        expect(guesses).toBeLessThan(12);
+      }
+    }
+  });
+});

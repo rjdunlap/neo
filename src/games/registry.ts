@@ -41,6 +41,26 @@ import { stampStudio } from './stamp-studio';
 import { petKitchen } from './pet-kitchen';
 import { tangramTown } from './tangram-town';
 import { rhythmNeighbors } from './rhythm-neighbors';
+import { peekaroundIsland } from './peekaround-island';
+import { lightLab } from './light-lab';
+import { penguinSlide } from './penguin-slide';
+import { secretCode } from './secret-code';
+import { frogHop } from './frog-hop';
+import { marketStall } from './market-stall';
+import { gardenGrow } from './garden-grow';
+import { clockTower } from './clock-tower';
+import { pixelPictures } from './pixel-pictures';
+import { goodnightRoom } from './goodnight-room';
+import { animalSnack } from './animal-snack';
+import { beatBuilder } from './beat-builder';
+import { rhymeTime } from './rhyme-time';
+import { stopAndGo } from './stop-and-go';
+import { rampRace } from './ramp-race';
+import { critterSort } from './critter-sort';
+import { treasureMap } from './treasure-map';
+import { oppositesGame } from './opposites';
+import { pictureGraph } from './picture-graph';
+import { inchworm } from './inchworm';
 import type { GameModule } from './types';
 
 /**
@@ -90,6 +110,26 @@ export const GAMES: GameModule[] = [
   petKitchen,
   tangramTown,
   rhythmNeighbors,
+  peekaroundIsland,
+  lightLab,
+  penguinSlide,
+  secretCode,
+  frogHop,
+  marketStall,
+  gardenGrow,
+  clockTower,
+  pixelPictures,
+  goodnightRoom,
+  animalSnack,
+  beatBuilder,
+  rhymeTime,
+  stopAndGo,
+  rampRace,
+  critterSort,
+  treasureMap,
+  oppositesGame,
+  pictureGraph,
+  inchworm,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

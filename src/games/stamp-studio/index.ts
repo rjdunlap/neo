@@ -116,8 +116,8 @@ class StampStudio implements Game {
 }
 export const stampStudio: GameModule = {
   id: 'stamp-studio', name: 'Stamp Studio', titleLine: 'game.stamp-studio', region: 'treehouse',
-  skills: ['composition', 'creative-expression', 'spatial-reasoning'], bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: b => b === 'lap' ? { min: 1, max: 2 } : b === 'toddler' ? { min: 2, max: 3 } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
+  skills: ['composition', 'creative-expression', 'spatial-reasoning'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 2 } : b === 'toddler' ? { min: 2, max: 3 } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
   describeLevel: l => planFor(l).name, music: STYLES.paint,
   coplayHint: 'Let {name} choose where the picture goes. The green arrow finishes any creation.',
   offScreen: 'Stamp with a sponge or potato on scrap paper, then tell a story about the picture.',

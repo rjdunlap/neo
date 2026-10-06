@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
 
-export type DuckMode = 'along' | 'make' | 'howmany' | 'add';
+export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -25,7 +25,19 @@ export const PLANS: DuckPlan[] = [
   { mode: 'howmany', rounds: 5, min: 2, max: 8 },
   { mode: 'add', rounds: 5, min: 1, max: 5 },
   { mode: 'add', rounds: 5, min: 1, max: 10, subtract: true },
+  // Early school: some ducks swim in; how many more fill the pond to ten?
+  { mode: 'ten', rounds: 5, min: 3, max: 9 },
 ];
+
+/** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
+export function tenStarts(rng: Rng, plan: DuckPlan): number[] {
+  const out: number[] = [];
+  while (out.length < plan.rounds) {
+    const a = rng.int(plan.min, plan.max);
+    if (a !== out.at(-1)) out.push(a);
+  }
+  return out;
+}
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

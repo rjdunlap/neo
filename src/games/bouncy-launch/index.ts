@@ -9,17 +9,18 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, reach, targets, type LaunchPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
+  school: { min: 4, max: 5 },
 };
 
 const PET_SCALE = 0.5;
@@ -368,8 +369,8 @@ export const bouncyLaunch: GameModule = {
   titleLine: 'game.bouncy-launch',
   region: 'tinker-lab',
   skills: ['cause-and-effect', 'measurement', 'numbers'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Say "pull... and let go!" together, then guess where {name}\'s pet will land.',

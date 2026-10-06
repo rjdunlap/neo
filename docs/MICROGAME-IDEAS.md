@@ -112,4 +112,6 @@ These candidates broaden the idea pool without replacing the roadmap's verificat
 
 ## Local implementation update (2026-10-06)
 
+**Peekaround Island** is built (working tree; toddler–pre-K, five levels): a code-drawn island turns in quarter steps to find who hides behind a tree, then asks who is hiding, then places friends behind, in front of and next to it. Shape Buddies remains a proposal. See [DESIGN.md](DESIGN.md) for details.
+
 Quick Tricks now contains the original Umbrella Up / Sock Gobbler / Bridge Stretch show at levels 1–3 and a second Parcel Turn / Picnic Places / Last Berry show at appended levels 4–6. Each show is one round and one sticker, with a child-controlled arrow between scenes. Rhythm Neighbors is also a standalone six-level game: different call and reply parts, two frog voices, optional forgiving rhythm judgment and guided replies. Both remain uncommitted and await iPad judgments; see VERIFICATION.md. Other ideas here remain proposals.

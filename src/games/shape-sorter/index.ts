@@ -8,9 +8,9 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { HOLE_R, holeAt, holeLayout, pieceKinds, planFor, type SorterPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Each shape's own color, used while colors still help. */
 const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
@@ -22,7 +22,7 @@ const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
   hexagon: 'green',
 };
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 5 },
   preschool: { min: 3, max: 7 },
@@ -342,7 +342,7 @@ export const shapeSorter: GameModule = {
   region: 'rainbow-meadow',
   skills: ['shapes', 'fine-motor', 'spatial'],
   bands: ['toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     const n = p.holes.length;

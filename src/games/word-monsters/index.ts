@@ -11,18 +11,19 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import { letterPicture } from '../letter-trails/pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { fits, FIRST_WORDS, makeQuestions, planFor, sounded, SOUNDS, type MonsterPlan, type Question } from './logic';
+import { fits, FIRST_WORDS, makeQuestions, planFor, sounded, SOUNDS, WORDS, type MonsterPlan, type Question } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
+  school: { min: 5, max: 7 },
 };
 
 const FURS: ColorName[] = ['purple', 'teal', 'orange', 'pink', 'blue', 'green', 'red', 'yellow'];
@@ -157,7 +158,7 @@ class WordMonsters implements Game {
   }
 
   private get building() {
-    return this.plan.mode === 'build' || this.plan.mode === 'spell';
+    return this.plan.mode === 'build' || this.plan.mode === 'spell' || this.plan.mode === 'family';
   }
 
   start() {
@@ -245,7 +246,9 @@ class WordMonsters implements Game {
     this.slots.clear();
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
     if (this.building) {
-      this.showPicture(wordPicture(q.answer), 0.5, -110);
+      // Word families only show real pictures: "sun" is drawn as a big S, which would give the answer away.
+      const drawn = (WORDS as readonly string[]).includes(q.answer) && !(q.fixed && q.answer === 'sun');
+      this.showPicture(drawn ? wordPicture(q.answer) : null, 0.5, -110);
       this.drawSlots(q.answer);
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);
@@ -253,13 +256,28 @@ class WordMonsters implements Game {
       this.showPicture(null);
     }
     this.setMonsters(q.monsters, this.plan.mode === 'find');
+    if (q.fixed) this.placeEnding(q.fixed);
     await this.ctx.tw.wait(0.4);
     this.busy = false;
     await this.ask(q);
   }
 
+  /** Word families: the ending's monsters already stand in the last slots. */
+  private placeEnding(ending: string) {
+    ending.split('').forEach((letter, i) => {
+      const m = new Monster(letter, false, FURS[(i + 3) % FURS.length]);
+      m.placed = true;
+      m.slot = i + 1;
+      m.position.copyFrom(this.slotAt(i + 1));
+      this.ctx.track(m);
+      this.crowd.addChild(m);
+      this.monsters.push(m);
+    });
+  }
+
   private ask(q: Question) {
     const sound = SOUNDS[q.answer];
+    if (this.plan.mode === 'family') return this.ctx.instruct('monster.family', { word: q.answer, sound: SOUNDS[q.answer[0]] });
     switch (this.plan.mode) {
       case 'find':
         return this.ctx.instruct('monster.find', { letter: q.answer.toUpperCase() });
@@ -367,7 +385,8 @@ class WordMonsters implements Game {
     void this.ctx.tw.to(m, { x: slot.x, y: slot.y }, { duration: 0.25, ease: ease.outBack });
     m.scale.set(1);
     sfx.squish();
-    this.filled++;
+    // In a word family the ending is already there, so the first sound finishes the word.
+    this.filled = q.fixed ? q.answer.length : this.filled + 1;
     if (this.filled >= q.answer.length) void this.wordDone(q);
     return true;
   }
@@ -441,8 +460,8 @@ export const wordMonsters: GameModule = {
   titleLine: 'game.word-monsters',
   region: 'story-grove',
   skills: ['letter-sounds', 'phonics', 'vocabulary'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Make each monster\'s sound together, slowly: "mmm", "sss", then blend them into a word.',

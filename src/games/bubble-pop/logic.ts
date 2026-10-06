@@ -1,7 +1,7 @@
 import { RAINBOW, type ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 
-export type BubbleMode = 'free' | 'color' | 'count';
+export type BubbleMode = 'free' | 'color' | 'count' | 'bonds';
 
 export interface BubblePlan {
   mode: BubbleMode;
@@ -14,6 +14,8 @@ export interface BubblePlan {
   /** Colors in play (color mode). */
   colors: number;
   radius: [number, number];
+  /** Bonds mode: the total each pair makes. */
+  sum?: number;
 }
 
 /** One entry per level. Lap levels are pure popping; then colors; then numbers in order. */
@@ -27,7 +29,21 @@ export const PLANS: BubblePlan[] = [
   { mode: 'count', goal: 5, speed: 35, most: 5, colors: 0, radius: [62, 74] },
   { mode: 'count', goal: 7, speed: 42, most: 7, colors: 0, radius: [56, 68] },
   { mode: 'count', goal: 10, speed: 48, most: 10, colors: 0, radius: [50, 60] },
+  // Pre-K and early school: pop two bubbles that make a number together.
+  { mode: 'bonds', goal: 4, speed: 28, most: 8, colors: 0, radius: [58, 68], sum: 5 },
+  { mode: 'bonds', goal: 5, speed: 32, most: 10, colors: 0, radius: [54, 62], sum: 10 },
 ];
+
+/** Bonds mode: numbers for `pairs` pairs that each make `sum`, so every bubble has a partner. */
+export function bondNumbers(sum: number, pairs: number, rng: Rng): number[] {
+  const out: number[] = [];
+  const firsts = rng.shuffle(Array.from({ length: Math.floor(sum / 2) }, (_, i) => i + 1));
+  for (let i = 0; i < pairs; i++) {
+    const a = firsts[i % firsts.length];
+    out.push(a, sum - a);
+  }
+  return rng.shuffle(out);
+}
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

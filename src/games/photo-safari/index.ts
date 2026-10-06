@@ -10,17 +10,18 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { describe, makeScene, planFor, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
+import { describe, makeScene, planFor, request, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
+  school: { min: 4, max: 6 },
 };
 
 const SCALE = 0.5;
@@ -199,7 +200,7 @@ class PhotoSafari implements Game {
     if (this.plan.mode === 'snap') {
       if (this.photos === 0) await this.ctx.instruct('safari.snap');
     } else if (t) {
-      await this.ctx.instruct('safari.ask', { what: describe(this.plan.mode, t.sighting) });
+      await this.ctx.instruct('safari.ask', { what: request(this.plan.mode, this.scene!) });
     }
   }
 
@@ -310,8 +311,8 @@ export const photoSafari: GameModule = {
   titleLine: 'game.photo-safari',
   region: 'story-grove',
   skills: ['vocabulary', 'verbs', 'positions', 'listening'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Look at the album together at the end: "What is the bunny doing? Where is it?"',

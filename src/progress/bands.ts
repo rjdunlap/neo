@@ -1,4 +1,4 @@
-export type Band = 'lap' | 'toddler' | 'preschool' | 'prek';
+export type Band = 'lap' | 'toddler' | 'preschool' | 'prek' | 'school';
 
 export interface BandInfo {
   id: Band;
@@ -13,6 +13,7 @@ export const BANDS: BandInfo[] = [
   { id: 'toddler', label: 'Toddler', ages: '2–3 years', minutes: 10 },
   { id: 'preschool', label: 'Preschool', ages: '3–4 years', minutes: 15 },
   { id: 'prek', label: 'Pre-K', ages: '5–6 years', minutes: 20 },
+  { id: 'school', label: 'Early school', ages: '6–8 years', minutes: 20 },
 ];
 
 export const bandInfo = (id: Band): BandInfo => BANDS.find((b) => b.id === id) ?? BANDS[0];

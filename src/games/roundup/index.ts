@@ -8,14 +8,14 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { enter, fleeSpeed, inRect, makeHerd, planFor, PLURAL, ringBell, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
@@ -584,7 +584,7 @@ export const roundup: GameModule = {
   region: 'barnyard',
   skills: ['motor-planning', 'sorting', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Show {name} how to wiggle a finger behind the animals to send them home.',

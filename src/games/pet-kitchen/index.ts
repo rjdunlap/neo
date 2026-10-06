@@ -164,8 +164,8 @@ class PetKitchen implements Game {
 }
 export const petKitchen:GameModule={
   id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',
-  skills:['equal-shares','fractions','doubling'],bands:['toddler','preschool','prek'],
-  levels:b=>b==='toddler'?{min:1,max:1}:b==='preschool'?{min:1,max:4}:{min:3,max:6},
+  skills:['equal-shares','fractions','doubling'],bands:['toddler','preschool','prek','school'],
+  levels:b=>b==='school'?{min:5,max:6}:b==='toddler'?{min:1,max:1}:b==='preschool'?{min:1,max:4}:{min:3,max:6},
   describeLevel:l=>planFor(l).name,music:STYLES.paint,
   coplayHint:'Cut the sandwich together. Help {name} give a piece to each friend, then serve it.',
   offScreen:'Share a sandwich or paper circle in equal parts. Put every piece back together to see the whole.',

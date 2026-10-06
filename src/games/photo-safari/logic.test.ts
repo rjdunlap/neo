@@ -1,6 +1,6 @@
 import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { describe, makeScene, matches, PLANS } from './logic';
+import { describe, makeScene, matches, PLANS, request } from './logic';
 
 group('Photo Safari', () => {
   it('always has exactly one animal matching the request, each in its own spot', () => {
@@ -36,5 +36,16 @@ group('Photo Safari', () => {
     expect(describe('doing', s)).toBe('the bunny jumping');
     expect(describe('where', s)).toBe('the bunny behind the bush');
     expect(describe('both', s)).toBe('the bunny jumping behind the bush');
+  });
+
+  it('not levels: everyone else does the same thing, and only the one asked for does something else', () => {
+    const plan = PLANS.find((p) => p.mode === 'not')!;
+    for (let seed = 1; seed <= 200; seed++) {
+      const scene = makeScene(plan, new Rng(seed));
+      const others = scene.sightings.filter((_, i) => i !== scene.target);
+      expect(others.every((s) => s.action === scene.notAction)).toBe(true);
+      expect(scene.sightings[scene.target].action).not.toBe(scene.notAction);
+      expect(request('not', scene)).toBe(`the animal that is not ${scene.notAction}`);
+    }
   });
 });

@@ -32,6 +32,8 @@ export const STYLES = {
   paint: { bpm: 76, chords: [I, IV, vi, IV], lead: 'bell', density: 0.14, range: [6, 12], bass: false, pad: true, shaker: false, volume: 0.38, seed: 41 },
   stickers: { bpm: 100, chords: [I, IV, V, I], lead: 'marimba', density: 0.3, range: [3, 9], bass: true, pad: false, shaker: true, volume: 0.42, seed: 8 },
   lullaby: { bpm: 66, chords: [I, IV, I, V], lead: 'bell', density: 0.6, range: [5, 12], bass: false, pad: true, shaker: false, volume: 0.42, seed: 3 },
+  /** Near silence, for games whose play is the music (a beat the child builds). */
+  quiet: { bpm: 100, chords: [I], lead: 'none', density: 0, range: [0, 0], bass: false, pad: false, shaker: false, volume: 0.0001, seed: 1 },
 } satisfies Record<string, MusicStyle>;
 
 /** Generative background music: a short seeded melody over a chord loop, slowly mutating. */

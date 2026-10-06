@@ -8,13 +8,13 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { describe, HAIR_COLORS, makeRequests, MAX_LENGTH, MIN_LENGTH, needs, planFor, toolFor, type Look, type Request, type SalonPlan, type Strand, type Tool } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
@@ -478,7 +478,7 @@ export const fluffySalon: GameModule = {
   region: 'treehouse',
   skills: ['creativity', 'pretend-play', 'vocabulary', 'fine-motor'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Be the customer! Ask {name} for "long and pink, please!" and say how you like it.',

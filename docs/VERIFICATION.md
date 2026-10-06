@@ -1,8 +1,93 @@
 # Puddle Island verification
 
-This is a dated record of checks, newest expansion first. The newest entry covers subject cards and four more games (43, in the working tree, only partly checked); the next ones cover four games (39, in the working tree) and a combined run with rule tests for the original games, both on 2026-10-06; the follow-on batch below covers all 35 games deployed on 2026-10-05; earlier sections describe earlier snapshots and retired navigation. These results do not automatically validate later working-tree changes or establish what is deployed. Outstanding work and device checks are tracked in [ROADMAP.md](ROADMAP.md).
+This is a dated record of checks, newest expansion first. The newest entry covers eleven more games and longer ladders (62, in the working tree); the next covers the early-school band, Wonder Woods and seven more games (51, in the working tree); the next covers Peekaround Island and a Little Helpers level, whose play-throughs are recorded in the newest entry; the next covers subject cards and four more games (43, pushed in `17124e8`, only partly checked); the next ones cover four games (39, in the working tree) and a combined run with rule tests for the original games, both on 2026-10-06; the follow-on batch below covers all 35 games deployed on 2026-10-05; earlier sections describe earlier snapshots and retired navigation. These results do not automatically validate later working-tree changes or establish what is deployed. Outstanding work and device checks are tracked in [ROADMAP.md](ROADMAP.md).
 
-## Subject cards, Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town (2026-10-06, midday; working tree, partly checked)
+## Pixel Pictures, Goodnight Room, and longer ladders (2026-10-06, evening; working tree, not committed)
+
+*Added later the same evening:*
+- **Animal Snack:** rule tests check that every animal has its own food and that questions are well formed. `WOODS_ONLY=snack` passed levels 1–5: animals and snacks tapped and dragged, wrong eaters and miscounts as misses, glow hints, saved scores and stickers.
+- **Picture Graph:** rule tests check that every question about a generated graph has one clear answer (no ties for most or fewest; exactly one pair of equal bars when asked). `WOODS_ONLY=graph` passed levels 1–4: bars built by tapping, wrong graphs and answers as misses, glow hints. A screenshot found a critter hidden under the number pads; critters now keep clear of the right edge, and the check button hides during questions.
+- **Treasure Map and Opposites:** rule tests check that squares are named and compared correctly, that finds sit on the map at different squares, and that step directions start on the map and turn; for Opposites, that every question has exactly one right card and every pairs card has exactly one opposite. `WOODS_ONLY=map` passed Treasure Map 1–4 and `WOODS_ONLY=opp` passed Opposites 1–4 (taps, misses, glow hints, saved scores and stickers). A gallery screenshot checked all 16 opposite pictures.
+- **Photo Safari 6 (not) and Egg Catch 6 (predict):** rule tests check that on NOT levels only the target does something different, and that predicted eggs land somewhere new each time. `BROWSER_SUITE=batch BATCH_ONLY=safari FROM_LEVEL=5` passed Photo Safari 5–6. `WOODS_ONLY=predict` passed Egg Catch 6, and `BATCH_ONLY=eggs FROM_LEVEL=4` passed levels 4–5 again. The first predict run counted no misses because the steering layer swallowed bin taps; disabling it when routing fixed this.
+- **Ramp Race:** rule tests check that higher ramps and slipperier floors always go farther, that every star is reachable (by exactly one height on the height level), and that the fair-test judge is right. `WOODS_ONLY=ramp` passed levels 1–4: ramps and floors changed by tapping, rolls, short and long rolls as misses with a ghost-ramp hint, and unfair tests as misses.
+- **Critter Sort:** rule tests check that separate hoops never overlap, that overlapping ones do, that every part of the diagram gets a critter, and that exactly one offered rule fits on the guessing level. `WOODS_ONLY=sort` passed levels 1–4: critters dragged into hoops and the middle, wrong hoops explained, glow hints, and rules guessed. Screenshot review replaced a "?" sign that looked like a lollipop, and spread out crowded critters.
+- **`BROWSER_SUITE=world` passed again with 57 games** (before Ramp Race and Critter Sort): every game is reachable on subject cards in all five places, in both orientations. The build passed.
+- **Stop and Go:** rule tests check the light cycle (greens and reds of at least 3 seconds, a short yellow), that only going on red is a mistake, and that both roads green is unsafe. `WOODS_ONLY=go` passed levels 1–4, waiting for the real light: two taps on red, then cars sent and steps taken only on green; at the crossing, both roads green twice, then each road given its turn. A probe found the scene failing to start (cars were added before the light was on the stage) and a crossing hint that never appeared because passing cars reset the miss count.
+- **Bubble Pop 10–11 (number bonds):** a rule test checks that every bubble has a partner that makes the total, whatever pair is popped first. `WOODS_ONLY=bonds` passed both levels: wrong pairs, a glowing pair hint, all pairs popped, and the rainbow bubble. The first run failed with 7 misses instead of 2: taps meant for one drifting bubble landed on another drawn on top. Taps now go to the nearest bubble's middle, and the run passes.
+- **Rhyme Time:** rule tests check that no word is in two families and that each question shows exactly the intended rhymes (one match, one pair, or one odd one out). `WOODS_ONLY=rhyme` passed levels 1–4. A gallery screenshot of all 29 pictures found the moon drawn as a navy blob (now a crescent).
+- **Beat Builder:** rule tests check that beats start on the drum, every row has a hit, three-row beats are never all sounds at once, and repeat beats really repeat. `WOODS_ONLY=beat` covered levels 1–5. The first full run failed one assertion at level 4. Three later runs of levels 3–5 passed, and the failure was not reproduced or explained; treat level 4's opening misses as worth watching.
+
+- `npm run typecheck` passed. `npm test` passed: 177 tests across 60 files. New rule tests:
+  - **Robot Path:** each counted or looped level's solution works within its slots, and the plain route doesn't fit without the new idea. Expanding slots and loops is tested, including which slot each step comes from.
+  - **Word Monsters 7:** each family question offers its first sound, with the ending fixed and two families per round.
+  - **Duck Pond 10:** rounds start with 3–9 ducks and never repeat back to back.
+  - **Monster Munch 8:** leftovers are 1 to (monsters − 1), the tray holds every cookie, and shares are at least 2.
+  - **Pixel Pictures:** every level has enough fitting pictures. Every logic puzzle is solvable by row and column logic alone, and every cell that logic decides agrees with the picture.
+  - **Goodnight Room:** requests are only for things in the room, never repeated, and one or two at a time.
+- **Browser runs**, each game on its own, every level passing without page errors:
+  - `BROWSER_SUITE=robot` covered Robot Path 1–10. The first six still pass with the rewritten scene; 7–10 tap arrows repeatedly and the loop button, with collisions, the hint, and the running slot lit.
+  - `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks` covered Duck Pond 1–10. Level 10 counts on after wrong pads, and the missing ducks fill the pond.
+  - `BROWSER_SUITE=third FROM_LEVEL=7` covered Feelings Faces, then Monster Munch 7–8. Level 8 hands back an unfair share, nudges an early bell, then asks how many each and how many left over.
+  - `BROWSER_SUITE=woods` covered `WOODS_ONLY=families` (Word Monsters 7), `pixels` (Pixel Pictures 1–5) and `night` (Goodnight Room 1–4).
+- **Screenshot review:** found the "sun" picture giving away the first sound in word families. It is hidden there now.
+- **Not checked:**
+  - The world suite and offline check after these additions. The catalog grew, but navigation and saves did not change.
+  - Portrait for these levels.
+  - A real iPad, and judging fun.
+
+## Wonder Woods, the early-school band, and seven more games (2026-10-06, afternoon; working tree, not committed)
+
+What changed:
+
+- **A fifth band and place.** `school` ("Early school", 6–8) is the trail's fifth place, Wonder Woods.
+- **Band tables.** Games now list only the bands they support (`BandLevels`, `rangeFor`); 29 existing games joined `school` at the top of their ladders.
+- **Seven new games:** Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall, Garden Grow and Clock Tower.
+- **A new browser suite.** `woods` covers these games, Peekaround Island and Little Helpers level 6.
+
+Headless Chrome only; checks kept to what changed.
+
+- **Unit and build checks.** `npm run typecheck` and `npm run build` passed, and `npm test` passed 168 tests across 58 files. Highlights of the new rule tests:
+  - **Light Lab:** every generated puzzle (300 seeds per level) has a known answer and starts unsolved, with no overlapping pieces. Pink flowers need light that has passed the pink glass. Following the hint mirror always solves.
+  - **Penguin Slide:** slides stop at rocks, edges and soft snow. Every puzzle's shortest solution is within the level's range, and following the hint arrow eats every fish in the fewest slides.
+  - **Secret Code:** marks never give more yellows than are missing. The real code never counts as ignoring a clue, even when guesses repeat a color. Suggested guesses fit every clue and always open the door.
+  - **Frog Hop:** every start and answer is on the visible pads, and answers never repeat back to back.
+  - **Market Stall:** amounts are 1–10 and makeable with the level's coins. The second way to pay always differs.
+  - **Garden Grow:** requests fit the beds and the needed packets are offered. Plantings match in any order.
+  - **Clock Tower:** times are spoken correctly ("quarter to 1"), times within a round are distinct, and exactly one picture matches when reading.
+  - The save migration keeps `school` for the child and the celebrated trail position.
+- **`BROWSER_SUITE=woods`.** Every level passed, driven like a finger: Light Lab 1–6, Penguin Slide 1–5 (level 3 in portrait), Peekaround Island 1–5, Little Helpers 6, Secret Code 1–6 (level 4 in portrait), Frog Hop 1–6, Market Stall 1–6, Garden Grow 1–5 and Clock Tower 1–6. Each level checks its misses and hints, where a level has them, plus the saved score and the sticker. Exploration is never counted as a miss: turning mirrors, sliding, live-beam levels and free planting. Each game passed in its own run; the suite was not run in one go.
+- **`BROWSER_SUITE=world` passed in full.** Hatching, the five-place trail, birthdays, the parent gate, and subject cards with every game reachable in all five places in both orientations, with large targets and preserved returns.
+  - The suite had failed twice for one reason: the test tapped an arrow again within the arrows' deliberate 400 ms debounce. It now waits.
+  - This is probably also why the cancellation step failed in the earlier Codex run.
+- **`npm run test:offline` passed** against a fresh build served on `localhost:4173` (the default `127.0.0.1` does not reach the IPv6-only preview).
+- **Bugs found while testing, all fixed:**
+  - **Secret Code:** the clue rule wrongly treated a gray mark as "not in the code" when the same color was green or yellow elsewhere in that guess (caught by a rule test). Its hint stones also covered the guess history; they now sit faintly in the empty slots.
+  - **Garden Grow:** planted seeds showed no color, so a mixed-color request could not be checked by eye. Seeds now carry colored markers, and a picture sign shows the request and glows as part of the hint.
+  - **Clock Tower:** "one hour later" rounds could repeat an answer.
+  - **Light Lab:** the beam's glow stacked into bright dots where segments met.
+  - **Market Stall:** the awning's scallops pointed up.
+- **Test-only fixes:**
+  - Little Helpers: tapping a bunch at its base calls a helper back, as designed, so the test now taps the fruit.
+  - Rounds that have just become ready get a frame before the first tap.
+- **Not checked:**
+  - A real iPad, device speech, and judgments of fun and clarity (roadmap §1).
+  - The 29 existing games at the `school` band. Their levels were covered at pre-K by earlier suites, not replayed from Wonder Woods.
+  - The combined browser flow.
+  - Portrait for most new levels. Only Penguin Slide 3, Secret Code 4 and the subject cards were played in portrait; the others were seen in landscape screenshots only.
+
+## Peekaround Island and Little Helpers equal groups (2026-10-06, afternoon; working tree, not committed)
+
+Checks were deliberately limited to save usage; the grown-up plans browser testing after the usage reset.
+
+- `npm run typecheck`: passed. `npm test`: 147 tests across 51 files passed. New rule tests:
+  - **Peekaround Island:** half a turn swaps front and behind and keeps sides as sides; exactly one friend hides, and it is the one asked about; the hider never repeats back to back; every placement request can be answered whichever fitting spot the child uses; all three words come up in a round; two-direction pairs stay answerable across the half turn.
+  - **Little Helpers level 6:** every bunch is 2 or 3 fruits of 2 or 3 helpers each, below the crowd so one helper is spare; neighbouring bunches differ in shape; each round shows all three shapes; counting by groups reads "2, 4, 6".
+- **Not checked:**
+  - `npm run build` after these changes.
+  - Any browser run. Neither game has a play-through case in `scripts/browser-check.mjs` yet, and nothing has been seen on screen: the island layout in both orientations, the tree hiding the back spot, drop spots, the who-is-hiding card under the home button, and the bunch layout clearing the waiting helpers.
+  - A real iPad.
+
+## Subject cards, Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town (2026-10-06, midday; pushed in `17124e8`, partly checked)
 
 Built by a Codex session that ran out of usage partway through checking; a Claude session then recorded the state from the logs Codex left in `test-results/` and opened two more lap levels. Headless Chrome only. Checks were deliberately deferred to save usage.
 

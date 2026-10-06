@@ -4,27 +4,28 @@ Written 2026-10-06, updated at midday after a Codex session ran out of usage par
 
 ## State of the tree
 
-- **The last commit is `da6860b`.** Everything below is in the working tree only: not committed and not deployed. Run `git status` before starting. Commit or push only when the grown-up asks; pushing to `main` deploys.
-- **Two sessions have worked in this checkout.** Claude added Seesaw Balance, Teddy Doctor, Bumper Garden and Quick Tricks (39 games). Codex then worked from the prompt below and added:
-  - **Subject cards:** an optional place layout, chosen in grown-up Finding games.
-  - **Four games:** Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town (43 games).
-  - **Longer ladders:** Quick Tricks levels 4–6 and Seesaw Balance level 7.
-  - **More lap play:** Rainbow Fingers and Fluffy Salon open their second free-play modes to lap.
+- **The last commit is `17124e8`, pushed to `main` (which deploys).** It holds everything through Tangram Town (43 games). The working tree adds, uncommitted:
+  - the early-school band (`school`, 6–8) and its trail place, Wonder Woods;
+  - Peekaround Island and Little Helpers level 6;
+  - Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall, Garden Grow, Clock Tower, Pixel Pictures, Goodnight Room, Animal Snack, Beat Builder, Rhyme Time, Stop and Go, Ramp Race, Critter Sort, Treasure Map, Opposites and Picture Graph (62 games);
+  - longer ladders: Robot Path 7–10 (counted steps, loops), Word Monsters 7 (word families), Duck Pond 10 (make ten), Monster Munch 8 (leftovers), Bubble Pop 10–11 (number bonds), Photo Safari 6 (not), Egg Catch 6 (predict);
+  - the `woods` browser suite.
 
-  A Claude session then opened Photo Safari's and Teddy Doctor's naming levels (level 2) to lap play. README, DESIGN, ROADMAP and ARCADE-IDEAS already describe all of it.
-- **Checked:** typecheck and 142 unit tests across 50 files pass. The `creative` suite and Quick Tricks 1–6 pass.
-- **Do first after the usage reset:** finish the unchecked items in the newest [verification entry](VERIFICATION.md):
-  1. `npm run build`.
-  2. `BROWSER_SUITE=world`. It last failed the subject-card cancellation step: after a pointer cancel, the next card tap did not open the subject. `SubjectPlaceScene.ts` was edited right after the probe, but the suite was not rerun.
-  3. `npm run test:offline` against a fresh build; it now starts through subject cards.
-  4. `BROWSER_SUITE=next NEXT_ONLY=seesaw FROM_LEVEL=7`.
-
-  Then record the results.
+  Run `git status` before starting. Commit or push only when the grown-up asks.
+- **Checked** (see the newest [verification entry](VERIFICATION.md)):
+  - typecheck, 168 unit tests and the build;
+  - every level of the `woods` suite;
+  - the full `world` suite;
+  - the production offline check.
+- **Not checked yet:**
+  - Seesaw Balance 7 in the `next` suite.
+  - The combined flow.
+  - A real iPad.
 
 ## Catalog snapshot
 
-- **Totals:** 43 games. Puddle Lagoon (lap) lays out 30, Daisy Meadow 39, Bumpy Hills 42 and Starry Peak 43. The original swiping path is still the default; subject cards await the iPad comparison (roadmap §2).
-- **Games per subject:** Treehouse 3, Counting Cove 4, Music Mountain 4, Rainbow Meadow 4, Barnyard 4, Bubble Beach 4, Story Grove 4, Puzzle Peaks 5, Tinker Lab 5, Cozy Village 6.
+- **Totals:** 62 games. Puddle Lagoon (lap) lays out 35, Daisy Meadow 45, Bumpy Hills 53, Starry Peak 58 and Wonder Woods 43. The original swiping path is still the default; subject cards await the iPad comparison (roadmap §2).
+- **Games per subject:** Treehouse 3, Music Mountain 4, Barnyard 4, Bubble Beach 4, Story Grove 4, Counting Cove 5, Rainbow Meadow 5, Tinker Lab 6, Puzzle Peaks 8, Cozy Village 8. Subject cards page within a subject, so eight is fine there; the swiping path is long at Starry Peak (50).
 - **Shortest ladders:**
   - Ten games stop at 5 levels, including Bouncy Launch, Peg Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, Bounce Back, Dot Link and Bumper Garden.
   - Robot Path is pre-K only.
@@ -33,7 +34,7 @@ Written 2026-10-06, updated at midday after a Codex session ran out of usage par
   - The remaining level 2s are too hard for a one-year-old: steering, pulling, sliding, colors, numbers, letters or rallies.
   - Peg Garden's bloom level can't finish if the same spot is tapped repeatedly (deterministic physics). It needs a gentle completion before it opens to lap.
   - New lap levels must be appended at the end of a ladder, so another lap step means an easy mode outside the usual ladder order. That needs a decision about non-contiguous ranges first.
-- **Remaining from step 3 of the prompt:** the 6–8 steps (Robot Path loops with step-through and undo, a Mail Carrier two-stop map, Little Helpers equal groups, Word Monsters blending) and the 5-level ladders. Step 4 (Windy Picnic or the pet treehouse) has not started.
+- **Remaining from step 3 of the prompt:** a Mail Carrier map with a legend and two planned stops, and the remaining 5-level ladders. Done: Little Helpers equal groups (6), Robot Path loops (7–10), Word Monsters word families (7), Duck Pond make-ten (10), Monster Munch leftovers (8). Step 4 (Windy Picnic or the pet treehouse) has not started.
 
 ## The grown-up's preferences
 

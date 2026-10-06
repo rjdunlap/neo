@@ -1,9 +1,16 @@
+import type { Band } from './bands';
 import type { RoundRecord } from './save';
 
 export interface LevelRange {
   min: number;
   max: number;
 }
+
+/** Level ranges for the age bands a game supports; a game lists only those bands. */
+export type BandLevels = Partial<Record<Band, LevelRange>>;
+
+/** A supported band's range. The shell only asks for bands a game lists, so the fallback is never played. */
+export const rangeFor = (table: BandLevels, band: Band): LevelRange => table[band] ?? { min: 1, max: 1 };
 
 /** Few mistakes and no hints. */
 export const isSmooth = (r: RoundRecord) => r.misses <= 1 && r.hints === 0;

@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { FRUIT_FOR, prop } from '../../art/props';
 import { Backdrop } from '../../art/scenery';
@@ -8,18 +8,19 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { CROWD, makeFruits, planFor, tryLift, usesWhistle, type Fruit, type HelperPlan } from './logic';
+import { CROWD, makeFruits, planFor, skipCount, tryLift, usesWhistle, type Fruit, type HelperPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: 6 },
 };
 
 const HELPER_COLORS: ColorName[] = ['pink', 'blue', 'yellow', 'purple', 'teal', 'orange', 'green'];
@@ -110,7 +111,8 @@ class LittleHelpers implements Game {
 
   private spot() {
     const v = this.view;
-    return { x: v.w * 0.55, y: v.h - 190 };
+    // A bunch's wider row of teams sits a little right, clear of the waiting crowd.
+    return { x: v.w * (this.plan.mode === 'groups' ? 0.58 : 0.55), y: v.h - 190 };
   }
 
   private basketAt() {
@@ -138,9 +140,21 @@ class LittleHelpers implements Game {
 
   destroy() {}
 
-  /** Where carrying helper `i` stands: a row under the fruit. */
+  /** The center of fruit `g` in a bunch, relative to the spot; each fruit's team stands under it. */
+  private groupX(g: number, f: Fruit) {
+    const each = f.need / f.groups;
+    return (g - (f.groups - 1) / 2) * (each * 50 + 30);
+  }
+
+  /** Where carrying helper `i` stands: a row under the fruit, or a team under each fruit of a bunch. */
   private slotAt(i: number) {
     const s = this.spot();
+    const f = this.fruit;
+    if (this.plan.mode === 'groups' && f) {
+      const each = f.need / f.groups;
+      const g = Math.floor(i / each);
+      return { x: s.x + this.groupX(g, f) + (i % each - (each - 1) / 2) * 50, y: s.y + 70 };
+    }
     const need = this.fruit?.need ?? 1;
     const n = Math.max(need, this.carrying.length, i + 1);
     return { x: s.x + (i - (n - 1) / 2) * 58, y: s.y + 70 };
@@ -157,13 +171,26 @@ class LittleHelpers implements Game {
     const f = this.fruit;
     if (!f) return void this.finale();
     const color = this.ctx.rng.pick(FRUIT_COLORS);
-    const art = prop(FRUIT_FOR[color]!, color);
-    // Heavier fruit is bigger.
-    art.scale.set(0.9 + f.need * 0.28);
-    art.y = -10 - f.need * 12;
     this.fruitNode.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.fruitNode.addChild(art);
-    this.fruitNode.hitArea = new Circle(0, art.y, 60 + f.need * 16);
+    if (this.plan.mode === 'groups') {
+      // A bunch: every fruit the same size, since each needs the same team.
+      const each = f.need / f.groups;
+      for (let g = 0; g < f.groups; g++) {
+        const art = prop(FRUIT_FOR[color]!, color);
+        art.scale.set(0.75 + each * 0.2);
+        art.position.set(this.groupX(g, f), -10 - each * 12);
+        this.fruitNode.addChild(art);
+      }
+      const w = f.groups * (each * 50 + 30) + 40;
+      this.fruitNode.hitArea = new Rectangle(-w / 2, -10 - each * 12 - 80, w, 160);
+    } else {
+      const art = prop(FRUIT_FOR[color]!, color);
+      // Heavier fruit is bigger.
+      art.scale.set(0.9 + f.need * 0.28);
+      art.y = -10 - f.need * 12;
+      this.fruitNode.addChild(art);
+      this.fruitNode.hitArea = new Circle(0, art.y, 60 + f.need * 16);
+    }
     this.fruitNode.alpha = 1;
     const s = this.spot();
     this.fruitNode.position.set(s.x, s.y - 300);
@@ -181,6 +208,8 @@ class LittleHelpers implements Game {
         return this.ctx.instruct('helpers.send', { n: f.need });
       case 'more':
         return this.ctx.instruct('helpers.more', { m: f.already, n: f.need });
+      case 'groups':
+        return this.ctx.instruct('helpers.groups', { n: f.groups, m: f.need / f.groups });
       default:
         return this.ctx.instruct('helpers.count', { n: f.need });
     }
@@ -190,6 +219,18 @@ class LittleHelpers implements Game {
   private drawBadge(f: Fruit) {
     this.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
     if (this.plan.mode === 'tap') return;
+    const s = this.spot();
+    this.badge.position.set(s.x - 200, s.y - 210);
+    if (this.plan.mode === 'groups') {
+      // Dots in little teams, one team per fruit: two twos look different from four.
+      const each = f.need / f.groups;
+      const step = each * 30 + 26;
+      const w = 40 + f.groups * each * 30 + (f.groups - 1) * 26;
+      const g = new Graphics().roundRect(-w / 2, -36, w, 72, 24).fill(0xffffff).stroke({ width: 5, color: wood.line });
+      for (let k = 0; k < f.groups; k++) for (let j = 0; j < each; j++) g.circle(-w / 2 + 35 + k * step + j * 30, 0, 12).fill(swatch.green.fill);
+      this.badge.addChild(g);
+      return;
+    }
     const numeral = this.plan.mode === 'numeral' || this.plan.mode === 'more';
     const w = numeral ? 90 : 40 + f.need * 34;
     const g = new Graphics().roundRect(-w / 2, -36, w, 72, 24).fill(0xffffff).stroke({ width: 5, color: wood.line });
@@ -200,8 +241,6 @@ class LittleHelpers implements Game {
     } else {
       for (let i = 0; i < f.need; i++) g.circle(-w / 2 + 37 + i * 34, 0, 12).fill(swatch.green.fill);
     }
-    const s = this.spot();
-    this.badge.position.set(s.x - 200, s.y - 210);
   }
 
   // Helpers ---------------------------------------------------------------------------------
@@ -259,13 +298,15 @@ class LittleHelpers implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
+    const groups = this.plan.mode === 'groups';
+    const vars = { n: f.need, m: f.need / f.groups, list: skipCount(f) };
     if (result === 'short') {
       // They strain, but it won't budge.
       for (const h of this.carrying) void this.ctx.tw.to(h, { y: h.y - 10 }, { duration: 0.12 }).then(() => this.ctx.tw.to(h, { y: h.y + 10 }, { duration: 0.12 }));
       void this.ctx.tw.to(this.fruitNode, { rotation: 0.08 }, { duration: 0.1 }).then(() => this.ctx.tw.to(this.fruitNode, { rotation: 0 }, { duration: 0.2 }));
-      await this.ctx.say('helpers.heavy', { n: f.need });
+      await this.ctx.say(groups ? 'helpers.groups.short' : 'helpers.heavy', vars);
     } else {
-      await this.ctx.say('helpers.extra', { n: f.need });
+      await this.ctx.say(groups ? 'helpers.groups.extra' : 'helpers.extra', vars);
       for (const h of this.carrying.slice(f.need)) this.release(h);
       await this.ctx.tw.wait(0.5);
     }
@@ -312,7 +353,9 @@ class LittleHelpers implements Game {
       h.slot = -1;
       void tw.to(h, { x: h.home.x, y: h.home.y }, { duration: 0.9, ease: ease.inOutSine }).then(() => (h.moving = false));
     }
-    await this.ctx.say('praise');
+    const f = this.fruit;
+    if (this.plan.mode === 'groups' && f) await this.ctx.say('helpers.groups.total', { n: f.groups, m: f.need / f.groups, total: f.need });
+    else await this.ctx.say('praise');
     await tw.wait(0.6);
     await this.next();
   }
@@ -372,8 +415,8 @@ export const littleHelpers: GameModule = {
   titleLine: 'game.little-helpers',
   region: 'counting-cove',
   skills: ['counting', 'one-to-one', 'number-sense', 'adding'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Count the helpers together as they line up: "one, two, three... heave ho!"',

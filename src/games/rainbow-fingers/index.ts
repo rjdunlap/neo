@@ -1,6 +1,5 @@
 import { Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent, type Renderer } from 'pixi.js';
 import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
-import type { Band } from '../../progress/bands';
 import { flower, starPoints } from '../../art/shapes';
 import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
@@ -14,6 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { frameIcon } from '../../ui/icons';
 import type { Game, GameContext, GameModule } from '../types';
 import { Coverage, mix, pickThings, planFor, RECIPES, type PaintPlan, type Primary, type Thing } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PAPER = 0xfffdf6;
 const MARGIN = 18;
@@ -24,11 +24,12 @@ const SPACING = 5;
 const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
 /** Rainbows, then pots, then coloring pages: named colors, remembered colors, and mixed colors (`logic.ts`). */
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
+  school: { min: 5, max: 6 },
 };
 const POTS: (ColorName | 'rainbow')[] = ['rainbow', ...RAINBOW];
 const PRIMARIES: Primary[] = ['red', 'yellow', 'blue'];
@@ -696,8 +697,8 @@ export const rainbowFingers: GameModule = {
   titleLine: 'game.rainbow-fingers',
   region: 'treehouse',
   skills: ['fine-motor', 'creativity'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.mode === 'free') return 'Rainbow painting';

@@ -2,7 +2,7 @@
 
 The long-term plan is a familiar island that grows from early play through **kindergarten–grade 5, roughly ages 5–11**. Keep extending favorite games, introduce new interactions when they add something useful, and connect them through places, characters, and projects. Younger activities remain available throughout.
 
-This is a content and product roadmap, not a release schedule or a completed curriculum. Ages and grades are rough planning guides, with overlap and support chosen for the child. The current app still has four bands through pre-K. All elementary zones, modes, and systems below are **proposed**. [ROADMAP.md](ROADMAP.md) holds the active implementation checklist; the [arcade](ARCADE-IDEAS.md) and [microgame](MICROGAME-IDEAS.md) notebooks hold the larger idea pool.
+This is a content and product roadmap, not a release schedule or a completed curriculum. Ages and grades are rough planning guides, with overlap and support chosen for the child. The current app has five bands: four through pre-K and an early-school band (6–8) whose place is **Wonder Woods**. Apart from that place and the games noted in E1, the elementary zones, modes, and systems below are **proposed**. [ROADMAP.md](ROADMAP.md) holds the active implementation checklist; the [arcade](ARCADE-IDEAS.md) and [microgame](MICROGAME-IDEAS.md) notebooks hold the larger idea pool.
 
 ## The shape of the journey
 
@@ -88,8 +88,8 @@ Exit milestone: familiar games remain easy to reach, one short project can resum
 ### E1 — Prove an early-elementary zone
 
 - [ ] Extend Seesaw Balance (now built for toddler–pre-K) and prototype Robot Path loops, then add the small Mail Carrier map mode that gives them a woodland context.
-- [ ] Define the first older supported level ranges and the parent-facing descriptions. Reuse the existing pre-K range where it fits; add a new band only with navigation, save, voice, and test support.
-- [ ] Build Wonder Woods as the first thematic zone pilot and preserve launch/return context independently of the chosen difficulty.
+- [x] Define the first older supported level ranges and the parent-facing descriptions (the `school` band; 35 games, with Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it). Reuse the existing pre-K range where it fits; add a new band only with navigation, save, voice, and test support.
+- [ ] Build Wonder Woods as the first thematic zone pilot (started as the 6–8 trail place; host, errand and zone identity separate from the band remain) and preserve launch/return context independently of the chosen difficulty.
 - [ ] Adapt the picnic story to the new zone; keep every participating game independently playable.
 - [ ] Check that a child can use hints, revise a route, leave partway, and return without losing progress or changing the other games' levels.
 

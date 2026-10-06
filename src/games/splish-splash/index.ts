@@ -7,9 +7,9 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { allowedParts, askedParts, planFor, type Part, type Plan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PART_SPOTS: Record<Part, [number, number, number][]> = {
   tummy: [[0, -72, 1]],
@@ -25,7 +25,7 @@ const PART_SPOTS: Record<Part, [number, number, number][]> = {
   nose: [[0, -112, 0.42]],
 };
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 4 },
   preschool: { min: 3, max: 7 },
@@ -429,7 +429,7 @@ export const splishSplash: GameModule = {
   region: 'cozy-village',
   skills: ['fine-motor', 'body-parts'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.ordered) return 'Two-step directions in order: "first your nose, then your ears"';

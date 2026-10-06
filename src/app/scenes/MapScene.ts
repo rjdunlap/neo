@@ -22,7 +22,7 @@ import { session } from '../session';
 const rank = (band: Band | null) => BANDS.findIndex((b) => b.id === band);
 
 /**
- * The island as an age trail: Puddle Lagoon on the shore up to Starry Peak. Every place is open;
+ * The island as an age trail: Puddle Lagoon on the shore, past Starry Peak, up to Wonder Woods. Every place is open;
  * the pet waits at her own place, and walks up the trail (with a birthday) when she grows.
  */
 export class MapScene extends Scene {

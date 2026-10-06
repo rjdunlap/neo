@@ -9,6 +9,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { knownMismatch, makeDeck, type MemoryCard } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PLANS = [
   { pairs: 2, mode: 'pictures', name: 'Four cards: two picture pairs' },
@@ -21,7 +22,7 @@ const PLANS = [
   { pairs: 8, mode: 'attributes', name: 'Match both shape and color' },
   { pairs: 8, mode: 'letters', name: 'Match uppercase and lowercase letters' },
 ] as const;
-const LEVELS = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 } };
+const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 9 } };
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
 
@@ -149,7 +150,7 @@ function memoryArt(): Container {
 }
 export const memoryMatch: GameModule = {
   id: 'memory-match', name: 'Memory Match', titleLine: 'game.memory-match', region: 'puzzle-peaks',
-  skills: ['memory', 'matching', 'number-sense', 'letters'], bands: ['preschool', 'prek'], levels: (b) => LEVELS[b],
+  skills: ['memory', 'matching', 'number-sense', 'letters'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, offScreen: 'Hide two pairs of familiar objects under cups and take turns finding their partners.',
   hubIcon: () => new WigglyIcon(memoryArt()), sticker: () => memoryArt(), create: (ctx) => new MemoryMatch(ctx),

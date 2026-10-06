@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { choosePalette, isRight, meant, PLANS, spawnTarget, TAP_REACH } from './logic';
+import { bondNumbers, choosePalette, isRight, meant, PLANS, spawnTarget, TAP_REACH } from './logic';
 
 describe('Bubble Pop', () => {
   it('keeps every bubble a big target, and number rounds within what fits on screen', () => {
@@ -51,5 +51,23 @@ describe('Bubble Pop', () => {
     // Squarely on the blue one, nowhere near a red one: still a miss.
     expect(meant(wrong, [wrong, far], { x: 300, y: 300 }, isRed)).toBe(wrong);
     expect(meant(right, [wrong, right], { x: 330, y: 300 }, isRed)).toBe(right);
+  });
+
+  it('bonds levels give every bubble a partner that makes the total', () => {
+    for (const plan of PLANS.filter((p) => p.mode === 'bonds')) {
+      for (let seed = 1; seed <= 200; seed++) {
+        const nums = bondNumbers(plan.sum!, plan.goal, new Rng(seed));
+        expect(nums).toHaveLength(plan.goal * 2);
+        // Greedy pairing always succeeds, whichever bubble is popped first.
+        const left = [...nums];
+        while (left.length) {
+          const a = left.shift()!;
+          const i = left.indexOf(plan.sum! - a);
+          expect(i, `${nums}`).toBeGreaterThanOrEqual(0);
+          left.splice(i, 1);
+        }
+        for (const n of nums) expect(n).toBeGreaterThanOrEqual(1), expect(n).toBeLessThan(plan.sum!);
+      }
+    }
   });
 });

@@ -123,8 +123,8 @@ class StorySteps implements Game {
 }
 export const storySteps: GameModule = {
   id: 'story-steps', name: 'Story Steps', titleLine: 'game.story-steps', region: 'story-grove',
-  skills: ['sequencing', 'cause-and-effect', 'storytelling'], bands: ['toddler', 'preschool', 'prek'],
-  levels: (b) => b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
+  skills: ['sequencing', 'cause-and-effect', 'storytelling'], bands: ['toddler', 'preschool', 'prek', 'school'],
+  levels: (b) => b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
   describeLevel: (l) => STORY_PLANS[Math.max(0, Math.min(STORY_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
   offScreen: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',

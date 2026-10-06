@@ -7,12 +7,12 @@ import { sfx } from '../../audio/sfx';
 import { palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { paddleBounce, planFor, predictY, type BouncePlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
@@ -352,7 +352,7 @@ export const bounceBack: GameModule = {
   region: 'bubble-beach',
   skills: ['tracking', 'hand-eye', 'turn-taking', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Take the pink paddle on the left and play with {name}! Count the bounces out loud.',

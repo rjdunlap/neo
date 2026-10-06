@@ -152,8 +152,8 @@ class SizeParade implements Game {
 }
 export const sizeParade: GameModule = {
   id: 'size-parade', name: 'Size Parade', titleLine: 'game.size-parade', region: 'puzzle-peaks',
-  skills: ['comparison', 'measurement', 'ordering'], bands: ['toddler', 'preschool', 'prek'],
-  levels: (b) => b === 'prek' ? { min: 5, max: 8 } : b === 'preschool' ? { min: 3, max: 6 } : { min: 1, max: 4 },
+  skills: ['comparison', 'measurement', 'ordering'], bands: ['toddler', 'preschool', 'prek', 'school'],
+  levels: (b) => b === 'school' ? { min: 7, max: 8 } : b === 'prek' ? { min: 5, max: 8 } : b === 'preschool' ? { min: 3, max: 6 } : { min: 1, max: 4 },
   describeLevel: (l) => SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, l - 1))].name,
   music: STYLES.hub, coplayHint: 'Use your hands to show {name} small and big, then compare the friends.',
   offScreen: 'Line up three spoons or shoes from smallest to biggest, then reverse the line.',

@@ -7,12 +7,12 @@ import { palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { collapse, DOT_COLORS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotPlan, type Grid } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
@@ -316,7 +316,7 @@ export const dotLink: GameModule = {
   region: 'rainbow-meadow',
   skills: ['colors', 'fine-motor', 'counting', 'planning'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Trace the line together and count the dots as you go: "one, two, three, four!"',

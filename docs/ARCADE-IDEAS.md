@@ -49,7 +49,7 @@ Increase the number of meaningful decisions before increasing speed, visual clut
 
 ## Current inventory
 
-There are **43 games**. Eighteen came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch below, and a newer four (Seesaw Balance, Teddy Doctor, Bumper Garden and the first Quick Tricks show; in the working tree, not yet committed). All eighteen pass their rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work.
+There are **62 games**. Peekaround Island (from the microgame notebook) and seven newer games are in the working tree: Light Lab and Secret Code from the recommended concepts here, plus Penguin Slide, Frog Hop, Market Stall, Garden Grow and Clock Tower. Eighteen came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch below, and a newer four (Seesaw Balance, Teddy Doctor, Bumper Garden and the first Quick Tricks show; in the working tree, not yet committed). All eighteen pass their rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work.
 
 | Game | Inspired by | Subject |
 | --- | --- | --- |
@@ -75,21 +75,40 @@ There are **43 games**. Eighteen came from this notebook and the microgame noteb
 | Pet Kitchen | Cooking Mama, JumpStart cafeteria | Counting Cove |
 | Rhythm Neighbors | Rhythm Heaven, call-and-response songs | Music Mountain |
 | Tangram Town | Tangrams, silhouette puzzles | Rainbow Meadow |
+| Peekaround Island | Captain Toad: Treasure Tracker (see [MICROGAME-IDEAS.md](MICROGAME-IDEAS.md)) | Puzzle Peaks |
+| Light Lab | Laser and mirror puzzles; the Light Lab concept below | Tinker Lab |
+| Penguin Slide | Ice-sliding puzzles in Pokémon and Zelda | Puzzle Peaks |
+| Secret Code | Mastermind, Neopets Time Tunnel | Puzzle Peaks |
+| Frog Hop | Number-line hopping games, Frogger | Counting Cove |
+| Market Stall | Neopets shops, pretend shops | Cozy Village |
+| Garden Grow | Toy gardens, Viva Piñata | Rainbow Meadow |
+| Clock Tower | Teaching clocks, JumpStart's clock activities | Cozy Village |
+| Pixel Pictures | Picross, Mario Paint | Treehouse |
+| Goodnight Room | *Goodnight Moon*, bedtime routines | Story Grove |
+| Animal Snack | Farm feeding toys, animal sound books | Barnyard |
+| Beat Builder | Chrome Music Lab Rhythm, step sequencers | Music Mountain |
+| Rhyme Time | Rhyming picture games, Dr. Seuss read-alouds | Story Grove |
+| Stop and Go | Red light, green light; toy traffic lights | Cozy Village |
+| Ramp Race | Toy car ramps, classroom fair-test experiments | Tinker Lab |
+| Critter Sort | Venn-diagram sorting, Zoombinis | Barnyard |
+| Treasure Map | Battleship, treasure-hunt maps | Rainbow Meadow |
+| Opposites | Concept board books, Sesame Street | Story Grove |
+| Picture Graph | Classroom picture graphs, tally charts | Counting Cove |
 
-### Inventory by subject (43 games)
+### Inventory by subject (62 games)
 
 | Subject | Games | Count |
 | --- | --- | --- |
-| Barnyard | Peekaboo Barn, Duckling Parade, Roundup, Egg Catch | 4 |
+| Barnyard | Peekaboo Barn, Duckling Parade, Roundup, Egg Catch, Animal Snack, Critter Sort | 6 |
 | Bubble Beach | Bubble Pop, Peg Garden, Bounce Back, Bumper Garden | 4 |
-| Counting Cove | Duck Pond, Monster Munch, Little Helpers, Pet Kitchen | 4 |
-| Cozy Village | Feelings Faces, Scoop Shop, Splish Splash, Weather Wardrobe, Mail Carrier, Teddy Doctor | 6 |
-| Music Mountain | Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors | 4 |
-| Puzzle Peaks | Memory Match, Pattern Train, Puzzle Pals, Size Parade, Quick Tricks | 5 |
-| Rainbow Meadow | Color Garden, Shape Sorter, Dot Link, Tangram Town | 4 |
-| Story Grove | Letter Trails, Story Steps, Word Monsters, Photo Safari | 4 |
-| Tinker Lab | Bouncy Launch, Bug Builder, Robot Path, Sink or Float, Seesaw Balance | 5 |
-| Treehouse | Rainbow Fingers, Fluffy Salon, Stamp Studio | 3 |
+| Counting Cove | Duck Pond, Monster Munch, Little Helpers, Pet Kitchen, Frog Hop, Picture Graph | 6 |
+| Cozy Village | Feelings Faces, Scoop Shop, Splish Splash, Weather Wardrobe, Mail Carrier, Teddy Doctor, Market Stall, Clock Tower, Stop and Go | 9 |
+| Music Mountain | Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Beat Builder | 5 |
+| Puzzle Peaks | Memory Match, Pattern Train, Puzzle Pals, Size Parade, Quick Tricks, Peekaround Island, Penguin Slide, Secret Code | 8 |
+| Rainbow Meadow | Color Garden, Shape Sorter, Dot Link, Tangram Town, Garden Grow, Treasure Map | 6 |
+| Story Grove | Letter Trails, Story Steps, Word Monsters, Photo Safari, Goodnight Room, Rhyme Time, Opposites | 7 |
+| Tinker Lab | Bouncy Launch, Bug Builder, Robot Path, Sink or Float, Seesaw Balance, Light Lab, Ramp Race | 7 |
+| Treehouse | Rainbow Fingers, Fluffy Salon, Stamp Studio, Pixel Pictures | 4 |
 
 **Gaps that remain:**
 

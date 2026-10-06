@@ -4,15 +4,15 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { buildTrain, patternPlan, type PatternPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 } } satisfies Record<Band, { min: number; max: number }>;
+const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 9 } };
 
 class PatternTrain implements Game {
   readonly plan: PatternPlan;
@@ -141,7 +141,7 @@ class PatternTrain implements Game {
 
 export const patternTrain: GameModule = {
   id: 'pattern-train', name: 'Pattern Train', titleLine: 'game.pattern-train', region: 'puzzle-peaks',
-  skills: ['patterns', 'sequencing', 'listening'], bands: ['preschool', 'prek'], levels: (b) => LEVELS[b],
+  skills: ['patterns', 'sequencing', 'listening'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly, offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
   hubIcon: () => new WigglyIcon(trainArt()), sticker: () => trainArt(), create: (ctx) => new PatternTrain(ctx),

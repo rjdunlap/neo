@@ -8,16 +8,17 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { caught, gatesFor, LANES, makeEggs, planFor, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { caught, exitFor, gatesFor, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
+  school: { min: 4, max: 6 },
 };
 
 const SHELL = { brown: { fill: 0xd9a066, line: 0x9c6b3c }, white: { fill: 0xfffdf6, line: 0xc9bfae } };
@@ -128,6 +129,8 @@ class EggCatch implements Game {
       this.touch.on('pointerupoutside', up);
     }
     if (routing) {
+      // The steering layer is only for catching; here it would sit over the bins and swallow taps.
+      this.touch.eventMode = 'none';
       // Each gate is a big tap target at its junction.
       for (let i = 0; i < 3; i++) {
         const hit = new Container();
@@ -140,11 +143,16 @@ class EggCatch implements Game {
   }
 
   get routing() {
-    return this.plan.mode === 'route' || this.plan.mode === 'sort';
+    return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'predict';
   }
 
+  /** Predict levels: the gates for each egg, and the egg waiting at the top for a guess. */
+  private predictions: [boolean, boolean, boolean][] = [];
+  private waiting: { node: Graphics; egg: Egg } | null = null;
+
   start() {
-    const line = { tap: 'egg.tap', catch: 'egg.catch', brown: 'egg.brown', route: 'egg.route', sort: 'egg.sort' } as const;
+    const line = { tap: 'egg.tap', catch: 'egg.catch', brown: 'egg.brown', route: 'egg.route', sort: 'egg.sort', predict: 'egg.predict' } as const;
+    if (this.plan.mode === 'predict') this.predictions = predictGates(this.ctx.rng, this.plan.eggs * 3);
     void this.ctx.instruct(line[this.plan.mode]);
     if (this.routing) void this.nextRoute();
   }
@@ -285,7 +293,7 @@ class EggCatch implements Game {
     });
   }
 
-  private miss(line: 'egg.white' | 'egg.wrongway' | null) {
+  private miss(line: 'egg.white' | 'egg.wrongway' | 'egg.predictwrong' | null) {
     this.misses++;
     this.wrongs++;
     if (line) void this.ctx.say(line);
@@ -339,6 +347,11 @@ class EggCatch implements Game {
     for (let i = 0; i < 4; i++) {
       const node = i === this.target.basket ? basketArt() : i === this.target.nest && this.plan.mode === 'sort' ? this.nestArt() : hayArt(150);
       node.position.set(o.bin[i].x, o.bin[i].y + 20);
+      // Predict levels: tap a bin to say where the egg will land.
+      if (this.plan.mode === 'predict') {
+        node.hitArea = new Rectangle(-80, -90, 160, 140);
+        onTap(node, () => void this.predict(i), { cooldown: 400 });
+      }
       this.exits.addChild(node);
     }
   }
@@ -353,6 +366,24 @@ class EggCatch implements Game {
     if (!this.routing) return;
     const g = this.gateArt.clear();
     const o = this.geo();
+    if (this.plan.mode === 'predict') {
+      // Gates are locked; after two misses the egg's whole path glows.
+      for (let i = 0; i < 3; i++) {
+        const p = o.gate[i];
+        const right = this.gates[i];
+        const to = { x: p.x + (right ? (i === 0 ? 190 : 95) : -(i === 0 ? 190 : 95)) * 0.42, y: p.y + 130 * 0.42 };
+        g.circle(p.x, p.y, 40).fill({ color: 0xffffff, alpha: 0.8 }).stroke({ width: 5, color: swatch.purple.line });
+        g.moveTo(p.x, p.y).lineTo(to.x, to.y).stroke({ width: 18, color: swatch.purple.fill, cap: 'round' });
+      }
+      if (this.hinting && this.waiting) {
+        const exit = exitFor(this.gates);
+        const path = [o.entry, o.gate[0], o.gate[exit >= 2 ? 2 : 1], o.exit[exit], o.bin[exit]];
+        g.moveTo(path[0].x, path[0].y);
+        for (const q of path.slice(1)) g.lineTo(q.x, q.y);
+        g.stroke({ width: 14, color: swatch.yellow.fill, alpha: 0.6 + 0.3 * Math.sin(this.clock * 6), cap: 'round', join: 'round' });
+      }
+      return;
+    }
     const want = this.hinting ? this.wanted() : [];
     for (let i = 0; i < 3; i++) {
       const p = o.gate[i];
@@ -375,7 +406,7 @@ class EggCatch implements Game {
   }
 
   private flip(i: number) {
-    if (this.finished) return;
+    if (this.finished || this.plan.mode === 'predict') return;
     this.gates[i] = !this.gates[i];
     sfx.tick();
     sfx.pop(4 + i * 2);
@@ -394,8 +425,27 @@ class EggCatch implements Game {
     this.hens[0].cheer();
     sfx.pop(8);
     await this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    if (this.plan.mode === 'predict') {
+      // The gates are set for this egg; it waits until she says where it will land.
+      this.gates = [...this.predictions[this.routed % this.predictions.length]];
+      this.target = { basket: -1, nest: -1 };
+      this.drawExits();
+      this.waiting = { node, egg };
+      return;
+    }
     // A moment to set the gates before it rolls.
     await this.ctx.tw.wait(this.routed === 0 ? 3.5 : 2);
+    await this.roll(node, egg);
+  }
+
+  /** Predict: the chosen bin gets the basket, then the egg rolls (slowly) to show where it really goes. */
+  private async predict(bin: number) {
+    if (!this.waiting || this.finished) return;
+    const { node, egg } = this.waiting;
+    this.waiting = null;
+    this.target = { basket: bin, nest: -1 };
+    this.drawExits();
+    sfx.pop(6);
     await this.roll(node, egg);
   }
 
@@ -428,7 +478,7 @@ class EggCatch implements Game {
       void this.ctx.say('count', { n: this.caughtCount });
       if (this.caughtCount >= this.plan.eggs) return void this.finale();
     } else {
-      this.miss('egg.wrongway');
+      this.miss(this.plan.mode === 'predict' ? 'egg.predictwrong' : 'egg.wrongway');
       this.hatch(node);
     }
     this.routed++;
@@ -491,8 +541,8 @@ export const eggCatch: GameModule = {
   titleLine: 'game.egg-catch',
   region: 'barnyard',
   skills: ['tracking', 'hand-eye', 'colors', 'prediction'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Point and say "here it comes!" as each egg rolls down.',

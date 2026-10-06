@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * that says its sound. The ladder goes from tapping to hear sounds, to finding a letter,
  * to matching first sounds, to building simple words sound by sound.
  */
-export type MonsterMode = 'play' | 'find' | 'who' | 'first' | 'build' | 'spell';
+export type MonsterMode = 'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family';
 
 export interface MonsterPlan {
   mode: MonsterMode;
@@ -23,7 +23,17 @@ export const PLANS: MonsterPlan[] = [
   { mode: 'first', rounds: 4, choices: 3, name: 'First sounds: "apple starts with aah"' },
   { mode: 'build', rounds: 3, choices: 3, name: 'Build a three-letter word with letters shown in the slots' },
   { mode: 'spell', rounds: 3, choices: 4, name: 'Build a three-letter word from its sounds, with a spare letter' },
+  { mode: 'family', rounds: 6, choices: 4, name: 'Word families: change the first sound to make hat, cat, bat (two families)' },
 ];
+
+/** Word families: the ending stays, the first sound changes. Each word's onset is a plain consonant sound. */
+export const FAMILIES: Record<string, string[]> = {
+  at: ['cat', 'hat', 'bat', 'mat', 'rat', 'sat'],
+  og: ['dog', 'log', 'fog', 'hog', 'jog'],
+  ig: ['pig', 'dig', 'wig', 'big', 'fig'],
+  un: ['sun', 'run', 'fun', 'bun'],
+  op: ['top', 'mop', 'hop', 'pop'],
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -57,6 +67,8 @@ export interface Question {
   answer: string;
   /** Monsters on the ground: letters, in screen order. */
   monsters: string[];
+  /** Word families: the ending already standing in the slots after the first. */
+  fixed?: string;
 }
 
 /** Pick `n` different letters including `must`, with no lookalikes among them. */
@@ -74,6 +86,16 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
   const out: Question[] = [];
   const pool = plan.mode === 'first' ? Object.keys(FIRST_WORDS) : plan.mode === 'find' ? 'abcdefghkmrstw'.split('') : ALPHABET;
   const used = new Set<string>();
+  if (plan.mode === 'family') {
+    // Two families, three words each; the other first sounds come from the family when they can, so hearing matters.
+    for (const rime of rng.shuffle(Object.keys(FAMILIES)).slice(0, plan.rounds / 3)) {
+      const onsets = FAMILIES[rime].map((w) => w[0]);
+      for (const word of rng.shuffle([...FAMILIES[rime]]).slice(0, 3)) {
+        out.push({ answer: word, fixed: rime, monsters: pickLetters(rng, plan.choices, [word[0]], [...rng.shuffle(onsets), ...'cfhjlmnrstw'.split('')]) });
+      }
+    }
+    return out;
+  }
   if (plan.mode === 'build' || plan.mode === 'spell') {
     for (const word of rng.shuffle([...WORDS]).slice(0, plan.rounds)) {
       out.push({ answer: word, monsters: pickLetters(rng, plan.choices, word.split('')) });

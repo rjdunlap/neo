@@ -8,16 +8,17 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule } from '../types';
-import { bankSize, padValues, planFor, SLOTS, story, type DuckPlan } from './logic';
+import { bankSize, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 5 },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 9 },
+  school: { min: 8, max: 10 },
 };
 
 const WATER = 0x7cc4f2;
@@ -137,6 +138,8 @@ class DuckPond implements Game {
   private misses = 0;
   private hints = 0;
   private wrongThisRound = 0;
+  /** Make-ten levels: how many ducks each round starts with. */
+  private starts: number[] = [];
   private busy = true;
   private finished = false;
 
@@ -313,6 +316,16 @@ class DuckPond implements Game {
       this.busy = false;
       return;
     }
+    if (p.mode === 'ten') {
+      if (!this.starts.length) this.starts = tenStarts(rng, p);
+      const a = this.starts.shift()!;
+      this.answer = 10 - a;
+      await this.arrive(a);
+      await this.ctx.instruct('duck.ten', { a });
+      this.showPads(this.answer);
+      this.busy = false;
+      return;
+    }
     // add / take away
     const { a, b, away, answer } = story(rng, p);
     this.answer = answer;
@@ -414,6 +427,17 @@ class DuckPond implements Game {
   private async tapPad(pad: Pad) {
     if (this.busy || this.finished) return;
     this.busy = true;
+    if (pad.value === this.answer && this.plan.mode === 'ten') {
+      // The missing ducks swim in and the pond is full: ten.
+      pad.glow(true);
+      sfx.bell(9, 0.3);
+      this.clearPads();
+      const a = this.swimmers.length;
+      await this.arrive(this.answer);
+      await this.ctx.say('duck.tenmade', { a, b: this.answer });
+      await this.roundWon(10, false);
+      return;
+    }
     if (pad.value === this.answer) {
       pad.glow(true);
       sfx.bell(9, 0.3);
@@ -428,8 +452,17 @@ class DuckPond implements Game {
     this.wrongThisRound++;
     pad.wobble();
     sfx.boing();
-    await this.ctx.say('duck.countus');
-    await this.countAloud();
+    if (this.plan.mode === 'ten') {
+      // Count on from the ducks already swimming, up to ten, on the fingers.
+      await this.ctx.say('duck.counton', { a: this.swimmers.length });
+      for (let n = this.swimmers.length + 1; n <= 10; n++) {
+        await this.ctx.say('count', { n });
+        await this.tw.wait(0.15);
+      }
+    } else {
+      await this.ctx.say('duck.countus');
+      await this.countAloud();
+    }
     if (this.wrongThisRound >= 2) this.hints++;
     this.pads.find((p) => p.value === this.answer)?.glow(true);
     this.busy = false;
@@ -510,13 +543,14 @@ export const duckPond: GameModule = {
   titleLine: 'game.duck-pond',
   region: 'counting-cove',
   skills: ['counting', 'number-sense', 'adding'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.mode === 'along') return `Count along as ${p.max} ducks hop in`;
     if (p.mode === 'make') return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
     if (p.mode === 'howmany') return `How many ducks? ${p.min} to ${p.max}`;
+    if (p.mode === 'ten') return 'Make ten: how many more ducks fill the pond to 10?';
     return p.subtract ? 'Adding and taking away, up to 10' : 'Adding, up to 5';
   },
   music: STYLES.hub,

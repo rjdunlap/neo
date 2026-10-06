@@ -8,21 +8,22 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import type { Game, GameContext, GameModule } from '../types';
 import { Jelly } from './jelly';
 import { makeTune, planFor, type JellyPlan } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Big jelly, low note: C D E G A from left to right. */
 const COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
 const STEPS = [0, 1, 2, 3, 4];
 const BULBS = 8;
 
-const LEVELS: Record<Band, { min: number; max: number }> = {
+const LEVELS: BandLevels = {
   lap: { min: 1, max: 3 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 4, max: 7 },
   prek: { min: 5, max: 9 },
+  school: { min: 8, max: 9 },
 };
 
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
@@ -301,8 +302,8 @@ export const jellyDrums: GameModule = {
   titleLine: 'game.jelly-drums',
   region: 'music-mountain',
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;

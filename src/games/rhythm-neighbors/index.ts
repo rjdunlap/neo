@@ -98,8 +98,8 @@ class RhythmNeighbors implements Game{
  destroy(){this.events=[];this.done=true;}
 }
 export const rhythmNeighbors:GameModule={
- id:'rhythm-neighbors',name:'Rhythm Neighbors',titleLine:'game.rhythm-neighbors',region:'music-mountain',skills:['turn-taking','rhythm','musical-expression'],bands:['lap','toddler','preschool','prek'],
- levels:b=>b==='lap'?{min:1,max:2}:b==='toddler'?{min:2,max:3}:b==='preschool'?{min:3,max:4}:{min:4,max:6},describeLevel:l=>planFor(l).name,
+ id:'rhythm-neighbors',name:'Rhythm Neighbors',titleLine:'game.rhythm-neighbors',region:'music-mountain',skills:['turn-taking','rhythm','musical-expression'],bands:['lap','toddler','preschool','prek','school'],
+ levels:b=>b==='school'?{min:5,max:6}:b==='lap'?{min:1,max:2}:b==='toddler'?{min:2,max:3}:b==='preschool'?{min:3,max:4}:{min:4,max:6},describeLevel:l=>planFor(l).name,
  music:{...STYLES.jelly,shaker:false,volume:0.15},coplayHint:'Let {name} answer the woodpecker with a frog. Any timing is welcome in the first turns.',offScreen:'Take turns knocking on a table. Try a short question and a different answering rhythm.',
  hubIcon:()=>{const c=new Container();const f=frog(0);f.y=-35;c.addChild(f);return new WigglyIcon(c);},sticker:seed=>frog(new Rng(seed).int(0,1),80),create:ctx=>new RhythmNeighbors(ctx),
 };

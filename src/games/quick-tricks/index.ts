@@ -8,7 +8,6 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Band } from '../../progress/bands';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
@@ -31,11 +30,13 @@ import {
   type Trick,
   type TricksPlan,
 } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: Partial<Record<Band, { min: number; max: number }>> = {
+const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 4 },
   prek: { min: 2, max: 6 },
+  school: { min: 5, max: 6 },
 };
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -651,8 +652,8 @@ export const quickTricks: GameModule = {
   titleLine: 'game.quick-tricks',
   region: 'puzzle-peaks',
   skills: ['spatial-words', 'matching', 'length', 'problem-solving'],
-  bands: ['toddler', 'preschool', 'prek'],
-  levels: (band) => LEVELS[band] ?? { min: 1, max: 1 },
+  bands: ['toddler', 'preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => level >= 4 ? encoreFor(level).name : planFor(level).name,
   music: STYLES.stickers,
   coplayHint: 'Be the audience! Clap after each trick and ask {name} what happened.',
