@@ -116,8 +116,8 @@ Researched classic arcade and Flash games (Neopets, Kongregate, Miniclip, Club P
 - [x] Roundup (Extreme Herder, Puffle Roundup) in the barnyard: six levels from tap-to-hop to shooing with a finger, sorting into two pens, and counting with a bell. Animals near their gate are drawn in, and one trots home by itself after 30 quiet seconds.
 - [x] Bouncy Launch (Kass Basher, Toss the Turtle) in the tinker lab: five levels from tap-to-boing to pull-strength control, star and numbered clouds, and farther/nearer than last time. A hint shows the flight path and the right pull.
 - [x] Unit tests for all four games' rules and a `BROWSER_SUITE=arcade` play-through of every level with mistakes, hints and saved scores. The offline check now pages Daisy Meadow to reach Monster Munch.
-- [ ] Next ideas from the research: Seesaw Balance (Hasee Bounce), Bubble Cannon (Faerie Bubbles), Draw a Ramp (Line Rider), Hill Roll (Turmac Roll).
-- [ ] Places are getting long (16 games at lap, 25 at pre-K). Decide whether places should page by subject or show fewer games at once.
+- [x] Widen the idea backlog to mobile, Game Boy and console classics. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) now holds the inventory by subject, a suggested next batch aimed at thin subjects (Dot Link, Fluffy Salon, Teddy Doctor, Word Monsters, Photo Safari, Bumper Garden, Number Merge, Pet Kitchen), and the backlog by source.
+- [ ] Deferred: reorganize places (16 games at lap, 25 at pre-K) once the inventory has grown. Paging by subject and showing fewer games at once are the options.
 
 ## Development direction after this expansion
 
@@ -127,6 +127,6 @@ These are future candidates, not claims of implemented features:
 2. Add a gentle listening/language activity (music or stories): matching familiar sounds or spoken initial sounds to pictures, with freely replayable examples.
 3. Add cooperative pretend play (everyday life), such as packing a picnic, with many acceptable choices and no rigid judgments about a child's routines. Weather Wardrobe now covers choosing clothes for the weather.
 4. Extend creative play (art): reusable shape stamps and saved artwork pages, keeping local storage bounded and export under grown-up control.
-5. More from the catalog: Sock Match and Tidy Up (everyday life), Shadow Match and Maze Walk (puzzles), Rhyme Time, Letter Fishing and Word Builder (stories and letters), Pizza Shop and Market Stall (numbers and money), and Tangram Town.
+5. More from the catalog: Sock Match and Tidy Up (everyday life), Shadow Match and Maze Walk (puzzles), Rhyme Time, Letter Fishing and Word Builder (stories and letters), Pizza Shop and Market Stall (numbers and money), and Tangram Town. The larger arcade, mobile and handheld backlog is in [ARCADE-IDEAS.md](ARCADE-IDEAS.md).
 6. Pet treehouse room and pet things from stickers (the design catalog's Neopets thread).
 7. Recorded parent voices slotting in by line id.
