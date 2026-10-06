@@ -19,6 +19,10 @@ import { peekabooBarn } from './peekaboo-barn';
 import { rainbowFingers } from './rainbow-fingers';
 import { shapeSorter } from './shape-sorter';
 import { splishSplash } from './splish-splash';
+import { ducklingParade } from './duckling-parade';
+import { scoopShop } from './scoop-shop';
+import { roundup } from './roundup';
+import { bouncyLaunch } from './bouncy-launch';
 import type { GameModule } from './types';
 
 /**
@@ -46,6 +50,10 @@ export const GAMES: GameModule[] = [
   puzzlePals,
   weatherWardrobe,
   sinkFloat,
+  ducklingParade,
+  scoopShop,
+  roundup,
+  bouncyLaunch,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

@@ -25,7 +25,7 @@ npm run build      # type-check + production build into dist/
 
 The island is an **age trail**. It climbs from **Puddle Lagoon** (lap, 18–24 months) on the shore through **Daisy Meadow** (toddler) and **Bumpy Hills** (preschool) up to **Starry Peak** (pre-K). Each place lays out every game for that age, at that age's levels. A game that grows with her, like Bubble Pop, stands in each place it supports. The play button goes straight to her own place; the island button there opens the trail, where her pet waits by her place and every place is open to explore. When there are more games than fit, swipe the land sideways or tap the arrows. When a grown-up moves her up an age band, the pet has a birthday and walks up the trail.
 
-There are twenty-one games. "Ages" lists the places each one appears in.
+There are twenty-five games. "Ages" lists the places each one appears in.
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
@@ -41,6 +41,10 @@ There are twenty-one games. "Ages" lists the places each one appears in.
 | Monster Munch | lap–pre-K | tap cookies into a hungry monster | count along, one cookie each, feed exactly N then ring the bell, cookies and apples, fair sharing |
 | Puzzle Pals | lap–pre-K | finish a two-piece picture | three to twelve pieces, first over a faint picture, then an empty frame |
 | Sink or Float | lap–pre-K | drop things in the water and watch | guess and test, sort into baskets, surprises like a floating apple |
+| Duckling Parade | lap–pre-K | tap the grass to walk Mama Duck; ducklings fall in behind | lead them to the pond, bring exactly N, find one color, build a color pattern in line |
+| Scoop Shop | lap–pre-K | tap tubs to pile scoops on a cone for a customer | one color, two scoops, "four blue scoops", three flavors stacked in order, then from memory |
+| Roundup | lap–pre-K | tap an animal and it hops into its pen | shoo animals through the gate with a finger, sort pigs and bunnies, put exactly N in and ring the bell |
+| Bouncy Launch | lap–pre-K | tap the spring and the pet boings onto a cloud | pull back farther to fly farther, land on the star cloud, then a numbered cloud, farther or nearer than last time |
 | Shape Sorter | toddler–pre-K | one circle hole | six plain holes, one color, tilted pieces |
 | Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers |
 | Size Parade | toddler–pre-K | tap the bigger or smaller friend | order three, then five friends in either direction |
@@ -112,7 +116,7 @@ With `npm run dev` running in another terminal:
 npm run test:browser
 ```
 
-This exercises hatching, the age trail and the parent gate; every level of Pattern Train, Memory Match, Robot Path and the nine games added after them; all 26 letter trails plus word/name modes; and sticker placement, removal, paging, and portrait resizing. It includes wrong answers, hints, saved rewards, reload persistence, and place scrolling. Single suites: `world` (hatching, the age trail, swiping, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (every level of Rainbow Fingers and Splish Splash), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. Screenshots go into ignored `test-results/`.
+This exercises hatching, the age trail and the parent gate; every level of Pattern Train, Memory Match, Robot Path and the nine games added after them; all 26 letter trails plus word/name modes; and sticker placement, removal, paging, and portrait resizing. It includes wrong answers, hints, saved rewards, reload persistence, and place scrolling. Single suites: `world` (hatching, the age trail, swiping, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (every level of Rainbow Fingers and Splish Splash), `arcade` (Duckling Parade, Scoop Shop, Roundup, Bouncy Launch; `ARCADE_ONLY=parade|scoop|roundup|launch` runs one), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. Screenshots go into ignored `test-results/`.
 
 With `npm run build-and-preview` running in another terminal:
 

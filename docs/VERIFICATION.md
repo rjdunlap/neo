@@ -2,6 +2,32 @@
 
 Checked locally on 2026-10-05. The island expansion and second expansion are implemented: fifteen games, including the Robot Path stretch goal and the newer Size Parade, Bug Builder, and Story Steps. No commit, push, or deployment was performed.
 
+## Arcade-inspired games (2026-10-05, evening)
+
+Duckling Parade, Scoop Shop, Roundup and Bouncy Launch were added (twenty-five games), based on research into Neopets, Kongregate and other Flash-portal games ([ARCADE-IDEAS.md](ARCADE-IDEAS.md)).
+
+- `npm run typecheck` and `npm run build`: passed.
+- `npm test`: 69 tests across twenty-two files passed. New tests check, for each game:
+  - Duckling Parade: there are always enough right ducklings, patterns form only in order, and extras get sent back.
+  - Scoop Shop: orders use only tubs on the counter, every order can be finished by following the hints, and wrong, extra and out-of-order scoops bounce.
+  - Roundup: there are always enough animals, with a spare when counting; animals enter only through the gate; and the bell finds too many or too few.
+  - Bouncy Launch: a bigger pull flies farther, every cloud is reachable and forgiving, a target never repeats twice in a row, and landings are judged short, long or compared correctly.
+- `BROWSER_SUITE=arcade` (new): all 25 levels passed, driven like a finger would: tapping the grass, tapping tubs, a finger kept behind each animal, and real pull-and-release drags. Mistakes, hint glows, peeks, the bell and exact saved scores are checked.
+- Full `npm run test:browser`: every suite before `arcade` passed in one run. The suite then found a Duckling Parade fairness bug (below). After the fix, `arcade` passed in full, Duckling Parade passed three runs in a row, and `stickers` passed.
+- `npm run test:offline`: passed. It now taps Daisy Meadow's next arrow, because Monster Munch has moved to index 8.
+- Bugs found and fixed while testing:
+  - Steering could get stuck after a lost pointer-up.
+  - Taps were caught by whatever was drawn above the input layer.
+  - `onTap` radii were in the critters' scaled-down units.
+  - Ducklings could wait at the pond's edge.
+  - Walking past a wrong duckling, or tapping between two ducklings, counted as a miss.
+  - Herded animals could never step through the gate (the fence padding blocked the opening) and could be jostled through fences.
+  - Exact-count pens finished without the child counting, so they now wait for a bell.
+  - Pen signs hid behind animals.
+  - The springboard snapped the pet onto the fingertip.
+  - A tall order bubble was clipped.
+- Not checked: a real iPad (touch feel for herding and pulling especially).
+
 ## Deeper ladders for Rainbow Fingers and Splish Splash (same day, later)
 
 Rainbow Fingers now has 6 levels and Splish Splash has 8, so preschool and pre-K no longer top out early.

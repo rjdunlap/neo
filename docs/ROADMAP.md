@@ -107,6 +107,18 @@ All three main additions support preschool and pre-K, with level ladders that in
 - [x] Unit tests for both games' rules (`logic.ts`) and a `BROWSER_SUITE=early` play-through of every level with wrong answers, hints and saved scores.
 - [ ] Rule tests and browser play-throughs for the other original games (Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, Color Garden).
 
+## 11. Arcade-inspired games
+
+Researched classic arcade and Flash games (Neopets, Kongregate, Miniclip, Club Penguin) and adapted the best fits to the toddler rules. The idea list and reasoning are in [ARCADE-IDEAS.md](ARCADE-IDEAS.md).
+
+- [x] Duckling Parade (Meerca Chase) in the barnyard: eight levels from tap-to-walk to leading ducklings home, exact numbers, one color, and AB/ABC color patterns in the line. Walking past a wrong duckling is free; only stopping on one counts.
+- [x] Scoop Shop (Papa's Freezeria, Ice Cream Machine) in the village: six levels from free stacking to color orders, pairs, counted scoops, ordered stacks and remembered orders (tap the customer to peek, which counts as a hint).
+- [x] Roundup (Extreme Herder, Puffle Roundup) in the barnyard: six levels from tap-to-hop to shooing with a finger, sorting into two pens, and counting with a bell. Animals near their gate are drawn in, and one trots home by itself after 30 quiet seconds.
+- [x] Bouncy Launch (Kass Basher, Toss the Turtle) in the tinker lab: five levels from tap-to-boing to pull-strength control, star and numbered clouds, and farther/nearer than last time. A hint shows the flight path and the right pull.
+- [x] Unit tests for all four games' rules and a `BROWSER_SUITE=arcade` play-through of every level with mistakes, hints and saved scores. The offline check now pages Daisy Meadow to reach Monster Munch.
+- [ ] Next ideas from the research: Seesaw Balance (Hasee Bounce), Bubble Cannon (Faerie Bubbles), Draw a Ramp (Line Rider), Hill Roll (Turmac Roll).
+- [ ] Places are getting long (16 games at lap, 25 at pre-K). Decide whether places should page by subject or show fewer games at once.
+
 ## Development direction after this expansion
 
 These are future candidates, not claims of implemented features:

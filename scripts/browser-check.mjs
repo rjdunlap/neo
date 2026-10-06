@@ -702,6 +702,238 @@ async function early() {
   }
 }
 
+async function arcade() {
+  // Duckling Parade: walk Mama Duck by tapping the grass; wrong ducklings, extras and the pond.
+  await page.evaluate(() => {
+    window.walkTo = async (x, y) => {
+      const g = neo.scene.game;
+      const p = neo.scene.game.mama.parent.toGlobal({ x, y: y - 30 });
+      kit.tap(p.x, p.y);
+      await kit.until(() => Math.hypot(g.mama.x - g.target.x, g.mama.y - g.target.y) < 3 || g.busy, 8000);
+    };
+    window.fetchDuck = async (d) => {
+      await walkTo(d.critter.x, d.critter.y);
+      if (!await kit.until(() => d.state === 'line', 3000)) throw new Error(`Duckling ${d.color} would not join: mama ${Math.round(neo.scene.game.mama.x)},${Math.round(neo.scene.game.mama.y)} target ${Math.round(neo.scene.game.target.x)},${Math.round(neo.scene.game.target.y)} duck ${Math.round(d.critter.x)},${Math.round(d.critter.y)} ${d.state} level ${neo.scene.level} busy ${neo.scene.game.busy} home ${neo.scene.game.homeCount} line ${neo.scene.game.line.length}`);
+    };
+    window.goHome = async () => {
+      const g = neo.scene.game;
+      await walkTo(g.pondAt.x - 40, g.pondAt.y);
+      await kit.until(() => g.busy, 3000);
+      await kit.until(() => !g.busy || g.finished, 20000);
+    };
+  });
+  const only = process.env.ARCADE_ONLY;
+  for (let level = 1; level <= 8 && (!only || only === 'parade'); level++) {
+    await launch('duckling-parade', level);
+    await page.waitForTimeout(500);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const loose = () => g.ducklings.filter((d) => d.state === 'loose');
+      const joinable = (d) => d.state === 'loose' && (g.plan.mode === 'pattern' ? d.color === g.round.pattern[g.line.length] : !g.round.want || d.color === g.round.want);
+      // Stop on a duckling that can't join yet: two gentle misses light up the right ones.
+      // The wrong duckling farthest from any right one, approached from the far side, so no right
+      // one joins first (which would rightly spend the tap).
+      const gap = (d) => Math.min(...loose().filter(joinable).map((j) => Math.hypot(j.critter.x - d.critter.x, j.critter.y - d.critter.y)));
+      const wrong = loose().filter((d) => !joinable(d)).sort((a, b) => gap(b) - gap(a))[0];
+      if (wrong) {
+        const j = loose().filter(joinable).sort((a, b) => Math.hypot(a.critter.x - wrong.critter.x, a.critter.y - wrong.critter.y) - Math.hypot(b.critter.x - wrong.critter.x, b.critter.y - wrong.critter.y))[0];
+        const away = j ? Math.atan2(wrong.critter.y - j.critter.y, wrong.critter.x - j.critter.x) : Math.PI;
+        g.mama.position.set(wrong.critter.x + Math.cos(away) * 95, wrong.critter.y + Math.sin(away) * 95); g.target.x = g.mama.x; g.target.y = g.mama.y; g.trail.length = 0;
+        await walkTo(wrong.critter.x, wrong.critter.y);
+        await kit.sleep(3800);
+        if (g.misses !== 2 || g.hints !== 1) throw new Error(`Refusals: ${g.misses} misses, ${g.hints} hints, level ${neo.scene.level}, line ${g.line.map((d) => d.color)}, wrong ${wrong.color} ${wrong.state}, near ${g.ducklings.filter((d) => d !== wrong && Math.hypot(d.critter.x - wrong.critter.x, d.critter.y - wrong.critter.y) < 150).map((d) => d.color + d.state)}`);
+        if (!g.ducklings.some((d) => d.glow.visible)) throw new Error('No hint glow');
+        await walkTo(g.mama.x, g.mama.y - 160);
+      }
+      if (g.plan.mode === 'tap') {
+        for (const d of [...g.ducklings]) if (d.state === 'loose') await fetchDuck(d);
+        if (!await kit.until(() => g.finished, 20000)) throw new Error('Lap parade never went home');
+        return;
+      }
+      // Counting levels: bring one too many, and the extra hops back out.
+      const want = g.round.target !== undefined ? g.round.target + 1 : g.round.pattern ? g.round.pattern.length : g.ducklings.filter((d) => !g.round.want || d.color === g.round.want).length;
+      for (let guard = 0; g.line.length < want && guard < 20; guard++) {
+        const d = loose().filter(joinable).sort((a, b) => Math.hypot(a.critter.x - g.mama.x, a.critter.y - g.mama.y) - Math.hypot(b.critter.x - g.mama.x, b.critter.y - g.mama.y))[0];
+        if (!d) break;
+        await fetchDuck(d);
+      }
+      await goHome();
+      if (!await kit.until(() => g.finished, 15000)) throw new Error(`Parade unfinished: ${g.homeCount} home, line ${g.line.length}`);
+    });
+    await screenshot(`duckling-parade-${level}`);
+    await finished('duckling-parade');
+    const r = await page.evaluate(() => { const r = kit.store.stats('duckling-parade').history.at(-1); return [r.misses, r.hints]; });
+    const expected = { tap: [0, 0], walk: [0, 0], count: [1, 0], color: [2, 1], colorCount: [3, 1], pattern: [2, 1] }[mode];
+    assert.deepEqual(r, expected, `parade ${level} score`);
+    log(`Duckling Parade ${level} (${mode}): walking, joining, pond, saved score and sticker passed`);
+  }
+
+  // Scoop Shop: wrong flavors and extra scoops bounce back; two lead to a glowing tub; memory peeks.
+  for (let level = 1; level <= 6 && (!only || only === 'scoop'); level++) {
+    await launch('scoop-shop', level);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const tap = async (color) => { await kit.until(() => !g.busy, 8000); kit.tapOn(g.tubs.get(color), 0, -20); await kit.sleep(150); await kit.until(() => !g.busy || g.customerIndex >= g.orders.length, 8000); };
+      for (let c = 0; c < g.orders.length; c++) {
+        await kit.until(() => g.customerIndex === c && !g.busy && g.cone, 8000);
+        const order = g.order;
+        if (c === 0 && g.plan.mode !== 'free') {
+          const wrong = g.flavors.find((f) => !order.scoops.includes(f)) ?? g.flavors.find((f) => f !== order.scoops[0]);
+          await tap(wrong); await tap(wrong);
+          if (g.misses !== 2 || g.hints !== 1 || g.cone.colors.length !== 0) throw new Error(`Scoop hint: ${g.misses} ${g.hints}`);
+        }
+        if (c === 1 && g.plan.mode === 'memory') {
+          await kit.until(() => g.hidden, 8000);
+          kit.tapOn(g.customer, 0, -80);
+          await kit.until(() => !g.hidden, 3000);
+          await kit.until(() => g.hidden, 10000);
+          if (g.hints !== 2) throw new Error('Peek not counted');
+        }
+        const want = g.plan.mode === 'free' ? Array(g.plan.max).fill(g.flavors[0]) : null;
+        for (let guard = 0; guard < 8 && g.order === order; guard++) {
+          const next = want ? want[guard] : (await import('/src/games/scoop-shop/logic.ts')).nextNeeded(order, g.cone.colors);
+          if (!next) break;
+          await tap(next);
+        }
+        await kit.until(() => g.customerIndex > c || g.finished, 15000);
+      }
+    });
+    await screenshot(`scoop-shop-${level}`);
+    await finished('scoop-shop');
+    const r = await page.evaluate(() => { const r = kit.store.stats('scoop-shop').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'free' ? [0, 0] : mode === 'memory' ? [2, 2] : [2, 1], `scoop ${level} score`);
+    log(`Scoop Shop ${level} (${mode}): orders, bounced scoops, hint glow${mode === 'memory' ? ', peeking' : ''}, saved score and sticker passed`);
+  }
+
+  // Roundup: a real finger shoos each animal through a gate; wrong pens and extras hop back out.
+  await page.evaluate(() => {
+    const canvas = () => document.querySelector('canvas');
+    const touch = (type, x, y) => canvas().dispatchEvent(new PointerEvent(type, { clientX: x, clientY: y, pointerId: 7, pointerType: 'touch', isPrimary: true, bubbles: true, cancelable: true, buttons: type === 'pointerup' ? 0 : 1 }));
+    /** Keep a finger behind the animal and walk it to the gate of pen `i`, then through. */
+    window.herdInto = async (a, i, ms = 14000) => {
+      const g = neo.scene.game;
+      const r = g.pens[i].rect;
+      const t0 = performance.now();
+      let down = false;
+      while (a.state === 'loose' && performance.now() - t0 < ms) {
+        const c = a.critter;
+        const outside = c.x < r.x - 50 || Math.abs(c.y - (r.y + r.h / 2)) > r.h * 0.2;
+        const goal = outside && !(c.x > r.x - 70 && Math.abs(c.y - (r.y + r.h / 2)) < r.h * 0.2) ? { x: r.x - 60, y: r.y + r.h / 2 } : { x: r.x + 80, y: r.y + r.h / 2 };
+        const dx = goal.x - c.x, dy = goal.y - c.y, d = Math.hypot(dx, dy) || 1;
+        const f = neo.scene.game.touch.parent.toGlobal({ x: c.x - (dx / d) * 95, y: c.y - 30 - (dy / d) * 95 });
+        touch(down ? 'pointermove' : 'pointerdown', f.x, f.y);
+        down = true;
+        await kit.sleep(30);
+      }
+      if (down) { const f = neo.scene.game.touch.parent.toGlobal({ x: 200, y: 200 }); touch('pointerup', f.x, f.y); }
+      await kit.sleep(200);
+    };
+  });
+  for (let level = 1; level <= 6 && (!only || only === 'roundup'); level++) {
+    await launch('roundup', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const loose = () => g.animals.filter((a) => a.state === 'loose');
+      if (g.plan.mode === 'tap') {
+        for (const a of [...g.animals]) { kit.tapOn(a.critter, 0, -40); await kit.until(() => a.state === 'penned', 4000); }
+      } else {
+        if (g.plan.mode === 'sort') {
+          // Twice into the wrong pen: two gentle misses and a glow.
+          for (let k = 0; k < 2; k++) {
+            const a = loose().find((x) => x.kind === 'pig');
+            await herdInto(a, 1);
+            await kit.until(() => a.state === 'loose', 3000);
+            await kit.sleep(2100);
+          }
+          if (g.misses !== 2 || g.hints < 1) throw new Error(`Wrong pens: ${g.misses} ${g.hints}`);
+        }
+        if (g.plan.mode === 'count') {
+          // One too many, then the bell: the extra hops back out.
+          for (let k = 0; k <= g.pens[0].pen.target; k++) await herdInto(loose()[0], 0);
+          kit.tapOn(g.bell); await kit.sleep(300);
+          await kit.until(() => !g.busy, 8000);
+          if (g.misses !== 1 || g.pens[0].inside !== g.pens[0].pen.target) throw new Error(`Extra not noticed: ${g.misses} ${g.pens[0].inside}`);
+        }
+        // Shooing can sweep a neighbor in too; the bell sends extras back out, so herd and ring until right.
+        for (let round = 0; round < 4 && !g.finished; round++) {
+          for (let guard = 0; guard < 20 && !g.finished; guard++) {
+            const a = loose().find((x) => g.needs(x) >= 0);
+            if (!a) break;
+            await herdInto(a, g.needs(a));
+          }
+          if (!g.bell.visible) break;
+          kit.tapOn(g.bell); await kit.sleep(300);
+          await kit.until(() => !g.busy || g.finished, 10000);
+        }
+      }
+      if (!await kit.until(() => g.finished, 8000)) throw new Error(`Roundup unfinished: ${g.pens.map((p) => p.inside).join(',')}`);
+    });
+    await screenshot(`roundup-${level}`);
+    await finished('roundup');
+    const r = await page.evaluate(() => { const r = kit.store.stats('roundup').history.at(-1); return [r.misses, r.hints]; });
+    log(`Roundup ${level} (${mode}): score ${r}`);
+    // Herding speed varies, so an idle hint may add to the two wrong-pen misses' hint.
+    if (mode === 'sort') assert.ok(r[0] === 2 && r[1] >= 1, `roundup sort score ${r}`);
+    if (mode === 'count') assert.ok(r[0] >= 1, 'roundup count misses');
+    if (mode === 'tap') assert.deepEqual(r, [0, 0], 'roundup tap score');
+    log(`Roundup ${level} (${mode}): herding, gates, pens, saved score and sticker passed`);
+  }
+
+  // Bouncy Launch: real pull-and-let-go drags; short and long landings, the hint ring, and comparing.
+  await page.evaluate(() => {
+    window.fling = async (f) => {
+      const g = neo.scene.game;
+      const { pullFor } = await import('/src/games/bouncy-launch/logic.ts');
+      await kit.until(() => !g.flying, 10000);
+      const d = pullFor(f) / Math.SQRT2;
+      const p = g.pet.getGlobalPosition();
+      await kit.drag(kit.line([p.x, p.y - 80], [p.x - d, p.y - 80 + d], 10), 1, 16);
+      await kit.until(() => g.flying, 2000);
+      await kit.until(() => !g.flying, 10000);
+    };
+  });
+  for (let level = 1; level <= 5 && (!only || only === 'launch'); level++) {
+    await launch('bouncy-launch', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const { padAt } = await import('/src/games/bouncy-launch/logic.ts');
+      if (g.plan.mode === 'tap') {
+        for (let i = 0; i < g.plan.shots; i++) { await kit.until(() => !g.flying, 10000); kit.tapOn(g.pet, 0, -60); await kit.until(() => g.flying, 2000); }
+        return;
+      }
+      if (g.plan.mode === 'free') { for (const f of [0.2, 0.9, 0.5, 0.7]) await fling(f); return; }
+      if (g.plan.mode === 'compare') {
+        await fling(0.5);
+        let first = true;
+        while (!g.finished) {
+          const want = g.ask === 'farther' ? Math.min(1, g.last + 0.3) : Math.max(0, g.last - 0.3);
+          // One wrong-way flight on the first ask.
+          await fling(first ? (g.ask === 'farther' ? Math.max(0, g.last - 0.2) : Math.min(1, g.last + 0.2)) : want);
+          first = false;
+        }
+        return;
+      }
+      // Star and number levels: two misses light the pull ring, then hit every cloud.
+      const t0 = g.targets[0];
+      const off = t0 === 0 ? 0.95 : 0.03;
+      await fling(off); await fling(off);
+      if (g.misses !== 2 || g.hints !== 1 || !g.hinting) throw new Error(`Launch hint: ${g.misses} ${g.hints}`);
+      while (!g.finished && g.shot < g.targets.length) await fling(padAt(g.targets[g.shot]));
+    });
+    await screenshot(`bouncy-launch-${level}`);
+    await finished('bouncy-launch');
+    const r = await page.evaluate(() => { const r = kit.store.stats('bouncy-launch').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, { tap: [0, 0], free: [0, 0], star: [2, 1], number: [2, 1], compare: [1, 0] }[mode], `launch ${level} score`);
+    log(`Bouncy Launch ${level} (${mode}): pulls, flights, landings, saved score and sticker passed`);
+  }
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -721,6 +953,7 @@ try {
   if (suite === 'all' || suite === 'third') await third();
   if (suite === 'all' || suite === 'fourth') await fourth();
   if (suite === 'all' || suite === 'early') await early();
+  if (suite === 'all' || suite === 'arcade') await arcade();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

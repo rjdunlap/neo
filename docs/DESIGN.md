@@ -26,7 +26,7 @@ Status checked against the repository on 2026-10-05. The island expansion is imp
 | --- | --- |
 | Platform | TypeScript, Vite, PixiJS 8; installable PWA with an offline asset cache |
 | Navigation | Start screen, hatching, an age-trail island map of four places, place scenes with every game for that age laid out, game host, sticker book, goodnight scene |
-| Games | Bubble Pop, Rainbow Fingers, Jelly Drums, Peekaboo Barn, Splish Splash, Duck Pond, Shape Sorter, Color Garden, Pattern Train, Memory Match, Letter Trails, Robot Path, Size Parade, Bug Builder, Story Steps, Feelings Faces, Monster Munch, Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float |
+| Games | Bubble Pop, Rainbow Fingers, Jelly Drums, Peekaboo Barn, Splish Splash, Duck Pond, Shape Sorter, Color Garden, Pattern Train, Memory Match, Letter Trails, Robot Path, Size Parade, Bug Builder, Story Steps, Feelings Faces, Monster Munch, Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float, Duckling Parade, Scoop Shop, Roundup, Bouncy Launch |
 | Progression | Per-game level ladders, automatic adjustment within age bands, grown-up level pins. Rainbow Fingers (6 levels) and Splish Splash (8) now reach pre-K with new modes rather than topping out early |
 | Pet | Four-tap hatching, eight colors, spoken name choices and grown-up name entry; customized guide shared across scenes |
 | Rewards | Five illustrated pages with free sticker placement and a paged tray; positions saved as page fractions |
