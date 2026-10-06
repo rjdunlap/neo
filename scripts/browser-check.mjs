@@ -934,6 +934,478 @@ async function arcade() {
   }
 }
 
+async function batch() {
+  const only = process.env.BATCH_ONLY;
+  // Word Monsters: sounds, finding letters, first sounds and building words by dragging.
+  for (let level = 1; level <= 6 && (!only || only === 'monsters'); level++) {
+    await launch('word-monsters', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const ready = () => kit.until(() => !g.busy || g.finished, 10000);
+      if (g.plan.mode === 'play') {
+        for (let i = 0; i < g.plan.rounds; i++) { await ready(); kit.tapOn(g.monsters[i % g.monsters.length]); await kit.sleep(250); }
+        return;
+      }
+      const building = g.plan.mode === 'build' || g.plan.mode === 'spell';
+      for (let q = 0; q < g.questions.length; q++) {
+        await kit.until(() => g.index === q && !g.busy, 10000);
+        const question = g.question;
+        const want = () => (building ? question.answer[g.filled] : question.answer);
+        const monster = (l) => g.monsters.find((m) => !m.placed && m.letter === l);
+        const act = async (m) => {
+          if (!building) { kit.tapOn(m); await kit.sleep(450); return; }
+          const slot = g.top.parent.toGlobal({ x: g.top.x + (g.filled - 1) * 150, y: g.top.y + 106 + 40 });
+          await kit.dragTo(m, slot, 10); await kit.sleep(500);
+        };
+        if (q === 0) {
+          // Two wrong answers: a gentle miss each, then the right monster glows.
+          const wrong = g.monsters.find((m) => m.letter !== want() && !question.answer.slice(g.filled).startsWith(m.letter));
+          await act(wrong); await act(wrong);
+          if (g.misses !== 2 || g.hints !== 1 || !monster(want()).glow.visible) throw new Error(`Monster hint: ${g.misses} ${g.hints}`);
+        }
+        if (!building) { await act(monster(want())); continue; }
+        while (g.filled < question.answer.length && g.question === question) await act(monster(want()));
+      }
+    });
+    await screenshot(`word-monsters-${level}`);
+    await finished('word-monsters');
+    const r = await page.evaluate(() => { const r = kit.store.stats('word-monsters').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'play' ? [0, 0] : [2, 1], `monsters ${level} score`);
+    log(`Word Monsters ${level} (${mode}): sounds, choices, mistakes, hint, saved score and sticker passed`);
+  }
+
+  // Peg Garden: tap to drop; aim by dragging. Shots are chosen by simulating the real physics.
+  for (let level = 1; level <= 5 && (!only || only === 'pegs'); level++) {
+    await launch('peg-garden', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const { simulate } = await import('/src/engine/ball.ts');
+      const { aimVelocity, AIM_LIMIT, BOARD } = await import('/src/games/peg-garden/logic.ts');
+      const board = g.board;
+      const screen = (x, y) => board.toGlobal({ x, y });
+      const done = () => kit.until(() => !g.ball, 15000);
+      const drop = async (x) => { await done(); const p = screen(x, 30); kit.tap(p.x, p.y); await kit.until(() => g.ball, 2000); await done(); };
+      // Aim: find an angle whose simulated path touches what we want, then drag the launcher there.
+      const shoot = async (good) => {
+        await done();
+        let best = 0;
+        for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.01) {
+          const { hits } = simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball }, g.world, BOARD.h, 6, 1 / 30);
+          if (good(hits)) { best = a; break; }
+        }
+        const p = screen(BOARD.w / 2 + Math.sin(best) * 300, 40 + Math.cos(best) * 300);
+        const q = screen(BOARD.w / 2 + Math.sin(best) * 310, 40 + Math.cos(best) * 310);
+        await kit.drag([[p.x, p.y], [q.x, q.y]], 1, 30);
+        await kit.until(() => g.ball, 2000); await done();
+      };
+      if (g.plan.mode === 'drop') { for (let i = 0; i < g.plan.count; i++) await drop(60 + i * 110); return; }
+      if (g.plan.mode === 'bloom') {
+        for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => !b.bloomed); if (!b) break; await drop(b.x); }
+        return;
+      }
+      if (g.plan.mode === 'color') {
+        // Drop far from the orange flowers until two shots in a row bloom none: then the arrow hint.
+        const specials = g.buds.filter((b) => b.spot.kind === 'special');
+        const far = [...g.buds].filter((b) => b.spot.kind === 'plain').sort((a, b) => Math.min(...specials.map((s) => Math.abs(s.x - b.x))) - Math.min(...specials.map((s) => Math.abs(s.x - a.x))));
+        for (let k = 0; k < 12 && !g.hinting && !g.finished; k++) await drop(far[k % 3].x);
+        if (!g.finished && (!g.hinting || g.hints !== 1)) throw new Error(`Peg color hint: ${g.misses} ${g.hints}`);
+        for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => b.spot.kind === 'special' && !b.bloomed); if (!b) break; await drop(b.x); }
+        return;
+      }
+      // Number and order: two shots that miss the target, then the full-path hint, then hits.
+      const isTarget = (i) => g.buds[i].spot.kind === g.target;
+      for (let k = 0; k < 2; k++) await shoot((hits) => !hits.some(isTarget));
+      if (g.misses < 2 || g.hints !== 1) throw new Error(`Peg hint: ${g.misses} ${g.hints}`);
+      for (let guard = 0; guard < 10 && !g.finished; guard++) await shoot((hits) => hits.some(isTarget));
+    });
+    if (!await page.evaluate(() => neo.scene.game.finished)) await page.waitForTimeout(2000);
+    await screenshot(`peg-garden-${level}`);
+    await finished('peg-garden');
+    const r = await page.evaluate(() => { const r = kit.store.stats('peg-garden').history.at(-1); return [r.misses, r.hints]; });
+    log(`Peg Garden ${level} (${mode}): score ${r}`);
+    if (mode === 'drop' || mode === 'bloom') assert.deepEqual(r, [0, 0], `pegs ${level} score`);
+    else assert.ok(r[0] >= 2 && r[1] === 1, `pegs ${level} score ${r}`);
+    log(`Peg Garden ${level} (${mode}): drops, aiming, blooms, hint, saved score and sticker passed`);
+  }
+
+  // Fluffy Salon: real strokes through the fur with each tool, requests, and the mirror.
+  await page.evaluate(() => {
+    window.salon = {
+      async pick(tool) { const g = neo.scene.game; kit.tapOn(g.buttons.find((b) => b.tool === tool)); await kit.sleep(250); },
+      /** Brush back and forth across the whole head of fur. */
+      async zigzag() {
+        const b = neo.scene.game.hair.getBounds();
+        for (let y = b.y + 10; y < b.y + b.height; y += 26) {
+          const row = [];
+          for (let x = b.x; x <= b.x + b.width; x += 18) row.push([x, y]);
+          await kit.drag(row, 1, 6);
+        }
+      },
+      /** Snip close to the head, following its curve. */
+      async cutShort() {
+        const g = neo.scene.game;
+        for (const r of [150, 140]) {
+          const pts = [];
+          for (let a = -Math.PI; a <= 0; a += 0.08) { const p = g.hair.toGlobal({ x: Math.cos(a) * r, y: -122 + Math.sin(a) * r }); pts.push([p.x, p.y]); }
+          await kit.drag(pts, 1, 8);
+        }
+      },
+      async style(look) {
+        const g = neo.scene.game;
+        const { needs, toolFor } = await import('/src/games/fluffy-salon/logic.ts');
+        for (let i = 0; i < 12; i++) {
+          const fix = needs(look, g.strands);
+          if (!fix || g.busy) return;
+          const tool = toolFor(fix);
+          if (g.tool !== tool) await salon.pick(tool);
+          if (tool === 'cut') await salon.cutShort(); else await salon.zigzag();
+        }
+      },
+    };
+  });
+  for (let level = 1; level <= 5 && (!only || only === 'salon'); level++) {
+    await launch('fluffy-salon', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (g.plan.mode === 'play' || g.plan.mode === 'tools') {
+        for (const tool of g.plan.mode === 'play' ? ['grow', 'pink'] : ['grow', 'curl', 'blue', 'cut']) {
+          await salon.pick(tool);
+          if (tool === 'cut') await salon.cutShort(); else await salon.zigzag();
+        }
+        if (!await kit.until(() => g.mirror.visible, 30000)) throw new Error('No mirror');
+        await kit.sleep(500);
+        kit.tapOn(g.mirror);
+        return;
+      }
+      for (let r = 0; r < g.requests.length; r++) {
+        await kit.until(() => g.request === r && !g.busy, 10000);
+        const look = g.look;
+        if (r === 0 && g.plan.mode !== 'ask') {
+          // Checking the mirror too soon: two gentle "almost"s, then the right tool glows.
+          for (let k = 0; k < 2; k++) { kit.tapOn(g.mirror); await kit.sleep(500); await kit.until(() => !g.busy, 8000); }
+          if (g.misses !== 2 || g.hints !== 1 || !g.buttons.some((b) => b.glow.visible)) throw new Error(`Salon hint: ${g.misses} ${g.hints}`);
+        }
+        await salon.style(look);
+        if (g.plan.mode !== 'ask') { await kit.until(() => !g.busy, 8000); kit.tapOn(g.mirror); }
+        await kit.until(() => g.request > r || g.finished, 15000);
+      }
+    });
+    await screenshot(`fluffy-salon-${level}`);
+    await finished('fluffy-salon');
+    const r = await page.evaluate(() => { const r = kit.store.stats('fluffy-salon').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'two' || mode === 'match' ? [2, 1] : [0, 0], `salon ${level} score`);
+    log(`Fluffy Salon ${level} (${mode}): tools, requests, mirror, hint, saved score and sticker passed`);
+  }
+
+  // Sound Garden: singers, listening questions with wrong answers, and echoing rhythms on the drum.
+  for (let level = 1; level <= 6 && (!only || only === 'garden'); level++) {
+    await launch('sound-garden', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const ready = () => kit.until(() => !g.busy || g.finished, 15000);
+      if (g.plan.mode === 'play') {
+        for (let i = 0; i < g.plan.rounds; i++) { kit.tapOn(g.singers[i % g.singers.length].node); await kit.sleep(300); }
+        return;
+      }
+      if (g.plan.mode === 'echo') {
+        const { GAP_SECONDS } = await import('/src/games/sound-garden/logic.ts');
+        const tapRhythm = async (r) => {
+          for (let i = 0; i <= r.length; i++) { kit.tapOn(g.drum, 0, -40); if (i < r.length) await kit.sleep(GAP_SECONDS[r[i]] * 1000); }
+        };
+        for (let q = 0; q < g.rhythms.length; q++) {
+          await kit.until(() => g.index === q && !g.busy, 15000);
+          const r = g.rhythms[q];
+          if (q === 0) {
+            // Two echoes with an extra tap: gentle misses, then rhythm dots appear.
+            for (let k = 0; k < 2; k++) { await tapRhythm([...r, 'S']); await kit.until(() => g.busy, 4000); await ready(); }
+            if (g.misses !== 2 || g.hints !== 1) throw new Error(`Echo hint: ${g.misses} ${g.hints}`);
+          }
+          await tapRhythm(r);
+          await kit.until(() => g.index > q || g.finished, 15000);
+        }
+        return;
+      }
+      for (let q = 0; q < g.questions.length; q++) {
+        await kit.until(() => g.index === q && !g.busy, 15000);
+        const right = g.tiles.find((t) => t.answer === g.question.answer);
+        const wrong = g.tiles.find((t) => t !== right);
+        if (q === 0) {
+          for (let k = 0; k < 2; k++) { kit.tapOn(wrong); await kit.sleep(300); await ready(); }
+          if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible) throw new Error(`Garden hint: ${g.misses} ${g.hints}`);
+          kit.tapOn(g.bush); await kit.sleep(300); await ready();
+        }
+        kit.tapOn(right);
+        await kit.until(() => g.index > q || g.finished, 15000);
+      }
+    });
+    await screenshot(`sound-garden-${level}`);
+    await finished('sound-garden');
+    const r = await page.evaluate(() => { const r = kit.store.stats('sound-garden').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'play' ? [0, 0] : [2, 1], `garden ${level} score`);
+    log(`Sound Garden ${level} (${mode}): sounds, answers, mistakes, hint, saved score and sticker passed`);
+  }
+
+  // Little Helpers: tap the fruit to send helpers one by one; the whistle checks the count.
+  for (let level = 1; level <= 5 && (!only || only === 'helpers'); level++) {
+    await launch('little-helpers', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const settle = () => kit.until(() => !g.busy && !g.helpers.some((h) => h.moving), 10000);
+      const send = async (n) => { for (let i = 0; i < n; i++) { kit.tapOn(g.fruitNode, 0, -30); await kit.sleep(260); } await kit.sleep(400); };
+      for (let q = 0; q < g.fruits.length; q++) {
+        await kit.until(() => g.index === q && !g.busy, 15000);
+        await settle();
+        const f = g.fruit;
+        if (!g.whistle.visible) { await send(f.need); await kit.until(() => g.index > q || g.finished, 15000); continue; }
+        if (q === 0) {
+          // One too many, then the whistle: an extra walks back. Then too few: too heavy.
+          await send(f.need - f.already + 1);
+          kit.tapOn(g.whistle); await kit.sleep(300); await settle();
+          if (g.carrying.length !== f.need) throw new Error(`Extras not sent back: ${g.carrying.length} of ${f.need}`);
+          const h = g.carrying.at(-1); kit.tapOn(h, 0, -24); await kit.sleep(300); await settle();
+          kit.tapOn(g.whistle); await kit.sleep(300); await settle();
+          if (g.misses !== 2 || g.hints !== 1) throw new Error(`Helper hint: ${g.misses} ${g.hints}`);
+          await send(1);
+        } else {
+          await send(f.need - f.already);
+        }
+        await settle();
+        kit.tapOn(g.whistle);
+        await kit.until(() => g.index > q || g.finished, 15000);
+      }
+    });
+    await screenshot(`little-helpers-${level}`);
+    await finished('little-helpers');
+    const r = await page.evaluate(() => { const r = kit.store.stats('little-helpers').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'tap' || mode === 'two' ? [0, 0] : [2, 1], `helpers ${level} score`);
+    log(`Little Helpers ${level} (${mode}): sending, take-backs, whistle, hint, saved score and sticker passed`);
+  }
+
+  // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.
+  for (let level = 1; level <= 5 && (!only || only === 'eggs'); level++) {
+    await launch('egg-catch', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const canvas = document.querySelector('canvas');
+      const touch = (type, x, y) => canvas.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: y, pointerId: 9, pointerType: 'touch', isPrimary: true, bubbles: true, cancelable: true, buttons: type === 'pointerup' ? 0 : 1 }));
+      if (g.plan.mode === 'tap') {
+        for (let i = 0; i < g.plan.eggs; i++) {
+          await kit.until(() => !g.falling.some((f) => !f.done), 8000);
+          await kit.sleep(300);
+          kit.tapOn(g.hens[i % g.hens.length], 0, -50);
+          await kit.until(() => g.caughtCount > i || g.finished, 8000);
+        }
+        return;
+      }
+      if (g.plan.mode === 'catch' || g.plan.mode === 'brown') {
+        const y = g.basket.getGlobalPosition().y;
+        let down = false;
+        const t0 = performance.now();
+        while (!g.finished && performance.now() - t0 < 90000) {
+          const live = g.falling.filter((f) => !f.done).sort((a, b) => b.t - a.t);
+          // Miss the first two brown eggs on purpose (move away), then catch every brown one.
+          const target = live.find((f) => f.egg.shell === 'brown');
+          let x = g.basket.x;
+          if (target) x = g.misses < 2 && g.hints === 0 ? (target.x < neo.view.w / 2 ? neo.view.w - 100 : 180) : target.x;
+          else { const white = live[0]; if (white) x = white.x < neo.view.w / 2 ? neo.view.w - 100 : 180; }
+          const p = g.basket.parent.toGlobal({ x, y: 0 });
+          touch(down ? 'pointermove' : 'pointerdown', p.x, y);
+          down = true;
+          await kit.sleep(60);
+        }
+        touch('pointerup', 10, y);
+        return;
+      }
+      // Routing: two eggs sent the wrong way (gates set away from the target), then the right way.
+      const { gatesFor } = await import('/src/games/egg-catch/logic.ts');
+      const t0 = performance.now();
+      let lastRouted = -1;
+      while (!g.finished && performance.now() - t0 < 120000) {
+        if (g.routed !== lastRouted) {
+          lastRouted = g.routed;
+          // The next egg (and its basket) appears 0.8 s after the last one lands.
+          await kit.sleep(1300);
+          const egg = g.eggs[g.routed % g.eggs.length];
+          const exit = g.plan.mode === 'sort' && egg.shell === 'white' ? g.target.nest : g.target.basket;
+          const want = [...g.gates];
+          for (const { gate, right } of gatesFor(exit)) want[gate] = right;
+          if (g.misses < 2 && g.hints === 0) want[0] = !want[0];
+          for (let i = 0; i < 3; i++) if (g.gates[i] !== want[i]) { kit.tapOn(g.gateHits[i]); await kit.sleep(300); }
+        }
+        await kit.sleep(100);
+      }
+    });
+    await screenshot(`egg-catch-${level}`);
+    await finished('egg-catch');
+    const r = await page.evaluate(() => { const r = kit.store.stats('egg-catch').history.at(-1); return [r.misses, r.hints]; });
+    log(`Egg Catch ${level} (${mode}): score ${r}`);
+    if (mode === 'tap') assert.deepEqual(r, [0, 0], 'eggs tap score');
+    else assert.ok(r[0] >= 2 && r[1] === 1, `eggs ${level} score ${r}`);
+    log(`Egg Catch ${level} (${mode}): eggs, basket, gates, hatching, hint, saved score and sticker passed`);
+  }
+
+  // Mail Carrier: deliver each letter; a wrong mailbox hands it back.
+  for (let level = 1; level <= 5 && (!only || only === 'mail'); level++) {
+    await launch('mail-carrier', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      for (let q = 0; q < g.letters.length; q++) {
+        await kit.until(() => g.index === q && !g.busy, 15000);
+        const right = g.letter;
+        if (q === 0 && g.plan.mode !== 'drop') {
+          const wrong = g.houses.find((h) => h !== right);
+          for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(300); await kit.until(() => !g.busy, 8000); }
+          if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible) throw new Error(`Mail hint: ${g.misses} ${g.hints}`);
+        }
+        kit.tapOn(g.plan.mode === 'drop' ? g.houses[q % g.houses.length] : right, 0, -60);
+        await kit.until(() => g.index > q || g.finished, 15000);
+      }
+    });
+    await screenshot(`mail-carrier-${level}`);
+    await finished('mail-carrier');
+    const r = await page.evaluate(() => { const r = kit.store.stats('mail-carrier').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'drop' ? [0, 0] : [2, 1], `mail ${level} score`);
+    log(`Mail Carrier ${level} (${mode}): letters, mailboxes, mistakes, hint, saved score and sticker passed`);
+  }
+
+  // Photo Safari: photograph the asked-for animal; a wrong photo names what it caught.
+  for (let level = 1; level <= 5 && (!only || only === 'safari'); level++) {
+    await launch('photo-safari', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      for (let p = 0; p < g.plan.photos; p++) {
+        await kit.until(() => g.photos === p && !g.busy && g.actors.length, 15000);
+        const right = g.target ?? g.actors[p % g.actors.length];
+        if (p === 0 && g.target) {
+          const wrong = g.actors.find((a) => a !== right);
+          for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }
+          if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible) throw new Error(`Safari hint: ${g.misses} ${g.hints}`);
+        }
+        kit.tapOn(right, 0, -60);
+        await kit.until(() => g.photos > p, 10000);
+      }
+    });
+    await screenshot(`photo-safari-${level}`);
+    await finished('photo-safari');
+    const r = await page.evaluate(() => { const r = kit.store.stats('photo-safari').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'snap' ? [0, 0] : [2, 1], `safari ${level} score`);
+    log(`Photo Safari ${level} (${mode}): photos, wrong snaps, hint, album, saved score and sticker passed`);
+  }
+
+  // Bounce Back: a child finger tracks the ball (after two misses on purpose); a grown-up finger on the left.
+  for (let level = 1; level <= 5 && (!only || only === 'bounce'); level++) {
+    await launch('bounce-back', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const { predictY } = await import('/src/games/bounce-back/logic.ts');
+      const canvas = document.querySelector('canvas');
+      const touch = (type, id, x, y) => canvas.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: y, pointerId: id, pointerType: 'touch', isPrimary: id === 21, bubbles: true, cancelable: true, buttons: type === 'pointerup' ? 0 : 1 }));
+      const at = (x, y) => g.touch.parent.toGlobal({ x, y });
+      const b = g.box;
+      if (g.plan.mode === 'together') {
+        // A grown-up's finger on the left moves the pink paddle, and the pet steps aside.
+        const p = at(b.x0 + 80, b.y0 + 100);
+        touch('pointerdown', 22, p.x, p.y);
+        await kit.sleep(500);
+        if (g.petFace.visible || Math.abs(g.paddles.left - (b.y0 + 100)) > 120) throw new Error('Grown-up paddle not in control');
+        touch('pointerup', 22, p.x, p.y);
+      }
+      let down = false;
+      const t0 = performance.now();
+      while (!g.finished && performance.now() - t0 < 120000) {
+        const ball = g.ball;
+        const face = b.x1 - 46;
+        let y = ball.vx > 0 ? predictY(ball.x, ball.y, ball.vx, ball.vy, face, b.y0 + 26, b.y1 - 26) : (b.y0 + b.y1) / 2;
+        // Stars: strike the ball off-center so it heads for the star.
+        if (g.plan.mode === 'stars' && ball.vx > 0) {
+          const angle = Math.max(-0.85, Math.min(0.85, Math.atan2(g.starAt.y - y, face - g.starAt.x)));
+          y -= (angle / 0.85) * (g.plan.paddle / 2) * 0.9;
+        }
+        // Miss the first two on purpose: hold the paddle at the far end.
+        if (g.misses < 2 && g.hints === 0 && ball.vx > 0) y = y < (b.y0 + b.y1) / 2 ? b.y1 - 20 : b.y0 + 20;
+        const p = at(b.x1 - 120, y);
+        touch(down ? 'pointermove' : 'pointerdown', 21, p.x, p.y);
+        down = true;
+        await kit.sleep(40);
+      }
+      touch('pointerup', 21, 0, 0);
+    });
+    await screenshot(`bounce-back-${level}`);
+    await finished('bounce-back');
+    const r = await page.evaluate(() => { const r = kit.store.stats('bounce-back').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, [2, 1], `bounce ${level} score`);
+    log(`Bounce Back ${level} (${mode}): rally, pet and grown-up paddles, misses, hint, saved score and sticker passed`);
+  }
+
+  // Dot Link: drag real lines through dots; wrong colors, short chains and open lines are gentle misses.
+  for (let level = 1; level <= 5 && (!only || only === 'dots'); level++) {
+    await launch('dot-link', level);
+    await page.waitForTimeout(600);
+    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const { findLine, findSquare } = await import('/src/games/dot-link/logic.ts');
+      const at = (c) => { const p = g.board.toGlobal({ x: c.c * 108, y: c.r * 108 }); return [p.x, p.y]; };
+      const ready = () => kit.until(() => !g.busy || g.finished, 8000);
+      const draw = async (cells) => {
+        await ready();
+        const pts = [];
+        cells.forEach((c, i) => {
+          if (i) { const [a, b] = [at(cells[i - 1]), at(c)]; pts.push([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]); }
+          pts.push(at(c));
+        });
+        await kit.drag(pts, 1, 40);
+        await kit.sleep(150);
+        await ready();
+      };
+      const p = g.plan;
+      if (p.mode === 'tap') {
+        for (let i = 0; i < p.goal; i++) { await ready(); const [x, y] = at({ r: i % p.rows, c: i % p.cols }); kit.tap(x, y); await kit.sleep(200); }
+        return;
+      }
+      // Two misses first where the level can have them.
+      if (p.mode !== 'pair') {
+        for (let k = 0; k < 2; k++) {
+          const other = p.mode === 'color' ? g.palette.find((c) => c !== g.target && findLine(g.grid, 2, c)) : undefined;
+          const short = findLine(g.grid, 2, other);
+          await draw(short.slice(0, 2));
+        }
+        if (g.misses !== 2 || g.hints !== 1) throw new Error(`Dot hint: ${g.misses} ${g.hints}`);
+      }
+      for (let guard = 0; guard < 40 && !g.finished; guard++) {
+        await ready();
+        if (p.mode === 'square') { const sq = findSquare(g.grid); await draw([...sq, sq[0]]); continue; }
+        const want = p.mode === 'chain' ? p.length : 2;
+        const line = (p.mode === 'color' && (findLine(g.grid, 4, g.target) || findLine(g.grid, 3, g.target))) || findLine(g.grid, want, g.target);
+        await draw(line.slice(0, Math.max(want, p.mode === 'color' ? line.length : want)));
+      }
+    });
+    await screenshot(`dot-link-${level}`);
+    await finished('dot-link');
+    const r = await page.evaluate(() => { const r = kit.store.stats('dot-link').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, mode === 'tap' || mode === 'pair' ? [0, 0] : [2, 1], `dots ${level} score`);
+    log(`Dot Link ${level} (${mode}): lines, pops, falls, mistakes, hint, saved score and sticker passed`);
+  }
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -954,6 +1426,7 @@ try {
   if (suite === 'all' || suite === 'fourth') await fourth();
   if (suite === 'all' || suite === 'early') await early();
   if (suite === 'all' || suite === 'arcade') await arcade();
+  if (suite === 'all' || suite === 'batch') await batch();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

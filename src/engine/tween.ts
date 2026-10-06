@@ -88,7 +88,18 @@ export class Tweener {
       tw.elapsed += dt;
       const p = Math.min(1, tw.elapsed / tw.duration);
       const e = tw.ease(p);
-      tw.keys.forEach((k, i) => (tw.target[k] = tw.from[i] + (tw.to[i] - tw.from[i]) * e));
+      // Something destroyed mid-tween (a letter posted, a scoop eaten) just ends its tween,
+      // instead of throwing and freezing every other tween in the scene.
+      if ((tw.target as { destroyed?: boolean }).destroyed) {
+        finished.push(tw);
+        continue;
+      }
+      try {
+        tw.keys.forEach((k, i) => (tw.target[k] = tw.from[i] + (tw.to[i] - tw.from[i]) * e));
+      } catch {
+        finished.push(tw);
+        continue;
+      }
       if (p >= 1) finished.push(tw);
     }
     if (finished.length) {

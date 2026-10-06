@@ -23,6 +23,16 @@ import { ducklingParade } from './duckling-parade';
 import { scoopShop } from './scoop-shop';
 import { roundup } from './roundup';
 import { bouncyLaunch } from './bouncy-launch';
+import { wordMonsters } from './word-monsters';
+import { pegGarden } from './peg-garden';
+import { fluffySalon } from './fluffy-salon';
+import { soundGarden } from './sound-garden';
+import { littleHelpers } from './little-helpers';
+import { eggCatch } from './egg-catch';
+import { mailCarrier } from './mail-carrier';
+import { photoSafari } from './photo-safari';
+import { bounceBack } from './bounce-back';
+import { dotLink } from './dot-link';
 import type { GameModule } from './types';
 
 /**
@@ -54,6 +64,16 @@ export const GAMES: GameModule[] = [
   scoopShop,
   roundup,
   bouncyLaunch,
+  wordMonsters,
+  pegGarden,
+  fluffySalon,
+  soundGarden,
+  littleHelpers,
+  eggCatch,
+  mailCarrier,
+  photoSafari,
+  bounceBack,
+  dotLink,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

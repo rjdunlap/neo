@@ -2,9 +2,9 @@
 
 ## Vision
 
-Puddle Island is a home-made iPad learning game for the developer's daughter, who is about to turn one in October 2026. It is being built ahead of when she may use it, with room to grow through age six. The inspiration is the discovery and playful learning of Jumpstart, the companion and world of Neopets, and the variety of small games found on Kongregate.
+Puddle Island is a home-made iPad learning game for the developer's daughter, who is about to turn one in October 2026. Its current activities grow from lap play through roughly age six. The longer-term direction includes ages 6–8, with a few 8–10 ideas held as optional stretches. The inspiration is the discovery and playful learning of JumpStart, the companion and world of Neopets, and the variety of small games found on Kongregate.
 
-The original request was to begin with design, architecture, and game ideas before coding. The follow-up asked for more minigames and modes that scale in difficulty as they are played. The project now has twenty-one games and four expansions described in [ROADMAP.md](ROADMAP.md). After the third expansion, the developer asked for the world map itself to be the age selection, with the games laid out in each age's place; the island became an age trail.
+The island is an age trail: each place contains the activities for its band. The documented baseline is twenty-five games; a further batch is in progress in the local source. [ROADMAP.md](ROADMAP.md) separates completed milestones, work needing verification, and proposals. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) holds the game and world concepts with their learning goals and inspiration. This document describes current behavior, with future direction explicitly labeled below.
 
 The developer is not an artist. All game artwork is generated in code with PixiJS Graphics, and sounds and music are synthesized with Web Audio. The visual direction should be achievable with the shared shape, animal, scenery, and particle builders, without sprites or an external asset pipeline.
 
@@ -20,13 +20,13 @@ The developer is not an artist. All game artwork is generated in code with PixiJ
 
 ## Current implementation
 
-Status checked against the repository on 2026-10-05. The island expansion is implemented; validation results are tracked in [VERIFICATION.md](VERIFICATION.md).
+The table describes the 25-game baseline recorded in [VERIFICATION.md](VERIFICATION.md) on 2026-10-05. Additional games are being implemented in the working tree; registration alone does not establish verification or deployment. The verification log records checks performed, rather than a guarantee about every subsequent local edit.
 
 | Area | Current behavior |
 | --- | --- |
 | Platform | TypeScript, Vite, PixiJS 8; installable PWA with an offline asset cache |
 | Navigation | Start screen, hatching, an age-trail island map of four places, place scenes with every game for that age laid out, game host, sticker book, goodnight scene |
-| Games | Bubble Pop, Rainbow Fingers, Jelly Drums, Peekaboo Barn, Splish Splash, Duck Pond, Shape Sorter, Color Garden, Pattern Train, Memory Match, Letter Trails, Robot Path, Size Parade, Bug Builder, Story Steps, Feelings Faces, Monster Munch, Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float, Duckling Parade, Scoop Shop, Roundup, Bouncy Launch |
+| Games | The 25-game baseline is listed with modes and bands in the [README](../README.md#the-island-and-its-games); current registrations live in `src/games/registry.ts` |
 | Progression | Per-game level ladders, automatic adjustment within age bands, grown-up level pins. Rainbow Fingers (6 levels) and Splish Splash (8) now reach pre-K with new modes rather than topping out early |
 | Pet | Four-tap hatching, eight colors, spoken name choices and grown-up name entry; customized guide shared across scenes |
 | Rewards | Five illustrated pages with free sticker placement and a paged tray; positions saved as page fractions |
@@ -37,6 +37,18 @@ Status checked against the repository on 2026-10-05. The island expansion is imp
 The current age bands in `src/progress/bands.ts` are lap (18–24 months), toddler (2–3 years), preschool (3–4 years), and pre-K (5–6 years). These are application groupings, not developmental assessments.
 
 Each game supplies level ranges for the bands it supports. Two consecutive smooth rounds at the current level (at most one miss and no hints) move up; two struggling rounds (at least four misses or at least two hints per round) move down. Both changes stay within the selected band's range. Modes can change the task itself, rather than merely adding more objects.
+
+## Proposed direction: a connected world that grows with her
+
+These systems and older age ranges are proposals, not current app behavior. The [roadmap](ROADMAP.md) orders small pilots before broader infrastructure.
+
+**Short adventures give familiar games a purpose.** A recurring island friend asks for help with a picnic, a delivery, or a tune. Two or three activities visibly change a small scene, followed by a complete ending. A picture journal replays requests and resumes after any break; free play stays available. The first pilot can advance on existing round completions. Passing specific creations or choices between activities needs a deliberate extension beyond the current `{ misses, hints }` result.
+
+**A home and journal give play a lasting personal result.** Start with one room and free furnishings, then add a place to display a sticker or drawing and play a saved tune. Discoveries have known sources and narrated observations. Keep local storage bounded and include new data in migration, backup, restore, and offline checks. Nothing deteriorates while away; possessions are never spent to continue playing. Preserve one sticker per completed round and prevent the story layer from awarding it twice.
+
+**Older play adds reasoning and expression.** Target 6–8 first: balancing quantities, equal sharing, clue-based stories, editable robot loops, and experiments with replay. Some games may begin at this range. Keep spoken support and large targets, and let children revise a plan, undo, or ask for a worked example. Reading can be practiced inside a game while navigation and explanations remain available aloud. A new selectable band/place requires changes across levels, saves, parent controls, routes, trail layout, speech, and tests; no fifth band exists yet.
+
+The design test for an activity is whether the skill changes the play: quantities fill plates, a clue finds a friend, a revised route reaches a destination. Creative choices and experimental predictions should not become incorrect answers. Fun can come from making, discovering, caring, and trying another solution as well as finishing a puzzle. Optional personal challenges must not withhold the story ending or ordinary reward.
 
 ## Architecture
 
@@ -114,8 +126,14 @@ Four more games, all starting at lap with cause and effect and growing to pre-K:
 - **Weather Wardrobe (everyday life):** sun, rain and snow fill the sky. At lap, tapping the sky changes the weather and the pet dresses itself; later the child picks one item, then every item that fits, then packs a suitcase for a two-weather trip. Each item belongs to exactly one weather, and a wrong choice says which weather it is for. Clothing is drawn in critter body coordinates and attached, so it hops with the pet.
 - **Sink or Float (science):** things arc into a water tank; floaters bob and sinkers drift down trailing bubbles. Lap drops things in; then the voice names the result; then the child guesses before each test, and guesses never count as misses; then sorting into float and sink baskets, first with familiar things and then with surprises such as a floating apple and a sinking coin. A wrong sort is tested in the water before the thing goes to its basket.
 
+## Arcade activities
+
+The first arcade expansion adds Duckling Parade (steer a growing line), Scoop Shop (build an order), Roundup (guide a crowd), and Bouncy Launch (pull and release). They keep the motion and playful physical response of their inspirations while teaching quantities, patterns, sorting, memory, and comparison. All four span lap through pre-K; their rules live in each game's `logic.ts`, and their browser coverage is recorded in the verification log.
+
+The follow-on batch broadens language, music, pretend play, catching, and number-as-quantity. Its design briefs remain in [the arcade notebook](ARCADE-IDEAS.md#batch-already-in-progress); completed behavior should be promoted into these docs only alongside recorded checks.
+
 ## Document provenance
 
-This local document reconstructs the design from the user's original brief, supplied continuation plan, and current source code. It is not a copy of the full earlier design document or its roughly 30-game idea catalog.
+This local document maintains current design decisions from the original brief, implementation, and later planning. The local idea notebook consolidates future concepts; the roadmap is the active backlog.
 
 The [historical design artifact](https://claude.ai/code/artifact/a7666bb8-0fdf-429b-b5df-2ab53a112913) is retained only as a reference. Working on the project does not require access to that service. Keep current decisions and status in this repository.

@@ -1,6 +1,46 @@
 # Puddle Island verification
 
-Checked locally on 2026-10-05. The island expansion and second expansion are implemented: fifteen games, including the Robot Path stretch goal and the newer Size Parade, Bug Builder, and Story Steps. No commit, push, or deployment was performed.
+This is a dated record of checks, newest expansion first. The latest recorded game expansion below covers the 25-game baseline on 2026-10-05; earlier sections describe earlier snapshots and retired navigation. These results do not automatically validate later working-tree changes or establish what is deployed. Outstanding work and device checks are tracked in [ROADMAP.md](ROADMAP.md).
+
+## Follow-on batch in the working tree (2026-10-05, late evening; not committed or deployed)
+
+Ten games from the idea notebook's batch were implemented locally: Word Monsters, Peg Garden, Fluffy Salon, Sound Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, Bounce Back and Dot Link (35 in the registry). Shared additions: `engine/ball.ts` (deterministic ball and peg physics), a tweener guard for destroyed targets, and drum, knock, chirp and croak sounds. These results cover automated checks in headless Chrome only.
+
+- `npm run typecheck` and `npm run build`: passed.
+- `npm test`: 100 tests across 34 files passed. New rule tests:
+  - **Word Monsters:** every letter has a sound line, there are no lookalike letters side by side, and words fill left to right.
+  - **Peg Garden:** every numbered peg can be reached by some aim (simulated across 30 boards).
+  - **Fluffy Salon:** requests never start already done, and the "what to fix next" logic picks the right tool.
+  - **Sound Garden:** questions are balanced, and the echo judge accepts a wobbly rhythm but rejects the wrong one.
+  - **Little Helpers:** fruit never needs more helpers than the crowd, and lifting needs exactly enough.
+  - **Egg Catch:** the hint's gate settings reach every exit.
+  - **Mail Carrier:** streets are numbered in order and every house gets mail.
+  - **Photo Safari:** exactly one animal matches each request.
+  - **Bounce Back:** wall-bounce prediction and paddle angles are right.
+  - **Dot Link:** loops, gravity and refills work, and a move that counts always exists.
+  - **Shared code:** tests for the ball physics and the tweener guard.
+- `BROWSER_SUITE=batch` (new; `BATCH_ONLY=monsters|pegs|salon|garden|helpers|eggs|mail|safari|bounce|dots`): all 52 levels passed in one run without page errors. Input was driven the way a finger would:
+  - drags into word slots and real fur strokes;
+  - shots chosen by simulating the physics;
+  - a held finger steering a basket or paddle;
+  - a second finger standing in for the grown-up on Bounce Back;
+  - lines drawn through dot centers.
+
+  Each level checks its gentle misses, its hint, the saved miss/hint counts, and the sticker.
+- `BROWSER_SUITE=world` re-passed after the places grew (Daisy Meadow now has 31 games).
+- `npm run test:offline`: passed against a fresh build. It now pages twice to reach Monster Munch, which moved to index 13.
+- Bugs found and fixed while testing:
+  - Word Monsters colored lookalike neighbors the same.
+  - Little Helpers could start a lift twice and skip a fruit.
+  - Mail Carrier (and, latently, Scoop Shop) destroyed a letter or scoop mid-tween, which froze the scene. The tweener now ends such tweens instead.
+  - Photo Safari's flash and bush caught taps meant for the animals.
+  - Fluffy Salon's mirror overlapped a color, and top strands covered the pet's eyes.
+  - Sound Garden's bush drew overlapping outlines.
+- Not checked:
+  - The full combined `npm run test:browser` flow was not rerun after these additions.
+  - No real-iPad check.
+  - Device speech for letter sounds ("buh", "mmm") is a stand-in; whether it is usable phonics needs listening on the device, and recorded voices should replace it.
+  - Judgments on fun and clarity remain open (see [ROADMAP.md](ROADMAP.md)).
 
 ## Arcade-inspired games (2026-10-05, evening)
 
@@ -102,7 +142,7 @@ Screenshots from the runs are in ignored `test-results/browser/` and `test-resul
 
 ## Reproducing checks
 
-See the [README](../README.md#browser-checks). Browser scripts use a fresh, isolated context. `BROWSER_EXECUTABLE` can select an installed Chrome executable, and `GAME_URL` can select another local server port. `BROWSER_SUITE=world|pattern|memory|letters|robot|expansion|third|fourth|stickers` runs a single development suite; omit it to run the combined flow. The standalone sticker suite supplies test stickers, while the combined flow uses the rewards earned by its game play-throughs.
+See the [README](../README.md#browser-checks) for the maintained suite list, including `early` and `arcade`. Browser scripts use a fresh, isolated context. `BROWSER_EXECUTABLE` can select an installed Chrome executable, and `GAME_URL` can select another local server port. Set `BROWSER_SUITE` to one suite name, or omit it to run the combined flow. The standalone sticker suite supplies test stickers, while the combined flow uses the rewards earned by its game play-throughs. New suites in the working tree need their own recorded results; they are not covered by earlier entries here.
 
 ## Remaining device checks
 

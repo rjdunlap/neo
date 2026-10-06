@@ -1,68 +1,119 @@
 # Puddle Island (project Neo)
 
-Shared project guidance for any coding assistant or human contributor. Code paths in the architecture notes are relative to `src/` unless stated otherwise; documentation paths are relative to the repository root.
+Shared guidance for human contributors and coding assistants. Paths below are relative to the repository root unless stated otherwise.
 
-An iPad learning game for the developer's daughter (about 1 year old in Oct 2026), growing with her to age 6. TypeScript + Vite + PixiJS 8, installed as an offline PWA. Live at https://rjdunlap.github.io/neo/ (every push to `main` deploys via `.github/workflows/deploy.yml`).
+## Project direction
 
-Read these repository-local documents for context; no particular AI provider or external document tool is required:
+Puddle Island is an iPad learning game for the developer's daughter (about one year old in October 2026). Build a varied library of small, satisfying minigames that grow with her and feel part of a familiar island. The inspirations are JumpStart's playful learning and adventures, Neopets' companion and personal world, and the variety of classic arcade games.
 
-- `README.md`: setup, current game list, and how to add a game.
-- `docs/DESIGN.md`: product vision, architecture, and current implementation status.
-- `docs/ROADMAP.md`: implementation checklist and verification status for the island expansion. Treat unchecked items as remaining work.
+Current play spans `lap`, `toddler`, `preschool`, and `prek` (roughly through age six). Proposed extensions focus on ages 6–8, with selected 8–10 stretches. Short adventures, a pet treehouse, and a discovery journal are future directions; do not assume they or an older age band already exist.
 
-## Commands
+Each activity should have a fun action and a clear learning purpose: sharing fills plates, a pattern moves a train, a revised route reaches a friend. Add variety through different decisions, movement, creativity, listening, and pretend play. Extend an existing game when the meaningful action is the same; create a new game when the learning or interaction warrants it. Games can start at an older band without an artificial toddler mode.
 
-- `npm run dev` (port 5173), `npm test` (vitest), `npm run typecheck`, `npm run build`.
-- `npm run build-and-preview` builds and serves the production app on port 4173 for PWA/offline checks.
+Follow the user's requested scope and the roadmap. Build complete, playable slices; introduce shared infrastructure when an implemented activity needs it. Keep standalone play available as future stories connect games.
 
-## Non-negotiables
+## Project references
 
-- **No sprites or audio files.** Everything is drawn with Pixi `Graphics` and synthesized with Web Audio. Colors only from `art/palette.ts`. Pitched sounds use pentatonic steps (`audio/notes.ts`) so they're always in key with the music.
-- **Toddler rules:** huge targets (≥100 units), respond on touch-down, no fail states (wrong = boing + gentle voice hint, then a glow after two misses), every instruction spoken (`content/voice-script.ts`), tapping the corner pet repeats it. Drags go through `engine/drag.ts`. Taps through `engine/input.ts` `onTap` (cooldown + palm rejection).
-- No ads, purchases, streaks, timers that end play, or anything that guilt-trips. Rewards are predictable (one sticker per round).
-- Kid-facing text is never required reading. Grown-up UI (parent zone) is plain HTML in `parent/panel.ts`.
+Read the README, design, and roadmap for context; consult the idea notebook when choosing or developing concepts. No external document service is required.
 
-## Architecture
+| Document / source | Role |
+| --- | --- |
+| [README.md](README.md) | Setup, documented game inventory, navigation, browser commands |
+| [docs/DESIGN.md](docs/DESIGN.md) | Current architecture, behavior, and explicitly labeled future direction |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Priorities, unfinished work, and completed milestones |
+| [docs/ARCADE-IDEAS.md](docs/ARCADE-IDEAS.md) | Game concepts, learning goals, inspiration, and overlaps; not a mandate to build every idea |
+| [docs/VERIFICATION.md](docs/VERIFICATION.md) | Checks actually performed and remaining gaps |
+| `src/games/registry.ts`, `src/games/types.ts` | Current registrations and the minigame contract |
 
-- `app/`: `App` (Pixi app, logical-unit root, scene switching with a fade, frame loop), `Scene` base (layers `content` → `particles` → `ui`; `track(obj)` runs `obj.update(dt)`), `routes.ts`, `session.ts` (screen-time timer), scenes (`StartScene`, `HatchScene`, `MapScene`, `PlaceScene`, `GameScene`, `StickerBookScene`, `GoodnightScene`).
-- Logical units: the 1024×768 design area always fits (`engine/view.ts`); the spare side grows. Lay out from `view.w`/`view.h` in `resize()`. Keep rows clear of the pet in the bottom-left (use `spread(n, 150, view.w - 40, gap)`). Home button is top-left and returns from a game to the place it was launched from; places have an island button (top-left) and a sticker-book button (top-right). The parent gate is both top corners on the map.
-- **Games** (`games/<id>/index.ts`) export a `GameModule` (`games/types.ts`) and are listed in `games/registry.ts`. The shell (`GameScene`) owns the pet, home button, co-play tip, saving, stickers and the celebration; a game only draws into `ctx.stage`, uses `ctx.tw`/`ctx.particles`/`ctx.say`/`ctx.instruct`, and calls `ctx.finish({ misses, hints })`.
-- **Level ladders:** games define ordered level plans (usually changing *mode* as well as size) and expose `{min, max}` ranges per supported age band (`lap`, `toddler`, `preschool`, `prek`). `describeLevel(level)` is shown to grown-ups. `progress/difficulty.ts`: two smooth rounds (≤1 miss, 0 hints) step up, two struggling rounds (≥4 misses or ≥2 hints) step down, clamped to the band. Grown-ups can pin a level (`store.pin`). `games/registry.test.ts` checks every ladder.
-- **World (age trail):** the map is the age selection. `content/places.ts` defines four places, one per band (Puddle Lagoon, Daisy Meadow, Bumpy Hills, Starry Peak), with map positions on a switchback trail, generated landmarks, backdrops and spoken names. Every place is open. `MapScene` shows the pet at her own band's place (`profile.band`, set by grown-ups) and, when that band rises past `world.band`, throws a birthday and walks the pet up the trail. `PlaceScene` lays out every game for its band (`gamesFor(band)`, grouped by subject) in a zigzag of two rows; when they don't fit, the land swipes sideways (a game opens on lift without a swipe, after squishing on touch-down) and arrows page it; scroll is remembered per place for the session. Routes: `go.hub()` is the map, `go.place(band)` a place, `go.game(id, band?)` plays at that band's levels (default her own); `GameScene` gets the band and returns to its place. The start button goes straight to her place. `GameModule.region` and `content/world.ts` `REGION_IDS` are now subjects that order games inside a place.
-- **Pet:** `art/pet.ts` builds the customized guide from the save. `GameContext.petSpec` lets activities share its look; `childName` supports Letter Trails. `{pet}` is available in voice lines. Hatching is four egg taps, eight colors, then spoken name choices or an optional HTML name form.
-- **Stickers:** five scene pages plus a paged tray. `StickerRecord.placement` is optional `{ page, x, y }`, with normalized page coordinates. Drops back on the tray remove placement but retain the earned sticker. Drags use `engine/drag.ts`; Letter Trails uses its zero-lift option for fingertip tracing.
-- **New games:** Pattern Train has nine mode levels; Memory Match has nine levels and only counts known-partner mistakes; Letter Trails has ordered capital stroke data plus word/name modes; Robot Path has six levels with tested solvable routes.
-- **Second expansion:** Size Parade has eight comparison/order levels; Bug Builder has seven guided/copy/mirror levels; Story Steps has seven sequencing levels across four code-drawn picture stories. All three support toddler through pre-K. Their pure puzzle rules live in each game's `logic.ts`; `games/expansion.test.ts` checks unique size order, mirror geometry, and story solvability. `BROWSER_SUITE=expansion npm run test:browser` exercises every new level plus mistakes, hints, portrait layouts, save reload, and scrolling a place to an off-screen game.
-- **Third expansion:** Feelings Faces and Monster Munch both start at lap. Critters have `sad` and `calm` moods (brows and a tear are drawn for sad/surprised) and a `currentMood` getter. Feelings Faces hides the corner guide and its big pet repeats the instruction. Monster Munch's `Monster` (`games/monster-munch/art.ts`) gapes, chews, refuses, burps and shows eaten food in its tummy. Particles have a `heart` kind. `BROWSER_SUITE=third npm run test:browser` plays every level of both.
-- **Fourth expansion:** Song Maker (a looping note grid synced to `music.beats()`; free play, shadow/card copying, pattern continuation, and a by-ear level), Puzzle Pals (a code-drawn scene rendered once into a `RenderTexture` and cut into 2–12 sprite pieces; the finished picture comes alive), Weather Wardrobe (clothing art drawn in critter body coordinates and `attach`ed to the pet; trips pack a suitcase), and Sink or Float (guesses never count as misses; wrong sorts are tested in the water). All start at lap. `BROWSER_SUITE=fourth npm run test:browser` plays every level.
-- **Deeper first games:** Rainbow Fingers has six levels (free, pots, named-color coloring pages, remembered colors, mixing in a bowl); pictures, coverage and mixing live in `games/rainbow-fingers/logic.ts`. Splish Splash has eight (adds the nose, pairs, and ordered pairs); plans live in `games/splish-splash/logic.ts`. `BROWSER_SUITE=early npm run test:browser` plays every level of both.
-- **Arcade expansion:** Duckling Parade, Scoop Shop, Roundup and Bouncy Launch adapt Flash-era arcade loops (see `docs/ARCADE-IDEAS.md`), each from lap to pre-K with rules in `logic.ts`. Duckling Parade and Roundup steer with a raw pointer on a full-screen layer; Bouncy Launch measures a slingshot pull from finger movement rather than using `drag.ts` (which snaps the object to the fingertip). `BROWSER_SUITE=arcade npm run test:browser` plays every level (`ARCADE_ONLY=parade|scoop|roundup|launch` for one game).
-- Saves: `progress/save.ts` (version 2 `SaveData` + `migrate()`; upgrades version-one saves, drops the retired `world.opened` list, and repairs input) and `progress/store.ts` (IndexedDB via idb-keyval). Add fields with defaults in `migrate` and a test.
-- Art kit: `art/critter.ts` (parametric animals; `CRITTERS` presets; `attach()` to put things on the body), `art/props.ts` (fruit etc.), `art/shapes.ts` (`shapePath`, `puffs` for bushes/trees), `art/scenery.ts` (`Backdrop`), `art/particles.ts`, `art/sticker.ts`.
-- Audio: `audio/engine.ts` (unlock on first tap; buses), `audio/sfx.ts` (incl. synthesized animal voices), `audio/music.ts` (generative styles), `audio/voice.ts` (device speech for now; recorded parent voices are planned to slot in by line id).
+Check the working tree before editing. Local implementations, recorded verification, and deployed features are distinct states. Preserve unrelated work in progress. Keep game counts and expansion history in the docs above rather than duplicating them here.
 
-## Testing in the browser
+## Rules for every activity
 
-In dev, the console has `neo` (the `App`; `neo.scene`, `neo.go.game(id)`, `neo.view`) and `kit` (`src/dev/testkit.ts`, dev-only): `kit.tap(x, y)`, `kit.tapOn(obj, dx, dy)`, `kit.drag(points)`, `kit.dragTo(obj, point)`, `kit.line(a, b)`, `kit.until(fn)`, `kit.sleep(ms)`, `kit.store`. Typical check: start (tap the middle), wait ~3s, set `kit.store.data.profile.band` and `kit.store.stats(id).level`, `neo.go.game(id)`, then drive it and read game state (`neo.scene.game.*`). Screenshots are too slow to hit moving targets; drive with scripts, then screenshot to look. `npm run test:browser` uses Playwright against a running dev server; `npm run test:offline` targets the production preview. See the README for browser setup.
+- **Generated art and sound.** Draw with Pixi `Graphics`; use `src/art/palette.ts` colors. No imported sprite or audio files. Rendering code-drawn art into a `RenderTexture`, as Puzzle Pals does, is supported. Synthesize sound with Web Audio; pitched sounds use pentatonic steps from `src/audio/notes.ts`.
+- **Large, forgiving controls.** Targets are at least 100 logical units on screen, including after scaling. Give immediate touch-down feedback. Taps use `onTap` from `src/engine/input.ts`; object drags use `src/engine/drag.ts`. Continuous steering, slingshots, and deliberate multi-touch may need custom pointer handling; retain palm rejection and handle cancellation, leaving the screen, and cleanup.
+- **Spoken support.** Instructions and feedback belong in `src/content/voice-script.ts`. Use `ctx.instruct` for the instruction the pet repeats and `ctx.say` for other speech. If the game uses a large pet instead of the corner guide, it must repeat the instruction. Navigation never requires reading. Literacy activities may practice reading with replayable spoken support; check actual device speech before claiming a phonics skill.
+- **Mistakes teach; exploration stays welcome.** A wrong answer gets a gentle boing and spoken hint, with a glow after two misses. Keep retries and supported completion available. Do not count free creative choices, unseen-card exploration, or experimental predictions as wrong answers. Older puzzles can require revision, with undo or replay and an explanation of what happened.
+- **Predictable rewards and comfortable stopping.** One sticker per completed round, including with help. No lives, game-over screens, ads, purchases, streaks, round-ending timers, or guilt. The grown-up session setting owns the gentle goodnight flow. Future pet/world systems must not create neglect, lost possessions, or obligations while away.
+- **Depth before pressure.** Grow levels through new modes and meaningful choices before adding speed, clutter, or memory load. Keep younger modes simple. Include co-play and an off-screen activity where useful; grown-up UI stays plain HTML in `src/parent/panel.ts`.
 
-Gotchas learned the hard way:
-- Editing a file while a browser script runs triggers an HMR full reload and kills the script. Edit, *then* test. Re-check `neo.scene` after reloads.
-- Navigation is ignored while a scene transition is in progress; wait ~3s after the start tap before `neo.go.*`.
-- Synthetic `pointerup` must be dispatched on the canvas (the kit does this); dispatching it on `document` leaves Pixi thinking the finger is still down (hold buttons then fire).
-- Dragged things ride 40 units above the finger (`LIFT` in `drag.ts`): aim drops ~40 units below the target.
-- Pixi `Graphics.arc()` joins to the previous point: `moveTo` the arc's start first. Stroking several overlapping circles draws inner outlines: use `puffs()`.
-- A container scaled to 0 has no inverse transform; `toLocal` gives NaN. `Critter` guards its eye tracking; guard anything similar.
-- Rendering into a `RenderTexture` (painting, mud): render parentless containers with `renderer.render({ container, target, clear: false })`; erase with `blendMode = 'erase'`.
-- The Pixi stage is interactive, so every visible thing on a game's stage takes part in hit tests: a tap goes to the topmost drawing under the finger, even one with no listener, and the event then lands on the stage. Put full-screen input layers last, and only give a layer a `hitArea` when it should catch taps.
-- `onTap`'s `radius` (and any `hitArea`) is in the object's own units. On a critter drawn at 0.3 scale, a radius of 80 is 24 on screen and centered on its feet: set `hitArea = new Circle(0, -120, 85 / scale)` instead.
-- Use an isolated browser profile for testing. Clear only that profile's test progress when done: `(await import('/node_modules/.vite/deps/idb-keyval.js')).del('neo.save')`. Do not clear a real player's save.
+## Adding or extending a minigame
 
-## Keeping context current
+1. **Define a small complete experience.** State the fun action, learning goal, supported bands, first round, deeper modes, completion condition, and response to mistakes. For creative play, define a gentle way to finish without imposing one correct creation. Check existing games and the idea notebook for overlap.
+2. **Keep rules inspectable.** Put level plans, puzzle generation, and answer/solution rules in the game's `logic.ts` where practical. Use the supplied seeded RNG for puzzle generation. Test meaningful properties such as solvability, valid targets, fair quantities, acceptable alternative solutions, and hints that lead somewhere useful.
+3. **Implement the contract.** Export a `GameModule` from `src/games/<id>/index.ts`: stable ID, grown-up name, spoken title, subject (`region`), skills, supported bands, level ranges/descriptions, music, hub icon, seeded sticker art, and `create(ctx)`. Supply co-play/off-screen suggestions where appropriate. Implement `start`, `update`, `resize`, and `destroy`.
+4. **Use the shell.** Draw into `ctx.stage`; reuse `ctx.rng`, `ctx.tw`, `ctx.particles`, `ctx.track`/`untrack`, and voice helpers. Use `ctx.petSpec` for the customized companion and `ctx.childName` where appropriate. Finish through `ctx.finish({ misses, hints })`; the game does not award stickers, save round history, or create its own home/celebration UI.
+5. **Build a coherent ladder.** Define ordered plans and `{ min, max }` ranges for each supported band, with a useful `describeLevel` for grown-ups. Register in `src/games/registry.ts` and add voice lines. Registry tests check IDs, titles, bands, descriptions, and subject/place coverage.
+6. **Integrate with the island.** Check the icon, title, layout, place scrolling, return route, portrait/landscape, and pet clearance. More games must not mean smaller targets. Preserve stable IDs so saves and stickers survive catalog reorganization.
+7. **Verify and document.** Use the checks below, then update the inventory, implementation status, roadmap, and verification log. Mark gaps explicitly; a registered game or passing build alone does not establish finished play.
 
-- Keep this file provider-neutral. Document shell commands and browser checks directly instead of requiring a particular assistant's tools or launch configuration.
-- When implementing roadmap items, update `docs/ROADMAP.md`, the status in `docs/DESIGN.md`, the README, and any architecture guidance here that changed.
-- For code changes, run `npm run typecheck`, `npm test`, and `npm run build`. Exercise new games in the browser, including wrong answers and hints; check the production PWA offline after changes affecting assets, navigation, or persistence. Report checks actually performed and any remaining gaps.
+Two smooth rounds (at most one miss, no hints) at the current level step up; two struggling rounds (at least four misses or two hints each) step down. `src/progress/difficulty.ts` clamps changes to the played band's range. Grown-ups can pin levels through `store.pin`. Miss/hint accounting affects adaptation, so define it deliberately; assisted completion is not evidence of independent mastery.
 
-## Git
+## Integration and persistence
 
-Commit or push only when asked; a push deploys the live site. Repo-local identity is `rjdunlap` with the GitHub no-reply email (public repo).
+| Area | Contract to preserve |
+| --- | --- |
+| App and scenes | `src/app/App.ts` owns Pixi, transitions, logical view, and the frame loop. `Scene` layers are `content` → `particles` → `ui`; `track(obj)` runs its update. `GameScene` owns the guide, home, co-play tip, saving, difficulty, stickers, and celebration. |
+| Age trail | `src/content/places.ts` defines Puddle Lagoon, Daisy Meadow, Bumpy Hills, and Starry Peak. Every place is open. `profile.band` sets the home place; advancing beyond saved `world.band` triggers the birthday walk once. |
+| Routes | `go.hub()` opens the map; `go.place(band)` opens a place; `go.game(id, band?)` plays its levels, defaulting to the profile band. Home returns to the launching place; start goes to the child's home place. |
+| Catalog layout | `GameModule.region` and `src/content/world.ts` `REGION_IDS` are subject IDs, not separate map destinations. `PlaceScene` groups games by subject on a swipeable two-row path with arrows and session scroll memory. Games squish on touch-down and launch on lift only if no swipe occurred. |
+| Logical layout | `src/engine/view.ts` fits a 1024×768 design area and expands the spare dimension. Use `view.w`/`view.h` in `resize()`. Keep the bottom-left pet clear, e.g. `spread(n, 150, view.w - 40, gap)`. Home/island is top-left, the place's book button top-right; the map's two top corners form the parent gate. |
+| Save data | `src/progress/save.ts` defines version 2 data and `migrate()`; `src/progress/store.ts` persists through IndexedDB. Add defaults, repair behavior, and migration tests for new fields. Preserve old progress, level pins, and backup/restore. The retired `world.opened` list is not an unlock system. |
+| Pet and stickers | `src/art/pet.ts` builds the saved companion; voice lines support `{pet}`. Sticker placement is optional `{ page, x, y }` with normalized coordinates. Returning a sticker to the tray removes placement, never ownership. |
+
+Games must release their own drag handles, global listeners, timers, and render textures in `destroy()`. Stop or guard callbacks that could touch destroyed objects; untrack objects removed before the scene ends. Use scene-owned timing and update helpers rather than unmanaged loops.
+
+Future stories that carry a chosen object, amount, or tune need an explicit extension to the result contract; `{ misses, hints }` carries only round statistics. Save story steps so resuming cannot award twice. New rooms, journals, and creations need bounded storage and migration/backup checks. An older selectable band requires auditing band mappings, levels, places, routes, parent controls, voice, birthdays, and old saves together.
+
+## Reuse before adding new helpers
+
+| Need | Existing starting points |
+| --- | --- |
+| Characters, clothing, props | In `src/art/`: `critter.ts` (`CRITTERS`, `attach()`, moods including `sad`/`calm`, `currentMood`), `pet.ts`, `props.ts`, `shapes.ts`, `scenery.ts`, `particles.ts`, `sticker.ts` |
+| Input, motion, physics | In `src/engine/`: `input.ts`, `drag.ts`, `tween.ts`, `random.ts`, `view.ts`; `ball.ts` supplies ball/peg/wall simulation. Inspect current code and tests before reusing work in progress. |
+| Music and speech | In `src/audio/`: `engine.ts` unlocks on first touch; `sfx.ts` includes synthesized animal voices; `music.beats()` supports beat-synced play; `voice.ts` speaks line IDs with device speech. Parent recordings remain a proposal. |
+| Steering and aiming | Duckling Parade / Roundup for continuous steering; Bouncy Launch for a pull measured from pointer movement rather than an object snapped to the fingertip |
+| Tracing, pictures, and reasoning | Letter Trails for zero-lift drags and ordered strokes; Puzzle Pals for code-drawn textures; Memory Match for known-partner mistakes; Robot Path for solvable programs; Sink or Float for unpenalized predictions |
+
+Choose examples by the mechanic being built. Do not copy a game's assumptions about age, scoring, geometry, or cleanup without checking them.
+
+## Verification workflow
+
+TypeScript + Vite + PixiJS 8, installed as an offline PWA. Run from the repository root:
+
+```bash
+npm run dev                 # development server, port 5173
+npm run typecheck
+npm test
+npm run build
+npm run test:browser         # with the dev server running
+npm run build-and-preview   # production build/preview, port 4173
+npm run test:offline         # with the production preview running
+```
+
+For code changes, run typecheck, unit tests, and build. Exercise every new/changed game level in the browser, including wrong answers and hints where applicable, supported completion, saved results/rewards, reload, orientation, and reaching/returning from its place. Recheck production offline behavior after asset, navigation, or persistence changes. Shared engine or shell changes also need affected existing games checked.
+
+Browser setup, suite names, and filters live in [README.md](README.md#browser-checks) and `scripts/browser-check.mjs`; add cases there for new games instead of maintaining a second suite inventory here. `BROWSER_SUITE=<suite> npm run test:browser` selects one suite. Browser scripts use isolated contexts; never clear a real player's save. Documentation-only edits need link/consistency and diff checks, not a game test run.
+
+Record only checks actually performed. Chrome automation does not establish physical iPad touch feel, offline device speech, first-touch audio, orientation, Guided Access, or Add to Home Screen behavior.
+
+### Scripted play
+
+Dev-only `neo` exposes the app (`neo.scene`, `neo.view`, `neo.go.game(id, band)`); `kit` in `src/dev/testkit.ts` provides `tap`, `tapOn`, `drag`, `dragTo`, `line`, `until`, `sleep`, and `store`. Start with a center tap and wait about three seconds for the transition before navigating. Set the test profile band and `kit.store.stats(id).level`, then drive the game and inspect `neo.scene.game`.
+
+Use scripted input for moving targets, then screenshots for visual review. Finish edits before a play-through: HMR can reload and kill a running script. Re-check `neo.scene` after reloads. To clear an isolated profile's test data only, use `(await import('/node_modules/.vite/deps/idb-keyval.js')).del('neo.save')`.
+
+### Input and rendering pitfalls
+
+- Dispatch synthetic `pointerup` on the canvas (the kit does); using `document` leaves Pixi thinking the finger is down. Handle `pointercancel` and lost release in custom controls.
+- Object drags ride 40 logical units above the finger; aim drops about 40 units below the target. Tracing can use `lift: 0`.
+- Hit areas and `onTap` radii use local object units. A critter at 0.3 scale with radius 80 only has a 24-unit screen radius, centered on its feet. Give it a body-centered area such as `new Circle(0, -120, 85 / scale)`.
+- Visible drawings can intercept hits even without listeners. Put full-screen input layers last, give them a `hitArea` only when they should catch taps, and set `eventMode = 'none'` on decorations over controls (bushes, flashes).
+- A zero-scale container has no inverse transform; guard `toLocal` calls against NaN.
+- `Graphics.arc()` joins to the previous point: `moveTo` its start first. Use `puffs()` instead of stroking overlapping circles with visible inner outlines.
+- Render parentless containers into textures: `renderer.render({ container, target, clear: false })`; erase with `blendMode = 'erase'`. Free game-owned textures when leaving.
+
+## Documentation and Git
+
+Keep this file provider-neutral and focused on durable contributor guidance. Game descriptions, historical expansions, counts, and detailed test results belong in the linked docs. When implementing roadmap work, update the README, DESIGN status, ROADMAP, and VERIFICATION; update this file when a shared contract or workflow changes. Label new ideas as proposals and preserve remaining checks as unfinished.
+
+Commit or push only when asked. The live site is [Puddle Island](https://rjdunlap.github.io/neo/); every push to `main` deploys through `.github/workflows/deploy.yml`. Repo-local identity is `rjdunlap` with the GitHub no-reply email (public repository).

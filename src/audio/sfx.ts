@@ -194,4 +194,38 @@ export const sfx = {
     tone(o.ctx, f, 'sawtooth', 420, o.t, 0.07, 0.25, 1.0, 190);
     setTimeout(() => f.disconnect(), 1800);
   },
+
+  /** A soft hand drum. */
+  drum() {
+    const o = out();
+    if (!o) return;
+    tone(o.ctx, o.dest, 'sine', 130 * jitter(), o.t, 0.6, 0.004, 0.28, 55);
+    noise(o.ctx, o.dest, o.t, 0.05, 0.12, { type: 'lowpass', hz: 700 });
+  },
+
+  /** A woodpecker's knock on hollow wood. */
+  knock() {
+    const o = out();
+    if (!o) return;
+    tone(o.ctx, o.dest, 'triangle', 820 * jitter(), o.t, 0.32, 0.002, 0.07, 560);
+    noise(o.ctx, o.dest, o.t, 0.03, 0.14, { type: 'bandpass', hz: 1900, q: 2 });
+  },
+
+  /** A little bird's chirp, pitched on the scale. */
+  chirp(step = 12) {
+    const o = out();
+    if (!o) return;
+    const hz = stepHz(step);
+    tone(o.ctx, o.dest, 'sine', hz * 0.8, o.t, 0.22, 0.005, 0.07, hz * 1.25);
+    tone(o.ctx, o.dest, 'sine', hz, o.t + 0.09, 0.2, 0.005, 0.08, hz * 1.4);
+  },
+
+  /** A frog's low croak. */
+  croak() {
+    const o = out();
+    if (!o) return;
+    const hz = 110 * jitter(30);
+    tone(o.ctx, o.dest, 'triangle', hz, o.t, 0.4, 0.01, 0.16, hz * 0.8);
+    tone(o.ctx, o.dest, 'triangle', hz * 1.05, o.t + 0.18, 0.35, 0.01, 0.2, hz * 0.75);
+  },
 };

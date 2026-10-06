@@ -47,11 +47,11 @@ try {
   await page.screenshot({ path: 'test-results/offline/place.png' });
   // Production has no test hooks, so this taps by position. Daisy Meadow lays games out in
   // gamesFor('toddler') order (PlaceScene.ts): x = 205 + 122 * index, even indexes in the back row.
-  // Monster Munch is index 8, past the right edge: the next arrow (964, 239) pages the land by
-  // view.w - 260 = 764, leaving it at x = 205 + 122 * 8 - 764 = 417. Adding games to earlier
-  // subjects moves it: update the index here.
-  await page.mouse.click(964, 239); await page.waitForTimeout(1500);
-  await page.mouse.click(205 + 122 * 8 - 764, 440); await page.waitForTimeout(2000);
+  // Monster Munch is index 13 (odd, so the front row at y ≈ 713), past the right edge: the next
+  // arrow (964, 239) pages the land by view.w - 260 = 764, so two pages leave it at
+  // x = 205 + 122 * 13 - 2 * 764 = 263. Adding games to earlier subjects moves it: update here.
+  for (let i = 0; i < 2; i++) { await page.mouse.click(964, 239); await page.waitForTimeout(1500); }
+  await page.mouse.click(205 + 122 * 13 - 2 * 764, 680); await page.waitForTimeout(2000);
   await page.screenshot({ path: 'test-results/offline/monster-munch.png' });
   // Counting along: tapping each cookie on the tray feeds it.
   for (let attempt = 0; attempt < 20; attempt++) {

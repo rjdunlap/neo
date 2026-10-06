@@ -1,10 +1,10 @@
 # Puddle Island (project Neo)
 
-A home-made iPad learning game for little kids, in the spirit of Jumpstart. Every picture and sound is generated in code: no sprites, no audio files.
+A home-made iPad learning game in the spirit of JumpStart and Neopets: playful learning, a familiar pet, and an island to explore. Current age bands run from lap play through pre-K; future ideas extend into ages 6–8. Every picture and sound is generated in code: no sprites, no audio files.
 
 **Play it:** <https://rjdunlap.github.io/neo/> (every push to `main` redeploys via GitHub Actions)
 
-[Design and architecture](docs/DESIGN.md) · [Continuation plan](docs/ROADMAP.md) · [Contributor and AI guidance](AGENTS.md)
+[Design and architecture](docs/DESIGN.md) · [Roadmap](docs/ROADMAP.md) · [Game and world ideas](docs/ARCADE-IDEAS.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md)
 
 ## Run it
 
@@ -25,7 +25,7 @@ npm run build      # type-check + production build into dist/
 
 The island is an **age trail**. It climbs from **Puddle Lagoon** (lap, 18–24 months) on the shore through **Daisy Meadow** (toddler) and **Bumpy Hills** (preschool) up to **Starry Peak** (pre-K). Each place lays out every game for that age, at that age's levels. A game that grows with her, like Bubble Pop, stands in each place it supports. The play button goes straight to her own place; the island button there opens the trail, where her pet waits by her place and every place is open to explore. When there are more games than fit, swipe the land sideways or tap the arrows. When a grown-up moves her up an age band, the pet has a birthday and walks up the trail.
 
-There are twenty-five games. "Ages" lists the places each one appears in.
+The recorded baseline has twenty-five games, listed below. More games are being implemented in the local working tree; see the [roadmap's current status](docs/ROADMAP.md#current-position) and verification log before treating additions as checked or deployed. "Ages" lists the places each baseline game appears in.
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
@@ -73,6 +73,10 @@ Letter Trails uses capital A–Z stroke data. Accented Latin names are normalize
 
 Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, volume, and see what she played this week. Backups save to Files.
 
+## Where it could grow
+
+The next proposals connect the activities: a short **Windy Picnic** adventure, a **pet treehouse** to decorate, and a **discovery journal** for things made and learned. Older game ideas include Seesaw Balance, sharing recipes in Pet Kitchen, deduction in Secret Code, and building/debugging in Chain Reaction and Robot Path. These are future concepts, not features currently available. The [roadmap](docs/ROADMAP.md) puts verification and easier navigation first, then small world and ages 6–8 pilots. A few ages 8–10 extensions remain longer-term ideas.
+
 ## How it's built
 
 TypeScript + Vite + PixiJS 8, installed as a PWA. See the [design doc](docs/DESIGN.md) for the why. Shared instructions for human contributors and coding assistants live in [AGENTS.md](AGENTS.md).
@@ -116,7 +120,9 @@ With `npm run dev` running in another terminal:
 npm run test:browser
 ```
 
-This exercises hatching, the age trail and the parent gate; every level of Pattern Train, Memory Match, Robot Path and the nine games added after them; all 26 letter trails plus word/name modes; and sticker placement, removal, paging, and portrait resizing. It includes wrong answers, hints, saved rewards, reload persistence, and place scrolling. Single suites: `world` (hatching, the age trail, swiping, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (every level of Rainbow Fingers and Splish Splash), `arcade` (Duckling Parade, Scoop Shop, Roundup, Bouncy Launch; `ARCADE_ONLY=parade|scoop|roundup|launch` runs one), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. Screenshots go into ignored `test-results/`.
+The script exercises hatching, navigation and the parent gate; game levels including all 26 capital letter trails and word/name modes; and sticker placement, removal, paging, and portrait resizing. Scenarios include wrong answers, hints, saved rewards, reload persistence, and place scrolling. The [verification log](docs/VERIFICATION.md) records which runs passed and their limits.
+
+Single suites: `world` (hatching, the age trail, swiping, birthdays, the parent gate), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (Rainbow Fingers and Splish Splash), `arcade` (Duckling Parade, Scoop Shop, Roundup, Bouncy Launch; `ARCADE_ONLY=parade|scoop|roundup|launch` runs one), plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. The local `batch` suite is being developed alongside the follow-on games; its presence does not mean it has passed. Screenshots go into ignored `test-results/`.
 
 With `npm run build-and-preview` running in another terminal:
 

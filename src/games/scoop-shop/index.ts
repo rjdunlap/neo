@@ -328,9 +328,10 @@ class ScoopShop implements Game {
     const spot = cone.toGlobal(cone.nextSpot());
     const to = this.ctx.stage.toLocal(spot);
     const peak = Math.min(s.y, to.y) - 90;
-    void tw.to(s, { x: to.x }, { duration: 0.45, ease: ease.inOutSine });
+    const across = tw.to(s, { x: to.x }, { duration: 0.45, ease: ease.inOutSine });
     await tw.to(s, { y: peak }, { duration: 0.22, ease: ease.outQuad });
     await tw.to(s, { y: to.y }, { duration: 0.23, ease: ease.inQuad });
+    await across;
 
     if (result === 'add') {
       s.destroy();

@@ -1,136 +1,119 @@
-# Continuation plan
+# Puddle Island roadmap
 
-Status: the original island plan below is implemented, including Robot Path. A second expansion adds Size Parade, Bug Builder, and Story Steps; a third adds Feelings Faces and Monster Munch; then the map became an age trail and a fourth expansion added Song Maker, Puzzle Pals, Weather Wardrobe, and Sink or Float, for twenty-one games. Sections 1–2 describe the original ten-region map, since replaced by the age trail in section 9. The games and supporting systems are described in [DESIGN.md](DESIGN.md); completed checks and device-specific limits are recorded in [VERIFICATION.md](VERIFICATION.md).
+This is the ordered development backlog. Checked items describe completed implementation milestones; unchecked items are remaining work or proposals. A proposal is not a commitment to ship it. Test results belong in [VERIFICATION.md](VERIFICATION.md), current behavior in [DESIGN.md](DESIGN.md), and game concepts in [ARCADE-IDEAS.md](ARCADE-IDEAS.md).
 
-## 1. Groundwork
+## Current position
 
-- [x] Add region data for all ten regions: map position, landmark drawing, region-view backdrop, and spoken name.
-- [x] Add saved `pet { name, color, hatched }`, `world.opened`, and optional sticker placement. Supply defaults and repair behavior in `migrate()`, with tests for older and invalid saves.
-- [x] Expose the customized pet's look through `GameContext` and support `{pet}` in spoken lines.
-- [x] Add a pre-K level to Splish Splash so its region does not close when the child moves up a band.
-- [x] Add a test enforcing that an available region stays available in later bands.
+The latest recorded game expansion brings the documented baseline to **25 games**, with four age-trail places, pet hatching, adaptive levels, and a sticker book. A follow-on batch is actively changing in the local source: Word Monsters, Peg Garden, Fluffy Salon, Sound Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, and Bounce Back are present. Treat these as work in progress until their checks are recorded; use the registry for the current inventory, and do not infer deployment from source presence.
 
-The ten regions are Bubble Beach, Music Mountain, Treehouse, Barnyard, Counting Cove, Cozy Village, Rainbow Meadow, Puzzle Peaks, Story Grove, and Tinker Lab. Story Grove fills the previously unspecified tenth region and hosts Letter Trails. Positions, generated landmarks, spoken titles, and backdrops live in `src/content/regions.ts`.
+Current bands remain lap, toddler, preschool, and pre-K (through roughly age six). The proposed next reach is **6–8**, with selected **8–10** concepts held for later. Older play should add reasoning, expression, and connected adventures while retaining the younger child's simple activities.
 
-## 2. Island map
+Recommended sequence: **verify the current batch → improve finding games → one short adventure → one pet room → a small 6–8 pilot**. Do not build a new economy or a large quest framework before the small versions prove useful.
 
-- [x] Replace the hub pages with an island map scene.
-- [x] Tapping a landmark makes Pip hop there, then zooms into a region scene using the hub's existing flowers and game spots.
-- [x] Put an island button at the top-left of region scenes. A game's home button returns to its region.
-- [x] Cover regions with no games for the current band with clouds the child can poke.
-- [x] On the first map visit after a band increases, reveal newly available regions with a cloud-parting party and a birthday for Pip.
-- [x] Move the parent gate and sticker book button to the map.
+## 1. Finish and verify the current work
 
-## 3. Hatching and pet customization
+- [ ] Verify Word Monsters and Photo Safari: vocabulary, spoken prompts, answer clarity, replay, and whether device speech actually produces usable letter sounds. Avoid claiming phonics coverage from letter-name playback alone.
+- [ ] Verify Peg Garden and Egg Catch: reachable goals, slow motion, forgiving catches/routes, orientation, and hints that teach the next action.
+- [ ] Verify Fluffy Salon and Sound Garden: satisfying free play, clear exits, repeatable instructions, and guided modes that preserve creative exploration.
+- [ ] Verify Little Helpers and Mail Carrier: visible quantities, unambiguous requests, and correct end-of-round accounting.
+- [ ] Verify Bounce Back: multi-touch, one-player assist, soft returns, shared rally goals, and whether mistakes/hints fit cooperative play rather than penalizing exploration.
+- [ ] Finish rule tests and browser play-throughs for the remaining original games: Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, and Color Garden.
+- [ ] Run typecheck, unit tests, build, the relevant browser suites, and the combined browser flow; record actual results and any untested paths. Check production offline play after changes to navigation, persistence, or the cached app.
+- [ ] Promote verified additions into the README inventory, DESIGN status, and the arcade notebook together. Update counts from the registry; do not infer a live release from local checks.
+- [ ] Check the real iPad: offline speech, first-touch audio, small-hand dragging, herding and pulling, orientation, installation, and Guided Access. Preserve these as outstanding until performed on the device.
 
-- [x] Add an egg scene that cracks over four taps.
-- [x] Offer eight large paint blobs for choosing the pet's color.
-- [x] Offer three spoken name bubbles plus a plain HTML name field for grown-ups.
-- [x] Show the egg on the start screen until it has hatched.
-- [x] Add pet name and color settings to the grown-up zone.
+Done when each addition has verified rules, a completed round at every level, mistakes/hints where applicable, portrait layout, reward/save reload checks, and an honest verification entry. Existing round completion still awards one sticker, including with help.
 
-## 4. Sticker book
+## 2. Make the larger catalog easy to explore
 
-- [x] Add five scene pages: meadow, beach, farm, under the sea, and space.
-- [x] Add a tray of unplaced stickers.
-- [x] Use `src/engine/drag.ts` to place stickers anywhere on a page; dropping one back onto the tray removes its placement, retaining the earned sticker.
-- [x] Save positions as fractions of the page so placements survive resizing.
+- [ ] Prototype a place layout with clearly separated subject clusters and a few large choices visible at once; keep the age trail and every place open.
+- [ ] Compare that layout with the current swipe-and-arrow path on the iPad. Choose based on reaching and returning from a desired game, not fitting more icons on screen.
+- [ ] Retain spoken subject/game names, touch-down feedback, swipe cancellation, remembered position, and home returning to the launching place and band.
+- [ ] Explore a small favorites shelf or a familiar host per subject if grouping alone does not solve discovery. Avoid daily recommendations or compulsory rotations.
+- [ ] Verify every supported game is reachable in every supported band, including after a catalog grows and in portrait.
 
-## 5. New games
+Done when a child and grown-up can find a known activity, discover another, and return without losing their place. Reorganizing subjects must not alter saved game IDs or reset progress.
 
-All three main additions support preschool and pre-K, with level ladders that introduce new modes as well as larger challenges.
+## 3. Connect the games: Island Errands pilot
 
-### Pattern Train
+Design: [Island Errands in the idea notebook](ARCADE-IDEAS.md#island-errands-a-first-adventure-48-l). Target roughly 4–8 with support adjusted per activity.
 
-- [x] Progress through AB → AAB/ABB → ABC → animal patterns → a missing car → bell sound patterns → filling two cars.
+- [ ] Write **The Windy Picnic**: one recurring character, one picnic scene, and three illustrated requests with a satisfying final scene. Start with existing activities where their rules fit.
+- [ ] Make a picture journal that replays the request and recaps completed steps; point directly to the next destination. Keep free play available throughout.
+- [ ] Prototype completing suitable rounds as story steps. Separately specify any new result data needed to carry an exact quantity, selected object, or tune into the picnic; the current `{ misses, hints }` result cannot express those details.
+- [ ] Save after each step and resume after a goodnight or reload. Make step completion idempotent so replay cannot duplicate keepsakes or corrupt the next step.
+- [ ] Give assisted completion the same story ending. Avoid expired requests, item loss, mandatory repeat quotas, and difficulty requirements that block the adventure.
+- [ ] Finish with the prepared picnic and one known keepsake. Keep one sticker per completed game round; the story layer must not duplicate the shell's sticker award.
+- [ ] Observe whether the child understands who needs help, what to try, and what changed. Simplify the pilot before authoring more stories.
 
-### Memory Match
+Done when the whole adventure can be played, left halfway, resumed offline, and finished with help; all original games remain independently playable. Only then consider a reusable story format or a second episode (a missing melody or a mixed-up delivery).
 
-- [x] Grow from four to sixteen cards, then introduce number-to-dots matches, shapes with two attributes, and uppercase-to-lowercase letters.
-- [x] Count an incorrect match as a miss only when the child had already seen the partner card.
+## 4. Give the pet a home and the child a collection
 
-### Letter Trails
+Design: [Pet Treehouse and Discovery Journal](ARCADE-IDEAS.md#pet-treehouse-and-discovery-journal-all-ages-with-support-l).
 
-- [x] Add stroke data for all 26 capital letters.
-- [x] Have a firefly lead each stroke in order.
-- [x] Turn a finished letter into a picture with a spoken association, such as “A is for apple.”
-- [x] Add short words and then the child's name at the top levels.
+- [ ] Build one treehouse room with six free furnishings, move/rotate controls, and a place to display an earned sticker. Displaying never consumes the sticker.
+- [ ] Let the pet use its room in small, playful ways. Care happens during play; hunger, dirt, sadness, or construction waits never accrue while away.
+- [ ] Add bounded, locally saved creations: one drawing display and one tune player first, with explicit replace/undo behavior. Use code-drawn art and synthesized playback.
+- [ ] Add a small discovery journal with known entries, spoken observations, and a clear way to revisit where each was found. No random rare items or calendar availability.
+- [ ] Add deterministic keepsakes only where they represent a story/discovery; provide the starter room without earning anything. Keep the existing sticker reward predictable.
+- [ ] Define save defaults, limits, backup/restore behavior, and migration tests for room placements, creations, journal entries, and story progress. Check placement after resizing and offline reload.
 
-### Required for each new game
+Done when the room feels personal with its starter kit, creations can be revisited, and taking a long break has no adverse consequence. A currency, marketplace, trading, and online social layer are outside this pilot.
 
-- [x] Register its metadata and band ranges, with a grown-up description of every level.
-- [x] Add a hub icon, reward sticker, and spoken instructions and feedback.
-- [x] Run a scripted browser play-through including wrong answers, hints, and round completion.
+## 5. A small older-child pilot (proposed 6–8)
 
-### Stretch: Robot Path
+Start with **Seesaw Balance**, then one extension to **Robot Path**. They test concrete reasoning and debugging without requiring a large amount of authored story content. These are proposed starting points; play observations may favor a different pair.
 
-- [x] Add Robot Path so Tinker Lab opens at pre-K. Its six modes progress from two straight steps through turns, a larger grid, rocks, and programs of up to eight steps.
+- [ ] Define a support ladder for Seesaw Balance: compare visible weights → make equal totals → infer a hidden weight. Keep pan positions fixed so weight and lever distance are not confused.
+- [ ] Prototype Robot Path loops with step-through playback, editable commands, and an obvious undo. Keep existing levels intact.
+- [ ] Provide spoken explanations and large targets. Let the child ask for a worked example or easier mode; longer reasoning must not require faster fingers.
+- [ ] Decide whether to add an `explorer` band/place after trying the activities. A possible name is **Wonder Woods**; neither the ID nor name is implemented or settled.
+- [ ] If a band is adopted, audit `bands.ts`, place/trail layout, `GameModule` ranges, registry tests, difficulty, routes, parent controls, voice lines, and birthdays. Confirm exhaustive band mappings still behave correctly.
+- [ ] Test loading and restoring old saves with appropriate defaults; preserve existing levels, pins, stickers, and home place. Verify new-band navigation and offline play. Existing games need not all support the new band.
+- [ ] Evaluate optional narrated word/sentence practice separately from reading-required navigation. Review language content and the actual speech output before treating a mode as ready.
 
-## 6. Documentation and verification
+Done when the two activities offer meaningfully different decisions from pre-K, can be finished with support, and fit the same touch/offline/reward rules. Add the band only with the full surrounding support, not as a label that silently stretches existing ladders.
 
-- [x] Update the README game list and navigation instructions.
-- [x] Update `AGENTS.md` for the new architecture and `docs/DESIGN.md` for implementation status.
-- [x] Run `npm run typecheck`, `npm test`, and `npm run build`.
-- [x] Run the production preview (`npm run build-and-preview`), load it online so the service worker can install, then verify reload and play while offline.
-- [x] Record what was verified and any remaining limitations, including device-specific checks still needed on the iPad.
+## 6. Candidate batches after the pilots
 
-## 7. Second expansion: earlier exploration and new skills
+Choose one small batch based on an observed gap. Full loops and scope are in [the idea notebook](ARCADE-IDEAS.md#games-worth-developing-next).
 
-- [x] Size Parade: eight levels from big/small comparisons to ordering three or five friends in either direction.
-- [x] Bug Builder: seven levels from matching outlines to copying a model and reflecting six spots across a bug's wings.
-- [x] Story Steps: seven levels using four picture stories, progressing through shown beginnings, whole sequences, missing middles, and unrelated distractors.
-- [x] Support toddler through pre-K for all three; open Puzzle Peaks, Tinker Lab, and Story Grove earlier while retaining later-band access.
-- [x] Add generated landmarks, reward stickers, spoken instructions and hints, parent level descriptions, co-play tips, and off-screen activities.
-- [x] Page region menus so a growing catalog retains large, separate touch targets.
-- [x] Test the puzzle rules and add scripted play-throughs for every level, wrong answers, hints, portrait layouts, saved rewards, reload persistence, and menu paging.
+| Candidate | Purpose and learning | Dependency / selection reason |
+| --- | --- | --- |
+| Pet Kitchen + Market Stall | Equal parts, measurement, combinations and change inside pretend play | Use a fresh pretend purse for each market round; no persistent economy required |
+| Critter Crossing + Secret Code | Classification, deduction, comparing evidence and revising a guess | Shared visible history, explanatory feedback, and undo; appropriate for roughly 5–8 |
+| Chain Reaction + deeper launch modes | Predict, test, adjust one variable; explore several solutions | Reuse only verified physics pieces; begin with a constrained construction set |
+| Story Theater + Busy Picture | Listening/reading comprehension, sequencing, cause and effect, expression | Review each story's clues and acceptable endings; free theater accepts any creation |
+| Habitat Helpers + discovery entries | Observation, classification, planning for compatible needs | Explicit stylized model and accurate facts; growth advances through play |
+| Bounce Back + cooperative music | Turn-taking, shared plans, rhythmic listening | Multi-touch and one-player assist checked on the iPad |
+| Stamp Studio + Tangram Town | Composition, rotation, shape decomposition, saved work | Reuse Rainbow Fingers/Bug Builder where practical; bounded creation storage |
+| Quick Tricks + Rhythm Neighbors | Short physical jokes, spoken actions, listening, and rhythm conversations | [Microgame concepts](MICROGAME-IDEAS.md); try three drag-based scenes or one music extension before building a collection framework |
+| Shape Buddies or Peekaround Island | Cooperative construction or spatial perspective | [New interaction ideas](MICROGAME-IDEAS.md#develop-these-into-complete-activities); choose one small prototype with predefined shapes or four drawn views |
 
-## 8. Third expansion: more to do at lap
+- [ ] Select and specify the next batch after the adventure/home/older-play pilots are evaluated.
+- [ ] Consider a Quick Tricks pilot with Umbrella Up, Sock Gobbler, and Bridge Stretch: replayable prompts, child-paced transitions, one sticker per complete show, and deliberate miss/hint accounting across scenes. This is an optional candidate, not a new prerequisite for the existing roadmap.
+- [ ] Keep 8–10 extensions (nested programs, equivalent fractions, interacting habitat rules) in reserve until the 6–8 experience works.
+- [ ] Revisit optional parent-recorded voice lines as a separate design decision. The current no-audio-files constraint and offline storage/consent behavior need an explicit resolution before implementation.
 
-- [x] Verify the second expansion: typecheck, unit tests, build, the full browser suite, and a tap-through of map → region → page arrows for every band. All fifteen games were reachable at their bands; nine wait under clouds at lap by design.
-- [x] Show grown-ups which band opens each clouded game, keep a region's page when returning from a game, outline page dots, and keep region ground green.
-- [x] Feelings Faces in Cozy Village: seven levels from free-play feeling bubbles to naming, helping, causes, and friends' feelings. Add `sad` and `calm` critter moods.
-- [x] Monster Munch in Counting Cove: seven levels from tap-to-feed to counting along, one-to-one giving, exact orders with a bell, two-food orders, and fair sharing.
-- [x] Unit tests for both games' rules and a `BROWSER_SUITE=third` play-through of every level with mistakes, hints, saved scores, lap regions, and reload persistence.
+## Definition of ready and done for future activities
 
-## 9. Age trail and fourth expansion
+Before building, state the **fun action**, **specific skill**, **smallest complete round**, **starting support**, and **what deeper play changes**. Identify existing games that could host the mode. Give at least one example of a mistake or experiment and how the game explains it. Creative play must not be forced into a single correct answer.
 
-- [x] Make the map the age selection: four places (Puddle Lagoon, Daisy Meadow, Bumpy Hills, Starry Peak) on a switchback trail, all open; each lays out every game for its band at that band's levels. Retire subject regions, clouds and region pages; keep subject IDs for grouping.
-- [x] Pass the place's band through `go.game(id, band)`; home returns to the place; start goes straight to her place; birthdays walk the pet up the trail.
-- [x] Swipeable places with momentum, arrow paging, launch-on-lift with touch-down feedback, and remembered scroll.
-- [x] Song Maker, Puzzle Pals, Weather Wardrobe and Sink or Float, each from lap to pre-K with unit-tested rules.
-- [x] Browser suites updated for the trail (`world`, `expansion`, `third`) plus a new `fourth` suite; offline check rewritten for the trail.
+Before marking done, verify solvable and unambiguous authored/generated tasks, supported completion, interruptions and resizing, spoken prompts, stable reward/save behavior, and all applicable code/browser/offline checks. Try a fresh arrangement to see whether the learning action still makes sense beyond one memorized answer. Assisted completion is worthwhile play, but is not evidence of independent mastery. Content and device validation are separate from a passing build. Record what was actually run in the verification log.
 
-## 10. Deeper ladders for the first games
+## Completed implementation milestones
 
-- [x] Rainbow Fingers grows from 2 levels to 6: coloring pages with named colors (2, then 3 pictures), remembered colors ("paint the apple"), and mixing primaries in a bowl. Outlines stay above the paint; a picture fills in neatly once 70% is covered in the right color. Wrong colors are gentle misses, and the right pot glows after two, or after 12 quiet seconds. Bands: toddler 1–3, preschool 2–5, pre-K 3–6.
-- [x] Splish Splash grows from 5 levels to 8: five shuffled parts (adds the nose), two parts at once in any order, and "first … then …" in order. Bands: preschool 3–7, pre-K 5–8.
-- [x] Unit tests for both games' rules (`logic.ts`) and a `BROWSER_SUITE=early` play-through of every level with wrong answers, hints and saved scores.
-- [ ] Rule tests and browser play-throughs for the other original games (Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, Color Garden).
+This replaces the historical continuation checklist. The original ten-region map, cloud unlocks, region pages, and saved `world.opened` list were superseded by the age trail; they are not active requirements. Details of the current architecture are in [DESIGN.md](DESIGN.md), and dated checks remain in [VERIFICATION.md](VERIFICATION.md).
 
-## 11. Arcade-inspired games
-
-Researched classic arcade and Flash games (Neopets, Kongregate, Miniclip, Club Penguin) and adapted the best fits to the toddler rules. The idea list and reasoning are in [ARCADE-IDEAS.md](ARCADE-IDEAS.md).
-
-- [x] Duckling Parade (Meerca Chase) in the barnyard: eight levels from tap-to-walk to leading ducklings home, exact numbers, one color, and AB/ABC color patterns in the line. Walking past a wrong duckling is free; only stopping on one counts.
-- [x] Scoop Shop (Papa's Freezeria, Ice Cream Machine) in the village: six levels from free stacking to color orders, pairs, counted scoops, ordered stacks and remembered orders (tap the customer to peek, which counts as a hint).
-- [x] Roundup (Extreme Herder, Puffle Roundup) in the barnyard: six levels from tap-to-hop to shooing with a finger, sorting into two pens, and counting with a bell. Animals near their gate are drawn in, and one trots home by itself after 30 quiet seconds.
-- [x] Bouncy Launch (Kass Basher, Toss the Turtle) in the tinker lab: five levels from tap-to-boing to pull-strength control, star and numbered clouds, and farther/nearer than last time. A hint shows the flight path and the right pull.
-- [x] Unit tests for all four games' rules and a `BROWSER_SUITE=arcade` play-through of every level with mistakes, hints and saved scores. The offline check now pages Daisy Meadow to reach Monster Munch.
-- [x] Widen the idea backlog to mobile, Atari 2600, arcade cabinets, Game Boy, Xbox Live Arcade, Nintendo DS/Wii, 90s computer edutainment and board games. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) holds:
-  - the inventory by subject, with thin spots;
-  - a suggested next batch aimed at those spots (Word Monsters, Peg Garden, Fluffy Salon, Sound Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, Bounce Back, Dot Link) and strong alternates;
-  - mechanic families, showing overlaps and shared code worth building;
-  - the backlog by source.
-- [ ] Deferred: reorganize places (16 games at lap, 25 at pre-K) once the inventory has grown. Paging by subject and showing fewer games at once are the options.
-
-## Development direction after this expansion
-
-These are future candidates, not claims of implemented features:
-
-1. Validate on the actual iPad: speech availability offline, first-touch audio, small-hand dragging, orientation, installation, and Guided Access. Use observed friction to tune the existing games before adding complexity.
-2. Add a gentle listening/language activity (music or stories): matching familiar sounds or spoken initial sounds to pictures, with freely replayable examples.
-3. Add cooperative pretend play (everyday life), such as packing a picnic, with many acceptable choices and no rigid judgments about a child's routines. Weather Wardrobe now covers choosing clothes for the weather.
-4. Extend creative play (art): reusable shape stamps and saved artwork pages, keeping local storage bounded and export under grown-up control.
-5. More from the catalog: Sock Match and Tidy Up (everyday life), Shadow Match and Maze Walk (puzzles), Rhyme Time, Letter Fishing and Word Builder (stories and letters), Pizza Shop and Market Stall (numbers and money), and Tangram Town. The larger arcade, mobile and handheld backlog is in [ARCADE-IDEAS.md](ARCADE-IDEAS.md).
-6. Pet treehouse room and pet things from stickers (the design catalog's Neopets thread).
-7. Recorded parent voices slotting in by line id.
+- [x] Shared game shell, generated art/audio, local saves, age-band difficulty, and grown-up controls.
+- [x] Pet hatching and customization, shared pet appearance, spoken name support.
+- [x] Five sticker scenes with a paged tray, drag placement/removal, and normalized saved coordinates.
+- [x] Pattern Train, Memory Match, Letter Trails (all 26 capitals plus words/name), and Robot Path.
+- [x] Size Parade, Bug Builder, and Story Steps, including earlier toddler access.
+- [x] Feelings Faces and Monster Munch, expanding lap play.
+- [x] Four open age-trail places; play at the selected place's band; return to that place; birthday walk; swipe/arrow paging and remembered scroll.
+- [x] Song Maker, Puzzle Pals, Weather Wardrobe, and Sink or Float.
+- [x] Deeper Rainbow Fingers (6 levels) and Splish Splash (8 levels).
+- [x] Duckling Parade, Scoop Shop, Roundup, and Bouncy Launch, reaching the 25-game baseline.
+- [x] Automated verification recorded for those expansions, including production offline checks where relevant. Physical iPad checks remain open above.
