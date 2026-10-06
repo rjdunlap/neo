@@ -116,7 +116,11 @@ Researched classic arcade and Flash games (Neopets, Kongregate, Miniclip, Club P
 - [x] Roundup (Extreme Herder, Puffle Roundup) in the barnyard: six levels from tap-to-hop to shooing with a finger, sorting into two pens, and counting with a bell. Animals near their gate are drawn in, and one trots home by itself after 30 quiet seconds.
 - [x] Bouncy Launch (Kass Basher, Toss the Turtle) in the tinker lab: five levels from tap-to-boing to pull-strength control, star and numbered clouds, and farther/nearer than last time. A hint shows the flight path and the right pull.
 - [x] Unit tests for all four games' rules and a `BROWSER_SUITE=arcade` play-through of every level with mistakes, hints and saved scores. The offline check now pages Daisy Meadow to reach Monster Munch.
-- [x] Widen the idea backlog to mobile, Game Boy and console classics. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) now holds the inventory by subject, a suggested next batch aimed at thin subjects (Dot Link, Fluffy Salon, Teddy Doctor, Word Monsters, Photo Safari, Bumper Garden, Number Merge, Pet Kitchen), and the backlog by source.
+- [x] Widen the idea backlog to mobile, Atari 2600, arcade cabinets, Game Boy, Xbox Live Arcade, Nintendo DS/Wii, 90s computer edutainment and board games. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) holds:
+  - the inventory by subject, with thin spots;
+  - a suggested next batch aimed at those spots (Word Monsters, Peg Garden, Fluffy Salon, Sound Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, Bounce Back, Dot Link) and strong alternates;
+  - mechanic families, showing overlaps and shared code worth building;
+  - the backlog by source.
 - [ ] Deferred: reorganize places (16 games at lap, 25 at pre-K) once the inventory has grown. Paging by subject and showing fewer games at once are the options.
 
 ## Development direction after this expansion
