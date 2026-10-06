@@ -59,41 +59,64 @@ async function hatchingAndMap() {
   await page.waitForTimeout(600);
   await page.reload(); await ready();
   assert.equal(await page.evaluate(() => kit.store.data.pet.hatched), true);
-  await page.mouse.click(512, 308); await scene('MapScene');
-  await tap("neo.scene.places.find(p => p.def.id === 'puzzle-peaks').node");
-  assert.equal(await page.evaluate(() => neo.scene.constructor.name), 'MapScene');
+  // Start goes straight to her own place on the age trail, with every lap game on one screen.
+  await page.mouse.click(512, 308); await scene('PlaceScene');
+  assert.equal(await page.evaluate(() => neo.scene.band), 'lap');
+  const lapGames = await page.evaluate(async () => (await import('/src/app/scenes/PlaceScene.ts')).gamesFor('lap').map((g) => g.id));
+  assert.deepEqual(await page.evaluate(() => neo.scene.landmarks.map((l) => l.mod.id)), lapGames);
+  await screenshot('place-lap');
+  await tap('neo.scene.home'); await scene('MapScene');
+  await screenshot('map-lap');
+  // Every place is open; an older place plays its games at that age's levels.
+  await tap("neo.scene.places.find(p => p.def.band === 'prek').node"); await scene('PlaceScene');
+  assert.equal(await page.evaluate(() => neo.scene.band), 'prek');
+  assert.ok(await page.evaluate(() => neo.scene.maxScroll > 0), 'pre-K games need a swipe');
+  // A swipe that starts on a game scrolls the land instead of opening the game.
+  const from = await page.evaluate(() => { const p = neo.scene.landmarks[2].node.getGlobalPosition(); return [p.x, p.y - 60]; });
+  await page.mouse.move(from[0], from[1]); await page.mouse.down();
+  for (let x = from[0]; x >= from[0] - 320; x -= 20) await page.mouse.move(x, from[1]);
+  await page.mouse.up(); await page.waitForTimeout(700);
+  assert.equal(await page.evaluate(() => neo.scene.constructor.name), 'PlaceScene');
+  const swiped = await page.evaluate(() => neo.scene.scroll);
+  assert.ok(swiped > 200, `swipe scrolled ${swiped}`);
+  await tap('neo.scene.next'); await page.waitForTimeout(600);
+  assert.ok(await page.evaluate((s) => neo.scene.scroll > s, swiped));
+  await tap('neo.scene.previous'); await page.waitForTimeout(600);
+  await screenshot('place-prek');
+  await page.evaluate(() => { const l = neo.scene.landmarks.find((l) => { const x = l.node.getGlobalPosition().x; return x > 250 && x < 800; }); kit.tapOn(l.node, 0, -60); });
+  await scene('GameScene');
+  assert.equal(await page.evaluate(() => neo.scene.band), 'prek');
+  // Holding home returns to the place it came from.
+  await page.mouse.move(62, 62); await page.mouse.down();
+  await scene('PlaceScene'); await page.mouse.up();
+  assert.equal(await page.evaluate(() => neo.scene.band), 'prek');
+  await tap('neo.scene.home'); await scene('MapScene');
+  // A grown-up moves her up a band: the pet has a birthday and walks up the trail.
   await page.evaluate(() => { kit.store.setBand('preschool'); neo.go.hub(); });
   await scene('MapScene');
   assert.equal(await page.evaluate(() => neo.scene.birthday), true);
-  await page.waitForFunction(() => neo.scene.places.every((p) => !p.available || !p.cloud.visible));
+  await page.waitForFunction(() => { const n = neo.scene.places.find((p) => p.def.band === 'preschool').node; return !neo.scene.walking && Math.hypot(neo.scene.pip.x - n.x, neo.scene.pip.y - n.y) < 180; }, null, { timeout: 10000 });
   await screenshot('map-preschool');
-  await tap("neo.scene.places.find(p => p.def.id === 'story-grove').node");
-  await scene('RegionScene');
-  assert.equal(await page.evaluate(() => neo.scene.region), 'story-grove');
-  await screenshot('story-grove');
-  await tap('neo.scene.games[0].icon'); await scene('GameScene');
-  // Holding home returns to the region, not directly to the map.
-  await page.mouse.move(62, 62); await page.mouse.down();
-  await scene('RegionScene'); await page.mouse.up();
-  assert.equal(await page.evaluate(() => neo.scene.region), 'story-grove');
-  await tap('neo.scene.home'); await scene('MapScene');
+  await page.evaluate(() => kit.store.stats('robot-path').history.push({ level: 1, misses: 0, hints: 0, seconds: 90, at: Date.now() }));
   await page.evaluate(() => {
     const canvas = document.querySelector('canvas');
     for (const [id, x] of [[11, 40], [12, innerWidth - 40]]) canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: 40, pointerId: id, pointerType: 'touch', bubbles: true }));
   });
   await page.locator('.parent').waitFor();
   await page.evaluate(() => { const canvas = document.querySelector('canvas'); for (const id of [11, 12]) canvas.dispatchEvent(new PointerEvent('pointerup', { pointerId: id, pointerType: 'touch', bubbles: true })); });
+  // A game from an older place shows up in the week's summary even though it isn't in her band.
+  assert.ok(await page.locator('.parent', { hasText: 'Played in another place on the trail' }).count(), 'played-elsewhere row');
   await page.locator('[data-band="prek"]').click();
   await page.locator('#p-name').fill('Mia');
   await page.locator('#p-pet-name').fill('Clover');
   await page.locator('#p-pet-color').selectOption('pink');
   await page.locator('#p-session').selectOption('0');
   await page.locator('[data-done]').click(); await scene('MapScene');
-  await page.waitForFunction(() => neo.scene.places.every((p) => !p.cloud.visible));
   assert.equal(await page.evaluate(() => neo.scene.pip.spec.color), 'pink');
-  assert.equal(await page.evaluate(() => kit.store.data.world.opened.length), 10);
+  assert.deepEqual(await page.evaluate(() => kit.store.data.world), { band: 'prek' });
+  await page.waitForTimeout(3000);
   await screenshot('map-prek');
-  log('Hatching, save reload, clouds, birthday, region navigation, and parent settings passed');
+  log('Hatching, save reload, the age trail, swiping, birthdays, place navigation, and parent settings passed');
 }
 
 async function patterns() {
@@ -318,17 +341,19 @@ async function expansion() {
   const progress = await page.evaluate(() => ['size-parade', 'bug-builder', 'story-steps'].map((id) => ({ id, plays: kit.store.stats(id).plays, stickers: kit.store.data.stickers.filter((s) => s.game === id).length })));
   await page.reload(); await ready();
   assert.deepEqual(await page.evaluate(() => ['size-parade', 'bug-builder', 'story-steps'].map((id) => ({ id, plays: kit.store.stats(id).plays, stickers: kit.store.data.stickers.filter((s) => s.game === id).length }))), progress);
-  await page.evaluate(() => { kit.store.data.profile.band = 'preschool'; neo.go.region('puzzle-peaks'); }); await scene('RegionScene');
-  assert.equal(await page.evaluate(() => neo.scene.games.filter((g) => g.icon.visible).length), 2);
-  await tap('neo.scene.next');
-  assert.deepEqual(await page.evaluate(() => neo.scene.games.filter((g) => g.icon.visible).map((g) => g.mod.id)), ['size-parade']);
-  await screenshot('region-second-page');
-  await tap('neo.scene.previous');
-  assert.equal(await page.evaluate(() => neo.scene.page), 0);
-  await page.waitForTimeout(400); await tap('neo.scene.next');
-  await tap("neo.scene.games.find((g) => g.mod.id === 'size-parade').icon"); await scene('GameScene');
+  // Toddler Daisy Meadow holds all three; the arrows bring an off-screen one into view.
+  await page.evaluate(() => neo.go.place('toddler')); await scene('PlaceScene');
+  for (const id of ['size-parade', 'bug-builder', 'story-steps']) assert.ok(await page.evaluate((id) => neo.scene.landmarks.some((l) => l.mod.id === id), id), id);
+  const onScreen = () => page.evaluate(() => { const x = neo.scene.landmarks.find((l) => l.mod.id === 'size-parade').node.getGlobalPosition().x; return x > 120 && x < innerWidth - 120; });
+  for (let i = 0; i < 6 && !(await onScreen()); i++) { await tap('neo.scene.next'); await page.waitForTimeout(600); }
+  assert.ok(await onScreen(), 'Size Parade scrolled into view');
+  await screenshot('place-toddler-scrolled');
+  await page.evaluate(() => kit.tapOn(neo.scene.landmarks.find((l) => l.mod.id === 'size-parade').node, 0, -60)); await scene('GameScene');
   assert.equal(await page.evaluate(() => neo.scene.mod.id), 'size-parade');
-  log('Expansion save reload and both directions of region paging passed');
+  // Coming home lands where the meadow was scrolled to, not back at the start.
+  await page.mouse.move(62, 62); await page.mouse.down(); await scene('PlaceScene'); await page.mouse.up();
+  assert.ok(await onScreen(), 'place kept its scroll');
+  log('Expansion save reload, arrow scrolling, and returning to a scrolled place passed');
 }
 
 async function third() {
@@ -449,17 +474,140 @@ async function third() {
     log(`Monster Munch ${level}: feeding, mistakes, hints, saved round and sticker passed`);
   }
 
-  // Both start at lap, so lap regions now page between two games, and progress survives a reload.
+  // Both start at lap, so Puddle Lagoon shows them, and progress survives a reload.
   await page.waitForTimeout(500);
   const progress = await page.evaluate(() => ['feelings-faces', 'monster-munch'].map((id) => ({ id, plays: kit.store.stats(id).plays, stickers: kit.store.data.stickers.filter((s) => s.game === id).length })));
   await page.reload(); await ready();
   assert.deepEqual(await page.evaluate(() => ['feelings-faces', 'monster-munch'].map((id) => ({ id, plays: kit.store.stats(id).plays, stickers: kit.store.data.stickers.filter((s) => s.game === id).length }))), progress);
-  for (const [region, games] of [['cozy-village', ['splish-splash', 'feelings-faces']], ['counting-cove', ['duck-pond', 'monster-munch']]]) {
-    await page.evaluate((region) => { kit.store.data.profile.band = 'lap'; neo.go.region(region); }, region); await scene('RegionScene');
-    assert.deepEqual(await page.evaluate(() => neo.scene.games.filter((g) => g.icon.visible).map((g) => g.mod.id)), games);
-    await screenshot(`region-${region}-lap`);
+  await page.evaluate(() => neo.go.place('lap')); await scene('PlaceScene');
+  const lapIds = await page.evaluate(() => neo.scene.landmarks.map((l) => l.mod.id));
+  for (const id of ['feelings-faces', 'monster-munch']) assert.ok(lapIds.includes(id), id);
+  await screenshot('place-lap-new-games');
+  log('Puddle Lagoon shows both new games, and saved progress survives a reload');
+}
+
+async function fourth() {
+  // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
+  for (let level = 1; level <= 7; level++) {
+    await launch('song-maker', level);
+    await page.waitForTimeout(600);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (g.plan.mode === 'free') { for (let i = 0; i < g.plan.notes; i++) { kit.tapOn(g.beads[(i * 5) % g.beads.length]); await kit.sleep(220); } return; }
+      if (!await kit.until(() => !g.listening, 15000)) throw new Error('Tune never finished');
+      const isNote = (b) => g.song.notes.some((n) => n.col === b.note.col && n.row === b.note.row);
+      const wrong = g.beads.find((b) => !isNote(b) && !b.given && g.song.notes.some((n) => n.col === b.note.col));
+      for (let i = 0; i < 2; i++) { kit.tapOn(wrong); await kit.sleep(250); }
+      if (g.hints !== 1) throw new Error('Song hint missing');
+    });
+    if ([1, 5, 6, 7].includes(level)) await screenshot(`song-maker-${level}`);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      for (const n of [...g.remaining]) { kit.tapOn(g.beads.find((b) => b.note.col === n.col && b.note.row === n.row)); await kit.sleep(250); }
+    });
+    await finished('song-maker');
+    const r = await page.evaluate(() => { const r = kit.store.stats('song-maker').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, level <= 2 ? [0, 0] : [2, 1], `song ${level} score`);
+    log(`Song Maker ${level}: loop, mistakes, hint, saved round and sticker passed`);
   }
-  log('Lap regions show both new games, and saved progress survives a reload');
+
+  // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
+  for (let level = 1; level <= 7; level++) {
+    await launch('puzzle-pals', level);
+    await page.waitForTimeout(600);
+    await page.evaluate(() => { window.slotAt = (p) => { const g = neo.scene.game; return { x: g.board.x + (600 / g.plan.cols) * (p.col + 0.5) * g.scale, y: g.board.y + (420 / g.plan.rows) * (p.row + 0.5) * g.scale + 40 }; }; });
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const waiting = g.pieces.filter((p) => !p.placed);
+      await kit.dragTo(waiting[0].node, { x: 200, y: 140 }); await kit.sleep(600);
+      if (g.misses !== 0) throw new Error('Drop off the frame counted as a miss');
+      const other = waiting.find((p) => p !== waiting[0]);
+      if (other) for (let i = 0; i < 2; i++) { await kit.dragTo(waiting[0].node, slotAt(other.piece)); await kit.sleep(600); }
+    });
+    if ([1, 7].includes(level)) await screenshot(`puzzle-pals-${level}`);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      for (const p of g.pieces.filter((p) => !p.placed)) { await kit.dragTo(p.node, slotAt(p.piece)); await kit.sleep(450); if (!p.placed) throw new Error('Piece rejected its own place'); }
+    });
+    await page.waitForTimeout(900);
+    if (level === 4) await screenshot('puzzle-pals-alive');
+    await finished('puzzle-pals');
+    const r = await page.evaluate(() => { const r = kit.store.stats('puzzle-pals').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, level === 1 ? [0, 0] : [2, 1], `puzzle ${level} score`);
+    log(`Puzzle Pals ${level}: exploring, mistakes, hint, the picture coming alive, and a sticker passed`);
+  }
+
+  // Weather Wardrobe: free weather play, then dressing and packing.
+  for (let level = 1; level <= 6; level++) {
+    await launch('weather-wardrobe', level);
+    await page.waitForTimeout(700);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (g.plan.mode === 'play') { for (let i = 0; i < 6; i++) { kit.tap(500, 200); await kit.sleep(600); } return; }
+      const wrong = g.options.find((o) => !g.outfit.needed.includes(o.item));
+      for (let i = 0; i < 2; i++) { kit.tapOn(wrong.node); await kit.sleep(450); }
+      if (g.hints !== 1) throw new Error('Wardrobe hint missing');
+    });
+    if ([1, 4, 6].includes(level)) await screenshot(`weather-wardrobe-${level}`);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      for (let step = 0; !g.done && step < 30; step++) {
+        await kit.until(() => !g.busy || g.done, 15000);
+        if (g.done) break;
+        const o = g.options.find((o) => !o.used && g.outfit.needed.includes(o.item));
+        if (o) kit.tapOn(o.node);
+        await kit.sleep(450);
+      }
+    });
+    await finished('weather-wardrobe');
+    const r = await page.evaluate(() => { const r = kit.store.stats('weather-wardrobe').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, level === 1 ? [0, 0] : [2, 1], `wardrobe ${level} score`);
+    log(`Weather Wardrobe ${level}: weather, dressing, mistakes, hint, saved round and sticker passed`);
+  }
+
+  // Sink or Float: guesses are never misses; wrong sorts are tested in the water.
+  for (let level = 1; level <= 6; level++) {
+    await launch('sink-float', level);
+    await page.waitForTimeout(700);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const floats = { duck: 1, boat: 1, ball: 1, leaf: 1, apple: 1 };
+      const basket = (f) => ({ x: neo.view.w * 0.87, y: (f ? neo.view.h * 0.3 : neo.view.h * 0.56) + 40 });
+      if (g.plan.mode === 'drop' || g.plan.mode === 'say') { for (const i of [...g.items]) { kit.tapOn(i.node); await kit.sleep(450); } return; }
+      if (g.plan.mode === 'guess') {
+        for (let k = 0; k < g.items.length; k++) {
+          await kit.until(() => g.guessing || g.finished, 20000);
+          if (g.finished) break;
+          kit.tapOn(g.floatButton); await kit.sleep(300);
+          await kit.until(() => g.guessing || g.finished || g.current > k, 20000);
+        }
+        return;
+      }
+      for (let i = 0; i < 2; i++) {
+        const wrong = g.items.find((i) => !i.done);
+        await kit.dragTo(wrong.node, basket(!floats[wrong.thing])); await kit.sleep(300);
+        await kit.until(() => !g.busy, 20000);
+      }
+      for (const i of g.items.filter((i) => !i.done)) { await kit.dragTo(i.node, basket(!!floats[i.thing])); await kit.sleep(450); }
+    });
+    await page.waitForTimeout(1000);
+    if ([2, 3, 5].includes(level)) await screenshot(`sink-float-${level}`);
+    await finished('sink-float');
+    const r = await page.evaluate(() => { const r = kit.store.stats('sink-float').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, level === 4 || level === 5 ? [2, 1] : [0, 0], `sink ${level} score`);
+    log(`Sink or Float ${level}: splashes, guesses, sorting, saved round and sticker passed`);
+  }
+
+  // All four start at lap, so Puddle Lagoon shows them, and progress survives a reload.
+  await page.waitForTimeout(500);
+  const ids = ['song-maker', 'puzzle-pals', 'weather-wardrobe', 'sink-float'];
+  const progress = await page.evaluate((ids) => ids.map((id) => ({ id, plays: kit.store.stats(id).plays })), ids);
+  await page.reload(); await ready();
+  assert.deepEqual(await page.evaluate((ids) => ids.map((id) => ({ id, plays: kit.store.stats(id).plays })), ids), progress);
+  await page.evaluate(() => neo.go.place('lap')); await scene('PlaceScene');
+  const lap = await page.evaluate(() => neo.scene.landmarks.map((l) => l.mod.id));
+  for (const id of ids) assert.ok(lap.includes(id), id);
+  log('Puddle Lagoon shows all four, and saved progress survives a reload');
 }
 
 try {
@@ -468,7 +616,7 @@ try {
   if (suite === 'all' || suite === 'world') await hatchingAndMap();
   else {
     await page.evaluate(() => { kit.store.data.pet = { name: 'Clover', color: 'pink', hatched: true }; });
-    await page.mouse.click(512, 308); await scene('MapScene');
+    await page.mouse.click(512, 308); await scene('PlaceScene');
   }
   if (suite === 'all' || suite === 'pattern') await patterns();
   if (suite === 'all' || suite === 'memory') await memory();
@@ -479,6 +627,7 @@ try {
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'expansion') await expansion();
   if (suite === 'all' || suite === 'third') await third();
+  if (suite === 'all' || suite === 'fourth') await fourth();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

@@ -7,6 +7,10 @@ import { bugBuilder } from './bug-builder';
 import { storySteps } from './story-steps';
 import { feelingsFaces } from './feelings-faces';
 import { monsterMunch } from './monster-munch';
+import { songMaker } from './song-maker';
+import { puzzlePals } from './puzzle-pals';
+import { weatherWardrobe } from './weather-wardrobe';
+import { sinkFloat } from './sink-float';
 import { bubblePop } from './bubble-pop';
 import { colorGarden } from './color-garden';
 import { duckPond } from './duck-pond';
@@ -38,6 +42,10 @@ export const GAMES: GameModule[] = [
   storySteps,
   feelingsFaces,
   monsterMunch,
+  songMaker,
+  puzzlePals,
+  weatherWardrobe,
+  sinkFloat,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

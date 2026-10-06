@@ -1,6 +1,6 @@
 # Continuation plan
 
-Status: the original island plan below is implemented, including Robot Path. A second expansion adds Size Parade, Bug Builder, and Story Steps, and a third adds Feelings Faces and Monster Munch for seventeen total games. The games and supporting systems are described in [DESIGN.md](DESIGN.md); completed checks and device-specific limits are recorded in [VERIFICATION.md](VERIFICATION.md).
+Status: the original island plan below is implemented, including Robot Path. A second expansion adds Size Parade, Bug Builder, and Story Steps; a third adds Feelings Faces and Monster Munch; then the map became an age trail and a fourth expansion added Song Maker, Puzzle Pals, Weather Wardrobe, and Sink or Float, for twenty-one games. Sections 1–2 describe the original ten-region map, since replaced by the age trail in section 9. The games and supporting systems are described in [DESIGN.md](DESIGN.md); completed checks and device-specific limits are recorded in [VERIFICATION.md](VERIFICATION.md).
 
 ## 1. Groundwork
 
@@ -92,12 +92,22 @@ All three main additions support preschool and pre-K, with level ladders that in
 - [x] Monster Munch in Counting Cove: seven levels from tap-to-feed to counting along, one-to-one giving, exact orders with a bell, two-food orders, and fair sharing.
 - [x] Unit tests for both games' rules and a `BROWSER_SUITE=third` play-through of every level with mistakes, hints, saved scores, lap regions, and reload persistence.
 
+## 9. Age trail and fourth expansion
+
+- [x] Make the map the age selection: four places (Puddle Lagoon, Daisy Meadow, Bumpy Hills, Starry Peak) on a switchback trail, all open; each lays out every game for its band at that band's levels. Retire subject regions, clouds and region pages; keep subject IDs for grouping.
+- [x] Pass the place's band through `go.game(id, band)`; home returns to the place; start goes straight to her place; birthdays walk the pet up the trail.
+- [x] Swipeable places with momentum, arrow paging, launch-on-lift with touch-down feedback, and remembered scroll.
+- [x] Song Maker, Puzzle Pals, Weather Wardrobe and Sink or Float, each from lap to pre-K with unit-tested rules.
+- [x] Browser suites updated for the trail (`world`, `expansion`, `third`) plus a new `fourth` suite; offline check rewritten for the trail.
+
 ## Development direction after this expansion
 
 These are future candidates, not claims of implemented features:
 
 1. Validate on the actual iPad: speech availability offline, first-touch audio, small-hand dragging, orientation, installation, and Guided Access. Use observed friction to tune the existing games before adding complexity.
-2. Add a gentle listening/language activity in Music Mountain or Story Grove: matching familiar sounds or spoken initial sounds to pictures, with freely replayable examples.
-3. Add cooperative pretend play in Cozy Village: packing a picnic or choosing clothes for illustrated weather (the catalog's Weather Wardrobe), with many acceptable choices and no rigid judgments about a child's routines.
-4. Extend creative play in the Treehouse: reusable shape stamps and saved artwork pages, keeping local storage bounded and export under grown-up control.
-5. More lap-first games for the regions that still have one at lap: Song Maker (Music Mountain) as a tap-to-light looping grid, and Puzzle Pals jigsaws growing from two pieces.
+2. Add a gentle listening/language activity (music or stories): matching familiar sounds or spoken initial sounds to pictures, with freely replayable examples.
+3. Add cooperative pretend play (everyday life), such as packing a picnic, with many acceptable choices and no rigid judgments about a child's routines. Weather Wardrobe now covers choosing clothes for the weather.
+4. Extend creative play (art): reusable shape stamps and saved artwork pages, keeping local storage bounded and export under grown-up control.
+5. More from the catalog: Sock Match and Tidy Up (everyday life), Shadow Match and Maze Walk (puzzles), Rhyme Time, Letter Fishing and Word Builder (stories and letters), Pizza Shop and Market Stall (numbers and money), and Tangram Town.
+6. Pet treehouse room and pet things from stickers (the design catalog's Neopets thread).
+7. Recorded parent voices slotting in by line id.

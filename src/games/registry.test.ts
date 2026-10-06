@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BANDS } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
 import { GAMES } from './registry';
-import { REGIONS } from '../content/regions';
+import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
 describe('game registry', () => {
@@ -26,25 +26,18 @@ describe('game registry', () => {
     for (const b of BANDS) expect(GAMES.filter((g) => g.bands.includes(b.id)).length, b.id).toBeGreaterThanOrEqual(3);
   });
 
-  it('defines all ten regions and gives every region a game by pre-K', () => {
-    expect(REGIONS.map((r) => r.id).sort()).toEqual([...REGION_IDS].sort());
-    for (const region of REGIONS) {
-      expect(SCRIPT[region.line], region.id).toBeDefined();
-      expect(region.x).toBeGreaterThanOrEqual(0);
-      expect(region.x).toBeLessThanOrEqual(1);
-      expect(region.y).toBeGreaterThanOrEqual(0);
-      expect(region.y).toBeLessThanOrEqual(1);
-      expect(GAMES.some((g) => g.region === region.id && g.bands.includes('prek')), region.id).toBe(true);
+  it('gives every place on the age trail a spoken name and room for its games', () => {
+    expect(PLACES.map((p) => p.band)).toEqual(BANDS.map((b) => b.id));
+    for (const place of PLACES) {
+      expect(SCRIPT[place.line], place.band).toBeDefined();
+      expect(place.x >= 0 && place.x <= 1 && place.y >= 0 && place.y <= 1, place.band).toBe(true);
     }
-    for (const game of GAMES) expect(REGION_IDS).toContain(game.region);
+    // Places climb the island: each one sits higher on the map than the last.
+    PLACES.slice(1).forEach((p, i) => expect(p.y).toBeLessThan(PLACES[i].y));
   });
 
-  it('never closes an available region when moving to a later age band', () => {
-    const opened = new Set<string>();
-    for (const band of BANDS) {
-      const available = new Set(GAMES.filter((g) => g.bands.includes(band.id)).map((g) => g.region));
-      for (const id of opened) expect(available.has(id as (typeof REGION_IDS)[number]), `${id} at ${band.id}`).toBe(true);
-      for (const id of available) opened.add(id);
-    }
+  it('files every game under a known subject, and every subject has a game by pre-K', () => {
+    for (const game of GAMES) expect(REGION_IDS).toContain(game.region);
+    for (const id of REGION_IDS) expect(GAMES.some((g) => g.region === id && g.bands.includes('prek')), id).toBe(true);
   });
 });

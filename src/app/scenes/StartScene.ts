@@ -68,6 +68,7 @@ export class StartScene extends Scene {
     sfx.giggle();
     void this.tw.to(this.play.scale, { x: 0, y: 0 }, { duration: 0.25 });
     void voice.say('start.hi');
-    void this.tw.wait(1.6).then(() => store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch());
+    // Straight to her own place on the trail; the island button leads to the whole map.
+    void this.tw.wait(1.6).then(() => (store.data.pet.hatched ? this.app.go.place(store.data.profile.band) : this.app.go.hatch()));
   }
 }

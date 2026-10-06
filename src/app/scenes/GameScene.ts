@@ -12,6 +12,7 @@ import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
+import type { Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { againIcon, houseIcon } from '../../ui/icons';
@@ -38,12 +39,14 @@ export class GameScene extends Scene {
   constructor(
     app: App,
     private readonly mod: GameModule,
+    /** The place she came from: its age band sets the levels. */
+    private readonly band: Band,
   ) {
     super(app);
   }
 
   init() {
-    const band = store.data.profile.band;
+    const band = this.band;
     this.level = store.levelFor(this.mod.id, this.mod.levels(band));
     this.content.addChild(this.stage);
 
@@ -117,13 +120,13 @@ export class GameScene extends Scene {
 
   private leave() {
     voice.stop();
-    this.app.go.region(this.mod.region);
+    this.app.go.place(this.band);
   }
 
   private finish(result: RoundResult) {
     if (this.finished) return;
     this.finished = true;
-    const band = store.data.profile.band;
+    const band = this.band;
     store.recordRound(
       this.mod.id,
       { level: this.level, misses: result.misses, hints: result.hints, seconds: Math.round(this.seconds), at: Date.now() },
@@ -189,8 +192,8 @@ export class GameScene extends Scene {
       return;
     }
 
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id));
-    const home = new RoundButton(houseIcon(0xffffff), swatch.blue, 66, () => this.app.go.region(this.mod.region));
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band));
+    const home = new RoundButton(houseIcon(0xffffff), swatch.blue, 66, () => this.app.go.place(this.band));
     again.position.set(v.w / 2 - 230, v.h * 0.72);
     home.position.set(v.w / 2 + 230, v.h * 0.72);
     for (const b of [again, home]) {

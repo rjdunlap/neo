@@ -4,6 +4,7 @@ import { voice } from '../audio/voice';
 import { GAMES } from '../games/registry';
 import { BANDS, type Band } from '../progress/bands';
 import { store } from '../progress/store';
+import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
 
 const SESSION_CHOICES = [5, 10, 15, 20, 30, 0];
@@ -31,8 +32,9 @@ export function openParentPanel(onClose: () => void) {
         <label for="p-name">Child's name, as the voice should say it</label>
         <input id="p-name" type="text" autocomplete="off" maxlength="40" placeholder="e.g. Mia" />
       </div>
+      <p class="muted">Her age band is her pet's home on the island trail, and where play starts. Every place stays open to explore; each plays its games at that age's levels.</p>
       <div class="parent__bands" data-bands>
-        ${BANDS.map((b) => `<button type="button" data-band="${b.id}">${b.label}<small>${b.ages}</small></button>`).join('')}
+        ${BANDS.map((b) => `<button type="button" data-band="${b.id}">${b.label}<small>${b.ages} · ${esc(placeFor(b.id).name)}</small></button>`).join('')}
       </div>
 
       <h2>Your island friend</h2>
@@ -205,23 +207,22 @@ function weekSummary(): string {
         <td>${recent.length}</td><td>${minutes}</td>
       </tr>`;
   });
+  // Every place is open, so she may also have played games meant for other ages.
+  for (const g of GAMES.filter((g) => !g.bands.includes(band))) {
+    const recent = store.stats(g.id).history.filter((r) => r.at >= since);
+    if (!recent.length) continue;
+    const minutes = Math.max(1, Math.round(recent.reduce((t, r) => t + r.seconds, 0) / 60));
+    rows.push(`<tr><td><strong>${esc(g.name)}</strong><br><span class="muted">Played in another place on the trail</span></td><td>${recent.length}</td><td>${minutes}</td></tr>`);
+  }
   const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
   const ideas = (played.length ? played : games).filter((g) => g.offScreen).slice(0, 2);
-  // Games for older bands sit under clouds on the map; say which band opens each one.
-  const rank = (id: Band) => BANDS.findIndex((b) => b.id === id);
-  const opensAt = (g: (typeof GAMES)[number]) => g.bands.find((b) => rank(b) > rank(band));
-  const later = BANDS.filter((b) => rank(b.id) > rank(band)).flatMap((b) => {
-    const opens = GAMES.filter((g) => !g.bands.includes(band) && opensAt(g) === b.id);
-    return opens.length ? [`<strong>${b.label}:</strong> ${opens.map((g) => esc(g.name)).join(', ')}`] : [];
-  });
   return `
-    <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Only games for the chosen age band are shown.</p>
+    <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Games for her age band are shown with levels for that band, plus anything she played elsewhere on the trail this week.</p>
     <table>
       <tr><th>Game and level</th><th>Rounds</th><th>Minutes</th></tr>
       ${rows.join('')}
     </table>
-    ${later.length ? `<p class="muted" style="margin-top:8px">Waiting under the clouds until a later band: ${later.join('; ')}.</p>` : ''}
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
     ${ideas.map((g) => `<p><strong>Off-screen idea:</strong> ${esc(g.offScreen!)}</p>`).join('')}`;
 }

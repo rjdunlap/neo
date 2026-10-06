@@ -13,7 +13,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { drawSpring, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperArt, helperCard, jackBox, moonAndStars, present } from './art';
+import { drawSpring, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, jackBox, moonAndStars, present } from './art';
 import { FEELINGS, feelingPlan, feelingRound, type Feeling, type FeelingEvent, type FeelingPlan, type Helper, type Need, type Question } from './logic';
 
 const PET_SCALE = 0.85;
@@ -529,13 +529,19 @@ export const feelingsFaces: GameModule = {
   coplayHint: 'Make the same face as the pet with {name}, and name the feeling together.',
   offScreen: 'Make happy, sad, sleepy and surprised faces in a mirror together, and talk about what makes each one happen.',
   hubIcon: () => {
+    // Two feeling balloons tied to a little post: happy and sad.
     const c = new Container();
-    const pet = feelingCritter(petSpec(), 'happy', 0.5);
-    pet.alive = false;
-    const heart = helperArt('hug');
-    heart.scale.set(0.5);
-    heart.position.set(70, -150);
-    c.addChild(pet, heart);
+    const stand = new Graphics().roundRect(-8, -50, 16, 50, 5).fill(wood.fill).stroke({ width: 4, color: wood.line }).ellipse(0, 0, 50, 10).fill(wood.line);
+    const strings = new Graphics();
+    c.addChild(strings, stand);
+    for (const [feeling, x, y] of [['happy', -46, -128], ['sad', 48, -112]] as const) {
+      strings.moveTo(0, -48).quadraticCurveTo(x * 0.3, (y - 48) / 2, x, y + 46).stroke({ width: 3, color: swatch.white.line });
+      const { node, critter } = feelingBubble(petSpec(), feeling);
+      critter.alive = false;
+      node.scale.set(0.62);
+      node.position.set(x, y);
+      c.addChild(node);
+    }
     return new WigglyIcon(c);
   },
   sticker: (seed) => feelingsSticker(seed),

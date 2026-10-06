@@ -1,5 +1,5 @@
 import type { Band } from './bands';
-import { PET_COLORS, REGION_IDS, STICKER_PAGES, type PetColor, type RegionId, type StickerPage } from '../content/world';
+import { PET_COLORS, STICKER_PAGES, type PetColor, type StickerPage } from '../content/world';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -38,7 +38,7 @@ export interface SaveData {
   profile: { name: string; band: Band };
   pet: { name: string; color: PetColor; hatched: boolean };
   /** Highest band celebrated on the map; null before the first visit. */
-  world: { opened: RegionId[]; band: Band | null };
+  world: { band: Band | null };
   settings: { volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
@@ -52,7 +52,7 @@ export function defaults(): SaveData {
     version: 2,
     profile: { name: '', band: 'lap' },
     pet: { name: 'Pip', color: 'teal', hatched: false },
-    world: { opened: [], band: null },
+    world: { band: null },
     settings: { volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true },
     games: {},
     stickers: [],
@@ -120,8 +120,8 @@ export function migrate(raw: unknown): SaveData {
       color: PET_COLORS.find((c) => c === pet.color) ?? 'teal',
       hatched: bool(pet.hatched, false),
     },
+    // Older saves also listed opened regions; the age trail has no closed places, so that is dropped.
     world: {
-      opened: REGION_IDS.filter((id) => Array.isArray(world.opened) && world.opened.includes(id)),
       band: BAND_IDS.find((b) => b === world.band) ?? null,
     },
     settings: {

@@ -42,16 +42,16 @@ describe('migrate', () => {
     expect(save.games).toEqual(legacy.games);
     expect(save.stickers).toEqual(legacy.stickers);
     expect(save.pet).toEqual({ name: 'Pip', color: 'teal', hatched: false });
-    expect(save.world).toEqual({ opened: [], band: null });
+    expect(save.world).toEqual({ band: null });
   });
 
-  it('repairs pet settings and opened regions from untrusted backups', () => {
+  it('repairs pet settings and the celebrated band from untrusted backups, dropping retired region lists', () => {
     const save = migrate({ pet: { name: '   ', color: 'ultraviolet', hatched: 'yes' }, world: { opened: ['treehouse', 'treehouse', 'missing', 4], band: 'not-a-band' } });
     expect(save.pet).toEqual(defaults().pet);
-    expect(save.world).toEqual({ opened: ['treehouse'], band: null });
+    expect(save.world).toEqual({ band: null });
     const valid = migrate({ pet: { name: ' Clover ', color: 'purple', hatched: true }, world: { opened: ['story-grove'], band: 'preschool' } });
     expect(valid.pet).toEqual({ name: 'Clover', color: 'purple', hatched: true });
-    expect(valid.world.band).toBe('preschool');
+    expect(valid.world).toEqual({ band: 'preschool' });
   });
 
   it('preserves valid sticker placements, clamps positions, and removes invalid placements', () => {

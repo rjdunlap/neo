@@ -7,15 +7,18 @@ import { Tweener } from '../engine/tween';
 import { computeView, type View } from '../engine/view';
 import type { Scene } from './Scene';
 import { session } from './session';
-import type { RegionId } from '../content/world';
+import type { Band } from '../progress/bands';
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
   start(): void;
+  /** The island map: the age trail. */
   hub(): void;
-  region(id: RegionId): void;
+  /** One place on the trail, with every game for that age band laid out. */
+  place(band: Band): void;
   hatch(): void;
-  game(id: string): void;
+  /** Plays a game at the levels for `band` (her own band if omitted). */
+  game(id: string, band?: Band): void;
   stickers(): void;
   goodnight(): void;
 }

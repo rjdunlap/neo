@@ -75,6 +75,18 @@ class Music {
     this.style = null;
   }
 
+  /** Beats since the music started, or null when nothing is playing (so callers keep their own time). */
+  beats(): number | null {
+    const ctx = audio.ctx;
+    if (!ctx || !this.style || ctx.state !== 'running') return null;
+    return Math.max(0, (ctx.currentTime - this.start) / (60 / this.style.bpm));
+  }
+
+  /** The playing style's tempo. */
+  bpm(): number | null {
+    return this.style?.bpm ?? null;
+  }
+
   /** 0..1 through the current beat, so things can bob along. */
   beat(): number {
     const ctx = audio.ctx;

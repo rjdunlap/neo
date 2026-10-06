@@ -2,6 +2,18 @@
 
 Checked locally on 2026-10-05. The island expansion and second expansion are implemented: fifteen games, including the Robot Path stretch goal and the newer Size Parade, Bug Builder, and Story Steps. No commit, push, or deployment was performed.
 
+## Age trail and fourth expansion (same day, later)
+
+The map became the age selection: four places on a switchback trail, every one open, each laying out all the games for its band. Song Maker, Puzzle Pals, Weather Wardrobe, and Sink or Float were added (twenty-one games).
+
+- `npm run typecheck` and `npm run build`: passed.
+- `npm test`: 51 tests across sixteen files passed. New tests cover places (one per band, climbing the map), subjects, song generation (one note per beat, never a single pitch, patterns continue their first bar, higher rows sound higher), puzzle drops (each place found from its center and off-center, off-frame drops ignored, small boards forgiving), wardrobe outfits (items belong to one weather, needed items always offered, no ambiguous distractors), and sink-or-float sets (always both floaters and sinkers, surprises only where asked). Save tests now cover dropping the retired opened-regions list.
+- `BROWSER_SUITE=world`: hatching, starting in her place, swiping (a swipe that starts on a game scrolls instead of opening it), arrows, launching from Starry Peak at pre-K levels, holding home back to the place, a birthday walk up the trail, the parent gate including a game played in another place, and settings.
+- `BROWSER_SUITE=fourth`: all 26 levels of the four new games, with free play, two mistakes and a hint wherever answers can be wrong, guesses that never count as misses, exploring drops that never count, exact saved scores, stickers, Puddle Lagoon showing all four, and reload persistence.
+- `npm run test:offline`: passed against a fresh production build, starting in Daisy Meadow and finishing Monster Munch offline.
+- Screenshots of the map, every place, and every new level were reviewed. Fixed on review: a pet covering a place label (switchback layout), a clipped last landmark, a second purple pet as the Feelings landmark (now feeling balloons), song cards without row stripes, picture hills spilling past the frame, a ball hidden behind the dog, coat and boots overlapping, a forecast card over the sun, tiny mitten icons, two splashes sharing one spot, and a blue wave on a blue button.
+- Code review fixes: a cancelled touch no longer freezes a place; quick weather taps can't leave the previous weather's clothes; an unfinished puzzle frees its picture; the listen level ignores taps until the tune has played once.
+
 ## Third expansion (re-verified the same day)
 
 The second expansion was re-verified independently before more work: typecheck, unit tests, build, and the full browser suite all passed again. A separate scripted tap-through of map → landmark → region page arrows confirmed which games each band reaches with real clicks: lap 6 (Puzzle Peaks, Tinker Lab, Rainbow Meadow and Story Grove under clouds, by design), toddler 11, preschool 14, pre-K 15. No game was unreachable at its bands.
@@ -30,8 +42,8 @@ Then Feelings Faces and Monster Munch were added (seventeen games), with polish 
 | --- | --- |
 | Hatching | Four egg taps, eight color choices, spoken-name choices, custom HTML name entry, and confirmation |
 | Persistence | Hatched pet and customization survive reload; old-save behavior is covered by unit tests |
-| Map | Clouds for unavailable places, birthday reveal after a band increase, ten places open at pre-K, landmark navigation |
-| Region routes | Launching a game and holding its home button returns to that region; the island button returns to the map |
+| Age trail map | Four open places, the pet at her own place, a birthday walk up the trail after a band increase, tapping any place to walk there and enter |
+| Places | Start lands in her place; games laid out per band; swipes scroll and never open a game; arrows page; launching plays at the place's levels; holding home returns to the same place and scroll; the island button returns to the map |
 | Parent gate | Both-corner hold opens the HTML panel; changing child name, pet name/color, band, and session length applies |
 | Pattern Train | All nine levels, wrong choices, hint glow, bell audition/confirmation, two gaps, and saved rewards |
 | Memory Match | All nine levels, unpenalized exploration, known-partner mistakes, hints, matches, and saved rewards |
@@ -40,16 +52,20 @@ Then Feelings Faces and Monster Munch were added (seventeen games), with polish 
 | Size Parade | All eight levels, biggest/smallest comparisons, ascending/descending drag order, two misses then a hint, exact saved scoring, stickers, and portrait play |
 | Bug Builder | All seven levels, guided matching, model copying, both mirror columns, reusable stamps, unpenalized outside drops, hints, saved scoring and stickers, and portrait play |
 | Story Steps | All seven levels, ordering and missing-middle modes, unrelated distractors, replay of placed cards, completed-story narration, hints, saved scoring and stickers, and portrait play |
-| Growing catalog | Two landmarks per page, both page arrows, launching Size Parade from the second page, and reward/history reload for all three new games |
+| Growing catalog | Scrolling Daisy Meadow with the arrows to an off-screen Size Parade, launching it, and returning to the same scroll; reward/history reload for every newer game |
 | Sticker book | Five scenes, drag placement, normalized coordinates, reload persistence, removal back to the tray, tray paging, portrait resizing |
 | Feelings Faces | Free-play bubbles for all four feelings, hugging a sad pet, face matching, named feelings, helpers for needs, event causes, friends' feelings, mistakes, hints, saved scoring and stickers, portrait play |
 | Monster Munch | Tap feeding, counting along with tap and drag, one cookie each, exact orders with the bell, two-food orders, refusals, fair sharing with hand-backs, number pads, saved scoring and stickers |
+| Song Maker | Free-play loops on the beat, shadow and card copying, pattern continuation, the by-ear level, mistakes, hints, saved scoring and stickers |
+| Puzzle Pals | Two to twelve pieces, a pre-placed half at lap, unpenalized off-frame drops, wrong places, hint glow on piece and place, the picture coming alive, saved scoring and stickers |
+| Weather Wardrobe | Tapping the sky through sun, rain and snow, picking one item, every item, and packing for a trip, explained wrong choices, hints, saved scoring and stickers |
+| Sink or Float | Tap drops with floating and sinking, spoken results, free guesses, sorting with in-water tests for wrong sorts, hints, saved scoring and stickers |
 
 Screenshots from the runs are in ignored `test-results/browser/` and `test-results/offline/`. The map, hatching, region pages, all new games, portrait layouts, and sticker scenes were visually reviewed. The map pet was moved clear of the Counting Cove label, and a sea-scene bubble was kept within the page border.
 
 ## Reproducing checks
 
-See the [README](../README.md#browser-checks). Browser scripts use a fresh, isolated context. `BROWSER_EXECUTABLE` can select an installed Chrome executable, and `GAME_URL` can select another local server port. `BROWSER_SUITE=world|pattern|memory|letters|robot|expansion|third|stickers` runs a single development suite; omit it to run the combined flow. The standalone sticker suite supplies test stickers, while the combined flow uses the rewards earned by its game play-throughs.
+See the [README](../README.md#browser-checks). Browser scripts use a fresh, isolated context. `BROWSER_EXECUTABLE` can select an installed Chrome executable, and `GAME_URL` can select another local server port. `BROWSER_SUITE=world|pattern|memory|letters|robot|expansion|third|fourth|stickers` runs a single development suite; omit it to run the combined flow. The standalone sticker suite supplies test stickers, while the combined flow uses the rewards earned by its game play-throughs.
 
 ## Remaining device checks
 
