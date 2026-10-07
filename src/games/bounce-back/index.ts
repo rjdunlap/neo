@@ -7,7 +7,7 @@ import { sfx } from '../../audio/sfx';
 import { palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import type { CouchControls } from '../../engine/controller';
+import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { paddleBounce, planFor, predictY, type BouncePlan } from './logic';
@@ -83,6 +83,18 @@ class BounceBack implements Game {
   private squish = 0;
   private starAt = { x: 0, y: 0 };
   private controllerRight = false;
+
+  /** The "watch me" demo: slide the right paddle to where the ball will arrive, and rest in the middle otherwise. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    const p = out.players[0];
+    p.active = true;
+    if (this.finished || dt <= 0) return out;
+    const b = this.box;
+    const want = this.ball.vx > 0 ? predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, this.faces().right, b.y0 + BALL_R, b.y1 - BALL_R) : (b.y0 + b.y1) / 2;
+    p.y = Math.max(-1, Math.min(1, (want - this.targets.right) / (620 * dt)));
+    return out;
+  }
 
   control(input: CouchControls, dt: number) {
     this.controllerRight = true;

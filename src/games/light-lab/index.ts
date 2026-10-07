@@ -3,6 +3,8 @@ import { ink, swatch, wood } from '../../art/palette';
 import { flower } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { nextSpot, routeStep, type Spot } from '../../couch/focus';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -103,6 +105,17 @@ class LightLab implements Game {
   private wrongs = 0;
   private hinted = -1;
   private clock = 0;
+  /** Couch face-off score: turns beyond the ones this board needs, plus shines that missed, added up (lower is better). */
+  excess = 0;
+  private taps = 0;
+  private needed = 0;
+  private shinesMissed = 0;
+  // Couch play: a ring over the mirrors (and the sun on planning levels).
+  private spots: (Spot & { thing: number })[] = [];
+  private focus = 0;
+  private couchOn = false;
+  private readonly ring = new Graphics();
+  private botWait = 1;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -112,7 +125,8 @@ class LightLab implements Game {
     onTap(this.sun, () => void this.shine(), { cooldown: 500 });
     this.beam.eventMode = 'none';
     this.glow.eventMode = 'none';
-    this.board.addChild(this.floor, this.beam, this.pieces, this.sun, this.glow);
+    this.ring.eventMode = 'none';
+    this.board.addChild(this.floor, this.beam, this.pieces, this.sun, this.glow, this.ring);
     ctx.stage.addChild(this.board);
   }
 
@@ -134,11 +148,50 @@ class LightLab implements Game {
       const t = this.puzzle.things[this.hinted];
       g.circle((t.x + 0.5) * CELL, (t.y + 0.5) * CELL, 46 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
     }
+    const ring = this.ring.clear();
+    const spot = this.couchOn && !this.busy && !this.finished ? this.spots[this.focus] : undefined;
+    if (spot) {
+      const c = this.at(spot.x, spot.y);
+      ring.circle(c.x, c.y, 52 + 3 * Math.sin(this.clock * 6)).stroke({ width: 8, color: swatch.teal.line });
+    }
     // On planning levels the sun pulses to show it can be tapped.
     if (this.plan.mode === 'plan' && !this.busy) this.sun.scale.set(1 + 0.05 * Math.sin(this.clock * 4));
   }
 
   destroy() {}
+
+  /** Couch play: the stick moves the ring, the bottom button turns a mirror (or shines on the sun), the left button shines. */
+  control(input: CouchControls) {
+    this.couchOn = true;
+    if (this.busy || this.finished || !this.spots.length) return;
+    for (const p of input.players) {
+      if (p.direction >= 0) this.focus = nextSpot(this.spots, this.focus, p.direction);
+      if (p.undo) void this.shine();
+      if (p.action) {
+        const t = this.spots[this.focus].thing;
+        if (t < 0) void this.shine(); else this.turn(t);
+      }
+    }
+  }
+
+  /** The "watch me" demo: turn each mirror on the way that still points the wrong way, then shine. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (this.busy || this.finished || this.botWait > 0 || !this.spots.length) return out;
+    const want = hintMirror(this.puzzle, this.tilts);
+    const target = want >= 0 ? this.spots.findIndex((sp) => sp.thing === want) : this.spots.findIndex((sp) => sp.thing < 0);
+    if (target < 0) return out;
+    if (target === this.focus) {
+      out.players[0].action = true;
+      this.botWait = 1;
+    } else {
+      out.players[0].direction = routeStep(this.spots, this.focus, target);
+      this.botWait = 0.45;
+    }
+    return out;
+  }
 
   private at(x: number, y: number) {
     return { x: (x + 0.5) * CELL, y: (y + 0.5) * CELL };
@@ -167,6 +220,12 @@ class LightLab implements Game {
   private build() {
     const p = this.puzzle;
     this.pieces.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.taps = 0;
+    this.shinesMissed = 0;
+    this.needed = p.pathMirrors.filter((i) => p.start[i] !== p.solution[i]).length;
+    this.spots = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [{ x: t.x, y: t.y, thing: i }] : []));
+    if (this.plan.mode === 'plan') this.spots.push({ x: 0, y: p.sunRow, thing: -1 });
+    this.focus = Math.max(0, this.spots.findIndex((sp) => sp.thing === p.pathMirrors[0]));
     this.mirrors.clear();
     this.blooms.clear();
     this.beam.clear();
@@ -199,6 +258,7 @@ class LightLab implements Game {
   /** Tap a mirror: it tilts the other way. Turning is always free; it is how you explore. */
   private turn(i: number) {
     if (this.busy || this.finished) return;
+    this.taps++;
     this.tilts[i] = (1 - this.tilts[i]) as Tilt;
     const glass = this.mirrors.get(i)!.children[1];
     void this.ctx.tw.to(glass, { rotation: this.tilts[i] === 0 ? Math.PI / 4 : -Math.PI / 4 }, { duration: 0.18, ease: ease.outBack });
@@ -255,6 +315,7 @@ class LightLab implements Game {
     }
     if (solved(this.puzzle, this.tilts)) return void this.win();
     this.misses++;
+    this.shinesMissed++;
     this.wrongs++;
     sfx.boing();
     const why = whyNot(this.puzzle, this.tilts);
@@ -274,6 +335,7 @@ class LightLab implements Game {
 
   private async win() {
     this.busy = true;
+    this.excess += Math.max(0, this.taps - this.needed) + this.shinesMissed;
     this.hinted = -1;
     this.drawBeam();
     for (const b of this.blooms.values()) {
@@ -295,7 +357,7 @@ class LightLab implements Game {
     sfx.tada();
     await this.ctx.say('light.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.excess });
   }
 }
 

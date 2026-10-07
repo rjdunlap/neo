@@ -28,9 +28,63 @@
 .couch-hud { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; background: #fff4e3ed; padding: 6px 18px; font-size: 18px; }
 .couch-hud button { font-size: 16px; margin: 0; padding: 12px; pointer-events: auto; }
 .couch-caption { margin: 0; text-align: center; font-size: 18px; }
-.couch-game-help { position: absolute; bottom: 4px; left: 160px; right: 24px; text-align: center; background: #fff4e3ec; padding: 8px 14px; margin: 0; border-radius: 12px; font-size: 16px; }
+.couch-game-help { position: absolute; bottom: 4px; left: 160px; right: 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 22px; background: #fff4e3ec; padding: 6px 14px; margin: 0; border-radius: 12px; font-size: 16px; }
+.couch-help-row { display: inline-flex; align-items: center; gap: 8px; }
+.couch-help-row .glyph { width: 30px; height: 30px; }
 .couch-modal { position: absolute; inset: 0; background: #f3f6ebf5; pointer-events: auto; overflow: auto; }
 .couch-modal .couch-sheet { padding-top: 80px; }
 .couch-modal button { display: block; }
 .couch-entry { position: fixed; right: 24px; bottom: 24px; z-index: 4; font: inherit; font-size: 19px; background: #fff4e3; color: #2b2b3a; border: 2px solid #3a9a9b; border-radius: 16px; padding: 16px 22px; cursor: pointer; }
 @media(max-width: 750px) { .couch-sheet { padding: 26px; } .couch-cards { gap: 16px; grid-template-columns: 1fr; } .couch .couch-card { min-height: 160px; } .couch-card canvas { height: 80px; } .couch-hud { grid-template-columns: 1fr auto; } .couch-caption { grid-row: 2; grid-column: 1 / -1; } .couch-game-help { left: 100px; font-size: 14px; } }
+
+/* How to play: text and controller on the left, a window onto a real round on the right. */
+.couch-howto-open .couch-hud, .couch-howto-open .couch-game-help { display: none; }
+.couch-how-screen { position: absolute; inset: 0; overflow: auto; pointer-events: auto; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 36px; align-items: center; padding: 18px 44px; }
+.couch-how-text { max-width: 600px; }
+.couch-how-head { display: flex; align-items: center; gap: 22px; }
+.couch-how-head canvas { height: 92px; width: 120px; object-fit: contain; }
+.couch-how-head h1 { margin: 2px 0 6px; font-size: clamp(28px, 3.4vw, 44px); }
+.couch-chip { display: inline-block; font-size: 13px; letter-spacing: .12em; color: #35685a; border: 2px solid #35685a; border-radius: 999px; padding: 4px 12px; }
+.couch-goal { font-size: 20px; line-height: 1.32; margin: 8px 0 8px; }
+.couch-how-text .pad { display: block; width: min(100%, 220px); height: auto; margin: 2px 0 6px; }
+.couch-rows { list-style: none; margin: 0 0 8px; padding: 0; }
+.couch-rows li { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 3px 10px; border-radius: 14px; font-size: 17px; line-height: 1.25; border: 2px solid transparent; }
+.couch-rows li small { grid-column: 2; font-size: 12px; color: #50665b; }
+.couch-rows li.on { background: #fff6cf; border-color: #e6c35a; }
+.couch-how-screen .couch-actions { margin-top: 6px; }
+.couch-how-screen .couch-actions button { padding: 12px 20px; }
+.couch-how-screen .couch-primary { padding: 16px 28px; font-size: 22px; }
+.couch-demo { aspect-ratio: 4 / 3; width: min(100%, calc(80vh * 4 / 3)); justify-self: center; border-radius: 18px; box-shadow: 0 0 0 6px #b7cabc, 0 18px 40px #0003; }
+.glyphs { display: inline-flex; align-items: center; gap: 6px; }
+.glyphs i { font-size: 12px; color: #50665b; }
+.glyph { width: 34px; height: 34px; }
+.pad .pad-body { fill: #fff; stroke: #476b60; stroke-width: 5; }
+.pad .part, .glyph .part { fill: #dbe7df; stroke: #7f9a8d; stroke-width: 3; }
+.pad .part.well, .glyph .part.well { fill: #cfdcd3; }
+.pad .part.cap, .glyph .part.cap { fill: #9db8aa; }
+.pad .part.dim, .glyph .part.dim { fill: #eef3ee; stroke: #c4d3c9; }
+.pad .on .part, .pad .part.on, .glyph .part.on, .couch-rows li.on .glyph .part { fill: #ffd86c; stroke: #aa8534; }
+.pad .on { filter: drop-shadow(0 0 6px #ffd86c); }
+.couch-namecard { text-align: center; margin-top: 10vh; }
+.couch-namecard canvas { height: 190px; width: auto; max-width: 100%; }
+.couch-namecard h1 { font-size: clamp(48px, 9vw, 104px); margin: 10px 0; }
+.couch-namecard .couch-intro { margin: 0 auto 18px; font-size: 20px; letter-spacing: .12em; color: #35685a; }
+@media (max-aspect-ratio: 1 / 1) {
+  .couch-how-screen { grid-template-columns: 1fr; align-content: start; gap: 22px; padding: 22px 28px; }
+  .couch-demo { order: -1; width: min(100%, calc(34vh * 4 / 3)); }
+  .couch-how-text { max-width: none; }
+  .couch-how-text .pad { width: min(100%, 230px); margin: 0 0 6px; }
+  .couch-goal { margin: 8px 0; }
+}
+
+/* Trip choice, face-off results and unlocks. */
+.couch-modes { grid-template-columns: repeat(2, 1fr); }
+.couch .couch-mode { min-height: 220px; }
+.couch .couch-mode-together { background: #e0f1e9; }
+.couch .couch-mode-faceoff { background: #fff0d4; }
+.couch-card { position: relative; }
+.couch-new { position: absolute; top: 14px; right: 14px; font-style: normal; font-size: 13px; font-weight: 700; letter-spacing: .12em; color: #fff; background: #c4572e; border-radius: 999px; padding: 4px 11px; }
+.couch-tally { font-size: 22px; font-weight: 600; margin: 4px 0; }
+.couch-unlocked { font-size: 20px; font-weight: 600; color: #8a4a12; background: #fff0d4; border-radius: 14px; padding: 10px 16px; display: inline-block; }
+.couch-teaser { font-size: 18px; color: #50665b; }
+@media (max-width: 750px) { .couch-modes { grid-template-columns: 1fr; } }

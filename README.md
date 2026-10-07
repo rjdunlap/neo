@@ -6,7 +6,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 [Design and architecture](docs/DESIGN.md) · [Roadmap](docs/ROADMAP.md) · [Game and world ideas](docs/ARCADE-IDEAS.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md)
 
-Next prototype proposals: [Island Party with three next-game choices and a controller/TV path](docs/PARTY-AND-SWITCH.md), then [longer challenges, personal records, and unique achievements](docs/PLAY-AND-PROGRESSION.md). These are plans; the current app still uses short rounds and sticker celebrations.
+**Couch play** for two grown-ups, with a controller or keyboard, is built: a separate trip of six stops with a how-to-play screen before each game, games that open as trips are finished, and a face-off mode. See [Couch play](#couch-play). Still proposals: [the wider Island Party](docs/PARTY-AND-SWITCH.md), then [longer challenges, personal records, and unique achievements](docs/PLAY-AND-PROGRESSION.md). The child's island is unchanged: it still uses short rounds and sticker celebrations, and every game stays open.
 
 ## Run it
 
@@ -121,6 +121,21 @@ Letter Trails uses capital A–Z stroke data. Accented Latin names are normalize
 
 Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, place layout, volume, and see what she played this week. Backups save to Files.
 
+## Couch play
+
+A separate route for grown-ups, from **Couch play** on the title screen (or the **C** key, or a controller button). It has its own save (`neo.couch.v1`), so it never touches the child's profile, levels, stickers or story. Setup, controls and pairing a Pro Controller are in [docs/CONTROLLER-SETUP.md](docs/CONTROLLER-SETUP.md).
+
+- **A trip** is six stops. Choose **Together** (light six lanterns as a team) or **Face-off** (each stop has a winner). Players take turns choosing; three games are offered each time, with a free Shuffle once more than three are open.
+- **How to play.** The first time a game is chosen, a screen shows its name, a one-sentence goal (spoken), a drawn controller with the buttons it uses, and a window where a bot plays a real round with the same controls you will use. Later plays show a short name card; **How to play** is always in the pause menu.
+- **Earning games.** Three games are open at the start. Each finished trip, in either mode, opens the next group (Memory Match and Rhythm Neighbors; then Light Lab and Secret Code; then Peg Garden and Bumper Garden). Nothing locks again and nothing expires. New games carry a NEW mark until they have been explained. The child's island has no such gates.
+- **Face-off.** Each player plays their own fresh board in turn, scored against that board's own best (slides over the best route, extra turns, guesses, shots), or one shared board where turns alternate (Memory Match). Ties and team games score for both players. The trip always ends with everyone having lit every lantern.
+
+| Game | Together | Face-off |
+| --- | --- | --- |
+| Penguin Slide, Bouncy Launch, Light Lab, Secret Code, Peg Garden | take turns | each on their own board, fewest wins |
+| Memory Match | take turns | one board, most pairs wins, a match earns another turn |
+| Bounce Back, Rhythm Neighbors, Bumper Garden | together | team: both score |
+
 ## Where it could grow
 
 The [elementary roadmap](docs/ELEMENTARY-ROADMAP.md) plans a world that grows through kindergarten–grade 5. **Wonder Woods** now exists as the early-school place on the trail (its host, project and keepsake are still to come); later come **Maker Harbor** and **Storybook Square** for building and stories, and **Discovery Marsh** and **Skywatch Isles** for investigations and longer projects. Familiar games gain deeper modes—counting becomes sharing and fractions, routes become programs, and picture stories become evidence-based mysteries. Younger favorites remain available.
@@ -133,12 +148,13 @@ TypeScript + Vite + PixiJS 8, installed as a PWA. See the [design doc](docs/DESI
 
 ```text
 src/
-  app/        boot, scene switching, session timer, routes, scenes/ (start, hatch, map, place, game host, picnic, stickers, goodnight)
+  app/        boot, scene switching, session timer, routes, scenes/ (start, hatch, map, place, game host, picnic, stickers, goodnight, couch)
   engine/     view scaling, tweens, seeded random, toddler input rules
   art/        palette, shapes, critter builder, particles, scenery, sticker frame
   audio/      Web Audio engine, instruments, sound effects, generative music, voice
   games/      one folder per minigame + the contract (types.ts) and registry
   progress/   age bands, save format + migration, difficulty, IndexedDB store
+  couch/      grown-up couch play: the catalog of how-to data, trips, unlocks and face-off rules, its own save, the demo runner, the controller diagram
   parent/     the grown-up panel (plain HTML)
   ui/         buttons, icons, parent gate, text
   content/    voice script, the age-trail places, stable world IDs, and the Windy Picnic's story rules
@@ -156,6 +172,10 @@ In `npm run dev`, the browser console has `neo` (the app) and `kit` (synthetic t
 
 The shell handles everything else: transitions, the home button, the pet guide, co-play tips, saving the result, difficulty, stickers and the celebration. A game draws into `ctx.stage`, listens with `onTap`, and calls `ctx.finish({ misses, hints })`.
 
+### Making a game playable on the couch
+
+A game becomes a couch game by implementing the optional `control(input, dt)` and `autoplay(dt)` on its `Game`, and adding one entry to `src/couch/catalog.ts` (goal line, control rows, face-off kind, demo level, the level of each stop) and one tier slot in `src/couch/party.ts`. The how-to screen, name card, offers, NEW mark and unlock then follow. `autoplay` is a bot that returns the input a capable player would press; it drives the how-to demo and is the browser check that the controls can complete a round (`BROWSER_SUITE=couchgames`). A face-off game reports `score` (or `scores` for a shared board) through `ctx.finish`; fairness needs boards drawn from `ctx.rng`, never fixed per level.
+
 ### Rules every game follows
 
 Huge touch targets, responses on touch-down, no fail states (a wrong tap gets a boing and a hint), every instruction spoken, and tapping the pet repeats it. Colors come only from `art/palette.ts`, and pitched sounds use `audio/notes.ts` steps so everything stays in key with the music.
@@ -172,7 +192,7 @@ npm run test:browser
 
 The script exercises hatching, navigation and the parent gate; game levels including all 26 capital letter trails and word/name modes; and sticker placement, removal, paging, and portrait resizing. Scenarios include wrong answers, hints, saved rewards, reload persistence, and place scrolling. The [verification log](docs/VERIFICATION.md) records which runs passed and their limits.
 
-Single suites: `world` (hatching, the map, both place layouts, every subject/game card in all bands and both orientations, return memory, cancellation, birthdays, the parent gate), `picnic` (the Windy Picnic from the map: the blanket, story rounds, resuming, the journal, the finale and keepsake, retelling), `shortlist` (Block Tower, Lasso Loops, Pet Says, Owl Walk Home; `SHORTLIST_ONLY=tower|lasso|says|owls`), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (Rainbow Fingers and Splish Splash; `EARLY_ONLY=paint|bath`), `arcade` (Duckling Parade, Scoop Shop, Roundup, Bouncy Launch; `ARCADE_ONLY=parade|scoop|roundup|launch` runs one), `batch` (the follow-on ten games; `BATCH_ONLY=monsters|pegs|salon|garden|helpers|eggs|mail|safari|bounce|dots` runs one), `originals` (Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, Color Garden; `ORIGINALS_ONLY=bubbles|jelly|peekaboo|ducks|shapes|garden` runs one), `next` (Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks; `NEXT_ONLY=seesaw|doctor|bumper|tricks` runs one), `creative` (Stamp Studio, Pet Kitchen, Rhythm Neighbors, Tangram Town; `CREATIVE_ONLY=stamps|kitchen|rhythm|tangram`), `woods` (Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure and Little Helpers' equal groups; `WOODS_ONLY=light|penguin|peek|code|hop|shop|grow|clock|pixels|night|snack|beat|rhyme|go|ramp|sort|map|opp|graph|worm|bonds|predict|families|helpers|boxes|mailmap`; Seesaw Balance 8–9 is `boxes` and Mail Carrier 6–7 is `mailmap`; Egg Catch 6 is `predict` and Photo Safari 6 is in `batch`; Bubble Pop 10–11 is `bonds`; Word Monsters 7 is `families`), with Robot Path 7–10 in `robot`, Duck Pond 10 in `originals` and Monster Munch 8 in `third`, plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. `FROM_LEVEL=n` starts `next`, `creative`, `woods` and `shortlist` at a later level. `TO_LEVEL=n` can limit the paint or salon loop for lap checks. Screenshots go into ignored `test-results/`.
+Single suites: `couch` (the full couch trip: how-to screens, name cards, unlock announcement, NEW marks, shuffle, face-off turns, reload between turns, ties and team stops, backup), `couchgames` (every couch game's intro and a bot-played round), `world` (hatching, the map, both place layouts, every subject/game card in all bands and both orientations, return memory, cancellation, birthdays, the parent gate), `picnic` (the Windy Picnic from the map: the blanket, story rounds, resuming, the journal, the finale and keepsake, retelling), `shortlist` (Block Tower, Lasso Loops, Pet Says, Owl Walk Home; `SHORTLIST_ONLY=tower|lasso|says|owls`), `expansion` (Size Parade, Bug Builder, Story Steps), `third` (Feelings Faces, Monster Munch), `fourth` (Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float), `early` (Rainbow Fingers and Splish Splash; `EARLY_ONLY=paint|bath`), `arcade` (Duckling Parade, Scoop Shop, Roundup, Bouncy Launch; `ARCADE_ONLY=parade|scoop|roundup|launch` runs one), `batch` (the follow-on ten games; `BATCH_ONLY=monsters|pegs|salon|garden|helpers|eggs|mail|safari|bounce|dots` runs one), `originals` (Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, Color Garden; `ORIGINALS_ONLY=bubbles|jelly|peekaboo|ducks|shapes|garden` runs one), `next` (Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks; `NEXT_ONLY=seesaw|doctor|bumper|tricks` runs one), `creative` (Stamp Studio, Pet Kitchen, Rhythm Neighbors, Tangram Town; `CREATIVE_ONLY=stamps|kitchen|rhythm|tangram`), `woods` (Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure and Little Helpers' equal groups; `WOODS_ONLY=light|penguin|peek|code|hop|shop|grow|clock|pixels|night|snack|beat|rhyme|go|ramp|sort|map|opp|graph|worm|bonds|predict|families|helpers|boxes|mailmap`; Seesaw Balance 8–9 is `boxes` and Mail Carrier 6–7 is `mailmap`; Egg Catch 6 is `predict` and Photo Safari 6 is in `batch`; Bubble Pop 10–11 is `bonds`; Word Monsters 7 is `families`), with Robot Path 7–10 in `robot`, Duck Pond 10 in `originals` and Monster Munch 8 in `third`, plus `pattern`, `memory`, `letters`, `robot` and `stickers`, e.g. `BROWSER_SUITE=fourth npm run test:browser`. `FROM_LEVEL=n` starts `next`, `creative`, `woods` and `shortlist` at a later level. `TO_LEVEL=n` can limit the paint or salon loop for lap checks. Screenshots go into ignored `test-results/`.
 
 With `npm run build-and-preview` running in another terminal:
 

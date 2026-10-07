@@ -9,7 +9,7 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { CouchControls } from '../../engine/controller';
+import { idle, type CouchControls } from '../../engine/controller';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
@@ -45,6 +45,8 @@ class BouncyLaunch implements Game {
   shot = 0;
   misses = 0;
   hints = 0;
+  /** How far every launch landed from the middle of its cloud, as a fraction of the strip, added up. */
+  off = 0;
   /** Where the last landing was (0..1 along the strip), for compare levels. */
   last: number | undefined;
   ask: 'farther' | 'nearer' | undefined;
@@ -70,6 +72,23 @@ class BouncyLaunch implements Game {
   private flight: { pts: { x: number; y: number }[]; t: number; duration: number; done: () => void } | null = null;
   private strip = { x0: 0, x1: 0, y: 0 };
   private controllerPower = 0.5;
+  private botWait = 1;
+
+  /** The "watch me" demo: hold toward the next cloud's power, then press the launch button. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    this.botWait -= dt;
+    const target = this.targets[this.shot];
+    if (this.flying || this.finished || this.grab || this.botWait > 0 || target === undefined) return out;
+    const gap = padAt(target) - this.controllerPower;
+    out.players[0].active = true;
+    if (Math.abs(gap) > 0.015) out.players[0].x = Math.max(-1, Math.min(1, gap / (Math.max(dt, 1e-3) * 0.5)));
+    else {
+      out.players[0].action = true;
+      this.botWait = 1.4;
+    }
+    return out;
+  }
 
   control(input: CouchControls, dt: number) {
     if (this.flying || this.finished || this.grab) return;
@@ -292,6 +311,7 @@ class BouncyLaunch implements Game {
   private async landed(f: number) {
     const tw = this.ctx.tw;
     const verdict = judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last);
+    if (this.plan.mode === 'star' || this.plan.mode === 'number') this.off += Math.abs(f - padAt(this.targets[this.shot]));
     const firstCompare = this.plan.mode === 'compare' && this.last === undefined;
     if (verdict === 'yes') {
       if (!firstCompare && this.plan.mode !== 'tap' && this.plan.mode !== 'free') {
@@ -339,7 +359,7 @@ class BouncyLaunch implements Game {
     this.pet.cheer();
     await this.ctx.say('launch.done');
     await this.ctx.tw.wait(0.8);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: Math.round(this.off * 100) });
   }
 }
 

@@ -3,6 +3,7 @@ import { cream, swatch } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -21,6 +22,8 @@ class RhythmNeighbors implements Game{
  private readonly bg=new Graphics();private readonly score=new Container();private readonly glow=new Graphics();
  private clock=0;private events:{at:number;voice:number;note:number}[]=[];private busyUntil=0;private wrong=0;private guided=false;private plays=0;
  busy=false;done=false;misses=0;hints=0;
+ private botPlan:{at:number;voice:number}[]=[];private botSubmitAt=0;
+ get finished(){return this.done;}
  constructor(private readonly ctx:GameContext){
   this.view = ctx.view;
   this.plan=planFor(ctx.level);this.phrases=makePhrases(ctx.level,ctx.rng);
@@ -79,6 +82,28 @@ class RhythmNeighbors implements Game{
    node.position.set(250+times[i]/end*(this.view.w-370),0);this.score.addChild(node);
   });
   if(this.guided){const voice=p.voices[Math.min(this.taps.length,p.voices.length-1)],f=this.frogs[voice];this.glow.circle(f.x,f.y,106).stroke({width:9,color:swatch.yellow.line});}
+ }
+ /** Couch play: left and right are the two frogs, the bottom button sends the answer, the left button replays the call. */
+ control(input:CouchControls){
+  for(const p of input.players){
+   if(p.undo)this.demonstrate();
+   if(p.action)this.check();
+   if(p.direction===0||p.direction===2)this.play(this.frogs.length===1||p.direction===2?0:1);
+  }
+ }
+ /** The "watch me" demo: wait out the call and the sample reply, then play the reply back on the beat and send it. */
+ autoplay(_dt:number):CouchControls{
+  const out=idle();out.players[0].active=true;
+  if(this.done)return out;
+  if(this.busy){this.botPlan=[];this.botSubmitAt=0;return out;}
+  if(!this.taps.length&&!this.botPlan.length&&!this.botSubmitAt){
+   const p=this.phrases[this.phrase],times=schedule(p.gaps,this.clock+0.7);
+   this.botPlan=times.map((at,i)=>({at,voice:p.voices[i]}));this.botSubmitAt=times.at(-1)!+0.9;
+  }
+  const next=this.botPlan[0];
+  if(next&&this.clock>=next.at){this.botPlan.shift();out.players[0].direction=this.frogs.length===1||!next.voice?2:0;}
+  else if(!this.botPlan.length&&this.botSubmitAt&&this.clock>=this.botSubmitAt){this.botSubmitAt=0;out.players[0].action=true;}
+  return out;
  }
  start(){void this.ctx.instruct(this.plan.free?'neighbors.free':this.plan.timing?'neighbors.rhythm':'neighbors.turns');if(!this.plan.free)this.demonstrate();}
  resize(v:View){

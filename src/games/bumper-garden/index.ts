@@ -5,6 +5,7 @@ import { STYLES } from '../../audio/music';
 import { stepFromUnit } from '../../audio/notes';
 import { sfx } from '../../audio/sfx';
 import { stepBall, type Ball, type BallWorld } from '../../engine/ball';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -143,6 +144,7 @@ class BumperGarden implements Game {
   private view: View;
   private clock = 0;
   private idle = 0;
+  private botWait = 1;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -230,13 +232,47 @@ class BumperGarden implements Game {
       return;
     }
     const local = this.board.toLocal({ x, y: 0 });
-    const side: FlipperSide = local.x < TABLE.w / 2 ? 'left' : 'right';
+    this.flip(local.x < TABLE.w / 2 ? 'left' : 'right');
+  }
+
+  private flip(side: FlipperSide) {
+    this.idle = 0;
     const f = this.flippers[side];
     f.upFor = 0.2;
     sfx.tick();
     this.sides[side].scale.set(0.85);
     void this.ctx.tw.to(this.sides[side].scale, { x: 1, y: 1 }, { duration: 0.2 });
     this.kick(side);
+  }
+
+  /**
+   * Couch play. With one controller, left and right flip the left and right flippers. With two,
+   * each player has a flipper: any button or direction on the first flips the left one, the second the right.
+   */
+  control(input: CouchControls) {
+    if (this.finished) return;
+    const two = input.players[1].active;
+    input.players.forEach((p, i) => {
+      const pressed = p.direction >= 0 || p.action || p.undo;
+      const left = two ? i === 0 && pressed : p.direction === 2 || p.undo;
+      const right = two ? i === 1 && pressed : p.direction === 0 || p.action;
+      if (left) this.flip('left');
+      if (right) this.flip('right');
+    });
+  }
+
+  /** The "watch me" demo: flip the side the ladybug is falling toward, just as it reaches the flippers. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    const b = this.ball;
+    if (this.finished || this.state !== 'flying' || this.botWait > 0) return out;
+    if (b.vy > 0 && b.y > FLIPPER.y - 70 && b.y < FLIPPER.y + 30) {
+      out.players[0].direction = b.x < TABLE.w / 2 ? 2 : 0;
+      this.botWait = 0.3;
+    }
+    return out;
   }
 
   /** Batting the ladybug: if it is on or just above the flipper, it flies back up. */

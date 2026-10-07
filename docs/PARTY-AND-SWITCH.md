@@ -2,6 +2,19 @@
 
 Follow-up to the play/progression review, 2026-10-06. **Proposals and feasibility research only.** The developer's wife enjoys Mario Party, and the home console is an original-generation Nintendo Switch (including OLED/Lite), not Switch 2. No party mode, controller support, console export, or developer access has been implemented or obtained.
 
+## Status (2026-10-07): built as couch trips
+
+A first version of Island Party now exists as **couch play** (see [Couch play in the design doc](DESIGN.md#couch-play-2026-10-07) and [CONTROLLER-SETUP](CONTROLLER-SETUP.md)): a separate grown-up save, six-stop trips with three choices per stop, alternating choosers, lanterns, and keyboard/controller play, extended with a how-to screen and bot demo before each game, games that open as trips are finished, and a **face-off** mode. It runs in the browser on a computer, as recommended below; the Switch route is unchanged and unexplored. Nine games are couch-ready, not the six listed below: Block Tower and Quick Tricks are still candidates.
+
+Decisions made while building the competitive part, following the equal-information rule below:
+
+- A face-off stop gives each player **their own fresh board** (different seeds, same plan and level) and scores it against **that board's own best**, so boards of slightly different difficulty still compare fairly. The second player never faces a board whose answer was just watched. This rules out games whose boards are fixed per level (Robot Path) for versus play; they can be team games.
+- Games with natural alternation (Memory Match) play **one shared board**, taking turns, with no hints, since a glowing hint would favor whoever asked.
+- Cooperative games (Bounce Back, Rhythm Neighbors, Bumper Garden) are **team stops** that score for both players. Ties also score for both. The trip never shows a loser, and every lantern still lights.
+- A stop gives one couch sticker, not one per turn. The first turn of a two-turn stop is saved, so leaving and reloading between turns does not repeat or lose it.
+
+Not built: a party finale and keepsake, a shared scoring contract across more than two scored games, simultaneous face-off, and any Switch route. Real controllers and a TV have not been tried.
+
 ## Recommended next slice: choose the next stop
 
 Build **Island Party** before the longer single-game course. It is the horizontal proof of concept: several existing activities become one evening's play. Penguin Slide's course remains the next vertical slice for deeper decisions and personal records.
