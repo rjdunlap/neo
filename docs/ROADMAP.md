@@ -21,7 +21,7 @@ Checked items here are built (see the verification log); unchecked items are pro
 3. Penguin Slide's five-board course with a personal best, now that the couch already carries `score` through the result boundary.
 4. The child's island, with no gating: a game's name at the start, a grown-up how-to from the couch catalog data, a NEW sparkle, and a favorites shelf (§2).
 
-Known tooling issue: `BROWSER_SUITE=batch BATCH_ONLY=pegs` (Peg Garden touch play) fails on the development Mac in most runs, on unmodified code too, at a different level each time; diagnose it before relying on it (§1). Nothing from the couch work is deployed: it lives on a branch until a grown-up has played it.
+Known tooling issue: `BROWSER_SUITE=batch BATCH_ONLY=pegs` (Peg Garden touch play) fails on the development Mac in most runs, on unmodified code too, at a different level each time; diagnose it before relying on it (§1). As of 2026-10-07 the couch work was pushed on the branch `couch-howto-unlocks-faceoff`, not merged to `main` (and so not deployed); check `git branch --contains 44cfbd0` before assuming either.
 
 - [ ] Build a desktop-friendly **Grown-up Play** entry with party/course selection and a separate local adult save slot. Adult play must not change the child's level history, pins, stickers, story, or band.
 - [x] Build **Island Party** (built as **couch trips**): six stops, three varied next-game choices from the opened games (a free shuffle, avoiding the last two), alternating choosers, a shared lantern goal, compact results on the chooser between stops, saved offers and progress with no duplicate awards, and ordinary couch stickers kept per stop in a separate save. Still open: a party finale scene and one known party keepsake.
