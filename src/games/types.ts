@@ -52,6 +52,34 @@ export interface RoundResult {
   scores?: [number, number];
 }
 
+/**
+ * A challenge course in couch play: a fixed run of parts (ponds, clouds) in a row, with the run's numbers handed
+ * to the shell as they change. A "try" is whatever the game counts: a slide, a launch.
+ */
+export interface CouchCourse {
+  /** Which course; the game knows its parts. */
+  id: string;
+  /** Where to begin: `done` holds the tries taken on each finished part, and `attempts` those already spent on the one in progress. */
+  resume: { board: number; done: number[]; attempts: number; assisted: boolean };
+  /** Told after every try, finished part and shown hint, so a reload cannot lose the numbers. */
+  progress(p: CourseProgress): void;
+}
+
+export interface CourseProgress {
+  /** The part in play, counting from 0. */
+  board: number;
+  boards: number;
+  /** Tries taken on each finished part. Every successful try counts, including a slide later undone and a launch that missed. */
+  done: number[];
+  /** Tries taken so far on the part in play. */
+  attempts: number;
+  /** The fewest tries for this part, and for the whole course. */
+  par: number;
+  minimum: number;
+  /** A hint has been shown at some point in the run. */
+  assisted: boolean;
+}
+
 export interface GameContext {
   /** Draw here; it sits under the pet, the home button and the particles. */
   stage: Container;
@@ -71,8 +99,11 @@ export interface GameContext {
   /** Speak an instruction; the pet repeats the latest one when tapped. */
   instruct(id: LineId, vars?: LineVars): Promise<void>;
   say(id: LineId, vars?: LineVars): Promise<void>;
-  /** Set only by couch play. `versus`: a face-off on one shared board, so the game alternates the two players. */
-  couch?: { versus: boolean };
+  /**
+   * Set only by couch play. `versus`: a face-off on one shared board, so the game alternates the two players.
+   * `course`: a challenge run on fixed boards, played in a row as one round.
+   */
+  couch?: { versus: boolean; course?: CouchCourse };
   /** End the round. The shell celebrates, saves the result and offers "again". */
   finish(result: RoundResult): void;
 }

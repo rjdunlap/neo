@@ -65,15 +65,15 @@ export function targets(plan: LaunchPlan, rng: Rng): number[] {
 
 export type Verdict = 'yes' | 'short' | 'long';
 
-/** Did a landing meet the ask? `last` is the previous landing for compare levels. */
-export function judge(plan: LaunchPlan, f: number, target: number, ask?: 'farther' | 'nearer', last?: number): Verdict {
+/** Did a landing meet the ask? `last` is the previous landing for compare levels; `width` is how forgiving the clouds are. */
+export function judge(plan: LaunchPlan, f: number, target: number, ask?: 'farther' | 'nearer', last?: number, width = 0.85): Verdict {
   if (plan.mode === 'tap' || plan.mode === 'free') return 'yes';
   if (plan.mode === 'compare') {
     if (last === undefined) return 'yes';
     if (ask === 'farther') return f > last + 0.04 ? 'yes' : 'short';
     return f < last - 0.04 ? 'yes' : 'long';
   }
-  const hit = padHit(f);
+  const hit = padHit(f, width);
   if (hit === target) return 'yes';
   return f < padAt(target) ? 'short' : 'long';
 }

@@ -64,13 +64,19 @@ export class ControllerSampler {
   }
 }
 
+/** Someone typing a name: W, S, space and backspace are letters then, not paddles and undo. */
+const typing = (e: KeyboardEvent) => {
+  const t = e.target;
+  return t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+};
+
 /** Scene-owned listeners: no keys are intercepted in the child's game or other pages. */
 export class CouchInput {
   private keys = new Set<string>();
   private sampler = new ControllerSampler();
   private readonly codes = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Space', 'Backspace', 'Escape', 'KeyW', 'KeyS']);
   private readonly down = (e: KeyboardEvent) => {
-    if (!this.codes.has(e.code) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!this.codes.has(e.code) || e.metaKey || e.ctrlKey || e.altKey || typing(e)) return;
     e.preventDefault();
     this.keys.add(e.code);
     this.unlock();
