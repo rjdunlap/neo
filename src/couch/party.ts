@@ -1,6 +1,8 @@
 import { Rng } from '../engine/random';
 import type { RoundResult } from '../games/types';
 import { COUCH_INFO } from './catalog';
+import { courseSpec, repairCourse, type CourseSave } from './course';
+import { isCourseId, type CourseId } from './courses';
 
 export const COUCH_IDS = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'memory-match', 'rhythm-neighbors', 'light-lab', 'secret-code', 'peg-garden', 'bumper-garden'] as const;
 export type CouchId = typeof COUCH_IDS[number];
@@ -28,16 +30,27 @@ export interface Party {
   reroll: number;
   turn: Turn | null;
 }
+/** The one party keepsake, "Lantern Night", kept from the first finished trip. `at` is 0 when the date is unknown. */
+export interface Keepsake { at: number }
 export interface CouchSave {
-  version: 2;
+  version: 3;
   party: Party | null;
   trips: number;
   /** One counter and latest sticker seed per game; ownership counts never fall as history rotates. */
   stickers: Partial<Record<CouchId, { count: number; seed: number }>>;
   /** Games whose full "how to play" has been shown; later plays only show a name card. */
   seen: CouchId[];
+  /** Earned once, by the first finished trip of either mode; later trips never add another. */
+  keepsake: Keepsake | null;
+  /** Challenge courses: a run in progress, and each player's records. Created when a course is first started. */
+  courses: Partial<Record<CourseId, CourseSave>>;
+  /** What the two players like to be called; empty means "Player 1" and "Player 2". */
+  names: [string, string];
 }
-export const couchDefaults = (): CouchSave => ({ version: 2, party: null, trips: 0, stickers: {}, seen: [] });
+export const couchDefaults = (): CouchSave => ({ version: 3, party: null, trips: 0, stickers: {}, seen: [], keepsake: null, courses: {}, names: ['', ''] });
+export const NAME_MAX = 14;
+/** A name as the page may show it: no control characters, single spaces, trimmed, at most `NAME_MAX` letters. */
+export const cleanName = (v: unknown): string => typeof v === 'string' ? [...v.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim()].slice(0, NAME_MAX).join('').trim() : '';
 export const newParty = (mode: TripMode, seed: number): Party => ({ seed, rounds: [], selected: null, mode, reroll: 0, turn: null });
 
 /**
@@ -62,9 +75,16 @@ const isWinner = (v: unknown): v is StopWinner => v === 0 || v === 1 || v === 't
 
 export function repairCouch(raw: unknown): CouchSave {
   const v = object(raw), out = couchDefaults();
-  // Version 1 had no `seen` list or trip modes; everything else carries over unchanged.
-  if (v.version !== 1 && v.version !== 2) return out;
+  // Version 1 had no `seen` list or trip modes, and versions 1 and 2 had no keepsake; everything else carries over.
+  if (v.version !== 1 && v.version !== 2 && v.version !== 3) return out;
   out.trips = number(v.trips);
+  // A save that finished a trip before keepsakes existed gets it now, with an unknown date.
+  const kept = object(v.keepsake);
+  out.keepsake = v.keepsake && typeof v.keepsake === 'object' ? { at: number(kept.at) } : out.trips > 0 ? { at: 0 } : null;
+  const names = Array.isArray(v.names) ? v.names : [];
+  out.names = [cleanName(names[0]), cleanName(names[1])];
+  const courses = object(v.courses);
+  for (const id of Object.keys(courses)) if (isCourseId(id)) out.courses[id] = repairCourse(courses[id], courseSpec(id));
   if (Array.isArray(v.seen)) out.seen = COUCH_IDS.filter(id => (v.seen as unknown[]).includes(id));
   const stickers = object(v.stickers);
   for (const id of COUCH_IDS) {
@@ -135,7 +155,7 @@ export const tally = (party: Party): [number, number] => party.rounds.reduce<[nu
  * stop on separate boards finishes in two: the first turn is kept (`'turn'`), the second settles the
  * stop (`'stop'`). Stale finishes can't award again, or settle a different selection.
  */
-export function completeRound(save: CouchSave, token: string, result: RoundResult): 'turn' | 'stop' | false {
+export function completeRound(save: CouchSave, token: string, result: RoundResult, now = Date.now()): 'turn' | 'stop' | false {
   const p = save.party;
   if (!p?.selected || p.rounds.length >= STOPS || roundToken(p) !== token) return false;
   const id = p.selected, info = COUCH_INFO[id], faceoff = p.mode === 'faceoff';
@@ -161,6 +181,9 @@ export function completeRound(save: CouchSave, token: string, result: RoundResul
   const old = save.stickers[id];
   save.stickers[id] = { count: (old?.count ?? 0) + 1, seed: round.seed };
   p.selected = null;
-  if (p.rounds.length === STOPS) save.trips++;
+  if (p.rounds.length === STOPS) {
+    save.trips++;
+    save.keepsake ??= { at: now };
+  }
   return 'stop';
 }

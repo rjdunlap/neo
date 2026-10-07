@@ -58,7 +58,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.bouncy-launch',
     tagline: 'Aim the spring. Land on three star clouds.',
     controls: [
-      { parts: STICK, text: 'Hold left or right to set the spring’s power.', keys: 'Left / right arrows' },
+      { parts: STICK, text: 'Push down (or right) to squash the spring for more power; up (or left) for less.', keys: 'Down / right arrows: more · up / left: less' },
       { parts: ['bottom'], text: 'Press to launch.', keys: 'Enter' },
     ],
     play: 'turns',

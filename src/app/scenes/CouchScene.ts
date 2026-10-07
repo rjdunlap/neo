@@ -2,26 +2,35 @@ import { Container, Graphics } from 'pixi.js';
 import { makePet, petSpec } from '../../art/pet';
 import { audio } from '../../audio/engine';
 import { music } from '../../audio/music';
+import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { COUCH_INFO, couchLine, type CouchInfo } from '../../couch/catalog';
 import { controllerArt, glyphs, type ControllerArt } from '../../couch/controller-art';
 import { Demo } from '../../couch/demo';
-import { completeRound, isNew, levelFor, markSeen, newParty, nextTier, offers, playerNow, repairCouch, reshuffle, roundToken, seedFor, starterOf, STOPS, tally, UNLOCK_TIERS, unlockedIds, type CouchId, type CouchRound, type Party, type TripMode } from '../../couch/party';
+import { finaleOf, namerOf, stopLabel, type Finale } from '../../couch/finale';
+import { FinaleStage } from '../../couch/finale-stage';
+import { completeCourse, courseDefaults, courseOf, noteProgress, startRun, BADGES, courseSpec, type CourseSpec, type Outcome, type PlayerRecord } from '../../couch/course';
+import { COURSE_IDS, countOf, courseInfo, unitsOf, type CourseId, type CourseInfo } from '../../couch/courses';
+import { cleanName, completeRound, isNew, levelFor, markSeen, NAME_MAX, newParty, nextTier, offers, playerNow, repairCouch, reshuffle, roundToken, seedFor, starterOf, STOPS, tally, unlockedIds, type CouchId, type CouchRound, type Party, type TripMode } from '../../couch/party';
 import { couchStore } from '../../couch/store';
 import { CouchInput } from '../../engine/controller';
 import { randomSeed, Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { gameById } from '../../games/registry';
-import type { Game, GameModule, RoundResult } from '../../games/types';
+import type { CourseProgress, Game, GameModule, RoundResult } from '../../games/types';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 import '../../couch/style.css';
 
 /** How long the name card shows when a game has already been explained. */
 const CARD_SECONDS = 1.6;
-type Screen = 'menu' | 'mode' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'backup';
-const who = (player: number) => `Player ${player + 1}`;
+type Screen = 'menu' | 'mode' | 'courses' | 'course' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'backup';
+/** The trip whose finale has already played in this page, so coming back to its page doesn't replay the fanfare. */
+let celebrated: number | null = null;
+/** A course run's result, handed to the page that follows it (a finished run ends by opening a fresh scene). */
+let handoff: { id: CourseId; outcome: Outcome } | null = null;
+const who = (player: number) => namerOf(couchStore.data.names)(player);
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', cls = '') => {
   const el = document.createElement(tag); el.textContent = text; el.className = cls; return el;
@@ -64,10 +73,20 @@ export class CouchScene extends Scene {
   private rows: HTMLElement[] = [];
   private narration = 0;
   private cardAge = 0;
+  private finaleStage: FinaleStage | null = null;
 
-  constructor(app: App, private readonly play = false) { super(app); }
+  /** The challenge course being played, while a run is on screen. */
+  private course: { spec: CourseSpec; info: CourseInfo; token: number; player: 0 | 1 } | null = null;
+  private readonly stats = node('small', '', 'couch-hud-stats');
+
+  constructor(app: App, private readonly play: boolean | CourseId = false) { super(app); }
+
+  /** Any key or click wakes the browser's audio; a controller button may not. */
+  private readonly wake = () => this.unlock();
 
   init() {
+    window.addEventListener('pointerdown', this.wake);
+    window.addEventListener('keydown', this.wake);
     this.overlay.setAttribute('aria-label', 'Couch play');
     document.body.append(this.overlay);
     this.introLayer.addChild(this.paper);
@@ -75,11 +94,12 @@ export class CouchScene extends Scene {
     this.ui.addChild(this.introLayer);
     this.input = new CouchInput(() => this.unlock(), () => this.pause('Window left — ready when you are.'));
     const selected = this.couch.data.party?.selected;
-    if (this.play && selected) this.begin(selected);
+    if (typeof this.play === 'string') { const result = handoff?.id === this.play ? handoff.outcome : null; handoff = null; this.courseHome(this.play, result); }
+    else if (this.play && selected) this.begin(selected);
     else this.menu();
   }
 
-  private go(play = false) { this.leaving = true; this.app.go.couch(play); }
+  private go(play: boolean | CourseId = false) { this.leaving = true; this.app.go.couch(play); }
   private leave() { this.leaving = true; this.app.go.start(); }
 
   private unlock() {
@@ -100,15 +120,24 @@ export class CouchScene extends Scene {
   }
 
   private shell(title: string, intro: string) {
+    this.closeFinale();
     this.overlay.className = 'couch'; this.overlay.replaceChildren();
     const sheet = node('div', '', 'couch-sheet');
     sheet.append(node('p', 'PUDDLE ISLAND · GROWN-UP PLAY', 'couch-eyebrow'), node('h1', title), node('p', intro, 'couch-intro'));
     this.overlay.append(sheet); return sheet;
   }
 
-  private footer(sheet: HTMLElement) {
-    sheet.append(this.status, this.warning, node('p', 'Menus: arrows / D-pad to choose · Enter / bottom face button to select · Esc / + to pause', 'couch-keys'));
-    const actions = node('div', '', 'couch-actions'); sheet.append(actions);
+  /** One compact row: the three grown-up buttons, and what the controllers are doing. It keeps a page short enough for a TV. */
+  private footer(sheet: HTMLElement, extra?: (actions: HTMLElement) => void, notes = true) {
+    const foot = node('div', '', 'couch-foot');
+    const actions = node('div', '', 'couch-actions');
+    foot.append(actions); sheet.append(foot);
+    if (notes) {
+      const note = node('div', '', 'couch-notes');
+      note.append(this.status, this.warning, node('p', 'Menus: arrows / D-pad to choose · Enter / bottom face button to select · Esc / + to pause', 'couch-keys'));
+      foot.append(note);
+    }
+    extra?.(actions);
     this.button(actions, 'Controller setup', () => this.setup());
     this.button(actions, 'Couch backup', () => this.backup());
     this.button(actions, 'Back to start', () => this.leave());
@@ -135,13 +164,6 @@ export class CouchScene extends Scene {
     return `${name}: ${who(0)}: ${a}, ${who(1)}: ${b} ${unit} · ${verdict} · ${kept}.`;
   }
 
-  /** How a finished face-off trip reads. Both players always light every lantern. */
-  private finale(p: Party) {
-    const [a, b] = tally(p);
-    if (a === b) return `It ended ${a} to ${b}: you both win the evening!`;
-    return `${who(a > b ? 0 : 1)} wins ${Math.max(a, b)} to ${Math.min(a, b)}, and you both lit all six lanterns!`;
-  }
-
   private startTrip(mode: TripMode) {
     this.couch.data.party = newParty(mode, randomSeed());
     this.couch.save(); this.menu();
@@ -150,14 +172,15 @@ export class CouchScene extends Scene {
   /** Together or face-off: the same six stops, with or without a winner at each. */
   private modeChoice() {
     this.screen = 'mode'; this.buttons = [];
-    const sheet = this.shell('How shall we play tonight?', 'Both trips have six stops and three choices at each. Take turns choosing, and pass a controller if you only have one.');
+    const sheet = this.shell('How shall we play tonight?', 'Both trips have six stops and three choices at each. Take turns choosing, and pass a controller if you only have one. Or take on a challenge.');
     const grid = node('div', '', 'couch-cards couch-modes'); sheet.append(grid);
-    const cards: [TripMode, string, string, string][] = [
+    const cards: [TripMode | 'course', string, string, string][] = [
       ['together', 'Together', 'Light the six lanterns as a team. Nobody wins or loses; finish a round, even with help, and the next lantern lights.', 'SHARED GOAL'],
       ['faceoff', 'Face-off', 'The same six stops, but each has a winner. Each of you plays your own fresh board. Ties and team games score for both.', 'A WINNER AT EACH STOP'],
+      ['course', 'Challenges', 'A fixed run in one game, scored by how few tries it takes. Beat your own best, and each other\'s.', 'A SCORE TO BEAT'],
     ];
     for (const [mode, title, text, tag] of cards) {
-      const b = this.button(grid, '', () => this.startTrip(mode), `couch-card couch-mode couch-mode-${mode}`);
+      const b = this.button(grid, '', () => mode === 'course' ? this.courseMenu() : this.startTrip(mode), `couch-card couch-mode couch-mode-${mode}`);
       b.dataset.mode = mode;
       b.append(node('strong', title), node('span', text), node('small', tag));
     }
@@ -172,43 +195,248 @@ export class CouchScene extends Scene {
     if (!p) {
       const sheet = this.shell('An evening on the island', 'Six rounds. Three choices each time. Take turns choosing, pass a controller, or play the paddles together. Play together, or face off for a winner at each stop.');
       this.button(sheet, 'Start a couch trip', () => this.modeChoice(), 'couch-primary');
+      this.button(sheet, 'Challenges', () => this.courseMenu());
       sheet.append(node('p', 'Keyboard works now. Original Switch Pro Controllers can be paired with your Mac later. Couch stickers and trips have their own save.', 'couch-intro'));
+      const kept = this.couch.data.keepsake;
+      if (kept) sheet.append(this.keepsakeCard(kept.at));
       this.footer(sheet); return;
     }
+    if (p.rounds.length === STOPS) return this.finale(p);
     const faceoff = p.mode === 'faceoff';
-    const done = p.rounds.length === STOPS;
     const last = p.rounds.at(-1);
     const [a, b] = tally(p);
-    const sheet = this.shell(done ? 'Six lanterns lit!' : `Choose stop ${p.rounds.length + 1} of ${STOPS}`, done ? (faceoff ? this.finale(p) : 'You made a whole trip together. Stay here, stop for the evening, or set out again.') : `${who(starterOf(p))} chooses. Both of you can help. Finish a round to light the next lantern.`);
+    const sheet = this.shell(`Choose stop ${p.rounds.length + 1} of ${STOPS}`, `${who(starterOf(p))} chooses. Both of you can help. Finish a round to light the next lantern.`);
     const progress = node('div', '', 'couch-lanterns');
     progress.setAttribute('aria-label', `${p.rounds.length} of ${STOPS} lanterns lit`);
     for (let i = 0; i < STOPS; i++) progress.append(node('span', String(i + 1), i < p.rounds.length ? 'lit' : ''));
-    sheet.append(progress);
+    // The lanterns sit beside the title, which keeps the chooser short enough for a 1080p TV.
+    const heading = sheet.querySelector('h1')!, row = node('div', '', 'couch-title-row');
+    heading.replaceWith(row); row.append(heading, progress);
     if (faceoff && p.rounds.length) sheet.append(node('p', `Face-off: ${who(0)}: ${a} · ${who(1)}: ${b}`, 'couch-tally'));
     if (last) sheet.append(node('p', this.resultLine(last, p), 'couch-result'));
     if (p.selected) this.button(sheet, `Resume ${gameById(p.selected)!.name}${p.turn ? ` · ${who(playerNow(p))}’s turn` : ''}`, () => this.go(true), 'couch-primary');
-    if (done) {
-      const trips = this.couch.data.trips;
-      sheet.append(node('p', `${plural(trips, 'completed trip')} · ${Object.values(this.couch.data.stickers).reduce((n, s) => n + (s?.count ?? 0), 0)} couch stickers kept`, 'couch-intro'));
-      // Finishing a trip opens the next tier: say which games, and how many more are still to come.
-      const fresh = (UNLOCK_TIERS[trips] ?? []).filter(id => !this.couch.data.seen.includes(id));
-      if (fresh.length) sheet.append(node('p', `New games are open: ${fresh.map(id => gameById(id)!.name).join(', ')}. Look for NEW on their cards.`, 'couch-unlocked'));
-      const next = nextTier(trips);
-      if (next) sheet.append(node('p', `Finish another trip to open ${plural(next.length, 'more game')}.`, 'couch-teaser'));
-      this.button(sheet, 'Start another trip', () => { this.couch.data.party = null; this.modeChoice(); }, 'couch-primary');
-    } else {
-      const grid = node('div', '', 'couch-cards'); sheet.append(grid);
-      for (const id of offers(p, this.couch.data.trips)) {
-        const mod = gameById(id)!, info = COUCH_INFO[id];
-        const bt = this.button(grid, '', () => { p.selected = id; this.couch.save(); this.go(true); }, `couch-card couch-card-${id}`);
-        bt.dataset.game = id;
-        bt.append(this.iconCanvas(mod), node('strong', mod.name), node('span', info.tagline), node('small', this.playLabel(info)));
-        if (isNew(this.couch.data, id)) bt.append(node('em', 'NEW', 'couch-new'));
-      }
-      if (unlockedIds(this.couch.data.trips).length > 3) this.button(sheet, 'Shuffle the choices', () => { reshuffle(p); this.couch.save(); this.menu(); });
+    const grid = node('div', '', 'couch-cards'); sheet.append(grid);
+    for (const id of offers(p, this.couch.data.trips)) {
+      const mod = gameById(id)!, info = COUCH_INFO[id];
+      const bt = this.button(grid, '', () => { p.selected = id; this.couch.save(); this.go(true); }, `couch-card couch-card-${id}`);
+      bt.dataset.game = id;
+      bt.append(this.iconCanvas(mod), node('strong', mod.name), node('span', info.tagline), node('small', this.playLabel(info)));
+      if (isNew(this.couch.data, id)) bt.append(node('em', 'NEW', 'couch-new'));
     }
-    this.footer(sheet);
-    if (last) void voice.say(done ? 'couch.done' : 'couch.next');
+    const shuffle = unlockedIds(this.couch.data.trips).length > 3;
+    this.footer(sheet, actions => {
+      if (shuffle) this.button(actions, 'Shuffle the choices', () => { reshuffle(p); this.couch.save(); this.menu(); });
+      this.button(actions, 'Challenges', () => this.courseMenu());
+    });
+    if (last) void voice.say('couch.next');
+  }
+
+  /** The pet, drawn once into a canvas for the DOM screens. */
+  private petCanvas(resolution = 1.5) {
+    const pet = makePet();
+    const canvas = this.app.renderer.extract.canvas({ target: pet, resolution }) as HTMLCanvasElement;
+    canvas.setAttribute('aria-hidden', 'true'); pet.destroy({ children: true });
+    return canvas;
+  }
+
+  /** "Lantern Night", kept from the first finished trip: six lanterns over the night sky, with the pet who came along. */
+  private keepsakeCard(at: number, fresh = false) {
+    const card = node('figure', '', `couch-keepsake${fresh ? ' fresh' : ''}`);
+    const sky = node('div', '', 'couch-keepsake-sky');
+    const row = node('div', '', 'couch-mini-lanterns');
+    for (let i = 0; i < STOPS; i++) row.append(node('i'));
+    sky.append(row, this.petCanvas());
+    const when = at ? new Date(at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const caption = node('figcaption');
+    caption.append(node('small', fresh ? 'NEW KEEPSAKE' : 'KEEPSAKE'), node('strong', 'Lantern Night'), node('span', when ? `Our first trip · ${when}` : 'Our first trip'));
+    card.append(sky, caption);
+    return card;
+  }
+
+  private closeFinale() {
+    this.finaleStage?.destroy();
+    this.finaleStage = null;
+  }
+
+  /** The end of a trip: a night sky, six lanterns lit in the color of whoever took each stop, and what the trip opened. */
+  private finale(p: Party) {
+    const f: Finale = finaleOf(this.couch.data)!;
+    const save = this.couch.data;
+    const first = celebrated !== p.seed;
+    celebrated = p.seed;
+    const sheet = this.shell('Six lanterns lit!', f.verdict);
+    this.overlay.classList.add('couch-finale-open');
+    sheet.classList.add('couch-finale');
+    // The title sits on glass so lanterns floating behind it never hide a word.
+    const head = node('div', '', 'couch-head couch-glass');
+    head.append(...Array.from(sheet.children)); sheet.append(head);
+    const stage = new FinaleStage(this.view, f.stops.map(stop => stop.owner));
+    this.content.addChild(stage);
+    this.finaleStage = stage;
+    if (first) stage.celebrate(); else stage.settle();
+
+    // The first time, the lanterns have the sky to themselves for a moment before the page fades in.
+    const grid = node('div', '', `couch-finale-grid${first ? ' couch-reveal' : ''}`); sheet.append(grid);
+    const main = node('div', '', 'couch-glass'), aside = node('div', '', 'couch-glass couch-aside');
+    grid.append(main, aside);
+
+    if (f.faceoff) {
+      const score = node('div', '', 'couch-score');
+      score.setAttribute('aria-label', `Face-off: ${who(0)} ${f.score[0]}, ${who(1)} ${f.score[1]}`);
+      for (const side of [0, 1] as const) {
+        const box = node('div', '', `couch-score-side side-${side}${f.lead === side ? ' lead' : ''}`);
+        box.append(node('small', f.lead === side ? `${who(side)} · ahead` : who(side)), node('b', String(f.score[side])));
+        score.append(box);
+        if (side === 0) score.append(node('span', '–'));
+      }
+      main.append(score);
+    }
+    const recap = node('ol', '', 'couch-recap');
+    f.stops.forEach((stop, i) => {
+      const mod = gameById(stop.id)!;
+      const li = node('li', '', `couch-stop owner-${stop.owner}`);
+      const label = node('span');
+      label.append(node('strong', mod.name), node('small', `${stopLabel(stop, f.faceoff, who)}${stop.helped ? ' · with help' : ''}`));
+      li.append(node('b', String(i + 1)), this.iconCanvas(mod, 1), label);
+      recap.append(li);
+    });
+    main.append(recap);
+    const last = p.rounds.at(-1);
+    if (last) main.append(node('p', this.resultLine(last, p), 'couch-result'));
+
+    // A keepsake the first time a trip is finished, and the games it opened.
+    if (save.keepsake && save.trips === 1) aside.append(this.keepsakeCard(save.keepsake.at, true));
+    aside.append(node('p', `${plural(save.trips, 'completed trip')} · ${Object.values(save.stickers).reduce((n, v) => n + (v?.count ?? 0), 0)} couch stickers kept`, 'couch-totals'));
+    const fresh = f.opened.filter(id => !save.seen.includes(id));
+    if (fresh.length) {
+      aside.append(node('p', `New games are open: ${fresh.map(id => gameById(id)!.name).join(', ')}. Look for NEW on their cards.`, 'couch-unlocked'));
+      const icons = node('div', '', 'couch-opened');
+      for (const id of fresh) { const chip = node('div'); chip.title = gameById(id)!.name; chip.append(this.iconCanvas(gameById(id)!, 1)); icons.append(chip); }
+      aside.append(icons);
+    }
+    if (f.next) aside.append(node('p', `Finish another trip to open ${plural(f.next, 'more game')}.`, 'couch-teaser'));
+
+    const again = this.button(sheet, 'Start another trip', () => { this.couch.data.party = null; this.modeChoice(); }, 'couch-primary');
+    if (first) again.classList.add('couch-reveal');
+    this.footer(sheet, actions => { this.button(actions, 'Challenges', () => this.courseMenu()); }, false);
+    if (first) sheet.querySelector('.couch-foot')?.classList.add('couch-reveal');
+    if (first) {
+      void voice.say('couch.done').then(() => { if (!this.gone && !this.leaving && save.keepsake && save.trips === 1) void voice.say('couch.keepsake'); });
+    }
+  }
+
+  /** One player's marks on the course: their bests in each support category, runs, and which badges they hold. */
+  private playerCard(info: CourseInfo, player: 0 | 1, rec: PlayerRecord, outcome: Outcome | null) {
+    const card = node('section', '', `couch-player side-${player}${outcome?.player === player ? ' played' : ''}`);
+    card.append(node('h2', who(player)));
+    const list = node('dl');
+    const row = (name: string, value: string) => { list.append(node('dt', name), node('dd', value)); };
+    row('Best, no help', rec.clean === null ? 'not yet' : countOf(info, rec.clean));
+    row('Best, with help', rec.assisted === null ? 'not yet' : countOf(info, rec.assisted));
+    row('Runs finished', String(rec.runs));
+    card.append(list);
+    const badges = node('ul', '', 'couch-badges');
+    for (const badge of BADGES) {
+      const text = info.badges[badge], earned = rec.badges.includes(badge);
+      const li = node('li', '', earned ? 'earned' : '');
+      li.append(node('strong', text.title), node('small', earned ? 'earned' : text.how));
+      badges.append(li);
+    }
+    card.append(badges);
+    return card;
+  }
+
+  /** What the run just finished came to: the total against the minimum, the best, new badges, and the tries on each part. */
+  private outcomePanel(info: CourseInfo, o: Outcome) {
+    const panel = node('div', '', 'couch-outcome');
+    const mine = who(o.player), kind = o.assisted ? 'with help' : 'no help';
+    const big = node('p', '', 'couch-big');
+    big.append(node('b', String(o.total)), document.createTextNode(` ${o.total === 1 ? info.unit : unitsOf(info)}`));
+    const line = o.total <= o.minimum ? `The fewest ${unitsOf(info)} possible: perfect!`
+      : o.previous === null ? `Your first finish (${kind}). That is your mark to beat.`
+      : o.improved ? `A new best (${kind})! It was ${o.previous}.`
+      : `Your best (${kind}) is still ${o.previous}.`;
+    panel.append(big, node('p', `${mine} · course minimum ${o.minimum}. ${line}`, 'couch-outcome-line'));
+    const earned = o.earned.map(b => info.badges[b].title);
+    if (earned.length) { const tag = node('p', '', 'couch-new-badges'); tag.append(node('em', 'NEW BADGE'), document.createTextNode(` ${earned.join(' and ')}`)); panel.append(tag); }
+    const parts = node('ol', '', 'couch-pond-scores');
+    const cap = info.part[0].toUpperCase() + info.part.slice(1);
+    o.boards.forEach((n, i) => parts.append(node('li', `${cap} ${i + 1}: ${countOf(info, n)}${info.par ? ` · ${info.par} ${info.best[i]}` : ''}`, n <= info.best[i] ? 'perfect' : '')));
+    panel.append(parts);
+    return panel;
+  }
+
+  /** The challenges on offer, each with both players' marks. */
+  private courseMenu() {
+    this.screen = 'courses'; this.buttons = [];
+    const sheet = this.shell('Challenges', 'A fixed run in one game, scored by how few tries it takes. Every player keeps their own best, and a hint is always allowed: it just goes in its own column.');
+    const grid = node('div', '', 'couch-cards couch-courses'); sheet.append(grid);
+    for (const id of COURSE_IDS) {
+      const info = courseInfo(id), mod = gameById(info.game)!, saved = this.couch.data.courses[id];
+      const b = this.button(grid, '', () => this.courseHome(id), `couch-card couch-course-card couch-course-${id}`);
+      b.dataset.course = id;
+      const marks = [0, 1].map(p => { const best = saved?.players[p].clean ?? saved?.players[p].assisted ?? null; return `${who(p)}: ${best === null ? 'no finish yet' : `${best}${saved?.players[p].clean === null ? ' with help' : ''}`}`; }).join(' · ');
+      b.append(this.iconCanvas(mod), node('strong', info.name), node('span', info.card), node('small', marks));
+      if (saved?.run) b.append(node('em', 'IN PROGRESS', 'couch-new'));
+    }
+    this.button(sheet, 'Back to couch play', () => this.menu());
+    this.focusButtons();
+  }
+
+  /** The course page: both players' records, the rules of the score, and a way in (or back into a run left halfway). */
+  private courseHome(id: CourseId, outcome: Outcome | null = null) {
+    this.screen = 'course'; this.buttons = [];
+    const info = courseInfo(id), spec = courseSpec(id);
+    const saved = this.couch.data.courses[id] ?? courseDefaults(spec);
+    const run = saved.run;
+    const sheet = this.shell(info.name, outcome ? info.rule : `${info.blurb} The fewest ${unitsOf(info)} the whole course can take is ${spec.minimum}.`);
+    sheet.classList.add('couch-course');
+    const progress = node('div', '', 'couch-lanterns');
+    const finished = outcome ? spec.boards : run?.slides.length ?? 0;
+    progress.setAttribute('aria-label', `${finished} of ${spec.boards} ${info.part}s finished`);
+    for (let i = 0; i < spec.boards; i++) progress.append(node('span', String(i + 1), i < finished ? 'lit' : ''));
+    const heading = sheet.querySelector('h1')!, row = node('div', '', 'couch-title-row');
+    heading.replaceWith(row); row.append(heading, progress);
+    if (outcome) sheet.append(this.outcomePanel(info, outcome));
+    const players = node('div', '', 'couch-players'); sheet.append(players);
+    for (const player of [0, 1] as const) players.append(this.playerCard(info, player, saved.players[player], outcome));
+    if (!outcome) sheet.append(node('p', info.note, 'couch-keys'));
+    const actions = node('div', '', 'couch-actions'); sheet.append(actions);
+    if (run) {
+      this.button(actions, `Resume · ${who(run.player)} · ${info.part} ${Math.min(run.slides.length + 1, spec.boards)} of ${spec.boards}`, () => this.launchCourse(id, run.player, true), 'couch-primary');
+      this.button(actions, 'Start a fresh run', () => this.launchCourse(id, run.player));
+    } else {
+      const next = outcome ? outcome.player : 0;
+      this.button(actions, `${who(next)} plays`, () => this.launchCourse(id, next), 'couch-primary');
+      this.button(actions, `${who(next === 0 ? 1 : 0)} plays`, () => this.launchCourse(id, next === 0 ? 1 : 0));
+    }
+    this.button(actions, 'All challenges', () => this.courseMenu());
+    this.focusButtons();
+    if (outcome) {
+      sfx.tada();
+      void voice.say(outcome.improved ? 'couch.course.best' : info.done);
+    }
+  }
+
+  /** Start (or resume) a run for a player. The first time the course's game is chosen, its how-to comes first. */
+  private launchCourse(id: CourseId, player: 0 | 1, resume = false) {
+    const spec = courseSpec(id), info = courseInfo(id);
+    const course = courseOf(this.couch.data, spec);
+    if (!resume || !course.run) startRun(course, player, randomSeed());
+    this.couch.save();
+    this.course = { spec, info, token: course.run!.token, player: course.run!.player };
+    if (this.couch.data.seen.includes(spec.game)) this.startGame();
+    else this.intro(spec.game, 'first');
+  }
+
+  /** Keep a run's numbers as the game reports them, and show them on the HUD. */
+  private courseProgress(p: CourseProgress) {
+    const run = this.course;
+    if (!run || this.gone) return;
+    noteProgress(courseOf(this.couch.data, run.spec), run.spec, run.token, { slides: p.done, attempts: p.attempts, assisted: p.assisted });
+    this.couch.save();
+    const total = p.done.reduce((n, s) => n + s, 0) + p.attempts, info = run.info, cap = info.part[0].toUpperCase() + info.part.slice(1);
+    this.stats.textContent = `${cap} ${Math.min(p.board + 1, p.boards)} of ${p.boards} · ${countOf(info, total)} so far${info.par ? ` · this ${info.part}'s ${info.par} ${p.par}` : ''} · course minimum ${p.minimum}${p.assisted ? ' · helped' : ''}`;
   }
 
   /** A chosen game: explain it the first time, then just introduce it by name. */
@@ -311,6 +539,7 @@ export class CouchScene extends Scene {
   /** Changed their mind: the game goes back to being unchosen. */
   private backFromIntro() {
     this.closeIntro(); this.narration++; voice.stop();
+    if (this.course) { const id = this.course.spec.id; this.course = null; this.go(id); return; }
     this.couch.data.party!.selected = null; this.couch.save(); this.go();
   }
 
@@ -343,13 +572,17 @@ export class CouchScene extends Scene {
   }
 
   private startGame() {
-    const party = this.couch.data.party!, id = party.selected!, mod = gameById(id)!, info = COUCH_INFO[id];
-    this.token = roundToken(party); this.screen = 'game';
+    const course = this.course, party = this.couch.data.party;
+    const id: CouchId = course ? course.spec.game : party!.selected!, mod = gameById(id)!, info = COUCH_INFO[id];
+    this.token = course ? '' : roundToken(party!); this.screen = 'game';
     this.overlay.replaceChildren();
     this.overlay.className = 'couch couch-playing';
     const hud = node('div', '', 'couch-hud');
-    const turnOf = party.mode === 'faceoff' && info.faceoff === 'twin' ? ` · ${who(playerNow(party))}` : '';
-    hud.append(node('strong', `${mod.name} · ${party.rounds.length + 1}/${STOPS}${turnOf}`), this.caption);
+    const turnOf = party && party.mode === 'faceoff' && info.faceoff === 'twin' ? ` · ${who(playerNow(party))}` : '';
+    const title = node('div');
+    title.append(node('strong', course ? `${course.info.name} · ${who(course.player)}` : `${mod.name} · ${party!.rounds.length + 1}/${STOPS}${turnOf}`));
+    if (course) { this.stats.textContent = ''; title.append(this.stats); }
+    hud.append(title, this.caption);
     this.button(hud, 'Pause / + / Esc', () => this.pause());
     const help = node('div', '', 'couch-game-help');
     for (const row of info.controls) {
@@ -362,7 +595,10 @@ export class CouchScene extends Scene {
     this.pet.position.set(74, this.view.h - 18);
     // The couch versions of lines that tell a touch player to tap or pull.
     const speak = (line: LineId) => couchLine(id, line);
-    this.game = mod.create({ stage: this.stage, view: this.view, level: levelFor(id, party.rounds.length), band: info.band, couch: { versus: party.mode === 'faceoff' && info.faceoff === 'shared' }, rng: new Rng(seedFor(party, party.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, petSpec: petSpec(), childName: 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
+    const run = course && courseOf(this.couch.data, course.spec).run;
+    const resume = { board: run?.slides.length ?? 0, done: run?.slides.slice() ?? [], attempts: run?.attempts ?? 0, assisted: run?.assisted ?? false };
+    const couch = course ? { versus: false, course: { id: course.spec.id, resume, progress: (p: CourseProgress) => this.courseProgress(p) } } : { versus: party!.mode === 'faceoff' && info.faceoff === 'shared' };
+    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, petSpec: petSpec(), childName: 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
       instruct: (line, vars) => { const said = speak(line); this.instruction = { id: said, vars }; this.caption.textContent = voice.line(said, vars); return this.whileHere(voice.say(said, vars)); },
       say: (line, vars) => this.whileHere(voice.say(speak(line), vars)), finish: result => this.finish(result),
     });
@@ -373,7 +609,7 @@ export class CouchScene extends Scene {
 
   resize(v: View) {
     this.game?.resize(v); this.pet.position.set(74, v.h - 18);
-    this.drawPaper(v);
+    this.drawPaper(v); this.finaleStage?.resize(v);
   }
 
   private whileHere(spoken: Promise<void>): Promise<void> {
@@ -386,6 +622,13 @@ export class CouchScene extends Scene {
   private finish(result: RoundResult) {
     if (this.gone || this.leaving || this.settled) return;
     if (this.paused) { this.deferred.push(() => this.finish(result)); return; }
+    if (this.course) {
+      // A finished run is one round: one sticker, the records, and then its result on the course page.
+      const outcome = completeCourse(this.couch.data, this.course.spec, this.course.token);
+      if (!outcome) return;
+      this.settled = true; this.couch.save(); handoff = { id: this.course.spec.id, outcome }; this.go(this.course.spec.id);
+      return;
+    }
     const settled = completeRound(this.couch.data, this.token, result);
     if (!settled) return;
     // The first player's turn on a face-off stop leads straight to the second player's.
@@ -400,21 +643,22 @@ export class CouchScene extends Scene {
 
   private pauseSheet(reason: string) {
     this.screen = 'pause';
-    const id = this.couch.data.party!.selected!;
+    const id: CouchId = this.course ? this.course.spec.game : this.couch.data.party!.selected!;
     this.modal = node('div', '', 'couch-modal'); const sheet = node('div', '', 'couch-sheet'); this.modal.append(sheet);
     sheet.append(node('h1', 'Paused'), node('p', reason, 'couch-intro'), this.status, this.warning);
     this.button(sheet, 'Resume round', () => this.resume(), 'couch-primary');
     this.button(sheet, 'How to play', () => this.intro(id, 'pause'));
     this.button(sheet, 'Repeat instruction', () => { if (this.instruction) void voice.say(this.instruction.id, this.instruction.vars); });
-    this.button(sheet, 'Choose a different game', () => { this.couch.data.party!.selected = null; this.couch.save(); this.go(); });
+    if (this.course) { const id = this.course.spec.id; this.button(sheet, 'Back to the course page', () => this.go(id)); }
+    else this.button(sheet, 'Choose a different game', () => { this.couch.data.party!.selected = null; this.couch.save(); this.go(); });
     this.button(sheet, 'Save and return to start', () => this.leave());
-    sheet.append(node('p', 'Leaving or refreshing restarts this unfinished round from the same seed. Completed lanterns and stickers stay saved.', 'couch-keys'));
+    sheet.append(node('p', this.course ? this.course.info.leaving : 'Leaving or refreshing restarts this unfinished round from the same seed. Completed lanterns and stickers stay saved.', 'couch-keys'));
     this.overlay.append(this.modal); this.focusButtons(this.modal);
   }
 
   private resume() {
     this.paused = false; this.screen = 'game'; this.modal?.remove(); this.modal = null; this.buttons = [];
-    music.play(gameById(this.couch.data.party!.selected!)!.music);
+    music.play(gameById(this.course ? this.course.spec.game : this.couch.data.party!.selected!)!.music);
     const pending = this.deferred.splice(0); pending.forEach(resolve => resolve());
   }
 
@@ -424,6 +668,20 @@ export class CouchScene extends Scene {
     sheet.append(node('p', 'Pro Controller: SYNC is beside the USB-C port. Joy-Con: detach it and use SYNC on the inner rail; pair each half separately. Browser exposure varies. This prototype accepts the browser’s standard mapping; separate or unmapped Joy-Cons are not yet supported.', 'couch-intro'), this.status,
       node('p', 'Focus this browser tab and press a controller button. The first controller is Player 1 (blue paddle), the second is Player 2 (pink paddle). Printed Nintendo letters may differ: confirm is the bottom face button, undo is the left face button, pause is +. Release sticks between menu moves.', 'couch-intro'),
       node('p', 'Keyboard: arrows + Enter for Player 1; W/S joins Player 2 in Bounce Back. Backspace undoes a slide. Esc pauses. If sound is quiet, press a keyboard key or click once to enable browser audio. Connect the Mac to a TV and use full screen when ready.', 'couch-intro'));
+    // Names are typed on a keyboard, once; the couch itself never needs one.
+    const names = node('div', '', 'couch-names');
+    names.append(node('p', 'Names (optional): who is playing? They replace Player 1 and Player 2 on every screen.', 'couch-intro'));
+    for (const player of [0, 1] as const) {
+      const row = node('label');
+      const input = node('input');
+      input.type = 'text'; input.maxLength = NAME_MAX; input.placeholder = `Player ${player + 1}`; input.autocomplete = 'off'; input.spellcheck = false;
+      input.value = this.couch.data.names[player]; input.dataset.player = String(player);
+      input.setAttribute('aria-label', `Player ${player + 1}’s name`);
+      input.oninput = () => { this.couch.data.names[player] = cleanName(input.value); this.couch.save(); };
+      row.append(node('span', `Player ${player + 1}`), input);
+      names.append(row);
+    }
+    sheet.append(names);
     this.button(sheet, 'Back to couch play', () => this.menu(), 'couch-primary'); this.focusButtons();
   }
 
@@ -441,7 +699,7 @@ export class CouchScene extends Scene {
         if (file.size > 50000) throw new Error('too large');
         const raw = JSON.parse(await file.text());
         if (this.gone) return;
-        if ((raw?.version !== 1 && raw?.version !== 2) || !('stickers' in raw) || !('party' in raw)) throw new Error('wrong backup');
+        if (![1, 2, 3].includes(raw?.version) || !('stickers' in raw) || !('party' in raw)) throw new Error('wrong backup');
         this.couch.data = repairCouch(raw); this.couch.save(); this.menu();
       } catch { if (!this.gone) this.warning.textContent = 'That was not a valid couch backup. Your current progress is unchanged.'; }
     };
@@ -450,12 +708,15 @@ export class CouchScene extends Scene {
   }
 
   update(dt: number) {
-    const input = this.input.poll(); this.status.textContent = input.status;
+    const input = this.input.poll();
+    const quiet = !audio.ctx || audio.ctx.state !== 'running';
+    this.status.textContent = input.status + (quiet ? ' · Sound is off: press any key or click once' : '');
     this.age += dt;
     if (this.leaving || this.age < 0.35) return;
     if (this.couch.warning) this.warning.textContent = this.couch.warning;
     if (input.disconnected) this.pause('Controller disconnected. Reconnect it, or resume using the keyboard.');
     if (this.screen === 'intro' || this.screen === 'howto') this.tickDemo(dt);
+    this.finaleStage?.update(dt);
     if (this.screen === 'card') {
       this.cardAge += dt;
       const id = this.couch.data.party?.selected;
@@ -485,7 +746,8 @@ export class CouchScene extends Scene {
   }
 
   destroy() {
-    this.gone = true; this.deferred = []; this.input.destroy(); this.demo?.destroy(); this.game?.destroy();
+    window.removeEventListener('pointerdown', this.wake); window.removeEventListener('keydown', this.wake);
+    this.gone = true; this.deferred = []; this.input.destroy(); this.demo?.destroy(); this.game?.destroy(); this.closeFinale();
     this.overlay.remove(); voice.stop(); music.stop(); super.destroy();
   }
 }

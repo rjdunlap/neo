@@ -13,7 +13,7 @@ Decisions made while building the competitive part, following the equal-informat
 - Cooperative games (Bounce Back, Rhythm Neighbors, Bumper Garden) are **team stops** that score for both players. Ties also score for both. The trip never shows a loser, and every lantern still lights.
 - A stop gives one couch sticker, not one per turn. The first turn of a two-turn stop is saved, so leaving and reloading between turns does not repeat or lose it.
 
-Not built: a party finale and keepsake, a shared scoring contract across more than two scored games, simultaneous face-off, and any Switch route. Real controllers and a TV have not been tried.
+Built since: a **finale** (a night sky with six lanterns lit in the color of whoever took each stop, a scoreboard, a recap, and the games the trip opened) and the one known **keepsake**, Lantern Night, from the first finished trip. Not built: a shared scoring contract across more than two scored games, simultaneous face-off, and any Switch route. Real controllers and a TV have not been tried.
 
 ## Recommended next slice: choose the next stop
 

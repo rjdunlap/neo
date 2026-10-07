@@ -9,10 +9,12 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
+import { courseBoards, courseMinimum, isPondCourse } from './course';
 import { eaten, HINT_AFTER, makePuzzle, planFor, slide, solve, type Cell, type Dir, type SlidePlan, type SlidePuzzle } from './logic';
 
 const LEVELS: BandLevels = {
@@ -88,10 +90,26 @@ class PenguinSlide implements Game {
   private view: View;
   private clock = 0;
   private botWait = 0.8;
+  /** Couch challenge course: fixed ponds in a row. Null in ordinary play, where boards are generated. */
+  private readonly course: { boards: SlidePuzzle[]; minimum: number } | null;
+  /** Slides taken on each finished pond, undone ones included. */
+  private done: number[] = [];
+  /** Slides already spent on the pond we are resuming, so leaving and coming back cannot erase them. */
+  private carry = 0;
+  private assisted = false;
+  private told = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    const run = ctx.couch?.course;
+    if (run && isPondCourse(run.id)) {
+      this.course = { boards: courseBoards(run.id), minimum: courseMinimum(run.id) };
+      this.index = run.resume.board - 1;
+      this.done = run.resume.done.slice();
+      this.carry = run.resume.attempts;
+      this.assisted = run.resume.assisted;
+    } else this.course = null;
     this.arrow.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.penguin.eventMode = 'none';
@@ -152,11 +170,12 @@ class PenguinSlide implements Game {
   private async next() {
     this.busy = true;
     this.index++;
-    if (this.index >= this.plan.puzzles) return void this.finale();
-    this.puzzle = makePuzzle(this.plan, this.ctx.rng);
+    if (this.index >= (this.course?.boards.length ?? this.plan.puzzles)) return void this.finale();
+    this.puzzle = this.course ? this.course.boards[this.index] : makePuzzle(this.plan, this.ctx.rng);
     this.at = { ...this.puzzle.start };
     this.have = 0;
-    this.moves = 0;
+    this.moves = this.carry;
+    this.carry = 0;
     this.history = [];
     this.hinting = false;
     this.stuck = false;
@@ -165,6 +184,13 @@ class PenguinSlide implements Game {
     this.board.alpha = 0;
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
+    this.checkHelp();
+    this.report();
+    if (this.course) {
+      if (this.told) return;
+      this.told = true;
+      return this.ctx.instruct('slide.go');
+    }
     if (this.index > 0) return;
     if (this.plan.soft) return this.ctx.instruct('slide.soft');
     if (this.plan.fish === 2) return this.ctx.instruct('slide.two');
@@ -222,6 +248,7 @@ class PenguinSlide implements Game {
     this.busy = true;
     this.history.push({ at: this.at, have: this.have });
     this.moves++;
+    this.report();
     sfx.whoosh();
     this.penguin.rotation = [0.3, 0, -0.3, 0][dir];
     const end = this.at2(to);
@@ -266,8 +293,39 @@ class PenguinSlide implements Game {
     if (!this.hinting && this.moves > this.puzzle.best + HINT_AFTER) {
       this.hinting = true;
       this.hints++;
+      this.assisted = true;
+      this.report();
       if (!this.stuck) void this.ctx.say('slide.hint');
     }
+  }
+
+  /** Hand a course's numbers to the shell. `finished` means the pond just ended, so none of its slides are "in progress". */
+  private report(finished = false) {
+    const run = this.ctx.couch?.course;
+    if (!run || !this.course) return;
+    run.progress({
+      board: this.index,
+      boards: this.course.boards.length,
+      done: this.done.slice(),
+      attempts: finished ? 0 : this.moves,
+      par: this.puzzle.best,
+      minimum: this.course.minimum,
+      assisted: this.assisted,
+    });
+  }
+
+  /** The score for the pond just finished, over the board for a moment: the slides taken, and the best route. */
+  private async pondScore() {
+    const best = this.puzzle.best, total = this.course!.boards.length;
+    const text = this.moves === best ? `Pond ${this.index + 1} of ${total}: ${this.moves} slides, a perfect route!` : `Pond ${this.index + 1} of ${total}: ${this.moves} slides (best route ${best})`;
+    const note = label(text, 36, ink);
+    note.position.set(this.board.x + (this.puzzle.cols * CELL) / 2, Math.max(52, this.board.y - 50));
+    note.alpha = 0;
+    this.ctx.stage.addChild(note);
+    await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.wait(1.1);
+    await this.ctx.tw.to(note, { alpha: 0 }, { duration: 0.25 });
+    note.destroy();
   }
 
   private drawArrow() {
@@ -288,13 +346,19 @@ class PenguinSlide implements Game {
     this.busy = true;
     // Every successful slide counts, including ones later undone; blocked bumps and undo do not.
     this.excess += Math.max(0, this.moves - this.puzzle.best);
+    if (this.course) {
+      this.done.push(this.moves);
+      this.report(true);
+    }
     this.hinting = false;
     this.stuck = false;
     sfx.sparkle();
     this.ctx.pet.cheer();
     await this.ctx.tw.to(this.penguin.scale, { x: 1.25, y: 1.25 }, { duration: 0.2, ease: ease.outBack });
     await this.ctx.tw.to(this.penguin.scale, { x: 1, y: 1 }, { duration: 0.2 });
-    await this.ctx.say('praise');
+    // A course moves straight on after a short score; ordinary play praises, and the pet speaks.
+    if (this.course) await this.pondScore();
+    else await this.ctx.say('praise');
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
     await this.next();
   }

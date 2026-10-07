@@ -9,6 +9,7 @@ import type { Scene } from './Scene';
 import { session } from './session';
 import type { Band } from '../progress/bands';
 import type { PicnicStep } from '../content/world';
+import type { CourseId } from '../couch/courses';
 
 /** A game round played as one Windy Picnic request: at the story's level, coming home to the picnic. */
 export interface StoryRound {
@@ -18,8 +19,11 @@ export interface StoryRound {
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
-  /** Adult couch trip, with its own save and selected controller-supported games. */
-  couch(play?: boolean): void;
+  /**
+   * Adult couch play, with its own save and controller-supported games. `true` resumes the trip's chosen
+   * game; a course id opens that challenge's page.
+   */
+  couch(play?: boolean | CourseId): void;
   start(): void;
   /** The island map: the age trail. */
   hub(): void;
@@ -99,6 +103,8 @@ export class App {
   private applyView() {
     this.view = computeView(window.innerWidth, window.innerHeight);
     this.root.scale.set(this.view.scale);
+    // Grown-up DOM screens (couch play) grow with the window so they stay readable from a couch.
+    document.documentElement.style.setProperty('--u', String(Math.min(2.2, Math.max(1, this.view.scale))));
     this.curtain.clear().rect(0, 0, window.innerWidth, window.innerHeight).fill(cream);
     this.scene?.resize(this.view);
   }
