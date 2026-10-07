@@ -12,6 +12,7 @@ import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule } from '../types';
 import {
+  aloneSide,
   downSide,
   FRIEND_FOR,
   makeRounds,
@@ -26,6 +27,7 @@ import {
   type SeesawRound,
   type Side,
   type Thing,
+  type ThingKind,
 } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -33,7 +35,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 7 },
-  school: { min: 6, max: 7 },
+  school: { min: 6, max: 9 },
 };
 
 /** From the middle of the seesaw to each tray's post. */
@@ -190,6 +192,11 @@ class SeesawBalance implements Game {
   finished = false;
   /** How far the plank leans now, and how fast it is turning. */
   angle = 0;
+  /** Take-the-same-off levels: changes in a row that left it tipped (an experiment, not a miss). */
+  tips = 0;
+  /** The thing that glows to help after two tips. */
+  hintItem: Item | null = null;
+  private lastOff: { item: Item; from: Side } | null = null;
   private spin = 0;
 
   private readonly backdrop: Backdrop;
@@ -355,8 +362,10 @@ class SeesawBalance implements Game {
 
   private drawGlow() {
     const g = this.glow.clear();
-    if (this.finished || this.wrongs < 2) return;
     const a = 0.55 + 0.3 * Math.sin(this.clock * 6);
+    const hint = this.hintItem;
+    if (hint && !this.finished) g.roundRect(hint.node.x - hint.width / 2 - 20, hint.node.y - hint.height - 22, hint.width + 40, hint.height + 40, 24).fill({ color: 0xfff3a0, alpha: a });
+    if (this.finished || this.wrongs < 2) return;
     const mode = this.plan.mode;
     const ring = (x: number, y: number, w: number, h: number) => g.roundRect(x - w / 2, y - h, w, h, 24).fill({ color: 0xfff3a0, alpha: a });
     if (mode === 'up' || mode === 'heavy') {
@@ -402,8 +411,14 @@ class SeesawBalance implements Game {
     this.index++;
     this.wrongs = 0;
     this.busy = true;
+    this.tips = 0;
+    this.hintItem = null;
+    this.lastOff = null;
     const r = this.round;
-    r.fixed.forEach((thing, i) => this.addItem(thing, i, true, r.fixedSide));
+    const same = this.plan.mode === 'same';
+    // On the take-the-same-off levels everything starts on the trays, and anything can come off.
+    r.fixed.forEach((thing, i) => this.addItem(thing, i, !same, r.fixedSide));
+    r.across?.forEach((thing, i) => this.addItem(thing, i, false, other(r.fixedSide)));
     r.offered.forEach((thing, i) => this.addItem(thing, i, false, null));
     this.layoutGround();
     for (const item of this.items) {
@@ -418,6 +433,7 @@ class SeesawBalance implements Game {
     else if (mode === 'level') await this.ctx.instruct('seesaw.level');
     else if (mode === 'heaviest') await this.ctx.instruct('seesaw.heaviest');
     else if (mode === 'parts') await this.ctx.instruct('seesaw.parts', { n: r.answer });
+    else if (mode === 'same') await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.same-boxes' : 'seesaw.same');
     else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.twins' : 'seesaw.mystery');
     this.busy = false;
   }
@@ -472,6 +488,7 @@ class SeesawBalance implements Game {
       return false;
     }
     if (mode === 'heaviest') for (const there of this.items.filter((i) => i.side === side)) this.takeOff(there, true);
+    if (item.side) this.lastOff = { item, from: item.side };
     if (item.side) item.side = null;
     item.side = side;
     this.settle(item);
@@ -489,6 +506,7 @@ class SeesawBalance implements Game {
 
   /** Off the seesaw and back to the grass. `walk` sends it home (otherwise the drag floats it there). */
   private takeOff(item: Item, walk = false) {
+    if (item.side) this.lastOff = { item, from: item.side };
     item.side = null;
     item.settling = false;
     if (item.drag) item.drag.home = item.ground;
@@ -507,6 +525,7 @@ class SeesawBalance implements Game {
     const mode = this.plan.mode;
     const r = this.round;
     if (mode === 'heaviest') return;
+    if (mode === 'same') return this.checkSame();
     if (mode === 'up' || mode === 'heavy') {
       this.busy = true;
       await this.ctx.tw.wait(0.7);
@@ -542,21 +561,65 @@ class SeesawBalance implements Game {
   private async removed() {
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
+    if (mode === 'same') return this.checkSame();
     if (mode !== 'level' && mode !== 'parts' && mode !== 'mystery') return;
     const side = other(this.round.fixedSide);
     const added = total(this.items.filter((i) => i.side === side).map((i) => i.thing));
     if (weigh(total(this.round.fixed), added) === 'level') await this.balanced();
   }
 
+  /**
+   * After any change on a take-the-same-off level: tipped means one side changed alone (said aloud, never a
+   * miss); level with the box alone means we can read its weight from the blocks across.
+   */
+  private async checkSame() {
+    if (this.busy || this.finished) return;
+    await this.ctx.tw.wait(0.5);
+    if (this.busy || this.finished) return;
+    const { left, right } = this.weights;
+    if (left !== right) {
+      this.tips++;
+      await this.ctx.say('seesaw.tipped');
+      if (this.tips >= 2 && !this.hintItem) {
+        this.hintItem = this.suggest();
+        if (this.hintItem) {
+          this.hints++;
+          void this.ctx.say('seesaw.same-hint');
+        }
+      }
+      return;
+    }
+    this.tips = 0;
+    this.hintItem = null;
+    const sides = { left: this.items.filter((i) => i.side === 'left').map((i) => i.thing), right: this.items.filter((i) => i.side === 'right').map((i) => i.thing) };
+    if (aloneSide(sides)) return this.balanced();
+    void this.ctx.say('seesaw.still-level');
+  }
+
+  /** Something that makes it level again: the same kind of thing from the heavy side, or the last thing back on. */
+  private suggest(): Item | null {
+    const { left, right } = this.weights;
+    const heavy = downSide(left, right);
+    if (!heavy) return null;
+    const off = this.lastOff;
+    const kind: ThingKind = off?.item.thing.kind ?? 'block';
+    const match = this.items.find((i) => i.side === heavy && i.thing.kind === kind);
+    if (off && off.from !== heavy && match) return match;
+    if (off && !off.item.side) return off.item;
+    return this.items.find((i) => i.side === heavy) ?? null;
+  }
+
   private async balanced() {
     this.busy = true;
     await this.ctx.tw.wait(0.6);
-    if (this.plan.mode !== 'mystery') {
+    if (this.plan.mode !== 'mystery' && this.plan.mode !== 'same') {
       await this.ctx.say('seesaw.balanced');
       return this.won();
     }
     // How heavy is the box? The blocks tell us.
-    await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', { n: total(this.round.fixed) });
+    this.hintItem = null;
+    if (this.plan.mode === 'same') await this.ctx.instruct('seesaw.alone');
+    else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', { n: total(this.round.fixed) });
     this.pads = numberChoices(this.ctx.rng, this.round.answer).map((n) => {
       const pad = this.ctx.track(new Pad(n));
       onTap(pad, () => void this.answer(pad), { cooldown: 400 });
@@ -584,12 +647,13 @@ class SeesawBalance implements Game {
       return this.won();
     }
     this.miss();
-    await this.ctx.say(this.plan.boxes === 2 ? 'seesaw.twins-hint' : 'seesaw.count-again', { n: total(this.round.fixed), each: this.round.answer });
+    const twins = this.plan.mode === 'mystery' && this.plan.boxes === 2;
+    await this.ctx.say(twins ? 'seesaw.twins-hint' : 'seesaw.count-again', { n: total(this.round.fixed), each: this.round.answer });
     const blocks = this.items.filter((i) => i.side && i.thing.kind === 'block');
     for (let k = 0; k < blocks.length; k++) {
       void this.ctx.tw.to(blocks[k].node.scale, { x: 1.2, y: 1.2 }, { duration: 0.15 }).then(() => this.ctx.tw.to(blocks[k].node.scale, { x: 1, y: 1 }, { duration: 0.15 }));
       sfx.bell(5 + k, 0.2);
-      await this.ctx.say('count', { n: this.plan.boxes === 2 ? k % this.round.answer + 1 : k + 1 });
+      await this.ctx.say('count', { n: twins ? k % this.round.answer + 1 : k + 1 });
     }
     this.pads.find((p) => p.value === this.round.answer)!.glowing = true;
     this.busy = false;

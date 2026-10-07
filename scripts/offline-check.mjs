@@ -66,12 +66,30 @@ try {
   assert.deepEqual(save.world, { band: 'toddler' });
   await page.waitForTimeout(1700);
   await page.screenshot({ path: 'test-results/offline/reward.png' });
+  // The seeded save predates island stories: loading it added the Windy Picnic, untold.
+  assert.deepEqual(save.stories, { picnic: { steps: [], ended: false, keepsake: false } });
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('canvas').waitFor();
   assert.equal((await readSave()).stickers.length, 1, 'Offline progress survived reload');
   assert.equal(await page.evaluate(() => typeof window.kit), 'undefined', 'Dev helper excluded from production');
+  // Offline, the picnic opens from the map, and a step found there is kept across a reload. The striped blanket
+  // is in one of six spots (two on each of the tree, the clothesline and the bush); try each until it's found.
+  await page.waitForTimeout(1400);
+  await page.mouse.click(512, 308); await page.waitForTimeout(2800);
+  await page.mouse.click(65, 65); await page.waitForTimeout(2600);
+  await page.mouse.click(842, 550); await page.waitForTimeout(3200);
+  await page.screenshot({ path: 'test-results/offline/picnic.png' });
+  for (const [x, y] of [[96, 296], [216, 320], [539, 354], [680, 353], [288, 426], [388, 418]]) {
+    await page.mouse.click(x, y); await page.waitForTimeout(900);
+    if ((await readSave()).stories?.picnic?.steps?.includes('blanket')) break;
+  }
+  assert.deepEqual((await readSave()).stories.picnic.steps, ['blanket'], 'Found the blanket offline');
+  await page.waitForTimeout(1500);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.locator('canvas').waitFor();
+  assert.deepEqual((await readSave()).stories.picnic, { steps: ['blanket'], ended: false, keepsake: false }, 'The story step survived an offline reload');
   assert.deepEqual(errors, []);
-  console.log(`PASS: production reload, cached font and assets (${assets.length}), trail navigation, new-game completion, reward, and saved progress work offline.`);
+  console.log(`PASS: production reload, cached font and assets (${assets.length}), trail navigation, new-game completion, reward, saved progress, the Windy Picnic from the map and its saved step work offline.`);
 } catch (error) {
   await page.screenshot({ path: 'test-results/offline/failure.png' });
   console.error(error); console.error('Page errors:', errors); process.exitCode = 1;

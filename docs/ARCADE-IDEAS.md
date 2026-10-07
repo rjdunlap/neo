@@ -100,30 +100,30 @@ There are **63 games**, all committed (the newest twenty in `dfe08a3`). Many cam
 | Picture Graph | Classroom picture graphs, tally charts | Counting Cove |
 | Inchworm Measure | Measuring with nonstandard units, classroom rulers | Tinker Lab |
 
-### Inventory by subject (63 games)
+### Inventory by subject (67 games)
 
 | Subject | Games | Count |
 | --- | --- | --- |
 | Barnyard | Peekaboo Barn, Duckling Parade, Roundup, Egg Catch, Animal Snack, Critter Sort | 6 |
 | Bubble Beach | Bubble Pop, Peg Garden, Bounce Back, Bumper Garden | 4 |
-| Counting Cove | Duck Pond, Monster Munch, Little Helpers, Pet Kitchen, Frog Hop, Picture Graph | 6 |
-| Cozy Village | Feelings Faces, Scoop Shop, Splish Splash, Weather Wardrobe, Mail Carrier, Teddy Doctor, Market Stall, Clock Tower, Stop and Go | 9 |
+| Counting Cove | Duck Pond, Monster Munch, Little Helpers, Pet Kitchen, Frog Hop, Picture Graph, Lasso Loops | 7 |
+| Cozy Village | Feelings Faces, Scoop Shop, Splish Splash, Weather Wardrobe, Mail Carrier, Teddy Doctor, Market Stall, Clock Tower, Stop and Go, Pet Says | 10 |
 | Music Mountain | Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Beat Builder | 5 |
 | Puzzle Peaks | Memory Match, Pattern Train, Puzzle Pals, Size Parade, Quick Tricks, Peekaround Island, Penguin Slide, Secret Code | 8 |
-| Rainbow Meadow | Color Garden, Shape Sorter, Dot Link, Tangram Town, Garden Grow, Treasure Map | 6 |
+| Rainbow Meadow | Color Garden, Shape Sorter, Dot Link, Tangram Town, Garden Grow, Treasure Map, Owl Walk Home | 7 |
 | Story Grove | Letter Trails, Story Steps, Word Monsters, Photo Safari, Goodnight Room, Rhyme Time, Opposites | 7 |
-| Tinker Lab | Bouncy Launch, Bug Builder, Robot Path, Sink or Float, Seesaw Balance, Light Lab, Ramp Race, Inchworm Measure | 8 |
+| Tinker Lab | Bouncy Launch, Bug Builder, Robot Path, Sink or Float, Seesaw Balance, Light Lab, Ramp Race, Inchworm Measure, Block Tower | 9 |
 | Treehouse | Rainbow Fingers, Fluffy Salon, Stamp Studio, Pixel Pictures | 4 |
 
 **Gaps that remain:**
 
 - **Literacy:** connected spoken stories, rhyme/blending, and using a clue's meaning. Word Monsters and Photo Safari address some sound and vocabulary work; they do not replace comprehension.
-- **Numbers:** capacity, place value, and practical combinations. Inchworm Measure covers length with units, Seesaw Balance weight, Clock Tower time and Market Stall money; Pet Kitchen introduces equal parts and doubling. Duck Pond already includes adding and taking away; Little Helpers adds amounts used to carry loads.
+- **Numbers:** capacity and practical combinations. Lasso Loops now groups in fives and tens, reads two-digit numbers to 39 as tens and ones, and makes equal groups. Inchworm Measure covers length with units, Seesaw Balance weight, Clock Tower time and Market Stall money; Pet Kitchen introduces equal parts and doubling. Duck Pond already includes adding and taking away; Little Helpers adds amounts used to carry loads.
 - **Creative work that persists:** keep a drawing, composition, or construction and use it in the pet's world. Fluffy Salon and Sound Garden broaden the activities, but a shared home/gallery is a separate system.
 - **Inquiry and planning:** gather evidence, revise a guess, and solve more than one valid way.
-- **Playing together:** deliberate cooperation on one screen, beyond a grown-up helping with controls.
+- **Playing together:** deliberate cooperation on one screen, beyond a grown-up helping with controls. Owl Walk Home takes turns with the pet toward a shared goal; Pet Says is co-play off the screen.
 - **Navigation:** the optional subject-card prototype needs comparison with the original path on the iPad.
-- **Areas no game touches yet:** capacity and estimation, place value beyond ten, 3D shapes, gears and circuits, life cycles, syllables, calming strategies, and cooperative turn-taking games. See the [gap review](#learning-and-play-gaps-in-the-current-catalog).
+- **Areas no game touches yet:** capacity and estimation, 3D shapes, gears and circuits, life cycles, syllables, and calming strategies. (Place value, stacking, copying actions and turn-taking now have Lasso Loops, Block Tower, Pet Says and Owl Walk Home.) See the [gap review](#learning-and-play-gaps-in-the-current-catalog).
 
 ## How a classic becomes a Puddle Island game
 
@@ -151,6 +151,8 @@ Effort throughout this notebook is relative: S = a contained mode or small game;
 Judge the built games on the iPad and choose between the two place layouts, then build **one short adventure and one pet room** before adding another large batch. This tests whether the games feel better when they belong to a place and a story. Seesaw Balance's 6–8 modes (see the extensions below) are the natural next step toward equations. Use Bounce Back to test cooperative play before building more two-player games.
 
 ### Island Errands: a first adventure (4–8, L)
+
+*Built as a pilot:* the Windy Picnic below now exists as described, with Juniper the gardener bunny, the blanket found in the scene, Pet Kitchen and Jelly Drums rounds as the other two requests, a journal, and Juniper's photo as the keepsake ([DESIGN.md](DESIGN.md#the-windy-picnic-2026-10-06-night)). Carrying the child's exact shares or tune into the picnic is specified there but not built.
 
 **First story: The Windy Picnic.** The gardener's picnic has blown into a muddle. Choose a picture request: find the striped blanket, share six buns between three guests, or finish a three-note invitation. Each useful action changes the picnic scene. A final picnic plays the child's tune and lets every friend enjoy what was prepared.
 
@@ -181,10 +183,10 @@ These are proposed modes; none is a current implementation claim. Steps already 
 
 | Existing activity | Proposed 6–8 extension | Later stretch, only if useful |
 | --- | --- | --- |
-| Seesaw Balance | Two different unknown weights; solve by doing the same thing to both pans (Box Balance in the gap review) | 8–10: lever distance as a separate step, as in PhET's Balancing Act |
+| Seesaw Balance | Two different unknown weights; solve by doing the same thing to both pans (Box Balance in the gap review). Taking the same off both sides, with one kind of box, is built at levels 8–9 | 8–10: lever distance as a separate step, as in PhET's Balancing Act |
 | Robot Path | Step through and repair one wrong command (counted steps and loops are built at levels 7–10) | 8–10: conditions, then nested loops, each with a visual trace |
 | Little Helpers / Monster Munch | Split a visible group two ways (equal groups and leftovers are built) | 8–10: remainders represented as friends/items to redistribute, never discarded |
-| Mail Carrier | Read a picture map, follow a legend, plan two deliveries, compare routes | 8–10: several route constraints; shortest route is an optional puzzle |
+| Mail Carrier | Read a picture map, follow a legend, plan two deliveries, compare routes. The map, its key and two planned stops are built at levels 6–7; comparing routes is not | 8–10: several route constraints; shortest route is an optional puzzle |
 | Word Monsters / Letter Trails | Blend a small set of clear sounds into words; build a word that fits a spoken clue (word families are built) | 8–10: word families and meaningful prefixes; content review before adding rules |
 | Song Maker / Sound Garden | Compose an answer to a phrase; alternate parts with the pet | Longer forms and rhythm changes; keep the shared pentatonic pitch system |
 | Peg Garden / Bouncy Launch | Predict a landing, compare two launches, and explain with replay | 8–10: controlled trials and a picture chart, with no claim that arcade physics models everything |
@@ -493,6 +495,8 @@ The same references show patterns that conflict with this project's rules:
 - **Ads and upsells** in free pet apps.
 
 ### A shortlist from this review
+
+Items 1 and 3–5 are built (2026-10-06, night; see [DESIGN.md](DESIGN.md#four-games-from-the-gap-reviews-shortlist-2026-10-06-night)): Lasso Loops was built as a game without waiting for the gesture test in item 2, so watching small hands close loops on the iPad is now a check on a built game.
 
 1. **Block Tower** for her current age: stacking and knocking down is a lap skill no game offers, and it grows into measurement and balance in older bands.
 2. **A third Quick Tricks show as a gesture test:** Wind the Music Box (crank), Fill the Cups (pour) and Loop the Fireflies (lasso), described in [the microgame notebook](MICROGAME-IDEAS.md#a-third-show-new-gestures). Watch which gestures small hands manage before building Gear Garden, Pour and Fill or Lasso Loops.

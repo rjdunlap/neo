@@ -15,9 +15,9 @@ import type { Game, GameContext, GameModule, RoundResult } from '../../games/typ
 import type { Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
-import { againIcon, houseIcon } from '../../ui/icons';
+import { againIcon, basketIcon, houseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
-import type { App } from '../App';
+import type { App, StoryRound } from '../App';
 import { Scene } from '../Scene';
 import { session } from '../session';
 
@@ -32,22 +32,27 @@ export class GameScene extends Scene {
   private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave());
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /** The "again" and "home" buttons, once the celebration offers them. */
+  after: { again: RoundButton; home: RoundButton } | null = null;
   private level = 1;
   private seconds = 0;
   private finished = false;
+  private gone = false;
 
   constructor(
     app: App,
     private readonly mod: GameModule,
     /** The place she came from: its age band sets the levels. */
     private readonly band: Band,
+    /** Set when the round is a picnic request: it plays the story's level and goes home to the picnic. */
+    readonly story?: StoryRound,
   ) {
     super(app);
   }
 
   init() {
     const band = this.band;
-    this.level = store.levelFor(this.mod.id, this.mod.levels(band));
+    this.level = this.story?.level ?? store.levelFor(this.mod.id, this.mod.levels(band));
     this.content.addChild(this.stage);
 
     this.pet.scale.set(0.42);
@@ -77,9 +82,9 @@ export class GameScene extends Scene {
       untrack: (o) => this.untrack(o),
       instruct: (id, vars) => {
         this.instruction = { id, vars };
-        return voice.say(id, vars);
+        return this.whileHere(voice.say(id, vars));
       },
-      say: (id, vars) => voice.say(id, vars),
+      say: (id, vars) => this.whileHere(voice.say(id, vars)),
       finish: (result) => this.finish(result),
     };
     this.game = this.mod.create(ctx);
@@ -114,13 +119,28 @@ export class GameScene extends Scene {
   }
 
   destroy() {
+    this.gone = true;
     this.game.destroy();
     super.destroy();
   }
 
+  /**
+   * Speech finishes on its own timer, so a game waiting for a line could carry on after she has left and
+   * touch destroyed objects. Once the scene is gone the wait never ends, just like its tweens.
+   */
+  private whileHere(spoken: Promise<void>): Promise<void> {
+    return new Promise((resolve) => void spoken.then(() => !this.gone && resolve()));
+  }
+
   private leave() {
     voice.stop();
-    this.app.go.place(this.band);
+    this.goHome();
+  }
+
+  /** Back to the place she came from, or to the picnic for a story round. */
+  private goHome() {
+    if (this.story) this.app.go.picnic(this.story.step);
+    else this.app.go.place(this.band);
   }
 
   private finish(result: RoundResult) {
@@ -131,7 +151,11 @@ export class GameScene extends Scene {
       this.mod.id,
       { level: this.level, misses: result.misses, hints: result.hints, seconds: Math.round(this.seconds), at: Date.now() },
       this.mod.levels(band),
+      // A story round plays the story's level; it shouldn't move the game's own level.
+      !this.story,
     );
+    // Finishing completes the request, however much help it took.
+    if (this.story) store.completeStep(this.story.step);
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
     // Save the round and its sticker now: a write that only starts as the page closes can be lost.
@@ -194,8 +218,9 @@ export class GameScene extends Scene {
       return;
     }
 
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band));
-    const home = new RoundButton(houseIcon(0xffffff), swatch.blue, 66, () => this.app.go.place(this.band));
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story));
+    const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.goHome());
+    this.after = { again, home };
     again.position.set(v.w / 2 - 230, v.h * 0.72);
     home.position.set(v.w / 2 + 230, v.h * 0.72);
     for (const b of [again, home]) {
@@ -210,7 +235,7 @@ export class GameScene extends Scene {
   private showTip(template: string) {
     const name = store.data.profile.name.trim() || 'your little one';
     const body = new Text({
-      text: template.replace('{name}', name),
+      text: template.replaceAll('{name}', name),
       style: { fontFamily: FONT, fontSize: 19, fill: ink, fontWeight: '500', align: 'center', wordWrap: true, wordWrapWidth: 520 },
     });
     const head = new Text({ text: 'GROWN-UP TIP', style: { fontFamily: FONT, fontSize: 12, fill: 0x6b6b7b, fontWeight: '600', letterSpacing: 1.5 } });

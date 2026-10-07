@@ -110,14 +110,14 @@ These were added by the [reference gap review](ARCADE-IDEAS.md#reference-gap-rev
 
 ## Gestures the island does not use yet
 
-Current games tap, drag, hold a basket, pull back, draw, steer and use two hands at once. Sesame Workshop's touch research found tapping and dragging easiest for preschoolers and pinching and flicking hard, so try each new gesture as a small scene before building a game around it.
+Current games tap, drag, hold a basket, pull back, draw, steer and use two hands at once; Lasso Loops now draws closed loops, so the loop row below is in use. Sesame Workshop's touch research found tapping and dragging easiest for preschoolers and pinching and flicking hard, so try each new gesture as a small scene before building a game around it.
 
 | Gesture | What it feels like | First scene | Fuller activity | Care points |
 | --- | --- | --- | --- | --- |
 | **Crank** (a circular drag) | Winding a music box | Wind the Music Box | Gear Garden | Measure the angle swept around the crank's center, not speed; any direction counts at first; a handle at least 100 units across; cancel cleanly when the finger leaves |
 | **Press and hold** | Filling a balloon; a slow breath | Balloon Breath | Belly Breaths | No required duration; letting go always does something pleasant; keep palm rejection |
 | **Pour** (drag to tilt) | Tipping a jug | Fill the Cups | Pour and Fill | The jug tilts with its handle, not the device; the flow slows near the line; overfilling spills into a tray that can be poured back |
-| **Loop** (a closed drawing) | Lassoing | Loop the Fireflies | Lasso Loops | Close generously (the end near the start); count things whose centers fall inside; reuse Letter Trails' and Dot Link's path capture |
+| **Loop** (a closed drawing) | Lassoing | Loop the Fireflies | Lasso Loops (built) | Close generously (Lasso Loops always joins the end back to the start); count things whose centers fall inside |
 | **Sliding pitch** | Singing higher and lower | Sing Higher | A Sound Garden mode | Snap to pentatonic steps from `notes.ts` and show the step reached |
 | **Baton** (a rhythmic up-and-down drag) | Conducting | Wake the Band | Little Conductor | Take the tempo from turnarounds with heavy smoothing; never require a precise beat |
 | **Time scrub** (a large slider) | A time-lapse | Grow Overnight: drag the sun across the sky to watch a sprout grow | Moon Window, Caterpillar Week | Both directions work; there is no right speed |
@@ -126,7 +126,7 @@ Leave out device tilt and shaking unless a grown-up opts in: Safari asks permiss
 
 ### A third show: new gestures
 
-The first two Quick Tricks shows use one-finger drags and taps. A third show could try three new gestures before any becomes a full game: **Wind the Music Box** (turn the crank until a friend pops up), **Fill the Cups** (pour to each cup's line) and **Loop the Fireflies** (draw one loop around three fireflies). In the finale the fireflies light their jar while the music box plays. At toddler level any turn, pour or loop succeeds; preschool and pre-K add a named amount ("fill it to the line", "loop three"), and a 6–8 remix asks for "two whole turns" or "half full". Cranking and pouring cannot go wrong, since an overflowing cup spills into a tray and can be poured back; only a closed loop around the wrong number of fireflies counts as a miss. Accounting follows the earlier shows: one sticker for the show, misses summed across it, and at most one hint per trick. Watch whether small hands can crank and close a loop before building Gear Garden, Pour and Fill or Lasso Loops.
+The first two Quick Tricks shows use one-finger drags and taps. A third show could try three new gestures before any becomes a full game: **Wind the Music Box** (turn the crank until a friend pops up), **Fill the Cups** (pour to each cup's line) and **Loop the Fireflies** (draw one loop around three fireflies). In the finale the fireflies light their jar while the music box plays. At toddler level any turn, pour or loop succeeds; preschool and pre-K add a named amount ("fill it to the line", "loop three"), and a 6–8 remix asks for "two whole turns" or "half full". Cranking and pouring cannot go wrong, since an overflowing cup spills into a tray and can be poured back; only a closed loop around the wrong number of fireflies counts as a miss. Accounting follows the earlier shows: one sticker for the show, misses summed across it, and at most one hint per trick. Watch whether small hands can crank and close a loop before building Gear Garden or Pour and Fill. (Lasso Loops was built first, so its loop gesture can be watched directly on the iPad; Loop the Fireflies could still bring the gesture to toddlers.)
 
 ## A practical shortlist
 

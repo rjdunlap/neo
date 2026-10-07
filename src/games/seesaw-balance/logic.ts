@@ -5,9 +5,10 @@ import type { Rng } from '../../engine/random';
  * seesaw and watch it tip. The ladder goes from "make your friend go up" to heavier and lighter,
  * balancing with blocks, finding the heaviest of look-alike presents, making the same weight two ways,
  * and weighing a mystery box. Things sit on level trays at the ends, so only weight matters, never
- * how far out something sits.
+ * how far out something sits. The early-school steps, after DragonBox and PhET's Equality Explorer, start
+ * balanced with a box and blocks on one side: take the same off both sides until the box is alone.
  */
-export type SeesawMode = 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery';
+export type SeesawMode = 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same';
 export type Side = 'left' | 'right';
 
 export interface SeesawPlan {
@@ -25,6 +26,8 @@ export const PLANS: SeesawPlan[] = [
   { mode: 'parts', rounds: 3, name: 'Same weight, different pieces: match 4 to 7 with number weights' },
   { mode: 'mystery', rounds: 3, name: 'Weigh a mystery box with blocks, then say how heavy it is' },
   { mode: 'mystery', rounds: 3, boxes: 2, name: 'Two identical boxes: weigh both, then find the weight of one' },
+  { mode: 'same', rounds: 3, name: 'A box and blocks balance blocks: take the same off both sides until the box is alone, then say its weight' },
+  { mode: 'same', rounds: 3, boxes: 2, name: 'Boxes on both sides: take a box for a box and a block for a block until one box is alone' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -49,6 +52,8 @@ export interface SeesawRound {
   offered: Thing[];
   /** The number to say at the end of a mystery round, or the weight to match. */
   answer: number;
+  /** Things that start on the other tray (the take-the-same-off levels start balanced). */
+  across?: Thing[];
 }
 
 export const other = (side: Side): Side => (side === 'left' ? 'right' : 'left');
@@ -135,6 +140,15 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
         });
         break;
       }
+      case 'same': {
+        // Box + k blocks balance m + k blocks; with two boxes, a box stands on the other side too.
+        const m = fresh(2, 4);
+        const k = rng.int(1, 2);
+        const boxes = (n: number): Thing[] => Array.from({ length: n }, () => ({ kind: 'box', weight: m }));
+        const two = plan.boxes === 2;
+        rounds.push({ fixed: [...boxes(two ? 2 : 1), ...blocks(k)], fixedSide, offered: [], across: [...boxes(two ? 1 : 0), ...blocks(m + k)], answer: m });
+        break;
+      }
       case 'mystery': {
         const m = fresh(2, plan.boxes === 2 ? 3 : 5);
         rounds.push({ fixed: Array.from({ length: plan.boxes ?? 1 }, () => ({ kind: 'box', weight: m })), fixedSide, offered: blocks(plan.boxes === 2 ? 7 : 6), answer: m });
@@ -149,4 +163,14 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
 export function numberChoices(rng: Rng, answer: number): number[] {
   const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((v) => v >= 1);
   return rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
+}
+
+/** Take-the-same-off levels: the side where one box stands alone while the other side holds only blocks. */
+export function aloneSide(sides: Record<Side, readonly Thing[]>): Side | null {
+  for (const side of ['left', 'right'] as Side[]) {
+    const here = sides[side];
+    const there = sides[other(side)];
+    if (here.length === 1 && here[0].kind === 'box' && there.length > 0 && there.every((t) => t.kind === 'block')) return side;
+  }
+  return null;
 }

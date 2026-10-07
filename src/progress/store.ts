@@ -1,7 +1,8 @@
 import { get, set } from 'idb-keyval';
 import { bandInfo, type Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
-import { defaults, HISTORY_LENGTH, migrate, type GameStats, type RoundRecord, type SaveData } from './save';
+import { PICNIC_STEPS, type PicnicStep } from '../content/world';
+import { defaults, HISTORY_LENGTH, migrate, type GameStats, type RoundRecord, type SaveData, type StoryProgress } from './save';
 
 const KEY = 'neo.save';
 
@@ -56,11 +57,42 @@ class Store {
     this.save();
   }
 
-  recordRound(gameId: string, round: RoundRecord, range: LevelRange) {
+  /** With `adapt` false (a story round played at the story's own level), the game's level stays where it was. */
+  recordRound(gameId: string, round: RoundRecord, range: LevelRange, adapt = true) {
     const stats = this.stats(gameId);
     stats.plays++;
     stats.history = [...stats.history, round].slice(-HISTORY_LENGTH);
-    stats.level = nextLevel(round.level, stats.history, range);
+    if (adapt) stats.level = nextLevel(round.level, stats.history, range);
+    this.save();
+  }
+
+  get picnic(): StoryProgress {
+    return this.data.stories.picnic;
+  }
+
+  /** Marks a picnic request done. Doing it again changes nothing; returns whether it was new. */
+  completeStep(step: PicnicStep): boolean {
+    const p = this.picnic;
+    if (p.steps.includes(step)) return false;
+    p.steps = PICNIC_STEPS.filter((s) => s === step || p.steps.includes(s));
+    this.save();
+    return true;
+  }
+
+  /** The ending was shown: the telling is over and its keepsake is kept for good. */
+  endStory() {
+    const p = this.picnic;
+    if (p.steps.length < PICNIC_STEPS.length) return;
+    p.ended = true;
+    p.keepsake = true;
+    this.save();
+  }
+
+  /** Tell the story again from the start. The keepsake stays. */
+  retellStory() {
+    const p = this.picnic;
+    p.steps = [];
+    p.ended = false;
     this.save();
   }
 

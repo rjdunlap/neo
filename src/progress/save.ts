@@ -1,5 +1,5 @@
 import type { Band } from './bands';
-import { PET_COLORS, STICKER_PAGES, type PetColor, type StickerPage } from '../content/world';
+import { PET_COLORS, PICNIC_STEPS, STICKER_PAGES, type PetColor, type PicnicStep, type StickerPage } from '../content/world';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -32,6 +32,15 @@ export interface StickerRecord {
   placement?: StickerPlacement;
 }
 
+/** One island story: which requests are done in this telling, and whether its keepsake was earned. */
+export interface StoryProgress {
+  steps: PicnicStep[];
+  /** This telling's ending has been shown. */
+  ended: boolean;
+  /** The story's one known keepsake (the picnic photo). Telling the story again never takes it away or adds another. */
+  keepsake: boolean;
+}
+
 /** Everything the app remembers, as one versioned record so a backup is a single file. */
 export interface SaveData {
   version: 2;
@@ -42,6 +51,7 @@ export interface SaveData {
   settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
+  stories: { picnic: StoryProgress };
 }
 
 export const HISTORY_LENGTH = 10;
@@ -56,6 +66,7 @@ export function defaults(): SaveData {
     settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true },
     games: {},
     stickers: [],
+    stories: { picnic: { steps: [], ended: false, keepsake: false } },
   };
 }
 
@@ -71,6 +82,14 @@ function placement(raw: unknown): StickerPlacement | undefined {
   return { page, x: Math.max(0, Math.min(1, raw.x)), y: Math.max(0, Math.min(1, raw.y)) };
 }
 
+function story(raw: unknown): StoryProgress {
+  const r = isObj(raw) ? raw : {};
+  const steps = PICNIC_STEPS.filter((id) => Array.isArray(r.steps) && r.steps.includes(id));
+  // A telling can only have ended once every step is done; an ending always left its keepsake.
+  const ended = bool(r.ended, false) && steps.length === PICNIC_STEPS.length;
+  return { steps, ended, keepsake: bool(r.keepsake, false) || ended };
+}
+
 /** Accepts anything (old saves, hand-edited backups, garbage) and returns a valid save. */
 export function migrate(raw: unknown): SaveData {
   const d = defaults();
@@ -81,6 +100,7 @@ export function migrate(raw: unknown): SaveData {
   const settings = isObj(raw.settings) ? raw.settings : {};
   const pet = isObj(raw.pet) ? raw.pet : {};
   const world = isObj(raw.world) ? raw.world : {};
+  const stories = isObj(raw.stories) ? raw.stories : {};
 
   const games: Record<string, GameStats> = {};
   if (isObj(raw.games)) {
@@ -133,5 +153,6 @@ export function migrate(raw: unknown): SaveData {
     },
     games,
     stickers,
+    stories: { picnic: story(stories.picnic) },
   };
 }

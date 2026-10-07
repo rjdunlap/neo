@@ -68,6 +68,11 @@ export class Tweener {
     return new Promise((resolve) => this.timers.push({ at: this.time + seconds, resolve }));
   }
 
+  /** Whether anything is animating `target` (so a relayout can leave it to land). */
+  busy(target: object): boolean {
+    return this.tweens.some((t) => t.target === target);
+  }
+
   /** Stops any tweens on `target`; their promises never resolve. */
   kill(target: object) {
     this.tweens = this.tweens.filter((t) => t.target !== target);
