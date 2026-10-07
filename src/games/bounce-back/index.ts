@@ -7,6 +7,7 @@ import { sfx } from '../../audio/sfx';
 import { palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { paddleBounce, planFor, predictY, type BouncePlan } from './logic';
@@ -81,6 +82,20 @@ class BounceBack implements Game {
   private wrongs = 0;
   private squish = 0;
   private starAt = { x: 0, y: 0 };
+  private controllerRight = false;
+
+  control(input: CouchControls, dt: number) {
+    this.controllerRight = true;
+    const half = this.paddleLength() / 2;
+    const move = (side: 'left' | 'right', y: number) => {
+      this.targets[side] = Math.max(this.box.y0 + half, Math.min(this.box.y1 - half, this.targets[side] + y * 620 * dt));
+    };
+    move('right', input.players[0].y);
+    if (this.plan.mode === 'together' && input.players[1].active) {
+      this.leftIdle = 0;
+      move('left', input.players[1].y);
+    }
+  }
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -168,7 +183,7 @@ class BounceBack implements Game {
   update(dt: number) {
     this.clock += dt;
     this.leftIdle += dt;
-    this.childTouch = [...this.fingers.values()].includes('right');
+    this.childTouch = this.controllerRight || [...this.fingers.values()].includes('right');
     this.movePaddles(dt);
     if (!this.finished) {
       if (this.serving > 0) {

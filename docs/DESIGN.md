@@ -20,7 +20,7 @@ The developer is not an artist. All game artwork is generated in code with PixiJ
 
 ## Current implementation
 
-The table describes the app with 67 games in five places and the Windy Picnic. Everything through Tangram Town and the subject-card prototype was pushed to `main` in `17124e8`; the early-school band with Wonder Woods, Peekaround Island, Little Helpers level 6, twenty newer games and the longer ladders described below were committed in `dfe08a3`. The Windy Picnic, Mail Carrier 6–7, Seesaw Balance 8–9 and four more games (Block Tower, Lasso Loops, Pet Says, Owl Walk Home) are in the working tree, not yet committed. Automated checks are recorded in [VERIFICATION.md](VERIFICATION.md). The verification log records checks performed, rather than a guarantee about every subsequent local edit; judgments of fun and real-iPad checks for the newest games are still open in the [roadmap](ROADMAP.md).
+The table describes the app with 67 games in five places and the Windy Picnic. Everything through Tangram Town and the subject-card prototype was pushed to `main` in `17124e8`; the early-school band with Wonder Woods, Peekaround Island, Little Helpers level 6, twenty newer games and the longer ladders described below were committed in `dfe08a3`. The Windy Picnic, Mail Carrier 6–7, Seesaw Balance 8–9 and four more games (Block Tower, Lasso Loops, Pet Says, Owl Walk Home) were committed in `cecac4c` and merged to `main` in `7066d5b`. Automated checks are recorded in [VERIFICATION.md](VERIFICATION.md). The verification log records checks performed, rather than a guarantee about every subsequent local edit; judgments of fun and real-iPad checks for the newest games are still open in the [roadmap](ROADMAP.md).
 
 | Area | Current behavior |
 | --- | --- |
@@ -41,6 +41,8 @@ Each game supplies level ranges for the bands it supports. Two consecutive smoot
 ## Proposed direction: a connected world that grows with her
 
 These systems and older age ranges are proposals, not current app behavior. The [roadmap](ROADMAP.md) orders small pilots before broader infrastructure; the [elementary roadmap](ELEMENTARY-ROADMAP.md) develops the longer-term game families, zones, and milestones.
+
+**Longer play and personal goals are the next browser prototypes.** The [party follow-up](PARTY-AND-SWITCH.md) proposes a separate adult play slot and a six-stop Island Party with three choices between games; controller/TV play is a separate milestone. The [play and progression review](PLAY-AND-PROGRESSION.md) then develops a Penguin Slide course with local personal records, an aiming-game course, and the small room. Unique achievements would record known accomplishments while stickers remain repeatable decorations. These features are unimplemented: the current shell still celebrates each round and requires a replay tap. Adult browser evaluation can move prototypes forward while child and physical-iPad validation remain open.
 
 **Short adventures give familiar games a purpose.** A recurring island friend asks for help with a picnic, a delivery, or a tune. Two or three activities visibly change a small scene, followed by a complete ending. A picture journal replays requests and resumes after any break; free play stays available. The first pilot, the Windy Picnic (described below), is built and advances on existing round completions. Passing specific creations or choices between activities needs a deliberate extension beyond the current `{ misses, hints }` result; *Proposed: story results* below specifies one, unimplemented.
 

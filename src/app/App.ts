@@ -18,6 +18,8 @@ export interface StoryRound {
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
+  /** Adult couch trip, with its own save and selected controller-supported games. */
+  couch(play?: boolean): void;
   start(): void;
   /** The island map: the age trail. */
   hub(): void;

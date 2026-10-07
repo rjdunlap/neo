@@ -6,6 +6,8 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 [Design and architecture](docs/DESIGN.md) · [Roadmap](docs/ROADMAP.md) · [Game and world ideas](docs/ARCADE-IDEAS.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md)
 
+Next prototype proposals: [Island Party with three next-game choices and a controller/TV path](docs/PARTY-AND-SWITCH.md), then [longer challenges, personal records, and unique achievements](docs/PLAY-AND-PROGRESSION.md). These are plans; the current app still uses short rounds and sticker celebrations.
+
 ## Run it
 
 ```bash
