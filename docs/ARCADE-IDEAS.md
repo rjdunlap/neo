@@ -49,11 +49,11 @@ The lessons below are design judgments for this project, not claims that nostalg
 
 These ranges may overlap. A game can start at 5–6 or 6–8; it does not need an artificial toddler mode. Reading can be the skill being practiced, but instructions, clues, and feedback remain available aloud. A narration button may model the answer in a literacy activity; record it as supported practice rather than treating help as failure. Keep large targets and adjustable support at every age.
 
-Increase the number of meaningful decisions before increasing speed, visual clutter, or memory load. For older children, a visible hypothesis can be wrong and a construction can need repair: replay, revise, undo, and hints make that productive. No lives, lost possessions, round-ending clocks, public rankings, or punishment for taking a break. Optional personal comparisons (a shorter route, a different solution) never gate the ending or reward.
+Increase the number of meaningful decisions before increasing speed, visual clutter, or memory load. For older children, a visible hypothesis can be wrong and a construction can need repair: replay, revise, undo, and hints make that productive. Child play has no lives, lost possessions, round-ending clocks, public rankings, or punishment for taking a break. Optional personal comparisons (a shorter route, a different solution) never gate the ending or ordinary reward. The separate adult-play proposal starts with local records and leaves an online adult leaderboard as a later design decision.
 
 ## Current inventory
 
-There are **63 games**, all committed (the newest twenty in `dfe08a3`). Many came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch, Seesaw Balance, Teddy Doctor, Bumper Garden, both Quick Tricks shows, Peekaround Island, Light Lab and Secret Code. All have rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work. [DESIGN.md](DESIGN.md) describes what each built game does.
+There are **67 games**, all on `main` (the newest four merged in `7066d5b`), plus the Windy Picnic, the first Island Errands story. Many came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch, Seesaw Balance, Teddy Doctor, Bumper Garden, both Quick Tricks shows, Peekaround Island, Light Lab, Secret Code, and four from the gap review's shortlist (Block Tower, Lasso Loops, Pet Says and Owl Walk Home). All have rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work. [DESIGN.md](DESIGN.md) describes what each built game does.
 
 | Game | Inspired by | Subject |
 | --- | --- | --- |
@@ -99,6 +99,10 @@ There are **63 games**, all committed (the newest twenty in `dfe08a3`). Many cam
 | Opposites | Concept board books, Sesame Street | Story Grove |
 | Picture Graph | Classroom picture graphs, tally charts | Counting Cove |
 | Inchworm Measure | Measuring with nonstandard units, classroom rulers | Tinker Lab |
+| Block Tower | Stacking blocks, Jenga, Art of Balance (WiiWare) | Tinker Lab |
+| Lasso Loops | Montessori golden beads, ten frames, Pokémon Ranger's capture loop | Counting Cove |
+| Pet Says | Simon Says, action songs such as "Head, Shoulders, Knees and Toes" | Cozy Village |
+| Owl Walk Home | Hoot Owl Hoot!, First Orchard | Rainbow Meadow |
 
 ### Inventory by subject (67 games)
 
@@ -148,7 +152,7 @@ Effort throughout this notebook is relative: S = a contained mode or small game;
 
 ## Recommended next direction
 
-Judge the built games on the iPad and choose between the two place layouts, then build **one short adventure and one pet room** before adding another large batch. This tests whether the games feel better when they belong to a place and a story. Seesaw Balance's 6–8 modes (see the extensions below) are the natural next step toward equations. Use Bounce Back to test cooperative play before building more two-player games.
+The immediate audience for prototypes is the grown-ups in a desktop browser: she is not yet one and an iPad is not readily available. Start with **Island Party's three next-game choices**, then a Penguin Slide course with a personal record, Bouncy Launch to test a different scoring action, and **one pet room** before another large batch. The [party follow-up](PARTY-AND-SWITCH.md) adds Mario Party, WarioWare, and Snipperclips references, cooperative raft/construction ideas, and a controller/TV path. The [play and progression review](PLAY-AND-PROGRESSION.md) covers research, scoring, unique achievements, and the distinction between a course and repeated short rounds. All are proposals. The **short adventure** is already built (the Windy Picnic); adult browser evaluation can guide its next small extension. Keep later child comprehension, iPad play, and the place-layout comparison open. Seesaw Balance's take-the-same-off levels are built; two different unknown weights remain a possible extension. Use Bounce Back to test cooperative play before building more two-player games.
 
 ### Island Errands: a first adventure (4–8, L)
 
@@ -346,7 +350,7 @@ These references span preschool through elementary school. Preserve exploration 
 
 ## Reference gap review (2026-10-06)
 
-This review compared both idea notebooks with the registry, which holds 63 games, including Inchworm (measuring length with units, pre-K–school), which is not yet in this notebook's inventory or the README. It found whole shelves of references that had never been consulted, and learning areas and touch interactions that no current game uses. Everything here is a proposal, and names such as Block Tower are working titles. Source descriptions are brief summaries; recheck a source before a design depends on its details.
+This review compared both idea notebooks with the registry, which then held 63 games, the newest being Inchworm Measure (measuring length with units, pre-K–school). It found whole shelves of references that had never been consulted, and learning areas and touch interactions that no current game uses. Everything here is a proposal, and names such as Block Tower are working titles. Source descriptions are brief summaries; recheck a source before a design depends on its details.
 
 ### Reference shelves that were missing
 
@@ -382,6 +386,8 @@ Coverage was read from each game's skills and levels.
 | **Playing together** | Bounce Back's grown-up paddle | Turns toward a shared goal, and puzzles where each player can do something the other can't | Owl Walk Home, Two Friends, Snap Pairs with the pet |
 | **Ages 8–11** | Light Lab, Secret Code, Robot Path loops, picture graphs | Logic machines, small systems with visible needs, data across several days, evidence across places | Sorting Machine, Little Town Planner, Lemonade Stand, Postcard Detective |
 | **Touch interactions** | Tap, drag, hold, pull back, draw, steer, two hands | Turning a crank, holding for a while, pouring, drawing a loop around things, sliding a pitch, conducting | [Gestures the island does not use yet](MICROGAME-IDEAS.md#gestures-the-island-does-not-use-yet) |
+
+Since this review, Block Tower (stacking and knocking down for lap play), Pet Says (copying actions, and moving only on "Pet says"), Owl Walk Home (turns toward a shared goal) and Lasso Loops (place value, equal groups and the loop gesture) are built; the other gaps in this table remain.
 
 ### New ideas by source
 

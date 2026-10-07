@@ -9,6 +9,7 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import type { CouchControls } from '../../engine/controller';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
@@ -68,6 +69,17 @@ class BouncyLaunch implements Game {
   private seat = { x: 0, y: 0 };
   private flight: { pts: { x: number; y: number }[]; t: number; duration: number; done: () => void } | null = null;
   private strip = { x0: 0, x1: 0, y: 0 };
+  private controllerPower = 0.5;
+
+  control(input: CouchControls, dt: number) {
+    if (this.flying || this.finished || this.grab) return;
+    const p = input.players.find(p => p.x || p.action);
+    if (!p) return;
+    this.controllerPower = Math.max(0, Math.min(1, this.controllerPower + p.x * dt * 0.5));
+    this.pull(this.seat.x - pullFor(this.controllerPower), this.seat.y);
+    this.drawSpring();
+    if (p.action) this.letGo();
+  }
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);

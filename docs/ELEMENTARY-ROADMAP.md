@@ -4,6 +4,8 @@ The long-term plan is a familiar island that grows from early play through **kin
 
 This is a content and product roadmap, not a release schedule or a completed curriculum. Ages and grades are rough planning guides, with overlap and support chosen for the child. The current app has five bands: four through pre-K and an early-school band (6–8) whose place is **Wonder Woods**. Apart from that place and the games noted in E1, the elementary zones, modes, and systems below are **proposed**. [ROADMAP.md](ROADMAP.md) holds the active implementation checklist; the [arcade](ARCADE-IDEAS.md) and [microgame](MICROGAME-IDEAS.md) notebooks hold the larger idea pool.
 
+For the current prototype phase, the [party follow-up](PARTY-AND-SWITCH.md) and [play and progression review](PLAY-AND-PROGRESSION.md) take priority: prove a three-choice party route, then deeper adult-playable courses and personal goals in the browser, then build the small room. The developer's daughter is not yet one and an iPad is not readily available. Physical-device and child-observation milestones below stay open without blocking these prototypes; adult enjoyment does not establish child readiness.
+
 ## The shape of the journey
 
 | Horizon | What grows | Places and example experiences | A useful milestone |

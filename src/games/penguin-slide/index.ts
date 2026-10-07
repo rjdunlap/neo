@@ -7,6 +7,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import type { CouchControls } from '../../engine/controller';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
@@ -124,6 +125,13 @@ class PenguinSlide implements Game {
   }
 
   destroy() {}
+
+  control(input: CouchControls) {
+    if (this.busy || this.finished) return;
+    const p = input.players.find(p => p.undo || p.direction >= 0);
+    if (p?.undo) this.back();
+    else if (p && p.direction >= 0) void this.go(p.direction as Dir);
+  }
 
   private async next() {
     this.busy = true;

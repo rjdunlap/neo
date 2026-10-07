@@ -4,6 +4,8 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'couch.next': ['Another lantern is lit! What shall we play next?'],
+  'couch.done': ['Six lanterns! We made a whole trip together.'],
   'start.hi': ['Hi, {name}!', 'Hello, {name}!', 'Yay, {name} is here!'],
   'hub.pick': ['What should we play?', 'Pick a game!', "Let's play!"],
   'hub.again': ['What next?', 'Ooh, what now?'],

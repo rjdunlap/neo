@@ -1,0 +1,36 @@
+.couch { position: fixed; inset: 0; z-index: 5; overflow: auto; background: #f3f6eb; color: var(--ink); touch-action: pan-y; }
+.couch-sheet { box-sizing: border-box; width: min(1100px, 100%); margin: auto; padding: 28px 40px; }
+.couch h1 { font-size: clamp(32px, 4vw, 52px); line-height: 1.05; margin: 8px 0 16px; font-weight: 600; }
+.couch-eyebrow { font-size: 14px; letter-spacing: .15em; color: #476b60; margin: 0; }
+.couch-intro { font-size: 21px; line-height: 1.4; max-width: 900px; }
+.couch button { font: inherit; color: inherit; font-size: 19px; border: 2px solid #b7cabc; border-radius: 16px; padding: 15px 22px; cursor: pointer; background: white; margin: 6px 8px 6px 0; }
+.couch button:hover { background: #fff9dc; }
+.couch button:active { transform: scale(.98); }
+.couch button:focus-visible, .couch button:focus { outline: 5px solid #397b74; outline-offset: 4px; }
+.couch .couch-primary { background: #35685a; border-color: #35685a; color: white; font-size: 24px; padding: 22px 32px; }
+.couch-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 26px 0; }
+.couch .couch-card { margin: 0; min-height: 294px; display: flex; flex-direction: column; align-items: flex-start; text-align: left; padding: 22px; border-width: 3px; }
+.couch-card canvas { height: 104px; width: 100%; object-fit: contain; margin-bottom: 20px; }
+.couch-card strong { font-size: 26px; font-weight: 600; }
+.couch-card span { font-size: 18px; line-height: 1.35; margin: 12px 0; }
+.couch-card small { font-size: 12px; letter-spacing: .1em; margin-top: auto; color: #476b60; }
+.couch .couch-card-penguin-slide { background: #e7f4fa; }
+.couch .couch-card-bouncy-launch { background: #fff0d4; }
+.couch .couch-card-bounce-back { background: #e0f1e9; }
+.couch-lanterns { display: flex; gap: 14px; margin: 20px 0 14px; }
+.couch-lanterns span { width: 44px; height: 52px; border: 3px solid #b7cabc; border-radius: 15px; display: grid; place-items: center; color: #62746a; }
+.couch-lanterns .lit { background: #ffd86c; border-color: #aa8534; color: #624713; box-shadow: 0 0 16px #ffd86c80; }
+.couch-status, .couch-result { font-size: 18px; }
+.couch-warning { color: #8a422a; }
+.couch-warning:empty { display: none; }
+.couch-keys { color: #50665b; font-size: 15px; line-height: 1.45; }
+.couch-playing { background: transparent; pointer-events: none; overflow: hidden; }
+.couch-hud { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; background: #fff4e3ed; padding: 6px 18px; font-size: 18px; }
+.couch-hud button { font-size: 16px; margin: 0; padding: 12px; pointer-events: auto; }
+.couch-caption { margin: 0; text-align: center; font-size: 18px; }
+.couch-game-help { position: absolute; bottom: 4px; left: 160px; right: 24px; text-align: center; background: #fff4e3ec; padding: 8px 14px; margin: 0; border-radius: 12px; font-size: 16px; }
+.couch-modal { position: absolute; inset: 0; background: #f3f6ebf5; pointer-events: auto; overflow: auto; }
+.couch-modal .couch-sheet { padding-top: 80px; }
+.couch-modal button { display: block; }
+.couch-entry { position: fixed; right: 24px; bottom: 24px; z-index: 4; font: inherit; font-size: 19px; background: #fff4e3; color: #2b2b3a; border: 2px solid #3a9a9b; border-radius: 16px; padding: 16px 22px; cursor: pointer; }
+@media(max-width: 750px) { .couch-sheet { padding: 26px; } .couch-cards { gap: 16px; grid-template-columns: 1fr; } .couch .couch-card { min-height: 160px; } .couch-card canvas { height: 80px; } .couch-hud { grid-template-columns: 1fr auto; } .couch-caption { grid-row: 2; grid-column: 1 / -1; } .couch-game-help { left: 100px; font-size: 14px; } }

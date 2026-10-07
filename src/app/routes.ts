@@ -10,9 +10,11 @@ import { SubjectPlaceScene } from './scenes/SubjectPlaceScene';
 import { PlaceScene } from './scenes/PlaceScene';
 import { StartScene } from './scenes/StartScene';
 import { StickerBookScene } from './scenes/StickerBookScene';
+import { CouchScene } from './scenes/CouchScene';
 
 export function createRoutes(app: App): Routes {
   return {
+    couch: (play) => void app.show(new CouchScene(app, play)),
     start: () => void app.show(new StartScene(app)),
     hub: () => void app.show(new MapScene(app)),
     place: (band) => void app.show(store.data.settings.placeLayout === 'subjects' ? new SubjectPlaceScene(app, band) : new PlaceScene(app, band)),

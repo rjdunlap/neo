@@ -11,6 +11,7 @@ import type { Tweener } from '../engine/tween';
 import type { View } from '../engine/view';
 import type { Band } from '../progress/bands';
 import type { LevelRange } from '../progress/difficulty';
+import type { CouchControls } from '../engine/controller';
 
 /** The object that stands for a game in the hub. Its feet sit on (0, 0). */
 export type HubIcon = Container & Updatable;
@@ -68,6 +69,8 @@ export interface GameContext {
 }
 
 export interface Game {
+  /** Optional semantic input for explicitly supported couch games; ordinary touch play is unchanged. */
+  control?(input: CouchControls, dt: number): void;
   start(): void;
   update(dt: number): void;
   resize(view: View): void;

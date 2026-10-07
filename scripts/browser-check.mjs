@@ -3451,6 +3451,185 @@ async function picnicStory() {
   log('Windy Picnic: map entry, blanket clues and glow, resume after reload, story rounds at story levels without moving game levels, one sticker per round, journal recap and next arrow, finale and keepsake, reload, retelling, early-school place clue passed');
 }
 
+async function couchPlay() {
+  await page.addInitScript(() => {
+    window.couchPads = [];
+    Object.defineProperty(navigator, 'getGamepads', { value: () => window.couchPads, configurable: true });
+  });
+  await page.reload(); await ready();
+  const childBefore = await page.evaluate(() => JSON.stringify(kit.store.data));
+  // Full entry with keyboard; no developer route is needed.
+  await page.keyboard.press('c'); await scene('CouchScene');
+  await page.waitForTimeout(400);
+  await page.keyboard.press('Enter');
+  await page.locator('[data-game]').first().waitFor();
+  const makePads = () => page.evaluate(() => {
+    window.couchPads = [0, 1].map(index => ({ index, id: `Synthetic standard ${index}`, connected: true, mapping: 'standard', axes: [0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }));
+  });
+  await makePads(); await page.waitForTimeout(150);
+  const press = async (button, player = 0) => {
+    await page.evaluate(({button, player}) => { couchPads[player].buttons[button] = { pressed: true, value: 1 }; }, {button, player});
+    await page.waitForTimeout(100);
+    await page.evaluate(({button, player}) => { couchPads[player].buttons[button] = { pressed: false, value: 0 }; }, {button, player});
+    await page.waitForTimeout(100);
+  };
+  const menu = async () => {
+    await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'menu');
+    await page.waitForTimeout(400);
+  };
+  const choose = async id => {
+    await menu();
+    for (let i = 0; i < 10; i++) {
+      if (await page.evaluate(id => document.activeElement?.dataset.game === id, id)) break;
+      await press(15);
+    }
+    assert.equal(await page.evaluate(() => document.activeElement?.dataset.game), id);
+    await press(0);
+    await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'game');
+    await page.waitForTimeout(450);
+  };
+  await screenshot('couch-chooser');
+  const order = await page.locator('[data-game]').evaluateAll(nodes => nodes.map(n => n.dataset.game));
+  // Offers survive a reload and the existing child save remains unchanged.
+  await page.reload(); await ready(); await page.keyboard.press('c'); await menu();
+  assert.deepEqual(await page.locator('[data-game]').evaluateAll(nodes => nodes.map(n => n.dataset.game)), order);
+  await makePads(); await page.waitForTimeout(150);
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await screenshot('couch-chooser-portrait');
+  assert.equal(await page.evaluate(() => document.querySelector('.couch').scrollWidth > window.innerWidth), false);
+  await page.setViewportSize({ width: 1024, height: 768 });
+
+  const ids = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'penguin-slide', 'bounce-back', 'bouncy-launch'];
+  for (const [stop, id] of ids.entries()) {
+    await choose(id);
+    if (stop === 0) {
+      const before = await page.evaluate(() => JSON.stringify(neo.scene.game.puzzle));
+      await page.reload(); await ready(); await page.keyboard.press('c'); await menu();
+      await page.getByRole('button', { name: 'Resume Penguin Slide', exact: true }).click();
+      await page.waitForFunction(() => !neo.switching && neo.scene.game && !neo.scene.game.busy);
+      assert.equal(await page.evaluate(() => JSON.stringify(neo.scene.game.puzzle)), before);
+      await makePads(); await page.waitForTimeout(150);
+    }
+    if (id === 'penguin-slide') {
+      if (stop === 0) {
+        // Wander to the supported hint, then undo through the controller adapter.
+        for (let k = 0; k < 15; k++) {
+          await page.waitForFunction(() => !neo.scene.game.busy);
+          const dir = await page.evaluate(async () => {
+            const g = neo.scene.game; if (g.hinting) return -1;
+            const S = await import('/src/games/penguin-slide/logic.ts');
+            return [0,1,2,3].find(d => { const s = S.slide(g.puzzle, g.at, d); return s.passed.length && (g.have | S.eaten(g.puzzle, s.passed)) !== (1 << g.puzzle.fish.length) - 1; }) ?? -1;
+          });
+          if (dir < 0) break;
+          await press([15, 13, 14, 12][dir]);
+        }
+        await page.waitForFunction(() => !neo.scene.game.busy);
+        assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+        const history = await page.evaluate(() => neo.scene.game.history.length);
+        await press(2); await page.waitForTimeout(300);
+        assert.equal(await page.evaluate(() => neo.scene.game.history.length), history - 1);
+      }
+      for (let move = 0; move < 70; move++) {
+        await page.waitForFunction(() => neo.scene.screen !== 'game' || !neo.scene.game.busy || neo.scene.game.finished, null, {timeout:20000});
+        if (await page.evaluate(() => neo.scene.screen !== 'game' || neo.scene.game.finished)) break;
+        const dir = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; return S.solve(g.puzzle, g.at, g.have).first; });
+        await press(dir < 0 ? 2 : [15,13,14,12][dir]);
+        await page.waitForTimeout(300);
+      }
+    } else if (id === 'bouncy-launch') {
+      const shot = async target => {
+        await page.waitForFunction(() => !neo.scene.game.flying);
+        // Feedback steers only the synthetic stick; it never sets game state or calls launch().
+        await page.evaluate(async target => {
+          const g = neo.scene.game;
+          const start = performance.now();
+          while (Math.abs(g.controllerPower - target) > 0.012 && performance.now() - start < 5000) {
+            couchPads[0].axes[0] = Math.sign(target - g.controllerPower);
+            await kit.sleep(16);
+          }
+          couchPads[0].axes[0] = 0;
+        }, target);
+        await press(0);
+        await page.waitForFunction(() => !neo.scene.game?.flying || neo.scene.screen !== 'game', null, {timeout:20000});
+      };
+      if (stop === 1) {
+        const off = await page.evaluate(() => neo.scene.game.targets[0] === 0 ? .95 : .02);
+        await shot(off); await shot(off);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2,1]);
+        await screenshot('couch-launch-hint');
+      }
+      for (let n = 0; n < 3; n++) {
+        const target = await page.evaluate(() => (neo.scene.game.targets[neo.scene.game.shot] + .5) / 5);
+        await shot(target);
+      }
+    } else {
+      if (stop === 2) {
+        await page.evaluate(() => { couchPads[0].axes[1] = 1; couchPads[1].axes[1] = -1; });
+        await page.waitForTimeout(300);
+        assert.ok(await page.evaluate(() => neo.scene.game.paddles.right > neo.scene.game.paddles.left + 150));
+        await page.evaluate(() => { couchPads[0].axes[1] = couchPads[1].axes[1] = 0; });
+        await press(9);
+        assert.equal(await page.evaluate(() => neo.scene.screen), 'pause');
+        const ball = await page.evaluate(() => ({ ...neo.scene.game.ball }));
+        await page.waitForTimeout(450);
+        assert.deepEqual(await page.evaluate(() => ({ ...neo.scene.game.ball })), ball);
+        await screenshot('couch-paused'); await press(0);
+        await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+        assert.equal(await page.evaluate(() => neo.scene.screen), 'pause');
+        await press(0);
+        await page.evaluate(() => { couchPads[0] = null; });
+        await page.waitForTimeout(150);
+        assert.equal(await page.evaluate(() => neo.scene.screen), 'pause');
+        await makePads(); await page.waitForTimeout(150); await press(0);
+      }
+      await page.evaluate(async (keyboard) => {
+        const g = neo.scene.game, b = g.box;
+        const { predictY } = await import('/src/games/bounce-back/logic.ts');
+        const down = new Set();
+        const key = (code, pressed) => { if (pressed === down.has(code)) return; if (pressed) down.add(code); else down.delete(code); window.dispatchEvent(new KeyboardEvent(pressed ? 'keydown' : 'keyup', {code, bubbles:true})); };
+        if (keyboard) { couchPads[0].axes[1] = couchPads[1].axes[1] = 0; }
+        const start = performance.now();
+        while (!g.finished && performance.now() - start < 120000) {
+          for (const [i, side] of ['right','left'].entries()) {
+            const face = side === 'right' ? b.x1 - 46 : b.x0 + 46;
+            let target = predictY(g.ball.x, g.ball.y, g.ball.vx, g.ball.vy, face, b.y0 + 26, b.y1 - 26);
+            if (!keyboard && side === 'right' && g.misses < 2) target = target < (b.y0+b.y1)/2 ? b.y1 : b.y0;
+            const delta = target - g.targets[side], y = Math.abs(delta) < 10 ? 0 : Math.sign(delta);
+            if (keyboard) { key(i === 0 ? 'ArrowUp' : 'KeyW', y < 0); key(i === 0 ? 'ArrowDown' : 'KeyS', y > 0); }
+            else couchPads[i].axes[1] = y;
+          }
+          await kit.sleep(16);
+        }
+        for (const code of [...down]) key(code, false);
+        couchPads[0].axes[1] = couchPads[1].axes[1] = 0;
+        if (!g.finished) throw new Error('controller rally did not finish');
+      }, stop === 4);
+    }
+    await menu();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1')));
+    assert.equal(saved.party.rounds.length, stop + 1);
+    assert.equal(Object.values(saved.stickers).reduce((n,s) => n + s.count, 0), stop + 1);
+    assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data)), childBefore, 'couch play leaves all child state unchanged');
+    log(`Couch stop ${stop+1}: ${id}, controller/keyboard completion, separate sticker and lantern saved`);
+  }
+  await screenshot('couch-trip-complete');
+  const saved = await page.evaluate(() => localStorage.getItem('neo.couch.v1'));
+  assert.equal(JSON.parse(saved).trips, 1);
+  await page.reload(); await ready(); await page.keyboard.press('c'); await menu();
+  assert.equal(await page.evaluate(() => localStorage.getItem('neo.couch.v1')), saved, 'reload never duplicates trip or stickers');
+  await page.getByRole('button', { name: 'Couch backup', exact: true }).click();
+  const download = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download couch backup', exact: true }).click();
+  await (await download).saveAs('test-results/couch-backup.json');
+  await page.locator('input[type=file]').setInputFiles('test-results/couch-backup.json'); await menu();
+  assert.equal(await page.evaluate(() => localStorage.getItem('neo.couch.v1')), saved, 'backup round trip');
+  await page.getByRole('button', { name: 'Back to start', exact: true }).click(); await scene('StartScene');
+  await makePads(); await page.waitForTimeout(150); await press(0); // suppressed until release on first observation
+  if (await page.evaluate(() => neo.scene.constructor.name === 'StartScene')) await press(0);
+  await menu();
+  assert.deepEqual(errors, []);
+  log('Couch: six stops, two puzzle levels, launch misses/hints, two independent paddles, pause/blur/disconnect/reconnect, portrait, child isolation, seeded resume, backup and controller title entry passed');
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -3478,6 +3657,7 @@ try {
   if (suite === 'all' || suite === 'woods') await woodsBatch();
   if (suite === 'all' || suite === 'shortlist') await shortlistBatch();
   if (suite === 'all' || suite === 'picnic') await picnicStory();
+  if (suite === 'all' || suite === 'couch') await couchPlay();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);
