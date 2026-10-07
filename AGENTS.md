@@ -72,7 +72,7 @@ The elementary plan separates future zone identity from learning range; current 
 | Need | Existing starting points |
 | --- | --- |
 | Characters, clothing, props | In `src/art/`: `critter.ts` (`CRITTERS`, `attach()`, moods including `sad`/`calm`, `currentMood`), `pet.ts`, `props.ts`, `shapes.ts`, `scenery.ts`, `particles.ts`, `sticker.ts` |
-| Input, motion, physics | In `src/engine/`: `input.ts`, `drag.ts`, `tween.ts`, `random.ts`, `view.ts`; `ball.ts` supplies ball/peg/wall simulation. Inspect current code and tests before reusing work in progress. |
+| Input, motion, physics | In `src/engine/`: `input.ts`, `drag.ts`, `tween.ts`, `random.ts`, `view.ts`; `ball.ts` supplies ball/peg/wall simulation, and its `simulate()` also drives physics rule tests (reachable targets, nothing trapped, flight times). Inspect current code and tests before reusing work in progress. |
 | Music and speech | In `src/audio/`: `engine.ts` unlocks on first touch; `sfx.ts` includes synthesized animal voices; `music.beats()` supports beat-synced play; `voice.ts` speaks line IDs with device speech. Parent recordings remain a proposal. |
 | Steering and aiming | Duckling Parade / Roundup for continuous steering; Bouncy Launch for a pull measured from pointer movement rather than an object snapped to the fingertip |
 | Tracing, pictures, and reasoning | Letter Trails for zero-lift drags and ordered strokes; Puzzle Pals for code-drawn textures; Memory Match for known-partner mistakes; Robot Path for solvable programs; Sink or Float for unpenalized predictions |
@@ -96,6 +96,8 @@ npm run test:offline         # with the production preview running
 For code changes, run typecheck, unit tests, and build. Exercise every new/changed game level in the browser, including wrong answers and hints where applicable, supported completion, saved results/rewards, reload, orientation, and reaching/returning from its place. Recheck production offline behavior after asset, navigation, or persistence changes. Shared engine or shell changes also need affected existing games checked. Keep the checks proportionate: run the suite (or one-game filter) for what changed, not every suite. The combined flow takes about an hour; save it for occasional release checks.
 
 Browser setup, suite names, and filters live in [README.md](README.md#browser-checks) and `scripts/browser-check.mjs`; add cases there for new games instead of maintaining a second suite inventory here. `BROWSER_SUITE=<suite> npm run test:browser` selects one suite. Browser scripts use isolated contexts; never clear a real player's save. Documentation-only edits need link/consistency and diff checks, not a game test run.
+
+When a browser check fails, probe with a small logging script before changing the test: many failures here were real bugs, such as a hint glow swallowing touches, a destroyed drawing freezing a show, and overlapping tap targets. Prove a fix by briefly restoring the old rule and watching the check fail. Put one-off Playwright probes in `test-results/` so `import 'playwright'` resolves. Vite listens on IPv6 `localhost`, so use `GAME_URL=http://localhost:5173`. Before an offline run, confirm the preview serves the current build by comparing the `assets/index-*.js` name in the served page with `dist/index.html`.
 
 Record only checks actually performed. Chrome automation does not establish physical iPad touch feel, offline device speech, first-touch audio, orientation, Guided Access, or Add to Home Screen behavior.
 
@@ -122,4 +124,4 @@ Use scripted input for moving targets, then screenshots for visual review. Finis
 
 Keep this file provider-neutral and focused on durable contributor guidance. Game descriptions, historical expansions, counts, and detailed test results belong in the linked docs. When implementing roadmap work, update the README, DESIGN status, ROADMAP, and VERIFICATION; update this file when a shared contract or workflow changes. Label new ideas as proposals and preserve remaining checks as unfinished.
 
-Commit or push only when asked. The live site is [Puddle Island](https://rjdunlap.github.io/neo/); every push to `main` deploys through `.github/workflows/deploy.yml`. Repo-local identity is `rjdunlap` with the GitHub no-reply email (public repository).
+Report briefly to the grown-up after each finished game or feature: what it does and which checks ran. Commit or push only when asked. The live site is [Puddle Island](https://rjdunlap.github.io/neo/); every push to `main` deploys through `.github/workflows/deploy.yml`. Repo-local identity is `rjdunlap` with the GitHub no-reply email (public repository).
