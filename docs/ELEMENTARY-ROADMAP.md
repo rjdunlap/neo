@@ -41,7 +41,7 @@ Everything in the three progression columns is a proposed extension, not a descr
 | **Duckling Parade, Roundup, Dot Link, Bounce Back** | Follow patterns, sort by a stated rule, cooperate toward a visible goal | Combine attributes, plan an order of actions, explain a partner strategy | Optional constraint puzzles or cooperative remixes where the original controls still feel good; otherwise keep them as relaxing favorites |
 | **Weather Wardrobe, Feelings Faces, community errands** | Plan a short outing and consider what a friend might need | Read a map or simple timetable, coordinate roles, compare plausible perspectives | Plan a shared event with several needs, explain a compromise, and revise it together; avoid treating feelings or family routines as having one correct answer |
 
-Avoid making every game teach arithmetic. Language, music, spatial thinking, inquiry, coordination, creativity, and cooperation all have a place. Offer pictures, manipulatives, narration, and editable plans throughout. Reading and writing can be practiced inside a game while the interface and help remain accessible aloud.
+Some of these steps now exist as games of their own: **Lasso Loops** (built) bundles fireflies in fives and tens and makes equal groups, and **Block Tower** (built) reaches a simple, stated balance rule for 6–8 through stacking. Avoid making every game teach arithmetic. Language, music, spatial thinking, inquiry, coordination, creativity, and cooperation all have a place. Offer pictures, manipulatives, narration, and editable plans throughout. Reading and writing can be practiced inside a game while the interface and help remain accessible aloud.
 
 ## Zone concepts
 
@@ -49,7 +49,7 @@ Names and boundaries are working proposals. Each zone starts as one small place 
 
 | Proposed zone | Identity and recurring host | First small expansion | Later growth |
 | --- | --- | --- | --- |
-| **Wonder Woods** | A trail of hollow trees, streams, and signs; a curious squirrel postkeeper | Seesaw Balance, a Robot Path loop mode (built), a Mail Carrier map mode; **The Woodland Picnic** uses all three | Older Peekaround Island modes, listening clues, short stories, and gentle classification puzzles |
+| **Wonder Woods** | A trail of hollow trees, streams, and signs; a curious squirrel postkeeper (Hazel, who appears in Mail Carrier's map) | Seesaw Balance's take-the-same-off levels, a Robot Path loop mode and a Mail Carrier map mode (all three built); **The Woodland Picnic** uses all three | Older Peekaround Island modes, listening clues, short stories, and gentle classification puzzles |
 | **Maker Harbor** | Floating workshops and a friendly ferry crew; a beaver builder | Extend Little Helpers' equal groups (built at level 6) into dock loads and Mail Carrier into dock routes; add a constrained **Chain Reaction** activity | Shape Buddies, Wobble Works, area/volume blueprints, and a **Ferry Fair** project |
 | **Storybook Square** | A library, puppet stage, and post office; an owl storyteller | Extend Story Steps into clue-based endings and Word Monsters into meaningful word parts; add **Silly Describer** | Story Theater, alternative viewpoints, a locally saved illustrated newspaper, and **The Mixed-Up Invitations** mystery |
 | **Discovery Marsh** | Boardwalks, ponds, and an observation hut; a patient heron naturalist | Extend Photo Safari into observation records and Sink or Float into repeatable trials; add a small **Habitat Helpers** model | Compare habitat needs, chart observations, test one variable, and design a visitor garden with several valid solutions |
@@ -80,14 +80,15 @@ After each expansion, decide what the child wants to repeat, what was confusing,
 
 - [ ] Complete the remaining combined-browser and physical-iPad checks for the current catalog; evaluate device speech, fun, and clarity separately from automated success.
 - [ ] Make finding and returning to games comfortable as the catalog grows. Retain large targets, spoken names, favorites where useful, and remembered position.
-- [ ] Build the small Windy Picnic pilot with resumable steps; separately build the first pet room. Neither requires a large world framework.
+- [x] Build the small Windy Picnic pilot with resumable steps (a map destination, three requests, a journal and one keepsake; see [DESIGN.md](DESIGN.md#the-windy-picnic-2026-10-06-night)). It needed no world framework: a route, a scene and one save field.
+- [ ] Build the first pet room, separately. It does not require a large world framework either.
 - [ ] Establish a short activity brief: skill, fun action, support options, deeper mode, completion, accepted alternatives, and required checks.
 
 Exit milestone: familiar games remain easy to reach, one short project can resume after closing the app, and a personal creation/keepsake can be revisited. New standalone game work can still proceed when requested; the home is not a prerequisite for every minigame.
 
 ### E1 — Prove an early-elementary zone
 
-- [ ] Extend Seesaw Balance to its 6–8 modes and add the small Mail Carrier map mode that gives them a woodland context. (Robot Path loops with step-through playback are built: levels 7–10.)
+- [x] Extend Seesaw Balance to its 6–8 modes and add the small Mail Carrier map mode that gives them a woodland context. Built: Seesaw Balance 8–9 (take the same off both sides until a box is alone), Mail Carrier 6–7 (a picture map with a key, then two planned stops), and Robot Path loops with step-through playback (levels 7–10). Two different unknown weights remain a possible later step.
 - [x] Define the first older supported level ranges and the parent-facing descriptions (the `school` band; 35 games at first, 44 now, with Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it). Reuse the existing pre-K range where it fits; add a new band only with navigation, save, voice, and test support.
 - [ ] Build Wonder Woods as the first thematic zone pilot (started as the 6–8 trail place; host, errand and zone identity separate from the band remain) and preserve launch/return context independently of the chosen difficulty.
 - [ ] Adapt the picnic story to the new zone; keep every participating game independently playable.

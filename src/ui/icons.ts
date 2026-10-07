@@ -72,3 +72,23 @@ export function arrowIcon(dir: 1 | -1, color = ink): Graphics {
 export function playIcon(color = 0xffffff): Graphics {
   return new Graphics().poly([-16, -26, 28, 0, -16, 26]).fill(color).stroke(line(8, color));
 }
+
+/** A picnic basket: the way back to the Windy Picnic. */
+export function basketIcon(): Graphics {
+  return new Graphics()
+    .moveTo(-20, -4).bezierCurveTo(-20, -34, 20, -34, 20, -4).stroke(line(6, wood.line))
+    .poly([-30, -6, 30, -6, 23, 26, -23, 26]).fill(wood.fill).stroke(line(5, wood.line))
+    .moveTo(-27, 8).lineTo(27, 8).stroke(line(4, wood.line))
+    .rect(-31, -10, 62, 9).fill(swatch.red.fill)
+    .rect(-19, -10, 9, 9).rect(1, -10, 9, 9).fill(0xffffff)
+    .rect(-31, -10, 62, 9).stroke(line(3, swatch.red.line));
+}
+
+/** A little notebook with a leaf: the picnic journal. */
+export function journalIcon(): Graphics {
+  return new Graphics()
+    .roundRect(-26, -30, 52, 60, 6).fill(swatch.green.light).stroke(line(5, swatch.green.line))
+    .rect(-26, -30, 10, 60).fill(swatch.green.line)
+    .ellipse(6, 0, 13, 7).fill(swatch.green.fill).stroke(line(3, swatch.green.line))
+    .moveTo(-6, 6).lineTo(18, -6).stroke(line(3, swatch.green.line));
+}

@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, grass, ink, RAINBOW, swatch } from '../../art/palette';
 import { makePet } from '../../art/pet';
+import { checkBadge, picnicLandmark } from '../../art/picnic';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
@@ -40,6 +41,9 @@ export class MapScene extends Scene {
     openParentPanel(() => (store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch()));
   });
   readonly places: { def: Place; node: Container }[] = [];
+  /** The Windy Picnic, on the open grass beside Daisy Meadow: a story, not an age place. */
+  readonly picnic = new Container();
+  private readonly picnicDone = checkBadge(20);
   private leaving = false;
   private walking = false;
   /** A grown-up moved her up a band since the last visit: the pet starts at the old place. */
@@ -71,6 +75,15 @@ export class MapScene extends Scene {
       this.places.push({ def, node });
       this.map.addChild(node);
     }
+    const name = label('Windy Picnic', 21, ink);
+    name.y = 78;
+    const note = label('a story · 4–8 years', 14, swatch.white.line, '500');
+    note.y = 100;
+    this.picnicDone.position.set(70, -40);
+    this.picnicDone.visible = store.picnic.keepsake;
+    this.picnic.addChild(new Graphics().ellipse(0, 40, 92, 34).fill(cream), picnicLandmark(), name, note, this.picnicDone);
+    onTap(this.picnic, () => void this.visitPicnic(), { radius: 100 });
+    this.map.addChild(this.picnic);
     if (rank(profile.band) > rank(world.band)) world.band = profile.band;
     store.save();
     this.pip.scale.set(0.4);
@@ -96,6 +109,7 @@ export class MapScene extends Scene {
     for (let i = 0; i < 12; i++) this.sea.ellipse((i * 193) % v.w, 140 + ((i * 127) % (v.h - 180)), 40, 6).fill({ color: swatch.white.fill, alpha: 0.5 });
     this.island.clear().ellipse(v.w / 2, v.h / 2 + 22, v.w * 0.48, v.h * 0.4).fill(cream).ellipse(v.w / 2, v.h / 2 + 10, v.w * 0.455, v.h * 0.375).fill(grass);
     this.places.forEach(({ def, node }) => node.position.set(130 + def.x * (v.w - 290), 150 + def.y * (v.h - 360)));
+    this.picnic.position.set(130 + 0.97 * (v.w - 290), 150 + 0.98 * (v.h - 360));
 
     // The trail climbs from the lagoon to the peak through every place.
     const pts = this.places.map((p) => ({ x: p.node.x, y: p.node.y + 30 }));
@@ -165,6 +179,21 @@ export class MapScene extends Scene {
     this.map.position.set(node.x, node.y);
     await this.tw.to(this.map.scale, { x: 1.5, y: 1.5 }, { duration: 0.4 });
     this.app.go.place(def.band);
+  }
+
+  /** The pet hops over, and in we go. The picnic is open to every age, like the places. */
+  private async visitPicnic() {
+    if (this.leaving || this.walking) return;
+    this.leaving = true;
+    this.ui.eventMode = 'none';
+    void voice.say('map.picnic');
+    this.pip.hop(1.2);
+    sfx.whoosh();
+    const n = this.picnic;
+    this.map.pivot.set(n.x, n.y);
+    this.map.position.set(n.x, n.y);
+    await this.tw.to(this.map.scale, { x: 1.5, y: 1.5 }, { duration: 0.4 });
+    this.app.go.picnic();
   }
 
   update(dt: number) {

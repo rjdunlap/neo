@@ -24,7 +24,8 @@ export class RoundButton extends Container {
       () => {
         sfx.tick();
         this.scale.set(0.88);
-        window.setTimeout(() => this.scale.set(1), 110);
+        // A press can close whatever holds the button (a journal, a scene); don't touch it once it's gone.
+        window.setTimeout(() => !this.destroyed && this.scale.set(1), 110);
         onPress();
       },
       { radius: radius + 14, cooldown: 400 },

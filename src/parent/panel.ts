@@ -234,7 +234,15 @@ function weekSummary(): string {
       ${rows.join('')}
     </table>
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
+    <p><strong>The Windy Picnic</strong> (a story on the island map): ${picnicSummary()}</p>
     ${ideas.map((g) => `<p><strong>Off-screen idea:</strong> ${esc(g.offScreen!)}</p>`).join('')}`;
+}
+
+function picnicSummary(): string {
+  const p = store.picnic;
+  const words: Record<string, string> = { blanket: 'found the blanket', sandwiches: 'shared the sandwiches', invitation: 'played the invitation' };
+  const now = p.ended ? 'finished.' : p.steps.length ? `${p.steps.map((s) => words[s]).join(', ')} (${p.steps.length} of 3).` : 'not started yet.';
+  return `${now} ${p.keepsake ? 'Its picnic photo is in the journal.' : ''} Its sandwich and invitation steps are Pet Kitchen and Jelly Drums rounds; they play at the story's level and don't change those games' levels.`;
 }
 
 async function exportBackup() {

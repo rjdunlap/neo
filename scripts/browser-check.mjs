@@ -1826,13 +1826,15 @@ async function next() {
         } else if (mode === 'parts') {
           const n = g.round.answer;
           if (first) {
-            // Pile on weights (never exactly level) until it is too heavy twice, then clear the tray.
+            // Pile on weights (never exactly level) until it is too heavy twice, then clear the tray. One pass in
+            // weight order can't always get there (for 7: 4, skip 3, 2, skip 1), so an overload comes off and goes on again.
             let overs = 0;
-            for (const item of [...loose()].sort((a, b) => b.thing.weight - a.thing.weight)) {
+            for (let guard = 0; overs < 2 && guard < 12; guard++) {
               const on = total(loose().filter((i) => i.side).map((i) => i.thing));
-              if (on + item.thing.weight === n) continue;
+              const item = loose().filter((i) => !i.side).sort((a, b) => b.thing.weight - a.thing.weight).find((i) => on + i.thing.weight !== n);
+              if (!item) break;
               await seesaw.onto(item, empty());
-              if (on + item.thing.weight > n && ++overs === 2) break;
+              if (on + item.thing.weight > n && ++overs < 2) await seesaw.off(item);
             }
             if (g.misses !== 2 || g.hints !== 1) throw new Error(`Seesaw parts hint: ${g.misses} ${g.hints}`);
             for (const item of loose().filter((i) => i.side)) { if (g.busy) break; await seesaw.off(item); }
@@ -3032,6 +3034,421 @@ async function woodsBatch() {
     assert.deepEqual(await score('little-helpers'), [2, 1]);
     log('Little Helpers 6: equal teams under each fruit of a bunch, short whistles counted by groups, hint, saved score and sticker passed');
   }
+
+  // Seesaw Balance 8–9: take the same off both sides until the box is alone, then say its weight.
+  if (!only || only === 'boxes') for (let level = Math.max(8, fromLevel); level <= 9; level++) {
+    await launch('seesaw-balance', level);
+    if (level === 9) await page.setViewportSize({ width: 768, height: 1024 });
+    const rounds = await page.evaluate(() => neo.scene.game.rounds.length);
+    // Drag a thing off a tray onto the grass, or from the grass onto a tray (aiming below, since it rides above the finger).
+    const move = (pick, to) => page.evaluate(async ({ pick, to }) => {
+      const g = neo.scene.game; const fs = g.round.fixedSide; const os = fs === 'left' ? 'right' : 'left';
+      const side = { fixed: fs, other: os, grass: null }[pick.side];
+      const item = g.items.find((i) => i.side === side && i.thing.kind === pick.kind);
+      const s = neo.view.scale; const r = document.querySelector('canvas').getBoundingClientRect();
+      const at = to === 'grass' ? { x: 512, y: neo.view.h - 20 } : (() => { const t = g.trayTop(to === 'fixed' ? fs : os); return { x: t.x, y: t.y + 10 }; })();
+      await kit.dragTo(item.node, { x: r.left + at.x * s, y: r.top + at.y * s }, 10);
+      await kit.sleep(250);
+      await kit.until(() => !g.busy, 8000);
+      await kit.sleep(700);
+    }, { pick, to });
+    for (let n = 0; n < rounds; n++) {
+      await idle(n);
+      if (n === 0) {
+        // Two blocks off one side only: it tips twice, which is said aloud but never a miss; then a glow.
+        await move({ side: 'other', kind: 'block' }, 'grass');
+        await move({ side: 'other', kind: 'block' }, 'grass');
+        assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.tips, g.misses, g.hints, !!g.hintItem]; }), [2, 0, 1, true]);
+        await screenshot(`seesaw-balance-${level}-tipped`);
+        // Back on again: level, and the glow goes.
+        await move({ side: 'grass', kind: 'block' }, 'other');
+        await move({ side: 'grass', kind: 'block' }, 'other');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.tips, !!neo.scene.game.hintItem]), [0, false]);
+      }
+      if (level === 9) { await move({ side: 'fixed', kind: 'box' }, 'grass'); await move({ side: 'other', kind: 'box' }, 'grass'); }
+      while (await page.evaluate(() => { const g = neo.scene.game; return g.items.some((i) => i.side === g.round.fixedSide && i.thing.kind === 'block'); })) {
+        await move({ side: 'fixed', kind: 'block' }, 'grass');
+        await move({ side: 'other', kind: 'block' }, 'grass');
+      }
+      await page.waitForFunction(() => neo.scene.game.pads.length === 3 && !neo.scene.game.busy, null, { timeout: 15000 });
+      assert.equal(await page.evaluate(() => { const g = neo.scene.game; return g.items.filter((i) => i.side && i.thing.kind === 'block').length === g.round.answer; }), true, 'the blocks across show the box weight');
+      if (n === 0) {
+        await tap('neo.scene.game.pads.find((p) => p.value !== neo.scene.game.round.answer)');
+        await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+        await screenshot(`seesaw-balance-${level}`);
+      }
+      await tap('neo.scene.game.pads.find((p) => p.value === neo.scene.game.round.answer)');
+    }
+    await finished('seesaw-balance');
+    assert.deepEqual(await score('seesaw-balance'), [1, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Seesaw Balance ${level} (${level === 8 ? 'box and blocks' : 'boxes on both sides'}): same off both sides, tips explained without misses, glow, putting back, a lone box's weight, saved score and sticker passed`);
+  }
+
+  // Mail Carrier 6–7: Hazel's picture map of the woods, the key, and two planned stops.
+  if (!only || only === 'mailmap') for (let level = Math.max(6, fromLevel); level <= 7; level++) {
+    await launch('mail-carrier', level);
+    if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
+    const trips = await page.evaluate(() => neo.scene.game.trips.length);
+    // Tap a house's middle (the hit area is centered above its feet).
+    const house = (i) => tap(`neo.scene.game.houses[${i}]`).then(() => page.waitForTimeout(250));
+    for (let n = 0; n < trips; n++) {
+      await idle(n);
+      const trip = await page.evaluate(() => [...neo.scene.game.trip]);
+      if (n === 0) {
+        if (level === 6) {
+          // Two wrong houses say who lives there; then the key row and the house glow.
+          const wrong = (trip[0] + 1) % 5;
+          await house(wrong); await page.waitForTimeout(1200); await house(wrong);
+          assert.deepEqual(await counts(), [2, 1]);
+        } else {
+          // Letter 2's house first, then a house with no letter: both gentle misses, then a glow.
+          const nobody = [0, 1, 2, 3, 4].find((i) => !trip.includes(i));
+          await house(trip[1]); await house(nobody);
+          assert.deepEqual(await counts(), [2, 1]);
+        }
+        assert.ok(await page.evaluate((h) => { const g = neo.scene.game; return g.houses[h].glow.visible && g.key.find((r) => r.house === h).glow.visible; }, trip[0]), 'house and key row glow');
+        await screenshot(`mail-carrier-${level}`);
+        if (level === 7) {
+          // A planned stop can be taken out again by tapping it.
+          await house(trip[0]); await house(trip[0]);
+          assert.deepEqual(await page.evaluate(() => neo.scene.game.planned), []);
+        }
+      }
+      for (const h of trip) await house(h);
+      if (level === 7) {
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.planned), trip);
+        assert.equal(await page.evaluate(() => neo.scene.game.go.visible), true);
+        await tap('neo.scene.game.go');
+      }
+    }
+    await finished('mail-carrier');
+    assert.deepEqual(await score('mail-carrier'), [2, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : 'two planned stops'}): ${level === 6 ? 'wrong houses explained' : 'out-of-order and no-letter stops, undoing a stop'}, glowing key row, saved score and sticker passed`);
+  }
+}
+
+
+async function shortlistBatch() {
+  const only = process.env.SHORTLIST_ONLY;
+  const fromLevel = Number(process.env.FROM_LEVEL || 1);
+  const score = (id) => page.evaluate((id) => { const r = kit.store.stats(id).history.at(-1); return [r.misses, r.hints]; }, id);
+  const idle = async (n) => {
+    await page.waitForFunction((n) => { const g = neo.scene.game; return neo.scene.finished || (g.index === n && !g.busy); }, n, { timeout: 30000 });
+    await page.waitForTimeout(150);
+  };
+  const counts = () => page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]);
+  // A canvas point for logical (x, y).
+  const at = (x, y) => page.evaluate(({ x, y }) => { const s = neo.view.scale; const r = document.querySelector('canvas').getBoundingClientRect(); return [r.left + x * s, r.top + y * s]; }, { x, y });
+
+  if (!only || only === 'tower') for (let level = fromLevel; level <= 6; level++) {
+    await launch('block-tower', level);
+    if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+    const { rounds, mode } = await page.evaluate(() => ({ rounds: neo.scene.game.rounds.length, mode: neo.scene.game.plan.mode }));
+    for (let n = 0; n < rounds; n++) {
+      await idle(n);
+      if (mode === 'tumble' || mode === 'friend') {
+        // Lap play: a tap anywhere stacks, up to the friend's height, then knocks it all down.
+        while (!(await page.evaluate(() => neo.scene.game.full))) { const [x, y] = await at(300, 200); await page.mouse.click(x, y); await page.waitForTimeout(260); }
+        assert.equal(await page.evaluate(() => neo.scene.game.stack.length), await page.evaluate(() => neo.scene.game.round.target));
+        await page.waitForFunction(() => !neo.scene.game.busy);
+        if (n === 0) await screenshot(`block-tower-${level}`);
+        const [x, y] = await at(300, 200); await page.mouse.click(x, y);
+      } else if (mode === 'flag' || mode === 'match') {
+        const want = await page.evaluate(() => neo.scene.game.round.target);
+        const bin = async (k) => { for (let i = 0; i < k; i++) { await tap('neo.scene.game.bin'); await page.waitForTimeout(150); } };
+        if (n === 0) {
+          // One too many, then one too few: two explained misses, a counted hint.
+          await bin(want + 1);
+          await tap('neo.scene.game.bell'); await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+          const top = await page.evaluate(() => { const h = neo.scene.game.towerHit.hitArea; return [h.x + h.width / 2, h.y + 40]; });
+          for (let k = 0; k < 2; k++) { const [x, y] = await at(top[0], top[1] + k * 62); await page.mouse.click(x, y); await page.waitForTimeout(350); }
+          assert.equal(await page.evaluate(() => neo.scene.game.stack.length), want - 1, 'tapping the tower takes the top block off');
+          await tap('neo.scene.game.bell'); await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
+          assert.deepEqual(await counts(), [2, 1]);
+          await screenshot(`block-tower-${level}`);
+          await bin(1);
+        } else await bin(want);
+        assert.equal(await page.evaluate(() => neo.scene.game.stack.length), want);
+        await tap('neo.scene.game.bell');
+      } else if (mode === 'stand') {
+        // Guessing the tower that falls is fine: a guess is never a miss.
+        if (n === 0) await screenshot(`block-tower-${level}`);
+        await tap(`neo.scene.game.standTowers[${n === 1 ? 'neo.scene.game.stand.stands' : '1 - neo.scene.game.stand.stands'}][1]`);
+        await page.waitForFunction(() => neo.scene.game.flying.length > 0, null, { timeout: 5000 });
+        if (n === 0) { await page.waitForTimeout(900); await screenshot(`block-tower-${level}-fell`); }
+      } else {
+        // Reach: two topples past the table edge (explained misses), a glowing hint place, then a way that works.
+        const drop = async (slot) => {
+          await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+          const [k, edge, top] = await page.evaluate(() => { const g = neo.scene.game; return [g.placed.length, g.edge, g.tableTop]; });
+          const target = await at(edge + (slot * 104) / 8, top - k * 62 + 40);
+          await page.evaluate(async (target) => { const t = neo.scene.game.tray.find((t) => t.x === null); await kit.dragTo(t.node, { x: target[0], y: target[1] }, 12); }, target);
+          await page.waitForTimeout(500);
+        };
+        if (n === 0) {
+          for (let k = 0; k < 2; k++) { await drop(3); await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.placed.length === 0, null, { timeout: 20000 }); }
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.hintGhost.visible), 'a glowing place for the next block');
+          await screenshot(`block-tower-${level}`);
+        }
+        const way = await page.evaluate(async () => (await import('/src/games/block-tower/logic.ts')).finish([], neo.scene.game.reachRound));
+        for (const slot of way) await drop(slot);
+      }
+    }
+    await finished('block-tower');
+    assert.deepEqual(await score('block-tower'), mode === 'flag' || mode === 'match' || mode === 'reach' ? [2, 1] : [0, 0]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Bear's tower, explained misses, counted hint", stand: 'guess, ropes let go, why it fell shown', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`);
+  }
+
+  if (!only || only === 'lasso') {
+    // Loops are drawn like a finger would: around a chosen group, checked to hold exactly that group.
+    await page.evaluate(async () => {
+      const { inside } = await import('/src/games/lasso-loops/logic.ts');
+      const hull = (pts) => {
+        const p = [...pts].sort((a, b) => a.x - b.x || a.y - b.y);
+        const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+        const half = (list) => { const h = []; for (const q of list) { while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], q) <= 0) h.pop(); h.push(q); } return h; };
+        return half(p).slice(0, -1).concat(half([...p].reverse()).slice(0, -1));
+      };
+      const around = (pts) => hull(pts.flatMap((q) => Array.from({ length: 8 }, (_, k) => ({ x: q.x + 26 * Math.cos((k * Math.PI) / 4), y: q.y + 26 * Math.sin((k * Math.PI) / 4) }))));
+      window.lasso = {
+        loop(n) {
+          const g = neo.scene.game; const free = g.free;
+          for (const seed of free) {
+            const group = [...free].sort((a, b) => Math.hypot(a.x - seed.x, a.y - seed.y) - Math.hypot(b.x - seed.x, b.y - seed.y)).slice(0, n);
+            const poly = around(group.map((f) => ({ x: f.x, y: f.y })));
+            if (free.filter((f) => inside(poly, f.position)).length === n) return poly;
+          }
+          throw new Error(`No loop of ${n}`);
+        },
+        async draw(poly) {
+          const s = neo.view.scale; const r = document.querySelector('canvas').getBoundingClientRect();
+          const pts = [...poly, poly[0]];
+          const path = pts.flatMap((p, i) => (i ? kit.line([pts[i - 1].x, pts[i - 1].y], [p.x, p.y], 4).slice(1) : [[p.x, p.y]])).map(([x, y]) => [r.left + x * s, r.top + y * s]);
+          await kit.drag(path, 1, 4); await kit.sleep(250);
+        },
+      };
+    });
+    for (let level = fromLevel; level <= 5; level++) {
+      await launch('lasso-loops', level);
+      if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      const jars = await page.evaluate(() => neo.scene.game.jars.length);
+      for (let j = 0; j < jars; j++) {
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished, null, { timeout: 30000 });
+        if (await page.evaluate(() => neo.scene.game.finished || !neo.scene.game.free.length)) break;
+        const want = await page.evaluate(() => neo.scene.game.jar.want || 2);
+        if (j === 0 && level > 1) {
+          // Two loops with one too many: gentle misses, then rings around a group that fits.
+          for (let k = 0; k < 2; k++) {
+            await page.evaluate(async (n) => lasso.draw(lasso.loop(n)), want + 1);
+            await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+          }
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.equal(await page.evaluate(() => neo.scene.game.flies.filter((f) => f.ring.visible).length), want);
+          await screenshot(`lasso-loops-${level}`);
+        }
+        await page.evaluate(async (n) => lasso.draw(lasso.loop(n)), want);
+        await page.waitForFunction((j) => { const g = neo.scene.game; return g.index > j || g.finished || g.pads.length > 0; }, j, { timeout: 30000 });
+      }
+      if (level >= 3) {
+        // How many in all? A wrong number is counted aloud the way the jars show it.
+        await page.waitForFunction(() => neo.scene.game.pads.length === 3 && !neo.scene.game.busy, null, { timeout: 30000 });
+        await screenshot(`lasso-loops-${level}-question`);
+        await tap('neo.scene.game.pads.find((p) => p.value !== neo.scene.game.round.answer)');
+        await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
+        await tap('neo.scene.game.pads.find((p) => p.value === neo.scene.game.round.answer)');
+      }
+      await finished('lasso-loops');
+      assert.deepEqual(await score('lasso-loops'), level === 1 ? [0, 0] : level === 2 ? [2, 1] : [3, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(`Lasso Loops ${level}: loops drawn around fireflies${level > 1 ? ', wrong-sized loops explained, ringed hint' : ''}${level >= 3 ? ', how-many question with a counted miss' : ''}, saved score and sticker passed`);
+    }
+  }
+  if (!only || only === 'says') for (let level = fromLevel; level <= 5; level++) {
+    // Nothing is judged: the pet moves, and a grown-up taps the arrow. Tapping the big pet shows the move again.
+    await launch('pet-says', level);
+    if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
+    const turns = await page.evaluate(() => neo.scene.game.turns.length);
+    assert.equal(await page.evaluate(() => neo.scene.pet.visible), false, 'the big pet stands in for the corner guide');
+    for (let n = 0; n < turns; n++) {
+      await page.waitForFunction((n) => { const g = neo.scene.game; return g.index === n && !g.busy && g.next.visible; }, n, { timeout: 40000 });
+      if (n === 1) {
+        await tap('neo.scene.game.mover.pet');
+        if (level !== 5) assert.equal(await page.evaluate(() => neo.scene.game.next.visible), false, 'showing the move again');
+        await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.next.visible, null, { timeout: 40000 });
+        await screenshot(`pet-says-${level}`);
+      }
+      await page.waitForTimeout(250);
+      await tap('neo.scene.game.next');
+    }
+    await finished('pet-says');
+    assert.deepEqual(await score('pet-says'), [0, 0]);
+    assert.equal(await page.evaluate(() => neo.scene.pet.visible), false);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Pet Says ${level} (${await page.evaluate(() => neo.scene.game.plan.mode)}): moves shown and repeated, grown-up arrow, saved round and sticker passed`);
+  }
+
+  if (!only || only === 'owls') for (let level = fromLevel; level <= 4; level++) {
+    await launch('owl-walk', level);
+    if (level === 2) await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+    // An owl tapped before a card is turned over just says to turn one over.
+    await tap('neo.scene.game.owls[0].critter');
+    assert.equal(await page.evaluate(() => neo.scene.game.owls[0].spot), -1);
+    let wrong = false;
+    for (let t = 0; t < 60 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
+      await page.waitForFunction(() => { const g = neo.scene.game; return g.finished || (!g.busy && g.turn === 'child'); }, null, { timeout: 40000 });
+      if (await page.evaluate(() => neo.scene.game.finished)) break;
+      await tap('neo.scene.game.deck');
+      await page.waitForFunction(() => neo.scene.game.card && !neo.scene.game.busy, null, { timeout: 20000 });
+      const [best, worse] = await page.evaluate(async () => {
+        const L = await import('/src/games/owl-walk/logic.ts'); const g = neo.scene.game; const spots = g.owls.map((o) => o.spot);
+        const best = L.farthest(g.path, spots, g.card);
+        return [best[0], g.owls.findIndex((o, i) => !best.includes(i) && o.spot < g.path.length)];
+      });
+      if (level === 4 && !wrong && worse >= 0) {
+        // A shorter hop is a gentle miss with both numbers said; the second brings a glow on the farthest owl.
+        wrong = true;
+        for (let k = 0; k < 2; k++) { await tap(`neo.scene.game.owls[${worse}].critter`); await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); }
+        assert.deepEqual(await counts(), [2, 1]);
+        assert.ok(await page.evaluate((b) => neo.scene.game.owls[b].glow.visible, best));
+        await screenshot(`owl-walk-${level}`);
+      } else if (t === 1) await screenshot(`owl-walk-${level}`);
+      const before = await page.evaluate((b) => neo.scene.game.owls[b].spot, best);
+      await tap(`neo.scene.game.owls[${best}].critter`);
+      await page.waitForFunction(({ b, before }) => neo.scene.game.owls[b].spot !== before, { b: best, before }, { timeout: 20000 });
+    }
+    await finished('owl-walk');
+    assert.ok(await page.evaluate(() => neo.scene.game.owls.every((o) => o.spot >= neo.scene.game.path.length)), 'every owl is home');
+    assert.deepEqual(await score('owl-walk'), level === 4 ? [2, 1] : [0, 0]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Owl Walk Home ${level}: cards turned, owls hopped to the next stone of the color${level > 1 ? ', the pet taking turns' : ''}${level === 4 ? ', shorter hops explained with a glow' : ''}, everyone home, saved score and sticker passed`);
+  }
+}
+
+async function picnicStory() {
+  const picnic = () => page.waitForFunction(() => neo.scene.constructor.name === 'PicnicScene' && !neo.switching && !neo.scene.busy, null, { timeout: 30000 });
+  const story = () => page.evaluate(() => JSON.parse(JSON.stringify(kit.store.picnic)));
+  const stickers = () => page.evaluate(() => kit.store.data.stickers.length);
+  await page.evaluate(() => { kit.store.data.profile.band = 'prek'; kit.store.data.world.band = 'prek'; kit.store.data.settings.sessionMinutes = 0; kit.store.retellStory(); });
+  const before = await stickers();
+  // The picnic stands on the island map, open to every age like the places.
+  await page.evaluate(() => neo.go.hub()); await scene('MapScene');
+  await tap('neo.scene.picnic'); await picnic();
+  assert.equal(await page.evaluate(() => neo.scene.puzzle.blankets.length), 3);
+  await screenshot('picnic-start');
+
+  // The blanket, right here: the request, two wrong blankets explained, a glow, then Juniper's.
+  await tap("neo.scene.requests.find(r => r.step === 'blanket').button");
+  const wrong = await page.evaluate(() => { const p = neo.scene.puzzle; return p.blankets.map((_, i) => i).filter((i) => i !== p.target); });
+  for (const i of wrong) { await tap(`neo.scene.hung.find(h => h.index === ${i}).node`); await page.waitForTimeout(200); }
+  assert.equal(await page.evaluate(() => neo.scene.wrongs), 2);
+  assert.ok(await page.evaluate(() => { const p = neo.scene.puzzle; return neo.scene.hung.find((h) => h.index === p.target).node.glow.visible; }), 'Juniper\'s blanket glows');
+  await tap('neo.scene.hung.find(h => h.index === neo.scene.puzzle.target).node'); await picnic();
+  assert.deepEqual(await story(), { steps: ['blanket'], ended: false, keepsake: false });
+  assert.ok(await page.evaluate(() => !!neo.scene.ground && !neo.scene.puzzle), 'the blanket is spread on the grass');
+  assert.equal(await stickers(), before, 'the blanket step is not a game round and gives no sticker');
+
+  // Left halfway: a reload resumes with the blanket down and the other two to do.
+  await page.reload(); await ready();
+  await page.evaluate(() => neo.go.hub()); await scene('MapScene');
+  await tap('neo.scene.picnic'); await picnic();
+  assert.deepEqual(await story(), { steps: ['blanket'], ended: false, keepsake: false });
+  assert.ok(await page.evaluate(() => !!neo.scene.ground && neo.scene.hung.length === 0));
+  assert.deepEqual(await page.evaluate(() => neo.scene.requests.map((r) => r.glow.visible)), [false, true, false], 'the next request glows');
+
+  // Sandwiches: a Pet Kitchen round at the story's level, which leaves Pet Kitchen's own level alone.
+  const kitchenLevel = await page.evaluate(() => kit.store.stats('pet-kitchen').level);
+  await tap("neo.scene.requests.find(r => r.step === 'sandwiches').button");
+  await page.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching && neo.scene.mod.id === 'pet-kitchen', null, { timeout: 20000 });
+  assert.deepEqual(await page.evaluate(() => [neo.scene.band, neo.scene.level, neo.scene.story]), ['prek', 3, { step: 'sandwiches', level: 3 }]);
+  const kitchenRound = async () => {
+    await page.waitForTimeout(500);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      kit.tapOn(g.cuts[0]); await kit.sleep(450);
+      if (g.pieces.length < g.plates.length) { kit.tapOn(g.recut); await kit.sleep(500); kit.tapOn(g.cuts[1]); await kit.sleep(500); }
+      for (let i = 0; i < g.pieces.length; i++) { const p = g.plates[i % g.plates.length].getGlobalPosition(); await kit.dragTo(g.pieces[i].node, { x: p.x, y: p.y + 40 * neo.view.scale }, 18); await kit.sleep(220); }
+      kit.tapOn(g.serve);
+    });
+    await finished('pet-kitchen');
+  };
+  await kitchenRound();
+  assert.deepEqual((await story()).steps, ['blanket', 'sandwiches']);
+  assert.equal(await page.evaluate(() => kit.store.stats('pet-kitchen').level), kitchenLevel, 'a story round does not move the game level');
+  assert.equal(await stickers(), before + 1);
+  // "Again" plays the same story round: one more sticker, nothing done twice.
+  const after = (button) => page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }).then(() => page.waitForTimeout(500)).then(() => tap(`neo.scene.after.${button}`));
+  await after('again');
+  await page.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching && !neo.scene.finished && neo.scene.story?.step === 'sandwiches', null, { timeout: 20000 });
+  await kitchenRound();
+  assert.deepEqual(await story(), { steps: ['blanket', 'sandwiches'], ended: false, keepsake: false });
+  assert.equal(await stickers(), before + 2, 'one sticker per round, and the story adds none');
+  // The basket goes back to the picnic, where the plates arrive.
+  await after('home');
+  await picnic();
+  assert.equal(await page.evaluate(() => [neo.scene.from, neo.scene.plates.length].join()), 'sandwiches,4');
+
+  // The journal recaps what's done and its green arrow goes straight to the invitation.
+  await tap('neo.scene.journalButton'); await page.waitForTimeout(400);
+  assert.deepEqual(await page.evaluate(() => neo.scene.journal.rows.map((r) => !!r.change)), [true, true, false]);
+  assert.equal(await page.evaluate(() => !!neo.scene.journal.retell), false);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+  await screenshot('picnic-journal-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  await tap('neo.scene.journal.go');
+  await page.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching && neo.scene.mod.id === 'jelly-drums', null, { timeout: 20000 });
+  assert.deepEqual(await page.evaluate(() => [neo.scene.level, neo.scene.story.step]), [5, 'invitation']);
+  // Two wrong jellies first: help counts in the round's score but reaches the same ending.
+  await page.evaluate(async () => {
+    const g = neo.scene.game;
+    const hit = async (i) => { kit.tapOn(g.jellies[i], 0, -50); await kit.sleep(140); };
+    const turn = () => kit.until(() => g.phase === 'turn' || g.phase === 'done', 20000);
+    for (let t = 0; t < g.plan.goal; t++) {
+      await turn();
+      if (t === 0) { for (let k = 0; k < 2; k++) { await turn(); await hit((g.tune[0] + 1) % 5); } await turn(); }
+      for (const i of [...g.tune]) await hit(i);
+      await kit.until(() => g.phase !== 'turn', 3000);
+    }
+  });
+  await finished('jelly-drums');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('jelly-drums').history.at(-1); return [r.misses, r.hints]; }), [2, 1]);
+  await after('home');
+  // Friends arrive, then the picnic: the song, and Juniper's photo, kept.
+  await page.waitForFunction(() => neo.scene.constructor.name === 'PicnicScene' && !!neo.scene.photo, null, { timeout: 40000 });
+  await page.waitForTimeout(500);
+  await screenshot('picnic-finale');
+  await picnic();
+  assert.deepEqual(await story(), { steps: ['blanket', 'sandwiches', 'invitation'], ended: true, keepsake: true });
+  assert.equal(await stickers(), before + 3);
+
+  // After a reload the picnic is still set, calm, with the photo in the journal and a way to tell it again.
+  await page.reload(); await ready();
+  await page.evaluate(() => neo.go.picnic()); await picnic();
+  assert.deepEqual(await page.evaluate(() => [!!neo.scene.ground, neo.scene.plates.length, neo.scene.friends.length, neo.scene.photo]), [true, 4, 3, null]);
+  await tap('neo.scene.journalButton'); await page.waitForTimeout(400);
+  assert.deepEqual(await page.evaluate(() => [!!neo.scene.journal.go, !!neo.scene.journal.retell]), [false, true]);
+  await screenshot('picnic-journal-done');
+  await tap('neo.scene.journal.retell'); await picnic();
+  assert.deepEqual(await story(), { steps: [], ended: false, keepsake: true }, 'retelling keeps the photo');
+  assert.equal(await page.evaluate(() => neo.scene.hung.length), 3);
+  assert.equal(await stickers(), before + 3, 'retelling gives nothing extra');
+
+  // Early school needs the place as well as the stripes.
+  await page.evaluate(() => { kit.store.data.profile.band = 'school'; neo.go.picnic(); }); await picnic();
+  assert.equal(await page.evaluate(() => neo.scene.puzzle.withPlace), true);
+  await tap("neo.scene.requests.find(r => r.step === 'blanket').button");
+  const decoy = await page.evaluate(async () => { const { whyNot } = await import('/src/content/picnic.ts'); const p = neo.scene.puzzle; return p.blankets.findIndex((_, i) => whyNot(p, i) === 'place'); });
+  await tap(`neo.scene.hung.find(h => h.index === ${decoy}).node`);
+  assert.equal(await page.evaluate(() => neo.scene.wrongs), 1, 'a striped blanket in the wrong place is a gentle miss');
+  await screenshot('picnic-school');
+  await page.evaluate(() => { kit.store.data.profile.band = 'prek'; });
+  assert.equal(errors.length, 0, errors.join('\n'));
+  log('Windy Picnic: map entry, blanket clues and glow, resume after reload, story rounds at story levels without moving game levels, one sticker per round, journal recap and next arrow, finale and keepsake, reload, retelling, early-school place clue passed');
 }
 
 try {
@@ -3059,6 +3476,8 @@ try {
   if (suite === 'all' || suite === 'next') await next();
   if (suite === 'all' || suite === 'creative') await creativeBatch();
   if (suite === 'all' || suite === 'woods') await woodsBatch();
+  if (suite === 'all' || suite === 'shortlist') await shortlistBatch();
+  if (suite === 'all' || suite === 'picnic') await picnicStory();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

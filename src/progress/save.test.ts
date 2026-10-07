@@ -83,4 +83,23 @@ describe('migrate', () => {
     expect(save.stickers[3]).toEqual(base);
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
+
+  it('starts the Windy Picnic untold, and repairs story progress from untrusted backups', () => {
+    expect(migrate({}).stories).toEqual({ picnic: { steps: [], ended: false, keepsake: false } });
+    // Unknown and repeated steps drop out and the rest keep story order; an ending needs every step.
+    const odd = migrate({ stories: { picnic: { steps: ['invitation', 'dragon', 'blanket', 'blanket', 7], ended: true, keepsake: 'yes' } } });
+    expect(odd.stories.picnic).toEqual({ steps: ['blanket', 'invitation'], ended: false, keepsake: false });
+    // A finished telling always keeps its keepsake, and a keepsake survives a retelling.
+    expect(migrate({ stories: { picnic: { steps: ['blanket', 'sandwiches', 'invitation'], ended: true } } }).stories.picnic.keepsake).toBe(true);
+    expect(migrate({ stories: { picnic: { steps: [], ended: false, keepsake: true } } }).stories.picnic).toEqual({ steps: [], ended: false, keepsake: true });
+    expect(migrate({ stories: 'nope' }).stories).toEqual(defaults().stories);
+  });
+
+  it('keeps picnic progress through a backup and restore, with older progress untouched', () => {
+    const save = defaults();
+    save.games['pet-kitchen'] = { plays: 2, level: 3, pinned: null, history: [] };
+    save.stickers.push({ game: 'pet-kitchen', seed: 4, at: 1 });
+    save.stories.picnic = { steps: ['sandwiches'], ended: false, keepsake: true };
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
 });

@@ -11,15 +11,16 @@ import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { letterShows, mailboxShows, makeLetters, makeStreet, planFor, type House, type MailPlan } from './logic';
+import { isMapMode, letterShows, mailboxShows, makeLetters, makeStreet, planFor, type House, type MailPlan } from './logic';
+import { WoodsMail } from './woods';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
-  school: { min: 4, max: 5 },
+  prek: { min: 3, max: 6 },
+  school: { min: 4, max: 7 },
 };
 
 const NEIGHBORS: CritterName[] = ['cat', 'dog', 'bear', 'bunny', 'pig', 'cow'];
@@ -297,7 +298,7 @@ export const mailCarrier: GameModule = {
   name: 'Mail Carrier',
   titleLine: 'game.mail-carrier',
   region: 'cozy-village',
-  skills: ['numerals', 'counting', 'colors', 'community'],
+  skills: ['numerals', 'counting', 'colors', 'community', 'map reading', 'planning'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
@@ -306,5 +307,5 @@ export const mailCarrier: GameModule = {
   offScreen: 'Find the number on your own front door, then spot numbers on a walk.',
   hubIcon: () => new MailIcon(),
   sticker,
-  create: (ctx) => new MailCarrier(ctx),
+  create: (ctx) => (isMapMode(planFor(ctx.level).mode) ? new WoodsMail(ctx) : new MailCarrier(ctx)),
 };

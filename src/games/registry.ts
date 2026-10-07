@@ -61,6 +61,10 @@ import { treasureMap } from './treasure-map';
 import { oppositesGame } from './opposites';
 import { pictureGraph } from './picture-graph';
 import { inchworm } from './inchworm';
+import { blockTower } from './block-tower';
+import { lassoLoops } from './lasso-loops';
+import { petSays } from './pet-says';
+import { owlWalk } from './owl-walk';
 import type { GameModule } from './types';
 
 /**
@@ -130,6 +134,10 @@ export const GAMES: GameModule[] = [
   oppositesGame,
   pictureGraph,
   inchworm,
+  blockTower,
+  lassoLoops,
+  petSays,
+  owlWalk,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

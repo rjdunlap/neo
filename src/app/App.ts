@@ -8,6 +8,13 @@ import { computeView, type View } from '../engine/view';
 import type { Scene } from './Scene';
 import { session } from './session';
 import type { Band } from '../progress/bands';
+import type { PicnicStep } from '../content/world';
+
+/** A game round played as one Windy Picnic request: at the story's level, coming home to the picnic. */
+export interface StoryRound {
+  step: PicnicStep;
+  level: number;
+}
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -17,8 +24,10 @@ export interface Routes {
   /** One place on the trail, with every game for that age band laid out. */
   place(band: Band): void;
   hatch(): void;
-  /** Plays a game at the levels for `band` (her own band if omitted). */
-  game(id: string, band?: Band): void;
+  /** Plays a game at the levels for `band` (her own band if omitted), or as a step of the picnic story. */
+  game(id: string, band?: Band, story?: StoryRound): void;
+  /** The Windy Picnic. `from` is the request whose round just finished, so the scene can show what changed. */
+  picnic(from?: PicnicStep): void;
   stickers(): void;
   goodnight(): void;
 }

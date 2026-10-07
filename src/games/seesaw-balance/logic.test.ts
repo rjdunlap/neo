@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, PLANS, tilt, total, ways, weigh } from './logic';
+import { aloneSide, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, PLANS, tilt, total, ways, weigh, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
   it('leans toward the heavier side, more for a bigger difference, and is level only when equal', () => {
@@ -52,6 +52,12 @@ describe('Seesaw Balance', () => {
               expect(new Set(offered).size).toBe(3);
               expect(r.answer).toBe(Math.max(...offered));
               break;
+            case 'same':
+              // It starts level, with nothing on the grass, and the box isn't alone yet.
+              expect(fixed).toBe(total(r.across!));
+              expect(r.offered).toHaveLength(0);
+              expect(aloneSide({ [r.fixedSide]: r.fixed, [other(r.fixedSide)]: r.across! } as Record<'left' | 'right', Thing[]>)).toBeNull();
+              break;
             case 'parts':
               // At least two different ways to make the same weight.
               expect(fixed).toBe(r.answer);
@@ -61,7 +67,7 @@ describe('Seesaw Balance', () => {
           for (const t of [...r.fixed, ...r.offered]) if (t.kind === 'friend') expect(FRIEND_FOR[t.weight as keyof typeof FRIEND_FOR]).toBeDefined();
         }
         // Counting levels never ask the same number twice in a row.
-        if (plan.mode === 'level' || plan.mode === 'mystery' || plan.mode === 'parts') {
+        if (plan.mode === 'level' || plan.mode === 'mystery' || plan.mode === 'parts' || plan.mode === 'same') {
           for (let i = 1; i < rounds.length; i++) expect(rounds[i].answer).not.toBe(rounds[i - 1].answer);
         }
       }
@@ -86,5 +92,28 @@ describe('Seesaw Balance', () => {
         for (const c of choices) expect(c).toBeGreaterThanOrEqual(1);
       }
     }
+  });
+
+  it('reaches a lone box on a level seesaw by taking the same off both sides, and tips when only one side changes', () => {
+    for (const plan of PLANS.filter((p) => p.mode === 'same')) for (let seed = 1; seed <= 100; seed++) for (const r of makeRounds(plan, new Rng(seed))) {
+      const here = [...r.fixed];
+      const there = [...r.across!];
+      // Taking one block from one side only tips the seesaw.
+      expect(downSide(total(here.slice(0, -1)), total(there))).not.toBeNull();
+      const off = (kind: Thing['kind']) => {
+        here.splice(here.findIndex((t) => t.kind === kind), 1);
+        there.splice(there.findIndex((t) => t.kind === kind), 1);
+        expect(total(here)).toBe(total(there));
+      };
+      if (plan.boxes === 2) off('box');
+      while (here.some((t) => t.kind === 'block')) off('block');
+      const sides = { left: here, right: there };
+      expect(aloneSide(sides)).toBe('left');
+      // What is left across from the lone box is its weight in blocks, a number to say.
+      expect(there).toHaveLength(r.answer);
+      expect(r.answer).toBeGreaterThanOrEqual(2);
+    }
+    // A box alone is not enough if the other side still has a box.
+    expect(aloneSide({ left: [{ kind: 'box', weight: 3 }], right: [{ kind: 'box', weight: 3 }] })).toBeNull();
   });
 });

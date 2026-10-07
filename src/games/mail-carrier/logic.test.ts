@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { makeLetters, makeStreet, PLANS } from './logic';
+import { checkStop, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, SIGNS, walk } from './logic';
 
 describe('Mail Carrier', () => {
   it('builds a numbered street in order with different doors, and mails every house', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => !isMapMode(p.mode))) {
       for (let seed = 1; seed <= 200; seed++) {
         const rng = new Rng(seed);
         const street = makeStreet(plan, rng);
@@ -20,5 +20,66 @@ describe('Mail Carrier', () => {
         if (plan.letters >= plan.houses) expect(new Set(letters).size).toBe(plan.houses);
       }
     }
+  });
+});
+
+describe('Mail Carrier in Wonder Woods', () => {
+  const mapPlans = PLANS.filter((p) => isMapMode(p.mode));
+
+  it('has a connected map where every walk follows the paths', () => {
+    expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route']);
+    const edge = (a: number, b: number) => MAP_EDGES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+    for (const h of HOUSE_NODES) {
+      const w = walk(POST_OFFICE, h);
+      expect(w[0]).toBe(POST_OFFICE);
+      expect(w.at(-1)).toBe(h);
+      w.slice(1).forEach((n, i) => expect(edge(w[i], n)).toBe(true));
+      // A walk never passes through another house on the way.
+      expect(w.slice(1, -1).some((n) => HOUSE_NODES.includes(n))).toBe(false);
+    }
+    // Houses stand far enough apart on the map for big taps.
+    for (const a of HOUSE_NODES) for (const b of HOUSE_NODES) if (a < b) expect(Math.hypot(MAP_NODES[a].x - MAP_NODES[b].x, MAP_NODES[a].y - MAP_NODES[b].y)).toBeGreaterThan(0.25);
+  });
+
+  it('routes visit both stops in the planned order', () => {
+    for (const a of HOUSE_NODES.keys()) for (const b of HOUSE_NODES.keys()) {
+      if (a === b) continue;
+      const r = route([a, b]);
+      expect(r[0]).toBe(POST_OFFICE);
+      expect(r.at(-1)).toBe(HOUSE_NODES[b]);
+      expect(r.indexOf(HOUSE_NODES[a])).toBeGreaterThan(0);
+      expect(r.indexOf(HOUSE_NODES[a])).toBeLessThan(r.length - 1);
+    }
+  });
+
+  it('gives every house a different neighbor and sign, and sensible trips', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const woods = makeWoods(rng);
+      expect(woods).toHaveLength(HOUSE_NODES.length);
+      expect(new Set(woods.map((h) => h.resident)).size).toBe(woods.length);
+      expect(new Set(woods.map((h) => h.sign)).size).toBe(woods.length);
+      for (const h of woods) expect(SIGNS).toContain(h.sign);
+      for (const plan of mapPlans) {
+        const trips = makeTrips(plan, rng);
+        const flat = trips.flat();
+        expect(flat).toHaveLength(plan.letters);
+        for (const t of trips) {
+          expect(t).toHaveLength(plan.mode === 'route' ? 2 : 1);
+          expect(new Set(t).size).toBe(t.length);
+          for (const h of t) expect(h >= 0 && h < HOUSE_NODES.length).toBe(true);
+        }
+        flat.slice(1).forEach((h, i) => expect(h).not.toBe(flat[i]));
+        if (plan.mode === 'map') expect(new Set(flat).size).toBe(flat.length);
+      }
+    }
+  });
+
+  it('checks a planned stop: next, later, already planned, or no letter there', () => {
+    expect(checkStop([3, 1], [], 3)).toBe('ok');
+    expect(checkStop([3, 1], [], 1)).toBe('later');
+    expect(checkStop([3, 1], [3], 1)).toBe('ok');
+    expect(checkStop([3, 1], [3], 3)).toBe('planned');
+    expect(checkStop([3, 1], [], 4)).toBe('nobody');
   });
 });
