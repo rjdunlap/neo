@@ -3,6 +3,7 @@ import { ink, swatch, wood } from '../../art/palette';
 import { shapePath, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -11,7 +12,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { ignoredClues, makeCode, planFor, score, STONES, suggestion, type CodePlan, type Guess, type Mark } from './logic';
+import { candidates, ignoredClues, makeCode, planFor, score, STONES, suggestion, type CodePlan, type Guess, type Mark } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
@@ -66,13 +67,21 @@ class SecretCode implements Game {
   private view: View;
   private wrongs = 0;
   private hinted = false;
+  /** Couch face-off score: every key turned across the round's doors (lower is better). */
+  guesses = 0;
+  // Couch play: a ring over the stone tray.
+  private trayFocus = 0;
+  private couchOn = false;
+  private readonly ring = new Graphics();
+  private botWait = 1;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.key = new RoundButton(keyArt(), swatch.white, 56, () => void this.tryKey());
     this.ghost.eventMode = 'none';
-    ctx.stage.addChild(this.door, this.leaf, this.past, this.slotLayer, this.ghost, this.key);
+    this.ring.eventMode = 'none';
+    ctx.stage.addChild(this.door, this.leaf, this.past, this.slotLayer, this.ghost, this.key, this.ring);
     for (let c = 0; c < this.plan.colors; c++) {
       const b = stoneArt(c, 46);
       b.hitArea = new Circle(0, 0, 56);
@@ -111,9 +120,53 @@ class SecretCode implements Game {
   update() {
     // A hint stone shows only while its slot is empty.
     this.ghost.children.forEach((s, i) => (s.visible = this.guess[i] === null));
+    const ring = this.ring.clear();
+    const stone = this.couchOn && !this.finished ? this.tray[this.trayFocus] : undefined;
+    if (stone) ring.circle(stone.x, stone.y, 62).stroke({ width: 8, color: swatch.teal.line });
   }
 
   destroy() {}
+
+  /** Couch play: left and right choose a stone; the bottom button places it, or turns the key once every slot is full; the left button takes the last stone back. */
+  control(input: CouchControls) {
+    this.couchOn = true;
+    if (this.busy || this.finished) return;
+    for (const p of input.players) {
+      if (p.direction === 0) this.trayFocus = Math.min(this.tray.length - 1, this.trayFocus + 1);
+      else if (p.direction === 2) this.trayFocus = Math.max(0, this.trayFocus - 1);
+      if (p.undo) {
+        const last = this.guess.map((g) => g !== null).lastIndexOf(true);
+        if (last >= 0) this.clear(last);
+      }
+      if (p.action) {
+        if (this.guess.includes(null)) this.add(this.trayFocus);
+        else void this.tryKey();
+      }
+    }
+  }
+
+  /** The "watch me" demo: a player who reasons from the clues, trying a code that fits every mark so far. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (this.busy || this.finished || this.botWait > 0) return out;
+    const empty = this.guess.indexOf(null);
+    if (empty < 0) {
+      out.players[0].action = true;
+      this.botWait = 1;
+      return out;
+    }
+    const want = (candidates(this.plan, this.history)[0] ?? this.code)[empty];
+    if (want === this.trayFocus) {
+      out.players[0].action = true;
+      this.botWait = 0.5;
+    } else {
+      out.players[0].direction = want > this.trayFocus ? 0 : 2;
+      this.botWait = 0.35;
+    }
+    return out;
+  }
 
   private async next() {
     this.busy = true;
@@ -176,6 +229,7 @@ class SecretCode implements Game {
       return void this.ctx.say('code.fill');
     }
     this.busy = true;
+    this.guesses++;
     const stones = this.guess as number[];
     const ignored = ignoredClues(this.plan, this.history, stones);
     const marks = score(this.code, stones, this.plan.yellow);
@@ -289,7 +343,7 @@ class SecretCode implements Game {
     sfx.tada();
     await this.ctx.say('code.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.guesses });
   }
 }
 

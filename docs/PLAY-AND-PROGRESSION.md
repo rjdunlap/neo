@@ -2,6 +2,10 @@
 
 Roadmap review, 2026-10-06. **Proposal only; no runtime changes.** The developer's daughter is not yet one, an iPad is not readily available, and the immediate audience for new prototypes is the grown-up playing in a desktop browser. Child observations and physical-device checks remain necessary for judging child readiness, but are not prerequisites for building the next proof of concept.
 
+## Status (2026-10-07)
+
+The party half of this plan is built as **couch trips** (see [Couch play in the design doc](DESIGN.md#couch-play-2026-10-07)). Scoring now exists in a first, small form: couch games report `score` (or `scores` on a shared board) through the result boundary, face-off compares two players in one trip, and a face-off score is always relative to that board's own best so different boards compare fairly. Personal records, unique achievements, the Penguin Slide course, Bouncy Launch scoring and the pet room below are all still proposals. When the course is built, reuse the couch's `score` and per-board-best idea rather than inventing a second one, and keep the course and the couch's face-off scores in their own units, as the party document says.
+
 ## Recommendation
 
 Following the Mario Party discussion, build **Island Party with three next-game choices** first: a six-stop session using existing games, alternating choosers, a shared goal, and quick transitions. The [party and Switch follow-up](PARTY-AND-SWITCH.md) specifies this horizontal slice and a separate controller/TV milestone. Then build **Grown-up Play with a Penguin Slide challenge course** as the vertical slice: five boards, a saved personal best, and a clear ending. Try scoring in Bouncy Launch next, then build one small pet room with a display for a creation or keepsake.

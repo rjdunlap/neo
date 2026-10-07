@@ -3,8 +3,10 @@ import { cream, swatch, type ColorName } from '../../art/palette';
 import { shapePath, starPoints, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
+import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
@@ -44,13 +46,27 @@ class MemoryMatch implements Game {
   private hintAt: number | null = null;
   private clock = 0;
   private cardSize = 140;
+  private cols = 4;
+  // Couch play: a ring moved with the D-pad, and in a face-off two players taking turns on one board.
+  private focus = 0;
+  private couchOn = false;
+  private turn: 0 | 1 = 0;
+  private readonly won: [number, number] = [0, 0];
+  private readonly versus: boolean;
+  private readonly ring = new Graphics();
+  private readonly board = new Container();
+  private boardTexts: ReturnType<typeof label>[] = [];
+  private botWait = 1;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = PLANS[Math.max(0, Math.min(PLANS.length - 1, ctx.level - 1))];
+    this.versus = !!ctx.couch?.versus;
     this.cards = makeDeck(this.plan.pairs, ctx.rng);
     this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
     this.remaining = this.plan.pairs;
-    ctx.stage.addChild(this.background, this.hint);
+    ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
+    this.ring.eventMode = 'none';
+    this.board.eventMode = 'none';
     this.cards.forEach((card, i) => {
       const node = new Container();
       const front = new Container();
@@ -80,6 +96,8 @@ class MemoryMatch implements Game {
     return shapePath(new Graphics(), shape, 43).fill(swatch[color].fill).stroke({ width: 4, color: swatch[color].line });
   }
 
+  get finished() { return this.remaining === 0; }
+
   start() { void this.ctx.instruct(this.plan.mode === 'numbers' ? 'memory.number' : this.plan.mode === 'letters' ? 'memory.letter' : 'memory.start'); }
 
   private async choose(i: number) {
@@ -99,6 +117,8 @@ class MemoryMatch implements Game {
       a.matched = view.matched = true;
       a.node.alpha = view.node.alpha = 0.6;
       this.remaining--; this.wrong = 0; this.hintAt = null; this.hint.clear();
+      // A match earns the same player another turn.
+      if (this.versus) { this.won[this.turn]++; this.drawBoard(); }
       sfx.sparkle(); void this.ctx.say('memory.pair');
       await this.ctx.tw.wait(0.35);
     } else {
@@ -107,7 +127,9 @@ class MemoryMatch implements Game {
       await this.ctx.tw.wait(1.2);
       a.front.visible = view.front.visible = false;
       a.back.visible = view.back.visible = true;
-      if (this.wrong >= 2) {
+      // A face-off gives no glowing help: it would favor whoever asked.
+      if (this.versus) { this.turn = this.turn === 0 ? 1 : 0; this.drawBoard(); }
+      else if (this.wrong >= 2) {
         if (this.hintAt === null) this.hints++;
         this.hintAt = this.cards.findIndex((card, k) => k !== first && card.pair === this.cards[first].pair);
         void this.ctx.say('memory.hint');
@@ -116,12 +138,12 @@ class MemoryMatch implements Game {
     }
     this.seen.add(i);
     this.first = null; this.locked = false;
-    if (!this.remaining) this.ctx.finish({ misses: this.misses, hints: this.hints });
+    if (!this.remaining) this.ctx.finish({ misses: this.misses, hints: this.hints, ...(this.versus ? { scores: [this.won[0], this.won[1]] as [number, number] } : {}) });
   }
 
   resize(v: View) {
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    const cols = this.cards.length <= 6 ? this.plan.pairs : 4;
+    const cols = this.cols = this.cards.length <= 6 ? this.plan.pairs : 4;
     const rows = Math.ceil(this.cards.length / cols);
     this.cardSize = Math.min(150, (v.h - 170) / rows - 16, (v.w - 240) / cols - 16);
     const step = this.cardSize + 16;
@@ -131,14 +153,89 @@ class MemoryMatch implements Game {
       node.position.set(cx + (i % cols - (cols - 1) / 2) * step, 115 + this.cardSize / 2 + Math.floor(i / cols) * step);
     });
     this.drawHint();
+    this.board.position.set(cx, 84);
+    this.drawBoard();
   }
+
+  /** The face-off scoreboard: both players' pairs, with the player whose turn it is lit. */
+  private drawBoard() {
+    for (const t of this.boardTexts) t.destroy();
+    this.boardTexts = [];
+    if (!this.versus) return;
+    [0, 1].forEach((player) => {
+      const on = this.turn === player;
+      const t = label(`Player ${player + 1}: ${this.won[player]}`, on ? 34 : 26, on ? (player ? swatch.pink.line : swatch.blue.line) : ink);
+      t.alpha = on ? 1 : 0.6;
+      t.position.set(player ? 170 : -170, 0);
+      this.board.addChild(t);
+      this.boardTexts.push(t);
+    });
+  }
+
+  /** Move the ring one card, staying on the grid. */
+  private step(dir: number) {
+    const n = this.cards.length, rows = Math.ceil(n / this.cols);
+    let x = this.focus % this.cols, y = Math.floor(this.focus / this.cols);
+    if (dir === 0) x = Math.min(this.cols - 1, x + 1);
+    else if (dir === 2) x = Math.max(0, x - 1);
+    else if (dir === 1) y = Math.min(rows - 1, y + 1);
+    else y = Math.max(0, y - 1);
+    if (y * this.cols + x < n) this.focus = y * this.cols + x;
+  }
+
+  /** D-pad or stick moves the ring, the bottom button turns the card. In a face-off with two controllers, only the player whose turn it is. */
+  control(input: CouchControls) {
+    this.couchOn = true;
+    if (this.locked || this.remaining === 0) return;
+    const players = this.versus && input.players[1].active ? [input.players[this.turn]] : input.players;
+    for (const p of players) {
+      if (p.direction >= 0) this.step(p.direction);
+      if (p.action) void this.choose(this.focus);
+    }
+  }
+
+  /** The "watch me" demo: a player who remembers what has been turned over, moving the ring one card at a time. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    this.botWait -= dt;
+    if (this.locked || this.botWait > 0 || this.remaining === 0) return out;
+    out.players[0].active = true;
+    const open = (k: number) => !this.views[k].matched && k !== this.first;
+    const partner = (k: number) => this.cards.findIndex((c, j) => j !== k && c.pair === this.cards[k].pair);
+    let target = -1;
+    if (this.first !== null) {
+      const friend = partner(this.first);
+      target = this.seen.has(friend) ? friend : this.cards.findIndex((_, k) => open(k) && !this.seen.has(k));
+    } else {
+      // Take a card whose friend is already known, else the first one nobody has seen.
+      target = this.cards.findIndex((_, k) => open(k) && this.seen.has(partner(k)));
+      if (target < 0) target = this.cards.findIndex((_, k) => open(k) && !this.seen.has(k));
+    }
+    if (target < 0) return out;
+    this.botWait = 0.4;
+    if (target === this.focus) { out.players[0].action = true; this.botWait = 0.9; }
+    else {
+      const dx = (target % this.cols) - (this.focus % this.cols);
+      out.players[0].direction = dx > 0 ? 0 : dx < 0 ? 2 : target > this.focus ? 1 : 3;
+    }
+    return out;
+  }
+
   private drawHint() {
     this.hint.clear();
     if (this.hintAt === null) return;
     const c = this.views[this.hintAt].node, s = this.cardSize + 12;
     this.hint.roundRect(c.x - s / 2, c.y - s / 2, s, s, 22).stroke({ width: 7, color: swatch.yellow.line });
   }
-  update(dt: number) { this.clock += dt; this.hint.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3); }
+  update(dt: number) {
+    this.clock += dt;
+    this.hint.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3);
+    const ring = this.ring.clear();
+    if (!this.couchOn || !this.remaining) return;
+    const c = this.views[this.focus].node, size = this.cardSize + 14 + 3 * Math.sin(this.clock * 6);
+    const sw = this.versus ? (this.turn ? swatch.pink : swatch.blue) : swatch.teal;
+    ring.roundRect(c.x - size / 2, c.y - size / 2, size, size, 24).stroke({ width: 9, color: sw.line });
+  }
   destroy() {}
 }
 

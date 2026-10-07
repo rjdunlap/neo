@@ -7,7 +7,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { CouchControls } from '../../engine/controller';
+import { idle, type CouchControls } from '../../engine/controller';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
@@ -69,6 +69,8 @@ class PenguinSlide implements Game {
   index = -1;
   misses = 0;
   hints = 0;
+  /** Slides beyond each board's best route, added up: the couch face-off score (lower is better). */
+  excess = 0;
   busy = true;
   finished = false;
   readonly penguin = penguinArt();
@@ -85,6 +87,7 @@ class PenguinSlide implements Game {
   private stuck = false;
   private view: View;
   private clock = 0;
+  private botWait = 0.8;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -125,6 +128,19 @@ class PenguinSlide implements Game {
   }
 
   destroy() {}
+
+  /** The "watch me" demo: slide along the solver's best route, pausing between slides like a person thinking. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    this.botWait -= dt;
+    if (this.busy || this.finished || !this.puzzle || this.botWait > 0) return out;
+    const { first } = solve(this.puzzle, this.at, this.have);
+    if (first < 0) return out;
+    this.botWait = 0.9;
+    out.players[0].active = true;
+    out.players[0].direction = first;
+    return out;
+  }
 
   control(input: CouchControls) {
     if (this.busy || this.finished) return;
@@ -270,6 +286,8 @@ class PenguinSlide implements Game {
 
   private async win() {
     this.busy = true;
+    // Every successful slide counts, including ones later undone; blocked bumps and undo do not.
+    this.excess += Math.max(0, this.moves - this.puzzle.best);
     this.hinting = false;
     this.stuck = false;
     sfx.sparkle();
@@ -287,7 +305,7 @@ class PenguinSlide implements Game {
     sfx.tada();
     await this.ctx.say('slide.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.excess });
   }
 }
 

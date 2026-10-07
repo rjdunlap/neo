@@ -10,6 +10,7 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
+import { idle, type CouchControls } from '../../engine/controller';
 import { AIM_LIMIT, aimVelocity, BOARD, makeBoard, planFor, targets, type PegPlan, type PegSpot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -109,6 +110,10 @@ class PegGarden implements Game {
   private clock = 0;
   private ballAge = 0;
   private lastChime = 0;
+  // Couch play: the stick sweeps the launcher, the bottom button lets go. `shots` is the face-off score (fewer is better).
+  private couchOn = false;
+  private botAim: number | null = null;
+  private botWait = 1.2;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -180,6 +185,52 @@ class PegGarden implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
+  }
+
+  /** Couch play: hold left or right to swing the launcher, press the bottom button to let the pearl go. */
+  control(input: CouchControls, dt: number) {
+    this.couchOn = true;
+    if (!this.aimed || this.finished) return;
+    if (this.ball) return;
+    const p = input.players.find((q) => q.x || q.action);
+    if (p) {
+      this.aim = Math.max(-AIM_LIMIT, Math.min(AIM_LIMIT, this.aim + p.x * dt * 1.2));
+      if (p.action) {
+        this.guide.clear();
+        this.fire(this.shotStart());
+        return;
+      }
+    }
+    this.drawLauncher();
+  }
+
+  /** The "watch me" demo: find an angle whose simulated shot touches the wanted flower, swing to it, and let go. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (!this.aimed || this.ball || this.finished || this.botWait > 0) return out;
+    if (this.botAim === null) this.botAim = this.bestAim();
+    const gap = this.botAim - this.aim;
+    if (Math.abs(gap) > 0.015) out.players[0].x = Math.max(-1, Math.min(1, gap / (Math.max(dt, 1e-3) * 1.2)));
+    else {
+      out.players[0].action = true;
+      this.botAim = null;
+      this.botWait = 1.4;
+    }
+    return out;
+  }
+
+  /** An angle near the current one whose shot (and its neighbors) touches the wanted flower; straight down if none does. */
+  private bestAim(): number {
+    const want = this.buds.findIndex((b) => b.spot.kind === this.target);
+    const hits = (a: number) => simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball }, this.world, BOARD.h, 12, 1 / 30).hits.includes(want);
+    let best: number | null = null;
+    for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.02) {
+      if (!hits(a) || !hits(a - 0.012) || !hits(a + 0.012)) continue;
+      if (best === null || Math.abs(a - this.aim) < Math.abs(best - this.aim)) best = a;
+    }
+    return best ?? 0;
   }
 
   // Shooting ----------------------------------------------------------------------------
@@ -312,7 +363,7 @@ class PegGarden implements Game {
     const dy = Math.cos(this.aim);
     g.moveTo(x, 40).lineTo(x + dx * 66, 40 + dy * 66).stroke({ width: 24, color: swatch.pink.line, cap: 'round' });
     g.moveTo(x, 40).lineTo(x + dx * 62, 40 + dy * 62).stroke({ width: 14, color: swatch.pink.fill, cap: 'round' });
-    if (this.aiming !== null) this.drawGuide();
+    if (this.aiming !== null || this.couchOn) this.drawGuide();
   }
 
   /** While aiming: a short dotted guide, or the whole path once a hint is on. */
@@ -343,7 +394,7 @@ class PegGarden implements Game {
     this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 30, speed: [150, 400], gravity: 0, life: [0.8, 1.3] });
     await this.ctx.say('peg.done');
     await this.ctx.tw.wait(0.8);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.shots });
   }
 }
 

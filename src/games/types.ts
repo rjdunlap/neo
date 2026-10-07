@@ -43,6 +43,13 @@ export interface GameModule {
 export interface RoundResult {
   misses: number;
   hints: number;
+  /**
+   * Couch face-off only (the child's shell ignores it). One player's result on their own board, as
+   * a number the game says how to compare in `COUCH_INFO`: for example slides over the best route.
+   */
+  score?: number;
+  /** Couch face-off on one shared board: [player 1, player 2]. */
+  scores?: [number, number];
 }
 
 export interface GameContext {
@@ -64,6 +71,8 @@ export interface GameContext {
   /** Speak an instruction; the pet repeats the latest one when tapped. */
   instruct(id: LineId, vars?: LineVars): Promise<void>;
   say(id: LineId, vars?: LineVars): Promise<void>;
+  /** Set only by couch play. `versus`: a face-off on one shared board, so the game alternates the two players. */
+  couch?: { versus: boolean };
   /** End the round. The shell celebrates, saves the result and offers "again". */
   finish(result: RoundResult): void;
 }
@@ -71,6 +80,11 @@ export interface GameContext {
 export interface Game {
   /** Optional semantic input for explicitly supported couch games; ordinary touch play is unchanged. */
   control?(input: CouchControls, dt: number): void;
+  /**
+   * What a capable player would press this frame, for the couch intro's "watch me" demo. The demo
+   * hands it straight to `control()`, so it can only do what a real controller can.
+   */
+  autoplay?(dt: number): CouchControls;
   start(): void;
   update(dt: number): void;
   resize(view: View): void;
