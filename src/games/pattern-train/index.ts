@@ -2,6 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { cream, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
@@ -36,6 +37,11 @@ class PatternTrain implements Game {
   private done = false;
   private playing = false;
   private clock = 0;
+  // Couch play: a ring over the three choices.
+  private focus = 0;
+  private couchOn = false;
+  private readonly ring = new Graphics();
+  private botWait = 1.5;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = patternPlan(ctx.level);
@@ -64,7 +70,8 @@ class PatternTrain implements Game {
     this.replay = new RoundButton(replayArt(), swatch.yellow,  50, () => void this.playPattern());
     this.confirm = new RoundButton(playIcon(), swatch.green,  50, () => { if (this.selected !== null) this.choose(this.selected); });
     this.confirm.visible = this.plan.kind === 'bell';
-    this.scene.addChild(this.replay, this.confirm);
+    this.ring.eventMode = 'none';
+    this.scene.addChild(this.replay, this.confirm, this.ring);
   }
 
   start() {
@@ -135,8 +142,48 @@ class PatternTrain implements Game {
       this.selection.roundRect(c.x - 65, c.y - 65, 130, 130, 22).stroke({ width: 5, color: swatch.purple.fill });
     }
   }
-  update(dt: number) { this.clock += dt; this.glow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3); }
+  update(dt: number) {
+    this.clock += dt; this.glow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3);
+    const ring = this.ring.clear();
+    const choice = this.couchOn && !this.done ? this.choices[this.focus] : undefined;
+    if (choice) ring.roundRect(choice.x - 76, choice.y - 76, 152, 152, 28).stroke({ width: 8, color: swatch.teal.line });
+  }
   destroy() {}
+
+  /** The round is over. The couch checks read this name on every game. */
+  get finished() {
+    return this.done;
+  }
+
+  /** Couch play: left and right move the ring along the choices; the bottom button picks the one it is on. */
+  control(input: CouchControls) {
+    this.couchOn = true;
+    if (this.done) return;
+    for (const p of input.players) {
+      const was = this.focus;
+      if (p.direction === 0) this.focus = Math.min(this.choices.length - 1, this.focus + 1);
+      else if (p.direction === 2) this.focus = Math.max(0, this.focus - 1);
+      if (this.focus !== was && this.plan.kind === 'bell') sfx.bell(4 + this.focus * 3, 0.45);
+      if (p.action) this.choose(this.focus);
+    }
+  }
+
+  /** The "watch me" demo: look at the glowing car, then move to the choice that fits and press. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (this.done || this.botWait > 0) return out;
+    const want = this.sequence[this.targets[this.target]];
+    if (want === this.focus) {
+      out.players[0].action = true;
+      this.botWait = 1;
+    } else {
+      out.players[0].direction = want > this.focus ? 0 : 2;
+      this.botWait = 0.45;
+    }
+    return out;
+  }
 }
 
 export const patternTrain: GameModule = {

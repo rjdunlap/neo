@@ -4,6 +4,8 @@ import { swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import type { LineVars } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -163,6 +165,8 @@ class FluffySalon implements Game {
   readonly buttons: ToolButton[] = [];
   readonly mirror: RoundButton;
   private readonly card = new Container();
+  /** Free play has no request card, so a tap on the pet's clear face repeats instead. */
+  private readonly faceReplay = new Container();
   private pointer: number | null = null;
   private dirty = true;
   private clock = 0;
@@ -170,6 +174,7 @@ class FluffySalon implements Game {
   private wrongs = 0;
   private sinceProgress = 0;
   private hintTool: Tool | null = null;
+  private instruction: { id: LineId; vars?: LineVars } | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -182,7 +187,7 @@ class FluffySalon implements Game {
     this.drawCape(ctx.petSpec);
     this.pet.attach(this.cape);
     this.pet.attach(this.hair);
-    ctx.stage.addChild(this.wall, this.room, this.pet, this.card, this.touch);
+    ctx.stage.addChild(this.wall, this.room, this.pet, this.touch, this.card, this.faceReplay);
 
     this.touch.eventMode = 'static';
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
@@ -194,6 +199,13 @@ class FluffySalon implements Game {
     const up = (e: { pointerId: number }) => e.pointerId === this.pointer && (this.pointer = null);
     this.touch.on('pointerup', up);
     this.touch.on('pointerupoutside', up);
+
+    this.card.visible = false;
+    this.card.hitArea = new Rectangle(-110, -130, 220, 250);
+    onTap(this.card, () => this.repeatInstruction(), { cooldown: 500 });
+    this.faceReplay.visible = this.plan.mode === 'play' || this.plan.mode === 'tools';
+    this.faceReplay.hitArea = new Circle(0, 0, 68);
+    onTap(this.faceReplay, () => this.repeatInstruction(), { cooldown: 500 });
 
     const tools: Tool[] = this.plan.mode === 'play' ? ['grow'] : ['grow', 'cut', 'comb', 'curl'];
     for (const tool of [...tools, ...HAIR_COLORS]) {
@@ -210,7 +222,7 @@ class FluffySalon implements Game {
     if (this.plan.mode === 'play' || this.plan.mode === 'tools') {
       this.setHair({ length: 55, curl: 0.3, color: this.ctx.rng.pick(HAIR_COLORS) });
       this.mirror.visible = false;
-      void this.ctx.instruct('salon.play');
+      void this.instruct('salon.play');
       return;
     }
     void this.nextRequest();
@@ -249,6 +261,7 @@ class FluffySalon implements Game {
     colors.forEach((b, i) => b.position.set(v.w - 64, 184 + i * 100));
     this.mirror.position.set(v.w - 64, 62);
     this.card.position.set(170, 190);
+    this.faceReplay.position.set(this.pet.x, this.pet.y - 165);
   }
 
   update(dt: number) {
@@ -279,6 +292,18 @@ class FluffySalon implements Game {
   private setHair(start: { length: number; curl: number; color: ColorName }) {
     this.strands = this.an.map(() => ({ ...start }));
     this.dirty = true;
+  }
+
+  private instruct(id: LineId, vars?: LineVars) {
+    this.instruction = { id, vars };
+    return this.ctx.instruct(id, vars);
+  }
+
+  private repeatInstruction() {
+    if (!this.instruction || this.busy || this.finished) return;
+    this.pet.poke();
+    sfx.giggle();
+    void this.ctx.say(this.instruction.id, this.instruction.vars);
   }
 
   private choose(tool: Tool, quiet = false) {
@@ -351,11 +376,12 @@ class FluffySalon implements Game {
     this.showCard(r.look);
     this.mirror.visible = this.plan.mode !== 'ask';
     this.busy = false;
-    await this.ctx.instruct('salon.want', { look: describe(r.look) });
+    await this.instruct('salon.want', { look: describe(r.look) });
   }
 
   /** A little picture of the asked-for style, using the same fur drawing. */
   private showCard(look: Look) {
+    this.card.visible = true;
     this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
     const frame = new Graphics().roundRect(-100, -120, 200, 230, 26).fill(0xffffff).stroke({ width: 6, color: swatch.purple.line });
     const head = new Critter(this.ctx.petSpec);

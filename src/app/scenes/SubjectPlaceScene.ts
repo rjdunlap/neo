@@ -6,21 +6,28 @@ import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { placeFor } from '../../content/places';
+import { anyNew, FAVORITES_MAX, shelfFor } from '../../content/shelf';
 import { SUBJECTS, type RegionId } from '../../content/world';
 import { onTap, palmOnGlass } from '../../engine/input';
 import type { View } from '../../engine/view';
-import type { GameModule } from '../../games/types';
+import { shapePath } from '../../art/shapes';
+import type { GameModule, HubIcon } from '../../games/types';
 import type { Band } from '../../progress/bands';
+import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, bookIcon, islandIcon } from '../../ui/icons';
+import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
-import { Scene } from '../Scene';
+import { Scene, type Updatable } from '../Scene';
 import { session } from '../session';
 import { gamesFor } from './PlaceScene';
 
-interface Card { node: Container; id: string; mod?: GameModule }
-interface Position { subject: RegionId | null; subjectsPage: number; gamesPage: number }
+interface Card { node: Container; id: string; mod?: GameModule; sparkle?: Sparkle }
+/** The first "subject": the games she has hearted, only offered once there is a heart in this place. */
+export const FAVORITES = 'favorites';
+type Subject = RegionId | typeof FAVORITES;
+interface Position { subject: Subject | null; subjectsPage: number; gamesPage: number }
 const positions = new Map<Band, Position>();
 const gridIcon = () => {
   const g = new Graphics();
@@ -28,10 +35,20 @@ const gridIcon = () => {
   return g;
 };
 
+const heartCard = (): HubIcon => {
+  const heart = shapePath(new Graphics(), 'heart', 62).fill(swatch.pink.fill).stroke({ width: 6, color: swatch.pink.line });
+  heart.circle(-24, -26, 11).fill({ color: 0xffffff, alpha: 0.55 });
+  const icon = Object.assign(new Container(), { update() {} });
+  icon.addChild(heart);
+  return icon;
+};
+
 /** Optional subject browser. Four large choices per page, with separate session memory from the path. */
 export class SubjectPlaceScene extends Scene {
   readonly place;
   readonly games: GameModule[];
+  /** Her hearted games that play in this place, in the order she hearted them. */
+  readonly hearted: GameModule[];
   readonly subjects;
   readonly cards: Card[] = [];
   readonly state: Position;
@@ -51,7 +68,7 @@ export class SubjectPlaceScene extends Scene {
   readonly next = new RoundButton(arrowIcon(1), swatch.white, 50, () => this.page(1));
   private touch: { id: number; x: number; y: number; moved: boolean; card?: Card } | null = null;
   private leaving = false;
-  private icons: ReturnType<GameModule['hubIcon']>[] = [];
+  private icons: Updatable[] = [];
   private readonly lost = () => this.cancel();
   private readonly release = (e: PointerEvent) => { if (this.touch?.id === e.pointerId) this.cancel(); };
 
@@ -60,11 +77,22 @@ export class SubjectPlaceScene extends Scene {
     this.place = placeFor(band);
     this.games = gamesFor(band);
     this.subjects = SUBJECTS.filter(s => this.games.some(g => g.region === s.id));
+    this.hearted = shelfFor(store.favorites, this.games.map(g => g.id), FAVORITES_MAX).map(id => this.games.find(g => g.id === id)!);
     this.state = { ...(positions.get(band) ?? { subject: null, subjectsPage: 0, gamesPage: 0 }) };
+    // Hearts can be taken back between visits, so a remembered Favorites page may be gone or shorter.
+    if (this.state.subject === FAVORITES && !this.hearted.length) this.state.subject = null;
+    this.state.subjectsPage = Math.min(this.state.subjectsPage, Math.max(0, Math.ceil(this.subjectCount / 4) - 1));
+    this.state.gamesPage = Math.min(this.state.gamesPage, Math.max(0, Math.ceil(this.inSubject(this.state.subject).length / 4) - 1));
+  }
+
+  /** Subject cards on offer: Favorites first (only when there is a heart here), then the real subjects. */
+  get subjectCount() { return this.subjects.length + (this.hearted.length ? 1 : 0); }
+  private inSubject(subject: Subject | null): GameModule[] {
+    return subject === FAVORITES ? this.hearted : this.games.filter(g => g.region === subject);
   }
 
   get pageIndex() { return this.state.subject ? this.state.gamesPage : this.state.subjectsPage; }
-  get pageCount() { return Math.ceil((this.state.subject ? this.games.filter(g => g.region === this.state.subject).length : this.subjects.length) / 4); }
+  get pageCount() { return Math.ceil((this.state.subject ? this.inSubject(this.state.subject).length : this.subjectCount) / 4); }
 
   init() {
     this.backdrop = this.track(new Backdrop(this.place.backdrop, this.view));
@@ -112,7 +140,7 @@ export class SubjectPlaceScene extends Scene {
   private remember() { positions.set(this.band, { ...this.state }); }
   private speak() {
     const subject = this.subjects.find(s => s.id === this.state.subject);
-    void voice.say(subject?.line ?? 'place.subjects');
+    void voice.say(this.state.subject === FAVORITES ? 'place.favorites' : subject?.line ?? 'place.subjects');
   }
   private rebuild() {
     this.cancel();
@@ -121,15 +149,23 @@ export class SubjectPlaceScene extends Scene {
     for (const c of this.choices.removeChildren()) c.destroy({ children: true });
     this.cards.length = 0;
     const subject = this.subjects.find(s => s.id === this.state.subject);
-    this.heading.text = subject ? subject.name : this.place.name;
-    const items = subject
-      ? this.games.filter(g => g.region === subject.id).map(mod => ({ id: mod.id, name: mod.name, mod, example: mod }))
-      : this.subjects.map(s => ({ id: s.id, name: s.name, mod: undefined, example: this.games.find(g => g.region === s.id)! }));
+    const favorites = this.state.subject === FAVORITES;
+    this.heading.text = favorites ? 'Favorites' : subject ? subject.name : this.place.name;
+    // Each card: a name, a picture, and whether it holds something she has not played yet.
+    const items = this.state.subject
+      ? this.inSubject(this.state.subject).map(mod => ({ id: mod.id, name: mod.name, mod, icon: () => mod.hubIcon(), fresh: store.isNew(mod.id) }))
+      : [
+        ...(this.hearted.length ? [{ id: FAVORITES, name: 'Favorites', mod: undefined, icon: heartCard, fresh: false }] : []),
+        ...this.subjects.map(s => {
+          const here = this.games.filter(g => g.region === s.id);
+          return { id: s.id, name: s.name, mod: undefined, icon: () => here[0].hubIcon(), fresh: anyNew(store.data.games, here.map(g => g.id)) };
+        }),
+      ];
     items.forEach(item => {
       const node = new Container();
       const bg = new Graphics().roundRect(-150, -115, 300, 230, 30).fill({ color: swatch.white.fill, alpha: 0.94 }).stroke({ width: 5, color: swatch.teal.line });
       bg.eventMode = 'none';
-      const icon = this.track(item.example.hubIcon());
+      const icon = this.track(item.icon());
       this.icons.push(icon);
       const b = icon.getLocalBounds();
       const scale = Math.min(1, 210 / b.width, 145 / b.height);
@@ -139,11 +175,18 @@ export class SubjectPlaceScene extends Scene {
       const name = label(item.name, 25);
       name.position.set(0, 87);
       node.addChild(bg, icon, name);
+      let sparkle: Sparkle | undefined;
+      if (item.fresh) {
+        sparkle = this.track(new Sparkle(24));
+        this.icons.push(sparkle);
+        sparkle.position.set(116, -84);
+        node.addChild(sparkle);
+      }
       node.eventMode = 'static';
       node.cursor = 'pointer';
       node.hitArea = new Rectangle(-150, -115, 300, 230);
       this.choices.addChild(node);
-      this.cards.push({ node, id: item.id, mod: item.mod });
+      this.cards.push({ node, id: item.id, mod: item.mod, sparkle });
     });
     this.resize(this.view);
     this.remember();
@@ -156,7 +199,7 @@ export class SubjectPlaceScene extends Scene {
       void voice.say(card.mod.titleLine);
       this.app.go.game(card.mod.id, this.band);
     } else {
-      this.state.subject = card.id as RegionId;
+      this.state.subject = card.id as Subject;
       this.state.gamesPage = 0;
       this.rebuild();
       this.speak();

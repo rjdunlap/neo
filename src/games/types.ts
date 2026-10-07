@@ -16,6 +16,23 @@ import type { CouchControls } from '../engine/controller';
 /** The object that stands for a game in the hub. Its feet sit on (0, 0). */
 export type HubIcon = Container & Updatable;
 
+/**
+ * Grown-up-facing help for a touch game, written in `src/content/howto.ts` and shown on the card the
+ * hold-to-open "?" in the game shell opens. The round itself still gives its short, spoken instruction
+ * through `ctx.instruct`; this fills in gestures, finish controls and rules that a direct entry into a
+ * later level cannot assume were learned earlier.
+ */
+export interface GameHowTo {
+  /** What the player is trying to make happen. */
+  goal: string;
+  /** One to three concrete touch actions, in the order a player normally uses them. */
+  steps: readonly string[];
+  /** How this round ends, including an explicit finish/check control for open-ended play. */
+  finish: string;
+  /** An unusual rule worth knowing, such as a prediction not counting as a mistake. */
+  note?: string;
+}
+
 /** A minigame describes itself and builds rounds. Everything around a round belongs to the shell. */
 export interface GameModule {
   id: string;

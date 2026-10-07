@@ -7,6 +7,9 @@ export const PET_COLORS = ['teal', 'pink', 'blue', 'purple', 'green', 'yellow', 
 export type PetColor = (typeof PET_COLORS)[number];
 export const STICKER_PAGES = ['meadow', 'beach', 'farm', 'sea', 'space'] as const;
 export type StickerPage = (typeof STICKER_PAGES)[number];
+/** The treehouse's six free furnishings. Everyone has all of them from the start; they can be moved and turned, never lost. */
+export const ROOM_ITEMS = ['bed', 'lamp', 'rug', 'shelf', 'plant', 'musicbox'] as const;
+export type RoomItemId = (typeof ROOM_ITEMS)[number];
 /** The Windy Picnic's three requests, saved by these IDs; they can be done in any order. */
 export const PICNIC_STEPS = ['blanket', 'sandwiches', 'invitation'] as const;
 export type PicnicStep = (typeof PICNIC_STEPS)[number];

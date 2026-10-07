@@ -13,6 +13,8 @@ if (typeof window !== 'undefined') {
 export interface DragOptions {
   /** Tracing follows the fingertip; movable objects default to riding 40 units above it. */
   lift?: number;
+  /** Keep the object where it was grabbed instead of centring it under the finger (a long boat held by its stern). */
+  keepGrab?: boolean;
   onPick?(): void;
   /** Moved to (x, y) in the parent's coordinates. */
   onMove?(x: number, y: number): void;
@@ -79,7 +81,7 @@ export function draggable(obj: Container, tw: Tweener, opts: DragOptions): DragH
     grab.y = obj.y - p.y;
     obj.parent.addChild(obj); // on top of everything else
     void tw.to(obj.scale, { x: restScale * 1.12, y: restScale * 1.12 }, { duration: 0.12 });
-    void tw.to(grab, { x: 0, y: -(opts.lift ?? LIFT) }, { duration: 0.15 });
+    if (!opts.keepGrab) void tw.to(grab, { x: 0, y: -(opts.lift ?? LIFT) }, { duration: 0.15 });
     opts.onPick?.();
   });
   obj.on('globalpointermove', (e: FederatedPointerEvent) => {

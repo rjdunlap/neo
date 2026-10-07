@@ -53,7 +53,7 @@ Increase the number of meaningful decisions before increasing speed, visual clut
 
 ## Current inventory
 
-There are **67 games**, all on `main` (the newest four merged in `7066d5b`), plus the Windy Picnic, the first Island Errands story. Many came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch, Seesaw Balance, Teddy Doctor, Bumper Garden, both Quick Tricks shows, Peekaround Island, Light Lab, Secret Code, and four from the gap review's shortlist (Block Tower, Lasso Loops, Pet Says and Owl Walk Home). All have rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work. [DESIGN.md](DESIGN.md) describes what each built game does.
+The README lists every game that is built (see its inventory for the count), plus the Windy Picnic, the first Island Errands story. Many came from this notebook and the microgame notebook: the four arcade adaptations, the ten-game follow-on batch, Seesaw Balance, Teddy Doctor, Bumper Garden, both Quick Tricks shows, Peekaround Island, Light Lab, Secret Code, and four from the gap review's shortlist (Block Tower, Lasso Loops, Pet Says and Owl Walk Home). All have rule tests and browser play-throughs; judgments of fun and clarity and real-iPad checks are still open (see the [roadmap](ROADMAP.md#1-finish-and-verify-the-current-work)). Use the registry and verification log to check status before choosing new work. [DESIGN.md](DESIGN.md) describes what each built game does.
 
 | Game | Inspired by | Subject |
 | --- | --- | --- |
@@ -104,7 +104,7 @@ There are **67 games**, all on `main` (the newest four merged in `7066d5b`), plu
 | Pet Says | Simon Says, action songs such as "Head, Shoulders, Knees and Toes" | Cozy Village |
 | Owl Walk Home | Hoot Owl Hoot!, First Orchard | Rainbow Meadow |
 
-### Inventory by subject (67 games)
+### Inventory by subject
 
 | Subject | Games | Count |
 | --- | --- | --- |
@@ -113,7 +113,7 @@ There are **67 games**, all on `main` (the newest four merged in `7066d5b`), plu
 | Counting Cove | Duck Pond, Monster Munch, Little Helpers, Pet Kitchen, Frog Hop, Picture Graph, Lasso Loops | 7 |
 | Cozy Village | Feelings Faces, Scoop Shop, Splish Splash, Weather Wardrobe, Mail Carrier, Teddy Doctor, Market Stall, Clock Tower, Stop and Go, Pet Says | 10 |
 | Music Mountain | Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Beat Builder | 5 |
-| Puzzle Peaks | Memory Match, Pattern Train, Puzzle Pals, Size Parade, Quick Tricks, Peekaround Island, Penguin Slide, Secret Code | 8 |
+| Puzzle Peaks | Memory Match, Pattern Train, Puzzle Pals, Size Parade, Quick Tricks, Peekaround Island, Penguin Slide, Secret Code, Garden Rows, Ferry Jam, Critter Crossing | 11 |
 | Rainbow Meadow | Color Garden, Shape Sorter, Dot Link, Tangram Town, Garden Grow, Treasure Map, Owl Walk Home | 7 |
 | Story Grove | Letter Trails, Story Steps, Word Monsters, Photo Safari, Goodnight Room, Rhyme Time, Opposites | 7 |
 | Tinker Lab | Bouncy Launch, Bug Builder, Robot Path, Sink or Float, Seesaw Balance, Light Lab, Ramp Race, Inchworm Measure, Block Tower | 9 |
@@ -336,7 +336,7 @@ These references span preschool through elementary school. Preserve exploration 
 | --- | --- | --- | --- | --- |
 | Busy Picture | Living Books | A storybook page where everything does something when tapped | Words light up as they're read; tap a word to hear it | Story Grove literacy |
 | Lost and Found | Putt-Putt, Freddi Fish, Pajama Sam | Help a friend find a lost thing across three little screens | Give each thing to the right friend (a bone for the dog) | Problem solving; short quests |
-| Critter Crossing | Zoombinis | Critters with hats, noses and feet line up; some can cross the bridge | Work out the secret rule for who can cross | Pre-K deduction; the critters never fall off. Critter Sort's guess-the-rule level already covers naming a rule from sorted examples |
+| Critter Crossing (built, 2026-10-07) | Zoombinis | Critters with hats, noses and feet line up; some can cross the bridge | Work out the secret rule for who can cross | Pre-K deduction; the critters never fall off. Critter Sort's guess-the-rule level already covers naming a rule from sorted examples |
 | Chain Reaction | The Incredible Machine | Watch a ball roll through ramps, fans and springs to ring a bell | Place one or two missing parts to make it work | Tinker Lab; pre-K |
 | Follow the Leader | Lemmings | Little critters march along; place signs to guide them to the door | Split them between two doors; compare plans | Roughly 5–8; nobody falls (they turn around) |
 | Munch Maze | Cookie Monster Munch (Atari), Pac-Man | Carry cookies one at a time through a simple maze to the jar | Bring exactly 4; the ghosts are friendly and wave | Merges the catalog's Maze Walk |
@@ -446,8 +446,8 @@ The tables follow the backlog format above. Notes say when an idea is better as 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
 | Owl Walk Home | Hoot Owl Hoot!; First Orchard | Take turns with a grown-up or the pet: turn over a color card and move any owl to the next spot of that color | More owls; choose which owl to move so everyone gets home sooner | Turn-taking toward a shared goal, toddler–pre-K. The sunrise is only a bedtime story beat, never a way to lose. S–M |
-| Garden Rows | Picture sudoku; Latin squares | Each row of the flower bed needs one daisy, one tulip and one rose; plant the missing flower | 4×4 beds where columns count too; shapes as well as colors | Logic for roughly 4–9. Verify unique solutions in `logic.ts`. S |
-| Ferry Jam | ThinkFun's Rush Hour Jr. | Slide boats along their lanes so the ferry can leave the dock | More boats; fewer moves as an optional puzzle | Planning for roughly 5–10, with undo and a grid helper. S–M |
+| Garden Rows (built, 2026-10-07) | Picture sudoku; Latin squares | Each row of the flower bed needs one daisy, one tulip and one rose; plant the missing flower | 4×4 beds where columns count too; shapes as well as colors | Logic for roughly 4–9. Verify unique solutions in `logic.ts`. S |
+| Ferry Jam (built, 2026-10-07) | ThinkFun's Rush Hour Jr. | Slide boats along their lanes so the ferry can leave the dock | More boats; fewer moves as an optional puzzle | Planning for roughly 5–10, with undo and a grid helper. S–M |
 | Pancake Stack | Tower of Hanoi | Move three pancakes to a friend's plate; a big pancake slides off a smaller one | Four pancakes; count moves as an optional challenge | Recursive planning for roughly 6–10. The rule is shown physically, not scored as a miss. S |
 | Snap Pairs | Spot It! (Dobble) | Two cards share exactly one picture; tap it on either card | Bigger cards; take turns with the pet | Visual search for roughly 4–9. No race: the pet waits for her. S |
 | Seed Bowls | Mancala | Scoop the seeds from a bowl and drop one in each bowl along the row | Predict where the last seed lands; fill the store together | One-to-one counting and prediction, preschool–school; a shared goal instead of capturing. S–M |

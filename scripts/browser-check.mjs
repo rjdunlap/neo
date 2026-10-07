@@ -8,7 +8,7 @@ const browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_
 const context = await browser.newContext({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' });
 const page = await context.newPage();
 const errors = [];
-page.on('pageerror', (error) => errors.push(error.message));
+page.on('pageerror', (error) => { errors.push(error.message); console.error('PAGE ERROR', error.stack?.split('\n').slice(0, 7).join('\n')); });
 const log = (message) => console.log(new Date().toISOString(), message);
 const ready = () => page.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
 const scene = (name) => page.waitForFunction((name) => neo.scene.constructor.name === name && !neo.switching, name);
@@ -3770,6 +3770,15 @@ async function couchPlay() {
   assert.ok((await stored()).party.turn, 'the first turn is kept');
   assert.equal(await stickers(), stickersBefore, 'no sticker until the stop is settled');
   await screenshot('couch-turn-card');
+  // How to play is on the turn card too, and Back returns to it with the first player's turn still kept.
+  await page.waitForTimeout(450);
+  await page.getByRole('button', { name: 'How to play', exact: true }).click();
+  await page.waitForFunction(() => neo.scene.screen === 'intro');
+  await page.waitForTimeout(450);
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.waitForFunction(() => neo.scene.screen === 'turn');
+  assert.equal(await page.locator('.couch-sheet h1').innerText(), 'Player 2, you’re up!');
+  assert.ok((await stored()).party.turn, 'looking at How to play keeps the first turn');
 
   // Leave and come back between the two turns.
   await page.reload(); await ready(); await page.keyboard.press('c'); await menu();
@@ -3908,6 +3917,66 @@ async function couchGames() {
     log(`Couch catalog: ${id}: intro, controller lighting, bot round and save passed`);
   }
   assert.deepEqual(errors, []);
+  await couchGuide(ids);
+}
+
+/**
+ * How to play without starting a round: the menu's guide for every open game (looking counts as an explanation),
+ * and the name card of a game that was already explained, which otherwise only says its name before the round.
+ */
+async function couchGuide(ids) {
+  const childBefore = await page.evaluate(() => JSON.stringify(kit.store.data));
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1')));
+  const open = async (selected, seen) => {
+    await page.evaluate(({ selected, seen }) => {
+      localStorage.setItem('neo.couch.v1', JSON.stringify({ version: 2, trips: 9, stickers: {}, seen, party: { seed: 4242, mode: 'together', reroll: 0, turn: null, selected, rounds: [] } }));
+    }, { selected, seen });
+    await page.reload(); await ready();
+    await page.keyboard.press('c');
+    await page.waitForFunction(() => neo.scene.screen === 'menu');
+    await page.waitForTimeout(450);
+  };
+  await open(null, []);
+  await page.getByRole('button', { name: 'How to play', exact: true }).click();
+  await page.waitForFunction(() => neo.scene.screen === 'guide');
+  assert.deepEqual(await page.locator('[data-game]').evaluateAll(n => n.map(x => x.dataset.game).sort()), [...ids].sort(), 'the guide lists every open game');
+  await screenshot('couch-guide');
+  await page.waitForTimeout(450);
+  await page.locator('[data-game="robot-path"]').click();
+  await page.waitForFunction(() => neo.scene.screen === 'intro');
+  assert.equal(await page.locator('.couch-how-screen h1').innerText(), 'Robot Path');
+  assert.equal(await page.getByRole('button', { name: 'Play', exact: true }).count(), 0, 'the guide never starts a round');
+  assert.ok((await stored()).seen.includes('robot-path'), 'looking counts as an explanation');
+  await page.waitForFunction(() => neo.scene.demo?.lit.size > 0, null, { timeout: 30000 });
+  await screenshot('couch-guide-howto');
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.waitForFunction(() => neo.scene.screen === 'guide');
+  await page.waitForTimeout(450);
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.waitForFunction(() => neo.scene.screen === 'menu');
+  assert.equal((await stored()).party.rounds.length, 0, 'the guide leaves the trip alone');
+
+  // An explained game: its name card waits once someone moves to How to play, which Back then calls off.
+  await open('frog-hop', ids);
+  await page.getByRole('button', { name: /^Resume /, exact: false }).click();
+  await page.waitForFunction(() => neo.scene.screen === 'card');
+  await page.waitForTimeout(450);
+  await page.keyboard.press('ArrowRight', { delay: 120 });
+  assert.equal(await page.evaluate(() => document.activeElement?.textContent), 'How to play');
+  await page.waitForTimeout(2000); // longer than the card's own countdown
+  assert.equal(await page.evaluate(() => neo.scene.screen), 'card', 'the card waits for whoever is choosing');
+  await screenshot('couch-name-card');
+  await page.keyboard.press('Enter', { delay: 120 });
+  await page.waitForFunction(() => neo.scene.screen === 'intro');
+  assert.equal(await page.locator('.couch-how-screen h1').innerText(), 'Frog Hop');
+  await page.waitForFunction(() => neo.scene.demo?.lit.size > 0, null, { timeout: 30000 });
+  await page.waitForTimeout(450);
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.waitForFunction(() => neo.scene.screen === 'menu');
+  assert.equal(await page.getByRole('button', { name: /^Resume / }).count(), 0, 'Back from How to play unchooses the game');
+  assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data)), childBefore, 'the guide leaves the child save unchanged');
+  assert.deepEqual(errors, []);
+  log('Couch guide: every open game listed, how-to and demo without a round, looking marks it explained, name card waits and offers How to play, Back unchooses passed');
 }
 
 /**
@@ -4276,6 +4345,218 @@ async function couchNames() {
   log('Couch names: typed on the setup page without pressing couch buttons, saved, used in the chooser, the course pages and the finale, kept through a reload passed');
 }
 
+/**
+ * A quick look at every game (`SMOKE_ONLY=id,id` for some, `SMOKE_FROM=id` to continue from one): it opens at the lowest, middle and highest level of its
+ * ladder, takes a few taps, opens and closes the grown-up how-to card, and then once in portrait. It proves a game
+ * loads, draws, survives stray touches and resizes without page errors, not that its rules are right (the rule tests
+ * do that) or that a round can be finished (a game's own suite does that). About two seconds a level.
+ */
+async function smoke() {
+  const only = process.env.SMOKE_ONLY?.split(',');
+  const games = await page.evaluate(async () => {
+    const { GAMES } = await import('/src/games/registry.ts');
+    return GAMES.map((g) => {
+      const levels = [...new Set(g.bands.flatMap((b) => { const r = g.levels(b); return Array.from({ length: r.max - r.min + 1 }, (_, i) => r.min + i); }))].sort((a, b) => a - b);
+      return { id: g.id, levels: [...new Set([levels[0], levels[Math.floor(levels.length / 2)], levels.at(-1)])] };
+    });
+  });
+  const from = process.env.SMOKE_FROM ? games.findIndex((g) => g.id === process.env.SMOKE_FROM) : 0;
+  assert.ok(from >= 0, `SMOKE_FROM matched no game: ${process.env.SMOKE_FROM}`);
+  const picked = games.slice(from).filter((g) => !only || only.includes(g.id));
+  assert.ok(picked.length > 0, `SMOKE_ONLY matched no game: ${only}`);
+  const taps = [[512, 384], [300, 300], [720, 460], [512, 600]];
+  for (const g of picked) {
+    for (const level of g.levels) {
+      await launch(g.id, level);
+      await page.waitForTimeout(900);
+      for (const [x, y] of taps) { await page.mouse.click(x, y); await page.waitForTimeout(120); }
+      assert.deepEqual(errors, [], `${g.id} level ${level} raised page errors after stray taps`);
+      if (await page.evaluate(() => !neo.scene.finished)) {
+        await page.evaluate(() => neo.scene.openHelp());
+        assert.ok(await page.evaluate(() => !!neo.scene.helpCard), `${g.id} level ${level}: the how-to card did not open`);
+        const text = await page.evaluate(() => neo.scene.helpCard.info.level);
+        assert.ok(text && text.length > 3, `${g.id} level ${level}: the card has no level line`);
+        await page.evaluate(() => neo.scene.closeHelp());
+      }
+    }
+    await launch(g.id, g.levels.at(-1));
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(500);
+    await page.mouse.click(384, 512); await page.waitForTimeout(150);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
+    assert.deepEqual(errors, [], `${g.id} raised page errors in portrait`);
+    log(`Smoke: ${g.id} levels ${g.levels.join(', ')}: opened, tapped, how-to card, portrait passed`);
+  }
+}
+
+/** The pet's treehouse: reach it from the map, move and turn things, hang a sticker, tidy, leave; all of it kept through a reload. */
+async function roomPlay() {
+  await page.evaluate(() => {
+    kit.store.data.profile.band = 'prek';
+    kit.store.data.stickers = [];
+    for (const [game, seed] of [['pet-kitchen', 11], ['block-tower', 12], ['garden-rows', 13]]) kit.store.addSticker(game, seed);
+    kit.store.save(); kit.store.flush();
+    neo.go.hub();
+  });
+  await scene('MapScene');
+  await tap('neo.scene.treehouse');
+  await scene('RoomScene');
+  await page.waitForTimeout(500);
+  const state = () => page.evaluate(() => ({ room: JSON.parse(JSON.stringify(kit.store.data.room)), stickers: kit.store.data.stickers.length }));
+  const start = await state();
+  assert.deepEqual(start.room.items.map((i) => i.id), ['bed', 'lamp', 'rug', 'shelf', 'plant', 'musicbox']);
+  assert.equal(start.room.frame, null);
+  await screenshot('room-start');
+  const globalOf = (id) => page.evaluate((id) => { const p = neo.scene.pieces.get(id).node.getGlobalPosition(); return { x: p.x, y: p.y }; }, id);
+  // Drag the bed by its middle toward the right and up a little: it is saved, on the floor, and the other items stay put.
+  const bed = await globalOf('bed');
+  await page.mouse.move(bed.x, bed.y - 40); await page.mouse.down();
+  for (let i = 1; i <= 8; i++) { await page.mouse.move(bed.x + i * 30, bed.y - 40 - i * 6); await page.waitForTimeout(30); }
+  await page.mouse.up(); await page.waitForTimeout(500);
+  const moved = await state();
+  const was = start.room.items.find((i) => i.id === 'bed'); const now = moved.room.items.find((i) => i.id === 'bed');
+  assert.ok(now.x > was.x + 0.1, `the bed moved right (${was.x} to ${now.x})`);
+  assert.ok(now.y >= 0.66 && now.y <= 0.93, 'the bed stays on the floor');
+  assert.deepEqual(moved.room.items.filter((i) => i.id !== 'bed'), start.room.items.filter((i) => i.id !== 'bed'));
+  // A tap on the lamp puts the lights out and then on; nothing is saved for it.
+  const lamp = await globalOf('lamp');
+  await page.mouse.click(lamp.x, lamp.y - 60); await page.waitForTimeout(900);
+  assert.equal(await page.evaluate(() => neo.scene.lit), false);
+  assert.ok(await page.evaluate(() => neo.scene.dim.alpha) > 0.2, 'the room dims');
+  await page.waitForFunction(() => !neo.scene.acting);
+  await page.mouse.click(lamp.x, lamp.y - 60); await page.waitForTimeout(900);
+  assert.equal(await page.evaluate(() => neo.scene.lit), true);
+  await page.waitForFunction(() => !neo.scene.acting);
+  // Touch the shelf, then turn it round with the arrows.
+  const shelf = await globalOf('shelf');
+  await page.mouse.click(shelf.x, shelf.y - 90); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.scene.selected), 'shelf');
+  await tap('neo.scene.flip'); await page.waitForTimeout(250);
+  assert.equal((await state()).room.items.find((i) => i.id === 'shelf').flip, true);
+  await page.waitForFunction(() => !neo.scene.acting, null, { timeout: 15000 });
+  // Every other thing the pet does with a furnishing finishes by itself.
+  for (const id of ['bed', 'rug', 'plant', 'musicbox']) {
+    const at = await globalOf(id);
+    await page.mouse.click(at.x, at.y - (id === 'rug' ? 20 : 50));
+    await page.waitForFunction(() => !neo.scene.acting, null, { timeout: 15000 });
+  }
+  // The frame: choose a sticker; it stays in the book, and the frame keeps it through a reload.
+  await tap('neo.scene.frame'); await page.waitForTimeout(400);
+  assert.ok(await page.evaluate(() => !!neo.scene.picker), 'the sticker picker opens');
+  await screenshot('room-picker');
+  const first = await page.evaluate(() => { const panel = neo.scene.picker.body.children[0]; const node = panel.children.find((c) => c.hitArea?.radius > 40); const p = node.getGlobalPosition(); return { x: p.x, y: p.y }; });
+  await page.mouse.click(first.x, first.y); await page.waitForTimeout(500);
+  const hung = await state();
+  assert.ok(hung.room.frame && hung.room.frame.game, 'a sticker hangs in the frame');
+  assert.equal(hung.stickers, 3, 'hanging a sticker does not use it up');
+  assert.ok(await page.evaluate(() => !neo.scene.picker), 'the picker closes');
+  await screenshot('room-hung');
+  // Reload: the arrangement, the turn and the frame are all still there.
+  await page.waitForTimeout(500);
+  await page.reload(); await ready();
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene');
+  const again = await state();
+  assert.deepEqual(again.room, hung.room);
+  // Tidy puts the furnishings back and keeps the picture.
+  await tap('neo.scene.tidyButton'); await page.waitForTimeout(700);
+  const tidy = await state();
+  assert.deepEqual(tidy.room.items, start.room.items);
+  assert.deepEqual(tidy.room.frame, hung.room.frame);
+  // Empty the frame, then leave: the sticker is still in the book.
+  await tap('neo.scene.frame'); await page.waitForTimeout(400);
+  await page.evaluate(() => { const panel = neo.scene.picker.body.children[0]; const empty = panel.children.filter((c) => c.constructor.name === 'RoundButton')[1]; kit.tapOn(empty); });
+  await page.waitForTimeout(500);
+  const emptied = await state();
+  assert.equal(emptied.room.frame, null);
+  assert.equal(emptied.stickers, 3);
+  await tap('neo.scene.home'); await scene('MapScene');
+  assert.deepEqual(errors, []);
+  log('Room: reached from the map, an item moved (saved, on the floor), the lamp toggled, a shelf turned, the pet used the bed, rug, plant and music box, a sticker hung and kept through a reload without being used up, tidy and emptying the frame worked, home returned to the map');
+}
+
+/** The child's island: a twinkle on games not yet played, a heart after a round, the favorites shelf (path) and Favorites card (subjects). */
+async function islandShelf() {
+  await page.evaluate(async () => {
+    const { session } = await import('/src/app/session.ts');
+    kit.store.data.profile.band = 'toddler'; kit.store.data.world.band = 'toddler';
+    kit.store.data.settings.placeLayout = 'path'; kit.store.data.settings.sessionMinutes = 0; session.start(0);
+    kit.store.data.games = {}; kit.store.data.favorites = []; kit.store.data.stickers = [];
+    neo.go.place('toddler');
+  });
+  await scene('PlaceScene');
+  await page.waitForTimeout(400);
+  const fresh = await page.evaluate(() => ({ landmarks: neo.scene.landmarks.map((l) => l.mod.id), sparkles: [...neo.scene.sparkles.keys()], shelf: neo.scene.shelf, quiet: [...neo.scene.sparkles.values()].every((s) => s.eventMode === 'none') }));
+  assert.deepEqual(fresh.sparkles, fresh.landmarks, 'every unplayed game twinkles');
+  assert.equal(fresh.shelf, null, 'no heart, no shelf');
+  assert.ok(fresh.quiet, 'a twinkle never takes a touch');
+  const id = fresh.landmarks[0];
+  // Play one round of the first game (the shell's own finish, as a finished round does): one sticker, one play, no heart yet.
+  await page.evaluate(() => kit.tapOn(neo.scene.landmarks[0].node, 0, -60));
+  await scene('GameScene'); await page.waitForTimeout(1500);
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(700);
+  const after = () => page.evaluate((id) => ({ plays: kit.store.stats(id).plays, stickers: kit.store.data.stickers.length, hearts: [...kit.store.data.favorites], lit: neo.scene.after.heart.children[1].children[1].visible }), id);
+  assert.deepEqual(await after(), { plays: 1, stickers: 1, hearts: [], lit: false });
+  await screenshot('island-heart-off');
+  await tap('neo.scene.after.heart'); await page.waitForTimeout(150);
+  assert.deepEqual((await after()).hearts, [id]); assert.equal((await after()).lit, true);
+  await page.waitForTimeout(500);
+  await tap('neo.scene.after.heart'); await page.waitForTimeout(150);
+  assert.deepEqual((await after()).hearts, [], 'a second tap takes the heart back');
+  await page.waitForTimeout(500);
+  await tap('neo.scene.after.heart'); await page.waitForTimeout(150);
+  assert.deepEqual((await after()).hearts, [id]);
+  await screenshot('island-heart-on');
+  assert.equal((await after()).stickers, 1, 'hearting never adds or takes a sticker');
+  await page.waitForTimeout(500);
+  await tap('neo.scene.after.home'); await scene('PlaceScene'); await page.waitForTimeout(500);
+  const back = await page.evaluate(() => ({ sparkles: [...neo.scene.sparkles.keys()], shelf: neo.scene.shelf?.items.map((i) => i.mod.id) }));
+  assert.deepEqual(back.shelf, [id], 'the hearted game stands on the shelf');
+  assert.ok(!back.sparkles.includes(id) && back.sparkles.length === fresh.landmarks.length - 1, 'the played game stops twinkling and no other does');
+  await screenshot('island-shelf');
+  // The shelf is a way in: tap the game on it.
+  await page.evaluate(() => kit.tapOn(neo.scene.shelf.items[0].node, 0, -50));
+  await scene('GameScene');
+  assert.equal(await page.evaluate(() => neo.scene.mod.id), id);
+  // Subject layout: Favorites is the first card, with the one game inside; subjects with new games twinkle.
+  await page.evaluate(() => { kit.store.data.settings.placeLayout = 'subjects'; neo.go.place('toddler'); });
+  await scene('SubjectPlaceScene'); await page.waitForTimeout(400);
+  const cards = await page.evaluate(() => neo.scene.cards.map((c) => ({ id: c.id, sparkle: !!c.sparkle })));
+  assert.equal(cards[0].id, 'favorites'); assert.equal(cards[0].sparkle, false);
+  assert.ok(cards.slice(1).every((c) => c.sparkle), 'every subject still holds a game she has not played');
+  await screenshot('island-favorites-card');
+  await page.evaluate(() => kit.tapOn(neo.scene.cards[0].node)); await page.waitForTimeout(400);
+  assert.deepEqual(await page.evaluate(() => ({ subject: neo.scene.state.subject, ids: neo.scene.cards.map((c) => c.id), sparkles: neo.scene.cards.map((c) => !!c.sparkle) })), { subject: 'favorites', ids: [id], sparkles: [false] });
+  await page.evaluate(() => kit.tapOn(neo.scene.cards[0].node)); await scene('GameScene');
+  assert.equal(await page.evaluate(() => neo.scene.mod.id), id);
+  // Hearts and plays survive a reload, and a heart taken back leaves the card and the shelf.
+  await page.evaluate(() => { kit.store.flush(); }); await page.waitForTimeout(400);
+  await page.reload(); await ready();
+  assert.deepEqual(await page.evaluate(() => [...kit.store.data.favorites]), [id]);
+  await page.evaluate(() => { kit.store.data.settings.placeLayout = 'subjects'; kit.store.data.favorites = []; neo.go.place('toddler'); });
+  await scene('SubjectPlaceScene'); await page.waitForTimeout(300);
+  assert.notEqual(await page.evaluate(() => neo.scene.cards[0].id), 'favorites', 'no hearts, no Favorites card');
+  // Portrait: a full shelf of five clears the games and the arrows.
+  await page.evaluate(async () => {
+    const { GAMES } = await import('/src/games/registry.ts');
+    kit.store.data.settings.placeLayout = 'path';
+    kit.store.data.favorites = GAMES.filter((g) => g.bands.includes('toddler')).slice(0, 7).map((g) => g.id);
+    neo.go.place('toddler');
+  });
+  await scene('PlaceScene'); await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(700);
+  assert.equal(await page.evaluate(() => neo.scene.shelf.items.length), 5, 'a shelf holds five, the newest hearts');
+  const clear = await page.evaluate(() => {
+    const top = neo.scene.shelf.getBounds(); const arrows = [neo.scene.previous, neo.scene.next].filter((b) => b.visible).map((b) => b.getBounds());
+    return { bottom: top.y + top.height, arrows: arrows.some((a) => a.x < top.x + top.width && a.x + a.width > top.x && a.y < top.y + top.height && a.y + a.height > top.y) };
+  });
+  assert.equal(clear.arrows, false, 'the arrows stay clear of the shelf');
+  await screenshot('island-shelf-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+  log('Island: a fresh place twinkles on every game and has no shelf; a finished round gives one play and one sticker; the heart after a round toggles on, off and on, never touches stickers; the played game stops twinkling and the hearted one stands on the shelf and opens from it; the subject layout leads with a Favorites card (and drops it with no hearts); hearts survive a reload; a full shelf holds five in portrait clear of the arrows');
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -4307,6 +4588,9 @@ try {
   if (suite === 'all' || suite === 'couchcourse') await couchCourse();
   if (suite === 'all' || suite === 'couchnames') await couchNames();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
+  if (suite === 'smoke') await smoke();
+  if (suite === 'all' || suite === 'room') await roomPlay();
+  if (suite === 'all' || suite === 'island') await islandShelf();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

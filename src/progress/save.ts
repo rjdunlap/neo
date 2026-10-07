@@ -1,5 +1,7 @@
 import type { Band } from './bands';
-import { PET_COLORS, PICNIC_STEPS, STICKER_PAGES, type PetColor, type PicnicStep, type StickerPage } from '../content/world';
+import { PET_COLORS, PICNIC_STEPS, ROOM_ITEMS, STICKER_PAGES, type PetColor, type PicnicStep, type RoomItemId, type StickerPage } from '../content/world';
+import { clampSpot, starterItem, starterRoom } from '../content/room';
+import { cleanFavorites } from '../content/shelf';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -41,6 +43,20 @@ export interface StoryProgress {
   keepsake: boolean;
 }
 
+/** One furnishing in the pet's treehouse: where its feet are (fractions of the room) and which way it faces. */
+export interface RoomItem {
+  id: RoomItemId;
+  x: number;
+  y: number;
+  flip: boolean;
+}
+
+/** The treehouse: always all six furnishings, plus the one sticker hung in the frame (shown, never used up). */
+export interface RoomSave {
+  items: RoomItem[];
+  frame: { game: string; seed: number } | null;
+}
+
 /** Everything the app remembers, as one versioned record so a backup is a single file. */
 export interface SaveData {
   version: 2;
@@ -52,6 +68,9 @@ export interface SaveData {
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
   stories: { picnic: StoryProgress };
+  room: RoomSave;
+  /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
+  favorites: string[];
 }
 
 export const HISTORY_LENGTH = 10;
@@ -67,6 +86,8 @@ export function defaults(): SaveData {
     games: {},
     stickers: [],
     stories: { picnic: { steps: [], ended: false, keepsake: false } },
+    room: starterRoom(),
+    favorites: [],
   };
 }
 
@@ -88,6 +109,21 @@ function story(raw: unknown): StoryProgress {
   // A telling can only have ended once every step is done; an ending always left its keepsake.
   const ended = bool(r.ended, false) && steps.length === PICNIC_STEPS.length;
   return { steps, ended, keepsake: bool(r.keepsake, false) || ended };
+}
+
+/** Always six items, one of each: anything missing or damaged goes back to its starting spot. */
+function room(raw: unknown): RoomSave {
+  const r = isObj(raw) ? raw : {};
+  const given = Array.isArray(r.items) ? r.items.filter(isObj) : [];
+  const items = ROOM_ITEMS.map((id): RoomItem => {
+    const it = given.find((g) => g.id === id);
+    if (!it) return starterItem(id);
+    const start = starterItem(id);
+    return { id, ...clampSpot(num(it.x, start.x), num(it.y, start.y)), flip: bool(it.flip, false) };
+  });
+  const f = isObj(r.frame) ? r.frame : null;
+  const frame = f && typeof f.game === 'string' && f.game.length > 0 && f.game.length <= 60 && typeof f.seed === 'number' && Number.isFinite(f.seed) ? { game: f.game, seed: f.seed } : null;
+  return { items, frame };
 }
 
 /** Accepts anything (old saves, hand-edited backups, garbage) and returns a valid save. */
@@ -154,5 +190,7 @@ export function migrate(raw: unknown): SaveData {
     games,
     stickers,
     stories: { picnic: story(stories.picnic) },
+    room: room(raw.room),
+    favorites: cleanFavorites(raw.favorites),
   };
 }

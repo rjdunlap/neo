@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle } from 'pixi.js';
 import { swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -55,6 +56,11 @@ class SinkFloat implements Game {
   private view: View;
   private clock = 0;
   private nextSlot = 0;
+  // Couch play on guessing levels: a ring on Float (left) or Sink (right).
+  private pick = 0;
+  private couchOn = false;
+  private readonly ring = new Graphics();
+  private botWait = 1.5;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -78,7 +84,8 @@ class SinkFloat implements Game {
       button.visible = this.plan.mode === 'guess';
       ctx.stage.addChild(button);
     }
-    ctx.stage.addChild(this.tankFront, this.glow);
+    this.ring.eventMode = 'none';
+    ctx.stage.addChild(this.tankFront, this.glow, this.ring);
   }
 
   start() {
@@ -319,9 +326,42 @@ class SinkFloat implements Game {
     if (next.drag) g.roundRect(next.drag.home.x - 66, next.drag.home.y - 66, 132, 132, 24).stroke({ width: 8, color: swatch.yellow.line });
   }
 
+  /** Couch play on guessing levels: left and right choose float or sink; the bottom button makes the guess. */
+  control(input: CouchControls) {
+    this.couchOn = true;
+    if (this.plan.mode !== 'guess' || !this.guessing || this.finished) return;
+    for (const p of input.players) {
+      if (p.direction === 0) this.pick = 1;
+      else if (p.direction === 2) this.pick = 0;
+      if (p.action) this.guess(this.pick === 0);
+    }
+  }
+
+  /** The "watch me" demo: a player who knows how things behave in water, choosing and pressing. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (!this.guessing || this.finished || this.botWait > 0) return out;
+    const want = floats(this.items[this.current].thing) ? 0 : 1;
+    if (want === this.pick) {
+      out.players[0].action = true;
+      this.botWait = 1.2;
+    } else {
+      out.players[0].direction = want === 1 ? 0 : 2;
+      this.botWait = 0.6;
+    }
+    return out;
+  }
+
   update(dt: number) {
     this.clock += dt;
     this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 4);
+    const ring = this.ring.clear();
+    if (this.couchOn && this.guessing && !this.finished) {
+      const b = this.pick === 0 ? this.floatButton : this.sinkButton;
+      ring.roundRect(b.x - 92, b.y - 82, 184, 164, 30).stroke({ width: 8, color: swatch.teal.line });
+    }
     for (const w of this.wet) {
       if (!w.settled || !w.floats) continue;
       w.node.y = this.tank.surface - 8 + Math.sin(this.clock * 2.4 + w.phase) * 4;

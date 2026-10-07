@@ -254,7 +254,7 @@ class TreasureMap implements Game {
     this.marks.addChild(art);
     await this.ctx.tw.to(art.scale, { x: 1.4, y: 1.4 }, { duration: 0.3, ease: ease.outBack });
     sfx.sparkle();
-    const g = this.grid.toGlobal(at);
+    const g = this.ctx.stage.toLocal(this.grid.toGlobal(at));
     this.ctx.particles.burst(g.x, g.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
     this.ctx.pet.cheer();
     await this.ctx.say(this.plan.mode === 'place' ? 'map.placed' : 'map.found');

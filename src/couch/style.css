@@ -89,6 +89,12 @@
 .couch-tally { font-size: calc(22px * var(--u)); font-weight: 600; margin: calc(4px * var(--u)) 0; }
 .couch-unlocked { font-size: calc(20px * var(--u)); font-weight: 600; color: #8a4a12; background: #fff0d4; border-radius: calc(14px * var(--u)); padding: calc(10px * var(--u)) calc(16px * var(--u)); display: inline-block; }
 .couch-teaser { font-size: calc(18px * var(--u)); color: #50665b; }
+/* The guide lists every open game, so its cards are shorter than the chooser's three. */
+.couch-guide { grid-template-columns: repeat(auto-fill, minmax(calc(280px * var(--u)), 1fr)); gap: calc(16px * var(--u)); }
+.couch .couch-guide .couch-card { min-height: calc(200px * var(--u)); padding: calc(18px * var(--u)); }
+.couch-guide .couch-card canvas { height: calc(72px * var(--u)); margin-bottom: calc(10px * var(--u)); }
+.couch-guide .couch-card strong { font-size: calc(22px * var(--u)); }
+.couch-guide .couch-card span { font-size: calc(16px * var(--u)); margin: calc(8px * var(--u)) 0; }
 @media (max-width: 750px) { .couch-modes { grid-template-columns: 1fr; } }
 
 /* Footer: buttons on the left, controller notes on the right, one row on a wide screen. */

@@ -4,7 +4,7 @@ import { COUCH_INFO } from './catalog';
 import { courseSpec, repairCourse, type CourseSave } from './course';
 import { isCourseId, type CourseId } from './courses';
 
-export const COUCH_IDS = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'memory-match', 'rhythm-neighbors', 'light-lab', 'secret-code', 'peg-garden', 'bumper-garden'] as const;
+export const COUCH_IDS = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'memory-match', 'rhythm-neighbors', 'light-lab', 'secret-code', 'peg-garden', 'bumper-garden', 'pattern-train', 'egg-catch', 'robot-path', 'frog-hop', 'sink-float'] as const;
 export type CouchId = typeof COUCH_IDS[number];
 export const STOPS = 6;
 /** Together: shared lanterns. Face-off: the same six stops, with a winner at each. */
@@ -58,7 +58,7 @@ export const newParty = (mode: TripMode, seed: number): Party => ({ seed, rounds
  * (either mode) opens the next. Derived from the trip count, never stored, so a reload or a restored
  * backup can't award twice, and nothing locks again.
  */
-export const UNLOCK_TIERS: readonly (readonly CouchId[])[] = [['penguin-slide', 'bouncy-launch', 'bounce-back'], ['memory-match', 'rhythm-neighbors'], ['light-lab', 'secret-code'], ['peg-garden', 'bumper-garden']];
+export const UNLOCK_TIERS: readonly (readonly CouchId[])[] = [['penguin-slide', 'bouncy-launch', 'bounce-back'], ['memory-match', 'rhythm-neighbors'], ['light-lab', 'secret-code'], ['peg-garden', 'bumper-garden'], ['pattern-train', 'egg-catch'], ['frog-hop', 'sink-float'], ['robot-path']];
 const completed = (trips: number) => Number.isFinite(trips) ? Math.max(0, Math.floor(trips)) : 0;
 export const unlockedIds = (trips: number, tiers = UNLOCK_TIERS): CouchId[] => tiers.slice(0, completed(trips) + 1).flat();
 export const tierOf = (id: CouchId, tiers = UNLOCK_TIERS) => tiers.findIndex(t => t.includes(id));

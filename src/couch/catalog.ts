@@ -169,6 +169,80 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     demoLevel: 3,
     level: (stop) => (stop < 3 ? 3 : 4),
   },
+  'pattern-train': {
+    goal: 'couch.how.pattern-train',
+    tagline: 'Look at the train, then choose what comes next.',
+    controls: [
+      { parts: STICK, text: 'Move the highlight to the picture that fits the glowing car.', keys: 'Left / right arrows' },
+      { parts: ['bottom'], text: 'Choose it.', keys: 'Enter' },
+    ],
+    play: 'together',
+    faceoff: 'team',
+    // Pre-K's range (3–9) holds the shape and animal patterns used here; its bell levels (7 and 8) need listening and a confirm button.
+    band: 'prek',
+    demoLevel: 6,
+    level: (stop) => (stop < 2 ? 4 : stop < 4 ? 6 : 9),
+  },
+  'egg-catch': {
+    goal: 'couch.how.egg-catch',
+    tagline: 'Slide the basket under the falling eggs.',
+    controls: [
+      { parts: STICK, text: 'Slide the basket left and right. With two controllers, you both steer the same basket.', keys: 'Left / right arrows' },
+    ],
+    // With two controllers both steer one basket. A face-off on separate boards would mostly tie, so this is a team game.
+    play: 'together',
+    faceoff: 'team',
+    // Preschool's range (2–4) holds the two catching levels; the chute levels above them are touch puzzles.
+    band: 'preschool',
+    demoLevel: 2,
+    level: (stop) => (stop < 3 ? 2 : 3),
+    lines: { 'egg.catch': 'couch.egg.catch' },
+  },
+  'robot-path': {
+    goal: 'couch.how.robot-path',
+    tagline: 'Plan the robot’s steps to the star, then press play.',
+    controls: [
+      { parts: STICK, text: 'Add a step for the robot: up, down, left or right.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Play the whole path.', keys: 'Enter' },
+      { parts: ['left'], text: 'Take the last step back out.', keys: 'Backspace' },
+    ],
+    // Its boards are authored per level, not drawn from the seed, so a second player would face a path they had watched: a team game.
+    play: 'together',
+    faceoff: 'team',
+    band: 'school',
+    demoLevel: 4,
+    level: (stop) => (stop < 2 ? 4 : stop < 4 ? 5 : 6),
+    lines: { 'robot.start': 'couch.robot.start' },
+  },
+  'frog-hop': {
+    goal: 'couch.how.frog-hop',
+    tagline: 'Hop along the lily pads to where the frog will land.',
+    controls: [
+      { parts: STICK, text: 'Move the highlight along the lily pads, or the number cards.', keys: 'Left / right arrows' },
+      { parts: ['bottom'], text: 'Choose it.', keys: 'Enter' },
+    ],
+    play: 'together',
+    faceoff: 'team',
+    band: 'school',
+    demoLevel: 3,
+    level: (stop) => [3, 3, 4, 5, 6, 6][stop] ?? 6,
+    lines: { 'hop.gap': 'couch.hop.gap' },
+  },
+  'sink-float': {
+    goal: 'couch.how.sink-float',
+    tagline: 'Will it float or sink? Guess, then watch the water.',
+    controls: [
+      { parts: STICK, text: 'Choose float on the left or sink on the right.', keys: 'Left / right arrows' },
+      { parts: ['bottom'], text: 'Make your guess.', keys: 'Enter' },
+    ],
+    play: 'together',
+    faceoff: 'team',
+    // Early school's range (5–6) has one guessing level, with surprises; the sorting level is a drag.
+    band: 'school',
+    demoLevel: 6,
+    level: () => 6,
+    lines: { 'sink.guess': 'couch.sink.guess' },
+  },
 };
 
 /** The line to speak for `line` in couch play: a controller version when the original talks about touch. */

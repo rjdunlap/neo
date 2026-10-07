@@ -7,6 +7,7 @@ import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { placeFor, type Place } from '../../content/places';
+import { shelfFor } from '../../content/shelf';
 import { REGION_IDS } from '../../content/world';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
@@ -14,8 +15,11 @@ import type { View } from '../../engine/view';
 import { GAMES } from '../../games/registry';
 import type { GameModule, HubIcon } from '../../games/types';
 import type { Band } from '../../progress/bands';
+import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, bookIcon, islandIcon } from '../../ui/icons';
+import { Shelf, type ShelfItem } from '../../ui/shelf';
+import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -87,6 +91,8 @@ interface Landmark {
 export class PlaceScene extends Scene {
   readonly place: Place;
   readonly landmarks: Landmark[] = [];
+  /** The twinkles on games not yet played, by game ID. */
+  readonly sparkles = new Map<string, Sparkle>();
   scroll = 0;
   maxScroll = 0;
 
@@ -101,6 +107,8 @@ export class PlaceScene extends Scene {
   readonly previous = new RoundButton(arrowIcon(-1), swatch.white, 46, () => this.page(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.white, 46, () => this.page(1));
   private readonly heading = label('', 36);
+  /** The hearted games for this place, standing in the sky; absent until something is hearted. */
+  shelf: Shelf | null = null;
   private touch: { id: number; x0: number; scroll0: number; lastX: number; lastT: number; moved: boolean; target: Landmark | Flower | null } | null = null;
   private velocity = 0;
   private leaving = false;
@@ -129,6 +137,13 @@ export class PlaceScene extends Scene {
       icon.position.set(-(b.x + b.width / 2) * s, -(b.y + b.height) * s);
       const node = new Container();
       node.addChild(new Graphics().ellipse(0, 0, Math.min(110, (b.width * s) / 2 + 20), 18).fill({ color: swatch.green.line, alpha: 0.18 }), icon);
+      // A twinkle on a game she has not finished a round of yet. It never blocks a touch.
+      if (store.isNew(mod.id)) {
+        const sparkle = this.track(new Sparkle());
+        sparkle.position.set(Math.min(95, (b.width * s) / 2 - 4), -b.height * s + 6);
+        node.addChild(sparkle);
+        this.sparkles.set(mod.id, sparkle);
+      }
       node.eventMode = 'static';
       node.cursor = 'pointer';
       node.hitArea = new Rectangle(-Math.max(55, (b.width * s) / 2 + 15), -Math.max(100, b.height * s + 20), Math.max(110, b.width * s + 30), Math.max(100, b.height * s + 20) + 25);
@@ -150,6 +165,12 @@ export class PlaceScene extends Scene {
     this.pip.scale.set(0.55);
     this.pip.hitArea = new Circle(0, -120, 155);
     onTap(this.pip, () => { this.pip.poke(); void voice.say('hub.pick'); });
+    const here = gamesFor(this.band);
+    const hearted = shelfFor(store.favorites, here.map((g) => g.id)).map((id) => here.find((g) => g.id === id)!);
+    if (hearted.length) {
+      this.shelf = this.track(new Shelf(hearted, (item) => this.launch(item)));
+      this.ui.addChild(this.shelf);
+    }
     this.ui.addChild(this.track(this.pip), this.home, this.book, this.heading, this.previous, this.next);
     if (this.backdrop.sun) onTap(this.backdrop.sun, () => { this.backdrop.sun!.poke(); sfx.sparkle(); }, { radius: 100 });
     this.backdrop.clouds.forEach((c) => onTap(c, () => { c.poke(); sfx.whoosh(); }, { radius: 90 }));
@@ -185,6 +206,8 @@ export class PlaceScene extends Scene {
       const colors: ColorName[] = ['pink', 'purple', 'orange', 'red', 'blue'];
       for (let i = 0; i < Math.max(6, cols * 2); i++) this.plant((i + 0.5) * (this.landWidth / Math.max(6, cols * 2)), i % 2 ? mid + 55 : backY - 105 + (i % 3) * 12, colors[i % colors.length], false);
     }
+    // The shelf stands in the sky above the back row of games, clear of the home and book buttons.
+    this.shelf?.position.set(v.w / 2, Math.max(240, backY - ICON_H - 60));
     this.pip.position.set(92, v.h - 12);
     this.home.position.set(65, 65);
     this.book.position.set(v.w - 65, 65);
@@ -266,7 +289,7 @@ export class PlaceScene extends Scene {
     if (p.y > this.backdrop.groundY) this.plant(p.x, p.y, (['pink', 'purple', 'orange', 'red', 'blue'] as ColorName[])[this.flowers.length % 5]);
   }
 
-  private launch(mark: Landmark) {
+  private launch(mark: Pick<Landmark | ShelfItem, 'mod' | 'node'>) {
     if (this.leaving) return;
     this.leaving = true;
     lastScroll.set(this.band, this.scroll);

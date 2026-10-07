@@ -6,6 +6,7 @@ import { stickerize } from '../../art/sticker';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
+import { howToFor } from '../../content/howto';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
@@ -15,7 +16,8 @@ import type { Game, GameContext, GameModule, RoundResult } from '../../games/typ
 import type { Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
-import { againIcon, basketIcon, houseIcon } from '../../ui/icons';
+import { HowToPanel, questionIcon } from '../../ui/howto-card';
+import { againIcon, basketIcon, heartIcon, houseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
 import type { App, StoryRound } from '../App';
 import { Scene } from '../Scene';
@@ -30,10 +32,13 @@ export class GameScene extends Scene {
   private readonly stage = new Container();
   private readonly pet = makePet();
   private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave());
+  /** For the grown-up: hold to open the how-to card. Quiet on purpose, and a long hold so a small hand does not open it. */
+  private readonly help = new HoldButton(questionIcon(), swatch.white, 38, 0.9, () => this.openHelp());
+  private helpCard: HowToPanel | null = null;
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
-  /** The "again" and "home" buttons, once the celebration offers them. */
-  after: { again: RoundButton; home: RoundButton } | null = null;
+  /** The "again", heart and "home" buttons, once the celebration offers them. */
+  after: { again: RoundButton; heart: RoundButton; home: RoundButton } | null = null;
   private level = 1;
   private seconds = 0;
   private finished = false;
@@ -64,7 +69,9 @@ export class GameScene extends Scene {
     this.pet.hitArea = new Circle(0, -125, 170);
     this.track(this.pet);
     this.track(this.home);
-    this.ui.addChild(this.pet, this.home);
+    this.help.alpha = 0.6;
+    this.track(this.help);
+    this.ui.addChild(this.pet, this.home, this.help);
 
     const ctx: GameContext = {
       stage: this.stage,
@@ -97,7 +104,9 @@ export class GameScene extends Scene {
     this.game.resize(view);
     this.pet.position.set(74, view.h - 18);
     this.home.position.set(62, 62);
+    this.help.position.set(62, 160);
     this.tip?.position.set(view.w / 2, 16);
+    this.helpCard?.layout(view);
   }
 
   enter() {
@@ -106,6 +115,8 @@ export class GameScene extends Scene {
   }
 
   update(dt: number) {
+    // The how-to card holds the round still: nothing moves or counts while a grown-up reads.
+    if (this.helpCard) return;
     super.update(dt);
     if (this.finished) return;
     this.seconds += dt;
@@ -132,6 +143,23 @@ export class GameScene extends Scene {
     return new Promise((resolve) => void spoken.then(() => !this.gone && resolve()));
   }
 
+  /** The grown-up how-to card for this game at this level. Reading it is not a hint and changes no progress. */
+  private openHelp() {
+    if (this.helpCard || this.finished) return;
+    const info = howToFor(this.mod, this.level);
+    if (!info) return;
+    sfx.tick();
+    const card = new HowToPanel(info, () => this.closeHelp());
+    card.layout(this.view);
+    this.helpCard = card;
+    this.ui.addChild(card);
+  }
+
+  private closeHelp() {
+    this.helpCard?.destroy({ children: true });
+    this.helpCard = null;
+  }
+
   private leave() {
     voice.stop();
     this.goHome();
@@ -146,6 +174,7 @@ export class GameScene extends Scene {
   private finish(result: RoundResult) {
     if (this.finished) return;
     this.finished = true;
+    this.closeHelp();
     const band = this.band;
     store.recordRound(
       this.mod.id,
@@ -177,6 +206,7 @@ export class GameScene extends Scene {
     layer.addChild(veil, star, confetti);
     this.ui.addChild(layer);
     this.home.visible = false;
+    this.help.visible = false;
     this.pet.visible = false;
     this.tip?.destroy({ children: true });
     this.tip = null;
@@ -220,10 +250,30 @@ export class GameScene extends Scene {
 
     const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story));
     const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.goHome());
-    this.after = { again, home };
+    // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
+    const outline = heartIcon(0xffffff, false);
+    const solid = heartIcon(0xffffff, true);
+    const show = (on: boolean) => {
+      outline.visible = !on;
+      solid.visible = on;
+    };
+    show(store.isFavorite(this.mod.id));
+    const heartIcons = new Container();
+    heartIcons.addChild(outline, solid);
+    const heart = new RoundButton(heartIcons, swatch.pink, 56, () => {
+      const on = store.toggleFavorite(this.mod.id);
+      show(on);
+      if (on) {
+        sfx.sparkle();
+        confetti.burst(heart.x, heart.y, { kind: 'star', colors: [swatch.pink.fill, 0xffffff], count: 14, speed: [180, 340], gravity: 0, life: [0.5, 0.9] });
+        void voice.say('heart.on');
+      } else void voice.say('heart.off');
+    });
+    this.after = { again, heart, home };
     again.position.set(v.w / 2 - 230, v.h * 0.72);
+    heart.position.set(v.w / 2 + 195, v.h * 0.33);
     home.position.set(v.w / 2 + 230, v.h * 0.72);
-    for (const b of [again, home]) {
+    for (const b of [again, heart, home]) {
       b.scale.set(0);
       layer.addChild(b);
       void this.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
