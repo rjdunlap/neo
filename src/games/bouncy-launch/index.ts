@@ -5,6 +5,8 @@ import { Backdrop } from '../../art/scenery';
 import { puffs, starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import type { LineVars } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -60,6 +62,8 @@ class BouncyLaunch implements Game {
   private readonly backdrop: Backdrop;
   private readonly spring = new Graphics();
   private readonly preview = new Graphics();
+  /** The pet itself launches, so the fixed spring base is the safe instruction-replay target. */
+  private readonly replay = new Container();
   private readonly star = starArt(30);
   private readonly flag = new Graphics();
   /** The finger pulling the spring, and where it first touched. */
@@ -86,6 +90,7 @@ class BouncyLaunch implements Game {
   private tries = 0;
   private assisted = false;
   private told = false;
+  private instruction: { id: LineId; vars?: LineVars } | null = null;
 
   /** The "watch me" demo: hold toward the next cloud's power, then press the launch button. */
   autoplay(dt: number): CouchControls {
@@ -172,8 +177,10 @@ class BouncyLaunch implements Game {
     this.pet = new Critter(ctx.petSpec);
     this.pet.scale.set(PET_SCALE);
     this.pet.hitArea = new Circle(0, -125, 190);
+    this.replay.hitArea = new Circle(0, 0, 68);
+    onTap(this.replay, () => this.repeatInstruction(), { cooldown: 500 });
     ctx.track(this.pet);
-    ctx.stage.addChild(this.star, this.spring, this.preview, this.pet);
+    ctx.stage.addChild(this.star, this.spring, this.preview, this.replay, this.pet);
     if (this.plan.mode === 'tap') {
       onTap(this.pet, () => void this.launch(this.ctx.rng.range(0.15, 0.95)), { cooldown: 500 });
     } else {
@@ -206,6 +213,7 @@ class BouncyLaunch implements Game {
     const ground = this.backdrop.groundY + 30;
     this.seat = { x: 210, y: ground - 150 };
     this.strip = { x0: 380, x1: v.w - 80, y: ground + 10 };
+    this.replay.position.set(this.seat.x, this.strip.y - 8);
     this.pads.forEach((pad, i) => pad.position.set(this.landX(padAt(i)), this.strip.y));
     if (!this.flying && !this.grab) this.pet.position.set(this.seat.x, this.restingY());
     if (this.stick && !this.flying) this.squash();
@@ -248,6 +256,18 @@ class BouncyLaunch implements Game {
     this.star.position.set(this.landX(padAt(t)), this.strip.y - 110);
   }
 
+  private instruct(id: LineId, vars?: LineVars) {
+    this.instruction = { id, vars };
+    return this.ctx.instruct(id, vars);
+  }
+
+  private repeatInstruction() {
+    if (!this.instruction || this.flying || this.finished || this.grab) return;
+    this.pet.poke();
+    sfx.giggle();
+    void this.ctx.say(this.instruction.id, this.instruction.vars);
+  }
+
   private async askShot() {
     this.wrongs = 0;
     this.hinting = this.plan.mode === 'free';
@@ -259,23 +279,23 @@ class BouncyLaunch implements Game {
       this.report();
       if (this.told) return;
       this.told = true;
-      return this.ctx.instruct('launch.star');
+      return this.instruct('launch.star');
     }
     switch (this.plan.mode) {
       case 'tap':
-        if (this.shot === 0) await this.ctx.instruct('launch.tap');
+        if (this.shot === 0) await this.instruct('launch.tap');
         return;
       case 'free':
-        if (this.shot === 0) await this.ctx.instruct('launch.pull');
+        if (this.shot === 0) await this.instruct('launch.pull');
         return;
       case 'star':
-        return this.ctx.instruct('launch.star');
+        return this.instruct('launch.star');
       case 'number':
-        return this.ctx.instruct('launch.number', { n: this.targets[this.shot] + 1 });
+        return this.instruct('launch.number', { n: this.targets[this.shot] + 1 });
       case 'compare':
-        if (this.last === undefined) return this.ctx.instruct('launch.pull');
+        if (this.last === undefined) return this.instruct('launch.pull');
         this.ask = nextAsk(this.last);
-        return this.ctx.instruct(this.ask === 'farther' ? 'launch.farther' : 'launch.nearer');
+        return this.instruct(this.ask === 'farther' ? 'launch.farther' : 'launch.nearer');
     }
   }
 

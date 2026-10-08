@@ -340,7 +340,7 @@ class LightLab implements Game {
     this.drawBeam();
     for (const b of this.blooms.values()) {
       b.wake(this.ctx.tw);
-      const p = b.getGlobalPosition();
+      const p = this.ctx.stage.toLocal(b.getGlobalPosition());
       this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 16, speed: [100, 280], gravity: 0, life: [0.5, 0.9] });
     }
     sfx.sparkle();

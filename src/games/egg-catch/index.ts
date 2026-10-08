@@ -4,6 +4,7 @@ import { swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -225,6 +226,23 @@ class EggCatch implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
+  }
+
+  /** Couch play on the catching levels: the stick slides the basket, and with two controllers both can steer it. */
+  control(input: CouchControls, dt: number) {
+    if (this.finished || this.routing || this.plan.mode === 'tap') return;
+    const push = Math.max(-1, Math.min(1, input.players.reduce((sum, p) => sum + p.x, 0)));
+    if (push) this.basketTarget = Math.max(160, Math.min(this.view.w - 80, this.basketTarget + push * 760 * dt));
+  }
+
+  /** The "watch me" demo: slide under the next brown egg that is falling. */
+  autoplay(): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    const egg = this.falling.find((f) => !f.done && f.egg.shell === 'brown');
+    const dx = (egg ? egg.x : this.basketTarget) - this.basket.x;
+    out.players[0].x = Math.abs(dx) < 16 ? 0 : Math.max(-1, Math.min(1, dx / 80));
+    return out;
   }
 
   private steer(e: FederatedPointerEvent) {

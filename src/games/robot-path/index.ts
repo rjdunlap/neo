@@ -3,6 +3,7 @@ import { cream, ink, swatch } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
@@ -15,6 +16,9 @@ import { DELTAS, DIRECTIONS, expand, ROBOT_PLANS, runPath, shortestPath, slotOfS
 /** Levels 1–6 are the original one-step-per-slot programs; 7–10 add counted steps, then loops. */
 const PREK_TOP = 6;
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
+
+/** The stick's directions as the controller reports them: 0 right, 1 down, 2 left, 3 up. */
+const STICK_DIRECTIONS: Direction[] = ['right', 'down', 'left', 'up'];
 
 function arrow(dir: Direction) {
   const g = arrowIcon(1);
@@ -50,6 +54,7 @@ class RobotPath implements Game {
   /** The slot the robot is carrying out, lit up during playback. */
   private active = -1;
   private clock = 0;
+  private botWait = 1.5;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -246,6 +251,54 @@ class RobotPath implements Game {
   }
 
   destroy() {}
+
+  /** The round is over. The couch checks read this name on every game. */
+  get finished() {
+    return this.done;
+  }
+
+  /** Couch play: the stick adds a step, the bottom button plays the program, the left button takes the last step back out. */
+  control(input: CouchControls) {
+    if (this.running || this.done) return;
+    for (const p of input.players) {
+      if (p.direction >= 0) this.add(STICK_DIRECTIONS[p.direction]);
+      if (p.undo) this.undoLast();
+      if (p.action) void this.run();
+    }
+  }
+
+  /** One step back: on counted levels the last slot counts down before it goes. */
+  private undoLast() {
+    const last = this.program[this.program.length - 1];
+    if (!last) return;
+    if (last.n > 1) last.n--;
+    else this.program.pop();
+    this.drawQueue();
+    sfx.tick();
+  }
+
+  /** The "watch me" demo: press the steps of the known route one at a time, then play. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (this.running || this.done || this.botWait > 0) return out;
+    const want = expand(this.solution);
+    const have = expand(this.program);
+    let at = 0;
+    while (at < have.length && have[at] === want[at]) at++;
+    if (at < have.length) {
+      out.players[0].undo = true;
+      this.botWait = 0.3;
+    } else if (at < want.length) {
+      out.players[0].direction = STICK_DIRECTIONS.indexOf(want[at]);
+      this.botWait = 0.45;
+    } else {
+      out.players[0].action = true;
+      this.botWait = 1;
+    }
+    return out;
+  }
 }
 
 export const robotPath: GameModule = {

@@ -1,7 +1,9 @@
 import { get, set } from 'idb-keyval';
 import { bandInfo, type Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
-import { PICNIC_STEPS, type PicnicStep } from '../content/world';
+import { flipItem, moveItem, tidy } from '../content/room';
+import { isNew, toggleFavorite } from '../content/shelf';
+import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
 import { defaults, HISTORY_LENGTH, migrate, type GameStats, type RoundRecord, type SaveData, type StoryProgress } from './save';
 
 const KEY = 'neo.save';
@@ -66,6 +68,26 @@ class Store {
     this.save();
   }
 
+  /** Whether no round of this game has been finished yet (in any place). */
+  isNew(gameId: string): boolean {
+    return isNew(this.data.games, gameId);
+  }
+
+  get favorites(): readonly string[] {
+    return this.data.favorites;
+  }
+
+  isFavorite(gameId: string): boolean {
+    return this.data.favorites.includes(gameId);
+  }
+
+  /** Hearts a game or takes the heart back; returns whether it is hearted now. */
+  toggleFavorite(gameId: string): boolean {
+    this.data.favorites = toggleFavorite(this.data.favorites, gameId);
+    this.save();
+    return this.isFavorite(gameId);
+  }
+
   get picnic(): StoryProgress {
     return this.data.stories.picnic;
   }
@@ -93,6 +115,33 @@ class Store {
     const p = this.picnic;
     p.steps = [];
     p.ended = false;
+    this.save();
+  }
+
+  get room() {
+    return this.data.room;
+  }
+
+  /** Move a furnishing (to the nearest spot on the floor). */
+  moveRoomItem(id: RoomItemId, x: number, y: number) {
+    this.data.room = moveItem(this.data.room, id, x, y);
+    this.save();
+  }
+
+  flipRoomItem(id: RoomItemId) {
+    this.data.room = flipItem(this.data.room, id);
+    this.save();
+  }
+
+  /** Every furnishing back where it started. The picture in the frame stays. */
+  tidyRoom() {
+    this.data.room = tidy(this.data.room);
+    this.save();
+  }
+
+  /** Hang one sticker in the frame, or empty it. The sticker stays in the book either way. */
+  hangSticker(sticker: { game: string; seed: number } | null) {
+    this.data.room = { ...this.data.room, frame: sticker ? { game: sticker.game, seed: sticker.seed } : null };
     this.save();
   }
 

@@ -3,6 +3,7 @@ import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -75,6 +76,11 @@ class FrogHop implements Game {
   private wrongs = 0;
   private glowing: Container | null = null;
   private clock = 0;
+  // Couch play: a ring over the lily pads (or the number cards on counting levels).
+  private focus = 0;
+  private couchOn = false;
+  private readonly ring = new Graphics();
+  private botWait = 1.5;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -104,6 +110,9 @@ class FrogHop implements Game {
         ctx.stage.addChild(node);
       }
     }
+    // Last, so the ring sits over the cards as well as the pads.
+    this.ring.eventMode = 'none';
+    ctx.stage.addChild(this.ring);
   }
 
   get q() {
@@ -142,9 +151,52 @@ class FrogHop implements Game {
       const at = this.ctx.stage.toLocal(p);
       g.circle(at.x, at.y + (this.glowing instanceof Pad ? 6 : 0), 66 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
     }
+    const ring = this.ring.clear();
+    const spot = this.couchOn && !this.busy && !this.finished ? this.spots[this.focus] : undefined;
+    if (spot) {
+      if (spot instanceof Pad) ring.roundRect(spot.x - 58, spot.y - 56, 116, 118, 26).stroke({ width: 8, color: swatch.teal.line });
+      else ring.roundRect(spot.x - 66, spot.y - 68, 132, 136, 26).stroke({ width: 8, color: swatch.teal.line });
+    }
   }
 
   destroy() {}
+
+  /** What the ring can rest on: the lily pads, or on counting levels the number cards. */
+  private get spots(): Container[] {
+    return this.plan.mode === 'gap' ? this.cards.map((c) => c.node) : this.pads;
+  }
+
+  /** Couch play: left and right move the ring; the bottom button chooses what it is on. */
+  control(input: CouchControls) {
+    this.couchOn = true;
+    if (this.busy || this.finished || !this.q) return;
+    const last = this.spots.length - 1;
+    for (const p of input.players) {
+      if (p.direction === 0) this.focus = Math.min(last, this.focus + 1);
+      else if (p.direction === 2) this.focus = Math.max(0, this.focus - 1);
+      if (!p.action) continue;
+      if (this.plan.mode === 'gap') void this.tapCard(this.cards[this.focus].n);
+      else void this.tapPad(this.pads[this.focus].n);
+    }
+  }
+
+  /** The "watch me" demo: move the ring to the pad (or number card) that answers the question, then press. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (this.busy || this.finished || !this.q || this.botWait > 0) return out;
+    const want = this.plan.mode === 'gap' ? GAP_CARDS.indexOf(answerOf('gap', this.q)) : this.q.target - this.lo;
+    if (want < 0) return out;
+    if (want === this.focus) {
+      out.players[0].action = true;
+      this.botWait = 1;
+    } else {
+      out.players[0].direction = want > this.focus ? 0 : 2;
+      this.botWait = 0.4;
+    }
+    return out;
+  }
 
   private async next() {
     this.busy = true;
@@ -158,6 +210,8 @@ class FrogHop implements Game {
     const mode = this.plan.mode;
     const k = Math.abs(q.hops);
     this.signText.text = mode === 'find' ? String(q.target) : mode === 'gap' ? `${q.start} → ${q.target}` : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`;
+    // The ring starts where the frog sits (or on the first card), so choosing is a few steps along.
+    this.focus = mode === 'gap' ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     this.busy = false;
     if (mode === 'find') return this.ctx.instruct('hop.find', { n: q.target });
     if (mode === 'next') return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });

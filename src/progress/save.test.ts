@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { FLOOR, starterItem } from '../content/room';
+import { ROOM_ITEMS } from '../content/world';
 import { defaults, migrate } from './save';
 
 describe('migrate', () => {
@@ -100,6 +102,69 @@ describe('migrate', () => {
     save.games['pet-kitchen'] = { plays: 2, level: 3, pinned: null, history: [] };
     save.stickers.push({ game: 'pet-kitchen', seed: 4, at: 1 });
     save.stories.picnic = { steps: ['sandwiches'], ended: false, keepsake: true };
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('gives every save, old or new, the whole starter treehouse with an empty frame', () => {
+    const room = defaults().room;
+    expect(room.items.map((i) => i.id).sort()).toEqual([...ROOM_ITEMS].sort());
+    expect(room.frame).toBeNull();
+    expect(migrate({}).room).toEqual(room);
+    // A save from before the treehouse existed gets the starter room and keeps everything else.
+    const old = { version: 2, profile: { name: 'Mia', band: 'prek' }, stickers: [{ game: 'pet-kitchen', seed: 4, at: 1 }] };
+    const upgraded = migrate(old);
+    expect(upgraded.room).toEqual(room);
+    expect(upgraded.stickers).toHaveLength(1);
+    expect(upgraded.profile.name).toBe('Mia');
+  });
+
+  it('repairs a damaged treehouse: one of each known item, on the floor, never lost', () => {
+    const odd = migrate({ room: { items: [
+      { id: 'bed', x: 5, y: -2, flip: 'yes' },
+      { id: 'bed', x: 0.5, y: 0.7, flip: true },
+      { id: 'dragon', x: 0.5, y: 0.7 },
+      { id: 'lamp', x: 'left', y: NaN, flip: true },
+      'junk',
+    ], frame: { game: 'x'.repeat(200), seed: 1 } } });
+    expect(odd.room.items.map((i) => i.id)).toEqual([...ROOM_ITEMS]);
+    for (const it of odd.room.items) {
+      expect(it.x).toBeGreaterThanOrEqual(FLOOR.left);
+      expect(it.x).toBeLessThanOrEqual(FLOOR.right);
+      expect(it.y).toBeGreaterThanOrEqual(FLOOR.top);
+      expect(it.y).toBeLessThanOrEqual(FLOOR.bottom);
+    }
+    // The first bed wins, clamped to the nearest floor spot, with a non-boolean "flip" read as not flipped.
+    expect(odd.room.items.find((i) => i.id === 'bed')).toEqual({ id: 'bed', x: FLOOR.right, y: FLOOR.top, flip: false });
+    // A lamp with unreadable numbers goes back to its starting spot but keeps its facing.
+    expect(odd.room.items.find((i) => i.id === 'lamp')).toEqual({ ...starterItem('lamp'), flip: true });
+    expect(odd.room.frame).toBeNull();
+    expect(migrate({ room: 'nope' }).room).toEqual(defaults().room);
+    expect(migrate({ room: { items: 7, frame: [] } }).room).toEqual(defaults().room);
+  });
+
+  it('keeps a hung sticker and a rearranged room through a backup and restore', () => {
+    const save = defaults();
+    save.stickers.push({ game: 'pet-kitchen', seed: 4, at: 1 });
+    save.room = { items: save.room.items.map((i) => (i.id === 'rug' ? { ...i, x: 0.3, y: 0.7, flip: true } : i)), frame: { game: 'pet-kitchen', seed: 4 } };
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+    expect(save.room.items).toHaveLength(ROOM_ITEMS.length);
+  });
+
+  it('starts with no hearts, and repairs a damaged favorites list without touching anything else', () => {
+    expect(defaults().favorites).toEqual([]);
+    expect(migrate({}).favorites).toEqual([]);
+    // A save from before the shelf existed keeps its progress and gets an empty shelf.
+    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, games: { 'duck-pond': { plays: 4, level: 3, pinned: null, history: [] } } });
+    expect(old.favorites).toEqual([]);
+    expect(old.games['duck-pond'].plays).toBe(4);
+    expect(migrate({ favorites: 'duck-pond' }).favorites).toEqual([]);
+    expect(migrate({ favorites: ['duck-pond', 7, 'duck-pond', '', 'bubble-pop'] }).favorites).toEqual(['duck-pond', 'bubble-pop']);
+    expect(migrate({ favorites: Array.from({ length: 50 }, (_, i) => `g${i}`) }).favorites).toHaveLength(12);
+  });
+
+  it('keeps hearts through a backup and restore', () => {
+    const save = defaults();
+    save.favorites = ['duck-pond', 'bubble-pop'];
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 });

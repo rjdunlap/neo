@@ -65,6 +65,9 @@ import { blockTower } from './block-tower';
 import { lassoLoops } from './lasso-loops';
 import { petSays } from './pet-says';
 import { owlWalk } from './owl-walk';
+import { gardenRows } from './garden-rows';
+import { ferryJam } from './ferry-jam';
+import { critterCrossing } from './critter-crossing';
 import type { GameModule } from './types';
 
 /**
@@ -138,6 +141,9 @@ export const GAMES: GameModule[] = [
   lassoLoops,
   petSays,
   owlWalk,
+  gardenRows,
+  ferryJam,
+  critterCrossing,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

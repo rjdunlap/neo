@@ -3,6 +3,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // `scripts/snapshot-serve.sh` serves a copy of the tree beside the real dev server; it needs its own dep cache.
+  cacheDir: (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.VITE_CACHE_DIR || 'node_modules/.vite',
   // Relative paths so the build works from any static host or sub-folder (e.g. GitHub Pages).
   base: './',
   build: { chunkSizeWarningLimit: 1500 },

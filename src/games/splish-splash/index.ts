@@ -1,10 +1,13 @@
-import { Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent, type Renderer } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent, type Renderer } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { RAINBOW, swatch } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import type { LineVars } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule } from '../types';
@@ -140,6 +143,7 @@ class SplishSplash implements Game {
   private bubbleIn = 0;
   private hinted = false;
   private finished = false;
+  private instruction: { id: LineId; vars?: LineVars } | null = null;
   private readonly lift = (e: { pointerId: number }) => this.last.delete(e.pointerId);
 
   constructor(private readonly ctx: GameContext) {
@@ -164,6 +168,10 @@ class SplishSplash implements Game {
       }
     }
     this.rubberDuck.scale.set(0.24);
+    // The bath is one big scrub surface. The duck stays above it as a generous replay target,
+    // so asking for the instruction never cleans mud or advances the round.
+    this.rubberDuck.hitArea = new Circle(0, -125, 230);
+    onTap(this.rubberDuck, () => this.repeatInstruction(), { cooldown: 500 });
     ctx.track(this.pip);
     ctx.track(this.rubberDuck);
 
@@ -175,11 +183,11 @@ class SplishSplash implements Game {
     window.addEventListener('pointerup', this.lift);
     window.addEventListener('pointercancel', this.lift);
 
-    ctx.stage.addChild(this.wall, this.room, this.pip, this.tubFront, this.foam, this.rubberDuck, this.scrubZone);
+    ctx.stage.addChild(this.wall, this.room, this.pip, this.tubFront, this.foam, this.scrubZone, this.rubberDuck);
   }
 
   start() {
-    if (this.plan.mode === 'free') void this.ctx.instruct('bath.free');
+    if (this.plan.mode === 'free') void this.instruct('bath.free');
     else void this.askForPart();
   }
 
@@ -243,12 +251,24 @@ class SplishSplash implements Game {
     return allowedParts(this.plan, this.partIndex, (p) => this.partClean(p));
   }
 
+  private instruct(id: LineId, vars?: LineVars) {
+    this.instruction = { id, vars };
+    return this.ctx.instruct(id, vars);
+  }
+
+  private repeatInstruction() {
+    if (!this.instruction || this.finished) return;
+    this.rubberDuck.poke();
+    sfx.squeak(9);
+    void this.ctx.say(this.instruction.id, this.instruction.vars);
+  }
+
   private async askForPart() {
     this.sinceProgress = 0;
     this.hinted = false;
     const [a, b] = this.asked();
-    if (!b) await this.ctx.instruct('bath.part', { part: a });
-    else await this.ctx.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', { a, b });
+    if (!b) await this.instruct('bath.part', { part: a });
+    else await this.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', { a, b });
   }
 
   private scrubAt(e: FederatedPointerEvent) {

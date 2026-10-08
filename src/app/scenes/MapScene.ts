@@ -13,7 +13,7 @@ import { openParentPanel } from '../../parent/panel';
 import { bandInfo, BANDS, type Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { bookIcon } from '../../ui/icons';
+import { bookIcon, treehouseIcon } from '../../ui/icons';
 import { ParentGate } from '../../ui/ParentGate';
 import { label } from '../../ui/text';
 import type { App } from '../App';
@@ -35,6 +35,7 @@ export class MapScene extends Scene {
   readonly pip = makePet();
   private readonly title = label('Puddle Island', 42, ink);
   private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () => this.app.go.stickers());
+  private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => { void voice.say('map.room'); this.app.go.room(); });
   private readonly gate = new ParentGate(() => {
     voice.stop();
     this.countsTime = false;
@@ -89,7 +90,7 @@ export class MapScene extends Scene {
     this.pip.scale.set(0.4);
     onTap(this.pip, () => { this.pip.hop(); void voice.say('map.pick'); }, { radius: 70 });
     this.map.addChild(this.track(this.pip));
-    this.ui.addChild(this.title, this.book, this.track(this.gate));
+    this.ui.addChild(this.title, this.book, this.treehouse, this.track(this.gate));
   }
 
   private spot(band: Band) {
@@ -133,6 +134,7 @@ export class MapScene extends Scene {
     if (!this.walking) this.pip.position.copyFrom(this.petSpot(this.petAt));
     this.title.position.set(v.w / 2, 50);
     this.book.position.set(v.w - 75, v.h - 70);
+    this.treehouse.position.set(75, v.h - 70);
     this.gate.layout(v);
   }
 

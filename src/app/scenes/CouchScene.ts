@@ -25,7 +25,9 @@ import '../../couch/style.css';
 
 /** How long the name card shows when a game has already been explained. */
 const CARD_SECONDS = 1.6;
-type Screen = 'menu' | 'mode' | 'courses' | 'course' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'backup';
+type Screen = 'menu' | 'mode' | 'courses' | 'course' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'backup' | 'guide';
+/** Where a "how to play" screen was opened from, and so where its Back button goes. */
+type IntroFrom = 'first' | 'pause' | 'guide' | 'turn';
 /** The trip whose finale has already played in this page, so coming back to its page doesn't replay the fanfare. */
 let celebrated: number | null = null;
 /** A course run's result, handed to the page that follows it (a finished run ends by opening a fresh scene). */
@@ -74,6 +76,9 @@ export class CouchScene extends Scene {
   private narration = 0;
   private cardAge = 0;
   private finaleStage: FinaleStage | null = null;
+  /** Set once someone moves around the name card, so it waits for them instead of starting the round. */
+  private cardHeld = false;
+  private introFrom: IntroFrom = 'first';
 
   /** The challenge course being played, while a run is on screen. */
   private course: { spec: CourseSpec; info: CourseInfo; token: number; player: 0 | 1 } | null = null;
@@ -119,6 +124,13 @@ export class CouchScene extends Scene {
     this.buttons[0]?.focus({ preventScroll: true });
   }
 
+  /** Down or right goes to the next button, up or left to the one before; it wraps round. */
+  private moveFocus(direction: number) {
+    if (!this.buttons.length) return;
+    this.focus = (this.focus + ([0, 1].includes(direction) ? 1 : -1) + this.buttons.length) % this.buttons.length;
+    this.buttons[this.focus]?.focus();
+  }
+
   private shell(title: string, intro: string) {
     this.closeFinale();
     this.overlay.className = 'couch'; this.overlay.replaceChildren();
@@ -141,7 +153,31 @@ export class CouchScene extends Scene {
     this.button(actions, 'Controller setup', () => this.setup());
     this.button(actions, 'Couch backup', () => this.backup());
     this.button(actions, 'Back to start', () => this.leave());
+    this.button(actions, 'How to play', () => this.guide());
     this.focusButtons();
+  }
+
+  /** Every open game's controls and demo, any time: no round starts and the trip stays as it is. */
+  private guide() {
+    this.screen = 'guide'; this.buttons = [];
+    const sheet = this.shell('How to play', 'Pick a game to see its controls and watch it played. No round starts, and your trip stays just as it is.');
+    const grid = node('div', '', 'couch-cards couch-guide'); sheet.append(grid);
+    for (const id of unlockedIds(this.couch.data.trips)) {
+      const mod = gameById(id)!, info = COUCH_INFO[id];
+      const bt = this.button(grid, '', () => this.explain(id), `couch-card couch-card-${id}`);
+      bt.dataset.game = id;
+      bt.append(this.iconCanvas(mod), node('strong', mod.name), node('span', info.tagline), node('small', this.playLabel(info)));
+      if (isNew(this.couch.data, id)) bt.append(node('em', 'NEW', 'couch-new'));
+    }
+    const actions = node('div', '', 'couch-actions'); sheet.append(actions);
+    this.button(actions, 'Back', () => this.menu(), 'couch-primary');
+    this.focusButtons();
+  }
+
+  /** The full how-to from the guide. Seeing it counts as having it explained, so a NEW mark goes. */
+  private explain(id: CouchId) {
+    markSeen(this.couch.data, id); this.couch.save();
+    this.intro(id, 'guide');
   }
 
   /** The game's picture, drawn once into a canvas for the DOM screens. */
@@ -454,30 +490,36 @@ export class CouchScene extends Scene {
     const sheet = this.shell(`${who(me)}, you’re up!`, `${mod.name}: ${who(first)} scored ${p.turn!.score} ${info.score?.unit ?? 'points'}. Your board is a fresh one, just as tricky. Beat it, or tie it.`);
     sheet.classList.add('couch-namecard');
     sheet.prepend(this.iconCanvas(mod, 3));
-    this.button(sheet, 'Play', () => this.startGame(), 'couch-primary');
+    const actions = node('div', '', 'couch-actions'); sheet.append(actions);
+    this.button(actions, 'Play', () => this.startGame(), 'couch-primary');
+    this.button(actions, 'How to play', () => this.intro(id, 'turn'));
     this.focusButtons(sheet);
     void voice.say('couch.turn', { who: who(me) });
   }
 
-  /** The short version for a game already explained: its name, spoken, then the round. */
+  /** The short version for a game already explained: its name, spoken, then the round, unless someone asks for How to play. */
   private card(id: CouchId) {
     const mod = gameById(id)!, info = COUCH_INFO[id];
-    this.screen = 'card'; this.cardAge = 0; this.buttons = [];
+    this.screen = 'card'; this.cardAge = 0; this.cardHeld = false; this.buttons = [];
     const sheet = this.shell(mod.name, this.playLabel(info));
     sheet.classList.add('couch-namecard');
     sheet.prepend(this.iconCanvas(mod, 3));
-    sheet.append(node('p', 'Press the bottom button to start now · Esc / + for the menu', 'couch-keys'));
+    const actions = node('div', '', 'couch-actions'); sheet.append(actions);
+    this.button(actions, 'Play', () => this.startGame(), 'couch-primary');
+    this.button(actions, 'How to play', () => this.intro(id, 'first'));
+    sheet.append(node('p', 'Press the bottom button to start now · Right or down for How to play · Esc / + for the menu', 'couch-keys'));
+    this.focusButtons(sheet);
     void voice.say(mod.titleLine);
   }
 
   /** "How to play": the name, the goal, the controller, and a bot playing a real round in a window. */
-  private intro(id: CouchId, from: 'first' | 'pause') {
+  private intro(id: CouchId, from: IntroFrom) {
     const mod = gameById(id)!, info = COUCH_INFO[id];
     this.closeIntro();
     this.modal?.remove(); this.modal = null;
     this.screen = from === 'pause' ? 'howto' : 'intro';
-    this.howId = id;
-    if (from === 'first') this.overlay.replaceChildren();
+    this.howId = id; this.introFrom = from;
+    if (from !== 'pause') this.overlay.replaceChildren();
     this.overlay.className = 'couch couch-playing couch-howto-open';
 
     const screen = node('section', '', 'couch-how-screen');
@@ -499,8 +541,12 @@ export class CouchScene extends Scene {
       this.button(actions, 'Play', () => this.playFromIntro(id), 'couch-primary');
       this.button(actions, 'Watch again', () => this.watchAgain());
       this.button(actions, 'Back', () => this.backFromIntro());
-    } else {
+    } else if (from === 'pause') {
       this.button(actions, 'Back to the pause menu', () => this.closeHowTo(), 'couch-primary');
+      this.button(actions, 'Watch again', () => this.watchAgain());
+    } else {
+      // From the guide or a face-off turn card: look, then go back to where it was opened.
+      this.button(actions, 'Back', () => this.backFromIntro(), 'couch-primary');
       this.button(actions, 'Watch again', () => this.watchAgain());
     }
     const frame = node('div', '', 'couch-demo');
@@ -536,10 +582,13 @@ export class CouchScene extends Scene {
     this.closeIntro(); this.startGame();
   }
 
-  /** Changed their mind: the game goes back to being unchosen. */
+  /** Back from a how-to: to the guide or turn card it was opened from, or, on a first look, the game goes back to being unchosen. */
   private backFromIntro() {
+    const from = this.introFrom, id = this.howId;
     this.closeIntro(); this.narration++; voice.stop();
-    if (this.course) { const id = this.course.spec.id; this.course = null; this.go(id); return; }
+    if (this.course) { const course = this.course.spec.id; this.course = null; this.go(course); return; }
+    if (from === 'guide') return this.guide();
+    if (from === 'turn' && id) return this.turnCard(id);
     this.couch.data.party!.selected = null; this.couch.save(); this.go();
   }
 
@@ -720,7 +769,11 @@ export class CouchScene extends Scene {
     if (this.screen === 'card') {
       this.cardAge += dt;
       const id = this.couch.data.party?.selected;
-      if (id && (this.cardAge > CARD_SECONDS || input.players.some(p => p.action))) this.startGame();
+      // Moving the highlight means someone wants a look at How to play, so the card stops counting down.
+      const moved = input.players.find(p => p.direction >= 0);
+      if (moved) { this.cardHeld = true; this.moveFocus(moved.direction); }
+      if (input.players.some(p => p.action)) this.buttons[this.focus]?.click();
+      else if (id && !this.cardHeld && this.cardAge > CARD_SECONDS) this.startGame();
       else if (input.players.some(p => p.pause || p.back)) this.menu();
       return;
     }
@@ -734,10 +787,7 @@ export class CouchScene extends Scene {
     }
     if (this.screen !== 'game') {
       const p = input.players.find(p => p.direction >= 0 || p.action);
-      if (p?.direction !== undefined && p.direction >= 0 && this.buttons.length) {
-        this.focus = (this.focus + ([0, 1].includes(p.direction) ? 1 : -1) + this.buttons.length) % this.buttons.length;
-        this.buttons[this.focus]?.focus();
-      }
+      if (p && p.direction >= 0) this.moveFocus(p.direction);
       if (p?.action) this.buttons[this.focus]?.click();
       return;
     }

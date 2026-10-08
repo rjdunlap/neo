@@ -21,14 +21,14 @@ const LEVELS: BandLevels = {
 
 const SCALE = 0.32;
 const HOOP_R = 150;
-const KIND_WORDS: Record<string, string> = { cow: 'cow', duck: 'duck', pig: 'pig', cat: 'cat', bear: 'bear', dog: 'dog', bunny: 'bunny' };
+export const KIND_WORDS: Record<string, string> = { cow: 'cow', duck: 'duck', pig: 'pig', cat: 'cat', bear: 'bear', dog: 'dog', bunny: 'bunny' };
 
-function hatArt(): Graphics {
+export function hatArt(): Graphics {
   return new Graphics().ellipse(0, -232, 74, 16).fill(ink).roundRect(-44, -320, 88, 90, 10).fill(ink).rect(-44, -258, 88, 16).fill(swatch.red.fill);
 }
 
 /** A little picture of a rule, for the sign above a hoop. */
-function ruleIcon(rule: Rule): Graphics {
+export function ruleIcon(rule: Rule): Graphics {
   const g = new Graphics();
   const head = (color: number) => g.circle(0, 6, 26).fill(color).stroke({ width: 4, color: ink, alpha: 0.5 });
   switch (rule) {

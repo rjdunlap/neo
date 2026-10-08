@@ -257,7 +257,7 @@ class PixelPictures implements Game {
       sfx.bell(3 + y, 0.2);
       await this.ctx.tw.wait(0.08);
     }
-    const c = this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.n * CELL) / 2 });
+    const c = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.n * CELL) / 2 }));
     this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 22, speed: [150, 360], gravity: 0, life: [0.6, 1] });
     this.ctx.pet.cheer();
     await this.ctx.tw.to(this.board.scale, { x: 1.04, y: 1.04 }, { duration: 0.15, ease: ease.outQuad });

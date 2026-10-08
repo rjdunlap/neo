@@ -35,6 +35,8 @@ export interface Routes {
   /** The Windy Picnic. `from` is the request whose round just finished, so the scene can show what changed. */
   picnic(from?: PicnicStep): void;
   stickers(): void;
+  /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. */
+  room(): void;
   goodnight(): void;
 }
 

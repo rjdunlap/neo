@@ -1,5 +1,6 @@
 import { Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../art/palette';
+import { shapePath } from '../art/shapes';
 
 export function islandIcon(): Graphics {
   return new Graphics().ellipse(0, 18, 30, 12).fill(swatch.blue.fill).ellipse(0, 12, 24, 10).fill(swatch.yellow.light)
@@ -91,4 +92,39 @@ export function journalIcon(): Graphics {
     .rect(-26, -30, 10, 60).fill(swatch.green.line)
     .ellipse(6, 0, 13, 7).fill(swatch.green.fill).stroke(line(3, swatch.green.line))
     .moveTo(-6, 6).lineTo(18, -6).stroke(line(3, swatch.green.line));
+}
+
+/** A tree with a little cabin in its branches: the way to the pet's treehouse. */
+export function treehouseIcon(): Graphics {
+  return new Graphics()
+    .rect(-6, 4, 12, 26).fill(wood.line)
+    .circle(0, -8, 26).fill(swatch.green.fill).stroke(line(4, swatch.green.line))
+    .roundRect(-15, -10, 30, 22, 3).fill(wood.fill).stroke(line(3, wood.line))
+    .poly([-19, -10, 0, -26, 19, -10]).fill(swatch.red.fill).stroke(line(3, swatch.red.line))
+    .roundRect(-4, -2, 8, 14, 2).fill(wood.line);
+}
+
+/** Two arrows facing each other: turn a thing round. */
+export function flipIcon(color = ink): Graphics {
+  return new Graphics()
+    .moveTo(-6, 0).lineTo(-26, 0).moveTo(-14, -12).lineTo(-26, 0).lineTo(-14, 12)
+    .moveTo(6, 0).lineTo(26, 0).moveTo(14, -12).lineTo(26, 0).lineTo(14, 12)
+    .stroke(line(6, color))
+    .moveTo(0, -24).lineTo(0, 24).stroke({ width: 4, color, cap: 'round' });
+}
+
+/** A tick for "done" and "yes". */
+export function checkIcon(color = 0xffffff): Graphics {
+  return new Graphics().moveTo(-20, 2).lineTo(-6, 16).lineTo(22, -16).stroke({ width: 10, color, cap: 'round', join: 'round' });
+}
+
+/** A cross for "none" and "take away". */
+export function crossIcon(color = ink): Graphics {
+  return new Graphics().moveTo(-16, -16).lineTo(16, 16).moveTo(16, -16).lineTo(-16, 16).stroke({ width: 9, color, cap: 'round' });
+}
+
+/** A heart about 56 across: solid when it is kept, just an outline when it is not. */
+export function heartIcon(color = 0xffffff, filled = true): Graphics {
+  const g = shapePath(new Graphics(), 'heart', 26);
+  return filled ? g.fill(color).stroke(line(4, color)) : g.stroke(line(6, color));
 }
