@@ -16,7 +16,9 @@ const ICON_BOX = 100;
 /** The demonstration's window, beside the text on a wide screen (a quarter-turn narrower at small text) or above it on a tall one. */
 const DEMO_WIDE = 400;
 const DEMO_TALL = 520;
-const DEMO_NOTE = 'A demonstration: a controller moves the highlight. You tap or drag.';
+const NOTE_CONTROLLER = 'A demonstration: a controller moves the highlight. You tap or drag.';
+const NOTE_FINGER = 'A demonstration of this level: a pretend finger taps and drags. You do the same.';
+const NOTE_MOUSE = 'A demonstration of this level: a pointer clicks and drags. You do the same.';
 
 /** What the card does as the intro before a game's first round: it starts the round, or goes back. */
 export interface HowToIntro {
@@ -138,7 +140,7 @@ export class HowToPanel extends Container {
     if (slot) {
       // A frame for the window, and a line saying what it shows; the demo itself is drawn over it.
       const frame = new Graphics().roundRect(slot.x - 5, slot.y - 5, dw + 10, dh + 10, 22).fill(0xeadfcd);
-      const note = new Text({ text: DEMO_NOTE, style: { fontFamily: FONT, fontSize: 13, fill: MUTED, fontWeight: '500', wordWrap: true, wordWrapWidth: dw, lineHeight: 16 } });
+      const note = new Text({ text: { finger: NOTE_FINGER, mouse: NOTE_MOUSE, none: NOTE_CONTROLLER }[demo!.pointer ?? 'none'], style: { fontFamily: FONT, fontSize: 13, fill: MUTED, fontWeight: '500', wordWrap: true, wordWrapWidth: dw, lineHeight: 16 } });
       note.position.set(slot.x, slot.y + dh + 12);
       card.addChild(frame, note);
     }

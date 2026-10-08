@@ -103,3 +103,39 @@ export function readyForPond(plan: ParadePlan, round: Round, line: number): bool
   if (plan.mode === 'pattern') return line === round.pattern!.length;
   return true;
 }
+
+export interface DemoDuckling {
+  color: ColorName;
+  /** Still waiting on the meadow (not in the line or the pond). */
+  loose: boolean;
+  x: number;
+  y: number;
+}
+
+/** Where a capable player leads Mama next: a waiting duckling (by its place in the list) or the pond. */
+export type ParadeStop = { to: 'duckling'; index: number } | { to: 'pond' };
+
+/**
+ * Where the how-to card's ghost finger leads Mama next: the nearest waiting duckling that may join the line, and once
+ * the line is what the round asks for, the pond. Null when the line is complete but the pond would not take it yet, or when
+ * no waiting duckling may join (they are still hopping back out).
+ */
+export function nextStop(
+  plan: ParadePlan,
+  round: Round,
+  line: readonly ColorName[],
+  homeCount: number,
+  ducklings: readonly DemoDuckling[],
+  mama: { x: number; y: number },
+): ParadeStop | null {
+  const done = plan.mode === 'pattern' ? line.length === round.pattern!.length : homeCount + line.length >= needed(plan, round);
+  if (done) return readyForPond(plan, round, line.length) ? { to: 'pond' } : null;
+  let best: ParadeStop | null = null;
+  let bestD = Infinity;
+  ducklings.forEach((d, index) => {
+    if (!d.loose || canJoin(plan, round, [...line], d.color) !== 'join') return;
+    const dist = Math.hypot(d.x - mama.x, d.y - mama.y);
+    if (dist < bestD) [best, bestD] = [{ to: 'duckling', index }, dist];
+  });
+  return best;
+}

@@ -9,8 +9,8 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { arrive, canJoin, makeRound, needed, nextInPattern, planFor, readyForPond, type ParadePlan, type Round } from './logic';
+import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
+import { arrive, canJoin, makeRound, needed, nextInPattern, nextStop, planFor, readyForPond, type ParadePlan, type Round } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -178,6 +178,32 @@ class DucklingParade implements Game {
     }
     this.card.position.set(v.w / 2, 60);
     this.drawCard();
+  }
+
+  /**
+   * The ghost finger on the how-to card: tap where Mama should go on the first level, and lead her with a dragged finger
+   * after that, to the next duckling the line may take and then to the pond. It waits while she is still walking.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || Math.hypot(this.target.x - this.mama.x, this.target.y - this.mama.y) > 24) return null;
+    const stop = nextStop(
+      this.plan,
+      this.round,
+      this.line.map((d) => d.color),
+      this.homeCount,
+      this.ducklings.map((d) => ({ color: d.color, loose: d.state === 'loose', x: d.critter.x, y: d.critter.y })),
+      this.mama,
+    );
+    if (!stop) return null;
+    // Mama aims a little below the finger (`steer`), so the finger rides a little above where she should stand.
+    const there: Spot = stop.to === 'pond' ? { on: this.ground, x: this.pondAt.x - 40, y: this.pondAt.y - 30 } : { on: this.ducklings[stop.index].critter, y: -150 };
+    if (this.plan.mode === 'tap') return { tap: stop.to === 'pond' ? there : { on: this.ground, ...this.groundPoint(this.ducklings[stop.index].critter) } };
+    return { trace: { on: this.ground, x: this.mama.x, y: this.mama.y - 30 }, via: [there] };
+  }
+
+  /** A duckling's feet as a point on the steering layer, a little above them (`steer` aims below the finger). */
+  private groundPoint(c: Critter) {
+    return { x: c.x, y: c.y - 30 };
   }
 
   private steer(e: FederatedPointerEvent, down: boolean) {
@@ -532,6 +558,7 @@ export const ducklingParade: GameModule = {
   music: STYLES.hub,
   coplayHint: 'Count the ducklings out loud as they line up behind Mama Duck.',
   offScreen: 'Play follow-the-leader around the room, then count everyone in the line.',
+  touchDemo: true,
   hubIcon: () => new ParadeIcon(),
   sticker,
   create: (ctx) => new DucklingParade(ctx),

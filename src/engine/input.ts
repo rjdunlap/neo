@@ -5,9 +5,17 @@ export const gaze = { x: 0, y: 0, at: -Infinity };
 
 const down = new Set<number>();
 
+/** What the person plays with: a finger (or pen) on glass, or a mouse. */
+export type PointerKind = 'touch' | 'mouse';
+let kind: PointerKind = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches ? 'touch' : 'mouse';
+
+/** The last real pointer decides (a touch laptop follows whichever she used last); before any, whether the screen is a touch one. */
+export const pointerKind = (): PointerKind => kind;
+
 /** Watches every pointer on the page. Capture phase, so it runs before Pixi dispatches. */
 export function trackPointers() {
   const seen = (e: PointerEvent) => {
+    kind = e.pointerType === 'mouse' ? 'mouse' : 'touch';
     gaze.x = e.clientX;
     gaze.y = e.clientY;
     gaze.at = performance.now();

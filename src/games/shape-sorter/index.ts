@@ -8,8 +8,8 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Game, GameContext, GameModule } from '../types';
-import { HOLE_R, holeAt, holeLayout, pieceKinds, planFor, type SorterPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { HOLE_R, holeAt, holeFor, holeLayout, pieceKinds, planFor, type SorterPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Each shape's own color, used while colors still help. */
@@ -217,6 +217,14 @@ class ShapeSorter implements Game {
     this.clock += dt;
   }
 
+  /** The ghost finger on the how-to card: carry the next waiting piece to the hole of its own shape. */
+  autotouch(): TouchIntent | null {
+    if (this.finished) return null;
+    const piece = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed);
+    const hole = piece && holeFor(this.box.holes, piece.kind);
+    return piece && hole ? { drag: { on: piece.view }, to: { on: this.box, x: hole.x, y: hole.y } } : null;
+  }
+
   destroy() {
     for (const p of this.pieces) p.drag.destroy();
   }
@@ -355,6 +363,7 @@ export const shapeSorter: GameModule = {
   coplayHint: 'Name each shape as {name} picks it up: "circle", "square".',
   offScreen: 'Go on a shape hunt: find something round, something square, a triangle.',
   hubIcon: () => new BoxIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new ShapeSorter(ctx),
 };

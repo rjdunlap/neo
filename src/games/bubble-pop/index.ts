@@ -9,9 +9,9 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bubble, drawBubble } from './bubble';
-import { bondNumbers, choosePalette, isRight, meant, planFor, spawnTarget, TAP_REACH, type BubblePlan } from './logic';
+import { bondNumbers, bubbleToPop, choosePalette, inReach, isRight, meant, planFor, spawnTarget, TAP_REACH, type BubblePlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -113,6 +113,18 @@ class BubblePop implements Game {
         if (b.y < -b.r - 20) this.remove(b);
       }
     }
+  }
+
+  /** The ghost finger on the how-to card: pop what a capable child would, and the rainbow bubble last. */
+  autotouch(): TouchIntent | null {
+    if (this.phase === 'done') return null;
+    const shown = this.bubbles.filter((b) => !b.popped && !b.destroyed && inReach(b, this.view.w, this.view.h));
+    if (this.phase === 'finale') {
+      const rainbow = shown.find((b) => b.rainbow);
+      return rainbow ? { tap: { on: rainbow } } : null;
+    }
+    const pick = bubbleToPop(this.plan.mode, shown, this.target, this.nextNumber, this.plan.sum, this.held);
+    return pick ? { tap: { on: pick } } : null;
   }
 
   destroy() {
@@ -443,6 +455,7 @@ export const bubblePop: GameModule = {
   coplayHint: 'Say "pop!" together, and name the colors as {name} pops them.',
   offScreen: 'Blow real bubbles outside and pop them together. Count the pops out loud.',
   hubIcon: () => new BubbleMachine(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new BubblePop(ctx),
 };
