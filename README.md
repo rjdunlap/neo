@@ -112,7 +112,7 @@ There are seventy-two games, listed below. "Ages" lists the places each game app
 
 Within a place, games are grouped by subject: senses, music, art, animals, numbers, everyday life, colors and shapes, puzzles, stories, and science. Grown-ups → Finding games offers **Subject cards**, an optional prototype showing four large subject choices, then four games at a time. The original swiping path remains the default. Each layout remembers its own position for the session; returning from a game keeps the launching place and subject/page. Compare both on the iPad before choosing a default. A small gold **twinkle** marks every game she has not finished a round of yet (a subject card twinkles while it holds one), and after a round a **heart** beside the new sticker keeps the game on a **favorites shelf** of up to five above that place's games (or a first **Favorites** card in the subject layout). Neither gates anything: a second tap on the heart takes it back, and nothing expires or rotates.
 
-The first time a game is opened, it explains itself: a card with the game's picture and name (spoken), what the game is for, how to play this level, and how the round ends, with a big green **Play** and a **Back**. Nothing has started behind it, and Back leaves the game as new. After that the game goes straight to its round, and holding the small **?** under the home button opens the same card again. A grown-up can turn the cards off in the grown-up zone (a game started by a story request never shows one).
+Every time a game is opened, it explains itself: a card with the game's picture and name (spoken), what the game is for, how to play this level, and how the round ends, with a big green **Play** and a **Back**. The fifteen games the couch can also play (a bot already plays them there) show a **demonstration window** beside the text: a real round played by the bot, which moves a controller-style highlight where you would tap or drag. Nothing has started behind the card, and Back leaves the game. After Play the game starts at once, tapping **again** after a round skips the card (it has just been seen), and holding the small **?** under the home button opens the card during a round. A grown-up can turn the cards off in the grown-up zone (a game started by a story request never shows one).
 
 Each game moves up a level after two easy rounds and down after two hard ones, inside the range for the place it was played in. In the grown-up zone you can see each game's current level and pin one. How each game handles mistakes and hints, and what it grows into, is in [GAMES.md](docs/GAMES.md).
 
@@ -130,7 +130,7 @@ The treehouse button at the bottom-left of the map opens the pet's **treehouse**
 
 ## Grown-up zone
 
-Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, whether each game explains itself the first time it opens, place layout, volume, and see what she played this week. Backups save to Files.
+Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, whether each game shows how to play before it starts, place layout, volume, and see what she played this week. Backups save to Files.
 
 ## Couch play
 
@@ -195,7 +195,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | Suite | What it plays | Filter |
 | --- | --- | --- |
 | `smoke` | Every game at its lowest, middle and highest level: stray taps, the how-to card, portrait. Proves a game loads and survives touches, not that a round can finish; fails if anything touchable is stranded at the origin | `SMOKE_ONLY=id,id` |
-| `howto` | The first-visit how-to card: every game's card fits in landscape and portrait with large Play and Back, stray taps, Back leaves the game unexplained, Play explains it and starts the round, a story request and the grown-up switch skip it, a reload keeps it (about two minutes) | `HOWTO_ONLY=id,id` |
+| `howto` | The how-to card every time a game opens: every game's card fits in landscape and portrait with large Play and Back, a demonstration window exactly for the fifteen games with a bot (playing, touch-proof, destroyed with the card), stray taps, Back, Play, "again", a story request and the grown-up switch (about three minutes) | `HOWTO_ONLY=id,id` |
 | `world` | Hatching, the map, both place layouts, every subject and game card in all bands and both orientations, return memory, cancellation, birthdays, the parent gate (about 4½ minutes) | |
 | `island` | The NEW twinkle, the heart after a round, the shelf and Favorites card, a reload, a portrait shelf | |
 | `room` | The treehouse: moving, flipping and using furnishings, hanging a sticker, tidy, a reload | |

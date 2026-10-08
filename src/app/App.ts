@@ -31,7 +31,7 @@ export interface Routes {
   place(band: Band): void;
   hatch(): void;
   /** Plays a game at the levels for `band` (her own band if omitted), or as a step of the picnic story. */
-  game(id: string, band?: Band, story?: StoryRound): void;
+  game(id: string, band?: Band, story?: StoryRound, again?: boolean): void;
   /** The Windy Picnic. `from` is the request whose round just finished, so the scene can show what changed. */
   picnic(from?: PicnicStep): void;
   stickers(): void;

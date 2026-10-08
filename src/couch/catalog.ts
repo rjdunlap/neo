@@ -384,5 +384,14 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
   },
 };
 
+/**
+ * The round the island's how-to card plays in its demonstration window for a game the couch can play: the couch's own
+ * demo level, played by the game's bot. Null for a game with no bot, whose card has text only.
+ */
+export function demoFor(id: string): { level: number; band: Band } | null {
+  const info = (COUCH_INFO as Record<string, CouchInfo | undefined>)[id];
+  return info ? { level: info.demoLevel, band: info.band } : null;
+}
+
 /** The line to speak for `line` in couch play: a controller version when the original talks about touch. */
 export const couchLine = (id: CouchId, line: LineId): LineId => COUCH_INFO[id].lines?.[line] ?? line;

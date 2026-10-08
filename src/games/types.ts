@@ -19,7 +19,7 @@ export type HubIcon = Container & Updatable;
 
 /**
  * Grown-up-facing help for a touch game, written in `src/content/howto.ts` and shown on a card: by itself
- * the first time the game opens (the shell's intro, with Play), and any time after from the hold-to-open "?"
+ * every time the game opens (the shell's intro, with Play), and during a round from the hold-to-open "?"
  * in the game shell. The round itself still gives its short, spoken instruction
  * through `ctx.instruct`; this fills in gestures, finish controls and rules that a direct entry into a
  * later level cannot assume were learned earlier.

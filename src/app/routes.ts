@@ -21,9 +21,9 @@ export function createRoutes(app: App): Routes {
     hub: () => void app.show(new MapScene(app)),
     place: (band) => void app.show(store.data.settings.placeLayout === 'subjects' ? new SubjectPlaceScene(app, band) : new PlaceScene(app, band)),
     hatch: () => void app.show(new HatchScene(app)),
-    game: (id, band = store.data.profile.band, story) => {
+    game: (id, band = store.data.profile.band, story, again = false) => {
       const mod = gameById(id);
-      if (mod?.bands.includes(band)) void app.show(new GameScene(app, mod, band, story));
+      if (mod?.bands.includes(band)) void app.show(new GameScene(app, mod, band, story, again));
     },
     picnic: (from) => void app.show(new PicnicScene(app, from)),
     stickers: () => void app.show(new StickerBookScene(app)),

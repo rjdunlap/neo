@@ -58,10 +58,10 @@ export function openParentPanel(onClose: () => void) {
         <input id="p-tips" type="checkbox" />
       </div>
       <div class="parent__row">
-        <label for="p-howto">Explain each game the first time it opens</label>
+        <label for="p-howto">Show how to play before each game</label>
         <input id="p-howto" type="checkbox" />
       </div>
-      <p class="muted">A card with the goal and how to play, and a big Play button. Holding the ? in a game opens it again.</p>
+      <p class="muted">A card with the goal and how to play, a demonstration for some games, and a big Play button. Holding the ? in a game opens it again.</p>
 
       <h2>Finding games</h2>
       <div class="parent__row">
