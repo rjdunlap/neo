@@ -6,6 +6,7 @@ import { stickerize } from '../../art/sticker';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
+import { cleanCreation, type Creation } from '../../content/creations';
 import { howToFor } from '../../content/howto';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
@@ -17,7 +18,7 @@ import type { Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon } from '../../ui/howto-card';
-import { againIcon, basketIcon, heartIcon, houseIcon } from '../../ui/icons';
+import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
 import type { App, StoryRound } from '../App';
 import { Scene } from '../Scene';
@@ -38,7 +39,9 @@ export class GameScene extends Scene {
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   /** The "again", heart and "home" buttons, once the celebration offers them. */
-  after: { again: RoundButton; heart: RoundButton; home: RoundButton } | null = null;
+  after: { again: RoundButton; heart: RoundButton; home: RoundButton; keep: RoundButton | null } | null = null;
+  /** What she made this round, offered for the treehouse (null when the game made nothing or it was empty). */
+  private made: Creation | null = null;
   private level = 1;
   private seconds = 0;
   private finished = false;
@@ -174,6 +177,7 @@ export class GameScene extends Scene {
   private finish(result: RoundResult) {
     if (this.finished) return;
     this.finished = true;
+    this.made = cleanCreation(result.creation);
     this.closeHelp();
     const band = this.band;
     store.recordRound(
@@ -269,16 +273,38 @@ export class GameScene extends Scene {
         void voice.say('heart.on');
       } else void voice.say('heart.off');
     });
-    this.after = { again, heart, home };
+    // Something she made: a button to hang it in her treehouse room. Explicit, and it replaces (never deletes) the earlier one.
+    let keep: RoundButton | null = null;
+    const made = this.made;
+    if (made) {
+      const house = treehouseIcon();
+      const check = checkIcon(swatch.green.line);
+      check.visible = false;
+      const icons = new Container();
+      icons.addChild(house, check);
+      let kept = false;
+      keep = new RoundButton(icons, swatch.white, 56, () => {
+        if (kept) return;
+        kept = true;
+        store.keepCreation(made);
+        house.visible = false;
+        check.visible = true;
+        sfx.sparkle();
+        confetti.burst(keep!.x, keep!.y, { kind: 'star', colors: [swatch.green.fill, 0xffffff], count: 14, speed: [180, 340], gravity: 0, life: [0.5, 0.9] });
+        void voice.say('keep.done');
+      });
+      keep.position.set(v.w / 2 - 195, v.h * 0.33);
+    }
+    this.after = { again, heart, home, keep };
     again.position.set(v.w / 2 - 230, v.h * 0.72);
     heart.position.set(v.w / 2 + 195, v.h * 0.33);
     home.position.set(v.w / 2 + 230, v.h * 0.72);
-    for (const b of [again, heart, home]) {
+    for (const b of [again, heart, home, ...(keep ? [keep] : [])]) {
       b.scale.set(0);
       layer.addChild(b);
       void this.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
     }
-    void voice.say('again');
+    void voice.say(keep ? 'keep.offer' : 'again');
   }
 
   /** A small card for the grown-up, which fades after a few seconds or when tapped. */

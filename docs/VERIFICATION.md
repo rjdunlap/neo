@@ -4,6 +4,14 @@
 
 This is a dated record of checks, newest first. It records what was actually run; "not run" is an honest entry.
 
+## Pet room creations: a picture board and a tune plaque (2026-10-07; checked in the working tree, merged to `main` after the island work in `6492cef`)
+
+What changed: a game can hand the shell something she made (`RoundResult.creation`); Stamp Studio sends its stamps and Song Maker's free levels send the lit jellies. After the round a tree house button beside the sticker keeps it, only on request. The treehouse shows the picture on a board and the song on a plaque (the pet looks at the picture, sings the song beat by beat), a newer one replaces the older (one earlier of each kind is kept), and a back arrow brings the earlier one back. A bounded `creations` field in the save, repaired on load (`src/content/creations.ts`).
+
+- `npm run typecheck`, `npm test` (353 tests; new: what can be kept and the bounds, replacing, keeping a repeat, undo and redo, a tune's beats, and the save repaired, upgraded and round-tripped) and `npm run build` passed. `BROWSER_SUITE=creations` passed with real play: a three-stamp Stamp Studio picture and a second two-stamp one (offered, not kept until the button, one sticker each, a second tap changes nothing, the pet looks, replace then undo then undo again), a four-note free Song Maker song (kept, the pet sings it), tidy and a reload keep both, and the window, frame, plaque and board clear each other in portrait. Screenshots of the offer, the room and the portrait room were looked at.
+- Also run, because the shell's end-of-round screen, the room and the save changed: `BROWSER_SUITE=island`, `room` and `picnic`, and the production offline check (the served bundle matched `dist/index.html`). Not run: `world` and the couch suites (no navigation or couch code changed).
+- Not run, and open: a round that ends because the session's time is up goes straight to goodnight and offers nothing to keep; the offline reload of a room with creations; other media (Rainbow Fingers) and taking a creation down; and everything on a device, including whether a one-year-old would tap the tree house button or just enjoy the room.
+
 ## The child's island: a NEW sparkle and a favorites shelf (2026-10-07; checked in the working tree, not committed)
 
 What changed: a twinkling star on every game with no finished round (`src/ui/sparkle.ts`, in both place layouts; a subject card twinkles while it holds one), a heart beside the sticker after a round that hearts or un-hearts the game, a shelf of up to five hearted games above a place's games (`src/ui/shelf.ts`) and a **Favorites** card first in the subject layout, and a bounded `favorites` list in the save (`src/content/shelf.ts` holds the rules).

@@ -108,7 +108,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Make a song with jellies, or copy one.',
     steps: ['Tap jellies on the loop to place notes; the loop plays round and round.', 'Copy levels show the song as shadows or a card to match.'],
     finish: 'Free levels end after the song has played a few rounds; copy levels end when the song matches.',
-    note: 'Any song is welcome in the free levels.',
+    note: 'Any song is welcome in the free levels. After a free song, a little tree house button hangs it in the pet\'s room, where the pet sings it; copied songs are not offered.',
   },
   'puzzle-pals': {
     goal: 'Put a picture together.',
@@ -230,7 +230,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Make a picture with stamps.',
     steps: ['Choose a stamp (and a color), then tap the paper to press it.', 'Drag a stamp to move it; later levels let you turn it or make it big or small.', 'The back arrow undoes a stamp.'],
     finish: 'The round ends when the picture is done: tap the green arrow.',
-    note: 'Every picture is welcome; there is no wrong way to stamp.',
+    note: 'Every picture is welcome; there is no wrong way to stamp. After the round, a little tree house button hangs the picture in the pet\'s room (a new one replaces it, and the earlier one can be brought back).',
   },
   'pet-kitchen': {
     goal: 'Share food fairly with friends.',

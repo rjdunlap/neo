@@ -1,6 +1,7 @@
 import type { Container, Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
 import type { Critter, CritterSpec } from '../art/critter';
+import type { Creation } from '../content/creations';
 import type { RegionId } from '../content/world';
 import type { Particles } from '../art/particles';
 import type { MusicStyle } from '../audio/music';
@@ -67,6 +68,12 @@ export interface RoundResult {
   score?: number;
   /** Couch face-off on one shared board: [player 1, player 2]. */
   scores?: [number, number];
+  /**
+   * Something she made in this round (a stamped picture, a song) that she may choose to hang in the pet's
+   * treehouse. The shell offers it after the round; nothing is kept unless she says so. Free making only: a song
+   * copied from a card is not hers.
+   */
+  creation?: Creation;
 }
 
 /**

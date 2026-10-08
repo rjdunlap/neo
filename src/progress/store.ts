@@ -2,6 +2,7 @@ import { get, set } from 'idb-keyval';
 import { bandInfo, type Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
 import { flipItem, moveItem, tidy } from '../content/room';
+import { canUndo, keepCreation, undoCreation, type Creation } from '../content/creations';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
 import { defaults, HISTORY_LENGTH, migrate, type GameStats, type RoundRecord, type SaveData, type StoryProgress } from './save';
@@ -86,6 +87,26 @@ class Store {
     this.data.favorites = toggleFavorite(this.data.favorites, gameId);
     this.save();
     return this.isFavorite(gameId);
+  }
+
+  get creations() {
+    return this.data.creations;
+  }
+
+  /** Hang something she made in the treehouse, in place of what was there (which can be brought back). */
+  keepCreation(made: Creation) {
+    this.data.creations = keepCreation(this.data.creations, made);
+    this.save();
+  }
+
+  hasEarlier(kind: Creation['kind']): boolean {
+    return canUndo(this.data.creations, kind);
+  }
+
+  /** Bring back the earlier picture or tune; the one on show becomes the earlier one. */
+  undoCreation(kind: Creation['kind']) {
+    this.data.creations = undoCreation(this.data.creations, kind);
+    this.save();
   }
 
   get picnic(): StoryProgress {

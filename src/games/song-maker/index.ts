@@ -220,7 +220,9 @@ class SongMaker implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     for (const b of this.beads.filter((b) => b.lit)) this.ctx.particles.burst(b.x, b.y, { kind: 'note', colors: [swatch[rowColor(b.note.row, this.plan.rows)].fill], count: 2, speed: [80, 180], gravity: -60 });
-    void this.ctx.say('song.done').then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
+    // A song she made on the free loop is hers to keep; a copied one is not.
+    const creation = this.plan.mode === 'free' ? { kind: 'tune' as const, cols: this.plan.cols, rows: this.plan.rows, notes: this.beads.filter((b) => b.lit).map((b) => ({ ...b.note })) } : undefined;
+    void this.ctx.say('song.done').then(() => this.ctx.finish({ misses: this.misses, hints: this.hints, creation }));
   }
 
   // The loop -------------------------------------------------------------------

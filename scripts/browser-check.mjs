@@ -4557,6 +4557,89 @@ async function islandShelf() {
   log('Island: a fresh place twinkles on every game and has no shelf; a finished round gives one play and one sticker; the heart after a round toggles on, off and on, never touches stickers; the played game stops twinkling and the hearted one stands on the shelf and opens from it; the subject layout leads with a Favorites card (and drops it with no hearts); hearts survive a reload; a full shelf holds five in portrait clear of the arrows');
 }
 
+/** Things she made: a stamped picture and a free song are offered after the round, kept explicitly, shown in the treehouse, replaced, brought back, and kept through a reload. */
+async function creationsRoom() {
+  await page.evaluate(() => { kit.store.data.stickers = []; kit.store.data.creations = { picture: { current: null, previous: null }, tune: { current: null, previous: null } }; });
+  const stampPicture = async (points) => {
+    await launch('stamp-studio', 4);
+    await page.waitForTimeout(600);
+    for (const [x, y] of points) { await page.mouse.click(x, y); await page.waitForTimeout(150); }
+    assert.equal(await page.evaluate(() => neo.scene.game.stamps.length), points.length);
+    await tap('neo.scene.game.finish');
+    await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 25000 }); await page.waitForTimeout(800);
+  };
+  const state = () => page.evaluate(() => JSON.parse(JSON.stringify({ c: kit.store.data.creations, stickers: kit.store.data.stickers.length })));
+  // A first picture: offered, not kept until she says so.
+  await stampPicture([[400, 300], [600, 420], [500, 520]]);
+  assert.ok(await page.evaluate(() => !!neo.scene.after.keep), 'a stamped picture is offered for the treehouse');
+  assert.equal((await state()).c.picture.current, null, 'nothing is kept until she says so');
+  await screenshot('creations-offer');
+  await tap('neo.scene.after.keep'); await page.waitForTimeout(300);
+  let now = await state();
+  assert.equal(now.c.picture.current.stamps.length, 3); assert.equal(now.c.picture.previous, null); assert.equal(now.stickers, 1);
+  await page.waitForTimeout(500);
+  await tap('neo.scene.after.keep'); await page.waitForTimeout(200);
+  assert.deepEqual((await state()).c, now.c, 'a second tap changes nothing');
+  // In the room: the picture hangs on its board, there is no earlier one, and tapping it sends the pet to look.
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(600);
+  const board = () => page.evaluate(() => ({ stamps: neo.scene.board.children[0].children.length - 1, undo: neo.scene.undoPicture.visible, tuneUndo: neo.scene.undoTune.visible }));
+  assert.deepEqual(await board(), { stamps: 3, undo: false, tuneUndo: false });
+  await screenshot('creations-room-picture');
+  await page.evaluate(() => kit.tapOn(neo.scene.board)); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.scene.acting), true, 'the pet goes to look');
+  await page.waitForFunction(() => !neo.scene.acting, null, { timeout: 15000 });
+  // A second picture takes its place and the first can be brought back, and sent away again, without loss.
+  await stampPicture([[420, 330], [560, 450]]);
+  await tap('neo.scene.after.keep'); await page.waitForTimeout(300);
+  now = await state();
+  assert.deepEqual([now.c.picture.current.stamps.length, now.c.picture.previous.stamps.length], [2, 3]);
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(600);
+  assert.deepEqual(await board(), { stamps: 2, undo: true, tuneUndo: false });
+  await tap('neo.scene.undoPicture'); await page.waitForTimeout(500);
+  now = await state();
+  assert.deepEqual([now.c.picture.current.stamps.length, now.c.picture.previous.stamps.length], [3, 2]);
+  assert.equal((await board()).stamps, 3);
+  await tap('neo.scene.undoPicture'); await page.waitForTimeout(500);
+  assert.deepEqual([(await state()).c.picture.current.stamps.length, (await state()).c.picture.previous.stamps.length], [2, 3]);
+  // A free song: lit jellies are the tune. Four notes and some toggling; a copied song would offer nothing (a rule test covers that).
+  await launch('song-maker', 1);
+  await page.waitForTimeout(800);
+  const bead = (col, row) => `neo.scene.game.beads.find((b) => b.note.col === ${col} && b.note.row === ${row})`;
+  for (const [c, r] of [[0, 0], [1, 2], [2, 1], [3, 0]]) { await tap(bead(c, r)); await page.waitForTimeout(200); }
+  for (let i = 0; i < 8; i++) { await tap(bead(0, 1)); await page.waitForTimeout(200); }
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 40000 }); await page.waitForTimeout(800);
+  assert.ok(await page.evaluate(() => !!neo.scene.after.keep), 'a free song is offered for the treehouse');
+  await tap('neo.scene.after.keep'); await page.waitForTimeout(300);
+  now = await state();
+  assert.deepEqual(now.c.tune.current.notes, [{ col: 0, row: 0 }, { col: 1, row: 2 }, { col: 2, row: 1 }, { col: 3, row: 0 }]);
+  assert.equal(now.stickers, 3, 'one sticker per round, kept or not');
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(600);
+  assert.equal(await page.evaluate(() => neo.scene.undoTune.visible), false);
+  await screenshot('creations-room-both');
+  await page.evaluate(() => kit.tapOn(neo.scene.plaque)); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.scene.acting), true, 'the pet sings her song');
+  await page.waitForFunction(() => !neo.scene.acting, null, { timeout: 20000 });
+  // Tidy puts the furniture back but leaves what she made.
+  await tap('neo.scene.tidyButton'); await page.waitForTimeout(600);
+  assert.deepEqual((await state()).c, now.c);
+  // A reload keeps it all; portrait still shows both clear of each other.
+  await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(400);
+  await page.reload(); await ready();
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(600);
+  assert.deepEqual(await board(), { stamps: 2, undo: true, tuneUndo: false });
+  assert.deepEqual((await state()).c, now.c);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  const clear = await page.evaluate(() => {
+    const boxes = [neo.scene.frame, neo.scene.board, neo.scene.plaque, neo.scene.window].map((o) => o.getBounds());
+    return boxes.every((a, i) => boxes.every((b, j) => i === j || a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y));
+  });
+  assert.ok(clear, 'the window, frame, plaque and board do not overlap');
+  await screenshot('creations-room-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+  log('Creations: a stamped picture and a free song are offered after the round and kept only on request (one sticker each); the room shows the picture, the pet looks at it and sings the song; a second picture replaces the first, which comes back and goes away again with the undo arrow; tidy and a reload keep both; the wall items clear each other in portrait');
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -4591,6 +4674,7 @@ try {
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'island') await islandShelf();
+  if (suite === 'all' || suite === 'creations') await creationsRoom();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

@@ -167,4 +167,29 @@ describe('migrate', () => {
     save.favorites = ['duck-pond', 'bubble-pop'];
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
+
+  it('starts with nothing hung, and repairs damaged creations without touching anything else', () => {
+    expect(defaults().creations).toEqual({ picture: { current: null, previous: null }, tune: { current: null, previous: null } });
+    expect(migrate({}).creations).toEqual(defaults().creations);
+    // A save from before creations existed keeps its progress and its room.
+    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, favorites: ['duck-pond'], room: { items: [], frame: { game: 'pet-kitchen', seed: 4 } } });
+    expect(old.creations).toEqual(defaults().creations);
+    expect(old.favorites).toEqual(['duck-pond']);
+    expect(old.room.frame).toEqual({ game: 'pet-kitchen', seed: 4 });
+    const odd = migrate({ creations: { picture: { current: { kind: 'picture', stamps: [{ kind: 'star', color: 'pink', x: 0.5, y: 0.5, size: 1, turns: 0 }, 'junk'] }, previous: 7 }, tune: 'la' } });
+    expect(odd.creations.picture.current?.stamps).toHaveLength(1);
+    expect(odd.creations.picture.previous).toBeNull();
+    expect(odd.creations.tune).toEqual({ current: null, previous: null });
+    expect(migrate({ creations: 5 }).creations).toEqual(defaults().creations);
+  });
+
+  it('keeps a hung picture and tune, and the ones before them, through a backup and restore', () => {
+    const save = defaults();
+    const stamp = (x: number) => ({ kind: 'cat' as const, color: 'blue' as const, x, y: 0.4, size: 1.3, turns: 2 });
+    save.creations = {
+      picture: { current: { kind: 'picture', stamps: [stamp(0.2), stamp(0.7)] }, previous: { kind: 'picture', stamps: [stamp(0.5)] } },
+      tune: { current: { kind: 'tune', cols: 4, rows: 3, notes: [{ col: 0, row: 0 }, { col: 2, row: 2 }] }, previous: null },
+    };
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
 });
