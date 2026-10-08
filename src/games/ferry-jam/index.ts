@@ -1,18 +1,21 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { swatch, wood, type ColorName } from '../../art/palette';
+import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { HeldDirection, idle, type CouchControls } from '../../engine/controller';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
+import { label } from '../../ui/text';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
+import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
-import { atDock, FERRY, hintSlide, parse, planFor, reach, solve, start, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
+import { atDock, boatToward, FERRY, focusPath, hintSlide, parse, planFor, reach, solve, start, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
@@ -56,6 +59,9 @@ class FerryJam implements Game {
   finished = false;
   harbor!: Harbor;
   layout: Layout = [];
+  /** Couch play: the boat the highlight is on, and the boat she has picked up, with where it is along its lane. */
+  focus = FERRY;
+  grab: { boat: number; p: number; min: number; max: number } | null = null;
 
   private readonly board = new Container();
   private readonly water = new Graphics();
@@ -70,20 +76,45 @@ class FerryJam implements Game {
   private hinted: Slide | null = null;
   private clock = 0;
   private settled = false;
+  private readonly repeat = new HeldDirection();
+  private botWait = 0.8;
+  private botPlan: { key: string; slide: Slide | null } | null = null;
+  /** Slides beyond each harbor's fewest, added up: the couch face-off score (lower is better). */
+  private excess = 0;
+  /** Couch challenge course: fixed harbors in a row. Null in ordinary play, where harbors are drawn from the seed. */
+  private readonly course: { minimum: number } | null;
+  private done: number[] = [];
+  /** Slides already spent on the harbor we are resuming, so leaving and coming back cannot erase them. */
+  private carry = 0;
+  private assisted = false;
+  private told = false;
   /** What the held boat can reach in its lane while it is held. */
   private held: { boat: number; min: number; max: number } | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    this.harbors = ctx.rng
-      .shuffle([...HARBORS[Math.min(Object.keys(HARBORS).length, Math.max(1, ctx.level))]])
-      .slice(0, this.plan.harbors)
-      .map((rows) => parse(rows));
+    const run = ctx.couch?.course;
+    if (run && isHarborCourse(run.id)) {
+      this.harbors = courseHarbors(run.id).map((h) => h.harbor);
+      this.course = { minimum: courseMinimum(run.id) };
+      this.index = run.resume.board - 1;
+      this.done = run.resume.done.slice();
+      this.carry = run.resume.attempts;
+      this.assisted = run.resume.assisted;
+    } else {
+      this.harbors = ctx.rng
+        .shuffle([...HARBORS[Math.min(Object.keys(HARBORS).length, Math.max(1, ctx.level))]])
+        .slice(0, this.plan.harbors)
+        .map((rows) => parse(rows));
+      this.course = null;
+    }
     this.glow.eventMode = 'none';
     this.water.eventMode = 'none';
     this.board.addChild(this.water, this.boatLayer, this.glow);
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
     this.undoButton.alpha = 0.35;
+    // The couch screen takes no pointer input, so the round arrow there would look like an undo and do nothing: the left button undoes.
+    this.undoButton.visible = !ctx.couch;
     ctx.stage.addChild(this.board, this.undoButton);
   }
 
@@ -106,7 +137,9 @@ class FerryJam implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.finished || this.busy || !this.hinted) return;
+    if (this.finished || this.busy) return;
+    if (this.ctx.couch) this.drawFocus(g);
+    if (!this.hinted) return;
     const b = this.harbor.boats[this.hinted.boat];
     const at = this.layout[this.hinted.boat];
     const box = (p: number) => (b.dir === 'h' ? new Rectangle(p * CELL + 4, b.row * CELL + 4, b.len * CELL - 8, CELL - 8) : new Rectangle(b.col * CELL + 4, p * CELL + 4, CELL - 8, b.len * CELL - 8));
@@ -125,7 +158,9 @@ class FerryJam implements Game {
     this.busy = true;
     this.index++;
     this.hinted = null;
-    this.moves = 0;
+    this.grab = null;
+    this.moves = this.carry;
+    this.carry = 0;
     this.sinceHint = 0;
     this.undoStack = [];
     this.undoButton.alpha = 0.35;
@@ -138,9 +173,13 @@ class FerryJam implements Game {
     this.resize(this.ctx.view);
     this.placeAll(false);
     this.board.alpha = 0;
+    this.focus = FERRY;
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
-    if (this.index === 0) return this.ctx.instruct('ferry.start');
+    this.report();
+    if (this.course ? this.told : this.index > 0) return;
+    this.told = true;
+    return this.ctx.instruct('ferry.start');
   }
 
   private makeBoat(i: number, len: number, ferry: boolean): Container {
@@ -236,6 +275,7 @@ class FerryJam implements Game {
     this.moves++;
     this.sinceHint++;
     sfx.marimba(4 + (this.moves % 5), 0.3);
+    this.report();
     if (atDock(this.harbor, this.layout)) void this.sail();
     else this.maybeHint();
     return true;
@@ -254,6 +294,8 @@ class FerryJam implements Game {
 
   /** Lots of slides without getting there: point at a boat worth moving next. The first harbors stay hint-free for a while. */
   private maybeHint() {
+    // On the couch a hint is asked for in the pause menu, never handed over.
+    if (this.ctx.couch) return;
     const fewest = solveLength(this.harbor, start(this.harbor));
     if (this.sinceHint < Math.max(8, fewest * 2) || this.hinted) return;
     const slide = hintSlide(this.harbor, this.layout);
@@ -269,6 +311,11 @@ class FerryJam implements Game {
     this.busy = true;
     this.hinted = null;
     const fewest = solveLength(this.harbor, start(this.harbor));
+    this.excess += Math.max(0, this.moves - fewest);
+    if (this.course) {
+      this.done.push(this.moves);
+      this.report(true);
+    }
     const ferry = this.nodes[FERRY];
     sfx.whoosh();
     await this.ctx.tw.to(ferry, { x: ferry.x + CELL * 3.2 }, { duration: 0.9, ease: ease.inOutSine });
@@ -277,8 +324,192 @@ class FerryJam implements Game {
     this.ctx.pet.cheer();
     sfx.sparkle();
     await this.ctx.say(this.moves <= fewest ? 'ferry.best' : 'ferry.out');
+    if (this.course) await this.harborScore(fewest);
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
     await this.next();
+  }
+
+  /* -------------------------------------------------------------------------------------------- */
+  /* Couch play                                                                                    */
+  /* -------------------------------------------------------------------------------------------- */
+
+  /** Hand a course's numbers to the shell. `finished` means the harbor just ended, so none of its slides are "in progress". */
+  private report(finished = false) {
+    const run = this.ctx.couch?.course;
+    if (!run || !this.course || !this.harbor) return;
+    run.progress({
+      board: this.index,
+      boards: this.harbors.length,
+      done: this.done.slice(),
+      attempts: finished ? 0 : this.moves,
+      par: solveLength(this.harbor, start(this.harbor)),
+      minimum: this.course.minimum,
+      assisted: this.assisted,
+    });
+  }
+
+  /** The score for the harbor just cleared, over the board for a moment. */
+  private async harborScore(fewest: number) {
+    const total = this.harbors.length;
+    const text = this.moves === fewest ? `Harbor ${this.index + 1} of ${total}: ${this.moves} slides, the fewest possible!` : `Harbor ${this.index + 1} of ${total}: ${this.moves} slides (fewest ${fewest})`;
+    const note = label(text, 34, ink);
+    note.position.set(this.board.x + (this.n * CELL) / 2, Math.max(48, this.board.y - 46));
+    note.alpha = 0;
+    this.ctx.stage.addChild(note);
+    await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.wait(1.2);
+    await this.ctx.tw.to(note, { alpha: 0 }, { duration: 0.25 });
+    note.destroy();
+  }
+
+  private boxOf(i: number, p: number) {
+    const b = this.harbor.boats[i];
+    return b.dir === 'h' ? new Rectangle(p * CELL + 4, b.row * CELL + 4, b.len * CELL - 8, CELL - 8) : new Rectangle(b.col * CELL + 4, p * CELL + 4, CELL - 8, b.len * CELL - 8);
+  }
+
+  /** The highlight on the boat the stick is on; a picked-up boat also shows the way it can slide. */
+  private drawFocus(g: Graphics) {
+    if (!this.harbor) return;
+    const held = this.grab, i = held ? held.boat : this.focus, b = this.harbor.boats[i];
+    const box = this.boxOf(i, held ? held.p : this.layout[i]);
+    g.roundRect(box.x - 3, box.y - 3, box.width + 6, box.height + 6, 24).stroke({ width: held ? 8 : 6, color: ink });
+    if (!held) return;
+    // Arrowheads past each end of the lane it can still go along.
+    const bob = 4 * Math.sin(this.clock * 8), mid = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const head = (dx: number, dy: number, ok: boolean) => {
+      if (!ok) return;
+      const tx = mid.x + dx * (box.width / 2 + 22 + bob), ty = mid.y + dy * (box.height / 2 + 22 + bob);
+      g.poly([tx, ty, tx - dx * 18 - dy * 16, ty - dy * 18 + dx * 16, tx - dx * 18 + dy * 16, ty - dy * 18 - dx * 16]).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
+    };
+    if (b.dir === 'h') { head(-1, 0, held.p > held.min); head(1, 0, held.p < held.max); }
+    else { head(0, -1, held.p > held.min); head(0, 1, held.p < held.max); }
+  }
+
+  control(input: CouchControls, dt: number) {
+    if (this.busy || this.finished || !this.harbor) return;
+    for (const dir of this.repeat.poll(input, dt)) {
+      if (this.grab) this.shift(dir);
+      else this.moveFocus(dir);
+    }
+    if (input.players.some((p) => p.action)) {
+      if (this.grab) this.setDown();
+      else this.pickUp(this.focus);
+    } else if (input.players.some((p) => p.undo)) {
+      if (this.grab) this.putBack();
+      else this.undo();
+    }
+  }
+
+  private moveFocus(dir: number) {
+    const next = boatToward(this.harbor, this.layout, this.focus, dir);
+    if (next === null) return;
+    this.focus = next;
+    sfx.tick();
+  }
+
+  /** Pick the highlighted boat up: it can now slide along its lane as far as the boats and the wall allow. */
+  private pickUp(i: number) {
+    const { min, max } = reach(this.harbor, this.layout, i);
+    this.grab = { boat: i, p: this.layout[i], min, max };
+    this.hinted = null;
+    this.node(i).scale.set(1.04);
+    sfx.pop(3 + i);
+  }
+
+  private node(i: number) { return this.nodes[i]; }
+
+  /** One cell along the picked-up boat's lane, if the stick points along it and there is room. */
+  private shift(dir: number) {
+    const g = this.grab!, b = this.harbor.boats[g.boat];
+    const delta = b.dir === 'h' ? (dir === 0 ? 1 : dir === 2 ? -1 : 0) : dir === 1 ? 1 : dir === 3 ? -1 : 0;
+    if (!delta) return;
+    const p = Math.min(g.max, Math.max(g.min, g.p + delta));
+    if (p === g.p) return void sfx.squeak();
+    g.p = p;
+    void this.ctx.tw.to(this.node(g.boat), this.cellXY(g.boat, p), { duration: 0.1, ease: ease.outQuad });
+    sfx.tick();
+  }
+
+  /** Set the boat down where it is. A slide counts when it ends somewhere new, however far it went. */
+  private setDown() {
+    const g = this.grab!;
+    this.grab = null;
+    const node = this.node(g.boat);
+    node.scale.set(1);
+    const at = this.cellXY(g.boat, g.p);
+    this.handles[g.boat].home = at;
+    if (g.p === this.layout[g.boat]) return void sfx.pop(2);
+    this.undoStack.push(this.layout.slice());
+    this.layout[g.boat] = g.p;
+    this.moves++;
+    sfx.marimba(4 + (this.moves % 5), 0.3);
+    this.report();
+    if (atDock(this.harbor, this.layout)) void this.sail();
+  }
+
+  /** Put the picked-up boat back where it was: nothing was slid, so nothing counts. */
+  private putBack() {
+    const g = this.grab!;
+    this.grab = null;
+    const node = this.node(g.boat);
+    node.scale.set(1);
+    void this.ctx.tw.to(node, this.cellXY(g.boat, this.layout[g.boat]), { duration: 0.12, ease: ease.outQuad });
+    sfx.pop(2);
+  }
+
+  /** Couch pause menu's "Show a hint": the boat to slide next and where it goes. Marks the run helped. */
+  askForHint() {
+    if (this.busy || this.finished || !this.harbor) return;
+    if (this.grab) this.putBack();
+    const slide = hintSlide(this.harbor, this.layout);
+    if (!slide) return;
+    this.hinted = slide;
+    this.hints++;
+    this.assisted = true;
+    this.focus = slide.boat;
+    this.report();
+    void this.ctx.say('ferry.hint');
+  }
+
+  /** Couch pause menu: put every boat back where it began. Slides already made keep counting, so a restart never improves a score. */
+  restart() {
+    if (this.finished || !this.harbor || this.busy) return;
+    if (this.grab) this.putBack();
+    this.hinted = null;
+    this.layout = start(this.harbor);
+    this.undoStack = [];
+    this.focus = FERRY;
+    this.placeAll(true);
+  }
+
+  /** The "watch me" demo: play the solver's way out, moving the highlight to each boat, picking it up, sliding it and setting it down. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    this.botWait -= dt;
+    if (this.busy || this.finished || !this.harbor || this.botWait > 0) return out;
+    const key = this.layout.join(',');
+    if (this.botPlan?.key !== key) this.botPlan = { key, slide: solve(this.harbor, this.layout)?.[0] ?? null };
+    const next = this.botPlan.slide;
+    if (!next) return out;
+    const p = out.players[0];
+    p.active = true;
+    const g = this.grab, b = this.harbor.boats[next.boat];
+    if (g) {
+      if (g.boat !== next.boat) { p.undo = true; this.botWait = 0.3; }
+      else if (g.p === next.to) { p.action = true; this.botWait = 0.4; }
+      else { p.direction = b.dir === 'h' ? (next.to > g.p ? 0 : 2) : next.to > g.p ? 1 : 3; this.botWait = 0.22; }
+      return out;
+    }
+    if (this.focus !== next.boat) {
+      const path = focusPath(this.harbor, this.layout, this.focus, next.boat);
+      if (!path?.length) return out;
+      p.direction = path[0];
+      this.botWait = 0.3;
+      return out;
+    }
+    p.action = true;
+    this.botWait = 0.35;
+    return out;
   }
 
   private drawWater() {
@@ -301,7 +532,7 @@ class FerryJam implements Game {
     sfx.tada();
     await this.ctx.say('ferry.done');
     await this.ctx.tw.wait(0.4);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.excess });
   }
 }
 

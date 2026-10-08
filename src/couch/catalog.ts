@@ -287,6 +287,26 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     // Trips climb from the small ponds to a 5 by 5 that takes a short way to light; the hardest ponds are on the puzzle shelf.
     level: (stop) => [1, 2, 3, 3, 4, 5][stop] ?? 5,
   },
+  'ferry-jam': {
+    goal: 'couch.how.ferry-jam',
+    tagline: 'Slide the boats aside so the red ferry can sail out to the dock.',
+    controls: [
+      { parts: STICK, text: 'Move between boats. With one picked up, slide it along its lane.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Pick up the highlighted boat; press again to set it down.', keys: 'Enter' },
+      { parts: ['left'], text: 'Put a held boat back, or take the last slide back. It still counts.', keys: 'Backspace' },
+      { parts: ['start'], text: 'Pause menu: a hint, or the harbor again.', keys: 'Esc' },
+    ],
+    restart: 'Start this harbor again',
+    hint: 'Show a hint',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'slides over the fewest' },
+    // Early school's range (3 to 6) is the 5 by 5 and 6 by 6 harbors; trips climb through it.
+    band: 'school',
+    demoLevel: 3,
+    level: (stop) => [3, 4, 4, 5, 5, 6][stop] ?? 6,
+    lines: { 'ferry.start': 'couch.ferry.start' },
+  },
   'picture-logic': {
     goal: 'couch.how.picture-logic',
     tagline: 'Fill the squares the numbers allow, and a picture appears.',

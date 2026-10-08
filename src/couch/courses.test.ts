@@ -40,6 +40,7 @@ describe('the couch courses', () => {
     expect(courseSpec('lanterns')).toMatchObject({ game: 'lantern-lights', boards: 5, minimum: 36 });
     expect(courseSpec('pictures')).toMatchObject({ game: 'picture-logic', boards: 3, minimum: 182 });
     expect(courseSpec('bigpictures')).toMatchObject({ game: 'picture-logic', boards: 2, minimum: 230 });
+    expect(courseSpec('harbors')).toMatchObject({ game: 'ferry-jam', boards: 5, minimum: 64 });
   });
 
   it("is played by a game that is on the couch, at a level its band really has", () => {

@@ -14,6 +14,7 @@ export const SCRIPT = {
   'couch.course.lanterns': ['Five ponds, every lantern aglow!'],
   'couch.course.pictures': ['Three pictures, all found!'],
   'couch.course.bigpictures': ['Both big pictures, found!'],
+  'couch.course.harbors': ['Five busy harbors, all clear!'],
   'couch.course.best': ['A new best! Look at that sliding!'],
   'couch.keepsake': ['A keepsake for your first trip: Lantern Night!'],
   // Couch play: what each game asks of the players, one variant so the caption matches the speech.
@@ -33,8 +34,10 @@ export const SCRIPT = {
   'couch.how.sudoku-garden': ['Fill the bed so every row, column and box holds each number once. Move around with the stick, press the bottom button to open the number tray, and press it again to place a number. The left button takes a number back out.'],
   'couch.how.lantern-lights': ['Press a lantern to flip it and the four lanterns beside it. Move with the stick, press with the bottom button, and light every lantern on the pond. The left button takes the last press back.'],
   'couch.how.picture-logic': ['Fill the squares the numbers allow, and a picture appears. Press the bottom button to fill, and hold it while you move to paint a run.'],
+  'couch.how.ferry-jam': ['Slide the boats aside so the red ferry reaches the dock. Move between boats with the stick, press the bottom button to pick one up, slide it along its lane, and press again to set it down.'],
   'couch.how.sink-float': ['Will it float, or will it sink? Choose with left and right, press the bottom button, and watch the water to find out!'],
   // Couch versions of lines that tell a touch player to tap or pull.
+  'couch.ferry.start': ['The harbor is jammed! Choose a boat, pick it up with the bottom button, slide it, and set it down. Free the red ferry.'],
   'couch.slide.go': ['Use the stick or arrow keys to slide the penguin. It only stops when it bumps into something!'],
   'couch.slide.stuck': ['Oh no, the penguin cannot reach the fish from here. Press the left button to undo a slide, or pause to start the pond again.'],
   'couch.neighbors.rhythm': ['Listen to the bird and the frog reply. Now play the frog part with the left and right buttons, keeping the short and long gaps. Press the bottom button when ready.'],
