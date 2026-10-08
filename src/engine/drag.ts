@@ -60,6 +60,9 @@ export function draggable(obj: Container, tw: Tweener, opts: DragOptions): DragH
   };
 
   const drop = () => {
+    // Let the next finger drag. A real finger also frees this on its window `pointerup`, but a touch that never
+    // reaches the window (the how-to card's ghost finger) would otherwise leave every later drag ignored.
+    if (active === pointer) active = null;
     pointer = null;
     tw.kill(grab);
     void tw.to(obj.scale, { x: restScale, y: restScale }, { duration: 0.15 });

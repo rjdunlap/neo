@@ -3,13 +3,14 @@ import { makePet, petSpec } from '../../art/pet';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
+import { audio } from '../../audio/engine';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
 import { howToFor, shouldExplain } from '../../content/howto';
-import { demoFor } from '../../couch/catalog';
+import { islandDemo } from '../../content/demos';
 import { Demo } from '../../couch/demo';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
@@ -188,10 +189,12 @@ export class GameScene extends Scene {
   /** The how-to card fills the screen with Play and Back, and no round has been built or started. */
   private openIntro(info: NonNullable<ReturnType<typeof howToFor>>) {
     const mod = this.mod;
-    // A game the couch can play has a bot, which plays a real round in a window on the card.
-    const spec = demoFor(mod.id);
+    // A game with a bot plays a real round in a window on the card: a ghost finger at her level, or the couch's controller demo.
+    const spec = islandDemo(mod, this.level, this.band);
     const demo = spec ? new Demo(mod, { ...spec, renderer: this.app.renderer }) : undefined;
     const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo });
+    // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
+    if (demo) audio.hush(true);
     card.layout(this.view);
     this.helpCard = card;
     this.ui.addChild(card);
@@ -207,6 +210,7 @@ export class GameScene extends Scene {
   }
 
   private closeHelp() {
+    if (this.helpCard) audio.hush(false);
     this.helpCard?.destroy({ children: true });
     this.helpCard = null;
   }

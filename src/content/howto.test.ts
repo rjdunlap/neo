@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GAMES } from '../games/registry';
 import { COUCH_INFO, demoFor } from '../couch/catalog';
+import { islandDemo } from './demos';
 import { HOW_TO, howToFor, shouldExplain } from './howto';
 
 describe('touch how-to cards', () => {
@@ -73,5 +74,43 @@ describe('the demonstration on a card', () => {
       expect(demo.level, `${g.id} demo level`).toBeGreaterThanOrEqual(min);
       expect(demo.level, `${g.id} demo level`).toBeLessThanOrEqual(max);
     }
+  });
+});
+
+describe('what the island card shows, by what she plays with', () => {
+  const touch = GAMES.filter((g) => g.touchDemo);
+
+  it('shows a pretend finger on a touch screen and a pretend mouse pointer on a desktop, for every game with a touch bot', () => {
+    expect(touch.length).toBeGreaterThan(0);
+    for (const g of touch) {
+      expect(islandDemo(g, 3, 'toddler', 'touch')).toEqual({ input: 'finger', level: 3, band: 'toddler' });
+      expect(islandDemo(g, 3, 'toddler', 'mouse')).toEqual({ input: 'mouse', level: 3, band: 'toddler' });
+    }
+  });
+
+  it('plays her own level, so the window matches the "this level" line on the card, and never the couch\'s demo level', () => {
+    for (const g of touch) {
+      for (const band of g.bands) {
+        const { min, max } = g.levels(band);
+        for (let level = min; level <= max; level++) {
+          const demo = islandDemo(g, level, band, 'touch');
+          expect(demo, `${g.id} level ${level}`).toMatchObject({ level, band });
+          expect(howToFor(g, level)?.level).toBe(g.describeLevel(demo!.level));
+        }
+      }
+    }
+  });
+
+  it('keeps the controller demonstration for a couch game with no touch bot yet, and shows nothing for the rest', () => {
+    for (const g of GAMES) {
+      const demo = islandDemo(g, 1, 'toddler', 'touch');
+      if (g.touchDemo) continue;
+      if (demoFor(g.id)) expect(demo?.input, g.id).toBe('controller');
+      else expect(demo, g.id).toBeNull();
+    }
+  });
+
+  it('flags a game for the touch bot only if it is on the island (grown-up games have no touch card)', () => {
+    for (const g of touch) expect(HOW_TO[g.id], g.id).toBeDefined();
   });
 });

@@ -84,3 +84,36 @@ export function meant<T extends Reachable>(tapped: T, all: readonly T[], at: { x
   if (right(tapped)) return tapped;
   return all.find((b) => b !== tapped && right(b) && Math.hypot(b.x - at.x, b.y - at.y) <= b.r * TAP_REACH) ?? tapped;
 }
+
+export interface DemoBubble extends Reachable {
+  rainbow?: boolean;
+}
+
+/** Whether a bubble's middle is comfortably on the screen (half its radius in), so a finger can reach it. A bubble rising in from below counts as soon as it shows. */
+export const inReach = (b: Reachable, w: number, h: number) => b.x >= b.r / 2 && b.x <= w - b.r / 2 && b.y >= b.r / 2 && b.y <= h - b.r / 2;
+
+/**
+ * The bubble a capable player taps next, for the how-to card's ghost finger: anything in free play, one of the
+ * asked-for color, the next number, or in bonds the first of a pair and then its partner. In the free kinds it is the
+ * highest bubble that is not about to float off, so the hand is seen on the screen and not at its edge. Null when nothing
+ * right is showing yet. Never the finale's rainbow bubble.
+ */
+export function bubbleToPop<T extends DemoBubble>(
+  mode: BubbleMode,
+  shown: readonly T[],
+  target: ColorName | null,
+  next: number,
+  sum: number | undefined,
+  held: T | null,
+): T | null {
+  const live = shown.filter((b) => !b.rainbow);
+  const highest = (list: readonly T[]) => {
+    const settled = list.filter((b) => b.y >= b.r + 30);
+    return (settled.length ? settled : list).reduce<T | null>((best, b) => (!best || b.y < best.y ? b : best), null);
+  };
+  if (mode === 'free') return highest(live);
+  if (mode === 'color') return highest(live.filter((b) => isRight(mode, b, target, next)));
+  if (mode === 'count') return live.find((b) => b.number === next) ?? null;
+  if (held) return live.find((b) => b !== held && held.number! + b.number! === sum) ?? null;
+  return live.find((a) => live.some((b) => b !== a && a.number! + b.number! === sum)) ?? null;
+}

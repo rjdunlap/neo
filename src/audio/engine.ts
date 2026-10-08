@@ -1,5 +1,8 @@
 type AudioSessionNavigator = Navigator & { audioSession?: { type: string } };
 
+/** How loud effects are while hushed, against 1. */
+const HUSH = 0.4;
+
 /**
  * One AudioContext with three buses: effects, music and a master with a limiter.
  * iOS only lets audio start inside a tap, so `unlock()` runs from the start screen.
@@ -12,6 +15,8 @@ class AudioEngine {
   private volume = 0.8;
   private musicOn = true;
   private ducked = false;
+  /** Effects are lowered while a demonstration plays on a how-to card (read by the browser checks). */
+  hushed = false;
 
   unlock() {
     if (!this.ctx) {
@@ -26,6 +31,7 @@ class AudioEngine {
       this.master = ctx.createGain();
       this.master.gain.value = this.volume;
       this.sfxOut = ctx.createGain();
+      this.sfxOut.gain.value = this.hushed ? HUSH : 1;
       this.musicOut = ctx.createGain();
       this.sfxOut.connect(this.master);
       this.musicOut.connect(this.master);
@@ -53,6 +59,12 @@ class AudioEngine {
   setMusicOn(on: boolean) {
     this.musicOn = on;
     this.applyMusic();
+  }
+
+  /** Lowers the effects while a demonstration plays on a how-to card behind the spoken title. */
+  hush(on: boolean) {
+    this.hushed = on;
+    if (this.ctx) this.sfxOut.gain.setTargetAtTime(on ? HUSH : 1, this.ctx.currentTime, 0.05);
   }
 
   /** Lowers the music while the voice is talking. */
