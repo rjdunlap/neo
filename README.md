@@ -132,7 +132,7 @@ Press and hold **both top corners** of the island map for three seconds. Set her
 
 ## Couch play
 
-A separate route for two grown-ups, from **Couch play** on the title screen (or the **C** key, or a controller button), with its own save (`neo.couch.v1`) that never touches the child's profile, levels, stickers or story. Trips of six stops in **Together** or **Face-off** mode, a how-to screen with a bot demo before each game, games that open as trips are finished, a finale with a keepsake, and three **challenge courses** with personal bests. Pairing controllers, the rules, the controls and the order games open in are in the [couch play guide](docs/COUCH-PLAY.md).
+A separate route for grown-ups (two taking turns today, one alone planned), from **Couch play** on the title screen (or the **C** key, or a controller button), with its own save (`neo.couch.v1`) that never touches the child's profile, levels, stickers or story. Trips of six stops in **Together** or **Face-off** mode, a how-to screen with a bot demo before each game, games that open as trips are finished, a finale with a keepsake, and three **challenge courses** with personal bests. Pairing controllers, the rules, the controls and the order games open in are in the [couch play guide](docs/COUCH-PLAY.md).
 
 ## Where it's going
 
@@ -189,7 +189,8 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `couch` | A full couch trip and a face-off trip: how-to screens, name cards, the finale, unlocks, NEW marks, shuffle, turns, reloads, ties and team stops, backup (about 8 minutes) | |
 | `couchgames` | Every couch game's how-to screen and a bot-played round, then the How to play guide and a name card's How to play (about 5 minutes) | `COUCH_ONLY=peg-garden,bumper-garden` |
 | `couchcourse` | The challenge courses with controller presses: undone slides and missed launches counted, resume after a reload, hints, records and badges per player, one sticker per run (about 7 minutes) | |
-| `couchnames` | Typing player names on the setup page, kept in the couch save and used on every screen | |
+| `couchnames` | Typing player names on the Settings page, kept in the couch save and used on every screen | |
+| `couchsettings` | The couch Settings page: reached with a controller alone, prompts following what is connected (key caps and a keyboard diagram, or controller pictures), text size and volume applied and kept through a reload and a backup, the pause menu row, the island's volume given back, old saves opening with defaults (about 30 seconds) | |
 | `machines` | Chain Reaction's first and top levels: drags, an incomplete run, a failed experiment that is not a miss, a hint, the chime, completion, portrait | |
 | `clap` | Clap the Syllables: all four levels, a wrong count, wrong bins, a hint, a portrait tray | |
 | `shortlist` | Block Tower, Lasso Loops, Pet Says, Owl Walk Home | `SHORTLIST_ONLY=tower\|lasso\|says\|owls` |

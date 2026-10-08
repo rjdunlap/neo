@@ -6,13 +6,14 @@ import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { COUCH_INFO, couchLine, type CouchInfo } from '../../couch/catalog';
-import { controllerArt, glyphs, type ControllerArt } from '../../couch/controller-art';
+import { keyName, padArt, prompts, type ControllerArt } from '../../couch/controller-art';
 import { Demo } from '../../couch/demo';
 import { finaleOf, namerOf, stopLabel, type Finale } from '../../couch/finale';
 import { FinaleStage } from '../../couch/finale-stage';
 import { completeCourse, courseDefaults, courseOf, noteProgress, startRun, BADGES, courseSpec, type CourseSpec, type Outcome, type PlayerRecord } from '../../couch/course';
 import { COURSE_IDS, countOf, courseInfo, unitsOf, type CourseId, type CourseInfo } from '../../couch/courses';
 import { cleanName, completeRound, isNew, levelFor, markSeen, NAME_MAX, newParty, nextTier, offers, playerNow, repairCouch, reshuffle, roundToken, seedFor, starterOf, STOPS, tally, unlockedIds, type CouchId, type CouchRound, type Party, type TripMode } from '../../couch/party';
+import { PLACE_CHOICES, PLACE_NAMES, TEXT_NAMES, TEXT_SIZES, VOLUME_MAX, cardHint, gainFor, menuHint, nextText, nudgeVolume, placeReason, resolvePlace, unitFor, type Place, type PlaceChoice, type TextSize } from '../../couch/settings';
 import { couchStore } from '../../couch/store';
 import { CouchInput } from '../../engine/controller';
 import { randomSeed, Rng } from '../../engine/random';
@@ -21,11 +22,12 @@ import { gameById } from '../../games/registry';
 import type { CourseProgress, Game, GameModule, RoundResult } from '../../games/types';
 import type { App } from '../App';
 import { Scene } from '../Scene';
+import { applySettings } from '../settings';
 import '../../couch/style.css';
 
 /** How long the name card shows when a game has already been explained. */
 const CARD_SECONDS = 1.6;
-type Screen = 'menu' | 'mode' | 'courses' | 'course' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'backup' | 'guide';
+type Screen = 'menu' | 'mode' | 'courses' | 'course' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'settings' | 'backup' | 'guide';
 /** Where a "how to play" screen was opened from, and so where its Back button goes. */
 type IntroFrom = 'first' | 'pause' | 'guide' | 'turn';
 /** The trip whose finale has already played in this page, so coming back to its page doesn't replay the fanfare. */
@@ -46,6 +48,10 @@ export class CouchScene extends Scene {
   private readonly overlay = node('section', '', 'couch');
   private readonly status = node('p', '', 'couch-status');
   private readonly warning = node('p', '', 'couch-warning');
+  /** How to move and choose, kept current as a controller is connected or left behind. */
+  private readonly hint = node('p', '', 'couch-keys');
+  /** What "choose for me" looks at: standard controllers connected now, and how big the window is. */
+  private controllers = 0;
   private readonly stage = new Container();
   private readonly pet = makePet();
   /** Sits above everything while a "how to play" screen is open: a paper backdrop and the demo. */
@@ -93,6 +99,7 @@ export class CouchScene extends Scene {
     window.addEventListener('pointerdown', this.wake);
     window.addEventListener('keydown', this.wake);
     this.overlay.setAttribute('aria-label', 'Couch play');
+    this.applyPrefs();
     document.body.append(this.overlay);
     this.introLayer.addChild(this.paper);
     this.introLayer.visible = false;
@@ -106,6 +113,17 @@ export class CouchScene extends Scene {
 
   private go(play: boolean | CourseId = false) { this.leaving = true; this.app.go.couch(play); }
   private leave() { this.leaving = true; this.app.go.start(); }
+
+  /** Where she is playing right now: her choice, or what is connected and how big the window is. */
+  private place(): Place { return resolvePlace(this.couch.data.settings.place, this.surroundings()); }
+  private surroundings() { return { controllers: this.controllers, scale: this.view.scale }; }
+
+  /** Push the couch settings into sound and text size. The child's own settings come back when this scene is left. */
+  private applyPrefs(view: View = this.view) {
+    const s = this.couch.data.settings;
+    audio.setVolume(gainFor(s.volume)); audio.setMusicOn(s.music);
+    this.overlay.style.setProperty('--u', String(unitFor(view.scale, s.text)));
+  }
 
   private unlock() {
     if (this.unlocked && audio.ctx?.state === 'running') return;
@@ -146,12 +164,12 @@ export class CouchScene extends Scene {
     foot.append(actions); sheet.append(foot);
     if (notes) {
       const note = node('div', '', 'couch-notes');
-      note.append(this.status, this.warning, node('p', 'Menus: arrows / D-pad to choose · Enter / bottom face button to select · Esc / + to pause', 'couch-keys'));
+      note.append(this.status, this.warning, this.hint);
       foot.append(note);
     }
     extra?.(actions);
     this.button(actions, 'Controller setup', () => this.setup());
-    this.button(actions, 'Couch backup', () => this.backup());
+    this.button(actions, 'Settings', () => this.settingsPage());
     this.button(actions, 'Back to start', () => this.leave());
     this.button(actions, 'How to play', () => this.guide());
     this.focusButtons();
@@ -232,7 +250,7 @@ export class CouchScene extends Scene {
       const sheet = this.shell('An evening on the island', 'Six rounds. Three choices each time. Take turns choosing, pass a controller, or play the paddles together. Play together, or face off for a winner at each stop.');
       this.button(sheet, 'Start a couch trip', () => this.modeChoice(), 'couch-primary');
       this.button(sheet, 'Challenges', () => this.courseMenu());
-      sheet.append(node('p', 'Keyboard works now. Original Switch Pro Controllers can be paired with your Mac later. Couch stickers and trips have their own save.', 'couch-intro'));
+      sheet.append(node('p', 'A controller or the keyboard both work. Couch stickers and trips have their own save, apart from the island.', 'couch-intro'));
       const kept = this.couch.data.keepsake;
       if (kept) sheet.append(this.keepsakeCard(kept.at));
       this.footer(sheet); return;
@@ -507,7 +525,7 @@ export class CouchScene extends Scene {
     const actions = node('div', '', 'couch-actions'); sheet.append(actions);
     this.button(actions, 'Play', () => this.startGame(), 'couch-primary');
     this.button(actions, 'How to play', () => this.intro(id, 'first'));
-    sheet.append(node('p', 'Press the bottom button to start now · Right or down for How to play · Esc / + for the menu', 'couch-keys'));
+    sheet.append(node('p', cardHint(this.place()), 'couch-keys'));
     this.focusButtons(sheet);
     void voice.say(mod.titleLine);
   }
@@ -528,11 +546,15 @@ export class CouchScene extends Scene {
     const title = node('div');
     title.append(node('p', 'HOW TO PLAY', 'couch-eyebrow'), node('h1', mod.name), node('span', this.playLabel(info), 'couch-chip'));
     head.append(this.iconCanvas(mod), title);
-    this.pad = controllerArt();
+    const place = this.place();
+    this.pad = padArt(place);
     const list = node('ul', '', 'couch-rows');
     this.rows = info.controls.map(row => {
       const li = node('li');
-      li.append(glyphs(row.parts), node('span', row.text), node('small', row.keys));
+      // On a laptop the key cap already says "Backspace"; the small line is for what the cap cannot (which arrows, whose keys).
+      const repeated = place === 'laptop' && row.parts.every(part => keyName(part) === row.keys);
+      li.append(prompts(row.parts, place), node('span', row.text));
+      if (!repeated) li.append(node('small', row.keys));
       list.append(li); return li;
     });
     const actions = node('div', '', 'couch-actions');
@@ -633,10 +655,10 @@ export class CouchScene extends Scene {
     if (course) { this.stats.textContent = ''; title.append(this.stats); }
     hud.append(title, this.caption);
     this.button(hud, 'Pause / + / Esc', () => this.pause());
-    const help = node('div', '', 'couch-game-help');
+    const help = node('div', '', 'couch-game-help'), place = this.place();
     for (const row of info.controls) {
       const item = node('span', '', 'couch-help-row');
-      item.append(glyphs(row.parts), node('span', row.text));
+      item.append(prompts(row.parts, place), node('span', row.text));
       help.append(item);
     }
     this.overlay.append(hud, help);
@@ -658,7 +680,7 @@ export class CouchScene extends Scene {
 
   resize(v: View) {
     this.game?.resize(v); this.pet.position.set(74, v.h - 18);
-    this.drawPaper(v); this.finaleStage?.resize(v);
+    this.applyPrefs(v); this.drawPaper(v); this.finaleStage?.resize(v);
   }
 
   private whileHere(spoken: Promise<void>): Promise<void> {
@@ -700,11 +722,22 @@ export class CouchScene extends Scene {
     this.button(sheet, 'Repeat instruction', () => { if (this.instruction) void voice.say(this.instruction.id, this.instruction.vars); });
     const again = COUCH_INFO[id].restart;
     if (again && this.game?.restart) this.button(sheet, again, () => { const game = this.game; this.resume(); game?.restart?.(); });
+    this.quickSettings(sheet);
     if (this.course) { const id = this.course.spec.id; this.button(sheet, 'Back to the course page', () => this.go(id)); }
     else this.button(sheet, 'Choose a different game', () => { this.couch.data.party!.selected = null; this.couch.save(); this.go(); });
     this.button(sheet, 'Save and return to start', () => this.leave());
     sheet.append(node('p', this.course ? this.course.info.leaving : 'Leaving or refreshing restarts this unfinished round from the same seed. Completed lanterns and stickers stay saved.', 'couch-keys'));
     this.overlay.append(this.modal); this.focusButtons(this.modal);
+  }
+
+  /** Sound and text size without leaving the round: four buttons in a row on the pause menu. */
+  private quickSettings(sheet: HTMLElement) {
+    const s = this.couch.data.settings, row = node('div', '', 'couch-row'); sheet.append(row);
+    const kept = () => { this.couch.save(); this.applyPrefs(); sfx.pop(); };
+    this.button(row, 'Quieter', () => { s.volume = nudgeVolume(s.volume, -1); kept(); });
+    this.button(row, 'Louder', () => { s.volume = nudgeVolume(s.volume, 1); kept(); });
+    const music = this.button(row, `Music: ${s.music ? 'on' : 'off'}`, () => { s.music = !s.music; music.textContent = `Music: ${s.music ? 'on' : 'off'}`; kept(); });
+    const text = this.button(row, `Text: ${TEXT_NAMES[s.text]}`, () => { s.text = nextText(s.text); text.textContent = `Text: ${TEXT_NAMES[s.text]}`; kept(); });
   }
 
   private resume() {
@@ -719,9 +752,54 @@ export class CouchScene extends Scene {
     sheet.append(node('p', 'Pro Controller: SYNC is beside the USB-C port. Joy-Con: detach it and use SYNC on the inner rail; pair each half separately. Browser exposure varies. This prototype accepts the browser’s standard mapping; separate or unmapped Joy-Cons are not yet supported.', 'couch-intro'), this.status,
       node('p', 'Focus this browser tab and press a controller button. The first controller is Player 1 (blue paddle), the second is Player 2 (pink paddle). Printed Nintendo letters may differ: confirm is the bottom face button, undo is the left face button, pause is +. Release sticks between menu moves.', 'couch-intro'),
       node('p', 'Keyboard: arrows + Enter for Player 1; W/S joins Player 2 in Bounce Back. Backspace undoes a slide. Esc pauses. If sound is quiet, press a keyboard key or click once to enable browser audio. Connect the Mac to a TV and use full screen when ready.', 'couch-intro'));
+    sheet.append(node('p', 'Names, sound, text size and where you are playing are on the Settings page.', 'couch-intro'));
+    this.button(sheet, 'Settings', () => this.settingsPage());
+    this.button(sheet, 'Back to couch play', () => this.menu(), 'couch-primary'); this.focusButtons();
+  }
+
+  /** One choice among several: the chosen one is marked, and choosing it again changes nothing. */
+  private choice(parent: HTMLElement, key: string, label: string, chosen: boolean, action: () => void) {
+    const b = this.button(parent, label, action, `couch-choice${chosen ? ' couch-chosen' : ''}`);
+    b.dataset.key = key; b.setAttribute('aria-pressed', String(chosen));
+    return b;
+  }
+
+  /** The grown-up's page for this device: where she plays, sound, text size, names and the couch backup. Each change is kept at once. */
+  private settingsPage(focusKey = '') {
+    this.screen = 'settings'; this.buttons = [];
+    const s = this.couch.data.settings;
+    const sheet = this.shell('Settings', 'Kept with your couch save on this computer. The child’s island and its own grown-up settings are not touched.');
+    sheet.classList.add('couch-settings');
+    // Change, keep, apply, and draw the page again with the same button in focus.
+    const change = (key: string, apply: () => void, after?: () => void) => { apply(); this.couch.save(); this.applyPrefs(); this.settingsPage(key); after?.(); };
+    const grid = node('div', '', 'couch-settings-grid'); sheet.append(grid);
+    const section = (title: string, note: string) => {
+      const box = node('section', '', 'couch-setting'), row = node('div', '', 'couch-choices');
+      box.append(node('h2', title), row, node('p', note, 'couch-setting-note')); grid.append(box);
+      return { row, note: box.lastElementChild as HTMLElement };
+    };
+
+    const where = section('Where I’m playing', '');
+    for (const choice of PLACE_CHOICES) this.choice(where.row, `place-${choice}`, choice === 'auto' ? 'Choose for me' : PLACE_NAMES[choice], s.place === choice, () => change(`place-${choice}`, () => { s.place = choice as PlaceChoice; }));
+    const now = this.place();
+    where.note.textContent = `Right now: ${PLACE_NAMES[now]}${s.place === 'auto' ? `, because ${placeReason(this.surroundings())}` : ''}. This decides whether screens show controller buttons or keys.`;
+
+    const sound = section('Sound', s.volume === 0 ? 'Sound is off.' : s.volume === VOLUME_MAX ? 'As loud as it goes.' : 'Music plays during rounds.');
+    const level = (by: 1 | -1) => () => change(by > 0 ? 'louder' : 'quieter', () => { s.volume = nudgeVolume(s.volume, by); }, () => sfx.pop());
+    this.button(sound.row, 'Quieter', level(-1), 'couch-choice').dataset.key = 'quieter';
+    const meter = node('span', '', 'couch-meter');
+    meter.setAttribute('role', 'img'); meter.setAttribute('aria-label', `Volume ${s.volume} of ${VOLUME_MAX}`);
+    for (let i = 0; i < VOLUME_MAX; i++) meter.append(node('i', '', i < s.volume ? 'on' : ''));
+    sound.row.append(meter);
+    this.button(sound.row, 'Louder', level(1), 'couch-choice').dataset.key = 'louder';
+    this.choice(sound.row, 'music', `Music: ${s.music ? 'on' : 'off'}`, s.music, () => change('music', () => { s.music = !s.music; }));
+
+    const text = section('Text size', 'Grows every couch screen, on top of how big the window is.');
+    for (const size of TEXT_SIZES) this.choice(text.row, `text-${size}`, TEXT_NAMES[size], s.text === size, () => change(`text-${size}`, () => { s.text = size as TextSize; }));
+
     // Names are typed on a keyboard, once; the couch itself never needs one.
-    const names = node('div', '', 'couch-names');
-    names.append(node('p', 'Names (optional): who is playing? They replace Player 1 and Player 2 on every screen.', 'couch-intro'));
+    const names = node('section', '', 'couch-setting couch-names');
+    names.append(node('h2', 'Names'), node('p', 'Optional. They replace Player 1 and Player 2 on every screen. Typing needs a keyboard, once.', 'couch-setting-note'));
     for (const player of [0, 1] as const) {
       const row = node('label');
       const input = node('input');
@@ -732,8 +810,15 @@ export class CouchScene extends Scene {
       row.append(node('span', `Player ${player + 1}`), input);
       names.append(row);
     }
-    sheet.append(names);
-    this.button(sheet, 'Back to couch play', () => this.menu(), 'couch-primary'); this.focusButtons();
+    grid.append(names);
+    const actions = node('div', '', 'couch-actions'); sheet.append(actions, this.warning);
+    sheet.append(node('p', 'The island has its own grown-up zone, for her name, session length, levels and backup: on the island map, press and hold both top corners for three seconds.', 'couch-keys'));
+    this.button(actions, 'Couch backup', () => this.backup());
+    this.button(actions, 'Controller setup', () => this.setup());
+    this.button(actions, 'Back to couch play', () => this.menu(), 'couch-primary');
+    this.focusButtons();
+    const at = this.buttons.findIndex(b => b.dataset.key === focusKey);
+    if (at >= 0) { this.focus = at; this.buttons[at].focus(); }
   }
 
   private backup() {
@@ -751,11 +836,11 @@ export class CouchScene extends Scene {
         const raw = JSON.parse(await file.text());
         if (this.gone) return;
         if (![1, 2, 3].includes(raw?.version) || !('stickers' in raw) || !('party' in raw)) throw new Error('wrong backup');
-        this.couch.data = repairCouch(raw); this.couch.save(); this.menu();
+        this.couch.data = repairCouch(raw); this.couch.save(); this.applyPrefs(); this.menu();
       } catch { if (!this.gone) this.warning.textContent = 'That was not a valid couch backup. Your current progress is unchanged.'; }
     };
     sheet.append(node('p', 'Restoring replaces only couch progress. To start a fresh trip, finish this one or choose another game; earned sticker counts are retained.', 'couch-keys'), this.warning);
-    this.button(sheet, 'Back to couch play', () => this.menu(), 'couch-primary'); this.focusButtons();
+    this.button(sheet, 'Back to Settings', () => this.settingsPage(), 'couch-primary'); this.focusButtons();
   }
 
   update(dt: number) {
@@ -763,6 +848,9 @@ export class CouchScene extends Scene {
     const quiet = !audio.ctx || audio.ctx.state !== 'running';
     this.status.textContent = input.status + (quiet ? ' · Sound is off: press any key or click once' : '');
     this.age += dt;
+    this.controllers = input.controllers;
+    const hint = menuHint(this.place());
+    if (this.hint.textContent !== hint) this.hint.textContent = hint;
     if (this.leaving || this.age < 0.35) return;
     if (this.couch.warning) this.warning.textContent = this.couch.warning;
     if (input.disconnected) this.pause('Controller disconnected. Reconnect it, or resume using the keyboard.');
@@ -800,6 +888,6 @@ export class CouchScene extends Scene {
   destroy() {
     window.removeEventListener('pointerdown', this.wake); window.removeEventListener('keydown', this.wake);
     this.gone = true; this.deferred = []; this.input.destroy(); this.demo?.destroy(); this.game?.destroy(); this.closeFinale();
-    this.overlay.remove(); voice.stop(); music.stop(); super.destroy();
+    this.overlay.remove(); voice.stop(); music.stop(); applySettings(); super.destroy();
   }
 }

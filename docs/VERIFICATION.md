@@ -8,17 +8,18 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-07 (387 tests) | Release check entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-07 (397 tests) | Couch Settings entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
 | `picnic`, `island`, `room` | 2026-10-07 | Discovery journal entry | |
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
-| `couch` | 2026-10-07 | Child's island entry | About eight to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen games | Child's island entry | Peg Garden's bot needed one retry (its known flake) |
-| `couchcourse` | 2026-10-07 | Couch Penguin Slide restart entry | About seven minutes |
-| `couchnames` | 2026-10-07 | Couch finale entry | |
+| `couch` | 2026-10-07, after the Settings page | Couch Settings entry | About seven to nine minutes; run on a snapshot |
+| `couchgames` | 2026-10-07, all fourteen games; Penguin Slide, Bounce Back and Light Lab again after the Settings page | Child's island and couch Settings entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchcourse` | 2026-10-07, after the Settings page | Couch Settings entry | About four to seven minutes |
+| `couchnames` | 2026-10-07, now through the Settings page | Couch Settings entry | |
+| `couchsettings` | 2026-10-07 | Couch Settings entry | About 30 seconds |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -33,6 +34,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Couch Settings page (2026-10-07)
+
+What changed: the couch route has a **Settings** page (roadmap step 1 of grown-up play for one): where she is playing (*Choose for me*, *TV with a controller* or *Laptop with keyboard*, which swaps controller pictures, glyphs and hints for a drawn keyboard, key caps and key names), a couch volume and music switch, text size (normal, large, extra large), names and the couch backup (both moved here), plus a sound and text row on the pause menu. A bounded `settings` object joins the couch save with defaults and repair, without a version step. `CouchControls` gained a connected-controller count. Rules are in `src/couch/settings.ts`.
+
+- `npm run typecheck`, `npm test` (397 tests: ten new for the settings rules, the repair of odd values, old saves getting the defaults, field order for a byte-for-byte backup) and `npm run build` passed.
+- New `BROWSER_SUITE=couchsettings` passed: Settings reached and changed with the d-pad and bottom button alone, prompts flip when a synthetic controller connects, key caps and a keyboard diagram on a laptop, text size and volume applied at once and kept through a reload, the pause row, backup and restore carrying and applying the settings, the island's volume restored on leaving, an old save without settings opening with the defaults, and portrait. With the large text factor deliberately wrong, the suite failed on the right assertion. `couchnames`, `couchgames COUCH_ONLY=penguin-slide,bounce-back,light-lab`, the full `couch` and `couchcourse` passed on a snapshot, with their backup and names steps now going through Settings. The settings pointer line and a hint-update guard were added after the snapshot; `couchsettings` was re-run on the final code.
+- Screenshots at 1920 by 1080 (the page fits at normal size and scrolls at large text), a laptop-size window and portrait were looked at. The new page exists on the couch only; the child's save is untouched (asserted).
+- Not run: `world`, the offline check and the remaining `couchgames` entries (no navigation, asset or other game's code changed), `smoke`. Open and needing a person: whether "Choose for me" guesses right with her setup (a laptop with a controller attached, a keyboard on a TV), whether large text is wanted at all, how the page reads and navigates from the sofa on a TV with a real Pro Controller, and the new volume steps against the Mac's own volume.
 
 ### Couch Penguin Slide restart, and the grown-up play roadmap (2026-10-07)
 

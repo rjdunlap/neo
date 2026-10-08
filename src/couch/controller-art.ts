@@ -83,3 +83,44 @@ export function glyphs(parts: PadPart[]): HTMLElement {
   });
   return span;
 }
+
+/** The keyboard key that does what each controller part does (the stick and the d-pad are both the arrow keys). */
+const KEY_NAMES: Record<PadPart, string> = { stick: '← ↑ ↓ →', dpad: '← ↑ ↓ →', bottom: 'Enter', left: 'Backspace', start: 'Esc' };
+/** The name on the key cap that stands for a controller part. */
+export const keyName = (part: PadPart): string => KEY_NAMES[part];
+const isArrows = (part: PadPart) => part === 'stick' || part === 'dpad';
+
+/** A keyboard drawn in code, with the same lighting as the controller diagram: the arrow keys, Enter, Backspace and Esc. */
+export function keyboardArt(): ControllerArt {
+  const key = (x: number, y: number, w: number, h: number, label: string, size = 22) => svg('g', { class: 'key' }, svg('rect', { x, y, width: w, height: h, rx: 9, class: 'part' }), Object.assign(svg('text', { x: x + w / 2, y: y + h / 2 + size * 0.35, 'text-anchor': 'middle', 'font-size': size, class: 'key-label' }), { textContent: label }));
+  const arrows = svg('g', { class: 'arrows' }, key(160, 112, 56, 50, '↑'), key(98, 168, 56, 50, '←'), key(160, 168, 56, 50, '↓'), key(222, 168, 56, 50, '→'));
+  const enter = svg('g', {}, key(250, 108, 128, 50, 'Enter', 20));
+  const back = svg('g', {}, key(250, 28, 128, 50, 'Backspace', 18));
+  const esc = svg('g', {}, key(22, 28, 74, 50, 'Esc', 20));
+  const el = svg('svg', { viewBox: '0 0 400 240', class: 'pad keyboard', role: 'img', 'aria-label': 'Keyboard diagram' },
+    svg('rect', { x: 4, y: 4, width: 392, height: 232, rx: 26, class: 'pad-body' }), arrows, enter, back, esc);
+  const lit = new Map<SVGElement, (on: ReadonlySet<PadPart>) => boolean>([
+    [arrows, on => on.has('stick') || on.has('dpad')], [enter, on => on.has('bottom')], [back, on => on.has('left')], [esc, on => on.has('start')],
+  ]);
+  return { el, light(on) { for (const [node, test] of lit) node.classList.toggle('on', test(on)); } };
+}
+
+/** The diagram for what she is playing with: a controller, or a keyboard. */
+export const padArt = (place: 'tv' | 'laptop'): ControllerArt => place === 'tv' ? controllerArt() : keyboardArt();
+
+/** Key caps for a row: the stick and the d-pad are one set of keys, so they show once. */
+export function keycaps(parts: PadPart[]): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'glyphs keycaps';
+  const names = [...new Set(parts.map(p => KEY_NAMES[p]))];
+  names.forEach((name, i) => {
+    if (i) span.append(Object.assign(document.createElement('i'), { textContent: 'or' }));
+    const cap = Object.assign(document.createElement('kbd'), { textContent: name });
+    if (parts.some(isArrows) && name === KEY_NAMES.stick) cap.classList.add('arrows');
+    span.append(cap);
+  });
+  return span;
+}
+
+/** What names the controls in a row of instructions: pictures of controller parts, or the keys. */
+export const prompts = (parts: PadPart[], place: 'tv' | 'laptop'): HTMLElement => place === 'tv' ? glyphs(parts) : keycaps(parts);
