@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { ROW_STEPS } from '../games/song-maker/logic';
 import {
   canUndo, cleanCreation, cleanCreations, cleanPicture, cleanTune, emptyCreations, keepCreation, PAINTING_MAX_MARKS, PICTURE_MAX, tuneBeats, undoCreation,
-  type PaintingCreation, type StampPictureCreation, type TuneCreation,
+  type PaintingCreation, type PixelPictureCreation, type StampPictureCreation, type TuneCreation,
 } from './creations';
 
 const stamp = (x: number, kind: 'star' | 'cat' = 'star') => ({ kind, color: 'purple' as const, x, y: 0.5, size: 1, turns: 0 });
 const picture = (...xs: number[]): StampPictureCreation => ({ kind: 'picture', stamps: xs.map((x) => stamp(x)) });
 const painting = (...xs: number[]): PaintingCreation => ({
   kind: 'picture', aspect: 4 / 3, marks: xs.map((x, i) => ({ shape: 'dab', color: 0xff00aa + i, x, y: 0.5, r: 0.04 })),
+});
+const pixels = (...cells: [number, number, 'red' | 'blue'][]): PixelPictureCreation => ({
+  kind: 'picture', size: 4, pixels: cells.map(([x, y, color]) => ({ x, y, color })),
 });
 const tune = (rows = 3, ...notes: [number, number][]): TuneCreation => ({ kind: 'tune', cols: 4, rows, notes: notes.map(([col, row]) => ({ col, row })) });
 
@@ -41,6 +44,23 @@ describe('what can be kept', () => {
     expect(fixed && 'marks' in fixed ? fixed.aspect : 0).toBe(2);
     expect(fixed && 'marks' in fixed ? fixed.marks[1] : null).toEqual({ shape: 'flower', color: 'pink', x: 0, y: 1, r: 0.12 });
     expect(fixed && 'marks' in fixed ? fixed.marks[2] : null).toEqual({ shape: 'dab', color: 0, x: 0.5, y: 0.5, r: 0.006 });
+  });
+
+  it('keeps a small pixel picture, dropping damaged, repeated and off-grid squares', () => {
+    expect(cleanPicture({ kind: 'picture', size: 4, pixels: [] })).toBeNull();
+    expect(cleanPicture({ kind: 'picture', size: 9, pixels: [{ x: 0, y: 0, color: 'red' }] })).toBeNull();
+    expect(cleanPicture({
+      kind: 'picture',
+      size: 4,
+      pixels: [
+        { x: 2, y: 1, color: 'red' },
+        { x: 0, y: 0, color: 'blue' },
+        { x: 2, y: 1, color: 'pink' },
+        { x: 4, y: 0, color: 'green' },
+        { x: 1.5, y: 2, color: 'green' },
+        { x: 1, y: 3, color: 'ultraviolet' },
+      ],
+    })).toEqual(pixels([0, 0, 'blue'], [2, 1, 'red']));
   });
 
   it('keeps a tune only if it is a grid Song Maker can draw with at least two different jellies', () => {
@@ -121,12 +141,16 @@ describe('the two places', () => {
     expect(undoCreation(save, 'tune').picture).toEqual(save.picture);
   });
 
-  it('shares the picture board between stamped pictures and paintings', () => {
+  it('shares the picture board between stamped pictures, paintings and pixel pictures', () => {
     let save = keepCreation(emptyCreations(), picture(0.1));
     const painted = painting(0.2, 0.4, 0.6);
     save = keepCreation(save, painted);
     expect(save.picture).toEqual({ current: painted, previous: picture(0.1) });
     expect(undoCreation(save, 'picture').picture).toEqual({ current: picture(0.1), previous: painted });
+    const pixelArt = pixels([0, 0, 'blue'], [1, 0, 'red']);
+    save = keepCreation(save, pixelArt);
+    expect(save.picture).toEqual({ current: pixelArt, previous: painted });
+    expect(undoCreation(save, 'picture').picture).toEqual({ current: painted, previous: pixelArt });
   });
 
   it('ignores something that cannot be hung', () => {

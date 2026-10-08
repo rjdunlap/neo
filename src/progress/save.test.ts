@@ -207,6 +207,20 @@ describe('migrate', () => {
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
+  it('keeps a bounded pixel picture through a backup and restore', () => {
+    const save = defaults();
+    save.creations.picture.current = {
+      kind: 'picture',
+      size: 5,
+      pixels: [
+        { x: 1, y: 0, color: 'red' },
+        { x: 2, y: 0, color: 'red' },
+        { x: 2, y: 1, color: 'blue' },
+      ],
+    };
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
   it('starts with an empty journal, and repairs a damaged one without touching anything else', () => {
     expect(defaults().journal).toEqual({ found: [], seen: 0 });
     expect(migrate({}).journal).toEqual({ found: [], seen: 0 });
