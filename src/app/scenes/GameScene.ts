@@ -9,6 +9,8 @@ import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
 import { howToFor, shouldExplain } from '../../content/howto';
+import { demoFor } from '../../couch/catalog';
+import { Demo } from '../../couch/demo';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
@@ -59,6 +61,8 @@ export class GameScene extends Scene {
     private readonly band: Band,
     /** Set when the round is a picnic request: it plays the story's level and goes home to the picnic. */
     readonly story?: StoryRound,
+    /** She tapped "again" after a round: no card, she has just seen it. */
+    private readonly again = false,
   ) {
     super(app);
   }
@@ -81,8 +85,8 @@ export class GameScene extends Scene {
     this.track(this.help);
     this.ui.addChild(this.pet, this.home, this.help);
 
-    // A game's first visit explains itself on a plain card, and the round waits for Play.
-    const card = shouldExplain({ enabled: store.data.settings.howToCards, explained: store.data.explained, id: this.mod.id, story: !!this.story }) ? howToFor(this.mod, this.level) : null;
+    // Every time a game is opened it explains itself on a card (with a demonstration where there is a bot), and the round waits for Play.
+    const card = shouldExplain({ enabled: store.data.settings.howToCards, id: this.mod.id, story: !!this.story, again: this.again }) ? howToFor(this.mod, this.level) : null;
     if (card) this.openIntro(card);
     else this.build();
   }
@@ -137,8 +141,11 @@ export class GameScene extends Scene {
   }
 
   update(dt: number) {
-    // The how-to card holds the round still: nothing moves or counts while a grown-up reads.
-    if (this.helpCard) return;
+    // The how-to card holds the round still: nothing moves or counts while a grown-up reads (its demonstration, if any, plays on).
+    if (this.helpCard) {
+      this.helpCard.update(dt);
+      return;
+    }
     super.update(dt);
     if (this.finished) return;
     this.seconds += dt;
@@ -153,6 +160,7 @@ export class GameScene extends Scene {
 
   destroy() {
     this.gone = true;
+    this.closeHelp();
     this.game?.destroy();
     super.destroy();
   }
@@ -177,20 +185,22 @@ export class GameScene extends Scene {
     this.ui.addChild(card);
   }
 
-  /** The first visit: the how-to card fills the screen with Play and Back, and no round has been built or started. */
+  /** The how-to card fills the screen with Play and Back, and no round has been built or started. */
   private openIntro(info: NonNullable<ReturnType<typeof howToFor>>) {
     const mod = this.mod;
-    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave() });
+    // A game the couch can play has a bot, which plays a real round in a window on the card.
+    const spec = demoFor(mod.id);
+    const demo = spec ? new Demo(mod, { ...spec, renderer: this.app.renderer }) : undefined;
+    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo });
     card.layout(this.view);
     this.helpCard = card;
     this.ui.addChild(card);
   }
 
-  /** Play: this game is explained from now on, and its first round begins. */
+  /** Play: the card goes, and the round begins. */
   private playFromIntro() {
     if (this.game || this.gone) return;
     voice.stop();
-    store.explain(this.mod.id);
     this.closeHelp();
     this.build().resize(this.view);
     this.begin();
@@ -304,7 +314,7 @@ export class GameScene extends Scene {
       return;
     }
 
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story));
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true));
     const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.goHome());
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);

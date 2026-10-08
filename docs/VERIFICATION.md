@@ -8,13 +8,13 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (545 tests) | Pond Conga entry | Run with every code change |
-| `npm run test:offline` | 2026-10-08 | First-visit how-to cards entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
-| `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; five games after the how-to cards, before the tip fix (2026-10-08) | Clap the Syllables, Harbor Rush and first-visit how-to entries | Proves a game loads and survives stray taps, not that a round can finish |
-| `world` | 2026-10-08, after the first-visit how-to cards (2026-10-07: all 72 games in every band and both orientations) | First-visit how-to cards and release check entries | About five and a half minutes |
-| `picnic`, `island` | 2026-10-08, before the tip fix in the how-to cards slice | First-visit how-to cards entry | |
+| Unit tests, typecheck, build | 2026-10-08 (546 tests) | How-to card with demonstrations entry | Run with every code change |
+| `npm run test:offline` | 2026-10-08 | How-to card with demonstrations entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
+| `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
+| `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
+| `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
-| `howto` | 2026-10-08, all 72 games, landscape and portrait | First-visit how-to cards entry | About two minutes |
+| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations | How-to card with demonstrations entry | About three minutes |
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
@@ -44,6 +44,16 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### How-to card every time, with a bot demonstration (2026-10-08)
+
+What changed: following the first-visit card, the grown-up asked for bot demos and the card every time. The island how-to card now opens **every time** a game opens (not only the first), so the `explained` list in the save and its helpers are gone (a restored save that has it is read without it). It is skipped for a story request, the grown-up switch, a game with no card, and now **"again" straight after a round** (`go.game`'s new fourth argument; my call, one flag to flip). The fifteen island games the couch can already play (`demoFor` in `src/couch/catalog.ts`) show a **demonstration window** on the card: a `Demo` (the couch how-to's bot-played round at the couch's demo level) placed by `HowToPanel` beside the text on a wide screen and above it on a tall one, updated each frame while the card is open, touch-proof (`eventMode: 'none'`) and destroyed with the card; a line under it says a controller moves the highlight where she would tap or drag.
+
+- `npm run typecheck`, `npm test` (546 tests: the explained-list tests became tests for the switch and for `demoFor`, which is there for exactly the fifteen games the couch plays and at a level inside each game's range) and `npm run build` passed.
+- `BROWSER_SUITE=howto` (rewritten, about three minutes) passed: the card on every open (Back, then open again; a game she has played), Play, the tip and the round clock, the hold-to-open card, "again" going straight to the round, a story request and the switch, the grown-up panel's switch, a game tapped on the trail, and for Penguin Slide and Memory Match a demonstration that is a bot, plays, takes no touches (a tap in its window does nothing) and is destroyed by Back and by Play. **All 72 games' cards fit in landscape and portrait with 100-unit buttons, a demonstration window exactly for the fifteen with a bot, on screen and over 240 pixels wide.** The first sweep failed on my own finder (it counted a button inside Rhythm Neighbors' demo as the card's), and passed once restricted to the card.
+- `island`, `picnic` (story rounds still go straight in), `smoke` on Penguin Slide, Memory Match and Robot Path, `world` (about six minutes) and `npm run test:offline` on a production build passed.
+- Screenshots looked at: Penguin Slide's card in landscape and portrait, Robot Path (the longest text with a demonstration) in landscape, Rhythm Neighbors in portrait. The demonstration shows the island game as it is played by touch (its round arrow and buttons are visible) with a controller highlight moving.
+- Not run: the couch suites (couch play is untouched). Not established: whether a controller highlight where a finger would go helps or confuses a grown-up, whether a card before every game is too much on a lap (roadmap, "On the iPad"), a real device.
 
 ### Pond Conga, a sixth grown-up-only game and the first relaxing arcade game (2026-10-08)
 

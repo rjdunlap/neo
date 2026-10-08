@@ -2,9 +2,9 @@ import type { GameHowTo, GameModule } from '../games/types';
 
 /**
  * Grown-up help for the touch games, one entry per game id. It sits next to the voice script rather than
- * inside each game so the wording can be read and reviewed in one place. The card opens by itself the first
- * time a game is opened (as the intro before its first round) and any time later from the hold-to-open "?"
- * in the game shell. It adds the current level's `describeLevel` line, so the entry here only
+ * inside each game so the wording can be read and reviewed in one place. The card opens by itself every time a
+ * game is opened (as the intro before the round, with a demonstration for the games that have a bot) and, during
+ * a round, from the hold-to-open "?" in the game shell. It adds the current level's `describeLevel` line, so the entry here only
  * states what stays true across the whole ladder: the goal, the gestures, how a round ends, and any rule
  * about mistakes or experiments worth knowing. It is not a hint and never changes progress.
  *
@@ -424,29 +424,11 @@ export function howToFor(mod: Pick<GameModule, 'id' | 'name' | 'describeLevel'>,
   return { ...entry, title: mod.name, level: mod.describeLevel(level) };
 }
 
-/** How many explained games the save keeps: more than the island will ever have, so it never forgets one. */
-export const EXPLAINED_MAX = 200;
-/** Longest game ID kept from a restored save. */
-const ID_MAX = 60;
-
-/** The games a restored or hand-edited save may call explained: short unique strings, oldest first, bounded. */
-export function cleanExplained(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  const seen = new Set<string>();
-  for (const v of raw) if (typeof v === 'string' && v.length > 0 && v.length <= ID_MAX) seen.add(v);
-  return [...seen].slice(-EXPLAINED_MAX);
-}
-
-/** Notes that a game has been explained. Marking one twice changes nothing. */
-export function markExplained(explained: readonly string[], id: string): string[] {
-  return explained.includes(id) ? [...explained] : [...explained, id].slice(-EXPLAINED_MAX);
-}
-
 /**
- * Whether a game explains itself before its round: the first time it is opened, unless a grown-up has turned
- * the cards off. A story round never does (the story's own request comes first), and a game with no card has
- * nothing to show. Opening a card is never a hint and costs the round nothing.
+ * Whether a game explains itself before its round: every time it is opened, unless a grown-up has turned the cards off.
+ * A story request never does (the story's own request comes first), nor does "again" straight after a round (she has just
+ * seen it), and a game with no card has nothing to show. Opening a card is never a hint and costs the round nothing.
  */
-export function shouldExplain(opts: { enabled: boolean; explained: readonly string[]; id: string; story: boolean }): boolean {
-  return opts.enabled && !opts.story && !opts.explained.includes(opts.id) && opts.id in HOW_TO;
+export function shouldExplain(opts: { enabled: boolean; id: string; story: boolean; again: boolean }): boolean {
+  return opts.enabled && !opts.story && !opts.again && opts.id in HOW_TO;
 }

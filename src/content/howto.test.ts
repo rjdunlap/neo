@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GAMES } from '../games/registry';
-import { cleanExplained, EXPLAINED_MAX, HOW_TO, howToFor, markExplained, shouldExplain } from './howto';
+import { COUCH_INFO, demoFor } from '../couch/catalog';
+import { HOW_TO, howToFor, shouldExplain } from './howto';
 
 describe('touch how-to cards', () => {
   it('has an entry for every game and no entry for a game that is gone', () => {
@@ -33,32 +34,44 @@ describe('touch how-to cards', () => {
   });
 });
 
-describe('explaining a game the first time it opens', () => {
-  const base = { enabled: true, explained: [] as string[], id: 'duck-pond', story: false };
+describe('explaining a game every time it opens', () => {
+  const base = { enabled: true, id: 'duck-pond', story: false, again: false };
 
-  it('explains a game that has not been explained, once', () => {
+  it('explains a game each time it is opened', () => {
     expect(shouldExplain(base)).toBe(true);
-    expect(shouldExplain({ ...base, explained: markExplained([], 'duck-pond') })).toBe(false);
-    expect(shouldExplain({ ...base, explained: ['bubble-pop'] })).toBe(true);
+    expect(shouldExplain({ ...base, id: 'bubble-pop' })).toBe(true);
   });
 
-  it('stays out of the way: off, a story request, or a game with no card', () => {
+  it('stays out of the way: off, a story request, "again" after a round, or a game with no card', () => {
     expect(shouldExplain({ ...base, enabled: false })).toBe(false);
     expect(shouldExplain({ ...base, story: true })).toBe(false);
+    expect(shouldExplain({ ...base, again: true })).toBe(false);
     expect(shouldExplain({ ...base, id: 'no-such-game' })).toBe(false);
   });
 
-  it('can explain every game on the island, so none is left without its first card', () => {
+  it('can explain every game on the island, so none is left without its card', () => {
     for (const g of GAMES) expect(shouldExplain({ ...base, id: g.id }), g.id).toBe(true);
   });
+});
 
-  it('marks a game once, keeps the order, and stays bounded', () => {
-    expect(markExplained(['a'], 'b')).toEqual(['a', 'b']);
-    expect(markExplained(['a', 'b'], 'a')).toEqual(['a', 'b']);
-    const full = Array.from({ length: EXPLAINED_MAX }, (_, i) => `g${i}`);
-    const next = markExplained(full, 'new');
-    expect(next).toHaveLength(EXPLAINED_MAX);
-    expect(next.at(-1)).toBe('new');
-    expect(cleanExplained([...full, 'x'])).toHaveLength(EXPLAINED_MAX);
+describe('the demonstration on a card', () => {
+  it('is there for exactly the island games the couch can play, and for nothing else', () => {
+    const withBot = GAMES.filter((g) => demoFor(g.id)).map((g) => g.id).sort();
+    const couchOnIsland = Object.keys(COUCH_INFO).filter((id) => GAMES.some((g) => g.id === id)).sort();
+    expect(withBot).toEqual(couchOnIsland);
+    expect(withBot).toHaveLength(15);
+    expect(demoFor('monster-munch')).toBeNull();
+    expect(demoFor('no-such-game')).toBeNull();
+  });
+
+  it('plays a level the game has in the band the couch plays it in', () => {
+    for (const g of GAMES) {
+      const demo = demoFor(g.id);
+      if (!demo) continue;
+      expect(g.bands, `${g.id} band`).toContain(demo.band);
+      const { min, max } = g.levels(demo.band);
+      expect(demo.level, `${g.id} demo level`).toBeGreaterThanOrEqual(min);
+      expect(demo.level, `${g.id} demo level`).toBeLessThanOrEqual(max);
+    }
   });
 });

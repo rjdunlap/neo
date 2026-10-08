@@ -168,26 +168,23 @@ describe('migrate', () => {
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
-  it('starts with no game explained and the cards on, and repairs damaged values without touching anything else', () => {
-    expect(defaults().explained).toEqual([]);
+  it('starts with the how-to cards on, repairs the switch, and drops the list an earlier version kept', () => {
     expect(defaults().settings.howToCards).toBe(true);
-    expect(migrate({}).explained).toEqual([]);
-    // A save from before the cards existed keeps its progress; every game will explain itself once.
+    // A save from before the cards existed keeps its progress and gets the cards.
     const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, settings: { volume: 0.5 }, games: { 'duck-pond': { plays: 4, level: 3, pinned: null, history: [] } } });
-    expect(old.explained).toEqual([]);
     expect(old.settings.howToCards).toBe(true);
     expect(old.settings.volume).toBe(0.5);
     expect(old.games['duck-pond'].plays).toBe(4);
-    expect(migrate({ explained: 'duck-pond' }).explained).toEqual([]);
-    expect(migrate({ explained: ['duck-pond', 7, 'duck-pond', '', 'bubble-pop', 'x'.repeat(61)] }).explained).toEqual(['duck-pond', 'bubble-pop']);
-    expect(migrate({ explained: Array.from({ length: 400 }, (_, i) => `g${i}`) }).explained).toHaveLength(200);
     expect(migrate({ settings: { howToCards: 'no' } }).settings.howToCards).toBe(true);
     expect(migrate({ settings: { howToCards: false } }).settings.howToCards).toBe(false);
+    // The first version of the cards remembered which games had been shown; a restored save with that list is read without it.
+    const kept = migrate({ explained: ['duck-pond'], settings: { howToCards: false } });
+    expect('explained' in kept).toBe(false);
+    expect(kept.settings.howToCards).toBe(false);
   });
 
-  it('keeps which games were explained, and the switch, through a backup and restore', () => {
+  it('keeps the switch through a backup and restore', () => {
     const save = defaults();
-    save.explained = ['duck-pond', 'bubble-pop'];
     save.settings.howToCards = false;
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
