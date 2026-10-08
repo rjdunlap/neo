@@ -56,7 +56,7 @@ class StampStudio implements Game {
       if (this.done || !this.stamps.length) return;
       this.done = true; this.stamps.forEach(s => { if (s.drag) s.drag.enabled = false; });
       void ctx.say('stamp.done'); sfx.sparkle();
-      void ctx.tw.wait(0.9).then(() => ctx.finish({ misses: 0, hints: 0 }));
+      void ctx.tw.wait(0.9).then(() => ctx.finish({ misses: 0, hints: 0, creation: { kind: 'picture', stamps: this.stamps.map(s => ({ ...s.data })) } }));
     });
     this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () => {
       const s = this.stamps.pop(); if (!s || this.done) return;

@@ -1,6 +1,7 @@
 import type { Band } from './bands';
 import { PET_COLORS, PICNIC_STEPS, ROOM_ITEMS, STICKER_PAGES, type PetColor, type PicnicStep, type RoomItemId, type StickerPage } from '../content/world';
 import { clampSpot, starterItem, starterRoom } from '../content/room';
+import { cleanCreations, emptyCreations, type CreationsSave } from '../content/creations';
 import { cleanFavorites } from '../content/shelf';
 
 export interface StickerPlacement {
@@ -71,6 +72,8 @@ export interface SaveData {
   room: RoomSave;
   /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
   favorites: string[];
+  /** What she made and kept for the treehouse: one picture and one tune, each with the one before it. */
+  creations: CreationsSave;
 }
 
 export const HISTORY_LENGTH = 10;
@@ -88,6 +91,7 @@ export function defaults(): SaveData {
     stories: { picnic: { steps: [], ended: false, keepsake: false } },
     room: starterRoom(),
     favorites: [],
+    creations: emptyCreations(),
   };
 }
 
@@ -192,5 +196,6 @@ export function migrate(raw: unknown): SaveData {
     stories: { picnic: story(stories.picnic) },
     room: room(raw.room),
     favorites: cleanFavorites(raw.favorites),
+    creations: cleanCreations(raw.creations),
   };
 }
