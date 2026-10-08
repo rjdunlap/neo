@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (522 tests) | First-visit how-to cards entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (545 tests) | Pond Conga entry | Run with every code change |
 | `npm run test:offline` | 2026-10-08 | First-visit how-to cards entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; five games after the how-to cards, before the tip fix (2026-10-08) | Clap the Syllables, Harbor Rush and first-visit how-to entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-08, after the first-visit how-to cards (2026-10-07: all 72 games in every band and both orientations) | First-visit how-to cards and release check entries | About five and a half minutes |
@@ -18,16 +18,17 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered | Child's island, couch Settings, Just me, and the Island Bridges entry | Peg Garden's bot needed one retry (its known flake) |
+| `couchgames` | 2026-10-08, Pond Conga filtered (2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered) | Child's island, couch Settings, Just me, Island Bridges and Pond Conga entries | Peg Garden's bot needed one retry (its known flake) |
 | `couchcourse` | 2026-10-08, with twelve courses | Island Bridges entry | About four to seven minutes |
-| `couchnames` | 2026-10-08 | Island Bridges entry | |
-| `couchsettings` | 2026-10-08 | Island Bridges entry | About 30 seconds |
-| `couchsolo` | 2026-10-08, after Island Bridges joined the shelf | Island Bridges entry | About 40 seconds |
+| `couchnames` | 2026-10-08 | Pond Conga entry | |
+| `couchsettings` | 2026-10-08 | Pond Conga entry | About 30 seconds |
+| `couchsolo` | 2026-10-08, after Pond Conga joined the shelf | Pond Conga entry | About 40 seconds |
 | `couchbeds` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About three minutes; plays a full six-bed course with the bot |
 | `couchlanterns` | 2026-10-07 | Lantern Lights entry |
 | `couchpictures` | 2026-10-08 | Picture Logic entry | About three minutes; plays a full three-picture course with the bot |
 | `couchharbors` | 2026-10-08 | Harbor Rush entry | About three minutes; plays a full five-harbor course with the bot |
 | `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot |
+| `couchconga` | 2026-10-08 | Pond Conga entry | About two minutes; plays a full four-pond course with the bot |
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
@@ -43,6 +44,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Pond Conga, a sixth grown-up-only game and the first relaxing arcade game (2026-10-08)
+
+What changed: **Pond Conga** joins `GROWNUP_GAMES` (couch only): a line of ducklings paddles on at a steady, gentle pace (2.4 to 3.4 steps a second) and the stick turns the leader to each crumb of bread in turn, round lily pads; nothing moves before the first turn, a turn is made at the next step (two can wait in line, straight back is ignored), and a bump into a lily pad, the bank or the line itself is a **bonk** that turns the whole line about (so it can never box itself in), with a breather, and counts one more step. Every step and every bonk counts and the fewest is exact (the lily-pad-aware distances between the crumbs added up, and a pond is used only if a route with no bonk really reaches it), which differs from the roadmap's first idea of "fewest bonks, then time" (recorded in the roadmap and the idea notebook). Six levels, a hint (yellow dots that keep up as the line moves; marks a run helped), a restart that keeps the steps, a bot that follows the pond's own route, one puzzle-shelf course of four frozen ponds (Crumb Trail, par 259) with a best-routes replay, and a trip stop of one pond (face-off: steps over the fewest). Rules, generator and course are in `src/games/pond-conga/`.
+
+- `npm run typecheck`, `npm test` (545 tests: 23 new, among them par equal to the lower bound with a bonk-free route reaching it for every level on a dozen seeds each, a hint that leads on from wherever a random wanderer has gone (every crumb eaten, at most four bonks, all six levels), a bonk that keeps every duckling and turns the line about, the tail's cell free to take unless the line is growing, and each frozen pond's par worked out by the solver, never typed) and `npm run build` passed.
+- New `BROWSER_SUITE=couchconga` passed first time, and again after the best-routes replay was added (about two minutes): Just me, the shelf (thirteen puzzles) and course page, a line that waits for the first turn of the stick, a bonk at the bank that turns three ducklings about and counts eight steps (seven steps and the bonk), straight back ignored, the pause menu's hint (dots, the run marked helped) and restart (steps kept), a reload that resumes the pond with its steps, a fresh bot run of all four ponds in exactly 259 steps with one sticker and both badges, and Watch the best routes playing the demo. `couchgames COUCH_ONLY=pond-conga` (how-to screen, controller lighting, bot-played round, guide), `couchsettings`, `couchnames` and `couchsolo` passed. The six older course suites (`couchbeds` to `couchbridges`) each ran 40 seconds on the snapshot and were then stopped; each had written its in-round screenshot (a bot-played round already under way) inside that window, so each had passed its extended shelf-list assertion.
+- Screenshots looked at (and fixed from): the step counter sat over the pond's top border, ducklings overlapped at a turn, the pet in the corner covered the pond's lower-left corner (a crumb could hide there; the board's bottom is now kept above it), and the hub icon had its leader at the wrong end. The how-to screen, a bonk, a hint, the course result, the replay window and a 1920 by 1080 pond were looked at after the fixes. `couchsolo` needed its two hard-coded par lists extended.
+- Not run: the full `couch` and `couchcourse` suites (trip, face-off and course code are unchanged; the new last tier is not one that `couch` asserts, whose only tier-derived check is the early "open 2 more games" teaser, which I read for this), `world`, `smoke` and the offline check (no island game, navigation or asset changed), and a real controller or a TV. Open and needing a person: whether the pace and the next-step turn feel right on a stick, whether the bonk reads as gentle, whether the faint second crumb helps, and whether Crumb Trail's last pond (98 steps) is too long (roadmap, "Needs a person or a device").
 
 ### First-visit how-to cards on the island (2026-10-08)
 

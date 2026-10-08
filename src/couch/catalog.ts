@@ -325,6 +325,24 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     // Trips stay on the 7 by 7 to busier 9 by 9 seas; the 11 by 11 seas are on the puzzle shelf.
     level: (stop) => [1, 2, 2, 3, 3, 3][stop] ?? 3,
   },
+  'pond-conga': {
+    goal: 'couch.how.pond-conga',
+    tagline: 'Steer a line of ducklings to each crumb of bread, in order.',
+    controls: [
+      { parts: STICK, text: 'Turn the conga. It paddles on by itself, and a bump turns the whole line about.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Set off straight ahead (any turn does too).', keys: 'Enter' },
+      { parts: ['start'], text: 'Pause menu: show a hint, or put the line back at the start. A hint marks the run as helped.', keys: 'Esc' },
+    ],
+    restart: 'Start this pond again',
+    hint: 'Show a hint',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'steps over the fewest' },
+    band: 'school',
+    demoLevel: 1,
+    // Trips climb from a small open pond to a crowded one with twelve crumbs; the pace barely changes.
+    level: (stop) => [1, 2, 3, 3, 4, 5][stop] ?? 5,
+  },
   'ferry-jam': {
     goal: 'couch.how.ferry-jam',
     tagline: 'Slide the boats aside so the red ferry can sail out to the dock.',

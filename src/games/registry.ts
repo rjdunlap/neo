@@ -71,6 +71,7 @@ import { gardenRows } from './garden-rows';
 import { ferryJam } from './ferry-jam';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
+import { pondConga } from './pond-conga';
 import { lanternLights } from './lantern-lights';
 import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
@@ -168,6 +169,7 @@ export const GROWNUP_GAMES: GameModule[] = [
   pictureLogic,
   wordSearch,
   islandBridges,
+  pondConga,
 ];
 
 export const couchGameById = (id: string) => gameById(id) ?? GROWNUP_GAMES.find((g) => g.id === id);
