@@ -9,7 +9,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Unit tests, typecheck, build | 2026-10-07 (387 tests) | Release check entry | Run with every code change |
-| `npm run test:offline` | 2026-10-07 | Pixel Pictures entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
+| `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
 | `picnic`, `island`, `room` | 2026-10-07 | Discovery journal entry | |
@@ -33,6 +33,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Updates wait until the app closes (2026-10-07)
+
+What changed: the service worker's update policy is `prompt` with no refresh callback, instead of `autoUpdate`. A new build downloads in the background and waits until every open copy of the app has closed, so an update can no longer reload a session mid-play (it could send a child from a place back to Start seconds after their first tap). `clientsClaim` stays on, so a first install still controls the page at once and works offline on the first visit. Started by another session, finished here.
+
+- `npm run typecheck`, `npm test` (387 tests) and `npm run build` passed. The built `sw.js` calls `skipWaiting()` only on a `SKIP_WAITING` message, which nothing sends.
+- `npm run test:offline` passed against this build's own preview on port 4180 (served `index-BxKdmEap.js` matched `dist/index.html`).
+- A one-off Playwright probe (`test-results/pwa-update-probe.mjs`, not kept) served build A, published a build B with a changed `index.html` while the app was open, and checked for updates: the new worker waited, the open session was not reloaded and still showed A; after the page closed, reopening showed B. The same probe against a build with the old `autoUpdate` setting found the open session reloaded into B, so it detects the bug.
+- Not run: the world and couch suites (no navigation or couch code changed), and anything on an iPad, where a suspended home-screen app may hold the old version until it is swiped away.
 
 ### Release check before pushing to `main`: docs cleanup, Rainbow Fingers paintings, Pixel Pictures keepsakes (2026-10-07)
 

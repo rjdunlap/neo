@@ -10,7 +10,10 @@ export default defineConfig({
   build: { chunkSizeWarningLimit: 1500 },
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate',
+      // Let a new build take over after the current play session closes. Auto-update
+      // reloads every open client as soon as its cache is ready, which can send a child
+      // from the place screen back to Start a few seconds after their first tap.
+      registerType: 'prompt',
       includeAssets: ['icon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Puddle Island',
@@ -29,7 +32,9 @@ export default defineConfig({
           { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'] },
+      // The first worker still takes control at once, so the very first visit already works offline;
+      // an update waits (no skipWaiting) until every open copy of the app has closed.
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'], clientsClaim: true },
     }),
   ],
   test: { include: ['src/**/*.test.ts'] },

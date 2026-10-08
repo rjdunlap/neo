@@ -21,6 +21,9 @@ async function boot() {
     Object.assign(window, { neo: app });
     void import('./dev/testkit');
   }
+  // With the prompt update policy this installs fresh assets in the background, but
+  // deliberately supplies no refresh callback: the waiting worker takes over only
+  // after the app is closed, so play is never interrupted by an automatic reload.
   registerSW({ immediate: true });
 }
 

@@ -47,7 +47,7 @@ Keep these open until someone actually does them. None of them blocks the list a
 
 **On the iPad**
 
-- [ ] Device basics: offline speech voices, first-touch audio, small-hand dragging, herding and pulling, orientation changes, Add to Home Screen, and Guided Access.
+- [ ] Device basics: offline speech voices, first-touch audio, small-hand dragging, herding and pulling, orientation changes, Add to Home Screen, Guided Access, and that a new version arrives after the home-screen app is closed and reopened (how long iPadOS keeps a suspended app on the old one is unknown).
 - [ ] Compare the swipe path with subject cards for reaching and returning from a wanted game (not for fitting more icons), and whether the favorites shelf and twinkles are found and used. Check that every game is reachable in every band it supports, in portrait too, as the catalog grows.
 
 **With her now (lap and toddler)**
