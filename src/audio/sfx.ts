@@ -33,6 +33,14 @@ export const sfx = {
     if (o) marimba(o.ctx, o.dest, o.t, stepHz(step), gain);
   },
 
+  /** A hand clap: two quick, slightly different bursts of filtered noise. */
+  clap() {
+    const o = out();
+    if (!o) return;
+    noise(o.ctx, o.dest, o.t, 0.05, 0.5, { type: 'bandpass', hz: 1400 * jitter(80), q: 0.8 });
+    noise(o.ctx, o.dest, o.t + 0.016, 0.09, 0.42, { type: 'bandpass', hz: 2000 * jitter(80), q: 0.7 });
+  },
+
   /** A springy bounce, for a gentle "not that one". */
   boing() {
     const o = out();

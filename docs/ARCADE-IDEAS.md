@@ -510,7 +510,7 @@ Items 1 and 3–5 are built (2026-10-06, night; see [DESIGN.md](DESIGN.md#four-g
 4. **Owl Walk Home:** the shared-goal, turn-taking game the "playing together" gap asks for.
 5. **Lasso Loops:** place value and grouping, the largest number gap for the 6–8 band.
 6. **Garden Rows and Ferry Jam:** inexpensive grid logic with verifiable unique solutions.
-7. **Clap the Syllables:** fills a literacy gap with the existing rhythm judge.
+7. **Clap the Syllables** (built 2026-10-07, preschool–pre-K): fills a literacy gap. It did not need Sound Garden's rhythm judge: a clap is a count, not a timing, so the game counts claps in a burst and the pet claps the beats back. Names of friends were left out, because counting a child's own name would need a syllable counter this game does not have.
 
 Mother Goose Muddle and Postcard Detective belong with the Island Errands decision rather than as standalone games.
 

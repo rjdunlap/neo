@@ -332,6 +332,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: ['Tap squares to place sounds (drums on top, claps below); the beat plays round and round.', 'Copy levels show faint squares, or play the beat to copy by ear.', 'Tap the green check when the beat is ready.'],
     finish: 'The round ends when you tap the green check (copy levels need the beat to match).',
   },
+  'clap-syllables': {
+    goal: 'Hear that words are made of beats.',
+    steps: ['Tap the big hands once for each beat in the word: "but-ter-fly" is three claps.', 'Later levels sort pictures by their number of claps, or match some claps to a picture.'],
+    finish: 'The round ends after the last word, sort or question.',
+    note: 'The pet says each word whole and claps its beats with beads lighting up; a wrong count just brings the demonstration and another try. Check on the device that the words are said clearly.',
+  },
   'rhyme-time': {
     goal: 'Find the words that rhyme.',
     steps: ['Listen to the word.', 'Tap the picture that rhymes, or the two that rhyme, or the odd one out.'],
