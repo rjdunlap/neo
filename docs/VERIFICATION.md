@@ -45,14 +45,14 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
 
-### Older-child economy and progression roadmap (2026-10-08)
+### Older-child economy, progression and banking roadmap (2026-10-08)
 
-What changed: researched the remembered Coolmath/MECC Lemonade Stand loop and Neopets' fortune-wheel loop, then added one build-ready child-island game and one smaller progression proposal. **Lemonade Stand** is deliberately a separate neighbor to Market Stall: three forecast-and-quantity days first, then price and a five-day market week, with a testable seeded demand model, picture table, truthful help, no failed week and no island currency. A later Maker Harbor fair board reveals a finale from relevant named errands while its games remain directly open; its wheel keeps ceremony and surprise but has no fee, loss, rarity or cooldown. A universal point balance and catalog locks are deferred until an intended child asks for a saving-and-spending goal.
+What changed: researched the remembered Coolmath/MECC Lemonade Stand and Neopets wheel and bank loops, then revised the older-child plan around a narrower boundary: transparent, bounded economic constraints can teach forecasting, budgeting, probability, liquidity and recovery from loss; opaque or expiring engagement pressure remains out. **Lemonade Stand** is still the first separate game, with three no-risk forecast days before price, cost and a recoverable operating loss. A later Maker Harbor pilots earned tickets, guaranteed purchases, child-chosen permanent booth unlocks and visible-odds **Steady** and **Surprising** wheels. A voluntary **Harbor Bank** certificate is the one planned real-time exception: it matures and pays automatically, never requires a daily claim, and shows principal, date, return and early-withdrawal result before confirmation.
 
-- Sources checked: the original Apple classroom guide, Coolmath's optimization retrospective, Neopets' official Wheel of Excitement page and UNICEF's RITEC design toolbox; their links and the limits of the inference are in the roadmap.
+- Sources checked: the original Apple classroom guide; Coolmath's retrospective; Neopets' official Wheel of Excitement and National Neopian Bank pages; UNICEF's RITEC toolbox; a systematic review of primary-school gamification; the Deci, Koestner and Ryan reward meta-analysis; controlled primary-school saving instruction; children's saving-strategy, probability-intervention and natural-frequency studies; and the UK government's loot-box evidence response. The roadmap links each source beside the limited claim it supports.
 - Documentation checks: repository-relative Markdown links and the new external source links were checked; `git diff --check` passed.
 - Not run: typecheck, unit, build or browser suites; no runtime code, save, game registration, count or behavior changed.
-- Still open: play Lemonade Stand after it is built, then decide whether the multi-day table produces revision, whether a fair board feels like welcome progression, and whether the wheel is fun without a scarce reward.
+- Still open: play Lemonade Stand after it is built; test whether tickets create real choices rather than farming; choose the first guaranteed purchase and unlock price; test whether children understand each wheel's displayed odds; and add the bank only after the Harbor balance has a worthwhile use.
 
 ### How-to card every time, with a bot demonstration (2026-10-08)
 
