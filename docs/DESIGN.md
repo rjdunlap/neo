@@ -22,7 +22,7 @@ The developer is not an artist. All game artwork is generated in code with PixiJ
 
 | Area | Current behavior |
 | --- | --- |
-| Platform | TypeScript, Vite, PixiJS 8; installable PWA with an offline asset cache |
+| Platform | TypeScript, Vite, PixiJS 8; installable PWA with an offline asset cache. A new build waits to activate until the open app closes, so an update never reloads an active play session; the very first install takes control at once, so the first visit already works offline |
 | Navigation | Start screen, hatching, an age-trail island map of five places and the Windy Picnic, place scenes with every game for that age laid out, game host, the picnic scene and its journal, sticker book, the pet's treehouse room, goodnight scene |
 | Games | All are listed with modes and bands in the [README](../README.md#the-island-and-its-games); current registrations live in `src/games/registry.ts` |
 | Progression | Per-game level ladders, automatic adjustment within age bands, grown-up level pins |
