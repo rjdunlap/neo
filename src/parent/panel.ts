@@ -57,6 +57,11 @@ export function openParentPanel(onClose: () => void) {
         <label for="p-tips">Show grown-up tips during games</label>
         <input id="p-tips" type="checkbox" />
       </div>
+      <div class="parent__row">
+        <label for="p-howto">Explain each game the first time it opens</label>
+        <input id="p-howto" type="checkbox" />
+      </div>
+      <p class="muted">A card with the goal and how to play, and a big Play button. Holding the ? in a game opens it again.</p>
 
       <h2>Finding games</h2>
       <div class="parent__row">
@@ -98,6 +103,7 @@ export function openParentPanel(onClose: () => void) {
   const petColor = $<HTMLSelectElement>('#p-pet-color');
   const sessionSel = $<HTMLSelectElement>('#p-session');
   const tips = $<HTMLInputElement>('#p-tips');
+  const howto = $<HTMLInputElement>('#p-howto');
   const layout = $<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
   const musicBox = $<HTMLInputElement>('#p-music');
@@ -111,6 +117,7 @@ export function openParentPanel(onClose: () => void) {
     if (!sessionSel.value) sessionSel.value = '0';
     layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
+    howto.checked = d.settings.howToCards;
     volume.value = String(d.settings.volume);
     musicBox.checked = d.settings.music;
     root.querySelectorAll<HTMLButtonElement>('[data-band]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
@@ -148,6 +155,10 @@ export function openParentPanel(onClose: () => void) {
   });
   tips.addEventListener('change', () => {
     store.data.settings.coplayHints = tips.checked;
+    store.save();
+  });
+  howto.addEventListener('change', () => {
+    store.data.settings.howToCards = howto.checked;
     store.save();
   });
   layout.addEventListener('change', () => { store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path'; store.save(); });

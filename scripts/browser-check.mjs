@@ -10,7 +10,11 @@ const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (error) => { errors.push(error.message); console.error('PAGE ERROR', error.stack?.split('\n').slice(0, 7).join('\n')); });
 const log = (message) => console.log(new Date().toISOString(), message);
-const ready = () => page.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+// Every suite but `howto` plays games straight away; the first-visit how-to card is that suite's subject (a reload brings the setting back, so it is set after each).
+const ready = async () => {
+  await page.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+};
 const scene = (name) => page.waitForFunction((name) => neo.scene.constructor.name === name && !neo.switching, name);
 const tap = async (expression) => {
   await page.evaluate((expression) => { const obj = Function(`return (${expression})`)(); kit.tapOn(obj); }, expression);
@@ -5658,6 +5662,142 @@ async function smoke() {
   }
 }
 
+/**
+ * The first visit to a game explains it: the how-to card fills the screen with a big Play and a Back, the round is not built
+ * until Play, and the game goes straight to its round from then on. A story request, the parent switch and an already
+ * explained game skip it. Every game's card fits the screen, with large buttons, in landscape and portrait.
+ */
+async function howToIntro() {
+  const view = () => page.evaluate(() => ({ w: neo.view.w, h: neo.view.h }));
+  const goGame = async (id, band, story) => {
+    await page.evaluate(({ id, band, story }) => neo.go.game(id, band, story), { id, band, story });
+    await page.waitForFunction((id) => !neo.switching && neo.scene.constructor.name === 'GameScene' && neo.scene.mod.id === id, id);
+  };
+  const intro = () => page.evaluate(() => ({ open: !!neo.scene.helpCard, intro: !!neo.scene.helpCard?.intro, game: !!neo.scene.game }));
+  /** The card's buttons: the tap point of each in screen pixels, and its size in logical units (the 100-unit rule is in those). */
+  const buttons = () => page.evaluate(() => {
+    const out = [], k = neo.view.scale;
+    const walk = (o) => { if (o.constructor.name === 'RoundButton') { const b = o.getBounds(), p = o.getGlobalPosition(); out.push({ x: p.x, y: p.y, w: b.width / k, h: b.height / k, bottom: b.y + b.height }); } else for (const c of o.children ?? []) walk(c); };
+    walk(neo.scene.helpCard);
+    return out.sort((a, b) => a.x - b.x);
+  });
+  await page.evaluate(async () => {
+    const { session } = await import('/src/app/session.ts'); session.start(0);
+    kit.store.data.profile.band = 'toddler'; kit.store.data.profile.name = 'Mia';
+    kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true; kit.store.data.explained = [];
+  });
+
+  // --- First visit: the card, Play and Back, and no round until Play.
+  await goGame('bubble-pop', 'toddler');
+  assert.deepEqual(await intro(), { open: true, intro: true, game: false }, 'the first visit opens the how-to card and builds no round');
+  assert.match(await page.evaluate(() => neo.scene.helpCard.info.goal), /./);
+  let [back, play] = await buttons();
+  assert.ok(play && back && play.w >= 100 && back.w >= 100 && play.w > back.w, `Play and Back are large (Play ${play?.w}, Back ${back?.w}), Play the biggest`);
+  assert.ok(play.x > back.x, 'Play sits to the right of Back');
+  await page.waitForTimeout(500);
+  await screenshot('howto-intro-landscape');
+  // A tap on the backdrop (or the empty card) is not Play, not Back and not a way out.
+  await page.mouse.click(30, 700); await page.waitForTimeout(300);
+  await page.mouse.click(512, 120); await page.waitForTimeout(300);
+  assert.deepEqual(await intro(), { open: true, intro: true, game: false }, 'stray taps do nothing');
+  assert.deepEqual(await page.evaluate(() => kit.store.data.explained), [], 'nothing is explained until Play');
+  // Back leaves without marking the game, and the next visit explains it again.
+  await page.mouse.click(back.x, back.y); await scene('PlaceScene');
+  assert.deepEqual(await page.evaluate(() => kit.store.data.explained), [], 'Back leaves the game unexplained');
+  await goGame('bubble-pop', 'toddler');
+  assert.equal((await intro()).open, true, 'an unplayed game explains itself again');
+  [back, play] = await buttons();
+  await page.mouse.click(play.x, play.y);
+  await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+  assert.deepEqual(await page.evaluate(() => kit.store.data.explained), ['bubble-pop'], 'Play marks the game explained');
+  // The grown-up tip for the youngest bands appears after Play, centered at the top, and never over the home button.
+  await page.waitForFunction(() => !!neo.scene.tip);
+  assert.deepEqual(await page.evaluate(() => ({ x: neo.scene.tip.x, y: neo.scene.tip.y, w: neo.view.w })), { x: 512, y: 16, w: 1024 }, 'the tip is placed at the top centre');
+  assert.equal(await page.evaluate(() => neo.scene.tip.getBounds().x > 62 + 44), true, 'the tip stays clear of the home button');
+  await page.waitForTimeout(900);
+  assert.equal(await page.evaluate(() => neo.scene.seconds < 2), true, 'the round clock starts at Play, not when the card opened');
+  assert.deepEqual(errors, []);
+  // Reading the card is not a hint and changes no progress.
+  assert.equal(await page.evaluate(() => kit.store.data.games['bubble-pop']?.plays ?? 0), 0);
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 0);
+  // Holding "?" still opens the plain card in a round (no Play, a check to close it).
+  await page.evaluate(() => neo.scene.openHelp());
+  assert.deepEqual(await intro(), { open: true, intro: false, game: true }, 'the hold-to-open card is the same card without Play');
+  await page.evaluate(() => neo.scene.closeHelp());
+
+  // --- An explained game goes straight to its round, from the place and from "again".
+  await goGame('bubble-pop', 'toddler');
+  assert.deepEqual(await intro(), { open: false, intro: false, game: true }, 'an explained game starts at once');
+  // The save keeps it: a reload still goes straight in.
+  await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(500);
+  await page.reload(); await ready();
+  assert.deepEqual(await page.evaluate(() => kit.store.data.explained), ['bubble-pop'], 'explained games survive a reload');
+  await page.evaluate(() => { kit.store.data.settings.howToCards = true; });
+
+  // --- A story request, and the parent switch.
+  await page.evaluate(() => { kit.store.data.explained = []; });
+  await goGame('bubble-pop', 'toddler', { step: 'blanket', level: 1 });
+  assert.deepEqual(await intro(), { open: false, intro: false, game: true }, 'a story request goes straight to its round');
+  assert.deepEqual(await page.evaluate(() => kit.store.data.explained), [], 'a story round does not mark the game explained');
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  await goGame('duck-pond', 'toddler');
+  assert.deepEqual(await intro(), { open: false, intro: false, game: true }, 'the switch turns the cards off');
+  await page.evaluate(() => { kit.store.data.settings.howToCards = true; neo.go.hub(); }); await scene('MapScene');
+  // The switch is on the grown-up panel, kept in the save.
+  await page.evaluate(async () => { const { openParentPanel } = await import('/src/parent/panel.ts'); openParentPanel(() => {}); });
+  await page.locator('#p-howto').waitFor();
+  assert.equal(await page.locator('#p-howto').isChecked(), true, 'the switch shows its setting');
+  await page.locator('#p-howto').uncheck();
+  assert.equal(await page.evaluate(() => kit.store.data.settings.howToCards), false, 'the switch is saved');
+  await page.locator('#p-howto').check();
+  assert.equal(await page.evaluate(() => kit.store.data.settings.howToCards), true);
+  await page.locator('[data-done]').click(); await scene('MapScene');
+
+  // --- From a place, tapping a game opens its card.
+  await page.evaluate(() => { kit.store.data.explained = []; neo.go.place('toddler'); }); await scene('PlaceScene');
+  await page.waitForTimeout(700);
+  await page.evaluate(() => { const l = neo.scene.landmarks.find((l) => { const x = l.node.getGlobalPosition().x; return x > 250 && x < 800; }); kit.tapOn(l.node, 0, -60); });
+  await scene('GameScene');
+  assert.deepEqual(await intro(), { open: true, intro: true, game: false }, 'a game tapped on the trail explains itself first');
+
+  // --- Every game's card fits the screen with large buttons, in landscape and portrait, and leaving it unplayed is clean.
+  const games = await page.evaluate(async () => (await import('/src/games/registry.ts')).GAMES.map((g) => ({ id: g.id, band: g.bands.at(-1) })));
+  const only = process.env.HOWTO_ONLY?.split(',');
+  const picked = games.filter((g) => !only || only.includes(g.id));
+  assert.ok(picked.length > 0, `HOWTO_ONLY matched no game: ${only}`);
+  let tallest = { id: '', bottom: 0 };
+  for (const [name, size] of [['landscape', { width: 1024, height: 768 }], ['portrait', { width: 768, height: 1024 }]]) {
+    await page.setViewportSize(size); await page.waitForTimeout(400);
+    for (const g of picked) {
+      await page.evaluate(() => { kit.store.data.explained = []; });
+      await goGame(g.id, g.band);
+      const { w, h } = await view();
+      const fit = await page.evaluate(() => { const b = neo.scene.helpCard.body.getBounds(); return { x: b.x, y: b.y, r: b.x + b.width, b: b.y + b.height }; });
+      assert.ok(fit.x >= -1 && fit.y >= -1 && fit.r <= w + 1 && fit.b <= h + 1, `${g.id} ${name}: the card fits the screen (${JSON.stringify(fit)} in ${w} by ${h})`);
+      if (fit.b - fit.y > tallest.bottom) tallest = { id: g.id, bottom: fit.b - fit.y };
+      const [b, p] = await buttons();
+      assert.ok(b.w >= 100 && p.w >= 100, `${g.id} ${name}: Play and Back are at least 100 units across (${b.w}, ${p.w})`);
+      assert.ok(p.bottom <= size.height && b.bottom <= size.height, `${g.id} ${name}: the buttons are on screen`);
+      assert.equal((await intro()).game, false, `${g.id}: no round has been built behind the card`);
+      assert.deepEqual(errors, [], `${g.id} ${name}: page errors`);
+    }
+    log(`How-to intro ${name}: ${picked.length} games' cards fit, with large Play and Back`);
+  }
+  await page.evaluate(() => { kit.store.data.explained = []; });
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+  await goGame(tallest.id, picked.find((g) => g.id === tallest.id).band);
+  await page.waitForTimeout(400);
+  await screenshot('howto-intro-portrait-tallest');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  await screenshot('howto-intro-landscape-tallest');
+  // Turning the screen with the card open keeps it laid out, and Play still starts the round.
+  const [, go] = await buttons();
+  await page.mouse.click(go.x, go.y);
+  await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+  assert.deepEqual(errors, []);
+  log(`How-to intro: first-visit card with Play and Back, stray taps ignored, Back unexplained, Play explained and starts the round, explained games and story requests go straight in, parent switch, tallest card (${tallest.id}) passed`);
+}
+
 /** The pet's treehouse: reach it from the map, move and turn things, hang a sticker, tidy, leave; all of it kept through a reload. */
 async function roomPlay() {
   await page.evaluate(() => {
@@ -6264,6 +6404,7 @@ try {
   if (suite === 'all' || suite === 'couchbridges') await couchBridges();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
   if (suite === 'smoke') await smoke();
+  if (suite === 'all' || suite === 'howto') await howToIntro();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'island') await islandShelf();
   if (suite === 'all' || suite === 'creations') await creationsRoom();
