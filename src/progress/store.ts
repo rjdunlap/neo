@@ -2,7 +2,7 @@ import { get, set } from 'idb-keyval';
 import { bandInfo, type Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
 import { flipItem, moveItem, tidy } from '../content/room';
-import { canUndo, keepCreation, undoCreation, type Creation } from '../content/creations';
+import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
@@ -107,6 +107,12 @@ class Store {
   /** Bring back the earlier visual work or tune; the one on show becomes the earlier one. */
   undoCreation(kind: Creation['kind']) {
     this.data.creations = undoCreation(this.data.creations, kind);
+    this.save();
+  }
+
+  /** Leave this creation's wall place empty, keeping the displayed work one touch away. */
+  takeDownCreation(kind: Creation['kind']) {
+    this.data.creations = takeDownCreation(this.data.creations, kind);
     this.save();
   }
 

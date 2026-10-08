@@ -5,8 +5,9 @@ import { ROW_STEPS } from '../games/song-maker/logic';
  * Things she made that can hang in the pet's treehouse: one visual work and one tune. A game hands one over when a
  * round of free making ends; she chooses whether to keep it. A visual work can be a Stamp Studio picture or a
  * Rainbow Fingers painting, and both share the picture board. Keeping is the only way in, and each kind has two
- * places: the one on display and the one before it, so a replaced picture, painting or tune is one touch away,
- * never lost. Nothing here is scored, expires or needs her to come back.
+ * places: the one on display and the one before it, so a replaced picture, painting or tune is one touch away.
+ * Taking one down leaves the wall empty and keeps that work as the one to bring back. Nothing here is scored,
+ * expires or needs her to come back.
  */
 
 export const STAMP_KINDS = ['star', 'flower', 'fish', 'cat'] as const;
@@ -235,6 +236,19 @@ export function undoCreation(save: CreationsSave, kind: Creation['kind']): Creat
   return kind === 'picture'
     ? { ...save, picture: { current: save.picture.previous, previous: save.picture.current } }
     : { ...save, tune: { current: save.tune.previous, previous: save.tune.current } };
+}
+
+/**
+ * Leave this place on the wall empty. The work that was showing becomes the one to bring back, so taking it down
+ * is reversible; an older backup makes room for it, as it would when a newly kept creation replaces that backup.
+ */
+export function takeDownCreation(save: CreationsSave, kind: Creation['kind']): CreationsSave {
+  if (kind === 'picture') {
+    const slot = save.picture;
+    return slot.current ? { ...save, picture: { current: null, previous: slot.current } } : save;
+  }
+  const slot = save.tune;
+  return slot.current ? { ...save, tune: { current: null, previous: slot.current } } : save;
 }
 
 /** What a tune sounds like, beat by beat: the scale steps of the jellies in each column (empty for a quiet beat). */

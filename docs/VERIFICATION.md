@@ -8,14 +8,14 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (546 tests) | How-to card with demonstrations entry | Run with every code change |
-| `npm run test:offline` | 2026-10-08 | How-to card with demonstrations entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
+| Unit tests, typecheck, build | 2026-10-08 (547 tests) | Treehouse take-down entry | Run with every code change |
+| `npm run test:offline` | 2026-10-08 | Treehouse take-down entry | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
 | `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations | How-to card with demonstrations entry | About three minutes |
-| `creations` | 2026-10-07 | Pixel Pictures entry | |
+| `creations` | 2026-10-08 | Treehouse take-down entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
 | `couchgames` | 2026-10-08, Pond Conga filtered (2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered) | Child's island, couch Settings, Just me, Island Bridges and Pond Conga entries | Peg Garden's bot needed one retry (its known flake) |
@@ -44,6 +44,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Treehouse creation take-down and offline reloads (2026-10-08)
+
+What changed: the treehouse picture board and tune plaque each have an **X** while occupied. It leaves that wall place empty but keeps the work just removed behind the back arrow, so the action is reversible; an older backup makes room for it. The production offline check now seeds a moved/flipped room, a stamped picture, a tune and two journal discoveries, opens the room and journal, reloads, and proves both routes again through the journal's public `seen` save marker.
+
+- `npm run typecheck`, `npm test` (109 files, 547 tests) and `npm run build` passed. The creation rule test covers taking down, restoring, no-op on an empty kind and immutability.
+- `BROWSER_SUITE=creations` passed without page errors: all four creation sources still keep on request; both occupied places show X controls, both become empty, both removed works remain behind back arrows through a reload, both restore, and the controls remain clear in portrait. The occupied, empty and portrait screenshots were reviewed.
+- `npm run test:offline` passed against the matching production preview (24 cached font/assets): the existing game/reward and Windy Picnic checks plus the rearranged room, both kept creation kinds and the journal all work offline and survive reloads. Visual review caught that a save-only second-reload assertion could pass after a curtain-swallowed navigation click; the check now resets `journal.seen` and requires each real journal opening to advance it, with one bounded route retry.
+- Not run: `room` again (its furnishing, sticker-frame and tidy paths are unchanged and the `creations` pass opens and reloads this scene), `world`, game suites or couch suites. Still open: the other treehouse follow-ons in the roadmap and device/child observation.
 
 ### Older-child economy, progression and banking roadmap (2026-10-08)
 

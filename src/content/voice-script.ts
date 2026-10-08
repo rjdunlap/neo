@@ -197,6 +197,7 @@ export const SCRIPT = {
   'room.tune': ['Listen to the song you made!', 'Your very own song!'],
   'room.tune-empty': ['Make a song in Song Maker, and it can play here!'],
   'room.swap': ['Here is the one from before!'],
+  'room.taken-down': ['All clear! Tap the back arrow to put it up again.'],
   'journal.hello': ['Your discoveries! Tap one to hear about it.'],
   'journal.new': ['A new discovery for your journal!', 'Look, something new for your journal!'],
   'journal.hint': ['Not found yet! Tap the green arrow to go and find it.'],

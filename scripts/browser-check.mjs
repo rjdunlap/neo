@@ -6282,6 +6282,27 @@ async function creationsRoom() {
   shown = await board();
   assert.deepEqual({ medium: shown.medium, undo: shown.undo, tuneUndo: shown.tuneUndo }, { medium: 'pixels', undo: true, tuneUndo: false });
   assert.deepEqual((await state()).c, now.c);
+  // Each wall place can be left empty. The work just taken down is kept behind the back arrow, survives a reload,
+  // and can be restored; this is deliberately reversible even when an older backup has to make room for it.
+  assert.deepEqual(await page.evaluate(() => ({ picture: neo.scene.takePicture.visible, tune: neo.scene.takeTune.visible })), { picture: true, tune: true });
+  const beforeDown = (await state()).c;
+  await tap('neo.scene.takePicture'); await tap('neo.scene.takeTune'); await page.waitForTimeout(400);
+  let taken = (await state()).c;
+  assert.equal(taken.picture.current, null); assert.deepEqual(taken.picture.previous, beforeDown.picture.current);
+  assert.equal(taken.tune.current, null); assert.deepEqual(taken.tune.previous, beforeDown.tune.current);
+  assert.deepEqual(await page.evaluate(() => ({ pictureBack: neo.scene.undoPicture.visible, tuneBack: neo.scene.undoTune.visible, pictureTake: neo.scene.takePicture.visible, tuneTake: neo.scene.takeTune.visible })),
+    { pictureBack: true, tuneBack: true, pictureTake: false, tuneTake: false });
+  await screenshot('creations-room-taken-down');
+  await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(300);
+  await page.reload(); await ready();
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(500);
+  assert.deepEqual((await state()).c, taken, 'the empty wall and restorable creations survive a reload');
+  await tap('neo.scene.undoPicture'); await tap('neo.scene.undoTune'); await page.waitForTimeout(400);
+  const restored = (await state()).c;
+  assert.deepEqual(restored.picture, { current: beforeDown.picture.current, previous: null });
+  assert.deepEqual(restored.tune, { current: beforeDown.tune.current, previous: null });
+  assert.deepEqual(await page.evaluate(() => ({ pictureBack: neo.scene.undoPicture.visible, tuneBack: neo.scene.undoTune.visible, pictureTake: neo.scene.takePicture.visible, tuneTake: neo.scene.takeTune.visible })),
+    { pictureBack: false, tuneBack: false, pictureTake: true, tuneTake: true });
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
   const clear = await page.evaluate(() => {
     const boxes = [neo.scene.frame, neo.scene.board, neo.scene.plaque, neo.scene.window].map((o) => o.getBounds());
@@ -6291,7 +6312,7 @@ async function creationsRoom() {
   await screenshot('creations-room-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
-  log('Creations: stamped pictures, a free Rainbow Fingers painting, a completed Pixel Picture and a free song are offered after their rounds and kept only on request (one sticker each); the picture board shares all three visual media and swaps between the latest two without loss; the pet admires the art and sings the song; tidy and a reload keep everything; wall items stay clear in portrait');
+  log('Creations: stamped pictures, a free Rainbow Fingers painting, a completed Pixel Picture and a free song are offered after their rounds and kept only on request (one sticker each); the picture board shares all three visual media and swaps between the latest two; picture and tune can each be taken down, stay restorable through a reload, and come back; the pet admires the art and sings the song; tidy and a reload keep everything; wall items stay clear in portrait');
 }
 
 /** The discovery journal: what a round actually showed lands in it, the treehouse button twinkles, cards speak and point back to their game, and it survives a reload. */
