@@ -45,6 +45,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
 
+### Older-child economy and progression roadmap (2026-10-08)
+
+What changed: researched the remembered Coolmath/MECC Lemonade Stand loop and Neopets' fortune-wheel loop, then added one build-ready child-island game and one smaller progression proposal. **Lemonade Stand** is deliberately a separate neighbor to Market Stall: three forecast-and-quantity days first, then price and a five-day market week, with a testable seeded demand model, picture table, truthful help, no failed week and no island currency. A later Maker Harbor fair board reveals a finale from relevant named errands while its games remain directly open; its wheel keeps ceremony and surprise but has no fee, loss, rarity or cooldown. A universal point balance and catalog locks are deferred until an intended child asks for a saving-and-spending goal.
+
+- Sources checked: the original Apple classroom guide, Coolmath's optimization retrospective, Neopets' official Wheel of Excitement page and UNICEF's RITEC design toolbox; their links and the limits of the inference are in the roadmap.
+- Documentation checks: repository-relative Markdown links and the new external source links were checked; `git diff --check` passed.
+- Not run: typecheck, unit, build or browser suites; no runtime code, save, game registration, count or behavior changed.
+- Still open: play Lemonade Stand after it is built, then decide whether the multi-day table produces revision, whether a fair board feels like welcome progression, and whether the wheel is fun without a scarce reward.
+
 ### How-to card every time, with a bot demonstration (2026-10-08)
 
 What changed: following the first-visit card, the grown-up asked for bot demos and the card every time. The island how-to card now opens **every time** a game opens (not only the first), so the `explained` list in the save and its helpers are gone (a restored save that has it is read without it). It is skipped for a story request, the grown-up switch, a game with no card, and now **"again" straight after a round** (`go.game`'s new fourth argument; my call, one flag to flip). The fifteen island games the couch can already play (`demoFor` in `src/couch/catalog.ts`) show a **demonstration window** on the card: a `Demo` (the couch how-to's bot-played round at the couch's demo level) placed by `HowToPanel` beside the text on a wide screen and above it on a tall one, updated each frame while the card is open, touch-proof (`eventMode: 'none'`) and destroyed with the card; a line under it says a controller moves the highlight where she would tap or drag.
