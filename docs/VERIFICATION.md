@@ -8,10 +8,10 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-07 (387 tests) | Pixel Pictures entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-07 (387 tests) | Release check entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Pixel Pictures entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
-| `world` | 2026-10-07 | Child's island entry (release tier) | About four and a half minutes |
+| `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
 | `picnic`, `island`, `room` | 2026-10-07 | Discovery journal entry | |
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
@@ -33,6 +33,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Release check before pushing to `main`: docs cleanup, Rainbow Fingers paintings, Pixel Pictures keepsakes (2026-10-07)
+
+What changed since `origin/main` (`d9a071c`): the documentation cleanup (no code), Rainbow Fingers paintings and Pixel Pictures designs on the treehouse picture board (both already checked in their own entries below).
+
+- On the merged tree: `npm run typecheck`, `npm test` (387 tests in 94 files) and `npm run build` passed.
+- `BROWSER_SUITE=world` passed against a snapshot of the merged tree on port 5180 (the dev servers on 5173 and 4173 belonged to another checkout): hatching, save reload, the trail, birthdays, parent settings, and subject cards in every band and both orientations with all 37, 48, 58, 68 and 50 games reachable; no page errors.
+- Counted from earlier entries, since their areas did not change: the production offline check and `creations` (Pixel Pictures entry), `picnic`, `island` and `room` (discovery journal entry), and the couch suites (no couch code changed since they passed; Sink or Float, the one couch game that changed, passed `couchgames` again in the discovery journal entry).
+- Not run: `picnic` and `couch` again, the offline check on this exact merge (only docs differ from the Pixel Pictures tree it passed on), and anything on a device.
 
 ### Pixel Pictures in the treehouse (2026-10-07; merged to `main` in `b9120d8`)
 
