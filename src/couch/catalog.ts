@@ -306,6 +306,25 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     // Trips stay on the 8 by 8 to 12 by 12 grids; the 14 by 14 grids are The Big Hunt course on the puzzle shelf.
     level: (stop) => [1, 2, 2, 3, 3, 3][stop] ?? 3,
   },
+  'island-bridges': {
+    goal: 'couch.how.island-bridges',
+    tagline: 'Join the islands with bridges: each needs as many planks as its number.',
+    controls: [
+      { parts: STICK, text: 'Move between islands. With one armed, push toward a neighbor.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Arm an island to lay a plank toward a neighbor.', keys: 'Enter' },
+      { parts: ['left'], text: 'Arm it to take planks off instead. Free.', keys: 'Backspace' },
+      { parts: ['start'], text: 'Pause menu: a hint, or clear the sea.', keys: 'Esc' },
+    ],
+    restart: 'Clear this sea',
+    hint: 'Show a hint',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'planks over the answer' },
+    band: 'school',
+    demoLevel: 1,
+    // Trips stay on the 7 by 7 to busier 9 by 9 seas; the 11 by 11 seas are on the puzzle shelf.
+    level: (stop) => [1, 2, 2, 3, 3, 3][stop] ?? 3,
+  },
   'ferry-jam': {
     goal: 'couch.how.ferry-jam',
     tagline: 'Slide the boats aside so the red ferry can sail out to the dock.',

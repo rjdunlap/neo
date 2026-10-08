@@ -43,6 +43,7 @@ describe('the couch courses', () => {
     expect(courseSpec('harbors')).toMatchObject({ game: 'ferry-jam', boards: 5, minimum: 64 });
     expect(courseSpec('words')).toMatchObject({ game: 'word-search', boards: 3, minimum: 25 });
     expect(courseSpec('bigwords')).toMatchObject({ game: 'word-search', boards: 2, minimum: 24 });
+    expect(courseSpec('bridges')).toMatchObject({ game: 'island-bridges', boards: 5, minimum: 120 });
   });
 
   it("is played by a game that is on the couch, at a level its band really has", () => {
@@ -75,5 +76,7 @@ describe('the couch courses', () => {
     expect(countOf(courseInfo('pictures'), 182)).toBe('182 fills');
     expect(countOf(courseInfo('words'), 1)).toBe('1 guess');
     expect(countOf(courseInfo('words'), 25)).toBe('25 guesses');
+    expect(countOf(courseInfo('bridges'), 1)).toBe('1 plank');
+    expect(countOf(courseInfo('bridges'), 120)).toBe('120 planks');
   });
 });
