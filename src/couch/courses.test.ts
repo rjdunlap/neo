@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../content/voice-script';
-import { gameById } from '../games/registry';
+import { couchGameById as gameById } from '../games/registry';
 import { COUCH_INFO } from './catalog';
 import { courseSpec } from './course';
 import { COURSE_IDS, countOf, courseInfo, isCourseId } from './courses';
@@ -35,6 +35,8 @@ describe('the couch courses', () => {
     expect(courseSpec('ponds')).toMatchObject({ game: 'penguin-slide', boards: 5, minimum: 30 });
     expect(courseSpec('practice')).toMatchObject({ game: 'penguin-slide', boards: 5, minimum: 18 });
     expect(courseSpec('clouds')).toMatchObject({ game: 'bouncy-launch', boards: 12, minimum: 12 });
+    expect(courseSpec('beds')).toMatchObject({ game: 'sudoku-garden', boards: 6, minimum: 124 });
+    expect(courseSpec('bigbeds')).toMatchObject({ game: 'sudoku-garden', boards: 3, minimum: 149 });
   });
 
   it("is played by a game that is on the couch, at a level its band really has", () => {
@@ -57,5 +59,8 @@ describe('the couch courses', () => {
     expect(countOf(courseInfo('ponds'), 12)).toBe('12 slides');
     expect(countOf(courseInfo('clouds'), 1)).toBe('1 launch');
     expect(countOf(courseInfo('clouds'), 3)).toBe('3 launches');
+    expect(countOf(courseInfo('beds'), 1)).toBe('1 entry');
+    expect(countOf(courseInfo('beds'), 130)).toBe('130 entries');
+    expect(isCourseId('bigbeds')).toBe(true);
   });
 });

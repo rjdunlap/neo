@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ControllerSampler } from './controller';
+import { ControllerSampler, HeldDirection, idle } from './controller';
 
 const pad = (index: number, buttons: number[] = [], axes = [0, 0], mapping: GamepadMappingType = 'standard') => ({ index, id: `test ${index}`, mapping, connected: true, axes, buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: buttons.includes(i), touched: buttons.includes(i), value: buttons.includes(i) ? 1 : 0 })) });
 const keys = (...codes: string[]) => new Set(codes);
@@ -32,5 +32,41 @@ describe('controller semantics', () => {
     expect(next.players[0].y).toBe(1);
     expect(next.players[1]).toMatchObject({ y: -1, active: true });
     expect(s.sample([], keys()).players[1].active).toBe(true);
+  });
+});
+
+describe('hold to repeat', () => {
+  const frame = (x: number, y: number, pressed = -1) => { const c = idle(); Object.assign(c.players[0], { x, y, direction: pressed }); return c; };
+
+  it('moves once at the press, waits, then repeats while the stick is held', () => {
+    const h = new HeldDirection(0.4, 0.1);
+    expect(h.poll(frame(1, 0, 0), 0.016)).toEqual([0]);
+    let moves = 0;
+    for (let t = 0; t < 0.36; t += 0.016) moves += h.poll(frame(1, 0), 0.016).length;
+    expect(moves, 'nothing before the delay is up').toBe(0);
+    for (let t = 0; t < 0.5; t += 0.016) moves += h.poll(frame(1, 0), 0.016).length;
+    expect(moves).toBeGreaterThanOrEqual(3);
+    expect(moves).toBeLessThanOrEqual(6);
+  });
+
+  it('stops when the stick is let go or turned, and starts afresh on a new press', () => {
+    const h = new HeldDirection(0.2, 0.1);
+    h.poll(frame(0, 1, 1), 0.016);
+    for (let t = 0; t < 0.3; t += 0.016) h.poll(frame(0, 1), 0.016);
+    expect(h.poll(frame(0, 0), 0.016)).toEqual([]);
+    expect(h.poll(frame(0, 1), 0.3)).toEqual([]);
+    // Turning without a new press (a slow slide from down to right) never repeats the old direction.
+    h.poll(frame(0, 1, 1), 0.016);
+    expect(h.poll(frame(1, 0), 0.5)).toEqual([]);
+    expect(h.poll(frame(0, 0, 3), 0.016)).toEqual([3]);
+  });
+
+  it('catches up on a slow frame, and a bot with no held stick only ever presses', () => {
+    const h = new HeldDirection(0.2, 0.1);
+    h.poll(frame(1, 0, 0), 0.016);
+    expect(h.poll(frame(1, 0), 0.45).length).toBe(3);
+    const bot = new HeldDirection(0.2, 0.1);
+    expect(bot.poll(frame(0, 0, 2), 0.016)).toEqual([2]);
+    for (let i = 0; i < 40; i++) expect(bot.poll(frame(0, 0), 0.05)).toEqual([]);
   });
 });

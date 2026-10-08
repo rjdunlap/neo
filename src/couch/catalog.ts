@@ -23,6 +23,8 @@ export interface CouchInfo {
   controls: ControlRow[];
   /** The pause menu's "start this part again" button, for a game that implements `Game.restart`. */
   restart?: string;
+  /** The pause menu's "show a hint" button, for a game that implements `Game.askForHint`: help she asks for, rather than help that arrives after misses. */
+  hint?: string;
   /** Who plays: one at a time, or both at once. */
   play: 'turns' | 'together';
   faceoff: FaceOff;
@@ -246,6 +248,25 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     demoLevel: 6,
     level: () => 6,
     lines: { 'sink.guess': 'couch.sink.guess' },
+  },
+  'sudoku-garden': {
+    goal: 'couch.how.sudoku-garden',
+    tagline: 'Fill the bed so every row, column and box holds each number once.',
+    controls: [
+      { parts: STICK, text: 'Move around the bed. In the number tray, choose a number.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'On a square, open the number tray. In the tray, place the number or switch pencil marks on and off.', keys: 'Enter' },
+      { parts: ['left'], text: 'Close the tray, or take a number (or its pencil marks) back out. Free.', keys: 'Backspace' },
+      { parts: ['start'], text: 'Pause menu: show a hint, or start the bed again. A hint marks the run as helped.', keys: 'Esc' },
+    ],
+    restart: 'Start this bed again',
+    hint: 'Show a hint',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'entries over the empty squares' },
+    band: 'school',
+    demoLevel: 1,
+    // Trips stay on the small beds; the 9 by 9 beds are the Three Big Beds course on the puzzle shelf.
+    level: (stop) => [1, 1, 2, 2, 3, 3][stop] ?? 3,
   },
 };
 

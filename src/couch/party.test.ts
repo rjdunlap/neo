@@ -4,7 +4,7 @@ import {
   cleanName, COUCH_IDS, completeRound, couchDefaults, decide, isNew, levelFor, markSeen, newParty, nextTier, offers, playerNow, repairCouch, reshuffle,
   roundToken, seedFor, STOPS, tally, tierOf, UNLOCK_TIERS, unlockedIds, type CouchId, type CouchSave,
 } from './party';
-import { gameById } from '../games/registry';
+import { couchGameById as gameById } from '../games/registry';
 
 const reload = (save: CouchSave) => repairCouch(JSON.parse(JSON.stringify(save)));
 const tripSave = (mode: 'together' | 'faceoff', seed = 239): CouchSave => { const s = couchDefaults(); s.party = newParty(mode, seed); return s; };

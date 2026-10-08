@@ -151,6 +151,11 @@ export interface Game {
    * called mid-animation; the game finishes what it is doing first.
    */
   restart?(): void;
+  /**
+   * Couch pause menu's "show a hint", for a game whose help is something she asks for (a puzzle with no misses to count).
+   * A hint shown marks a challenge run as helped for good, the same as the games whose help arrives by itself.
+   */
+  askForHint?(): void;
   start(): void;
   update(dt: number): void;
   resize(view: View): void;

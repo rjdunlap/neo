@@ -19,7 +19,7 @@ import { couchStore } from '../../couch/store';
 import { CouchInput } from '../../engine/controller';
 import { randomSeed, Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { gameById } from '../../games/registry';
+import { couchGameById as gameById } from '../../games/registry';
 import type { CourseProgress, Game, GameModule, RoundResult } from '../../games/types';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -799,6 +799,8 @@ export class CouchScene extends Scene {
     this.button(sheet, 'Repeat instruction', () => { if (this.instruction) void voice.say(this.instruction.id, this.instruction.vars); });
     const again = COUCH_INFO[id].restart;
     if (again && this.game?.restart) this.button(sheet, again, () => { const game = this.game; this.resume(); game?.restart?.(); });
+    const help = COUCH_INFO[id].hint;
+    if (help && this.game?.askForHint) this.button(sheet, help, () => { const game = this.game; this.resume(); game?.askForHint?.(); });
     this.quickSettings(sheet);
     if (this.course) { const id = this.course.spec.id; this.button(sheet, 'Back to the course page', () => this.go(id)); }
     else this.button(sheet, 'Choose a different game', () => { this.couch.data.party!.selected = null; this.couch.save(); this.go(); });

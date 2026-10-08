@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BANDS } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
-import { GAMES } from './registry';
+import { couchGameById, GAMES, GROWNUP_GAMES, gameById } from './registry';
 import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
@@ -45,5 +45,25 @@ describe('game registry', () => {
   it('files every game under a known subject, and every subject has a game by pre-K', () => {
     for (const game of GAMES) expect(REGION_IDS).toContain(game.region);
     for (const id of REGION_IDS) expect(GAMES.some((g) => g.region === id && g.bands.includes('prek')), id).toBe(true);
+  });
+
+  it('keeps grown-up couch games off the child\'s island', () => {
+    expect(GROWNUP_GAMES.length).toBeGreaterThan(0);
+    const ids = new Set(GAMES.map((g) => g.id));
+    for (const g of GROWNUP_GAMES) {
+      expect(ids.has(g.id), g.id).toBe(false);
+      expect(gameById(g.id), g.id).toBeUndefined();
+      expect(couchGameById(g.id), g.id).toBe(g);
+      expect(SCRIPT[g.titleLine], g.id).toBeDefined();
+      expect(REGION_IDS).toContain(g.region);
+      for (const band of g.bands) {
+        const { min, max } = g.levels(band);
+        for (let l = min; l <= max; l++) expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
+      }
+    }
+    expect(new Set([...GAMES, ...GROWNUP_GAMES].map((g) => g.id)).size).toBe(GAMES.length + GROWNUP_GAMES.length);
+    // Every island game is still a couch lookup too.
+    expect(couchGameById('penguin-slide')).toBe(gameById('penguin-slide'));
+    expect(couchGameById('nope')).toBeUndefined();
   });
 });
