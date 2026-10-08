@@ -129,6 +129,7 @@ Use scripted input for moving targets, then screenshots for visual review. Finis
 
 ### Input and rendering pitfalls
 
+- In couch play the game's stage takes no pointer input, so a touch game's on-screen buttons are dead there: hide them when `ctx.couch` is set and put the action on `control()` or the pause menu (`Game.restart`).
 - Couch scenes sample controller and key input once per frame and ignore input for their first 0.35 s. Hold scripted keys at least ~120 ms (`page.keyboard.press(key, { delay: 120 })`) and wait out a new scene before pressing.
 - Dispatch synthetic `pointerup` on the canvas (the kit does); using `document` leaves Pixi thinking the finger is down. Handle `pointercancel` and lost release in custom controls.
 - Object drags ride 40 logical units above the finger; aim drops about 40 units below the target. Tracing can use `lift: 0`.

@@ -145,6 +145,12 @@ export interface Game {
    * hands it straight to `control()`, so it can only do what a real controller can.
    */
   autoplay?(dt: number): CouchControls;
+  /**
+   * Couch pause menu's "start this again": put the board in the round's current part back to its first
+   * position. Tries already made keep counting, so a restart is never a way to improve a score. May be
+   * called mid-animation; the game finishes what it is doing first.
+   */
+  restart?(): void;
   start(): void;
   update(dt: number): void;
   resize(view: View): void;

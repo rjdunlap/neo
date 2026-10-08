@@ -225,7 +225,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Penguin Slide
 
-*preschool–school · after the ice-sliding puzzles in Pokémon and Zelda.* Tap the ice in a direction and the penguin slides until a snowy rock, the pond's edge or soft snow stops it, eating fish it passes. Puzzles are generated and kept only when a breadth-first search over slides finds the planned shortest solution (1–2 moves at first, up to 4–6 with two fish and soft snow). Sliding is exploration: there are no misses. Undo steps back one slide. Three slides beyond the shortest bring a hint arrow showing a best next slide; if no route is left, the undo button glows. Its fixed ponds also make two couch challenge courses (Pond Practice and the Five Ponds).
+*preschool–school · after the ice-sliding puzzles in Pokémon and Zelda.* Tap the ice in a direction and the penguin slides until a snowy rock, the pond's edge or soft snow stops it, eating fish it passes. Puzzles are generated and kept only when a breadth-first search over slides finds the planned shortest solution (1–2 moves at first, up to 4–6 with two fish and soft snow). Sliding is exploration: there are no misses. Undo steps back one slide. Three slides beyond the shortest bring a hint arrow showing a best next slide; if no route is left, the undo button glows. Its fixed ponds also make two couch challenge courses (Pond Practice and the Five Ponds). On the couch the round arrow is not drawn (the couch screen takes no pointer input); the left button undoes a slide and the pause menu's **Start this pond again** puts the penguin and every fish back, with the slides so far still counted.
 
 ### Secret Code
 

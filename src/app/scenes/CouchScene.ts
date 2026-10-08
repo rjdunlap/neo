@@ -698,6 +698,8 @@ export class CouchScene extends Scene {
     this.button(sheet, 'Resume round', () => this.resume(), 'couch-primary');
     this.button(sheet, 'How to play', () => this.intro(id, 'pause'));
     this.button(sheet, 'Repeat instruction', () => { if (this.instruction) void voice.say(this.instruction.id, this.instruction.vars); });
+    const again = COUCH_INFO[id].restart;
+    if (again && this.game?.restart) this.button(sheet, again, () => { const game = this.game; this.resume(); game?.restart?.(); });
     if (this.course) { const id = this.course.spec.id; this.button(sheet, 'Back to the course page', () => this.go(id)); }
     else this.button(sheet, 'Choose a different game', () => { this.couch.data.party!.selected = null; this.couch.save(); this.go(); });
     this.button(sheet, 'Save and return to start', () => this.leave());
