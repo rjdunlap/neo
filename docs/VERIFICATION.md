@@ -8,24 +8,25 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (496 tests) | Word Search entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (516 tests) | Island Bridges entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08 | Clap the Syllables and Harbor Rush entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
 | `picnic`, `island`, `room` | 2026-10-07 | Discovery journal entry | |
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
-| `couch` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden, Lantern Lights, Picture Logic, Ferry Jam and Word Search (filtered) | Child's island, couch Settings, Just me, Sudoku Garden, Lantern Lights, Picture Logic, Harbor Rush and Word Search entries | Peg Garden's bot needed one retry (its known flake) |
-| `couchcourse` | 2026-10-08, after the shelf's cards became compact | Picture Logic entry | About four to seven minutes |
-| `couchnames` | 2026-10-07, after Just me | Couch Just me entry | |
-| `couchsettings` | 2026-10-07, after Just me | Couch Just me entry | About 30 seconds |
-| `couchsolo` | 2026-10-08, after Word Search joined the shelf | Word Search entry | About 40 seconds |
+| `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
+| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered | Child's island, couch Settings, Just me, and the Island Bridges entry | Peg Garden's bot needed one retry (its known flake) |
+| `couchcourse` | 2026-10-08, with twelve courses | Island Bridges entry | About four to seven minutes |
+| `couchnames` | 2026-10-08 | Island Bridges entry | |
+| `couchsettings` | 2026-10-08 | Island Bridges entry | About 30 seconds |
+| `couchsolo` | 2026-10-08, after Island Bridges joined the shelf | Island Bridges entry | About 40 seconds |
 | `couchbeds` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About three minutes; plays a full six-bed course with the bot |
 | `couchlanterns` | 2026-10-07 | Lantern Lights entry |
 | `couchpictures` | 2026-10-08 | Picture Logic entry | About three minutes; plays a full three-picture course with the bot |
 | `couchharbors` | 2026-10-08 | Harbor Rush entry | About three minutes; plays a full five-harbor course with the bot |
-| `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot | About two minutes; plays a full five-pond course with the bot |
+| `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot |
+| `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -40,6 +41,16 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Island Bridges, a fifth grown-up-only game (2026-10-08)
+
+What changed: **Island Bridges** (Hashi) joins `GROWNUP_GAMES` (couch only): 7 by 7, 9 by 9 and 11 by 11 seas of numbered islands joined by plank bridges, a generator that keeps a puzzle only if a propagation-and-search solver proves it has exactly one answer (the two gentler levels also only if counting alone finishes it), an arm-and-push scheme for a controller (the bottom button arms laying planks from an island, the left button arms taking them off, a push toward a neighbor does it), islands that turn green when done and red when their number can no longer be reached, a hint that names a wrong plank, then an island that decides a bridge, then a plank the answer needs, and one puzzle-shelf course (Island Hopping, par 120). Rules, generator and course are in `src/games/island-bridges/`.
+
+- `npm run typecheck`, `npm test` (516 tests: 20 new, among them the solver agreeing with a brute force over every plank assignment on thousands of random small layouts and counting an ambiguous layout as two answers, every generated puzzle having exactly one answer with numbers one to eight, the highlight reaching every island, and a player following every hint from an empty sea laying exactly the answer's planks) and `npm run build` passed.
+- New `BROWSER_SUITE=couchbridges` passed on its second run: Just me, the shelf (twelve puzzles) and course page, arming an island and laying planks (a second lays another, a third bumps and costs nothing), planks taken off for free and not given back to the count, a plank that does not belong named first by the hint (the run marked helped), clear with planks kept, a reload that resumes the sea with its planks, and a fresh bot run of all five seas laying exactly 120 planks with one sticker and both badges. The first run failed on my own test, not the game: sea 1 has no bridge the answer leaves empty, so the "wrong plank" now lays a second plank on a single-plank bridge when it must. `couchgames COUCH_ONLY=island-bridges` passed on the first try (its goal line and rows were already shortened after Picture Logic's how-to page overflowed).
+- A regression pass across the whole batch of grown-up games (Sudoku Garden to Island Bridges) on a snapshot: the full `couchgames` (all nineteen couch games with a bot-played round each, then the guide), the full `couch`, `couchcourse` (twelve courses), `couchsolo`, `couchsettings` and `couchnames` all passed. One `couchcourse` run failed only because the test script (read at the moment a suite starts) already expected the new course while the frozen app did not have it; it passed on a refreshed snapshot.
+- Screenshots looked at: a 7 by 7 sea with a plank laid, the hint on a wrong bridge (ringed in red, an island's outline red because its number was out of reach), and the course result.
+- Not run: `world`, `smoke` and the offline check (no island game, navigation or asset changed in this slice). Open and needing a person: whether arming an island and then pushing feels natural on a stick (versus pressing a button per plank), whether the green and red island cues are the right amount of help, whether an 11 by 11 sea is too fine for a sofa, and whether the puzzle shelf (now twelve cards) wants grouping by kind.
 
 ### Word Search, a fourth grown-up-only game (2026-10-08)
 

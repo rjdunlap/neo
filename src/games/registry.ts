@@ -74,6 +74,7 @@ import { sudokuGarden } from './sudoku-garden';
 import { lanternLights } from './lantern-lights';
 import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
+import { islandBridges } from './island-bridges';
 import type { GameModule } from './types';
 
 /**
@@ -166,6 +167,7 @@ export const GROWNUP_GAMES: GameModule[] = [
   lanternLights,
   pictureLogic,
   wordSearch,
+  islandBridges,
 ];
 
 export const couchGameById = (id: string) => gameById(id) ?? GROWNUP_GAMES.find((g) => g.id === id);
