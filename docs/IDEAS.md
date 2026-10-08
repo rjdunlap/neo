@@ -119,7 +119,6 @@ Proposals for the couch route, written after the first grown-up playtest (2026-1
 | **Pyramid Solitaire** (Neopets' Pyramids; Klondike, FreeCell) | Remove pairs that add to 13 from a pyramid of cards | Code-drawn cards; deals proven solvable by search; d-pad cursor. FreeCell later, since its deals are almost all solvable | M |
 | **Two boards at once** (Penguin Slide and Garden Rows face-offs) | Face-off on side-by-side boards of the same seed, instead of taking turns | Needs the `twin` games to render two boards in one scene; a proposal in the roadmap's parked list | M |
 | **Shared-cursor co-op** (Sudoku Garden for two) | One partner chooses the square, the other the number | Both controllers on one board; the pet takes the second seat when alone | S |
-| **Watch the best route** (par replay) | After a run, replay the solver's best route over the same pond | Reuses `solve()` in Penguin Slide; the reason to run again is seeing what you missed. Ask first, and never before the run | S |
 | **Endless runs** (Mega Mini Games' Endless) | "How many boards in a row" with no end screen, only a record | Opt-in per game; the couch counterpart of the parked "Keep playing" mode | S |
 
 Considered and set aside: Tetris-style falling blocks (a real-time pressure game, and the island has no fail state to give it; revisit as a calm "no speed-up" mode), Minesweeper (a wrong guess ends it; a gentle "garden sweep" could mark mistakes instead), crosswords (a clue bank is a large authored-content task), trivia (fact review) and Cheat! (a bluffing game against bots).

@@ -13,7 +13,8 @@ import { FinaleStage } from '../../couch/finale-stage';
 import { completeCourse, courseDefaults, courseOf, noteProgress, startRun, BADGES, courseSpec, type CourseSpec, type Outcome, type PlayerRecord } from '../../couch/course';
 import { COURSE_IDS, countOf, courseInfo, unitsOf, type CourseId, type CourseInfo } from '../../couch/courses';
 import { cleanName, completeRound, isNew, levelFor, markSeen, NAME_MAX, newParty, nextTier, offers, playerNow, repairCouch, reshuffle, roundToken, seedFor, starterOf, STOPS, tally, unlockedIds, type CouchId, type CouchRound, type Party, type TripMode } from '../../couch/party';
-import { PLACE_CHOICES, PLACE_NAMES, TEXT_NAMES, TEXT_SIZES, VOLUME_MAX, cardHint, gainFor, menuHint, nextText, nudgeVolume, placeReason, resolvePlace, unitFor, type Place, type PlaceChoice, type TextSize } from '../../couch/settings';
+import { PLACE_CHOICES, PLACE_NAMES, PLAYER_CHOICES, PLAYER_NAMES, TEXT_NAMES, TEXT_SIZES, VOLUME_MAX, cardHint, gainFor, menuHint, nextText, nudgeVolume, placeReason, resolvePlace, unitFor, type Place, type PlaceChoice, type Players, type TextSize } from '../../couch/settings';
+import { canWatchRoute, shelfEntry, standing } from '../../couch/shelf';
 import { couchStore } from '../../couch/store';
 import { CouchInput } from '../../engine/controller';
 import { randomSeed, Rng } from '../../engine/random';
@@ -27,7 +28,7 @@ import '../../couch/style.css';
 
 /** How long the name card shows when a game has already been explained. */
 const CARD_SECONDS = 1.6;
-type Screen = 'menu' | 'mode' | 'courses' | 'course' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'settings' | 'backup' | 'guide';
+type Screen = 'menu' | 'mode' | 'courses' | 'course' | 'route' | 'intro' | 'howto' | 'card' | 'turn' | 'game' | 'pause' | 'setup' | 'settings' | 'backup' | 'guide';
 /** Where a "how to play" screen was opened from, and so where its Back button goes. */
 type IntroFrom = 'first' | 'pause' | 'guide' | 'turn';
 /** The trip whose finale has already played in this page, so coming back to its page doesn't replay the fanfare. */
@@ -88,6 +89,8 @@ export class CouchScene extends Scene {
 
   /** The challenge course being played, while a run is on screen. */
   private course: { spec: CourseSpec; info: CourseInfo; token: number; player: 0 | 1 } | null = null;
+  /** The course whose best route is on screen. */
+  private routeCourse: CourseId | null = null;
   private readonly stats = node('small', '', 'couch-hud-stats');
 
   constructor(app: App, private readonly play: boolean | CourseId = false) { super(app); }
@@ -118,6 +121,9 @@ export class CouchScene extends Scene {
   private place(): Place { return resolvePlace(this.couch.data.settings.place, this.surroundings()); }
   private surroundings() { return { controllers: this.controllers, scale: this.view.scale }; }
 
+  /** One grown-up playing alone: Player 2, face-offs and turn cards are left out, and the Challenges become her puzzle shelf. */
+  private alone() { return this.couch.data.settings.players === 'one'; }
+
   /** Push the couch settings into sound and text size. The child's own settings come back when this scene is left. */
   private applyPrefs(view: View = this.view) {
     const s = this.couch.data.settings;
@@ -147,6 +153,12 @@ export class CouchScene extends Scene {
     if (!this.buttons.length) return;
     this.focus = (this.focus + ([0, 1].includes(direction) ? 1 : -1) + this.buttons.length) % this.buttons.length;
     this.buttons[this.focus]?.focus();
+  }
+
+  /** Put the focus on the button with this key, as the Settings page does after a change. */
+  private focusKey(key: string) {
+    const at = this.buttons.findIndex(b => b.dataset.key === key);
+    if (at >= 0) { this.focus = at; this.buttons[at].focus(); }
   }
 
   private shell(title: string, intro: string) {
@@ -247,9 +259,20 @@ export class CouchScene extends Scene {
     this.screen = 'menu'; this.buttons = [];
     const p = this.couch.data.party;
     if (!p) {
-      const sheet = this.shell('An evening on the island', 'Six rounds. Three choices each time. Take turns choosing, pass a controller, or play the paddles together. Play together, or face off for a winner at each stop.');
-      this.button(sheet, 'Start a couch trip', () => this.modeChoice(), 'couch-primary');
-      this.button(sheet, 'Challenges', () => this.courseMenu());
+      const alone = this.alone();
+      const sheet = alone
+        ? this.shell('Just for you', 'Fixed puzzles with an exact best number to beat, all open at once. Or a trip of six games, whenever you want a longer evening.')
+        : this.shell('An evening on the island', 'Six rounds. Three choices each time. Take turns choosing, pass a controller, or play the paddles together. Play together, or face off for a winner at each stop.');
+      if (alone) {
+        this.button(sheet, 'Puzzle shelf', () => this.courseMenu(), 'couch-primary');
+        this.button(sheet, 'Start a trip', () => this.startTrip('together'));
+      } else {
+        this.button(sheet, 'Start a couch trip', () => this.modeChoice(), 'couch-primary');
+        this.button(sheet, 'Challenges', () => this.courseMenu());
+      }
+      const choose = node('div', '', 'couch-setting couch-players-choice'), row = node('div', '', 'couch-choices');
+      choose.append(node('h2', 'Who is playing?'), row); sheet.append(choose);
+      this.playersRow(row, key => { this.menu(); this.focusKey(key); });
       sheet.append(node('p', 'A controller or the keyboard both work. Couch stickers and trips have their own save, apart from the island.', 'couch-intro'));
       const kept = this.couch.data.keepsake;
       if (kept) sheet.append(this.keepsakeCard(kept.at));
@@ -259,7 +282,8 @@ export class CouchScene extends Scene {
     const faceoff = p.mode === 'faceoff';
     const last = p.rounds.at(-1);
     const [a, b] = tally(p);
-    const sheet = this.shell(`Choose stop ${p.rounds.length + 1} of ${STOPS}`, `${who(starterOf(p))} chooses. Both of you can help. Finish a round to light the next lantern.`);
+    const alone = this.alone() && !faceoff;
+    const sheet = this.shell(`Choose stop ${p.rounds.length + 1} of ${STOPS}`, alone ? 'Pick the next game. Finish a round to light the next lantern.' : `${who(starterOf(p))} chooses. Both of you can help. Finish a round to light the next lantern.`);
     const progress = node('div', '', 'couch-lanterns');
     progress.setAttribute('aria-label', `${p.rounds.length} of ${STOPS} lanterns lit`);
     for (let i = 0; i < STOPS; i++) progress.append(node('span', String(i + 1), i < p.rounds.length ? 'lit' : ''));
@@ -268,7 +292,7 @@ export class CouchScene extends Scene {
     heading.replaceWith(row); row.append(heading, progress);
     if (faceoff && p.rounds.length) sheet.append(node('p', `Face-off: ${who(0)}: ${a} · ${who(1)}: ${b}`, 'couch-tally'));
     if (last) sheet.append(node('p', this.resultLine(last, p), 'couch-result'));
-    if (p.selected) this.button(sheet, `Resume ${gameById(p.selected)!.name}${p.turn ? ` · ${who(playerNow(p))}’s turn` : ''}`, () => this.go(true), 'couch-primary');
+    if (p.selected) this.button(sheet, `Resume ${gameById(p.selected)!.name}${p.turn && !alone ? ` · ${who(playerNow(p))}’s turn` : ''}`, () => this.go(true), 'couch-primary');
     const grid = node('div', '', 'couch-cards'); sheet.append(grid);
     for (const id of offers(p, this.couch.data.trips)) {
       const mod = gameById(id)!, info = COUCH_INFO[id];
@@ -280,7 +304,7 @@ export class CouchScene extends Scene {
     const shuffle = unlockedIds(this.couch.data.trips).length > 3;
     this.footer(sheet, actions => {
       if (shuffle) this.button(actions, 'Shuffle the choices', () => { reshuffle(p); this.couch.save(); this.menu(); });
-      this.button(actions, 'Challenges', () => this.courseMenu());
+      this.button(actions, this.alone() ? 'Puzzle shelf' : 'Challenges', () => this.courseMenu());
     });
     if (last) void voice.say('couch.next');
   }
@@ -370,9 +394,9 @@ export class CouchScene extends Scene {
     }
     if (f.next) aside.append(node('p', `Finish another trip to open ${plural(f.next, 'more game')}.`, 'couch-teaser'));
 
-    const again = this.button(sheet, 'Start another trip', () => { this.couch.data.party = null; this.modeChoice(); }, 'couch-primary');
+    const again = this.button(sheet, 'Start another trip', () => { this.couch.data.party = null; if (this.alone()) this.startTrip('together'); else this.modeChoice(); }, 'couch-primary');
     if (first) again.classList.add('couch-reveal');
-    this.footer(sheet, actions => { this.button(actions, 'Challenges', () => this.courseMenu()); }, false);
+    this.footer(sheet, actions => { this.button(actions, this.alone() ? 'Puzzle shelf' : 'Challenges', () => this.courseMenu()); }, false);
     if (first) sheet.querySelector('.couch-foot')?.classList.add('couch-reveal');
     if (first) {
       void voice.say('couch.done').then(() => { if (!this.gone && !this.leaving && save.keepsake && save.trips === 1) void voice.say('couch.keepsake'); });
@@ -382,7 +406,7 @@ export class CouchScene extends Scene {
   /** One player's marks on the course: their bests in each support category, runs, and which badges they hold. */
   private playerCard(info: CourseInfo, player: 0 | 1, rec: PlayerRecord, outcome: Outcome | null) {
     const card = node('section', '', `couch-player side-${player}${outcome?.player === player ? ' played' : ''}`);
-    card.append(node('h2', who(player)));
+    card.append(node('h2', this.alone() ? (this.couch.data.names[0] ? `${this.couch.data.names[0]}’s marks` : 'Your marks') : who(player)));
     const list = node('dl');
     const row = (name: string, value: string) => { list.append(node('dt', name), node('dd', value)); };
     row('Best, no help', rec.clean === null ? 'not yet' : countOf(info, rec.clean));
@@ -403,14 +427,14 @@ export class CouchScene extends Scene {
   /** What the run just finished came to: the total against the minimum, the best, new badges, and the tries on each part. */
   private outcomePanel(info: CourseInfo, o: Outcome) {
     const panel = node('div', '', 'couch-outcome');
-    const mine = who(o.player), kind = o.assisted ? 'with help' : 'no help';
+    const mine = this.alone() ? '' : `${who(o.player)} · `, kind = o.assisted ? 'with help' : 'no help';
     const big = node('p', '', 'couch-big');
     big.append(node('b', String(o.total)), document.createTextNode(` ${o.total === 1 ? info.unit : unitsOf(info)}`));
     const line = o.total <= o.minimum ? `The fewest ${unitsOf(info)} possible: perfect!`
       : o.previous === null ? `Your first finish (${kind}). That is your mark to beat.`
       : o.improved ? `A new best (${kind})! It was ${o.previous}.`
       : `Your best (${kind}) is still ${o.previous}.`;
-    panel.append(big, node('p', `${mine} · course minimum ${o.minimum}. ${line}`, 'couch-outcome-line'));
+    panel.append(big, node('p', `${mine}${mine ? 'course' : 'Course'} minimum ${o.minimum}. ${line}`, 'couch-outcome-line'));
     const earned = o.earned.map(b => info.badges[b].title);
     if (earned.length) { const tag = node('p', '', 'couch-new-badges'); tag.append(node('em', 'NEW BADGE'), document.createTextNode(` ${earned.join(' and ')}`)); panel.append(tag); }
     const parts = node('ol', '', 'couch-pond-scores');
@@ -423,13 +447,17 @@ export class CouchScene extends Scene {
   /** The challenges on offer, each with both players' marks. */
   private courseMenu() {
     this.screen = 'courses'; this.buttons = [];
-    const sheet = this.shell('Challenges', 'A fixed run in one game, scored by how few tries it takes. Every player keeps their own best, and a hint is always allowed: it just goes in its own column.');
+    const alone = this.alone();
+    const sheet = this.shell(alone ? 'Puzzle shelf' : 'Challenges', alone
+      ? 'Every puzzle is open. Each is a fixed run scored by how few tries it takes, with an exact best (par) to chase. A hint is always allowed: it just goes in its own column.'
+      : 'A fixed run in one game, scored by how few tries it takes. Every player keeps their own best, and a hint is always allowed: it just goes in its own column.');
     const grid = node('div', '', 'couch-cards couch-courses'); sheet.append(grid);
     for (const id of COURSE_IDS) {
       const info = courseInfo(id), mod = gameById(info.game)!, saved = this.couch.data.courses[id];
       const b = this.button(grid, '', () => this.courseHome(id), `couch-card couch-course-card couch-course-${id}`);
       b.dataset.course = id;
-      const marks = [0, 1].map(p => { const best = saved?.players[p].clean ?? saved?.players[p].assisted ?? null; return `${who(p)}: ${best === null ? 'no finish yet' : `${best}${saved?.players[p].clean === null ? ' with help' : ''}`}`; }).join(' · ');
+      const marks = alone ? standing(shelfEntry(this.couch.data, id), info)
+        : [0, 1].map(p => { const best = saved?.players[p].clean ?? saved?.players[p].assisted ?? null; return `${who(p)}: ${best === null ? 'no finish yet' : `${best}${saved?.players[p].clean === null ? ' with help' : ''}`}`; }).join(' · ');
       b.append(this.iconCanvas(mod), node('strong', info.name), node('span', info.card), node('small', marks));
       if (saved?.run) b.append(node('em', 'IN PROGRESS', 'couch-new'));
     }
@@ -452,24 +480,71 @@ export class CouchScene extends Scene {
     const heading = sheet.querySelector('h1')!, row = node('div', '', 'couch-title-row');
     heading.replaceWith(row); row.append(heading, progress);
     if (outcome) sheet.append(this.outcomePanel(info, outcome));
-    const players = node('div', '', 'couch-players'); sheet.append(players);
-    for (const player of [0, 1] as const) players.append(this.playerCard(info, player, saved.players[player], outcome));
+    const alone = this.alone();
+    const players = node('div', '', `couch-players${alone ? ' couch-solo' : ''}`); sheet.append(players);
+    for (const player of alone ? [0] as const : [0, 1] as const) players.append(this.playerCard(info, player, saved.players[player], outcome));
+    if (alone) {
+      const entry = shelfEntry(this.couch.data, id);
+      players.append(node('p', `Par is ${entry.minimum} ${unitsOf(info)}${info.par ? `, every ${info.part} by its ${info.par}` : ''}. ${standing(entry, info)}.`, 'couch-standing'));
+    }
     if (!outcome) sheet.append(node('p', info.note, 'couch-keys'));
     const actions = node('div', '', 'couch-actions'); sheet.append(actions);
+    const label = (player: 0 | 1) => alone ? '' : `${who(player)} · `;
     if (run) {
-      this.button(actions, `Resume · ${who(run.player)} · ${info.part} ${Math.min(run.slides.length + 1, spec.boards)} of ${spec.boards}`, () => this.launchCourse(id, run.player, true), 'couch-primary');
-      this.button(actions, 'Start a fresh run', () => this.launchCourse(id, run.player));
+      this.button(actions, `Resume · ${label(run.player)}${info.part} ${Math.min(run.slides.length + 1, spec.boards)} of ${spec.boards}`, () => this.launchCourse(id, run.player, true), 'couch-primary');
+      this.button(actions, 'Start a fresh run', () => this.launchCourse(id, alone ? 0 : run.player));
+    } else if (alone) {
+      this.button(actions, saved.players[0].runs ? 'Play again' : 'Play', () => this.launchCourse(id, 0), 'couch-primary');
     } else {
       const next = outcome ? outcome.player : 0;
       this.button(actions, `${who(next)} plays`, () => this.launchCourse(id, next), 'couch-primary');
       this.button(actions, `${who(next === 0 ? 1 : 0)} plays`, () => this.launchCourse(id, next === 0 ? 1 : 0));
     }
-    this.button(actions, 'All challenges', () => this.courseMenu());
+    if (canWatchRoute(this.couch.data, id, !!outcome)) this.button(actions, 'Watch the best routes', () => this.watchRoute(id, 0), 'couch-route');
+    this.button(actions, alone ? 'Puzzle shelf' : 'All challenges', () => this.courseMenu());
     this.focusButtons();
     if (outcome) {
       sfx.tada();
       void voice.say(outcome.improved ? 'couch.course.best' : info.done);
     }
+  }
+
+  /** The best way through each part of a course, played by the game's demo bot on the real board, one part at a time. Nothing is scored. */
+  private watchRoute(id: CourseId, board: number) {
+    const info = courseInfo(id), spec = courseSpec(id), mod = gameById(info.game)!, play = COUCH_INFO[info.game];
+    this.closeIntro();
+    this.screen = 'route'; this.routeCourse = id; this.buttons = [];
+    this.overlay.replaceChildren();
+    this.overlay.className = 'couch couch-playing couch-howto-open';
+    const cap = info.part[0].toUpperCase() + info.part.slice(1);
+    const screen = node('section', '', 'couch-how-screen'), text = node('div', '', 'couch-how-text');
+    const head = node('div', '', 'couch-how-head'), title = node('div');
+    title.append(node('p', 'BEST ROUTE', 'couch-eyebrow'), node('h1', info.name), node('span', `${cap} ${board + 1} of ${spec.boards} · ${countOf(info, info.best[board])}`, 'couch-chip'));
+    head.append(this.iconCanvas(mod), title);
+    const tabs = node('div', '', 'couch-choices couch-parts');
+    info.best.forEach((_, i) => this.choice(tabs, `part-${i}`, `${cap} ${i + 1}`, i === board, () => this.watchRoute(id, i)));
+    const actions = node('div', '', 'couch-actions');
+    this.button(actions, 'Watch again', () => this.demo?.restart());
+    this.button(actions, 'Back to the course page', () => this.leaveRoute(), 'couch-primary');
+    text.append(head, node('p', `Watch the fewest ${unitsOf(info)} this ${info.part} allows. It is a replay: nothing is scored, and your own best is not touched.`, 'couch-goal'), tabs, actions);
+    const frame = node('div', '', 'couch-demo');
+    frame.setAttribute('aria-label', `The best route through ${info.part} ${board + 1}`);
+    this.demoWindow = frame;
+    screen.append(text, frame);
+    this.how = screen; this.overlay.append(screen);
+    this.demo = new Demo(mod, { level: info.level, band: play.band, renderer: this.app.renderer, part: { course: id, board } });
+    this.introLayer.addChild(this.demo.root);
+    this.drawPaper(this.view);
+    this.introLayer.visible = true;
+    this.ui.addChild(this.introLayer);
+    this.focusButtons(screen);
+    this.focusKey(`part-${board}`);
+  }
+
+  private leaveRoute() {
+    const id = this.routeCourse; this.routeCourse = null;
+    this.closeIntro();
+    if (id) this.courseHome(id); else this.menu();
   }
 
   /** Start (or resume) a run for a player. The first time the course's game is chosen, its how-to comes first. */
@@ -632,10 +707,12 @@ export class CouchScene extends Scene {
   /** Run the demo, put it in its window, and light the controller with whatever its bot presses. */
   private tickDemo(dt: number) {
     const demo = this.demo, win = this.demoWindow, info = this.howId && COUCH_INFO[this.howId];
-    if (!demo || !win || !info) return;
+    if (!demo || !win) return;
     demo.update(dt);
     const r = win.getBoundingClientRect(), s = this.view.scale;
     if (r.width > 10) demo.layout(r.left / s, r.top / s, r.width / s);
+    // A best-route replay has no controller diagram to light.
+    if (!info) return;
     // Without a bot, walk through the rows so the diagram still explains each control.
     const lit = demo.hasBot ? demo.lit : new Set(info.controls[Math.floor(this.age / 2) % info.controls.length].parts);
     this.pad?.light(lit);
@@ -651,7 +728,7 @@ export class CouchScene extends Scene {
     const hud = node('div', '', 'couch-hud');
     const turnOf = party && party.mode === 'faceoff' && info.faceoff === 'twin' ? ` · ${who(playerNow(party))}` : '';
     const title = node('div');
-    title.append(node('strong', course ? `${course.info.name} · ${who(course.player)}` : `${mod.name} · ${party!.rounds.length + 1}/${STOPS}${turnOf}`));
+    title.append(node('strong', course ? `${course.info.name}${this.alone() ? '' : ` · ${who(course.player)}`}` : `${mod.name} · ${party!.rounds.length + 1}/${STOPS}${turnOf}`));
     if (course) { this.stats.textContent = ''; title.append(this.stats); }
     hud.append(title, this.caption);
     this.button(hud, 'Pause / + / Esc', () => this.pause());
@@ -757,6 +834,14 @@ export class CouchScene extends Scene {
     this.button(sheet, 'Back to couch play', () => this.menu(), 'couch-primary'); this.focusButtons();
   }
 
+  /** Just me or two players. Kept at once; a trip under way finishes the way it began. */
+  private playersRow(parent: HTMLElement, redraw: (key: string) => void) {
+    const s = this.couch.data.settings;
+    for (const choice of PLAYER_CHOICES) this.choice(parent, `players-${choice}`, PLAYER_NAMES[choice], s.players === choice, () => {
+      s.players = choice as Players; this.couch.save(); redraw(`players-${choice}`);
+    });
+  }
+
   /** One choice among several: the chosen one is marked, and choosing it again changes nothing. */
   private choice(parent: HTMLElement, key: string, label: string, chosen: boolean, action: () => void) {
     const b = this.button(parent, label, action, `couch-choice${chosen ? ' couch-chosen' : ''}`);
@@ -794,20 +879,25 @@ export class CouchScene extends Scene {
     this.button(sound.row, 'Louder', level(1), 'couch-choice').dataset.key = 'louder';
     this.choice(sound.row, 'music', `Music: ${s.music ? 'on' : 'off'}`, s.music, () => change('music', () => { s.music = !s.music; }));
 
+    const players = section('Who is playing', s.players === 'one' ? 'Player 2, face-offs and turn cards are left out, and Challenges become your puzzle shelf.' : 'Two people taking turns, with trips together or face-off. Choose Just me to play alone.');
+    this.playersRow(players.row, key => this.settingsPage(key));
+    players.note.textContent += ' A trip already under way finishes the way it began.';
+
     const text = section('Text size', 'Grows every couch screen, on top of how big the window is.');
     for (const size of TEXT_SIZES) this.choice(text.row, `text-${size}`, TEXT_NAMES[size], s.text === size, () => change(`text-${size}`, () => { s.text = size as TextSize; }));
 
     // Names are typed on a keyboard, once; the couch itself never needs one.
     const names = node('section', '', 'couch-setting couch-names');
-    names.append(node('h2', 'Names'), node('p', 'Optional. They replace Player 1 and Player 2 on every screen. Typing needs a keyboard, once.', 'couch-setting-note'));
-    for (const player of [0, 1] as const) {
+    const solo = s.players === 'one';
+    names.append(node('h2', solo ? 'Your name' : 'Names'), node('p', solo ? 'Optional. It replaces “You” on your puzzle shelf. Typing needs a keyboard, once.' : 'Optional. They replace Player 1 and Player 2 on every screen. Typing needs a keyboard, once.', 'couch-setting-note'));
+    for (const player of solo ? [0] as const : [0, 1] as const) {
       const row = node('label');
       const input = node('input');
       input.type = 'text'; input.maxLength = NAME_MAX; input.placeholder = `Player ${player + 1}`; input.autocomplete = 'off'; input.spellcheck = false;
       input.value = this.couch.data.names[player]; input.dataset.player = String(player);
-      input.setAttribute('aria-label', `Player ${player + 1}’s name`);
+      input.setAttribute('aria-label', solo ? 'Your name' : `Player ${player + 1}’s name`);
       input.oninput = () => { this.couch.data.names[player] = cleanName(input.value); this.couch.save(); };
-      row.append(node('span', `Player ${player + 1}`), input);
+      row.append(node('span', solo ? 'Name' : `Player ${player + 1}`), input);
       names.append(row);
     }
     grid.append(names);
@@ -817,8 +907,7 @@ export class CouchScene extends Scene {
     this.button(actions, 'Controller setup', () => this.setup());
     this.button(actions, 'Back to couch play', () => this.menu(), 'couch-primary');
     this.focusButtons();
-    const at = this.buttons.findIndex(b => b.dataset.key === focusKey);
-    if (at >= 0) { this.focus = at; this.buttons[at].focus(); }
+    this.focusKey(focusKey);
   }
 
   private backup() {
@@ -854,7 +943,7 @@ export class CouchScene extends Scene {
     if (this.leaving || this.age < 0.35) return;
     if (this.couch.warning) this.warning.textContent = this.couch.warning;
     if (input.disconnected) this.pause('Controller disconnected. Reconnect it, or resume using the keyboard.');
-    if (this.screen === 'intro' || this.screen === 'howto') this.tickDemo(dt);
+    if (this.screen === 'intro' || this.screen === 'howto' || this.screen === 'route') this.tickDemo(dt);
     this.finaleStage?.update(dt);
     if (this.screen === 'card') {
       this.cardAge += dt;
@@ -872,6 +961,7 @@ export class CouchScene extends Scene {
       else if (this.screen === 'pause') this.resume();
       else if (this.screen === 'intro') this.backFromIntro();
       else if (this.screen === 'howto') this.closeHowTo();
+      else if (this.screen === 'route') this.leaveRoute();
       else if (this.screen !== 'menu') this.menu();
       return;
     }

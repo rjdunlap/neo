@@ -30,6 +30,8 @@ export interface CourseInfo {
   unit: string;
   /** What the fewest for one part is called ("best route"), or null when it is always one try. */
   par: string | null;
+  /** The game can replay the best way through each part ("Watch the best route"): its demo bot plays the solver's route on that part. */
+  routes: boolean;
   /** The fewest tries for each part, in order, and in all. */
   best: readonly number[];
   minimum: number;
@@ -44,7 +46,7 @@ export interface CourseInfo {
 /** The two Penguin Slide courses speak alike; only the ponds, and how they are pitched, differ. */
 const ponds = (id: PondCourseId, card: string): CourseInfo => ({
   id, game: 'penguin-slide', level: 5, version: PONDS[id].version, name: PONDS[id].name, blurb: PONDS[id].blurb, card,
-  part: 'pond', unit: 'slide', par: 'best route', best: courseBoards(id).map(b => b.best), minimum: courseMinimum(id),
+  part: 'pond', unit: 'slide', par: 'best route', routes: true, best: courseBoards(id).map(b => b.best), minimum: courseMinimum(id),
   rule: 'Slide for the fewest slides. Every slide counts, even one you undo.',
   note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a pond starts that pond again, and the slides you made still count.',
   leaving: 'Leaving or refreshing starts the pond you are on again, and the slides you made on it still count. Finished ponds stay saved.',
@@ -61,7 +63,7 @@ const build: Record<CourseId, () => CourseInfo> = {
   clouds: () => ({
     id: 'clouds', game: 'bouncy-launch', level: 3, version: CLOUDS.version, name: CLOUDS.name, blurb: CLOUDS.blurb,
     card: 'Bouncy Launch, twelve small clouds in a row. Land on each with as few launches as you can, then beat your own best.',
-    part: 'cloud', unit: 'launch', par: null, best: CLOUDS.targets.map(() => 1), minimum: cloudMinimum(),
+    part: 'cloud', unit: 'launch', par: null, routes: false, best: CLOUDS.targets.map(() => 1), minimum: cloudMinimum(),
     rule: 'Land on every cloud with the fewest launches. Every launch counts, even a miss.',
     note: 'Two misses on a cloud bring a hint: once shown it marks the whole run as helped, and helped and unhelped bests are kept apart. Leaving in the middle of a cloud starts you on it again, and the launches you made at it still count.',
     leaving: 'Leaving or refreshing starts you again on the cloud you are on, and the launches you made at it still count. Finished clouds stay saved.',
