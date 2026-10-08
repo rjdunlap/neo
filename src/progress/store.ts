@@ -3,6 +3,7 @@ import { bandInfo, type Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
 import { flipItem, moveItem, tidy } from '../content/room';
 import { canUndo, keepCreation, undoCreation, type Creation } from '../content/creations';
+import { discover, hasNew, markSeen } from '../content/journal';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
 import { defaults, HISTORY_LENGTH, migrate, type GameStats, type RoundRecord, type SaveData, type StoryProgress } from './save';
@@ -107,6 +108,32 @@ class Store {
   undoCreation(kind: Creation['kind']) {
     this.data.creations = undoCreation(this.data.creations, kind);
     this.save();
+  }
+
+  get journal() {
+    return this.data.journal;
+  }
+
+  /** File what a round showed. Returns the entries that are new this time. */
+  discover(ids: readonly string[] | undefined): string[] {
+    const r = discover(this.data.journal, ids);
+    if (r.added.length) {
+      this.data.journal = r.journal;
+      this.save();
+    }
+    return r.added;
+  }
+
+  /** She opened the journal: everything found so far counts as looked at. */
+  openJournal() {
+    const next = markSeen(this.data.journal);
+    if (next === this.data.journal) return;
+    this.data.journal = next;
+    this.save();
+  }
+
+  get journalHasNew(): boolean {
+    return hasNew(this.data.journal);
   }
 
   get picnic(): StoryProgress {

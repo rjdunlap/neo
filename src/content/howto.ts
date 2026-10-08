@@ -125,7 +125,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Find out which things float and which sink.',
     steps: ['Tap a thing to drop it in the water and watch.', 'From level 3, tap a guess (float or sink) first, then test it.', 'Later levels sort things into float and sink baskets.'],
     finish: 'The round ends when every thing has been dropped (or sorted).',
-    note: 'A guess is never wrong; testing is how to find out.',
+    note: 'A guess is never wrong; testing is how to find out. Each thing she watches go into the water is added to her discovery journal in the treehouse.',
   },
   'duckling-parade': {
     goal: 'Lead Mama Duck so the ducklings follow her to the pond.',
@@ -325,6 +325,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Feed the animals their favorite snacks.',
     steps: ['Tap an animal or a snack.', 'Later levels drag each snack to its animal, or give a number of snacks.'],
     finish: 'The round ends when every animal has its snack.',
+    note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
   },
   'beat-builder': {
     goal: 'Make a beat with a drum, clap and bell.',

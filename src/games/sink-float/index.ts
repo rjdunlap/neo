@@ -5,6 +5,7 @@ import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
+import { entryId } from '../../content/journal';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
@@ -56,6 +57,8 @@ class SinkFloat implements Game {
   private view: View;
   private clock = 0;
   private nextSlot = 0;
+  /** Things she has watched go into the water this round: the discoveries for her journal. */
+  private readonly seen = new Set<Thing>();
   // Couch play on guessing levels: a ring on Float (left) or Sink (right).
   private pick = 0;
   private couchOn = false;
@@ -108,6 +111,7 @@ class SinkFloat implements Game {
   private async splash(item: Item) {
     const t = this.tank;
     const tw = this.ctx.tw;
+    this.seen.add(item.thing);
     // Reserve the spot now: several things can be in the air at once.
     const slot = this.nextSlot++;
     const x = this.slotX(slot);
@@ -243,7 +247,7 @@ class SinkFloat implements Game {
     this.ctx.pet.cheer();
     sfx.sparkle();
     await this.ctx.say('sink.done');
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.seen].map((t) => entryId('sink-float', t)) });
   }
 
   // Layout -----------------------------------------------------------------------------

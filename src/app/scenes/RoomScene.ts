@@ -17,7 +17,8 @@ import type { View } from '../../engine/view';
 import { gameById } from '../../games/registry';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, arrowIcon, flipIcon, islandIcon } from '../../ui/icons';
+import { againIcon, arrowIcon, flipIcon, islandIcon, magnifierIcon } from '../../ui/icons';
+import { Sparkle } from '../../ui/sparkle';
 import { BOARD, PLAQUE, pictureBoard, TunePlaque } from '../../ui/creation-art';
 import { StickerPicker } from '../../ui/sticker-picker';
 import { label } from '../../ui/text';
@@ -63,6 +64,8 @@ export class RoomScene extends Scene {
   private readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.app.go.hub());
   private readonly flip = new RoundButton(flipIcon(), swatch.white, 50, () => this.flipSelected());
   private readonly tidyButton = new RoundButton(againIcon(), swatch.white, 50, () => this.tidy());
+  /** The discovery journal. It twinkles while there is something in it she has not looked at. */
+  private readonly journalButton = new RoundButton(magnifierIcon(), swatch.white, 50, () => { void voice.say('journal.hello'); this.app.go.journal(); });
   private readonly ring = new Graphics();
   readonly pieces = new Map<RoomItemId, Piece>();
   private picker: StickerPicker | null = null;
@@ -85,7 +88,12 @@ export class RoomScene extends Scene {
     onTap(this.pet, () => { this.pet.poke(); sfx.giggle(); }, { radius: 90 });
     this.pet.hitArea = new Rectangle(-150, -300, 300, 320);
     this.stage.addChild(this.track(this.pet));
-    this.ui.addChild(this.dim, this.home, this.flip, this.tidyButton, this.undoPicture, this.undoTune);
+    this.ui.addChild(this.dim, this.home, this.flip, this.tidyButton, this.journalButton, this.undoPicture, this.undoTune);
+    if (store.journalHasNew) {
+      const sparkle = this.track(new Sparkle(24));
+      sparkle.position.set(36, -36);
+      this.journalButton.addChild(sparkle);
+    }
     this.flip.alpha = 0.35;
     onTap(this.frame, () => this.openPicker(), { cooldown: 400 });
     onTap(this.board, () => void this.viewPicture(), { cooldown: 400 });
@@ -125,6 +133,7 @@ export class RoomScene extends Scene {
     this.home.position.set(64, 64);
     this.flip.position.set(v.w - 190, v.h - 70);
     this.tidyButton.position.set(v.w - 75, v.h - 70);
+    this.journalButton.position.set(v.w - 305, v.h - 70);
     this.dim.clear().rect(0, 0, v.w, v.h).fill({ color: 0x1d2350, alpha: 1 });
     this.dim.alpha = this.lit ? 0 : 0.38;
     for (const piece of this.pieces.values()) this.place(piece, false);

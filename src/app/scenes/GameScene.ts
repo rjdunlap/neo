@@ -7,6 +7,7 @@ import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
+import { entryById, type JournalEntry } from '../../content/journal';
 import { howToFor } from '../../content/howto';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
@@ -18,6 +19,7 @@ import type { Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon } from '../../ui/howto-card';
+import { discoveryPill } from '../../ui/journal-art';
 import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
 import type { App, StoryRound } from '../App';
@@ -42,6 +44,8 @@ export class GameScene extends Scene {
   after: { again: RoundButton; heart: RoundButton; home: RoundButton; keep: RoundButton | null } | null = null;
   /** What she made this round, offered for the treehouse (null when the game made nothing or it was empty). */
   private made: Creation | null = null;
+  /** Journal entries this round showed her for the first time. */
+  private discovered: JournalEntry[] = [];
   private level = 1;
   private seconds = 0;
   private finished = false;
@@ -178,6 +182,7 @@ export class GameScene extends Scene {
     if (this.finished) return;
     this.finished = true;
     this.made = cleanCreation(result.creation);
+    this.discovered = store.discover(result.discoveries).map((id) => entryById(id)).filter((e): e is JournalEntry => !!e);
     this.closeHelp();
     const band = this.band;
     store.recordRound(
@@ -245,6 +250,19 @@ export class GameScene extends Scene {
     await this.tw.wait(0.5);
     void voice.say('sticker');
     await this.tw.wait(1.8);
+
+    // A first look at something for her journal: a little card with what she found, then on to the buttons.
+    if (this.discovered.length) {
+      const pill = discoveryPill(this.discovered);
+      pill.position.set(v.w / 2, v.h * 0.555);
+      pill.scale.set(0);
+      layer.addChild(pill);
+      void this.tw.to(pill.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
+      sfx.sparkle();
+      confetti.burst(pill.x, pill.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 12, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
+      void voice.say('journal.new');
+      await this.tw.wait(1.8);
+    }
 
     if (session.over) {
       await this.tw.wait(0.8);
