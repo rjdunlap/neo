@@ -70,6 +70,7 @@ import { owlWalk } from './owl-walk';
 import { gardenRows } from './garden-rows';
 import { ferryJam } from './ferry-jam';
 import { critterCrossing } from './critter-crossing';
+import { sudokuGarden } from './sudoku-garden';
 import type { GameModule } from './types';
 
 /**
@@ -151,3 +152,14 @@ export const GAMES: GameModule[] = [
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);
+
+/**
+ * Games made for one or two grown-ups on the couch route and nowhere else: they are not in `GAMES`, so no place, shelf,
+ * favorite, parent-panel level picker or sticker book on the child's island ever lists them, and `go.game` cannot open them.
+ * Couch play looks games up with `couchGameById`, which knows both lists.
+ */
+export const GROWNUP_GAMES: GameModule[] = [
+  sudokuGarden,
+];
+
+export const couchGameById = (id: string) => gameById(id) ?? GROWNUP_GAMES.find((g) => g.id === id);

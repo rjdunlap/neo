@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../content/voice-script';
-import { gameById } from '../games/registry';
+import { couchGameById as gameById } from '../games/registry';
 import { COUCH_INFO, couchLine } from './catalog';
 import { COUCH_IDS } from './party';
 

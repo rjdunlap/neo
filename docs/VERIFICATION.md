@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-07 (405 tests) | Couch Just me entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-07 (436 tests) | Sudoku Garden entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
@@ -16,11 +16,12 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me | Child's island, couch Settings and Just me entries | Peg Garden's bot needed one retry (its known flake) |
-| `couchcourse` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About four to seven minutes |
+| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden (filtered) | Child's island, couch Settings, Just me and Sudoku Garden entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchcourse` | 2026-10-07, after the Sudoku courses joined the list | Sudoku Garden entry | About four to seven minutes |
 | `couchnames` | 2026-10-07, after Just me | Couch Just me entry | |
 | `couchsettings` | 2026-10-07, after Just me | Couch Just me entry | About 30 seconds |
-| `couchsolo` | 2026-10-07 | Couch Just me entry | About 40 seconds |
+| `couchsolo` | 2026-10-07, after the Sudoku courses joined the shelf | Sudoku Garden entry | About 40 seconds |
+| `couchbeds` | 2026-10-07 | Sudoku Garden entry | About three minutes; plays a full six-bed course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -35,6 +36,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Sudoku Garden, the first grown-up-only game (2026-10-07)
+
+What changed: roadmap step 4 of grown-up play for one. **Sudoku Garden** is a couch-only puzzle (`GROWNUP_GAMES`, a new list the child's island never reads; `couchGameById` finds games in both lists): 6 by 6 and 9 by 9 beds, a technique solver (lone, only place, pair, pointing line) that grades each bed and explains each hint, a number tray and pencil marks on a controller, par in entries, two puzzle-shelf courses (Six Beds, Three Big Beds). The contract gained an optional `Game.askForHint()` with a `hint` label in the couch catalog (a pause-menu button, for help she asks for), and `HeldDirection` in `src/engine/controller.ts` gives a cursor hold-to-repeat. Rules, generator, hints and course beds are in `src/games/sudoku-garden/`.
+
+- `npm run typecheck`, `npm test` (436 tests: 30 new for the rules, the technique solver's soundness against the solution, every plan's exact blanks and grade over many seeds, hints that always finish a bed with and without a wrong number, the frozen beds, the registry keeping grown-up games off the island, `HeldDirection` and the plural of "entry") and `npm run build` passed.
+- New `BROWSER_SUITE=couchbeds` passed twice (the second time on the final code): Just me, the shelf and course page, the tray, a wrong entry that counts and is taken back free, a replaced number, pencil marks, the pause menu's hint (a wrong number named first, then a number with a reason; the run marked helped, saved at once), restart with entries kept, a reload that resumes the bed with its entries, and a fresh bot run of all six beds with exactly 124 entries, one sticker and both badges. `BROWSER_SUITE=couchgames COUCH_ONLY=sudoku-garden` passed twice (intro, controller lighting, bot round, save, the guide). On a snapshot, `couchsolo` and the full `couchcourse` passed after their course lists were extended to five.
+- Screenshots looked at: a 6 by 6 bed at the start and part-way, a 9 by 9 bed, the number tray, a hint (the hint text first overlapped the top caption and was moved to a panel under the tray; its ring first hid under the cursor), the pause menu, the course page and a finished run. The board was shrunk and moved down after the first look, because the controller reminder covered its bottom row and the course HUD covered its top.
+- Not run: `world`, `smoke`, the offline check and the full `couch` suite (no island game, place, navigation or asset changed, and trip, face-off and finale code did not change; the couch tier list gained one game at its end). Open and needing a person: whether the tray is quick enough with a real stick, whether the blossom colors help, how the hints read, and whether the 6 by 6 beds are too easy and a 9 by 9 bed too long for one sitting.
 
 ### Couch "Just me" and the puzzle shelf (2026-10-07)
 

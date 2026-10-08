@@ -1,6 +1,7 @@
 import type { LineId } from '../content/voice-script';
 import { CLOUDS, cloudMinimum } from '../games/bouncy-launch/course';
 import { COURSES as PONDS, courseBoards, courseMinimum, type PondCourseId } from '../games/penguin-slide/course';
+import { COURSES as BEDS, courseBest as bedBest, courseMinimum as bedMinimum, type BedCourseId } from '../games/sudoku-garden/course';
 import type { CouchId } from './party';
 
 /**
@@ -9,9 +10,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds';
+export type CourseId = PondCourseId | 'clouds' | BedCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -57,9 +58,25 @@ const ponds = (id: PondCourseId, card: string): CourseInfo => ({
   },
 });
 
+/** The two Sudoku Garden courses speak alike; only the beds differ. */
+const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
+  id, game: 'sudoku-garden', level: id === 'beds' ? 3 : 6, version: BEDS[id].version, name: BEDS[id].name, blurb: BEDS[id].blurb, card,
+  part: 'bed', unit: 'entry', par: 'fewest', routes: false, best: bedBest(id), minimum: bedMinimum(id),
+  rule: 'Fill every bed with the fewest entries you can: one for each empty square, with nothing replaced. Taking a number out and pencil marks are free.',
+  note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a bed starts that bed again, and the entries you made on it still count.',
+  leaving: 'Leaving or refreshing starts the bed you are on again, and the entries you made on it still count. Finished beds stay saved.',
+  done,
+  badges: {
+    finish: { title: 'Finished', how: 'Finish every bed, with or without help.' },
+    minimum: { title: 'Every entry right', how: 'Finish with one entry for each empty square and no hint.' },
+  },
+});
+
 const build: Record<CourseId, () => CourseInfo> = {
   practice: () => ponds('practice', 'Penguin Slide, five gentle ice puzzles with no dead ends. A warm-up, or an easy game for the evening.'),
   ponds: () => ponds('ponds', 'Penguin Slide, five ice puzzles that take real planning. Use the fewest slides you can, then beat your own best.'),
+  beds: () => beds('beds', 'Sudoku Garden, six small beds in a row. Place every number once, and beat your own best.', 'couch.course.beds'),
+  bigbeds: () => beds('bigbeds', 'Sudoku Garden, three full 9 by 9 beds. An evening\'s puzzle: fewer replaced numbers is better.', 'couch.course.bigbeds'),
   clouds: () => ({
     id: 'clouds', game: 'bouncy-launch', level: 3, version: CLOUDS.version, name: CLOUDS.name, blurb: CLOUDS.blurb,
     card: 'Bouncy Launch, twelve small clouds in a row. Land on each with as few launches as you can, then beat your own best.',
@@ -83,7 +100,7 @@ export function courseInfo(id: CourseId): CourseInfo {
   return info;
 }
 
-/** "slides", "launches". */
-export const unitsOf = (info: CourseInfo) => info.unit + (/(s|x|ch|sh)$/.test(info.unit) ? 'es' : 's');
+/** "slides", "launches", "entries". */
+export const unitsOf = (info: CourseInfo) => /[^aeiou]y$/.test(info.unit) ? `${info.unit.slice(0, -1)}ies` : info.unit + (/(s|x|ch|sh)$/.test(info.unit) ? 'es' : 's');
 /** "1 slide", "3 launches". */
 export const countOf = (info: CourseInfo, n: number) => `${n} ${n === 1 ? info.unit : unitsOf(info)}`;

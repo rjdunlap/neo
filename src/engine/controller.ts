@@ -19,6 +19,40 @@ type Pad = Pick<Gamepad, 'index' | 'id' | 'mapping' | 'connected' | 'axes' | 'bu
 const deadzone = (v = 0) => Math.abs(v) < 0.22 ? 0 : Math.sign(v) * (Math.abs(v) - 0.22) / 0.78;
 const direction = (x: number, y: number) => Math.max(Math.abs(x), Math.abs(y)) < 0.5 ? -1 : Math.abs(x) > Math.abs(y) ? x > 0 ? 0 : 2 : y > 0 ? 1 : 3;
 
+/**
+ * Hold-to-repeat for a cursor. The sampler reports a direction once per press, which suits menus; a cursor that has to cross
+ * a 9 by 9 bed wants to keep going while the stick is held. `poll` gives the moves for this frame: one at the press, then,
+ * once the same direction has been held for `after` seconds, one every `every` seconds. Without a held stick (a demo bot) it
+ * gives only the pressed direction, so repeating never changes what a bot does.
+ */
+export class HeldDirection {
+  private dir = -1;
+  private held = 0;
+  private due = 0;
+  constructor(private readonly after = 0.4, private readonly every = 0.11) {}
+  poll(input: CouchControls, dt: number): number[] {
+    const pressed = input.players.find((p) => p.direction >= 0)?.direction ?? -1;
+    if (pressed >= 0) {
+      this.dir = pressed;
+      this.held = 0;
+      this.due = this.after;
+      return [pressed];
+    }
+    const now = input.players.map((p) => direction(p.x, p.y)).find((d) => d >= 0) ?? -1;
+    if (now < 0 || now !== this.dir) {
+      this.dir = -1;
+      return [];
+    }
+    this.held += dt;
+    const moves: number[] = [];
+    while (this.held >= this.due) {
+      this.due += this.every;
+      moves.push(now);
+    }
+    return moves;
+  }
+}
+
 /** Pure sampler, also exercised with synthetic devices. Slot identities survive disconnects. */
 export class ControllerSampler {
   private slots: (number | undefined)[] = [undefined, undefined];
