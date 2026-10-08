@@ -4,7 +4,7 @@
 
 Puddle Island is a home-made iPad learning game for the developer's daughter, who is about to turn one in October 2026. Its current activities grow from lap play through roughly age six. The longer-term direction reaches elementary school through roughly grade 5 / age eleven, starting with a 6–8 pilot. The inspiration is the discovery and playful learning of JumpStart, the companion and world of Neopets, and the variety of small games found on Kongregate.
 
-The island is an age trail: each place contains the activities for its band. There are sixty-seven games, and one short story, the Windy Picnic. [ROADMAP.md](ROADMAP.md) separates completed milestones, work needing verification, and proposals. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) holds the game and world concepts with their learning goals and inspiration. This document describes current behavior, with future direction explicitly labeled below.
+The island is an age trail: each place contains the activities for its band. It has a large game catalog and one short story, the Windy Picnic; current counts live in the README and the roadmap's current position. [ROADMAP.md](ROADMAP.md) separates completed milestones, work needing verification, and proposals. [ARCADE-IDEAS.md](ARCADE-IDEAS.md) holds the game and world concepts with their learning goals and inspiration. This document describes current behavior, with future direction explicitly labeled below.
 
 The developer is not an artist. All game artwork is generated in code with PixiJS Graphics, and sounds and music are synthesized with Web Audio. The visual direction should be achievable with the shared shape, animal, scenery, and particle builders, without sprites or an external asset pipeline.
 

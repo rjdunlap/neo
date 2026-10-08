@@ -175,7 +175,7 @@ Later, show a saved drawing, play a saved Song Maker tune, and display a friend 
 | Idea / likely starting range | Play and educational action | Deeper 6–8 mode | Smallest useful version / effort |
 | --- | --- | --- | --- |
 | **Critter Crossing / 5–8** — Zoombinis | Test who fits a bridge rule; compare accepted examples and waiting friends | Combine two attributes, then infer AND/OR rules with an evidence tray | Four friends, one visible rule then one hidden rule; everyone waits safely; M |
-| **Chain Reaction / 5–8** — The Incredible Machine | Arrange ramps and bumpers so a ball rings a bell; predict, run, and edit | Two destinations, compare paths, change one variable at a time; several valid designs | Three fixed parts and two movable pieces, reset and slow replay; M |
+| **Chain Reaction / 5–8 (built)** — The Incredible Machine | Arrange large ramps so a marble rings a bell; predict, run, and edit (failed runs are experiments, not misses) | Touch a little chime before the final bell, change one piece at a time; the top level has several valid designs | Six levels, two machines per round, up to three fixed and two movable ramps, deterministic replay and one-placement help; M |
 | **Story Theater / 4–8** — Living Books, JumpStart, puppet play | Choose characters, arrange events, then watch a narrated little show | Choose an ending supported by clues; change one event and compare its consequences | Extend Story Steps with one branching story and a replay stage; M |
 | **Habitat Helpers / 5–8** — Neopets collecting, Viva Piñata | Put shelter, food, and water in a garden to invite a known visitor; test a prediction | Meet two visitors' compatible needs; compare observations in the journal | Two stylized visitors and explicit needs; growth advances by actions, no real-time waiting; M |
 
@@ -217,7 +217,7 @@ Grouping by the underlying mechanic shows overlaps and possible reuse. Inspect e
 | Catch what falls | Egg Catch | Juice Squish | Egg Catch's slow falls, held-finger basket and gates |
 | Aim and bounce (physics) | Bouncy Launch, Peg Garden, Bounce Back, Bumper Garden | Mini Golf, Pin Roll, Roll Ball, Block Topple, Snack Drop, Keepy Uppy | `engine/ball.ts`: ball, peg and wall physics with an optional ceiling and springy bumpers, and `simulate()` to preview or pick a shot |
 | Draw to control | Rainbow Fingers, Letter Trails, Dot Link | Cloud Path, Rainbow Road, Water Paths, Lasso Loops | Turning a drawn line into something a ball can ride |
-| Build and place | Bug Builder, Tangram Town, Stamp Studio | Block Builder, Chain Reaction, Shape Drop, Machine Line, Little Town Planner | A grid and snap-placement helper |
+| Build and place | Bug Builder, Tangram Town, Stamp Studio, Chain Reaction | Block Builder, Shape Drop, Machine Line, Little Town Planner | A grid and snap-placement helper |
 | Serve an order | Scoop Shop, Monster Munch, Mail Carrier, Pet Kitchen | Juice Bar, Little Farm | An order bubble and customer queue |
 | Match and sort | Color Garden, Shape Sorter, Sink or Float, Critter Sort | Trash Sort, Bug Net, Critter Crossing, Claw Catch, Fripple Orders, Snap Pairs, Shape Rollers | (Already well covered by drag.ts) |
 | Rhythm and sound | Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Beat Builder | Stomp Steps, Clap the Syllables, Little Conductor, Hat Band, Sing Higher, Draw a Song | Beat-synced spawning from `music.beats()`; Sound Garden's forgiving rhythm-echo judge |
@@ -337,7 +337,7 @@ These references span preschool through elementary school. Preserve exploration 
 | Busy Picture | Living Books | A storybook page where everything does something when tapped | Words light up as they're read; tap a word to hear it | Story Grove literacy |
 | Lost and Found | Putt-Putt, Freddi Fish, Pajama Sam | Help a friend find a lost thing across three little screens | Give each thing to the right friend (a bone for the dog) | Problem solving; short quests |
 | Critter Crossing (built, 2026-10-07) | Zoombinis | Critters with hats, noses and feet line up; some can cross the bridge | Work out the secret rule for who can cross | Pre-K deduction; the critters never fall off. Critter Sort's guess-the-rule level already covers naming a rule from sorted examples |
-| Chain Reaction | The Incredible Machine | Watch a ball roll through ramps, fans and springs to ring a bell | Place one or two missing parts to make it work | Tinker Lab; pre-K |
+| Chain Reaction (built, 2026-10-07) | The Incredible Machine | Watch a marble run through ramps to ring a bell | Place one or two missing ramps, touch a chime before the bell, and find another working design | Tinker Lab; pre-K–school; failed runs are experiments |
 | Follow the Leader | Lemmings | Little critters march along; place signs to guide them to the door | Split them between two doors; compare plans | Roughly 5–8; nobody falls (they turn around) |
 | Munch Maze | Cookie Monster Munch (Atari), Pac-Man | Carry cookies one at a time through a simple maze to the jar | Bring exactly 4; the ghosts are friendly and wave | Merges the catalog's Maze Walk |
 
