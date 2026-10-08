@@ -98,6 +98,8 @@ class PenguinSlide implements Game {
   private carry = 0;
   private assisted = false;
   private told = false;
+  /** A restart asked for mid-slide waits until the penguin has stopped. */
+  private again = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -117,6 +119,9 @@ class PenguinSlide implements Game {
     this.board.eventMode = 'static';
     onTap(this.board, (e) => void this.tapIce(e), { cooldown: 150 });
     this.undo = new RoundButton(againIcon(), swatch.white, 54, () => this.back());
+    // The couch screen takes no pointer input, so a round arrow there would look like a restart and do nothing.
+    // Controllers undo with the left button and restart from the pause menu.
+    this.undo.visible = !ctx.couch;
     ctx.stage.addChild(this.board, this.undo, this.glow);
   }
 
@@ -141,7 +146,7 @@ class PenguinSlide implements Game {
     this.clock += dt;
     if (!this.busy) this.penguin.rotation = 0.05 * Math.sin(this.clock * 3);
     const g = this.glow.clear();
-    if (this.stuck && !this.busy) g.circle(this.undo.x, this.undo.y, 68 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
+    if (this.stuck && !this.busy && this.undo.visible) g.circle(this.undo.x, this.undo.y, 68 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
     this.drawArrow();
   }
 
@@ -169,6 +174,7 @@ class PenguinSlide implements Game {
 
   private async next() {
     this.busy = true;
+    this.again = false;
     this.index++;
     if (this.index >= (this.course?.boards.length ?? this.plan.puzzles)) return void this.finale();
     this.puzzle = this.course ? this.course.boards[this.index] : makePuzzle(this.plan, this.ctx.rng);
@@ -240,9 +246,12 @@ class PenguinSlide implements Game {
     if (!passed.length) {
       // Already against something: a little bump, never a mistake.
       sfx.boing();
+      this.busy = true;
       const x = this.penguin.x;
       await this.ctx.tw.to(this.penguin, { x: x + [6, 0, -6, 0][dir] }, { duration: 0.06 });
       await this.ctx.tw.to(this.penguin, { x }, { duration: 0.1 });
+      this.busy = false;
+      if (this.again) this.restart();
       return;
     }
     this.busy = true;
@@ -271,6 +280,33 @@ class PenguinSlide implements Game {
     if (this.have === (1 << this.puzzle.fish.length) - 1) return void this.win();
     this.checkHelp();
     this.busy = false;
+    if (this.again) this.restart();
+  }
+
+  /**
+   * Couch pause menu: start this pond over from its first position, fish and all. The slides already
+   * taken keep counting (undone ones do too), so a restart never improves a score.
+   */
+  restart() {
+    if (this.finished || !this.puzzle) return;
+    if (this.busy) {
+      this.again = true;
+      return;
+    }
+    void this.rewind();
+  }
+
+  private async rewind() {
+    this.busy = true;
+    this.again = false;
+    this.at = { ...this.puzzle.start };
+    this.have = 0;
+    this.history = [];
+    this.fishNodes.forEach((f) => (f.visible = true));
+    const p = this.at2(this.at);
+    await this.ctx.tw.to(this.penguin, { x: p.x, y: p.y }, { duration: 0.3, ease: ease.inOutSine });
+    this.busy = false;
+    this.checkHelp();
   }
 
   /** Undo one slide: the fish it ate come back too. */

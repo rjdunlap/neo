@@ -4256,6 +4256,32 @@ async function couchCourse() {
   assert.equal(save.courses.ponds.players[0].clean, 30, 'the Five Ponds record is separate');
   await screenshot('couch-practice-result');
 
+  // --- Pause, "Start this pond again": the penguin goes home with every fish back, the slides still count, and the pond can still be finished.
+  // (The round arrow beside the pond is not drawn on the couch: the couch takes no pointer input, so it could only look like a restart.)
+  await page.getByRole('button', { name: 'Player 2 plays', exact: true }).click();
+  await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'game');
+  await page.waitForTimeout(700); await makePads(); await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(() => neo.scene.game.undo.visible), false, 'no round arrow that cannot be clicked');
+  const homeNow = () => page.evaluate(() => { const g = neo.scene.game; return { moves: g.moves, home: g.at.x === g.puzzle.start.x && g.at.y === g.puzzle.start.y, have: g.have, history: g.history.length }; });
+  await page.waitForFunction(() => !neo.scene.game.busy);
+  await press(dpad[await next()]); await page.waitForTimeout(600);
+  await page.waitForFunction(() => !neo.scene.game.busy);
+  assert.deepEqual({ ...await homeNow(), have: 0 }, { moves: 1, home: false, have: 0, history: 1 });
+  await press(9);
+  const restart = page.getByRole('button', { name: 'Start this pond again', exact: true });
+  assert.equal(await restart.count(), 1, 'the pause menu offers a restart');
+  await screenshot('couch-pause-restart');
+  await restart.click();
+  await page.waitForFunction(() => neo.scene.screen === 'game' && !neo.scene.game.busy);
+  assert.deepEqual(await homeNow(), { moves: 1, home: true, have: 0, history: 0 }, 'back at the start, the slide still counted');
+  assert.equal((await stored()).courses.practice.run.attempts, 1, 'and it is still saved');
+  // A restart asked for in the middle of a slide waits for the penguin to stop, then puts it home.
+  const mid = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; const slid = g.go(S.solve(g.puzzle, g.at, g.have).first); const busy = g.busy; g.restart(); await slid; await kit.sleep(700); return { busy }; });
+  assert.equal(mid.busy, true, 'the slide was under way');
+  assert.deepEqual(await homeNow(), { moves: 2, home: true, have: 0, history: 0 }, 'a restart asked for mid-slide still happens');
+  await clearPond();
+  assert.equal(await page.evaluate(() => neo.scene.game.index), 1, 'the pond can still be finished');
+
   // --- a run left after its last part was finished, but before its result, settles when it is resumed.
   for (const [id, parts, player] of [['clouds', Array(12).fill(1), 0], ['practice', [2, 3, 4, 4, 5], 1]]) {
     await page.evaluate(({ id, parts, player }) => { const s = JSON.parse(localStorage.getItem('neo.couch.v1')); s.courses[id].run = { player, token: 4242, slides: parts, attempts: 0, assisted: false }; localStorage.setItem('neo.couch.v1', JSON.stringify(s)); }, { id, parts, player });

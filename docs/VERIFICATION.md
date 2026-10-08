@@ -17,7 +17,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-07 | Child's island entry | About eight to nine minutes; run on a snapshot |
 | `couchgames` | 2026-10-07, all fourteen games | Child's island entry | Peg Garden's bot needed one retry (its known flake) |
-| `couchcourse` | 2026-10-07 | Bouncy Launch spring entry | About seven minutes |
+| `couchcourse` | 2026-10-07 | Couch Penguin Slide restart entry | About seven minutes |
 | `couchnames` | 2026-10-07 | Couch finale entry | |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
@@ -33,6 +33,14 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Couch Penguin Slide restart, and the grown-up play roadmap (2026-10-07)
+
+What changed: the first grown-up playtest reported that Penguin Slide's restart did not work. Cause (probed, not guessed): the couch screen sets the game stage to take no pointer input, so the round-arrow button beside the pond could be seen and not clicked, and even on touch it only undoes one slide. On the couch the arrow is no longer drawn, and the pause menu offers **Start this pond again** through an optional `Game.restart()` (penguin back home, fish back, slides so far still counted; a restart asked for mid-slide waits for the penguin to stop). The roadmap, ideas notebook and couch guide gained a grown-up play plan (docs only).
+
+- A Playwright probe on unchanged code confirmed the bug: a mouse click on the arrow changed nothing, while Backspace undid one slide. `npm run typecheck` and `npm test` (387 tests) passed.
+- `BROWSER_SUITE=couchcourse` passed on a snapshot, with a new case: after one slide the pause menu's restart puts the penguin home with its fish and the slide still saved and counted, a restart asked for mid-slide still happens, and the pond can still be finished. `BROWSER_SUITE=woods WOODS_ONLY=penguin` (touch play, five levels) passed.
+- Not run: `couchgames` and `couch` (no trip or other game's code changed), `smoke`, the build and the offline check (no shared assets or navigation), and anything with a real controller or TV, where the restart's discoverability in the pause menu is still a question for a person.
 
 ### Updates wait until the app closes (2026-10-07)
 

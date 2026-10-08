@@ -28,7 +28,7 @@ export const SCRIPT = {
   'couch.how.sink-float': ['Will it float, or will it sink? Choose with left and right, press the bottom button, and watch the water to find out!'],
   // Couch versions of lines that tell a touch player to tap or pull.
   'couch.slide.go': ['Use the stick or arrow keys to slide the penguin. It only stops when it bumps into something!'],
-  'couch.slide.stuck': ['Oh no, the penguin cannot reach the fish from here. Press the left button to undo a slide.'],
+  'couch.slide.stuck': ['Oh no, the penguin cannot reach the fish from here. Press the left button to undo a slide, or pause to start the pond again.'],
   'couch.neighbors.rhythm': ['Listen to the bird and the frog reply. Now play the frog part with the left and right buttons, keeping the short and long gaps. Press the bottom button when ready.'],
   'couch.light.two': ['Wake up both flowers with one sunbeam. Turn the mirrors, then shine the sun!'],
   'couch.peg.number': ['Hold left or right to aim, then press the bottom button. Hit {n}!'],

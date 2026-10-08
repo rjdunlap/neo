@@ -21,6 +21,8 @@ export interface CouchInfo {
   /** A few words for the chooser card. */
   tagline: string;
   controls: ControlRow[];
+  /** The pause menu's "start this part again" button, for a game that implements `Game.restart`. */
+  restart?: string;
   /** Who plays: one at a time, or both at once. */
   play: 'turns' | 'together';
   faceoff: FaceOff;
@@ -45,7 +47,9 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     controls: [
       { parts: STICK, text: 'Slide the penguin. It keeps going until it bumps into something.', keys: 'Arrow keys' },
       { parts: ['left'], text: 'Undo the last slide.', keys: 'Backspace' },
+      { parts: ['start'], text: 'Pause menu: start the pond again. Slides so far still count.', keys: 'Esc' },
     ],
+    restart: 'Start this pond again',
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'slides over the best route' },
