@@ -1,10 +1,12 @@
 # Island Party and playing on Switch
 
+> **Archived 2026-10-07.** The party half is built as couch play ([DESIGN](../DESIGN.md#couch-play), [player guide](../COUCH-PLAY.md)). The Switch feasibility research below is kept for reference; a native port is parked in the [roadmap](../ROADMAP.md#parked-or-decided). Open co-op ideas moved to [IDEAS](../IDEAS.md).
+
 Follow-up to the play/progression review, 2026-10-06. **Proposals and feasibility research only.** The developer's wife enjoys Mario Party, and the home console is an original-generation Nintendo Switch (including OLED/Lite), not Switch 2. No party mode, controller support, console export, or developer access has been implemented or obtained.
 
 ## Status (2026-10-07): built as couch trips
 
-A first version of Island Party now exists as **couch play** (see [Couch play in the design doc](DESIGN.md#couch-play-2026-10-07) and [CONTROLLER-SETUP](CONTROLLER-SETUP.md)): a separate grown-up save, six-stop trips with three choices per stop, alternating choosers, lanterns, and keyboard/controller play, extended with a how-to screen and bot demo before each game, games that open as trips are finished, and a **face-off** mode. It runs in the browser on a computer, as recommended below; the Switch route is unchanged and unexplored. Nine games are couch-ready, not the six listed below: Block Tower and Quick Tricks are still candidates.
+A first version of Island Party now exists as **couch play** (see [Couch play in the design doc](../DESIGN.md#couch-play) and [CONTROLLER-SETUP](../COUCH-PLAY.md)): a separate grown-up save, six-stop trips with three choices per stop, alternating choosers, lanterns, and keyboard/controller play, extended with a how-to screen and bot demo before each game, games that open as trips are finished, and a **face-off** mode. It runs in the browser on a computer, as recommended below; the Switch route is unchanged and unexplored. Nine games are couch-ready, not the six listed below: Block Tower and Quick Tricks are still candidates.
 
 Decisions made while building the competitive part, following the equal-information rule below:
 

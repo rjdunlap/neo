@@ -1,198 +1,200 @@
 # Puddle Island roadmap
 
-This is the ordered development backlog for growing Puddle Island from early play through **elementary school, roughly kindergarten–grade 5 (ages 5–11)**. Checked items describe completed implementation milestones; unchecked items are remaining work or proposals. A proposal is not a commitment to ship it. Test results belong in [VERIFICATION.md](VERIFICATION.md), current behavior in [DESIGN.md](DESIGN.md), and game concepts in [ARCADE-IDEAS.md](ARCADE-IDEAS.md).
+What Puddle Island is aiming for, where it stands, and what to do next. Unchecked boxes are open work; anything marked a proposal is not a commitment. How the app works is in [DESIGN.md](DESIGN.md), what each game does in [GAMES.md](GAMES.md), the idea pool in [IDEAS.md](IDEAS.md), and what has been checked in [VERIFICATION.md](VERIFICATION.md). The roadmap as it stood before the 2026-10-07 cleanup, with its full list of completed milestones, is in [the archive](archive/ROADMAP-HISTORY.md).
 
-## Current position
+## Direction
 
-The island has **72 games** in five age-trail places, with pet hatching, adaptive levels, a sticker book, and a first short story, **the Windy Picnic**. Everything through Tangram Town (43 games) was pushed to `main` in `17124e8`. The early-school band and its place, **Wonder Woods** (ages 6–8), Peekaround Island and nineteen more games (Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall, Garden Grow, Clock Tower, Pixel Pictures, Goodnight Room, Animal Snack, Beat Builder, Rhyme Time, Stop and Go, Ramp Race, Critter Sort, Treasure Map, Opposites, Picture Graph and Inchworm Measure), with longer ladders (Robot Path loops, Word Monsters word families, Duck Pond make-ten, Monster Munch leftovers), were committed in `dfe08a3`. Each has rule tests and a recorded browser play-through of every level. The Windy Picnic pilot (§3), Mail Carrier's picture map and two planned stops and Seesaw Balance's take-the-same-off levels in Wonder Woods (§5), and four games from the gap review's shortlist, Block Tower, Lasso Loops, Pet Says and Owl Walk Home (§6), were committed in `cecac4c` and merged to `main` in `7066d5b`, which deployed. Each has rule tests and recorded browser play-throughs. No one has yet judged the newer games or the picnic on an iPad or watched a child play them; §1 keeps those checks open. Puddle Lagoon offers 37 games, Daisy Meadow 48, Bumpy Hills 58, Starry Peak 68 and Wonder Woods 50. **Couch play** (a separate grown-up route with controller or keyboard support) is built with fourteen games, a how-to screen before each (reachable again from the name card, the turn card, the pause menu and a menu guide), games that open as trips are finished, a face-off mode, a finale with one keepsake, text that scales for a TV, and three challenge courses, Penguin Slide's Pond Practice and Five Ponds and Bouncy Launch's Cloud Hopper, with per-player records; see §0 and [Couch play in the design doc](DESIGN.md#couch-play-2026-10-07). It has been checked in headless Chrome with synthetic controllers only; real controllers, a TV and real play remain open. Every touch game now has a grown-up **how-to card** (a quiet hold-to-open `?` under the home button; goal, steps, how the round ends and the level's own description). **Chain Reaction** is the newest game: drag loose ramps into a constrained machine, run its marble, watch where it goes and revise until it touches the chime and bell; early boards have one solution and the top level several. The pet's **treehouse** (a room with six free furnishings and a frame for one sticker) is reached from the map. Places also twinkle on games not yet played and keep a **favorites shelf** of hearted games (a heart after a round), with no gating.
+Puddle Island is an iPad learning game for the developer's daughter, who turns one in October 2026, in the spirit of JumpStart's playful learning, Neopets' companion and personal world, and the variety of classic arcade games. It should grow with her from lap play through elementary school, to about grade 5 (age eleven), on one familiar island where younger favorites never disappear. Four threads carry it:
 
-Current bands are lap, toddler, preschool, pre-K and early school (`school`, roughly 6–8, at Wonder Woods). Elementary work has started as a **6–8 pilot**; then grow toward upper-elementary play through about age eleven. Learning ranges overlap; older modes and new zones remain proposals. Keep younger favorites available as reasoning, expression, investigations, and connected adventures grow.
+1. **Many small, satisfying games with a clear learning purpose**, where the skill causes the fun: sharing fills plates, a pattern moves a train, a revised route reaches a friend. Familiar games grow deeper modes; a new game earns its place with a new kind of decision or interaction.
+2. **A personal world**: her pet, its treehouse, things she made, and a discovery journal. Nothing decays, expires or waits for her.
+3. **Short stories that connect games**: a friend needs help, two or three activities change the scene, and there is a complete ending. Free play stays one tap away.
+4. **Couch play for grown-ups**: a separate route on a computer with controllers, its own save, trips, face-offs and challenge courses. It never touches the child's island.
 
-Recommended sequence for the current prototype phase: ~~three-choice Island Party~~ (built as couch trips, 2026-10-07) → (whenever a person is free, not a blocker: try couch play on a TV with real controllers and adjust) → ~~the child's island (NEW sparkle, favorites)~~ (built 2026-10-07) → ~~deeper challenge with personal records (Penguin Slide course)~~ (built as the couch's Five Ponds challenge) → ~~a second scored game (Bouncy Launch's target course)~~ (built as Cloud Hopper) and more couch games → small pet room/creation → connected project or deeper elementary play. The developer's daughter is not yet one and an iPad is not readily available, so desktop play by the grown-ups is the immediate feedback loop. Keep device and child observations open; they do not block browser proofs of concept. The [play and progression review](PLAY-AND-PROGRESSION.md) and [party/Switch follow-up](PARTY-AND-SWITCH.md) give the research, tradeoffs, and proposed slices. A native Switch port is exploratory. Avoid making a large world framework a prerequisite for a small playable addition.
+**How work gets judged right now.** She is not yet one and an iPad is not readily at hand, so the immediate feedback loop is grown-ups playing in a desktop browser. Device and child observations are listed below and never block building; equally, grown-up enjoyment is not evidence that a child is ready for something.
 
-## 0. Prove longer play and meaningful goals in the browser
+## Where we are
 
-Checked items here are built (see the verification log); unchecked items are proposals. This is the immediate work order; the numbered sections below retain the broader backlog and outstanding validation.
+- **72 games** across five places on an age trail that climbs in band order: Puddle Lagoon (lap, 37 games), Daisy Meadow (toddler, 48), Bumpy Hills (preschool, 58), Starry Peak (pre-K, 68) and Wonder Woods (early school, ages 6–8, 50). Every game has rule tests, a grown-up how-to card and adaptive levels; the [README](../README.md#the-island-and-its-games) lists them.
+- **The child's island:** pet hatching and customization, a sticker book, a gold twinkle on unplayed games, a favorites shelf of hearted games, and two place layouts (the swipe path and subject cards) still to compare on the iPad.
+- **One story:** the Windy Picnic, with a journal, resumable steps and a keepsake.
+- **The treehouse:** six free furnishings, a framed sticker, a picture board for a kept Stamp Studio picture, Rainbow Fingers painting or Pixel Pictures design, a tune plaque for a free Song Maker song, and a discovery journal of sixteen entries from Sink or Float and Animal Snack.
+- **Couch play:** fourteen controller-ready games, six-stop trips in Together or Face-off mode, how-to screens with bot demos, games that open as trips are finished, a finale and keepsake, and three challenge courses (Pond Practice, the Five Ponds, Cloud Hopper) with per-player records.
+- **Checked so far:** everything above has unit tests and recorded browser checks in headless Chrome. Nothing has been judged on an iPad, with real controllers on a TV, or with a child. What is deployed is whatever `origin/main` holds (`git log origin/main`).
 
-**Where to pick up next session.** Most of a session should build something playable from the first list; the second needs a person or a device and never blocks the first. Check effort follows the [verification budget](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release.
+## Next up
 
-*Build next (no person needed), in rough order:*
+Most sessions should build from this list; it never waits for the one after it. Check effort follows the [verification budget](../AGENTS.md#verification-budget). Roughly in order:
 
-1. The pet room is built out (room, picture board, tune plaque, discovery journal). Small follow-ons: more creation media, taking a creation down, and journal entries from more games. (The child's island is done: how-to cards, a NEW twinkle and a favorites shelf.)
-2. Chain Reaction is built. More games from the shortlist (§6): Story Theater, Habitat Helpers or Shape Buddies.
-3. Grow the couch catalog with games that can score on seeded boards (Block Tower's fixed boards make it a team game at best; Quick Tricks and Treasure Map are candidates; Garden Rows' seeded beds would suit a twin face-off). Each is `control()`, `autoplay`, a catalog entry and a tier slot; `BROWSER_SUITE=couchgames COUCH_ONLY=<id>` proves it.
-4. Deepen short ladders (§6) and give favorites a second lap level; a second picnic episode or a woodland errand (§3, §5).
+- [ ] **Treehouse follow-ons.** Take a creation down altogether; journal entries from more games (Photo Safari, Seesaw Balance, Bouncy Launch); show where in a game an entry was found; offer the keep button before a session-timeout goodnight (today that round goes straight to goodnight and its creation cannot be kept).
+- [ ] **New games from the shortlist:** Story Theater, Habitat Helpers or Shape Buddies ([candidates](IDEAS.md#candidates)). Choose by an observed gap; state the definition of ready first.
+- [ ] **Couch games that can score on seeded boards**, so face-off trips are not mostly team stops: Garden Rows (seeded beds suit a twin face-off), Treasure Map and Quick Tricks. Block Tower's fixed boards would only make a team stop; Owl Walk Home was considered and set aside. Each needs `control()`, `autoplay`, a catalog entry and a tier slot; `BROWSER_SUITE=couchgames COUCH_ONLY=<id>` proves it.
+- [ ] **Deepen short ladders** where a meaningful next decision exists: 26 games top out at four or five levels. Append levels without renumbering saved levels or pins.
+- [ ] **A second lap level for favorites:** 22 of the 37 lap games have one. A new lap level has to be appended at the end of a ladder, so first decide whether a band's range may skip levels. Peg Garden's bloom level also needs a guaranteed finish (repeated taps on one spot cannot complete it) before it opens further to lap play.
+- [ ] **Give Wonder Woods a zone identity:** a host on the place, a small errand, an identity separate from the `school` band, and launch/return context carried through game navigation, preserving the existing age-trail routes. This is the first step of [E1](#e1-early-elementary-roughly-ages-57).
+- [ ] **A second story episode** with a distinct new consequence: a missing melody, a mixed-up delivery, or the Woodland Picnic using Mail Carrier's map. Use the [typed story result](DESIGN.md#proposed-story-results) only when the episode carries something she made.
+- [ ] **Close two check gaps that need no person:** diagnose the flaky Peg Garden touch suite (`BROWSER_SUITE=batch BATCH_ONLY=pegs` fails on the development Mac at a different aimed level each run, on unmodified code too; a frame-timing difference between the simulation and the live game is a guess, not a finding), and extend `npm run test:offline` to reload a rearranged treehouse, a kept creation and the journal, which it does not open today.
 
-*Needs a person or a device (do not wait for these):*
+## Needs a person or a device
 
-1. Play the couch with real Pro Controllers on a TV and write down what is wrong: text size from the couch, how long the how-to demos feel, whether the bots are a good example, how fast trips open new games, and how face-off feels to the person who loses. Everything so far was checked with synthetic controllers in headless Chrome.
-2. Judge the three challenges in play (is Cloud Hopper's cloud size right for a stick? is Pond Practice easy enough and the Five Ponds hard enough? does any have a reason to run again?).
-3. The iPad and child checks in §1.
+Keep these open until someone actually does them. None of them blocks the list above.
 
-Known tooling issue: `BROWSER_SUITE=batch BATCH_ONLY=pegs` (Peg Garden touch play) fails on the development Mac in most runs, on unmodified code too, at a different level each time; diagnose it before relying on it (§1). As of 2026-10-07 the couch work was pushed on the branch `couch-howto-unlocks-faceoff`, not merged to `main` (and so not deployed); check `git branch --contains 44cfbd0` before assuming either.
+**Grown-ups at the computer or TV**
 
-- [ ] Build a desktop-friendly **Grown-up Play** entry with party/course selection and a separate local adult save slot. Adult play must not change the child's level history, pins, stickers, story, or band.
-- [x] Build **Island Party** (built as **couch trips**): six stops, three varied next-game choices from the opened games (a free shuffle, avoiding the last two), alternating choosers, a shared lantern goal, compact results on the chooser between stops, saved offers and progress with no duplicate awards, and ordinary couch stickers kept per stop in a separate save. The finale (a night sky, lanterns in the color of whoever took each stop, a scoreboard, the recap and what opened) and the one known keepsake (Lantern Night, from the first finished trip) are built.
-- [ ] Evaluate three versus four choices, pacing, repeat avoidance, and the desire to play together in the browser before adding a dice board or more minigames. Candidate references and new cooperative ideas are in [Party and Switch](PARTY-AND-SWITCH.md).
-- [x] As a separate couch-play milestone, support controller navigation and selected game actions, then two paddles in Bounce Back (built; keyboard works too). Fourteen games now have controller controls and a bot (Penguin Slide, Bouncy Launch, Bounce Back, Memory Match, Rhythm Neighbors, Light Lab, Secret Code, Peg Garden, Bumper Garden, then Pattern Train, Egg Catch, Robot Path, Frog Hop and Sink or Float).
-- [x] Add a **how-to-play screen** before a couch game's first play (name, spoken goal, drawn controller, and a bot demo of a real round), a short name card afterwards, and "How to play" in the pause menu. Couch wording replaces spoken lines that tell a touch player to tap or pull.
-- [x] Make How to play reachable even for a game already explained: the name card and a face-off turn card have a How to play button (moving to it makes the name card wait instead of starting the round), and a **How to play** guide on the couch menu lists every open game and plays its demo without starting a round or touching the trip.
-- [x] **Earn games by finishing trips**: three games at the start, then two per completed trip (either mode), derived from the trip count so reloads and restored backups cannot award twice; a NEW mark until explained; the next group announced by size, not by name. Nothing locks again or expires, and the child's island is untouched.
-- [x] **Face-off trips** beside Together trips: each player on their own fresh board scored against its own best (slides over the best route, extra turns, guesses, shots, distance from cloud centres), one shared board with alternating turns (Memory Match), or a team stop. Ties and team stops score for both; no loser screen. The first turn is saved so leaving between turns changes nothing.
-- [ ] Try the couch on a TV with real Pro Controllers: text size across the room (couch pages now scale to about 1.4 times at 1080p, untried on a real TV), how-to pacing and demo length (the longest, Secret Code and Bumper Garden, run about 30–40 seconds), whether the bots feel like a good example, how many trips per unlocked group feels right (two per trip now; a tier per trip is a guess), whether the finale's four-second ceremony is a treat or a wait, whether Pond Practice, the Five Ponds and Cloud Hopper each give a reason to play again (and whether a hint after three extra slides, or two missed launches, is too soon for a score chase), whether Cloud Hopper's small clouds suit a stick, and whether the spring that squashes straight down reads well or the launcher wants to become a catapult.
-- [x] Grow the couch catalog past nine so unlocks stay meaningful: Pattern Train, Egg Catch, Robot Path, Frog Hop and Sink or Float, in three more tiers (2, 2, then 1 game). All five are team games: Robot Path's boards are fixed per level and Egg Catch would mostly tie, so neither could be a fair twin face-off, and the other three are gentle by design (guesses are never wrong in Sink or Float). Coverage: the catalog tests and `BROWSER_SUITE=couchgames` (written, not yet run: see the verification log).
-- [ ] Grow it further with games that can score on seeded boards, so face-off trips are not mostly team stops: candidates are Garden Rows, Treasure Map, Quick Tricks and Block Tower. Owl Walk Home (a cooperative child's game) was considered and set aside.
-- [x] The child's island, a grown-up **How to play** card for every touch game (`src/content/howto.ts`, opened by holding a quiet `?` under the home button; adds the level's own description, holds the round still, changes no progress). The NEW twinkle on unplayed games and the favorites shelf (a heart after a round; §2) are built too.
-- [ ] Let the daughter join couch play as a co-pilot (any button cheers; a pet takes the other side), and consider simultaneous face-off boards.
-- [x] Build **Penguin Slide's five-board course** as one complete round (built as **The Five Ponds** on the couch): five fixed boards chosen with the solver (each with one shortest route; 3, 5, 6, 7 and 9 slides, 30 in all), a short score for each pond and straight on to the next, visible progress, pause/leave, one result and one sticker. The child's levels are untouched.
-- [x] Show total slides and a local personal best for the same versioned course, with explicit undo and assistance rules (a slide you undo still counts; a shown hint marks the run helped). Helped and unhelped bests are kept apart, per player. Two badges, each earned once per player: Finished, and Perfect route (the minimum, no hint).
-- [x] Save course progress, records and achievements with bounded storage (one run, one best per category per player, ten recent runs, three retired versions), migration (couch save version 3), the couch backup, and no duplicate awards after reload; child-save isolation is checked. Still open: the production offline check does not exercise couch play, so it has not been run for the course.
-- [ ] Play the slice on desktop and judge pacing, the desire to try another strategy, and clarity of the goal. Five to ten minutes is a hypothesis, not a timer. If five easy boards feel repetitive, deepen the decisions before adding quantity.
-- [x] Extend scoring to **Bouncy Launch** with a longer target course and a personal attempt record (built as **Cloud Hopper** on the couch): twelve small clouds in a row, every launch counted (a miss included), a hint after two misses at one cloud, the same per-player records, badges and one-sticker-per-run rules as the Five Ponds. The rules module turned out generic (`src/couch/course.ts`, with `src/couch/courses.ts` as the registry), so the shared helpers are extracted; competitive scoring on the party route is still open.
-- [x] Build the small pet room in §4, beginning with free furnishings and one display (built); a saved picture and song are built too. Use known achievements/keepsakes for lasting goals, with ordinary stickers remaining repeatable decorations.
+- [ ] Play couch trips with real Pro Controllers on a TV and write down what is wrong: text size from the couch (pages scale to about 1.4 times at 1080p), how-to pacing (Secret Code's and Bumper Garden's demos run 30–40 seconds), whether the bots are a good example, how fast trips open new games (one tier per trip is a guess), how face-off feels to whoever loses, and whether the finale's four-second ceremony is a treat or a wait.
+- [ ] Judge the challenge courses: whether Pond Practice is easy enough and the Five Ponds hard enough, whether Cloud Hopper's small clouds suit a stick, whether any of the three gives a reason to run again, whether a hint after three extra slides or two missed launches is too soon for a score chase, and whether the squashing spring reads well or the launcher wants to become a catapult. Five to ten minutes per course is a hypothesis, not a timer.
+- [ ] Compare three versus four choices per stop, and the pacing of a whole trip, before adding a dice board or more party structure.
 
-Local personal records come before an optional family board; public leaderboards remain a later adult-mode option. A later opt-in Keep playing mode can reduce celebration interruptions in selected ordinary games while preserving one sticker per completed round and the session setting's goodnight flow. Do not force scores onto creative or exploratory play. Full proposal and acceptance checks: [Longer play and personal goals](PLAY-AND-PROGRESSION.md).
+**On the iPad**
 
-## Elementary horizons
+- [ ] Device basics: offline speech voices, first-touch audio, small-hand dragging, herding and pulling, orientation changes, Add to Home Screen, Guided Access, and that a new version arrives after the home-screen app is closed and reopened (how long iPadOS keeps a suspended app on the old one is unknown).
+- [ ] Compare the swipe path with subject cards for reaching and returning from a wanted game (not for fitting more icons), and whether the favorites shelf and twinkles are found and used. Check that every game is reachable in every band it supports, in portrait too, as the catalog grows.
 
-The detailed [elementary roadmap](ELEMENTARY-ROADMAP.md) covers game families, zone concepts, project ideas, dependencies, and completion milestones. These are development horizons, not dates or grade locks.
+**With her now (lap and toddler)**
 
-| Horizon | Main work | Proposed places |
+- [ ] Whether tapping the soil (Garden Grow), the singing flowers, saying goodnight (Goodnight Room), Animal Snack, Stop and Go and Opposites hold a one-year-old's attention; Block Tower's tumbling; Pet Says as co-play; Owl Walk Home's turn-taking; whether she notices the heart, the treehouse or the journal at all.
+
+**Later, at three to five**
+
+- [ ] Word Monsters, Photo Safari and Clap the Syllables: vocabulary, spoken prompts, answer clarity, and whether device speech produces usable letter sounds and clear words. Do not claim phonics coverage from letter-name playback alone.
+- [ ] Physical play: Peg Garden and Egg Catch (reachable goals feel reachable, motion slow enough, forgiving catches); Bounce Back with two real hands and the pet taking over; Dot Link's line through dots for small fingers; Bumper Garden's half-screen flipping; Lasso Loops' loop gesture with small fingers.
+- [ ] Clarity: Fluffy Salon and Sound Garden (satisfying free play, clear exits, guided modes that keep creative exploration); Little Helpers and Mail Carrier (visible quantities and unambiguous requests at viewing distance; whether a Little Helpers bunch reads as equal teams); Seesaw Balance's tipping as weight; Teddy Doctor's spoken-only clues; Quick Tricks' arrow between tricks; Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town (stamp moving, equal pieces, reply scoring, silhouette help); Peekaround Island (turning reads as looking from another side, "behind" the crown, drop spots easy to hit).
+- [ ] The Windy Picnic: does she understand who needs help, what to try and what changed; are the blanket and request targets easy to hit; does the journal make sense.
+
+**Later, at six to eight**
+
+- [ ] The Wonder Woods games: Light Lab's mirrors as turning the beam, Penguin Slide's tap-the-ice direction, Secret Code's marks, Frog Hop's number line, Market Stall's coin sizes, Clock Tower's hand dragging, Inchworm Measure's worms and ruler, Block Tower's eighth-of-a-block dragging, Mail Carrier's map key, Chain Reaction (moving one piece at a time, predicting before running, discovering several designs), and whether Seesaw Balance 8–9 explains "do the same to both sides".
+- [ ] The newer ladder steps with an older child: Robot Path loops, word families, make ten, leftovers, and Pixel Pictures' logic puzzles.
+
+## Later horizons (elementary)
+
+The long-term plan: a familiar island that grows from early play through roughly ages 5–11, by extending favorite games, adding new interactions where they help, and connecting them through places, characters and projects. These are development horizons, not dates or grade locks. Ages are rough planning guides; learning ranges overlap; and the horizons are not a proposal for one runtime band per school grade. Apart from Wonder Woods (the `school` band's place) and the steps marked built, everything in this section is a **proposal**.
+
+| Horizon | What grows | Places and example experiences | A useful milestone |
+| --- | --- | --- | --- |
+| **E0 — Foundation** (now) | Reliable touch play, spoken support, finding favorites, completing and saving a round | The current trail; the Windy Picnic, treehouse and journal as first connecting projects (built) | The catalog is easy to find and comfortable on the iPad; a project resumes after a break; a creation can be revisited |
+| **E1 — Early elementary**, roughly ages 5–7 | Combine small quantities, follow and explain short sequences, use word and picture clues, measure and compare, editable routes and maps | **Wonder Woods**: help set up a woodland picnic, balance supplies, program a delivery route, follow a narrated clue | One zone with two deeper familiar games, one new activity and a small optional adventure |
+| **E2 — Middle elementary**, roughly grades 2–3, ages 7–9 | Equal groups and fractions, meaningful word parts, evidence in stories, loops and conditions, designing and testing, saved creations | **Maker Harbor** and **Storybook Square**, built in separate small expansions; organize a ferry fair or investigate mixed-up invitations | A project combines skills across games and produces something she can revisit or revise |
+| **E3 — Upper elementary**, roughly grades 4–5, ages 9–11 | Fraction and decimal models, area and volume, interpreting data, fair tests, comparing explanations, longer programs and projects | **Discovery Marsh** and **Skywatch Isles**; design a visitor habitat, investigate a water route, build a model observatory | Several valid approaches work, results can be compared, and a saved project survives several sessions |
+
+The 6–8 pilot (the `school` band, built) bridges E1 and E2.
+
+### E1: early elementary, roughly ages 5–7
+
+Built so far: the `school` band and Wonder Woods (where many games play their top levels), Seesaw Balance 8–9 (take the same off both sides), Robot Path loops with step-through playback (7–10), Mail Carrier's picture map and two planned stops (6–7), and Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it.
+
+- [ ] Wonder Woods as the first thematic zone: a host, an errand and a zone identity separate from the band, with launch/return context independent of the chosen difficulty (also in [next up](#next-up)).
+- [ ] A woodland errand: the Woodland Picnic, or a delivery for a friend, using Mail Carrier's map; every participating game stays independently playable.
+- [ ] Check that a child can use hints, revise a route, leave partway, and return without losing progress or changing other games' levels; test loading and restoring old saves with appropriate defaults (levels, pins, stickers and home place preserved), new-band navigation and offline play.
+- [ ] Let the child ask for a worked example or an easier mode; longer reasoning must never require faster fingers.
+- [ ] Seesaw Balance with two different unknown weights.
+- [ ] Evaluate optional narrated word and sentence practice separately from reading-free navigation; review language content and the actual speech output before treating a mode as ready.
+
+Exit milestone: a complete early-elementary place offers deeper decisions and accessible help, and visiting it changes neither the child's global band nor the younger activities.
+
+### E2: middle elementary
+
+- [ ] Choose **Maker Harbor** or **Storybook Square** first, by the next desired skill area; build the other in a later expansion.
+- [ ] Add the matching extensions from the [family table](#how-familiar-games-keep-growing): equal groups, parts and design, or word meaning and evidence in stories.
+- [ ] One new interaction and one project per expansion, with several valid solutions where appropriate.
+- [ ] Save a work in progress (a construction, program or story) and return to it directly from the journal.
+- [ ] Decide whether branching game modes need separate progress records before one linear level number carries unrelated skills.
+
+Exit milestone: she can choose a subject or project, make a plan, change it after feedback, and revisit a saved creation. Progress in reading never forces harder number work, or the reverse.
+
+### E3: upper elementary
+
+- [ ] A small **Discovery Marsh** investigation before any broader habitat simulation, with explicit observations and a limited, explainable model.
+- [ ] Upper-elementary number, geometry and story-evidence tasks where they fit existing families.
+- [ ] Pilot **Skywatch Isles** with one reusable robot routine, one blueprint mode and Light Lab's older modes, in code-drawn 2D scenes.
+- [ ] Projects with several short sessions of optional work, saved at meaningful steps; she can stop after any step.
+- [ ] Compare two results, pick a useful piece of evidence, or explain a choice through pictures, word choices or optional writing, with spoken help.
+
+Exit milestone: a project supports planning, testing, revising and showing the result; different valid approaches reach the ending; and her evidence can be revisited beside the creation.
+
+### How familiar games keep growing
+
+**Games grow through families of modes.** A counting game becomes equal sharing, then grouping, then a recipe or packing problem; a route game gains loops, conditions and reusable subroutes. Keep the original activity recognizable, with a deeper decision at each step. A mode earns its place through play, not bigger numbers or quicker responses. Some favorites (bubble popping, dressing the pet, free painting) can stay simple toys for an older child; not every game needs to reach grade 5. Avoid making every game teach arithmetic: language, music, spatial thinking, inquiry, coordination, creativity and cooperation all have a place.
+
+Everything in the three right-hand columns is proposed; steps already built are in [GAMES.md](GAMES.md). Choose modes by readiness and interest, never by advancing the whole library at once.
+
+| Family | Early elementary | Middle elementary | Upper elementary |
+| --- | --- | --- | --- |
+| **Duck Pond, Monster Munch, Little Helpers, Scoop Shop, Lasso Loops** | Compose and decompose small totals; explain how many more are needed | Arrays, division with visible leftovers, equal pieces of a whole | Equivalent fractions, decimal amounts, scaling a small order or recipe with visual models |
+| **Word Monsters, Letter Trails** | Reviewed sound and word combinations; short labels that matter in a scene | Prefixes and suffixes; choosing a word that fits a clue or sentence | Word parts and context for unfamiliar words; compose or revise a short message with spoken support |
+| **Story Steps, Photo Safari** | Retell a sequence; match a spoken clue to an event | Infer a cause; choose an ending supported by clues; organize a short narrative | Compare two accounts; select supporting details; revise an explanation or create a branching story |
+| **Robot Path, Egg Catch, Mail Carrier** | Repair one wrong command; compare two routes | Simple conditions, reusable route chunks, debugging a visible trace | Small functions or nested loops, several constraints, explaining a revision |
+| **Size Parade, Bug Builder, Puzzle Pals, Rainbow Fingers, Block Tower** | Measuring with equal units, rotation, symmetry, composing shapes | Area and perimeter, tiling, equivalent shapes, following and changing a blueprint | Packing unit cubes for volume, coordinate designs, relating a drawing to a construction |
+| **Sink or Float, Peg Garden, Bouncy Launch, Ramp Race, Chain Reaction** | Predict and observe; compare two trials with obvious differences | Change one variable, repeat a test, record outcomes in a picture table | Read graphs, compare evidence, notice a model's limits, improve an experiment |
+| **Jelly Drums, Song Maker, Sound Garden, Beat Builder** | Rhythm conversations, phrases, musical turn-taking | Contrasting sections and layered rhythms; a response to a phrase | Compose for a story or event; revise a piece after listening; keep the pentatonic pitch rules |
+| **Duckling Parade, Roundup, Dot Link, Bounce Back** | Follow patterns, sort by a stated rule, cooperate toward a visible goal | Combine attributes, plan an order of actions, explain a partner strategy | Optional constraint puzzles or cooperative remixes where the controls still feel good; otherwise relaxing favorites |
+| **Weather Wardrobe, Feelings Faces, community errands** | Plan a short outing; consider what a friend might need | Read a map or simple timetable, coordinate roles, compare plausible perspectives | Plan a shared event with several needs and explain a compromise; feelings and family routines never have one correct answer |
+
+The presentation can grow too: the pet becomes a companion in planning and investigating; older modes can use quieter feedback, richer tools and optional explanations in the same art style; a saved project shelf lets her choose what to continue or show a grown-up. Keep narration replayable, help easy to request, and celebrations at meaningful stopping points.
+
+### Zone concepts
+
+Names and boundaries are working proposals. Each zone starts as one small place with a host and a few activities; it needs no separate engine, economy or complete curriculum. A zone can hold several subjects and more than one learning range, and the same game identity can appear in several zones with an appropriate mode and a clear return route.
+
+| Zone | Identity and recurring host | First small expansion | Later growth |
+| --- | --- | --- | --- |
+| **Wonder Woods** (place built) | A trail of hollow trees, streams and signs; Hazel, the squirrel postkeeper from Mail Carrier's map | Seesaw Balance 8–9, Robot Path loops and Mail Carrier's map (built); **the Woodland Picnic** uses all three | Older Peekaround Island modes, listening clues, short stories, gentle classification puzzles |
+| **Maker Harbor** | Floating workshops and a friendly ferry crew; a beaver builder | Little Helpers' equal groups into dock loads; Mail Carrier into dock routes; Chain Reaction and Ferry Jam (built) as harbor activities | Shape Buddies, Wobble Works, area and volume blueprints, a **Ferry Fair** project |
+| **Storybook Square** | A library, puppet stage and post office; an owl storyteller | Story Steps into clue-based endings; Word Monsters into meaningful word parts; **Silly Describer** | Story Theater, alternative viewpoints, an illustrated newspaper saved locally, **the Mixed-Up Invitations** mystery |
+| **Discovery Marsh** | Boardwalks, ponds and an observation hut; a patient heron naturalist | Photo Safari into observation records; Sink or Float into repeatable trials; a small **Habitat Helpers** model | Compare habitat needs, chart observations, test one variable, design a visitor garden with several valid solutions |
+| **Skywatch Isles** | Hilltop observatories and model-building decks; a moth astronomer | A reusable Robot Path routine; a measured Bug Builder blueprint; Light Lab predictions and replays | Data stories, coordinate maps, a limited sun and shadow model, **the Lantern Observatory** project |
+
+Every zone stays open. Neither birthdays, test results nor sticker counts become access gates, and returning to the original island stays easy. The treehouse and journal are shared destinations, so new zones enrich one personal world.
+
+### What an expansion contains
+
+A default scope, not a quota; a smaller release that deepens one favorite is useful too.
+
+1. **Two extensions to familiar games**, each with a new decision or form of expression.
+2. **At most one new interaction family**, such as cooperative shaping, beam routing or editable rules.
+3. **One place, or a small addition to a place**, with a memorable host, clear landmarks and spoken navigation.
+4. **One optional project** combining a few activities, with saved steps and a satisfying ending; free play stays directly available.
+5. **One creation or known keepsake** to revisit in the treehouse or journal. Completed rounds keep the one-sticker reward; the project layer never duplicates it.
+6. **Content review and verification**, including old-save behavior and regression checks for existing play.
+
+Afterwards, decide what she wants to repeat, what confused her, and whether a fresh arrangement still makes sense. Expand the successful activity before filling out a whole zone.
+
+### Shared systems to change only when a slice needs them
+
+| System | Today | Proposed evolution and safeguard |
 | --- | --- | --- |
-| **E0 — Foundation** | Reliable current catalog, easier discovery, Windy Picnic, pet room and journal beginnings | Existing island |
-| **E1 — Early elementary** | Balancing, editable routes, maps, short clues; initial 6–8 pilot | Wonder Woods |
-| **E2 — Middle elementary** | Equal groups/fractions, word meaning, evidence in stories, construction and saved creations | Maker Harbor and Storybook Square, one expansion at a time |
-| **E3 — Upper elementary** | Fraction/decimal models, area/volume, data, fair tests, longer programs and projects | Discovery Marsh and Skywatch Isles |
+| **Places and learning ranges** | A `Place` has one `band`; places and bands correspond one to one, and a place lists every game supporting its band | Give thematic zones their own stable identity and explicit activity entries, separate from band selection. Keep the original trail as the familiar start; never append one giant scrolling place per grade |
+| **Routing and home** | A game returns to its launching band's place | Carry the launching zone and its position as navigation context, so one game can return to the harbor, the woods or the original place without duplicating its ID. Keep current routes until the migration is implemented and tested |
+| **Difficulty and progress** | One level, pin and history per game, within the played band's range | Extend coherent ladders first. If branches teach different skills, give modes stable keys and define how old levels and pins map. Never silently renumber saved levels, award a grade, or infer a global age from performance |
+| **Results and projects** | `RoundResult` carries misses and hints, plus optional `creation`, `discoveries` and couch scores; the shell saves the round and awards the sticker | Add typed results only for a concrete project need (a chosen route, a created pattern, an observation). Save project steps once so retries and reloads cannot duplicate awards. Never embed one game's scene inside another's lifecycle |
+| **Creations and journal** | Bounded, versioned picture, painting, pixel design and tune slots; sixteen known journal entries | Add constructions, programs and observations the same way: limits, explicit replacement, migration, backup and restore, all local and offline |
+| **Content and support** | Broad skill labels and spoken line IDs | For new modes, author a learning goal, prior concepts, examples, acceptable answers, misconceptions and graduated help: content guides, not mastery tests or prerequisite locks |
 
-Use a small expansion pattern: deepen two familiar games, add at most one new interaction, and connect them with a place or optional project. Not every expansion needs a new zone. New zones should have stable identities independent of learning bands; preserve the current trail and return behavior while that separation is introduced in E1.
+Resolve the place/band separation in E1, before several zones depend on it. Tests that assume one place per band must keep protecting the original trail and cover every new route; audit parent settings, birthdays, session behavior and backups in the same change. Longer puzzles never need faster fingers or mandatory reading. No currency grinding, timed access, online accounts, or care that deteriorates between visits.
 
-## 1. Finish and verify the current work
+### Educational reference points
 
-The automated checks for the ten newest games are done; what remains for them needs a person, the iPad, and ideally the child. These are validation obligations when the device and appropriate players are available, not a gate on §0's desktop prototypes. New implementation still needs its applicable automated/browser checks.
+The sequence borrows a few curriculum reference points, not a claim of alignment. Grade 3 math emphasizes multiplication and division, fractions, area and shape reasoning; grade 5 develops fraction and decimal operations and volume ([grade 3](https://www.thecorestandards.org/Math/Content/3/introduction/), [grade 5](https://www.thecorestandards.org/Math/Content/5/introduction/)). For stories, using details from a text to support an explanation and understanding word parts are useful goals; listening comprehension and independent decoding are different things to observe ([grade 5 literature](https://www.thecorestandards.org/ELA-Literacy/RL/5/), [foundational skills](https://www.thecorestandards.org/ELA-Literacy/RF/5/)). For investigations, plan fair comparisons, control relevant variables, and use observations as evidence; check the simulation's limits before presenting a game result as a fact about the world ([NGSS grades 3–5 engineering design](https://www.nextgenscience.org/topic-arrangement/3-5engineering-design)). Before calling a mode ready, review its facts, explanations, language, solvability, alternatives and behavior with help. Completion with hints is valuable play, not an assessment.
 
-- [x] Rule tests for the ten newest games, and browser play-throughs of all 52 of their levels with gentle misses, hints, saved miss/hint counts and stickers (`BROWSER_SUITE=batch`), driven like a finger would.
-- [ ] Judge Word Monsters and Photo Safari: vocabulary, spoken prompts, answer clarity, replay, and whether device speech actually produces usable letter sounds. Avoid claiming phonics coverage from letter-name playback alone.
-- [ ] Judge Peg Garden and Egg Catch on the device: reachable goals feel reachable, motion is slow enough, catches and routes feel forgiving, orientation, and hints that teach the next action.
-- [ ] Judge Fluffy Salon and Sound Garden: satisfying free play, clear exits, repeatable instructions, and guided modes that preserve creative exploration.
-- [ ] Judge Little Helpers and Mail Carrier: visible quantities and unambiguous requests at a child's viewing distance. (End-of-round accounting is covered by the play-throughs.)
-- [ ] Judge Bounce Back on the device: two real hands at once, the pet taking over the paddle, soft returns, shared rally goals, and whether mistakes/hints fit cooperative play rather than penalizing exploration.
-- [ ] Judge Dot Link: whether drawing a line through dots is easy for small fingers and whether chains and squares read clearly.
-- [ ] Judge the earlier four on the device: whether seesaw tipping reads as weight, whether Teddy Doctor's clues are clear when only spoken, whether Bumper Garden's half-screen flipping feels natural to small hands, and whether Quick Tricks' arrow between tricks is understood.
-- [ ] Judge the Wonder Woods games on the iPad: whether Light Lab's mirrors read as turning the beam, Penguin Slide's tap-the-ice direction, Secret Code's marks, Frog Hop's number line, Market Stall's coin sizes, Clock Tower's hand dragging (outer ring for the long hand), and dragging Inchworm Measure's worms and reading its ruler. Judge Garden Grow, Goodnight Room, Animal Snack, Stop and Go and Opposites with her now: whether tapping the soil, the singing flowers, and saying goodnight hold a one-year-old's attention. Judge the new ladder steps (Robot Path loops, word families, make ten, leftovers) and Pixel Pictures' logic puzzles with an older child.
-- [ ] Judge Peekaround Island: whether turning reads as looking from another side, whether a friend disappearing behind the crown reads as "behind", and whether the island's drop spots are easy to hit. Judge whether the Little Helpers bunch reads as equal teams.
-- [ ] Judge Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town on the iPad: stamp selection and moving, visible equal wholes/pieces, understanding the reply score and finish controls, and silhouette/rotation help. Judge the second Quick Tricks show and paired mystery boxes too.
-- [x] Rule tests and browser play-throughs for the remaining original games: Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond, Shape Sorter, and Color Garden (`BROWSER_SUITE=originals`, 48 levels), plus rule tests for Pattern Train. Every game now has rule tests.
-- [x] Run the combined browser flow (every suite in one run) and record it: passed at `da6860b`. Later changes are checked with the suites they touch; save the full run for occasional release checks.
-- [x] Promote the ten into the README inventory, DESIGN status, and the arcade notebook, with counts taken from the registry.
-- [ ] Judge the newest additions with her and on the iPad: the Windy Picnic (does she understand who needs help, what to try and what changed; are the blanket and request targets easy to hit; does the journal make sense), Block Tower's tumbling for her now and its eighth-of-a-block dragging for an older child, Lasso Loops' loop gesture with small fingers, Pet Says as co-play, Owl Walk Home's turn-taking, Mail Carrier's key at a child's viewing distance, and whether Seesaw Balance's tipping explains "do the same to both sides".
-- [ ] Diagnose the flaky Peg Garden touch suite (`BROWSER_SUITE=batch BATCH_ONLY=pegs`): aimed levels 2–5 failed at different levels in four runs on the development Mac, on the original code as well. It computes shots by simulation and drives them with synthetic touches; a frame-timing difference between the simulation and the live game is a guess, not a finding.
-- [ ] Check the real iPad: offline speech, first-touch audio, small-hand dragging, herding and pulling, orientation, installation, and Guided Access. Preserve these as outstanding until performed on the device.
+## Planning rules
 
-Done when each addition has verified rules, a completed round at every level, mistakes/hints where applicable, portrait layout, reward/save reload checks, and an honest verification entry. Existing round completion still awards one sticker, including with help.
+**Ready to build** when you can state the **fun action**, the **specific skill**, the **smallest complete round**, the **starting support**, and **what deeper play changes**; which existing game could host it as a mode instead; and at least one example of a mistake or experiment and how the game explains it. Creative play is never forced into a single correct answer.
 
-## 2. Make the larger catalog easy to explore
+**Done** when authored or generated tasks are solvable and unambiguous (in rule tests), supported completion works, interruptions and resizing behave, prompts are spoken, rewards and saves are stable, the checks at the right tier of the [verification budget](../AGENTS.md#verification-budget) have run, and a fresh arrangement still makes sense beyond one memorized answer. Then update the README row, this file, [GAMES.md](GAMES.md) and the verification log. Assisted completion is worthwhile play but not evidence of mastery; content and device validation are separate from a passing build.
 
-- [x] Prototype a place layout with clearly separated subject clusters and a few large choices visible at once: grown-up Finding games → Subject cards. Four choices per page; all places remain open.
-- [ ] Compare that layout with the current swipe-and-arrow path on the iPad. Choose based on reaching and returning from a desired game, not fitting more icons on screen.
-- [x] Retain spoken subject/game names, touch-down feedback, swipe cancellation, remembered position, and home returning to the launching place and band in both layouts.
-- [x] A small favorites shelf (built 2026-10-07): a heart beside the sticker after a round keeps the game; a place shows up to five on a shelf above its games, and the subject layout leads with a Favorites card. A gold twinkle marks games she has not finished a round of. Nothing gates, rotates or expires. Still open: a familiar host per subject, and whether the iPad comparison says the shelf is found and used.
-- [ ] Verify every supported game is reachable in every supported band, including after a catalog grows and in portrait.
+**Goals, scores and rewards** (carried over from the [play and progression review](archive/PLAY-AND-PROGRESSION.md)):
 
-Done when a child and grown-up can find a known activity, discover another, and return without losing their place. Reorganizing subjects must not alter saved game IDs or reset progress.
+- Stickers stay predictable and repeatable: one per completed round, with help or without. Never delete duplicates or reinterpret old round history as an achievement.
+- A unique achievement names a known condition, visible beforehand, and is earned once; repeating improves a record instead of adding copies.
+- Personal bests come before any shared board, and scores keep their own units (slides, launches, guesses); never add them into one island ranking. Compare only the same course version and support category, with helped and unhelped runs kept apart.
+- No daily resets, streaks, required returns or lost progress. Scores never go on creative or exploratory play, and optional challenges never withhold a story ending or the ordinary reward.
+- The question for a grown-up prototype is whether the player would choose to play again because there is something to improve, discover or make; minutes played and stickers earned do not answer it.
 
-## 3. Connect the games: Island Errands pilot
+## Parked or decided
 
-Design: [Island Errands in the idea notebook](ARCADE-IDEAS.md#island-errands-a-first-adventure-48-l). Target roughly 4–8 with support adjusted per activity.
-
-- [x] Write **The Windy Picnic**: one recurring character (Juniper the gardener bunny), one picnic scene on the island map, and three illustrated requests (a blanket found in the scene, sandwiches shared in a Pet Kitchen round, an invitation played in a Jelly Drums round) with a final picnic.
-- [x] Make a picture journal that replays each request, recaps completed steps with a picture of what changed, and points straight to the next one with a green arrow. Free play stays available throughout.
-- [x] Prototype completing suitable rounds as story steps (at a level chosen per band, without moving the game's own level). The extra result data needed to carry an exact quantity or tune into the picnic is specified, unimplemented, in [DESIGN.md](DESIGN.md#proposed-story-results).
-- [x] Save after each step and resume after a goodnight or reload. Step completion and the ending are idempotent; replaying a round or retelling the story never duplicates the keepsake.
-- [x] Give assisted completion the same story ending. Nothing expires or is lost, and no level or repeat quota blocks the story.
-- [x] Finish with the prepared picnic and one known keepsake (Juniper's photo, kept in the journal). Each completed game round still gives exactly one sticker; the story adds none.
-- [ ] When an appropriate child playtest is possible, observe whether the child understands who needs help, what to try, and what changed. Meanwhile, use adult browser play to refine the pilot or prototype a small episode with a distinct new consequence; label child comprehension unverified.
-
-Done when the whole adventure can be played, left halfway, resumed offline, and finished with help; all original games remain independently playable. Child comprehension is a separate validation milestone. Consider a second episode (a missing melody or a mixed-up delivery) after adult evaluation of the pilot; introduce a reusable story format only when that episode needs it.
-
-## 4. Give the pet a home and the child a collection
-
-Design: [Pet Treehouse and Discovery Journal](ARCADE-IDEAS.md#pet-treehouse-and-discovery-journal-all-ages-with-support-l).
-
-- [x] Build one treehouse room with six free furnishings, move/turn controls, and a place to display an earned sticker. Displaying never consumes the sticker. (Built 2026-10-07: `RoomScene`, reached from the map; see [DESIGN](DESIGN.md#pet-treehouse-built-2026-10-07).)
-- [x] Let the pet use its room in small, playful ways. Care happens during play; hunger, dirt, sadness, or construction waits never accrue while away. (A nap in the bed, a dance on the rug, reading, watering the plant, a tune from the music box, the lamp; nothing accrues.)
-- [x] Bounded, locally saved creations (built 2026-10-07): a picture board (a Stamp Studio picture) and a tune plaque (a free Song Maker song), each kept only when she taps the tree house button after the round, each with the one before it to bring back with an undo arrow. Code-drawn, synthesized playback. Still open: other media (Rainbow Fingers paintings, Pixel Pictures), taking a creation down altogether, and a round that ends because the session's time is up goes straight to goodnight, so there is no chance to keep that one.
-- [x] A small discovery journal (built 2026-10-07): sixteen known entries, nine Sink or Float things and seven Animal Snack animals, filed when a round actually shows them, each with a picture, a spoken observation and (found or not) a green arrow to the game that shows it. No random rare items or calendar availability. Still open: entries from more games (Photo Safari, Seesaw Balance, Bouncy Launch), notes she can add herself, and showing where in a game an entry was found rather than only which game.
-- [ ] Add deterministic keepsakes only where they represent a story/discovery; provide the starter room without earning anything. Keep the existing sticker reward predictable.
-- [ ] Define save defaults, limits, backup/restore behavior, and migration tests for room placements, creations, journal entries, and story progress. Check placement after resizing and offline reload. (Done for the room's placements, frame, picture, song and journal: bounded, repaired on load, round-tripped through a backup; still open: the offline reload of a rearranged room, a kept creation or a journal.)
-
-Done when the room feels personal with its starter kit, creations can be revisited, and taking a long break has no adverse consequence. A currency, marketplace, trading, and online social layer are outside this pilot.
-
-## 5. First elementary zone (initial 6–8 pilot)
-
-Start with **Seesaw Balance**, a **Robot Path** loop mode, and a small **Mail Carrier** map mode. Bring them together in **Wonder Woods**, the E1 pilot in the [elementary roadmap](ELEMENTARY-ROADMAP.md#e1--prove-an-early-elementary-zone). They test concrete reasoning and planning while keeping the first zone small. Names and exact scope can change with play observations.
-
-- [x] Define a support ladder for Seesaw Balance: compare visible weights → make equal totals → infer a hidden weight, with fixed trays so weight and lever distance are not confused. Built for toddler–pre-K (seven levels, up to finding one of two identical mystery boxes), then levels 8–9 for 6–8: take the same off both sides until a box is alone (boxes on both sides at the top), where one-sided changes tip it without counting as misses. Two different unknown weights remain open.
-- [x] Prototype Robot Path loops with step-through playback, editable commands, and an obvious undo. Keep existing levels intact. (Levels 7–10: counted steps, then a loop button; playback lights the running slot; tapping a slot removes it and what follows.)
-- [x] Extend Mail Carrier with a picture-map legend and two planned stops: levels 6–7, Hazel the squirrel postkeeper's map of the woods with a picture key, then two numbered letters planned in order and walked along the paths.
-- [ ] Use the map in a small woodland errand ([the Woodland Picnic](ELEMENTARY-ROADMAP.md#zone-concepts), or a delivery for a friend).
-- [ ] Provide spoken explanations and large targets. Let the child ask for a worked example or easier mode; longer reasoning must not require faster fingers.
-- [x] First older supported ranges: the `school` band ("Early school", 6–8) with 35 games at first (44 now), 29 of them at the top of existing ladders. Revisit the ranges after trying the activities.
-- [ ] Give Wonder Woods a stable zone identity and explicit activities, with a supported range for each. (Started: Wonder Woods is the `school` band's trail place, still one place per band; a host, an errand and zone identity separate from the band remain.) Carry the launching zone/position through game navigation while preserving the existing age-trail routes.
-- [x] Audit `bands.ts`, place/trail layout, `GameModule` ranges, registry tests, difficulty, routes, parent controls, voice lines, and birthdays. Done for `school`: games now list only supported bands (`BandLevels`/`rangeFor`), the trail has five places, and the band list in the world suite includes it. Update the current one-place-per-band assumption deliberately; retain coverage for every original place and new route.
-- [ ] Test loading and restoring old saves with appropriate defaults; preserve existing levels, pins, stickers, and home place. Verify new-band navigation and offline play. Existing games need not all support the new band.
-- [ ] Evaluate optional narrated word/sentence practice separately from reading-required navigation. Review language content and the actual speech output before treating a mode as ready.
-
-Done when one small elementary zone offers deeper decisions, supported completion, and an optional connected errand while retaining the same touch/offline/reward rules. Visiting it must not change the child's global band or remove younger activities. Add an older band only with the full surrounding support.
-
-## 6. Candidate batches after the pilots
-
-Choose one small batch based on an observed gap. Full loops and scope are in [the idea notebook](ARCADE-IDEAS.md#games-worth-developing-next).
-
-| Candidate | Purpose and learning | Dependency / selection reason |
-| --- | --- | --- |
-| Sorting Machine (Critter Crossing is built) | Hidden rules, combining attributes, comparing evidence and revising a guess | Critter Sort, Secret Code and Critter Crossing are built; the machine would add AND, OR and NOT tiles with a visible history; roughly 8–11 |
-| Chain Reaction (built) + deeper launch modes | Predict, test, adjust one variable; explore several solutions | The constrained construction set is built: large ramps, deterministic replay, one-placement help and several valid designs at the top; physical feel remains to be judged |
-| Story Theater + Busy Picture | Listening/reading comprehension, sequencing, cause and effect, expression | Review each story's clues and acceptable endings; free theater accepts any creation |
-| Habitat Helpers + discovery entries | Observation, classification, planning for compatible needs | Explicit stylized model and accurate facts; growth advances through play |
-| Bounce Back + cooperative music | Turn-taking, shared plans, rhythmic listening | Multi-touch and one-player assist checked on the iPad |
-| Shape Buddies | Cooperative construction | [New interaction ideas](MICROGAME-IDEAS.md#develop-these-into-complete-activities); start with predefined shapes. Peekaround Island, the other half of this pair, is built |
-| Clap the Syllables (built) | Syllables through rhythm | The rest of the [gap review shortlist](ARCADE-IDEAS.md#a-shortlist-from-this-review) (Garden Rows, Ferry Jam, Block Tower, Pet Says, Owl Walk Home, Lasso Loops and Clap the Syllables are built); try crank and pour gestures in [a third Quick Tricks show](MICROGAME-IDEAS.md#a-third-show-new-gestures) before Gear Garden or Pour and Fill |
-
-- [x] Select and specify the next batch after the relevant play/home/older-play prototype is evaluated in the browser: Chain Reaction is built as a six-level pre-K–school ladder with two small machines per round. Retain later child/device evaluation as a separate check.
-- [ ] Deepen short ladders where a meaningful next decision exists: 24 games top out at four or five levels, including most of the newest batches. Append levels without renumbering saved levels or pins.
-- [ ] Give more favorites a second lap level: 22 of the 37 lap games have one. A new lap level has to be appended at the end of a ladder, so first decide whether a band's range may skip levels. Peg Garden's bloom level also needs a guaranteed finish (repeated taps on one spot can't complete it) before it opens to lap play.
-- [x] A Quick Tricks pilot with Umbrella Up, Sock Gobbler, and Bridge Stretch, plus appended Parcel Turn, Picnic Places and Last Berry shows: one show per round with one sticker, an arrow the child taps between tricks, misses summed across the show and at most one hint per trick. Watch whether a medley adds delight before adding more tricks or a framework.
-- [ ] Progress from E1 into middle- and upper-elementary expansions using the [game-family progression](ELEMENTARY-ROADMAP.md#how-familiar-games-could-keep-growing); choose one zone or family at a time, preserving original levels and stable save IDs.
-- [ ] Revisit optional parent-recorded voice lines as a separate design decision. The current no-audio-files constraint and offline storage/consent behavior need an explicit resolution before implementation.
-
-## Definition of ready and done for future activities
-
-Before building, state the **fun action**, **specific skill**, **smallest complete round**, **starting support**, and **what deeper play changes**. Identify existing games that could host the mode. Give at least one example of a mistake or experiment and how the game explains it. Creative play must not be forced into a single correct answer.
-
-Before marking done, verify solvable and unambiguous authored/generated tasks (in rule tests), supported completion, interruptions and resizing, spoken prompts, stable reward/save behavior, and the checks that apply at the lightest tier of the [verification budget](../AGENTS.md#verification-budget). Try a fresh arrangement to see whether the learning action still makes sense beyond one memorized answer. Assisted completion is worthwhile play, but is not evidence of independent mastery. Content and device validation are separate from a passing build. Record what was actually run in the verification log.
-
-## Completed implementation milestones
-
-This replaces the historical continuation checklist. The original ten-region map, cloud unlocks, region pages, and saved `world.opened` list were superseded by the age trail; they are not active requirements. Details of the current architecture are in [DESIGN.md](DESIGN.md), and dated checks remain in [VERIFICATION.md](VERIFICATION.md).
-
-- [x] Shared game shell, generated art/audio, local saves, age-band difficulty, and grown-up controls.
-- [x] Pet hatching and customization, shared pet appearance, spoken name support.
-- [x] Five sticker scenes with a paged tray, drag placement/removal, and normalized saved coordinates.
-- [x] Pattern Train, Memory Match, Letter Trails (all 26 capitals plus words/name), and Robot Path.
-- [x] Size Parade, Bug Builder, and Story Steps, including earlier toddler access.
-- [x] Feelings Faces and Monster Munch, expanding lap play.
-- [x] Four open age-trail places; play at the selected place's band; return to that place; birthday walk; swipe/arrow paging and remembered scroll.
-- [x] Song Maker, Puzzle Pals, Weather Wardrobe, and Sink or Float.
-- [x] Deeper Rainbow Fingers (6 levels) and Splish Splash (8 levels).
-- [x] Duckling Parade, Scoop Shop, Roundup, and Bouncy Launch, reaching the 25-game baseline.
-- [x] Word Monsters, Peg Garden, Fluffy Salon, Sound Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, Bounce Back and Dot Link (35 games), with shared ball and peg physics (`engine/ball.ts`).
-- [x] Rule tests for every game, and play-throughs for the six earliest games (`originals`).
-- [x] Seesaw Balance, Teddy Doctor, Bumper Garden and Quick Tricks (39 games); the ball helper gained an optional ceiling and springy bumpers. Pushed in `17124e8`.
-- [x] Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town (43 games), with six levels each; Quick Tricks 4–6 and Seesaw Balance 7 appended without renumbering, two existing free-play modes opened to lap play, and Photo Safari's and Teddy Doctor's naming levels opened to lap play. Pushed in `17124e8`.
-- [x] Peekaround Island (44 games; toddler–pre-K, five levels) and Little Helpers level 6 (equal groups). Committed in `dfe08a3`.
-- [x] The early-school band and Wonder Woods, with Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall, Garden Grow and Clock Tower (51 games) and the `woods` browser suite. Committed in `dfe08a3`.
-- [x] Animal Snack, Beat Builder, Rhyme Time, Stop and Go, Ramp Race, Critter Sort, Treasure Map, Opposites and Picture Graph (62 games), then Inchworm Measure (63 games; pre-K–school: lay worms end to end, measure, compare, read a ruler). Committed in `dfe08a3`.
-- [x] Pixel Pictures and Goodnight Room (53 games); Robot Path 7–10 (counted steps, loops), Word Monsters 7 (word families), Duck Pond 10 (make ten), Monster Munch 8 (leftovers), Bubble Pop 10–11 (pairs that make 5 and 10), Photo Safari 6 (not), Egg Catch 6 (predict the path). Committed in `dfe08a3`.
-- [x] Automated verification recorded for those expansions, including production offline checks where relevant. Physical iPad checks and judgments of fun remain open above.
-- [x] The Windy Picnic pilot (a map destination, the in-scene blanket, two story rounds, the journal, the finale and keepsake, retelling, a `stories` save field with migration tests), Mail Carrier 6–7, Seesaw Balance 8–9, and Block Tower, Lasso Loops, Pet Says and Owl Walk Home (67 games), with rule tests, the `picnic` and `shortlist` browser suites, the world suite and the production offline check. Merged to `main` in `7066d5b` and deployed.
-- [x] Garden Rows, Ferry Jam, Critter Crossing, Clap the Syllables and Chain Reaction bring the catalog to 72 games. Chain Reaction is the first candidate-batch activity after the home/play prototypes: a six-level constrained construction ladder with deterministic replay, solver-checked boards and a filtered browser play of its first and top levels. Device and child judgment remain open.
+- **Native Nintendo Switch port:** exploratory only. There is no browser on the Switch; a port needs Nintendo developer approval, development hardware and a rewrite of rendering, input, audio, speech and saves. Prove one controller-driven game on approved hardware before estimating more. Research: [Party and Switch](archive/PARTY-AND-SWITCH.md#running-a-game-on-the-original-switch).
+- **A separate "Grown-up Play" launcher with its own adult save:** superseded by couch play, which has its own save and the challenge courses.
+- **Leaderboards:** a local pass-and-play family board is a reasonable experiment once a second person wants to compare; public online rankings need a service, identity and score validation and are a later adult-only option.
+- **More party structure:** a dice board, item economy, online matchmaking or controller support for every game is not needed. Simultaneous face-off boards and the daughter joining couch play as a co-pilot (any button cheers; a pet takes the other side) are proposals for later.
+- **An opt-in "Keep playing" mode** for selected short games, replacing the blocking celebration with a small acknowledgment while still awarding one sticker per round and leaving goodnight to the session setting: a proposal to try on a few games first.
+- **Parent-recorded voice lines:** needs an explicit decision against the no-audio-files rule, plus offline storage and consent behavior, before any work.

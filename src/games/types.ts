@@ -69,8 +69,8 @@ export interface RoundResult {
   /** Couch face-off on one shared board: [player 1, player 2]. */
   scores?: [number, number];
   /**
-   * Something she made in this round (a stamped picture, a song) that she may choose to hang in the pet's
-   * treehouse. The shell offers it after the round; nothing is kept unless she says so. Free making only: a song
+   * Something she made or completed in this round (a stamped picture, finger painting, pixel picture or song) that she may
+   * choose to hang in the pet's treehouse. The shell offers it after the round; nothing is kept unless she says so. A song
    * copied from a card is not hers.
    */
   creation?: Creation;

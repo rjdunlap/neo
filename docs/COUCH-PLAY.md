@@ -1,6 +1,6 @@
-# Couch play on a Mac
+# Couch play
 
-Saved for your next play session. This is the computer/browser route; the game does not run on the Switch console. Controller code can be exercised with simulated devices, but physical Switch controllers, Joy-Con pairing and TV latency still need your hands-on check.
+How to set up and play the grown-ups' couch route on a Mac with a TV, controllers or a keyboard. It runs in a desktop browser on the computer; the game does not run on the Switch console. How it works inside is in [DESIGN](DESIGN.md#couch-play); open questions for real play are in the [roadmap](ROADMAP.md#needs-a-person-or-a-device). Controller code can be exercised with simulated devices, but physical Switch controllers, Joy-Con pairing and TV latency still need your hands-on check.
 
 ## Pair your original Switch controllers
 
@@ -32,6 +32,16 @@ References: [Apple's Bluetooth controller connection guide](https://support.appl
 
 **Face-off.** Penguin Slide, Bouncy Launch, Light Lab, Secret Code and Peg Garden give each player their own fresh board in turn (never the same hidden board twice), scored against that board's own best, so different boards compare fairly: slides over the best route; distance from the cloud centres; extra turns and missed shines; guesses; shots. Lower wins. Memory Match is one shared board where players alternate and a match earns another turn; most pairs wins. Bounce Back, Rhythm Neighbors and Bumper Garden are team stops: both players score. Ties score for both. A stop's first turn is saved, so leaving between the two turns changes nothing. One couch sticker is kept per stop, not per turn.
 
+| Game | Together | Face-off |
+| --- | --- | --- |
+| Penguin Slide, Bouncy Launch, Light Lab, Secret Code, Peg Garden | take turns | each on their own board, fewest wins |
+| Memory Match | take turns | one board, most pairs wins, a match earns another turn |
+| Bounce Back, Rhythm Neighbors, Bumper Garden | together | team: both score |
+| Pattern Train, Frog Hop, Sink or Float, Robot Path | together: talk it over, either of you can press | team: both score |
+| Egg Catch | together: with two controllers you both steer one basket | team: both score |
+
+Games open in this order, one group per finished trip: Penguin Slide, Bouncy Launch and Bounce Back at the start; then Memory Match and Rhythm Neighbors; Light Lab and Secret Code; Peg Garden and Bumper Garden; Pattern Train and Egg Catch; Frog Hop and Sink or Float; then Robot Path.
+
 | Action | Standard controller | Keyboard |
 | --- | --- | --- |
 | Choose a menu item | D-pad or left stick; release between moves | Arrow keys or Tab |
@@ -60,6 +70,6 @@ Each couch game has a bot used for its how-to demo. The browser suite also uses 
 
 Connect the Mac to the TV with an available display connection, move the browser to the TV, and enter browser full screen. Try the TV's Game Mode if input feels delayed. Keep the Mac close enough for Bluetooth. Couch pages scale with the window (about 1.4 times at 1080p), so judge whether text is comfortable from the couch, paddle feel and sound delay before deciding whether the pacing needs changes. If sound is off, the status line says so: a controller button alone may not wake the browser's audio, so press any key or click once.
 
-Until these changes are pushed/deployed, run the working copy with `npm run dev` and visit **http://localhost:5173**. The [live site](https://rjdunlap.github.io/neo/) only contains code already deployed from `main`. This task does not deploy automatically.
+The [live site](https://rjdunlap.github.io/neo/) has whatever is deployed from `main`. To try local changes, run `npm run dev` and visit **http://localhost:5173**.
 
-Future work: more couch games (a larger pool keeps unlocks meaningful), further challenge courses, the daughter joining as a co-pilot, simultaneous face-off boards, explicit Joy-Con calibration, and real controller/TV validation. There are no leaderboards across trips; a face-off compares only the two players in the same trip.
+Planned next for the couch (more games that score on seeded boards, further courses, the daughter joining as a co-pilot, simultaneous face-off boards, Joy-Con support) is in the [roadmap](ROADMAP.md). There are no leaderboards across trips; a face-off compares only the two players in the same trip.

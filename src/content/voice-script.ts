@@ -175,7 +175,7 @@ export const SCRIPT = {
   'room.cleared': ['The frame is empty again.'],
   'room.tidy': ['All tidy!', 'Everything is back in its place.'],
   'room.picture': ['What a lovely picture you made!', 'Look at your picture!'],
-  'room.picture-empty': ['Make a picture in Stamp Studio, and it can hang here!'],
+  'room.picture-empty': ['Make a picture in Stamp Studio or Rainbow Fingers, and it can hang here!'],
   'room.tune': ['Listen to the song you made!', 'Your very own song!'],
   'room.tune-empty': ['Make a song in Song Maker, and it can play here!'],
   'room.swap': ['Here is the one from before!'],
