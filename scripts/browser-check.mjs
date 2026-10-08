@@ -2577,6 +2577,8 @@ async function woodsBatch() {
       await settle();
     };
     await idle(0);
+    // The animals must stand in the meadow, where a finger can reach them (at level 1 they once sat unplaced in the top-left corner).
+    assert.ok(await page.evaluate(() => neo.scene.game.friends.every((f) => { const p = f.node.getGlobalPosition(); return p.x > 100 && p.x < innerWidth - 100 && p.y > innerHeight * 0.4; })), `animal snack level ${level}: the animals are on screen`);
     if (mode === 'munch') for (let k = 0; k < 6; k++) await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k % 3].name, k));
     else if (mode === 'float') for (let k = 0; k < 6; k++) await tapSnack();
     else if (mode === 'match') {
@@ -4640,6 +4642,75 @@ async function creationsRoom() {
   log('Creations: a stamped picture and a free song are offered after the round and kept only on request (one sticker each); the room shows the picture, the pet looks at it and sings the song; a second picture replaces the first, which comes back and goes away again with the undo arrow; tidy and a reload keep both; the wall items clear each other in portrait');
 }
 
+/** The discovery journal: what a round actually showed lands in it, the treehouse button twinkles, cards speak and point back to their game, and it survives a reload. */
+async function journalPlay() {
+  await page.evaluate(() => { kit.store.data.stickers = []; kit.store.data.journal = { found: [], seen: 0 }; });
+  const found = () => page.evaluate(() => [...kit.store.data.journal.found]);
+  // Real Sink or Float play (drop level): every thing she watches go into the water is a discovery.
+  await launch('sink-float', 1); await page.waitForTimeout(900);
+  const things = await page.evaluate(() => neo.scene.game.items.map((i) => i.thing));
+  for (let i = 0; i < things.length; i++) { await page.evaluate((i) => kit.tapOn(neo.scene.game.items[i].node), i); await page.waitForTimeout(700); }
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 40000 }); await page.waitForTimeout(900);
+  assert.deepEqual((await found()).sort(), things.map((t) => `sink-float:${t}`).sort());
+  assert.equal(await page.evaluate(() => neo.scene.discovered.length), things.length, 'the end of the round shows what is new');
+  await screenshot('journal-new');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 1, 'one sticker as always');
+  // The treehouse button twinkles; opening the journal marks everything as looked at.
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(500);
+  assert.equal(await page.evaluate(() => neo.scene.journalButton.children.length), 3, 'a twinkle on the journal button');
+  await tap('neo.scene.journalButton'); await scene('JournalScene'); await page.waitForTimeout(500);
+  const view = () => page.evaluate(() => ({ page: neo.scene.page, found: neo.scene.cards.filter((c) => c.found).length, twinkles: neo.scene.cards.filter((c) => c.sparkle).length, seen: kit.store.data.journal.seen }));
+  assert.deepEqual(await view(), { page: 0, found: things.length, twinkles: things.length, seen: things.length });
+  await screenshot('journal-page-one');
+  // A card she has not found says where to find it; a found card says what she saw.
+  const detail = () => page.evaluate(() => neo.scene.detail.children[1].text);
+  await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => !c.found && c.node.visible).node)); await page.waitForTimeout(300);
+  assert.match(await detail(), /Not found yet.*Sink or Float/);
+  await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.found && c.node.visible).node)); await page.waitForTimeout(300);
+  assert.match(await detail(), /float|sink/i);
+  // Page two holds the animals; the green arrow goes to the game that shows the chosen one, at a band that game plays.
+  await tap('neo.scene.next'); await page.waitForTimeout(400);
+  await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.entry.id === 'animal-snack:cow').node)); await page.waitForTimeout(300);
+  assert.match(await detail(), /Animal Snack/);
+  await page.evaluate(() => { kit.store.data.profile.band = 'school'; });
+  await tap('neo.scene.play'); await scene('GameScene');
+  assert.deepEqual(await page.evaluate(() => [neo.scene.mod.id, neo.scene.band]), ['animal-snack', 'preschool']);
+  // Real Animal Snack play (munch level): each animal seen eating is a discovery.
+  await launch('animal-snack', 1); await page.waitForTimeout(900);
+  const friends = await page.evaluate(() => neo.scene.game.friends.map((f) => f.name));
+  for (let i = 0; i < 6; i++) {
+    await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 15000 });
+    await page.evaluate((i) => kit.tapOn(neo.scene.game.friends[i % neo.scene.game.friends.length].node, 0, -120), i); await page.waitForTimeout(300);
+  }
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 40000 }); await page.waitForTimeout(900);
+  const all = await found();
+  assert.deepEqual(all.filter((id) => id.startsWith('animal-snack:')).sort(), friends.map((f) => `animal-snack:${f}`).sort());
+  assert.equal(await page.evaluate(() => neo.scene.discovered.length), friends.length);
+  assert.equal(all.length, things.length + friends.length, 'nothing found twice');
+  // Back in the journal it opens where the new things are.
+  await page.evaluate(() => neo.go.journal()); await scene('JournalScene'); await page.waitForTimeout(500);
+  assert.deepEqual(await view(), { page: 1, found: things.length + friends.length, twinkles: friends.length, seen: things.length + friends.length });
+  await screenshot('journal-page-two');
+  assert.match(await detail(), /eats|chews/, 'the strip starts on the first new thing');
+  await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.found && c.entry.game === 'animal-snack').node)); await page.waitForTimeout(300);
+  assert.match(await detail(), /eats|chews/);
+  // A reload keeps everything and nothing twinkles any more.
+  await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(400);
+  await page.reload(); await ready();
+  await page.evaluate(() => neo.go.journal()); await scene('JournalScene'); await page.waitForTimeout(500);
+  assert.deepEqual(await found(), all);
+  assert.equal((await view()).twinkles, 0);
+  // Portrait: the cards stay clear of the strip, and the room's buttons clear of each other.
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  assert.ok(await page.evaluate(() => { const strip = neo.scene.detail.getBounds(); return neo.scene.cards.filter((c) => c.node.visible).every((c) => { const b = c.node.getBounds(); return b.y + b.height < strip.y; }); }), 'cards clear the strip');
+  await screenshot('journal-portrait');
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(600);
+  assert.ok(await page.evaluate(() => { const bs = [neo.scene.journalButton, neo.scene.flip, neo.scene.tidyButton].map((b) => b.getBounds()); return bs.every((a, i) => bs.every((b, j) => i === j || a.x + a.width <= b.x || b.x + b.width <= a.x)); }), 'the buttons do not overlap');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+  log('Journal: a Sink or Float round fills it with exactly what she watched, and an Animal Snack round with the animals she saw eat; the end of the round shows what is new and gives one sticker; the treehouse button twinkles until she opens the journal; an unfound card says where to find it, a found card says what she saw, the green arrow opens the game at a band it plays; the journal opens on the page with the new things; nothing is found twice; a reload keeps it all; portrait stays clear');
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -4675,6 +4746,7 @@ try {
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'island') await islandShelf();
   if (suite === 'all' || suite === 'creations') await creationsRoom();
+  if (suite === 'all' || suite === 'journal') await journalPlay();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

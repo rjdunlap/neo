@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
+import { entryId } from '../../content/journal';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { Backdrop } from '../../art/scenery';
@@ -86,6 +87,8 @@ class AnimalSnack implements Game {
   index = -1;
   /** 'munch' and 'float': snacks eaten so far. */
   eatenCount = 0;
+  /** Animals she has seen eat their favorite food this round: the discoveries for her journal. */
+  private readonly fed = new Set<CritterName>();
   misses = 0;
   hints = 0;
   busy = true;
@@ -169,6 +172,8 @@ class AnimalSnack implements Game {
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.blanket));
       this.friends.push(f);
     }
+    // Animals made after the shell's resize (every round) would otherwise wait at the corner for a snack tray to place them.
+    this.resize(this.view);
   }
 
   /** Snacks on the blanket: tappable on the float and count levels, draggable for matching. */
@@ -229,6 +234,7 @@ class AnimalSnack implements Game {
   }
 
   private async eat(f: Friend, node: Container) {
+    this.fed.add(f.name);
     const m = this.mouth(f);
     this.ctx.tw.kill(node);
     await this.ctx.tw.to(node, { x: m.x, y: m.y }, { duration: 0.35, ease: ease.inOutSine });
@@ -380,7 +386,7 @@ class AnimalSnack implements Game {
     for (const f of this.friends) f.node.cheer();
     await this.ctx.say('snack.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.fed].map((a) => entryId('animal-snack', a)) });
   }
 }
 
@@ -399,10 +405,9 @@ class SnackIcon extends WigglyIcon {
   }
 }
 
-function sticker(seed: number): Container {
-  const rng = new Rng(seed);
+/** An animal beside the food it loves (also the picture for its journal entry). */
+export function snackPicture(name: CritterName): Container {
   const c = new Container();
-  const name = rng.pick(['cow', 'bunny', 'dog', 'cat', 'duck', 'pig', 'bear'] as CritterName[]);
   const critter = new Critter(CRITTERS[name]);
   critter.alive = false;
   critter.scale.set(0.55);
@@ -411,6 +416,10 @@ function sticker(seed: number): Container {
   food.position.set(70, 50);
   c.addChild(critter, food);
   return c;
+}
+
+function sticker(seed: number): Container {
+  return snackPicture(new Rng(seed).pick(['cow', 'bunny', 'dog', 'cat', 'duck', 'pig', 'bear'] as CritterName[]));
 }
 
 export const animalSnack: GameModule = {

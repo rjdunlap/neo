@@ -9,6 +9,7 @@ import { PicnicScene } from './scenes/PicnicScene';
 import { SubjectPlaceScene } from './scenes/SubjectPlaceScene';
 import { PlaceScene } from './scenes/PlaceScene';
 import { StartScene } from './scenes/StartScene';
+import { JournalScene } from './scenes/JournalScene';
 import { RoomScene } from './scenes/RoomScene';
 import { StickerBookScene } from './scenes/StickerBookScene';
 import { CouchScene } from './scenes/CouchScene';
@@ -27,6 +28,7 @@ export function createRoutes(app: App): Routes {
     picnic: (from) => void app.show(new PicnicScene(app, from)),
     stickers: () => void app.show(new StickerBookScene(app)),
     room: () => void app.show(new RoomScene(app)),
+    journal: () => void app.show(new JournalScene(app)),
     goodnight: () => void app.show(new GoodnightScene(app)),
   };
 }

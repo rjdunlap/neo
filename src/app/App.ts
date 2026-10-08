@@ -37,6 +37,7 @@ export interface Routes {
   stickers(): void;
   /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. */
   room(): void;
+  journal(): void;
   goodnight(): void;
 }
 

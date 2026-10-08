@@ -192,4 +192,20 @@ describe('migrate', () => {
     };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
+
+  it('starts with an empty journal, and repairs a damaged one without touching anything else', () => {
+    expect(defaults().journal).toEqual({ found: [], seen: 0 });
+    expect(migrate({}).journal).toEqual({ found: [], seen: 0 });
+    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, creations: { picture: { current: null, previous: null } }, favorites: ['duck-pond'] });
+    expect(old.journal).toEqual({ found: [], seen: 0 });
+    expect(old.favorites).toEqual(['duck-pond']);
+    expect(migrate({ journal: { found: ['sink-float:duck', 'retired:thing', 4, 'sink-float:duck'], seen: 7 } }).journal).toEqual({ found: ['sink-float:duck'], seen: 1 });
+    expect(migrate({ journal: 'x' }).journal).toEqual({ found: [], seen: 0 });
+  });
+
+  it('keeps the journal through a backup and restore', () => {
+    const save = defaults();
+    save.journal = { found: ['sink-float:duck', 'animal-snack:bear'], seen: 1 };
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
 });

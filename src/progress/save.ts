@@ -2,6 +2,7 @@ import type { Band } from './bands';
 import { PET_COLORS, PICNIC_STEPS, ROOM_ITEMS, STICKER_PAGES, type PetColor, type PicnicStep, type RoomItemId, type StickerPage } from '../content/world';
 import { clampSpot, starterItem, starterRoom } from '../content/room';
 import { cleanCreations, emptyCreations, type CreationsSave } from '../content/creations';
+import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
 import { cleanFavorites } from '../content/shelf';
 
 export interface StickerPlacement {
@@ -74,6 +75,8 @@ export interface SaveData {
   favorites: string[];
   /** What she made and kept for the treehouse: one picture and one tune, each with the one before it. */
   creations: CreationsSave;
+  /** Discoveries she has seen for herself (known entries only), and how many she had looked at when she last opened the journal. */
+  journal: JournalSave;
 }
 
 export const HISTORY_LENGTH = 10;
@@ -92,6 +95,7 @@ export function defaults(): SaveData {
     room: starterRoom(),
     favorites: [],
     creations: emptyCreations(),
+    journal: emptyJournal(),
   };
 }
 
@@ -197,5 +201,6 @@ export function migrate(raw: unknown): SaveData {
     room: room(raw.room),
     favorites: cleanFavorites(raw.favorites),
     creations: cleanCreations(raw.creations),
+    journal: cleanJournal(raw.journal),
   };
 }

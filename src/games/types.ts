@@ -74,6 +74,11 @@ export interface RoundResult {
    * copied from a card is not hers.
    */
   creation?: Creation;
+  /**
+   * Journal entry ids (see `src/content/journal.ts`) for things this round actually showed her: a thing watched going
+   * into the water, an animal seen eating its favorite food. The shell files the new ones in her discovery journal.
+   */
+  discoveries?: string[];
 }
 
 /**

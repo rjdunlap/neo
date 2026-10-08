@@ -4,6 +4,15 @@
 
 This is a dated record of checks, newest first. It records what was actually run; "not run" is an honest entry.
 
+## The discovery journal, and a fix to Animal Snack's first level (2026-10-07; checked in the working tree, not committed)
+
+What changed: a discovery journal (`JournalScene`, reached from a new button in the treehouse): sixteen known entries (nine Sink or Float things, seven Animal Snack animals), filed from `RoundResult.discoveries` when a round actually showed them; the end of a round shows what is new; a bounded `journal` field in the save. **Found along the way:** at Animal Snack level 1 (lap, "munch") the animals were never laid out and stood stacked at the top-left corner, leaving an empty meadow; the existing play-through tapped through the same off-screen point and so passed. Fixed by laying the animals out whenever a round creates them.
+
+- `npm run typecheck`, `npm test` (366 tests; new: the entry table covers every thing and animal exactly, every entry's game exists, each spoken observation is true to the game's data, finding, repeats, the twinkle, and a damaged or old save repaired and round-tripped) and `npm run build` passed. `BROWSER_SUITE=journal` passed with real play: a Sink or Float drop round files exactly the things dropped, an Animal Snack munch round the animals that ate, one sticker, the end-of-round card, the twinkle on the treehouse button until the journal is opened, an unfound card and a found card, the green arrow to the game at a supported band, the journal opening on the page with the new things, nothing found twice, a reload, and portrait. Screenshots were looked at.
+- The Animal Snack fix: the `snack` play-through (`BROWSER_SUITE=woods WOODS_ONLY=snack`) now asserts the animals stand on screen; it failed on the old code at level 1 and passed on all five levels after the fix.
+- Also run: `island`, `creations`, `room`, `picnic` and `smoke` for Sink or Float and Animal Snack (the celebration, room, save and two games' finish calls changed), `couchgames` for Sink or Float (a couch game whose finish changed), and the production offline check (the served bundle matched the build). Not run: `world`, the other couch suites.
+- Not run, and open: the offline reload of a journal; whether a one-year-old notices the journal at all (it is a grown-up-and-older-child feature for now); and everything on a device.
+
 ## Pet room creations: a picture board and a tune plaque (2026-10-07; checked in the working tree, merged to `main` after the island work in `6492cef`)
 
 What changed: a game can hand the shell something she made (`RoundResult.creation`); Stamp Studio sends its stamps and Song Maker's free levels send the lit jellies. After the round a tree house button beside the sticker keeps it, only on request. The treehouse shows the picture on a board and the song on a plaque (the pet looks at the picture, sings the song beat by beat), a newer one replaces the older (one earlier of each kind is kept), and a back arrow brings the earlier one back. A bounded `creations` field in the save, repaired on load (`src/content/creations.ts`).

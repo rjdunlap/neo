@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../art/palette';
-import { shapePath } from '../art/shapes';
+import { shapePath, starPoints } from '../art/shapes';
 
 export function islandIcon(): Graphics {
   return new Graphics().ellipse(0, 18, 30, 12).fill(swatch.blue.fill).ellipse(0, 12, 24, 10).fill(swatch.yellow.light)
@@ -127,4 +127,13 @@ export function crossIcon(color = ink): Graphics {
 export function heartIcon(color = 0xffffff, filled = true): Graphics {
   const g = shapePath(new Graphics(), 'heart', 26);
   return filled ? g.fill(color).stroke(line(4, color)) : g.stroke(line(6, color));
+}
+
+/** A magnifying glass with a star in its lens: the discovery journal. */
+export function magnifierIcon(color = ink): Graphics {
+  const g = new Graphics()
+    .moveTo(10, 10).lineTo(26, 26).stroke(line(10, wood.line))
+    .circle(-6, -6, 22).fill(swatch.blue.light).stroke(line(7, color))
+    .poly(starPoints(10, 4.4, 5).map((v, i) => (i % 2 === 0 ? v - 6 : v - 5))).fill(swatch.yellow.fill);
+  return g;
 }
