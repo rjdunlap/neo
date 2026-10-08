@@ -451,14 +451,16 @@ export class CouchScene extends Scene {
     const sheet = this.shell(alone ? 'Puzzle shelf' : 'Challenges', alone
       ? 'Every puzzle is open. Each is a fixed run scored by how few tries it takes, with an exact best (par) to chase. A hint is always allowed: it just goes in its own column.'
       : 'A fixed run in one game, scored by how few tries it takes. Every player keeps their own best, and a hint is always allowed: it just goes in its own column.');
-    const grid = node('div', '', 'couch-cards couch-courses'); sheet.append(grid);
+    // Past six puzzles the cards drop their description (the course page has it) so the shelf still fits a screen.
+    const compact = COURSE_IDS.length > 6;
+    const grid = node('div', '', `couch-cards couch-courses${compact ? ' couch-compact' : ''}`); sheet.append(grid);
     for (const id of COURSE_IDS) {
       const info = courseInfo(id), mod = gameById(info.game)!, saved = this.couch.data.courses[id];
       const b = this.button(grid, '', () => this.courseHome(id), `couch-card couch-course-card couch-course-${id}`);
       b.dataset.course = id;
       const marks = alone ? standing(shelfEntry(this.couch.data, id), info)
         : [0, 1].map(p => { const best = saved?.players[p].clean ?? saved?.players[p].assisted ?? null; return `${who(p)}: ${best === null ? 'no finish yet' : `${best}${saved?.players[p].clean === null ? ' with help' : ''}`}`; }).join(' · ');
-      b.append(this.iconCanvas(mod), node('strong', info.name), node('span', info.card), node('small', marks));
+      b.append(this.iconCanvas(mod), node('strong', info.name), ...(compact ? [] : [node('span', info.card)]), node('small', marks));
       if (saved?.run) b.append(node('em', 'IN PROGRESS', 'couch-new'));
     }
     this.button(sheet, 'Back to couch play', () => this.menu());

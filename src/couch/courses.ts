@@ -1,6 +1,7 @@
 import type { LineId } from '../content/voice-script';
 import { CLOUDS, cloudMinimum } from '../games/bouncy-launch/course';
 import { COURSES as PONDS, courseBoards, courseMinimum, type PondCourseId } from '../games/penguin-slide/course';
+import { COURSES as PICTURES, courseBest as pictureBest, courseMinimum as pictureMinimum, type PictureCourseId } from '../games/picture-logic/course';
 import { COURSES as LANTERNS, courseBest as lanternBest, courseMinimum as lanternMinimum, type LanternCourseId } from '../games/lantern-lights/course';
 import { COURSES as BEDS, courseBest as bedBest, courseMinimum as bedMinimum, type BedCourseId } from '../games/sudoku-garden/course';
 import type { CouchId } from './party';
@@ -11,9 +12,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId;
+export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -59,6 +60,20 @@ const ponds = (id: PondCourseId, card: string): CourseInfo => ({
   },
 });
 
+/** The two Picture Logic courses speak alike; only the pictures differ. */
+const pictures = (id: PictureCourseId, card: string, done: LineId): CourseInfo => ({
+  id, game: 'picture-logic', level: id === 'pictures' ? 3 : 4, version: PICTURES[id].version, name: PICTURES[id].name, blurb: PICTURES[id].blurb, card,
+  part: 'picture', unit: 'fill', par: 'fewest', routes: false, best: pictureBest(id), minimum: pictureMinimum(id),
+  rule: 'Fill every picture with the fewest fills you can: one for each square in the picture, with nothing filled by mistake. Crosses, and taking a fill out, are free.',
+  note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a picture empties it again, and the fills you made on it still count.',
+  leaving: 'Leaving or refreshing empties the picture you are on, and the fills you made on it still count. Finished pictures stay saved.',
+  done,
+  badges: {
+    finish: { title: 'Finished', how: 'Find every picture, with or without help.' },
+    minimum: { title: 'Every fill right', how: 'Find every picture with one fill for each of its squares and no hint.' },
+  },
+});
+
 /** The two Sudoku Garden courses speak alike; only the beds differ. */
 const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
   id, game: 'sudoku-garden', level: id === 'beds' ? 3 : 6, version: BEDS[id].version, name: BEDS[id].name, blurb: BEDS[id].blurb, card,
@@ -76,6 +91,8 @@ const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
 const build: Record<CourseId, () => CourseInfo> = {
   practice: () => ponds('practice', 'Penguin Slide, five gentle ice puzzles with no dead ends. A warm-up, or an easy game for the evening.'),
   ponds: () => ponds('ponds', 'Penguin Slide, five ice puzzles that take real planning. Use the fewest slides you can, then beat your own best.'),
+  pictures: () => pictures('pictures', 'Picture Logic, three 10 by 10 pictures in a row. Fill what the numbers say, then beat your own best.', 'couch.course.pictures'),
+  bigpictures: () => pictures('bigpictures', 'Picture Logic, two big 15 by 15 pictures. An evening\'s puzzle: fewer wrong fills is better.', 'couch.course.bigpictures'),
   lanterns: () => ({
     id: 'lanterns', game: 'lantern-lights', level: 6, version: LANTERNS.lanterns.version, name: LANTERNS.lanterns.name, blurb: LANTERNS.lanterns.blurb,
     card: 'Lantern Lights, five ponds of paper lanterns in a row. Light every lantern with the fewest presses, then beat your own best.',

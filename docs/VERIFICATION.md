@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-07 (453 tests) | Lantern Lights entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (474 tests) | Picture Logic entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
@@ -16,13 +16,14 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden and Lantern Lights (filtered) | Child's island, couch Settings, Just me, Sudoku Garden and Lantern Lights entries | Peg Garden's bot needed one retry (its known flake) |
-| `couchcourse` | 2026-10-07, after the Sudoku courses joined the list | Sudoku Garden entry | About four to seven minutes |
+| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden, Lantern Lights and Picture Logic (filtered) | Child's island, couch Settings, Just me, Sudoku Garden, Lantern Lights and Picture Logic entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchcourse` | 2026-10-08, after the shelf's cards became compact | Picture Logic entry | About four to seven minutes |
 | `couchnames` | 2026-10-07, after Just me | Couch Just me entry | |
 | `couchsettings` | 2026-10-07, after Just me | Couch Just me entry | About 30 seconds |
-| `couchsolo` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About 40 seconds |
+| `couchsolo` | 2026-10-08, after Picture Logic joined the shelf | Picture Logic entry | About 40 seconds |
 | `couchbeds` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About three minutes; plays a full six-bed course with the bot |
-| `couchlanterns` | 2026-10-07 | Lantern Lights entry | About two minutes; plays a full five-pond course with the bot |
+| `couchlanterns` | 2026-10-07 | Lantern Lights entry |
+| `couchpictures` | 2026-10-08 | Picture Logic entry | About three minutes; plays a full three-picture course with the bot | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -37,6 +38,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Picture Logic, a third grown-up-only game (2026-10-08)
+
+What changed: **Picture Logic** (nonograms) joins `GROWNUP_GAMES` (couch only): a bank of ten 10 by 10 and three 15 by 15 pictures, each checked to be solvable by line logic alone, plus Pixel Pictures' 6 by 6 logic pictures; clues that go grey when a line matches and red when no way of filling it fits; hints that name the line and its clue; the finished picture takes its colors and says what it is; par is the picture's filled squares; two puzzle-shelf courses (Pond Pictures, The Big Pictures). Painting a run by holding a button needed a new fact from the controller sampler, so `PlayerControls` gained `hold` and `holdUndo`. The puzzle shelf's cards drop their description past six puzzles so eight fit a 1024 by 768 window. Rules, pictures and course are in `src/games/picture-logic/`.
+
+- `npm run typecheck`, `npm test` (474 tests: 21 new for the rules, the pictures, every deduction being right from many partly-solved states, a player who follows every hint finishing every picture with exactly its par in fills, the frozen course pictures' pinned clues, `hold` and `holdUndo` in the sampler) and `npm run build` passed.
+- New `BROWSER_SUITE=couchpictures` passed on the final code: Just me, the shelf (eight puzzles) and course page, a fill outside the picture counted and not refused, emptying and crosses free, a held bottom button painting an eight-square run in one stroke, a row's clue going grey when done and red with a ninth square, the pause menu's hint (a wrong mark named first, then a line and its clue, the run marked helped), restart with fills kept, a reload that resumes the picture with its fills, and a fresh bot run of all three pictures with exactly 182 fills, one sticker and both badges. `couchgames COUCH_ONLY=picture-logic` failed first on a real bug (the how-to page was taller than the screen with its long goal line and control rows, so the Play button was cut off) and passed after both were shortened. The full `couchcourse` and `couchsolo` passed on a snapshot after the shelf's cards were made compact.
+- Screenshots looked at: a 10 by 10 grid at the start and part-way through a stroke, a 15 by 15 grid (about 27 units a square, readable but the smallest in the game), the row clue overlapping the frame (fixed by moving the clue gutters), the cursor starting at the left edge (now the middle), the shelf with eight cards before and after the compact layout, the hint panel, a clue gone red, and the course result.
+- Not run: `couchbeds` and `couchlanterns` again (only their shelf-list assertion changed, to eight ids), `couch`, `world`, `smoke` and the offline check (no island game, navigation or asset changed). Open and needing a person: whether holding a button while moving the stick feels right on a real Pro Controller (the stick's own repeat and the held button together), whether a 15 by 15 grid is legible from a sofa at 1080p, whether the cat and the sailboat are the right size of first picture, and whether line-logic hints that name the row and its clue teach or just spoil.
 
 ### Lantern Lights, a second grown-up-only game (2026-10-07)
 
