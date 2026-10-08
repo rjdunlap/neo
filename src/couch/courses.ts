@@ -1,6 +1,7 @@
 import type { LineId } from '../content/voice-script';
 import { CLOUDS, cloudMinimum } from '../games/bouncy-launch/course';
 import { COURSES as PONDS, courseBoards, courseMinimum, type PondCourseId } from '../games/penguin-slide/course';
+import { COURSES as CONGA, courseBest as congaBest, courseMinimum as congaMinimum, type CongaCourseId } from '../games/pond-conga/course';
 import { COURSES as BRIDGES, courseBest as bridgeBest, courseMinimum as bridgeMinimum, type BridgeCourseId } from '../games/island-bridges/course';
 import { COURSES as WORDS, courseBest as wordBest, courseMinimum as wordMinimum, type WordCourseId } from '../games/word-search/course';
 import { COURSES as HARBORS_COURSE, courseBest as harborBest, courseMinimum as harborMinimum, type HarborCourseId } from '../games/ferry-jam/course';
@@ -15,9 +16,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId;
+export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -108,6 +109,19 @@ const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
 const build: Record<CourseId, () => CourseInfo> = {
   practice: () => ponds('practice', 'Penguin Slide, five gentle ice puzzles with no dead ends. A warm-up, or an easy game for the evening.'),
   ponds: () => ponds('ponds', 'Penguin Slide, five ice puzzles that take real planning. Use the fewest slides you can, then beat your own best.'),
+  conga: () => ({
+    id: 'conga', game: 'pond-conga', level: 5, version: CONGA.conga.version, name: CONGA.conga.name, blurb: CONGA.conga.blurb,
+    card: 'Pond Conga, four ponds in a row. Steer the ducklings to each crumb in order with as few steps as the way allows, then beat your own best.',
+    part: 'pond', unit: 'step', par: 'fewest', routes: true, best: congaBest('conga'), minimum: congaMinimum('conga'),
+    rule: 'Eat every crumb in order with the fewest steps you can. Every step counts, and so does every bonk.',
+    note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a pond puts the line back at the start, and the steps you took on it still count.',
+    leaving: 'Leaving or refreshing puts the line of the pond you are on back at the start, and the steps you took on it still count. Finished ponds stay saved.',
+    done: 'couch.course.conga',
+    badges: {
+      finish: { title: 'Finished', how: 'Eat every crumb in every pond, with or without help.' },
+      minimum: { title: 'Fewest steps', how: 'Finish every pond in the fewest steps possible, with no bonk and no hint.' },
+    },
+  }),
   bridges: () => ({
     id: 'bridges', game: 'island-bridges', level: 4, version: BRIDGES.bridges.version, name: BRIDGES.bridges.name, blurb: BRIDGES.bridges.blurb,
     card: 'Island Bridges, five seas in a row. Join every island with as few planks as the answer needs, then beat your own best.',
