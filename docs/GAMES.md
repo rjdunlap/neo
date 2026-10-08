@@ -1,0 +1,320 @@
+# Puddle Island games
+
+What each game does and the design decisions behind its rules: what counts as a miss, what a hint shows, how the levels grow, and what was learned while building it. The [README inventory](../README.md#the-island-and-its-games) is the one-line summary and the game count; `src/games/registry.ts` and each game's `logic.ts` are the source of truth; the grown-up how-to cards in `src/content/howto.ts` say how to play each one. Shared systems (the shell, saves, the treehouse, couch play) are in [DESIGN.md](DESIGN.md).
+
+Games are grouped by subject, the stable IDs in `src/content/world.ts` that group them inside a place. Each entry gives the bands it plays in (from the registry) and, where there is one, what inspired it. Some games also play on the couch; [COUCH-PLAY.md](COUCH-PLAY.md) lists them.
+
+When a game changes, update its entry here. A new game gets an entry in its subject.
+
+## Bubble Beach (senses)
+
+### Bubble Pop
+
+*lap–school.* Tap bubbles as they float up; later, one color, numbers in order, then pairs. A wrong bubble only wobbles and gets a spoken hint. Levels 10–11 (number bonds): every bubble has a partner that makes 5 (pre-K) or 10 (early school). Tap one to hold it still with a glow, then its partner: both pop with "3 and 2 make 5!" A wrong pair is a gentle miss that says both numbers and their total; two in a row glow a pair that works. Tapping the held bubble again lets it go. Because drifting bubbles overlap, a touch goes to the bubble whose middle is nearest the finger (a play-through found taps landing on the wrong, overlapping bubble).
+
+### Peg Garden
+
+*lap–pre-K · after Peggle and pachinko.* A pearl drops through a sea garden; each flower bud it touches blooms and chimes, and nothing is lost. Later levels ask for every flower, the orange ones, then aiming a launcher at a numbered flower and at 1, 2, 3 in order. `engine/ball.ts` simulates every board, so each numbered peg is reachable by some aim. It stays at one lap level: its bloom level has no guaranteed finish if the same spot is tapped again and again.
+
+### Bounce Back
+
+*lap–pre-K · after Pong and air hockey.* A slow, giggly ball between two big paddles, with no score: bounces are counted together toward a goal. A grown-up takes the left paddle on the play-together level, and the pet steps in when no second finger is there. Later levels aim through stars and count a rally of ten.
+
+### Bumper Garden
+
+*lap–pre-K · after Pokémon Pinball and 3D Pinball Space Cadet.* A ladybug ball bounces around flower bumpers on a garden table. It never drains: past the flippers a flower pot catches it and pops it back up. Tapping either half of the screen flips that side's flipper; young levels get a wider reach. Levels: launch for fun, flip until every flower blooms, bloom one color, bump numbered flowers in order. On goal levels a shot that blooms nothing wanted is a gentle miss; two in a row light the wanted flowers and aim the next launch at one (found by simulating the table).
+
+## Music Mountain (music)
+
+### Jelly Drums
+
+*lap–school.* Free play on five notes, then copying tunes of two to five notes. Replaying the tune is always available.
+
+### Song Maker
+
+*lap–school.* A looping grid of jelly beads; higher rows sound higher (pentatonic steps), and the playhead follows the background music's beat (`music.beats()`). Free play at lap and toddler; then copying a song from shadow notes, then from a small card; continuing a repeating pattern (stairs, hops, zigzags); and finding a four-note tune by ear, where a wrong jelly is followed by the right note so the difference can be heard. A song from a free level can be kept on the treehouse's tune plaque; a copied song is not hers and is not offered.
+
+### Sound Garden
+
+*lap–pre-K · after Electroplankton.* Garden creatures sing when touched. Listening questions follow: high or low (bird or frog), fast or slow (bunny or turtle), does the tune go up or down, then echoing a woodpecker's rhythm on a drum, judged forgivingly for wobble but not for the wrong rhythm.
+
+### Rhythm Neighbors
+
+*lap–school · after Rhythm Heaven and call-and-response songs.* Two lap modes let taps make a bird call and frog chorus. Later levels alternate a bird call with a different pictured frog reply, add a second frog voice, then short/long rhythm gaps. The relative-gap judge is shared with Sound Garden. Explicit submission avoids any deadline; replay demonstrates both parts. After two misses, or when help is requested, guided play highlights the next frog and accepts the correct sequence at any pace. Three exchanges finish with a short duet and one sticker.
+
+### Beat Builder
+
+*preschool–school · after Chrome Music Lab's Rhythm and step sequencers.* A step-sequencer grid with a looping playhead: rows are drum, clap and bell, columns are 4 or 8 steps. Free play finishes with a green check once a beat has gone round twice. Copying a visible beat leaves wrong squares off as gentle misses; copying by ear has a listen button and a check (two misses show where the beats differ); repeat levels give the first half and ask for the second to match. The game uses a near-silent `quiet` music style so the child's beat is the music.
+
+## Treehouse (art)
+
+### Rainbow Fingers
+
+*lap–school.* Finger painting that grows over six levels: rainbow or color-pot painting, paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), and mixing colors in a bowl. Any color is welcome in free painting. Lap play includes the second, unjudged free-play mode (color pots). A painting from either open-ended level can be kept on the treehouse picture board (bounded, normalized marks, never a bitmap); guided coloring pages offer nothing to keep.
+
+### Fluffy Salon
+
+*lap–pre-K · after Toca Hair Salon.* The pet sits in the chair with fluffy fur to grow, snip, comb, curl and color. Free play first (lap play includes the all-tools free mode), then one request at a time, two-part requests checked in the mirror ("short and blue"), then copying a pictured style. Requests never start already done, and the hint points to the tool for what to fix next.
+
+### Stamp Studio
+
+*lap–school · after Mario Paint and Kid Pix.* Two simple lap modes stamp stars or animals. Later modes offer colors, moving stamps, two sizes, quarter-turn rotation and spoken garden/story invitations. Any picture is valid; the green arrow can finish after the first stamp. Undo removes the latest stamp, and 24 stamps bound the scene. Coordinates stay normalized when resizing. A finished picture can be kept on the treehouse picture board.
+
+### Pixel Pictures
+
+*preschool–school · after Picross and Mario Paint.* Tap squares to copy a small picture (4×4, then 5×5 with two colors from a palette), finish a mirror half (the left half is drawn), then solve picture-logic puzzles (nonograms) from run numbers along rows and columns. Only pictures that row-and-column logic alone can solve are used (rule-tested). A square that should stay empty is a gentle miss and, on logic levels, gets a gray cross. Two misses glow a square that can be decided (on logic levels, by the same line logic). The finished picture shows in its colors and is named; after the round, the final design can be kept on the treehouse picture board.
+
+## Barnyard (animals)
+
+### Peekaboo Barn
+
+*lap–pre-K.* Tap a hiding place to see who is behind it; later, find a named animal, then remember who hid where.
+
+### Duckling Parade
+
+*lap–pre-K · after Meerca Chase (Neopets).* Tap the grass to walk Mama Duck; ducklings fall in behind (steer a growing line). Later: lead them to the pond, bring exactly N, find one color, build a color pattern in line.
+
+### Roundup
+
+*lap–pre-K · after Extreme Herder (Neopets), Puffle Roundup (Club Penguin) and Stampede (Atari 2600).* Tap an animal and it hops into its pen; later, shoo animals through the gate with a finger (guide a crowd), sort pigs and bunnies, and put exactly N in and ring the bell.
+
+### Egg Catch
+
+*lap–school · after Big Bird's Egg Catch (Atari 2600), Kaboom! and Game & Watch "Fire".* Hens lay eggs that roll gently into a basket. Then the child slides the basket under slow falls, catches only brown eggs, and flips gates to route eggs down chutes. Missed eggs land in soft hay and hatch, so nothing breaks. Level 6 (predict): the gates are set and locked; the egg waits at the top until the child taps the bin where it will land; a basket appears there and the egg rolls to show where it really goes. A wrong prediction is a miss ("follow the gates"); two light the egg's whole path. A play-through found the catch levels' full-screen steering layer still on top of the bins when routing, swallowing taps; it is now off when routing.
+
+### Animal Snack
+
+*lap–preschool · after farm feeding toys and animal sound books.* Cow, bunny, dog, cat, duck, pig and bear, each with one favorite food (hay, carrot, bone, fish, seeds, apple, honey). Lap levels are cause and effect: tap an animal and it munches its snack with its own voice, or tap a snack and it floats to the animal who loves it. Then "who eats the carrot?" (tap the animal), dragging each snack to its eater, and giving an animal 2–4 snacks before ringing the bell. A wrong animal shakes its head and says what it eats instead; too many snacks come back. Two misses glow the right animal or the next useful thing. Each animal that eats its favorite food files a discovery-journal entry. (Level 1 once left the animals stacked off screen at the top-left; they are now laid out whenever a round creates them, and the play-through asserts it.)
+
+### Critter Sort
+
+*pre-K–school · after Venn-diagram sorting and Zoombinis.* Critters, some wearing top hats, are dragged into hoops labelled with picture signs (a hat, a brown or white paint blob, floppy or pointy ears, whiskers). Levels: one hoop, two separate hoops (rules that never overlap), overlapping hoops where the middle means both, and a guessing level where critters are already sorted and the child picks the rule from three pictures. Every part of the diagram gets at least one critter and exactly one offered rule sorts the critters that way (rule-tested). A wrong hoop is a miss with a reason ("the cow is not brown"; "the dog is brown and has floppy ears, so it goes in the middle"); putting a critter back on the grass is never a miss.
+
+## Counting Cove (numbers)
+
+### Duck Pond
+
+*lap–school.* Count along as ducks hop in; then put N in, how many?, adding and taking away. The dots beside a number are there to count. Level 10 (make ten): 3–9 ducks swim in. "How many more to make 10?" is answered on lily pads. The missing ducks then swim in to fill the pond's ten places ("7 and 3 make 10!"). A wrong pad counts on aloud from the ducks already there.
+
+### Monster Munch
+
+*lap–school.* A code-drawn monster gapes, chews, burps, and shows eaten food in a tummy window. It complements Duck Pond rather than repeating it: lap levels feed by tapping, toddler levels count along and give one cookie to each monster, and preschool levels ask for an exact order (cookies, or cookies and apples) that the child completes by ringing a bell, deciding for herself when to ring. A full monster refuses another of that food, which counts as a miss. Pre-K shares cookies fairly among two or three monsters; unequal shares hand the extras back to the tray, then the child says how many each monster got. Level 8 (leftovers): the tray holds one or two more cookies than share evenly, and the bell says "I think it's fair". Uneven shares hand the extras back; ringing while everyone could still have one more is a gentle miss. Then two questions: how many each, and how many left over (those go to the pet).
+
+### Little Helpers
+
+*lap–school · after Pikmin.* Tap a fruit and a helper runs to carry it; bigger fruit needs more helpers, shown by dots or a numeral. Later levels wait for a whistle so the child sends exactly enough: too few cannot lift, extras walk back. The level before equal groups asks how many more are needed when some are already helping. Level 6 (equal groups): a bunch of two or three same-size fruits that each need the same team of two or three (2×2, 3×2, 2×3, each once before any repeats). The badge groups its dots by fruit and helpers line up in a team under each fruit. A wrong whistle counts by the team size ("2, 4, 6"), and each lift ends with "3 groups of 2 make 6".
+
+### Pet Kitchen
+
+*toddler–school · after Cooking Mama and JumpStart's cafeteria.* Cut one or two sandwiches into halves or quarters, move equal pieces between plates, then serve. Both halves and quarters are accepted when they share the wholes equally. A round-arrow control restores the wholes to try another cut. The last two levels double two kinds of fruit on a picture recipe, with undo. Only unsuccessful serving checks count as misses; cutting, arranging and undo are exploration. Two misses highlight a useful next action. The Windy Picnic plays a Pet Kitchen round as its sandwich step.
+
+### Frog Hop
+
+*preschool–school · after number-line hopping games and Frogger.* A number line of lily pads. Levels: find a number; one more and one less; add by hopping; take away by hopping back; how many hops between two numbers (number cards); a line to 20 that slides to keep the start and answer in view. A sign shows the sum (`4 + 3`, `7 − 3`, `3 → 8`). Two misses bring a counted demonstration, the frog hopping and counting aloud, then the answer glows.
+
+### Picture Graph
+
+*pre-K–school · after classroom picture graphs and tally charts.* Critters play in a meadow; the child builds a bar graph below by tapping above a bar to add a block (tapping the bar takes one away), then checks it. A wrong bar is a miss ("count the ducks again"); two make that kind's critters glow. Then questions about the graph she built: which has the most and the fewest (tap a bar), how many more of one than another (number pads), and on the last level a finished graph to read (how many in all; which two bars are the same). Counts never tie where "most" or "fewest" is asked (rule-tested).
+
+### Lasso Loops
+
+*preschool–school · after Montessori golden beads, ten frames and Pokémon Ranger's capture loop.* Draw a loop around fireflies and they fly into a jar. The loop always closes back to its start, so a nearly closed loop counts; a loop around none is just explained. Levels: loop any fireflies; loop exactly 2 or 3 per jar; jars of five, then of ten, with the rest resting on a leaf, followed by "how many in all?" (the choices include the swapped tens and ones); and equal groups ("make 3 groups of 4", then how many). A wrong-sized loop lets the fireflies go and is a miss; two put white rings round a close group of the right size. A wrong total is counted aloud the way the jars show it (by fives, by tens and ones, by groups). Drawing uses its own pointer handling with palm rejection; a cancelled touch drops the loop.
+
+## Cozy Village (everyday life)
+
+### Splish Splash
+
+*lap–pre-K.* Scrub mud off the pet; eight levels grow into named body parts in a shuffled order, two at once, then "first … then …". Washing the wrong part just makes the pet giggle and repeats the request.
+
+### Feelings Faces
+
+*lap–pre-K.* The critter gained `sad` and `calm` moods, with brows and a tear so feelings read even at sticker size. Lap play is cause and effect: four feeling bubbles change the big pet's face, with a matching sound, and tapping a sad pet gives it a hug. Later levels match the pet's face, find a named feeling, choose what helps a need (a hug, a pillow, an apple, or a scarf), watch a small event and choose how the pet feels (the pet stays `calm` until answered, so the event carries the answer), and find which of four friends feels a named feeling. The big pet replaces the corner guide and repeats the instruction when tapped.
+
+### Weather Wardrobe
+
+*lap–pre-K.* Sun, rain and snow fill the sky. At lap, tapping the sky changes the weather and the pet dresses itself; later the child picks one item, then every item that fits, then packs a suitcase for a two-weather trip. Each item belongs to exactly one weather, and a wrong choice says which weather it is for. Clothing is drawn in critter body coordinates and attached, so it hops with the pet. The pet is the star, so tapping the big pet repeats the instruction.
+
+### Scoop Shop
+
+*lap–school · after Papa's Freezeria and Neopets' Ice Cream Machine.* Tap tubs to pile scoops on a cone for a customer (build an order); then one color, two scoops, "four blue scoops", three flavors stacked in order, then from memory.
+
+### Mail Carrier
+
+*lap–school · after Paperboy.* The pet delivers letters along a street. A letter shows a door color, a number of dots, or a numeral (1 to 9), and the child taps the matching mailbox; a wrong mailbox politely hands it back. Levels 6–7 (pre-K–school): Hazel the squirrel postkeeper's picture map of the woods, with paths from her hollow-tree post office to five houses marked only by a sign (acorn, mushroom, leaf, flower, star). A picture key beside the map says which neighbor lives behind each sign, and tapping a row says it. Level 6 brings one letter at a time with a neighbor's picture: find them in the key, then tap their house, and the pet walks the paths there. Level 7 brings two numbered letters: tap the house for letter 1, then letter 2 (a dotted purple route and numbered flags show the plan, and tapping a planned house takes it and later stops out), then the green arrow walks it. A wrong house says who lives there; letter 2's house first, or a house with no letter, is a gentle miss; two misses light the key row and the house that's due. The map is a small graph in `logic.ts`, and walks follow it (rule-tested). The brown dog is left out of the woods, since at key size it looks like the bear.
+
+### Teddy Doctor
+
+*lap–school · after Toca Doctor and Dr. Panda.* Soft-toy patients (bear, cat, dog, bunny, pig) visit a little clinic; tools are reusable and dragged onto the body. Levels: tap boo-boos for bandages, bandage the part the patient names (open to lap play as a naming game: "on my ear"), choose what helps a symptom you can see (ice for a bump, a tissue for sniffles, a warm bottle for a tummy ache, socks for cold feet), then the same from a spoken clue alone, where the tool must also land on the right body part, and check-ups (heart, temperature, ears) in the order on a picture card or in the order the patient says. Where a tool lands is judged by the nearest body part, and a tap on boo-boos goes to the nearest one.
+
+### Market Stall
+
+*preschool–school · after Neopets shops and pretend shops.* Tap shell coins worth 1, 2 and 5 onto the mat; tap one on the mat to take it back (the nearest coin to the finger); ring the bell. Price tags show the numeral and dots. Running totals are said aloud except where adding up is the puzzle (two items, giving change). Later levels pay two prices together, pay the same price a second, different way, and give change from a customer's 10. Too much or too little is a miss with a spoken comparison; two bring faint coins showing one way.
+
+### Clock Tower
+
+*pre-K–school · after teaching clocks and JumpStart's clock activities.* Drag the clock's hands; the outer ring takes the long hand and the middle the short one, and each snaps to the marks the level uses. The short hand slides between numbers as the minutes pass, like real gears. Levels: the hour hand alone, o'clock, half past, quarter past and to, reading the clock to pick a daily-routine picture, and one hour later. A wrong time is read back aloud ("The clock says half past 4. We want 3 o'clock"); two misses show faint yellow target hands. On the hour, the tower chimes the hour.
+
+### Stop and Go
+
+*lap–preschool · after red light, green light and toy traffic lights.* A road, smiling cars and a three-lamp traffic light. On the lap level the light is a toy: tapping it steps green, yellow, red, and the car zooms off on green. Then the light cycles by itself (long greens and reds, a short yellow) and the child sends the front car only on green; on the walk level the pet steps toward a flag on green ("red light, green light"). Going on red is a gentle miss; yellow is only a nudge; waiting is never wrong and nothing is timed. The top level is a two-road crossing with two lights the child controls: each road has three cars, and both roads green at once is the one mistake (cars just wait). At the crossing, misses count across the round, and the hint glows the green light that should turn red. A play-through found two bugs: cars added before the light was on the stage (now a car layer), and the first crossing design letting one road finish the round without any decision.
+
+### Pet Says
+
+*lap–pre-K · after Simon Says and action songs such as "Head, Shoulders, Knees and Toes".* The big pet, with two mitten hands riding on its body, claps, stomps, waves, jumps, turns, wiggles, reaches up and crouches; the child copies off the screen and a grown-up taps the green arrow to go on. Nothing is judged and no miss is possible. Levels: copy single moves; body words (nose, tummy, ears, head, toes); two moves in order; "Pet says" (the pet moves either way to tempt, and two spaced-out commands without "Pet says" end with "did you stay still?"); and a freeze dance, where the music stops after a few seconds and the pet freezes in a pose. Tapping the big pet shows the move again; the corner guide steps out while it is the star.
+
+## Rainbow Meadow (colors and shapes)
+
+### Shape Sorter
+
+*toddler–pre-K.* One circle hole, growing to six plain holes, one color, and tilted pieces. A shape that does not fit slides back with a hint.
+
+### Color Garden
+
+*toddler–pre-K.* Sort fruit, balloons and flowers into baskets by color; level 1 is dragging practice with one basket, growing to six colors.
+
+### Dot Link
+
+*lap–pre-K · after Two Dots and Candy Crush.* Tap dots to pop them, then drag a line through neighboring dots of one color; new dots drop in from the top. Later levels ask for one color, chains of four, and a closed square that clears every dot of that color. A move that counts always exists.
+
+### Tangram Town
+
+*toddler–school · after tangrams and silhouette puzzles.* Six authored house, boat, cottage and rocket puzzles use shuffled large pieces. Quarter-turn controls rotate the selected piece; identical triangles and symmetric rectangle/square rotations are accepted. Later silhouettes can reveal outlines and orient the next piece through help. Off-board drops and turning are exploration. Wrong placements on the picture get a spoken hint and a glow after two misses. Help affects hint accounting.
+
+### Garden Grow
+
+*lap–preschool · after toy gardens and Viva Piñata.* Tap the soil and a seed grows into a smiling flower that sings when tapped. Level 2 adds the cloud: plant, then make it rain. Later levels plant the color asked for (a wrong packet shakes, as a miss), then exactly 2–5 seeds before the rain, then two colors with a number of each. A picture sign shows what was asked and each planted seed has a marker in its color. Tapping a planted seed takes it out; two misses make the sign and the beds still to plant glow.
+
+### Treasure Map
+
+*pre-K–school · after Battleship and treasure-hunt maps.* A parchment grid where row 1 is at the bottom, as on maps and graphs. Levels: picture rows and colored columns ("the apple row, the red column"), letters and numbers ("B3"), putting a tree, house, boat or flag at a named square, and following directions from where the pet stands ("2 left, then 3 up"; the pet then walks it, counting). A sign shows each request in pictures or letters. A wrong dig leaves a mark and says what was right ("right column, now look along the row"); two misses glow the target's column and row.
+
+### Owl Walk Home
+
+*toddler–pre-K · after Hoot Owl Hoot! and First Orchard, without the losing clock.* Turn over a color card and tap an owl: it hops to the next stone of that color ahead, skipping a stone with an owl on it, or flies home if there is none. Stones and cards also carry a shape per color (heart, circle, star, triangle). Level 1 is one owl; then two, then three owls, taking turns with the pet, which turns its own card and hops the owl that goes farthest. The top level shows how far each owl would hop with the card and asks for the farthest; a shorter hop is a gentle miss with both numbers said, and two light the best owl. Everyone wins together, and the sun only rises when every owl is home. A random-play simulation shows every game ends.
+
+## Puzzle Peaks (puzzles)
+
+### Pattern Train
+
+*preschool–school.* Advances from AB through AAB/ABB and ABC, animal patterns, missing middle cars, bell patterns, and two-car gaps. Bell choices can be auditioned before confirming.
+
+### Memory Match
+
+*preschool–school.* Grows from four to sixteen cards, then teaches number/dot, two-attribute, and upper/lowercase matches. Exploring unseen cards does not count as a miss: an incorrect pair counts only if the matching card was already known.
+
+### Size Parade
+
+*toddler–school.* Four levels ask for the biggest or smallest friend across four short questions. Four later levels ask the child to drag three or five friends into an ascending or descending line. Friends share an appearance and baseline, so size determines the answer; positions are shuffled. A fixed large hit area keeps the smallest friend easy to select.
+
+### Puzzle Pals
+
+*lap–school.* Six code-drawn scenes (a cow on the farm, a duck in the pond, and so on) are rendered once into a texture and cut into 2 to 12 pieces. Faint pictures guide the early levels; later ones show only an empty frame. Dropping off the frame is exploration; a wrong place is a gentle miss. The finished picture comes alive and the animal says hello.
+
+### Quick Tricks
+
+*toddler–school · after WarioWare: Touched!* One show of three tricks, one sticker. Levels 1–3: Umbrella Up (hold a leaf above a bunny in the rain; at pre-K, choose the leaf big enough for two friends), Sock Gobbler (give the monster the partner sock, by color, then by color and pattern), and Bridge Stretch (stretch a springy plank to the far bank; at pre-K, choose the one plank long enough). Levels 4–6, a second show: Parcel Turn (rotate and fit parcels), Picnic Places (give each friend a bowl; the top level begins partly set) and Last Berry (add to a visible starting quantity and undo extras to make four, five or six berries). An arrow appears after each trick's payoff and the child moves on when ready; misses are summed across the show, with at most one hint per trick. The microgame thinking behind it, and a proposed third show, are in [IDEAS.md](IDEAS.md#quick-tricks-and-microgames).
+
+### Peekaround Island
+
+*toddler–school · after Captain Toad: Treasure Tracker and Fez.* A round island seen from the side, with a big round tree in the middle and four friend spots a quarter turn apart. Turning is drawn, not 3D: each spot's angle projects onto an ellipse, depth sets scale and draw order, and anything behind the tree's crown is hidden and cannot be tapped. Flowers between the spots make each quarter turn visible. "In front of", "behind" and "next to" are always from the child's side, so turning changes them (`logic.ts` `whereIs`).
+
+- Levels 1–2 show arrow buttons; tapping the tree also turns it. Level 1 finds whoever hides behind the tree. Level 2 finds a named friend while two others stand in plain sight; tapping one of them is a miss, and two misses make the arrows glow.
+- Level 3 has no arrows. A picture card shows all four friends and the child taps the one who is hiding: an elimination. A visible friend tapped by mistake says where it stands; the hider's picture glows after two misses. A right answer turns the island halfway round to reveal the friend.
+- Levels 4–5 drag friends from the shore onto the island. Level 4 asks one friend at a time, covering all three words. Level 5 gives two directions at once, then turns the island halfway and names who is in front now. Either side counts for "next to". A drop away from the island floats home without a miss; a drop on the wrong spot gets a spoken explanation of the word, and the fitting spots glow after two misses.
+- Requests are always answerable whichever fitting spot is used (rule-tested). The hider never repeats back to back. The round ends with a full spin of the island.
+
+### Penguin Slide
+
+*preschool–school · after the ice-sliding puzzles in Pokémon and Zelda.* Tap the ice in a direction and the penguin slides until a snowy rock, the pond's edge or soft snow stops it, eating fish it passes. Puzzles are generated and kept only when a breadth-first search over slides finds the planned shortest solution (1–2 moves at first, up to 4–6 with two fish and soft snow). Sliding is exploration: there are no misses. Undo steps back one slide. Three slides beyond the shortest bring a hint arrow showing a best next slide; if no route is left, the undo button glows. Its fixed ponds also make two couch challenge courses (Pond Practice and the Five Ponds).
+
+### Secret Code
+
+*pre-K–school · after Mastermind and Neopets' Time Tunnel.* Tap stones into a door's slots and turn the key. Each slot gets a green check, a yellow dot (in the code elsewhere; from level 3) or a gray cross; guesses stay listed above the door, and green stones stay in place. Each stone also carries a shape, so colors never rely on hue alone. A guess is never a miss in itself. The miss is ignoring a clue: putting a stone where a mark already ruled it out, a rule that understands repeated colors. Two such misses, or many guesses, bring faint stones in the empty slots that fit every clue so far. Later levels have more slots and colors, then a repeated color.
+
+### Garden Rows
+
+*pre-K–school · after picture sudoku and Latin squares.* Plant a 3 by 3 flower bed so each row has one of every flower; from level 2 the columns count too, then 4 by 4 beds with fewer flowers to start, and a 5 by 5 bed. Every bed has exactly one way to finish (rule-tested over many seeds per level). A flower that repeats in a row or column will not stay and counts as a miss; tapping a planted flower takes it out. The glowing spot is a hint. Seeded beds would suit a couch face-off; it is not a couch game yet.
+
+### Ferry Jam
+
+*pre-K–school · after ThinkFun's Rush Hour Jr.* Drag boats along their lanes in a small harbor so the red ferry can reach the dock; a boat stops at the next boat or the wall. Harbors grow from small to 4 by 4, 5 by 5 and 6 by 6, needing more slides in a planned order. Nothing is a mistake and the round arrow takes back the last slide. Harbors come from a frozen, solver-checked list, each solvable within its plan's slides. After a long wander without getting closer, a glowing boat shows a next slide that moves one step closer.
+
+### Critter Crossing
+
+*pre-K–school · after Zoombinis.* A bridge gate with a rule: shown on the sign at level 1, then a secret to work out by sending critters one at a time (each crosses or waits with a red mark) and then guessing from three or four pictures. Rules are one picture, "not" a picture, or two pictures together. Trying a critter is never a mistake. A guess counts as a miss only if it contradicts something already seen; a fair but unproven guess says to try another critter. Rule tests check that every round has critters who cross and who wait, that trying everyone leaves exactly one picture, and that the hint's suggested test always narrows the pictures without ruling out the true one.
+
+## Story Grove (stories)
+
+### Letter Trails
+
+*preschool–school.* Defines all 26 capitals as ordered strokes. A firefly and moving beacon guide the finger; successive checkpoints enforce the trail while tolerating imprecise motion. Each finished letter becomes a code-drawn illustration with a spoken association. Top levels spell short words and the child's name. Accented Latin names normalize to A–Z; names with no supported letters fall back to PIP. Additional scripts would need their own stroke data.
+
+### Story Steps
+
+*toddler–school.* Seven levels progress from a shown beginning through three- and four-picture ordering, missing middles, and unrelated distractors. Four stories depict a flower, a block tower, a snow friend, and a butterfly. Completed pictures are narrated in sequence; the music-note button reads only already placed pictures. Cards belong to a known story and stage, so every missing position has one answer.
+
+### Word Monsters
+
+*lap–school · after Endless Alphabet and Reader Rabbit.* Every letter is a little monster that says its sound. Tap to hear them, find a letter by name, then by its sound, match first sounds ("apple starts with aah"), then drag letters into slots to build three-letter words, at the top level from sounds alone with a spare letter. Lookalike letters are never neighbors. The sounds come from device speech (`sound.a`…`sound.z`), which approximates phonics sounds at best: they are stand-ins until checked on the iPad. Level 7 (word families): the ending (at, og, ig, un, op) already stands in the last two slots as monsters, and the child drags the first sound in to make hat, then cat, then bat. Most other choices are the same family's first sounds, so hearing decides it. Two families of three words per round. The "sun" picture (a big S) is hidden here so it doesn't give the answer away.
+
+### Photo Safari
+
+*lap–school · after Pokémon Snap.* Animals are busy around the island; tap one to photograph it. Requests grow from the animal's name to what it is doing ("jumping") and where it is ("under the tree"), then both. Exactly one animal matches each request. Level 2 (finding a named animal) is open to lap play as a naming game. Level 6 (not): "the animal that is not sleeping": everyone else is doing the same thing, and only the asked-for animal is doing something different. A wrong photo says what that animal *is* doing ("that is the cat sleeping").
+
+### Goodnight Room
+
+*lap–preschool · after* Goodnight Moon *and bedtime routines.* A calm bedroom: lamp, wall clock, fishbowl, and teddy, kitten and puppy critters. Tap each to say goodnight: it gets sleepy eyes, a "z" floats up, the room darkens a little and stars appear in the window. When everyone is asleep, a soft chime ends the round. Later levels name who to say goodnight to, then two in order. A wrong friend, or the right two out of order, is a gentle miss with a glow after two; tapping someone already asleep is just a soft "shh".
+
+### Rhyme Time
+
+*pre-K–school · after rhyming picture games and Dr. Seuss read-alouds.* 29 code-drawn word pictures in twelve rhyme families (cat/hat/bat, star/car/jar, bear/pear/chair, and so on); critters stand in for cat, dog, bear and duck, and a crowned bear is the king. Every question is said aloud with all its words, and a music-note button repeats it. Levels: which one rhymes with a word (three, then four choices), find the rhyming pair (tap one, then another), and the odd one out of three rhymes. Distractors come from other families, so exactly the intended answer rhymes (rule-tested). A non-rhyme is a gentle miss naming both words; two misses glow the answer.
+
+### Opposites
+
+*lap–pre-K · after concept board books and Sesame Street.* Eight concept pairs drawn in code: big and small (bears), happy and sad (cat moods), up and down (a balloon with arrows), open and closed (a box), full and empty (a glass), hot and cold (a steaming mug, an ice cube), day and night, fast and slow (a bunny, a snail). On the lap, tapping the picture flips it to its opposite while the word is spoken. Then find the one named, find the opposite among three, and match three opposite pairs. Wrong picks are gentle misses naming the words; two glow the answer.
+
+### Clap the Syllables
+
+*preschool–pre-K · after classroom syllable clapping and Rhythm Heaven.* The pet says a word whole and claps its beats ("but-ter-fly") with beads lighting up, and the child claps along on big hands. Then she claps a word by herself (a wrong count brings the pet's demonstration; a second leaves the beats showing), sorts pictures into 1-, 2- and 3-clap bins, and hears some claps and finds the picture with that many beats. Twenty-seven words of one to three beats. A clap is a count, not a timing, so the game counts claps in a burst rather than using Sound Garden's rhythm judge. Friends' names were left out: counting a child's own name would need a syllable counter the game does not have. Whether device speech says each word clearly is unchecked.
+
+## Tinker Lab (science)
+
+### Robot Path
+
+*pre-K–school.* A visible arrow program, a play button, and editable steps. Its first six levels add turns, grid size, rocks, and longer routes. Every board has a tested solution within its program limit. Levels 7–8 hold *counted* steps: tapping the same arrow again makes "right ×4", so a long route fits in two or four slots. Levels 9–10 add a purple loop button that repeats the whole program ×2–×4 (a staircase is "right, down, ×4"). Each level has an authored solution; rule tests check that it works and that the plain route doesn't fit the slots without the new idea. Playback lights up the slot being carried out (step-through), and the hint follows the known solution: the arrow to tap again, the next arrow, the loop button, or clear. Boards are authored per level, which is why it can only be a team game on the couch.
+
+### Bug Builder
+
+*toddler–school.* Two guided levels show pale matching shape outlines; two copy levels use a separate small model; three mirror levels ask for matching wings, ending with two columns and six spots. Reusable stamps return to the tray. The final palette contains repeated shapes and colors, requiring both attributes to match. Drops outside a spot are exploration, not mistakes.
+
+### Sink or Float
+
+*lap–school.* Things arc into a water tank; floaters bob and sinkers drift down trailing bubbles. Lap drops things in; then the voice names the result; then the child guesses before each test, and guesses never count as misses; then sorting into float and sink baskets, first with familiar things and then with surprises such as a floating apple and a sinking coin. A wrong sort is tested in the water before the thing goes to its basket. Each thing that actually goes into the water files a discovery-journal entry (a thing only sorted correctly was never tested, so it is not found).
+
+### Bouncy Launch
+
+*lap–school · after Kass Basher (Neopets) and Toss the Turtle (Kongregate).* Tap the spring and the pet boings onto a cloud (pull and release); later, pull back farther to fly farther, land on the star cloud, then a numbered cloud, farther or nearer than last time. On the couch the spring squashes straight down instead of stretching sideways, and the game's twelve small clouds make the Cloud Hopper challenge course ([DESIGN](DESIGN.md#couch-play)).
+
+### Seesaw Balance
+
+*toddler–school · after Hasee Bounce (Neopets) and balance toys; levels 8–9 after DragonBox and PhET's Equality Explorer.* Friends, blocks, number weights and presents go on level trays at the ends of a springy seesaw, so only weight matters. Levels: make a little friend go up, choose a friend heavy enough, level it with blocks (one at a time, so it never tips too far), find the heaviest of three look-alike presents by testing pairs (testing is never a mistake) and put it in a wagon, make the same weight with different number weights (any combination counts), and weigh a mystery box with blocks then say how heavy it is. Level 7: two identical hidden weights balance together; the child divides the visible block total into two equal groups to name one box's weight, and wrong answers demonstrate the two groups aloud. Levels 8–9 (school): the seesaw starts level with a mystery box and blocks on one tray and only blocks on the other (level 9 has a box on each side too). Anything can come off. Taking something off one side tips it, which is said aloud and never counted as a miss; two tips in a row light the thing whose twin should come off (or the thing to put back). When the box stands alone and the seesaw is level, the blocks across from it are its weight; a wrong number is a miss and the blocks are counted aloud. Two different unknown weights are a possible next step.
+
+### Light Lab
+
+*pre-K–school · after laser and mirror puzzles.* Mirrors on a grid turn a sunbeam a quarter; tap one to tilt it. Flowers wake when the light reaches them and let it pass on; colored glass tints the beam, and a pink flower only wakes in pink light. Puzzles are built backwards from a random beam path, with spare mirrors and rocks placed off it, and start unsolved (rule-tested over hundreds of seeds, including that following hints always solves). Levels 1–2 show the beam live as mirrors turn (no misses possible); from level 3 the child plans and then taps the sun, which draws the beam cell by cell. A shine that misses is a miss, explained aloud (off the edge, a rock, the wrong color, one flower still asleep); two misses make the next wrong mirror on the known path glow.
+
+### Ramp Race
+
+*pre-K–school · after toy car ramps and classroom fair-test experiments.* Tap the ramp to change its height (three heights) and the floor to change its surface (carpet, wood, ice); press go and the car rolls down and glides to a stop. The model is deliberately simple and stated plainly: distance = height × floor glide, in floor marks. Levels: explore (every roll is fine), choose the height that stops the car on a star (wood only), height and floor together, and fair tests with two lanes (change only the floor, or only the ramp). A short or long roll is a gentle miss naming what to change; two misses show a ghost ramp and glowing floor that would work. An unfair test (both things changed) is a miss; an identical setup is only a nudge.
+
+### Inchworm Measure
+
+*pre-K–school · after measuring with nonstandard units and classroom rulers.* Drag inchworms from a bucket onto a leaf, pencil, snake or stick; they snap end to end with no gaps or overlaps. Levels: lay worms along a leaf and count them; measure, then pick how many worms long; measure two things and say which is longer and by how many worms; and read a ruler, where every other question starts past 0 and the number at the end is offered as the tempting wrong answer. A worm that would hang off the end, or a wrong number, is a gentle miss with a spoken hint (count again; count the spaces; it did not start at 0); two misses glow the right number, the thing's end, or the ruler spaces it covers.
+
+### Block Tower
+
+*lap–school · after stacking blocks, Jenga and Art of Balance.* Stacking and knocking down, with one explicit balance rule: a block stays up when the middle of it and everything on top is over the block below, and not on its edge (`topples` in `logic.ts`; positions are in eighths of a block, so checks are exact). Levels: tap anywhere to stack six and tap to tumble (lap); stack as tall as a friend; build up to a numbered flag from a basket, tap the tower to take the top off, and ring the bell (too short or too tall is a miss, two bring counting together); compare with Bear's tower (as tall, one taller, one shorter); which of two leaning towers will stand when the ropes let go (a guess is never wrong; the fallen tower's ghost shows the middle line past the edge, the standing tower's shows it over the block); and reach: drag blocks onto a table so one touches a star line past its edge without toppling (two blocks to half a block out, then three to five eighths). A topple is a miss, explained with the middle line; two bring a glowing place for the next block (found by searching every slot) or a glow on the top block to take off. The stars were chosen by counting solutions: one block alone can never reach either.
+
+### Chain Reaction
+
+*pre-K–school · after The Incredible Machine.* Drag loose ramps into large sockets, run the machine and watch the marble; then move one part and run again. Six levels with two small machines per round: a single loose ramp, fixed and loose ramps together, two-piece revisions, touching a little chime before the final bell, and a top level with several valid designs. Replay is deterministic. A run that misses is an experiment, never a miss; loose ramps can go back to their tray. The light bulb gives (and counts as a hint) one useful placement that keeps correct work. Rule tests enumerate every visibly different placement across many seeds per level and require the planned solution count, solvability and a useful hint.

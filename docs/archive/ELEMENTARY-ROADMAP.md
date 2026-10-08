@@ -1,8 +1,10 @@
 # Growing Puddle Island through elementary school
 
+> **Archived 2026-10-07.** Folded into the [roadmap's later horizons](../ROADMAP.md#later-horizons-elementary). Kept as it stood for reference; its checklists are not maintained here.
+
 The long-term plan is a familiar island that grows from early play through **kindergarten–grade 5, roughly ages 5–11**. Keep extending favorite games, introduce new interactions when they add something useful, and connect them through places, characters, and projects. Younger activities remain available throughout.
 
-This is a content and product roadmap, not a release schedule or a completed curriculum. Ages and grades are rough planning guides, with overlap and support chosen for the child. The current app has five bands: four through pre-K and an early-school band (6–8) whose place is **Wonder Woods**. Apart from that place and the games noted in E1, the elementary zones, modes, and systems below are **proposed**. [ROADMAP.md](ROADMAP.md) holds the active implementation checklist; the [arcade](ARCADE-IDEAS.md) and [microgame](MICROGAME-IDEAS.md) notebooks hold the larger idea pool.
+This is a content and product roadmap, not a release schedule or a completed curriculum. Ages and grades are rough planning guides, with overlap and support chosen for the child. The current app has five bands: four through pre-K and an early-school band (6–8) whose place is **Wonder Woods**. Apart from that place and the games noted in E1, the elementary zones, modes, and systems below are **proposed**. [ROADMAP.md](../ROADMAP.md) holds the active implementation checklist; the [arcade](../IDEAS.md) and [microgame](../IDEAS.md) notebooks hold the larger idea pool.
 
 For the current prototype phase, the [party follow-up](PARTY-AND-SWITCH.md) and [play and progression review](PLAY-AND-PROGRESSION.md) take priority: prove a three-choice party route, then deeper adult-playable courses and personal goals in the browser, then build the small room. The developer's daughter is not yet one and an iPad is not readily available. Physical-device and child-observation milestones below stay open without blocking these prototypes; adult enjoyment does not establish child readiness.
 
@@ -82,7 +84,7 @@ After each expansion, decide what the child wants to repeat, what was confusing,
 
 - [ ] Complete the remaining combined-browser and physical-iPad checks for the current catalog; evaluate device speech, fun, and clarity separately from automated success.
 - [ ] Make finding and returning to games comfortable as the catalog grows. Retain large targets, spoken names, favorites where useful, and remembered position.
-- [x] Build the small Windy Picnic pilot with resumable steps (a map destination, three requests, a journal and one keepsake; see [DESIGN.md](DESIGN.md#the-windy-picnic-2026-10-06-night)). It needed no world framework: a route, a scene and one save field.
+- [x] Build the small Windy Picnic pilot with resumable steps (a map destination, three requests, a journal and one keepsake; see [DESIGN.md](../DESIGN.md#the-windy-picnic)). It needed no world framework: a route, a scene and one save field.
 - [ ] Build the first pet room, separately. It does not require a large world framework either.
 - [ ] Establish a short activity brief: skill, fun action, support options, deeper mode, completion, accepted alternatives, and required checks.
 
@@ -141,4 +143,4 @@ For later story activities, using details from a text to support an explanation 
 
 For investigations, plan fair comparisons, control relevant variables, and use observations as evidence. Check the content and simulation limits before presenting a game result as a fact about the natural world. ([NGSS grades 3–5 engineering design](https://www.nextgenscience.org/topic-arrangement/3-5engineering-design))
 
-Before promoting a mode to implemented status, review its facts, explanations, language, solvability, alternatives, and behavior with help. Record automated checks, device observations, and content-review gaps separately in [VERIFICATION.md](VERIFICATION.md). Completion with hints is valuable play; it is not a standardized assessment of the child.
+Before promoting a mode to implemented status, review its facts, explanations, language, solvability, alternatives, and behavior with help. Record automated checks, device observations, and content-review gaps separately in [VERIFICATION.md](../VERIFICATION.md). Completion with hints is valuable play; it is not a standardized assessment of the child.
