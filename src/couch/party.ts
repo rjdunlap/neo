@@ -3,6 +3,7 @@ import type { RoundResult } from '../games/types';
 import { COUCH_INFO } from './catalog';
 import { courseSpec, repairCourse, type CourseSave } from './course';
 import { isCourseId, type CourseId } from './courses';
+import { repairSettings, settingsDefaults, type CouchSettings } from './settings';
 
 export const COUCH_IDS = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'memory-match', 'rhythm-neighbors', 'light-lab', 'secret-code', 'peg-garden', 'bumper-garden', 'pattern-train', 'egg-catch', 'robot-path', 'frog-hop', 'sink-float'] as const;
 export type CouchId = typeof COUCH_IDS[number];
@@ -46,8 +47,10 @@ export interface CouchSave {
   courses: Partial<Record<CourseId, CourseSave>>;
   /** What the two players like to be called; empty means "Player 1" and "Player 2". */
   names: [string, string];
+  /** Where she plays, the couch volume and music, and the text size. Added without a version step: an older save simply gets the defaults. */
+  settings: CouchSettings;
 }
-export const couchDefaults = (): CouchSave => ({ version: 3, party: null, trips: 0, stickers: {}, seen: [], keepsake: null, courses: {}, names: ['', ''] });
+export const couchDefaults = (): CouchSave => ({ version: 3, party: null, trips: 0, stickers: {}, seen: [], keepsake: null, courses: {}, names: ['', ''], settings: settingsDefaults() });
 export const NAME_MAX = 14;
 /** A name as the page may show it: no control characters, single spaces, trimmed, at most `NAME_MAX` letters. */
 export const cleanName = (v: unknown): string => typeof v === 'string' ? [...v.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim()].slice(0, NAME_MAX).join('').trim() : '';
@@ -83,6 +86,7 @@ export function repairCouch(raw: unknown): CouchSave {
   out.keepsake = v.keepsake && typeof v.keepsake === 'object' ? { at: number(kept.at) } : out.trips > 0 ? { at: 0 } : null;
   const names = Array.isArray(v.names) ? v.names : [];
   out.names = [cleanName(names[0]), cleanName(names[1])];
+  out.settings = repairSettings(v.settings);
   const courses = object(v.courses);
   for (const id of Object.keys(courses)) if (isCourseId(id)) out.courses[id] = repairCourse(courses[id], courseSpec(id));
   if (Array.isArray(v.seen)) out.seen = COUCH_IDS.filter(id => (v.seen as unknown[]).includes(id));

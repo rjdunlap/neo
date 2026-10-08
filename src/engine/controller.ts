@@ -10,10 +10,11 @@ export interface PlayerControls {
   back: boolean;
   active: boolean;
 }
-export interface CouchControls { players: [PlayerControls, PlayerControls]; disconnected: boolean; status: string }
+/** `controllers` counts the standard-mapped pads connected right now, so a screen can tell a controller from a keyboard. */
+export interface CouchControls { players: [PlayerControls, PlayerControls]; disconnected: boolean; status: string; controllers: number }
 export const neutral = (): PlayerControls => ({ x: 0, y: 0, direction: -1, action: false, undo: false, pause: false, back: false, active: false });
 /** Nobody pressing anything: the starting point for a bot's frame of input. */
-export const idle = (): CouchControls => ({ players: [neutral(), neutral()], disconnected: false, status: '' });
+export const idle = (): CouchControls => ({ players: [neutral(), neutral()], disconnected: false, status: '', controllers: 0 });
 type Pad = Pick<Gamepad, 'index' | 'id' | 'mapping' | 'connected' | 'axes' | 'buttons'>;
 const deadzone = (v = 0) => Math.abs(v) < 0.22 ? 0 : Math.sign(v) * (Math.abs(v) - 0.22) / 0.78;
 const direction = (x: number, y: number) => Math.max(Math.abs(x), Math.abs(y)) < 0.5 ? -1 : Math.abs(x) > Math.abs(y) ? x > 0 ? 0 : 2 : y > 0 ? 1 : 3;
@@ -60,7 +61,7 @@ export class ControllerSampler {
     }) as [PlayerControls, PlayerControls];
     const unknown = pads.some(p => p?.connected && p.mapping !== 'standard');
     const status = standard.length ? `${Math.min(standard.length, 2)} controller${standard.length === 1 ? '' : 's'} ready · first connected = Player 1` : 'Keyboard ready · press a controller button to connect';
-    return { players, disconnected, status: status + (unknown ? ' · Unmapped controller: use a Pro Controller or keyboard for now' : '') };
+    return { players, disconnected, controllers: standard.length, status: status + (unknown ? ' · Unmapped controller: use a Pro Controller or keyboard for now' : '') };
   }
 }
 
