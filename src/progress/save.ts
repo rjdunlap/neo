@@ -73,7 +73,7 @@ export interface SaveData {
   room: RoomSave;
   /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
   favorites: string[];
-  /** What she made and kept for the treehouse: one picture and one tune, each with the one before it. */
+  /** What she made and kept for the treehouse: one visual work and one tune, each with the one before it. */
   creations: CreationsSave;
   /** Discoveries she has seen for herself (known entries only), and how many she had looked at when she last opened the journal. */
   journal: JournalSave;

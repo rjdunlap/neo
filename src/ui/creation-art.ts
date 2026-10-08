@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, wood, type ColorName } from '../art/palette';
-import { musicNote } from '../art/shapes';
+import { flower, musicNote } from '../art/shapes';
 import type { PictureCreation, TuneCreation } from '../content/creations';
 import { stampArt } from '../games/stamp-studio/art';
 
@@ -32,14 +32,41 @@ export function pictureBoard(picture: PictureCreation | null): Container {
     c.addChild(hint);
     return c;
   }
-  for (const s of picture.stamps) {
-    const art = stampArt(s.kind, s.color, 48);
-    art.scale.set(0.46 * s.size);
-    art.rotation = (s.turns * Math.PI) / 2;
-    art.position.set(-paperW / 2 + margin + s.x * (paperW - 2 * margin), -paperH / 2 + margin + s.y * (paperH - 2 * margin));
-    art.eventMode = 'none';
-    c.addChild(art);
+  if ('stamps' in picture) {
+    for (const s of picture.stamps) {
+      const art = stampArt(s.kind, s.color, 48);
+      art.scale.set(0.46 * s.size);
+      art.rotation = (s.turns * Math.PI) / 2;
+      art.position.set(-paperW / 2 + margin + s.x * (paperW - 2 * margin), -paperH / 2 + margin + s.y * (paperH - 2 * margin));
+      art.eventMode = 'none';
+      c.addChild(art);
+    }
+    return c;
   }
+
+  // Preserve the paper's shape and redraw each saved mark; no bitmap or imported asset is stored.
+  const areaW = paperW - 12;
+  const areaH = paperH - 12;
+  const w = Math.min(areaW, areaH * picture.aspect);
+  const h = Math.min(areaH, areaW / picture.aspect);
+  const x0 = -w / 2;
+  const y0 = -h / 2;
+  const unit = Math.min(w, h);
+  const dabs = new Graphics();
+  for (const mark of picture.marks) {
+    const x = x0 + mark.x * w;
+    const y = y0 + mark.y * h;
+    if (mark.shape === 'dab') dabs.circle(x, y, mark.r * unit).fill(mark.color);
+    else {
+      const color = swatch[mark.color];
+      const art = flower(new Graphics(), mark.r * unit, color.fill, color.line);
+      art.position.set(x, y);
+      art.eventMode = 'none';
+      c.addChild(art);
+    }
+  }
+  dabs.eventMode = 'none';
+  c.addChildAt(dabs, 1);
   return c;
 }
 

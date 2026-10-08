@@ -53,7 +53,7 @@ export class RoomScene extends Scene {
   private readonly paint = new Graphics();
   private readonly window = windowArt(86);
   private readonly frame = new Container();
-  /** What she made, on the wall: her picture, and a plaque that plays her song. */
+  /** What she made, on the wall: her stamped picture or painting, and a plaque that plays her song. */
   private readonly board = new Container();
   private readonly plaque = new TunePlaque();
   private readonly undoPicture = new RoundButton(undoIcon(), swatch.white, 36, () => this.undo('picture'));
@@ -196,7 +196,7 @@ export class RoomScene extends Scene {
     this.frame.hitArea = new Rectangle(-FRAME / 2 - 10, -FRAME / 2 - 10, FRAME + 20, FRAME + 20);
   }
 
-  /** Her picture and song as the save has them now, and the buttons for the ones before. */
+  /** Her picture or painting and song as the save has them now, and the buttons for the ones before. */
   private drawCreations() {
     const { picture, tune } = store.creations;
     this.board.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -208,7 +208,7 @@ export class RoomScene extends Scene {
     this.undoTune.visible = store.hasEarlier('tune');
   }
 
-  /** Bring back the picture or song from before; the one on show becomes the one before, so asking again swaps back. */
+  /** Bring back the visual work or song from before; the one on show becomes the one before, so asking again swaps back. */
   private undo(kind: Creation['kind']) {
     store.undoCreation(kind);
     this.drawCreations();
@@ -401,7 +401,7 @@ export class RoomScene extends Scene {
     return { x: s.x * this.view.w, y: s.y * this.view.h };
   }
 
-  /** The pet admires her picture. An empty board just says what could hang there. */
+  /** The pet admires her stamped picture or painting. An empty board just says what could hang there. */
   private async viewPicture() {
     if (this.acting) return;
     if (!store.creations.picture.current) {
@@ -483,4 +483,3 @@ export class RoomScene extends Scene {
     this.picker = null;
   }
 }
-

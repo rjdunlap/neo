@@ -5,6 +5,7 @@ import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
 import { stepFromUnit } from '../../audio/notes';
 import { sfx } from '../../audio/sfx';
+import { PAINTING_MAX_MARKS, type PaintingCreation, type PaintingMark } from '../../content/creations';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -191,6 +192,10 @@ class RainbowFingers implements Game {
   private readonly stamps = new Container();
   private readonly pool: Sprite[] = [];
   private readonly strokes = new Map<number, Stroke>();
+  /** A bounded, normalized replay of free painting for the treehouse picture board. */
+  private paintingMarks: PaintingMark[] = [];
+  private dabCount = 0;
+  private dabEvery = 3;
   private readonly frameButton: RoundButton;
   private readonly pots = new Container();
   private readonly potRing = new Graphics();
@@ -559,6 +564,7 @@ class RainbowFingers implements Game {
   }
 
   private stamp(x: number, y: number, tint: number) {
+    this.recordDab(x, y, tint);
     const s = this.pool.pop() ?? new Sprite(textures().brush);
     s.anchor.set(0.5);
     s.position.set(x, y);
@@ -576,7 +582,9 @@ class RainbowFingers implements Game {
 
   /** A quick tap grows a flower, which then becomes part of the painting. */
   private bloom(x: number, y: number) {
-    const color = swatch[FLOWER_COLORS[Math.floor(Math.random() * FLOWER_COLORS.length)]];
+    const colorName = FLOWER_COLORS[Math.floor(Math.random() * FLOWER_COLORS.length)];
+    const color = swatch[colorName];
+    this.recordMark({ shape: 'flower', ...this.normalized(x, y), r: 26 / this.paperSize(), color: colorName });
     const f = flower(new Graphics(), 26, color.fill, color.line);
     f.position.set(x, y);
     f.scale.set(0);
@@ -590,6 +598,40 @@ class RainbowFingers implements Game {
       this.ctx.renderer.render({ container: f, target: this.rt, clear: false });
       f.destroy();
     });
+  }
+
+  /** Free levels can be kept without storing a bitmap: sample and normalize the marks the child actually made. */
+  private recordDab(x: number, y: number, color: number) {
+    if (this.plan.count !== 0 || this.dabCount++ % this.dabEvery !== 0) return;
+    this.recordMark({ shape: 'dab', ...this.normalized(x, y), r: BRUSH_RADIUS / this.paperSize(), color });
+  }
+
+  private recordMark(mark: PaintingMark) {
+    if (this.plan.count !== 0) return;
+    if (this.paintingMarks.length >= PAINTING_MAX_MARKS) {
+      // Keep the whole painting represented instead of retaining only its beginning. Future dabs are sampled at
+      // the same coarser interval; flowers remain in the sequence but are bounded with everything else.
+      this.paintingMarks = this.paintingMarks.filter((_, i) => i % 2 === 0);
+      this.dabEvery *= 2;
+    }
+    this.paintingMarks.push(mark);
+  }
+
+  private normalized(x: number, y: number) {
+    const w = Math.max(1, this.view.w - MARGIN * 2);
+    const h = Math.max(1, this.view.h - MARGIN * 2);
+    return { x: Math.min(1, Math.max(0, (x - MARGIN) / w)), y: Math.min(1, Math.max(0, (y - MARGIN) / h)) };
+  }
+
+  private paperSize() {
+    return Math.max(1, Math.min(this.view.w - MARGIN * 2, this.view.h - MARGIN * 2));
+  }
+
+  private painting(): PaintingCreation | undefined {
+    if (this.plan.count !== 0 || this.paintingMarks.length < 3) return;
+    const w = Math.max(1, this.view.w - MARGIN * 2);
+    const h = Math.max(1, this.view.h - MARGIN * 2);
+    return { kind: 'picture', aspect: w / h, marks: this.paintingMarks.map((mark) => ({ ...mark })) };
   }
 
   /** Done: the painting shrinks into a wooden frame on the wall. */
@@ -625,7 +667,7 @@ class RainbowFingers implements Game {
     sfx.sparkle();
     await this.ctx.say('paint.done');
     await this.ctx.tw.wait(0.6);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, creation: this.painting() });
   }
 }
 

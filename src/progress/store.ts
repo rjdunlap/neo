@@ -104,7 +104,7 @@ class Store {
     return canUndo(this.data.creations, kind);
   }
 
-  /** Bring back the earlier picture or tune; the one on show becomes the earlier one. */
+  /** Bring back the earlier visual work or tune; the one on show becomes the earlier one. */
   undoCreation(kind: Creation['kind']) {
     this.data.creations = undoCreation(this.data.creations, kind);
     this.save();
