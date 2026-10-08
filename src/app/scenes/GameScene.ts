@@ -8,7 +8,7 @@ import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
-import { howToFor } from '../../content/howto';
+import { howToFor, shouldExplain } from '../../content/howto';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
@@ -31,7 +31,8 @@ import { session } from '../session';
  * the pet guide, the hold-to-leave home button, co-play tips, and the celebration at the end.
  */
 export class GameScene extends Scene {
-  private game!: Game;
+  /** Built when the round is about to start: after the intro, for a game that is opened for the first time. */
+  private game: Game | null = null;
   private readonly stage = new Container();
   private readonly pet = makePet();
   private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave());
@@ -80,6 +81,15 @@ export class GameScene extends Scene {
     this.track(this.help);
     this.ui.addChild(this.pet, this.home, this.help);
 
+    // A game's first visit explains itself on a plain card, and the round waits for Play.
+    const card = shouldExplain({ enabled: store.data.settings.howToCards, explained: store.data.explained, id: this.mod.id, story: !!this.story }) ? howToFor(this.mod, this.level) : null;
+    if (card) this.openIntro(card);
+    else this.build();
+  }
+
+  /** The game for this round, drawn onto the stage; nothing in it starts until `begin`. */
+  private build(): Game {
+    const band = this.band;
     const ctx: GameContext = {
       stage: this.stage,
       view: this.view,
@@ -101,14 +111,19 @@ export class GameScene extends Scene {
       say: (id, vars) => this.whileHere(voice.say(id, vars)),
       finish: (result) => this.finish(result),
     };
-    this.game = this.mod.create(ctx);
+    return (this.game = this.mod.create(ctx));
+  }
 
-    const early = band === 'lap' || band === 'toddler';
+  /** Music, the first round, and the grown-up tip for the youngest bands. */
+  private begin() {
+    music.play(this.mod.music);
+    this.game?.start();
+    const early = this.band === 'lap' || this.band === 'toddler';
     if (early && store.data.settings.coplayHints && this.mod.coplayHint) this.showTip(this.mod.coplayHint);
   }
 
   resize(view: View) {
-    this.game.resize(view);
+    this.game?.resize(view);
     this.pet.position.set(74, view.h - 18);
     this.home.position.set(62, 62);
     this.help.position.set(62, 160);
@@ -117,8 +132,8 @@ export class GameScene extends Scene {
   }
 
   enter() {
-    music.play(this.mod.music);
-    this.game.start();
+    if (this.game) this.begin();
+    else void voice.say(this.mod.titleLine);
   }
 
   update(dt: number) {
@@ -127,7 +142,7 @@ export class GameScene extends Scene {
     super.update(dt);
     if (this.finished) return;
     this.seconds += dt;
-    this.game.update(dt);
+    this.game?.update(dt);
   }
 
   sleepyWarning() {
@@ -138,7 +153,7 @@ export class GameScene extends Scene {
 
   destroy() {
     this.gone = true;
-    this.game.destroy();
+    this.game?.destroy();
     super.destroy();
   }
 
@@ -160,6 +175,25 @@ export class GameScene extends Scene {
     card.layout(this.view);
     this.helpCard = card;
     this.ui.addChild(card);
+  }
+
+  /** The first visit: the how-to card fills the screen with Play and Back, and no round has been built or started. */
+  private openIntro(info: NonNullable<ReturnType<typeof howToFor>>) {
+    const mod = this.mod;
+    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave() });
+    card.layout(this.view);
+    this.helpCard = card;
+    this.ui.addChild(card);
+  }
+
+  /** Play: this game is explained from now on, and its first round begins. */
+  private playFromIntro() {
+    if (this.game || this.gone) return;
+    voice.stop();
+    store.explain(this.mod.id);
+    this.closeHelp();
+    this.build().resize(this.view);
+    this.begin();
   }
 
   private closeHelp() {
@@ -345,6 +379,8 @@ export class GameScene extends Scene {
       body,
     );
     card.alpha = 0;
+    // `resize` only moves a tip that already exists, and a tip made after the first resize (once Play is pressed) would sit at the origin, over the home button.
+    card.position.set(this.view.w / 2, 16);
     const dismiss = () => {
       if (this.tip !== card) return;
       this.tip = null;

@@ -18,7 +18,7 @@ describe('migrate', () => {
       stickers: [{ game: 'bubble-pop', seed: 5, at: 1 }, { seed: 9 }],
     });
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
-    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 10, coplayHints: true });
+    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 10, coplayHints: true, howToCards: true });
     expect(save.games['bubble-pop'].level).toBe(1);
     expect(save.games['bubble-pop'].pinned).toBeNull();
     expect(save.games['bubble-pop'].history).toEqual([{ level: 1, misses: 2, hints: 0, seconds: 0, at: 0 }]);
@@ -165,6 +165,30 @@ describe('migrate', () => {
   it('keeps hearts through a backup and restore', () => {
     const save = defaults();
     save.favorites = ['duck-pond', 'bubble-pop'];
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('starts with no game explained and the cards on, and repairs damaged values without touching anything else', () => {
+    expect(defaults().explained).toEqual([]);
+    expect(defaults().settings.howToCards).toBe(true);
+    expect(migrate({}).explained).toEqual([]);
+    // A save from before the cards existed keeps its progress; every game will explain itself once.
+    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, settings: { volume: 0.5 }, games: { 'duck-pond': { plays: 4, level: 3, pinned: null, history: [] } } });
+    expect(old.explained).toEqual([]);
+    expect(old.settings.howToCards).toBe(true);
+    expect(old.settings.volume).toBe(0.5);
+    expect(old.games['duck-pond'].plays).toBe(4);
+    expect(migrate({ explained: 'duck-pond' }).explained).toEqual([]);
+    expect(migrate({ explained: ['duck-pond', 7, 'duck-pond', '', 'bubble-pop', 'x'.repeat(61)] }).explained).toEqual(['duck-pond', 'bubble-pop']);
+    expect(migrate({ explained: Array.from({ length: 400 }, (_, i) => `g${i}`) }).explained).toHaveLength(200);
+    expect(migrate({ settings: { howToCards: 'no' } }).settings.howToCards).toBe(true);
+    expect(migrate({ settings: { howToCards: false } }).settings.howToCards).toBe(false);
+  });
+
+  it('keeps which games were explained, and the switch, through a backup and restore', () => {
+    const save = defaults();
+    save.explained = ['duck-pond', 'bubble-pop'];
+    save.settings.howToCards = false;
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 

@@ -4,6 +4,7 @@ import { clampSpot, starterItem, starterRoom } from '../content/room';
 import { cleanCreations, emptyCreations, type CreationsSave } from '../content/creations';
 import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
 import { cleanFavorites } from '../content/shelf';
+import { cleanExplained } from '../content/howto';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -66,13 +67,15 @@ export interface SaveData {
   pet: { name: string; color: PetColor; hatched: boolean };
   /** Highest band celebrated on the map; null before the first visit. */
   world: { band: Band | null };
-  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean };
+  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean; howToCards: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
   stories: { picnic: StoryProgress };
   room: RoomSave;
   /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
   favorites: string[];
+  /** Games whose how-to card has been shown as an intro and played from: each explains itself once, and a reset or a grown-up's switch is the only way it comes back. Never locks anything. */
+  explained: string[];
   /** What she made and kept for the treehouse: one visual work and one tune, each with the one before it. */
   creations: CreationsSave;
   /** Discoveries she has seen for herself (known entries only), and how many she had looked at when she last opened the journal. */
@@ -88,12 +91,13 @@ export function defaults(): SaveData {
     profile: { name: '', band: 'lap' },
     pet: { name: 'Pip', color: 'teal', hatched: false },
     world: { band: null },
-    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true },
+    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true, howToCards: true },
     games: {},
     stickers: [],
     stories: { picnic: { steps: [], ended: false, keepsake: false } },
     room: starterRoom(),
     favorites: [],
+    explained: [],
     creations: emptyCreations(),
     journal: emptyJournal(),
   };
@@ -194,12 +198,14 @@ export function migrate(raw: unknown): SaveData {
       music: bool(settings.music, d.settings.music),
       sessionMinutes: Math.max(0, num(settings.sessionMinutes, d.settings.sessionMinutes)),
       coplayHints: bool(settings.coplayHints, d.settings.coplayHints),
+      howToCards: bool(settings.howToCards, d.settings.howToCards),
     },
     games,
     stickers,
     stories: { picnic: story(stories.picnic) },
     room: room(raw.room),
     favorites: cleanFavorites(raw.favorites),
+    explained: cleanExplained(raw.explained),
     creations: cleanCreations(raw.creations),
     journal: cleanJournal(raw.journal),
   };

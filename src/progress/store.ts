@@ -4,6 +4,7 @@ import { nextLevel, type LevelRange } from './difficulty';
 import { flipItem, moveItem, tidy } from '../content/room';
 import { canUndo, keepCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
+import { markExplained } from '../content/howto';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
 import { defaults, HISTORY_LENGTH, migrate, type GameStats, type RoundRecord, type SaveData, type StoryProgress } from './save';
@@ -88,6 +89,18 @@ class Store {
     this.data.favorites = toggleFavorite(this.data.favorites, gameId);
     this.save();
     return this.isFavorite(gameId);
+  }
+
+  /** Whether this game's how-to card has already been shown as its intro. */
+  isExplained(gameId: string): boolean {
+    return this.data.explained.includes(gameId);
+  }
+
+  /** The intro was played from: this game goes straight to its round from now on. */
+  explain(gameId: string) {
+    if (this.isExplained(gameId)) return;
+    this.data.explained = markExplained(this.data.explained, gameId);
+    this.save();
   }
 
   get creations() {

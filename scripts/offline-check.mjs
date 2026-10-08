@@ -51,6 +51,10 @@ try {
   await page.mouse.click(342, 290); await page.waitForTimeout(700);
   await page.screenshot({ path: 'test-results/offline/counting-cove.png' });
   await page.mouse.click(682, 290); await page.waitForTimeout(2000);
+  // The seeded save predates the first-visit card, so no game is explained yet: the card comes first and Play starts the round.
+  await page.screenshot({ path: 'test-results/offline/monster-munch-howto.png' });
+  assert.equal((await readSave())?.explained, undefined, 'The seeded save has explained nothing');
+  await page.mouse.click(574, 640); await page.waitForTimeout(1500);
   await page.screenshot({ path: 'test-results/offline/monster-munch.png' });
   // Counting along: tapping each cookie on the tray feeds it.
   for (let attempt = 0; attempt < 20; attempt++) {
@@ -62,6 +66,8 @@ try {
   assert.equal(save?.stickers?.[0]?.game, 'monster-munch', 'Finished a new minigame while offline');
   assert.equal(save.games['monster-munch'].plays, 1);
   assert.equal(save.pet.name, 'Clover');
+  assert.deepEqual(save.explained, ['monster-munch'], 'Play on the first-visit card was saved');
+  assert.equal(save.settings.howToCards, true, 'An older save gets the cards on');
   assert.equal(save.settings.placeLayout, 'subjects');
   assert.deepEqual(save.world, { band: 'toddler' });
   await page.waitForTimeout(1700);
@@ -71,6 +77,7 @@ try {
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('canvas').waitFor();
   assert.equal((await readSave()).stickers.length, 1, 'Offline progress survived reload');
+  assert.deepEqual((await readSave()).explained, ['monster-munch'], 'The explained game survived an offline reload');
   assert.equal(await page.evaluate(() => typeof window.kit), 'undefined', 'Dev helper excluded from production');
   // Offline, the picnic opens from the map, and a step found there is kept across a reload. The striped blanket
   // is in one of six spots (two on each of the tree, the clothesline and the bush); try each until it's found.
@@ -89,7 +96,7 @@ try {
   await page.locator('canvas').waitFor();
   assert.deepEqual((await readSave()).stories.picnic, { steps: ['blanket'], ended: false, keepsake: false }, 'The story step survived an offline reload');
   assert.deepEqual(errors, []);
-  console.log(`PASS: production reload, cached font and assets (${assets.length}), trail navigation, new-game completion, reward, saved progress, the Windy Picnic from the map and its saved step work offline.`);
+  console.log(`PASS: production reload, cached font and assets (${assets.length}), trail navigation, a first-visit how-to card and Play, new-game completion, reward, saved progress, the Windy Picnic from the map and its saved step work offline.`);
 } catch (error) {
   await page.screenshot({ path: 'test-results/offline/failure.png' });
   console.error(error); console.error('Page errors:', errors); process.exitCode = 1;

@@ -8,11 +8,13 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (516 tests) | Island Bridges entry | Run with every code change |
-| `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
-| `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08 | Clap the Syllables and Harbor Rush entries | Proves a game loads and survives stray taps, not that a round can finish |
-| `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
-| `picnic`, `island`, `room` | 2026-10-07 | Discovery journal entry | |
+| Unit tests, typecheck, build | 2026-10-08 (522 tests) | First-visit how-to cards entry | Run with every code change |
+| `npm run test:offline` | 2026-10-08 | First-visit how-to cards entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
+| `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; five games after the how-to cards, before the tip fix (2026-10-08) | Clap the Syllables, Harbor Rush and first-visit how-to entries | Proves a game loads and survives stray taps, not that a round can finish |
+| `world` | 2026-10-08, after the first-visit how-to cards (2026-10-07: all 72 games in every band and both orientations) | First-visit how-to cards and release check entries | About five and a half minutes |
+| `picnic`, `island` | 2026-10-08, before the tip fix in the how-to cards slice | First-visit how-to cards entry | |
+| `room` | 2026-10-07 | Discovery journal entry | |
+| `howto` | 2026-10-08, all 72 games, landscape and portrait | First-visit how-to cards entry | About two minutes |
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
@@ -41,6 +43,17 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### First-visit how-to cards on the island (2026-10-08)
+
+What changed: the first time a game is opened on a profile, `GameScene` shows its grown-up how-to card as a full-screen intro (the game's picture and name, this level, the goal, what to do, how the round ends, a big green Play and a Back) in place of starting the round; the game is not built until Play, which saves it as explained (`explained` in the save, with `settings.howToCards` as the grown-up's switch in the grown-up zone, default on). The hold-to-open `?` still shows the card in a round. A story request, a game with no card and the switch skip the intro. `HowToPanel` draws both cards and steps its text down to fit a short screen. The grown-up tip for the youngest bands now starts after Play, so it is placed when it is made.
+
+- `npm run typecheck`, `npm test` (522 tests: 6 new for the explained list and the switch repairing, bounding and surviving a backup, and for when a game explains itself, including every game on the island) and `npm run build` passed.
+- New `BROWSER_SUITE=howto` passed: the first visit opens the card and builds no round, Play and Back are at least 100 units across (Play the bigger), stray taps on the backdrop do nothing, Back leaves the game unexplained and the next visit explains it again, Play marks it explained and starts the round (the round clock starts at Play, no sticker or play is recorded by reading the card), the hold-to-open card is the same card without Play, an explained game goes straight in and stays so through a reload, a story request and the switch skip the card, the switch on the grown-up panel is saved, a game tapped on the trail opens its card, and **all 72 games' cards fit the screen with large buttons in landscape and in portrait** and can be left unplayed without a page error (about two minutes).
+- It also found a bug in my first version: the tip card for lap and toddler games was made after `resize` had run, so it sat at the screen's top-left over the home button (the `world` suite failed at the hold-home step on Bumper Garden, and the same suite passed on unmodified `HEAD`). The tip now positions itself when it is made, and `howto` checks its place; with the fix removed that check fails.
+- `smoke` on five games (bubble-pop, duck-pond, penguin-slide, pet-kitchen, monster-munch), `island` and `picnic` (story rounds still go straight to their game at the story's level) passed on a snapshot **before the tip fix**, and were not run again (the fix only gives the tip the position it had before this change). `world` (about nine minutes this time) and the `howto` suite passed after it. `npm run test:offline` passed on a production build of the final tree, and now also plays Monster Munch through the first-visit card from an older save and checks that the explained game survives an offline reload.
+- Screenshots looked at: Bubble Pop's card in landscape and portrait, and the tallest card (Clap the Syllables) in both.
+- Not run: the couch suites (couch play is untouched), the other `smoke` games and the island's per-game suites with the card on (the harness turns it off in `ready()` so they play as before; the `howto` suite is the one that covers the card). Open and needing a person: whether the card is read or tapped through, whether one more tap before each new game suits a small child on a lap, and whether it should come every time (roadmap, "On the iPad").
 
 ### Island Bridges, a fifth grown-up-only game (2026-10-08)
 
