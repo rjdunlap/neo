@@ -268,6 +268,25 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     // Trips stay on the small beds; the 9 by 9 beds are the Three Big Beds course on the puzzle shelf.
     level: (stop) => [1, 1, 2, 2, 3, 3][stop] ?? 3,
   },
+  'lantern-lights': {
+    goal: 'couch.how.lantern-lights',
+    tagline: 'Press a lantern to flip it and its neighbours. Light every lantern on the pond.',
+    controls: [
+      { parts: STICK, text: 'Move from lantern to lantern. The glow shows what a press would flip.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Press the lantern: it and the four beside it flip.', keys: 'Enter' },
+      { parts: ['left'], text: 'Take the last press back. It still counts.', keys: 'Backspace' },
+      { parts: ['start'], text: 'Pause menu: show a hint, or put the pond back as it began. A hint marks the run as helped.', keys: 'Esc' },
+    ],
+    restart: 'Start this pond again',
+    hint: 'Show a hint',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'presses over the fewest' },
+    band: 'school',
+    demoLevel: 2,
+    // Trips climb from the small ponds to a 5 by 5 that takes a short way to light; the hardest ponds are on the puzzle shelf.
+    level: (stop) => [1, 2, 3, 3, 4, 5][stop] ?? 5,
+  },
 };
 
 /** The line to speak for `line` in couch play: a controller version when the original talks about touch. */
