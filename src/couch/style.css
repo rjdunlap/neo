@@ -259,4 +259,8 @@
 .couch-players-choice { max-width: calc(560px * var(--u)); margin: calc(8px * var(--u)) 0; }
 .couch-parts { margin: calc(8px * var(--u)) 0 calc(4px * var(--u)); }
 /* On the shelf the standing under a puzzle is the number she came for, so it is not fine print. */
+.couch-courses.couch-compact { gap: calc(14px * var(--u)); margin: calc(12px * var(--u)) 0; }
+.couch .couch-courses.couch-compact .couch-card { min-height: calc(156px * var(--u)); padding: calc(16px * var(--u)); }
+.couch-courses.couch-compact .couch-card canvas { height: calc(64px * var(--u)); margin-bottom: calc(8px * var(--u)); }
+.couch-courses.couch-compact .couch-card strong { font-size: calc(22px * var(--u)); }
 .couch-courses .couch-card small { font-size: calc(16px * var(--u)); letter-spacing: 0; color: #35685a; font-weight: 600; }

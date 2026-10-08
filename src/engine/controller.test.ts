@@ -14,6 +14,18 @@ describe('controller semantics', () => {
     s.sample([pad(0)], keys());
     expect(s.sample([pad(0, [2])], keys()).players[0].undo).toBe(true);
   });
+  it('reports the bottom and left buttons as held for as long as they stay down, apart from the one-frame press', () => {
+    const s = new ControllerSampler();
+    s.sample([pad(0)], keys());
+    expect(s.sample([pad(0, [0])], keys()).players[0]).toMatchObject({ action: true, hold: true, undo: false, holdUndo: false });
+    expect(s.sample([pad(0, [0])], keys()).players[0]).toMatchObject({ action: false, hold: true });
+    expect(s.sample([pad(0, [0, 2])], keys()).players[0]).toMatchObject({ action: false, hold: true, undo: true, holdUndo: true });
+    expect(s.sample([pad(0, [2])], keys()).players[0]).toMatchObject({ hold: false, holdUndo: true, undo: false });
+    expect(s.sample([pad(0)], keys()).players[0]).toMatchObject({ hold: false, holdUndo: false });
+    // The keyboard: Enter and Backspace.
+    expect(s.sample([], keys('Enter')).players[0]).toMatchObject({ hold: true, action: true });
+    expect(s.sample([], keys('Enter', 'Backspace')).players[0]).toMatchObject({ hold: true, holdUndo: true, action: false, undo: true });
+  });
   it('keeps player two on the pink paddle when player one disconnects, then reconnects', () => {
     const s = new ControllerSampler(); s.sample([pad(3), pad(7)], keys());
     const lost = s.sample([pad(7, [], [0, 1])], keys());

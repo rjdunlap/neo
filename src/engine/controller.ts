@@ -9,10 +9,13 @@ export interface PlayerControls {
   pause: boolean;
   back: boolean;
   active: boolean;
+  /** The bottom and left buttons are down right now (`action` and `undo` are only true on the frame they go down), for painting a run by holding a button while moving. */
+  hold: boolean;
+  holdUndo: boolean;
 }
 /** `controllers` counts the standard-mapped pads connected right now, so a screen can tell a controller from a keyboard. */
 export interface CouchControls { players: [PlayerControls, PlayerControls]; disconnected: boolean; status: string; controllers: number }
-export const neutral = (): PlayerControls => ({ x: 0, y: 0, direction: -1, action: false, undo: false, pause: false, back: false, active: false });
+export const neutral = (): PlayerControls => ({ x: 0, y: 0, direction: -1, action: false, undo: false, pause: false, back: false, active: false, hold: false, holdUndo: false });
 /** Nobody pressing anything: the starting point for a bot's frame of input. */
 export const idle = (): CouchControls => ({ players: [neutral(), neutral()], disconnected: false, status: '', controllers: 0 });
 type Pad = Pick<Gamepad, 'index' | 'id' | 'mapping' | 'connected' | 'axes' | 'buttons'>;
@@ -84,7 +87,10 @@ export class ControllerSampler {
         undo: held(2) || (slot === 0 && keys.has('Backspace')),
         pause: held(9) || (slot === 0 && keys.has('Escape')),
         back: held(1), active: !!p || slot === 0 || this.keyboardTwo,
+        hold: false, holdUndo: false,
       };
+      raw.hold = raw.action;
+      raw.holdUndo = raw.undo;
       const key = String(slot);
       // A newly mounted screen must see buttons/sticks released before accepting their edges.
       const prev = this.previous.get(key) ?? raw;

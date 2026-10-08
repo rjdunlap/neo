@@ -106,7 +106,7 @@ export function clues(p: Picture): { rows: number[][]; cols: number[][] } {
 }
 
 /** Every way to place these runs on a line of `n` cells. */
-function placements(n: number, clue: number[]): boolean[][] {
+export function placements(n: number, clue: number[]): boolean[][] {
   if (clue.length === 1 && clue[0] === 0) return [Array(n).fill(false)];
   const out: boolean[][] = [];
   const place = (i: number, start: number, line: boolean[]) => {

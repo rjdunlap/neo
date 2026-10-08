@@ -15,7 +15,7 @@ describe('the couch courses', () => {
       expect(info.id).toBe(id);
       expect(COUCH_IDS).toContain(info.game);
       expect(info.version).toBeGreaterThanOrEqual(1);
-      expect(info.best.length).toBeGreaterThanOrEqual(3);
+      expect(info.best.length).toBeGreaterThanOrEqual(2);
       expect(info.best.every(n => Number.isInteger(n) && n >= 1)).toBe(true);
       expect(info.minimum).toBe(info.best.reduce((a, b) => a + b, 0));
       expect(info.name.length).toBeGreaterThan(3);
@@ -38,6 +38,8 @@ describe('the couch courses', () => {
     expect(courseSpec('beds')).toMatchObject({ game: 'sudoku-garden', boards: 6, minimum: 124 });
     expect(courseSpec('bigbeds')).toMatchObject({ game: 'sudoku-garden', boards: 3, minimum: 149 });
     expect(courseSpec('lanterns')).toMatchObject({ game: 'lantern-lights', boards: 5, minimum: 36 });
+    expect(courseSpec('pictures')).toMatchObject({ game: 'picture-logic', boards: 3, minimum: 182 });
+    expect(courseSpec('bigpictures')).toMatchObject({ game: 'picture-logic', boards: 2, minimum: 230 });
   });
 
   it("is played by a game that is on the couch, at a level its band really has", () => {
@@ -66,5 +68,7 @@ describe('the couch courses', () => {
     expect(isCourseId('lanterns')).toBe(true);
     expect(countOf(courseInfo('lanterns'), 1)).toBe('1 press');
     expect(countOf(courseInfo('lanterns'), 36)).toBe('36 presses');
+    expect(countOf(courseInfo('pictures'), 1)).toBe('1 fill');
+    expect(countOf(courseInfo('pictures'), 182)).toBe('182 fills');
   });
 });

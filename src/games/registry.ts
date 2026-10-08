@@ -72,6 +72,7 @@ import { ferryJam } from './ferry-jam';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { lanternLights } from './lantern-lights';
+import { pictureLogic } from './picture-logic';
 import type { GameModule } from './types';
 
 /**
@@ -162,6 +163,7 @@ export const gameById = (id: string) => GAMES.find((g) => g.id === id);
 export const GROWNUP_GAMES: GameModule[] = [
   sudokuGarden,
   lanternLights,
+  pictureLogic,
 ];
 
 export const couchGameById = (id: string) => gameById(id) ?? GROWNUP_GAMES.find((g) => g.id === id);

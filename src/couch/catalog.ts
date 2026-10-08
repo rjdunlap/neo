@@ -287,6 +287,25 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     // Trips climb from the small ponds to a 5 by 5 that takes a short way to light; the hardest ponds are on the puzzle shelf.
     level: (stop) => [1, 2, 3, 3, 4, 5][stop] ?? 5,
   },
+  'picture-logic': {
+    goal: 'couch.how.picture-logic',
+    tagline: 'Fill the squares the numbers allow, and a picture appears.',
+    controls: [
+      { parts: STICK, text: 'Move around the grid.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Fill a square. Hold it and move to paint a run.', keys: 'Enter (hold)' },
+      { parts: ['left'], text: 'Cross a square out. Hold it to cross a run. Free.', keys: 'Backspace (hold)' },
+      { parts: ['start'], text: 'Pause menu: a hint, or empty the picture.', keys: 'Esc' },
+    ],
+    restart: 'Empty this picture',
+    hint: 'Show a hint',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'fills over the picture' },
+    band: 'school',
+    demoLevel: 1,
+    // Trips stay on the 6 by 6 and 10 by 10 pictures; the 15 by 15 pictures are The Big Pictures course on the puzzle shelf.
+    level: (stop) => [1, 2, 2, 3, 3, 3][stop] ?? 3,
+  },
 };
 
 /** The line to speak for `line` in couch play: a controller version when the original talks about touch. */
