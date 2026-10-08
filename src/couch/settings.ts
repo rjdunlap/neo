@@ -11,6 +11,9 @@ export type PlaceChoice = typeof PLACE_CHOICES[number];
 export type Place = 'tv' | 'laptop';
 export const TEXT_SIZES = ['normal', 'large', 'xlarge'] as const;
 export type TextSize = typeof TEXT_SIZES[number];
+/** Just one grown-up (the puzzle shelf, trips together), or two taking turns and facing off. */
+export const PLAYER_CHOICES = ['one', 'two'] as const;
+export type Players = typeof PLAYER_CHOICES[number];
 
 /** Volume is a whole step from 0 (off) to `VOLUME_MAX`, so a controller can nudge it and a reload restores it exactly. */
 export const VOLUME_MAX = 5;
@@ -19,8 +22,10 @@ export interface CouchSettings {
   volume: number;
   music: boolean;
   text: TextSize;
+  /** Added last, so a restored backup keeps its key order. Two is how couch play began, so an older save keeps it. */
+  players: Players;
 }
-export const settingsDefaults = (): CouchSettings => ({ place: 'auto', volume: 4, music: true, text: 'normal' });
+export const settingsDefaults = (): CouchSettings => ({ place: 'auto', volume: 4, music: true, text: 'normal', players: 'two' });
 
 const object = (v: unknown): Record<string, unknown> => v && typeof v === 'object' ? v as Record<string, unknown> : {};
 /** Anything the save holds is repaired to a value the page can show; a missing or odd field takes its default. */
@@ -30,6 +35,7 @@ export function repairSettings(raw: unknown): CouchSettings {
   if (typeof v.volume === 'number' && Number.isFinite(v.volume)) out.volume = Math.max(0, Math.min(VOLUME_MAX, Math.round(v.volume)));
   if (typeof v.music === 'boolean') out.music = v.music;
   if (TEXT_SIZES.includes(v.text as TextSize)) out.text = v.text as TextSize;
+  if (PLAYER_CHOICES.includes(v.players as Players)) out.players = v.players as Players;
   return out;
 }
 
@@ -45,6 +51,7 @@ export const placeReason = (now: Surroundings): string =>
 
 export const PLACE_NAMES: Record<Place, string> = { tv: 'TV with a controller', laptop: 'Laptop with keyboard' };
 export const TEXT_NAMES: Record<TextSize, string> = { normal: 'Normal', large: 'Large', xlarge: 'Extra large' };
+export const PLAYER_NAMES: Record<Players, string> = { one: 'Just me', two: 'Two players' };
 /** Text size multiplies the window scale that every couch length is already built on. */
 export const TEXT_FACTOR: Record<TextSize, number> = { normal: 1, large: 1.2, xlarge: 1.4 };
 /** The couch length unit (`--u`): the window scale kept between 1 and 2.2, times the text size. */

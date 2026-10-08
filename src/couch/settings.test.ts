@@ -1,23 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { COUCH_INFO } from './catalog';
 import { repairCouch, couchDefaults } from './party';
-import { cardHint, gainFor, menuHint, nextText, nudgeVolume, placeReason, repairSettings, resolvePlace, settingsDefaults, TEXT_FACTOR, TEXT_SIZES, TV_SCALE, unitFor, VOLUME_MAX } from './settings';
+import { cardHint, gainFor, menuHint, nextText, nudgeVolume, PLAYER_CHOICES, placeReason, repairSettings, resolvePlace, settingsDefaults, TEXT_FACTOR, TEXT_SIZES, TV_SCALE, unitFor, VOLUME_MAX } from './settings';
 
 describe('couch settings', () => {
-  it('start as "choose for me", a little under full volume, music on and normal text', () => {
-    expect(settingsDefaults()).toEqual({ place: 'auto', volume: 4, music: true, text: 'normal' });
+  it('start as "choose for me", a little under full volume, music on, normal text and two players', () => {
+    expect(settingsDefaults()).toEqual({ place: 'auto', volume: 4, music: true, text: 'normal', players: 'two' });
     expect(gainFor(settingsDefaults().volume)).toBeCloseTo(0.8);
   });
 
   it('repairs anything a save or a hand-edited backup might hold', () => {
     expect(repairSettings(undefined)).toEqual(settingsDefaults());
     expect(repairSettings('loud')).toEqual(settingsDefaults());
-    expect(repairSettings({ place: 'tablet', volume: 'max', music: 'yes', text: 'huge' })).toEqual(settingsDefaults());
-    expect(repairSettings({ place: 'laptop', volume: 99, music: false, text: 'xlarge' })).toEqual({ place: 'laptop', volume: VOLUME_MAX, music: false, text: 'xlarge' });
+    expect(repairSettings({ place: 'tablet', volume: 'max', music: 'yes', text: 'huge', players: 3 })).toEqual(settingsDefaults());
+    expect(repairSettings({ place: 'laptop', volume: 99, music: false, text: 'xlarge', players: 'one' })).toEqual({ place: 'laptop', volume: VOLUME_MAX, music: false, text: 'xlarge', players: 'one' });
     expect(repairSettings({ volume: -3 }).volume).toBe(0);
     expect(repairSettings({ volume: 2.6 }).volume).toBe(3);
     expect(repairSettings({ volume: NaN }).volume).toBe(settingsDefaults().volume);
     expect(repairSettings({ volume: Infinity }).volume).toBe(settingsDefaults().volume);
+  });
+
+  it('knows just two player counts, and a save from before the choice keeps playing for two', () => {
+    expect([...PLAYER_CHOICES]).toEqual(['one', 'two']);
+    expect(repairSettings({ place: 'tv', volume: 3, music: true, text: 'large' }).players).toBe('two');
+    expect(repairSettings({ players: 'one' }).players).toBe('one');
+    expect(repairSettings({ players: 'both' }).players).toBe('two');
   });
 
   it('follows what is connected unless she chose', () => {
@@ -79,7 +86,7 @@ describe('couch settings in the save', () => {
   it('are part of a new save and survive a reload exactly', () => {
     const save = couchDefaults();
     expect(save.settings).toEqual(settingsDefaults());
-    save.settings = { place: 'laptop', volume: 1, music: false, text: 'large' };
+    save.settings = { place: 'laptop', volume: 1, music: false, text: 'large', players: 'one' };
     expect(JSON.stringify(repairCouch(JSON.parse(JSON.stringify(save))))).toBe(JSON.stringify(save));
   });
 
@@ -96,7 +103,7 @@ describe('couch settings in the save', () => {
   });
 
   it('keeps the field order stable so a restored backup is written back byte for byte', () => {
-    expect(Object.keys(couchDefaults().settings)).toEqual(['place', 'volume', 'music', 'text']);
-    expect(Object.keys(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, settings: { text: 'large', music: false, volume: 2, place: 'tv' } }).settings)).toEqual(['place', 'volume', 'music', 'text']);
+    expect(Object.keys(couchDefaults().settings)).toEqual(['place', 'volume', 'music', 'text', 'players']);
+    expect(Object.keys(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, settings: { players: 'one', text: 'large', music: false, volume: 2, place: 'tv' } }).settings)).toEqual(['place', 'volume', 'music', 'text', 'players']);
   });
 });

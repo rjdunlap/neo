@@ -7,7 +7,7 @@ import { Rng } from '../engine/random';
 import { Tweener } from '../engine/tween';
 import { DESIGN_H, DESIGN_W, type View } from '../engine/view';
 import type { CouchControls } from '../engine/controller';
-import type { Game, GameContext, GameModule } from '../games/types';
+import type { CourseProgress, Game, GameContext, GameModule } from '../games/types';
 import type { PadPart } from './catalog';
 
 /** The demo is laid out like a normal 1024×768 screen, then scaled into its window. */
@@ -59,7 +59,7 @@ export class Demo {
 
   constructor(
     private readonly mod: GameModule,
-    private readonly opts: { level: number; band: GameContext['band']; renderer: Renderer; seed?: number },
+    private readonly opts: { level: number; band: GameContext['band']; renderer: Renderer; seed?: number; part?: { course: string; board: number } },
   ) {
     this.root.addChild(new Graphics().rect(0, 0, DESIGN_W, DESIGN_H).fill(0xfff9ee), this.stage, this.mask);
     this.root.mask = this.mask;
@@ -155,11 +155,22 @@ export class Demo {
     this.pet = pet;
     this.tracked.add(pet);
     const talk = () => this.tw.wait(0.5);
+    // One part of a course on its own (its best route): begin at that part, and stop when it is finished.
+    const part = this.opts.part;
+    const couch = part ? {
+      versus: false,
+      course: {
+        id: part.course,
+        resume: { board: part.board, done: Array.from({ length: part.board }, () => 1), attempts: 0, assisted: false },
+        progress: (p: CourseProgress) => { if (p.done.length > part.board) this.done = true; },
+      },
+    } : undefined;
     const ctx: GameContext = {
       stage: this.stage,
       view: VIEW,
       level: this.opts.level,
       band: this.opts.band,
+      couch,
       rng: new Rng(this.opts.seed ?? 7),
       tw: this.tw,
       particles: fx,

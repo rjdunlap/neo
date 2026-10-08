@@ -8,18 +8,19 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-07 (397 tests) | Couch Settings entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-07 (405 tests) | Couch Just me entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
 | `picnic`, `island`, `room` | 2026-10-07 | Discovery journal entry | |
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
-| `couch` | 2026-10-07, after the Settings page | Couch Settings entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen games; Penguin Slide, Bounce Back and Light Lab again after the Settings page | Child's island and couch Settings entries | Peg Garden's bot needed one retry (its known flake) |
-| `couchcourse` | 2026-10-07, after the Settings page | Couch Settings entry | About four to seven minutes |
-| `couchnames` | 2026-10-07, now through the Settings page | Couch Settings entry | |
-| `couchsettings` | 2026-10-07 | Couch Settings entry | About 30 seconds |
+| `couch` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About seven to nine minutes; run on a snapshot |
+| `couchgames` | 2026-10-07, all fourteen games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me | Child's island, couch Settings and Just me entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchcourse` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About four to seven minutes |
+| `couchnames` | 2026-10-07, after Just me | Couch Just me entry | |
+| `couchsettings` | 2026-10-07, after Just me | Couch Just me entry | About 30 seconds |
+| `couchsolo` | 2026-10-07 | Couch Just me entry | About 40 seconds |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -34,6 +35,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Couch "Just me" and the puzzle shelf (2026-10-07)
+
+What changed: roadmap step 2 of grown-up play for one. A **Who is playing?** choice (*Just me* or *Two players*) on the couch start page and Settings, kept as `settings.players` (default *Two*, added last so a restored backup keeps its key order). *Just me* leaves out Player 2, the face-off and turn cards, offers a Together-only trip, and turns Challenges into a **Puzzle shelf** that shows each course's best and how far it is above par. **Watch the best routes** on a Penguin Slide course page replays the solver's route on the real pond (`Demo` gained an optional `part`), scored and saved nowhere, and never offered in the middle of a run. Rules are in `src/couch/shelf.ts` and `src/couch/settings.ts`.
+
+- `npm run typecheck`, `npm test` (405 tests: eight new, for the shelf's standings and above-par arithmetic, a helped best, per-player records, the answer withheld mid-run and before a first finish, and `players` repair and field order) and `npm run build` passed.
+- New `BROWSER_SUITE=couchsolo` passed (twice, the second time on the final code): the choice on the start page and Settings, the *Just for you* page and shelf with no Player 2, standings from a seeded record, a one-card course page, the bot replaying pond 1 in 2 slides and pond 3 in 4 (the courses' best routes), nothing saved by watching, portrait, a Together-only trip, one name field, and back to two players with the half-played run resumed by name. With the mid-run guard in `canWatchRoute` deliberately removed, it failed on the right assertion. On a snapshot, `couchsettings` (its stored-settings assertion now includes `players`), `couchnames`, `couchgames COUCH_ONLY=penguin-slide,light-lab`, the full `couchcourse` and the full `couch` suite passed, since the two-player course page, the finale buttons and `Demo` (which every how-to screen uses) were touched.
+- Screenshots of the start page, shelf, a course page and the best-route screen (laptop size and portrait) were looked at; the standing under a shelf card was enlarged after the first look. The child's save is untouched (asserted).
+- Not run: `world`, the offline check and `smoke` (no navigation, asset or other game's code changed). Open and needing a person: whether she finds *Just me* on the start page, whether a shelf that says "3 above par" makes her want another go, whether Watch the best routes is a treat or a spoiler, and how the shelf and replay read from the sofa on a TV (the replay's window is the size of a how-to demo).
 
 ### Couch Settings page (2026-10-07)
 

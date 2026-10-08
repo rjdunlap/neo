@@ -252,3 +252,11 @@
 .couch-row { display: flex; flex-wrap: wrap; }
 .couch-modal .couch-row button { display: inline-block; }
 @media(max-width: 750px) { .couch-settings-grid { grid-template-columns: 1fr; } }
+
+/* Just me: one player's card, the standing under it, the players choice on the start page, and the best-route screen. */
+.couch-players.couch-solo { grid-template-columns: minmax(0, 1fr); }
+.couch-player.side-0 + .couch-standing, .couch-standing { margin: calc(2px * var(--u)) 0 0; font-size: calc(19px * var(--u)); font-weight: 600; color: #35685a; }
+.couch-players-choice { max-width: calc(560px * var(--u)); margin: calc(8px * var(--u)) 0; }
+.couch-parts { margin: calc(8px * var(--u)) 0 calc(4px * var(--u)); }
+/* On the shelf the standing under a puzzle is the number she came for, so it is not fine print. */
+.couch-courses .couch-card small { font-size: calc(16px * var(--u)); letter-spacing: 0; color: #35685a; font-weight: 600; }
