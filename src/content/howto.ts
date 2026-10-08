@@ -338,6 +338,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends after the last word, sort or question.',
     note: 'The pet says each word whole and claps its beats with beads lighting up; a wrong count just brings the demonstration and another try. Check on the device that the words are said clearly.',
   },
+  'chain-reaction': {
+    goal: 'Arrange the ramps so the marble rings the big bell (and, later, the little chime first).',
+    steps: ['Drag every loose ramp into a round socket.', 'Tap the green arrow to run the machine and watch what each ramp changes.', 'Move one ramp and run it again, or tap the yellow light bulb for one useful placement.'],
+    finish: 'The round ends after both machines ring their bells.',
+    note: 'A run that misses is an experiment, not a wrong answer. Loose ramps can be moved back to their tray, and the top level has several working designs.',
+  },
   'rhyme-time': {
     goal: 'Find the words that rhyme.',
     steps: ['Listen to the word.', 'Tap the picture that rhymes, or the two that rhyme, or the odd one out.'],

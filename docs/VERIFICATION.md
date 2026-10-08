@@ -4,6 +4,14 @@
 
 This is a dated record of checks, newest first. It records what was actually run; "not run" is an honest entry.
 
+## Chain Reaction (2026-10-07; checked in the working tree, not committed)
+
+What changed: **Chain Reaction**, a pre-K–school prediction-and-revision game with six levels and two small machines per round. The child drags one or two large ramps into sockets, runs a deterministic marble replay, then moves one part and tries again; later machines must touch a small chime before the final bell, and the top level has several valid designs. Failed runs are experiments (zero misses); the light bulb gives and counts one useful placement.
+
+- `npm run typecheck`, `npm test` (382 tests in 94 files) and `npm run build` passed. Rule tests follow fixed and loose ramps, safe side exits and chimes; across 20 seeds at every level they enumerate every visibly different placement (swapping identical ramps is not another design), require the planned solution count, solvability and a useful hint that preserves correct work.
+- `BROWSER_SUITE=machines` passed after the final visual fix: real drags at levels 1 and 6, an incomplete first run, a failed top-level experiment that stayed at zero misses, one explicit hint, the chime and bell, both machines and one sticker per round, exact saved scores, portrait fit, and no page errors. Landscape and portrait screenshots were reviewed; the opening support rings were redrawn after their fade when the first review found them missing.
+- Not run: middle levels, `world`, the production offline check (no asset, navigation or persistence behavior changed), or a physical device. Still open: touch feel for moving one piece at a time, whether children predict before pressing run, actual speech/sound, and whether several designs at the top are discoverable rather than merely solver-valid.
+
 ## Clap the Syllables, and a smoke check for objects that were never placed (2026-10-07; checked in the working tree, not committed)
 
 What changed: a new game, **Clap the Syllables** (preschool–pre-K, four levels): the pet claps the beats of a word with beads lighting up and she claps along on big hands; she claps a word by herself (a wrong count brings the pet's demonstration, a second one leaves the beats showing); she sorts pictures into 1-, 2- and 3-clap bins; she hears claps and finds the picture with that many. Twenty-seven words (one to three beats), the one-beat pictures reused from Rhyme Time, four new pictures, a synthesized clap in `sfx`. The `smoke` suite now fails if anything touchable is stranded at the origin (the Animal Snack bug class).

@@ -54,6 +54,7 @@ import { goodnightRoom } from './goodnight-room';
 import { animalSnack } from './animal-snack';
 import { beatBuilder } from './beat-builder';
 import { clapSyllables } from './clap-syllables';
+import { chainReaction } from './chain-reaction';
 import { rhymeTime } from './rhyme-time';
 import { stopAndGo } from './stop-and-go';
 import { rampRace } from './ramp-race';
@@ -146,6 +147,7 @@ export const GAMES: GameModule[] = [
   ferryJam,
   critterCrossing,
   clapSyllables,
+  chainReaction,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

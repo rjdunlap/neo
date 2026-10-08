@@ -4818,6 +4818,87 @@ async function clapPlay() {
   log('Clap the Syllables: level 1 (clap along: beads light with each clap, the pet repeats the word after a quiet moment), 2 (a wrong count brings a demonstration, a second one the beats as a hint, then it finishes), 3 (a wrong bin plays the claps, two glow the right bin, empty space is free, all pictures sorted), 4 (claps shown and heard, a wrong picture twice then the glow, four questions); one sticker per round; portrait cards on screen');
 }
 
+async function chainPlay() {
+  const score = () => page.evaluate(() => { const r = kit.store.stats('chain-reaction').history.at(-1); return [r.misses, r.hints]; });
+  const readyMachine = (index) => page.waitForFunction((index) => { const g = neo.scene.game; return g.index === index && !g.busy; }, index, { timeout: 30000 });
+  const put = (piece, socket) => page.evaluate(async ({ piece, socket }) => {
+    const g = neo.scene.game;
+    const p = g.diagram.toGlobal({ ...g.socketPosition(socket), y: g.socketPosition(socket).y + 40 });
+    await kit.dragTo(g.parts[piece].node, p, 14);
+    await kit.sleep(180);
+  }, { piece, socket });
+  const home = (piece) => page.evaluate(async (piece) => {
+    const g = neo.scene.game, h = g.parts[piece].home;
+    const p = g.diagram.toGlobal({ x: h.x, y: h.y + 40 });
+    await kit.dragTo(g.parts[piece].node, p, 14);
+    await kit.sleep(180);
+  }, piece);
+  const arrange = async (layout) => {
+    for (let piece = 0; piece < layout.length; piece++) await home(piece);
+    for (let piece = 0; piece < layout.length; piece++) await put(piece, layout[piece]);
+  };
+
+  for (const level of [1, 6]) {
+    await launch('chain-reaction', level);
+    const machines = await page.evaluate(() => neo.scene.game.boards.length);
+    for (let index = 0; index < machines; index++) {
+      await readyMachine(index);
+      if (index === 0 && level === 1) {
+        // Running with the piece still in its tray is explained, but it is not recorded as a mistake.
+        await tap('neo.scene.game.runButton');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+        assert.ok(await page.evaluate(() => !!neo.scene.game.hinted), 'the first machine begins with a glowing placement');
+        await screenshot('chain-reaction-1');
+      }
+      if (index === 0 && level === 6) {
+        const wrong = await page.evaluate(async () => {
+          const g = neo.scene.game, { trace } = await import('/src/games/chain-reaction/logic.ts');
+          const work = Array(g.machine.loose.length).fill(0);
+          const go = (piece, used) => {
+            if (piece === work.length) return trace(g.machine, work).success ? null : work.slice();
+            for (let socket = 0; socket < g.machine.sockets.length; socket++) if (!used.has(socket)) {
+              work[piece] = socket; used.add(socket);
+              const found = go(piece + 1, used); if (found) return found;
+              used.delete(socket);
+            }
+            return null;
+          };
+          return go(0, new Set());
+        });
+        assert.ok(wrong, 'there is an arrangement to revise');
+        await arrange(wrong);
+        await tap('neo.scene.game.runButton');
+        await readyMachine(index);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'a failed experiment is not a miss');
+        await tap('neo.scene.game.helpButton');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 1]);
+        assert.ok(await page.evaluate(() => !!neo.scene.game.hinted), 'help glows one ramp and socket');
+        await screenshot('chain-reaction-6');
+      }
+      const solution = await page.evaluate(() => neo.scene.game.machine.solution.slice());
+      await arrange(solution);
+      assert.equal(await page.evaluate(async () => { const g = neo.scene.game, { trace } = await import('/src/games/chain-reaction/logic.ts'); return trace(g.machine, g.placement).success; }), true);
+      await tap('neo.scene.game.runButton');
+      await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.index > index, index, { timeout: 30000 });
+    }
+    await finished('chain-reaction');
+    assert.deepEqual(await score(), level === 1 ? [0, 0] : [0, 1]);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), level === 1 ? 1 : 2);
+    log(`Chain Reaction ${level}: large-piece dragging, ${level === 1 ? 'starting glow and incomplete run' : 'failed experiment, explicit hint, chime'}, replay, two machines, saved score and sticker passed`);
+  }
+
+  // The tallest board keeps its controls, tray and sockets on screen in portrait.
+  await launch('chain-reaction', 6); await readyMachine(0);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  assert.ok(await page.evaluate(() => {
+    const g = neo.scene.game;
+    return [...g.parts.map((p) => p.node), g.runButton, g.helpButton].every((node) => { const b = node.getBounds(); return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight; });
+  }), 'portrait controls and pieces fit');
+  await screenshot('chain-reaction-6-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -4855,6 +4936,7 @@ try {
   if (suite === 'all' || suite === 'creations') await creationsRoom();
   if (suite === 'all' || suite === 'journal') await journalPlay();
   if (suite === 'all' || suite === 'clap') await clapPlay();
+  if (suite === 'all' || suite === 'machines') await chainPlay();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);
