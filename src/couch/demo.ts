@@ -45,6 +45,8 @@ export class Demo {
   readonly root = new Container();
   /** Parts lit right now, held briefly after each press. */
   readonly lit = new Set<PadPart>();
+  /** How many times the bot has finished the round (the checks wait for one; a round that runs long is replayed and not counted). */
+  finishedRounds = 0;
   private readonly stage = new Container();
   private readonly mask = new Graphics();
   private readonly tw = new Tweener();
@@ -135,7 +137,10 @@ export class Demo {
     }
     game.update(dt);
     this.decay(dt);
-    if (this.done || this.age > MAX_SECONDS) this.rest = REST_SECONDS;
+    if (this.done || this.age > MAX_SECONDS) {
+      if (this.done) this.finishedRounds++;
+      this.rest = REST_SECONDS;
+    }
   }
 
   destroy() {

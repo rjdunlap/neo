@@ -15,7 +15,8 @@ class AudioEngine {
   private volume = 0.8;
   private musicOn = true;
   private ducked = false;
-  private hushed = false;
+  /** Effects are lowered while a demonstration plays on a how-to card (read by the browser checks). */
+  hushed = false;
 
   unlock() {
     if (!this.ctx) {

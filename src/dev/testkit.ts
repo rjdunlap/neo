@@ -3,6 +3,7 @@
  * synthetic touches that go through the same paths as real fingers.
  * Loaded only by `npm run dev`; never part of the production build.
  */
+import { audio } from '../audio/engine';
 import { store } from '../progress/store';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -18,6 +19,8 @@ function touch(type: string, x: number, y: number, id: number) {
 const kit = {
   sleep,
   store,
+  /** The app's own audio engine (a check that imports the module itself can get a second copy after a hot reload). */
+  audio,
   /** Touch down and up at a canvas point (CSS pixels). */
   tap(x: number, y: number, id = 1) {
     touch('pointerdown', x, y, id);
