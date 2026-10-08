@@ -4,6 +4,15 @@
 
 This is a dated record of checks, newest first. It records what was actually run; "not run" is an honest entry.
 
+## Rainbow Fingers paintings in the treehouse (2026-10-07; checked in the working tree, not committed)
+
+What changed: the two open-ended Rainbow Fingers levels now return the painting as a creation after the child taps the frame. The save keeps at most 320 normalized brush/flower marks (never a bitmap); the existing picture board shows either that painting or Stamp Studio work, and its back arrow swaps between the two media without adding another wall target. Guided coloring pages do not offer a creation.
+
+- `npm run typecheck`, `npm test` (385 tests in 94 files) and `npm run build` passed. New rules cover damaged paint marks, clamped positions/sizes/aspect, the mark bound, a too-small painting, sharing the visual slot across media, swapping without loss, and backup/restore.
+- `BROWSER_SUITE=creations` passed with real input and no page errors: two stamped pictures, a free song and a free finger painting were each offered but not kept until requested; the painting stayed within its bound, replaced the stamped picture while retaining it as the previous work, swapped both ways, earned exactly one ordinary sticker, sent the pet to admire it, survived tidy and a reload, and stayed clear of the other wall pieces in portrait. The painting and portrait screenshots were reviewed.
+- The production preview served the same `index-D508fQE9.js` named by `dist/index.html`; `npm run test:offline` passed (production reload, 24 cached font/assets, trail navigation, one game/reward/save, and the Windy Picnic step). The offline check does not open the treehouse, so an offline reload of the painting itself remains unproved.
+- Not run: the full `early` suite (the existing guided Rainbow Fingers levels were not changed), broader shell/world suites, or a physical device. Still open: whether a child's longer painting remains recognizable after mark compaction, whether she understands that stamped and painted work share one board, and the session-time goodnight path that has no keep prompt.
+
 ## Chain Reaction (2026-10-07; checked in the working tree, not committed)
 
 What changed: **Chain Reaction**, a pre-K–school prediction-and-revision game with six levels and two small machines per round. The child drags one or two large ramps into sockets, runs a deterministic marble replay, then moves one part and tries again; later machines must touch a small chime before the final bell, and the top level has several valid designs. Failed runs are experiments (zero misses); the light bulb gives and counts one useful placement.

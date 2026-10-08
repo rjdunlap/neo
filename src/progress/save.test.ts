@@ -177,7 +177,7 @@ describe('migrate', () => {
     expect(old.favorites).toEqual(['duck-pond']);
     expect(old.room.frame).toEqual({ game: 'pet-kitchen', seed: 4 });
     const odd = migrate({ creations: { picture: { current: { kind: 'picture', stamps: [{ kind: 'star', color: 'pink', x: 0.5, y: 0.5, size: 1, turns: 0 }, 'junk'] }, previous: 7 }, tune: 'la' } });
-    expect(odd.creations.picture.current?.stamps).toHaveLength(1);
+    expect(odd.creations.picture.current && 'stamps' in odd.creations.picture.current ? odd.creations.picture.current.stamps : []).toHaveLength(1);
     expect(odd.creations.picture.previous).toBeNull();
     expect(odd.creations.tune).toEqual({ current: null, previous: null });
     expect(migrate({ creations: 5 }).creations).toEqual(defaults().creations);
@@ -189,6 +189,20 @@ describe('migrate', () => {
     save.creations = {
       picture: { current: { kind: 'picture', stamps: [stamp(0.2), stamp(0.7)] }, previous: { kind: 'picture', stamps: [stamp(0.5)] } },
       tune: { current: { kind: 'tune', cols: 4, rows: 3, notes: [{ col: 0, row: 0 }, { col: 2, row: 2 }] }, previous: null },
+    };
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('keeps a bounded finger painting through a backup and restore', () => {
+    const save = defaults();
+    save.creations.picture.current = {
+      kind: 'picture',
+      aspect: 4 / 3,
+      marks: [
+        { shape: 'dab', color: 0xff55aa, x: 0.1, y: 0.2, r: 0.03 },
+        { shape: 'dab', color: 0x55aaff, x: 0.4, y: 0.5, r: 0.03 },
+        { shape: 'flower', color: 'yellow', x: 0.7, y: 0.8, r: 0.04 },
+      ],
     };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
