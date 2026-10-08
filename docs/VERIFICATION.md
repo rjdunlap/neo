@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-07 (436 tests) | Sudoku Garden entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-07 (453 tests) | Lantern Lights entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
@@ -16,12 +16,13 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden (filtered) | Child's island, couch Settings, Just me and Sudoku Garden entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden and Lantern Lights (filtered) | Child's island, couch Settings, Just me, Sudoku Garden and Lantern Lights entries | Peg Garden's bot needed one retry (its known flake) |
 | `couchcourse` | 2026-10-07, after the Sudoku courses joined the list | Sudoku Garden entry | About four to seven minutes |
 | `couchnames` | 2026-10-07, after Just me | Couch Just me entry | |
 | `couchsettings` | 2026-10-07, after Just me | Couch Just me entry | About 30 seconds |
-| `couchsolo` | 2026-10-07, after the Sudoku courses joined the shelf | Sudoku Garden entry | About 40 seconds |
-| `couchbeds` | 2026-10-07 | Sudoku Garden entry | About three minutes; plays a full six-bed course with the bot |
+| `couchsolo` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About 40 seconds |
+| `couchbeds` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About three minutes; plays a full six-bed course with the bot |
+| `couchlanterns` | 2026-10-07 | Lantern Lights entry | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -36,6 +37,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Lantern Lights, a second grown-up-only game (2026-10-07)
+
+What changed: **Lantern Lights**, a Lights Out puzzle on a pond at dusk, joins Sudoku Garden in `GROWNUP_GAMES` (couch only). Pressing a lantern flips it and its four neighbours; the fewest presses for any pond is worked out exactly by Gaussian elimination over two numbers (`solve`), so par is real; a hint always brings the fewest down by one; the cursor shows what a press would flip. Six levels from 3 by 3 to 5 by 5, a face-off scored in presses over the fewest, and one puzzle-shelf course, **Dusk on the Pond** (par 36). It reuses `Game.askForHint` and `HeldDirection` from the Sudoku slice. Rules and course ponds are in `src/games/lantern-lights/`.
+
+- `npm run typecheck`, `npm test` (453 tests: 17 new for the exact fewest presses against a brute force over every 3 by 3 and 4 by 4 board and 4000 random 5 by 5 boards including those that cannot be lit, every winning set, each level's par inside its plan, hints that always bring the fewest down by exactly one, the frozen ponds and the plural of "press") and `npm run build` passed.
+- New `BROWSER_SUITE=couchlanterns` passed first time: Just me, the shelf and course page, a press flipping exactly the lantern and its neighbours and counted and saved at once, a taken-back press still counted and nothing happening with nothing to take back, the pause menu's hint (a lantern in a fewest-press way, the cursor sent to it, the run marked helped, pressing it bringing the fewest down by one), restart with presses kept, a reload that resumes the pond with its presses, and a fresh bot run of all five ponds with exactly 36 presses, one sticker and both badges. `BROWSER_SUITE=couchgames COUCH_ONLY=lantern-lights` (intro, controller lighting, bot round, save, the guide), `couchsolo` and `couchbeds` (their shelf lists now hold six puzzles) passed on a snapshot.
+- Screenshots looked at: a 3 by 3 pond, the 4 by 4 and 5 by 5 ponds, a hint, a finished pond with its stars, and the course result. The halos under lit lanterns first read as grey on the night water and were made warmer.
+- Not run: the full `couchcourse` (only its shelf-list assertion changed, to six ids), `couch`, `world`, `smoke` and the offline check (no island game, navigation or asset changed). Open and needing a person: whether the Lights Out family is fun for her at all, whether a par worked out by algebra feels fair when the usual "chase the lights" method often takes more presses than it, and whether the glow that shows what a press would flip helps or gives the rule away too gently.
 
 ### Sudoku Garden, the first grown-up-only game (2026-10-07)
 

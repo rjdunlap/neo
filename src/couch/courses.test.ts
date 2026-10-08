@@ -37,6 +37,7 @@ describe('the couch courses', () => {
     expect(courseSpec('clouds')).toMatchObject({ game: 'bouncy-launch', boards: 12, minimum: 12 });
     expect(courseSpec('beds')).toMatchObject({ game: 'sudoku-garden', boards: 6, minimum: 124 });
     expect(courseSpec('bigbeds')).toMatchObject({ game: 'sudoku-garden', boards: 3, minimum: 149 });
+    expect(courseSpec('lanterns')).toMatchObject({ game: 'lantern-lights', boards: 5, minimum: 36 });
   });
 
   it("is played by a game that is on the couch, at a level its band really has", () => {
@@ -62,5 +63,8 @@ describe('the couch courses', () => {
     expect(countOf(courseInfo('beds'), 1)).toBe('1 entry');
     expect(countOf(courseInfo('beds'), 130)).toBe('130 entries');
     expect(isCourseId('bigbeds')).toBe(true);
+    expect(isCourseId('lanterns')).toBe(true);
+    expect(countOf(courseInfo('lanterns'), 1)).toBe('1 press');
+    expect(countOf(courseInfo('lanterns'), 36)).toBe('36 presses');
   });
 });

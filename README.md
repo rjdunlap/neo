@@ -132,7 +132,7 @@ Press and hold **both top corners** of the island map for three seconds. Set her
 
 ## Couch play
 
-A separate route for grown-ups (two taking turns, or **Just me** with a puzzle shelf), from **Couch play** on the title screen (or the **C** key, or a controller button), with its own save (`neo.couch.v1`) that never touches the child's profile, levels, stickers or story. Trips of six stops in **Together** or **Face-off** mode, a how-to screen with a bot demo before each game, games that open as trips are finished, a finale with a keepsake, five **challenge courses** with personal bests (for one player, a **puzzle shelf** showing each best against par, and a replay of the best route), and a **Settings** page. Fifteen games play on the couch: fourteen from the island, and **Sudoku Garden**, made for grown-ups and not on the island at all (below). Pairing controllers, the rules, the controls and the order games open in are in the [couch play guide](docs/COUCH-PLAY.md).
+A separate route for grown-ups (two taking turns, or **Just me** with a puzzle shelf), from **Couch play** on the title screen (or the **C** key, or a controller button), with its own save (`neo.couch.v1`) that never touches the child's profile, levels, stickers or story. Trips of six stops in **Together** or **Face-off** mode, a how-to screen with a bot demo before each game, games that open as trips are finished, a finale with a keepsake, six **challenge courses** with personal bests (for one player, a **puzzle shelf** showing each best against par, and a replay of the best route), and a **Settings** page. Sixteen games play on the couch: fourteen from the island, and **Sudoku Garden** and **Lantern Lights**, made for grown-ups and not on the island at all (below). Pairing controllers, the rules, the controls and the order games open in are in the [couch play guide](docs/COUCH-PLAY.md).
 
 ### Grown-up games (couch only)
 
@@ -140,6 +140,7 @@ Games in `GROWNUP_GAMES` appear only on the couch route, with a controller or th
 
 | Game | Starts as | Grows into |
 | --- | --- | --- |
+| Lantern Lights | a 3 by 3 pond of paper lanterns: press one to flip it and its four neighbours, and light them all | 4 by 4 and 5 by 5 ponds that take planning; a hint that always brings the fewest presses down by one; one puzzle-shelf course scored in presses against an exactly worked-out par (Dusk on the Pond) |
 | Sudoku Garden | a 6 by 6 bed with a few numbers to find, placed from a tray with a controller | half the bed to find, the only-place-left trick, then 9 by 9 beds up to a pair or pointing line; hints on request that name the reason; two puzzle-shelf courses scored in entries against par (Six Beds, Three Big Beds) |
 
 ## Where it's going
@@ -199,6 +200,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `couchcourse` | The challenge courses with controller presses: undone slides and missed launches counted, resume after a reload, hints, records and badges per player, one sticker per run (about 7 minutes) | |
 | `couchnames` | Typing player names on the Settings page, kept in the couch save and used on every screen | |
 | `couchbeds` | Sudoku Garden's Six Beds course played Just me with controller presses: the tray, a wrong entry counted and taken back free, pencil marks, a hint that names a wrong number first, restart, a reload that resumes, then a perfect bot run with one sticker and both badges (about 4 minutes) | |
+| `couchlanterns` | Lantern Lights' Dusk on the Pond course played Just me with controller presses: a press and its neighbours, a taken-back press still counted, a hint into a fewest-press way, restart, a reload that resumes, then a perfect bot run with one sticker and both badges (about 2 minutes) | |
 | `couchsolo` | Couch play for one: the Who is playing? choice, the Just me start page and puzzle shelf with par standings and no Player 2, a one-card course page, Watch the best routes (the solver's route replayed per pond, not offered mid-run), a Together-only trip, back to two players (about 40 seconds) | |
 | `couchsettings` | The couch Settings page: reached with a controller alone, prompts following what is connected (key caps and a keyboard diagram, or controller pictures), text size and volume applied and kept through a reload and a backup, the pause menu row, the island's volume given back, old saves opening with defaults (about 30 seconds) | |
 | `machines` | Chain Reaction's first and top levels: drags, an incomplete run, a failed experiment that is not a miss, a hint, the chime, completion, portrait | |
