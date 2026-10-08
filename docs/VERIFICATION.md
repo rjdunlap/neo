@@ -4,6 +4,15 @@
 
 This is a dated record of checks, newest first. It records what was actually run; "not run" is an honest entry.
 
+## Pixel Pictures in the treehouse (2026-10-07; checked on the feature branch)
+
+What changed: Pixel Pictures now returns the last design completed in a round as an optional creation. It is saved as a bounded 4×4 to 6×6 palette grid (at most 36 cells, never a bitmap), shares the existing visual slot with stamps and finger paintings, and is kept only when the treehouse button is tapped after the ordinary sticker celebration.
+
+- `npm run typecheck`, `npm test` (387 tests in 94 files) and `npm run build` passed. New rules cover empty/oversized grids, bad colors and coordinates, repeated cells, deterministic ordering, sharing and swapping across all three visual media, and backup/restore.
+- `BROWSER_SUITE=creations` passed with real input and no page errors: all three level-1 Pixel Pictures were completed, only the last was offered, nothing changed before the keep tap, one ordinary sticker was awarded, the prior painting stayed one tap away, both swapped without loss, the pet admired the pixel work, tidy and reload kept it, and the wall stayed clear in portrait. The landscape and portrait pixel-board screenshots were reviewed.
+- The production preview served the same `index-CRwYcGg8.js` named by `dist/index.html`; `npm run test:offline` passed (production reload, 24 cached font/assets, trail navigation, one game/reward/save, and the Windy Picnic step). The offline check does not open the treehouse itself.
+- Not run: the existing `woods` Pixel Pictures ladder (its interaction and puzzle rules did not change), broader shell/world suites, or a physical device. Still open: whether a child treats the copied design as something worth keeping, taking a work down, and the session-time goodnight path that has no keep prompt.
+
 ## Rainbow Fingers paintings in the treehouse (2026-10-07; checked in the working tree, not committed)
 
 What changed: the two open-ended Rainbow Fingers levels now return the painting as a creation after the child taps the frame. The save keeps at most 320 normalized brush/flower marks (never a bitmap); the existing picture board shows either that painting or Stamp Studio work, and its back arrow swaps between the two media without adding another wall target. Guided coloring pages do not offer a creation.

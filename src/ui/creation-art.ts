@@ -44,6 +44,28 @@ export function pictureBoard(picture: PictureCreation | null): Container {
     return c;
   }
 
+  if ('pixels' in picture) {
+    const areaW = paperW - 20;
+    const areaH = paperH - 20;
+    const cell = Math.min(areaW / picture.size, areaH / picture.size);
+    const x0 = -(cell * picture.size) / 2;
+    const y0 = -(cell * picture.size) / 2;
+    const bySpot = new Map(picture.pixels.map((pixel) => [`${pixel.x}:${pixel.y}`, pixel.color]));
+    const pixels = new Graphics();
+    for (let y = 0; y < picture.size; y++) {
+      for (let x = 0; x < picture.size; x++) {
+        const color = bySpot.get(`${x}:${y}`);
+        pixels
+          .roundRect(x0 + x * cell + 1, y0 + y * cell + 1, cell - 2, cell - 2, Math.min(3, cell * 0.1))
+          .fill(color ? swatch[color].fill : (x + y) % 2 ? 0xffffff : 0xf4f4f8)
+          .stroke({ width: 1.5, color: 0xd8d8e2 });
+      }
+    }
+    pixels.eventMode = 'none';
+    c.addChild(pixels);
+    return c;
+  }
+
   // Preserve the paper's shape and redraw each saved mark; no bitmap or imported asset is stored.
   const areaW = paperW - 12;
   const areaH = paperH - 12;

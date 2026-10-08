@@ -8,6 +8,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
+import type { PixelPictureCreation } from '../../content/creations';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { clues, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
@@ -50,6 +51,7 @@ class PixelPictures implements Game {
   private view: View;
   private wrongs = 0;
   private hinted: { x: number; y: number } | null = null;
+  private lastCreation: PixelPictureCreation | null = null;
   private clock = 0;
 
   constructor(private readonly ctx: GameContext) {
@@ -263,6 +265,11 @@ class PixelPictures implements Game {
     await this.ctx.tw.to(this.board.scale, { x: 1.04, y: 1.04 }, { duration: 0.15, ease: ease.outQuad });
     await this.ctx.tw.to(this.board.scale, { x: 1, y: 1 }, { duration: 0.15 });
     await this.ctx.say('pixel.reveal', { name: this.picture.name });
+    this.lastCreation = {
+      kind: 'picture',
+      size: this.plan.size,
+      pixels: this.target.flatMap((row, y) => row.flatMap((letter, x) => letter ? [{ x, y, color: colorOf(letter) }] : [])),
+    };
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
     await this.next();
   }
@@ -273,7 +280,7 @@ class PixelPictures implements Game {
     sfx.tada();
     await this.ctx.say('pixel.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, creation: this.lastCreation ?? undefined });
   }
 }
 

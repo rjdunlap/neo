@@ -17,6 +17,8 @@ export const PICTURE_MAX = 24;
 /** Enough marks to preserve a small painting while keeping backups and IndexedDB records comfortably bounded. */
 export const PAINTING_MAX_MARKS = 320;
 export const PAINTING_MIN_MARKS = 3;
+export const PIXEL_PICTURE_MIN_SIZE = 4;
+export const PIXEL_PICTURE_MAX_SIZE = 6;
 export const TUNE_MIN_NOTES = 2;
 export const TUNE_MAX_COLS = 8;
 export const TUNE_MAX_ROWS = 5;
@@ -62,8 +64,21 @@ export interface PaintingCreation {
   marks: PaintingMark[];
 }
 
-/** The one picture-board slot is shared by stamped pictures and finger paintings. */
-export type PictureCreation = StampPictureCreation | PaintingCreation;
+export interface PixelPictureCell {
+  x: number;
+  y: number;
+  color: ColorName;
+}
+
+/** The last little picture completed in Pixel Pictures, kept as at most a 6 by 6 code-drawn grid. */
+export interface PixelPictureCreation {
+  kind: 'picture';
+  size: 4 | 5 | 6;
+  pixels: PixelPictureCell[];
+}
+
+/** The one picture-board slot is shared by stamped pictures, finger paintings and pixel pictures. */
+export type PictureCreation = StampPictureCreation | PaintingCreation | PixelPictureCreation;
 
 /** A song on a loop: which beat (column) and pitch (row, 0 = top) each jelly sits on. */
 export interface TuneCreation {
@@ -120,6 +135,27 @@ function cleanMark(raw: unknown): PaintingMark | null {
   return null;
 }
 
+function cleanPixelPicture(raw: Record<string, unknown>): PixelPictureCreation | null {
+  const size = typeof raw.size === 'number' && Number.isInteger(raw.size) && raw.size >= PIXEL_PICTURE_MIN_SIZE && raw.size <= PIXEL_PICTURE_MAX_SIZE
+    ? raw.size as PixelPictureCreation['size']
+    : null;
+  if (size === null || !Array.isArray(raw.pixels)) return null;
+  const seen = new Set<string>();
+  const pixels: PixelPictureCell[] = [];
+  for (const pixel of raw.pixels) {
+    if (!isObj(pixel)) continue;
+    const x = typeof pixel.x === 'number' && Number.isInteger(pixel.x) ? pixel.x : NaN;
+    const y = typeof pixel.y === 'number' && Number.isInteger(pixel.y) ? pixel.y : NaN;
+    const color = typeof pixel.color === 'string' && pixel.color in swatch ? pixel.color as ColorName : null;
+    const key = `${x}:${y}`;
+    if (!(x >= 0 && x < size && y >= 0 && y < size) || !color || seen.has(key)) continue;
+    seen.add(key);
+    pixels.push({ x, y, color });
+  }
+  pixels.sort((a, b) => a.y - b.y || a.x - b.x);
+  return pixels.length ? { kind: 'picture', size, pixels } : null;
+}
+
 /** A visual work from anything: damaged marks are dropped and the rest bounded; null if too little remains. */
 export function cleanPicture(raw: unknown): PictureCreation | null {
   if (!isObj(raw)) return null;
@@ -127,6 +163,7 @@ export function cleanPicture(raw: unknown): PictureCreation | null {
     const stamps = raw.stamps.map(cleanStamp).filter((s): s is PictureStamp => !!s).slice(0, PICTURE_MAX);
     return stamps.length ? { kind: 'picture', stamps } : null;
   }
+  if (Array.isArray(raw.pixels)) return cleanPixelPicture(raw);
   if (!Array.isArray(raw.marks)) return null;
   const marks = raw.marks.map(cleanMark).filter((m): m is PaintingMark => !!m).slice(0, PAINTING_MAX_MARKS);
   if (marks.length < PAINTING_MIN_MARKS) return null;
