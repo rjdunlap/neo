@@ -1,6 +1,7 @@
 import type { LineId } from '../content/voice-script';
 import { CLOUDS, cloudMinimum } from '../games/bouncy-launch/course';
 import { COURSES as PONDS, courseBoards, courseMinimum, type PondCourseId } from '../games/penguin-slide/course';
+import { COURSES as HARBORS_COURSE, courseBest as harborBest, courseMinimum as harborMinimum, type HarborCourseId } from '../games/ferry-jam/course';
 import { COURSES as PICTURES, courseBest as pictureBest, courseMinimum as pictureMinimum, type PictureCourseId } from '../games/picture-logic/course';
 import { COURSES as LANTERNS, courseBest as lanternBest, courseMinimum as lanternMinimum, type LanternCourseId } from '../games/lantern-lights/course';
 import { COURSES as BEDS, courseBest as bedBest, courseMinimum as bedMinimum, type BedCourseId } from '../games/sudoku-garden/course';
@@ -12,9 +13,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId;
+export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -91,6 +92,19 @@ const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
 const build: Record<CourseId, () => CourseInfo> = {
   practice: () => ponds('practice', 'Penguin Slide, five gentle ice puzzles with no dead ends. A warm-up, or an easy game for the evening.'),
   ponds: () => ponds('ponds', 'Penguin Slide, five ice puzzles that take real planning. Use the fewest slides you can, then beat your own best.'),
+  harbors: () => ({
+    id: 'harbors', game: 'ferry-jam', level: 6, version: HARBORS_COURSE.harbors.version, name: HARBORS_COURSE.harbors.name, blurb: HARBORS_COURSE.harbors.blurb,
+    card: 'Ferry Jam, five harbors in a row. Get the ferry to the dock in the fewest slides, then beat your own best.',
+    part: 'harbor', unit: 'slide', par: 'best way', routes: true, best: harborBest('harbors'), minimum: harborMinimum('harbors'),
+    rule: 'Clear every harbor in the fewest slides you can. A boat slid any distance is one slide, and every slide counts, even one you take back.',
+    note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a harbor puts the boats back where they began, and the slides you made still count.',
+    leaving: 'Leaving or refreshing puts the boats of the harbor you are on back where they began, and the slides you made on it still count. Finished harbors stay saved.',
+    done: 'couch.course.harbors',
+    badges: {
+      finish: { title: 'Finished', how: 'Clear every harbor, with or without help.' },
+      minimum: { title: 'Fewest slides', how: 'Clear every harbor with the fewest slides possible and no hint.' },
+    },
+  }),
   pictures: () => pictures('pictures', 'Picture Logic, three 10 by 10 pictures in a row. Fill what the numbers say, then beat your own best.', 'couch.course.pictures'),
   bigpictures: () => pictures('bigpictures', 'Picture Logic, two big 15 by 15 pictures. An evening\'s puzzle: fewer wrong fills is better.', 'couch.course.bigpictures'),
   lanterns: () => ({

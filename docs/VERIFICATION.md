@@ -8,22 +8,23 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (474 tests) | Picture Logic entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (481 tests) | Harbor Rush entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
-| `smoke` | 2026-10-07, every game then registered (70) | Clap the Syllables entry | Proves a game loads and survives stray taps, not that a round can finish |
+| `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08 | Clap the Syllables and Harbor Rush entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
 | `picnic`, `island`, `room` | 2026-10-07 | Discovery journal entry | |
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden, Lantern Lights and Picture Logic (filtered) | Child's island, couch Settings, Just me, Sudoku Garden, Lantern Lights and Picture Logic entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden, Lantern Lights, Picture Logic and Ferry Jam (filtered) | Child's island, couch Settings, Just me, Sudoku Garden, Lantern Lights, Picture Logic and Harbor Rush entries | Peg Garden's bot needed one retry (its known flake) |
 | `couchcourse` | 2026-10-08, after the shelf's cards became compact | Picture Logic entry | About four to seven minutes |
 | `couchnames` | 2026-10-07, after Just me | Couch Just me entry | |
 | `couchsettings` | 2026-10-07, after Just me | Couch Just me entry | About 30 seconds |
 | `couchsolo` | 2026-10-08, after Picture Logic joined the shelf | Picture Logic entry | About 40 seconds |
 | `couchbeds` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About three minutes; plays a full six-bed course with the bot |
 | `couchlanterns` | 2026-10-07 | Lantern Lights entry |
-| `couchpictures` | 2026-10-08 | Picture Logic entry | About three minutes; plays a full three-picture course with the bot | About two minutes; plays a full five-pond course with the bot |
+| `couchpictures` | 2026-10-08 | Picture Logic entry | About three minutes; plays a full three-picture course with the bot |
+| `couchharbors` | 2026-10-08 | Harbor Rush entry | About three minutes; plays a full five-harbor course with the bot | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -38,6 +39,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Harbor Rush: Ferry Jam on the couch (2026-10-08)
+
+What changed: Ferry Jam, an island game, gained a couch mode in the style of Penguin Slide (roadmap step 3, "Harbor Rush"): `control()` (a highlight that jumps to the nearest boat in the direction pushed, pick up and set down with the bottom button, one cell per push along the lane with hold-to-repeat, the left button putting a held boat back or taking the last slide back), `autoplay()` (the solver's way), `restart()`, `askForHint()` and a course. `boatToward` and `focusPath` in `ferry-jam/logic.ts` are the highlight's rules. **Busy Harbors** is one puzzle-shelf course of five frozen harbors from the game's own solver-checked list (par 64) that also replays its best routes. Touch play is unchanged; on the couch the round arrow is hidden and the automatic hint after many slides is off. Because the COUCH_IDS list grew to eighteen, the browser suites' "every tier unlocked" seed was raised from 9 to 30 trips (Ferry Jam is the eleventh group of games to open).
+
+- `npm run typecheck`, `npm test` (481 tests: 7 new, among them every boat of all 84 harbors of the game reachable by the highlight and still reachable along the best way out, the frozen course harbors being well formed, in the game's own list and finished by the solver in exactly their par) and `npm run build` passed.
+- New `BROWSER_SUITE=couchharbors` passed first time: Just me, the shelf (nine puzzles), the course page, the highlight moving to the next boat that way, picking up and sliding one cell (the wrong axis doing nothing), putting a held boat back for nothing, a slide counted and saved at once, setting a boat down where it was not counting, taking the last slide back (still counted), the pause menu's hint being the solver's next slide and marking the run helped, restart keeping the slides, a reload that resumes the harbor with its slides, a fresh bot run of all five harbors in exactly 64 slides with one sticker and both badges, and Watch the best routes playing the demo on a harbor. `couchgames COUCH_ONLY=ferry-jam` passed. Ferry Jam's touch play was driven with synthetic drags (levels 1 and 4, the solver's slides, one sticker each) and `smoke SMOKE_ONLY=ferry-jam` passed, because an island game's scene was edited.
+- Screenshots looked at: a harbor with the highlight, the shelf with nine cards, the hint, the best-route window and the course result. The how-to goal line was shortened because the four-line caption ran over the HUD.
+- Not run: `couchcourse`, `couchsolo`, `couchbeds`, `couchlanterns` and `couchpictures` again (only their shelf-list assertions changed, to nine ids), `couch`, `world` and the offline check (no navigation or asset changed). Open and needing a person: whether the highlight's jump to "the nearest boat that way" feels right on a stick (it can skip a boat that sits behind another), whether picking up and setting down is too many presses for a slide, and whether a 6 by 6 harbor at 18 slides is the right size for a last harbor.
 
 ### Picture Logic, a third grown-up-only game (2026-10-08)
 

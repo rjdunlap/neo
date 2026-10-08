@@ -236,3 +236,47 @@ export function wellFormed(h: Harbor): boolean {
 export function hintSlide(h: Harbor, layout: Layout): Slide | null {
   return solve(h, layout)?.[0] ?? null;
 }
+
+/** Where a boat's middle is, in cells from the harbor's top-left corner, with its lane position at `p`. */
+function middle(h: Harbor, i: number, p: number): { x: number; y: number } {
+  const b = h.boats[i];
+  return b.dir === 'h' ? { x: p + b.len / 2, y: b.row + 0.5 } : { x: b.col + 0.5, y: p + b.len / 2 };
+}
+
+/**
+ * Couch play: the boat the highlight moves to when the stick is pushed in a direction (0 right, 1 down, 2 left, 3 up). It is
+ * the nearest boat in the cone that way (no more than a quarter turn off straight), and when the cone is empty the nearest boat
+ * anywhere on that side, so the highlight can always get to every boat. Null when no boat lies that way at all.
+ */
+export function boatToward(h: Harbor, layout: Layout, from: number, dir: number): number | null {
+  const at = middle(h, from, layout[from]);
+  let cone: number | null = null, coneScore = Infinity, side: number | null = null, sideScore = Infinity;
+  h.boats.forEach((_, j) => {
+    if (j === from) return;
+    const c = middle(h, j, layout[j]);
+    const along = [c.x - at.x, c.y - at.y, at.x - c.x, at.y - c.y][dir];
+    const across = Math.abs(dir % 2 === 0 ? c.y - at.y : c.x - at.x);
+    if (along < 0.25) return;
+    const score = along + 2 * across;
+    if (across <= along && score < coneScore) { coneScore = score; cone = j; }
+    if (score < sideScore) { sideScore = score; side = j; }
+  });
+  return cone ?? side;
+}
+
+/** The pushes of the stick that take the highlight from one boat to another, or null if it cannot get there. */
+export function focusPath(h: Harbor, layout: Layout, from: number, to: number): number[] | null {
+  const seen = new Map<number, number[]>([[from, []]]);
+  const queue = [from];
+  for (let head = 0; head < queue.length; head++) {
+    const at = queue[head];
+    if (at === to) return seen.get(at)!;
+    for (const dir of [0, 1, 2, 3]) {
+      const next = boatToward(h, layout, at, dir);
+      if (next === null || seen.has(next)) continue;
+      seen.set(next, [...seen.get(at)!, dir]);
+      queue.push(next);
+    }
+  }
+  return null;
+}
