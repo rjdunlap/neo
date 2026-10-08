@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (481 tests) | Harbor Rush entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (496 tests) | Word Search entry | Run with every code change |
 | `npm run test:offline` | 2026-10-07 | Waiting updates entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08 | Clap the Syllables and Harbor Rush entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-07, all 72 games in every band and both orientations | Release check entry | About five and a half minutes |
@@ -16,15 +16,16 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `creations` | 2026-10-07 | Pixel Pictures entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-07, after Just me and the puzzle shelf | Couch Just me entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden, Lantern Lights, Picture Logic and Ferry Jam (filtered) | Child's island, couch Settings, Just me, Sudoku Garden, Lantern Lights, Picture Logic and Harbor Rush entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchgames` | 2026-10-07, all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; Sudoku Garden, Lantern Lights, Picture Logic, Ferry Jam and Word Search (filtered) | Child's island, couch Settings, Just me, Sudoku Garden, Lantern Lights, Picture Logic, Harbor Rush and Word Search entries | Peg Garden's bot needed one retry (its known flake) |
 | `couchcourse` | 2026-10-08, after the shelf's cards became compact | Picture Logic entry | About four to seven minutes |
 | `couchnames` | 2026-10-07, after Just me | Couch Just me entry | |
 | `couchsettings` | 2026-10-07, after Just me | Couch Just me entry | About 30 seconds |
-| `couchsolo` | 2026-10-08, after Picture Logic joined the shelf | Picture Logic entry | About 40 seconds |
+| `couchsolo` | 2026-10-08, after Word Search joined the shelf | Word Search entry | About 40 seconds |
 | `couchbeds` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About three minutes; plays a full six-bed course with the bot |
 | `couchlanterns` | 2026-10-07 | Lantern Lights entry |
 | `couchpictures` | 2026-10-08 | Picture Logic entry | About three minutes; plays a full three-picture course with the bot |
-| `couchharbors` | 2026-10-08 | Harbor Rush entry | About three minutes; plays a full five-harbor course with the bot | About two minutes; plays a full five-pond course with the bot |
+| `couchharbors` | 2026-10-08 | Harbor Rush entry | About three minutes; plays a full five-harbor course with the bot |
+| `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
@@ -39,6 +40,16 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Word Search, a fourth grown-up-only game (2026-10-08)
+
+What changed: **Word Search** joins `GROWNUP_GAMES` (couch only): nine themed word lists as data, grids from 8 by 8 to 14 by 14 with words across, down, on a slant and backwards, generated so that every listed word occurs exactly once and no word on a block list (profanity and slurs, `blocked.ts`) can be read in any direction, marking a word's first and last letter, a spoken found word with a colored band and a struck-off list entry, a hint that names a word and rings its first letter, and two puzzle-shelf courses (Pond Words, The Big Hunt). Rules, words and courses are in `src/games/word-search/`.
+
+- `npm run typecheck`, `npm test` (496 tests: 15 new for the word lists, every level hiding exactly its words exactly once in the directions it allows, the block list never readable in a generated grid or a frozen one and no theme word hiding a blocked one forwards or backwards, lines between two squares, a word reading both ways, the hint, and the frozen course grids) and `npm run build` passed.
+- New `BROWSER_SUITE=couchwords` passed first time: Just me, the shelf (eleven puzzles) and course page, a crooked mark that cannot be checked and costs nothing, letting go of a mark for free, a wrong line counted as a guess, a word found, and a word found by marking its last letter first, the pause menu's hint (a word not found yet, its first letter, the run marked helped), restart with guesses kept, a reload that resumes the grid with its guesses, and a fresh bot run of all three grids with exactly 25 guesses, one sticker and both badges. `couchgames COUCH_ONLY=word-search` and `couchsolo` passed on a snapshot.
+- Generating found two real problems before any browser run: a 14 by 14 grid read in eight directions shows a short blocked word by accident about one time in five (so the filler is redrawn until none shows), and the sea theme's word SHELL hides the blocked word HELL (the theme word became CORAL, and a test now checks every theme word against the block list).
+- Screenshots looked at: a 14 by 14 grid with four words found and the list struck off, the hint, the course result and the shelf with eleven cards (it scrolls with the controller past nine).
+- Not run: the other couch suites again (only their shelf-list assertions changed, to eleven ids), `couch`, `couchcourse`, `world`, `smoke` and the offline check (no island game, navigation or asset changed). Open and needing a person: whether marking a word with two presses and a stick walk is pleasant on a real controller (a diagonal takes two presses a step), whether 14 by 14 is too fine to read from a sofa, whether the themes are the right ones, and whether someone reviewing the word lists wants a theme added or a word dropped.
 
 ### Harbor Rush: Ferry Jam on the couch (2026-10-08)
 

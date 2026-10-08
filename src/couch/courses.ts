@@ -1,6 +1,7 @@
 import type { LineId } from '../content/voice-script';
 import { CLOUDS, cloudMinimum } from '../games/bouncy-launch/course';
 import { COURSES as PONDS, courseBoards, courseMinimum, type PondCourseId } from '../games/penguin-slide/course';
+import { COURSES as WORDS, courseBest as wordBest, courseMinimum as wordMinimum, type WordCourseId } from '../games/word-search/course';
 import { COURSES as HARBORS_COURSE, courseBest as harborBest, courseMinimum as harborMinimum, type HarborCourseId } from '../games/ferry-jam/course';
 import { COURSES as PICTURES, courseBest as pictureBest, courseMinimum as pictureMinimum, type PictureCourseId } from '../games/picture-logic/course';
 import { COURSES as LANTERNS, courseBest as lanternBest, courseMinimum as lanternMinimum, type LanternCourseId } from '../games/lantern-lights/course';
@@ -13,9 +14,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId;
+export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -61,6 +62,20 @@ const ponds = (id: PondCourseId, card: string): CourseInfo => ({
   },
 });
 
+/** The two Word Search courses speak alike; only the grids differ. */
+const words = (id: WordCourseId, card: string, done: LineId): CourseInfo => ({
+  id, game: 'word-search', level: id === 'words' ? 3 : 4, version: WORDS[id].version, name: WORDS[id].name, blurb: WORDS[id].blurb, card,
+  part: 'grid', unit: 'guess', par: 'fewest', routes: false, best: wordBest(id), minimum: wordMinimum(id),
+  rule: 'Find every word in the fewest guesses you can: one for each word, with no wrong line checked. Letting go of a line you are marking costs nothing.',
+  note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a grid starts it again, and the guesses you made on it still count.',
+  leaving: 'Leaving or refreshing starts the grid you are on again, and the guesses you made on it still count. Finished grids stay saved.',
+  done,
+  badges: {
+    finish: { title: 'Finished', how: 'Find every word in every grid, with or without help.' },
+    minimum: { title: 'Every guess right', how: 'Find every word with one guess each and no hint.' },
+  },
+});
+
 /** The two Picture Logic courses speak alike; only the pictures differ. */
 const pictures = (id: PictureCourseId, card: string, done: LineId): CourseInfo => ({
   id, game: 'picture-logic', level: id === 'pictures' ? 3 : 4, version: PICTURES[id].version, name: PICTURES[id].name, blurb: PICTURES[id].blurb, card,
@@ -92,6 +107,8 @@ const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
 const build: Record<CourseId, () => CourseInfo> = {
   practice: () => ponds('practice', 'Penguin Slide, five gentle ice puzzles with no dead ends. A warm-up, or an easy game for the evening.'),
   ponds: () => ponds('ponds', 'Penguin Slide, five ice puzzles that take real planning. Use the fewest slides you can, then beat your own best.'),
+  words: () => words('words', 'Word Search, three themed grids in a row. Find every word with as few guesses as you can, then beat your own best.', 'couch.course.words'),
+  bigwords: () => words('bigwords', 'Word Search, two big 14 by 14 grids with twelve words each, in every direction. An evening\'s puzzle.', 'couch.course.bigwords'),
   harbors: () => ({
     id: 'harbors', game: 'ferry-jam', level: 6, version: HARBORS_COURSE.harbors.version, name: HARBORS_COURSE.harbors.name, blurb: HARBORS_COURSE.harbors.blurb,
     card: 'Ferry Jam, five harbors in a row. Get the ferry to the dock in the fewest slides, then beat your own best.',
