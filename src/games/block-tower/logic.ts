@@ -161,40 +161,13 @@ export function finish(placed: readonly number[], round: ReachRound): number[] |
   return null;
 }
 
-export type TowerTouch =
-  | { kind: 'stack' }
-  | { kind: 'knock' }
-  | { kind: 'check' }
-  | { kind: 'take' }
-  | { kind: 'stand'; tower: number }
-  | { kind: 'place'; x: number };
+// What a capable child does next (the ghost finger on the how-to card follows these) ----------------------------
 
-/** The next real control a capable child uses in each mode (and the how-to card's ghost finger follows). */
-export function towerTouch(
-  mode: TowerMode,
-  state: {
-    stack: number;
-    target: number;
-    full: boolean;
-    stands?: number;
-    guess?: number | null;
-    placed?: readonly number[];
-    reach?: ReachRound | null;
-  },
-): TowerTouch | null {
-  if (mode === 'tumble' || mode === 'friend') return state.full ? { kind: 'knock' } : { kind: 'stack' };
-  if (mode === 'flag' || mode === 'match') {
-    if (state.stack < state.target) return { kind: 'stack' };
-    if (state.stack > state.target) return { kind: 'take' };
-    return { kind: 'check' };
-  }
-  if (mode === 'stand') return state.guess === null && state.stands !== undefined ? { kind: 'stand', tower: state.stands } : null;
-  const placed = state.placed ?? [];
-  const round = state.reach;
-  if (!round) return null;
-  if (topples(placed, 0) !== -1) return placed.length ? { kind: 'take' } : null;
-  if (reached(placed, round.star)) return null;
-  const way = finish(placed, round);
-  if (way?.length) return { kind: 'place', x: way[0] };
-  return placed.length ? { kind: 'take' } : null;
-}
+/** On the basket levels: add a block while the tower is short of the target, ring the bell when it is exactly right, take one back if it is tall. */
+export const stackMove = (have: number, want: number): 'add' | 'ring' | 'take' => (have < want ? 'add' : have > want ? 'take' : 'ring');
+
+/** On "which tower will stand?": the tower whose every block has its own middle and the middle of the blocks above over the block below. */
+export const standingTower = (round: StandRound): number => round.towers.findIndex((t) => topples(t, null) === -1);
+
+/** On the reach levels: where the next block goes (eighths from the table edge), or undefined when no way on is left from these blocks. */
+export const nextReach = (placed: readonly number[], round: ReachRound): number | undefined => finish(placed, round)?.[0];

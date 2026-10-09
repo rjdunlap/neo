@@ -7,7 +7,7 @@ import { spread, type View } from '../../engine/view';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bugBody, bugSticker, bugToken } from './art';
-import { BUG_PLANS, BUG_TOKENS, bugPuzzle, nextBugMove, type BugSpot } from './logic';
+import { BUG_PLANS, BUG_TOKENS, bugPuzzle, nextStamp, slotAt, type BugSpot } from './logic';
 
 interface Spot extends BugSpot { node: Container; filled: boolean; wrong: number }
 class BugBuilder implements Game {
@@ -50,7 +50,7 @@ class BugBuilder implements Game {
         onDrop: (x, y) => {
           if (this.done) return false;
           // Slots are a little more generous than the outlines, without overlapping neighboring spots.
-          const slot = this.targets.find((s) => !s.filled && Math.hypot(x - this.board.x - s.x, y - this.board.y - s.y) < 57);
+          const slot = slotAt(this.targets, x - this.board.x, y - this.board.y);
           if (!slot) return false;
           if (slot.token !== token) {
             this.misses++; slot.wrong++; sfx.boing();
@@ -103,11 +103,13 @@ class BugBuilder implements Game {
     this.paletteGlow.roundRect(choice.drag.home.x - 59, choice.drag.home.y - 59, 118, 118, 24).stroke({ width: 7, color: swatch.yellow.line });
   }
   update(dt: number) { this.clock += dt; this.glow.alpha = this.paletteGlow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3); if (this.done) this.board.rotation = Math.sin(this.clock * 8) * 0.035; }
-  /** Carry the matching reusable token to the next open spot. */
+  /** The ghost finger on the how-to card: carry the color the next empty spot needs from the tray to it. */
   autotouch(): TouchIntent | null {
     if (this.done) return null;
-    const move = nextBugMove(this.targets, this.choices);
-    return move ? { drag: { on: move.choice.node }, to: { on: this.board, x: move.spot.x, y: move.spot.y } } : null;
+    const next = nextStamp(this.targets);
+    const choice = next && this.choices[next.token];
+    if (!next || !choice || choice.drag.dragging) return null;
+    return { drag: { on: choice.node }, to: { on: this.board, x: next.x, y: next.y } };
   }
   destroy() { this.choices.forEach((c) => c.drag.destroy()); }
 }

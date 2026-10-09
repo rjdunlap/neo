@@ -13,7 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { compare, finish, makeRounds, makeStand, middleFrom, planFor, REACH, reached, topples, towerTouch, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
+import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, planFor, REACH, reached, stackMove, standingTower, topples, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -221,35 +221,34 @@ class BlockTower implements Game {
     this.drawGlow();
   }
 
-  /** Use the mode's real touch controls; the reach level follows the same exact balance solver as its hint. */
+  /** The ghost finger on the how-to card: stack by tapping, ring the bell at the target, pick the tower that stands, or carry blocks out to the star. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.index < 0) return null;
-    const move = towerTouch(this.plan.mode, {
-      stack: this.stack.length,
-      target: this.round.target,
-      full: this.full,
-      stands: this.stand?.stands,
-      guess: this.guess,
-      placed: this.placed.map((t) => t.x!),
-      reach: this.reachRound,
-    });
-    if (!move) return null;
-    if (move.kind === 'stack') return { tap: { on: this.plan.mode === 'tumble' || this.plan.mode === 'friend' ? this.input : this.bin } };
-    if (move.kind === 'knock') return { tap: { on: this.input } };
-    if (move.kind === 'check') return { tap: { on: this.bell } };
-    if (move.kind === 'stand') {
-      const block = this.standTowers[move.tower]?.at(-1);
-      return block ? { tap: { on: block } } : null;
+    if (this.busy || this.finished || !this.rounds[this.index]) return null;
+    switch (this.plan.mode) {
+      case 'tumble':
+      case 'friend':
+        // A tap anywhere stacks a block, and the next one after the tower is full knocks it down.
+        return { tap: { on: this.input, x: this.towerX, y: this.floor - 250 }, pause: 0.3 };
+      case 'flag':
+      case 'match': {
+        const move = stackMove(this.stack.length, this.round.target);
+        if (move === 'ring') return { tap: { on: this.bell } };
+        if (move === 'take') return { tap: { on: this.towerHit, x: this.towerX, y: this.floor - BH / 2 } };
+        return { tap: { on: this.bin, x: 0, y: -50 }, pause: 0.3 };
+      }
+      case 'stand': {
+        if (!this.stand || this.guess !== null) return null;
+        return { tap: { on: this.standTowers[standingTower(this.stand)][0], x: 0, y: -BH / 2 } };
+      }
+      case 'reach': {
+        const round = this.reachRound;
+        const placed = this.placed;
+        const next = round ? nextReach(placed.map((t) => t.x!), round) : undefined;
+        const block = this.tray.find((t) => t.x === null && !t.drag.dragging);
+        if (next === undefined || !block) return null;
+        return { drag: { on: block.node }, to: { on: this.ctx.stage, x: this.edge + px(next), y: this.tableTop - placed.length * BH } };
+      }
     }
-    if (move.kind === 'place') {
-      const block = this.tray.find((t) => t.x === null && t.drag.enabled && !t.drag.dragging);
-      return block ? { drag: { on: block.node }, to: { on: this.layer, x: this.edge + px(move.x), y: this.tableTop - this.placed.length * BH } } : null;
-    }
-    if (this.plan.mode === 'reach') {
-      const top = this.placed.at(-1);
-      return top ? { drag: { on: top.node }, to: { on: this.layer, x: this.view.w - 210, y: this.floor + 30 } } : null;
-    }
-    return { tap: { on: this.towerHit } };
   }
 
   destroy() {

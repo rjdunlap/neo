@@ -9,7 +9,7 @@ import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon, SCENES, type Scene } from './art';
-import { dropSlot, nextPuzzleMove, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
+import { dropSlot, nextToPlace, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
 
 interface PieceView {
   piece: Piece;
@@ -231,11 +231,13 @@ class PuzzlePals implements Game {
     this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 4);
   }
 
-  /** Carry the next waiting picture piece to the middle of its own grid cell. */
+  /** The ghost finger on the how-to card: carry the next piece from the tray to its own place in the frame. */
   autotouch(): TouchIntent | null {
     if (this.done) return null;
-    const move = nextPuzzleMove(this.plan, this.pieces.filter((p) => !p.drag.dragging));
-    return move ? { drag: { on: move.piece.node }, to: { on: this.board, x: move.to.x, y: move.to.y } } : null;
+    const next = nextToPlace(this.pieces);
+    if (!next || next.drag.dragging) return null;
+    const c = slotCenter(this.plan, next.piece);
+    return { drag: { on: next.node }, to: { on: this.board, x: c.x, y: c.y } };
   }
 
   destroy() {

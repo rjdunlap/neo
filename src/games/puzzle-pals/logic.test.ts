@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { dropSlot, nextPuzzleMove, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows } from './logic';
+import { Rng } from '../../engine/random';
+import { dropSlot, nextToPlace, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows } from './logic';
 
 describe('Puzzle Pals', () => {
   it('cuts every picture into its grid, leaving at least one piece to place', () => {
@@ -25,24 +26,28 @@ describe('Puzzle Pals', () => {
     }
   });
 
+  it('the ghost finger places every piece of every level in its own place, whatever order the tray holds them in', () => {
+    for (const plan of PUZZLE_PLANS) {
+      for (let seed = 1; seed <= 50; seed++) {
+        // The game's tray: the pre-placed pieces first (already in place), then the rest shuffled.
+        const all = piecesFor(plan);
+        const tray = [...all.slice(0, plan.preplaced), ...new Rng(seed).shuffle(all.slice(plan.preplaced))].map((piece, i) => ({ piece, placed: i < plan.preplaced }));
+        let moved = 0;
+        for (let next = nextToPlace(tray); next; next = nextToPlace(tray)) {
+          // Let go on the middle of its place: the nearest empty place is that piece's own, so it is never a miss.
+          const c = slotCenter(plan, next.piece);
+          expect(dropSlot(plan, c.x, c.y, tray.filter((p) => !p.placed).map((p) => p.piece))).toEqual(next.piece);
+          next.placed = true;
+          moved++;
+        }
+        expect(moved).toBe(all.length - plan.preplaced);
+      }
+    }
+  });
+
   it('is forgiving on the smallest puzzles: anywhere over the frame finds the last empty place', () => {
     const plan = PUZZLE_PLANS[0];
     const [, right] = piecesFor(plan);
     expect(dropSlot(plan, 20, 20, [right])).toEqual(right);
-  });
-
-  it('the demonstration carries every waiting piece to its own empty grid cell', () => {
-    for (const plan of PUZZLE_PLANS) {
-      const views = piecesFor(plan).map((piece, i) => ({ piece, placed: i < plan.preplaced }));
-      let moves = 0;
-      for (let move = nextPuzzleMove(plan, views); move; move = nextPuzzleMove(plan, views)) {
-        const empty = views.filter((p) => !p.placed).map((p) => p.piece);
-        expect(dropSlot(plan, move.to.x, move.to.y, empty)).toEqual(move.piece.piece);
-        move.piece.placed = true;
-        moves++;
-      }
-      expect(moves).toBe(views.length - plan.preplaced);
-      expect(views.every((p) => p.placed)).toBe(true);
-    }
   });
 });
