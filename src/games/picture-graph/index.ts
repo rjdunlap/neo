@@ -12,11 +12,11 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { choicesFor, graphMove, makeGraph, planFor, questionsFor, type Graph, type GraphPlan, type Question } from './logic';
+import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, planFor, prebuilt, questionsFor, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 4 },
+  school: { min: 1, max: 6 },
 };
 
 const COL_W = 110;
@@ -26,6 +26,22 @@ const NAMES: Partial<Record<CritterName, string>> = { duck: 'ducks', pig: 'pigs'
 
 function checkArt(): Graphics {
   return new Graphics().moveTo(-20, 0).lineTo(-6, 16).lineTo(22, -16).stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
+}
+
+/** The key of a graph where a block stands for more than one critter: a block, "=", and that many dots. */
+function keyArt(per: number): Container {
+  const c = new Container();
+  c.addChild(tile(124, 100, 'white'));
+  // A plain grey block: it stands for a block of any column.
+  c.addChild(new Graphics().roundRect(-36, -34, 72, 30, 7).fill(0xdde3ea).stroke({ width: 3, color: 0x8a97a6 }));
+  const eq = label('=', 34, ink);
+  eq.position.set(-44, 24);
+  c.addChild(eq);
+  const dots = new Graphics();
+  for (let k = 0; k < per; k++) dots.circle(-4 + k * 30, 24, 11).fill(ink);
+  c.addChild(dots);
+  c.eventMode = 'none';
+  return c;
 }
 
 class PictureGraph implements Game {
@@ -49,6 +65,8 @@ class PictureGraph implements Game {
   private readonly chart = new Container();
   private readonly blocks = new Graphics();
   private readonly glow = new Graphics();
+  /** Shown when a block stands for more than one critter. */
+  private readonly key: Container;
   private critters: { kind: number; node: Critter }[] = [];
   private view: View;
   private wrongs = 0;
@@ -63,8 +81,10 @@ class PictureGraph implements Game {
     this.glow.eventMode = 'none';
     this.meadow.eventMode = 'none';
     this.chart.addChild(this.blocks);
+    this.key = keyArt(this.plan.per);
+    this.key.visible = this.plan.per > 1;
     this.check = new RoundButton(checkArt(), swatch.green, 56, () => void this.checkGraph());
-    ctx.stage.addChild(this.backdrop, this.meadow, this.chart, this.glow, this.check);
+    ctx.stage.addChild(this.backdrop, this.meadow, this.chart, this.key, this.glow, this.check);
   }
 
   start() {
@@ -85,6 +105,7 @@ class PictureGraph implements Game {
     if (!this.graph) return;
     this.columns.forEach((c, i) => c.position.set(this.colX(i), this.baseY()));
     this.check.position.set(v.w - 90, this.baseY() - 40);
+    this.key.position.set(88, v.h * 0.34);
     this.pads.forEach((p, i) => p.node.position.set(v.w - 110, v.h * 0.32 + i * 125));
     this.draw();
   }
@@ -135,8 +156,8 @@ class PictureGraph implements Game {
     this.questions = [];
     if (this.index >= this.plan.graphs) return void this.finale();
     this.graph = makeGraph(this.plan, this.ctx.rng);
-    const read = this.plan.mode === 'read';
-    this.bars = read ? [...this.graph.counts] : this.graph.kinds.map(() => 0);
+    const read = prebuilt(this.plan);
+    this.bars = read ? barsFor(this.plan, this.graph) : this.graph.kinds.map(() => 0);
     this.buildMeadow(!read);
     this.buildColumns();
     this.clearPads();
@@ -144,7 +165,7 @@ class PictureGraph implements Game {
     this.resize(this.view);
     this.busy = false;
     if (read) return this.askNext();
-    return this.ctx.instruct('graph.build');
+    return this.ctx.instruct(this.plan.per > 1 ? 'graph.buildpairs' : 'graph.build');
   }
 
   /** The critters, scattered in the meadow above the graph. */
@@ -156,6 +177,24 @@ class PictureGraph implements Game {
     this.critters = [];
     if (!show) return;
     const v = this.view;
+    const per = this.plan.per;
+    const add = (kind: number, x: number, y: number) => {
+      const node = new Critter(CRITTERS[this.graph.kinds[kind]]);
+      node.scale.set(0.22);
+      node.position.set(x, y);
+      this.ctx.track(node);
+      this.meadow.addChild(node);
+      this.critters.push({ kind, node });
+    };
+    if (per > 1) {
+      // A block's worth of critters (a pair) stands together, so a pair is counted as one block.
+      const groups = this.graph.counts.flatMap((n, kind) => Array.from({ length: n / per }, () => kind));
+      const spots = groupSpots(groups.length, per, meadowArea(v.w, v.h), this.ctx.rng);
+      groups.forEach((kind, k) => {
+        for (let j = 0; j < per; j++) add(kind, spots[k].x + (j - (per - 1) / 2) * GROUP_GAP, spots[k].y);
+      });
+      return;
+    }
     const spots: { x: number; y: number }[] = [];
     this.graph.counts.forEach((n, kind) => {
       for (let k = 0; k < n; k++) {
@@ -166,12 +205,7 @@ class PictureGraph implements Game {
           if (spots.every((s) => Math.hypot(s.x - p.x, s.y - p.y) > 70)) break;
         }
         spots.push(p);
-        const node = new Critter(CRITTERS[this.graph.kinds[kind]]);
-        node.scale.set(0.22);
-        node.position.set(p.x, p.y);
-        this.ctx.track(node);
-        this.meadow.addChild(node);
-        this.critters.push({ kind, node });
+        add(kind, p.x, p.y);
       }
     });
   }
@@ -211,8 +245,10 @@ class PictureGraph implements Game {
     });
     // Number labels down the side.
     this.chart.children.filter((c) => (c as Container & { tag?: string }).tag === 'num').forEach((c) => c.destroy());
-    for (let n = 2; n <= 8; n += 2) {
-      const t = label(String(n), 20, ink) as unknown as Container & { tag?: string };
+    // With a key, every row says how many critters the bar stands for up to there (2, 4, 6...).
+    const per = this.plan.per;
+    for (let n = per > 1 ? 1 : 2; n <= 8; n += per > 1 ? 1 : 2) {
+      const t = label(String(n * per), 20, ink) as unknown as Container & { tag?: string };
       t.tag = 'num';
       t.position.set(left + 6, base - n * BLOCK_H);
       this.chart.addChild(t);
@@ -224,7 +260,7 @@ class PictureGraph implements Game {
     // Answering "which one?" questions: tap a column.
     const q = this.questions[this.q];
     if (q && (q.ask === 'most' || q.ask === 'fewest' || q.ask === 'same')) return void this.answerColumn(i);
-    if (this.plan.mode === 'read' || this.questions.length) return;
+    if (prebuilt(this.plan) || this.questions.length) return;
     const p = this.columns[i].toLocal(e.global);
     const top = -this.bars[i] * BLOCK_H;
     if (p.y < top && this.bars[i] < 8) {
@@ -239,8 +275,8 @@ class PictureGraph implements Game {
   }
 
   private async checkGraph() {
-    if (this.busy || this.finished || this.plan.mode === 'read' || this.questions.length) return;
-    const wrong = this.bars.findIndex((n, i) => n !== this.graph.counts[i]);
+    if (this.busy || this.finished || prebuilt(this.plan) || this.questions.length) return;
+    const wrong = this.bars.findIndex((n, i) => n !== this.graph.counts[i] / this.plan.per);
     if (wrong < 0) {
       this.busy = true;
       this.hint = null;
@@ -258,7 +294,7 @@ class PictureGraph implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    await this.ctx.say('graph.recount', { kind: NAMES[this.graph.kinds[wrong]]! });
+    await this.ctx.say(this.plan.per > 1 ? 'graph.recountpairs' : 'graph.recount', { kind: NAMES[this.graph.kinds[wrong]]! });
     if (this.wrongs >= 2 && this.hint === null) {
       this.hints++;
       this.hint = wrong;
@@ -271,14 +307,14 @@ class PictureGraph implements Game {
     this.wrongs = 0;
     this.clearPads();
     const q = this.questions.length ? this.questions[this.q] : undefined;
-    if (!q && this.plan.mode === 'read') {
+    if (!q && prebuilt(this.plan)) {
       this.questions = questionsFor(this.plan, this.graph, this.ctx.rng);
       return this.askNext();
     }
     if (!q) return void this.next();
     const name = (i: number) => NAMES[this.graph.kinds[i]]!;
     if (q.ask === 'more' || q.ask === 'total') {
-      for (const n of choicesFor(q.answer, this.ctx.rng)) {
+      for (const n of choicesFor(q.answer, this.ctx.rng, this.plan.per)) {
         const node = new Container();
         node.addChild(tile(116, 104, 'white'), label(String(n), 46, ink));
         node.hitArea = new Rectangle(-62, -56, 124, 112);
@@ -291,8 +327,8 @@ class PictureGraph implements Game {
     if (q.ask === 'most') return this.ctx.instruct('graph.most');
     if (q.ask === 'fewest') return this.ctx.instruct('graph.fewest');
     if (q.ask === 'same') return this.ctx.instruct('graph.same');
-    if (q.ask === 'total') return this.ctx.instruct('graph.total');
-    if (q.ask === 'more') return this.ctx.instruct('graph.more', { a: name(q.a), b: name(q.b) });
+    if (q.ask === 'total') return this.ctx.instruct(this.plan.per > 1 ? 'graph.totalpairs' : 'graph.total');
+    if (q.ask === 'more') return this.ctx.instruct(this.plan.per > 1 ? 'graph.morepairs' : 'graph.more', { a: name(q.a), b: name(q.b) });
   }
 
   private clearPads() {
@@ -323,15 +359,16 @@ class PictureGraph implements Game {
     if (this.busy || this.finished) return;
     const q = this.questions[this.q] as Extract<Question, { answer: number }>;
     if (n === q.answer) return void this.right();
-    return void this.wrong(q.answer);
+    // Reading the number of blocks and forgetting the key gets its own gentle explanation.
+    return void this.wrong(q.answer, this.plan.per > 1 && n === q.answer / this.plan.per);
   }
 
-  private async wrong(answer: number) {
+  private async wrong(answer: number, blocksOnly = false) {
     this.busy = true;
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    await this.ctx.say('graph.look');
+    await this.ctx.say(blocksOnly ? 'graph.blocks' : 'graph.look');
     if (this.wrongs >= 2 && this.hint === null) {
       this.hints++;
       this.hint = answer;
