@@ -1,7 +1,7 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
-import { music, STYLES } from '../../audio/music';
+import { music, STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -346,7 +346,7 @@ export const songMaker: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => (b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 5, max: 7 } : b === 'preschool' ? { min: 4, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
   describeLevel: (l) => songPlan(l).name,
-  music: STYLES.jelly,
+  music: silenced(STYLES.jelly),
   coplayHint: 'Sing along with {name} when the jellies play: up high for the top row, down low for the bottom.',
   offScreen: 'Make a song with pots and spoons, then play it again the same way together.',
   hubIcon: () => new WigglyIcon(boardArt()),

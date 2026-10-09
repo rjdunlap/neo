@@ -8,15 +8,17 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import type { LineVars } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
-import { answerOf, choices, makeMeasures, planFor, type Measure, type MeasurePlan, type Thing } from './logic';
+import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, planFor, temptingReading, type Measure, type MeasurePlan, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 4 },
+  school: { min: 1, max: 6 },
 };
 
 const U = 88;
@@ -99,13 +101,13 @@ class Inchworm implements Game {
     void this.next();
   }
 
-  /** The ruler level fits 0 to 10 on screen with a smaller unit; worms keep their size elsewhere. */
+  /** The ruler levels fit 0 to 10 on screen with a smaller unit; worms keep their size elsewhere. */
   private get u(): number {
-    return this.plan.mode === 'ruler' ? 74 : U;
+    return isRuler(this.plan.mode) ? 74 : U;
   }
 
   private x0() {
-    return this.plan.mode === 'ruler' ? 140 : 200;
+    return isRuler(this.plan.mode) ? 140 : 200;
   }
 
   resize(v: View) {
@@ -117,7 +119,7 @@ class Inchworm implements Game {
       if (!b.drag.dragging) b.node.position.set(b.drag.home.x, b.drag.home.y);
     });
     // Pads to the right of the measuring, or along the bottom under the long ruler.
-    this.pads.forEach((p, i) => (this.plan.mode === 'ruler' ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110) : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125)));
+    this.pads.forEach((p, i) => (isRuler(this.plan.mode) ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110) : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125)));
     this.drawRuler();
   }
 
@@ -126,10 +128,13 @@ class Inchworm implements Game {
     const g = this.glow.clear();
     if (!this.hinting || this.busy) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
-    if (this.plan.mode === 'ruler') {
-      // The spaces under the pencil, numbered from where it starts.
-      const r = this.rows[0];
-      for (let k = 0; k < r.length; k++) g.roundRect(this.x0() + (r.start + k) * this.u + 4, r.y + 30, this.u - 8, 44, 10).stroke({ width: 4, color: swatch.yellow.fill });
+    if (isRuler(this.plan.mode)) {
+      for (const s of hintSpans(this.m, this.plan.mode)) {
+        const r = this.rows[s.row];
+        // How much longer: ring the extra part of the longer thing. Otherwise light the ruler spaces under it, from where it starts.
+        if (this.plan.mode === 'rulerdiff') g.roundRect(this.x0() + s.from * this.u + 3, r.y - 34, s.count * this.u - 6, 68, 12).stroke({ width: pulse, color: swatch.yellow.fill });
+        else for (let k = 0; k < s.count; k++) g.roundRect(this.x0() + (s.from + k) * this.u + 4, r.y + 30, this.u - 8, 44, 10).stroke({ width: 4, color: swatch.yellow.fill });
+      }
       return;
     }
     const p = this.pads.find((x) => x.n === answerOf(this.m, this.plan.mode));
@@ -161,12 +166,25 @@ class Inchworm implements Game {
     if (this.plan.mode === 'compare') {
       add(m.thing, m.length, v.h * 0.3);
       add(m.other!.thing, m.other!.length, v.h * 0.52);
+    } else if (this.plan.mode === 'rulerdiff') {
+      // Two rows above one ruler, each starting at its own mark.
+      add(m.thing, m.length, v.h * 0.26, m.start ?? 0);
+      add(m.other!.thing, m.other!.length, v.h * 0.26 + 96, m.other!.start ?? 0);
+    } else if (this.plan.mode === 'rulersum') {
+      // The second thing starts exactly where the first stops, on the same row.
+      add(m.thing, m.length, v.h * 0.4, m.start ?? 0);
+      add(m.other!.thing, m.other!.length, v.h * 0.4, m.other!.start ?? 0);
     } else add(m.thing, m.length, v.h * 0.4, m.start ?? 0);
-    if (this.plan.mode === 'ruler') this.showPads();
+    if (isRuler(this.plan.mode)) this.showPads();
     else this.fillBucket();
     this.resize(v);
     this.busy = false;
     const what = THING_WORDS[m.thing];
+    if (this.plan.mode === 'rulerdiff') {
+      const [longer, shorter] = longerShorter(m);
+      return this.ctx.instruct('worm.rulerdiff', { a: THING_WORDS[longer], b: THING_WORDS[shorter] });
+    }
+    if (this.plan.mode === 'rulersum') return this.ctx.instruct('worm.rulersum', { a: what, b: THING_WORDS[m.other!.thing] });
     if (this.plan.mode === 'ruler') return this.ctx.instruct(m.start ? 'worm.rulerstart' : 'worm.ruler', { what });
     if (this.plan.mode === 'compare') return this.ctx.instruct('worm.compare', { a: what, b: THING_WORDS[m.other!.thing] });
     return this.ctx.instruct(this.index === 0 ? 'worm.lay' : 'worm.again', { what });
@@ -174,10 +192,15 @@ class Inchworm implements Game {
 
   private drawRuler() {
     const g = this.ruler.clear();
-    if (this.plan.mode !== 'ruler' || !this.rows[0]) return;
-    const y = this.rows[0].y + 30;
+    if (!isRuler(this.plan.mode) || !this.rows[0]) return;
+    // The ruler sits under the lowest row (the two things of "end to end" share one row).
+    const y = Math.max(...this.rows.map((r) => r.y)) + 30;
     g.roundRect(this.x0() - 16, y, 10 * this.u + 32, 60, 10).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
     for (let k = 0; k <= 10; k++) g.moveTo(this.x0() + k * this.u, y).lineTo(this.x0() + k * this.u, y + 24).stroke({ width: 3, color: ink });
+    // With two rows stacked above one ruler, faint lines drop from each thing's two ends so the marks can be read.
+    if (this.plan.mode === 'rulerdiff') {
+      for (const r of this.rows) for (const mark of [r.start, r.start + r.length]) g.moveTo(this.x0() + mark * this.u, r.y + 18).lineTo(this.x0() + mark * this.u, y).stroke({ width: 2, color: ink, alpha: 0.28 });
+    }
     this.ruler.removeChildren().forEach((c) => c.destroy());
     for (let k = 0; k <= 10; k++) {
       const t = label(String(k), 22, ink);
@@ -273,7 +296,8 @@ class Inchworm implements Game {
       this.hinting = false;
       sfx.sparkle();
       this.ctx.pet.cheer();
-      if (this.plan.mode === 'compare') await this.ctx.say('worm.yay');
+      if (this.plan.mode === 'compare' || this.plan.mode === 'rulerdiff') await this.ctx.say('worm.yay');
+      else if (this.plan.mode === 'rulersum') await this.ctx.say('worm.together', { n });
       else await this.ctx.say('worm.long', { what: THING_WORDS[m.thing], n: m.length });
       return void this.next();
     }
@@ -281,13 +305,22 @@ class Inchworm implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    const fromEnd = this.plan.mode === 'ruler' && m.start && n === m.start + m.length;
-    await this.ctx.say(fromEnd ? 'worm.fromzero' : this.plan.mode === 'ruler' ? 'worm.spaces' : 'worm.countagain');
+    await this.ctx.say(...this.missLine(m, n));
     if (this.wrongs >= 2 && !this.hinting) {
       this.hinting = true;
       this.hints++;
     }
     this.busy = false;
+  }
+
+  /** What to say to a wrong number: the likely mistake gets its own gentle explanation. */
+  private missLine(m: Measure, n: number): [LineId, LineVars?] {
+    const mode = this.plan.mode;
+    const likely = temptingReading(m, mode) === n;
+    if (mode === 'ruler') return [likely ? 'worm.fromzero' : 'worm.spaces'];
+    if (mode === 'rulerdiff') return likely ? ['worm.fromends'] : ['worm.extra', { a: THING_WORDS[longerShorter(m)[0]] }];
+    if (mode === 'rulersum') return [likely ? (m.start ? 'worm.fromzero' : 'worm.firstonly') : 'worm.spaces'];
+    return ['worm.countagain'];
   }
 
   private async finale() {

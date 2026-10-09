@@ -1,7 +1,7 @@
 import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { ink, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
-import { STYLES } from '../../audio/music';
+import { STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
@@ -535,7 +535,7 @@ export const clapSyllables: GameModule = {
   bands: ['preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
-  music: STYLES.paint,
+  music: silenced(STYLES.paint),
   coplayHint: 'Clap along with {name} and say the word slowly: "but-ter-fly", one clap for each beat. Try the names of people in the family.',
   offScreen: 'Clap the beats in names, foods and animals at home: "ba-na-na" is three claps, "dog" is one.',
   hubIcon: () => new WigglyIcon(clapIcon()),

@@ -3,7 +3,7 @@ import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { musicNote } from '../../art/shapes';
-import { music, STYLES } from '../../audio/music';
+import { music, STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -315,7 +315,7 @@ export const jellyDrums: GameModule = {
     const p = planFor(level);
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },
-  music: STYLES.jelly,
+  music: silenced(STYLES.jelly),
   coplayHint: 'Sing along! Big jellies sing low, little jellies sing high.',
   offScreen: 'Make a pots-and-pans band: big pot, low sound; small pot, high sound.',
   hubIcon: () => new JellyStand(),

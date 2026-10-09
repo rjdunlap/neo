@@ -4,7 +4,7 @@ import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
 import { audio } from '../../audio/engine';
-import { music } from '../../audio/music';
+import { isSilent, music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
@@ -191,6 +191,8 @@ export class GameScene extends Scene {
     const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo, pick });
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
+    // The loop that follows her in from the place would sit under a demonstration of making music; `begin` plays the same style later.
+    if (isSilent(mod.music)) music.play(mod.music);
     card.layout(this.view);
     this.helpCard = card;
     this.ui.addChild(card);
