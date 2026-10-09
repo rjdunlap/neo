@@ -94,7 +94,7 @@ There are seventy-four games, listed below. "Ages" lists the places each game ap
 | Memory Match | preschool–school | four picture cards | sixteen cards, number↔dots, shape + color, A↔a |
 | Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals, short words, the child's name |
 | Stamp Studio | lap–school | press stars or animal stamps onto a picture | choose colors, arrange stamps, change size and orientation, tell a picture story; any creation can finish |
-| Pet Kitchen | toddler–school | cut a sandwich in halves and share | quarters, sharing multiple wholes with alternative equal cuts, doubling a picture recipe |
+| Pet Kitchen | toddler–school | cut a sandwich in halves and share | quarters, sharing multiple wholes with alternative equal cuts, doubling and halving a picture recipe, serving a named fraction |
 | Rhythm Neighbors | lap–school | tap a bird and a frog chorus | trade different musical parts, follow two frog voices, play long/short replies with a guided option |
 | Tangram Town | toddler–school | fit two big shapes into a house or boat | quarter-turn snaps, two triangles making a wall, a four-piece rocket, silhouettes with optional help |
 | Peekaround Island | toddler–school | turn a little island to find who is hiding behind the tree | find a named friend, work out who is hiding from a picture card, put friends behind / in front of / next to the tree, two directions and then a half turn |

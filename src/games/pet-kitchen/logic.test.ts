@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { doubled, fair, fairCut, ingredientHint, nextPlate, PLANS, plateAt, PLATE_REACH, recipe } from './logic';
+import { doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, PLANS, plateAt, PLATE_REACH, recipe, servesFraction } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
    expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
@@ -44,5 +44,26 @@ it('the ghost finger doubles every recipe with exactly the fruit that is missing
    const base=recipe(level,new Rng(seed)),made=[0,0];let taps=0;
    for(let i=ingredientHint(base,made);i>=0;i=ingredientHint(base,made)){made[i]++;taps++;expect(made[i]).toBeLessThanOrEqual(base[i]*2);}
    expect(doubled(base,made)).toBe(true);expect(taps).toBe(2*(base[0]+base[1]));
+ }
+});
+it('every named fraction can be served with an offered equal cut, including two quarters for a half',()=>{
+ const level7=PLANS[6];
+ for(const request of FRACTIONS){
+   const cut=fractionCut(request,level7.cuts);expect(cut).toBeDefined();
+   const served=cut!*request.numerator/request.denominator;
+   expect(servesFraction(request,cut!,served)).toBe(true);
+   expect(servesFraction(request,cut!,Math.max(0,served-1))).toBe(false);
+ }
+ expect(servesFraction(FRACTIONS[0],4,2)).toBe(true);
+ expect(servesFraction(FRACTIONS[2],4,3)).toBe(true);
+ expect(fractionCut(FRACTIONS[2],[2])).toBeUndefined();
+});
+it('the halving recipe is always whole-fruit exact and its hint repairs either direction',()=>{
+ for(let seed=1;seed<=50;seed++){
+   const base=recipe(8,new Rng(seed)),made=[0,0];
+   expect(base.every(n=>n%2===0)).toBe(true);
+   for(let i=halfIngredientHint(base,made);i>=0;i=halfIngredientHint(base,made))made[i]++;
+   expect(halved(base,made)).toBe(true);
+   made[0]++;expect(halfIngredientHint(base,made)).toBe(0);expect(halved(base,made)).toBe(false);
  }
 });

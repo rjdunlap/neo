@@ -10,7 +10,7 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { doubled, fair, fairCut, ingredientHint, nextPlate, planFor, plateAt, recipe } from './logic';
+import { doubled, fair, fairCut, fractionCut, fractionRequest, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, plateAt, recipe, servesFraction } from './logic';
 
 function sandwich(parts = 1) {
   const g = new Graphics(), w=parts===2?90:parts===4?62:135, h=parts===2?48:parts===4?62:110;
@@ -47,13 +47,14 @@ class PetKitchen implements Game {
   private readonly pieceLayer = new Container();
   private readonly meal = new Container();
   private split = 0;
+  private readonly request;
   misses = 0; hints = 0; done = false;
   private wrong = 0;
   private assisted = false;
   private clock = 0;
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.plan=planFor(ctx.level); this.base=recipe(ctx.level,ctx.rng);
+    this.plan=planFor(ctx.level); this.base=recipe(ctx.level,ctx.rng); this.request=fractionRequest(ctx.rng);
     ctx.stage.addChild(this.background,this.food,this.recipeCard,this.meal,this.glow,this.pieceLayer); this.glow.eventMode='none';
     this.serve=new RoundButton(arrowIcon(1),swatch.green,48,()=>this.check());
     this.undo=new RoundButton(arrowIcon(-1),swatch.white,48,()=>{
@@ -61,7 +62,7 @@ class PetKitchen implements Game {
     });
     this.recut=new RoundButton(againIcon(),swatch.white,48,()=>{if(this.done)return;this.clearPieces();this.split=0;this.resize(this.view);this.instruction();});
     ctx.stage.addChild(this.serve,this.undo,this.recut);
-    if(this.plan.mode==='share') {
+    if(this.plan.mode==='share'||this.plan.mode==='fraction') {
       for(let i=0;i<this.plan.friends;i++) {
         const p=new Container();
         p.addChild(new Graphics().circle(0,0,76).fill(swatch.white.fill).stroke({width:6,color:swatch.blue.line}));
@@ -86,7 +87,7 @@ class PetKitchen implements Game {
       }
       this.recipeCard.addChild(new Graphics().roundRect(-235,-60,470,120,20).fill(cream).stroke({width:5,color:swatch.brown.line}));
       this.base.forEach((n,i)=>{ for(let j=0;j<n;j++){const f=fruit(i);f.position.set(-150+i*170+j*52,0);this.recipeCard.addChild(f);} });
-      const times=label('× 2',36);times.position.set(175,0);this.recipeCard.addChild(times);
+      const times=label(this.plan.mode==='half-recipe'?'÷ 2':'× 2',36);times.position.set(175,0);this.recipeCard.addChild(times);
     }
   }
   private counts(){return this.plates.map((_,i)=>this.pieces.filter(p=>p.plate===i).length);}
@@ -108,24 +109,27 @@ class PetKitchen implements Game {
         },
       });this.pieces.push(piece);
     }
-    this.resize(this.view);void this.ctx.instruct('kitchen.share',{n:this.plan.friends});
+    this.resize(this.view);void this.ctx.instruct(this.plan.mode==='fraction'?'kitchen.fraction-share':'kitchen.share',this.plan.mode==='fraction'?{amount:this.request.name}:{n:this.plan.friends});
   }
   private check(){
     if(this.done)return;
-    const ok=this.plan.mode==='share'?fair(this.counts(),this.pieces.length):doubled(this.base,this.made);
+    const ok=this.plan.mode==='share'?fair(this.counts(),this.pieces.length):this.plan.mode==='fraction'?servesFraction(this.request,this.split,this.counts()[0]):this.plan.mode==='half-recipe'?halved(this.base,this.made):doubled(this.base,this.made);
     if(ok){this.done=true;this.pieces.forEach(p=>p.drag.enabled=false);this.glow.clear();sfx.sparkle();void this.ctx.say('kitchen.done');void this.ctx.tw.wait(1.1).then(()=>this.ctx.finish({misses:this.misses,hints:this.hints}));return;}
     this.misses++;this.wrong++;sfx.boing();
-    void this.ctx.say(this.plan.mode==='share'?'kitchen.fair':'kitchen.double-hint');
+    void this.ctx.say(this.plan.mode==='share'?'kitchen.fair':this.plan.mode==='fraction'?'kitchen.fraction-hint':this.plan.mode==='half-recipe'?'kitchen.half-hint':'kitchen.double-hint');
     if(this.wrong===2){this.assisted=true;this.hints++;}this.drawHint();
   }
   private drawHint(){
     this.glow.clear();if(!this.assisted||this.done)return;
-    if(this.plan.mode==='share') {
+    if(this.plan.mode==='share'||this.plan.mode==='fraction') {
+      if(this.plan.mode==='fraction'&&!this.split){this.glow.circle(this.cuts[0].x,this.cuts[0].y,62).stroke({width:8,color:swatch.yellow.line});return;}
+      if(this.plan.mode==='fraction'&&!fractionCut(this.request,[this.split])){this.glow.circle(this.recut.x,this.recut.y,62).stroke({width:8,color:swatch.yellow.line});void this.ctx.say('kitchen.recut');return;}
       if(this.pieces.length<this.plates.length){this.glow.circle(this.recut.x,this.recut.y,62).stroke({width:8,color:swatch.yellow.line});void this.ctx.say('kitchen.recut');return;}
       const p=this.plates[nextPlate(this.counts())];this.glow.circle(p.x,p.y,84).stroke({width:8,color:swatch.yellow.line});
     } else {
-      const i=ingredientHint(this.base,this.made);if(i<0)return;
-      const b=this.made[i]>this.base[i]*2?this.undo:this.ingredients[i];this.glow.circle(b.x,b.y,65).stroke({width:8,color:swatch.yellow.line});
+      const i=this.plan.mode==='half-recipe'?halfIngredientHint(this.base,this.made):ingredientHint(this.base,this.made);if(i<0)return;
+      const wanted=this.plan.mode==='half-recipe'?this.base[i]/2:this.base[i]*2;
+      const b=this.made[i]>wanted?this.undo:this.ingredients[i];this.glow.circle(b.x,b.y,65).stroke({width:8,color:swatch.yellow.line});
     }
   }
   private layoutPieces(){
@@ -141,37 +145,44 @@ class PetKitchen implements Game {
     for(const c of this.meal.removeChildren())c.destroy({children:true});
     this.made.forEach((n,i)=>{for(let j=0;j<n;j++){const f=fruit(i);f.position.set(-140+i*170+(j%3)*45,Math.floor(j/3)*55);this.meal.addChild(f);}});
   }
-  private instruction(){void this.ctx.instruct(this.plan.mode==='recipe'?'kitchen.double':this.split?'kitchen.share':'kitchen.cut',{n:this.plan.friends});}
+  private instruction(){
+    if(this.plan.mode==='half-recipe')void this.ctx.instruct('kitchen.half');
+    else if(this.plan.mode==='recipe')void this.ctx.instruct('kitchen.double');
+    else if(this.plan.mode==='fraction')void this.ctx.instruct(this.split?'kitchen.fraction-share':'kitchen.fraction',{amount:this.request.name});
+    else void this.ctx.instruct(this.split?'kitchen.share':'kitchen.cut',{n:this.plan.friends});
+  }
   start(){this.instruction();}
   resize(v:View){
   this.view=v;
     this.background.clear().rect(0,0,v.w,v.h).fill(swatch.orange.light).roundRect(165,v.h-260,v.w-190,245,30).fill(cream);
     this.serve.position.set(v.w-75,65);this.undo.position.set(v.w-75,v.h-80);this.recut.position.set(205,65);
-    this.undo.visible=this.plan.mode==='recipe';this.recut.visible=this.plan.mode==='share'&&this.split>0;
+    this.undo.visible=this.plan.mode==='recipe'||this.plan.mode==='half-recipe';this.recut.visible=(this.plan.mode==='share'||this.plan.mode==='fraction')&&this.split>0;
     const px=spread(this.plates.length,180,v.w-50,185);
     this.plates.forEach((p,i)=>{p.position.set(px[i],Math.max(310,v.h*0.36));p.visible=this.split>0;});
     for(const c of this.food.removeChildren())c.destroy({children:true});
-    if(!this.split&&this.plan.mode==='share')for(let i=0;i<this.plan.wholes;i++){const f=sandwich();f.scale.set(1.5);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,v.h*0.4);this.food.addChild(f);}
+    if(!this.split&&(this.plan.mode==='share'||this.plan.mode==='fraction'))for(let i=0;i<this.plan.wholes;i++){const f=sandwich();f.scale.set(1.5);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,v.h*0.4);this.food.addChild(f);}
     const xs=spread(this.cuts.length,250,v.w-180,200);this.cuts.forEach((b,i)=>{b.position.set(xs[i],v.h-110);b.visible=!this.split;});
     this.recipeCard.position.set(v.w/2,215);this.meal.position.set(v.w/2,v.h*0.5);
     this.ingredients.forEach((b,i)=>b.position.set(v.w/2+(i?110:-110),v.h-95));
-    if(this.plan.mode==='recipe')this.background.ellipse(v.w/2,v.h*0.5+30,245,110).fill(swatch.white.fill).stroke({width:7,color:swatch.blue.line});
+    if(this.plan.mode==='recipe'||this.plan.mode==='half-recipe')this.background.ellipse(v.w/2,v.h*0.5+30,245,110).fill(swatch.white.fill).stroke({width:7,color:swatch.blue.line});
     this.layoutPieces();this.drawHint();
   }
   update(dt:number){this.clock+=dt;this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)this.meal.rotation=Math.sin(this.clock*7)*0.04;}
   /** The ghost finger on the how-to card: cut fairly, give each plate a piece in turn, serve; or add fruit until the recipe is doubled, serve. */
   autotouch():TouchIntent|null{
     if(this.done)return null;
-    if(this.plan.mode==='recipe'){
-      const i=ingredientHint(this.base,this.made);
+    if(this.plan.mode==='recipe'||this.plan.mode==='half-recipe'){
+      const i=this.plan.mode==='half-recipe'?halfIngredientHint(this.base,this.made):ingredientHint(this.base,this.made);
       return i>=0?{tap:{on:this.ingredients[i]}}:{tap:{on:this.serve}};
     }
     if(!this.split){
-      const cut=this.cuts[(this.plan.cuts as readonly number[]).indexOf(fairCut(this.plan)!)];
+      const wanted=this.plan.mode==='fraction'?fractionCut(this.request,this.plan.cuts):fairCut(this.plan);
+      const cut=this.cuts[(this.plan.cuts as readonly number[]).indexOf(wanted!)];
       return cut?{tap:{on:cut}}:null;
     }
     if(this.pieces.some(p=>p.drag.dragging))return null;
-    const loose=this.pieces.find(p=>p.plate<0);
+    const needed=this.plan.mode==='fraction'?this.split*this.request.numerator/this.request.denominator:Infinity;
+    const loose=this.pieces.find(p=>p.plate<0&&this.counts()[0]<needed);
     if(loose)return {drag:{on:loose.node},to:{on:this.plates[nextPlate(this.counts())]}};
     return {tap:{on:this.serve}};
   }
@@ -180,7 +191,7 @@ class PetKitchen implements Game {
 export const petKitchen:GameModule={
   id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',
   skills:['equal-shares','fractions','doubling'],bands:['toddler','preschool','prek','school'],
-  levels:b=>b==='school'?{min:5,max:6}:b==='toddler'?{min:1,max:1}:b==='preschool'?{min:1,max:4}:{min:3,max:6},
+  levels:b=>b==='school'?{min:5,max:8}:b==='toddler'?{min:1,max:1}:b==='preschool'?{min:1,max:4}:{min:3,max:6},
   describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
   coplayHint:'Cut the sandwich together. Help {name} give a piece to each friend, then serve it.',
   offScreen:'Share a sandwich or paper circle in equal parts. Put every piece back together to see the whole.',

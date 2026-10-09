@@ -6,15 +6,36 @@ export const PLANS = [
   { mode: 'share', wholes: 2, friends: 4, cuts: [2,4], name: 'Share two sandwiches fairly; halves or quarters both work' },
   { mode: 'recipe', wholes: 0, friends: 0, cuts: [], name: 'Double a picture recipe: one berry and one apple become two each' },
   { mode: 'recipe', wholes: 0, friends: 0, cuts: [], name: 'Double two berries and one apple for a bigger fruit salad' },
+  { mode: 'fraction', wholes: 1, friends: 1, cuts: [2,4], name: 'Serve a named fraction of one sandwich' },
+  { mode: 'half-recipe', wholes: 0, friends: 0, cuts: [], name: 'Halve a picture recipe for one friend' },
 ] as const;
 export const planFor = (l: number) => PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
 export const fair = (plates: number[], pieces: number) => pieces > 0 && plates.length > 0 && plates.every(n => n > 0 && n === pieces / plates.length);
 export function nextPlate(plates: number[]) { return plates.indexOf(Math.min(...plates)); }
 export function recipe(level: number, rng: Rng): [number,number] {
+  if (level >= 8) return rng.chance(0.5) ? [2,2] : [4,2];
   return level <= 5 ? [1,1] : rng.chance(0.5) ? [2,1] : [1,2];
 }
 export const doubled = (base: number[], made: number[]) => base.length === made.length && base.every((n,i) => made[i] === n*2);
 export const ingredientHint = (base: number[], made: number[]) => made.findIndex((n,i) => n !== base[i]*2);
+export const halved = (base: number[], made: number[]) => base.length === made.length && made.every((n,i) => n * 2 === base[i]);
+export const halfIngredientHint = (base: number[], made: number[]) => made.findIndex((n,i) => n * 2 !== base[i]);
+
+export const FRACTIONS = [
+  { id: 'half', name: 'one half', numerator: 1, denominator: 2 },
+  { id: 'quarter', name: 'one quarter', numerator: 1, denominator: 4 },
+  { id: 'three-quarters', name: 'three quarters', numerator: 3, denominator: 4 },
+] as const;
+export type FractionRequest = typeof FRACTIONS[number];
+export function fractionRequest(rng: Rng): FractionRequest { return rng.pick(FRACTIONS); }
+/** A whole sandwich is cut into equal pieces; two quarters are a valid half. */
+export function servesFraction(request: FractionRequest, cut: number, served: number): boolean {
+  return cut > 0 && served >= 0 && served <= cut && served / cut === request.numerator / request.denominator;
+}
+/** The fewest equal pieces that can make the requested fraction. */
+export function fractionCut(request: FractionRequest, cuts: readonly number[]): number | undefined {
+  return [...cuts].sort((a, b) => a - b).find(cut => Number.isInteger(cut * request.numerator / request.denominator));
+}
 
 /** How near a plate's middle a piece must be let go to land on it. */
 export const PLATE_REACH = 88;

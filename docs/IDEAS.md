@@ -16,7 +16,7 @@ How to use it:
 | Where | What is there |
 | --- | --- |
 | [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | Fill and Dump, Sing-Along Barn, Number Trails, Read & Do |
-| [Sketches for the three to build first](#sketches-for-the-three-to-build-first) | Memory Match 10–12, Pattern Train 10–12, Pet Kitchen 7–8 |
+| [Sketches for the next two to build](#sketches-for-the-next-two-to-build) | Memory Match 10–12, Pattern Train 10–12 |
 | [Fun and arcade review](#fun-and-arcade-review-2026-10-09) | Lander and Drift, a real-time grown-up game; waits on a scoring decision |
 | [Short-ladder audit](#short-ladder-audit-2026-10-09) | Every school-reaching ladder, with the ordered list of next decisions |
 | [Candidates](#candidates), [Gap review proposals](#proposals) and [Extend existing games](#extend-existing-games-before-making-duplicates) | The rest; each needs its definition of ready first |
@@ -510,15 +510,13 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
 | The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them |
 
-### Sketches for the three to build first
+### Sketches for the next two to build
 
-All three are modes of the existing game, extend a ladder the child already knows, and close gaps from the [gap review](#gap-review-2026-10-09).
+Both are modes of an existing game, extend a ladder the child already knows, and close gaps from the [gap review](#gap-review-2026-10-09).
 
 **Memory Match 10–12, "Same, said differently."** *Fun action:* flip cards to find the two that mean the same. *Skill:* reading number words, naming fractions and reading a clock, as one idea about equivalence. *Smallest round:* four pairs of number words and numerals, each spoken as it turns over. *Support:* exploring unseen cards still costs nothing; a pair counts as a miss only if its partner was already known (the game's existing rule); replaying a card's speech is free. *Levels:* 10 number words to numerals (one to ten); 11 fraction pictures to names (a half, a quarter, three quarters); 12 clock faces to digital times (o'clock and half past). Build 10 first: its cards are text, as the letter cards are. 11 and 12 need small new art (a fraction picture and a shared clock face) and a look at whether they read clearly on a 140-unit card before they are promised. *Rule tests:* every deck has one partner per card, no two cards could both match, and every equivalence is true. *Checks:* the device speech for number and fraction words, and how long words such as "eight" fit at card size; the existing ghost-finger bot should pair by id.
 
 **Pattern Train 10–12, "The seventh car."** *Fun action:* look down the train and say what the far car must be. *Skill:* using a repeating rule to find a position without filling every car. *Smallest round:* two full repeats of an ABC pattern are shown and the train runs off the edge; she picks the seventh car from three. *Support:* she may tap the cars to count along, which is not a hint; a hint highlights the repeat. *Levels:* 10 find a far car in a one-attribute pattern (the train runs into a tunnel instead of off the edge); 11 two attributes that change together (color and shape move in step), with different rates a later step to check because the combined cycle is six or more; 12 numbered cars that count by 2, 5 or 10, a new car kind drawn with `label()`. *Rule tests:* the answer follows from the shown repeats alone, the three choices differ, and the counting steps match the numerals. *Checks:* the couch trip names its levels (4, 6 and 9), so it is unaffected.
-
-**Pet Kitchen 7–8, "Three quarters, please."** *Fun action:* serve a friend the amount they ask for. *Skill:* a fraction as a number of equal parts, and doubling's inverse. *Smallest round:* one sandwich and a friend who wants half of it. *Support:* cutting and rearranging stay free exploration; an unequal cut says so and offers the round arrow (the existing recut hint); two misses highlight the next useful action. *Levels:* 7 serve a named fraction (a half, a quarter, three quarters), where two quarters is accepted for a half; 8 halve a picture recipe, with a card that says whether the salad is for many or for one. *Rule tests:* each request has at least one valid way to serve it, and a half made of two quarters is accepted. *Art:* none new; it reuses the sandwich and the recipe screen. *Checks:* spoken fraction words, and the existing level-5 and 6 recipe screen with undo.
 
 ### Open questions
 

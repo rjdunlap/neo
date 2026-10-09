@@ -2202,7 +2202,7 @@ async function creativeBatch() {
     await tap('neo.scene.game.finish');await finished('stamp-studio');assert.deepEqual(await score('stamp-studio'),[0,0]);
     await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, saved round and sticker passed`);
   }
-  if (!only || only === 'kitchen') for(let level=fromLevel;level<=6;level++) {
+  if (!only || only === 'kitchen') for(let level=fromLevel;level<=8;level++) {
     await launch('pet-kitchen',level);
     if(level===4||level===6){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await page.evaluate(async()=>{
@@ -2216,11 +2216,23 @@ async function creativeBatch() {
           const p=g.plates[i%g.plates.length].getGlobalPosition();
           await kit.dragTo(g.pieces[i].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);
         }
+      }else if(g.plan.mode==='fraction'){
+        // Serve too little twice to expose the useful glow, then recut in quarters so every named fraction fits.
+        kit.tapOn(g.cuts[0]);await kit.sleep(450);
+        for(let k=0;k<2;k++){kit.tapOn(g.serve);await kit.sleep(500);}
+        if(g.misses!==2||g.hints!==1)throw new Error(`Kitchen fraction hint ${g.misses}/${g.hints}`);
+        kit.tapOn(g.recut);await kit.sleep(500);kit.tapOn(g.cuts[1]);await kit.sleep(500);
+        const needed=g.split*g.request.numerator/g.request.denominator;
+        for(let i=0;i<needed;i++){
+          const p=g.plates[0].getGlobalPosition();
+          await kit.dragTo(g.pieces[i].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);
+        }
       }else{
         for(let k=0;k<2;k++){kit.tapOn(g.serve);await kit.sleep(500);}
         // One extra fruit can be undone without an extra miss.
         kit.tapOn(g.ingredients[0]);await kit.sleep(500);kit.tapOn(g.undo);await kit.sleep(500);
-        for(let i=0;i<2;i++)for(let n=0;n<2*g.base[i];n++){kit.tapOn(g.ingredients[i]);await kit.sleep(450);}
+        const multiplier=g.plan.mode==='half-recipe'?0.5:2;
+        for(let i=0;i<2;i++)for(let n=0;n<multiplier*g.base[i];n++){kit.tapOn(g.ingredients[i]);await kit.sleep(450);}
       }
     });
     await screenshot(`pet-kitchen-${level}`);await tap('neo.scene.game.serve');await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);
