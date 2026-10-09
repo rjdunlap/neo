@@ -77,3 +77,6 @@ export function outfits(plan: WardrobePlan, rng: Rng): Outfit[] {
   }
   return out;
 }
+
+/** The first thing to wear (or pack) that she has not chosen yet, or null once she has them all. Always a right one. */
+export const itemToTap = (outfit: Outfit, used: ReadonlySet<Item>): Item | null => outfit.needed.find((i) => !used.has(i)) ?? null;
