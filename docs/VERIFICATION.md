@@ -8,14 +8,14 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (592 tests, on the tree that merges the treehouse take-down, both ghost-finger slices and Lemonade Stand) | Lemonade Stand entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09 (606 tests, typecheck and unit tests; build not run) after the third ghost-finger slice; 2026-10-08 build on the tree that merges the treehouse take-down, both earlier slices and Lemonade Stand | Ghost finger on eleven more games entry | Run with every code change |
 | `npm run test:offline` | 2026-10-08, on that merged tree | Lemonade Stand entry (and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
-| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations and the ghost finger (again after the teardown fix); Lemonade Stand's card alone (`HOWTO_ONLY`) after it was added | Ghost finger on ten couch games and Lemonade Stand entries | About three minutes |
-| `fingerdemo` | 2026-10-08, all 13 games with a ghost finger, first and last level, clean play asserted | Ghost finger on ten couch games entry | About 15 seconds a play; Chrome automation, so the hand's look on an iPad is not established |
+| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations and the ghost finger (again after the teardown fix); Lemonade Stand's card alone (`HOWTO_ONLY`) after it was added; the eleven newest ghost-finger games' cards alone (`HOWTO_ONLY`) on 2026-10-09 | Ghost finger on ten couch games, Lemonade Stand and ghost finger on eleven more games entries | About three minutes |
+| `fingerdemo` | 2026-10-09, the eleven newest of 24 games with a ghost finger at every level (the other thirteen: 2026-10-08, first and last level), clean play asserted | Ghost finger on eleven more games entry | Under a minute a play, the longest 66 s of the 75 allowed; Chrome automation, so the hand's look on an iPad is not established |
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
@@ -45,6 +45,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### The ghost finger on eleven more games (2026-10-09)
+
+What changed: ghost fingers (a mouse pointer on a desktop) for Jelly Drums, Song Maker, Beat Builder, Rhyme Time, Opposites, Pet Says, Goodnight Room, Peekaboo Barn, Weather Wardrobe, Duck Pond and Photo Safari, the first of the other taps after the couch games: **24 of 72**. Each bot's choice is a rule in the game's `logic.ts` with a test (a scale for free play, the next square or note of the goal, the answer, the thing named), `Jelly.belly` gives a spot on the body, and `FINGER_LEVELS` lets the `fingerdemo` suite play chosen levels.
+
+- `npm run typecheck` and `npm test` passed (606 tests; new: every bot only ever taps a right target and clears every plan and seed, free play's scale is the jelly next door, a heard-tune round is not copied before the tune has played, Duck Pond sends exactly as many ducks as the sign says and never one too many, Beat Builder only turns on squares of the goal and leaves a repeat level's given half alone).
+- `BROWSER_SUITE=fingerdemo` passed at every level of all eleven games (Weather Wardrobe 1 to 6, Duck Pond 1 to 10, Photo Safari 1 to 6, Jelly Drums 1 to 9, Peekaboo Barn 1 to 8 except 4 and 7, Song Maker 1 to 7, Beat Builder 1 to 5, Opposites and Rhyme Time 1 to 4, Pet Says 1 to 5, Goodnight Room 1 to 4), with no wrong move and no hint, in 6 to 66 seconds; the longest are Duck Pond 10 (66 s) and Jelly Drums 9 (61 s), under the 75 allowed. `BROWSER_SUITE=howto` for the eleven cards (`HOWTO_ONLY`) passed in both orientations, and its ghost-finger checks (24 games with one) passed. Screenshots of the mouse pointer on Jelly Drums (landscape and portrait), Song Maker and Beat Builder looked right.
+- `scripts/abandon-cards.mjs` (55 cards opened and left at random moments, five rounds) logged one page error: Peekaboo Barn's `question()` loop reaching `Spot.go` on a critter the scene had already destroyed, the same kind as Frog Hop's `leap` (a continuation ready in the frame its scene is destroyed) on the real game's side, which the roadmap already lists. It is not caused by the bot (`autotouch` is never called in a round, and a demonstration's teardown is deferred); it is unfixed.
+- Not run: `world`, the couch suites, `npm run build`, `npm run test:offline` (no shell, navigation or persistence change). Not established: the hand on an iPad, and whether 66 seconds is too long for Duck Pond's last level to watch (a grown-up can leave at once).
 
 ### Lemonade Stand, a school-band market week (2026-10-08)
 
