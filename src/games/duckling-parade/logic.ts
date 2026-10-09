@@ -112,13 +112,34 @@ export interface DemoDuckling {
   y: number;
 }
 
-/** Where a capable player leads Mama next: a waiting duckling (by its place in the list) or the pond. */
-export type ParadeStop = { to: 'duckling'; index: number } | { to: 'pond' };
+/**
+ * Where a capable player leads Mama next: a waiting duckling (by its place in the list) or the pond. `via` is a waypoint to
+ * go to first when the straight way is blocked (the finger taps it, then the next call goes on from there); `drag` says
+ * the way to `via` (or to the stop) is clear, so a dragged finger may lead her; otherwise the finger taps the spot instead.
+ */
+export type ParadeStop = ({ to: 'duckling'; index: number } | { to: 'pond' }) & { drag: boolean; via?: { x: number; y: number } };
+
+/** How close a finger may pass a duckling that must not join before the game takes it as aimed at that duckling, and how close Mama may pass one that would join. */
+export const AIM_REACH = 108;
+export const JOIN_REACH = 90;
+
+type Pt = { x: number; y: number };
+
+function distToSegment(p: Pt, a: Pt, b: Pt): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
 
 /**
- * Where the how-to card's ghost finger leads Mama next: the nearest waiting duckling that may join the line, and once
- * the line is what the round asks for, the pond. Null when the line is complete but the pond would not take it yet, or when
- * no waiting duckling may join (they are still hopping back out).
+ * Where the how-to card's ghost finger leads Mama next: the nearest waiting duckling that may join the line (one with a
+ * clear way first), and once the line is what the round asks for, the pond. A way is clear when it passes no duckling that
+ * must not join (the game counts a finger resting near one as "not me") and, when the round asks for an exact number or the
+ * line is full, no spare that would join as an extra; when the straight way is not clear, a waypoint on the meadow that
+ * makes both halves clear is looked for. Null when the line is complete but the pond would not take it yet, or when no
+ * waiting duckling may join.
  */
 export function nextStop(
   plan: ParadePlan,
@@ -126,16 +147,45 @@ export function nextStop(
   line: readonly ColorName[],
   homeCount: number,
   ducklings: readonly DemoDuckling[],
-  mama: { x: number; y: number },
+  mama: Pt,
+  pond: Pt,
+  field = { x0: 60, x1: 964, y0: 277, y1: 728 },
 ): ParadeStop | null {
   const done = plan.mode === 'pattern' ? line.length === round.pattern!.length : homeCount + line.length >= needed(plan, round);
-  if (done) return readyForPond(plan, round, line.length) ? { to: 'pond' } : null;
+  // When the round asks for a number, a spare duckling that joins on the way is one too many (it hops back out as a miss); in a
+  // pattern, one that joins on the way changes which color comes next, so the one being led to may stop being the right one.
+  const exact = round.target !== undefined || plan.mode === 'pattern';
+  const clear = (from: Pt, to: Pt, except: number) =>
+    ducklings.every((d, i) => {
+      if (!d.loose || i === except) return true;
+      const gap = distToSegment(d, from, to);
+      const joins = canJoin(plan, round, [...line], d.color) === 'join';
+      // A duckling that would not join must not be aimed at; one that would join must not be passed when the count is exact or the line is full.
+      return joins ? !(done || exact) || gap > JOIN_REACH + 4 : gap > AIM_REACH + 4;
+    });
+  /** The way to `dest`: straight if clear, else by the cheapest waypoint that makes both halves clear, else straight anyway. */
+  const wayTo = (dest: Pt, except: number): { drag: boolean; via?: Pt } => {
+    if (clear(mama, dest, except)) return { drag: true };
+    let best: Pt | undefined;
+    let bestLen = Infinity;
+    for (let x = field.x0; x <= field.x1; x += 60) {
+      for (let y = field.y0; y <= field.y1; y += 50) {
+        const w = { x, y };
+        const len = Math.hypot(w.x - mama.x, w.y - mama.y) + Math.hypot(w.x - dest.x, w.y - dest.y);
+        if (len < bestLen && clear(mama, w, except) && clear(w, dest, except)) [best, bestLen] = [w, len];
+      }
+    }
+    return best ? { drag: false, via: best } : { drag: false };
+  };
+  if (done) return readyForPond(plan, round, line.length) ? { to: 'pond', ...wayTo(pond, -1) } : null;
   let best: ParadeStop | null = null;
-  let bestD = Infinity;
+  let bestKey = Infinity;
   ducklings.forEach((d, index) => {
     if (!d.loose || canJoin(plan, round, [...line], d.color) !== 'join') return;
-    const dist = Math.hypot(d.x - mama.x, d.y - mama.y);
-    if (dist < bestD) [best, bestD] = [{ to: 'duckling', index }, dist];
+    const way = wayTo(d, index);
+    // A clear way beats a nearer one that is not; then the nearest.
+    const key = Math.hypot(d.x - mama.x, d.y - mama.y) + (way.drag ? 0 : way.via ? 1000 : 100000);
+    if (key < bestKey) [best, bestKey] = [{ to: 'duckling', index, ...way }, key];
   });
   return best;
 }

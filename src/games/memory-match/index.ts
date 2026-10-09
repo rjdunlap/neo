@@ -9,8 +9,8 @@ import type { View } from '../../engine/view';
 import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { knownMismatch, makeDeck, type MemoryCard } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { knownMismatch, makeDeck, nextCard, type MemoryCard } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PLANS = [
@@ -200,17 +200,7 @@ class MemoryMatch implements Game {
     this.botWait -= dt;
     if (this.locked || this.botWait > 0 || this.remaining === 0) return out;
     out.players[0].active = true;
-    const open = (k: number) => !this.views[k].matched && k !== this.first;
-    const partner = (k: number) => this.cards.findIndex((c, j) => j !== k && c.pair === this.cards[k].pair);
-    let target = -1;
-    if (this.first !== null) {
-      const friend = partner(this.first);
-      target = this.seen.has(friend) ? friend : this.cards.findIndex((_, k) => open(k) && !this.seen.has(k));
-    } else {
-      // Take a card whose friend is already known, else the first one nobody has seen.
-      target = this.cards.findIndex((_, k) => open(k) && this.seen.has(partner(k)));
-      if (target < 0) target = this.cards.findIndex((_, k) => open(k) && !this.seen.has(k));
-    }
+    const target = nextCard(this.cards, this.seen, (k) => this.views[k].matched, this.first);
     if (target < 0) return out;
     this.botWait = 0.4;
     if (target === this.focus) { out.players[0].action = true; this.botWait = 0.9; }
@@ -219,6 +209,14 @@ class MemoryMatch implements Game {
       out.players[0].direction = dx > 0 ? 0 : dx < 0 ? 2 : target > this.focus ? 1 : 3;
     }
     return out;
+  }
+
+  /** The ghost finger on the how-to card: the same player who remembers, tapping the card itself. */
+  autotouch(): TouchIntent | null {
+    if (this.locked || this.remaining === 0) return null;
+    const target = nextCard(this.cards, this.seen, (k) => this.views[k].matched, this.first);
+    // The first card of a pair is followed straight away by the second; a pair is given a moment to be seen.
+    return target < 0 ? null : { tap: { on: this.views[target].node }, pause: this.first === null ? 0.3 : 0.55 };
   }
 
   private drawHint() {
@@ -250,5 +248,5 @@ export const memoryMatch: GameModule = {
   skills: ['memory', 'matching', 'number-sense', 'letters'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, offScreen: 'Hide two pairs of familiar objects under cups and take turns finding their partners.',
-  hubIcon: () => new WigglyIcon(memoryArt()), sticker: () => memoryArt(), create: (ctx) => new MemoryMatch(ctx),
+  hubIcon: () => new WigglyIcon(memoryArt()), touchDemo: true, sticker: () => memoryArt(), create: (ctx) => new MemoryMatch(ctx),
 };

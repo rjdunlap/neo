@@ -76,3 +76,21 @@ export function shortestPath(plan: RobotPlan): Direction[] {
   }
   return [];
 }
+
+/** What a player pressing the known route does next: one of the buttons. */
+export type Press = { clear: true } | { arrow: Direction } | { loop: true } | { play: true };
+
+/**
+ * The next button for a program, from a known solution (the hint's ring after two misses, and the how-to card's ghost finger):
+ * clear it if it has left the solution, else one more of the last step or the next arrow, then the loop count, then play.
+ */
+export function nextPress(solution: readonly Slot[], program: readonly Slot[], mode: RobotMode, loop: number, wantLoop: number): Press {
+  const prefix = program.every((s, i) => solution[i] && s.dir === solution[i].dir && (i < program.length - 1 ? s.n === solution[i].n : s.n <= solution[i].n));
+  if (!prefix) return { clear: true };
+  const last = program[program.length - 1];
+  const lastSol = solution[program.length - 1];
+  if (last && lastSol && last.n < lastSol.n) return { arrow: last.dir };
+  if (program.length < solution.length) return { arrow: solution[program.length].dir };
+  if (mode === 'loop' && loop !== wantLoop) return { loop: true };
+  return { play: true };
+}

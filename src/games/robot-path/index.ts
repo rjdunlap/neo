@@ -10,8 +10,8 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { DELTAS, DIRECTIONS, expand, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Cell, type Direction, type RobotPlan, type Slot } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { DELTAS, DIRECTIONS, expand, nextPress, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Cell, type Direction, type RobotPlan, type Slot } from './logic';
 
 /** Levels 1–6 are the original one-step-per-slot programs; 7–10 add counted steps, then loops. */
 const PREK_TOP = 6;
@@ -201,16 +201,17 @@ class RobotPath implements Game {
   }
 
   private nextHelp(): RoundButton {
-    const sol = this.solution;
-    const prog = this.program;
-    const prefix = prog.every((s, i) => sol[i] && s.dir === sol[i].dir && (i < prog.length - 1 ? s.n === sol[i].n : s.n <= sol[i].n));
-    if (!prefix) return this.clear;
-    const last = prog[prog.length - 1];
-    const lastSol = sol[prog.length - 1];
-    if (last && lastSol && last.n < lastSol.n) return this.arrows.find((a) => a.dir === last.dir)!.button;
-    if (prog.length < sol.length) return this.arrows.find((a) => a.dir === sol[prog.length].dir)!.button;
-    if (this.mode === 'loop' && this.loop !== (this.plan.solution?.loop ?? 1)) return this.loopButton;
+    const press = nextPress(this.solution, this.program, this.mode, this.loop, this.plan.solution?.loop ?? 1);
+    if ('clear' in press) return this.clear;
+    if ('arrow' in press) return this.arrows.find((a) => a.dir === press.arrow)!.button;
+    if ('loop' in press) return this.loopButton;
     return this.play;
+  }
+
+  /** The ghost finger on the how-to card: press the next button of the known route, one at a time, then play. */
+  autotouch(): TouchIntent | null {
+    if (this.running || this.done) return null;
+    return { tap: { on: this.nextHelp() }, pause: 0.35 };
   }
 
   resize(v: View) {
@@ -313,6 +314,7 @@ export const robotPath: GameModule = {
   music: STYLES.jelly,
   offScreen: 'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
   hubIcon: () => new WigglyIcon(robotArt(160)),
+  touchDemo: true,
   sticker: () => robotArt(150),
   create: (ctx) => new RobotPath(ctx),
 };

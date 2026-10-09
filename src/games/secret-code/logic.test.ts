@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { candidates, ignoredClues, makeCode, PLANS, ruledOut, score, suggestion, type Guess } from './logic';
+import { candidates, ignoredClues, makeCode, nextMove, PLANS, ruledOut, score, suggestion, type Guess } from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -57,6 +57,32 @@ describe('Secret Code', () => {
           if (marks.every((m) => m === 'green')) break;
         }
         expect(guesses).toBeLessThan(12);
+      }
+    }
+  });
+
+  it('has a player who reasons from the clues crack every code without once ignoring a clue', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const code = makeCode(plan, new Rng(seed));
+        const history: Guess[] = [];
+        let guess: (number | null)[] = Array(plan.slots).fill(null);
+        let turns = 0;
+        for (let step = 0; step < 200 && turns < 12; step++) {
+          const move = nextMove(plan, history, code, guess);
+          if ('stone' in move) {
+            guess[guess.indexOf(null)] = move.stone;
+            continue;
+          }
+          const stones = guess as number[];
+          expect(ignoredClues(plan, history, stones), `${plan.name} seed ${seed}`).toEqual([]);
+          const marks = score(code, stones, plan.yellow);
+          history.push({ stones: [...stones], marks });
+          turns++;
+          if (marks.every((m) => m === 'green')) break;
+          guess = Array(plan.slots).fill(null);
+        }
+        expect(history.at(-1)?.marks.every((m) => m === 'green'), `${plan.name} seed ${seed}`).toBe(true);
       }
     }
   });

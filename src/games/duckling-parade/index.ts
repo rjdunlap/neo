@@ -73,7 +73,7 @@ class DucklingParade implements Game {
   private announcedHome = false;
   private placed = false;
   /** When the finger last set a destination, and when the duckling it picked joined: then the tap is spent. */
-  private aimedAt = 0;
+  private aimedAt = -1;
   private joinedAt = -1;
 
   constructor(private readonly ctx: GameContext) {
@@ -185,7 +185,8 @@ class DucklingParade implements Game {
    * after that, to the next duckling the line may take and then to the pond. It waits while she is still walking.
    */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || Math.hypot(this.target.x - this.mama.x, this.target.y - this.mama.y) > 24) return null;
+    // Ducklings beside Mama's start join at once; let them settle before choosing where to lead her.
+    if (this.busy || this.finished || this.clock < 1 || Math.hypot(this.target.x - this.mama.x, this.target.y - this.mama.y) > 24) return null;
     const stop = nextStop(
       this.plan,
       this.round,
@@ -193,17 +194,16 @@ class DucklingParade implements Game {
       this.homeCount,
       this.ducklings.map((d) => ({ color: d.color, loose: d.state === 'loose', x: d.critter.x, y: d.critter.y })),
       this.mama,
+      this.pondAt,
+      this.field(this.view),
     );
     if (!stop) return null;
     // Mama aims a little below the finger (`steer`), so the finger rides a little above where she should stand.
     const there: Spot = stop.to === 'pond' ? { on: this.ground, x: this.pondAt.x - 40, y: this.pondAt.y - 30 } : { on: this.ducklings[stop.index].critter, y: -150 };
-    if (this.plan.mode === 'tap') return { tap: stop.to === 'pond' ? there : { on: this.ground, ...this.groundPoint(this.ducklings[stop.index].critter) } };
+    // A blocked way goes round by a waypoint first (the next call goes on from there).
+    if (stop.via) return { tap: { on: this.ground, x: stop.via.x, y: stop.via.y - 30 } };
+    if (this.plan.mode === 'tap' || !stop.drag) return { tap: there, receiver: this.ground };
     return { trace: { on: this.ground, x: this.mama.x, y: this.mama.y - 30 }, via: [there] };
-  }
-
-  /** A duckling's feet as a point on the steering layer, a little above them (`steer` aims below the finger). */
-  private groundPoint(c: Critter) {
-    return { x: c.x, y: c.y - 30 };
   }
 
   private steer(e: FederatedPointerEvent, down: boolean) {

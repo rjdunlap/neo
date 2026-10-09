@@ -10,8 +10,8 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game,GameContext,GameModule } from '../types';
-import { accepts, makePhrases, planFor, schedule } from './logic';
+import type { Game,GameContext,GameModule,TouchIntent } from '../types';
+import { accepts, makePhrases, nextNote, planFor, schedule } from './logic';
 
 function frog(which:number,r=65){const s=which?swatch.teal:swatch.green,g=new Graphics();g.ellipse(0,10,r,r*0.65).fill(s.fill).stroke({width:5,color:s.line});for(const x of [-r*.5,r*.5])g.circle(x,-r*.35,r*.28).fill(s.fill).stroke({width:4,color:s.line}).circle(x,-r*.36,r*.13).fill(swatch.white.fill).circle(x,-r*.36,r*.06).fill(swatch.purple.line);g.moveTo(-r*.4,12).quadraticCurveTo(0,35,r*.4,12).stroke({width:4,color:s.line});return g;}
 function bird(){const g=new Graphics().roundRect(-35,-100,70,180,20).fill(swatch.brown.fill).stroke({width:5,color:swatch.brown.line});g.ellipse(12,-45,35,48).fill(swatch.orange.fill).circle(15,-91,30).fill(swatch.red.fill).poly([35,-98,70,-87,35,-82]).fill(swatch.yellow.fill).circle(26,-98,5).fill(swatch.purple.line);return g;}
@@ -105,6 +105,16 @@ class RhythmNeighbors implements Game{
   else if(!this.botPlan.length&&this.botSubmitAt&&this.clock>=this.botSubmitAt){this.botSubmitAt=0;out.players[0].action=true;}
   return out;
  }
+ /** The ghost finger on the how-to card: after the bird, tap the frogs of the reply, resting longer where the gap is long, then send it. Free levels: each frog once, then send. */
+ autotouch():TouchIntent|null{
+  if(this.done||this.busy)return null;
+  if(this.plan.free){
+   if(this.plays<this.frogs.length)return {tap:{on:this.frogs[this.plays]},pause:0.4};
+   return this.submit.visible?{tap:{on:this.submit}}:null;
+  }
+  const move=nextNote(this.phrases[this.phrase],this.taps.length);
+  return 'send' in move?{tap:{on:this.submit}}:{tap:{on:this.frogs[move.voice]},pause:move.rest};
+ }
  start(){void this.ctx.instruct(this.plan.free?'neighbors.free':this.plan.timing?'neighbors.rhythm':'neighbors.turns');if(!this.plan.free)this.demonstrate();}
  resize(v:View){
   this.view=v;
@@ -126,5 +136,5 @@ export const rhythmNeighbors:GameModule={
  id:'rhythm-neighbors',name:'Rhythm Neighbors',titleLine:'game.rhythm-neighbors',region:'music-mountain',skills:['turn-taking','rhythm','musical-expression'],bands:['lap','toddler','preschool','prek','school'],
  levels:b=>b==='school'?{min:5,max:6}:b==='lap'?{min:1,max:2}:b==='toddler'?{min:2,max:3}:b==='preschool'?{min:3,max:4}:{min:4,max:6},describeLevel:l=>planFor(l).name,
  music:{...STYLES.jelly,shaker:false,volume:0.15},coplayHint:'Let {name} answer the woodpecker with a frog. Any timing is welcome in the first turns.',offScreen:'Take turns knocking on a table. Try a short question and a different answering rhythm.',
- hubIcon:()=>{const c=new Container();const f=frog(0);f.y=-35;c.addChild(f);return new WigglyIcon(c);},sticker:seed=>frog(new Rng(seed).int(0,1),80),create:ctx=>new RhythmNeighbors(ctx),
+ hubIcon:()=>{const c=new Container();const f=frog(0);f.y=-35;c.addChild(f);return new WigglyIcon(c);},touchDemo:true,sticker:seed=>frog(new Rng(seed).int(0,1),80),create:ctx=>new RhythmNeighbors(ctx),
 };
