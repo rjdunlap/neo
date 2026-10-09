@@ -18,6 +18,13 @@ describe('which mode a card opens', () => {
     expect(sourceOfClick(0)).toBe('key');
     expect(modeFor(sourceOfClick(0))).toBe('couch');
   });
+
+  it('trusts a pointer that went down before the click over the click’s detail, which a touch browser may report as 0', () => {
+    expect(sourceOfClick(0, true)).toBe('pointer');
+    expect(modeFor(sourceOfClick(0, true))).toBe('island');
+    expect(sourceOfClick(0, false)).toBe('key');
+    expect(sourceOfClick(1, true)).toBe('pointer');
+  });
 });
 
 describe('couch Player 1', () => {

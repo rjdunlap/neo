@@ -7273,6 +7273,8 @@ async function profiles() {
   const hatched = (color) => page.evaluate((color) => { kit.store.data.pet = { name: 'Pip', color, hatched: true }; kit.store.data.settings.howToCards = false; kit.store.save(); neo.go.start(); }, color);
 
   // A device with nothing on it shows only "Add a player".
+  // A save still waiting to be written would otherwise land again after the wipe.
+  await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(400);
   await idb(async (m) => { for (const k of await m.keys()) await m.del(k); });
   await page.reload(); await ready(); await scene('ChooserScene');
   await page.locator('.chooser__add').waitFor();
@@ -7309,6 +7311,15 @@ async function profiles() {
   // The map's "Who's playing?" button is the way back.
   await page.evaluate(() => neo.go.hub()); await scene('MapScene'); await page.waitForTimeout(800);
   await page.evaluate(() => kit.tapOn(neo.scene.players)); await cards(1);
+
+  // A touch browser may report a tap's click with no `detail`: with a pointer down first it is still a tap, and with none (Enter, a screen reader) it is couch play.
+  await page.evaluate(() => { const b = document.querySelector('.chooser__play'); b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' })); b.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })); });
+  await scene('PlaceScene');
+  await page.evaluate(() => neo.go.start()); await cards(1);
+  await page.waitForTimeout(1700); // longer than the window in which a pointer still counts
+  await page.evaluate(() => document.querySelector('.chooser__play').dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })));
+  await scene('CouchScene');
+  await page.getByRole('button', { name: 'Back to start', exact: true }).click(); await cards(1);
 
   // Someone old enough chooses a friend with no egg, and starts at the top band.
   await addPlayer('Robert', 3, 1980);
@@ -7441,7 +7452,6 @@ try {
   if (suite === 'all' || suite === 'couchconga') await couchConga();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
   if (suite === 'all' || suite === 'grownups') await grownUps();
-  if (suite === 'all' || suite === 'profiles') await profiles();
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
   if (suite === 'phone') await phoneGames();
@@ -7461,6 +7471,8 @@ try {
   });
   if (suite === 'all' || suite === 'stickers') await stickerBook();
   assert.equal(errors.length, 0, errors.join('\n'));
+  // Last, because it wipes the device to start from nothing.
+  if (suite === 'all' || suite === 'profiles') await profiles();
   log('PASS: isolated browser checks completed without page errors');
 } catch (error) {
   await screenshot('failure');

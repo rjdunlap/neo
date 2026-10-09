@@ -13,11 +13,17 @@ export type Mode = 'island' | 'couch';
 
 export const modeFor = (source: Source): Mode => (source === 'pointer' ? 'island' : 'couch');
 
+/** How recently a pointer must have gone down for the click that follows to be its tap. */
+export const POINTER_WINDOW_MS = 1500;
+
 /**
- * What a click on a card was: a finger or a mouse has a `detail` of 1 or more, and a keyboard (or an assistive technology's
- * "activate") sends a click with 0. Those take the couch, the way Enter does, rather than an island they cannot drive.
+ * What a click on a card was. A pointer that went down just before it (`pointerSeen`, which the scene reads from a real
+ * `pointerdown`) is a tap or a click and opens the island. With none, a click with a `detail` of 1 or more is still read as
+ * a pointer, but `detail` is only the fallback: nothing shows that every touch browser sets it, and a wrong guess would put
+ * a tap on couch play. A click with neither (Enter, or an assistive technology's "activate") takes the couch, the way Enter
+ * does, rather than an island it cannot drive.
  */
-export const sourceOfClick = (detail: number): Source => (detail > 0 ? 'pointer' : 'key');
+export const sourceOfClick = (detail: number, pointerSeen = false): Source => (pointerSeen || detail > 0 ? 'pointer' : 'key');
 
 /** A person's name as the island keeps it (`migrate` allows 40 characters). */
 export const NAME_LIMIT = 40;

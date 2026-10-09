@@ -14,7 +14,7 @@ import { blankToFill, cardName, isBlankProfile, MAX_PROFILES, type ProfileEntry 
 import { defaults, type SaveData } from '../../progress/save';
 import { store } from '../../progress/store';
 import { gearButton } from '../../ui/grownups';
-import { couchNameFor, modeFor, readNewPlayer, skipsEgg, sourceOfClick, type Mode, type NewPlayer } from '../chooser';
+import { couchNameFor, modeFor, POINTER_WINDOW_MS, readNewPlayer, skipsEgg, sourceOfClick, type Mode, type NewPlayer } from '../chooser';
 import { selectPlayer } from '../players';
 import { applySettings } from '../settings';
 import { Scene } from '../Scene';
@@ -59,6 +59,8 @@ export class ChooserScene extends Scene {
   private age = 0;
   private busy = false;
   private closed = false;
+  /** When a real pointer last went down: the click that follows is that tap, whatever its `detail` says. */
+  private pointerAt = -Infinity;
   private form: HTMLElement | null = null;
   private formKey: ((e: KeyboardEvent) => void) | null = null;
   private readonly gear = gearButton({
@@ -82,8 +84,12 @@ export class ChooserScene extends Scene {
     const ask = el('p', 'chooser__ask', 'Who’s playing?');
     this.page.append(title, ask, this.cards, this.note);
     this.note.hidden = true;
-    // Any real pointer takes the ring away.
-    this.page.addEventListener('pointerdown', () => this.showRing(false));
+    // A key (Tab included) brings the ring; any real pointer takes it away, and makes the click that follows its tap.
+    this.page.addEventListener('pointerdown', () => {
+      this.pointerAt = performance.now();
+      this.showRing(false);
+    }, true);
+    window.addEventListener('keydown', this.onKeyDown);
     document.body.append(this.page, this.gear.el);
     setTimeout(() => this.page.classList.add('chooser--in'), 16);
     this.startInput();
@@ -93,6 +99,10 @@ export class ChooserScene extends Scene {
   resize(v: View) {
     this.backdrop.resize(v);
   }
+
+  private readonly onKeyDown = (e: KeyboardEvent) => {
+    if (!e.metaKey && !e.ctrlKey && !e.altKey) this.showRing(true);
+  };
 
   /** Keys and controllers are only read while nothing else (the add form, the grown-ups' page) wants Enter and the arrows. */
   private startInput() {
@@ -124,7 +134,7 @@ export class ChooserScene extends Scene {
       play.dataset.id = entry.id;
       play.setAttribute('aria-label', `Play as ${name}`);
       play.append(this.friend(save), el('span', 'chooser__name', name));
-      play.addEventListener('click', (e) => this.choose(entry.id, modeFor(sourceOfClick(e.detail))));
+      play.addEventListener('click', (e) => this.choose(entry.id, modeFor(sourceOfClick(e.detail, performance.now() - this.pointerAt < POINTER_WINDOW_MS))));
       const couch = el('button', 'chooser__couch');
       couch.type = 'button';
       couch.setAttribute('aria-label', `${name}: couch play, with a controller or keyboard`);
@@ -163,6 +173,7 @@ export class ChooserScene extends Scene {
 
   private showRing(on: boolean) {
     this.ring = on;
+    this.page.classList.toggle('chooser--keys', on);
     this.buttons.forEach((b, i) => b.classList.toggle('is-focus', on && i === this.focus));
   }
 
@@ -346,6 +357,7 @@ export class ChooserScene extends Scene {
 
   destroy() {
     this.closed = true;
+    window.removeEventListener('keydown', this.onKeyDown);
     this.stopInput();
     this.dismissForm(false);
     this.page.remove();

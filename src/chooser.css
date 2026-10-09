@@ -141,15 +141,17 @@
   transform: scale(0.96);
 }
 
-/* The ring a keyboard or controller moves; a finger never sees it. */
-.chooser button:focus-visible,
+/* The ring a keyboard or controller moves. It shows only once a key or a controller has been used (`chooser--keys`): the
+   first card is focused from the start so Enter has somewhere to act, and a finger must not see a ring there. */
+.chooser button:focus,
+.chooser button:focus-visible {
+  outline: none;
+}
+
+.chooser--keys button:focus-visible,
 .chooser button.is-focus {
   outline: calc(6px * var(--u)) solid #f2b134;
   outline-offset: calc(-6px * var(--u));
-}
-
-.chooser button:focus:not(:focus-visible):not(.is-focus) {
-  outline: none;
 }
 
 .chooser__note {
