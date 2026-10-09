@@ -53,12 +53,12 @@ describe('touch how-to cards', () => {
     }
   });
 
-  it('never talks about other levels: what to do, how it ends and what to know are about the level on the card', () => {
+  it('never talks about other levels: the goal, what to do, how it ends and what to know are about the level on the card', () => {
     const offenders: string[] = [];
     for (const g of GAMES) {
       for (const level of levelsOf(g)) {
         const card = howToFor(g, level)!;
-        for (const line of [...card.steps, card.finish, card.note ?? '']) {
+        for (const line of [card.goal, ...card.steps, card.finish, card.note ?? '']) {
           if (OTHER_LEVELS.test(line)) offenders.push(`${g.id} level ${level}: ${line}`);
         }
       }

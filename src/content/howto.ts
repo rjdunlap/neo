@@ -448,7 +448,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the asked-for dots are cleared.',
   },
   'seesaw-balance': {
-    goal: 'Make the seesaw go up, stay level, or show how heavy something is.',
+    goal: 'Make the seesaw go up, balance, or show how heavy something is.',
     steps: [
       { to: 2, text: 'Tap a friend to put it on the other side of the seesaw.' },
       { from: 3, to: 3, text: 'Tap blocks to put them on the other side until the seesaw balances.' },
@@ -598,7 +598,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 3, text: 'Tap coins onto the counter to add up the price, then ring the bell.' },
       { from: 4, to: 4, text: 'Add the two prices, tap coins onto the counter to pay for both, then ring the bell.' },
-      { from: 5, to: 5, text: 'Pay the price, then buy another one at the same price and pay a different way with other coins.' },
+      { from: 5, to: 5, text: 'Pay the price and ring the bell, then buy another one at the same price and pay a different way with other coins, ringing the bell again.' },
       { from: 6, text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.' },
     ],
     finish: [
@@ -730,7 +730,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'The pet says each word whole and claps its beats with beads lighting up; a wrong count just brings the demonstration and another try. Check on the device that the words are said clearly.',
   },
   'chain-reaction': {
-    goal: 'Arrange the ramps so the marble rings the big bell (and, later, the little chime first).',
+    goal: 'Arrange the ramps so the marble rings the big bell (and the little chime first, when there is one).',
     steps: [
       'Drag every loose ramp into a round socket.',
       'Tap the green arrow to run the machine and watch what each ramp changes.',
@@ -748,7 +748,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'rhyme-time': {
     goal: 'Find the words that rhyme.',
     steps: [
-      'Listen to the word.',
+      { to: 2, text: 'Listen to the word.' },
+      { from: 3, text: 'Listen to the words.' },
       { to: 2, text: 'Tap the picture that rhymes with it.' },
       { from: 3, to: 3, text: 'Tap the two pictures that rhyme with each other.' },
       { from: 4, text: 'Tap the picture that does not rhyme with the others.' },
