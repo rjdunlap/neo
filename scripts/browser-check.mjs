@@ -5815,18 +5815,24 @@ async function howToIntro() {
     walk(neo.scene.helpCard.body); // the card's own buttons, not the ones inside a demonstration's game
     return out.sort((a, b) => a.x - b.x);
   });
-  const withBot = await page.evaluate(async () => { const { demoFor } = await import('/src/couch/catalog.ts'); const { GAMES } = await import('/src/games/registry.ts'); return GAMES.filter((g) => demoFor(g.id)).map((g) => g.id); });
-  assert.equal(withBot.length, 15, 'fifteen island games have a bot');
+  // The card shows a demonstration for a game with a ghost finger (`touchDemo`) and, until it has one, for a couch game (the controller's).
+  const { withBot, touchBots, couchBots, textOnly } = await page.evaluate(async () => {
+    const { islandDemo } = await import('/src/content/demos.ts'); const { demoFor } = await import('/src/couch/catalog.ts'); const { GAMES } = await import('/src/games/registry.ts');
+    const ids = GAMES.filter((g) => islandDemo(g, 1, g.bands[0])).map((g) => g.id);
+    return { withBot: ids, touchBots: GAMES.filter((g) => g.touchDemo).map((g) => g.id), couchBots: GAMES.filter((g) => demoFor(g.id)).map((g) => g.id), textOnly: GAMES.find((g) => !ids.includes(g.id))?.id ?? null };
+  });
+  assert.equal(couchBots.length, 15, 'fifteen island games can also be played with a controller');
+  assert.deepEqual([...withBot].sort(), [...new Set([...touchBots, ...couchBots])].sort(), 'a demonstration for a game with a ghost finger or a controller bot, and for no other');
   await page.evaluate(async () => {
     const { session } = await import('/src/app/session.ts'); session.start(0);
     kit.store.data.profile.band = 'toddler'; kit.store.data.profile.name = 'Mia';
     kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true;
   });
 
-  // --- A game with no bot: the card, Play and Back, and no round until Play.
+  // --- The card, Play and Back, and no round until Play.
   await goGame('bubble-pop', 'toddler');
   assert.deepEqual(await intro(), { open: true, intro: true, game: false }, 'opening a game shows the how-to card and builds no round');
-  assert.equal(await demo(), null, 'a game with no bot has a card of text only');
+  assert.equal(!!(await demo()), withBot.includes('bubble-pop'), 'a demonstration exactly when the game has a bot');
   assert.match(await page.evaluate(() => neo.scene.helpCard.info.goal), /./);
   let [back, play] = await buttons();
   assert.ok(play && back && play.w >= 100 && back.w >= 100 && play.w > back.w, `Play and Back are large (Play ${play?.w}, Back ${back?.w}), Play the biggest`);
@@ -5920,6 +5926,46 @@ async function howToIntro() {
     assert.deepEqual(errors, [], `${id}: page errors after Play`);
   }
 
+  // --- The ghost finger: a drawn hand (a mouse pointer on a desktop) plays the demonstration into the game's own handlers, and leaves nothing behind.
+  if (touchBots.length) {
+    const ghostId = touchBots.includes('shape-sorter') ? 'shape-sorter' : touchBots[0];
+    const lastBand = await page.evaluate(async (id) => (await import('/src/games/registry.ts')).gameById(id).bands.at(-1), ghostId);
+    const pointer = () => page.evaluate(() => neo.scene.helpCard.intro.demo.pointer);
+    const hushed = () => page.evaluate(() => kit.audio.hushed);
+    await goGame(ghostId, lastBand);
+    assert.equal(await pointer(), 'mouse', `${ghostId}: the page has only seen a mouse, so the demonstration shows a mouse pointer`);
+    assert.equal(await hushed(), true, `${ghostId}: effects sit lower while a demonstration plays`);
+    await page.waitForFunction(() => neo.scene.helpCard.intro.demo.finger?.hand.visible, null, { timeout: 30000 });
+    assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.root.eventMode), 'none', `${ghostId}: nothing she touches reaches the demonstration's game`);
+    // A touch, and the demonstration becomes a finger.
+    await page.evaluate(() => kit.tap(30, 700)); await page.waitForTimeout(300);
+    assert.equal((await intro()).intro, true, `${ghostId}: a touch on the backdrop does nothing`);
+    await goGame(ghostId, lastBand);
+    assert.equal(await pointer(), 'finger', `${ghostId}: after a touch the demonstration shows a finger`);
+    // The demonstration's drag must leave the one-at-a-time drag lock free: after Play, a real drag works.
+    if (ghostId === 'shape-sorter') {
+      await page.waitForFunction(() => neo.scene.helpCard.intro.demo.game.placed >= 1, null, { timeout: 40000 });
+      const [, go] = await buttons();
+      await page.mouse.click(go.x, go.y);
+      await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+      assert.equal(await hushed(), false, `${ghostId}: Play gives the effects back`);
+      await page.waitForTimeout(600);
+      const before = await page.evaluate(() => neo.scene.game.pieces.length);
+      await page.evaluate(async () => {
+        const g = neo.scene.game, p = g.pieces[0], hole = g.box.holes.find((h) => h.kind === p.kind);
+        const to = g.box.toGlobal({ x: hole.x, y: hole.y + 40 }); // a held piece rides 40 units above the finger
+        await kit.dragTo(p.view, to);
+      });
+      await page.waitForFunction((n) => neo.scene.game.pieces.length === n - 1, before, { timeout: 5000 });
+      assert.deepEqual(errors, [], `${ghostId}: page errors`);
+    } else {
+      const [, go] = await buttons();
+      await page.mouse.click(go.x, go.y);
+      await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+    }
+    log(`How-to ghost finger: ${touchBots.length} games with one; ${ghostId} showed a mouse pointer, then a finger after a touch, left effects lowered only while it played, and a real drag worked after Play`);
+  }
+
   // --- Every game's card fits the screen with large buttons, in landscape and portrait, a demonstration in the games that have a bot, and leaving it is clean.
   const games = await page.evaluate(async () => (await import('/src/games/registry.ts')).GAMES.map((g) => ({ id: g.id, band: g.bands.at(-1) })));
   const only = process.env.HOWTO_ONLY?.split(',');
@@ -5967,6 +6013,41 @@ async function howToIntro() {
   await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
   assert.deepEqual(errors, []);
   log(`How-to intro: the card every time with Play and Back, stray taps ignored, a demonstration (touch-proof, destroyed with the card) for the ${withBot.length} games with a bot, "again", a story request and the parent switch skip it, tallest text-only card (${tallest.id}) passed`);
+}
+
+/**
+ * The ghost finger's bot plays every touch game's demonstration to the end (the touch version of `couchgames`'s "the bot finishes
+ * a round"): at the game's first and last level, within the 40 seconds a demonstration gets before it replays, with no page error.
+ * `FINGER_ONLY=bubble-pop,shape-sorter` picks games.
+ */
+async function fingerDemos() {
+  const only = process.env.FINGER_ONLY?.split(',');
+  const games = await page.evaluate(async () => {
+    const { GAMES } = await import('/src/games/registry.ts');
+    return GAMES.filter((g) => g.touchDemo).map((g) => {
+      const ranges = g.bands.map((band) => ({ band, ...g.levels(band) }));
+      const lo = ranges.reduce((a, r) => (r.min < a.min ? r : a));
+      const hi = ranges.reduce((a, r) => (r.max > a.max ? r : a));
+      return { id: g.id, plays: lo.min === hi.max ? [{ band: lo.band, level: lo.min }] : [{ band: lo.band, level: lo.min }, { band: hi.band, level: hi.max }] };
+    });
+  });
+  const picked = games.filter((g) => !only || only.includes(g.id));
+  assert.ok(picked.length > 0, `FINGER_ONLY matched no game: ${only}`);
+  await page.evaluate(async () => {
+    const { session } = await import('/src/app/session.ts'); session.start(0);
+    kit.store.data.profile.name = 'Mia'; kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true;
+  });
+  for (const g of picked) {
+    for (const { band, level } of g.plays) {
+      await page.evaluate(({ id, band, level }) => { kit.store.data.profile.band = band; kit.store.stats(id).pinned = level; neo.go.game(id, band); }, { id: g.id, band, level });
+      await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !!neo.scene.helpCard?.intro?.demo, { id: g.id, level });
+      assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
+      await page.waitForFunction(() => neo.scene.helpCard.intro.demo.finishedRounds > 0, null, { timeout: 44000, polling: 250 });
+      assert.deepEqual(errors, [], `${g.id} level ${level}: page errors`);
+      log(`Finger demo: ${g.id} level ${level} (${band}) finished in ${(await page.evaluate(() => neo.scene.helpCard.intro.demo.age)).toFixed(1)}s`);
+    }
+  }
+  await page.evaluate(() => { neo.go.hub(); }); await scene('MapScene');
 }
 
 /** The pet's treehouse: reach it from the map, move and turn things, hang a sticker, tidy, leave; all of it kept through a reload. */
@@ -6598,6 +6679,7 @@ try {
   if (suite === 'all' || suite === 'couchgames') await couchGames();
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'howto') await howToIntro();
+  if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'island') await islandShelf();
   if (suite === 'all' || suite === 'creations') await creationsRoom();

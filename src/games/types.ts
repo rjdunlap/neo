@@ -14,6 +14,26 @@ import type { Band } from '../progress/bands';
 import type { LevelRange } from '../progress/difficulty';
 import type { CouchControls } from '../engine/controller';
 
+/** A point on a display object, in that object's own coordinates ((0, 0) unless given). */
+export interface Spot {
+  on: Container;
+  x?: number;
+  y?: number;
+}
+
+/**
+ * What a capable child would do with one finger next, for the ghost finger on the island's how-to card.
+ * Every gesture is sent to the first spot's object, the one whose `onTap` or `draggable` handlers a real
+ * finger would reach, so the game only has to say which object and where.
+ */
+export type TouchIntent =
+  /** Touch down on the spot and lift. */
+  | { tap: Spot }
+  /** Pick the object up at the spot and carry it so that it lands on `to`; it rides `lift` units above the finger (40, like `draggable`). */
+  | { drag: Spot; to: Spot; lift?: number }
+  /** Put the finger down at the spot and keep it down while it follows `via`, in order (tracing, steering). */
+  | { trace: Spot; via: Spot[] };
+
 /** The object that stands for a game in the hub. Its feet sit on (0, 0). */
 export type HubIcon = Container & Updatable;
 
@@ -54,6 +74,8 @@ export interface GameModule {
   /** A real-world activity that carries the same skill off the screen, for the parent zone. */
   offScreen?: string;
   hubIcon(): HubIcon;
+  /** The game's `create()` returns a game with `autotouch()`, so its how-to card shows the ghost finger at her level. */
+  touchDemo?: true;
   /** The sticker for finishing a round, rebuilt from its seed. */
   sticker(seed: number): Container;
   create(ctx: GameContext): Game;
@@ -146,6 +168,13 @@ export interface Game {
    * hands it straight to `control()`, so it can only do what a real controller can.
    */
   autoplay?(dt: number): CouchControls;
+  /**
+   * What a capable child would touch next, for the ghost finger on the island's how-to card (touch play, so the
+   * couch never calls it). Return null while there is nothing to do yet, such as during an animation. The shell
+   * plays the gesture with a drawn hand into the object's own handlers, so it can only do what a finger can; the
+   * game chooses targets and a test can check its rule. A game that has this sets `touchDemo` on its module.
+   */
+  autotouch?(dt: number): TouchIntent | null;
   /**
    * Couch pause menu's "start this again": put the board in the round's current part back to its first
    * position. Tries already made keep counting, so a restart is never a way to improve a score. May be

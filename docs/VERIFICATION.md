@@ -8,13 +8,14 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (547 tests) | Treehouse take-down entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (merge of the treehouse take-down and ghost finger) | Treehouse take-down and ghost finger entries | Run with every code change |
 | `npm run test:offline` | 2026-10-08 | Treehouse take-down entry | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
-| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations | How-to card with demonstrations entry | About three minutes |
+| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations and the ghost finger | Ghost finger entry | About three minutes |
+| `fingerdemo` | 2026-10-08, the three games with a ghost finger, first and last level | Ghost finger entry | About 15 seconds a play; Chrome automation, so the hand's look on an iPad is not established |
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
@@ -33,9 +34,9 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
-| `originals`, `robot`, `third` | 2026-10-06 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
+| `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-06 in the combined flow, with later per-game reruns | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
-| `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07 | Archived combined-flow entry; couch play entries | |
+| `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |
 | `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-06 in the combined flow | Archived combined-flow entry | |
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
@@ -62,6 +63,15 @@ What changed: researched the remembered Coolmath/MECC Lemonade Stand and Neopets
 - Documentation checks: repository-relative Markdown links and the new external source links were checked; `git diff --check` passed.
 - Not run: typecheck, unit, build or browser suites; no runtime code, save, game registration, count or behavior changed.
 - Still open: play Lemonade Stand after it is built; test whether tickets create real choices rather than farming; choose the first guaranteed purchase and unlock price; test whether children understand each wheel's displayed odds; and add the bank only after the Harbor balance has a worthwhile use.
+
+### The ghost finger on the how-to card (2026-10-08)
+
+What changed: the grown-up asked for a bot demonstration on every game's how-to card, and that it show the input the person is actually using (a finger on touch, the keyboard and mouse on a desktop, a controller where that is how it is played). New `GhostFinger` (`src/engine/ghost.ts`), an optional `Game.autotouch()` and `GameModule.touchDemo`, `islandDemo` (`src/content/demos.ts`), `Demo` in a finger or mouse mode, `pointerKind()`, a card note per input, effects lowered to 40% while a demonstration plays, and a fix in `draggable` (its one-at-a-time lock was only freed by a real window `pointerup`, so a ghost's drag left every later real drag ignored). Built for Bubble Pop (taps, all four modes), Shape Sorter (drags) and Duckling Parade (steering); 3 of 72.
+
+- `npm run typecheck`, `npm test` (562 tests: the ghost finger sending its events to the target's own handlers from its own pointer id and nothing else, following a moving object and aiming at a spot in the object's own units, a draggable carried and dropped and the drag lock free afterwards, a trace, a target destroyed before and after it lands; each bot rule picks a right target at every level and finishes a seeded round; `islandDemo` by pointer kind and at her level) and `npm run build` passed. The drag-lock test failed before the fix and passes after it.
+- `BROWSER_SUITE=fingerdemo` (new) passed: the bot finishes at the first and last level of all three games, in 9 to 23 seconds. `BROWSER_SUITE=howto` passed in full (all 72 cards in landscape and portrait), with the ghost-finger checks: a mouse pointer until a touch and then a finger, effects lowered only while it plays, taps on the window doing nothing, and a real drag working after Play. With the fix briefly removed the same check timed out at the real drag. `originals` (Bubble Pop, Shape Sorter), `arcade` (`parade`, levels 1 to 8), `batch` (`monsters`, which drags) and `smoke` on the three games passed.
+- Probed by hand across every level of Bubble Pop (1, 4, 7, 10, 11), Duckling Parade (1 to 8) and Shape Sorter (1, 5, 7) with screenshots of the finger and the mouse pointer on the card.
+- Not run: `world`, the couch suites and `npm run test:offline` (navigation, couch play and persistence are untouched; `audio` and `drag` changed in ways the suites above exercise). Not established: how the hand reads on an iPad, whether 40% is the right level for the demonstration's sound, whether the first two seconds of Bubble Pop (bubbles rising in) feel empty, and the fifteen couch games still show the controller highlight on the island card (next in the roadmap). Checked in code, not in this slice: the couch's own how-to screen draws a keyboard diagram with the same lit keys on Laptop (`padArt(place)`, covered by `couchsettings`).
 
 ### How-to card every time, with a bot demonstration (2026-10-08)
 
