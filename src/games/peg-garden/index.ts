@@ -9,9 +9,9 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { AIM_LIMIT, aimVelocity, BOARD, makeBoard, planFor, targets, type PegPlan, type PegSpot } from './logic';
+import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, dropAt, makeBoard, planFor, targets, type PegPlan, type PegSpot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -81,6 +81,9 @@ class Bud extends Container {
     this.scale.y += (1 - this.scale.y) * k;
   }
 }
+
+/** Where along the ledge each drop is made on the first level, as a fraction of the board: all over, not one place. */
+const DROP_AT = [0.5, 0.2, 0.8, 0.35, 0.65, 0.1];
 
 class PegGarden implements Game {
   readonly plan: PegPlan;
@@ -223,14 +226,28 @@ class PegGarden implements Game {
 
   /** An angle near the current one whose shot (and its neighbors) touches the wanted flower; straight down if none does. */
   private bestAim(): number {
-    const want = this.buds.findIndex((b) => b.spot.kind === this.target);
-    const hits = (a: number) => simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball }, this.world, BOARD.h, 12, 1 / 30).hits.includes(want);
-    let best: number | null = null;
-    for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.02) {
-      if (!hits(a) || !hits(a - 0.012) || !hits(a + 0.012)) continue;
-      if (best === null || Math.abs(a - this.aim) < Math.abs(best - this.aim)) best = a;
+    return aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim, [0.012]) ?? 0;
+  }
+
+  /**
+   * The ghost finger on the how-to card: tap along the ledge to drop a pearl (on the bloom and color levels, over the place
+   * whose pearl touches the buds still waiting), or, on the aiming levels, put a finger down by the launcher, swing it round
+   * to the angle whose shot reaches the wanted flower, and lift.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.ball || this.finished) return null;
+    const mode = this.plan.mode;
+    if (this.aimed) {
+      // After the last wanted flower the round is only waiting for the praise to end.
+      if (this.target === undefined) return null;
+      const finger = (a: number): Spot => ({ on: this.touch, x: BOARD.w / 2 + Math.sin(a) * 200, y: 40 + Math.cos(a) * 200 });
+      return { trace: finger(this.aim), via: [finger(aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim) ?? 0)] };
     }
-    return best ?? 0;
+    if (mode === 'drop') return { tap: { on: this.touch, x: BOARD.w * DROP_AT[this.shots % DROP_AT.length], y: 40 } };
+    // The pearl drifts a little as it is let go; the bot looks at the draw the game is about to make.
+    const drift = this.ctx.rng.clone().range(-DRIFT, DRIFT);
+    const { x } = dropAt(this.world, (i) => !this.buds[i].bloomed && (mode !== 'color' || this.buds[i].spot.kind === 'special'), drift, mode === 'color');
+    return { tap: { on: this.touch, x, y: 40 } };
   }
 
   // Shooting ----------------------------------------------------------------------------
@@ -243,7 +260,7 @@ class PegGarden implements Game {
     if (this.ball || this.finished || palmOnGlass()) return;
     const p = this.local(e);
     if (!this.aimed) {
-      this.fire({ x: Math.max(BOARD.ball, Math.min(BOARD.w - BOARD.ball, p.x)), y: 40, vx: this.ctx.rng.range(-20, 20), vy: 60, r: BOARD.ball });
+      this.fire({ x: Math.max(BOARD.ball, Math.min(BOARD.w - BOARD.ball, p.x)), y: 40, vx: this.ctx.rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball });
       return;
     }
     this.aiming = e.pointerId;
@@ -442,6 +459,7 @@ export const pegGarden: GameModule = {
   coplayHint: 'Guess together where the pearl will land before {name} lets go.',
   offScreen: 'Roll a marble down a tilted tray with toy blocks as bumpers.',
   hubIcon: () => new PegIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new PegGarden(ctx),
 };

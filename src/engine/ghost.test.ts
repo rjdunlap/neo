@@ -62,6 +62,43 @@ describe('GhostFinger', () => {
     expect(stray).not.toHaveBeenCalled();
   });
 
+  it('waits over a spot for the moment to press when the game says so, and gives the touch up if the moment never comes', () => {
+    const { root, ghost } = scene();
+    const flipper = thing(root, 400, 400);
+    const taps: number[] = [];
+    onTap(flipper, () => taps.push(frames));
+    let ready = false;
+    let frames = 0;
+    ghost.start({ tap: { on: flipper }, when: () => ready });
+    // The hand arrives and hovers: well past the time a tap takes, nothing has been pressed.
+    for (; frames < 240; frames++) ghost.update(1 / 60);
+    expect(taps).toEqual([]);
+    expect(ghost.idle).toBe(false);
+    ready = true;
+    ghost.update(1 / 60);
+    expect(taps).toHaveLength(1);
+    // A moment that never comes: the hand lets the touch go after a few seconds and the game is asked again.
+    // A moment that has gone is given up at once.
+    const gone = scene();
+    const missed = thing(gone.root, 300, 300);
+    const felt = vi.fn();
+    onTap(missed, felt);
+    let cancel = false;
+    gone.ghost.start({ tap: { on: missed }, when: () => (cancel ? 'cancel' : false), pause: 0.1 });
+    for (let i = 0; i < 180; i++) gone.ghost.update(1 / 60);
+    expect(gone.ghost.idle).toBe(false);
+    cancel = true;
+    expect(gone.play(60 * 3)).toBe(true);
+    expect(felt).not.toHaveBeenCalled();
+    const second = scene();
+    const never = thing(second.root, 300, 300);
+    const heard = vi.fn();
+    onTap(never, heard);
+    second.ghost.start({ tap: { on: never }, when: () => false, pause: 0.1 });
+    expect(second.play(60 * 12)).toBe(true);
+    expect(heard).not.toHaveBeenCalled();
+  });
+
   it('aims at a spot on the object, in the object\'s own coordinates, and follows it if it moves', () => {
     const { root, ghost } = scene();
     const critter = thing(root, 100, 100);
