@@ -331,6 +331,87 @@ What was found, and what it means for the sketches. These are starting points, n
 
 Weighted to the next few years, because the youngest play comes first: **Fill and Dump** and **Sing-Along Barn** for lap and toddler; **Number Trails** as the cheapest build; **Day by Day**; then, for 6 to 8, **Read & Do** and **Orchard Rows**; the **touch puzzles** and **Rule Parade** for about 8 and 9; **Mirror Brush** and **Pixel Flipbook** as creative modes whenever convenient. Read & Do is the largest long-term hole, because reading is the main skill of the school band and nothing else covers it.
 
+## Short-ladder audit (2026-10-09)
+
+An audit of every school-reaching game's ladder, read from each game's `levels(band)` and `describeLevel` and checked against its [GAMES.md](GAMES.md) entry and level plans. The question is the roadmap's: where does a **meaningful next decision** exist, as opposed to a bigger number, a faster pace or more to remember ([depth before pressure](../AGENTS.md#rules-for-every-activity))? A next level qualifies when it changes what she has to decide, reuses the game's own interaction, and has a property a unit test can assert (solvable, one clear answer, a hint that leads somewhere). The verdicts are judgments from reading rules and code; nothing was played and no child has used any of it.
+
+### What the ladders look like
+
+- **Two populations overlap.** 25 island games have a whole ladder of only four or five levels (the roadmap's number); 12 of them reach the `school` band, and 13 end at pre-K by design. Separately, 23 games give the school band only one or two levels. Counting both, 33 school-reaching games are short in one sense or the other.
+- **Six levels is a convention, not a measure.** 28 of the 74 ladders top out at six, and the school band is usually its last two. A "school window" is whatever is left at the top, so extending every ladder evenly would be the wrong fix.
+- **The top is what she meets most at 7 and 8.** At a band's last level two smooth rounds step up to nothing, so she replays it. A top level that is a toy-sized idea shows up as repetition.
+- **How a level is added.** The plan lookups read (Pattern Train, Memory Match, Sink or Float, Song Maker, Rainbow Fingers) clamp the level to the table's length, so appending to the plan table and raising the school `max` is the safe edit; never renumber. A new level also needs its `describeLevel` text, `LevelLine` steps on the how-to card scoped to it, rule tests for the plan, and, for a game with a ghost finger, a bot that can play it, because `fingerdemo` plays each game's first and last level.
+- **Two couplings to budget for.** 11 of the 23 short-window games have a ghost-finger bot (Bouncy Launch, Little Helpers, Rhythm Neighbors, Scoop Shop, Sink or Float, Song Maker, Size Parade, Jelly Drums, Memory Match, Pattern Train, Bubble Pop). Five are also couch games (Bouncy Launch, Rhythm Neighbors, Sink or Float, Memory Match, Pattern Train), but a couch trip names its level for each stop, so appended levels leave trips and courses alone.
+
+### Extend: a real next decision, small to build
+
+Mostly plan entries and rule tests; each row names any art, voice or layout it needs. *Tag:* **roadmap** = already named there; **new** = from this audit.
+
+| Game (ladder top · school levels) | What the top level asks now | Next decision | Cost · tag |
+| --- | --- | --- | --- |
+| **Memory Match** (9 · 8–9) | Match uppercase to lowercase letters | *Same, said differently:* number word to numeral (one to ten), a fraction picture to its name, a clock face to its digital time. The pairing rule becomes equivalence of representations rather than the same look | S for number words (text cards, as letters are today); S–M for fractions and clocks, which need small new art: a card-sized fraction picture, and a clock face (Clock Tower's is drawn inside its own scene, so it would be shared). Check legibility in the 140-unit card first. New. Bot and couch levels unaffected if card pairs carry ids. Sketch below |
+| **Pattern Train** (9 · 8–9) | Fill two cars of an AAB pattern | *The seventh car:* name a car far down the line from two shown repeats, then two things changing per car, then numbered cars that count by 2, 5 or 10. Generalizing the rule replaces continuing it. Fills the skip-counting hole | S–M · new. Numbered cars are a new car kind (today `shape`, `animal` and `bell`), and a train that runs off the edge is a layout change. Sketch below |
+| **Pet Kitchen** (6 · 5–6) | Double a picture recipe | *Three quarters, please:* name a fraction and give that many equal pieces (two quarters make a half), then halve a recipe, choosing double or half from the card. The voice script's only fraction word today is "quarters" in the recut hint | S · new. No new art (it reuses the sandwich); it needs voice lines for the fraction words. The cheapest of the three. Sketch below |
+| **Treasure Map** (4 · 1–4) | Follow directions from where the pet stands | A square found from two clues ("two right of the tree, one below the rock"), where the answer is where the clues meet | S · roadmap. Has a ghost finger, so the bot learns the new clue type |
+| **Critter Sort** (4 · 2–4) | Guess the rule from sorted critters | A hoop for "not": the critters outside it share the missing property | S · roadmap. No ghost finger |
+| **Bouncy Launch** (5 · 4–5) | Farther or nearer than last time | Predict which cloud a shown pull will reach, then launch and compare (an unscored prediction, like Sink or Float). Needs the pull-to-cloud mapping to be deterministic, which should be confirmed first | S–M · new. Ghost finger and couch game |
+| **Rainbow Fingers** (6 · 5–6) | Mix two pots into orange, green or purple | *Paint the pumpkin:* recall that it is orange, then mix it from two pots. Joins the recall and mix modes that already exist | S · new. Modest |
+
+### Extend later: a real next decision that costs more
+
+A new interaction, authored art, a stated model, or a precondition.
+
+| Game (ladder top · school levels) | Next decision | Why it waits |
+| --- | --- | --- |
+| **Sink or Float** (6 · 5–6) | *Make it float:* change one thing about an object (flatten the clay into a boat, take weights off) and compare trials. The first fair-test variable | A stated, honest model of why shapes float, plus the journal; a ghost finger and couch game to keep working |
+| **Ramp Race** (4 · 1–4) | Predict where the car stops, then roll | The finish rule and its half-marks (such as 1.5 × 3) are worked out before building; a recorded-trials table is a new screen ([E2](ROADMAP.md#e2-middle-elementary)) |
+| **Bug Builder** (7 · 6–7) | *Fold a Friend:* predict where each spot lands when the wing folds over; later, which crease makes the bug match | Pairs with Mirror Brush (above); the crease-choice step belongs near age 9 |
+| **Peekaround Island** (5 · 4–5) | *View from above:* which picture shows the island from the sky | A new top-down view to draw |
+| **Block Tower** (6 · 5–6) | Unclear. The top level is already the optimization (reach the star with only N blocks), and a farther star with more blocks is a bigger number. A counterweight block behind the table edge, which lets the stack reach out, would be a different decision | Needs design first. `finish()` already searches every slot, so solvability and the fewest blocks would be cheap to test once a decision is chosen |
+| **Puzzle Pals** (7 · 6–7) | Pieces that arrive turned, so she turns them to fit | A tap-to-turn interaction with its own hint; more pieces is not a next decision |
+| **Quick Tricks** (6 · 5–6) | A third show, the remix | The new gestures (crank, pour, loop) and a visible condition; shares its gesture test with Fill and Dump |
+| **Song Maker** (7 · 6–7) | *Answer the phrase:* end a given four-note start so it comes home | A rule for "comes home" that a test can check, and a mode that fits the loop grid |
+| **Story Steps** (7 · 6–7) | Choose the picture that caused what happened | Authored story content and art, near Story Theater |
+| **Letter Trails** (8 · 7–8) | Lowercase letters, then tracing the word a picture spells | Needs a four-line writing frame; digits are a separate preschool mode (Number Trails above) |
+| **Tangram Town** (6 · 5–6) | Flip a piece; make the same shape with fewer pieces | More silhouettes to author |
+| **Penguin Slide** (5 · 2–5) | *Mossy Path:* visit every square once | A new rule with its own solver (roadmap names it) |
+| **Beat Builder** (5 · 3–5) | Two sections (a verse and a chorus) | A bigger design in a thin subject; do it as a music slice |
+| **Pixel Pictures** (5 · 3–5) | Pixel Flipbook (above) | A new bounded creation shape |
+
+### Leave: the ceiling is right
+
+| Game | Why |
+| --- | --- |
+| **Jelly Drums** (9 · 8–9) | Each level adds a note to remember, which is memory load, not a decision; making tunes belongs to Song Maker and Beat Builder |
+| **Bubble Pop** (11 · 10–11) | A simple toy that has already grown pairs-to-10; arithmetic lives in Duck Pond and Frog Hop |
+| **Size Parade** (8 · 7–8) | The school window only adds more friends, which is a bigger number rather than a new decision; measurement lives in Inchworm Measure |
+| **Scoop Shop** (6 · 5–6) | The top level is already "remember the order"; more would only add load |
+| **Stamp Studio** (6 · 5–6) | Open-ended; every story is welcome, so there is nothing to climb |
+| **Teddy Doctor** (6 · 5–6) | Care role-play whose top level already sequences a check-up |
+| **Rhythm Neighbors** (6 · 5–6) | A couch game; layered rhythms are a larger design for a music slice |
+| **Little Helpers** (6 · 5–6) | Equal groups is the right end; remainders are in Monster Munch and Lasso Loops, and rows and columns are Orchard Rows |
+| **Lasso Loops** (5 · 3–5) | Place value past 39 would mean forty or more fireflies, which is clutter; it needs a different representation, not a longer ladder |
+| **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
+| **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
+| **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
+| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them |
+
+### Sketches for the three to build first
+
+All three are modes of the existing game, extend a ladder the child already knows, and close gaps from the [gap review](#gap-review-2026-10-09).
+
+**Memory Match 10–12, "Same, said differently."** *Fun action:* flip cards to find the two that mean the same. *Skill:* reading number words, naming fractions and reading a clock, as one idea about equivalence. *Smallest round:* four pairs of number words and numerals, each spoken as it turns over. *Support:* exploring unseen cards still costs nothing; a pair counts as a miss only if its partner was already known (the game's existing rule); replaying a card's speech is free. *Levels:* 10 number words to numerals (one to ten); 11 fraction pictures to names (a half, a quarter, three quarters); 12 clock faces to digital times (o'clock and half past). Build 10 first: its cards are text, as the letter cards are. 11 and 12 need small new art (a fraction picture and a shared clock face) and a look at whether they read clearly on a 140-unit card before they are promised. *Rule tests:* every deck has one partner per card, no two cards could both match, and every equivalence is true. *Checks:* the device speech for number and fraction words, and how long words such as "eight" fit at card size; the existing ghost-finger bot should pair by id.
+
+**Pattern Train 10–12, "The seventh car."** *Fun action:* look down the train and say what the far car must be. *Skill:* using a repeating rule to find a position without filling every car. *Smallest round:* two full repeats of an ABC pattern are shown and the train runs off the edge; she picks the seventh car from three. *Support:* she may tap the cars to count along, which is not a hint; a hint highlights the repeat. *Levels:* 10 find a far car in a one-attribute pattern (the train runs into a tunnel instead of off the edge); 11 two attributes that change together (color and shape move in step), with different rates a later step to check because the combined cycle is six or more; 12 numbered cars that count by 2, 5 or 10, a new car kind drawn with `label()`. *Rule tests:* the answer follows from the shown repeats alone, the three choices differ, and the counting steps match the numerals. *Checks:* the couch trip names its levels (4, 6 and 9), so it is unaffected.
+
+**Pet Kitchen 7–8, "Three quarters, please."** *Fun action:* serve a friend the amount they ask for. *Skill:* a fraction as a number of equal parts, and doubling's inverse. *Smallest round:* one sandwich and a friend who wants half of it. *Support:* cutting and rearranging stay free exploration; an unequal cut says so and offers the round arrow (the existing recut hint); two misses highlight the next useful action. *Levels:* 7 serve a named fraction (a half, a quarter, three quarters), where two quarters is accepted for a half; 8 halve a picture recipe, with a card that says whether the salad is for many or for one. *Rule tests:* each request has at least one valid way to serve it, and a half made of two quarters is accepted. *Art:* none new; it reuses the sandwich and the recipe screen. *Checks:* spoken fraction words, and the existing level-5 and 6 recipe screen with undo.
+
+### Open questions
+
+1. **Is two levels enough for a favorite?** The adaptive clamp means a child stays at the last level, so a favorite she plays often may want a longer school window (three or four levels). The audit favors giving the best games more depth over stretching all of them.
+2. **Representations versus a new game.** Memory Match 10–12 teaches fractions and a clock through matching; Pet Kitchen and Clock Tower teach them by doing. Decide whether the matching levels are a bridge or a duplicate once they can be played.
+3. **Order.** Pet Kitchen first (no new art), then Memory Match 10 (text cards) and Pattern Train, with Memory Match 11 and 12 after a legibility look; then Treasure Map and Critter Sort (already on the roadmap), then Bouncy Launch and Rainbow Fingers. Sink or Float's *make it float* is the strongest of the costlier set.
+
 ## Reference backlog
 
 The wider pool of ideas, kept by the reference that suggested them. Repeated names refer to the same concept as above, not separate tasks. "First playable loop" is an entry point, not a claim that every concept fits a toddler. Source descriptions are brief summaries; recheck a source before a design depends on its details. Rows for ideas that became games have been removed.
