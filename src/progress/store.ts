@@ -1,6 +1,25 @@
-import { get, set } from 'idb-keyval';
+import { del, get, set } from 'idb-keyval';
 import type { Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
+import {
+  addEntry,
+  buildBackup,
+  cleanBirth,
+  effectiveBand,
+  INDEX_KEY,
+  newEntry,
+  newProfileId,
+  parseBackup,
+  planRestore,
+  previousKey,
+  removeEntry,
+  repairIndex,
+  saveKey,
+  updateEntry,
+  type Birth,
+  type ProfileEntry,
+  type ProfileIndex,
+} from './profiles';
 import { flipItem, moveItem, tidy } from '../content/room';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
@@ -8,49 +27,125 @@ import { isNew, toggleFavorite } from '../content/shelf';
 import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
 import { defaults, HISTORY_LENGTH, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
 
-const KEY = 'neo.save';
-/** One snapshot of the save from before the last reset or restore (see `PreviousSave`). */
-const PREVIOUS_KEY = 'neo.save.previous';
+export interface RestoreResult {
+  replaced: number;
+  added: number;
+  /** People in the file who did not fit in the household. */
+  skipped: number;
+}
 
-/** Saved progress in IndexedDB. Reads are synchronous from memory; writes are batched. */
-class Store {
+/**
+ * Saved progress in IndexedDB. Reads are synchronous from memory; writes are batched.
+ *
+ * `data` is the **active profile's** save, so every scene reads and writes it as it always has. Which profile that is, and
+ * who else has a save here, lives in the index (`profiles.ts`). The first profile's save is still `neo.save`.
+ */
+export class Store {
   data: SaveData = defaults();
+  private index: ProfileIndex;
+  /** False if the index could not be read: it is then never written, so a guess cannot overwrite the people on disk. */
+  private indexTrusted = true;
   private previous: PreviousSave | null = null;
-  private timer: number | undefined;
+  private timer: ReturnType<typeof setTimeout> | undefined;
+  private listening = false;
+
+  constructor(
+    private readonly makeId: () => string = newProfileId,
+    private readonly clock: () => number = Date.now,
+  ) {
+    // Until `load` reads the real index, the app is the single-profile app it was: one blank save at `neo.save`.
+    this.index = { version: 1, active: 'unloaded', profiles: [newEntry('unloaded', 0, true)] };
+  }
+
+  private get entry(): ProfileEntry {
+    return this.index.profiles.find((p) => p.id === this.index.active) ?? this.index.profiles[0];
+  }
+
+  get activeId(): string {
+    return this.index.active;
+  }
+
+  get profiles(): readonly ProfileEntry[] {
+    return this.index.profiles;
+  }
 
   async load() {
+    this.listen();
+    this.indexTrusted = true;
+    let raw: unknown;
     try {
-      this.data = migrate(await get(KEY));
+      raw = await get(INDEX_KEY);
+    } catch (e) {
+      this.indexTrusted = false;
+      console.warn('Could not read the list of players', e);
+    }
+    this.index = repairIndex(raw, this.makeId, this.clock());
+    // A first run, or a device from before profiles, writes the one legacy profile down.
+    if (JSON.stringify(raw) !== JSON.stringify(this.index)) this.saveIndex();
+    const loaded = await this.read(this.entry);
+    this.data = loaded.data;
+    this.previous = loaded.previous;
+    this.syncBand();
+  }
+
+  /** Once only, however many times `load` runs. */
+  private listen() {
+    if (this.listening) return;
+    this.listening = true;
+    // Ask Safari not to clear our storage when space is low.
+    if (typeof navigator !== 'undefined') void navigator.storage?.persist?.();
+    // iPadOS may suspend a hidden web app before a pending write's timer runs.
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => document.hidden && this.flush());
+    if (typeof window !== 'undefined') window.addEventListener('pagehide', () => this.flush());
+  }
+
+  /** A profile's save and its undo snapshot; a save that is missing or cannot be read is a fresh one. */
+  private async read(entry: ProfileEntry): Promise<{ data: SaveData; previous: PreviousSave | null }> {
+    const out: { data: SaveData; previous: PreviousSave | null } = { data: defaults(), previous: null };
+    try {
+      out.data = migrate(await get(saveKey(entry)));
     } catch (e) {
       console.warn('Could not read saved progress', e);
     }
     try {
-      this.previous = repairPrevious(await get(PREVIOUS_KEY));
+      out.previous = repairPrevious(await get(previousKey(entry)));
     } catch (e) {
       console.warn('Could not read the undo snapshot', e);
     }
-    // Ask Safari not to clear our storage when space is low.
-    void navigator.storage?.persist?.();
-    // iPadOS may suspend a hidden web app before a pending write's timer runs.
-    document.addEventListener('visibilitychange', () => document.hidden && this.flush());
-    window.addEventListener('pagehide', () => this.flush());
+    return out;
   }
 
   save() {
-    window.clearTimeout(this.timer);
-    this.timer = window.setTimeout(() => this.write(), 300);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.write(), 300);
   }
 
   /** Writes a pending save right away. */
   flush() {
     if (this.timer === undefined) return;
-    window.clearTimeout(this.timer);
+    clearTimeout(this.timer);
     this.write();
   }
 
   private write() {
     this.timer = undefined;
-    set(KEY, this.data).catch((e) => console.warn('Could not save progress', e));
+    set(saveKey(this.entry), this.data).catch((e) => console.warn('Could not save progress', e));
+  }
+
+  private saveIndex() {
+    if (!this.indexTrusted) return;
+    set(INDEX_KEY, this.index).catch((e) => console.warn('Could not save the list of players', e));
+  }
+
+  /**
+   * Once a profile has a birth (or a chosen start), its saved band follows the age, so the places, games and picnic that read
+   * `profile.band` need no change. A profile with neither keeps the band its save has, exactly as before.
+   */
+  private syncBand() {
+    const band = effectiveBand(this.entry, this.data.profile.band, new Date(this.clock()));
+    if (band === this.data.profile.band) return;
+    this.data.profile.band = band;
+    this.save();
   }
 
   stats(gameId: string): GameStats {
@@ -218,6 +313,142 @@ class Store {
     this.save();
   }
 
+  /**
+   * Makes another profile the active one. Its save is read first, with the profile being left still active; then, in one
+   * step, the pending write of the one being left goes out under its own key and `data` becomes the other's. There is no
+   * moment when `data` is empty and a stray `save()` could overwrite a real save.
+   */
+  async switchTo(id: string): Promise<boolean> {
+    const target = this.index.profiles.find((p) => p.id === id);
+    if (!target) return false;
+    if (id === this.index.active) return true;
+    const loaded = await this.read(target);
+    // Someone may have been removed while the save was being read.
+    if (!this.index.profiles.some((p) => p.id === id)) return false;
+    this.flush();
+    this.index = { ...this.index, active: id };
+    this.data = loaded.data;
+    this.previous = loaded.previous;
+    this.saveIndex();
+    this.syncBand();
+    return true;
+  }
+
+  /** Adds a person and returns their id, or null if the household is full. They are not switched to; their save starts blank. */
+  addProfile(birth: Birth | null = null): string | null {
+    let id = this.makeId();
+    for (let tries = 0; this.index.profiles.some((p) => p.id === id); tries++) {
+      if (tries >= 5) return null;
+      id = this.makeId();
+    }
+    const next = addEntry(this.index, { ...newEntry(id, this.clock()), birth: cleanBirth(birth) });
+    if (!next) return null;
+    this.index = next;
+    this.saveIndex();
+    return id;
+  }
+
+  /**
+   * Takes a person and their save away for good (a caller asks first, behind the grown-ups' hold). If it was the active
+   * profile, another becomes active; the last one is replaced by a blank profile, never by nothing.
+   */
+  async removeProfile(id: string): Promise<boolean> {
+    const gone = this.index.profiles.find((p) => p.id === id);
+    if (!gone) return false;
+    const next = removeEntry(this.index, id, this.makeId, this.clock());
+    const wasActive = id === this.index.active;
+    if (wasActive) {
+      const loaded = await this.read(next.profiles.find((p) => p.id === next.active)!);
+      // Nothing pending may write the removed profile back.
+      clearTimeout(this.timer);
+      this.timer = undefined;
+      this.data = loaded.data;
+      this.previous = loaded.previous;
+    }
+    this.index = next;
+    this.saveIndex();
+    if (wasActive) this.syncBand();
+    // The index goes first, so a crash leaves a stray save at worst and never an index that points at nothing.
+    await Promise.all([del(saveKey(gone)), del(previousKey(gone))]).catch((e) => console.warn('Could not clear a removed player', e));
+    return true;
+  }
+
+  /** The birth month and year of a profile, or null to forget it. Anything that is not a month and a year is forgotten. */
+  setBirth(id: string, birth: Birth | null) {
+    if (!this.index.profiles.some((p) => p.id === id)) return;
+    this.index = updateEntry(this.index, id, { birth: cleanBirth(birth) });
+    this.saveIndex();
+    if (id === this.index.active) this.syncBand();
+  }
+
+  /** A grown-up's "start here instead": the band that wins over the age, or null to follow the age again. */
+  setStartBand(id: string, band: Band | null) {
+    if (!this.index.profiles.some((p) => p.id === id)) return;
+    this.index = updateEntry(this.index, id, { startBand: band });
+    this.saveIndex();
+    if (id === this.index.active) this.syncBand();
+  }
+
+  /** Another profile's save, to draw its card on the chooser. The active profile's is the live one. */
+  async peek(id: string): Promise<SaveData | null> {
+    const entry = this.index.profiles.find((p) => p.id === id);
+    if (!entry) return null;
+    if (id === this.index.active) return this.data;
+    return (await this.read(entry)).data;
+  }
+
+  /** One file with every profile. */
+  async exportAll(): Promise<string> {
+    this.flush();
+    const profiles = [];
+    for (const e of this.index.profiles) {
+      const save = e.id === this.index.active ? this.data : (await this.read(e)).data;
+      profiles.push({ id: e.id, birth: e.birth, startBand: e.startBand, save });
+    }
+    return JSON.stringify(buildBackup(profiles, this.index.active, this.clock()), null, 2);
+  }
+
+  /**
+   * Puts a backup back (see `planRestore`): a profile with the same id is replaced and keeps its own undo snapshot, a new one
+   * is added if there is room, and nobody is deleted. Returns null if the text is not a backup of ours.
+   */
+  async restoreAll(text: string): Promise<RestoreResult | null> {
+    const parsed = parseBackup(text);
+    if (!parsed) return null;
+    this.flush();
+    const plan = planRestore(this.index, parsed);
+    let index = this.index;
+    let activeReplaced = false;
+    for (const r of plan.replace) {
+      const entry = index.profiles.find((p) => p.id === r.id)!;
+      const isActive = r.id === index.active;
+      const current = isActive ? this.data : (await this.read(entry)).data;
+      const snapshot = remember(current, this.clock());
+      await set(previousKey(entry), snapshot).catch((e) => console.warn('Could not keep the undo snapshot', e));
+      if (isActive) {
+        this.previous = snapshot;
+        this.data = r.save;
+        activeReplaced = true;
+      } else {
+        await set(saveKey(entry), r.save).catch((e) => console.warn('Could not save progress', e));
+      }
+      if (r.entry) index = updateEntry(index, r.id, r.entry);
+    }
+    for (const a of plan.add) {
+      const next = addEntry(index, { ...newEntry(a.id, this.clock()), birth: a.birth, startBand: a.startBand });
+      if (!next) continue;
+      index = next;
+      await set(saveKey({ id: a.id, legacy: false }), a.save).catch((e) => console.warn('Could not save progress', e));
+    }
+    this.index = index;
+    this.saveIndex();
+    if (activeReplaced) {
+      this.save();
+      this.syncBand();
+    }
+    return { replaced: plan.replace.length, added: plan.add.length, skipped: plan.skipped };
+  }
+
   exportJson(): string {
     return JSON.stringify(this.data, null, 2);
   }
@@ -227,6 +458,7 @@ class Store {
       const next = migrate(JSON.parse(text));
       this.keep();
       this.data = next;
+      this.syncBand();
       this.save();
       return true;
     } catch {
@@ -254,6 +486,7 @@ class Store {
     this.data = swapped.data;
     this.previous = swapped.previous;
     this.persistPrevious();
+    this.syncBand();
     this.save();
     return true;
   }
@@ -265,7 +498,7 @@ class Store {
   }
 
   private persistPrevious() {
-    if (this.previous) set(PREVIOUS_KEY, this.previous).catch((e) => console.warn('Could not keep the undo snapshot', e));
+    if (this.previous) set(previousKey(this.entry), this.previous).catch((e) => console.warn('Could not keep the undo snapshot', e));
   }
 }
 
