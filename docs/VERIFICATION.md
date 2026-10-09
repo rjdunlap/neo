@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (630 tests, journal source detail on current main) | Journal source-detail entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09 (631 tests, typecheck and build, with deferred scene destruction) | Scene teardown entry | Run with every code change |
 | `npm run test:offline` | 2026-10-09, with the gear and no play timer | Gear entry (2026-10-08: Lemonade Stand entry and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
@@ -49,6 +49,14 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Scene teardown waits out already-ready continuations (2026-10-09)
+
+What changed: when `App` leaves a scene it still removes the root, stops the scene's tweens and clears tracked updates immediately, but `Scene.destroy()` now destroys the detached Pixi display tree one task later. This closes the rare race where a promise resolved in the final update had already queued its `await` continuation, which then wrote through a destroyed object's null transform (seen in Frog Hop's `leap` and Peekaboo Barn's `question()` loop). Repeated `destroy()` calls schedule only one release; game-owned timers and global callbacks still require their own cleanup.
+
+- Typecheck, 631 unit tests and `npm run build` passed. Two new lifecycle tests cover the queued continuation and idempotent destruction. With synchronous destruction briefly restored, the first test failed and reproduced `Cannot read properties of null (reading 'set')` in the queued continuation.
+- `GAME_URL=http://localhost:5174 GAME_ONLY=frog-hop,peekaboo-barn ROUNDS=20 node scripts/abandon-cards.mjs` passed: 40 cards opened and left at randomized moments, 0 page errors. The earlier stress had found both games' failures in this path.
+- Not run: broad game, world, couch or offline suites. No game rules, navigation, persistence or assets changed. The separate Peg Garden timing flake remains open on the roadmap.
 
 ### The grown-ups' gear, an Esc pause sheet and no play timer (2026-10-09)
 
