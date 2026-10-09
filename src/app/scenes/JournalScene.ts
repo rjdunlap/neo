@@ -20,6 +20,10 @@ const PER_PAGE = 8;
 const CARD = { w: 190, h: 170, gap: 24 };
 /** Which page was open last, for this session. */
 let lastPage = 0;
+/** Another player is at the screen: the page the last one had open is not theirs. */
+export function forgetJournalPage() {
+  lastPage = 0;
+}
 
 interface Card {
   entry: JournalEntry;

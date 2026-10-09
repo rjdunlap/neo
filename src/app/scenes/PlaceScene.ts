@@ -33,6 +33,11 @@ const SWIPE = 24;
 /** Where each place was scrolled to, and whether "swipe for more" was said, for this session. */
 const lastScroll = new Map<Band, number>();
 const toldMore = new Set<Band>();
+/** Another player is at the screen: where the last one scrolled to, and what they were told, is not theirs. */
+export function forgetPlaces() {
+  lastScroll.clear();
+  toldMore.clear();
+}
 
 /** The games for a band, grouped by subject so music sits with music and numbers with numbers. */
 export function gamesFor(band: Band): GameModule[] {

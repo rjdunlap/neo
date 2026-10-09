@@ -243,3 +243,32 @@ export function planRestore(index: ProfileIndex, backup: ParsedBackup): RestoreP
   }
   return plan;
 }
+
+// ---- What the chooser shows -------------------------------------------------------------------------------------
+
+/**
+ * Nothing has happened in this profile: no name, no friend hatched, no birth, no round played. A fresh device's one profile
+ * is like this (the index is never empty), and the chooser hides it and lets "Add a player" fill it in.
+ */
+export function isBlankProfile(save: SaveData, entry: Pick<ProfileEntry, 'birth' | 'startBand'>): boolean {
+  return (
+    save.profile.name.trim() === '' &&
+    !save.pet.hatched &&
+    entry.birth === null &&
+    entry.startBand === null &&
+    save.stickers.length === 0 &&
+    Object.values(save.games).every((g) => g.plays === 0)
+  );
+}
+
+/** The name on a person's card. Only the grown-ups' page sets a name, so a save without one is labelled with the friend's. */
+export const cardName = (save: Pick<SaveData, 'profile' | 'pet'>): string => save.profile.name.trim() || save.pet.name;
+
+/**
+ * The profile that "Add a player" fills in instead of creating a second one, so the first person stays at `neo.save`:
+ * the first blank one, the original (`legacy`) before any other. Null when none is blank.
+ */
+export function blankToFill(items: readonly { entry: ProfileEntry; save: SaveData }[]): string | null {
+  const blank = items.filter((i) => isBlankProfile(i.save, i.entry));
+  return (blank.find((i) => i.entry.legacy) ?? blank[0])?.entry.id ?? null;
+}
