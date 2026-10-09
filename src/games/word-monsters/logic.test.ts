@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { ALPHABET, fits, FIRST_WORDS, lookalike, makeQuestions, PLANS, sounded, WORDS } from './logic';
+import { ALPHABET, fits, FIRST_WORDS, lookalike, makeQuestions, nextMonster, PLANS, sounded, WORDS } from './logic';
 
 describe('Word Monsters', () => {
   it('has a spoken sound for every letter', () => {
@@ -36,5 +36,45 @@ describe('Word Monsters', () => {
     expect(fits('cat', 0, 'a')).toBe(false);
     expect(fits('cat', 2, 't')).toBe(true);
     expect(sounded('cat')).toBe('kuh, aah, tuh');
+  });
+
+  it('has a bot that plays every level with no wrong tap and no wrong drop (what the ghost finger plays)', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const questions = makeQuestions(plan, new Rng(seed));
+        if (plan.mode === 'play') {
+          // Free play: every monster in turn, round and round, until the round's taps are done.
+          const monsters = questions[0].monsters.map((letter) => ({ letter, placed: false }));
+          const heard = new Set<string>();
+          for (let taps = 0; taps < plan.rounds; taps++) heard.add(nextMonster(plan, questions[0], monsters, 0, taps)!.letter);
+          expect(heard.size, `${plan.mode} seed ${seed}`).toBe(Math.min(monsters.length, plan.rounds));
+          continue;
+        }
+        for (const q of questions) {
+          const building = plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family';
+          // A word family's ending already stands in the slots, as monsters that cannot be picked up.
+          const monsters = [...q.monsters.map((letter) => ({ letter, placed: false })), ...(q.fixed ?? '').split('').filter(Boolean).map((letter) => ({ letter, placed: true }))];
+          if (!building) {
+            const pick = nextMonster(plan, q, monsters, 0, 0);
+            expect(pick?.letter, `${plan.mode} seed ${seed}`).toBe(q.answer);
+            continue;
+          }
+          // Drop the letter for each empty slot in turn; the game takes it only if it is that slot's letter.
+          let filled = 0;
+          let drops = 0;
+          while (filled < q.answer.length) {
+            const pick = nextMonster(plan, q, monsters, filled, 0);
+            expect(pick, `${plan.mode} ${q.answer} slot ${filled}`).toBeDefined();
+            expect(pick!.placed).toBe(false);
+            expect(fits(q.answer, filled, pick!.letter)).toBe(true);
+            pick!.placed = true;
+            // In a word family the first sound finishes the word, as in the game.
+            filled = q.fixed ? q.answer.length : filled + 1;
+            drops++;
+          }
+          expect(drops).toBe(q.fixed ? 1 : q.answer.length);
+        }
+      }
+    }
   });
 });

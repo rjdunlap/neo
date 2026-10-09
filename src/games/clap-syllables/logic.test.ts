@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { FAMILIES } from '../rhyme-time/logic';
 import { OWN_PICTURES } from './art';
-import { answerOf, byCount, clapsWord, makeQuestions, PLANS, planFor, syllables, WORDS } from './logic';
+import { MIN_TAP_GAP } from '../../engine/ghost';
+import { answerOf, byCount, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, PLANS, pictureToTap, planFor, syllables, WORDS } from './logic';
 
 const rhymeWords = new Set(Object.values(FAMILIES).flat());
 
@@ -92,5 +93,46 @@ describe('the levels', () => {
 describe('the spoken count', () => {
   it('says one clap, two claps, three claps', () => {
     expect([1, 2, 3].map(clapsWord)).toEqual(['one clap', 'two claps', 'three claps']);
+  });
+});
+
+describe('the ghost finger (what the how-to card plays)', () => {
+  it('claps each word once for each beat, and the gap between its claps is well inside the pause after which a word is counted', () => {
+    for (const plan of PLANS.filter((p) => p.mode === 'along' || p.mode === 'solo')) {
+      for (let seed = 1; seed <= 50; seed++) {
+        for (const q of makeQuestions(plan, new Rng(seed))) {
+          let claps = 0;
+          while (clapsToGo(q.words[0], claps) > 0) claps++;
+          expect(claps).toBe(syllables(q.words[0]));
+        }
+      }
+    }
+    // The hand returns to the pad, presses and lifts with no rest in between; resting the usual half second as well would leave the margin at a tenth of a second.
+    expect(MIN_TAP_GAP + 0.5).toBeLessThan(PAUSE);
+  });
+
+  it('carries every picture to the hoop with as many claps as its name has beats, leaving none behind', () => {
+    const plan = PLANS.find((p) => p.mode === 'sort')!;
+    for (let seed = 1; seed <= 100; seed++) {
+      const [q] = makeQuestions(plan, new Rng(seed));
+      const bins = Array.from({ length: plan.max }, (_, i) => ({ count: i + 1 }));
+      const cards = q.words.map((word) => ({ word, sorted: false }));
+      for (let next = nextToSort(cards, bins); next; next = nextToSort(cards, bins)) {
+        expect(next.bin.count, next.card.word.word).toBe(syllables(next.card.word));
+        next.card.sorted = true;
+      }
+      expect(cards.every((c) => c.sorted)).toBe(true);
+    }
+  });
+
+  it('taps the one picture whose name has the claps that were played', () => {
+    const plan = PLANS.find((p) => p.mode === 'match')!;
+    for (let seed = 1; seed <= 100; seed++) {
+      for (const q of makeQuestions(plan, new Rng(seed))) {
+        const cards = q.words.map((word) => ({ word }));
+        expect(pictureToTap(q, cards)?.word).toBe(answerOf(q));
+        expect(cards.filter((c) => syllables(c.word) === q.target)).toHaveLength(1);
+      }
+    }
   });
 });

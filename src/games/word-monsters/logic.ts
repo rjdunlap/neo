@@ -116,3 +116,14 @@ export const fits = (word: string, filled: number, letter: string) => word[fille
 
 /** "kuh, aah, tuh" for the voice. */
 export const sounded = (word: string) => word.split('').map((l) => SOUNDS[l]).join(', ');
+
+/**
+ * What a capable child does next, for the ghost finger. Free play: each monster in turn, round and round, to hear them.
+ * Finding: the monster that is the answer. Building: the monster whose letter is the next empty slot's, never one that
+ * is already in a slot (a word family's ending stands there from the start).
+ */
+export function nextMonster<M extends { letter: string; placed: boolean }>(plan: MonsterPlan, q: Question, monsters: readonly M[], filled: number, taps: number): M | undefined {
+  if (plan.mode === 'play') return monsters.length ? monsters[taps % monsters.length] : undefined;
+  if (plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family') return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
+  return monsters.find((m) => m.letter === q.answer);
+}

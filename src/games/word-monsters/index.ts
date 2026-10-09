@@ -14,8 +14,8 @@ import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
 import { letterPicture } from '../letter-trails/pictures';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { fits, FIRST_WORDS, makeQuestions, planFor, sounded, SOUNDS, WORDS, type MonsterPlan, type Question } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { fits, FIRST_WORDS, makeQuestions, nextMonster, planFor, sounded, SOUNDS, WORDS, type MonsterPlan, type Question } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -190,6 +190,21 @@ class WordMonsters implements Game {
   }
 
   update() {}
+
+  /**
+   * The ghost finger on the how-to card: tap each monster in turn to hear them, tap the one that is the answer, or carry the
+   * letter that comes next to the first empty slot.
+   */
+  autotouch(): TouchIntent | null {
+    // Free play never starts a question, so its monsters belong to the first.
+    const q = this.question ?? (this.plan.mode === 'play' ? this.questions[0] : undefined);
+    if (this.busy || this.finished || !q) return null;
+    const m = nextMonster(this.plan, q, this.monsters.filter((x) => !x.destroyed), this.filled, this.taps);
+    if (!m) return null;
+    if (!this.building) return { tap: { on: m } };
+    const slot = this.slotAt(this.filled);
+    return m.drag && !m.drag.dragging ? { drag: { on: m }, to: { on: this.crowd, x: slot.x, y: slot.y } } : null;
+  }
 
   destroy() {
     for (const m of this.monsters) m.drag?.destroy();
@@ -464,6 +479,7 @@ export const wordMonsters: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  touchDemo: true,
   coplayHint: 'Make each monster\'s sound together, slowly: "mmm", "sss", then blend them into a word.',
   offScreen: 'Play I-spy with sounds: "I spy something that starts with sss."',
   hubIcon: () => new MonstersIcon(),

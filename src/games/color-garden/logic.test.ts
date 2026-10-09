@@ -3,7 +3,7 @@ import { FRUIT_FOR } from '../../art/props';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { basketAt, basketWidth, deal, PLANS } from './logic';
+import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, PLANS } from './logic';
 
 describe('Color Garden', () => {
   it('gives every basket something to catch, and only things that belong in a basket', () => {
@@ -35,6 +35,30 @@ describe('Color Garden', () => {
         // High in the sky, or far off to the side: not a basket.
         expect(basketAt(baskets, baskets[0].x, y - 400)).toBeUndefined();
         expect(basketAt(baskets, 20, y - 40)).toBeUndefined();
+      }
+    }
+  });
+
+  it('has a bot that sorts every piece of fruit by carrying it to its own basket, at every level and screen width (what the ghost finger plays)', () => {
+    for (const plan of PLANS) {
+      for (const viewW of [1024, 1366]) {
+        for (let seed = 1; seed <= 40; seed++) {
+          const { colors, items } = deal(new Rng(seed), plan);
+          const w = basketWidth(plan);
+          const xs = spread(plan.colors, 150, viewW - 40, w + 30);
+          const baskets = colors.map((color, i) => ({ color, x: xs[i], y: 768 - 26, w }));
+          let waiting = items.map((color) => ({ color }));
+          let moves = 0;
+          for (let next = nextToSort(waiting, baskets); next; next = nextToSort(waiting, baskets)) {
+            // The drop lands in the basket of the fruit's color, so it is taken and nothing is a miss.
+            const at = basketAt(baskets, next.basket.x, next.basket.y - DROP_ABOVE);
+            expect(at?.color, `${plan.colors} colors, seed ${seed}`).toBe(next.item.color);
+            waiting = waiting.filter((i) => i !== next.item);
+            moves++;
+          }
+          expect(moves).toBe(plan.items);
+          expect(waiting).toHaveLength(0);
+        }
       }
     }
   });

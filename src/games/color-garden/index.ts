@@ -9,8 +9,8 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import type { Game, GameContext, GameModule } from '../types';
-import { basketAt, basketWidth, deal, planFor, type GardenPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, planFor, type GardenPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -170,6 +170,13 @@ class ColorGarden implements Game {
     this.clock += dt;
   }
 
+  /** The ghost finger on the how-to card: carry the next piece of fruit to the basket of its own color. */
+  autotouch(): TouchIntent | null {
+    if (this.finished) return null;
+    const next = nextToSort(this.items.filter((i) => !i.drag.dragging && !i.view.destroyed), this.baskets);
+    return next ? { drag: { on: next.item.view }, to: { on: next.basket, x: 0, y: -DROP_ABOVE } } : null;
+  }
+
   destroy() {
     for (const i of this.items) i.drag.destroy();
   }
@@ -301,6 +308,7 @@ export const colorGarden: GameModule = {
     return `Sort ${p.items} ${p.fruit ? 'fruits' : 'balloons and flowers'} into ${p.colors} colors`;
   },
   music: STYLES.paint,
+  touchDemo: true,
   coplayHint: 'Say each color with {name}: "red apple, red basket!"',
   offScreen: 'Sort socks or blocks into piles by color together.',
   hubIcon: () => new TreeIcon(),
