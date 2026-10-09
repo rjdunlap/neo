@@ -128,6 +128,17 @@ export function choices(m: Measure, mode: MeasureMode, rng: Rng): number[] {
 export const answerOf = (m: Measure, mode: MeasureMode) =>
   mode === 'compare' || mode === 'rulerdiff' ? Math.abs(m.length - m.other!.length) : mode === 'rulersum' ? m.length + m.other!.length : m.length;
 
+export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'answer'; value: number };
+
+/** The next real touch for a clean measuring round: fill each unfinished row, then choose its reading. */
+export function measureTouch(m: Measure, mode: MeasureMode, worms: readonly number[]): MeasureTouch | null {
+  if (isRuler(mode)) return { kind: 'answer', value: answerOf(m, mode) };
+  const lengths = [m.length, ...(m.other ? [m.other.length] : [])];
+  const row = lengths.findIndex((length, i) => (worms[i] ?? 0) < length);
+  if (row >= 0) return { kind: 'worm', row };
+  return mode === 'lay' ? null : { kind: 'answer', value: answerOf(m, mode) };
+}
+
 /** Which ruler spaces to light up when help is wanted: `row` is 0 for the first thing, 1 for the second; `from` is a ruler mark. */
 export interface Span {
   row: 0 | 1;

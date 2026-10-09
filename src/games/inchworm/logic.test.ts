@@ -1,8 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, PLANS, RULER, temptingReading } from './logic';
+import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, measureTouch, PLANS, RULER, temptingReading } from './logic';
 
 describe('Inchworm Measure', () => {
+  it('demonstrates every mode by filling each row and then choosing the exact reading', () => {
+    for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
+      for (const m of makeMeasures(plan, new Rng(seed))) {
+        const worms = Array(m.other ? 2 : 1).fill(0);
+        for (let step = 0; step < 20; step++) {
+          const move = measureTouch(m, plan.mode, worms);
+          if (!move) break;
+          if (move.kind === 'answer') {
+            expect(move.value).toBe(answerOf(m, plan.mode));
+            break;
+          }
+          expect(move.row).toBeGreaterThanOrEqual(0);
+          expect(move.row).toBeLessThan(worms.length);
+          worms[move.row]++;
+        }
+        if (!isRuler(plan.mode)) {
+          expect(worms[0]).toBe(m.length);
+          if (m.other) expect(worms[1]).toBe(m.other.length);
+        }
+        expect(measureTouch(m, plan.mode, worms)).toEqual(plan.mode === 'lay' ? null : { kind: 'answer', value: answerOf(m, plan.mode) });
+      }
+    }
+  });
+
   it('makes lengths that fit, different each time, and answers that are offered', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {

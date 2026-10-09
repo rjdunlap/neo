@@ -1,8 +1,54 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { aloneSide, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, PLANS, tilt, total, ways, weigh, type Thing } from './logic';
+import { aloneSide, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, PLANS, seesawTouch, tilt, total, ways, weigh, type SeesawTouchItem, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
+  it('demonstrates every mode with only moves that lead to its answer', () => {
+    for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
+      for (const round of makeRounds(plan, new Rng(seed))) {
+        const same = plan.mode === 'same';
+        const items: SeesawTouchItem[] = [
+          ...round.fixed.map((thing) => ({ thing, fixed: !same, side: round.fixedSide })),
+          ...(round.across ?? []).map((thing) => ({ thing, fixed: false, side: other(round.fixedSide) })),
+          ...round.offered.map((thing) => ({ thing, fixed: false, side: null })),
+        ];
+        let numbers = false;
+        let answered = false;
+        const weight = (side: 'left' | 'right') => total(items.filter((item) => item.side === side).map((item) => item.thing));
+        const target = other(round.fixedSide);
+        for (let step = 0; step < 30; step++) {
+          if (plan.mode === 'heaviest') for (const item of items) if (item.side) item.tested = true;
+          const sides = { left: items.filter((i) => i.side === 'left').map((i) => i.thing), right: items.filter((i) => i.side === 'right').map((i) => i.thing) };
+          const readyForNumber = plan.mode === 'mystery' ? weight(target) === total(round.fixed) : plan.mode === 'same' ? !!aloneSide(sides) : false;
+          if (readyForNumber && !numbers) numbers = true;
+          const move = seesawTouch(plan, round, items, numbers);
+          if (!move) break;
+          if (move.kind === 'answer') {
+            expect(move.value).toBe(round.answer);
+            answered = true;
+            break;
+          }
+          const item = items[move.item];
+          expect(item.fixed).toBe(false);
+          if (move.to === 'wagon') {
+            expect(item.thing.weight).toBe(round.answer);
+            item.side = null;
+            item.inWagon = true;
+          } else if (move.to === 'ground') item.side = null;
+          else {
+            if (plan.mode === 'heaviest') for (const otherItem of items) if (otherItem !== item && otherItem.side === move.to) otherItem.side = null;
+            item.side = move.to;
+          }
+        }
+
+        if (plan.mode === 'up' || plan.mode === 'heavy') expect(weight(target)).toBeGreaterThan(total(round.fixed));
+        if (plan.mode === 'level' || plan.mode === 'parts') expect(weight(target)).toBe(total(round.fixed));
+        if (plan.mode === 'mystery' || plan.mode === 'same') expect(answered).toBe(true);
+        if (plan.mode === 'heaviest') expect(items.some((item) => item.inWagon && item.thing.weight === round.answer)).toBe(true);
+      }
+    }
+  });
+
   it('leans toward the heavier side, more for a bigger difference, and is level only when equal', () => {
     expect(tilt(3, 3)).toBe(0);
     expect(downSide(3, 3)).toBeNull();
