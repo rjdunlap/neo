@@ -160,3 +160,14 @@ export function finish(placed: readonly number[], round: ReachRound): number[] |
   }
   return null;
 }
+
+// What a capable child does next (the ghost finger on the how-to card follows these) ----------------------------
+
+/** On the basket levels: add a block while the tower is short of the target, ring the bell when it is exactly right, take one back if it is tall. */
+export const stackMove = (have: number, want: number): 'add' | 'ring' | 'take' => (have < want ? 'add' : have > want ? 'take' : 'ring');
+
+/** On "which tower will stand?": the tower whose every block has its own middle and the middle of the blocks above over the block below. */
+export const standingTower = (round: StandRound): number => round.towers.findIndex((t) => topples(t, null) === -1);
+
+/** On the reach levels: where the next block goes (eighths from the table edge), or undefined when no way on is left from these blocks. */
+export const nextReach = (placed: readonly number[], round: ReachRound): number | undefined => finish(placed, round)?.[0];

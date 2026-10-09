@@ -7,9 +7,9 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon, SCENES, type Scene } from './art';
-import { dropSlot, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
+import { dropSlot, nextToPlace, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
 
 interface PieceView {
   piece: Piece;
@@ -231,6 +231,15 @@ class PuzzlePals implements Game {
     this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 4);
   }
 
+  /** The ghost finger on the how-to card: carry the next piece from the tray to its own place in the frame. */
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    const next = nextToPlace(this.pieces);
+    if (!next || next.drag.dragging) return null;
+    const c = slotCenter(this.plan, next.piece);
+    return { drag: { on: next.node }, to: { on: this.board, x: c.x, y: c.y } };
+  }
+
   destroy() {
     // The live picture only joins the stage when finished; otherwise it is ours to clean up.
     if (!this.picture.root.parent) this.picture.root.destroy({ children: true });
@@ -250,6 +259,7 @@ export const puzzlePals: GameModule = {
   levels: (b) => (b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 5, max: 7 } : b === 'preschool' ? { min: 4, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
   describeLevel: (l) => puzzlePlan(l).name,
   music: STYLES.paint,
+  touchDemo: true,
   coplayHint: 'Ask {name} what is in each piece: an ear, a sun, a flower? Then find where it goes.',
   offScreen: 'Cut an old card or a cereal box picture into two or three pieces and put it back together.',
   hubIcon: () => new WigglyIcon(puzzleIcon()),
