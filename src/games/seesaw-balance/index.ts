@@ -11,7 +11,7 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   aloneSide,
   balanceObservation,
@@ -21,6 +21,7 @@ import {
   numberChoices,
   other,
   planFor,
+  seesawTouch,
   tilt,
   total,
   weigh,
@@ -203,6 +204,8 @@ class SeesawBalance implements Game {
   hintItem: Item | null = null;
   private lastOff: { item: Item; from: Side } | null = null;
   private spin = 0;
+  /** Presents already compared on a tray during the how-to demonstration. */
+  private readonly demoTested = new Set<Item>();
 
   private readonly backdrop: Backdrop;
   private readonly stand = new Graphics();
@@ -365,6 +368,30 @@ class SeesawBalance implements Game {
     this.drawGlow();
   }
 
+  /** Use the real drags to compare, balance, or take equal things away, then tap the box's weight. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.round) return null;
+    for (const item of this.items) if (item.side) this.demoTested.add(item);
+    const move = seesawTouch(this.plan, this.round, this.items.map((item) => ({
+      thing: item.thing,
+      fixed: item.fixed,
+      side: item.side,
+      inWagon: item.inWagon,
+      tested: this.demoTested.has(item),
+    })), this.pads.length > 0);
+    if (!move) return null;
+    if (move.kind === 'answer') {
+      const pad = this.pads.find((p) => p.value === move.value);
+      return pad ? { tap: { on: pad } } : null;
+    }
+    const item = this.items[move.item];
+    if (!item?.drag || item.drag.dragging || !item.drag.enabled) return null;
+    if (move.to === 'wagon') return { drag: { on: item.node }, to: { on: this.wagon, x: 0, y: -66 } };
+    if (move.to === 'ground') return { drag: { on: item.node }, to: { on: this.ctx.stage, x: item.ground.x, y: item.ground.y } };
+    const at = this.trayTop(move.to);
+    return { drag: { on: item.node }, to: { on: this.ctx.stage, x: at.x, y: at.y } };
+  }
+
   private drawGlow() {
     const g = this.glow.clear();
     const a = 0.55 + 0.3 * Math.sin(this.clock * 6);
@@ -419,6 +446,7 @@ class SeesawBalance implements Game {
     this.tips = 0;
     this.hintItem = null;
     this.lastOff = null;
+    this.demoTested.clear();
     const r = this.round;
     const same = this.plan.mode === 'same';
     // On the take-the-same-off levels everything starts on the trays, and anything can come off.
@@ -797,6 +825,7 @@ export const seesawBalance: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
+  touchDemo: true,
   coplayHint: 'Hold two things with {name}, one in each hand: which is heavier? Then try them on the seesaw.',
   offScreen: 'Hang two cups from a coat hanger and add spoons or coins until it hangs level.',
   hubIcon: () => new SeesawIcon(),

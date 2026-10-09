@@ -13,8 +13,8 @@ import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { fits, makeScene, nextRequest, planFor, spotFacing, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { fits, makeScene, nextRequest, peekTouch, planFor, spotFacing, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -162,6 +162,22 @@ class PeekaroundIsland implements Game {
       f.node.eventMode = p.depth < -0.5 ? 'none' : 'static';
     }
     this.drawGlow();
+  }
+
+  /** Turn to reveal the hider, choose the hidden friend, or carry the named friend to a fitting island spot. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const move = peekTouch(this.plan.mode, this.turns, this.hider, this.friends);
+    if (!move) return null;
+    if (move.kind === 'turn') return { tap: { on: this.right } };
+    if (move.kind === 'tile') {
+      const tile = this.tiles.find((t) => t.name === move.name);
+      return tile ? { tap: { on: tile.node } } : null;
+    }
+    const friend = this.friends.find((f) => f.name === move.name);
+    if (move.kind === 'friend') return friend ? { tap: { on: friend.node, x: 0, y: -125 } } : null;
+    const at = this.at(move.spot);
+    return friend?.drag && !friend.drag.dragging ? { drag: { on: friend.node, x: 0, y: -125 }, to: { on: this.ctx.stage, x: at.x, y: at.y } } : null;
   }
 
   destroy() {
@@ -535,6 +551,7 @@ export const peekaroundIsland: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  touchDemo: true,
   coplayHint: 'Hide a toy behind a cup, then turn the cup around together: "Where did it go? Behind!"',
   offScreen: 'Play hide-and-seek around a chair: "Am I in front of it, behind it, or next to it?"',
   hubIcon: () => new PeekIcon(),

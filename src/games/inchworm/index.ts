@@ -13,8 +13,8 @@ import type { LineId } from '../../content/voice-script';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, planFor, temptingReading, type Measure, type MeasurePlan, type Thing } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, measureTouch, planFor, temptingReading, type Measure, type MeasurePlan, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
@@ -140,6 +140,23 @@ class Inchworm implements Game {
     const p = this.pads.find((x) => x.n === answerOf(this.m, this.plan.mode));
     if (p) return void g.roundRect(p.node.x - 66, p.node.y - 60, 132, 120, 22).stroke({ width: pulse, color: swatch.yellow.fill });
     for (const r of this.rows) g.moveTo(this.x0() + (r.start + r.length) * this.u, r.y - 50).lineTo(this.x0() + (r.start + r.length) * this.u, r.y + 50).stroke({ width: pulse, color: swatch.yellow.fill });
+  }
+
+  /** Lay the next worm end to end, or tap the reading once the measuring is complete. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.m) return null;
+    const move = measureTouch(this.m, this.plan.mode, this.rows.map((r) => r.worms));
+    if (!move) return null;
+    if (move.kind === 'answer') {
+      const pad = this.pads.find((p) => p.n === move.value);
+      return pad ? { tap: { on: pad.node } } : null;
+    }
+    const worm = this.bucket.find((b) => !b.drag.dragging);
+    const row = this.rows[move.row];
+    return worm && row ? {
+      drag: { on: worm.node },
+      to: { on: this.ctx.stage, x: this.x0() + (row.start + row.worms) * this.u + this.u / 2, y: row.y - 30 },
+    } : null;
   }
 
   destroy() {
@@ -374,6 +391,7 @@ export const inchworm: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  touchDemo: true,
   coplayHint: 'Measure something real together with paper clips or hands: "The book is five hands long!"',
   offScreen: 'Measure toys with LEGO bricks or spoons laid end to end. Which toy is longest?',
   hubIcon: () => new WormIcon(),

@@ -1,8 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { hintFor, makeBoard, PLANS, planFor, solutions, trace } from './logic';
+import { chainTouch, hintFor, makeBoard, PLANS, planFor, solutions, trace } from './logic';
 
 describe('Chain Reaction', () => {
+  it('demonstrates every generated machine by completing one accepted design before running it', () => {
+    PLANS.forEach((plan, level) => {
+      for (let seed = 1; seed <= 50; seed++) {
+        const board = makeBoard(plan, new Rng(seed * 109 + level));
+        const layout = Array<number | null>(board.loose.length).fill(null);
+        for (let step = 0; step < board.loose.length; step++) {
+          const move = chainTouch(board, layout);
+          expect(move?.kind).toBe('place');
+          if (move?.kind !== 'place') break;
+          expect(layout.filter((socket) => socket === move.socket)).toHaveLength(0);
+          layout[move.piece] = move.socket;
+        }
+        expect(trace(board, layout).success).toBe(true);
+        expect(chainTouch(board, layout)).toEqual({ kind: 'run' });
+      }
+    });
+  });
+
   it('follows fixed and loose ramps and notices a chime', () => {
     const board = {
       cols: 4,

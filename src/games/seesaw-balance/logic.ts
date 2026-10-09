@@ -182,3 +182,82 @@ export function aloneSide(sides: Record<Side, readonly Thing[]>): Side | null {
   }
   return null;
 }
+
+export interface SeesawTouchItem {
+  thing: Thing;
+  fixed: boolean;
+  side: Side | null;
+  inWagon?: boolean;
+  /** Heaviest mode: this present has already taken a turn on a tray. */
+  tested?: boolean;
+}
+
+export type SeesawTouch = { kind: 'move'; item: number; to: Side | 'ground' | 'wagon' } | { kind: 'answer'; value: number };
+
+/** Indexes of a subset that makes `need`, or null when none does. */
+function completion(items: readonly SeesawTouchItem[], indexes: readonly number[], need: number): number[] | null {
+  if (need === 0) return [];
+  if (need < 0 || !indexes.length) return null;
+  const [first, ...rest] = indexes;
+  const withFirst = completion(items, rest, need - items[first].thing.weight);
+  if (withFirst) return [first, ...withFirst];
+  return completion(items, rest, need);
+}
+
+/**
+ * The next real drag or number tap in a clean round. Heaviest mode runs a small tournament; take-the-same-off
+ * removes a matching thing from the heavy side after each deliberate tip.
+ */
+export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonly SeesawTouchItem[], numbers = false): SeesawTouch | null {
+  if (numbers) return { kind: 'answer', value: round.answer };
+  const target = other(round.fixedSide);
+  const loose = items.map((item, index) => ({ item, index })).filter(({ item }) => !item.fixed && !item.inWagon);
+  const on = (side: Side) => loose.filter(({ item }) => item.side === side);
+  const ground = loose.filter(({ item }) => item.side === null);
+  const weight = (side: Side) => total(on(side).map(({ item }) => item.thing));
+
+  if (plan.mode === 'up') {
+    const pick = ground.find(({ item }) => item.thing.weight > total(round.fixed));
+    return pick ? { kind: 'move', item: pick.index, to: target } : null;
+  }
+  if (plan.mode === 'heavy') {
+    const pick = ground.find(({ item }) => item.thing.weight > round.answer);
+    return pick ? { kind: 'move', item: pick.index, to: target } : null;
+  }
+  if (plan.mode === 'level' || plan.mode === 'mystery' || plan.mode === 'parts') {
+    const need = total(round.fixed) - weight(target);
+    if (need <= 0) return null;
+    const way = completion(items, ground.map(({ index }) => index), need);
+    return way?.length ? { kind: 'move', item: way[0], to: target } : null;
+  }
+  if (plan.mode === 'heaviest') {
+    const untested = ground.find(({ item }) => !item.tested);
+    const left = on('left')[0];
+    const right = on('right')[0];
+    if (!left && untested) return { kind: 'move', item: untested.index, to: 'left' };
+    if (!right && untested) return { kind: 'move', item: untested.index, to: 'right' };
+    if (untested && left && right) return { kind: 'move', item: untested.index, to: left.item.thing.weight < right.item.thing.weight ? 'left' : 'right' };
+    if (left && right) return { kind: 'move', item: left.item.thing.weight > right.item.thing.weight ? left.index : right.index, to: 'wagon' };
+    return null;
+  }
+
+  // Take the same kind off both sides. At level, begin a pair; while tipped, remove one item whose weight restores equality.
+  const leftWeight = weight('left');
+  const rightWeight = weight('right');
+  if (leftWeight !== rightWeight) {
+    const heavy: Side = leftWeight > rightWeight ? 'left' : 'right';
+    const difference = Math.abs(leftWeight - rightWeight);
+    const match = on(heavy).find(({ item }) => item.thing.weight === difference);
+    return match ? { kind: 'move', item: match.index, to: 'ground' } : null;
+  }
+  const sides = { left: on('left').map(({ item }) => item.thing), right: on('right').map(({ item }) => item.thing) };
+  if (aloneSide(sides)) return null;
+  const boxes = { left: on('left').filter(({ item }) => item.thing.kind === 'box'), right: on('right').filter(({ item }) => item.thing.kind === 'box') };
+  if (boxes.left.length && boxes.right.length && (boxes.left.length > 1 || boxes.right.length > 1)) {
+    const side: Side = boxes.left.length > boxes.right.length ? 'left' : 'right';
+    return { kind: 'move', item: boxes[side][0].index, to: 'ground' };
+  }
+  const side: Side = on(round.fixedSide).some(({ item }) => item.thing.kind === 'block') ? round.fixedSide : other(round.fixedSide);
+  const block = on(side).find(({ item }) => item.thing.kind === 'block');
+  return block ? { kind: 'move', item: block.index, to: 'ground' } : null;
+}

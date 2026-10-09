@@ -1,8 +1,46 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { fits, makeScene, nextRequest, PLANS, spotFacing, whereIs, type Where } from './logic';
+import { fits, makeScene, nextRequest, peekTouch, PLANS, spotFacing, whereIs, type PeekTouchFriend, type Where } from './logic';
 
 describe('Peekaround Island', () => {
+  it('demonstrates turning, choosing, and every requested placement without a wrong touch', () => {
+    for (const mode of ['find', 'named', 'who'] as const) for (let seed = 1; seed <= 50; seed++) {
+      const scene = makeScene(PLANS.find((p) => p.mode === mode)!, new Rng(seed));
+      const hider = scene.friends[scene.hider];
+      const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], 0) }));
+      if (mode === 'who') expect(peekTouch(mode, 0, hider, friends)).toEqual({ kind: 'tile', name: hider });
+      else {
+        expect(peekTouch(mode, 0, hider, friends)).toEqual({ kind: 'turn', dir: 1 });
+        expect(peekTouch(mode, 1, hider, friends)).toEqual({ kind: 'friend', name: hider });
+      }
+    }
+
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      let turns = 0;
+      const friends: PeekTouchFriend[] = ['duck', 'pig', 'cat', 'bunny'].map((name) => ({ name: name as PeekTouchFriend['name'], spot: -1 }));
+      for (let pair = 0; pair < 2; pair++) {
+        const free = [0, 1, 2, 3].filter((spot) => !friends.some((f) => f.spot === spot));
+        const first = nextRequest(free, turns, [], rng);
+        const second = nextRequest(free.filter((s) => s !== first.spot), turns, [first.where], rng);
+        const waiting = friends.filter((f) => f.spot < 0).slice(0, 2);
+        waiting[0].want = first.where;
+        waiting[1].want = second.where;
+        for (let n = 0; n < 2; n++) {
+          const move = peekTouch('two', turns, null, friends);
+          expect(move?.kind).toBe('place');
+          if (move?.kind !== 'place') break;
+          const friend = friends.find((f) => f.name === move.name)!;
+          expect(fits(friend.want!, move.spot, turns)).toBe(true);
+          friend.spot = move.spot;
+          friend.want = undefined;
+        }
+        turns += 2;
+      }
+      expect(friends.every((f) => f.spot >= 0)).toBe(true);
+    }
+  });
+
   it('turning the island changes what is in front and behind', () => {
     expect(whereIs(0, 0)).toBe('front');
     expect(whereIs(0, 1)).toBe('next');

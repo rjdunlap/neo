@@ -10,8 +10,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { hintFor, makeBoards, planFor, trace, type ChainBoard, type ChainPlan, type Layout, type Ramp } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { chainTouch, hintFor, makeBoards, planFor, trace, type ChainBoard, type ChainPlan, type Layout, type Ramp } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
@@ -133,6 +133,17 @@ class ChainReaction implements Game {
   }
 
   update() {}
+
+  /** Carry each ramp along a working design, then run the marble through the finished machine. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.machine) return null;
+    const move = chainTouch(this.machine, this.placement);
+    if (!move) return null;
+    if (move.kind === 'run') return { tap: { on: this.runButton } };
+    const part = this.parts[move.piece];
+    const at = this.socketPosition(move.socket);
+    return part && !part.handle.dragging ? { drag: { on: part.node }, to: { on: this.ctx.stage, x: at.x, y: at.y } } : null;
+  }
 
   destroy() {
     for (const p of this.parts) p.handle.destroy();
@@ -387,6 +398,7 @@ export const chainReaction: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  touchDemo: true,
   coplayHint: 'Before running it, trace the marble with a finger and predict where each ramp will send it.',
   offScreen: 'Prop up a book as a ramp for a toy ball. Change one part of the setup, predict where the ball will go, then try it.',
   hubIcon: () => new ChainIcon(),

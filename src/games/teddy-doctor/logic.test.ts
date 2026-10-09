@@ -1,8 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { AILMENTS, AIM_PARTS, CHECKS, CURE, makeRounds, nearestPart, partSpot, PATIENTS, PLANS, SCRAPE_PARTS, wantedTool } from './logic';
+import { AILMENTS, AIM_PARTS, CHECKS, CURE, doctorTouch, makeRounds, nearestPart, partSpot, PATIENTS, PLANS, SCRAPE_PARTS, wantedTool } from './logic';
 
 describe('Teddy Doctor', () => {
+  it('demonstrates every patient with the right tool, place, and check-up order', () => {
+    for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
+      for (const round of makeRounds(plan, new Rng(seed))) {
+        const scrapes = [...round.scrapes];
+        let step = 0;
+        for (let moves = 0; moves < 5; moves++) {
+          const touch = doctorTouch(plan.mode, round, step, scrapes);
+          if (!touch) break;
+          if (plan.mode === 'play') {
+            expect(touch).toEqual({ kind: 'tap', part: scrapes[0] });
+            scrapes.shift();
+          } else if (plan.mode === 'part') {
+            expect(touch).toEqual({ kind: 'tool', tool: 'bandage', part: scrapes[0] });
+            scrapes.shift();
+          } else if (plan.mode === 'tool' || plan.mode === 'clue') {
+            expect(touch).toEqual({ kind: 'tool', tool: CURE[round.ailment!].tool, part: round.part });
+            step++;
+            break;
+          } else {
+            const tool = round.steps[step];
+            expect(touch).toEqual({ kind: 'tool', tool, part: ({ stethoscope: 'tummy', thermometer: 'mouth', flashlight: 'ear' } as const)[tool] });
+            step++;
+          }
+        }
+        expect(scrapes).toHaveLength(0);
+        if (plan.mode === 'card' || plan.mode === 'told') expect(step).toBe(round.steps.length);
+      }
+    }
+  });
+
   it('gives every ailment its own cure', () => {
     const tools = AILMENTS.map((a) => CURE[a].tool);
     expect(new Set(tools).size).toBe(AILMENTS.length);
