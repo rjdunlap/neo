@@ -153,6 +153,22 @@ describe('GhostFinger', () => {
     expect(taps).toHaveBeenCalledOnce();
   });
 
+  it('can point at one object while the touch goes to another (a steering layer, with the finger on a duckling)', () => {
+    const { root, ghost, play } = scene();
+    const ground = thing(root, 0, 0);
+    const duck = thing(root, 400, 300);
+    const heard: Point[] = [];
+    ground.on('pointerdown', (e) => heard.push(e.global.clone()));
+    const stray = vi.fn();
+    onTap(duck, stray);
+    ghost.start({ tap: { on: duck, y: -30 }, receiver: ground });
+    expect(play()).toBe(true);
+    expect(heard).toHaveLength(1);
+    expect(heard[0].x).toBeCloseTo(400, 0);
+    expect(heard[0].y).toBeCloseTo(270, 0);
+    expect(stray).not.toHaveBeenCalled();
+  });
+
   it('gives up quietly when the object it was heading for is destroyed', () => {
     const { root, ghost, play } = scene();
     const gone = thing(root, 300, 300);

@@ -120,3 +120,13 @@ export function suggestion(plan: CodePlan, history: Guess[], code: number[]): nu
   const all = candidates(plan, history);
   return all.find((c) => c.join() !== code.join()) && all.length > 1 ? all[0] : code;
 }
+
+/**
+ * What a player who reasons from the clues does next (the couch bot and the how-to card's ghost finger): put the next
+ * stone of the first code that fits every mark so far into the first empty slot, and turn the key once every slot is full.
+ */
+export function nextMove(plan: CodePlan, history: Guess[], code: number[], guess: readonly (number | null)[]): { stone: number } | { key: true } {
+  const empty = guess.indexOf(null);
+  if (empty < 0) return { key: true };
+  return { stone: (candidates(plan, history)[0] ?? code)[empty] };
+}

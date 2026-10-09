@@ -39,3 +39,9 @@ export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; t
   const targets = plan.two ? [length - 2, length - 1] : [plan.missing ? 2 : length - 1];
   return { sequence, targets };
 }
+
+/**
+ * The choice that fills the car being asked for (the couch bot and the how-to card's ghost finger): the symbol the pattern
+ * puts there. Always one of the `CHOICES` on offer.
+ */
+export const wantedChoice = (sequence: readonly number[], targets: readonly number[], target: number): number => sequence[targets[target]];

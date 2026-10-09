@@ -19,6 +19,9 @@ export type Thing = keyof typeof THINGS;
 export const ALL_THINGS = Object.keys(THINGS) as Thing[];
 export const floats = (t: Thing) => THINGS[t].floats;
 
+/** The basket or button that is right for a thing (the how-to card's ghost finger sorts and guesses with it). */
+export const rightBasket = (t: Thing): 'float' | 'sink' => (floats(t) ? 'float' : 'sink');
+
 export type SinkMode = 'drop' | 'say' | 'guess' | 'sort';
 
 export interface SinkPlan {

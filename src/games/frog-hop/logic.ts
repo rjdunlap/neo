@@ -48,6 +48,15 @@ export const answerOf = (mode: HopMode, q: HopQuestion) => (mode === 'gap' ? Mat
 /** Number cards offered on 'gap' levels. */
 export const GAP_CARDS = [1, 2, 3, 4, 5, 6];
 
+/**
+ * Which spot answers a question, for the couch bot and the how-to card's ghost finger: a lily pad counted from the first one
+ * in view, or on 'gap' levels a number card by its place in `GAP_CARDS`. -1 when the answer is not on screen.
+ */
+export function answerSlot(mode: HopMode, q: HopQuestion, lo: number): number {
+  const slot = mode === 'gap' ? GAP_CARDS.indexOf(answerOf('gap', q)) : q.target - lo;
+  return slot >= 0 && slot < (mode === 'gap' ? GAP_CARDS.length : WINDOW) ? slot : -1;
+}
+
 function windowFor(top: number, a: number, b: number, rng: Rng): number {
   const min = Math.max(0, Math.max(a, b) - (WINDOW - 1));
   const max = Math.min(Math.min(a, b), top - (WINDOW - 1));

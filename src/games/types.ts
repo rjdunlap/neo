@@ -23,16 +23,22 @@ export interface Spot {
 
 /**
  * What a capable child would do with one finger next, for the ghost finger on the island's how-to card.
- * Every gesture is sent to the first spot's object, the one whose `onTap` or `draggable` handlers a real
- * finger would reach, so the game only has to say which object and where.
+ * Every gesture is sent to the first spot's object (or the intent's `receiver`), the one whose `onTap` or `draggable`
+ * handlers a real finger would reach, so the game only has to say which object and where.
  */
-export type TouchIntent =
+export type TouchIntent = (
   /** Touch down on the spot and lift. */
   | { tap: Spot }
   /** Pick the object up at the spot and carry it so that it lands on `to`; it rides `lift` units above the finger (40, like `draggable`). */
   | { drag: Spot; to: Spot; lift?: number }
   /** Put the finger down at the spot and keep it down while it follows `via`, in order (tracing, steering). */
-  | { trace: Spot; via: Spot[] };
+  | { trace: Spot; via: Spot[] }
+) & {
+  /** Send the touch to this object instead of the first spot's, for a layer that takes touches anywhere (a steering ground) while the finger points at something that moves. */
+  receiver?: Container;
+  /** Seconds to rest after this gesture before the game is asked again (0.55 by default; shorter when the next touch belongs with this one, such as the first card of a pair). */
+  pause?: number;
+};
 
 /** The object that stands for a game in the hub. Its feet sit on (0, 0). */
 export type HubIcon = Container & Updatable;

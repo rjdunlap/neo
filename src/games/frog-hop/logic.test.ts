@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { answerOf, GAP_CARDS, makeQuestions, PLANS, WINDOW } from './logic';
+import { answerOf, answerSlot, GAP_CARDS, makeQuestions, PLANS, WINDOW } from './logic';
 
 describe('Frog Hop', () => {
   it('asks questions whose start and answer are both on the pads in view', () => {
@@ -36,5 +36,20 @@ describe('Frog Hop', () => {
       const finds = makeQuestions(at('find'), new Rng(seed));
       finds.slice(1).forEach((q, i) => expect(q.start).toBe(finds[i].target));
     }
+  });
+
+  it('always has an answer on the screen for the ghost finger to tap, and it is the right one', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        for (const q of makeQuestions(plan, new Rng(seed))) {
+          const slot = answerSlot(plan.mode, q, q.lo);
+          expect(slot, plan.name).toBeGreaterThanOrEqual(0);
+          if (plan.mode === 'gap') expect(GAP_CARDS[slot]).toBe(Math.abs(q.hops));
+          else expect(q.lo + slot).toBe(q.target);
+        }
+      }
+    }
+    // A pad that has slid out of view is not an answer on screen.
+    expect(answerSlot('find', { start: 0, target: 12, hops: 12, lo: 0 }, 0)).toBe(-1);
   });
 });

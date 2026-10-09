@@ -13,8 +13,9 @@ import type { PadPart } from './catalog';
 
 /** The demo is laid out like a normal 1024×768 screen, then scaled into its window. */
 const VIEW: View = { w: DESIGN_W, h: DESIGN_H, scale: 1 };
-/** Replay a long demo from the top, and rest a moment between plays. */
+/** Replay a long demo from the top, and rest a moment between plays. A pretend finger is slower than a controller, so it gets longer. */
 const MAX_SECONDS = 40;
+const MAX_SECONDS_FINGER = 75;
 const REST_SECONDS = 1.6;
 /** How long a pressed part stays lit, so a single-frame press is still visible. */
 const HOLD = 0.3;
@@ -84,6 +85,11 @@ export class Demo {
     return this.touches ? !!this.game?.autotouch : !!this.game?.autoplay;
   }
 
+  /** How long one play may run before it is shown again from the top. */
+  get limit() {
+    return this.touches ? MAX_SECONDS_FINGER : MAX_SECONDS;
+  }
+
   /** Which pretend pointer plays it, for the card's note: null when a controller does. */
   get pointer(): 'finger' | 'mouse' | null {
     return this.touches ? (this.opts.input as 'finger' | 'mouse') : null;
@@ -137,7 +143,7 @@ export class Demo {
     }
     game.update(dt);
     this.decay(dt);
-    if (this.done || this.age > MAX_SECONDS) {
+    if (this.done || this.age > this.limit) {
       if (this.done) this.finishedRounds++;
       this.rest = REST_SECONDS;
     }
@@ -147,7 +153,9 @@ export class Demo {
     if (this.dead) return;
     this.dead = true;
     this.teardown();
-    this.root.destroy({ children: true });
+    this.root.removeFromParent();
+    // A game's `await` that was ready this frame still runs after this call; let it finish on objects that are still alive.
+    setTimeout(() => this.root.destroy({ children: true }), 0);
   }
 
   private decay(dt: number) {
@@ -167,14 +175,15 @@ export class Demo {
     this.tracked.clear();
     this.held.clear();
     this.lit.clear();
-    for (const child of this.stage.removeChildren()) child.destroy({ children: true });
     this.finger?.stop();
-    this.finger?.hand.destroy({ children: true });
+    // Take everything out of sight now, and destroy it a moment later: a continuation the game had already queued (an `await`
+    // that became ready this frame) still runs after this call and may touch its objects.
+    const doomed = [...this.stage.removeChildren(), ...[this.finger?.hand, this.fx, this.pet].filter((o): o is Container => !!o)];
+    for (const o of doomed) o.removeFromParent();
     this.finger = null;
-    this.fx?.destroy({ children: true });
     this.fx = null;
-    this.pet?.destroy({ children: true });
     this.pet = null;
+    setTimeout(() => doomed.forEach((o) => o.destroy({ children: true })), 0);
   }
 
   private build() {

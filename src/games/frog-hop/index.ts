@@ -11,8 +11,8 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { answerOf, GAP_CARDS, makeQuestions, planFor, WINDOW, type HopPlan, type HopQuestion } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { answerOf, answerSlot, GAP_CARDS, makeQuestions, planFor, WINDOW, type HopPlan, type HopQuestion } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -186,7 +186,7 @@ class FrogHop implements Game {
     out.players[0].active = true;
     this.botWait -= dt;
     if (this.busy || this.finished || !this.q || this.botWait > 0) return out;
-    const want = this.plan.mode === 'gap' ? GAP_CARDS.indexOf(answerOf('gap', this.q)) : this.q.target - this.lo;
+    const want = answerSlot(this.plan.mode, this.q, this.lo);
     if (want < 0) return out;
     if (want === this.focus) {
       out.players[0].action = true;
@@ -196,6 +196,13 @@ class FrogHop implements Game {
       this.botWait = 0.4;
     }
     return out;
+  }
+
+  /** The ghost finger on the how-to card: tap the lily pad (or on counting levels the number card) that answers the question. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.q) return null;
+    const slot = answerSlot(this.plan.mode, this.q, this.lo);
+    return slot < 0 ? null : { tap: { on: this.spots[slot] } };
   }
 
   private async next() {
@@ -370,6 +377,7 @@ export const frogHop: GameModule = {
   coplayHint: 'Count the hops out loud together, tapping the table for each one.',
   offScreen: 'Make a number line with chalk or tape on the floor and hop along it: "Start at 2, hop 3 more!"',
   hubIcon: () => new HopIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new FrogHop(ctx),
 };

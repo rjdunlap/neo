@@ -10,9 +10,9 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { floatIcon, sinkIcon, thingArt } from './art';
-import { floats, sinkPlan, thingsFor, type SinkPlan, type Thing } from './logic';
+import { floats, rightBasket, sinkPlan, thingsFor, type SinkPlan, type Thing } from './logic';
 
 interface Item {
   thing: Thing;
@@ -94,6 +94,22 @@ class SinkFloat implements Game {
   start() {
     if (this.plan.mode === 'guess') void this.nextGuess();
     else void this.ctx.instruct(this.plan.mode === 'sort' ? 'sink.sort' : 'sink.drop');
+  }
+
+  /**
+   * The ghost finger on the how-to card: tap each thing to drop it in, guess the right button for it, or carry it to its basket.
+   * (A guess is never a wrong answer here, but a demonstration shows the plain right one.)
+   */
+  autotouch(): TouchIntent | null {
+    if (this.finished || this.busy) return null;
+    if (this.plan.mode === 'guess') {
+      if (!this.guessing) return null;
+      return { tap: { on: rightBasket(this.items[this.current].thing) === 'float' ? this.floatButton : this.sinkButton } };
+    }
+    const item = this.items.find((i) => !i.done && !i.node.destroyed && !i.drag?.dragging);
+    if (!item) return null;
+    if (this.plan.mode !== 'sort') return { tap: { on: item.node } };
+    return { drag: { on: item.node }, to: { on: this.baskets, x: this.view.w * 0.87, y: this.basketY(rightBasket(item.thing)) } };
   }
 
   // Dropping things in ----------------------------------------------------------------
@@ -412,6 +428,7 @@ export const sinkFloat: GameModule = {
   coplayHint: 'Before each splash, ask {name}: will it float or sink? Every guess is a good guess.',
   offScreen: 'At bath time, test a spoon, a cup, a toy and a sponge: which float and which sink?',
   hubIcon: () => new WigglyIcon(tankArt()),
+  touchDemo: true,
   sticker: (seed) => tankArt(seed),
   create: (ctx) => new SinkFloat(ctx),
 };
