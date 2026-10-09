@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { judge, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, reach, targets } from './logic';
+import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, targets } from './logic';
 
 describe('Bouncy Launch', () => {
   it('turns a bigger pull into a farther flight, and every pad has a pull that lands on it', () => {
@@ -35,5 +35,32 @@ describe('Bouncy Launch', () => {
     expect(judge(compare, 0.2, 0, 'nearer', 0.7)).toBe('yes');
     expect(nextAsk(0.8)).toBe('nearer');
     expect(nextAsk(0.2)).toBe('farther');
+  });
+
+  it("gives the ghost finger's bot only right pulls: every launch lands where it was asked, within the leash, and the round is finished in its own number of shots", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const tgs = targets(plan, new Rng(seed));
+        const goal = plan.mode === 'compare' ? plan.shots + 1 : plan.shots;
+        let last: number | undefined;
+        const pulls: number[] = [];
+        for (let shot = 0; shot < goal; shot++) {
+          const pull = pullToTake(plan, shot, tgs, last);
+          if (plan.mode === 'tap') {
+            expect(pull).toBe(0);
+            continue;
+          }
+          expect(pull).toBeGreaterThanOrEqual(MIN_PULL);
+          expect(pull).toBeLessThanOrEqual(MAX_PULL);
+          pulls.push(pull);
+          const f = reach(pull);
+          const ask = plan.mode === 'compare' && last !== undefined ? nextAsk(last) : undefined;
+          expect(judge(plan, f, tgs[shot] ?? 0, ask, last)).toBe('yes');
+          last = f;
+        }
+        // Free play shows pulls of different sizes; a compare level alternates by a clear step.
+        if (plan.mode === 'free') expect(new Set(pulls.map(Math.round)).size).toBeGreaterThan(2);
+      }
+    }
   });
 });

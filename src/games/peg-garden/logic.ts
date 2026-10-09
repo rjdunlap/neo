@@ -1,3 +1,4 @@
+import { simulate, type BallWorld } from '../../engine/ball';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -73,4 +74,60 @@ export const SHOT_SPEED = 620;
 export function aimVelocity(angle: number) {
   const a = Math.max(-AIM_LIMIT, Math.min(AIM_LIMIT, angle));
   return { vx: Math.sin(a) * SHOT_SPEED, vy: Math.cos(a) * SHOT_SPEED };
+}
+
+/**
+ * An angle near `near` whose shot touches bud `want`, preferring one whose neighbours a hair either side touch it too (the
+ * couch bot and the ghost finger both aim with it), or null if no angle does. A shot is exact, so a lone angle still works.
+ */
+export function aimAt(world: BallWorld, want: number, near: number, margins: readonly number[] = [0.012, 0.005, 0]): number | null {
+  const hits = (a: number) => simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball }, world, BOARD.h, 12, 1 / 30).hits.includes(want);
+  const angles: number[] = [];
+  for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.01) angles.push(a);
+  for (const m of margins) {
+    let best: number | null = null;
+    for (const a of angles) {
+      if (best !== null && Math.abs(a - near) >= Math.abs(best - near)) continue;
+      if (hits(a) && (m === 0 || (hits(a - m) && hits(a + m)))) best = a;
+    }
+    if (best !== null) return best;
+  }
+  return null;
+}
+
+/** How far a dropped pearl drifts sideways as it is let go (the game picks a drift between plus and minus this). */
+export const DRIFT = 20;
+
+/**
+ * Where to let a pearl go from the top so it touches the buds that `wanted` accepts, given the drift it will have (the bot
+ * looks at the game's next random draw). Each place is tried a unit or two either side too, as a real frame rate is never
+ * quite the simulation's. The best place is the one whose every try touches a wanted bud (`sure`), and then, when a shot
+ * with none counts against her (`early`), the one that touches it soonest, since a pearl is least certain after many bounces,
+ * and otherwise the one that touches most. Ties go to the middle.
+ */
+export function dropAt(world: BallWorld, wanted: (bud: number) => boolean, drift: number, early = false): { x: number; sure: boolean } {
+  const xs: number[] = [];
+  for (let x = BOARD.ball + 2; x <= BOARD.w - BOARD.ball - 2; x += 4) xs.push(x);
+  xs.sort((a, b) => Math.abs(a - BOARD.w / 2) - Math.abs(b - BOARD.w / 2));
+  // What each place is worth, best first when compared in turn.
+  const worth = (x: number) => {
+    const tries = [-2, 0, 2].map((off) => {
+      const hits = simulate({ x: x + off, y: 40, vx: drift, vy: 60, r: BOARD.ball }, world, BOARD.h, 12, 1 / 30).hits;
+      const first = hits.findIndex(wanted);
+      return { count: hits.filter(wanted).length, first: first < 0 ? Infinity : first };
+    });
+    const floor = Math.min(...tries.map((t) => t.count));
+    const sum = tries.reduce((a, t) => a + t.count, 0);
+    return { floor, key: early ? [floor > 0 ? 1 : 0, -Math.max(...tries.map((t) => t.first)), sum] : [floor, sum] };
+  };
+  const beats = (a: number[], b: number[]) => {
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] > b[i];
+    return false;
+  };
+  let best = { x: xs[0], ...worth(xs[0]) };
+  for (const x of xs.slice(1)) {
+    const w = worth(x);
+    if (beats(w.key, best.key)) best = { x, ...w };
+  }
+  return { x: best.x, sure: best.floor > 0 };
 }
