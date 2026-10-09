@@ -100,3 +100,14 @@ export function nextNeeded(order: Order, cone: ColorName[]): ColorName | undefin
   for (const c of cone) left.splice(left.indexOf(c), 1);
   return left[0];
 }
+
+/**
+ * The tub a capable child scoops from next, or null when the cone is done. An order says what it still needs
+ * (`nextNeeded`), in the right order on the stacking levels and from memory on the last one; free play has no order, so
+ * it takes a different flavor each time, round the counter.
+ */
+export function scoopToTake(plan: ScoopPlan, order: Order, cone: ColorName[], flavors: ColorName[]): ColorName | null {
+  if (complete(plan, order, cone)) return null;
+  if (plan.mode === 'free') return flavors[cone.length % flavors.length];
+  return nextNeeded(order, cone) ?? null;
+}

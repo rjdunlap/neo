@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { fits } from '../critter-sort/logic';
-import { bestTest, consistent, gateKey, gateWords, makeRound, passes, PLANS, planFor, sameGate, type Gate } from './logic';
+import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, PLANS, planFor, sameGate, type CrossPlan, type CrossRound, type Gate } from './logic';
 
 const hatBrown: Gate = { kind: 'and', rules: ['hat', 'brown'] };
 
@@ -111,5 +111,75 @@ describe('Critter Crossing', () => {
         expect(bestTest(r.critters, tried, r.options, evidence)).toBeNull();
       }
     }
+  });
+
+  describe("the demonstration's finger", () => {
+    /** Plays a round the way the game does: a critter sent to the gate crosses if it fits, and the finger goes on from what it saw. */
+    const play = (round: CrossRound, plan: CrossPlan) => {
+      const tried: { c: (typeof round.critters)[number]; passed: boolean }[] = [];
+      for (let guard = 0; guard < round.critters.length + 3; guard++) {
+        const step = nextStep(round, plan, tried);
+        if (!step) return { tried, guess: null };
+        if (step.do === 'guess') return { tried, guess: step.gate };
+        expect(tried.some((t) => t.c === step.critter), 'a critter is sent only once').toBe(false);
+        tried.push({ c: step.critter, passed: passes(step.critter, round.gate) });
+      }
+      throw new Error('the finger did not finish the round');
+    };
+
+    it('on a visible round sends exactly the critters that fit, and none that would be turned back', () => {
+      const plan = PLANS.find((p) => p.mode === 'visible')!;
+      for (let seed = 1; seed <= 300; seed++) {
+        const round = makeRound(plan, new Rng(seed));
+        const { tried, guess } = play(round, plan);
+        expect(guess).toBeNull();
+        expect(tried.every((t) => t.passed), `seed ${seed}`).toBe(true);
+        expect(tried.length).toBe(round.critters.filter((c) => passes(c, round.gate)).length);
+      }
+    });
+
+    it('on a hidden round tries critters until the true rule is the only one left, and guesses it once the button is awake', () => {
+      for (const plan of PLANS.filter((p) => p.mode === 'hidden')) {
+        for (let seed = 1; seed <= 400; seed++) {
+          const round = makeRound(plan, new Rng(seed));
+          const { tried, guess } = play(round, plan);
+          expect(guess, `${plan.name} seed ${seed}`).not.toBeNull();
+          expect(sameGate(guess!, round.gate), `${plan.name} seed ${seed}: guessed the true rule`).toBe(true);
+          expect(tried.length, 'enough tried for the guess button to wake').toBeGreaterThanOrEqual(plan.minTests);
+          expect(tried.length).toBeLessThanOrEqual(round.critters.length);
+          // Its guess fits everything it saw, so it can never be a wrong answer.
+          expect(consistent([guess!], tried)).toHaveLength(1);
+        }
+      }
+    });
+
+    it('does not try more critters than it needs once the rule is certain', () => {
+      for (const plan of PLANS.filter((p) => p.mode === 'hidden')) {
+        for (let seed = 1; seed <= 400; seed++) {
+          const round = makeRound(plan, new Rng(seed));
+          const { tried } = play(round, plan);
+          const before = tried.slice(0, -1);
+          // Dropping the last critter tried would have left it unfinished: not enough tried, or not yet certain.
+          const needMore = before.length < plan.minTests || consistent(round.options, before).length > 1;
+          expect(needMore, `${plan.name} seed ${seed}`).toBe(true);
+        }
+      }
+    });
+
+    it('sends a waiting critter when the evidence is already decisive but the button has not woken', () => {
+      const plan = PLANS.find((p) => p.mode === 'hidden' && p.minTests >= 3)!;
+      let sawDecisiveEarly = false;
+      for (let seed = 1; seed <= 400; seed++) {
+        const round = makeRound(plan, new Rng(seed));
+        const tried: { c: (typeof round.critters)[number]; passed: boolean }[] = [];
+        for (;;) {
+          const step = nextStep(round, plan, tried);
+          if (!step || step.do === 'guess') break;
+          if (tried.length < plan.minTests && consistent(round.options, tried).length === 1) sawDecisiveEarly = true;
+          tried.push({ c: step.critter, passed: passes(step.critter, round.gate) });
+        }
+      }
+      expect(sawDecisiveEarly).toBe(true);
+    });
   });
 });

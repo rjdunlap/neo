@@ -86,3 +86,18 @@ export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, stri
       return questions(rng, plan.rounds, plan.feelings, plan.feelings, (f) => f, plan.choices);
   }
 }
+
+/**
+ * Free play ends once every feeling has been shown and she has tapped six times, or after twelve taps of any kind.
+ * Either way the round ends with a sticker; nothing she taps is ever wrong.
+ */
+export const playDone = (tried: ReadonlySet<Feeling>, taps: number) => (tried.size === FEELINGS.length && taps >= 6) || taps >= 12;
+
+/** The feeling bubble a capable child taps next in free play: one she has not seen the pet show yet, then each in turn. */
+export const bubbleToTap = (tried: ReadonlySet<Feeling>, taps: number): Feeling => FEELINGS.find((f) => !tried.has(f)) ?? FEELINGS[taps % FEELINGS.length];
+
+/**
+ * The choice that answers a question, by its place among the options (faces, helpers or friends, left to right as they
+ * are dealt). Options are distinct, so there is exactly one.
+ */
+export const choiceToTap = (q: Question<string, string>) => q.options.indexOf(q.answer);

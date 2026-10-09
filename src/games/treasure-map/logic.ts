@@ -74,6 +74,22 @@ export function directions(f: Find): string {
   return `${h}, then ${v}`;
 }
 
+/** A square's width on the map, in the grid's own units. */
+export const CELL = 100;
+
+/** A square's middle in the grid's own coordinates (row 0 at the bottom, as on maps and graphs). */
+export const cellCenter = (s: Square, size: number) => ({ x: s.col * CELL + CELL / 2, y: (size - 1 - s.row) * CELL + CELL / 2 });
+
+/** The square under a point in the grid's own coordinates, or null off the map. The inverse of `cellCenter`. */
+export function squareAt(x: number, y: number, size: number): Square | null {
+  const col = Math.floor(x / CELL);
+  const row = size - 1 - Math.floor(y / CELL);
+  return col < 0 || row < 0 || col >= size || row >= size ? null : { col, row };
+}
+
+/** Where a finger digs for a find: the middle of its square, which `squareAt` reads back as exactly that square. Always a right dig. */
+export const digSpot = (f: Find, size: number) => cellCenter(f.square, size);
+
 /** What a wrong dig got right: the column, the row, both or neither, so the hint can say which to fix. */
 export function compare(guess: Square, want: Square): 'column' | 'row' | 'neither' | 'right' {
   const c = guess.col === want.col;

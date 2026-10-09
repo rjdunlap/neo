@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { complete, makeOrders, nextNeeded, PLANS, planFor, tryScoop } from './logic';
+import { complete, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop } from './logic';
 
 describe('Scoop Shop', () => {
   it('only orders flavors that are on the counter, in the sizes each level asks for', () => {
@@ -48,5 +48,25 @@ describe('Scoop Shop', () => {
     expect(tryScoop(stack, tall, [], 'blue')).toBe('wrong');
     expect(tryScoop(stack, tall, ['pink'], 'blue')).toBe('add');
     expect(complete(stack, tall, ['blue', 'pink', 'green'])).toBe(false);
+  });
+
+  it("takes the right scoop every time on every level, so the demonstration's cones are all served with no bounce", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const { flavors, orders } = makeOrders(plan, new Rng(seed));
+        for (const order of orders) {
+          const cone: ColorName[] = [];
+          for (let next = scoopToTake(plan, order, cone, flavors); next; next = scoopToTake(plan, order, cone, flavors)) {
+            expect(flavors).toContain(next);
+            expect(tryScoop(plan, order, cone, next), `${plan.name} seed ${seed}`).toBe('add');
+            cone.push(next);
+            expect(cone.length).toBeLessThanOrEqual(plan.max);
+          }
+          expect(complete(plan, order, cone)).toBe(true);
+          // Free play piles a different flavor on each scoop, so the demonstration shows choosing.
+          if (plan.mode === 'free') expect(new Set(cone).size).toBe(cone.length);
+        }
+      }
+    }
   });
 });

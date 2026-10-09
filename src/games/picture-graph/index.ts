@@ -11,8 +11,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { choicesFor, makeGraph, planFor, questionsFor, type Graph, type GraphPlan, type Question } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { choicesFor, graphMove, makeGraph, planFor, questionsFor, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
@@ -102,6 +102,26 @@ class PictureGraph implements Game {
       return;
     }
     for (const c of this.critters.filter((x) => x.kind === this.hint)) g.circle(c.node.x, c.node.y - 30, 40).stroke({ width: pulse, color: swatch.yellow.fill });
+  }
+
+  /**
+   * The ghost finger: add a block above a short bar (quick taps, they belong together), press the check, then answer
+   * each question by its column or its number.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.graph) return null;
+    const move = graphMove(this.plan, this.graph, this.bars, this.questions[this.q], this.firstSame);
+    if (!move) return null;
+    if (move.do === 'check') return { tap: { on: this.check } };
+    if (move.do === 'number') {
+      const pad = this.pads.find((p) => p.n === move.n);
+      return pad ? { tap: { on: pad.node } } : null;
+    }
+    const column = this.columns[move.kind];
+    if (!column) return null;
+    // A tap above the bar adds a block there, where the next one will sit.
+    if (move.do === 'add') return { tap: { on: column, x: 0, y: -(this.bars[move.kind] + 0.5) * BLOCK_H }, pause: 0.15 };
+    return { tap: { on: column, x: 0, y: -Math.max(1, this.bars[move.kind]) * BLOCK_H * 0.5 } };
   }
 
   destroy() {}
@@ -280,7 +300,7 @@ class PictureGraph implements Game {
   }
 
   /** "Same" questions need two columns: the first tap is remembered. */
-  private firstSame: number | null = null;
+  firstSame: number | null = null;
 
   private async answerColumn(i: number) {
     const q = this.questions[this.q];
@@ -375,6 +395,7 @@ export const pictureGraph: GameModule = {
   coplayHint: 'Point and count together, crossing off each critter in your head: "one duck, two ducks..."',
   offScreen: 'Make a graph of the family\'s favorite fruits with sticky notes or blocks. Which is the most popular?',
   hubIcon: () => new GraphIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new PictureGraph(ctx),
 };

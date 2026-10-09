@@ -10,8 +10,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { complete, makeOrders, nextNeeded, planFor, tryScoop, type Order, type ScoopPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { complete, makeOrders, nextNeeded, planFor, scoopToTake, tryScoop, type Order, type ScoopPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -188,6 +188,15 @@ class ScoopShop implements Game {
       const tub = want && this.tubs.get(want);
       if (tub) g.circle(tub.x, tub.y - 20, 80 + 5 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: 0.75 });
     }
+  }
+
+  /** The ghost finger: the tub the order needs next (a new flavor each time in free play, the remembered order on the last level). */
+  autotouch(): TouchIntent | null {
+    const { order, cone } = this;
+    if (this.busy || this.finished || !order || !cone) return null;
+    const color = scoopToTake(this.plan, order, cone.colors, this.flavors);
+    const tub = color && this.tubs.get(color);
+    return tub ? { tap: { on: tub, x: 0, y: -20 } } : null;
   }
 
   destroy() {}
@@ -453,6 +462,7 @@ export const scoopShop: GameModule = {
   coplayHint: 'Be the customer! Ask {name} for "pink, please!" and say thank you.',
   offScreen: 'Play ice cream shop with colored pom-poms or blocks stacked in a cup.',
   hubIcon: () => new ShopIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new ScoopShop(ctx),
 };

@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-09 (typecheck, unit tests and build on the tree that merges the journal sources, deferred teardown and the last five ghost-finger games) | Merge of journal and ghost-finger work entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09 (typecheck and 654 unit tests on the tree that merges the journal sources, deferred teardown, the gear and the last five couch ghost fingers with five more bots; the build was last run before this slice, and no shared file or asset changed since) | Five more ghost-finger games entry | Run with every code change |
 | `npm run test:offline` | 2026-10-09, with the gear and no play timer | Gear entry (2026-10-08: Lemonade Stand entry and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error); Egg Catch, Bounce Back, Bouncy Launch, Peg Garden and Bumper Garden filtered (2026-10-09) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
@@ -16,9 +16,9 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `grownups` | 2026-10-09 | Gear entry | About 40 seconds |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
-| `howto` | 2026-10-09, all 73 games on the tree merged with phone support (29 with a demonstration), landscape and portrait; the five newest ghost-finger games filtered again, now 29 with a ghost finger | Phone support entry, last five couch games entry | About three minutes |
+| `howto` | 2026-10-09, all 73 games on the tree merged with phone support (29 with a demonstration), landscape and portrait; filtered again for the five newest bots (Treasure Map, Feelings Faces, Critter Crossing, Scoop Shop, Picture Graph), now 34 with a ghost finger | Phone support entry, five more ghost-finger games entry | About three minutes |
 | `howtolevel` | 2026-10-08 | Level arrows entry | About 10 seconds; also run by `howto` |
-| `fingerdemo` | 2026-10-09, the five newest (Egg Catch, Bounce Back, Bouncy Launch, Peg Garden, Bumper Garden) and the eleven before them at every level, the other thirteen of the 29 on 2026-10-08 (first and last level), clean play asserted | Last five couch games and eleven more games entries | Under a minute a play (Bumper Garden's first level 49 s, its fifth 12 to 45 s), the longest 66 s of the 75 allowed; Chrome automation, so the hand's look on an iPad is not established |
+| `fingerdemo` | 2026-10-09, Treasure Map, Feelings Faces, Critter Crossing, Scoop Shop and Picture Graph at every level, the last five couch games (Egg Catch, Bounce Back, Bouncy Launch, Peg Garden, Bumper Garden) and the eleven before them at every level, the other thirteen of the 29 on 2026-10-08 (first and last level), clean play asserted | Five more, last five couch games and eleven more games entries | Under a minute a play (Bumper Garden's first level 49 s, its fifth 12 to 45 s), the longest 66 s of the 75 allowed; Chrome automation, so the hand's look on an iPad is not established |
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
 | `journal` | 2026-10-09 | More discovery-journal sources entry | Real play of all five source games, all three pages, reload and portrait |
 | `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
@@ -35,7 +35,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot |
 | `couchconga` | 2026-10-08 | Pond Conga entry | About two minutes; plays a full four-pond course with the bot |
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
-| `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries | Run with a `WOODS_ONLY` filter |
+| `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4, real taps) again 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
 | `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
@@ -49,6 +49,16 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### The ghost finger on five more games: the first of the one-touch taps (2026-10-09)
+
+What changed: bots for **Treasure Map**, **Feelings Faces**, **Critter Crossing**, **Scoop Shop** and **Picture Graph**, so 34 of the island's 73 games show a finger (or a mouse pointer) on their how-to card. Each rule is in the game's `logic.ts` with a test: `digSpot`/`squareAt` (the map's cell geometry moved out of the game so the finger and a real tap read the same grid), `choiceToTap`/`bubbleToTap`/`playDone`, `nextStep` (a visible gate: only the critters that fit; a secret rule: `bestTest` until one picture is left and `minTests` is tried, then that picture), `scoopToTake` and `graphMove`.
+
+- `npm run typecheck` and all 654 unit tests passed (11 new: every plan and 100 to 400 seeds per rule). Critter Crossing's test fails with the fallback for "the evidence is already decisive but the guess button has not woken" removed, and the seeded rounds do hit that case.
+- `BROWSER_SUITE=fingerdemo` passed at every level, no wrong move and no hint: Treasure Map 1 to 4 (7.0, 6.8, 6.8 and 10.8 s), Feelings Faces 1 to 7 (8 to 20 s), Critter Crossing 1 to 5 (7 to 29 s), Scoop Shop 1 to 6 (14 to 27 s), Picture Graph 1 to 4 (10 to 29 s; the longest, level 3, is under half the 75 s allowed).
+- `BROWSER_SUITE=woods WOODS_ONLY=map` (Treasure Map with real taps at all four levels, wrong row, wrong column and right square, after the refactor onto the shared geometry), `BROWSER_SUITE=howto` filtered to the five (cards fit in landscape and portrait, a window for each, "34 games with one") and `scripts/abandon-cards.mjs` (the five, ten rounds each: 50 cards opened and left at random moments, 0 page errors) passed. Looked at the demonstration window of Picture Graph 2, Critter Crossing 4 and Feelings Faces 7 mid-play: the hand sits where a finger would go.
+- The roadmap's "72" had left Lemonade Stand out; the count is now 34 of 73. 39 remain.
+- Not run: `world`, `smoke`, the couch suites, the build and the offline check (no shared file, route, save or asset changed). Not established: the hand on an iPad, and whether Critter Crossing's hand testing critters one at a time reads as "work it out" to a grown-up.
 
 ### More discovery-journal sources (2026-10-09)
 
