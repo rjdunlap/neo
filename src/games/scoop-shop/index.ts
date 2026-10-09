@@ -194,6 +194,8 @@ class ScoopShop implements Game {
   autotouch(): TouchIntent | null {
     const { order, cone } = this;
     if (this.busy || this.finished || !order || !cone) return null;
+    // The last level: wait for the picture to hide, so the order is scooped from memory and never copied.
+    if (this.plan.mode === 'memory' && !this.hidden && cone.colors.length === 0) return null;
     const color = scoopToTake(this.plan, order, cone.colors, this.flavors);
     const tub = color && this.tubs.get(color);
     return tub ? { tap: { on: tub, x: 0, y: -20 } } : null;
