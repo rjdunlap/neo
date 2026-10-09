@@ -2,7 +2,7 @@ import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { ink, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { JOURNAL, type JournalEntry } from '../../content/journal';
+import { JOURNAL, sourceText, type JournalEntry } from '../../content/journal';
 import { SCRIPT } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
@@ -135,11 +135,14 @@ export class JournalScene extends Scene {
     const y = v.h - 105;
     const strip = new Graphics().roundRect(x - w / 2, y - 62, w, 124, 30).fill({ color: 0xffffff, alpha: 0.96 }).stroke({ width: 5, color: swatch.teal.line });
     strip.eventMode = 'none';
-    const said = found ? SCRIPT[entry.line][0] : `Not found yet. Find it in ${mod?.name ?? 'its game'}.`;
+    const said = found ? SCRIPT[entry.line][0] : 'Not found yet.';
     const text = new Text({ text: said, style: { fontFamily: FONT, fontSize: 24, fill: ink, fontWeight: '500', wordWrap: true, wordWrapWidth: w - 220, lineHeight: 30 } });
     text.anchor.set(0, 0.5);
     text.position.set(x - w / 2 + 28, y - 8);
-    const where = new Text({ text: found ? `Found in ${mod?.name ?? ''}` : '', style: { fontFamily: FONT, fontSize: 17, fill: 0x6b6b7b, fontWeight: '600' } });
+    const where = new Text({
+      text: sourceText(entry, mod?.name ?? 'its game', found),
+      style: { fontFamily: FONT, fontSize: 17, fill: 0x6b6b7b, fontWeight: '600', wordWrap: true, wordWrapWidth: w - 220, lineHeight: 21 },
+    });
     where.anchor.set(0, 0.5);
     where.position.set(x - w / 2 + 28, y + 40);
     text.eventMode = where.eventMode = 'none';
@@ -195,4 +198,3 @@ export class JournalScene extends Scene {
     voice.stop();
   }
 }
-

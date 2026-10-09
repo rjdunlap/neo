@@ -12,15 +12,14 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { compare, COLUMN_COLORS, directions, makeFinds, name, planFor, ROW_PICTURES, type Find, type MapPlan, type Square } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { CELL, cellCenter, compare, COLUMN_COLORS, digSpot, directions, makeFinds, name, planFor, ROW_PICTURES, squareAt, type Find, type MapPlan, type Square } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
   school: { min: 1, max: 4 },
 };
 
-const CELL = 100;
 const PARCHMENT = 0xf3e2b8;
 
 function rowPicture(i: number): Container {
@@ -118,7 +117,7 @@ class TreasureMap implements Game {
 
   /** A square's middle, in grid coordinates (row 0 at the bottom, as on maps and graphs). */
   private cellAt(s: Square) {
-    return { x: s.col * CELL + CELL / 2, y: (this.plan.size - 1 - s.row) * CELL + CELL / 2 };
+    return cellCenter(s, this.plan.size);
   }
 
   resize(v: View) {
@@ -157,6 +156,13 @@ class TreasureMap implements Game {
     // The target's column and row light up.
     g.rect(s.col * CELL, 0, CELL, n * CELL).fill({ color: swatch.yellow.fill, alpha: pulse * 0.6 });
     g.rect(0, (n - 1 - s.row) * CELL, n * CELL, CELL).fill({ color: swatch.yellow.fill, alpha: pulse * 0.6 });
+  }
+
+  /** The ghost finger digs in the middle of the square asked for, once the last dig has finished. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.find) return null;
+    const at = digSpot(this.find, this.plan.size);
+    return { tap: { on: this.grid, x: at.x, y: at.y } };
   }
 
   destroy() {}
@@ -206,12 +212,11 @@ class TreasureMap implements Game {
   private async tapGrid(e: FederatedPointerEvent) {
     if (this.busy || this.finished) return;
     const p = this.grid.toLocal(e.global);
-    const n = this.plan.size;
-    const col = Math.floor(p.x / CELL);
-    const row = n - 1 - Math.floor(p.y / CELL);
-    if (col < 0 || row < 0 || col >= n || row >= n) return;
+    const guess = squareAt(p.x, p.y, this.plan.size);
+    if (!guess) return;
+    const { col, row } = guess;
     const want = this.find.square;
-    const result = compare({ col, row }, want);
+    const result = compare(guess, want);
     if (result === 'right') return void this.found();
     this.busy = true;
     this.misses++;
@@ -305,6 +310,7 @@ export const treasureMap: GameModule = {
   coplayHint: 'Trace the row and column with two fingers until they meet: "Across here, up there... dig!"',
   offScreen: 'Hide a toy in a muffin tin or egg carton and give clues: "third row, second cup".',
   hubIcon: () => new MapIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new TreasureMap(ctx),
 };

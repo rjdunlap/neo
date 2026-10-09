@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, targets } from './logic';
+import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
 
 describe('Bouncy Launch', () => {
   it('turns a bigger pull into a farther flight, and every pad has a pull that lands on it', () => {
@@ -11,6 +11,9 @@ describe('Bouncy Launch', () => {
       expect(padHit(padAt(i) + 0.06)).toBe(i);
     }
     expect(padHit(0.2)).toBe(-1);
+    expect(revealsPullRule([])).toBe(false);
+    expect(revealsPullRule([0.2, 0.3])).toBe(false);
+    expect(revealsPullRule([0.9, 0.2])).toBe(true);
   });
 
   it('never asks for the same cloud twice in a row', () => {

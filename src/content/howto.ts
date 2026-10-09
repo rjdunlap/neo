@@ -320,7 +320,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, text: 'Pull back more, or less, than last time, as asked.' },
     ],
     finish: 'The round ends when the pet lands where it was asked to.',
-    note: [{ from: 3, text: 'Landing short or long is just a try again.' }],
+    note: [
+      { from: 2, text: 'After two clearly different pulls, the bigger-pull observation is added to her discovery journal in the treehouse.' },
+      { from: 3, text: 'Landing short or long is just a try again.' },
+    ],
   },
   'word-monsters': {
     goal: 'Meet the letter monsters and hear their sounds.',
@@ -424,6 +427,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, text: 'Listen for what the animal is not doing, like "the animal that is not sleeping", then tap it.' },
     ],
     finish: 'The round ends when the photos asked for are taken.',
+    note: 'Each action she successfully photographs is added to her discovery journal in the treehouse.',
   },
   'bounce-back': {
     goal: 'Bounce the ball back and forth with the pet.',
@@ -461,7 +465,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 4, text: 'The round ends when the seesaw is balanced or the heaviest is chosen, as asked.' },
       { from: 5, text: 'The round ends when the seesaw is balanced as asked and the weight is chosen.' },
     ],
-    note: 'Tipping is how the seesaw explains weight; trying things is the game.',
+    note: 'Tipping is how the seesaw explains weight; trying things is the game. A heavier side going down and equal sides lying flat are added to her discovery journal after she sees them.',
   },
   'teddy-doctor': {
     goal: 'Look after the teddy patient.',

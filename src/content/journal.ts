@@ -1,4 +1,5 @@
 import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
+import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
 import type { LineId } from './voice-script';
 
@@ -8,7 +9,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -19,6 +20,13 @@ export interface JournalEntry {
   name: string;
   /** The spoken observation, replayable from the card. */
   line: LineId;
+  /** The exact action that reveals this entry, for an unfound card and for remembering where it came from. */
+  source: {
+    /** Lower-case imperative clause, such as "put the duck into the water". */
+    find: string;
+    /** Lower-case past-tense clause, such as "the duck went into the water". */
+    found: string;
+  };
 }
 
 export const entryId = (game: JournalGame, key: string) => `${game}:${key}`;
@@ -48,17 +56,75 @@ const SNACK_LINES: Record<string, LineId> = {
   bear: 'journal.snack.bear',
 };
 
+const SAFARI_LINES: Record<Action, LineId> = {
+  jumping: 'journal.safari.jumping',
+  sleeping: 'journal.safari.sleeping',
+  eating: 'journal.safari.eating',
+  dancing: 'journal.safari.dancing',
+};
+
 /** Floaters first, then sinkers, so the cards read as two groups; then the animals in the order the game lists them. */
 const sinkOrder = [...ALL_THINGS.filter(floats), ...ALL_THINGS.filter((t) => !floats(t))];
 
 export const JOURNAL: readonly JournalEntry[] = [
-  ...sinkOrder.map((t): JournalEntry => ({ id: entryId('sink-float', t), game: 'sink-float', key: t, name: cap(t), line: SINK_LINES[t] })),
-  ...ANIMALS.map((a): JournalEntry => ({ id: entryId('animal-snack', a), game: 'animal-snack', key: a, name: `${cap(a)} and ${FAVORITE[a]}`, line: SNACK_LINES[a] })),
+  ...sinkOrder.map((t): JournalEntry => ({
+    id: entryId('sink-float', t),
+    game: 'sink-float',
+    key: t,
+    name: cap(t),
+    line: SINK_LINES[t],
+    source: { find: `put the ${t} into the water`, found: `the ${t} went into the water` },
+  })),
+  ...ANIMALS.map((a): JournalEntry => ({
+    id: entryId('animal-snack', a),
+    game: 'animal-snack',
+    key: a,
+    name: `${cap(a)} and ${FAVORITE[a]}`,
+    line: SNACK_LINES[a],
+    source: { find: `let the ${a} eat ${FAVORITE[a]}`, found: `the ${a} ate ${FAVORITE[a]}` },
+  })),
+  ...ACTIONS.map((action): JournalEntry => ({
+    id: entryId('photo-safari', action),
+    game: 'photo-safari',
+    key: action,
+    name: cap(action),
+    line: SAFARI_LINES[action],
+    source: { find: `take a photo of an animal ${action}`, found: `an animal ${action} was photographed` },
+  })),
+  {
+    id: entryId('seesaw-balance', 'heavy-down'),
+    game: 'seesaw-balance',
+    key: 'heavy-down',
+    name: 'Heavier side',
+    line: 'journal.seesaw.heavy',
+    source: { find: 'put more weight on one side of the seesaw', found: 'one side held more weight and went down' },
+  },
+  {
+    id: entryId('seesaw-balance', 'equal-level'),
+    game: 'seesaw-balance',
+    key: 'equal-level',
+    name: 'Same weight',
+    line: 'journal.seesaw.equal',
+    source: { find: 'make both sides of the seesaw weigh the same', found: 'both sides weighed the same and the seesaw became level' },
+  },
+  {
+    id: entryId('bouncy-launch', 'bigger-pull'),
+    game: 'bouncy-launch',
+    key: 'bigger-pull',
+    name: 'Bigger pull',
+    line: 'journal.launch.pull',
+    source: { find: 'try two different pulls and watch where the pet lands', found: 'a bigger pull sent the pet farther than a smaller pull' },
+  },
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);
 export const entryById = (id: string) => JOURNAL.find((e) => e.id === id);
 export const entriesOf = (game: JournalGame) => JOURNAL.filter((e) => e.game === game);
+
+/** A card names the exact revealing action, not just the game that contains it. */
+export function sourceText(entry: JournalEntry, gameName: string, found: boolean): string {
+  return found ? `Found in ${gameName} when ${entry.source.found}.` : `In ${gameName}, ${cap(entry.source.find)}.`;
+}
 
 /** The journal in the save. `seen` is how many entries she had looked at when she last opened it (for a twinkle). */
 export interface JournalSave {

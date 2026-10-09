@@ -12,9 +12,9 @@ import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawSpring, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, jackBox, moonAndStars, present } from './art';
-import { FEELINGS, feelingPlan, feelingRound, type Feeling, type FeelingEvent, type FeelingPlan, type Helper, type Need, type Question } from './logic';
+import { bubbleToTap, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type Feeling, type FeelingEvent, type FeelingPlan, type Helper, type Need, type Question } from './logic';
 
 const PET_SCALE = 0.85;
 
@@ -150,7 +150,7 @@ class FeelingsFaces implements Game {
 
   private checkPlayDone() {
     // Every feeling seen, or plenty of happy tapping on favorites: either way the round ends with a sticker.
-    if (((this.tried.size === FEELINGS.length && this.taps >= 6) || this.taps >= 12) && !this.done) {
+    if (playDone(this.tried, this.taps) && !this.done) {
       this.done = true;
       void this.ctx.tw.wait(2).then(() => {
         this.pet?.setMood('happy');
@@ -511,6 +511,26 @@ class FeelingsFaces implements Game {
     }
   }
 
+  /**
+   * The ghost finger: in free play a feeling bubble the pet has not shown yet; in a question the face, helper or friend
+   * that answers it, once the options are dealt.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    if (this.plan.mode === 'play') {
+      const bubble = this.options.find((o) => o.value === bubbleToTap(this.tried, this.taps));
+      return bubble ? { tap: { on: bubble.node } } : null;
+    }
+    if (this.busy || !this.question) return null;
+    const at = choiceToTap(this.question);
+    if (this.plan.mode === 'friends') {
+      const friend = this.friends[at];
+      return friend ? { tap: { on: friend.critter, x: 0, y: -150 } } : null;
+    }
+    const option = this.options[at];
+    return option ? { tap: { on: option.node } } : null;
+  }
+
   destroy() {
     this.ctx.pet.visible = true;
   }
@@ -544,6 +564,7 @@ export const feelingsFaces: GameModule = {
     }
     return new WigglyIcon(c);
   },
+  touchDemo: true,
   sticker: (seed) => feelingsSticker(seed),
   create: (ctx) => new FeelingsFaces(ctx),
 };

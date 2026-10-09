@@ -13,8 +13,8 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import { hatArt, KIND_WORDS, ruleIcon } from '../critter-sort/index';
 import type { Rule, SortCritter } from '../critter-sort/logic';
-import type { Game, GameContext, GameModule } from '../types';
-import { bestTest, consistent, gateKey, gateWords, makeRound, passes, planFor, sameGate, type CrossPlan, type CrossRound, type Gate } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, type CrossPlan, type CrossRound, type Gate } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
@@ -188,6 +188,23 @@ class CritterCrossing implements Game {
       const card = this.cards.find((c) => sameGate(c.gate, (this.hinting as { gate: Gate }).gate));
       if (card) g.roundRect(this.panel.x + card.node.x - cardWidth(card.gate) / 2 - 8, this.panel.y + card.node.y - 70, cardWidth(card.gate) + 16, 140, 24).stroke({ width: pulse, color: swatch.yellow.fill });
     }
+  }
+
+  /**
+   * The ghost finger: send the next critter to the gate, or (on a secret rule, once enough have been tried and one
+   * picture is left) wake the guess button and pick that picture.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.round) return null;
+    const step = nextStep(this.round, this.plan, this.evidence());
+    if (!step) return null;
+    if (step.do === 'try') {
+      const slot = this.slots.find((s) => s.c === step.critter);
+      return slot ? { tap: { on: slot.node, x: 0, y: -120 } } : null;
+    }
+    if (!this.open) return { tap: { on: this.bulb } };
+    const card = this.cards.find((c) => sameGate(c.gate, step.gate));
+    return card ? { tap: { on: card.node } } : null;
   }
 
   destroy() {}
@@ -529,6 +546,7 @@ export const critterCrossing: GameModule = {
   coplayHint: 'Ask: who crossed, and who had to wait? What do the ones who crossed have in common?',
   offScreen: 'Make up a secret rule ("only toys with wheels") and let her try toys at a "bridge"; say yes or no, then let her guess.',
   hubIcon: () => new CrossingIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new CritterCrossing(ctx),
 };

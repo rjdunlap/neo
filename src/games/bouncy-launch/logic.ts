@@ -42,6 +42,11 @@ export function pullFor(f: number): number {
   return MIN_PULL + Math.max(0, Math.min(1, f)) * (MAX_PULL - MIN_PULL);
 }
 
+/** Two plainly different pulls reveal the game's stated rule: the bigger pull lands farther away. */
+export function revealsPullRule(landings: readonly number[], gap = 0.15): boolean {
+  return landings.length >= 2 && Math.max(...landings) - Math.min(...landings) >= gap;
+}
+
 /** Where pad `i` (0-based) sits, as a fraction along the landing strip. */
 export const padAt = (i: number) => (i + 0.5) / PADS;
 

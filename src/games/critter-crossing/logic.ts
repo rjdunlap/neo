@@ -149,3 +149,27 @@ export function makeRound(plan: CrossPlan, rng: Rng, avoid?: string): CrossRound
   }
   throw new Error(`could not make a ${plan.name} round`);
 }
+
+/** What a capable child does next on a round: send a critter to the gate, or guess the rule. */
+export type CrossStep = { do: 'try'; critter: SortCritter } | { do: 'guess'; gate: Gate };
+
+/**
+ * The ghost finger's next move, given the critters already sent to the gate and what happened (`tried`).
+ *
+ * On a visible round the sign says the rule, so it sends each critter that fits, never one that does not, and is done when
+ * they have all crossed (null). On a hidden round it sends the critter whose answer rules out the most pictures
+ * (`bestTest`), and guesses only once the guess button is awake (`minTests` tried) and a single picture is left; that one is
+ * the true rule, because every round is made so that trying everyone leaves exactly one picture standing. When the evidence
+ * is already decisive but `minTests` has not been tried, any waiting critter is sent, since the button would only say "try more".
+ */
+export function nextStep(round: CrossRound, plan: CrossPlan, tried: { c: SortCritter; passed: boolean }[]): CrossStep | null {
+  const waiting = round.critters.filter((c) => !tried.some((t) => t.c === c));
+  if (plan.mode === 'visible') {
+    const fit = waiting.find((c) => passes(c, round.gate));
+    return fit ? { do: 'try', critter: fit } : null;
+  }
+  const left = consistent(round.options, tried);
+  if (tried.length >= plan.minTests && left.length === 1) return { do: 'guess', gate: left[0] };
+  const test = bestTest(round.critters, tried.map((t) => t.c), round.options, tried) ?? waiting[0];
+  return test ? { do: 'try', critter: test } : null;
+}

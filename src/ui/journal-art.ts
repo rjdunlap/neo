@@ -3,13 +3,24 @@ import type { CritterName } from '../art/critter';
 import { swatch } from '../art/palette';
 import type { JournalEntry } from '../content/journal';
 import { snackPicture } from '../games/animal-snack';
+import { launchJournalPicture } from '../games/bouncy-launch';
+import { safariJournalPicture } from '../games/photo-safari';
+import type { Action } from '../games/photo-safari/logic';
+import { seesawJournalPicture } from '../games/seesaw-balance';
+import type { BalanceObservation } from '../games/seesaw-balance/logic';
 import { thingArt } from '../games/sink-float/art';
 import type { Thing } from '../games/sink-float/logic';
 import { magnifierIcon } from './icons';
 
 /** The picture for a journal entry, drawn from the game that shows it, centered on (0, 0)-ish; fit it with `fit`. */
 export function entryPicture(entry: JournalEntry): Container {
-  return entry.game === 'sink-float' ? thingArt(entry.key as Thing) : snackPicture(entry.key as CritterName);
+  switch (entry.game) {
+    case 'sink-float': return thingArt(entry.key as Thing);
+    case 'animal-snack': return snackPicture(entry.key as CritterName);
+    case 'photo-safari': return safariJournalPicture(entry.key as Action);
+    case 'seesaw-balance': return seesawJournalPicture(entry.key as BalanceObservation);
+    case 'bouncy-launch': return launchJournalPicture();
+  }
 }
 
 /** Scales a picture to fit a square and centers its drawing on (0, 0). Never makes a small picture bigger than it was. */

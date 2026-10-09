@@ -74,3 +74,23 @@ export function choicesFor(answer: number, rng: Rng): number[] {
   const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((n) => n >= 0);
   return rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
 }
+
+/** One touch a capable child makes: a block added to a bar, the check, a column answering "which?", or a number pad. */
+export type GraphMove = { do: 'add'; kind: number } | { do: 'check' } | { do: 'column'; kind: number } | { do: 'number'; n: number };
+
+/**
+ * What a capable child touches next, from what is on the screen. While she is building, she adds a block to a bar
+ * that is short of its critters (never past it) and checks when every bar matches; once there is a question, she
+ * answers it: the column for "most", "fewest" and (one tap, then the other) "same", the number pad for "how many
+ * more" and "how many in all". Null when there is nothing to do yet, such as a reading level before its question arrives.
+ */
+export function graphMove(plan: GraphPlan, graph: Graph, bars: number[], question: Question | undefined, firstSame: number | null): GraphMove | null {
+  if (question) {
+    if (question.ask === 'same') return { do: 'column', kind: firstSame === null ? question.answer[0] : question.answer[1] };
+    if (question.ask === 'most' || question.ask === 'fewest') return { do: 'column', kind: question.answer };
+    return { do: 'number', n: question.answer };
+  }
+  if (plan.mode === 'read') return null;
+  const short = bars.findIndex((n, i) => n < graph.counts[i]);
+  return short >= 0 ? { do: 'add', kind: short } : { do: 'check' };
+}
