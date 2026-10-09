@@ -7,8 +7,8 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { SIZE_PLANS, sizeOrder, sizeScale } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { SIZE_PLANS, sizeOrder, sizeScale, sizeTouch } from './logic';
 
 type Animal = 'duck' | 'bunny' | 'cat';
 function friend(rank: number, count: number, animal: Animal): Container {
@@ -147,6 +147,15 @@ class SizeParade implements Game {
     if (this.plan.mode === 'line') { const p = this.slots[this.step]; this.glow.ellipse(p.x, p.y, 74, 34).stroke({ width: 7, color: swatch.yellow.line }); }
     if (this.wrong >= 2) { const c = this.choices.find((c) => c.rank === this.order[this.step])!; this.hintsGlow.roundRect((c.drag?.home.x ?? c.node.x) - 80, (c.drag?.home.y ?? c.node.y) - 180, 160, 200, 24).stroke({ width: 7, color: swatch.yellow.line }); }
   }
+  /** The ghost finger: tap the biggest or smallest friend, or carry the next friend in size to its place in the line. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.done) return null;
+    const i = sizeTouch(this.order, this.step, this.choices);
+    if (i === null) return null;
+    // A friend's body is the middle of its tap area; its feet are the origin.
+    const body = { on: this.choices[i].node, y: -80 };
+    return this.plan.mode === 'pick' ? { tap: body } : { drag: body, to: { on: this.slots[this.step] } };
+  }
   update(dt: number) { this.clock += dt; this.glow.alpha = this.hintsGlow.alpha = 0.7 + 0.3 * Math.sin(this.clock * 3); }
   destroy() { this.choices.forEach((c) => c.drag?.destroy()); }
 }
@@ -157,5 +166,5 @@ export const sizeParade: GameModule = {
   describeLevel: (l) => SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, l - 1))].name,
   music: STYLES.hub, coplayHint: 'Use your hands to show {name} small and big, then compare the friends.',
   offScreen: 'Line up three spoons or shoes from smallest to biggest, then reverse the line.',
-  hubIcon: () => new WigglyIcon(paradeArt()), sticker: () => paradeArt(), create: (ctx) => new SizeParade(ctx),
+  hubIcon: () => new WigglyIcon(paradeArt()), touchDemo: true, sticker: () => paradeArt(), create: (ctx) => new SizeParade(ctx),
 };

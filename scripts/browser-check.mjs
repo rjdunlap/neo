@@ -6483,7 +6483,10 @@ async function fingerDemos() {
       await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !!neo.scene.helpCard?.intro?.demo, { id: g.id, level });
       assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
       const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
-      await page.waitForFunction(() => neo.scene.helpCard.intro.demo.finishedRounds > 0, null, { timeout: (limit + 4) * 1000, polling: 250 });
+      // The demonstration's own clock decides, not the wall: on a busy Mac it runs at a fraction of real time (a quarter, once), so the
+      // limit is checked in the demo's seconds (its age stays above the limit while it rests before replaying) and the wall-clock timeout is only a backstop.
+      await page.waitForFunction((limit) => { const d = neo.scene.helpCard.intro.demo; return d.finishedRounds > 0 || d.age > limit; }, limit, { timeout: limit * 8000, polling: 250 });
+      assert.ok(await page.evaluate(() => neo.scene.helpCard.intro.demo.finishedRounds > 0), `${g.id} level ${level}: the bot finished a round within ${limit} seconds of its own clock`);
       assert.deepEqual(errors, [], `${g.id} level ${level}: page errors`);
       // A demonstration shows right play: the bot makes no wrong move and needs no hint (for the games that count them).
       const clean = await page.evaluate(() => { const game = neo.scene.helpCard.intro.demo.game; return game && typeof game.misses === 'number' ? { misses: game.misses, hints: game.hints } : null; });
@@ -7137,6 +7140,69 @@ async function chainPlay() {
   assert.deepEqual(errors, []);
 }
 
+async function habitatPlay() {
+  const readyRound = (index) => page.waitForFunction((index) => neo.scene.finished || (neo.scene.game.roundIndex === index && !neo.scene.game.busy), index, { timeout: 30000 });
+  const solveBuildRound = async (tryFirst = false) => {
+    const index = await page.evaluate(() => neo.scene.game.roundIndex);
+    if (tryFirst) {
+      await tap('neo.scene.game.testButton');
+      await page.waitForFunction(() => neo.scene.game.attempts === 1 && !neo.scene.game.busy);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'an incomplete habitat is a free experiment');
+      await tap('neo.scene.game.testButton');
+      await page.waitForFunction(() => neo.scene.game.attempts === 2 && !neo.scene.game.busy);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 1], 'a second test brings help, not a miss');
+      assert.ok(await page.evaluate(() => neo.scene.game.hinting.length > 0), 'a useful piece glows');
+      await screenshot('habitat-helpers-1');
+    }
+    const solution = await page.evaluate(async () => {
+      const { solutions } = await import('/src/games/habitat-helpers/logic.ts');
+      return solutions(neo.scene.game.round)[0];
+    });
+    for (const id of solution) {
+      await page.evaluate((id) => kit.tapOn(neo.scene.game.pieces.find((p) => p.id === id).node), id);
+      await page.waitForTimeout(220);
+    }
+    assert.equal(await page.evaluate(() => neo.scene.game.selected.length), solution.length);
+    await tap('neo.scene.game.testButton');
+    await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.roundIndex > index, index, { timeout: 30000 });
+  };
+
+  // First level: an empty garden can be tested freely; the second test supplies a glow, then Bunny arrives.
+  await launch('habitat-helpers', 1);
+  await readyRound(0);
+  await solveBuildRound(true);
+  await finished('habitat-helpers');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('habitat-helpers').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
+  assert.ok(await page.evaluate(() => kit.store.data.journal.found.includes('habitat-helpers:bunny')));
+
+  // Prediction level: deliberately predict the other visitor. It is an observation, not a wrong answer.
+  await launch('habitat-helpers', 4);
+  for (let index = 0; index < 3; index++) {
+    await readyRound(index);
+    const wrong = await page.evaluate(() => neo.scene.game.round.visitors[0] === 'bunny' ? 'duck' : 'bunny');
+    await page.evaluate((visitor) => kit.tapOn(neo.scene.game.choices.find((c) => c.visitor === visitor).node), wrong);
+    await tap('neo.scene.game.testButton');
+    await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.roundIndex > index, index, { timeout: 30000 });
+  }
+  await finished('habitat-helpers');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('habitat-helpers').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+
+  // Top level: the only three-space solution is the berry hedge, seed grass and pond with reeds; both visitors arrive.
+  await launch('habitat-helpers', 6);
+  await readyRound(0);
+  await solveBuildRound();
+  await finished('habitat-helpers');
+  assert.ok(await page.evaluate(() => ['habitat-helpers:bunny', 'habitat-helpers:duck'].every((id) => kit.store.data.journal.found.includes(id))));
+  await launch('habitat-helpers', 6);
+  await readyRound(0);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  assert.ok(await page.evaluate(() => [...neo.scene.game.pieces.map((p) => p.node), neo.scene.game.testButton].every((node) => { const b = node.getBounds(); return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight; })), 'portrait pieces and gate fit');
+  await screenshot('habitat-helpers-6-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+  log('Habitat Helpers: first, prediction and top levels; a free incomplete test, automatic help, both visitors, discoveries and portrait passed');
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -7190,6 +7256,7 @@ try {
   if (suite === 'all' || suite === 'journal') await journalPlay();
   if (suite === 'all' || suite === 'clap') await clapPlay();
   if (suite === 'all' || suite === 'machines') await chainPlay();
+  if (suite === 'all' || suite === 'habitat') await habitatPlay();
   if (suite === 'stickers') await page.evaluate(() => {
     kit.store.data.profile.band = 'prek';
     for (let i = 0; i < 12; i++) kit.store.addSticker(['pattern-train', 'memory-match', 'letter-trails', 'robot-path'][i % 4], i + 1);

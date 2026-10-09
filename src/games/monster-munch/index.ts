@@ -12,9 +12,9 @@ import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol } from '../shared';
-import type { Game, GameContext, GameModule, HubIcon } from '../types';
-import { foodArt, Monster, MONSTER_COLORS, monsterSticker } from './art';
-import { complete, extras, missing, munchPlan, munchRounds, numberChoices, orderWords, wantsMore, type Food, type MunchPlan, type MunchRound, type Order } from './logic';
+import type { Game, GameContext, GameModule, HubIcon, TouchIntent } from '../types';
+import { foodArt, Monster, MONSTER_COLORS, monsterSticker, MOUTH_Y } from './art';
+import { complete, extras, missing, munchPlan, munchRounds, munchTouch, numberChoices, orderWords, wantsMore, type Food, type MunchPlan, type MunchRound, type Order } from './logic';
 
 interface Snack {
   food: Food;
@@ -290,7 +290,7 @@ class MonsterMunch implements Game {
   }
 
   /** What the pads are asking on leftover levels: first how many each, then how many are left. */
-  private asking: 'each' | 'left' = 'each';
+  asking: 'each' | 'left' = 'each';
 
   /**
    * The bell on leftover levels: fair is everyone the same with fewer cookies left than monsters.
@@ -495,6 +495,28 @@ class MonsterMunch implements Game {
     this.glow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 4);
   }
 
+  /** The ghost finger: tap or carry the foods the sign asks for, ring the bell, and tap the number that is right. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.done || !this.monsters.length) return null;
+    // Wait for the foods and the answer pads to finish popping in.
+    if (this.snacks.some((s) => !s.eatenBy && s.node.scale.x < 0.95) || this.pads.some((p) => p.node.scale.x < 0.95)) return null;
+    const r = this.current;
+    const move = munchTouch(this.plan, {
+      want: r.want,
+      left: r.left,
+      snacks: this.snacks.map((s) => ({ food: s.food, eaten: !!s.eatenBy })),
+      fed: this.monsters.map((m) => this.have(m)),
+      pads: this.pads.map((p) => p.value),
+      asking: this.asking,
+    });
+    if (!move) return null;
+    if (move === 'bell') return { tap: { on: this.bell } };
+    if ('pad' in move) return { tap: { on: this.pads.find((p) => p.value === move.pad)!.node } };
+    if ('tap' in move) return { tap: { on: this.snacks[move.tap].node }, pause: 0.25 };
+    // Dropped on the monster's mouth, which is well inside the area that counts.
+    return { drag: { on: this.snacks[move.give].node }, to: { on: this.monsters[move.to], x: 0, y: MOUTH_Y }, pause: 0.2 };
+  }
+
   destroy() {
     this.snacks.forEach((s) => s.drag?.destroy());
   }
@@ -532,6 +554,7 @@ export const monsterMunch: GameModule = {
   coplayHint: 'Count each cookie out loud with {name} as the monster munches.',
   offScreen: 'At snack time, share crackers between two plates so each has the same, and count them together.',
   hubIcon: () => new MunchIcon(),
+  touchDemo: true,
   sticker: (seed) => monsterSticker(seed),
   create: (ctx) => new MonsterMunch(ctx),
 };

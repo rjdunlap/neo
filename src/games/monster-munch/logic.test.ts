@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { complete, extras, missing, MUNCH_PLANS, munchRounds, numberChoices, orderWords, TRAY_MAX, wantsMore } from './logic';
+import { complete, extras, missing, MUNCH_PLANS, munchRounds, munchTouch, numberChoices, orderWords, TRAY_MAX, wantsMore, type Food, type MunchTable, type Order } from './logic';
 
 describe('Monster Munch rounds', () => {
   it('always put enough food on a tray that stays small enough to grab', () => {
@@ -65,6 +65,70 @@ describe('Monster Munch rounds', () => {
         expect(r.tray.cookie).toBe(r.want.cookie * r.monsters + r.left!);
         expect(r.tray.cookie).toBeLessThanOrEqual(TRAY_MAX);
         expect(r.want.cookie).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+  it("the ghost finger plays every round of every level with no refusal, a fair share, the bell only when the order is right, and the right numbers", () => {
+    for (const plan of MUNCH_PLANS) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const rng = new Rng(seed);
+        const rounds = munchRounds(plan, rng);
+        for (const r of rounds) {
+          const foods: Food[] = [...Array<Food>(r.tray.cookie).fill('cookie'), ...Array<Food>(r.tray.apple).fill('apple')];
+          const t: MunchTable = {
+            want: r.want,
+            left: r.left,
+            snacks: rng.shuffle(foods).map((food) => ({ food, eaten: false })),
+            fed: Array.from({ length: r.monsters }, (): Order => ({ cookie: 0, apple: 0 })),
+            pads: [],
+            asking: 'each',
+          };
+          let won = false;
+          for (let step = 0; step < 40 && !won; step++) {
+            const move = munchTouch(plan, t);
+            expect(move, `${plan.mode} seed ${seed}: a touch to make (step ${step})`).not.toBeNull();
+            if (move === 'bell') {
+              if (plan.mode === 'leftover') {
+                // The game's own judgment: even shares and fewer left than monsters, so the pads come.
+                const counts = t.fed.map((f) => f.cookie);
+                expect(counts.every((c) => c === counts[0]), 'even shares').toBe(true);
+                expect(t.snacks.filter((x) => !x.eaten).length, 'fewer left than monsters').toBeLessThan(r.monsters);
+                t.pads = numberChoices(r.want.cookie, rng);
+              } else {
+                expect(['exact', 'two']).toContain(plan.mode);
+                expect(complete(r.want, t.fed[0]), 'the bell rings on exactly the order').toBe(true);
+                won = true;
+              }
+            } else if ('pad' in move!) {
+              const answer = plan.mode === 'leftover' && t.asking === 'left' ? r.left : r.want.cookie;
+              expect(move.pad, 'the right number').toBe(answer);
+              expect(t.pads).toContain(move.pad);
+              if (plan.mode === 'leftover' && t.asking === 'each') {
+                t.asking = 'left';
+                t.pads = numberChoices(r.left!, rng);
+              } else won = true;
+            } else if ('tap' in move!) {
+              expect(plan.mode).toBe('tap');
+              expect(t.snacks[move.tap].eaten).toBe(false);
+              t.snacks[move.tap].eaten = true;
+              if (t.snacks.every((x) => x.eaten)) won = true;
+            } else {
+              const snack = t.snacks[move!.give];
+              expect(snack.eaten).toBe(false);
+              // The game refuses a food a monster already has enough of (and, when giving one each, a second cookie).
+              expect(wantsMore(r.want, t.fed[move!.to], snack.food), `${plan.mode}: the monster still wants ${snack.food}`).toBe(true);
+              snack.eaten = true;
+              t.fed[move!.to][snack.food]++;
+              if (plan.mode === 'count' && t.snacks.every((x) => x.eaten)) won = true;
+              if (plan.mode === 'each' && t.fed.every((f) => f.cookie >= r.want.cookie)) won = true;
+              if (plan.mode === 'share' && t.snacks.every((x) => x.eaten)) {
+                expect(extras(t.fed.map((f) => f.cookie), r.want.cookie).every((n) => n === 0), 'a fair share').toBe(true);
+                t.pads = numberChoices(r.want.cookie, rng);
+              }
+            }
+          }
+          expect(won, `${plan.mode} seed ${seed}: the round is won`).toBe(true);
+        }
       }
     }
   });

@@ -12,8 +12,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { distance, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, MAX_DISTANCE, onStar, planFor, waysTo, type FairQuestion, type RampPlan, type Setup } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { distance, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, MAX_DISTANCE, onStar, planFor, rampTouch, waysTo, type FairQuestion, type RampPlan, type Setup } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
@@ -168,6 +168,19 @@ class RampRace implements Game {
       g.poly([x0, l.floorY, l.rampEnd, l.floorY, x0, l.floorY - this.hint.height * HEIGHT_PX]).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.5 + pulse });
       if (this.hint.floor !== l.setup.floor) g.roundRect(l.rampEnd, l.floorY - 6, MAX_DISTANCE * l.unit, 46, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.4 + pulse });
     }
+  }
+
+  /** The ghost finger: change the ramp (and the floor where it can change) to what the question needs, then press go. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const move = rampTouch(this.plan, this.lanes.map((l) => l.setup), { star: this.stars[this.index], question: this.questions[this.index], rolls: this.rolls });
+    if (!move) return null;
+    if (move === 'go') return { tap: { on: this.go } };
+    const lane = this.lanes[move.lane];
+    // The hand lands on the slope near its foot, or on the floor strip, in the lane's own coordinates.
+    return move.change === 'ramp'
+      ? { tap: { on: lane.ramp, x: lane.rampEnd - RAMP_W + 40, y: lane.floorY - 25 }, pause: 0.3 }
+      : { tap: { on: lane.floorHit, x: lane.rampEnd + 90, y: lane.floorY + 14 }, pause: 0.3 };
   }
 
   destroy() {}
@@ -342,6 +355,7 @@ export const rampRace: GameModule = {
   coplayHint: 'Guess together before each roll: "Will it reach the star? Too far? Too short?"',
   offScreen: 'Roll a toy car down a book propped up at different heights. Does a carpet or the kitchen floor let it roll farther?',
   hubIcon: () => new RampIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new RampRace(ctx),
 };

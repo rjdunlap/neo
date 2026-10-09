@@ -16,3 +16,13 @@ export function sizeOrder(count: number, order: 'big' | 'small'): number[] {
   return order === 'small' ? ranks : ranks.reverse();
 }
 export function sizeScale(rank: number, count: number): number { return 0.42 + 0.58 * rank / Math.max(1, count - 1); }
+
+/**
+ * What a capable child touches next: the friend whose size is the next answer (the biggest or smallest in the pick levels,
+ * the next one in the line in the line-up levels), by its place among the friends on the ground. Friends already in the line
+ * are not touched again, and a wrong friend never is.
+ */
+export function sizeTouch(order: number[], step: number, friends: { rank: number; placed: boolean }[]): number | null {
+  const i = friends.findIndex((f) => f.rank === order[step] && !f.placed);
+  return i < 0 ? null : i;
+}

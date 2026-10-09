@@ -77,6 +77,7 @@ import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
 import { islandBridges } from './island-bridges';
 import { lemonadeStand } from './lemonade-stand';
+import { habitatHelpers } from './habitat-helpers';
 import type { GameModule } from './types';
 
 /**
@@ -156,6 +157,7 @@ export const GAMES: GameModule[] = [
   clapSyllables,
   chainReaction,
   lemonadeStand,
+  habitatHelpers,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

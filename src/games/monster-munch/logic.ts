@@ -116,3 +116,64 @@ export function orderWords(o: Order, more = false): string {
   const parts = [o.cookie ? part(o.cookie, 'cookie') : '', o.apple ? part(o.apple, 'apple') : ''].filter(Boolean);
   return parts.join(' and ') || 'nothing';
 }
+
+/** One touch of the ghost finger: tap a waiting food, carry one to a monster, ring the bell, or tap a number (by its value). */
+export type MunchTouch = { tap: number } | { give: number; to: number } | 'bell' | { pad: number };
+
+/** What the table looks like to the finger. */
+export interface MunchTable {
+  want: Order;
+  /** Leftover levels: cookies that cannot be shared fairly. */
+  left?: number;
+  snacks: { food: Food; eaten: boolean }[];
+  /** What each monster has eaten so far. */
+  fed: Order[];
+  /** The numbers on the answer pads, when there are any. */
+  pads: number[];
+  /** Leftover levels: whether the pads ask how many each monster got, or how many are left. */
+  asking: 'each' | 'left';
+}
+
+/**
+ * What a capable child touches next. Tapping levels tap a waiting cookie; the others carry the next one to a monster: to
+ * the only monster until it has what the sign asks for (cookies before apples), then ring the bell; or, with several
+ * monsters, to whoever has the fewest so everyone gets the same. Sharing and leftover levels then tap the number that is
+ * right (how many each, then how many are left). It never feeds a monster more than it asked for, so nothing is handed back.
+ */
+export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
+  const waiting = (food?: Food) => t.snacks.findIndex((s) => !s.eaten && (!food || s.food === food));
+  if (t.pads.length) {
+    const answer = plan.mode === 'leftover' && t.asking === 'left' ? t.left : t.want.cookie;
+    return answer !== undefined && t.pads.includes(answer) ? { pad: answer } : null;
+  }
+  switch (plan.mode) {
+    case 'tap': {
+      const i = waiting();
+      return i < 0 ? null : { tap: i };
+    }
+    case 'count': {
+      const i = waiting();
+      return i < 0 ? null : { give: i, to: 0 };
+    }
+    case 'exact':
+    case 'two': {
+      const need = missing(t.want, t.fed[0]);
+      if (need.cookie + need.apple === 0) return 'bell';
+      for (const food of ['cookie', 'apple'] as Food[]) {
+        const i = need[food] > 0 ? waiting(food) : -1;
+        if (i >= 0) return { give: i, to: 0 };
+      }
+      return null;
+    }
+    default: {
+      // each, share and leftover: the monster with the fewest cookies that still wants one.
+      let to = -1;
+      t.fed.forEach((f, m) => {
+        if (f.cookie < t.want.cookie && (to < 0 || f.cookie < t.fed[to].cookie)) to = m;
+      });
+      if (to < 0) return plan.mode === 'leftover' ? 'bell' : null;
+      const i = waiting('cookie');
+      return i < 0 ? null : { give: i, to };
+    }
+  }
+}

@@ -916,6 +916,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
       },
     ],
   },
+  'habitat-helpers': {
+    goal: 'Build or inspect a garden where its visitors have food, water and shelter.',
+    steps: [
+      { to: 3, text: 'Tap a garden piece to put it in the habitat. Tap it again to take it out.' },
+      { from: 4, to: 4, text: 'Look at the prepared habitat, then tap Bunny or Duck to predict who will visit.' },
+      { from: 5, text: 'Tap garden pieces to fill the open spaces. Some pieces meet more than one need.' },
+      'Tap the green gate to test the habitat and see who comes.',
+    ],
+    finish: 'The round ends after every habitat has been tested and its visitor arrives.',
+    note: [
+      { to: 3, text: 'Testing an incomplete habitat is a free experiment. After two tests, a useful piece glows.' },
+      { from: 4, to: 4, text: 'A prediction that does not match is still a useful observation, not a mistake.' },
+      { from: 5, text: 'Testing an incomplete habitat is a free experiment. After two tests, a useful piece glows.' },
+    ],
+  },
 };
 
 /** What the how-to card shows for one game at one level: every line already chosen for that level. */

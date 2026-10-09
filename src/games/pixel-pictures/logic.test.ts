@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { clues, colorsOf, deduce, lineSolvable, makePictures, PICTURES, picturesFor, PLANS, runs, symmetric, toGrid, type Knowledge } from './logic';
+import { clues, colorsOf, deduce, givenInMirror, lineSolvable, makePictures, PICTURES, picturesFor, PLANS, pixelTouch, runs, symmetric, toGrid, type Filled, type Knowledge } from './logic';
 
 describe('Pixel Pictures', () => {
   it('pictures are square, the right size, and drawn in known colors', () => {
@@ -46,6 +46,42 @@ describe('Pixel Pictures', () => {
             known[f.y][f.x] = f.fill;
           }
         }
+      }
+    }
+  });
+  it("the ghost finger copies, mirrors and solves every picture of every level touch by touch, never tapping a wrong or a settled square", () => {
+    for (const plan of PLANS) {
+      for (const picture of picturesFor(plan)) {
+        const target = toGrid(picture);
+        const n = plan.size;
+        // The board as the game starts it: mirror levels have the left half drawn.
+        const filled: Filled = target.map((row, y) => row.map((_, x) => (plan.mode === 'mirror' && givenInMirror(n, x) ? target[y][x] : null)));
+        let color = colorsOf(picture)[0];
+        let from: { x: number; y: number } | undefined;
+        let paletteTaps = 0;
+        let taps = 0;
+        for (let step = 0; step < 200; step++) {
+          const move = pixelTouch(plan, picture, filled, color, from);
+          if (!move) break;
+          if ('color' in move) {
+            expect(plan.mode === 'copy' && plan.colors === 2, `${picture.name}: only two-color levels have a palette`).toBe(true);
+            expect(move.color, 'a different color than the one chosen').not.toBe(color);
+            color = move.color;
+            expect(++paletteTaps, `${picture.name}: changes color once for each color`).toBeLessThanOrEqual(colorsOf(picture).length);
+            continue;
+          }
+          const { x, y } = move.cell;
+          // The game's own rule: a square the picture leaves empty, or the wrong color, is a miss; so is one already filled (ignored) or given.
+          expect(target[y][x], `${plan.mode} ${picture.name}: (${x}, ${y}) belongs to the picture`).not.toBeNull();
+          expect(filled[y][x], `${picture.name}: (${x}, ${y}) is still empty`).toBeNull();
+          if (plan.mode === 'copy' && plan.colors === 2) expect(target[y][x], 'the color in hand').toBe(color);
+          if (plan.mode === 'mirror') expect(givenInMirror(n, x), 'only the half still to do').toBe(false);
+          filled[y][x] = plan.mode === 'clues' ? 'b' : target[y][x];
+          from = { x, y };
+          taps++;
+        }
+        const want = target.flat().filter((c, i) => !!c && !(plan.mode === 'mirror' && givenInMirror(n, i % n))).length;
+        expect(taps, `${plan.mode} ${picture.name}: every square it needs, and no more`).toBe(want);
       }
     }
   });
