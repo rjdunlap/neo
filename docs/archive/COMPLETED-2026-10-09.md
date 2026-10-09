@@ -38,6 +38,27 @@ Most sessions should build from this list; it never waits for the one after it. 
 - [x] **Make real-game scene teardown safe for an already-ready continuation (2026-10-09).** An `await` continuation that was queued in the same frame its scene left still ran once and could set a property on a destroyed display object (Frog Hop's `leap`, found 2026-10-08 by opening and abandoning cards at random moments, about one in fifty, and again in Peekaboo Barn's `question()` loop reaching `Spot.go`). `Scene.destroy()` now stops scene-owned work immediately but releases the detached Pixi tree one task later, as `Demo` already did. A lifecycle test fails with synchronous destruction on the same null-transform write, and `GAME_ONLY=frog-hop,peekaboo-barn ROUNDS=20 node scripts/abandon-cards.mjs` opened 40 cards with no page errors. Game-owned timers and global callbacks still need their own guards. The production offline check now opens and reloads a rearranged treehouse, both kinds of kept creation and the journal.
 - [x] A small **Discovery Marsh** investigation before any broader habitat simulation, with explicit observations and a limited, explainable model: Habitat Helpers (2026-10-09).
 
+### Profiles stage 1: the definition of ready as written, and what was built
+
+Written 2026-10-09 and built the same day in two slices (PRs #60 and #62). Slice 1a is the storage layer (`src/progress/profiles.ts` and the active-profile `Store`, described in [DESIGN.md](../DESIGN.md#persistence-and-grown-up-ui)). Slice 1b's checklist as written:
+
+**Slice 1b: the chooser and what a person sees (next).** Ready when each of these is done:
+
+1. The chooser replaces `StartScene` and `go.start()`. The first tap still unlocks audio and speech inside the gesture. The gear stays, and the Couch play button, the C key and the controller-opens-couch shortcut go (replaced by the mode choice above). `CouchScene`'s two "back to start" labels and the grown-ups' page's return route change with it.
+2. Add-a-player: name, birth month and year (`checkBirthInput` for the clock rule), a friend (Pip in a chosen color until the pet `kind` exists), then the comfort questions. A pure `petSpecFor(pet)` so a card can draw another profile's friend (`petSpec()` reads the active profile).
+3. The grown-ups' page splits into per-profile settings and device settings (sound, backup, reset). It gains a birth field and the *start here instead* choice (the band buttons become that once a birth is set). The age labels in `src/progress/bands.ts` ("Preschool 3–4 years", "Pre-K 5–6 years") change to match the boundaries; this is the one visible change a profile layer alone would cause, so it ships here. Deleting a person, resetting and restoring stay behind the gear's hold; backup uses `exportAll`.
+4. Controller and keyboard navigation across the cards (`nextSpot` in `src/couch/focus.ts`, `ControllerSampler`; a controller press is not a gesture for audio, so the unlock still comes from a pointer or key).
+5. After a switch: `applySettings()`, a scene rebuild, and clearing the session state keyed by band (`PlaceScene` `lastScroll` and `toldMore`, `SubjectPlaceScene` `positions`, `JournalScene` `lastPage`).
+6. Checks: the `browser-check.mjs` preamble (every suite taps the title at 512,308), `phonefit`, `grownups` and every couch `enter()` helper, and `offline-check.mjs` (which also taps the title). Docs that name the title screen or the couch entry (README, COUCH-PLAY, DESIGN, AGENTS) change in the same PR.
+7. A grown-up's voice set is not needed yet: with no stored type there is one set until stage 3 gives the `grownup` band its own.
+
+**What was built, and what changed on the way:**
+
+- Items 1 to 6 were built. The chooser is plain HTML over the island's backdrop (`ChooserScene`), the input that picks a card picks the mode, and Add a player fills the blank first profile. The grown-ups' page edits any player and returns to whoever was playing. The `phonefit`, `grownups`, couch and offline scripts moved off the title screen, and a new `profiles` suite covers the chooser.
+- **The age labels** in `src/progress/bands.ts` changed to the accepted boundaries (under 2, 2, 3, 4–5, 6 and up), which also changed the small labels under each place on the map.
+- **Added to the checklist while building:** a "Who's playing?" button top-left on the map (otherwise changing player needed a reload); the page returning to whoever was playing; a click with no pointer behind it (Enter, a screen reader) counting as a key, never as the island; keys and the controller stopped while the add form or the page is open; `selectPlayer` as the one place a player is switched.
+- **Cut, and recorded in the roadmap:** the comfort questions, a device-level sound setting, a friend's `kind`, and linking couch records to people.
+
 ### Habitat Helpers, the new-games item (built 2026-10-09)
 
 - [ ] **New games from the shortlist:** **Habitat Helpers is built (2026-10-09)** for the science gap: Bunny and Duck each need food, water and shelter; the six-level ladder moves from obvious pieces to distractors, a prediction, compact multipurpose habitats and one three-piece garden compatible with both. Its definition of ready was two stylized visitors, explicit needs, prediction before a test, a compatible-needs puzzle, free experimental revisions, supported completion, discoveries only for visitors actually shown, the complete band ladder and normal game integration. Story Theater or Shape Buddies remain ([candidates](../IDEAS.md#candidates)).
