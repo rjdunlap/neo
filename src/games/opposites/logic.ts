@@ -72,3 +72,25 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
 }
 
 export const opposites = (a: Card, b: Card) => a.concept === b.concept && a.side !== b.side;
+
+/**
+ * Which card a capable child taps next, by its place in the round's cards, or null when the round is waiting. Switch: the
+ * one card. Find: the card named. Opposite: the card that is the opposite of the one shown. Pairs: the first card not yet
+ * matched and then its opposite (`picked` is the one already chosen). Always a right one.
+ */
+export function cardToTap(plan: OppPlan, round: OppRound, done: readonly boolean[], picked: number | null): number | null {
+  const find = (ok: (c: Card, i: number) => boolean) => {
+    const i = round.cards.findIndex((c, k) => !done[k] && ok(c, k));
+    return i < 0 ? null : i;
+  };
+  switch (plan.mode) {
+    case 'switch':
+      return 0;
+    case 'find':
+      return find((c) => word(c) === word(round.ask!));
+    case 'opposite':
+      return find((c) => opposites(c, round.ask!));
+    case 'pairs':
+      return picked === null ? find(() => true) : find((c, k) => k !== picked && opposites(c, round.cards[picked]));
+  }
+}

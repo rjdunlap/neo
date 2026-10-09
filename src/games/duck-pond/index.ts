@@ -9,8 +9,8 @@ import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
-import type { Game, GameContext, GameModule } from '../types';
-import { bankSize, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { bankSize, duckMove, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -194,6 +194,15 @@ class DuckPond implements Game {
   update(dt: number) {
     for (const d of [...this.bank, ...this.swimmers]) d.update(dt);
     for (const p of this.pads) p.update(dt);
+  }
+
+  /** The ghost finger on the how-to card: send the ducks in (all of them, or as many as the sign says), or touch the lily pad with the answer. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const move = duckMove(this.plan, this.bank.filter((d) => !d.resting).length, this.swimmers.length, this.want, this.pads.map((p) => p.value), this.answer);
+    if (move === null) return null;
+    if (move === 'duck') return { tap: { on: this.bank.find((d) => !d.resting)!, y: -46 } };
+    return { tap: { on: this.pads[move.pad] } };
   }
 
   destroy() {}
@@ -557,6 +566,7 @@ export const duckPond: GameModule = {
   coplayHint: 'Count out loud with {name}, and touch each duck as you count.',
   offScreen: 'Line up toy ducks or spoons and count them together, touching each one.',
   hubIcon: () => new PondIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new DuckPond(ctx),
 };

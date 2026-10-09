@@ -83,3 +83,17 @@ export function story(rng: Rng, plan: DuckPlan): PondStory {
   const b = rng.int(1, Math.min(plan.max - a, 4));
   return { a, b, away, answer: a + b };
 }
+
+/**
+ * What a capable child touches next: a duck on the bank, or lily pad number `pad` (counting from the left), or null while
+ * she waits. Ducks: all of them (along), or only until there are as many swimming as the sign says (make). Pads: the one
+ * with the answer. Always a right one, and never a duck too many.
+ */
+export type DuckMove = 'duck' | { pad: number };
+
+export function duckMove(plan: DuckPlan, bank: number, swimming: number, want: number, pads: readonly number[], answer: number): DuckMove | null {
+  if (plan.mode === 'along') return bank > 0 ? 'duck' : null;
+  if (plan.mode === 'make') return bank > 0 && swimming < want ? 'duck' : null;
+  const pad = pads.indexOf(answer);
+  return pad >= 0 ? { pad } : null;
+}

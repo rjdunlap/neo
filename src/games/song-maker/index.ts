@@ -8,8 +8,8 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { key, makeSong, ROW_STEPS, songPlan, type Note, type Song, type SongPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { beadToTap, key, makeSong, ROW_STEPS, songPlan, type Note, type Song, type SongPlan } from './logic';
 
 /** Row colors, top (high) to bottom (low), matching the jelly drums' rainbow. */
 const ROW_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
@@ -132,6 +132,14 @@ class SongMaker implements Game {
         void this.ctx.instruct('song.listen').then(() => this.playTune(true));
         break;
     }
+  }
+
+  /** The ghost finger on the how-to card: light the song (free play), or tap what the round asks for, once a heard tune has finished playing. */
+  autotouch(): TouchIntent | null {
+    if (this.done || this.listening) return null;
+    const note = beadToTap(this.plan, this.song, this.placed);
+    const bead = note && this.beads.find((b) => b.note.col === note.col && b.note.row === note.row);
+    return bead ? { tap: { on: bead }, pause: 0.15 } : null;
   }
 
   private step(row: number) {
@@ -342,6 +350,7 @@ export const songMaker: GameModule = {
   coplayHint: 'Sing along with {name} when the jellies play: up high for the top row, down low for the bottom.',
   offScreen: 'Make a song with pots and spoons, then play it again the same way together.',
   hubIcon: () => new WigglyIcon(boardArt()),
+  touchDemo: true,
   sticker: (seed) => boardArt(seed),
   create: (ctx) => new SongMaker(ctx),
 };

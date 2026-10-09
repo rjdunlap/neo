@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { JELLIES, makeTune, PLANS } from './logic';
+import { FREE_SONG, freeNote, JELLIES, jellyToTap, makeTune, PLANS } from './logic';
 
 describe('Jelly Drums', () => {
   it('grows from free play to longer tunes', () => {
@@ -27,5 +27,36 @@ describe('Jelly Drums', () => {
       }
     }
     expect(used.size).toBe(JELLIES);
+  });
+
+  describe("the ghost finger's bot", () => {
+    it('plays free play as a scale up and down: every note a real jelly next door, all five used, looping for as long as it takes', () => {
+      expect(new Set(FREE_SONG).size).toBe(JELLIES);
+      for (let n = 0; n < 100; n++) {
+        const i = freeNote(n);
+        expect(i).toBeGreaterThanOrEqual(0);
+        expect(i).toBeLessThan(JELLIES);
+        expect(Math.abs(i - freeNote(n + 1)), `note ${n}`).toBe(1);
+      }
+    });
+
+    it('waits through the first pause and the tune, then copies it note for note, with no wrong tap', () => {
+      for (const plan of PLANS.filter((p) => p.mode === 'echo')) {
+        const tune = makeTune(new Rng(7), plan.length);
+        for (const phase of ['play', 'listen', 'done'] as const) expect(jellyToTap('echo', phase, tune, 0, 0)).toBeNull();
+        const copy: number[] = [];
+        for (let at = 0; at < tune.length; at++) copy.push(jellyToTap('echo', 'turn', tune, at, 0)!);
+        expect(copy).toEqual(tune);
+        expect(jellyToTap('echo', 'turn', tune, tune.length, 0)).toBeNull();
+      }
+    });
+
+    it('reaches the goal of every free level in exactly that many taps, then stops', () => {
+      for (const plan of PLANS.filter((p) => p.mode === 'free')) {
+        let notes = 0;
+        while (jellyToTap('free', notes < plan.goal ? 'play' : 'done', [], 0, notes) !== null) notes++;
+        expect(notes).toBe(plan.goal);
+      }
+    });
   });
 });

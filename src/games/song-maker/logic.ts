@@ -73,3 +73,24 @@ export function makeSong(plan: SongPlan, rng: Rng): Song {
 
 /** Which note belongs in a column, if any. */
 export const noteAt = (song: Song, col: number) => song.notes.find((n) => n.col === col);
+
+/**
+ * The notes the ghost finger lights in free play, in the order it taps them: a tune climbing the rows beat by beat, then a
+ * second voice over it, then a third, so the song grows left to right in layers. All different spots, `plan.notes` of them.
+ */
+export function freeSong(plan: SongPlan): Note[] {
+  const out: Note[] = [];
+  for (let layer = 0; layer < plan.rows; layer++)
+    for (let col = 0; col < plan.cols; col++) out.push({ col, row: (plan.rows - 1 - (col % plan.rows) + layer) % plan.rows });
+  return out.slice(0, plan.notes);
+}
+
+/**
+ * The spot a capable child taps next, or null when there is nothing left to do: in free play the next note of her song
+ * that is not lit yet, and when copying, the first note of the song that is not placed (the shadow, the card's next note,
+ * the pattern's next beat, or the tune heard), always a right one.
+ */
+export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string>): Note | null {
+  const notes = plan.mode === 'free' ? freeSong(plan) : song.notes;
+  return notes.find((n) => !placed.has(key(n))) ?? null;
+}

@@ -12,8 +12,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { describe, makeScene, planFor, request, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { animalToTap, describe, makeScene, planFor, request, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -129,6 +129,13 @@ class PhotoSafari implements Game {
 
   start() {
     void this.nextScene();
+  }
+
+  /** The ghost finger on the how-to card: photograph the animal that was asked for, or each animal in turn. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.scene) return null;
+    const animal = this.actors[animalToTap(this.scene, this.photos)];
+    return animal && !animal.destroyed ? { tap: { on: animal, y: -60 } } : null;
   }
 
   private ground() {
@@ -317,6 +324,7 @@ export const photoSafari: GameModule = {
   music: STYLES.hub,
   coplayHint: 'Look at the album together at the end: "What is the bunny doing? Where is it?"',
   offScreen: 'Play "I spy" with places: "I spy a teddy under the table."',
+  touchDemo: true,
   hubIcon: () => new SafariIcon(),
   sticker,
   create: (ctx) => new PhotoSafari(ctx),
