@@ -23,6 +23,7 @@ export abstract class Scene {
   /** Whether Esc holds this scene still behind the pause sheet. Off where the scene has its own way to the grown-ups' page or its own Esc. */
   canPause = true;
   private readonly tracked = new Set<Updatable>();
+  private destroyed = false;
 
   constructor(protected readonly app: App) {
     this.root.addChild(this.content, this.particles, this.ui);
@@ -54,8 +55,14 @@ export abstract class Scene {
   }
 
   destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
     this.tw.clear();
     this.tracked.clear();
-    this.root.destroy({ children: true });
+    // A tween or speech promise can have resolved in the same frame that the app leaves this
+    // scene. Its already-queued continuation still runs once, even though clearing the scene's
+    // helpers prevents any later continuation. Keep the detached display tree alive through
+    // that microtask checkpoint, then release it before the next frame.
+    setTimeout(() => this.root.destroy({ children: true }), 0);
   }
 }
