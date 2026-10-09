@@ -7179,6 +7179,11 @@ async function habitatPlay() {
   await launch('habitat-helpers', 4);
   for (let index = 0; index < 3; index++) {
     await readyRound(index);
+    // The sign shows a mystery guest, never the answer; the two visitor cards do not overlap; touching a prepared piece only listens.
+    assert.equal(await page.evaluate(() => neo.scene.game.goal.children.some((c) => 'alive' in c)), false, 'the prediction sign never shows who will come');
+    assert.ok(await page.evaluate(() => { const [a, b] = neo.scene.game.choices.map((c) => c.node); return Math.abs(a.x - b.x) >= 142; }), 'the Bunny and Duck cards do not overlap');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.pieces[0].node)); await page.waitForTimeout(450);
+    assert.equal(await page.evaluate(() => neo.scene.game.selected.length), 2, 'a prepared piece stays put when touched');
     const wrong = await page.evaluate(() => neo.scene.game.round.visitors[0] === 'bunny' ? 'duck' : 'bunny');
     await page.evaluate((visitor) => kit.tapOn(neo.scene.game.choices.find((c) => c.visitor === visitor).node), wrong);
     await tap('neo.scene.game.testButton');
@@ -7195,6 +7200,11 @@ async function habitatPlay() {
   assert.ok(await page.evaluate(() => ['habitat-helpers:bunny', 'habitat-helpers:duck'].every((id) => kit.store.data.journal.found.includes(id))));
   await launch('habitat-helpers', 6);
   await readyRound(0);
+  // Six cards: no two overlap, and the last one's touch area stays clear of the gate's.
+  assert.ok(await page.evaluate(() => {
+    const g = neo.scene.game; const xs = g.pieces.map((p) => p.node.x).sort((a, b) => a - b);
+    return xs.every((x, i) => i === 0 || x - xs[i - 1] >= 112) && xs.at(-1) + 62 <= g.testButton.x - 72;
+  }), 'six piece cards are apart and clear of the gate');
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
   assert.ok(await page.evaluate(() => [...neo.scene.game.pieces.map((p) => p.node), neo.scene.game.testButton].every((node) => { const b = node.getBounds(); return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight; })), 'portrait pieces and gate fit');
   await screenshot('habitat-helpers-6-portrait');

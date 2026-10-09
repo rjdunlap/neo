@@ -11,10 +11,11 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
+import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { gardenPatch, gateIcon, needIcon, pieceArt } from './art';
-import { helpingPieces, makeRounds, missingNeeds, NEEDS, PIECES, planFor, visitorsFor, welcomes, type HabitatPlan, type HabitatRound, type PieceId, type Visitor } from './logic';
+import { habitatTouch, helpingPieces, makeRounds, missingNeeds, NEEDS, PIECES, planFor, visitorsFor, welcomes, type HabitatPlan, type HabitatRound, type PieceId, type Visitor } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 3 },
@@ -128,10 +129,11 @@ class HabitatHelpers implements Game {
     selectedButtons.forEach((p, i) => p.node.position.set(gardenXs[i], gardenY + (i % 2 ? 12 : -14)));
 
     const loose = this.pieces.filter((p) => !p.selected);
-    const trayXs = spread(loose.length, 220, v.w - 165, 112);
+    // Between the pet and the gate: six 112-unit cards (level 6) fit with their 124-unit touch areas not overlapping.
+    const trayXs = spread(loose.length, 150, v.w - 165, 124);
     loose.forEach((p, i) => p.node.position.set(trayXs[i], v.h - 90));
 
-    const choiceXs = spread(this.choices.length, gardenX - 110, gardenX + 110, 180);
+    const choiceXs = spread(this.choices.length, gardenX - 90 * this.choices.length, gardenX + 90 * this.choices.length, 180);
     this.choices.forEach((c, i) => c.node.position.set(choiceXs[i], v.h - 95));
     this.drawPlots(gardenX, gardenY, gardenXs);
   }
@@ -149,6 +151,20 @@ class HabitatHelpers implements Game {
       const c = this.choices.find((choice) => choice.visitor === this.prediction);
       if (c) g.roundRect(c.node.x - 79, c.node.y - 74, 158, 148, 28).stroke({ width: pulse, color: swatch.green.fill });
     }
+  }
+
+  /** The ghost finger: place the pieces that work and open the gate, or pick the visitor the garden welcomes and open the gate. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.roundIndex < 0 || this.roundIndex >= this.rounds.length) return null;
+    const touch = habitatTouch(this.round, this.plan.mode, this.selected, this.prediction);
+    if (!touch) return null;
+    if (touch === 'gate') return { tap: { on: this.testButton }, pause: 1 };
+    if ('visitor' in touch) {
+      const choice = this.choices.find((c) => c.visitor === touch.visitor);
+      return choice ? { tap: { on: choice.node } } : null;
+    }
+    const piece = this.pieces.find((p) => p.id === touch.piece && !p.selected);
+    return piece ? { tap: { on: piece.node } } : null;
   }
 
   destroy() {
@@ -203,11 +219,18 @@ class HabitatHelpers implements Game {
     const width = this.round.visitors.length === 2 ? 410 : 340;
     this.goal.addChild(new Graphics().roundRect(-width / 2, -66, width, 132, 28).fill({ color: 0xffffff, alpha: 0.93 }).stroke({ width: 6, color: wood.line }));
     const start = this.round.visitors.length === 2 ? -150 : -110;
-    this.round.visitors.forEach((visitor, i) => {
-      const c = smallVisitor(visitor, 0.22);
-      c.position.set(start + i * 65, 48);
-      this.goal.addChild(c);
-    });
+    if (this.plan.mode === 'predict') {
+      // Who will come is the question, so the sign shows a mystery guest, never the answer.
+      const mystery = label('?', 74, wood.line);
+      mystery.position.set(start, 4);
+      this.goal.addChild(mystery);
+    } else {
+      this.round.visitors.forEach((visitor, i) => {
+        const c = smallVisitor(visitor, 0.22);
+        c.position.set(start + i * 65, 48);
+        this.goal.addChild(c);
+      });
+    }
     NEEDS.forEach((need, i) => {
       const icon = needIcon(need, 42);
       icon.position.set(10 + i * 82, 0);
@@ -233,6 +256,7 @@ class HabitatHelpers implements Game {
     for (const id of this.round.prepared ?? []) {
       const node = pieceButton(id);
       const piece: PieceButton = { id, node, selected: true, locked: true };
+      onTap(node, () => this.inspect(piece), { cooldown: 400 });
       this.pieces.push(piece);
       this.selected.push(id);
       this.pieceLayer.addChild(node);
@@ -266,6 +290,13 @@ class HabitatHelpers implements Game {
     }
     this.hinting = this.hinting.filter((id) => !this.selected.includes(id));
     this.resize(this.view);
+  }
+
+  /** Prediction rounds: touching a prepared piece says what it gives, so the guess can be reasoned and not only lucky. */
+  private inspect(piece: PieceButton) {
+    if (this.busy || this.finished) return;
+    sfx.pop(5);
+    void this.ctx.say('habitat.place', { piece: PIECES[piece.id].name, help: this.pieceHelp(piece.id) });
   }
 
   private pieceHelp(id: PieceId): string {
@@ -399,6 +430,7 @@ export const habitatHelpers: GameModule = {
   coplayHint: 'Ask what the visitor still needs: food, water or somewhere safe to shelter.',
   offScreen: 'Look outdoors for food, water and shelter an animal could use. Watch from a distance and leave wild animals where they are.',
   hubIcon: () => new WigglyIcon(habitatIcon()),
+  touchDemo: true,
   sticker,
   create: (ctx) => new HabitatHelpers(ctx),
 };
