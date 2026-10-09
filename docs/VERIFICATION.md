@@ -52,12 +52,14 @@ Each entry is about six lines: what changed, which checks ran, what was not run 
 
 ### Quiet music-making games (2026-10-09)
 
-What changed: Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors and Clap the Syllables use `silenced(STYLES.x)` (same tempo and seed, every layer off, volume 0.0001) instead of the island's loop, so it no longer competes with the sounds she makes; the treehouse tune plaque calls the new `music.duck()` while her song plays. Beat Builder and Pet Says already used `STYLES.quiet`.
+What changed: Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors and Clap the Syllables use `silenced(STYLES.x)` (same tempo and seed, every layer off, volume 0.0001) instead of the island's loop, so it no longer competes with the sounds she makes; the treehouse tune plaque calls the new `music.duck()` while her song plays; and the how-to card, which opens before the round is built, now switches to a silenced game's style as it opens (otherwise the place's loop sat under Jelly Drums' ghost-finger demonstration). Beat Builder and Pet Says already used `STYLES.quiet`.
 
 - `npm run typecheck` and `npm test` (114 files, 663 tests) passed. Three new registry tests: the seven music-making games all have a near-silent style, Jelly Drums and Song Maker keep their 92 bpm clock, and `silenced` keeps tempo and seed. Putting Sound Garden's old `STYLES.lullaby` back made the first fail on that game.
 - A headless probe on a private dev server (not kept in the suite) opened each game, then read the music engine: the five changed games and Beat Builder sat at a gain of 0.0001 with `bpm()` and `beats()` live at their own tempos (92, 92, 66, 92, 76), while Bubble Pop stayed at 0.45; `music.duck(2)` on the hub took the gain from 0.5 to 0.0002 and back to 0.4997 with no page errors.
+- A second probe with the how-to cards on: from the place (hub loop, gain 0.5) Jelly Drums and Song Maker dropped to 0.0001 as their cards opened and stayed there through Play, while Bubble Pop's card kept the hub loop, as before. The first probe had the cards off, which is why it did not show this.
 - `BROWSER_SUITE=creations` passed without page errors, including the pet singing the kept song from the plaque.
-- Not run: `npm run build` (shared audio code, but no assets or persistence changed), `smoke`, `world`, couch suites (couch play reads the same `music` field and has no music-making game). Not established: how the near-silence sounds or feels, which needs the iPad (roadmap, *Needs a person or a device*). Pattern Train was left alone.
+- `BROWSER_SUITE=couchgames COUCH_ONLY=rhythm-neighbors` passed (Rhythm Neighbors is also a couch game and reads the same `music` field there).
+- Not run: `npm run build` (shared audio code, but no assets or persistence changed), `smoke`, `world`, the other couch suites (no other couch game makes music). Not established: how the near-silence sounds or feels, which needs the iPad (roadmap, *Needs a person or a device*). Pattern Train was left alone.
 
 ### The ghost finger on Little Helpers, Market Stall, Garden Rows, Garden Grow and Owl Walk Home (2026-10-09)
 
