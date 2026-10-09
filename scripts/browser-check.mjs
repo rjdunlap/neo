@@ -219,8 +219,35 @@ async function grownUps() {
   assert.equal(await page.evaluate(() => kit.store.data.stickers.length), base + 2, 'undo brought the stickers back');
   await screenshot('parent-undo');
   await page.locator('[data-done]').click(); await scene('StartScene');
+
+  // A finger, not only a mouse: the same hold with real touch events, on the map (once a child is playing, the iPad's only way in).
+  const touchContext = await browser.newContext({ viewport: { width: 1024, height: 768 }, hasTouch: true });
+  try {
+    const finger = await touchContext.newPage();
+    finger.on('pageerror', (error) => errors.push(error.message));
+    await finger.goto(process.env.GAME_URL || 'http://127.0.0.1:5173');
+    await finger.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+    await finger.evaluate(() => { kit.store.data.pet = { name: 'Clover', color: 'pink', hatched: true }; kit.store.data.settings.howToCards = false; neo.go.hub(); });
+    await finger.waitForFunction(() => neo.scene.constructor.name === 'MapScene' && !neo.switching);
+    await finger.waitForTimeout(500);
+    const cdp = await touchContext.newCDPSession(finger);
+    const box = await finger.locator('.gear').boundingBox();
+    const at = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const touch = async (ms) => {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [at] });
+      await finger.waitForTimeout(ms);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    };
+    await touch(300);
+    assert.equal(await finger.locator('.parent').count(), 0, 'a short touch opens nothing');
+    assert.ok(await finger.locator('.gear').evaluate((el) => el.classList.contains('gear--hint')), 'a short touch shows the hint');
+    await touch(2400);
+    await finger.locator('.parent').waitFor({ timeout: 3000 });
+  } finally {
+    await touchContext.close();
+  }
   assert.deepEqual(errors, []);
-  log("The grown-ups' gear (tap, mouse hold, Enter hold), Esc and the pause sheet, no play timer, and undoing a reset after a reload passed");
+  log("The grown-ups' gear (tap, mouse hold, Enter hold, touch tap and hold), Esc and the pause sheet, no play timer, and undoing a reset after a reload passed");
 }
 
 async function subjectPlaces() {
