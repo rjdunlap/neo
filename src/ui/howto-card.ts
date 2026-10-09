@@ -4,8 +4,9 @@ import { onTap } from '../engine/input';
 import type { View } from '../engine/view';
 import type { Demo } from '../couch/demo';
 import type { HowToCard } from '../content/howto';
-import { RoundButton } from './buttons';
-import { checkIcon, houseIcon, playIcon } from './icons';
+import type { LevelRange } from '../progress/difficulty';
+import { HoldButton, RoundButton } from './buttons';
+import { arrowIcon, checkIcon, houseIcon, playIcon } from './icons';
 import { FONT } from './text';
 
 const MUTED = 0x6b6b7b;
@@ -19,6 +20,10 @@ const DEMO_TALL = 520;
 const NOTE_CONTROLLER = 'A demonstration: a controller moves the highlight. You tap or drag.';
 const NOTE_FINGER = 'A demonstration of this level: a pretend finger taps and drags. You do the same.';
 const NOTE_MOUSE = 'A demonstration of this level: a pointer clicks and drags. You do the same.';
+/** The level arrows are held for a moment, like the home and "?" buttons, so a small hand's tap does not change the game. */
+const STEP_RADIUS = 38;
+const STEP_HOLD = 0.35;
+const STEP_GAP = 10;
 
 /** What the card does as the intro before a game's first round: it starts the round, or goes back. */
 export interface HowToIntro {
@@ -28,6 +33,11 @@ export interface HowToIntro {
   back: () => void;
   /** A bot playing a real round in a window on the card, for a game that has one. The card runs, places and destroys it. */
   demo?: Demo;
+  /**
+   * Arrows to choose the level before the round is built: the levels she may play, and what a held arrow does. The scene
+   * answers with `show`. Left off when the game has one level.
+   */
+  pick?: { range: LevelRange; step: (delta: 1 | -1) => void };
 }
 
 /**
@@ -36,14 +46,20 @@ export interface HowToIntro {
  * check or a tap on the veil. As the intro before a round it fills the screen, shows the game's picture,
  * and offers a big Play and a Back; a stray tap on the backdrop does nothing. For a game with a bot it also
  * shows a demonstration round in a window (beside the text on a wide screen, above it on a tall one).
+ * The intro can also step the level (held arrows beside "this level"): the text, the steps and the demonstration follow it.
  * Reading it changes nothing about the round.
  */
 export class HowToPanel extends Container {
   private readonly body = new Container();
   private readonly veil = new Graphics();
+  private demo: Demo | undefined;
+  private shown: View | null = null;
+  /** The held arrows of the card as last laid out, run each frame; and a step waiting to be applied after them. */
+  private holds: HoldButton[] = [];
+  private pending: 1 | -1 | 0 = 0;
 
   constructor(
-    private readonly info: HowToCard,
+    private info: HowToCard,
     private readonly close: () => void,
     private readonly intro?: HowToIntro,
   ) {
@@ -51,25 +67,56 @@ export class HowToPanel extends Container {
     this.veil.eventMode = 'static';
     if (!intro) onTap(this.veil, close, { cooldown: 400 });
     this.addChild(this.veil, this.body);
-    const demo = intro?.demo;
-    if (demo) {
-      // The game inside the window is a separate copy: nothing she touches may reach it.
-      demo.root.eventMode = 'none';
-      this.addChild(demo.root);
+    this.mount(intro?.demo);
+  }
+
+  /** The demonstration now on the card, if any. */
+  get currentDemo(): Demo | undefined {
+    return this.demo;
+  }
+
+  /** Put a demonstration's window on the card. */
+  private mount(demo: Demo | undefined) {
+    this.demo = demo;
+    if (this.intro) this.intro.demo = demo;
+    if (!demo) return;
+    // The game inside the window is a separate copy: nothing she touches may reach it.
+    demo.root.eventMode = 'none';
+    this.addChild(demo.root);
+  }
+
+  /**
+   * Show another level's card, and its demonstration: the old one is destroyed unless it is the one passed again
+   * (a game whose demonstration does not follow the level).
+   */
+  show(info: HowToCard, demo: Demo | undefined) {
+    this.info = info;
+    if (demo !== this.demo) {
+      this.demo?.destroy();
+      this.mount(demo);
+    }
+    if (this.shown) this.layout(this.shown);
+  }
+
+  /** Run the demonstration, if there is one, and the held arrows. */
+  update(dt: number) {
+    this.demo?.update(dt);
+    for (const h of this.holds) if (!h.destroyed) h.update(dt);
+    // A finished hold changes the card, which replaces the arrows: do it once they have all run.
+    if (this.pending) {
+      const delta = this.pending;
+      this.pending = 0;
+      this.intro?.pick?.step(delta);
     }
   }
 
-  /** Run the demonstration, if there is one. */
-  update(dt: number) {
-    this.intro?.demo?.update(dt);
-  }
-
   destroy(options?: Parameters<Container['destroy']>[0]) {
-    this.intro?.demo?.destroy();
+    this.demo?.destroy();
     super.destroy(options);
   }
 
   layout(view: View) {
+    this.shown = view;
     this.veil.clear().rect(0, 0, view.w, view.h);
     if (this.intro) this.veil.fill(0xfff4e3);
     else this.veil.fill({ color: 0x2b2440, alpha: 0.5 });
@@ -82,11 +129,13 @@ export class HowToPanel extends Container {
       built = this.build(view, scale);
     }
     this.body.addChild(built.card);
-    if (built.window) this.intro!.demo!.layout(built.card.x + built.window.x, built.card.y + built.window.y, built.window.w);
+    if (built.window) this.demo!.layout(built.card.x + built.window.x, built.card.y + built.window.y, built.window.w);
   }
 
   private build(view: View, scale: number): { card: Container; window: { x: number; y: number; w: number } | null } {
-    const demo = this.intro?.demo;
+    const demo = this.demo;
+    this.holds = [];
+    const range = this.intro?.pick && this.intro.pick.range.max > this.intro.pick.range.min ? this.intro.pick.range : null;
     // Beside the text when the screen is wider than tall; above it when it is tall. The window shrinks a little with the text.
     const wide = !!demo && view.w >= view.h * 1.1;
     const width = Math.min(view.w - 60, wide ? 1000 : 760);
@@ -109,7 +158,11 @@ export class HowToPanel extends Container {
       rows.push(text('HOW TO PLAY', 13, MUTED, '600'));
       rows.push(text(this.info.title, Math.round(34 * scale), ink, '600'));
     }
-    add('THIS LEVEL', this.info.level);
+    rows.push(text(`THIS LEVEL  ·  ${this.info.levelNumber}`, 13, MUTED, '600'));
+    // With arrows the pair sits to the left of the description, and is the tallest part of the row.
+    const side = range ? STEP_RADIUS * 4 + STEP_GAP + 22 : 0;
+    const levelText = text(this.info.level, BODY, ink, '500', inner - side);
+    rows.push(levelText);
     add('GOAL', this.info.goal);
     rows.push(text('WHAT TO DO', 13, MUTED, '600'));
     this.info.steps.forEach((s, i) => rows.push(text(`${i + 1}.  ${s}`, BODY, ink)));
@@ -121,11 +174,14 @@ export class HowToPanel extends Container {
     const slot = demo ? { x: wide ? width - 32 - dw : (width - dw) / 2, y: wide ? 22 : y + 2, w: dw } : null;
     if (demo && !wide) y += dh + noteH + 8;
     const placed: Array<[Text, number]> = [];
+    let stepY = 0;
     for (const r of rows) {
       const small = r.style.fontSize === 13;
       if (small && placed.length) y += 14;
-      placed.push([r, y]);
-      y += r.height + (small ? 3 : 6);
+      const h = range && r === levelText ? Math.max(r.height, STEP_RADIUS * 2) : r.height;
+      placed.push([r, y + (h - r.height) / 2]);
+      if (range && r === levelText) stepY = y + h / 2;
+      y += h + (small ? 3 : 6);
     }
     if (demo && wide) y = Math.max(y, 22 + dh + noteH + 8);
     // The intro's Play is the biggest thing on the card; the "?" card has one small check.
@@ -145,9 +201,10 @@ export class HowToPanel extends Container {
       card.addChild(frame, note);
     }
     for (const [r, ry] of placed) {
-      r.position.set(32, ry);
+      r.position.set(32 + (range && r === levelText ? side : 0), ry);
       card.addChild(r);
     }
+    if (range) card.addChild(...this.arrows(range, 32 + STEP_RADIUS, stepY));
     if (this.intro) {
       const go = new RoundButton(playIcon(), swatch.green, play, this.intro.play);
       const back = new RoundButton(houseIcon(0xffffff), swatch.blue, 52, this.intro.back);
@@ -164,6 +221,21 @@ export class HowToPanel extends Container {
     // A tap on the card itself must not fall through to the veil and close it.
     card.eventMode = 'static';
     return { card, window: slot };
+  }
+
+  /** The two level arrows, side by side. An arrow at the end of the levels is dimmed and does nothing. */
+  private arrows(range: LevelRange, x: number, y: number): HoldButton[] {
+    const make = (dir: 1 | -1, at: number) => {
+      const atEnd = dir === 1 ? this.info.levelNumber >= range.max : this.info.levelNumber <= range.min;
+      const button = new HoldButton(arrowIcon(dir), swatch.white, STEP_RADIUS, STEP_HOLD, () => (this.pending = dir), swatch.blue.fill);
+      button.position.set(at, y);
+      if (atEnd) {
+        button.alpha = 0.3;
+        button.eventMode = 'none';
+      } else this.holds.push(button);
+      return button;
+    };
+    return [make(-1, x), make(1, x + STEP_RADIUS * 2 + STEP_GAP)];
   }
 
   /** The game's picture on the left, the label and title beside it. */

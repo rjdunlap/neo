@@ -19,6 +19,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
 import type { Band } from '../../progress/bands';
+import { stepLevel } from '../../progress/difficulty';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon } from '../../ui/howto-card';
@@ -189,15 +190,39 @@ export class GameScene extends Scene {
   /** The how-to card fills the screen with Play and Back, and no round has been built or started. */
   private openIntro(info: NonNullable<ReturnType<typeof howToFor>>) {
     const mod = this.mod;
-    // A game with a bot plays a real round in a window on the card: a ghost finger at her level, or the couch's controller demo.
-    const spec = islandDemo(mod, this.level, this.band);
-    const demo = spec ? new Demo(mod, { ...spec, renderer: this.app.renderer }) : undefined;
-    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo });
+    const demo = this.demoAt(this.level);
+    // Held arrows choose the level the round is built at. They stay within her band's levels, like the grown-up zone's picker.
+    const range = mod.levels(this.band);
+    const pick = range.max > range.min ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta) } : undefined;
+    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo, pick });
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
     card.layout(this.view);
     this.helpCard = card;
     this.ui.addChild(card);
+  }
+
+  /**
+   * A game with a bot plays a real round in a window on the card: a ghost finger at the level on the card, or (a game with no
+   * touch bot yet) the couch's controller demo, which plays its own level and so is kept as it is when the level changes.
+   */
+  private demoAt(level: number, current?: Demo): Demo | undefined {
+    const spec = islandDemo(this.mod, level, this.band);
+    if (!spec) return undefined;
+    if (spec.input === 'controller' && current) return current;
+    return new Demo(this.mod, { ...spec, renderer: this.app.renderer });
+  }
+
+  /** An arrow on the intro: the round will be built at the next level, and the card shows what that level asks and does. */
+  private stepIntroLevel(delta: 1 | -1) {
+    const card = this.helpCard;
+    if (!card || this.game || this.gone) return;
+    const level = stepLevel(this.level, delta, this.mod.levels(this.band));
+    if (level === this.level) return;
+    const info = howToFor(this.mod, level);
+    if (!info) return;
+    this.level = level;
+    card.show(info, this.demoAt(level, card.currentDemo));
   }
 
   /** Play: the card goes, and the round begins. */
