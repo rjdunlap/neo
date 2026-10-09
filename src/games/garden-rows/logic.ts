@@ -187,3 +187,20 @@ export function hintFor(bed: Bed, given: boolean[][], solution: Bed, rule: Rule)
     }
   return best ? { kind: 'plant', r: best.r, c: best.c, flower: solution[best.r][best.c]! } : null;
 }
+
+/**
+ * The planting a capable child does next: the empty spot with the fewest flowers that fit (a spot with one choice, if there
+ * is one), planted with the flower of the one way to finish. Among equally tight spots it prefers one that takes the packet
+ * already chosen, so the seeds are not swapped more than needed. Null when the bed is full.
+ */
+export function nextPlanting(bed: Bed, solution: Bed, rule: Rule, selected: number): { r: number; c: number; flower: number } | null {
+  let best: { r: number; c: number; flower: number; key: number } | null = null;
+  for (let r = 0; r < bed.length; r++)
+    for (let c = 0; c < bed.length; c++) {
+      if (bed[r][c] !== null) continue;
+      const flower = solution[r][c]!;
+      const key = candidates(bed, rule, r, c).length * 2 + (flower === selected ? 0 : 1);
+      if (!best || key < best.key) best = { r, c, flower, key };
+    }
+  return best && { r: best.r, c: best.c, flower: best.flower };
+}

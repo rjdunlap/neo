@@ -9,9 +9,9 @@ import type { View } from '../../engine/view';
 import { spread } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, planFor, type Bed, type Hint, type Puzzle, type RowsPlan,
+  clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, nextPlanting, planFor, type Bed, type Hint, type Puzzle, type RowsPlan,
 } from './logic';
 
 const LEVELS: BandLevels = {
@@ -177,6 +177,16 @@ class GardenRows implements Game {
       const p = this.packets.children[this.hinted.flower];
       if (p) ring.circle(p.x, p.y, PACKET + 9 + 3 * Math.sin(this.clock * 6)).stroke({ width: 6, color: swatch.yellow.fill });
     }
+  }
+
+  /** The ghost finger: pick up the seeds for the tightest spot, then plant it. */
+  autotouch(): TouchIntent | null {
+    const puzzle = this.puzzles[this.index];
+    if (this.busy || this.finished || !puzzle) return null;
+    const step = nextPlanting(this.bed, puzzle.solution, this.plan.rule, this.selected);
+    if (!step) return null;
+    if (step.flower !== this.selected) return { tap: { on: this.packets.children[step.flower] }, pause: 0.3 };
+    return { tap: { on: this.board, x: step.c * CELL + CELL / 2, y: step.r * CELL + CELL / 2 } };
   }
 
   destroy() {}
@@ -375,6 +385,7 @@ export const gardenRows: GameModule = {
   coplayHint: 'Point at a row and ask together: which flower is missing here?',
   offScreen: 'Lay out three or four different toys in a grid so no kind repeats in any row or column, then take a few away for her to put back.',
   hubIcon: () => new RowsIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new GardenRows(ctx),
 };

@@ -11,8 +11,8 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { CROWD, makeFruits, planFor, skipCount, tryLift, usesWhistle, type Fruit, type HelperPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { CROWD, helperTouch, makeFruits, planFor, skipCount, tryLift, usesWhistle, type Fruit, type HelperPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -137,6 +137,18 @@ class LittleHelpers implements Game {
   }
 
   update() {}
+
+  /** The ghost finger: send a helper to the fruit until the team is big enough, then blow the whistle where there is one. */
+  autotouch(): TouchIntent | null {
+    const f = this.fruit;
+    if (!f || this.busy || this.finished || this.helpers.some((h) => h.moving)) return null;
+    const touch = helperTouch(this.plan, f.need, this.carrying.length);
+    if (touch === 'whistle') return { tap: { on: this.whistle } };
+    if (touch !== 'send') return null;
+    // A bunch has several fruits under one tap area; the finger points at the middle one.
+    const each = f.need / f.groups;
+    return { tap: { on: this.fruitNode, x: this.groupX(Math.floor(f.groups / 2), f), y: -10 - each * 12 } };
+  }
 
   destroy() {}
 
@@ -422,6 +434,7 @@ export const littleHelpers: GameModule = {
   coplayHint: 'Count the helpers together as they line up: "one, two, three... heave ho!"',
   offScreen: 'Carry a big pillow together: how many hands does it take?',
   hubIcon: () => new HelpersIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new LittleHelpers(ctx),
 };

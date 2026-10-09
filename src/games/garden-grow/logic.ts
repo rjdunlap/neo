@@ -71,3 +71,33 @@ export function matches(r: Request, planted: ColorName[]): boolean {
 }
 
 export const total = (r: Request) => Object.values(r.want).reduce((a, b) => a + (b ?? 0), 0);
+
+/** What a bed holds, as far as the demonstration needs to know. */
+export interface BedState {
+  seed: ColorName | null;
+  bloom: boolean;
+}
+
+/** One touch of the garden: a bed (by position), a seed packet (by color), or the rain cloud. */
+export type GardenTouch = { bed: number } | { packet: ColorName } | 'rain';
+
+/**
+ * What a capable child touches next. Free play fills the beds, one tap each (and on the rain level, a tap on the cloud once
+ * every bed has a seed); a color level takes the packet that was asked for; a counting level takes the packets until the
+ * seeds in the beds are exactly what the sign shows, and only then makes it rain. Null while there is nothing left to do.
+ */
+export function gardenTouch(plan: GardenPlan, request: Request | undefined, beds: readonly BedState[]): GardenTouch | null {
+  if (plan.mode === 'plant' || plan.mode === 'water') {
+    const empty = beds.findIndex((b) => !b.seed);
+    if (empty >= 0) return { bed: empty };
+    return plan.mode === 'water' && beds.some((b) => !b.bloom) ? 'rain' : null;
+  }
+  // Flowers in the beds mean the request was met (rain only grows what matches) and the next one is on its way.
+  if (!request || beds.some((b) => b.bloom)) return null;
+  const want = Object.entries(request.want) as [ColorName, number][];
+  // A color level is one seed of the color on the sign.
+  if (plan.mode === 'color') return beds.some((b) => b.seed === want[0][0]) ? null : { packet: want[0][0] };
+  const planted = beds.filter((b) => b.seed && !b.bloom).map((b) => b.seed!);
+  for (const [color, n] of want) if (planted.filter((c) => c === color).length < n) return { packet: color };
+  return 'rain';
+}

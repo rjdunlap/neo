@@ -10,8 +10,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { BEDS, makeRequests, matches, packetsFor, planFor, total, type GardenPlan, type Request } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { BEDS, gardenTouch, makeRequests, matches, packetsFor, planFor, total, type GardenPlan, type Request } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -134,6 +134,17 @@ class GardenGrow implements Game {
     const empty = this.beds.filter((b) => !b.seed);
     const planted = this.beds.length - empty.length;
     empty.slice(0, Math.max(0, this.glowBeds - planted)).forEach((b) => g.ellipse(b.node.x, b.node.y, 66, 28).stroke({ width: pulse, color: swatch.yellow.fill }));
+  }
+
+  /** The ghost finger: plant the beds, take the packet asked for, and make it rain when the seeds are right. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const touch = gardenTouch(this.plan, this.requests[this.index], this.beds.map((b) => ({ seed: b.seed, bloom: !!b.bloom })));
+    if (!touch) return null;
+    if (touch === 'rain') return { tap: { on: this.cloud } };
+    if ('bed' in touch) return { tap: { on: this.beds[touch.bed].node } };
+    const packet = this.packets.find((p) => p.color === touch.packet);
+    return packet ? { tap: { on: packet.node } } : null;
   }
 
   destroy() {}
@@ -401,6 +412,7 @@ export const gardenGrow: GameModule = {
   coplayHint: 'Say it together: "Plant the seed... rain, rain... it grows!" and wiggle up like a flower.',
   offScreen: 'Plant a bean in a cup and water it together; look at it each morning.',
   hubIcon: () => new GardenIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new GardenGrow(ctx),
 };
