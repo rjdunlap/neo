@@ -76,6 +76,7 @@ import { lanternLights } from './lantern-lights';
 import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
 import { islandBridges } from './island-bridges';
+import { lemonadeStand } from './lemonade-stand';
 import type { GameModule } from './types';
 
 /**
@@ -154,6 +155,7 @@ export const GAMES: GameModule[] = [
   critterCrossing,
   clapSyllables,
   chainReaction,
+  lemonadeStand,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

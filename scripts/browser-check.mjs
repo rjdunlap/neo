@@ -3133,6 +3133,49 @@ async function woodsBatch() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : 'two planned stops'}): ${level === 6 ? 'wrong houses explained' : 'out-of-order and no-letter stops, undoing a stop'}, glowing key row, saved score and sticker passed`);
   }
+
+  // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.
+  if (!only || only === 'lemon') for (let level = fromLevel; level <= 4; level++) {
+    await launch('lemonade-stand', level);
+    if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+    const plan = await page.evaluate(() => ({ days: neo.scene.game.plan.days, price: neo.scene.game.plan.prices.length > 1, purse: neo.scene.game.plan.purse }));
+    // What the purse should show after the rows so far (the host's top-up has been added on the morning after).
+    const purseNow = () => page.evaluate(async () => { const L = await import('/src/games/lemonade-stand/logic.ts'); let p = L.START_PURSE; for (const r of neo.scene.game.rows) p = L.settle(p, r).purse; return [p, neo.scene.game.purse]; });
+    for (let n = 0; n < plan.days; n++) {
+      await idle(n);
+      if (plan.purse) { const [want, got] = await purseNow(); assert.equal(got, want, `day ${n + 1} purse`); }
+      if (n === 0) {
+        // Opening before choosing only nudges; asking for help is one hint a day however often she asks.
+        await tap('neo.scene.game.open');
+        assert.equal(await page.evaluate(() => neo.scene.game.rows.length), 0);
+        assert.deepEqual(await counts(), [0, 0]);
+        await tap('neo.scene.game.help'); await tap('neo.scene.game.help');
+        assert.deepEqual(await counts(), [0, 1]);
+        await screenshot(`lemonade-stand-${level}`);
+      }
+      // The first day is a weak batch with the dearest price (an experiment); after that the best choice the model knows.
+      const choice = await page.evaluate(async (n) => {
+        const L = await import('/src/games/lemonade-stand/logic.ts'); const g = neo.scene.game;
+        if (n === 0) return { made: 4, price: g.plan.prices.at(-1) };
+        const b = L.bestChoice(g.plan, g.week[n], n, g.purse); return { made: b.made, price: b.price };
+      }, n);
+      await tap(`neo.scene.game.cards.find((c) => c.n === ${choice.made}).node`);
+      if (plan.price) await tap(`neo.scene.game.coins.find((c) => c.value === ${choice.price}).node`);
+      await tap('neo.scene.game.open');
+      await page.waitForFunction((n) => neo.scene.game.rows.length === n + 1, n, { timeout: 40000 });
+      assert.equal(await page.evaluate(() => neo.scene.game.tableRows.length), n + 1);
+      if (n === 0) {
+        const row = await page.evaluate(() => neo.scene.game.rows[0]);
+        assert.equal(row.sold + row.left, row.made);
+        await page.waitForTimeout(300);
+        await tap('neo.scene.game.tableRows[0].node');
+      }
+    }
+    await finished('lemonade-stand');
+    assert.deepEqual(await score('lemonade-stand'), [0, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Lemonade Stand ${level} (${['weather', 'forecast event', 'price', 'market week'][level - 1]}): early open nudged, help counted once, ${plan.price ? 'a price chosen, ' : ''}${plan.purse ? 'the purse tracked, ' : ''}a row a day read aloud, saved score and sticker passed`);
+  }
 }
 
 

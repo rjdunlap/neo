@@ -8,7 +8,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 What's in it:
 
-- **72 small games** on an age trail of five places, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
+- **73 small games** on an age trail of five places, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
 - **A pet** she hatches and names, a **sticker book**, and the pet's **treehouse**, where things she made hang on the wall and a discovery journal fills up.
 - **The Windy Picnic**, a short story that connects three activities.
 - **Couch play** for two grown-ups with controllers or a keyboard on a computer: trips, face-offs and challenge courses, with its own save.
@@ -33,7 +33,7 @@ npm run build      # type-check + production build into dist/
 
 The island is an **age trail**. It climbs from **Puddle Lagoon** (lap, 18–24 months) on the shore through **Daisy Meadow** (toddler) and **Bumpy Hills** (preschool) to **Starry Peak** (pre-K), and over the top to **Wonder Woods** (early school, ages 6–8). Each place lays out every game for that age, at that age's levels. A game that grows with her, like Bubble Pop, stands in each place it supports. The play button goes straight to her own place; the island button there opens the trail, where her pet waits by her place and every place is open to explore. When there are more games than fit, swipe the land sideways or tap the arrows. When a grown-up moves her up an age band, the pet has a birthday and walks up the trail.
 
-There are seventy-two games, listed below. "Ages" lists the places each game appears in; "school" is the early-school band at Wonder Woods (ages 6–8), where 50 games play their most demanding levels. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
+There are seventy-three games, listed below. "Ages" lists the places each game appears in; "school" is the early-school band at Wonder Woods (ages 6–8), where 51 games play their most demanding levels. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
@@ -86,6 +86,7 @@ There are seventy-two games, listed below. "Ages" lists the places each game app
 | Secret Code | pre-K–school | fill a door's slots with stones; each slot says yes or no | yellow "wrong place" marks, more slots and colors, codes with a repeated color |
 | Frog Hop | preschool–school | hop to a number on the lily pads | one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20 |
 | Market Stall | preschool–school | count out shell coins for the price | ones and twos, fives, adding two prices, paying two different ways, giving change from 10 |
+| Lemonade Stand | school | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table | an event on the forecast (a ferry, a quiet day), a price in shells, then a five-day market week where a lemon (one shell, two cups) is a cost and the purse carries from day to day; running out or having cups left is a result, never a mistake |
 | Garden Grow | lap–preschool | tap the soil: a seed grows into a singing flower | rain from a cloud, planting the color asked for, exactly so many seeds, two colors with a number of each |
 | Clock Tower | pre-K–school | turn the short hand to an o'clock time | both hands, half past, quarter past and to, reading the clock for the time of day, one hour later |
 | Garden Rows | pre-K–school | plant a 3 by 3 flower bed so each row has one of every flower | rows and columns, 4 by 4 beds with fewer flowers to start, a 5 by 5 bed; every bed has exactly one way to finish, and a flower that repeats will not stay |
@@ -219,7 +220,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `machines` | Chain Reaction's first and top levels: drags, an incomplete run, a failed experiment that is not a miss, a hint, the chime, completion, portrait | |
 | `clap` | Clap the Syllables: all four levels, a wrong count, wrong bins, a hint, a portrait tray | |
 | `shortlist` | Block Tower, Lasso Loops, Pet Says, Owl Walk Home | `SHORTLIST_ONLY=tower\|lasso\|says\|owls` |
-| `woods` | Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure, and these ladder steps: Little Helpers' equal groups (`helpers`), Seesaw Balance 8–9 (`boxes`), Mail Carrier 6–7 (`mailmap`), Egg Catch 6 (`predict`), Bubble Pop 10–11 (`bonds`), Word Monsters 7 (`families`) | `WOODS_ONLY=light\|penguin\|peek\|code\|hop\|shop\|grow\|clock\|pixels\|night\|snack\|beat\|rhyme\|go\|ramp\|sort\|map\|opp\|graph\|worm\|bonds\|predict\|families\|helpers\|boxes\|mailmap` |
+| `woods` | Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Lemonade Stand, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure, and these ladder steps: Little Helpers' equal groups (`helpers`), Seesaw Balance 8–9 (`boxes`), Mail Carrier 6–7 (`mailmap`), Egg Catch 6 (`predict`), Bubble Pop 10–11 (`bonds`), Word Monsters 7 (`families`) | `WOODS_ONLY=light\|penguin\|peek\|code\|hop\|shop\|grow\|clock\|pixels\|night\|snack\|beat\|rhyme\|go\|ramp\|sort\|map\|opp\|graph\|worm\|bonds\|predict\|families\|helpers\|boxes\|mailmap\|lemon` |
 | `creative` | Stamp Studio, Pet Kitchen, Rhythm Neighbors, Tangram Town | `CREATIVE_ONLY=stamps\|kitchen\|rhythm\|tangram` |
 | `next` | Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks | `NEXT_ONLY=seesaw\|doctor\|bumper\|tricks` |
 | `originals` | Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond (with level 10), Shape Sorter, Color Garden | `ORIGINALS_ONLY=bubbles\|jelly\|peekaboo\|ducks\|shapes\|garden` |
