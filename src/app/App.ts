@@ -29,12 +29,14 @@ export interface Routes {
    * game; a course id opens that challenge's page.
    */
   couch(play?: boolean | CourseId): void;
+  /** "Who's playing?": the front door, and the way back to it from the map. */
   start(): void;
   /** The island map: the age trail. */
   hub(): void;
   /** One place on the trail, with every game for that age band laid out. */
   place(band: Band): void;
-  hatch(): void;
+  /** The new friend's egg; `quick` skips the egg for someone old enough to choose a friend straight away. */
+  hatch(quick?: boolean): void;
   /** Plays a game at the levels for `band` (her own band if omitted), or as a step of the picnic story. */
   game(id: string, band?: Band, story?: StoryRound, again?: boolean): void;
   /** The Windy Picnic. `from` is the request whose round just finished, so the scene can show what changed. */
@@ -206,7 +208,7 @@ export class App {
         // The scene stays frozen behind the page; closing it goes to the island map, which shows any change at once.
         this.closeSheet();
         voice.stop();
-        openParentPanel(() => (store.data.pet.hatched ? this.go.hub() : this.go.hatch()));
+        openParentPanel(() => (store.data.pet.hatched ? this.go.hub() : this.go.hatch()), () => this.go.start());
       },
     });
   }

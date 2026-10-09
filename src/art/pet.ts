@@ -1,10 +1,17 @@
 import { Graphics } from 'pixi.js';
+import type { SaveData } from '../progress/save';
 import { store } from '../progress/store';
 import { Critter, CRITTERS, type CritterSpec } from './critter';
 import { swatch } from './palette';
 
+/** A saved pet's look, from the pet alone, so a card can draw another profile's friend. */
+export function petSpecFor(pet: Pick<SaveData['pet'], 'color'>): CritterSpec {
+  return { ...CRITTERS.pip, color: pet.color };
+}
+
+/** The active profile's friend. */
 export function petSpec(): CritterSpec {
-  return { ...CRITTERS.pip, color: store.data.pet.color };
+  return petSpecFor(store.data.pet);
 }
 
 export function makePet(): Critter {

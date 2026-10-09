@@ -7,6 +7,7 @@ import { voice } from '../../audio/voice';
 import { PET_COLORS, type PetColor } from '../../content/world';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
+import type { App } from '../App';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
@@ -32,10 +33,21 @@ export class HatchScene extends Scene {
   private leaving = false;
   private readonly next = new RoundButton(playIcon(), swatch.green, 58, () => this.advance());
 
+  constructor(app: App, private readonly quick = false) {
+    super(app);
+  }
+
   init() {
     this.content.addChild(this.background, this.egg, this.choices);
     this.ui.addChild(this.next, this.nameLabel);
     this.next.visible = false;
+    if (this.quick) {
+      // Old enough to choose a friend without an egg: straight to the colors.
+      this.egg.visible = false;
+      this.step = 'color';
+      this.setPet();
+      this.buildChoices();
+    }
     onTap(this.egg, () => {
       if (this.step !== 'egg') return;
       this.taps++;
@@ -138,6 +150,6 @@ export class HatchScene extends Scene {
     });
   }
 
-  enter() { void voice.say('hatch.tap'); }
+  enter() { void voice.say(this.quick ? 'hatch.color' : 'hatch.tap'); }
   destroy() { this.form?.remove(); super.destroy(); }
 }

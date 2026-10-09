@@ -7,7 +7,7 @@ import { MapScene } from './scenes/MapScene';
 import { PicnicScene } from './scenes/PicnicScene';
 import { SubjectPlaceScene } from './scenes/SubjectPlaceScene';
 import { PlaceScene } from './scenes/PlaceScene';
-import { StartScene } from './scenes/StartScene';
+import { ChooserScene } from './scenes/ChooserScene';
 import { JournalScene } from './scenes/JournalScene';
 import { RoomScene } from './scenes/RoomScene';
 import { StickerBookScene } from './scenes/StickerBookScene';
@@ -16,10 +16,10 @@ import { CouchScene } from './scenes/CouchScene';
 export function createRoutes(app: App): Routes {
   return {
     couch: (play) => void app.show(new CouchScene(app, play)),
-    start: () => void app.show(new StartScene(app)),
+    start: () => void app.show(new ChooserScene(app)),
     hub: () => void app.show(new MapScene(app)),
     place: (band) => void app.show(store.data.settings.placeLayout === 'subjects' ? new SubjectPlaceScene(app, band) : new PlaceScene(app, band)),
-    hatch: () => void app.show(new HatchScene(app)),
+    hatch: (quick) => void app.show(new HatchScene(app, quick)),
     game: (id, band = store.data.profile.band, story, again = false) => {
       const mod = gameById(id);
       if (mod?.bands.includes(band)) void app.show(new GameScene(app, mod, band, story, again));

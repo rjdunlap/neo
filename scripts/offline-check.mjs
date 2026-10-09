@@ -32,7 +32,7 @@ const writeSave = (value) => page.evaluate((value) => new Promise((resolve, reje
 const fromStart = async (target, afterTarget) => {
   await page.waitForFunction(() => document.fonts.status === 'loaded');
   await page.waitForTimeout(1600);
-  await page.mouse.click(512, 308); await page.waitForTimeout(4200);
+  await page.locator('.chooser__play').first().click(); await page.waitForTimeout(4200);
   await page.mouse.click(65, 65); await page.waitForTimeout(2800);
   await page.mouse.click(target.x, target.y); await page.waitForTimeout(afterTarget);
 };
@@ -49,7 +49,7 @@ const findBlanketOffline = async () => {
     }
     if (attempt === 0) {
       await page.reload({ waitUntil: 'domcontentloaded' });
-      await page.locator('canvas').waitFor();
+      await page.locator('#app canvas').waitFor();
     }
   }
 };
@@ -66,14 +66,14 @@ const openRoomAndJournalOffline = async (roomShot, journalShot) => {
     }
     if (attempt === 0) {
       await page.reload({ waitUntil: 'domcontentloaded' });
-      await page.locator('canvas').waitFor();
+      await page.locator('#app canvas').waitFor();
     }
   }
 };
 
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:4173');
-  await page.locator('canvas').waitFor();
+  await page.locator('#app canvas').waitFor();
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
   await page.evaluate(() => new Promise((resolve, reject) => {
@@ -115,13 +115,13 @@ try {
   assert.ok(assets.some((url) => url.includes('.js')), 'Game bundle cached');
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.locator('canvas').waitFor();
+  await page.locator('#app canvas').waitFor();
   await page.waitForFunction(() => document.fonts.status === 'loaded');
   await page.waitForTimeout(1400);
   // The start button leads straight to her place on the trail: Daisy Meadow for a toddler.
   // Start waits for its greeting before changing scenes; allow the production/offline frame loop to finish the
   // transition before paging through the place (a click during the curtain is intentionally swallowed).
-  await page.mouse.click(512, 308); await page.waitForTimeout(4000);
+  await page.locator('.chooser__play').first().click(); await page.waitForTimeout(4000);
   await page.screenshot({ path: 'test-results/offline/place.png' });
   // Four subject cards per page. Counting Cove is first on page two; Monster Munch
   // is its second game. Subject-local positions survive growth in earlier subjects.
@@ -151,7 +151,7 @@ try {
   // The seeded save predates island stories: loading it added the Windy Picnic, untold.
   assert.deepEqual(save.stories, { picnic: { steps: [], ended: false, keepsake: false } });
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.locator('canvas').waitFor();
+  await page.locator('#app canvas').waitFor();
   assert.equal((await readSave()).stickers.length, 1, 'Offline progress survived reload');
   assert.equal(await page.evaluate(() => typeof window.kit), 'undefined', 'Dev helper excluded from production');
   // Offline, the picnic opens from the map, and a step found there is kept across a reload. The striped blanket
@@ -160,7 +160,7 @@ try {
   assert.deepEqual((await readSave()).stories.picnic.steps, ['blanket'], 'Found the blanket offline');
   await page.waitForTimeout(1500);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.locator('canvas').waitFor();
+  await page.locator('#app canvas').waitFor();
   assert.deepEqual((await readSave()).stories.picnic, { steps: ['blanket'], ended: false, keepsake: false }, 'The story step survived an offline reload');
   // Open the public treehouse and journal routes while offline. The rearranged room, both kept creations and the
   // discoveries came from the old public save above, not dev helpers, and must still be there after production reloads.
@@ -176,7 +176,7 @@ try {
   beforeJournalReload.journal.seen = 0;
   await writeSave(beforeJournalReload);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.locator('canvas').waitFor();
+  await page.locator('#app canvas').waitFor();
   await openRoomAndJournalOffline('test-results/offline/treehouse-reloaded.png', 'test-results/offline/journal-reloaded.png');
   const reloadedRoom = await readSave();
   assert.deepEqual(reloadedRoom.room, roomSave.room, 'The rearranged room survived another offline reload');

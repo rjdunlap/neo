@@ -28,6 +28,10 @@ export const FAVORITES = 'favorites';
 type Subject = RegionId | typeof FAVORITES;
 interface Position { subject: Subject | null; subjectsPage: number; gamesPage: number }
 const positions = new Map<Band, Position>();
+/** Another player is at the screen: the last one's subject and page are not theirs. */
+export function forgetSubjects() {
+  positions.clear();
+}
 const gridIcon = () => {
   const g = new Graphics();
   for (const x of [-23, 5]) for (const y of [-23, 5]) g.roundRect(x, y, 18, 18, 4).fill(swatch.teal.line);

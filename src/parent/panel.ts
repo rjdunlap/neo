@@ -1,10 +1,14 @@
+import { playerChanged, selectPlayer } from '../app/players';
 import { applySettings } from '../app/settings';
 import { voice } from '../audio/voice';
 import { GAMES } from '../games/registry';
 import { BANDS, type Band } from '../progress/bands';
+import { bandForYears, cardName, checkBirthInput, completedYears, isBlankProfile } from '../progress/profiles';
 import { store } from '../progress/store';
 import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -20,9 +24,13 @@ const clock = (at: number) => new Date(at).toLocaleString([], { weekday: 'short'
 /**
  * The grown-up zone: plain HTML over the game, reached by holding the grown-ups gear.
  * Settings apply when it closes.
+ *
+ * It edits one player at a time, whoever is picked at the top, and closing it puts back whoever was playing when it opened
+ * (`onClose`), or, if that player was removed here, goes to `onGone` (the chooser).
  */
-export function openParentPanel(onClose: () => void) {
+export function openParentPanel(onClose: () => void, onGone: () => void = onClose) {
   if (current) return;
+  const openedFor = store.activeId;
   const root = document.createElement('div');
   current = root;
   root.className = 'parent';
@@ -32,17 +40,34 @@ export function openParentPanel(onClose: () => void) {
         <h1 id="parent-title">Grown-ups</h1>
         <button class="btn btn--primary" data-done>Done</button>
       </div>
-      <p class="muted">Settings for Puddle Island. Nothing here ever leaves this iPad.</p>
+      <p class="muted">Settings for Puddle Island. Nothing here ever leaves this device.</p>
 
       <h2>Who's playing</h2>
       <div class="parent__row">
-        <label for="p-name">Child's name, as the voice should say it</label>
+        <label for="p-who">Settings for</label>
+        <select id="p-who"></select>
+      </div>
+      <p class="muted">Everything down to Backup is for the player chosen here. New players are added on the "Who's playing?" page.</p>
+      <div class="parent__row">
+        <label for="p-name">Name, as the voice should say it</label>
         <input id="p-name" type="text" autocomplete="off" maxlength="40" placeholder="e.g. Mia" />
       </div>
-      <p class="muted">Her age band is her pet's home on the island trail, and where play starts. Every place stays open to explore; each plays its games at that age's levels.</p>
+
+      <h2>Age and where they start</h2>
+      <div class="parent__row">
+        <label for="p-month">Birth month</label>
+        <select id="p-month"><option value="">Not set</option>${MONTHS.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('')}</select>
+      </div>
+      <div class="parent__row">
+        <label for="p-year">Birth year</label>
+        <input id="p-year" type="number" inputmode="numeric" placeholder="e.g. ${new Date().getFullYear() - 3}" />
+      </div>
+      <p class="muted" data-age></p>
+      <p class="muted">With a birth month and year, their age picks the band by itself and moves them up as they grow. Choose a band below to start somewhere else instead. Every place stays open to explore; each plays its games at that age's levels. The birth month and year stay on this device, and are in the backup file.</p>
       <div class="parent__bands" data-bands>
         ${BANDS.map((b) => `<button type="button" data-band="${b.id}">${b.label}<small>${b.ages} · ${esc(placeFor(b.id).name)}</small></button>`).join('')}
       </div>
+      <div class="parent__actions" style="margin-top:10px"><button class="btn" data-follow hidden>Follow their age again</button></div>
 
       <h2>Your island friend</h2>
       <div class="parent__row">
@@ -73,6 +98,7 @@ export function openParentPanel(onClose: () => void) {
       <p class="muted">Subject cards show four large choices at a time. Try both layouts when finding and returning from a favorite game.</p>
 
       <h2>Sound</h2>
+      <p class="muted">Kept for each player.</p>
       <div class="parent__row">
         <label for="p-volume">Volume</label>
         <input id="p-volume" type="range" min="0" max="1" step="0.05" />
@@ -90,13 +116,19 @@ export function openParentPanel(onClose: () => void) {
       <div data-week></div>
 
       <h2>Backup</h2>
-      <p class="muted">Saves progress and stickers to a file you can keep or move to another iPad.</p>
+      <p class="muted">Saves everyone's progress, stickers and birth month and year to one file you can keep or move to another iPad or computer. Restoring puts people back and never removes anyone.</p>
       <div class="parent__actions" style="margin-top:10px">
-        <button class="btn" data-export>Save a backup</button>
+        <button class="btn" data-export>Save a backup of everyone</button>
         <button class="btn" data-import>Restore from a backup</button>
-        <button class="btn btn--danger" data-reset>Reset progress</button>
         <input type="file" accept="application/json,.json" data-file hidden />
       </div>
+
+      <h2>This player's progress</h2>
+      <div class="parent__actions" style="margin-top:10px">
+        <button class="btn btn--danger" data-reset>Reset progress</button>
+        <button class="btn btn--danger" data-remove>Remove this player</button>
+      </div>
+      <p class="muted">Reset starts their progress over and keeps their name and friend. Removing deletes the player, their friend and everything saved for them from this device; a backup file can bring them back.</p>
       <p class="muted" data-undo-note hidden></p>
       <div class="parent__actions" style="margin-top:10px">
         <button class="btn" data-undo hidden>Undo the last reset or restore</button>
@@ -104,7 +136,10 @@ export function openParentPanel(onClose: () => void) {
     </div>`;
 
   const $ = <T extends Element>(sel: string) => root.querySelector(sel) as T;
+  const who = $<HTMLSelectElement>('#p-who');
   const name = $<HTMLInputElement>('#p-name');
+  const month = $<HTMLSelectElement>('#p-month');
+  const year = $<HTMLInputElement>('#p-year');
   const petName = $<HTMLInputElement>('#p-pet-name');
   const petColor = $<HTMLSelectElement>('#p-pet-color');
   const tips = $<HTMLInputElement>('#p-tips');
@@ -112,12 +147,35 @@ export function openParentPanel(onClose: () => void) {
   const layout = $<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
   const musicBox = $<HTMLInputElement>('#p-music');
+  let closing = false;
+  let gone = false;
+
+  /** Everyone on the device, by the name on their card; the one being edited is selected. */
+  const fillWho = async () => {
+    const items = await Promise.all(store.profiles.map(async (e) => ({ e, save: await store.peek(e.id) })));
+    if (closing) return;
+    who.innerHTML = items.map(({ e, save }) => `<option value="${e.id}">${esc(save && !isBlankProfile(save, e) ? cardName(save) : 'New player (not set up)')}</option>`).join('');
+    who.value = store.activeId;
+  };
+
+  /** One line on where their age (or a chosen start) puts them. */
+  const ageNote = () => {
+    const { birth, startBand } = store.entry;
+    const age = birth ? `Age ${completedYears(birth, new Date())}. ` : '';
+    const why = startBand ? 'Starting where you chose' : birth ? 'Starting where their age puts them' : 'No birth month and year yet, so they start in the band chosen below';
+    return `${age}${why}: ${placeFor(store.data.profile.band).name}.`;
+  };
 
   const render = () => {
     const d = store.data;
+    const { birth, startBand } = store.entry;
     petName.value = d.pet.name;
     petColor.value = d.pet.color;
     name.value = d.profile.name;
+    month.value = birth ? String(birth.month) : '';
+    year.value = birth ? String(birth.year) : '';
+    $('[data-age]').textContent = ageNote();
+    $('[data-follow]').toggleAttribute('hidden', startBand === null);
     layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
@@ -126,7 +184,7 @@ export function openParentPanel(onClose: () => void) {
     const undoAt = store.undoAt;
     $('[data-undo]').toggleAttribute('hidden', undoAt === null);
     $('[data-undo-note]').toggleAttribute('hidden', undoAt === null);
-    if (undoAt !== null) $('[data-undo-note]').textContent = `Her progress from before ${clock(undoAt)} is kept, so a reset or restore can be undone. Undoing twice puts it back the way it is now.`;
+    if (undoAt !== null) $('[data-undo-note]').textContent = `Their progress from before ${clock(undoAt)} is kept, so a reset or restore can be undone. Undoing twice puts it back the way it is now.`;
     root.querySelectorAll<HTMLButtonElement>('[data-band]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
     $('[data-week]').innerHTML = weekSummary();
     root.querySelectorAll<HTMLSelectElement>('[data-pin]').forEach((sel) =>
@@ -136,7 +194,15 @@ export function openParentPanel(onClose: () => void) {
       }),
     );
   };
+  void fillWho();
   render();
+
+  who.addEventListener('change', async () => {
+    who.disabled = true;
+    await selectPlayer(who.value);
+    who.disabled = false;
+    render();
+  });
 
   petName.addEventListener('input', () => {
     store.data.pet.name = petName.value.trim().slice(0, 40) || 'Pip';
@@ -150,12 +216,40 @@ export function openParentPanel(onClose: () => void) {
     applySettings();
     store.save();
   });
+  name.addEventListener('change', () => void fillWho());
+
+  /** A birth month and year typed here is held to the clock; one that is not both, or has not happened, is not kept. */
+  const saveBirth = () => {
+    if (!month.value && !year.value.trim()) {
+      store.setBirth(store.activeId, null);
+      render();
+      return;
+    }
+    const birth = checkBirthInput(Number(month.value || NaN), Number(year.value.trim() || NaN), new Date());
+    if (!birth) {
+      $('[data-age]').textContent = month.value && year.value.trim() ? 'That month and year have not happened yet, or are too long ago, so it was not kept.' : 'Choose both the month and the year.';
+      return;
+    }
+    store.setBirth(store.activeId, birth);
+    render();
+  };
+  month.addEventListener('change', saveBirth);
+  year.addEventListener('change', saveBirth);
+
   root.querySelectorAll<HTMLButtonElement>('[data-band]').forEach((b) =>
     b.addEventListener('click', () => {
-      store.setBand(b.dataset.band as Band);
+      const band = b.dataset.band as Band;
+      const { birth } = store.entry;
+      // With a birth, a band is a start chosen instead of the age's; the age's own band is no choice at all.
+      if (birth) store.setStartBand(store.activeId, band === bandForYears(completedYears(birth, new Date())) ? null : band);
+      else store.setBand(band);
       render();
     }),
   );
+  $('[data-follow]').addEventListener('click', () => {
+    store.setStartBand(store.activeId, null);
+    render();
+  });
   tips.addEventListener('change', () => {
     store.data.settings.coplayHints = tips.checked;
     store.save();
@@ -183,15 +277,29 @@ export function openParentPanel(onClose: () => void) {
   file.addEventListener('change', async () => {
     const f = file.files?.[0];
     if (!f) return;
-    const ok = store.importJson(await f.text());
+    const result = await store.restoreAll(await f.text());
     file.value = '';
-    alert(ok ? 'Backup restored. If that was a mistake, "Undo the last reset or restore" brings back what was here.' : "That file doesn't look like a Puddle Island backup.");
-    applySettings();
+    if (!result) {
+      alert("That file doesn't look like a Puddle Island backup.");
+      return;
+    }
+    const plural = (n: number) => `${n} player${n === 1 ? '' : 's'}`;
+    alert(`Backup restored: ${plural(result.replaced)} put back${result.added ? `, ${plural(result.added)} added` : ''}${result.skipped ? `. ${plural(result.skipped)} did not fit and were left out` : ''}. If that was a mistake, choose the player at the top and press "Undo the last reset or restore".`);
+    playerChanged();
+    await fillWho();
     render();
   });
   $('[data-reset]').addEventListener('click', () => {
-    if (!confirm('Clear all game progress and stickers? Name and settings are kept. You can undo this from this page.')) return;
+    if (!confirm(`Clear all game progress and stickers for ${cardName(store.data)}? Their name and settings are kept. You can undo this from this page.`)) return;
     store.reset();
+    render();
+  });
+  $('[data-remove]').addEventListener('click', async () => {
+    const label = cardName(store.data);
+    if (!confirm(`Remove ${label} and everything saved for them from this device? A backup file can bring them back; nothing else can.`)) return;
+    if (!(await store.removeProfile(store.activeId))) return;
+    playerChanged();
+    await fillWho();
     render();
   });
   $('[data-undo]').addEventListener('click', () => {
@@ -200,15 +308,22 @@ export function openParentPanel(onClose: () => void) {
     render();
   });
 
-  const close = () => {
+  const close = async () => {
+    if (closing) return;
+    closing = true;
     current = null;
     root.remove();
     window.removeEventListener('keydown', onKey);
+    // Whoever was playing when the page opened is playing when it closes, unless they were removed here.
+    if (store.activeId !== openedFor) {
+      if (store.profiles.some((p) => p.id === openedFor)) await selectPlayer(openedFor);
+      else gone = true;
+    }
     applySettings();
-    onClose();
+    (gone ? onGone : onClose)();
   };
-  const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
-  $('[data-done]').addEventListener('click', close);
+  const onKey = (e: KeyboardEvent) => e.key === 'Escape' && void close();
+  $('[data-done]').addEventListener('click', () => void close());
   window.addEventListener('keydown', onKey);
   document.body.appendChild(root);
 }
@@ -266,7 +381,7 @@ function picnicSummary(): string {
 }
 
 async function exportBackup() {
-  const json = store.exportJson();
+  const json = await store.exportAll();
   const fileName = `puddle-island-backup-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([json], fileName, { type: 'application/json' });
   // On iPad the share sheet is the friendliest way to put a file in Files.

@@ -35,7 +35,6 @@
 .couch-modal { position: absolute; inset: 0; background: #f3f6ebf5; pointer-events: auto; overflow: auto; }
 .couch-modal .couch-sheet { padding-top: calc(48px * var(--u)); }
 .couch-modal button { display: block; }
-.couch-entry { position: fixed; right: calc(24px * var(--u)); bottom: calc(24px * var(--u)); z-index: 4; font: inherit; font-size: calc(19px * var(--u)); background: #fff4e3; color: #2b2b3a; border: calc(2px * var(--u)) solid #3a9a9b; border-radius: calc(16px * var(--u)); padding: calc(16px * var(--u)) calc(22px * var(--u)); cursor: pointer; }
 @media(max-width: 750px) { .couch-sheet { padding: calc(26px * var(--u)); } .couch-cards { gap: calc(16px * var(--u)); grid-template-columns: 1fr; } .couch .couch-card { min-height: calc(160px * var(--u)); } .couch-card canvas { height: calc(80px * var(--u)); } .couch-hud { grid-template-columns: 1fr auto; } .couch-caption { grid-row: 2; grid-column: 1 / -1; } .couch-game-help { left: calc(100px * var(--u)); font-size: calc(14px * var(--u)); } }
 
 /* How to play: text and controller on the left, a window onto a real round on the right. */

@@ -7,7 +7,7 @@ How to set up and play the grown-ups' couch route on a Mac with a TV, controller
 1. On the Mac, open **System Settings → Bluetooth**.
 2. Hold **SYNC** until the player lights flash. On a **Pro Controller**, SYNC is beside the USB-C port. On a **Joy-Con**, detach it from the Switch and use the small SYNC button on its inner rail.
 3. Select the controller in the Mac's Bluetooth list and connect. Pair each Joy-Con separately if trying the pair.
-4. Open Puddle Island in an up-to-date desktop browser, focus the tab, and press a controller button. Use **Couch play** on the title screen (or the **C** key). A standard controller's bottom face button can also enter couch play after being released and pressed again.
+4. Open Puddle Island in an up-to-date desktop browser, focus the tab, and press a controller button. On **Who's playing?**, press Enter (or a controller's bottom face button, after releasing and pressing it again) on a person's card, or click the small controller button on it. A controller's stick or d-pad, or the arrow keys, move between the cards. Any age can play couch play, and the person whose card was picked fills **Player 1**.
 5. Open **Controller setup** in couch play and check the detected count. The first standard controller is Player 1; the second is Player 2. If the browser reports an unmapped controller, use the keyboard or an already-owned Pro Controller for this prototype. Do not assume two Joy-Con halves are exposed as two usable standard controllers.
 
 Mac controller customization, when available, is under **System Settings → Game Controllers**. If a controller keeps returning to the Switch, wake/pair it with the Mac again. To return it to the Switch later, use the Switch's **Controllers → Change Grip/Order** pairing screen (or the original Joy-Con rails).
@@ -35,7 +35,7 @@ References: [Apple's Bluetooth controller connection guide](https://support.appl
 - **Names.** Optional. Type a name for each player (a keyboard is needed once; W, S, space and backspace type letters there). Names replace Player 1 and Player 2 on every screen and in what is spoken. With *Just me* there is one name, which replaces “You” on your marks.
 - **Couch backup** and **Controller setup** (pairing help), reached from here.
 
-The island's own grown-up zone (her name, levels, backup) is separate: on the island's title screen or map, press and hold the gear in the top-right corner for two seconds, or press Esc in an island game and hold the gear there. The Settings page says so at its foot.
+The island's own grown-up zone (her name, levels, backup) is separate: on **Who's playing?** or the island map, press and hold the gear in the top-right corner for two seconds, or press Esc in an island game and hold the gear there. The Settings page says so at its foot.
 
 The pause menu has a row of **Quieter**, **Louder**, **Music** and **Text** so sound and text size can change mid-round.
 

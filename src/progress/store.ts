@@ -57,7 +57,8 @@ export class Store {
     this.index = { version: 1, active: 'unloaded', profiles: [newEntry('unloaded', 0, true)] };
   }
 
-  private get entry(): ProfileEntry {
+  /** The active profile's place in the index: who they are (birth, start band), as against `data`, what they have done. */
+  get entry(): ProfileEntry {
     return this.index.profiles.find((p) => p.id === this.index.active) ?? this.index.profiles[0];
   }
 

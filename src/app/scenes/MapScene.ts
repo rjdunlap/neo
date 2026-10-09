@@ -14,7 +14,7 @@ import { bandInfo, BANDS, type Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { gearButton } from '../../ui/grownups';
-import { bookIcon, treehouseIcon } from '../../ui/icons';
+import { bookIcon, peopleIcon, treehouseIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -35,12 +35,14 @@ export class MapScene extends Scene {
   private readonly title = label('Puddle Island', 42, ink);
   private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () => this.app.go.stickers());
   private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => { void voice.say('map.room'); this.app.go.room(); });
+  /** Back to "Who's playing?", for someone else's turn. It changes nothing and removes nothing, so it needs no hold. */
+  private readonly players = new RoundButton(peopleIcon(), swatch.white, 52, () => this.app.go.start());
   /** Grown-ups' way in: hold the gear (the iPad has no Esc key, so this is the way in once a child is playing). */
   private readonly gear = gearButton({
     onOpen: () => {
       if (this.leaving) return;
       voice.stop();
-      openParentPanel(() => (store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch()));
+      openParentPanel(() => (store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch()), () => this.app.go.start());
     },
     onShort: () => void voice.say('parent.ask'),
   });
@@ -93,7 +95,7 @@ export class MapScene extends Scene {
     this.pip.scale.set(0.4);
     onTap(this.pip, () => { this.pip.hop(); void voice.say('map.pick'); }, { radius: 70 });
     this.map.addChild(this.track(this.pip));
-    this.ui.addChild(this.title, this.book, this.treehouse);
+    this.ui.addChild(this.title, this.book, this.treehouse, this.players);
     document.body.appendChild(this.gear.el);
   }
 
@@ -139,6 +141,7 @@ export class MapScene extends Scene {
     this.title.position.set(v.w / 2, 50);
     this.book.position.set(v.w - 75, v.h - 70);
     this.treehouse.position.set(75, v.h - 70);
+    this.players.position.set(75, 70);
   }
 
   enter() {

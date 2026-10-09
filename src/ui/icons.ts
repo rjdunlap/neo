@@ -129,3 +129,12 @@ export function magnifierIcon(color = ink): Graphics {
     .poly(starPoints(10, 4.4, 5).map((v, i) => (i % 2 === 0 ? v - 6 : v - 5))).fill(swatch.yellow.fill);
   return g;
 }
+
+/** Two friends side by side: "who's playing?". */
+export function peopleIcon(): Graphics {
+  return new Graphics()
+    .circle(-13, -12, 11).fill(swatch.teal.fill).stroke(line(4, swatch.teal.line))
+    .roundRect(-27, 2, 28, 24, 12).fill(swatch.teal.fill).stroke(line(4, swatch.teal.line))
+    .circle(14, -8, 12).fill(swatch.yellow.fill).stroke(line(4, swatch.yellow.line))
+    .roundRect(-1, 8, 30, 22, 12).fill(swatch.yellow.fill).stroke(line(4, swatch.yellow.line));
+}
