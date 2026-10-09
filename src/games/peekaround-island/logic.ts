@@ -80,3 +80,30 @@ export function nextRequest(free: number[], turns: number, asked: Where[], rng: 
 
 /** Whether a drop on `spot` answers the request. */
 export const fits = (where: Where, spot: number, turns: number) => whereIs(spot, turns) === where;
+
+export interface PeekTouchFriend {
+  name: CritterName;
+  spot: number;
+  want?: Where;
+}
+
+export type PeekTouch =
+  | { kind: 'turn'; dir: 1 }
+  | { kind: 'friend'; name: CritterName }
+  | { kind: 'tile'; name: CritterName }
+  | { kind: 'place'; name: CritterName; spot: number };
+
+/** The next visible control a capable child uses for each of the five perspective modes. */
+export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | null, friends: readonly PeekTouchFriend[]): PeekTouch | null {
+  if (mode === 'find' || mode === 'named') {
+    const hidden = hider && friends.find((f) => f.name === hider && f.spot >= 0);
+    if (!hidden) return null;
+    return whereIs(hidden.spot, turns) === 'behind' ? { kind: 'turn', dir: 1 } : { kind: 'friend', name: hidden.name };
+  }
+  if (mode === 'who') return hider ? { kind: 'tile', name: hider } : null;
+  const waiting = friends.find((f) => f.spot < 0 && f.want);
+  if (!waiting) return null;
+  const free = [0, 1, 2, 3].filter((spot) => !friends.some((f) => f.spot === spot));
+  const spot = free.find((s) => fits(waiting.want!, s, turns));
+  return spot === undefined ? null : { kind: 'place', name: waiting.name, spot };
+}

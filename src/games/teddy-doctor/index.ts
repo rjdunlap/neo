@@ -10,10 +10,11 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   CHECK_PART,
   CURE,
+  doctorTouch,
   makeRounds,
   nearestPart,
   partSpot,
@@ -200,6 +201,17 @@ class TeddyDoctor implements Game {
     if (this.patient) this.patient.x = this.spot.x + (this.shiver ? 3 * Math.sin(this.clock * 40) : 0);
     for (const s of this.symptoms) if (s.label === 'stars') s.rotation += dt * 2;
     this.drawGlow();
+  }
+
+  /** Tap the next boo-boo, or carry the right tool to the body part it belongs on. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.patient || !this.round) return null;
+    const move = doctorTouch(this.plan.mode, this.round, this.step, this.scrapes.map((s) => s.part));
+    if (!move) return null;
+    const at = partSpot(this.round.patient, move.part);
+    if (move.kind === 'tap') return { tap: { on: this.patient, x: at.x, y: at.y } };
+    const tool = this.tools.find((t) => t.tool === move.tool && !t.drag.dragging);
+    return tool ? { drag: { on: tool.node }, to: { on: this.patient, x: at.x, y: at.y } } : null;
   }
 
   /** Where a body part is on the screen. */
@@ -614,10 +626,10 @@ export const teddyDoctor: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  touchDemo: true,
   coplayHint: 'Be the patient! Tell {name} where it hurts, and say thank you when you feel better.',
   offScreen: 'Play doctor with a teddy and a box of plasters: where does it hurt, and what will help?',
   hubIcon: () => new WigglyIcon(teddyArt(1)),
   sticker: (seed) => teddyArt(seed),
   create: (ctx) => new TeddyDoctor(ctx),
 };
-

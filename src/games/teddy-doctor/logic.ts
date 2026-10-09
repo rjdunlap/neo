@@ -150,3 +150,17 @@ export function wantedTool(round: DoctorRound, step = 0): Tool | null {
   if (round.scrapes.length) return 'bandage';
   return null;
 }
+
+export type DoctorTouch = { kind: 'tap'; part: Part } | { kind: 'tool'; tool: Tool; part: Part };
+
+/** The next kind, tool and body part a clean doctor demonstration should touch. */
+export function doctorTouch(mode: DoctorMode, round: DoctorRound, step = 0, scrapes: readonly Part[] = round.scrapes): DoctorTouch | null {
+  if (mode === 'play') return scrapes[0] ? { kind: 'tap', part: scrapes[0] } : null;
+  if (mode === 'part') return scrapes[0] ? { kind: 'tool', tool: 'bandage', part: scrapes[0] } : null;
+  if (mode === 'tool' || mode === 'clue') {
+    const tool = wantedTool(round, step);
+    return tool && round.part ? { kind: 'tool', tool, part: round.part } : null;
+  }
+  const tool = wantedTool(round, step);
+  return tool && tool in CHECK_PART ? { kind: 'tool', tool, part: CHECK_PART[tool as Check] } : null;
+}

@@ -133,9 +133,8 @@ export function solutions(board: ChainBoard): number[][] {
   return [...distinct.values()];
 }
 
-/** A hint keeps as much of the child's current design as possible, then points to one change. */
-export function hintFor(board: ChainBoard, layout: Layout): { piece: number; socket: number } | null {
-  if (trace(board, layout).success) return null;
+/** A working indexed arrangement that keeps as much of the current design as possible. */
+function closestWorkingLayout(board: ChainBoard, layout: Layout): number[] | null {
   // Keep indexed arrangements here so identical loose ramps can be matched to whichever one the child already placed.
   const ways = workingLayouts(board);
   if (!ways.length) return null;
@@ -143,9 +142,26 @@ export function hintFor(board: ChainBoard, layout: Layout): { piece: number; soc
     const score = (way: number[]) => way.reduce((n, socket, piece) => n + (layout[piece] === socket ? 1 : 0), 0);
     return score(b) - score(a);
   });
-  const way = ways[0];
+  return ways[0];
+}
+
+/** A hint keeps as much of the child's current design as possible, then points to one change. */
+export function hintFor(board: ChainBoard, layout: Layout): { piece: number; socket: number } | null {
+  if (trace(board, layout).success) return null;
+  const way = closestWorkingLayout(board, layout);
+  if (!way) return null;
   const piece = way.findIndex((socket, i) => layout[i] !== socket);
   return piece < 0 ? null : { piece, socket: way[piece] };
+}
+
+export type ChainTouch = { kind: 'place'; piece: number; socket: number } | { kind: 'run' };
+
+/** Follow one accepted design a part at a time, then press the machine's real run button. */
+export function chainTouch(board: ChainBoard, layout: Layout): ChainTouch | null {
+  const way = closestWorkingLayout(board, layout);
+  const piece = way?.findIndex((socket, i) => layout[i] !== socket) ?? -1;
+  if (way && piece >= 0) return { kind: 'place', piece, socket: way[piece] };
+  return layout.every((socket) => socket !== null) && trace(board, layout).success ? { kind: 'run' } : null;
 }
 
 function key(c: Cell) {
