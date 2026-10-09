@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { compare, finish, makeRounds, makeStand, middleFrom, PLANS, REACH, reached, SLOTS, targetFor, topples, W } from './logic';
+import { compare, finish, makeRounds, makeStand, middleFrom, PLANS, REACH, reached, SLOTS, targetFor, topples, towerTouch, W } from './logic';
 
 describe('Block Tower', () => {
   it('keeps a block up only while the middle of it and everything above is over the block below', () => {
@@ -65,5 +65,29 @@ describe('Block Tower', () => {
     // A hint can finish from a good start, and says when the top block has to come off.
     expect(finish([-3], REACH[0])).not.toBeNull();
     expect(finish([3], REACH[0])).toBeNull();
+  });
+
+  it('the demonstration uses the right control in every mode and follows a stable route to each star', () => {
+    expect(towerTouch('tumble', { stack: 0, target: 6, full: false })).toEqual({ kind: 'stack' });
+    expect(towerTouch('friend', { stack: 3, target: 3, full: true })).toEqual({ kind: 'knock' });
+    expect(towerTouch('flag', { stack: 2, target: 4, full: false })).toEqual({ kind: 'stack' });
+    expect(towerTouch('flag', { stack: 4, target: 4, full: false })).toEqual({ kind: 'check' });
+    expect(towerTouch('match', { stack: 5, target: 4, full: false })).toEqual({ kind: 'take' });
+    expect(towerTouch('stand', { stack: 0, target: 0, full: false, stands: 1, guess: null })).toEqual({ kind: 'stand', tower: 1 });
+    expect(towerTouch('stand', { stack: 0, target: 0, full: false, stands: 1, guess: 1 })).toBeNull();
+
+    for (const round of REACH) {
+      const placed: number[] = [];
+      for (let step = 0; step < round.blocks; step++) {
+        const move = towerTouch('reach', { stack: 0, target: 0, full: false, placed, reach: round });
+        if (!move) break;
+        expect(move.kind).toBe('place');
+        if (move.kind === 'place') placed.push(move.x);
+        expect(topples(placed, 0), `${round.blocks} blocks, ${placed}`).toBe(-1);
+      }
+      expect(reached(placed, round.star)).toBe(true);
+      expect(towerTouch('reach', { stack: 0, target: 0, full: false, placed, reach: round })).toBeNull();
+    }
+    expect(towerTouch('reach', { stack: 0, target: 0, full: false, placed: [3], reach: REACH[0] })).toEqual({ kind: 'take' });
   });
 });

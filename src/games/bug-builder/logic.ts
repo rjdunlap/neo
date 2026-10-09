@@ -30,3 +30,13 @@ export function bugPuzzle(plan: BugPlan, rng: Rng): { model: BugSpot[]; targets:
   }
   return { model: spots, targets: spots.map((s) => ({ ...s, x: plan.mode === 'mirror' ? -s.x : s.x })) };
 }
+
+/** The next matching token and open spot for a capable child (and the how-to card's ghost finger). */
+export function nextBugMove<S extends { token: number; filled: boolean }, C extends { token: number }>(
+  spots: readonly S[],
+  choices: readonly C[],
+): { spot: S; choice: C } | undefined {
+  const spot = spots.find((s) => !s.filled);
+  const choice = spot && choices.find((c) => c.token === spot.token);
+  return spot && choice ? { spot, choice } : undefined;
+}

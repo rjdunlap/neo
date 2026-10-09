@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dropSlot, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows } from './logic';
+import { dropSlot, nextPuzzleMove, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows } from './logic';
 
 describe('Puzzle Pals', () => {
   it('cuts every picture into its grid, leaving at least one piece to place', () => {
@@ -29,5 +29,20 @@ describe('Puzzle Pals', () => {
     const plan = PUZZLE_PLANS[0];
     const [, right] = piecesFor(plan);
     expect(dropSlot(plan, 20, 20, [right])).toEqual(right);
+  });
+
+  it('the demonstration carries every waiting piece to its own empty grid cell', () => {
+    for (const plan of PUZZLE_PLANS) {
+      const views = piecesFor(plan).map((piece, i) => ({ piece, placed: i < plan.preplaced }));
+      let moves = 0;
+      for (let move = nextPuzzleMove(plan, views); move; move = nextPuzzleMove(plan, views)) {
+        const empty = views.filter((p) => !p.placed).map((p) => p.piece);
+        expect(dropSlot(plan, move.to.x, move.to.y, empty)).toEqual(move.piece.piece);
+        move.piece.placed = true;
+        moves++;
+      }
+      expect(moves).toBe(views.length - plan.preplaced);
+      expect(views.every((p) => p.placed)).toBe(true);
+    }
   });
 });

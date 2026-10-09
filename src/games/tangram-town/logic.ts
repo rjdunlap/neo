@@ -30,3 +30,9 @@ export function targetFor(piece:Piece,x:number,y:number,targets:readonly Target[
  return near.find(a=>a.t.shape===piece.shape&&sameOrientation(piece.shape,piece.turns,a.t.turns))?.i??-1;
 }
 export function hintFor(piece:Piece,targets:readonly Target[],filled:boolean[]){return targets.findIndex((t,i)=>!filled[i]&&t.shape===piece.shape);}
+export type TangramTouch = { kind: 'turn' } | { kind: 'place'; target: number };
+/** Turn the selected piece until it fits, then carry it to an open target of the same shape. */
+export function tangramTouch(piece:Piece,targets:readonly Target[],filled:readonly boolean[]):TangramTouch|null{
+ const target=hintFor(piece,targets,[...filled]);if(target<0)return null;
+ return sameOrientation(piece.shape,piece.turns,targets[target].turns)?{kind:'place',target}:{kind:'turn'};
+}
