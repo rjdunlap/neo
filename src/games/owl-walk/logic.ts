@@ -69,3 +69,9 @@ export const allHome = (path: readonly ColorName[], spots: readonly Spot[]) => s
 
 /** A card from the pile. The deck is open-ended; it only ever offers colors that are on the path. */
 export const drawCard = (plan: OwlPlan, rng: Rng): ColorName => rng.pick(STONE_COLORS.slice(0, plan.colors));
+
+/**
+ * The owl a capable child hops with this card: one that goes the farthest (the first of them), which is also what the pet
+ * does on its turn. Null when every owl is home.
+ */
+export const owlToHop = (path: readonly ColorName[], spots: readonly Spot[], color: ColorName): number | null => farthest(path, spots, color)[0] ?? null;

@@ -74,3 +74,17 @@ export function anotherWay(amount: number, coins: number[], first: number[]): nu
   const options = [fewest(amount, coins), fewest(amount, coins.filter((c) => c < 5)), Array(amount).fill(1)];
   return options.find((o) => !sameWay(o, first)) ?? options[2];
 }
+
+/**
+ * What a capable child puts on the counter for an order: the fewest coins that make the amount, and on a 'ways' level, once
+ * the first way is paid, a different set of coins for the same price.
+ */
+export function paymentFor(plan: ShopPlan, order: Order, firstWay: number[] | null): number[] {
+  const want = target(plan, order);
+  return firstWay ? anotherWay(want, plan.coins, firstWay) : fewest(want, plan.coins);
+}
+
+/** The next touch: put down the next coin of the payment, and ring the bell when they are all on the counter. */
+export function payTouch(payment: number[], onMat: number[]): { coin: number } | 'bell' {
+  return onMat.length < payment.length ? { coin: payment[onMat.length] } : 'bell';
+}

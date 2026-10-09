@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   candidates, clash, copyBed, countSolutions, deadEnds, emptyBed, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, makePuzzle,
-  PLANS, planFor, solve, type Bed,
+  nextPlanting, PLANS, planFor, solve, type Bed,
 } from './logic';
 
 const givenOf = (start: Bed) => start.map((row) => row.map((v) => v !== null));
@@ -138,5 +138,43 @@ describe('Garden Rows', () => {
       expect(isSolved(start, plan.rule)).toBe(false);
     }
     expect(isSolved(emptyBed(3), 'rows')).toBe(false);
+  });
+
+  it("plants a bed with no clash and no dead end at any step, to the one finished bed, so the demonstration never bounces", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 25; seed++) {
+        const { start, solution } = makePuzzle(plan, new Rng(seed));
+        const bed = copyBed(start);
+        let selected = 0;
+        let swaps = 0;
+        let steps = 0;
+        for (let step = nextPlanting(bed, solution, plan.rule, selected); step; step = nextPlanting(bed, solution, plan.rule, selected)) {
+          expect(bed[step.r][step.c]).toBeNull();
+          expect(clash(bed, plan.rule, step.r, step.c, step.flower), `${plan.name} seed ${seed}`).toBeNull();
+          if (step.flower !== selected) swaps++;
+          selected = step.flower;
+          bed[step.r][step.c] = step.flower;
+          steps++;
+          expect(deadEnds(bed, plan.rule)).toEqual([]);
+        }
+        expect(steps).toBe(plan.blanks);
+        expect(swaps).toBeLessThanOrEqual(steps);
+        expect(isSolved(bed, plan.rule)).toBe(true);
+        expect(bed).toEqual(solution);
+      }
+    }
+  });
+
+  it('plants the spot with the fewest choices first, and keeps the packet in hand when two spots are as tight', () => {
+    const solution: Bed = [[0, 1, 2], [1, 2, 0], [2, 0, 1]];
+    // A rows-only bed: row 1 is missing one flower (one choice), row 0 two (two choices each).
+    const bed: Bed = [[null, null, 2], [1, null, 0], [2, 0, 1]];
+    for (const selected of [0, 1, 2]) expect(nextPlanting(bed, solution, 'rows', selected)).toEqual({ r: 1, c: 1, flower: 2 });
+    expect(nextPlanting(solution, solution, 'rows', 0)).toBeNull();
+    // Two equally tight spots: the one that takes the flower already in hand goes first, else the first in reading order.
+    const tie: Bed = [[null, null, 2], [1, 2, 0], [2, 0, 1]];
+    expect(nextPlanting(tie, solution, 'rows', 1)).toEqual({ r: 0, c: 1, flower: 1 });
+    expect(nextPlanting(tie, solution, 'rows', 0)).toEqual({ r: 0, c: 0, flower: 0 });
+    expect(nextPlanting(tie, solution, 'rows', 2)).toEqual({ r: 0, c: 0, flower: 0 });
   });
 });
