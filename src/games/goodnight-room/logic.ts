@@ -40,3 +40,13 @@ export function makeRequests(plan: NightPlan, rng: Rng): Thing[][] {
   if (plan.mode === 'named') return order.slice(0, plan.requests).map((t) => [t]);
   return Array.from({ length: plan.requests }, (_, i) => [order[i * 2], order[i * 2 + 1]]);
 }
+
+/**
+ * Who a capable child says goodnight to next, or null when she is waiting: the first friend in the room still awake (everyone,
+ * in any order), or the one the voice named, one at a time and in the order asked. `asleep` holds the things already
+ * asleep, `step` how far through this request she is. Always a right one.
+ */
+export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefined, step: number, asleep: ReadonlySet<Thing>): Thing | null {
+  if (plan.mode === 'all') return THINGS.slice(0, plan.things).find((t) => !asleep.has(t)) ?? null;
+  return request?.[step] ?? null;
+}

@@ -11,8 +11,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { makeRounds, opposites, planFor, word, type Card, type OppPlan, type OppRound } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { cardToTap, makeRounds, opposites, planFor, word, type Card, type OppPlan, type OppRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
@@ -165,6 +165,14 @@ class Opposites implements Game {
     this.clock += dt;
     const g = this.glow.clear();
     if (this.glowing && !this.busy) g.roundRect(this.glowing.node.x - 100, this.glowing.node.y - 100, 200, 200, 36).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+  }
+
+  /** The ghost finger on the how-to card: tap the picture (it flips), the one named, the opposite, or each pair in turn. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.round) return null;
+    const picked = this.picked ? this.cards.indexOf(this.picked) : null;
+    const i = cardToTap(this.plan, this.round, this.cards.map((c) => c.done), picked);
+    return i === null ? null : { tap: { on: this.cards[i].node } };
   }
 
   destroy() {}
@@ -339,6 +347,7 @@ export const oppositesGame: GameModule = {
   coplayHint: 'Act them out together: stretch up big, curl up small, a happy face, a sad face.',
   offScreen: 'Play opposites with toys: put the teddy up high, then down low; open the box, close the box.',
   hubIcon: () => new OppIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new Opposites(ctx),
 };

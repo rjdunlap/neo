@@ -14,7 +14,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { danceSeconds, makeTurns, MOVE_WORDS, planFor, type Move, type SaysPlan, type Turn } from './logic';
 
 const LEVELS: BandLevels = {
@@ -114,6 +114,11 @@ class PetSays implements Game {
       this.beat++;
     }
     if (this.danceLeft <= 0) void this.freeze();
+  }
+
+  /** The ghost finger on the how-to card: the grown-up's green arrow, tapped once the pet has finished its move (or its dance and freeze). */
+  autotouch(): TouchIntent | null {
+    return this.busy || this.finished || this.dancing || !this.next.visible ? null : { tap: { on: this.next } };
   }
 
   destroy() {
@@ -381,6 +386,7 @@ export const petSays: GameModule = {
   coplayHint: 'Stand up and copy the pet with {name}, then tap the green arrow for the next move.',
   offScreen: 'Play Simon Says with family names: "Mama says touch your toes!" Freeze dance to any song.',
   hubIcon: () => new SaysIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new PetSays(ctx),
 };

@@ -11,9 +11,9 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { clothing, itemIcon } from './art';
-import { ITEM_WORDS, ITEMS, itemsFor, outfits, wardrobePlan, WEATHERS, type Item, type Outfit, type WardrobePlan, type Weather } from './logic';
+import { ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfits, wardrobePlan, WEATHERS, type Item, type Outfit, type WardrobePlan, type Weather } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -115,6 +115,19 @@ class WeatherWardrobe implements Game {
       this.dressFor('sunny');
       this.instruct('weather.play');
     } else this.ask();
+  }
+
+  /** The ghost finger on the how-to card: tap the sky to change the weather (free play), or the next thing that fits the weather. */
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    if (this.plan.mode === 'play') {
+      const sky = this.skyHit.hitArea as Rectangle;
+      return { tap: { on: this.skyHit, x: sky.width * 0.7, y: sky.height * 0.3 } };
+    }
+    if (this.busy) return null;
+    const item = itemToTap(this.outfit, new Set(this.options.filter((o) => o.used).map((o) => o.item)));
+    const option = this.options.find((o) => o.item === item);
+    return option ? { tap: { on: option.node } } : null;
   }
 
   private instruct(id: LineId, vars?: LineVars) {
@@ -385,6 +398,7 @@ export const weatherWardrobe: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (b) => (b === 'prek' ? { min: 4, max: 6 } : b === 'preschool' ? { min: 3, max: 5 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
   describeLevel: (l) => wardrobePlan(l).name,
+  touchDemo: true,
   music: STYLES.hub,
   coplayHint: 'Look out the real window with {name}: what is the weather today, and what would we wear?',
   offScreen: 'Before going out, let {name} pick one thing to wear for the weather, like a hat or boots.',

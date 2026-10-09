@@ -9,8 +9,8 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import type { Game, GameContext, GameModule } from '../types';
-import { ANIMALS, deal, newcomer, pickTarget, planFor, type Animal, type PeekPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { ANIMALS, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
@@ -143,6 +143,8 @@ class PeekabooBarn implements Game {
   private target: Animal | null = null;
   private busy = true;
   private finished = false;
+  /** The place the ghost finger tapped last, so free play visits them all. */
+  private lastTouched = -1;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -179,6 +181,16 @@ class PeekabooBarn implements Game {
   }
 
   update() {}
+
+  /** The ghost finger on the how-to card: tap the place that hides who was asked for, or in free play each place in turn. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const i = spotToTap(this.plan, this.spots.map((s) => s.pose), this.spots.map((s) => s.animal), this.target, this.lastTouched);
+    if (i === null) return null;
+    this.lastTouched = i;
+    // The cover is what a child touches; the animal's head peeks over it.
+    return { tap: { on: this.spots[i], y: -110 } };
+  }
 
   destroy() {}
 
@@ -409,6 +421,7 @@ export const peekabooBarn: GameModule = {
   music: STYLES.hub,
   coplayHint: 'Make the animal sounds together: "Moo!" Then say its name.',
   offScreen: 'Play peekaboo with stuffed animals under a blanket. Ask "Where did the cow go?"',
+  touchDemo: true,
   hubIcon: () => new BarnIcon(),
   sticker,
   create: (ctx) => new PeekabooBarn(ctx),
