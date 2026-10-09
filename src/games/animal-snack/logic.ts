@@ -62,3 +62,46 @@ export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
   }
   return out;
 }
+
+/** One touch of the ghost finger: an animal (by its place in the row), a snack on the blanket, a snack carried to an animal, or the bell. */
+export type SnackTouch = { friend: number } | { snack: number } | { give: number; to: number } | 'bell';
+
+/** What the table looks like to the finger. */
+export interface SnackTable {
+  friends: CritterName[];
+  snacks: { food: Food; eaten: boolean }[];
+  /** 'who' and 'count': the animal asked about; 'count': how many snacks it should get. */
+  ask?: CritterName;
+  n?: number;
+  /** 'munch' and 'float': snacks eaten so far. */
+  eatenCount: number;
+}
+
+/**
+ * What a capable child touches next. Free play ('munch') visits each animal in turn; 'float' taps the next snack waiting;
+ * 'who' taps the animal asked about; 'match' carries the next snack to the animal that eats it; 'count' gives the animal
+ * exactly the number asked for and then rings the bell. It never touches the wrong animal or rings early.
+ */
+export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
+  const waiting = t.snacks.findIndex((s) => !s.eaten);
+  switch (plan.mode) {
+    case 'munch':
+      return t.friends.length ? { friend: t.eatenCount % t.friends.length } : null;
+    case 'float':
+      return waiting < 0 ? null : { snack: waiting };
+    case 'who': {
+      const who = t.friends.findIndex((a) => a === t.ask);
+      return who < 0 ? null : { friend: who };
+    }
+    case 'match': {
+      if (waiting < 0) return null;
+      const to = t.friends.findIndex((a) => a === eaterOf(t.snacks[waiting].food));
+      return to < 0 ? null : { give: waiting, to };
+    }
+    case 'count': {
+      const fed = t.snacks.filter((s) => s.eaten).length;
+      if (fed === t.n) return 'bell';
+      return fed < (t.n ?? 0) && waiting >= 0 ? { snack: waiting } : null;
+    }
+  }
+}
