@@ -119,7 +119,7 @@ There are seventy-three games, listed below. "Ages" lists the places each game a
 | Critter Sort | pre-K–school | drag critters into a hoop: "wearing a hat" | two hoops, overlapping hoops where the middle is both, guess the rule |
 | Treasure Map | pre-K–school | dig where the apple row meets the red column | grid names like B3, putting things at named squares, following directions ("2 left, then 3 up") |
 | Opposites | lap–pre-K | tap a picture: it flips to its opposite (big, small; open, closed) | find the one named, find the opposite among three, match opposite pairs |
-| Picture Graph | pre-K–school | count critters and build their bars, one block each | which has the most and fewest, how many more, reading a finished graph (how many in all, which two are the same) |
+| Picture Graph | pre-K–school | count critters and build their bars, one block each | which has the most and fewest, how many more, reading a finished graph (how many in all, which two are the same), then a key where each block is two critters (build from pairs, then read it: how many in all, how many more) |
 | Rhyme Time | pre-K–school | which picture rhymes with "cat"? | four choices, find the rhyming pair, odd one out |
 | Beat Builder | preschool–school | tap squares on a beat grid; the playhead loops | copy a beat you can see, copy one by ear, make a pattern repeat, a longer three-instrument beat |
 | Inchworm Measure | pre-K–school | lay inchworms end to end along a leaf and count them | say how many worms long, compare two lengths, read a ruler even when the thing doesn't start at 0, then use the ruler for how much longer one thing is and how long two are end to end |

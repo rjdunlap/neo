@@ -3059,9 +3059,11 @@ async function woodsBatch() {
     log(`Opposites ${level} (${mode}): picture cards tapped and flipped, wrong picks as misses, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'graph') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'graph') for (let level = fromLevel; level <= 6; level++) {
     await launch('picture-graph', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    const per = await page.evaluate(() => neo.scene.game.plan.per);
+    const prebuilt = mode === 'read' || mode === 'scaleread';
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); await page.waitForTimeout(250); };
     // Tap just above a bar to add a block.
     const add = async (i) => {
@@ -3074,9 +3076,9 @@ async function woodsBatch() {
     for (let n = 0; n < 2; n++) {
       await idle(n);
       const counts0 = await page.evaluate(() => neo.scene.game.graph.counts);
-      if (mode !== 'read') {
+      if (!prebuilt) {
         if (mode === 'build' && !missed) { for (let k = 0; k < 2; k++) { await tap('neo.scene.game.check'); await settle(); } missed = true; assert.deepEqual(await counts(), [2, 1]); }
-        for (const [i, c] of counts0.entries()) for (let k = 0; k < c; k++) await add(i);
+        for (const [i, c] of counts0.entries()) for (let k = 0; k < c / per; k++) await add(i);
         await tap('neo.scene.game.check'); await settle();
       }
       // Questions about the graph.
@@ -3091,7 +3093,7 @@ async function woodsBatch() {
           if (!missed) {
             const wrongs = await page.evaluate((a) => neo.scene.game.pads.map((p) => p.n).filter((x) => x !== a), q.answer);
             await pad(wrongs[0]); await pad(wrongs[1]); missed = true; assert.deepEqual(await counts(), [2, 1]);
-            if (level === 3) await screenshot('picture-graph-3-hint');
+            if (level === 3 || level === 5 || level === 6) await screenshot(`picture-graph-${level}-hint`);
           }
           await pad(q.answer);
         }
