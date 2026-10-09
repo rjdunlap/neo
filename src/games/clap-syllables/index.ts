@@ -12,9 +12,9 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bead, fitTo, handsArt, wordPicture } from './art';
-import { answerOf, clapsWord, makeQuestions, planFor, syllables, WORDS, type ClapPlan, type Question, type Word } from './logic';
+import { answerOf, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, pictureToTap, planFor, syllables, WORDS, type ClapPlan, type Question, type Word } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -22,8 +22,6 @@ const LEVELS: BandLevels = {
 };
 
 const BEAT_COLORS: ColorName[] = ['red', 'yellow', 'blue'];
-/** Seconds of quiet after the last clap before a word she clapped by herself is counted. */
-const PAUSE = 1.5;
 /** Seconds with no clap before the pet shows the word again. */
 const NUDGE = 8;
 
@@ -129,6 +127,28 @@ class ClapSyllables implements Game {
     if ((mode === 'along' || mode === 'solo') && this.claps === 0) {
       this.idle += dt;
       if (this.idle > NUDGE) void this.again();
+    }
+  }
+
+  /**
+   * The ghost finger on the how-to card: clap the pad once for each beat (quickly enough that the game does not count the word
+   * before the last beat), carry each picture to the hoop for its beats, or tap the picture with as many beats as were played.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.index < 0 || this.index >= this.questions.length) return null;
+    switch (this.plan.mode) {
+      case 'along':
+      case 'solo':
+        // No rest between claps: the gap is the hand's own trip and press, well inside the pause after which a word is counted.
+        return clapsToGo(this.word, this.claps) > 0 ? { tap: { on: this.pad }, pause: 0 } : null;
+      case 'sort': {
+        const next = nextToSort(this.cards.map((card) => ({ card, word: card.word, sorted: !card.drag || !card.drag.enabled || card.drag.dragging })), this.bins);
+        return next ? { drag: { on: next.card.card.node }, to: { on: next.bin.node } } : null;
+      }
+      case 'match': {
+        const card = pictureToTap(this.q, this.cards);
+        return card ? { tap: { on: card.node } } : null;
+      }
     }
   }
 
@@ -535,6 +555,7 @@ export const clapSyllables: GameModule = {
   bands: ['preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
+  touchDemo: true,
   music: silenced(STYLES.paint),
   coplayHint: 'Clap along with {name} and say the word slowly: "but-ter-fly", one clap for each beat. Try the names of people in the family.',
   offScreen: 'Clap the beats in names, foods and animals at home: "ba-na-na" is three claps, "dog" is one.',

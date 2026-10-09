@@ -82,3 +82,23 @@ export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
 
 /** "one clap", "two claps": the spoken count. */
 export const clapsWord = (n: number) => `${['zero', 'one', 'two', 'three', 'four'][n] ?? n} ${n === 1 ? 'clap' : 'claps'}`;
+
+/** Seconds of quiet after the last clap before a word she clapped by herself is counted. */
+export const PAUSE = 1.5;
+
+/**
+ * What a capable child does next, for the ghost finger. Clapping a word: a clap for each beat still to go (none once the
+ * beats are in, when the game counts them by itself). Sorting: carry the first picture still in the tray to the hoop for its beats.
+ * Matching: the picture with as many beats as were played.
+ */
+export const clapsToGo = (word: Word, claps: number) => Math.max(0, syllables(word) - claps);
+
+export function nextToSort<C extends { word: Word; sorted: boolean }, B extends { count: number }>(cards: readonly C[], bins: readonly B[]): { card: C; bin: B } | undefined {
+  for (const card of cards) {
+    const bin = bins.find((b) => b.count === syllables(card.word));
+    if (!card.sorted && bin) return { card, bin };
+  }
+  return undefined;
+}
+
+export const pictureToTap = <C extends { word: Word }>(q: Question, cards: readonly C[]): C | undefined => cards.find((c) => c.word === answerOf(q));
