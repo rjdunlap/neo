@@ -38,6 +38,12 @@ export type TouchIntent = (
   receiver?: Container;
   /** Seconds to rest after this gesture before the game is asked again (0.55 by default; shorter when the next touch belongs with this one, such as the first card of a pair). */
   pause?: number;
+  /**
+   * Press only when this returns true: the hand travels to the first spot and waits over it (for up to six seconds, then gives
+   * the touch up) for a touch that has to land at a moment, such as a flipper meeting a ball. Checked every frame; it can
+   * return 'cancel' to give the touch up at once because the moment has gone.
+   */
+  when?: () => boolean | 'cancel';
 };
 
 /** The object that stands for a game in the hub. Its feet sit on (0, 0). */

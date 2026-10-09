@@ -87,3 +87,21 @@ export function judge(plan: LaunchPlan, f: number, target: number, ask?: 'farthe
 export function nextAsk(last: number): 'farther' | 'nearer' {
   return last > 0.55 ? 'nearer' : 'farther';
 }
+
+/** How far back a capable child pulls the spring for launch number `shot` (from 0): the pull that lands on the target cloud, a different one each time on free levels, and a clear step farther or nearer than last time when asked. */
+export function pullToTake(plan: LaunchPlan, shot: number, targets: readonly number[], last?: number): number {
+  switch (plan.mode) {
+    case 'tap':
+      return 0;
+    case 'free':
+      // Short, long, middle, longer: a bigger pull goes farther, so the pulls are seen to differ.
+      return pullFor([0.35, 0.8, 0.55, 0.95][shot % 4]);
+    case 'star':
+    case 'number':
+      return pullFor(padAt(targets[shot]));
+    case 'compare': {
+      if (last === undefined) return pullFor(0.5);
+      return pullFor(nextAsk(last) === 'farther' ? last + 0.3 : last - 0.3);
+    }
+  }
+}

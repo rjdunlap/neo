@@ -91,3 +91,42 @@ export function targetsFor(plan: EggPlan, rng: Rng): { basket: number; nest: num
   }
   return out;
 }
+
+/** The exit an egg should reach: the basket, or for a white egg on a sorting level, the nest. */
+export const exitWanted = (mode: EggMode, shell: Shell, target: { basket: number; nest: number }) => (mode === 'sort' && shell === 'white' ? target.nest : target.basket);
+
+/**
+ * Routing: the next gate a capable child flips so that an egg bound for `exit` gets there, or null once the gates it still
+ * has to pass already send it. `passed` is how many gates (0 to 2) the egg has already gone by: those are read and done with.
+ */
+export function gateToFlip(gates: readonly boolean[], exit: number, passed: number): number | null {
+  const need = gatesFor(exit);
+  for (let i = passed; i < need.length; i++) if (gates[need[i].gate] !== need[i].right) return need[i].gate;
+  return null;
+}
+
+/** An egg in the air, as a child watching sees it: the lane it will land in, and its shell. */
+export interface EggInAir {
+  x: number;
+  shell: Shell;
+}
+
+/**
+ * Catching: where to slide the basket next, or null to leave it. `air` is the eggs still falling, the one that lands first
+ * first. A brown egg wants the basket right under it, a white one wants it out of the way. The basket only moves when that
+ * keeps the eggs ahead of this one right too (it waits under one brown egg until it lands, then goes to the next) and the
+ * slide does not pass through the lane of a white egg about to land (a basket caught crossing it would take the egg in).
+ * A white egg is dodged to the lane of the next brown egg when there is one, else the nearest lane that is clear.
+ */
+export function basketMove(air: readonly EggInAir[], basketX: number, lanes: readonly number[], reach = 95): number | null {
+  const clear = reach + 30;
+  const fits = (x: number, e: EggInAir) => (e.shell === 'brown' ? Math.abs(x - e.x) <= reach * 0.4 : Math.abs(x - e.x) > clear);
+  const k = air.findIndex((e) => !fits(basketX, e));
+  if (k < 0) return null;
+  const crossing = (x: number, e: EggInAir) => e.shell === 'white' && Math.min(basketX, x) < e.x + clear && Math.max(basketX, x) > e.x - clear;
+  const spots =
+    air[k].shell === 'brown'
+      ? [air[k].x]
+      : [...air.slice(k + 1).filter((e) => e.shell === 'brown').map((e) => e.x), ...[...lanes].sort((a, b) => Math.abs(a - basketX) - Math.abs(b - basketX))];
+  return spots.find((x) => air.slice(0, k + 1).every((e) => fits(x, e)) && !air.slice(0, k).some((e) => crossing(x, e))) ?? null;
+}

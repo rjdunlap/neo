@@ -10,8 +10,8 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { caught, exitFor, gatesFor, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -92,6 +92,8 @@ class EggCatch implements Game {
   private clock = 0;
   private readonly targets: { basket: number; nest: number }[];
   private routed = 0;
+  /** Route levels: how many gates the egg on its way has gone by (2 when nothing is waiting to be set). */
+  private passed = 2;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -243,6 +245,26 @@ class EggCatch implements Game {
     const dx = (egg ? egg.x : this.basketTarget) - this.basket.x;
     out.players[0].x = Math.abs(dx) < 16 ? 0 : Math.max(-1, Math.min(1, dx / 80));
     return out;
+  }
+
+  /**
+   * The ghost finger on the how-to card: tap a hen (lap), touch under the next brown egg and let the basket slide there (it
+   * leaves white eggs alone), flip the gates the egg still has to pass, or tap the bin the set gates lead to.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.finished) return null;
+    const mode = this.plan.mode;
+    if (mode === 'tap') return this.falling.some((f) => !f.done) ? null : { tap: { on: this.hens[this.caughtCount % this.hens.length], y: -120 } };
+    if (mode === 'catch' || mode === 'brown') {
+      const air = this.falling.filter((f) => !f.done).sort((a, b) => b.t - a.t).map((f) => ({ x: f.x, shell: f.egg.shell }));
+      const x = basketMove(air, this.basketTarget, [...Array(LANES).keys()].map((i) => this.laneX(i)));
+      return x === null ? null : { tap: { on: this.touch, x, y: this.floor - 40 }, pause: 0.2 };
+    }
+    if (mode === 'predict') return this.waiting ? { tap: { on: this.exits.children[exitFor(this.gates)], y: -20 } } : null;
+    if (this.passed >= 2) return null;
+    const egg = this.eggs[this.routed % this.eggs.length];
+    const gate = gateToFlip(this.gates, exitWanted(mode, egg.shell, this.target), this.passed);
+    return gate === null ? null : { tap: { on: this.gateHits[gate] }, pause: 0.25 };
   }
 
   private steer(e: FederatedPointerEvent) {
@@ -419,8 +441,7 @@ class EggCatch implements Game {
   /** The gates this egg needs, for the hint. */
   private wanted() {
     const egg = this.eggs[this.routed % this.eggs.length];
-    const exit = this.plan.mode === 'sort' && egg.shell === 'white' ? this.target.nest : this.target.basket;
-    return gatesFor(exit);
+    return gatesFor(exitWanted(this.plan.mode, egg.shell, this.target));
   }
 
   private flip(i: number) {
@@ -443,6 +464,7 @@ class EggCatch implements Game {
     this.hens[0].cheer();
     sfx.pop(8);
     await this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    this.passed = 0;
     if (this.plan.mode === 'predict') {
       // The gates are set for this egg; it waits until she says where it will land.
       this.gates = [...this.predictions[this.routed % this.predictions.length]];
@@ -478,14 +500,16 @@ class EggCatch implements Game {
       sfx.tick();
     };
     await go(o.gate[0]);
+    this.passed = 1;
     const right = this.gates[0];
     const second = right ? 2 : 1;
     await go(o.gate[second]);
+    this.passed = 2;
     // The first gate was read when the egg passed it; the second is read now.
     const exit = right ? (this.gates[2] ? 3 : 2) : this.gates[1] ? 1 : 0;
     await go(o.exit[exit]);
     await go({ x: o.bin[exit].x, y: o.bin[exit].y - 10 });
-    const want = this.plan.mode === 'sort' && egg.shell === 'white' ? this.target.nest : this.target.basket;
+    const want = exitWanted(this.plan.mode, egg.shell, this.target);
     if (exit === want) {
       sfx.sparkle();
       this.ctx.particles.burst(node.x, node.y - 30, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 12, speed: [100, 240], gravity: 0, life: [0.5, 0.8] });
@@ -566,6 +590,7 @@ export const eggCatch: GameModule = {
   coplayHint: 'Point and say "here it comes!" as each egg rolls down.',
   offScreen: 'Roll a ball down a cardboard tube and catch it in a bowl.',
   hubIcon: () => new EggIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new EggCatch(ctx),
 };

@@ -6,6 +6,13 @@ export class Rng {
     this.state = seed >>> 0 || 1;
   }
 
+  /** A copy that draws the same numbers from here on without using this one up: a demonstration bot's look at a draw the game is about to make. */
+  clone(): Rng {
+    const copy = new Rng(1);
+    copy.state = this.state;
+    return copy;
+  }
+
   next(): number {
     let t = (this.state = (this.state + 0x6d2b79f5) >>> 0);
     t = Math.imul(t ^ (t >>> 15), t | 1);

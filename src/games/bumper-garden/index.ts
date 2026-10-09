@@ -11,18 +11,21 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   aimFor,
   CATCH_Y,
   FLIPPER,
-  flipperPoints,
   funnel,
+  kickBall,
   LAUNCH,
   launchVelocity,
   makeBumpers,
   makeWorld,
+  planFlip,
   planFor,
+  STEP,
+  swingFlippers,
   TABLE,
   type Bumper,
   type BumperPlan,
@@ -40,6 +43,15 @@ const LEVELS: BandLevels = {
 /** Colors a flower can be; on color levels the first is the one to bloom. */
 const FLOWER_COLORS: ColorName[] = ['yellow', 'pink', 'blue', 'purple'];
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+
+/** A flip the ghost finger has planned: the step it belongs to (counted from the plan), how many steps have passed, whether the hand is over the button yet, and whether the step has come (and since when). */
+interface Due {
+  frame: number;
+  age: number;
+  armed: boolean;
+  ready: boolean;
+  since: number;
+}
 
 /** A flower bumper: closed petals until it is bumped the right way, then it blooms. */
 class Flower extends Container {
@@ -138,13 +150,21 @@ class BumperGarden implements Game {
   private readonly glow = new Graphics();
   private readonly input = new Container();
   private readonly sides: Record<FlipperSide, Graphics> = { left: new Graphics(), right: new Graphics() };
-  private readonly flipperPegs: number;
   private progressed = false;
   private holdFor = 0;
   private view: View;
   private clock = 0;
   private idle = 0;
   private botWait = 1;
+  /** The ghost finger looks ahead at most this often (seconds on the game's clock). */
+  private thinkAt = 0;
+  /** Seconds of play the game still owes its physics (it moves in whole steps, so a look ahead agrees with it). */
+  private owed = 0;
+  /**
+   * The ghost finger's flip, once its hand is over the button: where the look ahead wants the ladybug. The game holds the
+   * ladybug there for the frame the hand takes to press, so the flip lands on the step that was planned however long the frames run.
+   */
+  private due: Due | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -154,7 +174,6 @@ class BumperGarden implements Game {
     this.target = colors[0];
     this.flowers = this.bumpers.map((b) => ctx.track(new Flower(b, colors[b.color % colors.length])));
     this.world = makeWorld(this.bumpers);
-    this.flipperPegs = this.world.pegs.length - 12;
     this.ball = { x: LAUNCH.x, y: LAUNCH.y, vx: 0, vy: 0, r: TABLE.ball };
 
     // The garden bed, hedges steering down to the flippers, and the pot that catches the ladybug.
@@ -237,6 +256,7 @@ class BumperGarden implements Game {
 
   private flip(side: FlipperSide) {
     this.idle = 0;
+    this.due = null;
     const f = this.flippers[side];
     f.upFor = 0.2;
     sfx.tick();
@@ -275,24 +295,49 @@ class BumperGarden implements Game {
     return out;
   }
 
+  /** Young players get a wider reach. */
+  private get wide() {
+    return this.plan.mode === 'spring' || this.plan.mode === 'bloom';
+  }
+
   /** Batting the ladybug: if it is on or just above the flipper, it flies back up. */
   private kick(side: FlipperSide) {
     if (this.state !== 'flying') return;
-    const b = this.ball;
-    const pts = flipperPoints(side, FLIPPER.rest, 12);
-    let best = Infinity;
-    let at = 0;
-    pts.forEach((p, i) => {
-      const d = Math.hypot(p.x - b.x, p.y - b.y);
-      if (d < best) [best, at] = [d, i / (pts.length - 1)];
-    });
-    // Young players get a wider reach.
-    const reach = b.r + 12 + (this.plan.mode === 'spring' || this.plan.mode === 'bloom' ? 46 : 30);
-    if (best > reach || b.vy < -250) return;
-    const s = side === 'left' ? 1 : -1;
-    b.vx = s * (320 - 420 * at) + this.ctx.rng.range(-40, 40);
-    b.vy = -880 - 80 * at;
+    const v = kickBall(this.ball, side, this.wide, () => this.ctx.rng.range(-40, 40));
+    if (!v) return;
+    Object.assign(this.ball, v);
     sfx.boing();
+  }
+
+  /**
+   * The ghost finger on the how-to card: tap to launch on the first level; after that, a look ahead (the ball is exact, and the
+   * kick's chance is the game's next random draw) finds the moment a flip sends the ladybug to a flower still waiting. The hand
+   * goes to that side's button and presses as the ladybug reaches the flipper.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.finished) return null;
+    if (this.state === 'held') return this.plan.mode === 'spring' ? { tap: { on: this.board, x: LAUNCH.x, y: LAUNCH.y }, receiver: this.input } : null;
+    if (this.plan.mode === 'spring' || this.clock < this.thinkAt) return null;
+    this.thinkAt = this.clock + 0.25;
+    const noise = this.ctx.rng.clone().range(-40, 40);
+    const flip = planFlip(this.world, this.bumpers.length, this.ball, this.wide, noise, (i) => this.wanted(i));
+    if (!flip) return null;
+    const due: Due = { frame: flip.frame, age: 0, armed: false, ready: false, since: 0 };
+    this.due = due;
+    return {
+      tap: { on: this.sides[flip.side] },
+      receiver: this.input,
+      pause: 0.2,
+      when: () => {
+        // The hand is over the button: from now the game watches for the planned step and holds there.
+        due.armed = true;
+        if (this.due !== due || this.state !== 'flying') {
+          if (this.due === due) this.due = null;
+          return 'cancel';
+        }
+        return due.ready;
+      },
+    };
   }
 
   private launch() {
@@ -321,22 +366,35 @@ class BumperGarden implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    // Flippers swing up fast and settle back; their pegs follow.
-    let k = this.flipperPegs;
-    for (const side of ['left', 'right'] as FlipperSide[]) {
-      const f = this.flippers[side];
-      f.upFor = Math.max(0, f.upFor - dt);
-      const target = f.upFor > 0 ? FLIPPER.up : FLIPPER.rest;
-      f.angle += Math.sign(target - f.angle) * Math.min(Math.abs(target - f.angle), dt * (f.upFor > 0 ? 22 : 9));
-      // The right flipper is drawn mirrored, so it turns the other way to match.
-      f.node.rotation = side === 'left' ? f.angle : -f.angle;
-      for (const p of flipperPoints(side, f.angle)) Object.assign(this.world.pegs[k++], p);
+    // Flippers swing up fast and settle back, and the ladybug flies, in whole steps however fast the screen draws.
+    this.owed = Math.min(this.owed + dt, 0.1);
+    while (this.owed >= STEP) {
+      const due = this.due;
+      if (due && this.state === 'flying' && due.age >= due.frame) {
+        // The planned step has come. With the hand over the button the game holds here for the frame it takes to press;
+        // without it the moment has gone.
+        if (!due.armed) this.due = null;
+        else {
+          if (!due.ready) [due.ready, due.since] = [true, this.clock];
+          if (this.clock - due.since > 0.3) this.due = null;
+          else break;
+        }
+      }
+      this.owed -= STEP;
+      swingFlippers(this.flippers, this.world, STEP);
+      if (this.state === 'flying' && !this.finished) {
+        const hits = stepBall(this.ball, this.world, STEP);
+        if (this.due) this.due.age++;
+        for (const i of hits) if (i < this.bumpers.length) this.bumped(i);
+        if (this.ball.y + this.ball.r >= CATCH_Y) void this.caught();
+      }
     }
-    if (this.state === 'flying' && !this.finished) {
-      const hits = stepBall(this.ball, this.world, Math.min(dt, 1 / 30));
-      for (const i of hits) if (i < this.bumpers.length) this.bumped(i);
-      if (this.ball.y + this.ball.r >= CATCH_Y) void this.caught();
-    } else if (this.state === 'held' && !this.finished) {
+    for (const side of ['left', 'right'] as FlipperSide[]) {
+      // The right flipper is drawn mirrored, so it turns the other way to match.
+      const f = this.flippers[side];
+      f.node.rotation = side === 'left' ? f.angle : -f.angle;
+    }
+    if (this.state === 'held' && !this.finished) {
       this.holdFor -= dt;
       this.idle += dt;
       if (this.holdFor <= 0) this.launch();
@@ -466,6 +524,7 @@ export const bumperGarden: GameModule = {
   coplayHint: 'Say "flip!" together, and count each flower as it blooms.',
   offScreen: 'Roll a ball down a tilted tray with a few cups as bumpers. Which cup does it hit first?',
   hubIcon: () => new WigglyIcon(tableArt(1)),
+  touchDemo: true,
   sticker: (seed) => tableArt(seed),
   create: (ctx) => new BumperGarden(ctx),
 };

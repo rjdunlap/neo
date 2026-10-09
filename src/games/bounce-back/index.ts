@@ -9,8 +9,8 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { paddleBounce, planFor, predictY, type BouncePlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { paddleBounce, paddleTarget, planFor, predictY, type BouncePlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -94,6 +94,21 @@ class BounceBack implements Game {
     const want = this.ball.vx > 0 ? predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, this.faces().right, b.y0 + BALL_R, b.y1 - BALL_R) : (b.y0 + b.y1) / 2;
     p.y = Math.max(-1, Math.min(1, (want - this.targets.right) / (620 * dt)));
     return out;
+  }
+
+  /**
+   * The ghost finger on the how-to card: once the ball is coming, touch the right side at the height where it will arrive
+   * (on the stars level, a little to one side of that so the bounce sends it through the star). The paddle follows.
+   */
+  autotouch(): TouchIntent | null {
+    const b = this.box;
+    if (this.finished || this.ball.vx <= 0) return null;
+    const half = this.paddleLength() / 2;
+    const arrive = predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, this.faces().right - BALL_R, b.y0 + BALL_R, b.y1 - BALL_R);
+    const star = this.star.visible ? this.starAt : null;
+    const geometry = { faceX: this.faces().right - BALL_R, top: b.y0 + BALL_R, bottom: b.y1 - BALL_R, low: b.y0 + half, high: b.y1 - half, paddle: this.paddleLength(), speed: this.speed(), starReach: BALL_R + 52 };
+    const y = paddleTarget(arrive, star, geometry);
+    return Math.abs(this.targets.right - y) < 8 ? null : { tap: { on: this.touch, x: this.faces().right - 60, y }, pause: 0.3 };
   }
 
   control(input: CouchControls, dt: number) {
@@ -385,6 +400,7 @@ export const bounceBack: GameModule = {
   coplayHint: 'Take the pink paddle on the left and play with {name}! Count the bounces out loud.',
   offScreen: 'Roll a ball back and forth across the floor, counting each roll.',
   hubIcon: () => new BounceIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new BounceBack(ctx),
 };

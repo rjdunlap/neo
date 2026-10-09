@@ -15,9 +15,9 @@ import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CLOUDS } from './course';
-import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
+import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -71,7 +71,7 @@ class BouncyLaunch implements Game {
   private readonly flag = new Graphics();
   /** The finger pulling the spring, and where it first touched. */
   private grab: { id: number; from: { x: number; y: number } } | null = null;
-  private readonly release = (e: PointerEvent) => {
+  private readonly release = (e: { pointerId: number }) => {
     if (!this.grab || e.pointerId !== this.grab.id) return;
     this.grab = null;
     if (!this.letGo()) void this.ctx.tw.to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.3, ease: ease.outBack }).then(() => this.drawSpring());
@@ -109,6 +109,25 @@ class BouncyLaunch implements Game {
       this.botWait = 1.4;
     }
     return out;
+  }
+
+  /**
+   * The ghost finger on the how-to card: tap the spring on the first level, and after that put a finger on the pet, pull it
+   * back and down by the pull that lands where it should (on the cloud, or nearer or farther than last time), and let go.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.flying || this.finished || this.grab) return null;
+    if (this.plan.mode === 'tap') return { tap: { on: this.pet, y: -125 } };
+    const pull = pullToTake(this.plan, this.shot, this.targets, this.last);
+    // Back and down, the way the leash allows; the finger travels as far as the pet is to be pulled.
+    const from = { x: this.seat.x, y: this.seat.y - 125 * PET_SCALE };
+    const d = { x: -0.35, y: 0.94 };
+    const len = Math.hypot(d.x, d.y);
+    return {
+      trace: { on: this.ctx.stage, ...from },
+      via: [{ on: this.ctx.stage, x: from.x + (d.x / len) * pull, y: from.y + (d.y / len) * pull }],
+      receiver: this.pet,
+    };
   }
 
   control(input: CouchControls, dt: number) {
@@ -202,6 +221,9 @@ class BouncyLaunch implements Game {
       });
       window.addEventListener('pointerup', this.release);
       window.addEventListener('pointercancel', this.release);
+      // The ghost finger on the how-to card lets go on the pet itself (it sends no window events); a real release reaches both, and the second finds the pull already gone.
+      this.pet.on('pointerup', this.release);
+      this.pet.on('pointerupoutside', this.release);
     }
   }
 
@@ -526,6 +548,7 @@ export const bouncyLaunch: GameModule = {
   coplayHint: 'Say "pull... and let go!" together, then guess where {name}\'s pet will land.',
   offScreen: 'Roll a ball down a ramp: tilt it more or less and see how far it goes.',
   hubIcon: () => new LaunchIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new BouncyLaunch(ctx),
 };
