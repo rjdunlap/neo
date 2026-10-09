@@ -28,19 +28,19 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Jelly Drums
 
-*lap–school.* Free play on five notes, then copying tunes of two to five notes. Replaying the tune is always available.
+*lap–school.* Free play on five notes, then copying tunes of two to five notes. Replaying the tune is always available. The island's background loop is silenced here (the jellies still bob to its quiet clock), so nothing competes with the notes she plays.
 
 ### Song Maker
 
-*lap–school.* A looping grid of jelly beads; higher rows sound higher (pentatonic steps), and the playhead follows the background music's beat (`music.beats()`). Free play at lap and toddler; then copying a song from shadow notes, then from a small card; continuing a repeating pattern (stairs, hops, zigzags); and finding a four-note tune by ear, where a wrong jelly is followed by the right note so the difference can be heard. A song from a free level can be kept on the treehouse's tune plaque; a copied song is not hers and is not offered.
+*lap–school.* A looping grid of jelly beads; higher rows sound higher (pentatonic steps), and the playhead follows the music clock's beat (`music.beats()`). Free play at lap and toddler; then copying a song from shadow notes, then from a small card; continuing a repeating pattern (stairs, hops, zigzags); and finding a four-note tune by ear, where a wrong jelly is followed by the right note so the difference can be heard. A song from a free level can be kept on the treehouse's tune plaque; a copied song is not hers and is not offered. The background loop is silenced so the song is the only music; its clock keeps running at the game's tempo for the playhead.
 
 ### Sound Garden
 
-*lap–pre-K · after Electroplankton.* Garden creatures sing when touched. Listening questions follow: high or low (bird or frog), fast or slow (bunny or turtle), does the tune go up or down, then echoing a woodpecker's rhythm on a drum, judged forgivingly for wobble but not for the wrong rhythm.
+*lap–pre-K · after Electroplankton.* Garden creatures sing when touched. Listening questions follow: high or low (bird or frog), fast or slow (bunny or turtle), does the tune go up or down, then echoing a woodpecker's rhythm on a drum, judged forgivingly for wobble but not for the wrong rhythm. The background loop is silenced, so the garden's own sounds are the only music and a fast-or-slow question is not blurred by a tempo underneath.
 
 ### Rhythm Neighbors
 
-*lap–school · after Rhythm Heaven and call-and-response songs.* Two lap modes let taps make a bird call and frog chorus. Later levels alternate a bird call with a different pictured frog reply, add a second frog voice, then short/long rhythm gaps. The relative-gap judge is shared with Sound Garden. Explicit submission avoids any deadline; replay demonstrates both parts. After two misses, or when help is requested, guided play highlights the next frog and accepts the correct sequence at any pace. Three exchanges finish with a short duet and one sticker.
+*lap–school · after Rhythm Heaven and call-and-response songs.* Two lap modes let taps make a bird call and frog chorus. Later levels alternate a bird call with a different pictured frog reply, add a second frog voice, then short/long rhythm gaps. The relative-gap judge is shared with Sound Garden. Explicit submission avoids any deadline; replay demonstrates both parts. After two misses, or when help is requested, guided play highlights the next frog and accepts the correct sequence at any pace. Three exchanges finish with a short duet and one sticker. The background loop is silenced, so the bird and frog parts are the only rhythm.
 
 ### Beat Builder
 
@@ -289,7 +289,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Clap the Syllables
 
-*preschool–pre-K · after classroom syllable clapping and Rhythm Heaven.* The pet says a word whole and claps its beats ("but-ter-fly") with beads lighting up, and the child claps along on big hands. Then she claps a word by herself (a wrong count brings the pet's demonstration; a second leaves the beats showing), sorts pictures into 1-, 2- and 3-clap bins, and hears some claps and finds the picture with that many beats. Twenty-seven words of one to three beats. A clap is a count, not a timing, so the game counts claps in a burst rather than using Sound Garden's rhythm judge. Friends' names were left out: counting a child's own name would need a syllable counter the game does not have. Whether device speech says each word clearly is unchecked.
+*preschool–pre-K · after classroom syllable clapping and Rhythm Heaven.* The pet says a word whole and claps its beats ("but-ter-fly") with beads lighting up, and the child claps along on big hands. Then she claps a word by herself (a wrong count brings the pet's demonstration; a second leaves the beats showing), sorts pictures into 1-, 2- and 3-clap bins, and hears some claps and finds the picture with that many beats. Twenty-seven words of one to three beats. A clap is a count, not a timing, so the game counts claps in a burst rather than using Sound Garden's rhythm judge. Friends' names were left out: counting a child's own name would need a syllable counter the game does not have. Whether device speech says each word clearly is unchecked. The background loop is silenced, so her claps are the only beat.
 
 ## Tinker Lab (science)
 

@@ -4,7 +4,7 @@ import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { flower, puffs } from '../../art/shapes';
 import { audio } from '../../audio/engine';
-import { STYLES } from '../../audio/music';
+import { STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -478,7 +478,7 @@ export const soundGarden: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   // Quiet music, so the listening questions are easy to hear.
-  music: STYLES.lullaby,
+  music: silenced(STYLES.lullaby),
   coplayHint: 'Sing along: a high "tweet" with your hand up high, a low "ribbit" with your hand down low.',
   offScreen: 'Play a pot-and-spoon drum: copy each other\'s taps, fast and slow.',
   hubIcon: () => new GardenIcon(),

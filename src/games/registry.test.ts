@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BANDS } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
 import { couchGameById, GAMES, GROWNUP_GAMES, gameById } from './registry';
+import { isSilent, silenced, STYLES } from '../audio/music';
 import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
@@ -65,5 +66,31 @@ describe('game registry', () => {
     // Every island game is still a couch lookup too.
     expect(couchGameById('penguin-slide')).toBe(gameById('penguin-slide'));
     expect(couchGameById('nope')).toBeUndefined();
+  });
+
+  it('plays no background music in a game where she makes the music', () => {
+    // Her own sounds are the music; the island's loop would compete with them.
+    const makingMusic = ['beat-builder', 'clap-syllables', 'jelly-drums', 'pet-says', 'rhythm-neighbors', 'song-maker', 'sound-garden'];
+    for (const id of makingMusic) {
+      const game = gameById(id)!;
+      expect(game, id).toBeDefined();
+      expect(isSilent(game.music), id).toBe(true);
+    }
+    // Not stopped: Song Maker's playhead and Jelly Drums' jellies keep time from the playing style.
+    for (const id of ['jelly-drums', 'song-maker']) expect(gameById(id)!.music.bpm, id).toBe(STYLES.jelly.bpm);
+  });
+
+  it('keeps the island\'s music for the games where the music is only a setting', () => {
+    expect(GAMES.filter((g) => !isSilent(g.music)).length).toBeGreaterThan(GAMES.length / 2);
+    expect(isSilent(STYLES.hub)).toBe(false);
+  });
+
+  it('silences a style but keeps its tempo and seed', () => {
+    const quiet = silenced(STYLES.lullaby);
+    expect(isSilent(quiet)).toBe(true);
+    expect(quiet.bpm).toBe(STYLES.lullaby.bpm);
+    expect(quiet.seed).toBe(STYLES.lullaby.seed);
+    expect([quiet.lead, quiet.bass, quiet.pad, quiet.shaker]).toEqual(['none', false, false, false]);
+    expect(STYLES.lullaby.volume).toBeGreaterThan(0.1);
   });
 });
