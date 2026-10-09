@@ -145,6 +145,17 @@ Use scripted input for moving targets, then screenshots for visual review. Finis
 
 ## Documentation and Git
 
+### Avoid duplicate parallel work
+
+Before choosing a roadmap slice or making edits:
+
+1. Fetch `origin` with pruning and make sure the new feature branch starts at the latest `origin/main`; fast-forward a clean local `main` first when needed. Never pull blindly into a dirty worktree.
+2. Inspect active worktrees, unmerged local and remote branches, and open pull requests for the same roadmap chunk, game IDs or files. Work that is in flight counts even when it has not reached `main` yet.
+3. If another branch is already implementing the slice, do not build a second version. Reconcile with that branch, help finish it, or choose the next non-overlapping ready slice unless the grown-up explicitly wants competing approaches.
+4. Create a clearly named feature branch before substantial edits, and publish its first coherent commit and pull request promptly so later sessions can see that the slice is claimed.
+
+Fetch and inspect for overlap again immediately before publishing a follow-up commit, and once more before merging or pushing `main`. If `origin/main` moved or overlapping work landed, integrate the current remote version and rerun the proportionate checks before publishing. Never push a local `main` whose view of `origin/main` is stale.
+
 Keep this file provider-neutral and durable; update it when a shared contract or workflow changes. Where an update goes:
 
 - **A game added or changed:** its README row, [GAMES.md](docs/GAMES.md) entry and how-to card.
