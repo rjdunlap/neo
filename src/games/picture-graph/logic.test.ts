@@ -163,20 +163,25 @@ describe('Picture Graph meadow: pairs of critters never hide each other', () => 
       const area = meadowArea(w, h);
       // The key sits at x 88 (124 wide) on the left and the pads are 124 wide centered 110 in from the right.
       for (const n of [1, 5, 9, 12]) {
+        // Thousands of seeds times every pair of critters is too many `expect` calls for the suite's time limit
+        // under load, so plain comparisons collect what is wrong and one `expect` per size reports the first few.
+        const problems: string[] = [];
         for (let seed = 1; seed <= 300; seed++) {
           const spots = groupSpots(n, 2, area, new Rng(seed));
-          expect(spots).toHaveLength(n);
+          const at = `${w}x${h} n=${n} seed ${seed}`;
+          if (spots.length !== n) problems.push(`${at}: placed ${spots.length} pairs`);
           const cs = critters(spots);
           cs.forEach((c, i) => {
-            expect(c.l, `${w}x${h} seed ${seed}: clear of the key`).toBeGreaterThanOrEqual(88 + 62 + 4);
-            expect(c.r, `${w}x${h} seed ${seed}: clear of the number pads`).toBeLessThanOrEqual(w - 110 - 62 - 4);
-            expect(c.t).toBeGreaterThanOrEqual(area.top - CRITTER_H - 1);
-            expect(c.b).toBeLessThanOrEqual(area.bottom + 1);
-            expect(c.b).toBeGreaterThanOrEqual(area.top - 1);
+            if (c.l < 88 + 62 + 4) problems.push(`${at}: critter ${i} is not clear of the key`);
+            if (c.r > w - 110 - 62 - 4) problems.push(`${at}: critter ${i} is not clear of the number pads`);
+            if (c.t < area.top - CRITTER_H - 1) problems.push(`${at}: critter ${i} is above the area`);
+            if (c.b > area.bottom + 1) problems.push(`${at}: critter ${i} is below the area`);
+            if (c.b < area.top - 1) problems.push(`${at}: critter ${i} is wholly above the area`);
             // Two in a pair stand side by side on purpose; different pairs never touch.
-            for (let j = i + 1; j < cs.length; j++) if (j >> 1 !== i >> 1) expect(touches(c, cs[j]), `${w}x${h} seed ${seed}: critters ${i} and ${j}`).toBe(false);
+            for (let j = i + 1; j < cs.length; j++) if (j >> 1 !== i >> 1 && touches(c, cs[j])) problems.push(`${at}: critters ${i} and ${j} touch`);
           });
         }
+        expect(problems.slice(0, 5)).toEqual([]);
       }
     }
   });
