@@ -512,13 +512,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 4, text: 'Tap a cutting picture to cut the food into equal pieces.' },
       { to: 4, text: 'Move pieces between plates until everyone has the same.' },
-      { from: 5, text: 'Look at the recipe card and double it: put in two fruits for each fruit on the card.' },
+      { from: 5, to: 6, text: 'Look at the recipe card and double it: put in two fruits for each fruit on the card.' },
+      { from: 7, to: 7, text: 'Listen to the amount your friend asks for, cut equal pieces, then put that fraction on their plate.' },
+      { from: 8, text: 'Look at the recipe card and halve it: put in one fruit for every two fruits on the card.' },
       'Tap the green arrow to serve.',
     ],
     finish: 'The round ends when the food is served fairly.',
     note: [
       { to: 4, text: 'If the pieces are not equal the kitchen asks to cut again; nothing is lost.' },
-      { from: 5, text: 'The back arrow takes the last fruit out; nothing is lost.' },
+      { from: 5, to: 6, text: 'The back arrow takes the last fruit out; nothing is lost.' },
+      { from: 7, text: 'Two quarters count as one half, and the round arrow lets you cut again; nothing is lost.' },
+      { from: 8, text: 'The back arrow takes the last fruit out; nothing is lost.' },
     ],
   },
   'tangram-town': {

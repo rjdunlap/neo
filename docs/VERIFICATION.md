@@ -38,7 +38,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4, real taps) again 2026-10-09; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
-| `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
+| `creative`, `next` | 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving) | Pet Kitchen fractions entry | `next` remains 2026-10-06 |
 | `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-06 in the combined flow, with later per-game reruns | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
 | `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |
@@ -59,6 +59,14 @@ What changed: `src/progress/profiles.ts` (pure: the profile index, birth month a
 - `BROWSER_SUITE=grownups` (reset, reload and undo through the store) and `world` passed on a dev server for this tree, in the headless shell. A probe against real IndexedDB seeded a pre-profiles `neo.save`, found it field for field as the one legacy profile, switched between two profiles with a save still pending, and reloaded.
 - `npm run build` and `npm run test:offline` passed before that merge, with the preview serving the built `index-BNf30OoZ.js`.
 - Not run: the other suites (no shell, scene or game changed), a stale cached build restoring a new backup (a known limit: it reads the file as a blank profile, kept only by its one undo snapshot), and any device.
+
+### Pet Kitchen: named fractions and halving (2026-10-09)
+
+What changed: two school levels extend Pet Kitchen without renumbering saved levels. Level 7 asks for one half, one quarter or three quarters of a sandwich; the player chooses equal cuts and serves the asked amount, accepting two quarters as a half. Level 8 reverses the earlier doubling recipe: its even recipe card says ÷2 and the player makes one fruit for every two shown. The card, voice support, ghost finger, scoped how-to, game inventory and short-ladder roadmap are updated.
+
+- `npm run typecheck` and the focused Pet Kitchen rule file passed (7 tests). It proves every request has a valid offered cut, two quarters make a half, halves cannot make three quarters, every halving recipe is whole-fruit exact, and each hint identifies the remaining repair.
+- `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen FROM_LEVEL=7` passed levels 7 and 8 with two deliberate wrong serves, one useful hint, an undo and one sticker per round. The fraction flow recut to quarters before serving the requested amount; the halving flow made the exact half recipe. No page errors occurred. Screenshots of both new rounds were reviewed in landscape.
+- Not run: the whole unit suite, build, `howto`, `world`, offline and couch checks (no shell, save, route, asset or couch change). Device speech for “one half,” “one quarter” and “three quarters” remains a real-device check.
 
 ### Tracing and steering bots for Letter Trails, Dot Link, Roundup, Lasso Loops and Clock Tower (2026-10-09)
 
