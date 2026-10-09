@@ -75,3 +75,12 @@ export function makeQuestions(plan: RhymePlan, rng: Rng): RhymeQuestion[] {
   }
   return out;
 }
+
+/**
+ * The picture a capable child taps next: the one that rhymes (match), the odd one out (odd), or, to find a rhyming pair, the
+ * first of the pair and then the other one. `picked` is the first card of a pair already chosen. Always a right one.
+ */
+export function wordToTap(plan: RhymePlan, q: RhymeQuestion, picked: string | null): string {
+  if (plan.mode === 'pair' && picked) return q.answer.find((w) => w !== picked)!;
+  return q.answer[0];
+}
