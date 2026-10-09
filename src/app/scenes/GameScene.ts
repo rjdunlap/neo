@@ -16,7 +16,7 @@ import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import type { View } from '../../engine/view';
+import { textBoost, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
 import type { Band } from '../../progress/bands';
 import { stepLevel } from '../../progress/difficulty';
@@ -134,6 +134,7 @@ export class GameScene extends Scene {
     this.home.position.set(62, 62);
     this.help.position.set(62, 160);
     this.tip?.position.set(view.w / 2, 16);
+    this.tip?.scale.set(textBoost(view.scale));
     this.helpCard?.layout(view);
   }
 
@@ -420,6 +421,7 @@ export class GameScene extends Scene {
     card.alpha = 0;
     // `resize` only moves a tip that already exists, and a tip made after the first resize (once Play is pressed) would sit at the origin, over the home button.
     card.position.set(this.view.w / 2, 16);
+    card.scale.set(textBoost(this.view.scale)); // small text stays readable on a phone
     const dismiss = () => {
       if (this.tip !== card) return;
       this.tip = null;

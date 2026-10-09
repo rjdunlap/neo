@@ -20,6 +20,8 @@ export abstract class Scene {
   readonly tw = new Tweener();
   /** Whether time here counts against the session's screen-time budget. */
   countsTime = true;
+  /** A plain-HTML scene that already suits a phone held upright, so it is never covered by the turn prompt. */
+  upright = false;
   private readonly tracked = new Set<Updatable>();
 
   constructor(protected readonly app: App) {

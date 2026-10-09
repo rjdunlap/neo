@@ -5839,6 +5839,164 @@ async function smoke() {
 }
 
 /**
+ * What a phone needs that a tablet does not. Safe areas: with a notch and a home indicator faked through the `--safe-*` custom
+ * properties (headless Chrome reports none), the island sits inside them, nothing on a scene's UI layer is covered, the parent gate's corners
+ * and the grown-up panel are reachable, and a tap on a button still lands on it. An upright phone (390 × 844) is asked to turn sideways
+ * and the scene waits; a phone held sideways, every tablet shape and a mouse are never asked. About 15 seconds.
+ */
+async function phoneFit() {
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; kit.store.data.pet = { name: 'Mia', color: 'pink', hatched: true }; kit.store.data.profile.band = 'toddler'; });
+  /** UI-layer things she can touch that lie outside the usable rectangle (window minus insets), in CSS pixels. */
+  const uncovered = () => page.evaluate(() => {
+    const k = neo.insets, out = [];
+    const walk = (o) => {
+      if (!o.visible || o.alpha === 0) return;
+      if (o.eventMode === 'static' || o.eventMode === 'dynamic') {
+        const b = o.getBounds();
+        if (b.width * b.height > 0 && (b.x < k.left - 1 || b.y < k.top - 1 || b.x + b.width > innerWidth - k.right + 1 || b.y + b.height > innerHeight - k.bottom + 1)) out.push(`${o.constructor.name} ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}`);
+      }
+      for (const c of o.children ?? []) walk(c);
+    };
+    walk(neo.scene.ui);
+    return out;
+  });
+  const insets = (top, right, bottom, left) => page.evaluate(([t, r, b, l]) => {
+    const s = document.documentElement.style;
+    for (const [name, v] of [['top', t], ['right', r], ['bottom', b], ['left', l]]) v ? s.setProperty(`--safe-${name}`, `${v}px`) : s.removeProperty(`--safe-${name}`);
+  }, [top, right, bottom, left]);
+
+  // --- A notch: 47 either side (iOS reports both), a home indicator below.
+  await page.setViewportSize({ width: 844, height: 390 });
+  await insets(0, 47, 21, 47);
+  await page.waitForFunction(() => neo.insets.left === 47 && neo.insets.bottom === 21);
+  const geo = await page.evaluate(() => ({ insets: neo.insets, root: [neo.root.x, neo.root.y], view: neo.view }));
+  assert.deepEqual(geo.insets, { top: 0, right: 47, bottom: 21, left: 47 });
+  assert.deepEqual(geo.root, [47, 0], 'the island starts inside the left cutout');
+  assert.ok(Math.abs(geo.view.w * geo.view.scale - 750) < 0.5 && Math.abs(geo.view.h * geo.view.scale - 369) < 0.5, 'the view is the usable rectangle');
+  for (const [name, go] of [['map', () => neo.go.hub()], ['place', () => neo.go.place('toddler')], ['game', () => neo.go.game('bubble-pop')]]) {
+    await page.evaluate(go); await page.waitForFunction(() => !neo.switching); await page.waitForTimeout(900);
+    assert.deepEqual(await uncovered(), [], `${name}: touchable UI under the notch or the home indicator`);
+    if (name === 'place') await screenshot('phone-notch-place');
+  }
+  // Scenery drawn past the island's edge (clouds, hills, a scrolling place's landmarks) must not show in the strips the insets leave: they are plain cream.
+  await page.evaluate(() => neo.go.place('toddler')); await scene('PlaceScene'); await page.waitForTimeout(900);
+  const strips = await page.evaluate(() => {
+    const k = neo.insets, bad = [], Rect = neo.pixi.screen.constructor;
+    for (const [name, x, y, w, h] of [['left', 0, 0, k.left, innerHeight], ['right', innerWidth - k.right, 0, k.right, innerHeight], ['bottom', 0, innerHeight - k.bottom, innerWidth, k.bottom]]) {
+      const px = neo.pixi.renderer.extract.pixels({ target: neo.pixi.stage, frame: new Rect(x, y, w, h) });
+      const data = px.pixels; let off = 0;
+      for (let i = 0; i < data.length; i += 4) if (Math.abs(data[i] - 255) > 1 || Math.abs(data[i + 1] - 244) > 1 || Math.abs(data[i + 2] - 227) > 1) off++;
+      if (off) bad.push(`${name} strip: ${off} of ${data.length / 4} pixels are not cream`);
+    }
+    return bad;
+  });
+  assert.deepEqual(strips, [], 'the inset strips are plain cream');
+  // A tap at a button's real screen position lands on it (the root is offset, so client and canvas coordinates must still agree).
+  await page.evaluate(() => neo.go.place('toddler')); await scene('PlaceScene'); await page.waitForTimeout(700);
+  const home = await page.evaluate(() => { const p = neo.scene.home.getGlobalPosition(); return [p.x, p.y]; });
+  assert.ok(home[0] >= 47, `the island button is inside the left cutout (x ${home[0]})`);
+  await page.mouse.click(home[0], home[1]); await scene('MapScene');
+  // The parent gate: both corners are inside the cutouts, and holding them there opens the grown-up panel.
+  await page.waitForTimeout(500);
+  const corners = await page.evaluate(() => { const k = neo.view.scale; return neo.scene.gate.zones.map((z) => { const p = z.getGlobalPosition(); return [p.x + 65 * k, p.y + 65 * k, p.x, p.x + 130 * k]; }); });
+  assert.ok(corners[0][2] >= 47 - 0.5 && corners[1][3] <= 844 - 47 + 0.5, 'the gate corners are inside the cutouts');
+  await page.evaluate((pts) => {
+    const canvas = document.querySelector('canvas');
+    pts.forEach(([x, y], i) => canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: y, pointerId: 31 + i, pointerType: 'touch', bubbles: true })));
+  }, corners);
+  await page.locator('.parent').waitFor({ timeout: 8000 });
+  await page.evaluate(() => { const canvas = document.querySelector('canvas'); for (const id of [31, 32]) canvas.dispatchEvent(new PointerEvent('pointerup', { pointerId: id, pointerType: 'touch', bubbles: true })); });
+  const sheet = await page.locator('.parent__sheet').boundingBox();
+  assert.ok(sheet.x >= 46.5 && sheet.x + sheet.width <= 844 - 46.5 && sheet.y + sheet.height <= 390 - 21 + 0.5, `the grown-up panel sits inside the cutouts (${JSON.stringify(sheet)})`);
+  await screenshot('phone-notch-parent');
+  await page.locator('[data-done]').click(); await scene('MapScene');
+  await insets(0, 0, 0, 0);
+  await page.waitForFunction(() => neo.insets.left === 0 && neo.root.x === 0);
+  await page.setViewportSize({ width: 1024, height: 768 });
+
+  // --- An upright phone is asked to turn; nothing else is.
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, reducedMotion: 'reduce' });
+  const p = await phone.newPage();
+  const phoneErrors = [];
+  p.on('pageerror', (error) => phoneErrors.push(error.message));
+  try {
+    await p.goto(process.env.GAME_URL || 'http://127.0.0.1:5173');
+    await p.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+    await p.evaluate(() => { kit.store.data.settings.howToCards = false; kit.store.data.pet = { name: 'Mia', color: 'pink', hatched: true }; kit.store.data.profile.band = 'toddler'; });
+    const asked = () => p.evaluate(() => ({ turning: neo.turning, shown: neo.turn.visible, scene: neo.scene.constructor.name }));
+    assert.deepEqual(await asked(), { turning: true, shown: true, scene: 'StartScene' }, 'an upright phone is asked to turn');
+    await p.waitForTimeout(500);
+    await p.screenshot({ path: `${output}/phone-turn-prompt.png` });
+    assert.equal(await p.locator('.couch-entry').isVisible(), false, "the couch button, a plain-HTML control above the canvas, is hidden while the prompt is up");
+    await p.touchscreen.tap(195, 422); await p.waitForTimeout(1500);
+    assert.equal((await asked()).scene, 'StartScene', 'a tap on the prompt does not start the island');
+    // Turned sideways, the prompt goes and the same tap works.
+    await p.setViewportSize({ width: 844, height: 390 }); await p.waitForTimeout(500);
+    assert.deepEqual(await asked(), { turning: false, shown: false, scene: 'StartScene' }, 'the prompt goes when the phone is sideways');
+    assert.equal(await p.locator('.couch-entry').isVisible(), true, 'the couch button is back when the phone is sideways');
+    await p.touchscreen.tap(422, 150); await p.waitForFunction(() => neo.scene.constructor.name === 'PlaceScene' && !neo.switching);
+    // Tablet shapes in either direction, and a tall phone again.
+    for (const [w, h, turning] of [[768, 1024, false], [744, 1133, false], [820, 1180, false], [1024, 1366, false], [360, 780, true], [430, 932, true], [667, 375, false]]) {
+      await p.setViewportSize({ width: w, height: h }); await p.waitForTimeout(250);
+      assert.equal((await asked()).turning, turning, `${w} × ${h}: the turn prompt ${turning ? 'shows' : 'stays away'}`);
+    }
+  } finally { await phone.close(); }
+  assert.deepEqual(phoneErrors, []);
+  // A mouse is never asked, whatever the window's shape (the shared context has no touch screen).
+  await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.turning), false, 'a narrow desktop window is not asked to turn');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+  log('Phone fit: a faked notch and home indicator (island inside them, UI uncovered, tap, parent gate and panel reachable), the turn prompt for an upright phone only, and the tablet shapes left alone passed');
+}
+
+/**
+ * Every game at a phone held sideways (844 × 390, about half the iPad's size): its middle level opens, takes a few taps, has nothing
+ * touchable stranded at the origin or left outside the window on its UI layer, and leaves a screenshot in test-results/browser/phone/
+ * to look at. `PHONE_ONLY=id,id` filters. Proves the layout holds at the widest shape the games have been given (about 2.2 to 1),
+ * not that a small hand can use it. About three seconds a game.
+ */
+async function phoneGames() {
+  const only = process.env.PHONE_ONLY?.split(',');
+  await mkdir(`${output}/phone`, { recursive: true });
+  const games = await page.evaluate(async () => {
+    const { GAMES } = await import('/src/games/registry.ts');
+    return GAMES.map((g) => {
+      const levels = [...new Set(g.bands.flatMap((b) => { const r = g.levels(b); return Array.from({ length: r.max - r.min + 1 }, (_, i) => r.min + i); }))].sort((a, b) => a - b);
+      return { id: g.id, level: levels[Math.floor(levels.length / 2)] };
+    });
+  });
+  const picked = games.filter((g) => !only || only.includes(g.id));
+  assert.ok(picked.length > 0, `PHONE_ONLY matched no game: ${only}`);
+  await page.setViewportSize({ width: 844, height: 390 });
+  for (const g of picked) {
+    await launch(g.id, g.level);
+    await page.waitForTimeout(900);
+    const problems = await page.evaluate(() => {
+      const out = [];
+      const walk = (o, layer) => {
+        if (!o.visible || o.alpha === 0) return;
+        if (o.eventMode === 'static' || o.eventMode === 'dynamic') {
+          const p = o.getGlobalPosition(), b = o.getBounds();
+          if (layer === 'stage' && Math.abs(p.x) < 1 && Math.abs(p.y) < 1 && b.width * b.height > 0 && b.x + b.width / 2 < 160 && b.y + b.height / 2 < 160) out.push(`${o.constructor.name} stranded at the origin`);
+          if (layer === 'ui' && b.width * b.height > 0 && (b.x < -1 || b.y < -1 || b.x + b.width > innerWidth + 1 || b.y + b.height > innerHeight + 1)) out.push(`${o.constructor.name} off the window ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}`);
+        }
+        for (const c of o.children ?? []) walk(c, layer);
+      };
+      for (const c of neo.scene.stage?.children ?? []) walk(c, 'stage');
+      walk(neo.scene.ui, 'ui');
+      return out;
+    });
+    assert.deepEqual(problems, [], `${g.id} level ${g.level} at phone size`);
+    for (const [x, y] of [[422, 195], [250, 250], [600, 150]]) { await page.mouse.click(x, y); await page.waitForTimeout(120); }
+    await page.screenshot({ path: `${output}/phone/${g.id}.jpg`, type: 'jpeg', quality: 70 });
+    assert.deepEqual(errors, [], `${g.id} raised page errors at phone size`);
+    log(`Phone: ${g.id} level ${g.level} opened, tapped and laid out at 844 × 390`);
+  }
+  await page.setViewportSize({ width: 1024, height: 768 });
+}
+
+/**
  * Every time a game is opened it explains itself: the how-to card fills the screen with a big Play and a Back, the round is not
  * built until Play, and a game with a bot also plays a demonstration round in a window. A story request, "again" after a round
  * and the parent switch skip it. Every game's card fits the screen, with large buttons, in landscape and portrait.
@@ -6841,6 +6999,8 @@ try {
   if (suite === 'all' || suite === 'couchconga') await couchConga();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
   if (suite === 'smoke') await smoke();
+  if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
+  if (suite === 'phone') await phoneGames();
   if (suite === 'all' || suite === 'howto') await howToIntro();
   if (suite === 'all' || suite === 'howto' || suite === 'howtolevel') await howToLevelPick();
   if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
