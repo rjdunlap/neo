@@ -129,10 +129,21 @@ export const welcomes = (selected: readonly PieceId[], visitors: readonly Visito
 /** Which of the two known visitors would come to this completed garden. */
 export const visitorsFor = (selected: readonly PieceId[]) => VISITORS.filter((visitor) => welcomes(selected, [visitor]));
 
-/** Unplaced pieces that meet at least one need the current garden is missing. */
+/**
+ * Unplaced pieces worth a glow: the ones that bring the garden closer to an arrangement that works. They come from the
+ * accepted arrangements that already share the most with the garden, so on a two-space level the glow points at the
+ * multipurpose piece rather than at everything that meets some need. Each one meets a need the garden is still missing.
+ */
 export function helpingPieces(round: HabitatRound, selected: readonly PieceId[]): PieceId[] {
   const missing = missingNeeds(selected, round.visitors);
-  return round.offered.filter((piece) => !selected.includes(piece) && missing.some((m) => covers(piece, m.visitor, m.need)));
+  const meetsMissing = (piece: PieceId) => missing.some((m) => covers(piece, m.visitor, m.need));
+  const overlap = (s: readonly PieceId[]) => s.filter((piece) => selected.includes(piece)).length;
+  const all = solutions(round);
+  const best = Math.max(0, ...all.map(overlap));
+  const wanted = new Set(all.filter((s) => overlap(s) === best).flat());
+  const glow = round.offered.filter((piece) => !selected.includes(piece) && wanted.has(piece) && meetsMissing(piece));
+  // The arrangement they share most with might need nothing the garden lacks (it is a superset of a finished garden); fall back to any useful piece.
+  return glow.length ? glow : round.offered.filter((piece) => !selected.includes(piece) && meetsMissing(piece));
 }
 
 /** All accepted arrangements, used by tests to prove each generated garden can be completed. */
@@ -144,4 +155,27 @@ export function solutions(round: HabitatRound): PieceId[][] {
     if (selected.length <= round.capacity && welcomes(selected, round.visitors)) out.push(selected);
   }
   return out;
+}
+
+/** What the ghost finger touches next. */
+export type HabitatTouch = { piece: PieceId } | { visitor: Visitor } | 'gate';
+
+/**
+ * The ghost finger's rule. A building round places the pieces of the smallest accepted arrangement (its first, in
+ * the order offered), then opens the gate; a prediction round picks the visitor the prepared garden really welcomes
+ * and then opens the gate. Null once the garden is tested or when there is nothing left to touch.
+ */
+export function habitatTouch(round: HabitatRound, mode: HabitatMode, selected: readonly PieceId[], prediction: Visitor | null): HabitatTouch | null {
+  if (mode === 'predict') {
+    if (!prediction) {
+      const answer = visitorsFor(round.prepared ?? [])[0];
+      return answer ? { visitor: answer } : null;
+    }
+    return 'gate';
+  }
+  if (welcomes(selected, round.visitors)) return 'gate';
+  const plan = solutions(round).sort((a, b) => a.length - b.length)[0];
+  if (!plan) return null;
+  const next = round.offered.find((piece) => plan.includes(piece) && !selected.includes(piece));
+  return next ? { piece: next } : null;
 }
