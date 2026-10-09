@@ -60,6 +60,8 @@ export class App {
   private switching = false;
   /** An invisible element whose padding is the safe area (see `#safe-area` in style.css). */
   private readonly probe = document.createElement('div');
+  /** Cream over the strips the insets leave, so scenery the root draws past its edge never shows in them. */
+  private readonly frame = new Graphics();
   /** Over everything while an upright phone is asked to turn; the scene underneath waits. */
   private readonly turn = new TurnPrompt();
   private turning = false;
@@ -80,7 +82,7 @@ export class App {
     });
     host.appendChild(this.pixi.canvas);
     this.pixi.stage.eventMode = 'static';
-    this.pixi.stage.addChild(this.root, this.curtain, this.turn);
+    this.pixi.stage.addChild(this.root, this.frame, this.curtain, this.turn);
     initTextures(this.pixi.renderer);
     trackPointers();
     this.probe.id = 'safe-area';
@@ -134,9 +136,21 @@ export class App {
     // Grown-up DOM screens (couch play) grow with the window so they stay readable from a couch.
     document.documentElement.style.setProperty('--u', String(Math.min(2.2, Math.max(1, this.view.scale))));
     this.curtain.clear().rect(0, 0, w, h).fill(cream);
+    this.drawFrame(w, h);
     this.turn.layout(w, h);
     this.refreshTurn();
     this.scene?.resize(this.view);
+  }
+
+  /** The four strips outside the insets, in cream; it swallows taps there and is absent on a screen with no cutouts. */
+  private drawFrame(w: number, h: number) {
+    const { top, right, bottom, left } = this.insets;
+    this.frame.clear();
+    const any = top + right + bottom + left > 0;
+    this.frame.eventMode = any ? 'static' : 'none';
+    if (!any) return;
+    const mid = h - top - bottom;
+    this.frame.rect(0, 0, w, top).rect(0, h - bottom, w, bottom).rect(0, top, left, mid).rect(w - right, top, right, mid).fill(cream);
   }
 
   private readInsets(): Insets {
@@ -152,6 +166,8 @@ export class App {
     if (on === this.turning) return;
     this.turning = on;
     this.turn.visible = on;
+    // Plain-HTML buttons sit above the canvas (couch play's entry, the hatch name field); the prompt must not be bypassed.
+    document.documentElement.classList.toggle('turning', on);
     if (on) voice.stop();
     this.syncSleep();
   }

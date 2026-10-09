@@ -5878,6 +5878,19 @@ async function phoneFit() {
     assert.deepEqual(await uncovered(), [], `${name}: touchable UI under the notch or the home indicator`);
     if (name === 'place') await screenshot('phone-notch-place');
   }
+  // Scenery drawn past the island's edge (clouds, hills, a scrolling place's landmarks) must not show in the strips the insets leave: they are plain cream.
+  await page.evaluate(() => neo.go.place('toddler')); await scene('PlaceScene'); await page.waitForTimeout(900);
+  const strips = await page.evaluate(() => {
+    const k = neo.insets, bad = [], Rect = neo.pixi.screen.constructor;
+    for (const [name, x, y, w, h] of [['left', 0, 0, k.left, innerHeight], ['right', innerWidth - k.right, 0, k.right, innerHeight], ['bottom', 0, innerHeight - k.bottom, innerWidth, k.bottom]]) {
+      const px = neo.pixi.renderer.extract.pixels({ target: neo.pixi.stage, frame: new Rect(x, y, w, h) });
+      const data = px.pixels; let off = 0;
+      for (let i = 0; i < data.length; i += 4) if (Math.abs(data[i] - 255) > 1 || Math.abs(data[i + 1] - 244) > 1 || Math.abs(data[i + 2] - 227) > 1) off++;
+      if (off) bad.push(`${name} strip: ${off} of ${data.length / 4} pixels are not cream`);
+    }
+    return bad;
+  });
+  assert.deepEqual(strips, [], 'the inset strips are plain cream');
   // A tap at a button's real screen position lands on it (the root is offset, so client and canvas coordinates must still agree).
   await page.evaluate(() => neo.go.place('toddler')); await scene('PlaceScene'); await page.waitForTimeout(700);
   const home = await page.evaluate(() => { const p = neo.scene.home.getGlobalPosition(); return [p.x, p.y]; });
@@ -5914,11 +5927,13 @@ async function phoneFit() {
     assert.deepEqual(await asked(), { turning: true, shown: true, scene: 'StartScene' }, 'an upright phone is asked to turn');
     await p.waitForTimeout(500);
     await p.screenshot({ path: `${output}/phone-turn-prompt.png` });
+    assert.equal(await p.locator('.couch-entry').isVisible(), false, "the couch button, a plain-HTML control above the canvas, is hidden while the prompt is up");
     await p.touchscreen.tap(195, 422); await p.waitForTimeout(1500);
     assert.equal((await asked()).scene, 'StartScene', 'a tap on the prompt does not start the island');
     // Turned sideways, the prompt goes and the same tap works.
     await p.setViewportSize({ width: 844, height: 390 }); await p.waitForTimeout(500);
     assert.deepEqual(await asked(), { turning: false, shown: false, scene: 'StartScene' }, 'the prompt goes when the phone is sideways');
+    assert.equal(await p.locator('.couch-entry').isVisible(), true, 'the couch button is back when the phone is sideways');
     await p.touchscreen.tap(422, 150); await p.waitForFunction(() => neo.scene.constructor.name === 'PlaceScene' && !neo.switching);
     // Tablet shapes in either direction, and a tall phone again.
     for (const [w, h, turning] of [[768, 1024, false], [744, 1133, false], [820, 1180, false], [1024, 1366, false], [360, 780, true], [430, 932, true], [667, 375, false]]) {

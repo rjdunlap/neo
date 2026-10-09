@@ -49,6 +49,12 @@ body {
   pointer-events: none;
 }
 
+/* While a phone is asked to turn sideways, nothing above the canvas may be used instead. */
+html.turning .couch-entry,
+html.turning .pet-name-form {
+  display: none;
+}
+
 /* ---------- Parent zone (plain HTML: grown-up UI doesn't need to be a game) ---------- */
 
 .parent {
