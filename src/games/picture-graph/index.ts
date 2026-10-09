@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { barsFor, choicesFor, graphMove, makeGraph, planFor, prebuilt, questionsFor, type Graph, type GraphPlan, type Question } from './logic';
+import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, planFor, prebuilt, questionsFor, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
@@ -178,25 +178,34 @@ class PictureGraph implements Game {
     if (!show) return;
     const v = this.view;
     const per = this.plan.per;
+    const add = (kind: number, x: number, y: number) => {
+      const node = new Critter(CRITTERS[this.graph.kinds[kind]]);
+      node.scale.set(0.22);
+      node.position.set(x, y);
+      this.ctx.track(node);
+      this.meadow.addChild(node);
+      this.critters.push({ kind, node });
+    };
+    if (per > 1) {
+      // A block's worth of critters (a pair) stands together, so a pair is counted as one block.
+      const groups = this.graph.counts.flatMap((n, kind) => Array.from({ length: n / per }, () => kind));
+      const spots = groupSpots(groups.length, per, meadowArea(v.w, v.h), this.ctx.rng);
+      groups.forEach((kind, k) => {
+        for (let j = 0; j < per; j++) add(kind, spots[k].x + (j - (per - 1) / 2) * GROUP_GAP, spots[k].y);
+      });
+      return;
+    }
     const spots: { x: number; y: number }[] = [];
     this.graph.counts.forEach((n, kind) => {
-      // One spot for each block's worth of critters: a single critter, or a pair side by side (they are counted together).
-      for (let k = 0; k < n / per; k++) {
+      for (let k = 0; k < n; k++) {
         let p = { x: 0, y: 0 };
         for (let tries = 0; tries < 60; tries++) {
-          // Clear of the number pads and the check on the right, and of the key on the left.
+          // Clear of the number pads and the check on the right.
           p = { x: this.ctx.rng.range(190, v.w - 230), y: this.ctx.rng.range(170, Math.min(v.h * 0.5, 380)) };
-          if (spots.every((s) => Math.hypot(s.x - p.x, s.y - p.y) > (per > 1 ? 105 : 70))) break;
+          if (spots.every((s) => Math.hypot(s.x - p.x, s.y - p.y) > 70)) break;
         }
         spots.push(p);
-        for (let j = 0; j < per; j++) {
-          const node = new Critter(CRITTERS[this.graph.kinds[kind]]);
-          node.scale.set(0.22);
-          node.position.set(p.x + (j - (per - 1) / 2) * 56, p.y);
-          this.ctx.track(node);
-          this.meadow.addChild(node);
-          this.critters.push({ kind, node });
-        }
+        add(kind, p.x, p.y);
       }
     });
   }

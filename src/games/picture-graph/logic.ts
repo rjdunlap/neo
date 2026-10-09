@@ -99,6 +99,43 @@ export function choicesFor(answer: number, rng: Rng, per = 1): number[] {
   return rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
 }
 
+/** A critter in the meadow is about this big (at the scale the game draws it), standing on its feet. */
+export const CRITTER_W = 58;
+export const CRITTER_H = 72;
+/** Critters of one block's worth stand this far apart, side by side. */
+export const GROUP_GAP = 56;
+
+/** The meadow's room for critters' feet: clear of the key on the left, the number pads on the right and the graph's top (which is 422 above the bottom). */
+export const meadowArea = (w: number, h: number) => ({ left: 216, right: w - 236, top: 165, bottom: Math.min(h * 0.5, 370, h - 430) });
+
+export interface Spot {
+  x: number;
+  y: number;
+}
+
+/** The middle of a block's worth of critters, and the room it takes. */
+export const groupSize = (per: number) => ({ w: (per - 1) * GROUP_GAP + CRITTER_W + 8, h: CRITTER_H + 12 });
+
+/**
+ * Where each block's worth of critters (a pair, when a block is two) stands: a shuffled grid of slots with a little
+ * jitter, so it looks scattered but no two groups can touch and none leaves the area. Random placement ran out of
+ * room for nine pairs in a meadow this small.
+ */
+export function groupSpots(n: number, per: number, area: ReturnType<typeof meadowArea>, rng: Rng): Spot[] {
+  const size = groupSize(per);
+  const cols = Math.max(1, Math.floor((area.right - area.left) / size.w) + 1);
+  const rows = Math.max(1, Math.floor((area.bottom - area.top) / size.h) + 1);
+  const stepX = cols > 1 ? (area.right - area.left) / (cols - 1) : 0;
+  const stepY = rows > 1 ? (area.bottom - area.top) / (rows - 1) : 0;
+  const slots = rng.shuffle(Array.from({ length: cols * rows }, (_, i) => i)).slice(0, n);
+  // A group moves at most half its spare room from its slot, and never out of the area (clamping only brings it back toward its slot).
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  return slots.map((i) => ({
+    x: clamp(area.left + (i % cols) * stepX + (stepX > size.w ? rng.range(-(stepX - size.w) / 2, (stepX - size.w) / 2) : 0), area.left, area.right),
+    y: clamp(area.top + Math.floor(i / cols) * stepY + (stepY > size.h ? rng.range(-(stepY - size.h) / 2, (stepY - size.h) / 2) : 0), area.top, area.bottom),
+  }));
+}
+
 /** One touch a capable child makes: a block added to a bar, the check, a column answering "which?", or a number pad. */
 export type GraphMove = { do: 'add'; kind: number } | { do: 'check' } | { do: 'column'; kind: number } | { do: 'number'; n: number };
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { barsFor, choicesFor, graphMove, makeGraph, PLANS, prebuilt, questionsFor, type Question } from './logic';
+import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, PLANS, prebuilt, questionsFor, type Question } from './logic';
 
 describe('Picture Graph', () => {
   it('makes graphs whose questions have one clear answer', () => {
@@ -149,6 +149,48 @@ describe('Picture Graph with a key: one block is two critters', () => {
       }
       expect(bars).toEqual(graph.counts.map((n) => n / 2));
       expect(graphMove(build, graph, bars, undefined, null)).toEqual({ do: 'check' });
+    }
+  });
+});
+
+describe('Picture Graph meadow: pairs of critters never hide each other', () => {
+  const rect = (x: number, y: number) => ({ l: x - CRITTER_W / 2, r: x + CRITTER_W / 2, t: y - CRITTER_H, b: y });
+  const touches = (a: ReturnType<typeof rect>, b: ReturnType<typeof rect>) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+
+  it('places every pair, in the area, clear of the key and the number pads, with no two critters touching', () => {
+    const critters = (spots: { x: number; y: number }[]) => spots.flatMap((p) => [rect(p.x - GROUP_GAP / 2, p.y), rect(p.x + GROUP_GAP / 2, p.y)]);
+    for (const [w, h] of [[1024, 768], [1366, 1024], [1600, 768], [1024, 1365]] as const) {
+      const area = meadowArea(w, h);
+      // The key sits at x 88 (124 wide) on the left and the pads are 124 wide centered 110 in from the right.
+      for (const n of [1, 5, 9, 12]) {
+        for (let seed = 1; seed <= 300; seed++) {
+          const spots = groupSpots(n, 2, area, new Rng(seed));
+          expect(spots).toHaveLength(n);
+          const cs = critters(spots);
+          cs.forEach((c, i) => {
+            expect(c.l, `${w}x${h} seed ${seed}: clear of the key`).toBeGreaterThanOrEqual(88 + 62 + 4);
+            expect(c.r, `${w}x${h} seed ${seed}: clear of the number pads`).toBeLessThanOrEqual(w - 110 - 62 - 4);
+            expect(c.t).toBeGreaterThanOrEqual(area.top - CRITTER_H - 1);
+            expect(c.b).toBeLessThanOrEqual(area.bottom + 1);
+            expect(c.b).toBeGreaterThanOrEqual(area.top - 1);
+            // Two in a pair stand side by side on purpose; different pairs never touch.
+            for (let j = i + 1; j < cs.length; j++) if (j >> 1 !== i >> 1) expect(touches(c, cs[j]), `${w}x${h} seed ${seed}: critters ${i} and ${j}`).toBe(false);
+          });
+        }
+      }
+    }
+  });
+
+  it('has room for every build the level can ask for, in the smallest view, with the graph panel below it', () => {
+    const area = meadowArea(1024, 768);
+    // The graph's panel starts 422 above the bottom of a 768-high view (see `draw` in index.ts); the feet stay above it.
+    expect(area.bottom).toBeLessThanOrEqual(768 - 422);
+    for (const plan of PLANS.filter((p) => p.per > 1 && !prebuilt(p))) {
+      for (let seed = 1; seed <= 300; seed++) {
+        const g = makeGraph(plan, new Rng(seed));
+        const groups = g.counts.reduce((a, b) => a + b, 0) / plan.per;
+        expect(groupSpots(groups, plan.per, area, new Rng(seed))).toHaveLength(groups);
+      }
     }
   });
 });

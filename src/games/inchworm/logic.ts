@@ -85,7 +85,8 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
 
 /**
  * Where the two things start on the ruler for "how much longer": round by round the same mark (0), one
- * of them along a little way, both along at different marks, then any two different marks.
+ * of them along a little way, both along a little way (the same mark is possible, and then reading the ends
+ * is right), then any two marks. `makeMeasures` skips a pair of starts whose ends would not tell a different story.
  */
 function diffStarts(round: number, rng: Rng): [number, number] {
   switch (round % 4) {
