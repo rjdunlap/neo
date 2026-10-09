@@ -13,11 +13,15 @@ import { applySettings } from './settings';
 export async function selectPlayer(id: string): Promise<boolean> {
   const was = store.activeId;
   if (!(await store.switchTo(id))) return false;
-  if (store.activeId !== was) {
-    forgetPlaces();
-    forgetSubjects();
-    forgetJournalPage();
-  }
-  applySettings();
+  if (store.activeId !== was) playerChanged();
+  else applySettings();
   return true;
+}
+
+/** Whoever is active just changed (a switch, or the active player was removed or restored): forget the last one's place. */
+export function playerChanged() {
+  forgetPlaces();
+  forgetSubjects();
+  forgetJournalPage();
+  applySettings();
 }

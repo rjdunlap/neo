@@ -50,7 +50,6 @@ body {
 }
 
 /* While a phone is asked to turn sideways, nothing above the canvas may be used instead. */
-html.turning .couch-entry,
 html.turning .gear:not(.gear--inline),
 html.turning .pause,
 html.turning .pet-name-form {
@@ -269,6 +268,7 @@ html.turning .pet-name-form {
 }
 
 .parent input[type='text'],
+.parent input[type='number'],
 .parent select {
   font: inherit;
   font-size: 17px;
