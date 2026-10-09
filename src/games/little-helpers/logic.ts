@@ -77,3 +77,13 @@ export type Lift = 'lift' | 'short' | 'extra';
 export function tryLift(need: number, helpers: number): Lift {
   return helpers === need ? 'lift' : helpers < need ? 'short' : 'extra';
 }
+
+/**
+ * What a capable child does next with a fruit that needs `need` helpers when `carrying` are already holding on: send
+ * another, or (on whistle levels, once there are exactly enough) blow the whistle. On the tap levels the lift starts by
+ * itself when the last helper arrives, so there is nothing more to touch.
+ */
+export function helperTouch(plan: HelperPlan, need: number, carrying: number): 'send' | 'whistle' | null {
+  if (carrying < need) return 'send';
+  return usesWhistle(plan) && carrying === need ? 'whistle' : null;
+}

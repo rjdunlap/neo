@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { allHome, drawCard, farthest, hop, hops, makePath, PLANS, STONE_COLORS } from './logic';
+import { allHome, drawCard, farthest, hop, hops, makePath, owlToHop, PLANS, STONE_COLORS } from './logic';
 
 describe('Owl Walk Home', () => {
   it('lays a path where every color keeps coming back and never repeats side by side', () => {
@@ -39,6 +39,28 @@ describe('Owl Walk Home', () => {
         spots[i] = to;
         turns++;
         expect(turns).toBeLessThan(plan.stones * plan.owls + 1);
+      }
+    }
+  });
+
+  it("hops the owl a card carries the farthest, every turn, until everyone is home, so the demonstration never bounces", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const rng = new Rng(seed);
+        const path = makePath(plan, rng);
+        const spots = Array(plan.owls).fill(-1);
+        let turns = 0;
+        while (!allHome(path, spots)) {
+          const card = drawCard(plan, rng);
+          const i = owlToHop(path, spots, card)!;
+          expect(i, `${plan.name} seed ${seed}`).not.toBeNull();
+          expect(spots[i]).toBeLessThan(path.length);
+          expect(farthest(path, spots, card)).toContain(i);
+          expect(hops(path, spots, card)[i]).toBeGreaterThan(0);
+          spots[i] = hop(path, spots, i, card);
+          expect(++turns).toBeLessThanOrEqual(plan.owls * (plan.stones + 1));
+        }
+        expect(owlToHop(path, spots, 'red')).toBeNull();
       }
     }
   });
