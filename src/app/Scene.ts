@@ -20,6 +20,8 @@ export abstract class Scene {
   readonly tw = new Tweener();
   /** A plain-HTML scene that already suits a phone held upright, so it is never covered by the turn prompt. */
   upright = false;
+  /** Whether Esc holds this scene still behind the pause sheet. Off where the scene has its own way to the grown-ups' page or its own Esc. */
+  canPause = true;
   private readonly tracked = new Set<Updatable>();
 
   constructor(protected readonly app: App) {

@@ -15,6 +15,8 @@ import { Scene } from '../Scene';
 import { applySettings } from '../settings';
 
 export class HatchScene extends Scene {
+  /** It has a name field, and nothing here has started yet. */
+  canPause = false;
   private readonly background = new Graphics();
   private readonly egg = drawEgg(new Graphics());
   private readonly choices = new Container();

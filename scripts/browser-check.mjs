@@ -100,12 +100,16 @@ async function hatchingAndMap() {
   await page.waitForFunction(() => { const n = neo.scene.places.find((p) => p.def.band === 'preschool').node; return !neo.scene.walking && Math.hypot(neo.scene.pip.x - n.x, neo.scene.pip.y - n.y) < 180; }, null, { timeout: 10000 });
   await screenshot('map-preschool');
   await page.evaluate(() => kit.store.stats('robot-path').history.push({ level: 1, misses: 0, hints: 0, seconds: 90, at: Date.now() }));
-  await page.evaluate(() => {
-    const canvas = document.querySelector('canvas');
-    for (const [id, x] of [[11, 40], [12, innerWidth - 40]]) canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: 40, pointerId: id, pointerType: 'touch', bubbles: true }));
-  });
-  await page.locator('.parent').waitFor();
-  await page.evaluate(() => { const canvas = document.querySelector('canvas'); for (const id of [11, 12]) canvas.dispatchEvent(new PointerEvent('pointerup', { pointerId: id, pointerType: 'touch', bubbles: true })); });
+  // The grown-ups' gear on the map: a short press only hints, holding it for two seconds opens the page.
+  const gear = page.locator('.gear');
+  const gearBox = await gear.boundingBox();
+  await page.mouse.move(gearBox.x + gearBox.width / 2, gearBox.y + gearBox.height / 2);
+  await page.mouse.down(); await page.waitForTimeout(300); await page.mouse.up();
+  assert.equal(await page.locator('.parent').count(), 0, 'a short press opens nothing');
+  assert.ok(await gear.evaluate((el) => el.classList.contains('gear--hint')), 'a short press shows the hint');
+  await page.mouse.down();
+  await page.locator('.parent').waitFor({ timeout: 4000 });
+  await page.mouse.up();
   // A game from an older place shows up in the week's summary even though it isn't in her band.
   assert.ok(await page.locator('.parent', { hasText: 'Played in another place on the trail' }).count(), 'played-elsewhere row');
   await page.locator('[data-band="prek"]').click();
@@ -118,6 +122,105 @@ async function hatchingAndMap() {
   await page.waitForTimeout(3000);
   await screenshot('map-prek');
   log('Hatching, save reload, the age trail, swiping, birthdays, place navigation, and parent settings passed');
+}
+
+/** The grown-ups' gear on the title screen, Esc and the pause sheet in a game, and undoing a reset. */
+async function grownUps() {
+  const gear = page.locator('.gear:not(.gear--inline)');
+  const holdOn = async (locator, ms) => {
+    const box = await locator.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down(); await page.waitForTimeout(ms); await page.mouse.up();
+  };
+  const sceneName = () => page.evaluate(() => neo.scene.constructor.name);
+
+  // The title screen: a tap only hints, a two-second hold opens the page, and typing a C there must not start couch play.
+  await page.evaluate(() => neo.go.start()); await scene('StartScene');
+  await gear.waitFor();
+  await holdOn(gear, 300);
+  assert.equal(await page.locator('.parent').count(), 0, 'a tap opens nothing');
+  assert.ok(await gear.evaluate((el) => el.classList.contains('gear--hint')), 'a tap shows the hint');
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  assert.equal(await page.locator('[data-undo]').isVisible(), false, 'nothing to undo yet');
+  await page.locator('#p-name').fill('');
+  await page.locator('#p-name').pressSequentially('Cleo');
+  assert.equal(await sceneName(), 'StartScene', 'a C typed in the name field does not open couch play');
+  assert.equal(await page.evaluate(() => kit.store.data.profile.name), 'Cleo');
+  await page.keyboard.press('Escape');
+  await scene('StartScene');
+  assert.equal(await page.locator('.parent').count(), 0, 'Esc closes the page');
+  assert.equal(await page.locator('.pause').count(), 0, 'and does not also open the pause sheet');
+  // The keyboard works too: hold Enter on the focused gear.
+  await gear.focus(); await page.keyboard.down('Enter'); await page.waitForTimeout(2400); await page.keyboard.up('Enter');
+  await page.locator('.parent').waitFor();
+  await page.locator('[data-done]').click(); await scene('StartScene');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(300);
+  assert.equal(await page.locator('.pause').count(), 0, 'Esc does nothing on the title screen');
+
+  // In a game, Esc holds the round still; Esc again lets it go.
+  await launch('bubble-pop', 1);
+  await page.waitForTimeout(500);
+  await page.keyboard.press('Escape');
+  await page.locator('.pause').waitFor();
+  assert.equal(await page.evaluate(() => neo.paused), true);
+  const frozen = await page.evaluate(() => neo.scene.seconds);
+  await page.waitForTimeout(800);
+  assert.equal(await page.evaluate(() => neo.scene.seconds), frozen, 'the round holds still while paused');
+  await screenshot('pause-sheet');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+  await screenshot('pause-sheet-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('.pause') && !neo.paused);
+  await page.waitForFunction((s) => neo.scene.seconds > s, frozen);
+
+  // From the pause sheet, holding its gear opens the page; Esc closes that to the island map and does not reopen the sheet.
+  await page.keyboard.press('Escape');
+  await page.locator('.pause').waitFor();
+  await holdOn(page.locator('.pause .gear'), 2400);
+  await page.locator('.parent').waitFor();
+  assert.equal(await page.locator('.pause').count(), 0, 'the sheet gives way to the page');
+  await page.keyboard.press('Escape');
+  await scene('MapScene');
+  assert.equal(await page.locator('.pause').count(), 0, 'the key that closed the page did not reopen the sheet');
+  assert.equal(await page.evaluate(() => neo.paused), false);
+  assert.equal(await page.evaluate(() => kit.store.data.settings.sessionMinutes), 0, 'no play timer');
+
+  // On the map, which can pause, the Esc that closes the page must not also open the sheet.
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  // Leaving the map removes a sheet in the same keypress, so only watching for it being added can tell.
+  await page.evaluate(() => {
+    window.pauseSheetAdded = false;
+    new MutationObserver((records) => records.forEach((r) => r.addedNodes.forEach((n) => n.classList?.contains('pause') && (window.pauseSheetAdded = true)))).observe(document.body, { childList: true });
+  });
+  await page.keyboard.press('Escape'); await scene('MapScene');
+  assert.equal(await page.evaluate(() => window.pauseSheetAdded), false, 'Esc on the page, from the map, never opens the sheet');
+  assert.equal(await page.evaluate(() => neo.paused), false);
+
+  // A reset can be undone, even after the app is closed and reopened.
+  const base = await page.evaluate(() => kit.store.data.stickers.length);
+  await page.evaluate(() => { kit.store.data.stickers.push({ game: 'bubble-pop', seed: 1, at: 1 }, { game: 'duck-pond', seed: 2, at: 2 }); kit.store.save(); kit.store.flush(); });
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  page.once('dialog', (d) => d.accept());
+  await page.locator('[data-reset]').click();
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 0);
+  await page.locator('[data-undo]').waitFor();
+  await page.waitForTimeout(700);
+  await page.reload(); await ready();
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 0, 'the reset was saved');
+  assert.notEqual(await page.evaluate(() => kit.store.undoAt), null, 'the snapshot survived the reload');
+  await gear.waitFor();
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  await page.locator('[data-undo]').click();
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), base + 2, 'undo brought the stickers back');
+  await screenshot('parent-undo');
+  await page.locator('[data-done]').click(); await scene('StartScene');
+  assert.deepEqual(errors, []);
+  log("The grown-ups' gear (tap, mouse hold, Enter hold), Esc and the pause sheet, no play timer, and undoing a reset after a reload passed");
 }
 
 async function subjectPlaces() {
@@ -5837,7 +5940,7 @@ async function smoke() {
 
 /**
  * What a phone needs that a tablet does not. Safe areas: with a notch and a home indicator faked through the `--safe-*` custom
- * properties (headless Chrome reports none), the island sits inside them, nothing on a scene's UI layer is covered, the parent gate's corners
+ * properties (headless Chrome reports none), the island sits inside them, nothing on a scene's UI layer is covered, the grown-ups' gear
  * and the grown-up panel are reachable, and a tap on a button still lands on it. An upright phone (390 × 844) is asked to turn sideways
  * and the scene waits; a phone held sideways, every tablet shape and a mouse are never asked. About 15 seconds.
  */
@@ -5893,16 +5996,13 @@ async function phoneFit() {
   const home = await page.evaluate(() => { const p = neo.scene.home.getGlobalPosition(); return [p.x, p.y]; });
   assert.ok(home[0] >= 47, `the island button is inside the left cutout (x ${home[0]})`);
   await page.mouse.click(home[0], home[1]); await scene('MapScene');
-  // The parent gate: both corners are inside the cutouts, and holding them there opens the grown-up panel.
+  // The grown-ups' gear: it sits inside the right cutout (its offset adds the safe area), and holding it there opens the grown-up panel.
   await page.waitForTimeout(500);
-  const corners = await page.evaluate(() => { const k = neo.view.scale; return neo.scene.gate.zones.map((z) => { const p = z.getGlobalPosition(); return [p.x + 65 * k, p.y + 65 * k, p.x, p.x + 130 * k]; }); });
-  assert.ok(corners[0][2] >= 47 - 0.5 && corners[1][3] <= 844 - 47 + 0.5, 'the gate corners are inside the cutouts');
-  await page.evaluate((pts) => {
-    const canvas = document.querySelector('canvas');
-    pts.forEach(([x, y], i) => canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: y, pointerId: 31 + i, pointerType: 'touch', bubbles: true })));
-  }, corners);
+  const gearAt = await page.locator('.gear').boundingBox();
+  assert.ok(gearAt.x + gearAt.width <= 844 - 47 + 0.5 && gearAt.y >= 0, `the gear is inside the cutouts (${JSON.stringify(gearAt)})`);
+  await page.mouse.move(gearAt.x + gearAt.width / 2, gearAt.y + gearAt.height / 2); await page.mouse.down();
   await page.locator('.parent').waitFor({ timeout: 8000 });
-  await page.evaluate(() => { const canvas = document.querySelector('canvas'); for (const id of [31, 32]) canvas.dispatchEvent(new PointerEvent('pointerup', { pointerId: id, pointerType: 'touch', bubbles: true })); });
+  await page.mouse.up();
   const sheet = await page.locator('.parent__sheet').boundingBox();
   assert.ok(sheet.x >= 46.5 && sheet.x + sheet.width <= 844 - 46.5 && sheet.y + sheet.height <= 390 - 21 + 0.5, `the grown-up panel sits inside the cutouts (${JSON.stringify(sheet)})`);
   await screenshot('phone-notch-parent');
@@ -5944,7 +6044,7 @@ async function phoneFit() {
   assert.equal(await page.evaluate(() => neo.turning), false, 'a narrow desktop window is not asked to turn');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
-  log('Phone fit: a faked notch and home indicator (island inside them, UI uncovered, tap, parent gate and panel reachable), the turn prompt for an upright phone only, and the tablet shapes left alone passed');
+  log('Phone fit: a faked notch and home indicator (island inside them, UI uncovered, tap, the gear and panel reachable), the turn prompt for an upright phone only, and the tablet shapes left alone passed');
 }
 
 /**
@@ -6991,6 +7091,7 @@ try {
   if (suite === 'all' || suite === 'couchbridges') await couchBridges();
   if (suite === 'all' || suite === 'couchconga') await couchConga();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
+  if (suite === 'all' || suite === 'grownups') await grownUps();
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
   if (suite === 'phone') await phoneGames();

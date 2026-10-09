@@ -210,3 +210,28 @@ export function migrate(raw: unknown): SaveData {
     journal: cleanJournal(raw.journal),
   };
 }
+
+/**
+ * The save as it was just before the last reset or restore, kept for exactly one undo so a slip never costs her
+ * stickers. It is not part of a backup: one snapshot, repaired by `migrate` when read, replaced by the next reset.
+ */
+export interface PreviousSave {
+  at: number;
+  data: SaveData;
+}
+
+/** A copy that later changes to `data` cannot touch. */
+export function remember(data: SaveData, at: number): PreviousSave {
+  return { at, data: structuredClone(data) };
+}
+
+/** What IndexedDB gave back, or null if it is not a snapshot. */
+export function repairPrevious(raw: unknown): PreviousSave | null {
+  if (!isObj(raw) || typeof raw.at !== 'number' || !Number.isFinite(raw.at) || !isObj(raw.data)) return null;
+  return { at: raw.at, data: migrate(raw.data) };
+}
+
+/** Undo swaps rather than discards, so undoing twice is a redo. */
+export function swapWithPrevious(current: SaveData, previous: PreviousSave, at: number): { data: SaveData; previous: PreviousSave } {
+  return { data: previous.data, previous: remember(current, at) };
+}

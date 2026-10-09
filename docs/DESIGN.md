@@ -14,7 +14,7 @@ The developer is not an artist. All game artwork is generated in code with PixiJ
 - Spoken instructions; reading is never required to play. Tapping the pet repeats the instruction.
 - Gentle feedback for mistakes, hints, and a glow after two misses. No failure screens.
 - Predictable rewards: one sticker for each completed round.
-- No ads, purchases, streaks, or timers that end a round. Session length is a grown-up setting, with a gentle goodnight flow.
+- No ads, purchases, streaks, or timers that end a round. There is no screen-time timer: play limits belong to the device (Screen Time app limits, Guided Access).
 - Early play supports a grown-up and child playing together. Games can include co-play prompts and related off-screen activities.
 - Difficulty changes quietly within a chosen age band. Grown-ups can pin a level.
 
@@ -23,14 +23,14 @@ The developer is not an artist. All game artwork is generated in code with PixiJ
 | Area | Current behavior |
 | --- | --- |
 | Platform | TypeScript, Vite, PixiJS 8; installable PWA with an offline asset cache. A new build waits to activate until the open app closes, so an update never reloads an active play session; the very first install takes control at once, so the first visit already works offline |
-| Navigation | Start screen, hatching, an age-trail island map of five places and the Windy Picnic, place scenes with every game for that age laid out, game host, the picnic scene and its journal, sticker book, the pet's treehouse room, goodnight scene |
+| Navigation | Start screen, hatching, an age-trail island map of five places and the Windy Picnic, place scenes with every game for that age laid out, game host, the picnic scene and its journal, sticker book, the pet's treehouse room, and an Esc pause sheet |
 | Games | All are listed with modes and bands in the [README](../README.md#the-island-and-its-games); current registrations live in `src/games/registry.ts` |
 | Progression | Per-game level ladders, automatic adjustment within age bands, grown-up level pins |
 | Pet | Four-tap hatching, eight colors, spoken name choices and grown-up name entry; customized guide shared across scenes; a treehouse room with saved creations and a discovery journal |
 | Rewards | Five illustrated pages with free sticker placement and a paged tray; positions saved as page fractions |
 | Saves | Version 2 local IndexedDB record with migration from version 1: profile, settings, levels and history, stickers and their placement, pet and trail state, the Windy Picnic, favorites, and the treehouse (room, creations, journal); backup and restore |
 | Couch play | A separate grown-up route (`CouchScene`) with its own localStorage save: six-stop trips in Together or Face-off mode, a how-to-play screen with a bot demo (reachable again at any time), games opened by finished trips, fourteen controller-ready games, a finale and keepsake, and three challenge courses; see [Couch play](#couch-play) |
-| Grown-up controls | Child name, pet name and color, age band (her pet's home place and where play starts), session length, place layout, sound settings, play history, and level settings |
+| Grown-up controls | Child name, pet name and color, age band (her pet's home place and where play starts), place layout, sound settings, play history, and level settings |
 | Audio | Synthesized sound effects and music, device speech driven by line IDs |
 
 The current age bands in `src/progress/bands.ts` are lap (18–24 months), toddler (2–3 years), preschool (3–4 years), pre-K (5–6 years) and early school (`school`, 6–8 years). These are application groupings, not developmental assessments.
@@ -41,7 +41,7 @@ Each game supplies level ranges for the bands it supports. Two consecutive smoot
 
 ### Application and scenes
 
-`src/app/App.ts` owns the Pixi application, scene transitions, logical view, and frame loop. `Scene.ts` provides content, particle, and UI layers plus tracked updates. `routes.ts` creates scenes, while `session.ts` handles the session timer. The 1024×768 design area fits the display; layouts respond to the available logical width and height.
+`src/app/App.ts` owns the Pixi application, scene transitions, logical view, and frame loop. `Scene.ts` provides content, particle, and UI layers plus tracked updates. `routes.ts` creates scenes, while `pause.ts` decides what Esc does (a scene that can pause holds still behind the pause sheet; the grown-ups' page, the title screen, hatching and couch play are left alone). The 1024×768 design area fits the display; layouts respond to the available logical width and height.
 
 **Phones.** The page is `viewport-fit=cover`, so the canvas fills the whole screen, under a notch, rounded corners and the home indicator. `App.applyView` reads those cutouts from the padding of a hidden `#safe-area` element (`--safe-top/right/bottom/left`, which default to `env(safe-area-inset-*)` in `src/style.css`), clamps them (`clampInsets`) and computes the view inside them (`computeView(w, h, insets)`); the root is placed at `(insets.left, insets.top)` and a cream frame (`App.frame`, absent when there are no cutouts) covers the strips the cutouts leave, so scenery drawn past the island's edge never shows in them and taps there go nowhere. A scene therefore sees only the usable rectangle: nothing needs its own notch logic, and the canvas stays at `(0, 0)` of the window, so client coordinates, `gaze` and the test kit agree with canvas coordinates (the parent panel and the hatch name field use the same `--safe-*` properties in CSS). A `ResizeObserver` on the probe re-runs the layout when iOS settles the values after a turn. A browser check or a person fakes a notch by setting the properties on `<html>`, which headless Chrome cannot report. A phone held upright (`needsTurn`: a touch screen taller than 1.6 times its width, so every iPad and tablet shape is left alone) gets `TurnPrompt` (`src/ui/TurnPrompt.ts`, drawn in CSS pixels over the root and the curtain, a phone turning clockwise to show a wide picture), and `App` stops updating the scene and the session clock, puts the audio to sleep, stops speech and hides the plain-HTML buttons above the canvas (`html.turning` in `src/style.css`: couch play's entry and the hatch name field) until the phone is turned; the view is still laid out for the scene underneath, so turning back needs no rebuild. A scene that sets `upright` (the DOM-based couch) is never covered. Phone targets are about half the iPad's size (a 100-unit target is about 50 points at 844 × 390): the layouts are not enlarged for phones, and a phone check cannot stand in for small hands on the iPad.
 
@@ -77,7 +77,7 @@ The current save contains profile, settings, game statistics and recent round hi
 
 The save also holds the treehouse: `room` (six furnishings and an optional framed sticker), `creations` (a picture-board slot and a tune slot, each with what is on show and one earlier piece) and `journal` (found entries and how many she has seen). Each is bounded and repaired on load; see [Pet treehouse](#pet-treehouse). Couch play keeps its own separate save ([Couch play](#couch-play)).
 
-Grown-up controls are plain HTML in `src/parent/panel.ts`. The parent gate is on the island map and requires holding both top corners for three seconds.
+Grown-up controls are plain HTML in `src/parent/panel.ts`. They are reached by the **gear** (`src/ui/grownups.ts`): plain HTML so a mouse, a keyboard (hold Enter or Space) and a finger all work, held for two seconds (`GEAR_HOLD_SECONDS`) while a ring fills. A shorter press shows a hint and, at most every six seconds, speaks `parent.ask`. It sits top-right on the title screen and the map, and inline on the pause sheet (`src/ui/pause-sheet.ts`) that `App` opens on Esc, which is the only way in once a game is running on a keyboard. The page closes to the island map, so a changed pet or band shows at once. It is a speed bump for a small hand, not a lock: nothing behind it can do lasting harm, because a reset or restore keeps one undo snapshot (`neo.save.previous`) and there is no timer to turn off. A reset or restore asks `store.undo()`; undoing twice swaps back.
 
 ### Delivery and verification
 

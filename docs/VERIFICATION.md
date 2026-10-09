@@ -8,11 +8,12 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-09 (621 tests, typecheck and build, on the tree that merges phone support with the eleven new ghost-finger demonstrations) | Phone support entry | Run with every code change |
-| `npm run test:offline` | 2026-10-08, on that merged tree | Lemonade Stand entry (and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
+| Unit tests, typecheck, build | 2026-10-09 (629 tests, typecheck and build, with the gear and no play timer) | Gear entry | Run with every code change |
+| `npm run test:offline` | 2026-10-09, with the gear and no play timer | Gear entry (2026-10-08: Lemonade Stand entry and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
-| `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
-| `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
+| `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
+| `world` | 2026-10-09, with the gear replacing the two-corner gate (2026-10-07: all 72 games in every band and both orientations) | Gear entry | About five and a half minutes |
+| `grownups` | 2026-10-09 | Gear entry | About 40 seconds |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
 | `howto` | 2026-10-09, all 73 games on the tree merged with phone support (29 with a demonstration), landscape and portrait | Phone support entry | About three minutes |
@@ -42,11 +43,20 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-06 in the combined flow | Archived combined-flow entry | |
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
-Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access, real controllers, a TV, and a child's reaction.
+Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### The grown-ups' gear, an Esc pause sheet and no play timer (2026-10-09)
+
+What changed (the developer's decision, 2026-10-09: play limits belong to the device, through Screen Time or Guided Access): the session timer, the Goodnight scene and route, the sleepy warning, the per-band default minutes and the "Play time" setting are gone (`settings.sessionMinutes` stays in the save, always 0, so an older cached build reading a newer backup never starts a timer). The two-corner `ParentGate`, which a mouse or keyboard could not do and which was the Goodnight scene's only exit, is replaced by a gear (`src/ui/grownups.ts`, plain HTML: held two seconds with a finger, a mouse or Enter; a tap shows a hint and says "ask a grown-up") at the top right of the title screen and the map. Esc on any island scene but the title, hatching and couch play holds it still behind a pause sheet (`src/ui/pause-sheet.ts`, `App.paused`, `escapeAction`) whose gear opens the page, which closes to the island map. A reset or restore now keeps one undo snapshot (`neo.save.previous`).
+
+- Typecheck, 629 unit tests (new: `escapeAction`; `remember`, `repairPrevious` and `swapWithPrevious`; an older save's timer saved as 0) and `npm run build` passed.
+- New `BROWSER_SUITE=grownups` passed: a tap hints and opens nothing, a mouse hold and a held Enter open the page, a C typed in the name field does not start couch play, Esc closes the page without also opening the sheet, Esc holds a Bubble Pop round still (its seconds stop) and Esc again lets it go, the sheet's gear opens the page and Esc closes that to the map, and a reset is undone after a reload. The Esc check failed with `escapeAction`'s page rule removed, but only once it watched for the sheet being added: leaving the scene removes the sheet in the same keypress, so the end state looked the same. I looked at the pause sheet in landscape and portrait, and the gear at rest, mid-hold and with its hint.
+- `world` (its gate step is now a mouse hold on the gear) and `phonefit` (the gear sits inside the faked cutouts and opens the page) passed. The offline check passed on the production build (`index-Bd6vnqkv.js`), including a new-game completion and its reward through the changed `GameScene`.
+- Not run: `picnic`, `smoke`, `howto` and the couch suites (their only changes are deleted timer lines and one `canPause` flag). Not established: a toddler's resting hand on the gear at two seconds, whether Screen Time lists a Home Screen web app for an App Limit, a Guided Access time limit ending a session cleanly, and Esc on a real laptop and TV. A passkey or PIN was weighed and not built: with no timer to guard and a reset that can be undone, nothing behind the gear needs one.
 
 ### Phone support: safe areas, the turn prompt and a phone-size pass (2026-10-09)
 
