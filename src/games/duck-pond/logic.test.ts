@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bankSize, padValues, PLANS, SLOTS, story } from './logic';
+import { bankSize, duckMove, padValues, PLANS, SLOTS, story } from './logic';
 import { tenStarts } from './logic';
 
 describe('Duck Pond', () => {
@@ -57,6 +57,32 @@ describe('Duck Pond', () => {
         expect(SLOTS.length).toBe(10);
         if (i > 0) expect(a).not.toBe(starts[i - 1]);
       });
+    }
+  });
+
+  it("gives the ghost finger's bot only right moves: every duck when counting along, exactly as many as the sign says, or the pad with the answer", () => {
+    for (const plan of PLANS) {
+      for (let want = plan.min; want <= plan.max; want++) {
+        if (plan.mode === 'along') {
+          let bank = plan.max;
+          let swimming = 0;
+          while (duckMove(plan, bank, swimming, 0, [], 0) === 'duck') (bank--, swimming++);
+          expect(swimming).toBe(plan.max);
+        } else if (plan.mode === 'make') {
+          let bank = bankSize(plan);
+          let swimming = 0;
+          while (duckMove(plan, bank, swimming, want, [], 0) === 'duck') (bank--, swimming++);
+          expect(swimming, `${plan.mode} ${want}`).toBe(want);
+          expect(bank).toBeGreaterThan(0);
+        } else {
+          for (let seed = 1; seed <= 20; seed++) {
+            const pads = padValues(new Rng(seed), want);
+            const move = duckMove(plan, 0, want, 0, pads, want);
+            expect(move).toEqual({ pad: pads.indexOf(want) });
+            expect(duckMove(plan, 0, want, 0, [], want)).toBeNull();
+          }
+        }
+      }
     }
   });
 });
