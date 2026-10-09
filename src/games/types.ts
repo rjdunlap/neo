@@ -50,15 +50,25 @@ export type HubIcon = Container & Updatable;
  * through `ctx.instruct`; this fills in gestures, finish controls and rules that a direct entry into a
  * later level cannot assume were learned earlier.
  */
+/** A line of a how-to card that holds for some levels only. `from` and `to` are inclusive; leave either off for "and up" or "and down". */
+export interface LevelLine {
+  text: string;
+  from?: number;
+  to?: number;
+}
+
 export interface GameHowTo {
-  /** What the player is trying to make happen. */
+  /** What the player is trying to make happen, true at every level. */
   goal: string;
-  /** One to three concrete touch actions, in the order a player normally uses them. */
-  steps: readonly string[];
-  /** How this round ends, including an explicit finish/check control for open-ended play. */
-  finish: string;
-  /** An unusual rule worth knowing, such as a prediction not counting as a mistake. */
-  note?: string;
+  /**
+   * One to four concrete touch actions, in the order a player normally uses them. A plain string holds at every level; a
+   * `LevelLine` only at the levels it names, so the card for a level says what to do at that level and nothing about the others.
+   */
+  steps: readonly (string | LevelLine)[];
+  /** How this round ends, including an explicit finish/check control for open-ended play. A list gives the first line that holds at the level. */
+  finish: string | readonly LevelLine[];
+  /** An unusual rule worth knowing, such as a prediction not counting as a mistake. A list gives the first line that holds, and none is fine. */
+  note?: string | readonly LevelLine[];
 }
 
 /** A minigame describes itself and builds rounds. Everything around a round belongs to the shell. */
