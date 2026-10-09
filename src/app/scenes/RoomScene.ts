@@ -461,6 +461,8 @@ export class RoomScene extends Scene {
     await this.tw.wait(0.7);
     this.pet.setMood('sing', tune.cols * 0.42 + 0.6);
     const beats = tuneBeats(tune);
+    // Her song is the music for now; the room's loop comes back a moment after the last note.
+    music.duck(beats.length * 0.42 + 0.6);
     for (let col = 0; col < beats.length; col++) {
       this.plaque.lightColumn(col);
       for (const step of beats[col]) sfx.marimba(step, 0.45);
