@@ -20,7 +20,6 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon, islandIcon, journalIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 const PATTERN_WORDS = { stripes: 'stripes', spots: 'spots', checks: 'checks' } as const;
 const FRIEND_SOUNDS: AnimalSound[] = ['meow', 'quack', 'growl'];
@@ -634,12 +633,6 @@ export class PicnicScene extends Scene {
     }
     const pulse = 0.55 + 0.35 * Math.sin(this.clock * 4);
     for (const r of this.requests) if (r.glow.visible) r.glow.alpha = pulse;
-    if (session.over && !this.leaving && !this.busy) this.leave(() => this.app.go.goodnight());
-  }
-
-  sleepyWarning() {
-    this.pip.setMood('sleepy', 3);
-    void voice.say('sleepy.warn');
   }
 
   exit() {

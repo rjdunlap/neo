@@ -1,6 +1,6 @@
 import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { describe, makeScene, matches, PLANS, request } from './logic';
+import { animalToTap, describe, makeScene, matches, PLANS, request } from './logic';
 
 group('Photo Safari', () => {
   it('always has exactly one animal matching the request, each in its own spot', () => {
@@ -46,6 +46,23 @@ group('Photo Safari', () => {
       expect(others.every((s) => s.action === scene.notAction)).toBe(true);
       expect(scene.sightings[scene.target].action).not.toBe(scene.notAction);
       expect(request('not', scene)).toBe(`the animal that is not ${scene.notAction}`);
+    }
+  });
+
+  it("gives the ghost finger's bot the one animal asked for, or each animal in turn when any photo will do", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const scene = makeScene(plan, new Rng(seed));
+        const seen = new Set<number>();
+        for (let photos = 0; photos < plan.photos; photos++) {
+          const i = animalToTap(scene, photos);
+          expect(i).toBeGreaterThanOrEqual(0);
+          expect(i).toBeLessThan(scene.sightings.length);
+          seen.add(i);
+          if (plan.mode !== 'snap') expect(scene.sightings.filter((s) => matches(plan.mode, s, scene.sightings[i]))).toHaveLength(1);
+        }
+        expect(seen.size).toBe(plan.mode === 'snap' ? Math.min(plan.photos, plan.animals) : 1);
+      }
     }
   });
 });

@@ -62,3 +62,9 @@ export function holeAt<H extends { x: number; y: number }>(holes: readonly H[], 
   }
   return best;
 }
+
+/**
+ * The hole a capable player takes a piece to, for the how-to card's ghost finger: the one with the piece's own
+ * shape. Every piece has one (`pieceKinds` only makes kinds the plan has holes for).
+ */
+export const holeFor = <H extends { kind: ShapeKind }>(holes: readonly H[], kind: ShapeKind): H | undefined => holes.find((h) => h.kind === kind);

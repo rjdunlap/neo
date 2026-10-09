@@ -35,3 +35,20 @@ export function pickTarget(rng: Rng, present: readonly Animal[], last: Animal | 
 
 /** Free play: someone new sneaks in, never the same as anyone already out. */
 export const newcomer = (rng: Rng, taken: readonly Animal[]): Animal => rng.pick(ANIMALS.filter((a) => !taken.includes(a)));
+
+/**
+ * Which hiding place a capable child taps next, or null while she waits. Asked for someone (find, remember): the place that
+ * hides them. Free play: the next place after the one she tapped last (so she visits them all) that has nobody out already.
+ * `poses` are the places' poses left to right ('hidden', 'peek' or 'out'), `animals` who is behind each.
+ */
+export function spotToTap(plan: PeekPlan, poses: readonly string[], animals: readonly Animal[], target: Animal | null, last: number): number | null {
+  if (plan.mode !== 'free') {
+    const i = animals.indexOf(target as Animal);
+    return target && i >= 0 ? i : null;
+  }
+  for (let k = 1; k <= poses.length; k++) {
+    const i = (last + k) % poses.length;
+    if (poses[i] !== 'out') return i;
+  }
+  return null;
+}

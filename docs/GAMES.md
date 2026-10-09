@@ -72,7 +72,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Duckling Parade
 
-*lap–pre-K · after Meerca Chase (Neopets).* Tap the grass to walk Mama Duck; ducklings fall in behind (steer a growing line). Later: lead them to the pond, bring exactly N, find one color, build a color pattern in line.
+*lap–pre-K · after Meerca Chase (Neopets).* Tap the grass to walk Mama Duck; ducklings fall in behind (steer a growing line). Later: lead them to the pond, bring exactly N, find one color, build a color pattern in line. A wrong duckling that merely waits beside Mama at the start is never a "not me": a refusal counts only once a finger has set a destination near it (a miss also needs that destination to be nearer it than to any duckling that may join).
 
 ### Roundup
 
@@ -149,6 +149,18 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 ### Market Stall
 
 *preschool–school · after Neopets shops and pretend shops.* Tap shell coins worth 1, 2 and 5 onto the mat; tap one on the mat to take it back (the nearest coin to the finger); ring the bell. Price tags show the numeral and dots. Running totals are said aloud except where adding up is the puzzle (two items, giving change). Later levels pay two prices together, pay the same price a second, different way, and give change from a customer's 10. Too much or too little is a miss with a spoken comparison; two bring faint coins showing one way.
+
+### Lemonade Stand
+
+*school · after MECC's Lemonade Stand and the Coolmath version.* A short market week. Each day shows a forecast (a sun, clouds or rain, and from level 2 an event: a ferry bringing visitors or a quiet day), the child taps a batch of 4, 8 or 12 cups (and from level 3 a price of 1, 2 or 3 shells), then taps OPEN. Friends come one at a time: each who finds a cup buys it, the rest watch the cups run out under a SOLD OUT sign, and spare cups go to two friends on a picnic blanket. A row (weather, price, cups made, sold and left, shells) joins a picture table; tapping a row reads it aloud. After the last day the pet points out one comparison the table can show (the same weather at two prices, two weathers at the same price, or the day that kept the most).
+
+The market is a plain function of the day (`logic.ts`): the lowest crowd for rain, clouds and sun is 2, 6 and 10 friends (plus a fixed 0 to 2 per day from the seed), a ferry adds 4 and a quiet day takes 4 away, and each shell of price loses friends (price 2 loses 2, price 3 loses 6; at least one friend always comes). Sold is the smaller of cups made and friends who came. The three weathers never overlap at one price, so the nearest batch above a day's crowd always leaves at most two cups. A week is rebuilt exactly from its seed, always has two or more weathers, and on level 1 is exactly two weathers with one of them twice, so there is always a day to compare. A rainy quiet day is never made.
+
+Levels: **1** three days, weather only; **2** three days with an event; **3** four days with a price (a middle price earns most on a plain sunny day, the lowest in the rain, the highest on a very busy ferry day, so no price is a dead button); **4** a five-day market week where a lemon costs one shell and makes two cups (a batch of 4, 8 or 12 costs 2, 4 or 6 shells), the purse starts at 6 and carries from day to day, a batch the purse cannot pay for is dimmed (tapping it says what it costs), spare cups still cost their lemons (a small, causal loss), and if the purse falls below the smallest batch's cost the ferry captain tops it up to exactly that, so there is no debt and no failed week. A best choice that does not lose shells exists on every day of every week (tested).
+
+Mistakes and help: nothing is a miss, so `misses` is always 0. Running out, spare cups and a weak first batch are results the table and the pet explain ("All sold out! 5 more friends wanted a cup", "4 cups are left. They go to a picnic with friends!", "The spare cups go to a picnic, but they cost shells to make"). OPEN before choosing only nudges the cards or prices. The lightbulb asks the pet for one true thing about today, most useful first: what happened the last time it was the same weather (ran out, a smaller batch would have sold as well, or nearly everything sold), how another weather compared (levels without a price), what the event does, how the forecast works, and what a higher price does. The rows the message is about are circled; asking again steps to the next. Every message is checked against the model (`helps()`), and on day 1, with no row to point at, it explains the forecast. Asking for help counts as one hint for the day however often she asks, so a round where help was asked on two or more days counts as struggling and two of those step the level down, while two rounds with no help step it up.
+
+Not built: a saved week or market-week chart in the journal, recipe quality and advertising, a "close the stand" button (the home button always works), the Maker Harbor tickets and fair board that this game is the first slice of, and a couch version.
 
 ### Clock Tower
 

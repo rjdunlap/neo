@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { FAMILIES, makeQuestions, PLANS, rhymes } from './logic';
+import { FAMILIES, makeQuestions, PLANS, rhymes, wordToTap } from './logic';
 
 describe('Rhyme Time', () => {
   it('never lists a word in two families', () => {
@@ -28,6 +28,24 @@ describe('Rhyme Time', () => {
             const odd = q.words.filter((w) => q.words.every((o) => o === w || !rhymes(w, o)));
             expect(odd).toEqual(q.answer);
           }
+        }
+      }
+    }
+  });
+
+  it("gives the ghost finger's bot only right taps: one for match and odd, a rhyming pair for pair", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        for (const q of makeQuestions(plan, new Rng(seed))) {
+          const first = wordToTap(plan, q, null);
+          expect(q.words).toContain(first);
+          if (plan.mode !== 'pair') {
+            expect(q.answer).toEqual([first]);
+            continue;
+          }
+          const second = wordToTap(plan, q, first);
+          expect(q.words).toContain(second);
+          expect(rhymes(first, second)).toBe(true);
         }
       }
     }

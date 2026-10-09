@@ -114,3 +114,6 @@ export function request(mode: SafariMode, scene: Scene): string {
   if (mode === 'not') return `the animal that is not ${scene.notAction}`;
   return describe(mode, scene.sightings[scene.target]);
 }
+
+/** Which animal a capable child photographs next: the one asked for, or in free snapping each in turn. Always a right one. */
+export const animalToTap = (scene: Scene, photos: number): number => (scene.target >= 0 ? scene.target : photos % scene.sightings.length);

@@ -14,6 +14,32 @@ import type { Band } from '../progress/bands';
 import type { LevelRange } from '../progress/difficulty';
 import type { CouchControls } from '../engine/controller';
 
+/** A point on a display object, in that object's own coordinates ((0, 0) unless given). */
+export interface Spot {
+  on: Container;
+  x?: number;
+  y?: number;
+}
+
+/**
+ * What a capable child would do with one finger next, for the ghost finger on the island's how-to card.
+ * Every gesture is sent to the first spot's object (or the intent's `receiver`), the one whose `onTap` or `draggable`
+ * handlers a real finger would reach, so the game only has to say which object and where.
+ */
+export type TouchIntent = (
+  /** Touch down on the spot and lift. */
+  | { tap: Spot }
+  /** Pick the object up at the spot and carry it so that it lands on `to`; it rides `lift` units above the finger (40, like `draggable`). */
+  | { drag: Spot; to: Spot; lift?: number }
+  /** Put the finger down at the spot and keep it down while it follows `via`, in order (tracing, steering). */
+  | { trace: Spot; via: Spot[] }
+) & {
+  /** Send the touch to this object instead of the first spot's, for a layer that takes touches anywhere (a steering ground) while the finger points at something that moves. */
+  receiver?: Container;
+  /** Seconds to rest after this gesture before the game is asked again (0.55 by default; shorter when the next touch belongs with this one, such as the first card of a pair). */
+  pause?: number;
+};
+
 /** The object that stands for a game in the hub. Its feet sit on (0, 0). */
 export type HubIcon = Container & Updatable;
 
@@ -24,15 +50,25 @@ export type HubIcon = Container & Updatable;
  * through `ctx.instruct`; this fills in gestures, finish controls and rules that a direct entry into a
  * later level cannot assume were learned earlier.
  */
+/** A line of a how-to card that holds for some levels only. `from` and `to` are inclusive; leave either off for "and up" or "and down". */
+export interface LevelLine {
+  text: string;
+  from?: number;
+  to?: number;
+}
+
 export interface GameHowTo {
-  /** What the player is trying to make happen. */
+  /** What the player is trying to make happen, true at every level. */
   goal: string;
-  /** One to three concrete touch actions, in the order a player normally uses them. */
-  steps: readonly string[];
-  /** How this round ends, including an explicit finish/check control for open-ended play. */
-  finish: string;
-  /** An unusual rule worth knowing, such as a prediction not counting as a mistake. */
-  note?: string;
+  /**
+   * One to four concrete touch actions, in the order a player normally uses them. A plain string holds at every level; a
+   * `LevelLine` only at the levels it names, so the card for a level says what to do at that level and nothing about the others.
+   */
+  steps: readonly (string | LevelLine)[];
+  /** How this round ends, including an explicit finish/check control for open-ended play. A list gives the first line that holds at the level. */
+  finish: string | readonly LevelLine[];
+  /** An unusual rule worth knowing, such as a prediction not counting as a mistake. A list gives the first line that holds, and none is fine. */
+  note?: string | readonly LevelLine[];
 }
 
 /** A minigame describes itself and builds rounds. Everything around a round belongs to the shell. */
@@ -54,6 +90,8 @@ export interface GameModule {
   /** A real-world activity that carries the same skill off the screen, for the parent zone. */
   offScreen?: string;
   hubIcon(): HubIcon;
+  /** The game's `create()` returns a game with `autotouch()`, so its how-to card shows the ghost finger at her level. */
+  touchDemo?: true;
   /** The sticker for finishing a round, rebuilt from its seed. */
   sticker(seed: number): Container;
   create(ctx: GameContext): Game;
@@ -146,6 +184,13 @@ export interface Game {
    * hands it straight to `control()`, so it can only do what a real controller can.
    */
   autoplay?(dt: number): CouchControls;
+  /**
+   * What a capable child would touch next, for the ghost finger on the island's how-to card (touch play, so the
+   * couch never calls it). Return null while there is nothing to do yet, such as during an animation. The shell
+   * plays the gesture with a drawn hand into the object's own handlers, so it can only do what a finger can; the
+   * game chooses targets and a test can check its rule. A game that has this sets `touchDemo` on its module.
+   */
+  autotouch?(dt: number): TouchIntent | null;
   /**
    * Couch pause menu's "start this again": put the board in the round's current part back to its first
    * position. Tries already made keep counting, so a restart is never a way to improve a score. May be

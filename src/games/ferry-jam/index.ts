@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
 import { atDock, boatToward, FERRY, focusPath, hintSlide, parse, planFor, reach, solve, start, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
@@ -152,6 +152,18 @@ class FerryJam implements Game {
 
   destroy() {
     for (const h of this.handles) h.destroy();
+  }
+
+  /** The ghost finger on the how-to card: take hold of the boat the solver's next slide moves and slide it along its lane. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.harbor || this.held) return null;
+    const slide = hintSlide(this.harbor, this.layout);
+    const node = slide && this.nodes[slide.boat];
+    if (!slide || !node || node.destroyed) return null;
+    const { w, h } = this.sizeOf(slide.boat);
+    const to = this.cellXY(slide.boat, slide.to);
+    // The boat stays where it was taken hold of (`keepGrab`), so the finger goes from its middle to where its middle should be.
+    return { drag: { on: node, x: w / 2, y: h / 2 }, to: { on: this.boatLayer, x: to.x, y: to.y }, lift: 0 };
   }
 
   private async next() {
@@ -596,6 +608,7 @@ export const ferryJam: GameModule = {
   coplayHint: 'Ask: which boat is in the ferry\'s way? Where does it have to go?',
   offScreen: 'Slide small boxes or toy cars on a tray with a few gaps so one of them can slide out of a notch in the edge.',
   hubIcon: () => new FerryIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new FerryJam(ctx),
 };

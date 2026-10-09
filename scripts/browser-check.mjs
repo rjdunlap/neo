@@ -28,8 +28,6 @@ async function launch(id, level, childName = 'Mia') {
     const mod = gameById(id);
     kit.store.data.profile.band = mod.bands.find((band) => { const r = mod.levels(band); return level >= r.min && level <= r.max; });
     kit.store.data.profile.name = childName;
-    kit.store.data.settings.sessionMinutes = 0;
-    const { session } = await import('/src/app/session.ts'); session.start(0);
     kit.store.stats(id).pinned = level;
     neo.go.game(id);
   }, { id, level, childName });
@@ -102,25 +100,154 @@ async function hatchingAndMap() {
   await page.waitForFunction(() => { const n = neo.scene.places.find((p) => p.def.band === 'preschool').node; return !neo.scene.walking && Math.hypot(neo.scene.pip.x - n.x, neo.scene.pip.y - n.y) < 180; }, null, { timeout: 10000 });
   await screenshot('map-preschool');
   await page.evaluate(() => kit.store.stats('robot-path').history.push({ level: 1, misses: 0, hints: 0, seconds: 90, at: Date.now() }));
-  await page.evaluate(() => {
-    const canvas = document.querySelector('canvas');
-    for (const [id, x] of [[11, 40], [12, innerWidth - 40]]) canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: 40, pointerId: id, pointerType: 'touch', bubbles: true }));
-  });
-  await page.locator('.parent').waitFor();
-  await page.evaluate(() => { const canvas = document.querySelector('canvas'); for (const id of [11, 12]) canvas.dispatchEvent(new PointerEvent('pointerup', { pointerId: id, pointerType: 'touch', bubbles: true })); });
+  // The grown-ups' gear on the map: a short press only hints, holding it for two seconds opens the page.
+  const gear = page.locator('.gear');
+  const gearBox = await gear.boundingBox();
+  await page.mouse.move(gearBox.x + gearBox.width / 2, gearBox.y + gearBox.height / 2);
+  await page.mouse.down(); await page.waitForTimeout(300); await page.mouse.up();
+  assert.equal(await page.locator('.parent').count(), 0, 'a short press opens nothing');
+  assert.ok(await gear.evaluate((el) => el.classList.contains('gear--hint')), 'a short press shows the hint');
+  await page.mouse.down();
+  await page.locator('.parent').waitFor({ timeout: 4000 });
+  await page.mouse.up();
   // A game from an older place shows up in the week's summary even though it isn't in her band.
   assert.ok(await page.locator('.parent', { hasText: 'Played in another place on the trail' }).count(), 'played-elsewhere row');
   await page.locator('[data-band="prek"]').click();
   await page.locator('#p-name').fill('Mia');
   await page.locator('#p-pet-name').fill('Clover');
   await page.locator('#p-pet-color').selectOption('pink');
-  await page.locator('#p-session').selectOption('0');
   await page.locator('[data-done]').click(); await scene('MapScene');
   assert.equal(await page.evaluate(() => neo.scene.pip.spec.color), 'pink');
   assert.deepEqual(await page.evaluate(() => kit.store.data.world), { band: 'prek' });
   await page.waitForTimeout(3000);
   await screenshot('map-prek');
   log('Hatching, save reload, the age trail, swiping, birthdays, place navigation, and parent settings passed');
+}
+
+/** The grown-ups' gear on the title screen, Esc and the pause sheet in a game, and undoing a reset. */
+async function grownUps() {
+  const gear = page.locator('.gear:not(.gear--inline)');
+  const holdOn = async (locator, ms) => {
+    const box = await locator.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down(); await page.waitForTimeout(ms); await page.mouse.up();
+  };
+  const sceneName = () => page.evaluate(() => neo.scene.constructor.name);
+
+  // The title screen: a tap only hints, a two-second hold opens the page, and typing a C there must not start couch play.
+  await page.evaluate(() => neo.go.start()); await scene('StartScene');
+  await gear.waitFor();
+  await holdOn(gear, 300);
+  assert.equal(await page.locator('.parent').count(), 0, 'a tap opens nothing');
+  assert.ok(await gear.evaluate((el) => el.classList.contains('gear--hint')), 'a tap shows the hint');
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  assert.equal(await page.locator('[data-undo]').isVisible(), false, 'nothing to undo yet');
+  await page.locator('#p-name').fill('');
+  await page.locator('#p-name').pressSequentially('Cleo');
+  assert.equal(await sceneName(), 'StartScene', 'a C typed in the name field does not open couch play');
+  assert.equal(await page.evaluate(() => kit.store.data.profile.name), 'Cleo');
+  await page.keyboard.press('Escape');
+  await scene('StartScene');
+  assert.equal(await page.locator('.parent').count(), 0, 'Esc closes the page');
+  assert.equal(await page.locator('.pause').count(), 0, 'and does not also open the pause sheet');
+  // The keyboard works too: hold Enter on the focused gear.
+  await gear.focus(); await page.keyboard.down('Enter'); await page.waitForTimeout(2400); await page.keyboard.up('Enter');
+  await page.locator('.parent').waitFor();
+  await page.locator('[data-done]').click(); await scene('StartScene');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(300);
+  assert.equal(await page.locator('.pause').count(), 0, 'Esc does nothing on the title screen');
+
+  // In a game, Esc holds the round still; Esc again lets it go.
+  await launch('bubble-pop', 1);
+  await page.waitForTimeout(500);
+  await page.keyboard.press('Escape');
+  await page.locator('.pause').waitFor();
+  assert.equal(await page.evaluate(() => neo.paused), true);
+  const frozen = await page.evaluate(() => neo.scene.seconds);
+  await page.waitForTimeout(800);
+  assert.equal(await page.evaluate(() => neo.scene.seconds), frozen, 'the round holds still while paused');
+  await screenshot('pause-sheet');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+  await screenshot('pause-sheet-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('.pause') && !neo.paused);
+  await page.waitForFunction((s) => neo.scene.seconds > s, frozen);
+
+  // From the pause sheet, holding its gear opens the page; Esc closes that to the island map and does not reopen the sheet.
+  await page.keyboard.press('Escape');
+  await page.locator('.pause').waitFor();
+  await holdOn(page.locator('.pause .gear'), 2400);
+  await page.locator('.parent').waitFor();
+  assert.equal(await page.locator('.pause').count(), 0, 'the sheet gives way to the page');
+  await page.keyboard.press('Escape');
+  await scene('MapScene');
+  assert.equal(await page.locator('.pause').count(), 0, 'the key that closed the page did not reopen the sheet');
+  assert.equal(await page.evaluate(() => neo.paused), false);
+  assert.equal(await page.evaluate(() => kit.store.data.settings.sessionMinutes), 0, 'no play timer');
+
+  // On the map, which can pause, the Esc that closes the page must not also open the sheet.
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  // Leaving the map removes a sheet in the same keypress, so only watching for it being added can tell.
+  await page.evaluate(() => {
+    window.pauseSheetAdded = false;
+    new MutationObserver((records) => records.forEach((r) => r.addedNodes.forEach((n) => n.classList?.contains('pause') && (window.pauseSheetAdded = true)))).observe(document.body, { childList: true });
+  });
+  await page.keyboard.press('Escape'); await scene('MapScene');
+  assert.equal(await page.evaluate(() => window.pauseSheetAdded), false, 'Esc on the page, from the map, never opens the sheet');
+  assert.equal(await page.evaluate(() => neo.paused), false);
+
+  // A reset can be undone, even after the app is closed and reopened.
+  const base = await page.evaluate(() => kit.store.data.stickers.length);
+  await page.evaluate(() => { kit.store.data.stickers.push({ game: 'bubble-pop', seed: 1, at: 1 }, { game: 'duck-pond', seed: 2, at: 2 }); kit.store.save(); kit.store.flush(); });
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  page.once('dialog', (d) => d.accept());
+  await page.locator('[data-reset]').click();
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 0);
+  await page.locator('[data-undo]').waitFor();
+  await page.waitForTimeout(700);
+  await page.reload(); await ready();
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 0, 'the reset was saved');
+  assert.notEqual(await page.evaluate(() => kit.store.undoAt), null, 'the snapshot survived the reload');
+  await gear.waitFor();
+  await holdOn(gear, 2400);
+  await page.locator('.parent').waitFor();
+  await page.locator('[data-undo]').click();
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), base + 2, 'undo brought the stickers back');
+  await screenshot('parent-undo');
+  await page.locator('[data-done]').click(); await scene('StartScene');
+
+  // A finger, not only a mouse: the same hold with real touch events, on the map (once a child is playing, the iPad's only way in).
+  const touchContext = await browser.newContext({ viewport: { width: 1024, height: 768 }, hasTouch: true });
+  try {
+    const finger = await touchContext.newPage();
+    finger.on('pageerror', (error) => errors.push(error.message));
+    await finger.goto(process.env.GAME_URL || 'http://127.0.0.1:5173');
+    await finger.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+    await finger.evaluate(() => { kit.store.data.pet = { name: 'Clover', color: 'pink', hatched: true }; kit.store.data.settings.howToCards = false; neo.go.hub(); });
+    await finger.waitForFunction(() => neo.scene.constructor.name === 'MapScene' && !neo.switching);
+    await finger.waitForTimeout(500);
+    const cdp = await touchContext.newCDPSession(finger);
+    const box = await finger.locator('.gear').boundingBox();
+    const at = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const touch = async (ms) => {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [at] });
+      await finger.waitForTimeout(ms);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    };
+    await touch(300);
+    assert.equal(await finger.locator('.parent').count(), 0, 'a short touch opens nothing');
+    assert.ok(await finger.locator('.gear').evaluate((el) => el.classList.contains('gear--hint')), 'a short touch shows the hint');
+    await touch(2400);
+    await finger.locator('.parent').waitFor({ timeout: 3000 });
+  } finally {
+    await touchContext.close();
+  }
+  assert.deepEqual(errors, []);
+  log("The grown-ups' gear (tap, mouse hold, Enter hold, touch tap and hold), Esc and the pause sheet, no play timer, and undoing a reset after a reload passed");
 }
 
 async function subjectPlaces() {
@@ -3133,6 +3260,49 @@ async function woodsBatch() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : 'two planned stops'}): ${level === 6 ? 'wrong houses explained' : 'out-of-order and no-letter stops, undoing a stop'}, glowing key row, saved score and sticker passed`);
   }
+
+  // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.
+  if (!only || only === 'lemon') for (let level = fromLevel; level <= 4; level++) {
+    await launch('lemonade-stand', level);
+    if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+    const plan = await page.evaluate(() => ({ days: neo.scene.game.plan.days, price: neo.scene.game.plan.prices.length > 1, purse: neo.scene.game.plan.purse }));
+    // What the purse should show after the rows so far (the host's top-up has been added on the morning after).
+    const purseNow = () => page.evaluate(async () => { const L = await import('/src/games/lemonade-stand/logic.ts'); let p = L.START_PURSE; for (const r of neo.scene.game.rows) p = L.settle(p, r).purse; return [p, neo.scene.game.purse]; });
+    for (let n = 0; n < plan.days; n++) {
+      await idle(n);
+      if (plan.purse) { const [want, got] = await purseNow(); assert.equal(got, want, `day ${n + 1} purse`); }
+      if (n === 0) {
+        // Opening before choosing only nudges; asking for help is one hint a day however often she asks.
+        await tap('neo.scene.game.open');
+        assert.equal(await page.evaluate(() => neo.scene.game.rows.length), 0);
+        assert.deepEqual(await counts(), [0, 0]);
+        await tap('neo.scene.game.help'); await tap('neo.scene.game.help');
+        assert.deepEqual(await counts(), [0, 1]);
+        await screenshot(`lemonade-stand-${level}`);
+      }
+      // The first day is a weak batch with the dearest price (an experiment); after that the best choice the model knows.
+      const choice = await page.evaluate(async (n) => {
+        const L = await import('/src/games/lemonade-stand/logic.ts'); const g = neo.scene.game;
+        if (n === 0) return { made: 4, price: g.plan.prices.at(-1) };
+        const b = L.bestChoice(g.plan, g.week[n], n, g.purse); return { made: b.made, price: b.price };
+      }, n);
+      await tap(`neo.scene.game.cards.find((c) => c.n === ${choice.made}).node`);
+      if (plan.price) await tap(`neo.scene.game.coins.find((c) => c.value === ${choice.price}).node`);
+      await tap('neo.scene.game.open');
+      await page.waitForFunction((n) => neo.scene.game.rows.length === n + 1, n, { timeout: 40000 });
+      assert.equal(await page.evaluate(() => neo.scene.game.tableRows.length), n + 1);
+      if (n === 0) {
+        const row = await page.evaluate(() => neo.scene.game.rows[0]);
+        assert.equal(row.sold + row.left, row.made);
+        await page.waitForTimeout(300);
+        await tap('neo.scene.game.tableRows[0].node');
+      }
+    }
+    await finished('lemonade-stand');
+    assert.deepEqual(await score('lemonade-stand'), [0, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Lemonade Stand ${level} (${['weather', 'forecast event', 'price', 'market week'][level - 1]}): early open nudged, help counted once, ${plan.price ? 'a price chosen, ' : ''}${plan.purse ? 'the purse tracked, ' : ''}a row a day read aloud, saved score and sticker passed`);
+  }
 }
 
 
@@ -3340,7 +3510,7 @@ async function picnicStory() {
   const picnic = () => page.waitForFunction(() => neo.scene.constructor.name === 'PicnicScene' && !neo.switching && !neo.scene.busy, null, { timeout: 30000 });
   const story = () => page.evaluate(() => JSON.parse(JSON.stringify(kit.store.picnic)));
   const stickers = () => page.evaluate(() => kit.store.data.stickers.length);
-  await page.evaluate(() => { kit.store.data.profile.band = 'prek'; kit.store.data.world.band = 'prek'; kit.store.data.settings.sessionMinutes = 0; kit.store.retellStory(); });
+  await page.evaluate(() => { kit.store.data.profile.band = 'prek'; kit.store.data.world.band = 'prek'; kit.store.retellStory(); });
   const before = await stickers();
   // The picnic stands on the island map, open to every age like the places.
   await page.evaluate(() => neo.go.hub()); await scene('MapScene');
@@ -5796,6 +5966,161 @@ async function smoke() {
 }
 
 /**
+ * What a phone needs that a tablet does not. Safe areas: with a notch and a home indicator faked through the `--safe-*` custom
+ * properties (headless Chrome reports none), the island sits inside them, nothing on a scene's UI layer is covered, the grown-ups' gear
+ * and the grown-up panel are reachable, and a tap on a button still lands on it. An upright phone (390 × 844) is asked to turn sideways
+ * and the scene waits; a phone held sideways, every tablet shape and a mouse are never asked. About 15 seconds.
+ */
+async function phoneFit() {
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; kit.store.data.pet = { name: 'Mia', color: 'pink', hatched: true }; kit.store.data.profile.band = 'toddler'; });
+  /** UI-layer things she can touch that lie outside the usable rectangle (window minus insets), in CSS pixels. */
+  const uncovered = () => page.evaluate(() => {
+    const k = neo.insets, out = [];
+    const walk = (o) => {
+      if (!o.visible || o.alpha === 0) return;
+      if (o.eventMode === 'static' || o.eventMode === 'dynamic') {
+        const b = o.getBounds();
+        if (b.width * b.height > 0 && (b.x < k.left - 1 || b.y < k.top - 1 || b.x + b.width > innerWidth - k.right + 1 || b.y + b.height > innerHeight - k.bottom + 1)) out.push(`${o.constructor.name} ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}`);
+      }
+      for (const c of o.children ?? []) walk(c);
+    };
+    walk(neo.scene.ui);
+    return out;
+  });
+  const insets = (top, right, bottom, left) => page.evaluate(([t, r, b, l]) => {
+    const s = document.documentElement.style;
+    for (const [name, v] of [['top', t], ['right', r], ['bottom', b], ['left', l]]) v ? s.setProperty(`--safe-${name}`, `${v}px`) : s.removeProperty(`--safe-${name}`);
+  }, [top, right, bottom, left]);
+
+  // --- A notch: 47 either side (iOS reports both), a home indicator below.
+  await page.setViewportSize({ width: 844, height: 390 });
+  await insets(0, 47, 21, 47);
+  await page.waitForFunction(() => neo.insets.left === 47 && neo.insets.bottom === 21);
+  const geo = await page.evaluate(() => ({ insets: neo.insets, root: [neo.root.x, neo.root.y], view: neo.view }));
+  assert.deepEqual(geo.insets, { top: 0, right: 47, bottom: 21, left: 47 });
+  assert.deepEqual(geo.root, [47, 0], 'the island starts inside the left cutout');
+  assert.ok(Math.abs(geo.view.w * geo.view.scale - 750) < 0.5 && Math.abs(geo.view.h * geo.view.scale - 369) < 0.5, 'the view is the usable rectangle');
+  for (const [name, go] of [['map', () => neo.go.hub()], ['place', () => neo.go.place('toddler')], ['game', () => neo.go.game('bubble-pop')]]) {
+    await page.evaluate(go); await page.waitForFunction(() => !neo.switching); await page.waitForTimeout(900);
+    assert.deepEqual(await uncovered(), [], `${name}: touchable UI under the notch or the home indicator`);
+    if (name === 'place') await screenshot('phone-notch-place');
+  }
+  // Scenery drawn past the island's edge (clouds, hills, a scrolling place's landmarks) must not show in the strips the insets leave: they are plain cream.
+  await page.evaluate(() => neo.go.place('toddler')); await scene('PlaceScene'); await page.waitForTimeout(900);
+  const strips = await page.evaluate(() => {
+    const k = neo.insets, bad = [], Rect = neo.pixi.screen.constructor;
+    for (const [name, x, y, w, h] of [['left', 0, 0, k.left, innerHeight], ['right', innerWidth - k.right, 0, k.right, innerHeight], ['bottom', 0, innerHeight - k.bottom, innerWidth, k.bottom]]) {
+      const px = neo.pixi.renderer.extract.pixels({ target: neo.pixi.stage, frame: new Rect(x, y, w, h) });
+      const data = px.pixels; let off = 0;
+      for (let i = 0; i < data.length; i += 4) if (Math.abs(data[i] - 255) > 1 || Math.abs(data[i + 1] - 244) > 1 || Math.abs(data[i + 2] - 227) > 1) off++;
+      if (off) bad.push(`${name} strip: ${off} of ${data.length / 4} pixels are not cream`);
+    }
+    return bad;
+  });
+  assert.deepEqual(strips, [], 'the inset strips are plain cream');
+  // A tap at a button's real screen position lands on it (the root is offset, so client and canvas coordinates must still agree).
+  await page.evaluate(() => neo.go.place('toddler')); await scene('PlaceScene'); await page.waitForTimeout(700);
+  const home = await page.evaluate(() => { const p = neo.scene.home.getGlobalPosition(); return [p.x, p.y]; });
+  assert.ok(home[0] >= 47, `the island button is inside the left cutout (x ${home[0]})`);
+  await page.mouse.click(home[0], home[1]); await scene('MapScene');
+  // The grown-ups' gear: it sits inside the right cutout (its offset adds the safe area), and holding it there opens the grown-up panel.
+  await page.waitForTimeout(500);
+  const gearAt = await page.locator('.gear').boundingBox();
+  assert.ok(gearAt.x + gearAt.width <= 844 - 47 + 0.5 && gearAt.y >= 0, `the gear is inside the cutouts (${JSON.stringify(gearAt)})`);
+  await page.mouse.move(gearAt.x + gearAt.width / 2, gearAt.y + gearAt.height / 2); await page.mouse.down();
+  await page.locator('.parent').waitFor({ timeout: 8000 });
+  await page.mouse.up();
+  const sheet = await page.locator('.parent__sheet').boundingBox();
+  assert.ok(sheet.x >= 46.5 && sheet.x + sheet.width <= 844 - 46.5 && sheet.y + sheet.height <= 390 - 21 + 0.5, `the grown-up panel sits inside the cutouts (${JSON.stringify(sheet)})`);
+  await screenshot('phone-notch-parent');
+  await page.locator('[data-done]').click(); await scene('MapScene');
+  await insets(0, 0, 0, 0);
+  await page.waitForFunction(() => neo.insets.left === 0 && neo.root.x === 0);
+  await page.setViewportSize({ width: 1024, height: 768 });
+
+  // --- An upright phone is asked to turn; nothing else is.
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, reducedMotion: 'reduce' });
+  const p = await phone.newPage();
+  const phoneErrors = [];
+  p.on('pageerror', (error) => phoneErrors.push(error.message));
+  try {
+    await p.goto(process.env.GAME_URL || 'http://127.0.0.1:5173');
+    await p.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+    await p.evaluate(() => { kit.store.data.settings.howToCards = false; kit.store.data.pet = { name: 'Mia', color: 'pink', hatched: true }; kit.store.data.profile.band = 'toddler'; });
+    const asked = () => p.evaluate(() => ({ turning: neo.turning, shown: neo.turn.visible, scene: neo.scene.constructor.name }));
+    assert.deepEqual(await asked(), { turning: true, shown: true, scene: 'StartScene' }, 'an upright phone is asked to turn');
+    await p.waitForTimeout(500);
+    await p.screenshot({ path: `${output}/phone-turn-prompt.png` });
+    assert.equal(await p.locator('.couch-entry').isVisible(), false, "the couch button, a plain-HTML control above the canvas, is hidden while the prompt is up");
+    await p.touchscreen.tap(195, 422); await p.waitForTimeout(1500);
+    assert.equal((await asked()).scene, 'StartScene', 'a tap on the prompt does not start the island');
+    // Turned sideways, the prompt goes and the same tap works.
+    await p.setViewportSize({ width: 844, height: 390 }); await p.waitForTimeout(500);
+    assert.deepEqual(await asked(), { turning: false, shown: false, scene: 'StartScene' }, 'the prompt goes when the phone is sideways');
+    assert.equal(await p.locator('.couch-entry').isVisible(), true, 'the couch button is back when the phone is sideways');
+    await p.touchscreen.tap(422, 150); await p.waitForFunction(() => neo.scene.constructor.name === 'PlaceScene' && !neo.switching);
+    // Tablet shapes in either direction, and a tall phone again.
+    for (const [w, h, turning] of [[768, 1024, false], [744, 1133, false], [820, 1180, false], [1024, 1366, false], [360, 780, true], [430, 932, true], [667, 375, false]]) {
+      await p.setViewportSize({ width: w, height: h }); await p.waitForTimeout(250);
+      assert.equal((await asked()).turning, turning, `${w} × ${h}: the turn prompt ${turning ? 'shows' : 'stays away'}`);
+    }
+  } finally { await phone.close(); }
+  assert.deepEqual(phoneErrors, []);
+  // A mouse is never asked, whatever the window's shape (the shared context has no touch screen).
+  await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.turning), false, 'a narrow desktop window is not asked to turn');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+  log('Phone fit: a faked notch and home indicator (island inside them, UI uncovered, tap, the gear and panel reachable), the turn prompt for an upright phone only, and the tablet shapes left alone passed');
+}
+
+/**
+ * Every game at a phone held sideways (844 × 390, about half the iPad's size): its middle level opens, takes a few taps, has nothing
+ * touchable stranded at the origin or left outside the window on its UI layer, and leaves a screenshot in test-results/browser/phone/
+ * to look at. `PHONE_ONLY=id,id` filters. Proves the layout holds at the widest shape the games have been given (about 2.2 to 1),
+ * not that a small hand can use it. About three seconds a game.
+ */
+async function phoneGames() {
+  const only = process.env.PHONE_ONLY?.split(',');
+  await mkdir(`${output}/phone`, { recursive: true });
+  const games = await page.evaluate(async () => {
+    const { GAMES } = await import('/src/games/registry.ts');
+    return GAMES.map((g) => {
+      const levels = [...new Set(g.bands.flatMap((b) => { const r = g.levels(b); return Array.from({ length: r.max - r.min + 1 }, (_, i) => r.min + i); }))].sort((a, b) => a - b);
+      return { id: g.id, level: levels[Math.floor(levels.length / 2)] };
+    });
+  });
+  const picked = games.filter((g) => !only || only.includes(g.id));
+  assert.ok(picked.length > 0, `PHONE_ONLY matched no game: ${only}`);
+  await page.setViewportSize({ width: 844, height: 390 });
+  for (const g of picked) {
+    await launch(g.id, g.level);
+    await page.waitForTimeout(900);
+    const problems = await page.evaluate(() => {
+      const out = [];
+      const walk = (o, layer) => {
+        if (!o.visible || o.alpha === 0) return;
+        if (o.eventMode === 'static' || o.eventMode === 'dynamic') {
+          const p = o.getGlobalPosition(), b = o.getBounds();
+          if (layer === 'stage' && Math.abs(p.x) < 1 && Math.abs(p.y) < 1 && b.width * b.height > 0 && b.x + b.width / 2 < 160 && b.y + b.height / 2 < 160) out.push(`${o.constructor.name} stranded at the origin`);
+          if (layer === 'ui' && b.width * b.height > 0 && (b.x < -1 || b.y < -1 || b.x + b.width > innerWidth + 1 || b.y + b.height > innerHeight + 1)) out.push(`${o.constructor.name} off the window ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}x${Math.round(b.height)}`);
+        }
+        for (const c of o.children ?? []) walk(c, layer);
+      };
+      for (const c of neo.scene.stage?.children ?? []) walk(c, 'stage');
+      walk(neo.scene.ui, 'ui');
+      return out;
+    });
+    assert.deepEqual(problems, [], `${g.id} level ${g.level} at phone size`);
+    for (const [x, y] of [[422, 195], [250, 250], [600, 150]]) { await page.mouse.click(x, y); await page.waitForTimeout(120); }
+    await page.screenshot({ path: `${output}/phone/${g.id}.jpg`, type: 'jpeg', quality: 70 });
+    assert.deepEqual(errors, [], `${g.id} raised page errors at phone size`);
+    log(`Phone: ${g.id} level ${g.level} opened, tapped and laid out at 844 × 390`);
+  }
+  await page.setViewportSize({ width: 1024, height: 768 });
+}
+
+/**
  * Every time a game is opened it explains itself: the how-to card fills the screen with a big Play and a Back, the round is not
  * built until Play, and a game with a bot also plays a demonstration round in a window. A story request, "again" after a round
  * and the parent switch skip it. Every game's card fits the screen, with large buttons, in landscape and portrait.
@@ -5815,18 +6140,23 @@ async function howToIntro() {
     walk(neo.scene.helpCard.body); // the card's own buttons, not the ones inside a demonstration's game
     return out.sort((a, b) => a.x - b.x);
   });
-  const withBot = await page.evaluate(async () => { const { demoFor } = await import('/src/couch/catalog.ts'); const { GAMES } = await import('/src/games/registry.ts'); return GAMES.filter((g) => demoFor(g.id)).map((g) => g.id); });
-  assert.equal(withBot.length, 15, 'fifteen island games have a bot');
-  await page.evaluate(async () => {
-    const { session } = await import('/src/app/session.ts'); session.start(0);
+  // The card shows a demonstration for a game with a ghost finger (`touchDemo`) and, until it has one, for a couch game (the controller's).
+  const { withBot, touchBots, couchBots, textOnly } = await page.evaluate(async () => {
+    const { islandDemo } = await import('/src/content/demos.ts'); const { demoFor } = await import('/src/couch/catalog.ts'); const { GAMES } = await import('/src/games/registry.ts');
+    const ids = GAMES.filter((g) => islandDemo(g, 1, g.bands[0])).map((g) => g.id);
+    return { withBot: ids, touchBots: GAMES.filter((g) => g.touchDemo).map((g) => g.id), couchBots: GAMES.filter((g) => demoFor(g.id)).map((g) => g.id), textOnly: GAMES.find((g) => !ids.includes(g.id))?.id ?? null };
+  });
+  assert.equal(couchBots.length, 15, 'fifteen island games can also be played with a controller');
+  assert.deepEqual([...withBot].sort(), [...new Set([...touchBots, ...couchBots])].sort(), 'a demonstration for a game with a ghost finger or a controller bot, and for no other');
+  await page.evaluate(() => {
     kit.store.data.profile.band = 'toddler'; kit.store.data.profile.name = 'Mia';
-    kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true;
+    kit.store.data.settings.howToCards = true;
   });
 
-  // --- A game with no bot: the card, Play and Back, and no round until Play.
+  // --- The card, Play and Back, and no round until Play.
   await goGame('bubble-pop', 'toddler');
   assert.deepEqual(await intro(), { open: true, intro: true, game: false }, 'opening a game shows the how-to card and builds no round');
-  assert.equal(await demo(), null, 'a game with no bot has a card of text only');
+  assert.equal(!!(await demo()), withBot.includes('bubble-pop'), 'a demonstration exactly when the game has a bot');
   assert.match(await page.evaluate(() => neo.scene.helpCard.info.goal), /./);
   let [back, play] = await buttons();
   assert.ok(play && back && play.w >= 100 && back.w >= 100 && play.w > back.w, `Play and Back are large (Play ${play?.w}, Back ${back?.w}), Play the biggest`);
@@ -5889,21 +6219,25 @@ async function howToIntro() {
   await scene('GameScene');
   assert.equal((await intro()).intro, true, 'a game tapped on the trail shows its card');
 
-  // --- A game with a bot: a demonstration plays in a window, nothing touched reaches it, and it goes when the card does.
-  for (const id of ['penguin-slide', 'memory-match']) {
+  // --- A game with a bot: a demonstration plays in a window, nothing touched reaches it, and it goes when the card does. The controller's
+  // highlight is the stopgap for a couch game with no ghost finger yet; the rest of this block is the same for a finger (it waits for the hand).
+  const controllerOnly = couchBots.filter((id) => !touchBots.includes(id));
+  const watched = [...controllerOnly.slice(0, 2), ...touchBots.filter((id) => !controllerOnly.includes(id)).slice(0, Math.max(1, 2 - controllerOnly.length))];
+  const lit = (id) => controllerOnly.includes(id) ? () => neo.scene.helpCard.intro.demo.lit.size > 0 : () => neo.scene.helpCard.intro.demo.finger?.hand.visible;
+  for (const id of watched) {
     const band = await page.evaluate(async (id) => (await import('/src/games/registry.ts')).gameById(id).bands.at(-1), id);
     await goGame(id, band);
     assert.deepEqual(await intro(), { open: true, intro: true, game: false }, `${id}: the card, with no round built`);
     let d = await demo();
     assert.deepEqual({ bot: d.bot, dead: d.dead, mode: d.mode }, { bot: true, dead: false, mode: 'none' }, `${id}: the demonstration is a bot in a window that takes no touches`);
-    await page.waitForFunction(() => neo.scene.helpCard.intro.demo.lit.size > 0, null, { timeout: 30000 });
+    await page.waitForFunction(lit(id), null, { timeout: 30000 });
     // Taps on the window do nothing: the card stays, and the demonstration's game is not a real one.
     const win = await page.evaluate(() => { const b = neo.scene.helpCard.intro.demo.root.getBounds(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
     await page.mouse.click(win.x, win.y); await page.waitForTimeout(300);
     assert.deepEqual(await intro(), { open: true, intro: true, game: false }, `${id}: a tap in the demonstration window does nothing`);
     await page.waitForTimeout(1500);
     assert.ok((await demo()).age > 1, `${id}: the demonstration keeps running`);
-    if (id === 'penguin-slide') { await page.waitForTimeout(500); await screenshot('howto-demo-landscape'); }
+    if (id === watched[0]) { await page.waitForTimeout(500); await screenshot('howto-demo-landscape'); }
     assert.deepEqual(errors, [], `${id}: page errors`);
     // Back takes the demonstration with it.
     await page.evaluate(() => { window.__demo = neo.scene.helpCard.intro.demo; });
@@ -5918,6 +6252,46 @@ async function howToIntro() {
     await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
     assert.equal(await page.evaluate(() => window.__demo.dead), true, `${id}: Play destroys the demonstration`);
     assert.deepEqual(errors, [], `${id}: page errors after Play`);
+  }
+
+  // --- The ghost finger: a drawn hand (a mouse pointer on a desktop) plays the demonstration into the game's own handlers, and leaves nothing behind.
+  if (touchBots.length) {
+    const ghostId = touchBots.includes('shape-sorter') ? 'shape-sorter' : touchBots[0];
+    const lastBand = await page.evaluate(async (id) => (await import('/src/games/registry.ts')).gameById(id).bands.at(-1), ghostId);
+    const pointer = () => page.evaluate(() => neo.scene.helpCard.intro.demo.pointer);
+    const hushed = () => page.evaluate(() => kit.audio.hushed);
+    await goGame(ghostId, lastBand);
+    assert.equal(await pointer(), 'mouse', `${ghostId}: the page has only seen a mouse, so the demonstration shows a mouse pointer`);
+    assert.equal(await hushed(), true, `${ghostId}: effects sit lower while a demonstration plays`);
+    await page.waitForFunction(() => neo.scene.helpCard.intro.demo.finger?.hand.visible, null, { timeout: 30000 });
+    assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.root.eventMode), 'none', `${ghostId}: nothing she touches reaches the demonstration's game`);
+    // A touch, and the demonstration becomes a finger.
+    await page.evaluate(() => kit.tap(30, 700)); await page.waitForTimeout(300);
+    assert.equal((await intro()).intro, true, `${ghostId}: a touch on the backdrop does nothing`);
+    await goGame(ghostId, lastBand);
+    assert.equal(await pointer(), 'finger', `${ghostId}: after a touch the demonstration shows a finger`);
+    // The demonstration's drag must leave the one-at-a-time drag lock free: after Play, a real drag works.
+    if (ghostId === 'shape-sorter') {
+      await page.waitForFunction(() => neo.scene.helpCard.intro.demo.game.placed >= 1, null, { timeout: 40000 });
+      const [, go] = await buttons();
+      await page.mouse.click(go.x, go.y);
+      await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+      assert.equal(await hushed(), false, `${ghostId}: Play gives the effects back`);
+      await page.waitForTimeout(600);
+      const before = await page.evaluate(() => neo.scene.game.pieces.length);
+      await page.evaluate(async () => {
+        const g = neo.scene.game, p = g.pieces[0], hole = g.box.holes.find((h) => h.kind === p.kind);
+        const to = g.box.toGlobal({ x: hole.x, y: hole.y + 40 }); // a held piece rides 40 units above the finger
+        await kit.dragTo(p.view, to);
+      });
+      await page.waitForFunction((n) => neo.scene.game.pieces.length === n - 1, before, { timeout: 5000 });
+      assert.deepEqual(errors, [], `${ghostId}: page errors`);
+    } else {
+      const [, go] = await buttons();
+      await page.mouse.click(go.x, go.y);
+      await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+    }
+    log(`How-to ghost finger: ${touchBots.length} games with one; ${ghostId} showed a mouse pointer, then a finger after a touch, left effects lowered only while it played, and a real drag worked after Play`);
   }
 
   // --- Every game's card fits the screen with large buttons, in landscape and portrait, a demonstration in the games that have a bot, and leaving it is clean.
@@ -5950,9 +6324,9 @@ async function howToIntro() {
     log(`How-to intro ${name}: ${picked.length} games' cards fit, with large Play and Back and a demonstration window for each of the games with a bot`);
   }
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
-  const demoId = withBot.includes('penguin-slide') ? 'penguin-slide' : withBot[0];
+  const demoId = watched[0];
   await goGame(demoId, await page.evaluate(async (id) => (await import('/src/games/registry.ts')).gameById(id).bands.at(-1), demoId));
-  await page.waitForFunction(() => neo.scene.helpCard.intro.demo.lit.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(lit(demoId), null, { timeout: 30000 });
   await page.waitForTimeout(600);
   await screenshot('howto-demo-portrait');
   if (tallest.id) {
@@ -5967,6 +6341,155 @@ async function howToIntro() {
   await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
   assert.deepEqual(errors, []);
   log(`How-to intro: the card every time with Play and Back, stray taps ignored, a demonstration (touch-proof, destroyed with the card) for the ${withBot.length} games with a bot, "again", a story request and the parent switch skip it, tallest text-only card (${tallest.id}) passed`);
+}
+
+/**
+ * The level arrows on the intro card: held for a moment (a tap is not enough), they step the level within her band, and the card's
+ * "this level" line, its steps and its demonstration follow. An arrow at an end is dimmed. Play builds the round at the chosen level,
+ * and finishing it moves her saved level there; a grown-up's pin stays where it was. A game with one level has no arrows.
+ */
+async function howToLevelPick() {
+  const goGame = async (id, band) => {
+    await page.evaluate(({ id, band }) => neo.go.game(id, band), { id, band });
+    await page.waitForFunction((id) => !neo.switching && neo.scene.constructor.name === 'GameScene' && neo.scene.mod.id === id && !!neo.scene.helpCard, id);
+    await page.waitForTimeout(300);
+  };
+  const arrows = () => page.evaluate(() => {
+    const out = [];
+    const walk = (o) => { if (o.constructor.name === 'HoldButton') { const p = o.getGlobalPosition(); out.push({ x: p.x, y: p.y, alpha: o.alpha, mode: o.eventMode }); } else for (const c of o.children ?? []) walk(c); };
+    walk(neo.scene.helpCard.body);
+    return out.sort((a, b) => a.x - b.x);
+  });
+  const play = () => page.evaluate(() => {
+    let found = null;
+    const walk = (o) => { if (o.constructor.name === 'RoundButton') { const p = o.getGlobalPosition(); if (!found || p.x > found.x) found = { x: p.x, y: p.y }; } else for (const c of o.children ?? []) walk(c); };
+    walk(neo.scene.helpCard.body);
+    return found;
+  });
+  const card = () => page.evaluate(() => { const c = neo.scene.helpCard; return { n: c.info.levelNumber, level: c.info.level, steps: [...c.info.steps], round: neo.scene.level }; });
+  const hold = async (a, ms = 700) => { await page.mouse.move(a.x, a.y); await page.mouse.down(); await page.waitForTimeout(ms); await page.mouse.up(); await page.waitForTimeout(250); };
+  const describe = (id, level) => page.evaluate(async ({ id, level }) => (await import('/src/games/registry.ts')).gameById(id).describeLevel(level), { id, level });
+
+  await ready();
+  await page.evaluate(() => {
+    kit.store.data.profile.band = 'toddler'; kit.store.data.profile.name = 'Mia';
+    kit.store.data.settings.howToCards = true;
+    kit.store.stats('bubble-pop').level = 3; kit.store.stats('bubble-pop').pinned = null;
+  });
+
+  // --- Arrows beside "this level", for a game with more than one level in her band (Bubble Pop plays 1–6 for a toddler).
+  await goGame('bubble-pop', 'toddler');
+  let c = await card();
+  assert.equal(c.n, 3); assert.equal(c.round, 3);
+  assert.deepEqual(c.steps, ['Tap a bubble to pop it.'], 'level 3 says only how to pop any bubble');
+  let [left, right] = await arrows();
+  assert.ok(left && right && left.x < right.x, 'an arrow each side');
+  assert.equal(left.alpha, 1); assert.equal(right.alpha, 1);
+  await page.waitForTimeout(400);
+  await screenshot('howto-level-pick');
+  await page.mouse.click(right.x, right.y); await page.waitForTimeout(300);
+  assert.equal((await card()).n, 3, 'a tap on an arrow does nothing: it is held');
+  await page.evaluate(() => { window.__first = neo.scene.helpCard.intro.demo; });
+  await hold(right);
+  c = await card();
+  assert.equal(c.n, 4); assert.equal(c.round, 4, 'the round will be built at the chosen level');
+  assert.equal(c.level, await describe('bubble-pop', 4), 'the "this level" line follows');
+  assert.match(c.steps[0], /color/, 'and so do the steps');
+  assert.equal(await page.evaluate(() => window.__first.dead), true, 'the old demonstration is gone');
+  assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo !== window.__first && !neo.scene.helpCard.intro.demo.dead), true, 'a new one plays the new level');
+  assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.opts.level), 4, 'at that level');
+  [left, right] = await arrows();
+  await hold(left);
+  assert.equal((await card()).n, 3, 'the left arrow goes back');
+  // Up to the end of her band: the right arrow is dimmed there and does nothing.
+  for (let i = 0; i < 3; i++) { [, right] = await arrows(); await hold(right); }
+  c = await card();
+  assert.equal(c.n, 6, 'the top of her band');
+  [left, right] = await arrows();
+  assert.ok(right.alpha < 1 && right.mode === 'none', 'the arrow at the end is dimmed');
+  await hold(right);
+  assert.equal((await card()).n, 6, 'and stays put');
+  // Back to 4, then Play: the round is built at 4, and finishing it keeps 4 as her level.
+  for (let i = 0; i < 2; i++) { [left] = await arrows(); await hold(left); }
+  assert.equal((await card()).n, 4);
+  const go = await play();
+  await page.mouse.click(go.x, go.y);
+  await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+  assert.equal(await page.evaluate(() => neo.scene.level), 4, 'the round plays the chosen level');
+  assert.equal(await page.evaluate(() => kit.store.stats('bubble-pop').level), 3, 'her saved level has not moved yet: nothing is saved by looking');
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+  assert.equal(await page.evaluate(() => { const s = kit.store.stats('bubble-pop'); return [s.level, s.history.at(-1).level]; }).then((x) => x.join()), '4,4', 'finishing it moves her level to the chosen one');
+
+  // --- A grown-up's pin stays where it was; the chosen level is for this round.
+  await page.evaluate(() => { kit.store.pin('bubble-pop', 5); neo.go.hub(); }); await scene('MapScene');
+  await goGame('bubble-pop', 'toddler');
+  assert.equal((await card()).n, 5, 'the pin sets the level on the card');
+  [left] = await arrows(); await hold(left);
+  assert.equal((await card()).n, 4);
+  await page.mouse.click((await play()).x, (await play()).y);
+  await page.waitForFunction(() => !neo.scene.helpCard && !!neo.scene.game);
+  assert.equal(await page.evaluate(() => neo.scene.level), 4);
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+  assert.equal(await page.evaluate(() => kit.store.stats('bubble-pop').pinned), 5, 'the pin is not moved');
+  await page.evaluate(() => { kit.store.pin('bubble-pop', null); neo.go.hub(); }); await scene('MapScene');
+
+  // --- A game with one level in her band has nothing to choose.
+  await goGame('quick-tricks', 'toddler');
+  assert.deepEqual(await arrows(), [], 'no arrows when there is one level');
+  // Leaving without Play changes nothing about her level.
+  await page.evaluate(() => neo.scene.helpCard.intro.back());
+  await scene('PlaceScene');
+
+  // --- The "?" card in a round shows the level but cannot change it.
+  await page.evaluate(() => { kit.store.stats('duck-pond').level = 2; });
+  await page.evaluate(() => neo.go.game('duck-pond', 'toddler', undefined, true));
+  await page.waitForFunction(() => !neo.switching && neo.scene.mod?.id === 'duck-pond' && !neo.scene.helpCard);
+  await page.evaluate(() => neo.scene.openHelp()); await page.waitForTimeout(200);
+  assert.deepEqual(await arrows(), [], 'the card opened in a round has no arrows');
+  assert.equal((await card()).n, 2);
+  assert.deepEqual(errors, []);
+  log('How-to level arrows: held to step, within her band, card + steps + demo follow, Play builds that level, finishing keeps it, a pin stays, one-level games and the "?" card have none');
+}
+
+/**
+ * The ghost finger's bot plays every touch game's demonstration to the end (the touch version of `couchgames`'s "the bot finishes
+ * a round"): at the game's first and last level, within the time a demonstration gets before it replays (75 seconds for a finger), with no page error.
+ * `FINGER_ONLY=bubble-pop,shape-sorter` picks games.
+ */
+async function fingerDemos() {
+  const only = process.env.FINGER_ONLY?.split(',');
+  const games = await page.evaluate(async () => {
+    const { GAMES } = await import('/src/games/registry.ts');
+    return GAMES.filter((g) => g.touchDemo).map((g) => {
+      const ranges = g.bands.map((band) => ({ band, ...g.levels(band) }));
+      const lo = ranges.reduce((a, r) => (r.min < a.min ? r : a));
+      const hi = ranges.reduce((a, r) => (r.max > a.max ? r : a));
+      return { id: g.id, ranges, plays: lo.min === hi.max ? [{ band: lo.band, level: lo.min }] : [{ band: lo.band, level: lo.min }, { band: hi.band, level: hi.max }] };
+    });
+  });
+  // FINGER_LEVELS=3,4: play these levels instead of the first and last (each in the first band that has it), to time the ones between.
+  const levels = process.env.FINGER_LEVELS?.split(',').map(Number);
+  if (levels) for (const g of games) g.plays = levels.flatMap((level) => { const r = g.ranges.find((x) => level >= x.min && level <= x.max); return r ? [{ band: r.band, level }] : []; });
+  const picked = games.filter((g) => !only || only.includes(g.id));
+  assert.ok(picked.length > 0, `FINGER_ONLY matched no game: ${only}`);
+  await page.evaluate(() => {
+    kit.store.data.profile.name = 'Mia'; kit.store.data.settings.howToCards = true;
+  });
+  for (const g of picked) {
+    for (const { band, level } of g.plays) {
+      await page.evaluate(({ id, band, level }) => { kit.store.data.profile.band = band; kit.store.stats(id).pinned = level; neo.go.game(id, band); }, { id: g.id, band, level });
+      await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !!neo.scene.helpCard?.intro?.demo, { id: g.id, level });
+      assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
+      const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
+      await page.waitForFunction(() => neo.scene.helpCard.intro.demo.finishedRounds > 0, null, { timeout: (limit + 4) * 1000, polling: 250 });
+      assert.deepEqual(errors, [], `${g.id} level ${level}: page errors`);
+      // A demonstration shows right play: the bot makes no wrong move and needs no hint (for the games that count them).
+      const clean = await page.evaluate(() => { const game = neo.scene.helpCard.intro.demo.game; return game && typeof game.misses === 'number' ? { misses: game.misses, hints: game.hints } : null; });
+      assert.ok(!clean || (clean.misses === 0 && clean.hints === 0), `${g.id} level ${level}: the demonstration played cleanly (${JSON.stringify(clean)})`);
+      log(`Finger demo: ${g.id} level ${level} (${band}) finished in ${(await page.evaluate(() => neo.scene.helpCard.intro.demo.age)).toFixed(1)}s`);
+    }
+  }
+  await page.evaluate(() => { neo.go.hub(); }); await scene('MapScene');
 }
 
 /** The pet's treehouse: reach it from the map, move and turn things, hang a sticker, tidy, leave; all of it kept through a reload. */
@@ -6056,10 +6579,9 @@ async function roomPlay() {
 
 /** The child's island: a twinkle on games not yet played, a heart after a round, the favorites shelf (path) and Favorites card (subjects). */
 async function islandShelf() {
-  await page.evaluate(async () => {
-    const { session } = await import('/src/app/session.ts');
+  await page.evaluate(() => {
     kit.store.data.profile.band = 'toddler'; kit.store.data.world.band = 'toddler';
-    kit.store.data.settings.placeLayout = 'path'; kit.store.data.settings.sessionMinutes = 0; session.start(0);
+    kit.store.data.settings.placeLayout = 'path';
     kit.store.data.games = {}; kit.store.data.favorites = []; kit.store.data.stickers = [];
     neo.go.place('toddler');
   });
@@ -6601,8 +7123,13 @@ try {
   if (suite === 'all' || suite === 'couchbridges') await couchBridges();
   if (suite === 'all' || suite === 'couchconga') await couchConga();
   if (suite === 'all' || suite === 'couchgames') await couchGames();
+  if (suite === 'all' || suite === 'grownups') await grownUps();
   if (suite === 'smoke') await smoke();
+  if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
+  if (suite === 'phone') await phoneGames();
   if (suite === 'all' || suite === 'howto') await howToIntro();
+  if (suite === 'all' || suite === 'howto' || suite === 'howtolevel') await howToLevelPick();
+  if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'island') await islandShelf();
   if (suite === 'all' || suite === 'creations') await creationsRoom();

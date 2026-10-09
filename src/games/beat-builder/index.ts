@@ -10,8 +10,8 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { differences, empty, givenStep, hits, makeBeat, planFor, same, type Beat, type BeatPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { beatMove, differences, empty, freeBeat, givenStep, hits, makeBeat, planFor, same, type Beat, type BeatPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -134,6 +134,17 @@ class BeatBuilder implements Game {
       void this.ctx.say('beat.done-when');
     }
     this.draw();
+  }
+
+  /** The ghost finger on the how-to card: make the beat (the faint, heard or half-given one, or boom-clap in free play), then press the check where one is asked for. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.playingTarget > 0) return null;
+    const goal = this.plan.mode === 'free' ? freeBeat(this.plan) : this.target;
+    const move = beatMove(this.plan, goal, this.beat, this.check.visible);
+    if (!move) return null;
+    if (move === 'check') return { tap: { on: this.check } };
+    // A square's middle, in the grid's own units; the grid works out which square from where the touch lands.
+    return { tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 }, pause: 0.15 };
   }
 
   destroy() {}
@@ -288,6 +299,7 @@ export const beatBuilder: GameModule = {
   coplayHint: 'Clap and stomp the beat together as the playhead goes round.',
   offScreen: 'Make a beat on pots and a wooden spoon: boom, clap, boom, clap. Then take turns copying each other.',
   hubIcon: () => new BeatIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new BeatBuilder(ctx),
 };

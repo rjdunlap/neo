@@ -23,7 +23,6 @@ import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 /** Every game's landmark is scaled to fit this box, feet on the ground. */
 const ICON_W = 190;
@@ -344,15 +343,6 @@ export class PlaceScene extends Scene {
       if (this.scroll === 0 || this.scroll === this.maxScroll) this.velocity = 0;
     }
     this.applyScroll();
-    if (session.over && !this.leaving) {
-      this.leaving = true;
-      this.app.go.goodnight();
-    }
-  }
-
-  sleepyWarning() {
-    this.pip.setMood('sleepy', 3);
-    void voice.say('sleepy.warn');
   }
 
   exit() {

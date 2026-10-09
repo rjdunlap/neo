@@ -11,8 +11,8 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { FAMILIES, makeQuestions, planFor, rhymes, type RhymePlan, type RhymeQuestion } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { FAMILIES, makeQuestions, planFor, rhymes, wordToTap, type RhymePlan, type RhymeQuestion } from './logic';
 import { picture } from './pictures';
 
 const LEVELS: BandLevels = {
@@ -79,6 +79,14 @@ class RhymeTime implements Game {
     this.clock += dt;
     const g = this.glow.clear();
     if (this.glowing && !this.busy) g.roundRect(this.glowing.node.x - 92, this.glowing.node.y - 92, 184, 184, 34).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+  }
+
+  /** The ghost finger on the how-to card: the rhyming picture, the odd one out, or the pair, one card and then the other. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.q) return null;
+    const word = wordToTap(this.plan, this.q, this.picked?.word ?? null);
+    const card = this.cards.find((c) => c.word === word);
+    return card ? { tap: { on: card.node } } : null;
   }
 
   destroy() {}
@@ -238,6 +246,7 @@ export const rhymeTime: GameModule = {
   coplayHint: 'Say the words slowly and stretch the ends: "caaat, haaat". Then make up a silly rhyme together.',
   offScreen: 'Play "I spy something that rhymes with..." around the house or on a walk.',
   hubIcon: () => new RhymeIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new RhymeTime(ctx),
 };

@@ -1,5 +1,4 @@
 import { applySettings } from '../app/settings';
-import { session } from '../app/session';
 import { voice } from '../audio/voice';
 import { GAMES } from '../games/registry';
 import { BANDS, type Band } from '../progress/bands';
@@ -7,17 +6,25 @@ import { store } from '../progress/store';
 import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
 
-const SESSION_CHOICES = [5, 10, 15, 20, 30, 0];
 const DAY = 24 * 60 * 60 * 1000;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
+let current: HTMLElement | null = null;
+
+/** Whether the grown-ups' page is on screen. It closes itself on Esc, so the app's Esc and keys like C leave it alone. */
+export const isParentPanelOpen = () => current !== null;
+
+const clock = (at: number) => new Date(at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+
 /**
- * The grown-up zone: plain HTML over the game, reached through the parent gate.
- * Settings apply when it closes, and the session timer restarts.
+ * The grown-up zone: plain HTML over the game, reached by holding the grown-ups gear.
+ * Settings apply when it closes.
  */
 export function openParentPanel(onClose: () => void) {
+  if (current) return;
   const root = document.createElement('div');
+  current = root;
   root.className = 'parent';
   root.innerHTML = `
     <div class="parent__sheet" role="dialog" aria-modal="true" aria-labelledby="parent-title">
@@ -46,13 +53,8 @@ export function openParentPanel(onClose: () => void) {
         <label for="p-pet-color">Pet color</label>
         <select id="p-pet-color">${PET_COLORS.map((color) => `<option value="${color}">${color}</option>`).join('')}</select>
       </div>
-      <h2>Play time</h2>
-      <div class="parent__row">
-        <label for="p-session">Session length (then a goodnight scene)</label>
-        <select id="p-session">
-          ${SESSION_CHOICES.map((m) => `<option value="${m}">${m ? `${m} minutes` : 'No limit'}</option>`).join('')}
-        </select>
-      </div>
+      <h2>Playing</h2>
+      <p class="muted">Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.</p>
       <div class="parent__row">
         <label for="p-tips">Show grown-up tips during games</label>
         <input id="p-tips" type="checkbox" />
@@ -95,13 +97,16 @@ export function openParentPanel(onClose: () => void) {
         <button class="btn btn--danger" data-reset>Reset progress</button>
         <input type="file" accept="application/json,.json" data-file hidden />
       </div>
+      <p class="muted" data-undo-note hidden></p>
+      <div class="parent__actions" style="margin-top:10px">
+        <button class="btn" data-undo hidden>Undo the last reset or restore</button>
+      </div>
     </div>`;
 
   const $ = <T extends Element>(sel: string) => root.querySelector(sel) as T;
   const name = $<HTMLInputElement>('#p-name');
   const petName = $<HTMLInputElement>('#p-pet-name');
   const petColor = $<HTMLSelectElement>('#p-pet-color');
-  const sessionSel = $<HTMLSelectElement>('#p-session');
   const tips = $<HTMLInputElement>('#p-tips');
   const howto = $<HTMLInputElement>('#p-howto');
   const layout = $<HTMLSelectElement>('#p-layout');
@@ -113,13 +118,15 @@ export function openParentPanel(onClose: () => void) {
     petName.value = d.pet.name;
     petColor.value = d.pet.color;
     name.value = d.profile.name;
-    sessionSel.value = String(d.settings.sessionMinutes);
-    if (!sessionSel.value) sessionSel.value = '0';
     layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
     volume.value = String(d.settings.volume);
     musicBox.checked = d.settings.music;
+    const undoAt = store.undoAt;
+    $('[data-undo]').toggleAttribute('hidden', undoAt === null);
+    $('[data-undo-note]').toggleAttribute('hidden', undoAt === null);
+    if (undoAt !== null) $('[data-undo-note]').textContent = `Her progress from before ${clock(undoAt)} is kept, so a reset or restore can be undone. Undoing twice puts it back the way it is now.`;
     root.querySelectorAll<HTMLButtonElement>('[data-band]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
     $('[data-week]').innerHTML = weekSummary();
     root.querySelectorAll<HTMLSelectElement>('[data-pin]').forEach((sel) =>
@@ -149,10 +156,6 @@ export function openParentPanel(onClose: () => void) {
       render();
     }),
   );
-  sessionSel.addEventListener('change', () => {
-    store.data.settings.sessionMinutes = Number(sessionSel.value);
-    store.save();
-  });
   tips.addEventListener('change', () => {
     store.data.settings.coplayHints = tips.checked;
     store.save();
@@ -181,21 +184,27 @@ export function openParentPanel(onClose: () => void) {
     const f = file.files?.[0];
     if (!f) return;
     const ok = store.importJson(await f.text());
-    alert(ok ? 'Backup restored.' : "That file doesn't look like a Puddle Island backup.");
+    file.value = '';
+    alert(ok ? 'Backup restored. If that was a mistake, "Undo the last reset or restore" brings back what was here.' : "That file doesn't look like a Puddle Island backup.");
     applySettings();
     render();
   });
   $('[data-reset]').addEventListener('click', () => {
-    if (!confirm('Clear all game progress and stickers? Name and settings are kept.')) return;
+    if (!confirm('Clear all game progress and stickers? Name and settings are kept. You can undo this from this page.')) return;
     store.reset();
+    render();
+  });
+  $('[data-undo]').addEventListener('click', () => {
+    if (!store.undo()) return;
+    applySettings();
     render();
   });
 
   const close = () => {
+    current = null;
     root.remove();
     window.removeEventListener('keydown', onKey);
     applySettings();
-    session.start(store.data.settings.sessionMinutes);
     onClose();
   };
   const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();

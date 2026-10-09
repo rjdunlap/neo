@@ -40,3 +40,22 @@ export function makeTune(rng: Rng, length: number): number[] {
     if (length < 2 || new Set(tune).size > 1) return tune;
   }
 }
+
+/** The little song the ghost finger plays in free play: the scale climbing and coming back, so every note is the jelly next door. */
+export const FREE_SONG = [0, 1, 2, 3, 4, 3, 2, 1];
+
+/** The jelly for the `n`th note of free play (counting from 0), looping the song. */
+export const freeNote = (n: number): number => FREE_SONG[((n % FREE_SONG.length) + FREE_SONG.length) % FREE_SONG.length];
+
+/** Where a round is: free play is all `play`; a tune round listens (`play` before the first tune, then `listen`) and takes a `turn`. */
+export type JellyPhase = 'play' | 'listen' | 'turn' | 'done';
+
+/**
+ * The jelly a capable child taps next, or null while she should wait. In free play she plays the song. In a tune round
+ * she waits through the first pause and the tune itself (a tap then is only music, but it is not her answer) and then
+ * taps the tune in order.
+ */
+export function jellyToTap(mode: JellyPlan['mode'], phase: JellyPhase, tune: readonly number[], at: number, notes: number): number | null {
+  if (mode === 'free') return phase === 'play' ? freeNote(notes) : null;
+  return phase === 'turn' ? (tune[at] ?? null) : null;
+}

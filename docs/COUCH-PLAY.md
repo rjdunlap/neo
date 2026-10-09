@@ -35,7 +35,7 @@ References: [Apple's Bluetooth controller connection guide](https://support.appl
 - **Names.** Optional. Type a name for each player (a keyboard is needed once; W, S, space and backspace type letters there). Names replace Player 1 and Player 2 on every screen and in what is spoken. With *Just me* there is one name, which replaces “You” on your marks.
 - **Couch backup** and **Controller setup** (pairing help), reached from here.
 
-The island's own grown-up zone (her name, session length, levels, backup) is separate and has no button: on the island map, press and hold both top corners for three seconds. The Settings page says so at its foot.
+The island's own grown-up zone (her name, levels, backup) is separate: on the island's title screen or map, press and hold the gear in the top-right corner for two seconds, or press Esc in an island game and hold the gear there. The Settings page says so at its foot.
 
 The pause menu has a row of **Quieter**, **Louder**, **Music** and **Text** so sound and text size can change mid-round.
 

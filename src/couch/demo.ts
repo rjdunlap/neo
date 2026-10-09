@@ -3,6 +3,7 @@ import type { Updatable } from '../app/Scene';
 import type { Critter } from '../art/critter';
 import { makePet, petSpec } from '../art/pet';
 import { Particles } from '../art/particles';
+import { GhostFinger } from '../engine/ghost';
 import { Rng } from '../engine/random';
 import { Tweener } from '../engine/tween';
 import { DESIGN_H, DESIGN_W, type View } from '../engine/view';
@@ -12,8 +13,9 @@ import type { PadPart } from './catalog';
 
 /** The demo is laid out like a normal 1024×768 screen, then scaled into its window. */
 const VIEW: View = { w: DESIGN_W, h: DESIGN_H, scale: 1 };
-/** Replay a long demo from the top, and rest a moment between plays. */
+/** Replay a long demo from the top, and rest a moment between plays. A pretend finger is slower than a controller, so it gets longer. */
 const MAX_SECONDS = 40;
+const MAX_SECONDS_FINGER = 75;
 const REST_SECONDS = 1.6;
 /** How long a pressed part stays lit, so a single-frame press is still visible. */
 const HOLD = 0.3;
@@ -34,21 +36,25 @@ export function pressed(input: CouchControls): Set<PadPart> {
 }
 
 /**
- * "Watch me": a real round of a game, played by its own bot through the same `control()` that a
- * controller uses. It is separate from the real round: its own seed, tweens, particles and pet, so
- * nothing it does is saved, rewarded or spoken.
+ * "Watch me": a real round of a game, played by its own bot. On the couch the bot presses a controller's buttons
+ * through the same `control()` a controller uses; on the island's touch card (`input: 'finger'`) it is a ghost
+ * finger that taps and drags the game's own objects. It is separate from the real round: its own seed, tweens,
+ * particles and pet, so nothing it does is saved, rewarded or spoken.
  */
 export class Demo {
   /** Add this where it should appear; place it with `layout`. */
   readonly root = new Container();
   /** Parts lit right now, held briefly after each press. */
   readonly lit = new Set<PadPart>();
+  /** How many times the bot has finished the round (the checks wait for one; a round that runs long is replayed and not counted). */
+  finishedRounds = 0;
   private readonly stage = new Container();
   private readonly mask = new Graphics();
   private readonly tw = new Tweener();
   private readonly tracked = new Set<Updatable>();
   private readonly held = new Map<PadPart, number>();
   private fx: Particles | null = null;
+  private finger: GhostFinger | null = null;
   private pet: Critter | null = null;
   private game: Game | null = null;
   private age = 0;
@@ -59,7 +65,15 @@ export class Demo {
 
   constructor(
     private readonly mod: GameModule,
-    private readonly opts: { level: number; band: GameContext['band']; renderer: Renderer; seed?: number; part?: { course: string; board: number } },
+    private readonly opts: {
+      level: number;
+      band: GameContext['band'];
+      renderer: Renderer;
+      seed?: number;
+      part?: { course: string; board: number };
+      /** Who plays it: a controller (the couch, the default), a ghost finger (the island's card on a touch screen) or a mouse pointer (on a desktop). */
+      input?: 'controller' | 'finger' | 'mouse';
+    },
   ) {
     this.root.addChild(new Graphics().rect(0, 0, DESIGN_W, DESIGN_H).fill(0xfff9ee), this.stage, this.mask);
     this.root.mask = this.mask;
@@ -68,7 +82,21 @@ export class Demo {
 
   /** Whether the game has a bot to show; without one the window stays still. */
   get hasBot() {
-    return !!this.game?.autoplay;
+    return this.touches ? !!this.game?.autotouch : !!this.game?.autoplay;
+  }
+
+  /** How long one play may run before it is shown again from the top. */
+  get limit() {
+    return this.touches ? MAX_SECONDS_FINGER : MAX_SECONDS;
+  }
+
+  /** Which pretend pointer plays it, for the card's note: null when a controller does. */
+  get pointer(): 'finger' | 'mouse' | null {
+    return this.touches ? (this.opts.input as 'finger' | 'mouse') : null;
+  }
+
+  private get touches() {
+    return this.opts.input === 'finger' || this.opts.input === 'mouse';
   }
 
   /** Put the demo at (x, y) with the given width, all in logical units. */
@@ -101,21 +129,33 @@ export class Demo {
     this.tw.update(dt);
     for (const u of this.tracked) u.update(dt);
     this.fx?.update(dt);
-    if (game.autoplay) {
+    const finger = this.finger;
+    if (finger && game.autotouch) {
+      finger.update(dt);
+      if (finger.idle) {
+        const intent = game.autotouch(dt);
+        if (intent) finger.start(intent);
+      }
+    } else if (game.autoplay && !this.touches) {
       const input = game.autoplay(dt);
       game.control?.(input, dt);
       for (const part of pressed(input)) this.held.set(part, HOLD);
     }
     game.update(dt);
     this.decay(dt);
-    if (this.done || this.age > MAX_SECONDS) this.rest = REST_SECONDS;
+    if (this.done || this.age > this.limit) {
+      if (this.done) this.finishedRounds++;
+      this.rest = REST_SECONDS;
+    }
   }
 
   destroy() {
     if (this.dead) return;
     this.dead = true;
     this.teardown();
-    this.root.destroy({ children: true });
+    this.root.removeFromParent();
+    // A game's `await` that was ready this frame still runs after this call; let it finish on objects that are still alive.
+    setTimeout(() => this.root.destroy({ children: true }), 0);
   }
 
   private decay(dt: number) {
@@ -135,11 +175,15 @@ export class Demo {
     this.tracked.clear();
     this.held.clear();
     this.lit.clear();
-    for (const child of this.stage.removeChildren()) child.destroy({ children: true });
-    this.fx?.destroy({ children: true });
+    this.finger?.stop();
+    // Take everything out of sight now, and destroy it a moment later: a continuation the game had already queued (an `await`
+    // that became ready this frame) still runs after this call and may touch its objects.
+    const doomed = [...this.stage.removeChildren(), ...[this.finger?.hand, this.fx, this.pet].filter((o): o is Container => !!o)];
+    for (const o of doomed) o.removeFromParent();
+    this.finger = null;
     this.fx = null;
-    this.pet?.destroy({ children: true });
     this.pet = null;
+    setTimeout(() => doomed.forEach((o) => o.destroy({ children: true })), 0);
   }
 
   private build() {
@@ -147,6 +191,11 @@ export class Demo {
     const fx = new Particles();
     this.fx = fx;
     this.root.addChildAt(fx, this.root.getChildIndex(this.stage) + 1);
+    if (this.touches) {
+      const finger = new GhostFinger(this.root, this.opts.renderer.events.rootBoundary, this.opts.input === 'mouse' ? 'mouse' : 'touch');
+      this.finger = finger;
+      this.root.addChildAt(finger.hand, this.root.getChildIndex(fx) + 1);
+    }
     this.age = 0;
     this.rest = 0;
     this.done = false;

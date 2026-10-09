@@ -62,3 +62,25 @@ export const differences = (target: Beat, have: Beat) =>
 
 /** How many squares are on: free play finishes once the beat has a few sounds. */
 export const hits = (b: Beat) => b.flat().filter(Boolean).length;
+
+/** The beat the ghost finger makes in free play: boom, clap, boom, clap (four hits, so the check button comes). */
+export function freeBeat(plan: BeatPlan): Beat {
+  const beat = empty(plan.rows, plan.steps);
+  for (let s = 0; s < plan.steps; s++) beat[s % 2][s] = true;
+  return beat;
+}
+
+/** What a capable child does next: tap a square (`row`, `step`), press the green check, or null to wait. */
+export type BeatMove = { row: number; step: number } | 'check';
+
+/**
+ * Her next move toward `goal` (the beat on show to copy, or the one she is making in free play): the first square of the
+ * goal that is not on yet and is hers to tap (never one of the squares given on repeat levels), always a right one.
+ * When the beat is built, a level that asks her to check (by ear, or free play) presses the check once it is showing;
+ * the levels that can see their beat finish by themselves.
+ */
+export function beatMove(plan: BeatPlan, goal: Beat, beat: Beat, checkShowing: boolean): BeatMove | null {
+  for (let step = 0; step < plan.steps; step++)
+    for (let row = 0; row < plan.rows; row++) if (goal[row][step] && !beat[row][step] && !givenStep(plan, step)) return { row, step };
+  return (plan.mode === 'hear' || plan.mode === 'free') && checkShowing ? 'check' : null;
+}

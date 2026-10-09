@@ -1,18 +1,21 @@
 import { get, set } from 'idb-keyval';
-import { bandInfo, type Band } from './bands';
+import type { Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
 import { flipItem, moveItem, tidy } from '../content/room';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
-import { defaults, HISTORY_LENGTH, migrate, type GameStats, type RoundRecord, type SaveData, type StoryProgress } from './save';
+import { defaults, HISTORY_LENGTH, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
 
 const KEY = 'neo.save';
+/** One snapshot of the save from before the last reset or restore (see `PreviousSave`). */
+const PREVIOUS_KEY = 'neo.save.previous';
 
 /** Saved progress in IndexedDB. Reads are synchronous from memory; writes are batched. */
 class Store {
   data: SaveData = defaults();
+  private previous: PreviousSave | null = null;
   private timer: number | undefined;
 
   async load() {
@@ -20,6 +23,11 @@ class Store {
       this.data = migrate(await get(KEY));
     } catch (e) {
       console.warn('Could not read saved progress', e);
+    }
+    try {
+      this.previous = repairPrevious(await get(PREVIOUS_KEY));
+    } catch (e) {
+      console.warn('Could not read the undo snapshot', e);
     }
     // Ask Safari not to clear our storage when space is low.
     void navigator.storage?.persist?.();
@@ -207,7 +215,6 @@ class Store {
   setBand(band: Band) {
     if (band === this.data.profile.band) return;
     this.data.profile.band = band;
-    this.data.settings.sessionMinutes = bandInfo(band).minutes;
     this.save();
   }
 
@@ -217,7 +224,9 @@ class Store {
 
   importJson(text: string): boolean {
     try {
-      this.data = migrate(JSON.parse(text));
+      const next = migrate(JSON.parse(text));
+      this.keep();
+      this.data = next;
       this.save();
       return true;
     } catch {
@@ -225,10 +234,38 @@ class Store {
     }
   }
 
+  /** Starts her progress over (name, settings and pet stay). `undo` brings it back. */
   reset() {
+    this.keep();
     const { profile, settings, pet } = this.data;
     this.data = { ...defaults(), profile, settings, pet };
     this.save();
+  }
+
+  /** When the save that `undo` would bring back was set aside, or null if there is none. */
+  get undoAt(): number | null {
+    return this.previous?.at ?? null;
+  }
+
+  /** Swaps the save with the snapshot from before the last reset or restore; doing it again swaps back. */
+  undo(): boolean {
+    if (!this.previous) return false;
+    const swapped = swapWithPrevious(this.data, this.previous, Date.now());
+    this.data = swapped.data;
+    this.previous = swapped.previous;
+    this.persistPrevious();
+    this.save();
+    return true;
+  }
+
+  /** Sets the current save aside, before something replaces it. */
+  private keep() {
+    this.previous = remember(this.data, Date.now());
+    this.persistPrevious();
+  }
+
+  private persistPrevious() {
+    if (this.previous) set(PREVIOUS_KEY, this.previous).catch((e) => console.warn('Could not keep the undo snapshot', e));
   }
 }
 

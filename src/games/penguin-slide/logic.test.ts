@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { eaten, makePuzzle, PLANS, slide, solve, type SlidePuzzle } from './logic';
+import { beside, eaten, makePuzzle, PLANS, slide, solve, tapDirection, type SlidePuzzle } from './logic';
 
 const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
 
@@ -47,6 +47,34 @@ describe('Penguin Slide', () => {
           used++;
         }
         expect(used).toBe(p.best);
+      }
+    }
+  });
+
+  it('has a tap the ghost finger can make for every slide of a fewest route, which sends the penguin that way and finishes in the fewest', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        let at = p.start;
+        let have = 0;
+        let moves = 0;
+        while (have !== (1 << p.fish.length) - 1 && moves < 40) {
+          const { first } = solve(p, at, have);
+          expect(first).toBeGreaterThanOrEqual(0);
+          const tap = beside(at, first as 0 | 1 | 2 | 3);
+          expect(tap.x).toBeGreaterThanOrEqual(0);
+          expect(tap.x).toBeLessThan(p.cols);
+          expect(tap.y).toBeGreaterThanOrEqual(0);
+          expect(tap.y).toBeLessThan(p.rows);
+          // The tap lands beside the penguin and the game reads it as the same direction.
+          expect(tapDirection(tap.x - at.x, tap.y - at.y)).toBe(first);
+          const { to, passed } = slide(p, at, tapDirection(tap.x - at.x, tap.y - at.y));
+          expect(passed.length).toBeGreaterThan(0);
+          have |= eaten(p, passed);
+          at = to;
+          moves++;
+        }
+        expect(moves).toBe(p.best);
       }
     }
   });

@@ -8,11 +8,11 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 What's in it:
 
-- **72 small games** on an age trail of five places, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
+- **73 small games** on an age trail of five places, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
 - **A pet** she hatches and names, a **sticker book**, and the pet's **treehouse**, where things she made hang on the wall and a discovery journal fills up.
 - **The Windy Picnic**, a short story that connects three activities.
 - **Couch play** for two grown-ups with controllers or a keyboard on a computer: trips, face-offs and challenge courses, with its own save.
-- A **grown-up zone** behind a parent gate, and offline play once installed.
+- A **grown-up zone** behind a press-and-hold gear (or Esc in a game), and offline play once installed.
 
 ## Run it
 
@@ -27,13 +27,31 @@ npm run build      # type-check + production build into dist/
 
 - **Quick look, same Wi-Fi:** `npm run dev:lan`, then open the "Network" URL it prints in Safari on the iPad. Fine for playing; offline mode and "Add to Home Screen" as a full app need HTTPS (below).
 - **The real thing:** open <https://rjdunlap.github.io/neo/> in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
-- **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app.
+- **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app. Guided Access can also set a time limit.
+- **Limit her time:** the app has no timer of its own. Use Screen Time → App Limits (check Screen Time → See All Activity after a few minutes of play to see where the Home Screen app is listed) or a Guided Access time limit.
+
+## Try it on a phone
+
+A phone is a good way to look at the island before the iPad arrives. It differs from the iPad in four ways:
+
+- **Hold it sideways.** The islands are drawn wide. An upright phone shows a picture asking to turn it, and the game waits behind it; turn off the rotation lock (iPhone: Control Center; Android: quick settings). An installed Android app is locked to landscape; an iPhone cannot be locked by a web app.
+- **Everything is about half the iPad's size.** At 844 × 390 the island is drawn at about 0.5 scale, so a 100-unit target is about 50 points across, against about 110 on an 11-inch iPad. The phone shows whether the games flow, read and sound right; it cannot show whether a small hand can drag, herd or pull. Judge those on the iPad.
+- **The notch and rounded corners are respected.** The island sits inside the safe area, so a phone with a notch shows a cream strip at each side, and the buttons in the corners (and the grown-ups' gear in the top-right corner) stay reachable.
+- **It has its own save.** A phone browser, and the home-screen app made from it, each keep a separate save from the iPad's. To carry one over, use Save a backup and Restore from a backup in the grown-up zone.
+
+To get it there:
+
+- **Live site (the merged `main`):** open <https://rjdunlap.github.io/neo/> in Safari (iPhone) or Chrome (Android). Share → Add to Home Screen on iPhone, or ⋮ → Install app on Android, runs it full screen and offline; in a plain Safari or Chrome tab the browser's own bars take some of the screen.
+- **A branch not yet merged:** with the phone on the same Wi-Fi, run `npm run dev:lan` and open the "Network" address it prints. That page is plain HTTP, so there is no install and no offline mode; it is for looking and playing.
+- **On the computer:** Chrome's device toolbar (⌥⌘I, then ⇧⌘M) with an iPhone preset, rotated sideways, shows the layout. It does not fake a notch: to see the safe-area handling, set `--safe-left`, `--safe-right` and `--safe-bottom` on `<html>` in the console (for example `document.documentElement.style.setProperty('--safe-left', '47px')`).
+
+Couch play is for a computer or TV with a keyboard or controller and is not a phone feature. Sound should play through an iPhone's silent switch (iOS 16.4 and later, as on the iPad) and speech uses the phone's own voices; neither has been heard on a phone yet (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
 
 ## The island and its games
 
 The island is an **age trail**. It climbs from **Puddle Lagoon** (lap, 18–24 months) on the shore through **Daisy Meadow** (toddler) and **Bumpy Hills** (preschool) to **Starry Peak** (pre-K), and over the top to **Wonder Woods** (early school, ages 6–8). Each place lays out every game for that age, at that age's levels. A game that grows with her, like Bubble Pop, stands in each place it supports. The play button goes straight to her own place; the island button there opens the trail, where her pet waits by her place and every place is open to explore. When there are more games than fit, swipe the land sideways or tap the arrows. When a grown-up moves her up an age band, the pet has a birthday and walks up the trail.
 
-There are seventy-two games, listed below. "Ages" lists the places each game appears in; "school" is the early-school band at Wonder Woods (ages 6–8), where 50 games play their most demanding levels. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
+There are seventy-three games, listed below. "Ages" lists the places each game appears in; "school" is the early-school band at Wonder Woods (ages 6–8), where 51 games play their most demanding levels. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
@@ -86,6 +104,7 @@ There are seventy-two games, listed below. "Ages" lists the places each game app
 | Secret Code | pre-K–school | fill a door's slots with stones; each slot says yes or no | yellow "wrong place" marks, more slots and colors, codes with a repeated color |
 | Frog Hop | preschool–school | hop to a number on the lily pads | one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20 |
 | Market Stall | preschool–school | count out shell coins for the price | ones and twos, fives, adding two prices, paying two different ways, giving change from 10 |
+| Lemonade Stand | school | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table | an event on the forecast (a ferry, a quiet day), a price in shells, then a five-day market week where a lemon (one shell, two cups) is a cost and the purse carries from day to day; running out or having cups left is a result, never a mistake |
 | Garden Grow | lap–preschool | tap the soil: a seed grows into a singing flower | rain from a cloud, planting the color asked for, exactly so many seeds, two colors with a number of each |
 | Clock Tower | pre-K–school | turn the short hand to an o'clock time | both hands, half past, quarter past and to, reading the clock for the time of day, one hour later |
 | Garden Rows | pre-K–school | plant a 3 by 3 flower bed so each row has one of every flower | rows and columns, 4 by 4 beds with fewer flowers to start, a 5 by 5 bed; every bed has exactly one way to finish, and a flower that repeats will not stay |
@@ -112,7 +131,7 @@ There are seventy-two games, listed below. "Ages" lists the places each game app
 
 Within a place, games are grouped by subject: senses, music, art, animals, numbers, everyday life, colors and shapes, puzzles, stories, and science. Grown-ups → Finding games offers **Subject cards**, an optional prototype showing four large subject choices, then four games at a time. The original swiping path remains the default. Each layout remembers its own position for the session; returning from a game keeps the launching place and subject/page. Compare both on the iPad before choosing a default. A small gold **twinkle** marks every game she has not finished a round of yet (a subject card twinkles while it holds one), and after a round a **heart** beside the new sticker keeps the game on a **favorites shelf** of up to five above that place's games (or a first **Favorites** card in the subject layout). Neither gates anything: a second tap on the heart takes it back, and nothing expires or rotates.
 
-Every time a game is opened, it explains itself: a card with the game's picture and name (spoken), what the game is for, how to play this level, and how the round ends, with a big green **Play** and a **Back**. The fifteen games the couch can also play (a bot already plays them there) show a **demonstration window** beside the text: a real round played by the bot, which moves a controller-style highlight where you would tap or drag. Nothing has started behind the card, and Back leaves the game. After Play the game starts at once, tapping **again** after a round skips the card (it has just been seen), and holding the small **?** under the home button opens the card during a round. A grown-up can turn the cards off in the grown-up zone (a game started by a story request never shows one).
+Every time a game is opened, it explains itself: a card with the game's picture and name (spoken), what the game is for, how to play this level (a pair of held arrows beside "this level" lets a grown-up pick another level in her band, and the steps and demonstration follow), and how the round ends, with a big green **Play** and a **Back**. A **demonstration window** beside the text plays a real round with the input the person is using: a **ghost finger** (a drawn hand that taps and drags the game's own objects) on a touch screen, a **mouse pointer** on a desktop, at the child's current level. That is built for 24 of the 72 games so far: Bubble Pop, Shape Sorter, Duckling Parade, Memory Match, Frog Hop, Pattern Train, Light Lab, Penguin Slide, Secret Code, Robot Path, Rhythm Neighbors, Sink or Float, Ferry Jam, Jelly Drums, Song Maker, Beat Builder, Rhyme Time, Opposites, Pet Says, Goodnight Room, Peekaboo Barn, Weather Wardrobe, Duck Pond and Photo Safari (the [roadmap](docs/ROADMAP.md) keeps the count and the order). Until the five other games the couch can also play (Egg Catch, Bounce Back, Peg Garden, Bouncy Launch, Bumper Garden) get one, they show the couch bot's controller-style highlight instead; the rest are text alone. Nothing has started behind the card, and Back leaves the game. After Play the game starts at once, tapping **again** after a round skips the card (it has just been seen), and holding the small **?** under the home button opens the card during a round. A grown-up can turn the cards off in the grown-up zone (a game started by a story request never shows one).
 
 Each game moves up a level after two easy rounds and down after two hard ones, inside the range for the place it was played in. In the grown-up zone you can see each game's current level and pin one. How each game handles mistakes and hints, and what it grows into, is in [GAMES.md](docs/GAMES.md).
 
@@ -130,7 +149,7 @@ The treehouse button at the bottom-left of the map opens the pet's **treehouse**
 
 ## Grown-up zone
 
-Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, whether each game shows how to play before it starts, place layout, volume, and see what she played this week. Backups save to Files.
+Press and hold the **gear** for two seconds: it is in the top-right corner of the title screen and the island map, and on a keyboard **Esc** pauses any island scene (couch play keeps its own pause menu) and shows the gear on the pause sheet. A tap only shows a hint, and says (in the pet's voice) that it is for grown-ups. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), whether each game shows how to play before it starts, place layout, volume, and see what she played this week. Backups save to Files, and a reset or restore can be undone from the same page (one step back, kept on the device; undoing twice puts things back). There is no play timer: limits belong to the device.
 
 ## Couch play
 
@@ -159,7 +178,7 @@ TypeScript + Vite + PixiJS 8, installed as a PWA. See the [design doc](docs/DESI
 
 ```text
 src/
-  app/        boot, scene switching, session timer, routes, scenes/ (start, hatch, map, place, game host, picnic, stickers, treehouse room, journal, goodnight, couch)
+  app/        boot, scene switching, Esc pause, routes, scenes/ (start, hatch, map, place, game host, picnic, stickers, treehouse room, journal, couch)
   engine/     view scaling, tweens, seeded random, toddler input rules
   art/        palette, shapes, critter builder, particles, scenery, sticker frame
   audio/      Web Audio engine, instruments, sound effects, generative music, voice
@@ -167,7 +186,7 @@ src/
   progress/   age bands, save format + migration, difficulty, IndexedDB store
   couch/      grown-up couch play: the catalog of how-to data, trips, unlocks and face-off rules, its own save, the demo runner, the controller diagram
   parent/     the grown-up panel (plain HTML)
-  ui/         buttons, icons, parent gate, text
+  ui/         buttons, icons, grown-ups gear, pause sheet, text
   content/    voice script, how-to cards, the age-trail places, stable world IDs, the Windy Picnic's story rules, and the treehouse's room, creations and journal rules
 ```
 
@@ -195,8 +214,13 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | Suite | What it plays | Filter |
 | --- | --- | --- |
 | `smoke` | Every game at its lowest, middle and highest level: stray taps, the how-to card, portrait. Proves a game loads and survives touches, not that a round can finish; fails if anything touchable is stranded at the origin | `SMOKE_ONLY=id,id` |
-| `howto` | The how-to card every time a game opens: every game's card fits in landscape and portrait with large Play and Back, a demonstration window exactly for the fifteen games with a bot (playing, touch-proof, destroyed with the card), stray taps, Back, Play, "again", a story request and the grown-up switch (about three minutes) | `HOWTO_ONLY=id,id` |
-| `world` | Hatching, the map, both place layouts, every subject and game card in all bands and both orientations, return memory, cancellation, birthdays, the parent gate (about 4½ minutes) | |
+| `howto` | The how-to card every time a game opens: every game's card fits in landscape and portrait with large Play and Back, a demonstration window exactly for the games with a bot (playing, touch-proof, destroyed with the card; a hand for a game with a ghost finger, the controller highlight for a couch game without one yet), the ghost finger (a mouse pointer until a touch, effects lowered while it plays, a real drag working after Play), stray taps, Back, Play, "again", a story request and the grown-up switch (about three minutes) | `HOWTO_ONLY=id,id` |
+| `howtolevel` | The level arrows on the intro card: held to step (a tap does nothing), within her band, the "this level" line, steps and demonstration follow, the arrow at an end is dimmed, Play builds the chosen level and finishing it keeps it, a grown-up's pin stays, no arrows for a one-level band or on the "?" card (about 10 seconds) | |
+| `fingerdemo` | The ghost finger's bot plays each game's demonstration to the end at the game's first and last level, with no wrong move and no hint, inside the 75 seconds a finger demonstration gets (a few seconds to about a minute a play) | `FINGER_ONLY=id,id`, `FINGER_LEVELS=3,4` (play these levels instead, to time the ones between) |
+| `phonefit` | A phone's needs: a faked notch and home indicator through the `--safe-*` properties (island inside them, the strips left plain cream, nothing on a scene's UI layer covered, a tap on a button, the grown-ups' gear and panel reachable), the turn prompt for an upright phone (390 × 844, with couch play's button hidden under it) and not for a sideways phone, any tablet shape or a mouse (about 20 seconds) | |
+| `phone` | `phonefit`, then every game's middle level at 844 × 390: stray taps, nothing stranded at the origin or off the window on the UI layer, and a screenshot of each in `test-results/browser/phone/` (about 3 seconds a game) | `PHONE_ONLY=id,id` |
+| `grownups` | The gear on the title screen (a tap shows a hint, a mouse hold or held Enter opens the page, a C typed in the name field does not start couch play), Esc and the pause sheet in a game (the round holds still, Esc resumes, the sheet's gear opens the page and Esc closes that to the map), no play timer, undoing a reset after a reload, and a touch tap and hold on the map's gear (about 45 seconds) | |
+| `world` | Hatching, the map, both place layouts, every subject and game card in all bands and both orientations, return memory, cancellation, birthdays, the grown-ups' gear and panel (about 4½ minutes) | |
 | `island` | The NEW twinkle, the heart after a round, the shelf and Favorites card, a reload, a portrait shelf | |
 | `room` | The treehouse: moving, flipping and using furnishings, hanging a sticker, tidy, a reload | |
 | `creations` | Stamp Studio pictures, a free Rainbow Fingers painting, Pixel Pictures designs and a free Song Maker song kept from the end-of-round screen, shown in the treehouse, swapped, taken down and brought back, kept through a reload | |
@@ -218,7 +242,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `machines` | Chain Reaction's first and top levels: drags, an incomplete run, a failed experiment that is not a miss, a hint, the chime, completion, portrait | |
 | `clap` | Clap the Syllables: all four levels, a wrong count, wrong bins, a hint, a portrait tray | |
 | `shortlist` | Block Tower, Lasso Loops, Pet Says, Owl Walk Home | `SHORTLIST_ONLY=tower\|lasso\|says\|owls` |
-| `woods` | Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure, and these ladder steps: Little Helpers' equal groups (`helpers`), Seesaw Balance 8–9 (`boxes`), Mail Carrier 6–7 (`mailmap`), Egg Catch 6 (`predict`), Bubble Pop 10–11 (`bonds`), Word Monsters 7 (`families`) | `WOODS_ONLY=light\|penguin\|peek\|code\|hop\|shop\|grow\|clock\|pixels\|night\|snack\|beat\|rhyme\|go\|ramp\|sort\|map\|opp\|graph\|worm\|bonds\|predict\|families\|helpers\|boxes\|mailmap` |
+| `woods` | Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Lemonade Stand, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure, and these ladder steps: Little Helpers' equal groups (`helpers`), Seesaw Balance 8–9 (`boxes`), Mail Carrier 6–7 (`mailmap`), Egg Catch 6 (`predict`), Bubble Pop 10–11 (`bonds`), Word Monsters 7 (`families`) | `WOODS_ONLY=light\|penguin\|peek\|code\|hop\|shop\|grow\|clock\|pixels\|night\|snack\|beat\|rhyme\|go\|ramp\|sort\|map\|opp\|graph\|worm\|bonds\|predict\|families\|helpers\|boxes\|mailmap\|lemon` |
 | `creative` | Stamp Studio, Pet Kitchen, Rhythm Neighbors, Tangram Town | `CREATIVE_ONLY=stamps\|kitchen\|rhythm\|tangram` |
 | `next` | Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks | `NEXT_ONLY=seesaw\|doctor\|bumper\|tricks` |
 | `originals` | Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond (with level 10), Shape Sorter, Color Garden | `ORIGINALS_ONLY=bubbles\|jelly\|peekaboo\|ducks\|shapes\|garden` |
@@ -227,6 +251,8 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `early` | Rainbow Fingers and Splish Splash | `EARLY_ONLY=paint\|bath` |
 | `third`, `fourth`, `expansion` | Feelings Faces and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps | |
 | `pattern`, `memory`, `letters`, `robot`, `stickers` | Pattern Train; Memory Match; all 26 letter trails and the word and name modes; Robot Path 1–10; sticker placement, removal, paging and portrait | |
+
+`scripts/abandon-cards.mjs` is not a suite: it opens each ghost-finger game's card and leaves it at a random moment (by the map, Back or Play), over and over, and fails on any page error; it found a rare fault where a game's `await` is ready in the frame its objects are destroyed (`GAME_URL=… GAME_ONLY=id,id ROUNDS=n`).
 
 `FROM_LEVEL=n` starts `next`, `creative`, `woods` and `shortlist` at a later level; `TO_LEVEL=n` can limit the paint or salon loop for lap checks.
 

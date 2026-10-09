@@ -2,11 +2,16 @@ import { Application, Container, Graphics, type Renderer } from 'pixi.js';
 import { cream } from '../art/palette';
 import { initTextures } from '../art/textures';
 import { audio } from '../audio/engine';
+import { voice } from '../audio/voice';
 import { trackPointers } from '../engine/input';
 import { Tweener } from '../engine/tween';
-import { computeView, type View } from '../engine/view';
+import { clampInsets, computeView, needsTurn, NO_INSETS, type Insets, type View } from '../engine/view';
+import { isParentPanelOpen, openParentPanel } from '../parent/panel';
+import { store } from '../progress/store';
+import { openPauseSheet, type PauseSheet } from '../ui/pause-sheet';
+import { TurnPrompt } from '../ui/TurnPrompt';
+import { escapeAction } from './pause';
 import type { Scene } from './Scene';
-import { session } from './session';
 import type { Band } from '../progress/bands';
 import type { PicnicStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
@@ -38,7 +43,6 @@ export interface Routes {
   /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. */
   room(): void;
   journal(): void;
-  goodnight(): void;
 }
 
 /** Owns the Pixi app, the logical-unit root, scene switching and the frame loop. */
@@ -47,6 +51,8 @@ export class App {
   /** Scaled so scenes work in logical units (see engine/view.ts). */
   readonly root = new Container();
   view: View = computeView(window.innerWidth, window.innerHeight);
+  /** What a notch, rounded corner or home indicator covers, in CSS pixels; the root sits inside it. */
+  insets: Insets = NO_INSETS;
   go!: Routes;
 
   /** The scene on screen. */
@@ -54,6 +60,17 @@ export class App {
   private readonly curtain = new Graphics();
   private readonly tw = new Tweener();
   private switching = false;
+  /** An invisible element whose padding is the safe area (see `#safe-area` in style.css). */
+  private readonly probe = document.createElement('div');
+  /** Cream over the strips the insets leave, so scenery the root draws past its edge never shows in them. */
+  private readonly frame = new Graphics();
+  /** Over everything while an upright phone is asked to turn; the scene underneath waits. */
+  private readonly turn = new TurnPrompt();
+  private turning = false;
+  private layoutKey = '';
+  /** Esc was pressed: the scene holds still behind the pause sheet (or the grown-ups' page opened from it). */
+  paused = false;
+  private sheet: PauseSheet | null = null;
 
   get renderer(): Renderer {
     return this.pixi.renderer;
@@ -70,14 +87,19 @@ export class App {
     });
     host.appendChild(this.pixi.canvas);
     this.pixi.stage.eventMode = 'static';
-    this.pixi.stage.addChild(this.root, this.curtain);
+    this.pixi.stage.addChild(this.root, this.frame, this.curtain, this.turn);
     initTextures(this.pixi.renderer);
     trackPointers();
+    this.probe.id = 'safe-area';
+    this.probe.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(this.probe);
     this.applyView();
 
     window.addEventListener('resize', () => this.applyView());
-    document.addEventListener('visibilitychange', () => audio.sleep(document.hidden));
-    session.onWarn = () => this.scene?.sleepyWarning();
+    // iOS settles the safe area a moment after a turn; the probe's box changes when it does.
+    if (typeof ResizeObserver === 'function') new ResizeObserver(() => this.applyView()).observe(this.probe);
+    document.addEventListener('visibilitychange', () => this.syncSleep());
+    window.addEventListener('keydown', (e) => this.onKey(e));
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
   }
 
@@ -85,6 +107,7 @@ export class App {
   async show(next: Scene) {
     if (this.switching) return;
     this.switching = true;
+    this.unpause();
     this.curtain.eventMode = 'static'; // swallow taps mid-transition
     const old = this.scene;
     if (old) {
@@ -97,6 +120,7 @@ export class App {
     next.init();
     next.resize(this.view);
     this.root.addChild(next.root);
+    this.refreshTurn();
     next.enter();
     await this.tw.to(this.curtain, { alpha: 0 }, { duration: 0.3 });
     this.curtain.eventMode = 'none';
@@ -104,18 +128,108 @@ export class App {
   }
 
   private applyView() {
-    this.view = computeView(window.innerWidth, window.innerHeight);
+    const w = window.innerWidth, h = window.innerHeight;
+    const insets = clampInsets(this.readInsets(), w, h);
+    // A window resize and the probe's observer both land here; lay out once per change.
+    const key = [w, h, insets.top, insets.right, insets.bottom, insets.left].join();
+    if (key === this.layoutKey) return;
+    this.layoutKey = key;
+    this.insets = insets;
+    this.view = computeView(w, h, this.insets);
     this.root.scale.set(this.view.scale);
+    // The island sits inside the cutouts; the cream behind it shows in the strips they leave.
+    this.root.position.set(this.insets.left, this.insets.top);
     // Grown-up DOM screens (couch play) grow with the window so they stay readable from a couch.
     document.documentElement.style.setProperty('--u', String(Math.min(2.2, Math.max(1, this.view.scale))));
-    this.curtain.clear().rect(0, 0, window.innerWidth, window.innerHeight).fill(cream);
+    this.curtain.clear().rect(0, 0, w, h).fill(cream);
+    this.drawFrame(w, h);
+    this.turn.layout(w, h);
+    this.refreshTurn();
     this.scene?.resize(this.view);
+  }
+
+  /** The four strips outside the insets, in cream; it swallows taps there and is absent on a screen with no cutouts. */
+  private drawFrame(w: number, h: number) {
+    const { top, right, bottom, left } = this.insets;
+    this.frame.clear();
+    const any = top + right + bottom + left > 0;
+    this.frame.eventMode = any ? 'static' : 'none';
+    if (!any) return;
+    const mid = h - top - bottom;
+    this.frame.rect(0, 0, w, top).rect(0, h - bottom, w, bottom).rect(0, top, left, mid).rect(w - right, top, right, mid).fill(cream);
+  }
+
+  private readInsets(): Insets {
+    const style = getComputedStyle(this.probe);
+    const px = (v: string) => parseFloat(v) || 0;
+    return { top: px(style.paddingTop), right: px(style.paddingRight), bottom: px(style.paddingBottom), left: px(style.paddingLeft) };
+  }
+
+  /** An upright phone gets the turn prompt, unless the scene is plain HTML that already suits it. */
+  private refreshTurn() {
+    const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    const on = needsTurn(window.innerWidth, window.innerHeight, touch) && !this.scene?.upright;
+    if (on === this.turning) return;
+    this.turning = on;
+    this.turn.visible = on;
+    // Plain-HTML buttons sit above the canvas (couch play's entry, the hatch name field); the prompt must not be bypassed.
+    document.documentElement.classList.toggle('turning', on);
+    if (on) voice.stop();
+    this.syncSleep();
+  }
+
+  private syncSleep() {
+    audio.sleep(document.hidden || this.turning || this.paused);
+  }
+
+  /** Esc: hold the scene still behind the pause sheet, or let it go again. */
+  private onKey(e: KeyboardEvent) {
+    if (e.key !== 'Escape' || e.repeat) return;
+    const action = escapeAction({
+      panelOpen: isParentPanelOpen(),
+      paused: this.paused,
+      canPause: !!this.scene?.canPause && !this.turning,
+      busy: this.switching,
+    });
+    if (action === 'pause') this.pause();
+    else if (action === 'resume') this.unpause();
+  }
+
+  private pause() {
+    this.paused = true;
+    voice.stop();
+    this.syncSleep();
+    this.sheet = openPauseSheet({
+      onResume: () => this.unpause(),
+      onShort: () => void voice.say('parent.ask'),
+      onGrownUps: () => {
+        // The scene stays frozen behind the page; closing it goes to the island map, which shows any change at once.
+        this.closeSheet();
+        voice.stop();
+        openParentPanel(() => (store.data.pet.hatched ? this.go.hub() : this.go.hatch()));
+      },
+    });
+  }
+
+  private unpause() {
+    this.closeSheet();
+    if (!this.paused) return;
+    this.paused = false;
+    this.syncSleep();
+  }
+
+  private closeSheet() {
+    this.sheet?.close();
+    this.sheet = null;
   }
 
   private tick(dt: number) {
     this.tw.update(dt);
-    if (!this.scene) return;
+    if (this.turning) {
+      this.turn.update(dt);
+      return;
+    }
+    if (!this.scene || this.paused) return;
     this.scene.update(dt);
-    if (this.scene.countsTime) session.update(dt);
   }
 }

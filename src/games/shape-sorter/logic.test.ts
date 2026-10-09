@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { HOLE_R, holeAt, holeLayout, pieceKinds, PLANS } from './logic';
+import { HOLE_R, holeAt, holeFor, holeLayout, pieceKinds, PLANS } from './logic';
 
 describe('Shape Sorter', () => {
   it('deals a piece for every hole and only pieces that fit somewhere', () => {
@@ -32,6 +32,19 @@ describe('Shape Sorter', () => {
       }
       // Far from every hole: nothing (the piece just goes home).
       expect(holeAt(holes, 0, -400)).toBeUndefined();
+    }
+  });
+
+  it('has a hole for every piece, and dropping a piece on its own hole is taken (what the ghost finger carries it to)', () => {
+    for (const plan of PLANS) {
+      const { holes } = holeLayout(plan);
+      for (let seed = 1; seed <= 30; seed++) {
+        for (const kind of pieceKinds(new Rng(seed), plan)) {
+          const hole = holeFor(holes, kind);
+          expect(hole, `${kind}`).toBeDefined();
+          expect(holeAt(holes, hole!.x, hole!.y)?.kind).toBe(kind);
+        }
+      }
     }
   });
 });

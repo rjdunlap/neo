@@ -3,21 +3,23 @@ import { makePet, petSpec } from '../../art/pet';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
+import { audio } from '../../audio/engine';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
 import { howToFor, shouldExplain } from '../../content/howto';
-import { demoFor } from '../../couch/catalog';
+import { islandDemo } from '../../content/demos';
 import { Demo } from '../../couch/demo';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import type { View } from '../../engine/view';
+import { textBoost, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
 import type { Band } from '../../progress/bands';
+import { stepLevel } from '../../progress/difficulty';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon } from '../../ui/howto-card';
@@ -26,7 +28,6 @@ import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, treehouseIcon }
 import { FONT } from '../../ui/text';
 import type { App, StoryRound } from '../App';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 /**
  * Hosts one round of a minigame and owns everything around it:
@@ -132,6 +133,7 @@ export class GameScene extends Scene {
     this.home.position.set(62, 62);
     this.help.position.set(62, 160);
     this.tip?.position.set(view.w / 2, 16);
+    this.tip?.scale.set(textBoost(view.scale));
     this.helpCard?.layout(view);
   }
 
@@ -150,12 +152,6 @@ export class GameScene extends Scene {
     if (this.finished) return;
     this.seconds += dt;
     this.game?.update(dt);
-  }
-
-  sleepyWarning() {
-    this.pet.setMood('sleepy', 2.5);
-    sfx.yawn();
-    void voice.say('sleepy.warn');
   }
 
   destroy() {
@@ -188,13 +184,39 @@ export class GameScene extends Scene {
   /** The how-to card fills the screen with Play and Back, and no round has been built or started. */
   private openIntro(info: NonNullable<ReturnType<typeof howToFor>>) {
     const mod = this.mod;
-    // A game the couch can play has a bot, which plays a real round in a window on the card.
-    const spec = demoFor(mod.id);
-    const demo = spec ? new Demo(mod, { ...spec, renderer: this.app.renderer }) : undefined;
-    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo });
+    const demo = this.demoAt(this.level);
+    // Held arrows choose the level the round is built at. They stay within her band's levels, like the grown-up zone's picker.
+    const range = mod.levels(this.band);
+    const pick = range.max > range.min ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta) } : undefined;
+    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo, pick });
+    // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
+    if (demo) audio.hush(true);
     card.layout(this.view);
     this.helpCard = card;
     this.ui.addChild(card);
+  }
+
+  /**
+   * A game with a bot plays a real round in a window on the card: a ghost finger at the level on the card, or (a game with no
+   * touch bot yet) the couch's controller demo, which plays its own level and so is kept as it is when the level changes.
+   */
+  private demoAt(level: number, current?: Demo): Demo | undefined {
+    const spec = islandDemo(this.mod, level, this.band);
+    if (!spec) return undefined;
+    if (spec.input === 'controller' && current) return current;
+    return new Demo(this.mod, { ...spec, renderer: this.app.renderer });
+  }
+
+  /** An arrow on the intro: the round will be built at the next level, and the card shows what that level asks and does. */
+  private stepIntroLevel(delta: 1 | -1) {
+    const card = this.helpCard;
+    if (!card || this.game || this.gone) return;
+    const level = stepLevel(this.level, delta, this.mod.levels(this.band));
+    if (level === this.level) return;
+    const info = howToFor(this.mod, level);
+    if (!info) return;
+    this.level = level;
+    card.show(info, this.demoAt(level, card.currentDemo));
   }
 
   /** Play: the card goes, and the round begins. */
@@ -207,6 +229,7 @@ export class GameScene extends Scene {
   }
 
   private closeHelp() {
+    if (this.helpCard) audio.hush(false);
     this.helpCard?.destroy({ children: true });
     this.helpCard = null;
   }
@@ -245,7 +268,7 @@ export class GameScene extends Scene {
     void this.celebrate(seed);
   }
 
-  /** Happy pet, confetti, a sticker, then "again?" — or goodnight if time is up. */
+  /** Happy pet, confetti, a sticker, then "again?". */
   private async celebrate(seed: number) {
     const v = this.view;
     const layer = new Container();
@@ -306,12 +329,6 @@ export class GameScene extends Scene {
       confetti.burst(pill.x, pill.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 12, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
       void voice.say('journal.new');
       await this.tw.wait(1.8);
-    }
-
-    if (session.over) {
-      await this.tw.wait(0.8);
-      this.app.go.goodnight();
-      return;
     }
 
     const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true));
@@ -391,6 +408,7 @@ export class GameScene extends Scene {
     card.alpha = 0;
     // `resize` only moves a tip that already exists, and a tip made after the first resize (once Play is pressed) would sit at the origin, over the home button.
     card.position.set(this.view.w / 2, 16);
+    card.scale.set(textBoost(this.view.scale)); // small text stays readable on a phone
     const dismiss = () => {
       if (this.tip !== card) return;
       this.tip = null;

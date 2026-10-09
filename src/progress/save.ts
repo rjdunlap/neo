@@ -66,7 +66,12 @@ export interface SaveData {
   pet: { name: string; color: PetColor; hatched: boolean };
   /** Highest band celebrated on the map; null before the first visit. */
   world: { band: Band | null };
-  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: number; coplayHints: boolean; howToCards: boolean };
+  /**
+   * `sessionMinutes` is retired and always 0 ("no limit"): the app has no timer, because play limits belong to the device
+   * (Screen Time, Guided Access). The field stays so an older cached build that reads a newer backup finds 0, not its
+   * old default of a few minutes, and never starts a goodnight scene.
+   */
+  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: 0; coplayHints: boolean; howToCards: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
   stories: { picnic: StoryProgress };
@@ -88,7 +93,7 @@ export function defaults(): SaveData {
     profile: { name: '', band: 'lap' },
     pet: { name: 'Pip', color: 'teal', hatched: false },
     world: { band: null },
-    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 5, coplayHints: true, howToCards: true },
+    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 0, coplayHints: true, howToCards: true },
     games: {},
     stickers: [],
     stories: { picnic: { steps: [], ended: false, keepsake: false } },
@@ -192,7 +197,7 @@ export function migrate(raw: unknown): SaveData {
       placeLayout: settings.placeLayout === 'subjects' ? 'subjects' : 'path',
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
       music: bool(settings.music, d.settings.music),
-      sessionMinutes: Math.max(0, num(settings.sessionMinutes, d.settings.sessionMinutes)),
+      sessionMinutes: 0,
       coplayHints: bool(settings.coplayHints, d.settings.coplayHints),
       howToCards: bool(settings.howToCards, d.settings.howToCards),
     },
@@ -204,4 +209,29 @@ export function migrate(raw: unknown): SaveData {
     creations: cleanCreations(raw.creations),
     journal: cleanJournal(raw.journal),
   };
+}
+
+/**
+ * The save as it was just before the last reset or restore, kept for exactly one undo so a slip never costs her
+ * stickers. It is not part of a backup: one snapshot, repaired by `migrate` when read, replaced by the next reset.
+ */
+export interface PreviousSave {
+  at: number;
+  data: SaveData;
+}
+
+/** A copy that later changes to `data` cannot touch. */
+export function remember(data: SaveData, at: number): PreviousSave {
+  return { at, data: structuredClone(data) };
+}
+
+/** What IndexedDB gave back, or null if it is not a snapshot. */
+export function repairPrevious(raw: unknown): PreviousSave | null {
+  if (!isObj(raw) || typeof raw.at !== 'number' || !Number.isFinite(raw.at) || !isObj(raw.data)) return null;
+  return { at: raw.at, data: migrate(raw.data) };
+}
+
+/** Undo swaps rather than discards, so undoing twice is a redo. */
+export function swapWithPrevious(current: SaveData, previous: PreviousSave, at: number): { data: SaveData; previous: PreviousSave } {
+  return { data: previous.data, previous: remember(current, at) };
 }

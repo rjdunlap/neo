@@ -10,8 +10,8 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { makeRequests, NAMES, planFor, THINGS, type NightPlan, type Thing } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { makeRequests, NAMES, planFor, THINGS, thingToTap, type NightPlan, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -33,6 +33,8 @@ function eyes(g: Graphics, x: number, y: number, open: boolean, size = 7) {
 /** A thing in the room that can be told goodnight. */
 class Sleeper extends Container {
   asleep = false;
+  /** Where a finger points: the middle of what can be tapped, in this thing's own units. */
+  mid = 0;
   private readonly critter: Critter | null = null;
   private readonly art = new Graphics();
   private readonly glow = new Graphics();
@@ -47,9 +49,11 @@ class Sleeper extends Container {
       this.critter.scale.set(0.46);
       this.addChild(this.critter);
       this.hitArea = new Circle(0, -60, 80);
+      this.mid = -60;
     } else {
       this.addChild(this.glow, this.art);
       this.hitArea = thing === 'lamp' ? new Rectangle(-75, -260, 150, 270) : new Circle(0, 0, 75);
+      this.mid = thing === 'lamp' ? -140 : 0;
     }
     this.drawArt();
   }
@@ -177,6 +181,15 @@ class GoodnightRoom implements Game {
       const b = this.glowing.getBounds();
       g.roundRect(b.x - 10, b.y - 10, b.width + 20, b.height + 20, 30).stroke({ width: 6 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
     }
+  }
+
+  /** The ghost finger on the how-to card: say goodnight to each friend, or to the one named and then the next. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const asleep = new Set(this.sleepers.filter((s) => s.asleep).map((s) => s.thing));
+    const thing = thingToTap(this.plan, this.requests[this.index], this.step, asleep);
+    const sleeper = this.sleepers.find((s) => s.thing === thing);
+    return sleeper ? { tap: { on: sleeper, y: sleeper.mid } } : null;
   }
 
   destroy() {}
@@ -308,6 +321,7 @@ export const goodnightRoom: GameModule = {
   coplayHint: 'Whisper "goodnight" together as each one falls asleep. It makes a calm last game before bed.',
   offScreen: 'At bedtime, say goodnight to the things in her room together: "Goodnight, lamp. Goodnight, teddy."',
   hubIcon: () => new NightIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new GoodnightRoom(ctx),
 };

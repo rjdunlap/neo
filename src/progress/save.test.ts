@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FLOOR, starterItem } from '../content/room';
 import { ROOM_ITEMS } from '../content/world';
-import { defaults, migrate } from './save';
+import { defaults, migrate, remember, repairPrevious, swapWithPrevious } from './save';
 
 describe('migrate', () => {
   it('turns nonsense into defaults', () => {
@@ -18,7 +18,9 @@ describe('migrate', () => {
       stickers: [{ game: 'bubble-pop', seed: 5, at: 1 }, { seed: 9 }],
     });
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
-    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 10, coplayHints: true, howToCards: true });
+    // A save from when the app had a play timer: the limit is retired, and always saved as 0 (no limit).
+    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 0, coplayHints: true, howToCards: true });
+    expect(defaults().settings.sessionMinutes).toBe(0);
     expect(save.games['bubble-pop'].level).toBe(1);
     expect(save.games['bubble-pop'].pinned).toBeNull();
     expect(save.games['bubble-pop'].history).toEqual([{ level: 1, misses: 2, hints: 0, seconds: 0, at: 0 }]);
@@ -256,5 +258,46 @@ describe('migrate', () => {
     const save = defaults();
     save.journal = { found: ['sink-float:duck', 'animal-snack:bear'], seen: 1 };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+});
+
+describe('undo for a reset or restore', () => {
+  const played = () => {
+    const save = defaults();
+    save.stickers.push({ game: 'bubble-pop', seed: 4, at: 1 }, { game: 'duck-pond', seed: 9, at: 2 });
+    save.games['bubble-pop'] = { plays: 4, level: 3, pinned: 2, history: [] };
+    return save;
+  };
+
+  it('snapshots a copy that later changes cannot reach', () => {
+    const save = played();
+    const snap = remember(save, 100);
+    save.stickers.length = 0;
+    save.games['bubble-pop'].plays = 0;
+    expect(snap.at).toBe(100);
+    expect(snap.data.stickers).toHaveLength(2);
+    expect(snap.data.games['bubble-pop'].plays).toBe(4);
+  });
+
+  it('brings the stickers back, and a second undo is a redo', () => {
+    const before = played();
+    const snap = remember(before, 1);
+    const afterReset = { ...defaults(), profile: before.profile, settings: before.settings, pet: before.pet };
+    const undone = swapWithPrevious(afterReset, snap, 2);
+    expect(undone.data).toEqual(before);
+    expect(undone.previous.at).toBe(2);
+    const redone = swapWithPrevious(undone.data, undone.previous, 3);
+    expect(redone.data).toEqual(afterReset);
+  });
+
+  it('reads back a stored snapshot, repairing it, and rejects anything else', () => {
+    const stored = JSON.parse(JSON.stringify(remember(played(), 7)));
+    expect(repairPrevious(stored)).toEqual(remember(played(), 7));
+    const damaged = repairPrevious({ at: 5, data: { profile: { name: 'Mia', band: 'dinosaur' }, stickers: 'x' } });
+    expect(damaged?.data.profile).toEqual({ name: 'Mia', band: 'lap' });
+    expect(damaged?.data.stickers).toEqual([]);
+    for (const junk of [null, undefined, 'x', 4, [], {}, { at: 'now', data: {} }, { at: Infinity, data: {} }, { at: 1 }, { at: 1, data: 'x' }]) {
+      expect(repairPrevious(junk)).toBeNull();
+    }
   });
 });

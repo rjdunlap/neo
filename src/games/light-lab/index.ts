@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { hintMirror, makePuzzle, planFor, solved, trace, whyNot, type LightPlan, type LightPuzzle, type Tilt, type Tint } from './logic';
 
 const LEVELS: BandLevels = {
@@ -191,6 +191,18 @@ class LightLab implements Game {
       this.botWait = 0.45;
     }
     return out;
+  }
+
+  /**
+   * The ghost finger on the how-to card: tap the mirror the solution still needs turned (the same one the hint names),
+   * and on planning levels, with every mirror right, the sun to shine.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.puzzle) return null;
+    const want = hintMirror(this.puzzle, this.tilts);
+    const mirror = want >= 0 ? this.mirrors.get(want) : undefined;
+    if (mirror) return { tap: { on: mirror } };
+    return this.plan.mode === 'plan' ? { tap: { on: this.sun } } : null;
   }
 
   private at(x: number, y: number) {
@@ -412,6 +424,7 @@ export const lightLab: GameModule = {
   coplayHint: 'Before shining, trace the path with your finger together: "The light goes here, bumps the mirror, and turns..."',
   offScreen: 'Use a hand mirror to bounce a sunbeam onto the wall, then onto a toy.',
   hubIcon: () => new LightIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new LightLab(ctx),
 };
