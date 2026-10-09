@@ -58,14 +58,6 @@ export function bookIcon(): Graphics {
     .stroke(line(3, 0xd9a520));
 }
 
-export function lockIcon(color = ink): Graphics {
-  return new Graphics()
-    .arc(0, -6, 10, Math.PI, 0)
-    .stroke(line(5, color))
-    .roundRect(-15, -6, 30, 24, 5)
-    .fill(color);
-}
-
 export function arrowIcon(dir: 1 | -1, color = ink): Graphics {
   return new Graphics().poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22]).fill(color).stroke(line(6, color));
 }
