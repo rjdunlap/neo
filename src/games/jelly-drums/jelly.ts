@@ -37,6 +37,11 @@ export class Jelly extends Container {
     this.drawFace();
   }
 
+  /** Where a finger points: up the body, level with the eyes' lower edge, in this jelly's own coordinates. */
+  get belly() {
+    return -this.h * 0.4;
+  }
+
   /** A tap: squish and sing. */
   hit(power = 1) {
     this.squashV += 5.5 * power;

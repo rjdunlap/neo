@@ -6075,9 +6075,12 @@ async function fingerDemos() {
       const ranges = g.bands.map((band) => ({ band, ...g.levels(band) }));
       const lo = ranges.reduce((a, r) => (r.min < a.min ? r : a));
       const hi = ranges.reduce((a, r) => (r.max > a.max ? r : a));
-      return { id: g.id, plays: lo.min === hi.max ? [{ band: lo.band, level: lo.min }] : [{ band: lo.band, level: lo.min }, { band: hi.band, level: hi.max }] };
+      return { id: g.id, ranges, plays: lo.min === hi.max ? [{ band: lo.band, level: lo.min }] : [{ band: lo.band, level: lo.min }, { band: hi.band, level: hi.max }] };
     });
   });
+  // FINGER_LEVELS=3,4: play these levels instead of the first and last (each in the first band that has it), to time the ones between.
+  const levels = process.env.FINGER_LEVELS?.split(',').map(Number);
+  if (levels) for (const g of games) g.plays = levels.flatMap((level) => { const r = g.ranges.find((x) => level >= x.min && level <= x.max); return r ? [{ band: r.band, level }] : []; });
   const picked = games.filter((g) => !only || only.includes(g.id));
   assert.ok(picked.length > 0, `FINGER_ONLY matched no game: ${only}`);
   await page.evaluate(async () => {

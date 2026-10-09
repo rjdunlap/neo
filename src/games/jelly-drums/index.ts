@@ -8,9 +8,9 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
-import { makeTune, planFor, type JellyPlan } from './logic';
+import { jellyToTap, makeTune, planFor, type JellyPhase, type JellyPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Big jelly, low note: C D E G A from left to right. */
@@ -37,7 +37,7 @@ class JellyDrums implements Game {
   private readonly jellies: Jelly[];
   private readonly fans: Critter[];
   private view: View;
-  private phase: 'play' | 'listen' | 'turn' | 'done' = 'play';
+  private phase: JellyPhase = 'play';
   private lit = 0;
   private notes = 0;
   private tune: number[] = [];
@@ -113,6 +113,13 @@ class JellyDrums implements Game {
     this.clock += dt;
     const beat = music.beat();
     for (const j of this.jellies) j.update(dt, beat);
+  }
+
+  /** The ghost finger on the how-to card: play the scale in free play, and in a tune round wait for the tune, then copy it. */
+  autotouch(): TouchIntent | null {
+    const i = jellyToTap(this.plan.mode, this.phase, this.tune, this.at, this.notes);
+    // A short rest: the next note belongs with this one, and a long tune round has to fit the window.
+    return i === null ? null : { tap: { on: this.jellies[i], y: this.jellies[i].belly }, pause: 0.15 };
   }
 
   destroy() {}
@@ -312,6 +319,7 @@ export const jellyDrums: GameModule = {
   coplayHint: 'Sing along! Big jellies sing low, little jellies sing high.',
   offScreen: 'Make a pots-and-pans band: big pot, low sound; small pot, high sound.',
   hubIcon: () => new JellyStand(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new JellyDrums(ctx),
 };
