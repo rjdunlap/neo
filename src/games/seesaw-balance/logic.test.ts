@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { aloneSide, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, PLANS, tilt, total, ways, weigh, type Thing } from './logic';
+import { aloneSide, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, PLANS, tilt, total, ways, weigh, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
   it('leans toward the heavier side, more for a bigger difference, and is level only when equal', () => {
@@ -19,6 +19,9 @@ describe('Seesaw Balance', () => {
     expect(weigh(4, 3)).toBe('under');
     expect(weigh(4, 4)).toBe('level');
     expect(weigh(4, 5)).toBe('over');
+    expect(balanceObservation(0, 0)).toBeNull();
+    expect(balanceObservation(2, 4)).toBe('heavy-down');
+    expect(balanceObservation(3, 3)).toBe('equal-level');
   });
 
   it('makes every round winnable, with a real choice to make', () => {

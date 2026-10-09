@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-09 (631 tests, typecheck and build, with deferred scene destruction) | Scene teardown entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09 (632 tests, typecheck and build, with five journal source games) | More discovery-journal sources entry | Run with every code change |
 | `npm run test:offline` | 2026-10-09, with the gear and no play timer | Gear entry (2026-10-08: Lemonade Stand entry and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
@@ -20,7 +20,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `howtolevel` | 2026-10-08 | Level arrows entry | About 10 seconds; also run by `howto` |
 | `fingerdemo` | 2026-10-09, the eleven newest of 24 games with a ghost finger at every level (the other thirteen: 2026-10-08, first and last level), clean play asserted | Ghost finger on eleven more games entry | Under a minute a play, the longest 66 s of the 75 allowed; Chrome automation, so the hand's look on an iPad is not established |
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
-| `journal` | 2026-10-08 | Journal source-detail entry | Real play of both source games, reload and portrait |
+| `journal` | 2026-10-09 | More discovery-journal sources entry | Real play of all five source games, all three pages, reload and portrait |
 | `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
 | `couchgames` | 2026-10-08, Pond Conga filtered (2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered) | Child's island, couch Settings, Just me, Island Bridges and Pond Conga entries | Peg Garden's bot needed one retry (its known flake) |
@@ -49,6 +49,15 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### More discovery-journal sources (2026-10-09)
+
+What changed: the journal grows from sixteen to twenty-three observations and five source games. Photo Safari files each of its four action words only after a successful photo; Seesaw Balance files the heavier-side and equal-weight rules only after a tray change shows them; Bouncy Launch files its bigger-pull/farther-landing rule only after two plainly different pulls. Every new card has its own code-drawn picture, spoken observation and exact found/unfound source line; opening a game or reading its instructions finds nothing. The bounded `{ found, seen }` save shape and stable existing ids are unchanged.
+
+- `npm run typecheck`, all 632 unit tests and `npm run build` passed. The rules now test which seesaw states count as an observation and how different two pulls must be; the journal table tests all promised entries across five real registered games, their spoken truth and their exact source text.
+- `BROWSER_SUITE=journal` passed with real input through all five sources: water drops, animal feeding, successful photographs, block drags that first tip and then level a seesaw, and four pull-and-release launches. It asserted only actually observed ids were filed, one ordinary sticker per round, all three journal pages, source detail, twinkles, the green route arrow, reload and portrait, with no page errors.
+- Looked at the new third page in landscape and the journal in portrait. The seven new cards, their pictures, labels, sparkles, detail text and green arrow are clear; the shorter third row leaves comfortable empty space.
+- Not run: `world`, unrelated game or couch suites, or the production offline check. No navigation, save shape, external asset or offline behavior changed. Still open: a child's response to the journal, notes she adds herself, creation entries and launching at an entry's exact request.
 
 ### Scene teardown waits out already-ready continuations (2026-10-09)
 

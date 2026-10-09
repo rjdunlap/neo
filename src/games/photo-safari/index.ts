@@ -6,6 +6,7 @@ import { Backdrop } from '../../art/scenery';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { entryId } from '../../content/journal';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -13,7 +14,7 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalToTap, describe, makeScene, planFor, request, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
+import { animalToTap, describe, makeScene, planFor, request, type Action, type Animal, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -94,11 +95,36 @@ class Actor extends Container {
   }
 }
 
+const ACTION_FRIEND: Record<Action, Animal> = { jumping: 'bunny', sleeping: 'cat', eating: 'pig', dancing: 'duck' };
+
+/** A still from the safari for the discovery journal's action-word cards. */
+export function safariJournalPicture(action: Action): Container {
+  const actor = new Actor({ animal: ACTION_FRIEND[action], action, spot: 'tree' });
+  actor.critter.alive = false;
+  actor.glow.visible = false;
+  if (action === 'jumping') {
+    actor.critter.y = -24;
+    actor.addChild(new Graphics().moveTo(72, -32).lineTo(72, -145).stroke({ width: 9, color: swatch.blue.line, cap: 'round' }).poly([52, -122, 72, -154, 92, -122]).fill(swatch.blue.line));
+  } else if (action === 'sleeping') {
+    const z = label('z z', 34, 0x6b6b8a);
+    z.position.set(60, -170);
+    actor.addChild(z);
+  } else if (action === 'dancing') {
+    actor.critter.rotation = -0.18;
+    const notes = label('♪ ♫', 34, swatch.purple.line);
+    notes.position.set(68, -170);
+    actor.addChild(notes);
+  }
+  return actor;
+}
+
 class PhotoSafari implements Game {
   readonly plan: SafariPlan;
   scene: Scene | null = null;
   actors: Actor[] = [];
   photos = 0;
+  /** Action words in photos that made it into this round's album. */
+  readonly photographed = new Set<Action>();
   misses = 0;
   hints = 0;
   busy = true;
@@ -234,6 +260,7 @@ class PhotoSafari implements Game {
     }
     this.busy = true;
     a.glow.visible = false;
+    this.photographed.add(a.sighting.action);
     await this.polaroid(a);
     this.photos++;
     await this.ctx.say('safari.click');
@@ -284,7 +311,7 @@ class PhotoSafari implements Game {
     sfx.tada();
     await this.ctx.say('safari.done');
     await this.ctx.tw.wait(1.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.photographed].map((action) => entryId('photo-safari', action)) });
   }
 }
 

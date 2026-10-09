@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { gameById } from '../games/registry';
 import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
+import { ACTIONS } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats } from '../games/sink-float/logic';
 import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen, sourceText } from './journal';
 import { SCRIPT } from './voice-script';
 
 describe('the entries', () => {
-  it('has one entry for every thing in Sink or Float and every animal in Animal Snack, and no others', () => {
+  it('covers every promised observation from all five source games, and no others', () => {
     expect(entriesOf('sink-float').map((e) => e.key).sort()).toEqual([...ALL_THINGS].sort());
     expect(entriesOf('animal-snack').map((e) => e.key).sort()).toEqual([...ANIMALS].sort());
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length);
+    expect(entriesOf('photo-safari').map((e) => e.key).sort()).toEqual([...ACTIONS].sort());
+    expect(entriesOf('seesaw-balance').map((e) => e.key).sort()).toEqual(['equal-level', 'heavy-down']);
+    expect(entriesOf('bouncy-launch').map((e) => e.key)).toEqual(['bigger-pull']);
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 3);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -32,14 +36,29 @@ describe('the entries', () => {
       const lines = SCRIPT[e.line];
       expect(lines?.length, e.id).toBeGreaterThan(0);
       const said = lines.join(' ').toLowerCase();
-      if (e.game === 'sink-float') {
-        const thing = e.key as (typeof ALL_THINGS)[number];
-        expect(said, e.id).toContain(floats(thing) ? 'float' : 'sink');
-        expect(said, e.id).not.toContain(floats(thing) ? 'sinks' : 'floats');
-        expect(said, e.id).toContain(e.key);
-      } else {
-        expect(said, e.id).toContain(e.key);
-        expect(said, e.id).toContain(FAVORITE[e.key as keyof typeof FAVORITE]!);
+      switch (e.game) {
+        case 'sink-float': {
+          const thing = e.key as (typeof ALL_THINGS)[number];
+          expect(said, e.id).toContain(floats(thing) ? 'float' : 'sink');
+          expect(said, e.id).not.toContain(floats(thing) ? 'sinks' : 'floats');
+          expect(said, e.id).toContain(e.key);
+          break;
+        }
+        case 'animal-snack':
+          expect(said, e.id).toContain(e.key);
+          expect(said, e.id).toContain(FAVORITE[e.key as keyof typeof FAVORITE]!);
+          break;
+        case 'photo-safari':
+          expect(said, e.id).toContain(e.key.slice(0, -3));
+          break;
+        case 'seesaw-balance':
+          expect(said, e.id).toContain(e.key === 'heavy-down' ? 'more weight' : 'same weight');
+          expect(said, e.id).toContain(e.key === 'heavy-down' ? 'down' : 'level');
+          break;
+        case 'bouncy-launch':
+          expect(said, e.id).toContain('bigger pull');
+          expect(said, e.id).toContain('farther');
+          break;
       }
     }
   });
@@ -51,20 +70,33 @@ describe('the entries', () => {
 
   it('says exactly what to do to find an entry, and where a found one came from', () => {
     for (const e of JOURNAL) {
-      const find = sourceText(e, e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack', false);
-      const found = sourceText(e, e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack', true);
-      expect(find).toContain(e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack');
-      expect(found).toContain(e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack');
-      expect(find.toLowerCase()).toContain(e.key);
-      expect(found.toLowerCase()).toContain(e.key);
+      const gameName = gameById(e.game)!.name;
+      const find = sourceText(e, gameName, false);
+      const found = sourceText(e, gameName, true);
+      expect(find).toContain(gameName);
+      expect(found).toContain(gameName);
       expect(find).not.toMatch(/Not found yet/);
-      expect(found).toMatch(/^Found in .+ when the /);
+      expect(found).toMatch(/^Found in .+ when /);
       if (e.game === 'sink-float') {
+        expect(find.toLowerCase()).toContain(e.key);
+        expect(found.toLowerCase()).toContain(e.key);
         expect(find).toContain('water');
         expect(found).toContain('water');
-      } else {
+      } else if (e.game === 'animal-snack') {
+        expect(find.toLowerCase()).toContain(e.key);
+        expect(found.toLowerCase()).toContain(e.key);
         expect(find).toContain(FAVORITE[e.key as keyof typeof FAVORITE]!);
         expect(found).toContain(FAVORITE[e.key as keyof typeof FAVORITE]!);
+      } else if (e.game === 'photo-safari') {
+        expect(find).toContain('photo');
+        expect(find).toContain(e.key);
+        expect(found).toContain(e.key);
+      } else if (e.game === 'seesaw-balance') {
+        expect(find).toContain('seesaw');
+        expect(found).toContain('side');
+      } else {
+        expect(find).toContain('pulls');
+        expect(found).toContain('bigger pull');
       }
     }
   });

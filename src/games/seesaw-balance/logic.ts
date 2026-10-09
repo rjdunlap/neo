@@ -59,6 +59,14 @@ export interface SeesawRound {
 export const other = (side: Side): Side => (side === 'left' ? 'right' : 'left');
 export const total = (things: readonly Thing[]) => things.reduce((sum, t) => sum + t.weight, 0);
 
+export type BalanceObservation = 'heavy-down' | 'equal-level';
+
+/** What a child can observe after changing the trays. Empty trays do not demonstrate either rule. */
+export function balanceObservation(left: number, right: number): BalanceObservation | null {
+  if (left === 0 && right === 0) return null;
+  return left === right ? 'equal-level' : 'heavy-down';
+}
+
 /** Which side is down, or null when level. */
 export function downSide(left: number, right: number): Side | null {
   return left === right ? null : left > right ? 'left' : 'right';
