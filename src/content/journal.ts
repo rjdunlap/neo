@@ -9,7 +9,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -114,6 +114,22 @@ export const JOURNAL: readonly JournalEntry[] = [
     name: 'Bigger pull',
     line: 'journal.launch.pull',
     source: { find: 'try two different pulls and watch where the pet lands', found: 'a bigger pull sent the pet farther than a smaller pull' },
+  },
+  {
+    id: entryId('habitat-helpers', 'bunny'),
+    game: 'habitat-helpers',
+    key: 'bunny',
+    name: 'Bunny habitat',
+    line: 'journal.habitat.bunny',
+    source: { find: 'build a garden with food, water and shelter for Bunny and open the gate', found: 'a garden supplied food, water and shelter and Bunny visited' },
+  },
+  {
+    id: entryId('habitat-helpers', 'duck'),
+    game: 'habitat-helpers',
+    key: 'duck',
+    name: 'Duck habitat',
+    line: 'journal.habitat.duck',
+    source: { find: 'build a garden with food, water and shelter for Duck and open the gate', found: 'a garden supplied food, water and shelter and Duck visited' },
   },
 ];
 

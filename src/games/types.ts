@@ -121,7 +121,8 @@ export interface RoundResult {
   creation?: Creation;
   /**
    * Journal entry ids (see `src/content/journal.ts`) for observations this completed round actually showed her: a thing
-   * watched in water, an animal eating, a photographed action, a changed balance or two compared pulls. The shell files
+   * watched in water, an animal eating, a photographed action, a changed balance, two compared pulls or a visitor whose
+   * food/water/shelter habitat was completed. The shell files
    * the new ones in her discovery journal.
    */
   discoveries?: string[];

@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-09 (typecheck, 654 unit tests and `npm run build` on the tree that merges the journal sources, deferred teardown, the gear and the last five couch ghost fingers with five more bots) | Five more ghost-finger games entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09 (Habitat Helpers: typecheck, 40 targeted tests and build passed; an earlier full run passed all 659 tests, while the final 660-test run had only an unchanged Ferry Jam test time out) | Habitat Helpers entry | Run with every code change |
 | `npm run test:offline` | 2026-10-09, with the gear and no play timer | Gear entry (2026-10-08: Lemonade Stand entry and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error); Egg Catch, Bounce Back, Bouncy Launch, Peg Garden and Bumper Garden filtered (2026-10-09) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
@@ -22,6 +22,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
 | `journal` | 2026-10-09, again on the tree that merges the journal with the couch ghost fingers | More discovery-journal sources entry, five more ghost-finger games entry | Real play of all five source games, all three pages, reload and portrait |
 | `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
+| `habitat` | 2026-10-09 | Habitat Helpers entry | First, prediction and top levels; Chrome automation, not a child or device |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
 | `couchgames` | 2026-10-08, Pond Conga filtered (2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered; 2026-10-09: Peg Garden, Bumper Garden, Bouncy Launch, Egg Catch and Bounce Back filtered, after their ghost fingers) | Child's island, couch Settings, Just me, Island Bridges, Pond Conga and last five couch games entries | Peg Garden's bot needed one retry (its known flake) |
 | `couchcourse` | 2026-10-08, with twelve courses | Island Bridges entry | About four to seven minutes |
@@ -49,6 +50,14 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Habitat Helpers, a small visitor-garden model (2026-10-09)
+
+What changed: **Habitat Helpers** is the 74th island game, in Tinker Lab for preschool through school. Its six levels move from Bunny's visible food/water/shelter pieces to both visitors, distractors, predicting who a prepared habitat invites, two-space habitats that need a multipurpose piece, and a three-space garden compatible with Bunny and Duck. Opening the gate tests the model; an incomplete habitat or unmatched prediction is a free experiment, the missing need is spoken, and the second incomplete test glows useful pieces and records one hint. Completing a round files only the Bunny/Duck habitat observations actually shown in the discovery journal. Every piece is code-drawn and says its name and modeled use when placed.
+
+- `npm run typecheck`, the four targeted files (40 tests: Habitat rules across 200 seeds per level, compact-piece requirements, exact prediction visitors and useful hints; journal, how-to and registry) and `npm run build` passed. An earlier full `npm test` passed all 659 tests; after one final Habitat data test was added, the full run passed 659 of 660 and only Ferry Jam's unchanged frozen-harbor test exceeded its five-second timeout under parallel load. It had passed in the earlier run, so it was recorded rather than looped.
+- `BROWSER_SUITE=habitat` passed on the final code: level 1 tested an empty garden twice (zero misses, then one hint and useful glows) and welcomed Bunny; level 4 deliberately predicted the other visitor in all three gardens without a miss or hint; level 6 used the unique three-piece answer and welcomed both; one sticker per round and both journal ids were saved. It also asserted the top-level choices and gate fit in portrait, with no page errors.
+- Looked at the active first level in landscape and top level in portrait: the goal pictures, open plots, 112-unit cards, glow and gate are distinct; the pet stays clear. Not run: `world`, full `howto`, full `journal`, `phone`, offline or couch suites (no shell, route, save schema, assets or couch code changed). Not established: the six garden pictures or shared pond model with a child, device speech, facts reviewed by a knowledgeable grown-up, or an iPad; those stay open in the roadmap.
 
 ### The ghost finger on five more games: the first of the one-touch taps (2026-10-09)
 
