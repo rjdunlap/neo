@@ -1,4 +1,5 @@
 import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
+import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
 import type { LineId } from './voice-script';
 
@@ -8,7 +9,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -55,6 +56,13 @@ const SNACK_LINES: Record<string, LineId> = {
   bear: 'journal.snack.bear',
 };
 
+const SAFARI_LINES: Record<Action, LineId> = {
+  jumping: 'journal.safari.jumping',
+  sleeping: 'journal.safari.sleeping',
+  eating: 'journal.safari.eating',
+  dancing: 'journal.safari.dancing',
+};
+
 /** Floaters first, then sinkers, so the cards read as two groups; then the animals in the order the game lists them. */
 const sinkOrder = [...ALL_THINGS.filter(floats), ...ALL_THINGS.filter((t) => !floats(t))];
 
@@ -75,6 +83,38 @@ export const JOURNAL: readonly JournalEntry[] = [
     line: SNACK_LINES[a],
     source: { find: `let the ${a} eat ${FAVORITE[a]}`, found: `the ${a} ate ${FAVORITE[a]}` },
   })),
+  ...ACTIONS.map((action): JournalEntry => ({
+    id: entryId('photo-safari', action),
+    game: 'photo-safari',
+    key: action,
+    name: cap(action),
+    line: SAFARI_LINES[action],
+    source: { find: `take a photo of an animal ${action}`, found: `an animal ${action} was photographed` },
+  })),
+  {
+    id: entryId('seesaw-balance', 'heavy-down'),
+    game: 'seesaw-balance',
+    key: 'heavy-down',
+    name: 'Heavier side',
+    line: 'journal.seesaw.heavy',
+    source: { find: 'put more weight on one side of the seesaw', found: 'one side held more weight and went down' },
+  },
+  {
+    id: entryId('seesaw-balance', 'equal-level'),
+    game: 'seesaw-balance',
+    key: 'equal-level',
+    name: 'Same weight',
+    line: 'journal.seesaw.equal',
+    source: { find: 'make both sides of the seesaw weigh the same', found: 'both sides weighed the same and the seesaw became level' },
+  },
+  {
+    id: entryId('bouncy-launch', 'bigger-pull'),
+    game: 'bouncy-launch',
+    key: 'bigger-pull',
+    name: 'Bigger pull',
+    line: 'journal.launch.pull',
+    source: { find: 'try two different pulls and watch where the pet lands', found: 'a bigger pull sent the pet farther than a smaller pull' },
+  },
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);

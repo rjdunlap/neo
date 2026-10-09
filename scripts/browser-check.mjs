@@ -6894,11 +6894,63 @@ async function journalPlay() {
   await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.found && c.entry.game === 'animal-snack').node)); await page.waitForTimeout(300);
   assert.match((await detail()).observation, /eats|chews/);
   assert.match((await detail()).source, /^Found in Animal Snack when the .* ate .+\.$/);
+  // Photo Safari files only the action words in successful photos.
+  await launch('photo-safari', 1); await page.waitForTimeout(700);
+  await page.evaluate(async () => {
+    const g = neo.scene.game;
+    for (let p = 0; p < g.plan.photos; p++) {
+      await kit.until(() => g.photos === p && !g.busy && g.actors.length, 15000);
+      kit.tapOn(g.actors[p % g.actors.length], 0, -60);
+      await kit.until(() => g.photos > p, 10000);
+    }
+  });
+  await finished('photo-safari');
+  const safari = await page.evaluate(() => [...neo.scene.game.photographed].map((action) => `photo-safari:${action}`).sort());
+  assert.deepEqual((await found()).filter((id) => id.startsWith('photo-safari:')).sort(), safari);
+  // Seesaw Balance files each balance rule only after a tray change makes it visible.
+  await launch('seesaw-balance', 3); await page.waitForTimeout(500);
+  await page.evaluate(async () => {
+    const g = neo.scene.game;
+    for (let r = 0; r < g.rounds.length; r++) {
+      await kit.until(() => g.index === r && !g.busy && g.items.length, 15000);
+      const side = g.round.fixedSide === 'left' ? 'right' : 'left';
+      for (let k = 0; k < g.round.answer; k++) {
+        const block = g.items.find((i) => !i.fixed && !i.side);
+        const top = g.trayTop(side), to = g.layer.toGlobal({ x: top.x, y: top.y + 20 });
+        await kit.dragTo(block.node, to, 12); await kit.sleep(250);
+      }
+    }
+  });
+  await finished('seesaw-balance');
+  assert.deepEqual((await found()).filter((id) => id.startsWith('seesaw-balance:')).sort(), ['seesaw-balance:equal-level', 'seesaw-balance:heavy-down']);
+  // Bouncy Launch files the distance rule after two plainly different real pull-and-release launches.
+  await launch('bouncy-launch', 2); await page.waitForTimeout(500);
+  await page.evaluate(async () => {
+    const g = neo.scene.game, { pullFor } = await import('/src/games/bouncy-launch/logic.ts');
+    for (const f of [0.2, 0.9, 0.5, 0.7]) {
+      await kit.until(() => !g.flying, 10000);
+      const d = pullFor(f) / Math.SQRT2, p = g.pet.getGlobalPosition();
+      await kit.drag(kit.line([p.x, p.y - 80], [p.x - d, p.y - 80 + d], 10), 1, 16);
+      await kit.until(() => g.flying, 2000); await kit.until(() => !g.flying, 10000);
+    }
+  });
+  await finished('bouncy-launch');
+  assert.deepEqual((await found()).filter((id) => id.startsWith('bouncy-launch:')), ['bouncy-launch:bigger-pull']);
+  const expanded = await found();
+  const expandedNew = expanded.length - all.length;
+  // The new discoveries occupy page three; each card still names the exact observation that revealed it.
+  await page.evaluate(() => neo.go.journal()); await scene('JournalScene'); await page.waitForTimeout(500);
+  assert.deepEqual(await view(), { page: 2, found: expanded.length, twinkles: expandedNew, seen: expanded.length });
+  await screenshot('journal-page-three');
+  await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.entry.id === 'seesaw-balance:equal-level').node)); await page.waitForTimeout(300);
+  assert.deepEqual(await detail(), { observation: 'When both sides have the same weight, the seesaw stays level.', source: 'Found in Seesaw Balance when both sides weighed the same and the seesaw became level.' });
+  await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.entry.id === 'bouncy-launch:bigger-pull').node)); await page.waitForTimeout(300);
+  assert.match((await detail()).source, /bigger pull sent the pet farther/);
   // A reload keeps everything and nothing twinkles any more.
   await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(400);
   await page.reload(); await ready();
   await page.evaluate(() => neo.go.journal()); await scene('JournalScene'); await page.waitForTimeout(500);
-  assert.deepEqual(await found(), all);
+  assert.deepEqual(await found(), expanded);
   assert.equal((await view()).twinkles, 0);
   // Portrait: the cards stay clear of the strip, and the room's buttons clear of each other.
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
@@ -6908,7 +6960,7 @@ async function journalPlay() {
   assert.ok(await page.evaluate(() => { const bs = [neo.scene.journalButton, neo.scene.flip, neo.scene.tidyButton].map((b) => b.getBounds()); return bs.every((a, i) => bs.every((b, j) => i === j || a.x + a.width <= b.x || b.x + b.width <= a.x)); }), 'the buttons do not overlap');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
-  log('Journal: a Sink or Float round fills it with exactly what she watched, and an Animal Snack round with the animals she saw eat; the end of the round shows what is new and gives one sticker; the treehouse button twinkles until she opens the journal; every unfound card names the exact revealing action and every found card remembers it, while the green arrow opens the game at a band it plays; the journal opens on the page with the new things; nothing is found twice; a reload keeps it all; portrait stays clear');
+  log('Journal: Sink or Float, Animal Snack, Photo Safari, Seesaw Balance and Bouncy Launch file only observations actually seen in a finished round; the end of the round shows what is new and gives one sticker; the treehouse button twinkles until she opens the journal; every unfound card names the exact revealing action and every found card remembers it, while the green arrow opens the game at a band it plays; all three pages, a reload and portrait stay clear');
 }
 
 /** Clap the Syllables: clap along, clap by yourself (a wrong count, a hint), sort by claps (wrong drops, a hint), match claps to a picture. */

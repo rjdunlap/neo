@@ -7,6 +7,7 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
+import { entryId } from '../../content/journal';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -16,7 +17,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { CLOUDS } from './course';
-import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, reach, targets, type LaunchPlan } from './logic';
+import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -58,6 +59,8 @@ class BouncyLaunch implements Game {
   flying = false;
   finished = false;
   hinting = false;
+  /** Landing distances produced by deliberate pulls (the tap-only level has none). */
+  readonly observedPulls: number[] = [];
 
   private readonly backdrop: Backdrop;
   private readonly spring = new Graphics();
@@ -375,6 +378,7 @@ class BouncyLaunch implements Game {
   private async launch(f: number) {
     if (this.flying || this.finished) return;
     this.flying = true;
+    if (this.plan.mode !== 'tap') this.observedPulls.push(f);
     if (this.course) {
       this.tries++;
       this.report();
@@ -461,7 +465,12 @@ class BouncyLaunch implements Game {
     this.pet.cheer();
     await this.ctx.say('launch.done');
     await this.ctx.tw.wait(0.8);
-    this.ctx.finish({ misses: this.misses, hints: this.hints, score: Math.round(this.off * 100) });
+    this.ctx.finish({
+      misses: this.misses,
+      hints: this.hints,
+      score: Math.round(this.off * 100),
+      discoveries: revealsPullRule(this.observedPulls) ? [entryId('bouncy-launch', 'bigger-pull')] : [],
+    });
   }
 }
 
@@ -481,6 +490,13 @@ class LaunchIcon extends WigglyIcon {
     c.addChild(g, cloud, s);
     super(c);
   }
+}
+
+/** A spring, flight and far cloud for the discovery journal's pull-distance card. */
+export function launchJournalPicture(): Container {
+  const picture = new LaunchIcon();
+  picture.rotation = -0.03;
+  return picture;
 }
 
 function sticker(seed: number): Container {

@@ -4,6 +4,7 @@ import { ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { entryId } from '../../content/journal';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -13,6 +14,7 @@ import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule } from '../types';
 import {
   aloneSide,
+  balanceObservation,
   downSide,
   FRIEND_FOR,
   makeRounds,
@@ -23,6 +25,7 @@ import {
   total,
   weigh,
   type FriendWeight,
+  type BalanceObservation,
   type SeesawPlan,
   type SeesawRound,
   type Side,
@@ -190,6 +193,8 @@ class SeesawBalance implements Game {
   wrongs = 0;
   busy = true;
   finished = false;
+  /** Balance rules the child has actually watched after changing a tray. */
+  readonly observations = new Set<BalanceObservation>();
   /** How far the plank leans now, and how fast it is turning. */
   angle = 0;
   /** Take-the-same-off levels: changes in a row that left it tipped (an experiment, not a miss). */
@@ -492,6 +497,7 @@ class SeesawBalance implements Game {
     if (item.side) item.side = null;
     item.side = side;
     this.settle(item);
+    this.observeBalance();
     sfx.clunk();
     void this.placed(item, side);
     return true;
@@ -509,6 +515,7 @@ class SeesawBalance implements Game {
     if (item.side) this.lastOff = { item, from: item.side };
     item.side = null;
     item.settling = false;
+    this.observeBalance();
     if (item.drag) item.drag.home = item.ground;
     if (walk) void this.ctx.tw.to(item.node, { x: item.ground.x, y: item.ground.y }, { duration: 0.4, ease: ease.outBack });
     void this.removed();
@@ -519,6 +526,11 @@ class SeesawBalance implements Game {
     this.wrongs++;
     if (this.wrongs === 2) this.hints++;
     sfx.boing();
+  }
+
+  private observeBalance() {
+    const seen = balanceObservation(this.weights.left, this.weights.right);
+    if (seen) this.observations.add(seen);
   }
 
   private async placed(item: Item, side: Side) {
@@ -716,7 +728,7 @@ class SeesawBalance implements Game {
     sfx.tada();
     await this.ctx.say('seesaw.done');
     await this.ctx.tw.wait(0.6);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.observations].map((seen) => entryId('seesaw-balance', seen)) });
   }
 }
 
@@ -737,6 +749,13 @@ function seesawArt(left: FriendWeight, right: FriendWeight, lean = 0): { art: Co
   plank.rotation = lean;
   art.addChild(stand, plank);
   return { art, plank };
+}
+
+/** The two balance observations as still pictures for the discovery journal. */
+export function seesawJournalPicture(observation: BalanceObservation): Container {
+  const { art } = observation === 'heavy-down' ? seesawArt(1, 4, 0.16) : seesawArt(2, 2, 0);
+  art.y = 60;
+  return art;
 }
 
 class SeesawIcon extends Container {
