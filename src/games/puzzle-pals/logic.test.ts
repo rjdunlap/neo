@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { dropSlot, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows } from './logic';
+import { Rng } from '../../engine/random';
+import { dropSlot, nextToPlace, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows } from './logic';
 
 describe('Puzzle Pals', () => {
   it('cuts every picture into its grid, leaving at least one piece to place', () => {
@@ -22,6 +23,25 @@ describe('Puzzle Pals', () => {
         expect(dropSlot(plan, c.x + PICTURE_W / plan.cols / 5, c.y - PICTURE_H / plan.rows / 5, pieces)).toEqual(p);
       }
       expect(dropSlot(plan, PICTURE_W * 2.5, PICTURE_H * 2.5, pieces)).toBeNull();
+    }
+  });
+
+  it('the ghost finger places every piece of every level in its own place, whatever order the tray holds them in', () => {
+    for (const plan of PUZZLE_PLANS) {
+      for (let seed = 1; seed <= 50; seed++) {
+        // The game's tray: the pre-placed pieces first (already in place), then the rest shuffled.
+        const all = piecesFor(plan);
+        const tray = [...all.slice(0, plan.preplaced), ...new Rng(seed).shuffle(all.slice(plan.preplaced))].map((piece, i) => ({ piece, placed: i < plan.preplaced }));
+        let moved = 0;
+        for (let next = nextToPlace(tray); next; next = nextToPlace(tray)) {
+          // Let go on the middle of its place: the nearest empty place is that piece's own, so it is never a miss.
+          const c = slotCenter(plan, next.piece);
+          expect(dropSlot(plan, c.x, c.y, tray.filter((p) => !p.placed).map((p) => p.piece))).toEqual(next.piece);
+          next.placed = true;
+          moved++;
+        }
+        expect(moved).toBe(all.length - plan.preplaced);
+      }
     }
   });
 

@@ -12,8 +12,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { compare, finish, makeRounds, makeStand, middleFrom, planFor, REACH, reached, topples, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, planFor, REACH, reached, stackMove, standingTower, topples, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -219,6 +219,36 @@ class BlockTower implements Game {
     for (const f of this.flying.filter((x) => x.node.alpha <= 0)) f.node.destroy();
     this.flying = this.flying.filter((x) => !x.node.destroyed);
     this.drawGlow();
+  }
+
+  /** The ghost finger on the how-to card: stack by tapping, ring the bell at the target, pick the tower that stands, or carry blocks out to the star. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.rounds[this.index]) return null;
+    switch (this.plan.mode) {
+      case 'tumble':
+      case 'friend':
+        // A tap anywhere stacks a block, and the next one after the tower is full knocks it down.
+        return { tap: { on: this.input, x: this.towerX, y: this.floor - 250 }, pause: 0.3 };
+      case 'flag':
+      case 'match': {
+        const move = stackMove(this.stack.length, this.round.target);
+        if (move === 'ring') return { tap: { on: this.bell } };
+        if (move === 'take') return { tap: { on: this.towerHit, x: this.towerX, y: this.floor - BH / 2 } };
+        return { tap: { on: this.bin, x: 0, y: -50 }, pause: 0.3 };
+      }
+      case 'stand': {
+        if (!this.stand || this.guess !== null) return null;
+        return { tap: { on: this.standTowers[standingTower(this.stand)][0], x: 0, y: -BH / 2 } };
+      }
+      case 'reach': {
+        const round = this.reachRound;
+        const placed = this.placed;
+        const next = round ? nextReach(placed.map((t) => t.x!), round) : undefined;
+        const block = this.tray.find((t) => t.x === null && !t.drag.dragging);
+        if (next === undefined || !block) return null;
+        return { drag: { on: block.node }, to: { on: this.ctx.stage, x: this.edge + px(next), y: this.tableTop - placed.length * BH } };
+      }
+    }
   }
 
   destroy() {
@@ -791,6 +821,7 @@ export const blockTower: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
+  touchDemo: true,
   coplayHint: 'Stack real blocks or cups with {name} and knock them down together: "One, two, three... crash!"',
   offScreen: 'Build towers with cups or books: which is taller? Then try leaning a stack over the edge of a table.',
   hubIcon: () => new TowerIcon(),

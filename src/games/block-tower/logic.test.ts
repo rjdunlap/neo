@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { compare, finish, makeRounds, makeStand, middleFrom, PLANS, REACH, reached, SLOTS, targetFor, topples, W } from './logic';
+import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
 
 describe('Block Tower', () => {
   it('keeps a block up only while the middle of it and everything above is over the block below', () => {
@@ -65,5 +65,45 @@ describe('Block Tower', () => {
     // A hint can finish from a good start, and says when the top block has to come off.
     expect(finish([-3], REACH[0])).not.toBeNull();
     expect(finish([3], REACH[0])).toBeNull();
+  });
+
+  it('the ghost finger stacks to the target and rings once, on the flag and compare levels, without ever being short or tall', () => {
+    for (const plan of PLANS.filter((p) => p.mode === 'flag' || p.mode === 'match')) {
+      for (let seed = 1; seed <= 50; seed++) {
+        for (const round of makeRounds(plan, new Rng(seed))) {
+          let have = 0;
+          let moves = 0;
+          for (let move = stackMove(have, round.target); move !== 'ring'; move = stackMove(have, round.target)) {
+            expect(move).toBe('add');
+            have++;
+            moves++;
+          }
+          expect(moves).toBe(round.target);
+          expect(compare(have, round.target)).toBe('right');
+          // A tower that is already tall gives a block back; it never rings.
+          expect(stackMove(round.target + 1, round.target)).toBe('take');
+        }
+      }
+    }
+  });
+
+  it('the ghost finger picks the one tower that stands, both in the plain and the subtle rounds', () => {
+    for (const subtle of [false, true]) for (let seed = 1; seed <= 300; seed++) {
+      const r = makeStand(new Rng(seed), subtle);
+      expect(standingTower(r)).toBe(r.stands);
+    }
+  });
+
+  it('the ghost finger reaches the star one block at a time, standing at every step', () => {
+    for (const round of REACH) {
+      const placed: number[] = [];
+      for (let next = nextReach(placed, round); next !== undefined && !reached(placed, round.star); next = nextReach(placed, round)) {
+        expect(SLOTS).toContain(next);
+        placed.push(next);
+        expect(topples(placed, 0)).toBe(-1);
+        expect(placed.length).toBeLessThanOrEqual(round.blocks);
+      }
+      expect(reached(placed, round.star)).toBe(true);
+    }
   });
 });

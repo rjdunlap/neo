@@ -8,8 +8,8 @@ import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game,GameContext,GameModule } from '../types';
-import { hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
+import type { Game,GameContext,GameModule,TouchIntent } from '../types';
+import { bestTarget, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
 
 function shape(shape:Shape,color:ColorName,outline=true){return new Graphics().poly(VERTICES[shape]).fill(swatch[color].fill).stroke({width:outline?5:0,color:swatch[color].line,join:'round'});}
 interface Choice {piece:Piece;node:Container;art:Graphics;drag:DragHandle;placed:boolean}
@@ -84,11 +84,24 @@ class TangramTown implements Game {
  }
  private previousBoard={x:0,y:0};
  update(dt:number){this.clock+=dt;this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)for(const c of this.pieces)c.node.y=c.drag.home.y+Math.sin(this.clock*5)*5;}
+ /** The ghost finger on the how-to card: turn the piece in hand until it fits its place (the turn button, never the help hand), then carry it there. */
+ autotouch():TouchIntent|null{
+  if(this.done)return null;
+  const c=this.pieces.find(p=>!p.placed);
+  if(!c||c.drag.dragging)return null;
+  const goal=bestTarget(c.piece,this.plan.targets,this.filled);
+  if(!goal)return null;
+  // The turn button turns the piece picked up last; the first in the tray is already in hand, so this only takes a touch if it is not.
+  if(this.selected!==c)return {tap:{on:c.node}};
+  if(goal.turns>0)return {tap:{on:this.turn}};
+  const t=this.plan.targets[goal.index];
+  return {drag:{on:c.node},to:{on:this.board,x:t.x,y:t.y}};
+ }
  destroy(){this.pieces.forEach(p=>p.drag.destroy());}
 }
 export const tangramTown:GameModule={
  id:'tangram-town',name:'Tangram Town',titleLine:'game.tangram-town',region:'rainbow-meadow',skills:['shape-composition','rotation','spatial-reasoning'],bands:['toddler','preschool','prek','school'],
- levels:b=>b==='school'?{min:5,max:6}:b==='toddler'?{min:1,max:2}:b==='preschool'?{min:2,max:4}:{min:3,max:6},describeLevel:l=>planFor(l).name,music:STYLES.paint,
+ levels:b=>b==='school'?{min:5,max:6}:b==='toddler'?{min:1,max:2}:b==='preschool'?{min:2,max:4}:{min:3,max:6},describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
  coplayHint:'Move the big shapes together. Let {name} try turning a roof before helping.',offScreen:'Cut a paper square diagonally. Turn the two triangles into different pictures.',
  hubIcon:()=>{const c=new Container(),a=shape('square','teal'),b=shape('roof','pink');a.scale.set(0.6);a.y=-42;b.scale.set(0.6);b.y=-120;c.addChild(a,b);return new WigglyIcon(c);},
  sticker:seed=>{const g=shape(new Rng(seed).pick(['square','roof','triangle'] as const),'purple');g.scale.set(0.8);return g;},create:ctx=>new TangramTown(ctx),

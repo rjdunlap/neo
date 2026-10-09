@@ -30,3 +30,21 @@ export function targetFor(piece:Piece,x:number,y:number,targets:readonly Target[
  return near.find(a=>a.t.shape===piece.shape&&sameOrientation(piece.shape,piece.turns,a.t.turns))?.i??-1;
 }
 export function hintFor(piece:Piece,targets:readonly Target[],filled:boolean[]){return targets.findIndex((t,i)=>!filled[i]&&t.shape===piece.shape);}
+/** How many taps of the turn button make `piece` fit `target`: none when it already does (a square or rectangle needs fewer than a roof). */
+export function turnsToFit(piece: Piece, target: Piece): number {
+  for (let k = 0; k < 4; k++) if (sameOrientation(piece.shape, piece.turns + k, target.turns)) return k;
+  return 0;
+}
+/**
+ * What a capable child aims for: the open place for this shape that takes the fewest turns, the hint's own pick on a tie.
+ * The ghost finger turns the piece that many times and then carries it there, so a test can check it never misses.
+ */
+export function bestTarget(piece: Piece, targets: readonly Target[], filled: readonly boolean[]): { index: number; turns: number } | undefined {
+  let best: { index: number; turns: number } | undefined;
+  targets.forEach((t, index) => {
+    if (filled[index] || t.shape !== piece.shape) return;
+    const turns = turnsToFit(piece, t);
+    if (!best || turns < best.turns) best = { index, turns };
+  });
+  return best;
+}
