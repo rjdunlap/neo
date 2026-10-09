@@ -17,7 +17,7 @@ import type { View } from '../../engine/view';
 import { gameById } from '../../games/registry';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, arrowIcon, flipIcon, islandIcon, magnifierIcon } from '../../ui/icons';
+import { againIcon, arrowIcon, crossIcon, flipIcon, islandIcon, magnifierIcon } from '../../ui/icons';
 import { Sparkle } from '../../ui/sparkle';
 import { BOARD, PLAQUE, pictureBoard, TunePlaque } from '../../ui/creation-art';
 import { StickerPicker } from '../../ui/sticker-picker';
@@ -58,6 +58,8 @@ export class RoomScene extends Scene {
   private readonly plaque = new TunePlaque();
   private readonly undoPicture = new RoundButton(undoIcon(), swatch.white, 36, () => this.undo('picture'));
   private readonly undoTune = new RoundButton(undoIcon(), swatch.white, 36, () => this.undo('tune'));
+  private readonly takePicture = new RoundButton(crossIcon(), swatch.white, 36, () => this.takeDown('picture'));
+  private readonly takeTune = new RoundButton(crossIcon(), swatch.white, 36, () => this.takeDown('tune'));
   private readonly stage = new Container();
   private readonly dim = new Graphics();
   private readonly pet = makePet();
@@ -88,7 +90,7 @@ export class RoomScene extends Scene {
     onTap(this.pet, () => { this.pet.poke(); sfx.giggle(); }, { radius: 90 });
     this.pet.hitArea = new Rectangle(-150, -300, 300, 320);
     this.stage.addChild(this.track(this.pet));
-    this.ui.addChild(this.dim, this.home, this.flip, this.tidyButton, this.journalButton, this.undoPicture, this.undoTune);
+    this.ui.addChild(this.dim, this.home, this.flip, this.tidyButton, this.journalButton, this.undoPicture, this.undoTune, this.takePicture, this.takeTune);
     if (store.journalHasNew) {
       const sparkle = this.track(new Sparkle(24));
       sparkle.position.set(36, -36);
@@ -174,9 +176,9 @@ export class RoomScene extends Scene {
     this.frame.position.set(v.w * 0.6, v.h * 0.26);
     this.board.position.set(v.w * 0.845, v.h * 0.26);
     this.plaque.position.set(v.w * 0.4, v.h * 0.26);
-    // The "bring back the one before" buttons sit just above what they would change, and show only when there is one.
-    this.undoPicture.position.set(this.board.x, this.board.y - BOARD.h / 2 - 48);
-    this.undoTune.position.set(this.plaque.x, this.plaque.y - PLAQUE.h / 2 - 48);
+    // Bring-back and take-down buttons sit just above what they change. drawCreations centers one or separates both.
+    this.placeCreationButtons(this.board.x, this.board.y - BOARD.h / 2 - 48, this.undoPicture, this.takePicture);
+    this.placeCreationButtons(this.plaque.x, this.plaque.y - PLAQUE.h / 2 - 48, this.undoTune, this.takeTune);
   }
 
   /** The frame and, when one is hung, its sticker. A sticker the save no longer has just shows an empty frame. */
@@ -206,6 +208,16 @@ export class RoomScene extends Scene {
     this.plaque.hitArea = new Rectangle(-PLAQUE.w / 2 - 10, -PLAQUE.h / 2 - 10, PLAQUE.w + 20, PLAQUE.h + 20);
     this.undoPicture.visible = store.hasEarlier('picture');
     this.undoTune.visible = store.hasEarlier('tune');
+    this.takePicture.visible = picture.current !== null;
+    this.takeTune.visible = tune.current !== null;
+    this.placeCreationButtons(this.board.x, this.board.y - BOARD.h / 2 - 48, this.undoPicture, this.takePicture);
+    this.placeCreationButtons(this.plaque.x, this.plaque.y - PLAQUE.h / 2 - 48, this.undoTune, this.takeTune);
+  }
+
+  private placeCreationButtons(x: number, y: number, undo: RoundButton, take: RoundButton) {
+    const both = undo.visible && take.visible;
+    undo.position.set(x - (both ? 48 : 0), y);
+    take.position.set(x + (both ? 48 : 0), y);
   }
 
   /** Bring back the visual work or song from before; the one on show becomes the one before, so asking again swaps back. */
@@ -217,6 +229,17 @@ export class RoomScene extends Scene {
     void this.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     sfx.whoosh();
     void voice.say('room.swap');
+  }
+
+  /** Clear one wall place. The back arrow can restore the work that was just taken down. */
+  private takeDown(kind: Creation['kind']) {
+    store.takeDownCreation(kind);
+    this.drawCreations();
+    const node = kind === 'picture' ? this.board : this.plaque;
+    node.scale.set(0.92);
+    void this.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    sfx.whoosh();
+    void voice.say('room.taken-down');
   }
 
   /** Put a piece where the save says. */

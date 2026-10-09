@@ -34,12 +34,13 @@ const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
 const COIN_LOOK: Record<number, { color: ColorName; r: number }> = {
   1: { color: 'yellow', r: 30 },
   2: { color: 'teal', r: 35 },
+  3: { color: 'green', r: 38 },
   5: { color: 'pink', r: 40 },
   10: { color: 'purple', r: 44 },
 };
 
 /** A shell coin: bigger coins are worth more, and each shows its number. */
-function coinArt(value: number): Container {
+export function coinArt(value: number): Container {
   const { color, r } = COIN_LOOK[value];
   const sw = swatch[color];
   const c = new Container();

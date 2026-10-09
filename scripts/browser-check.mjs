@@ -3133,6 +3133,49 @@ async function woodsBatch() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : 'two planned stops'}): ${level === 6 ? 'wrong houses explained' : 'out-of-order and no-letter stops, undoing a stop'}, glowing key row, saved score and sticker passed`);
   }
+
+  // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.
+  if (!only || only === 'lemon') for (let level = fromLevel; level <= 4; level++) {
+    await launch('lemonade-stand', level);
+    if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+    const plan = await page.evaluate(() => ({ days: neo.scene.game.plan.days, price: neo.scene.game.plan.prices.length > 1, purse: neo.scene.game.plan.purse }));
+    // What the purse should show after the rows so far (the host's top-up has been added on the morning after).
+    const purseNow = () => page.evaluate(async () => { const L = await import('/src/games/lemonade-stand/logic.ts'); let p = L.START_PURSE; for (const r of neo.scene.game.rows) p = L.settle(p, r).purse; return [p, neo.scene.game.purse]; });
+    for (let n = 0; n < plan.days; n++) {
+      await idle(n);
+      if (plan.purse) { const [want, got] = await purseNow(); assert.equal(got, want, `day ${n + 1} purse`); }
+      if (n === 0) {
+        // Opening before choosing only nudges; asking for help is one hint a day however often she asks.
+        await tap('neo.scene.game.open');
+        assert.equal(await page.evaluate(() => neo.scene.game.rows.length), 0);
+        assert.deepEqual(await counts(), [0, 0]);
+        await tap('neo.scene.game.help'); await tap('neo.scene.game.help');
+        assert.deepEqual(await counts(), [0, 1]);
+        await screenshot(`lemonade-stand-${level}`);
+      }
+      // The first day is a weak batch with the dearest price (an experiment); after that the best choice the model knows.
+      const choice = await page.evaluate(async (n) => {
+        const L = await import('/src/games/lemonade-stand/logic.ts'); const g = neo.scene.game;
+        if (n === 0) return { made: 4, price: g.plan.prices.at(-1) };
+        const b = L.bestChoice(g.plan, g.week[n], n, g.purse); return { made: b.made, price: b.price };
+      }, n);
+      await tap(`neo.scene.game.cards.find((c) => c.n === ${choice.made}).node`);
+      if (plan.price) await tap(`neo.scene.game.coins.find((c) => c.value === ${choice.price}).node`);
+      await tap('neo.scene.game.open');
+      await page.waitForFunction((n) => neo.scene.game.rows.length === n + 1, n, { timeout: 40000 });
+      assert.equal(await page.evaluate(() => neo.scene.game.tableRows.length), n + 1);
+      if (n === 0) {
+        const row = await page.evaluate(() => neo.scene.game.rows[0]);
+        assert.equal(row.sold + row.left, row.made);
+        await page.waitForTimeout(300);
+        await tap('neo.scene.game.tableRows[0].node');
+      }
+    }
+    await finished('lemonade-stand');
+    assert.deepEqual(await score('lemonade-stand'), [0, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Lemonade Stand ${level} (${['weather', 'forecast event', 'price', 'market week'][level - 1]}): early open nudged, help counted once, ${plan.price ? 'a price chosen, ' : ''}${plan.purse ? 'the purse tracked, ' : ''}a row a day read aloud, saved score and sticker passed`);
+  }
 }
 
 
@@ -6371,6 +6414,27 @@ async function creationsRoom() {
   shown = await board();
   assert.deepEqual({ medium: shown.medium, undo: shown.undo, tuneUndo: shown.tuneUndo }, { medium: 'pixels', undo: true, tuneUndo: false });
   assert.deepEqual((await state()).c, now.c);
+  // Each wall place can be left empty. The work just taken down is kept behind the back arrow, survives a reload,
+  // and can be restored; this is deliberately reversible even when an older backup has to make room for it.
+  assert.deepEqual(await page.evaluate(() => ({ picture: neo.scene.takePicture.visible, tune: neo.scene.takeTune.visible })), { picture: true, tune: true });
+  const beforeDown = (await state()).c;
+  await tap('neo.scene.takePicture'); await tap('neo.scene.takeTune'); await page.waitForTimeout(400);
+  let taken = (await state()).c;
+  assert.equal(taken.picture.current, null); assert.deepEqual(taken.picture.previous, beforeDown.picture.current);
+  assert.equal(taken.tune.current, null); assert.deepEqual(taken.tune.previous, beforeDown.tune.current);
+  assert.deepEqual(await page.evaluate(() => ({ pictureBack: neo.scene.undoPicture.visible, tuneBack: neo.scene.undoTune.visible, pictureTake: neo.scene.takePicture.visible, tuneTake: neo.scene.takeTune.visible })),
+    { pictureBack: true, tuneBack: true, pictureTake: false, tuneTake: false });
+  await screenshot('creations-room-taken-down');
+  await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(300);
+  await page.reload(); await ready();
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene'); await page.waitForTimeout(500);
+  assert.deepEqual((await state()).c, taken, 'the empty wall and restorable creations survive a reload');
+  await tap('neo.scene.undoPicture'); await tap('neo.scene.undoTune'); await page.waitForTimeout(400);
+  const restored = (await state()).c;
+  assert.deepEqual(restored.picture, { current: beforeDown.picture.current, previous: null });
+  assert.deepEqual(restored.tune, { current: beforeDown.tune.current, previous: null });
+  assert.deepEqual(await page.evaluate(() => ({ pictureBack: neo.scene.undoPicture.visible, tuneBack: neo.scene.undoTune.visible, pictureTake: neo.scene.takePicture.visible, tuneTake: neo.scene.takeTune.visible })),
+    { pictureBack: false, tuneBack: false, pictureTake: true, tuneTake: true });
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
   const clear = await page.evaluate(() => {
     const boxes = [neo.scene.frame, neo.scene.board, neo.scene.plaque, neo.scene.window].map((o) => o.getBounds());
@@ -6380,7 +6444,7 @@ async function creationsRoom() {
   await screenshot('creations-room-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
-  log('Creations: stamped pictures, a free Rainbow Fingers painting, a completed Pixel Picture and a free song are offered after their rounds and kept only on request (one sticker each); the picture board shares all three visual media and swaps between the latest two without loss; the pet admires the art and sings the song; tidy and a reload keep everything; wall items stay clear in portrait');
+  log('Creations: stamped pictures, a free Rainbow Fingers painting, a completed Pixel Picture and a free song are offered after their rounds and kept only on request (one sticker each); the picture board shares all three visual media and swaps between the latest two; picture and tune can each be taken down, stay restorable through a reload, and come back; the pet admires the art and sings the song; tidy and a reload keep everything; wall items stay clear in portrait');
 }
 
 /** The discovery journal: what a round actually showed lands in it, the treehouse button twinkles, cards speak and point back to their game, and it survives a reload. */

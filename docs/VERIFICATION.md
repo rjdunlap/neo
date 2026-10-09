@@ -8,15 +8,15 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (572 tests) | Ghost finger on ten couch games entry | Run with every code change |
-| `npm run test:offline` | 2026-10-08 | How-to card with demonstrations entry | Never opens the treehouse, the journal or couch play, so their offline reloads are unproved |
+| Unit tests, typecheck, build | 2026-10-08 (592 tests, on the tree that merges the treehouse take-down, both ghost-finger slices and Lemonade Stand) | Lemonade Stand entry | Run with every code change |
+| `npm run test:offline` | 2026-10-08, on that merged tree | Lemonade Stand entry (and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
-| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations and the ghost finger (again after the teardown fix) | Ghost finger on ten couch games entry | About three minutes |
+| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations and the ghost finger (again after the teardown fix); Lemonade Stand's card alone (`HOWTO_ONLY`) after it was added | Ghost finger on ten couch games and Lemonade Stand entries | About three minutes |
 | `fingerdemo` | 2026-10-08, all 13 games with a ghost finger, first and last level, clean play asserted | Ghost finger on ten couch games entry | About 15 seconds a play; Chrome automation, so the hand's look on an iPad is not established |
-| `creations` | 2026-10-07 | Pixel Pictures entry | |
+| `creations` | 2026-10-08 | Treehouse take-down entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
 | `couchgames` | 2026-10-08, Pond Conga filtered (2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered) | Child's island, couch Settings, Just me, Island Bridges and Pond Conga entries | Peg Garden's bot needed one retry (its known flake) |
@@ -31,7 +31,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot |
 | `couchconga` | 2026-10-08 | Pond Conga entry | About two minutes; plays a full four-pond course with the bot |
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
-| `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal and couch play entries | Run with a `WOODS_ONLY` filter |
+| `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-06 | Archived Stamp Studio expansion and Seesaw Balance entries | |
 | `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
@@ -45,6 +45,34 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Lemonade Stand, a school-band market week (2026-10-08)
+
+What changed: a new game, **Lemonade Stand** (`src/games/lemonade-stand/`, the 73rd; Wonder Woods now holds 51): a forecast, a batch of cups (and from level 3 a price), friends who buy, and a row a day in a picture table; four levels from the weather alone to a five-day week with a purse where a lemon (one shell) makes two cups. Registered at the end of `GAMES`, with a how-to card, voice lines, README and GAMES entries, and the roadmap's "ready to build" slice marked built (with where the build differs from the plan). It adds nothing to the save, the journal, the couch or the shell; `coinArt` is exported from Market Stall (with a 3-shell coin). This branch also carries PR #26's treehouse commits (the Lemonade plan lives in them), merged with `origin/main` (both ghost-finger slices, PRs #25 and #27), which resolves #26's conflict in `VERIFICATION.md` and `ROADMAP.md`.
+
+- `npm run typecheck`, `npm test` (111 files, 592 tests on the final merged tree; 19 are new in `logic.test.ts`: demand bands that never overlap and a nearest batch that always leaves at most two cups, a hotter day never lowering demand and a higher price never raising it, cups and shells reconciling exactly over 200 seeds on every plan, the purse never below the smallest batch under four policies including always the biggest and dearest, the exact top-up, a profitable choice open on every day, every help and closing-comparison sentence checked against the model, a week rebuilt from its seed) and `npm run build` passed. Four deliberate breaks (no demand floor, no purse top-up, help ignoring a sell-out, a quiet day bringing friends) each failed the rule tests and were restored. The lemon rule is a finding from the first run of those tests: at one shell a cup even the best choice lost shells on a rainy day.
+- `BROWSER_SUITE=woods WOODS_ONLY=lemon` (new) passed all four levels (about 35 to 65 seconds each, level 4 in portrait): OPEN before choosing only nudges and costs no miss, asking for help twice is one hint, a weak first batch (the smallest, at the dearest price), the best choice the model knows on later days, a table row a day (tapped and read), the purse matching a replay of the rule each morning on level 4, and the saved result `[0 misses, 1 hint]` with a sticker. `BROWSER_SUITE=howto HOWTO_ONLY=lemonade-stand` passed: the card fits in landscape and portrait with 100-unit Play and Back and no demonstration window (it is now the tallest text-only card). `npm run test:offline` passed on the production build of this merged tree. Three small source edits (the good-day bells, a guard so a row tap cannot cut off the closing comparison, the sticker's lemons) came after the first runs of the `lemon` and `howto` cases, and the guard is not exercised by them; both cases and the offline check were run again on the final tree after merging PR #27 (592 tests).
+- Screenshots looked at: each level's forecast, chosen, selling and after states in landscape; level 4 in portrait; the SOLD OUT sign; the closing comparison circling two rows; Wonder Woods with 51 games; the card; the hub icon and sticker. Fixed from them: the lightbulb over the picnic, the tally board over a customer, a 12-cup card overflowing, the awning clipping the tray, the purse blank until its first change, OPEN touching the table, the controls staying up at the end.
+- A probe stepped Wonder Woods' own Next button until the landmark was wholly in view (4 presses in landscape, 3 in portrait; the place orders games by subject, so it is not at the far end) and tapped it open.
+- Not run: `world` (place layout and navigation are untouched beyond one more landmark among 51), `smoke`, the couch suites, the other Wonder Woods games. Not established: speech on a device (every line is checked against the model, not heard), whether a child finds a weak batch an experiment or a failure, whether five days is too long, how the friends read on an iPad, and whether the lightbulb is found.
+
+### Treehouse creation take-down and offline reloads (2026-10-08)
+
+What changed: the treehouse picture board and tune plaque each have an **X** while occupied. It leaves that wall place empty but keeps the work just removed behind the back arrow, so the action is reversible; an older backup makes room for it. The production offline check now seeds a moved/flipped room, a stamped picture, a tune and two journal discoveries, opens the room and journal, reloads, and proves both routes again through the journal's public `seen` save marker.
+
+- `npm run typecheck`, `npm test` (109 files, 547 tests) and `npm run build` passed. The creation rule test covers taking down, restoring, no-op on an empty kind and immutability.
+- `BROWSER_SUITE=creations` passed without page errors: all four creation sources still keep on request; both occupied places show X controls, both become empty, both removed works remain behind back arrows through a reload, both restore, and the controls remain clear in portrait. The occupied, empty and portrait screenshots were reviewed.
+- `npm run test:offline` passed against the matching production preview (24 cached font/assets): the existing game/reward and Windy Picnic checks plus the rearranged room, both kept creation kinds and the journal all work offline and survive reloads. Visual review caught that a save-only second-reload assertion could pass after a curtain-swallowed navigation click; the check now resets `journal.seen` and requires each real journal opening to advance it, with one bounded route retry.
+- Not run: `room` again (its furnishing, sticker-frame and tidy paths are unchanged and the `creations` pass opens and reloads this scene), `world`, game suites or couch suites. Still open: the other treehouse follow-ons in the roadmap and device/child observation.
+
+### Older-child economy, progression and banking roadmap (2026-10-08)
+
+What changed: researched the remembered Coolmath/MECC Lemonade Stand and Neopets wheel and bank loops, then revised the older-child plan around a narrower boundary: transparent, bounded economic constraints can teach forecasting, budgeting, probability, liquidity and recovery from loss; opaque or expiring engagement pressure remains out. **Lemonade Stand** is still the first separate game, with three no-risk forecast days before price, cost and a recoverable operating loss. A later Maker Harbor pilots earned tickets, guaranteed purchases, child-chosen permanent booth unlocks and visible-odds **Steady** and **Surprising** wheels. A voluntary **Harbor Bank** certificate is the one planned real-time exception: it matures and pays automatically, never requires a daily claim, and shows principal, date, return and early-withdrawal result before confirmation.
+
+- Sources checked: the original Apple classroom guide; Coolmath's retrospective; Neopets' official Wheel of Excitement and National Neopian Bank pages; UNICEF's RITEC toolbox; a systematic review of primary-school gamification; the Deci, Koestner and Ryan reward meta-analysis; controlled primary-school saving instruction; children's saving-strategy, probability-intervention and natural-frequency studies; and the UK government's loot-box evidence response. The roadmap links each source beside the limited claim it supports.
+- Documentation checks: repository-relative Markdown links and the new external source links were checked; `git diff --check` passed.
+- Not run: typecheck, unit, build or browser suites; no runtime code, save, game registration, count or behavior changed.
+- Still open: play Lemonade Stand after it is built; test whether tickets create real choices rather than farming; choose the first guaranteed purchase and unlock price; test whether children understand each wheel's displayed odds; and add the bank only after the Harbor balance has a worthwhile use.
 
 ### The ghost finger on ten of the couch games, and a fix for a demonstration's teardown (2026-10-08)
 

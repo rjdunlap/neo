@@ -409,6 +409,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: ['Flip a color card, then tap the owl to hop to the next stone of that color.', 'Take turns with the pet.'],
     finish: 'The round ends when the owls are home.',
   },
+  'lemonade-stand': {
+    goal: 'Run a lemonade stand for a few days and learn from who comes.',
+    steps: [
+      'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups to make. From level 3, tap a price in shells too.',
+      'Tap OPEN and watch the friends buy, then look at the new row of the table. Tap a row to hear it.',
+      'The lightbulb asks the pet for help, based on the table so far.',
+    ],
+    finish: 'The round ends after the last day, when the pet points out one comparison from the table.',
+    note: 'Running out or having cups left is never a mistake: it is a result to learn from, and spare cups go to a picnic. Asking for help counts once a day. From level 4 a lemon costs a shell and makes two cups.',
+  },
 };
 
 /** What the how-to card shows for one game at one level. */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ROW_STEPS } from '../games/song-maker/logic';
 import {
-  canUndo, cleanCreation, cleanCreations, cleanPicture, cleanTune, emptyCreations, keepCreation, PAINTING_MAX_MARKS, PICTURE_MAX, tuneBeats, undoCreation,
+  canUndo, cleanCreation, cleanCreations, cleanPicture, cleanTune, emptyCreations, keepCreation, PAINTING_MAX_MARKS, PICTURE_MAX, takeDownCreation, tuneBeats, undoCreation,
   type PaintingCreation, type PixelPictureCreation, type StampPictureCreation, type TuneCreation,
 } from './creations';
 
@@ -130,6 +130,15 @@ describe('the two places', () => {
     expect(undoCreation(save, 'picture')).toBe(save);
   });
 
+  it('takes a creation off the wall without making the action irreversible', () => {
+    let save = keepCreation(keepCreation(emptyCreations(), picture(0.1)), picture(0.2));
+    save = takeDownCreation(save, 'picture');
+    expect(save.picture).toEqual({ current: null, previous: picture(0.2) });
+    expect(canUndo(save, 'picture')).toBe(true);
+    expect(undoCreation(save, 'picture').picture).toEqual({ current: picture(0.2), previous: null });
+    expect(takeDownCreation(save, 'tune')).toBe(save);
+  });
+
   it('treats the picture and the tune separately', () => {
     let save = keepCreation(emptyCreations(), picture(0.1));
     save = keepCreation(save, tune(3, [0, 0], [1, 2]));
@@ -164,6 +173,7 @@ describe('the two places', () => {
     const copy = JSON.parse(JSON.stringify(save));
     keepCreation(save, picture(0.5));
     undoCreation(keepCreation(save, picture(0.5)), 'picture');
+    takeDownCreation(save, 'picture');
     expect(save).toEqual(copy);
   });
 });
