@@ -18,7 +18,6 @@ import { ParentGate } from '../../ui/ParentGate';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 const rank = (band: Band | null) => BANDS.findIndex((b) => b.id === band);
 
@@ -38,7 +37,6 @@ export class MapScene extends Scene {
   private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => { void voice.say('map.room'); this.app.go.room(); });
   private readonly gate = new ParentGate(() => {
     voice.stop();
-    this.countsTime = false;
     openParentPanel(() => (store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch()));
   });
   readonly places: { def: Place; node: Container }[] = [];
@@ -204,15 +202,6 @@ export class MapScene extends Scene {
     // A soft glow around her own place.
     const home = this.spot(store.data.profile.band);
     this.glow.clear().circle(home.x, home.y + 10, 104 + 6 * Math.sin(this.clock * 2.5)).fill({ color: swatch.yellow.light, alpha: 0.75 });
-    if (session.over && this.countsTime && !this.leaving) {
-      this.leaving = true;
-      this.app.go.goodnight();
-    }
-  }
-
-  sleepyWarning() {
-    this.pip.setMood('sleepy', 3);
-    void voice.say('sleepy.warn');
   }
 
   exit() {

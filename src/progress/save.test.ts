@@ -18,7 +18,9 @@ describe('migrate', () => {
       stickers: [{ game: 'bubble-pop', seed: 5, at: 1 }, { seed: 9 }],
     });
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
-    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 10, coplayHints: true, howToCards: true });
+    // A save from when the app had a play timer: the limit is retired, and always saved as 0 (no limit).
+    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 0, coplayHints: true, howToCards: true });
+    expect(defaults().settings.sessionMinutes).toBe(0);
     expect(save.games['bubble-pop'].level).toBe(1);
     expect(save.games['bubble-pop'].pinned).toBeNull();
     expect(save.games['bubble-pop'].history).toEqual([{ level: 1, misses: 2, hints: 0, seconds: 0, at: 0 }]);

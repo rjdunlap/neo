@@ -43,7 +43,6 @@ const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', cls = ''
 
 /** Adult-only host: separate navigation, session goal and save; games retain their own rules. */
 export class CouchScene extends Scene {
-  countsTime = false;
   upright = true;
   readonly couch = couchStore;
   private input!: CouchInput;

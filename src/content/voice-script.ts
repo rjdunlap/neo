@@ -971,9 +971,6 @@ export const SCRIPT = {
   'heart.off': ['Okay! We can heart it again any time.'],
   'place.favorites': ['Your favorites! Tap one to play.'],
 
-  'sleepy.warn': ["I'm getting sleepy. One more game!"],
-  'sleepy.night': ['Goodnight, {name}. Sweet dreams!'],
-
   'bubble.free': ['Pop the bubbles!', 'Bubbles! Pop pop pop!'],
   'bubble.color': ['Pop the {color} bubbles!'],
   'bubble.wrong': ["That one's {wrong}. Find {color}!"],

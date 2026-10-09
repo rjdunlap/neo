@@ -15,7 +15,6 @@ import { Scene } from '../Scene';
 import { applySettings } from '../settings';
 
 export class HatchScene extends Scene {
-  countsTime = false;
   private readonly background = new Graphics();
   private readonly egg = drawEgg(new Graphics());
   private readonly choices = new Container();

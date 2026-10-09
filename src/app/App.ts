@@ -8,7 +8,6 @@ import { Tweener } from '../engine/tween';
 import { clampInsets, computeView, needsTurn, NO_INSETS, type Insets, type View } from '../engine/view';
 import { TurnPrompt } from '../ui/TurnPrompt';
 import type { Scene } from './Scene';
-import { session } from './session';
 import type { Band } from '../progress/bands';
 import type { PicnicStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
@@ -40,7 +39,6 @@ export interface Routes {
   /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. */
   room(): void;
   journal(): void;
-  goodnight(): void;
 }
 
 /** Owns the Pixi app, the logical-unit root, scene switching and the frame loop. */
@@ -94,7 +92,6 @@ export class App {
     // iOS settles the safe area a moment after a turn; the probe's box changes when it does.
     if (typeof ResizeObserver === 'function') new ResizeObserver(() => this.applyView()).observe(this.probe);
     document.addEventListener('visibilitychange', () => this.syncSleep());
-    session.onWarn = () => this.scene?.sleepyWarning();
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
   }
 
@@ -184,6 +181,5 @@ export class App {
     }
     if (!this.scene) return;
     this.scene.update(dt);
-    if (this.scene.countsTime) session.update(dt);
   }
 }

@@ -1,5 +1,5 @@
 import { get, set } from 'idb-keyval';
-import { bandInfo, type Band } from './bands';
+import type { Band } from './bands';
 import { nextLevel, type LevelRange } from './difficulty';
 import { flipItem, moveItem, tidy } from '../content/room';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
@@ -207,7 +207,6 @@ class Store {
   setBand(band: Band) {
     if (band === this.data.profile.band) return;
     this.data.profile.band = band;
-    this.data.settings.sessionMinutes = bandInfo(band).minutes;
     this.save();
   }
 

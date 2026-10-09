@@ -21,9 +21,8 @@ await page.goto(process.env.GAME_URL || 'http://localhost:5173');
 await page.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
 const games = await page.evaluate(async () => (await import('/src/games/registry.ts')).GAMES.map((g) => ({ id: g.id, band: g.bands.at(-1), levels: g.levels(g.bands.at(-1)), demo: !!g.touchDemo })));
 const picked = games.filter((g) => (only ? only.includes(g.id) : g.demo));
-await page.evaluate(async () => {
-  const { session } = await import('/src/app/session.ts'); session.start(0);
-  kit.store.data.profile.name = 'Mia'; kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true;
+await page.evaluate(() => {
+  kit.store.data.profile.name = 'Mia'; kit.store.data.settings.howToCards = true;
 });
 let opened = 0;
 for (let r = 0; r < rounds; r++) {

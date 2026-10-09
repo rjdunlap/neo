@@ -1,5 +1,4 @@
 import { applySettings } from '../app/settings';
-import { session } from '../app/session';
 import { voice } from '../audio/voice';
 import { GAMES } from '../games/registry';
 import { BANDS, type Band } from '../progress/bands';
@@ -7,14 +6,13 @@ import { store } from '../progress/store';
 import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
 
-const SESSION_CHOICES = [5, 10, 15, 20, 30, 0];
 const DAY = 24 * 60 * 60 * 1000;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /**
- * The grown-up zone: plain HTML over the game, reached through the parent gate.
- * Settings apply when it closes, and the session timer restarts.
+ * The grown-up zone: plain HTML over the game, reached through the grown-ups gear.
+ * Settings apply when it closes.
  */
 export function openParentPanel(onClose: () => void) {
   const root = document.createElement('div');
@@ -46,13 +44,8 @@ export function openParentPanel(onClose: () => void) {
         <label for="p-pet-color">Pet color</label>
         <select id="p-pet-color">${PET_COLORS.map((color) => `<option value="${color}">${color}</option>`).join('')}</select>
       </div>
-      <h2>Play time</h2>
-      <div class="parent__row">
-        <label for="p-session">Session length (then a goodnight scene)</label>
-        <select id="p-session">
-          ${SESSION_CHOICES.map((m) => `<option value="${m}">${m ? `${m} minutes` : 'No limit'}</option>`).join('')}
-        </select>
-      </div>
+      <h2>Playing</h2>
+      <p class="muted">Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.</p>
       <div class="parent__row">
         <label for="p-tips">Show grown-up tips during games</label>
         <input id="p-tips" type="checkbox" />
@@ -101,7 +94,6 @@ export function openParentPanel(onClose: () => void) {
   const name = $<HTMLInputElement>('#p-name');
   const petName = $<HTMLInputElement>('#p-pet-name');
   const petColor = $<HTMLSelectElement>('#p-pet-color');
-  const sessionSel = $<HTMLSelectElement>('#p-session');
   const tips = $<HTMLInputElement>('#p-tips');
   const howto = $<HTMLInputElement>('#p-howto');
   const layout = $<HTMLSelectElement>('#p-layout');
@@ -113,8 +105,6 @@ export function openParentPanel(onClose: () => void) {
     petName.value = d.pet.name;
     petColor.value = d.pet.color;
     name.value = d.profile.name;
-    sessionSel.value = String(d.settings.sessionMinutes);
-    if (!sessionSel.value) sessionSel.value = '0';
     layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
@@ -149,10 +139,6 @@ export function openParentPanel(onClose: () => void) {
       render();
     }),
   );
-  sessionSel.addEventListener('change', () => {
-    store.data.settings.sessionMinutes = Number(sessionSel.value);
-    store.save();
-  });
   tips.addEventListener('change', () => {
     store.data.settings.coplayHints = tips.checked;
     store.save();
@@ -195,7 +181,6 @@ export function openParentPanel(onClose: () => void) {
     root.remove();
     window.removeEventListener('keydown', onKey);
     applySettings();
-    session.start(store.data.settings.sessionMinutes);
     onClose();
   };
   const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();

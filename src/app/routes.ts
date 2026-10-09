@@ -2,7 +2,6 @@ import { gameById } from '../games/registry';
 import { store } from '../progress/store';
 import type { App, Routes } from './App';
 import { GameScene } from './scenes/GameScene';
-import { GoodnightScene } from './scenes/GoodnightScene';
 import { HatchScene } from './scenes/HatchScene';
 import { MapScene } from './scenes/MapScene';
 import { PicnicScene } from './scenes/PicnicScene';
@@ -29,6 +28,5 @@ export function createRoutes(app: App): Routes {
     stickers: () => void app.show(new StickerBookScene(app)),
     room: () => void app.show(new RoomScene(app)),
     journal: () => void app.show(new JournalScene(app)),
-    goodnight: () => void app.show(new GoodnightScene(app)),
   };
 }

@@ -13,11 +13,9 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 /** A sleeping Pip and a big play button. The first tap anywhere wakes the sound, the voice and Pip. */
 export class StartScene extends Scene {
-  countsTime = false;
   private backdrop!: Backdrop;
   private readonly pip = makePet();
   private readonly egg = drawEgg(new Graphics());
@@ -85,7 +83,6 @@ export class StartScene extends Scene {
     // Both must happen inside this tap, or iOS keeps the game silent.
     audio.unlock();
     voice.unlock();
-    session.start(store.data.settings.sessionMinutes);
 
     this.pip.setMood('happy');
     this.pip.cheer();

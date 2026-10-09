@@ -28,8 +28,6 @@ async function launch(id, level, childName = 'Mia') {
     const mod = gameById(id);
     kit.store.data.profile.band = mod.bands.find((band) => { const r = mod.levels(band); return level >= r.min && level <= r.max; });
     kit.store.data.profile.name = childName;
-    kit.store.data.settings.sessionMinutes = 0;
-    const { session } = await import('/src/app/session.ts'); session.start(0);
     kit.store.stats(id).pinned = level;
     neo.go.game(id);
   }, { id, level, childName });
@@ -114,7 +112,6 @@ async function hatchingAndMap() {
   await page.locator('#p-name').fill('Mia');
   await page.locator('#p-pet-name').fill('Clover');
   await page.locator('#p-pet-color').selectOption('pink');
-  await page.locator('#p-session').selectOption('0');
   await page.locator('[data-done]').click(); await scene('MapScene');
   assert.equal(await page.evaluate(() => neo.scene.pip.spec.color), 'pink');
   assert.deepEqual(await page.evaluate(() => kit.store.data.world), { band: 'prek' });
@@ -3383,7 +3380,7 @@ async function picnicStory() {
   const picnic = () => page.waitForFunction(() => neo.scene.constructor.name === 'PicnicScene' && !neo.switching && !neo.scene.busy, null, { timeout: 30000 });
   const story = () => page.evaluate(() => JSON.parse(JSON.stringify(kit.store.picnic)));
   const stickers = () => page.evaluate(() => kit.store.data.stickers.length);
-  await page.evaluate(() => { kit.store.data.profile.band = 'prek'; kit.store.data.world.band = 'prek'; kit.store.data.settings.sessionMinutes = 0; kit.store.retellStory(); });
+  await page.evaluate(() => { kit.store.data.profile.band = 'prek'; kit.store.data.world.band = 'prek'; kit.store.retellStory(); });
   const before = await stickers();
   // The picnic stands on the island map, open to every age like the places.
   await page.evaluate(() => neo.go.hub()); await scene('MapScene');
@@ -6024,10 +6021,9 @@ async function howToIntro() {
   });
   assert.equal(couchBots.length, 15, 'fifteen island games can also be played with a controller');
   assert.deepEqual([...withBot].sort(), [...new Set([...touchBots, ...couchBots])].sort(), 'a demonstration for a game with a ghost finger or a controller bot, and for no other');
-  await page.evaluate(async () => {
-    const { session } = await import('/src/app/session.ts'); session.start(0);
+  await page.evaluate(() => {
     kit.store.data.profile.band = 'toddler'; kit.store.data.profile.name = 'Mia';
-    kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true;
+    kit.store.data.settings.howToCards = true;
   });
 
   // --- The card, Play and Back, and no round until Play.
@@ -6248,10 +6244,9 @@ async function howToLevelPick() {
   const describe = (id, level) => page.evaluate(async ({ id, level }) => (await import('/src/games/registry.ts')).gameById(id).describeLevel(level), { id, level });
 
   await ready();
-  await page.evaluate(async () => {
-    const { session } = await import('/src/app/session.ts'); session.start(0);
+  await page.evaluate(() => {
     kit.store.data.profile.band = 'toddler'; kit.store.data.profile.name = 'Mia';
-    kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true;
+    kit.store.data.settings.howToCards = true;
     kit.store.stats('bubble-pop').level = 3; kit.store.stats('bubble-pop').pinned = null;
   });
 
@@ -6350,9 +6345,8 @@ async function fingerDemos() {
   if (levels) for (const g of games) g.plays = levels.flatMap((level) => { const r = g.ranges.find((x) => level >= x.min && level <= x.max); return r ? [{ band: r.band, level }] : []; });
   const picked = games.filter((g) => !only || only.includes(g.id));
   assert.ok(picked.length > 0, `FINGER_ONLY matched no game: ${only}`);
-  await page.evaluate(async () => {
-    const { session } = await import('/src/app/session.ts'); session.start(0);
-    kit.store.data.profile.name = 'Mia'; kit.store.data.settings.sessionMinutes = 0; kit.store.data.settings.howToCards = true;
+  await page.evaluate(() => {
+    kit.store.data.profile.name = 'Mia'; kit.store.data.settings.howToCards = true;
   });
   for (const g of picked) {
     for (const { band, level } of g.plays) {
@@ -6458,10 +6452,9 @@ async function roomPlay() {
 
 /** The child's island: a twinkle on games not yet played, a heart after a round, the favorites shelf (path) and Favorites card (subjects). */
 async function islandShelf() {
-  await page.evaluate(async () => {
-    const { session } = await import('/src/app/session.ts');
+  await page.evaluate(() => {
     kit.store.data.profile.band = 'toddler'; kit.store.data.world.band = 'toddler';
-    kit.store.data.settings.placeLayout = 'path'; kit.store.data.settings.sessionMinutes = 0; session.start(0);
+    kit.store.data.settings.placeLayout = 'path';
     kit.store.data.games = {}; kit.store.data.favorites = []; kit.store.data.stickers = [];
     neo.go.place('toddler');
   });

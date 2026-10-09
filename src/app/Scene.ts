@@ -18,8 +18,6 @@ export abstract class Scene {
   readonly particles = new Particles();
   readonly ui = new Container();
   readonly tw = new Tweener();
-  /** Whether time here counts against the session's screen-time budget. */
-  countsTime = true;
   /** A plain-HTML scene that already suits a phone held upright, so it is never covered by the turn prompt. */
   upright = false;
   private readonly tracked = new Set<Updatable>();
@@ -36,8 +34,6 @@ export abstract class Scene {
   resize(_view: View): void {}
   enter(): void {}
   exit(): void {}
-  /** Called once, a minute before the session's time is up. */
-  sleepyWarning(): void {}
 
   /** Runs `obj.update(dt)` every frame while the scene is alive. */
   track<T extends Updatable>(obj: T): T {
