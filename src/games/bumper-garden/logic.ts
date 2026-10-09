@@ -1,4 +1,4 @@
-import { simulate, type BallWorld, type Peg } from '../../engine/ball';
+import { simulate, stepBall, type Ball, type BallWorld, type Peg } from '../../engine/ball';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -123,4 +123,140 @@ export function aimFor(world: BallWorld, count: number, wanted: (i: number) => b
     if (hits.some(wanted)) return a;
   }
   return null;
+}
+
+/** A flipper's swing as the game keeps it: its angle, and how much longer it is held up. */
+export interface FlipperState {
+  angle: number;
+  upFor: number;
+}
+export type Flippers = Record<FlipperSide, FlipperState>;
+export const restingFlippers = (): Flippers => ({ left: { angle: FLIPPER.rest, upFor: 0 }, right: { angle: FLIPPER.rest, upFor: 0 } });
+/** The pegs that stand for the two flippers are the last twelve of a world. */
+const FLIPPER_PEGS = 12;
+
+/** Swing both flippers one frame (up fast while held, then settling back) and move their pegs to match. The game and the bot's look ahead both use this. */
+export function swingFlippers(flippers: Flippers, world: BallWorld, dt: number) {
+  let k = world.pegs.length - FLIPPER_PEGS;
+  for (const side of ['left', 'right'] as FlipperSide[]) {
+    const f = flippers[side];
+    f.upFor = Math.max(0, f.upFor - dt);
+    const target = f.upFor > 0 ? FLIPPER.up : FLIPPER.rest;
+    f.angle += Math.sign(target - f.angle) * Math.min(Math.abs(target - f.angle), dt * (f.upFor > 0 ? 22 : 9));
+    for (const p of flipperPoints(side, f.angle)) Object.assign(world.pegs[k++], p);
+  }
+}
+
+/** How near the ball must be to a flipper for a flip to bat it. Young players get a wider reach. */
+export const kickReach = (ballRadius: number, wide: boolean) => ballRadius + 12 + (wide ? 46 : 30);
+
+/**
+ * What a flip does to the ball: it flies back up, leaning one way or the other by where along the flipper it was struck (0 at
+ * the pivot, 1 at the tip), with a little chance in it (`noise` is asked for only when the flip connects). Null if the
+ * ball is out of reach, or already rising fast.
+ */
+export function kickBall(ball: Ball, side: FlipperSide, wide: boolean, noise: () => number): { vx: number; vy: number } | null {
+  const pts = flipperPoints(side, FLIPPER.rest, 12);
+  let best = Infinity;
+  let at = 0;
+  pts.forEach((p, i) => {
+    const d = Math.hypot(p.x - ball.x, p.y - ball.y);
+    if (d < best) [best, at] = [d, i / (pts.length - 1)];
+  });
+  if (best > kickReach(ball.r, wide) || ball.vy < -250) return null;
+  const s = side === 'left' ? 1 : -1;
+  return { vx: s * (320 - 420 * at) + noise(), vy: -880 - 80 * at };
+}
+
+/** The game moves the ladybug and the flippers in steps of this length however fast the screen draws, so a look ahead and the game agree. */
+export const STEP = 1 / 120;
+/** How far ahead the free flight is followed, and how far after a flip (in steps). */
+const FREE_FRAMES = 120 * 7;
+const AFTER_FRAMES = 120 * 4;
+/** A flip that works at the planned step and the next few is a flip that works when the hand lands a step late. */
+const LATE = 2;
+/** A flip that cannot reach a flower is only worth it if it keeps the ladybug up this many steps longer. */
+const KEEP_GAIN = 60;
+
+interface Moment {
+  ball: Ball;
+  /** How many flowers had been touched by now. */
+  touched: number;
+}
+
+/**
+ * Play the ball forward a frame at a time, the way the game does (flippers swing, then the ball moves), from `start` with
+ * the flippers at rest, pressing `press` on the first frame if asked. Returns the flowers it touches (after those already
+ * in `before`), where it was before each frame, and how many frames it stayed up.
+ */
+function playOut(world: BallWorld, flowers: number, start: Ball, before: readonly number[], wide: boolean, noise: number, press: FlipperSide | null, limit: number) {
+  const w: BallWorld = { ...world, pegs: world.pegs.map((p) => ({ ...p })) };
+  const flippers = restingFlippers();
+  const b = { ...start };
+  const hits = [...before];
+  const moments: Moment[] = [];
+  let frames = 0;
+  for (; frames < limit; frames++) {
+    moments.push({ ball: { ...b }, touched: hits.length });
+    if (press && frames === 0) {
+      flippers[press].upFor = 0.2;
+      const v = kickBall(b, press, wide, () => noise);
+      if (v) Object.assign(b, v);
+    }
+    swingFlippers(flippers, w, STEP);
+    for (const i of stepBall(b, w, STEP)) if (i < flowers && !hits.includes(i)) hits.push(i);
+    if (b.y + b.r >= CATCH_Y) break;
+  }
+  return { hits, moments, frames };
+}
+
+/** When and where to press a flipper: after `frame` more steps of play, when the ball is at (x, y). */
+export interface FlipPlan {
+  side: FlipperSide;
+  frame: number;
+  x: number;
+  y: number;
+}
+
+/**
+ * A look ahead for a bot. From the ball as it is now, with the flippers at rest and the chance in the next flip (`noise`, the
+ * game's next random draw) known, find the moment to press that gets a wanted flower touched. If the ball will touch one
+ * anyway there is nothing to do (null). Otherwise the earliest press whose flight touches one; failing that the press that
+ * keeps the ball up longest, for another pass.
+ */
+export function planFlip(world: BallWorld, flowers: number, ball: Ball, wide: boolean, noise: number, wanted: (flower: number) => boolean): FlipPlan | null {
+  const free = playOut(world, flowers, ball, [], wide, noise, null, FREE_FRAMES);
+  if (free.hits.some(wanted)) return null;
+  const sides = ['left', 'right'] as FlipperSide[];
+  // What a flip at a step is worth, worked out when it is first asked for.
+  const cache = new Map<string, { value: number; frames: number } | null>();
+  const worth = (side: FlipperSide, frame: number) => {
+    const key = `${side}${frame}`;
+    if (!cache.has(key)) {
+      const at = free.moments[frame];
+      if (!at || !kickBall(at.ball, side, wide, () => noise)) cache.set(key, null);
+      else {
+        const out = playOut(world, flowers, at.ball, free.hits.slice(0, at.touched), wide, noise, side, AFTER_FRAMES);
+        cache.set(key, { value: out.hits.filter(wanted).length, frames: out.frames });
+      }
+    }
+    return cache.get(key)!;
+  };
+  // The longest-lasting flip, for a ball that cannot be sent to a flower this time: another pass may.
+  let keep: { plan: FlipPlan; frames: number } | null = null;
+  // Every few steps, earliest first: the ball moves only a few units in between.
+  for (let frame = 0; frame < free.moments.length; frame += LATE + 1) {
+    for (const side of sides) {
+      const w = worth(side, frame);
+      if (!w) continue;
+      const at = free.moments[frame].ball;
+      const plan = { side, frame, x: at.x, y: at.y };
+      // The hand may press a step late: a flip that works here and the next steps on is a flip that works.
+      if (w.value > 0 && Array.from({ length: LATE }, (_, k) => worth(side, frame + 1 + k)).every((o) => o && o.value > 0)) return plan;
+      // Only a flip that keeps the ladybug up clearly longer than it would stay on its own is worth pressing.
+      if (w.value === 0 && frame + w.frames > free.moments.length + KEEP_GAIN && (!keep || frame + w.frames > keep.frames)) keep = { plan, frames: frame + w.frames };
+    }
+  }
+  // A ladybug still bouncing about at the end of the look ahead will be looked at again soon enough: no need to save it yet.
+  return free.moments.length < FREE_FRAMES ? (keep?.plan ?? null) : null;
 }

@@ -8,13 +8,15 @@ import { ease } from './tween';
 export const GHOST_POINTER = 71_000_001;
 
 type Pt = { x: number; y: number };
-type Phase = 'idle' | 'travel' | 'press' | 'carry' | 'release' | 'rest';
+type Phase = 'idle' | 'travel' | 'hover' | 'press' | 'carry' | 'release' | 'rest';
 
 /** The seconds each part of a gesture takes, slow enough for a grown-up to see what was touched. */
 const TRAVEL = { min: 0.45, max: 0.95, speed: 560 };
 const CARRY = { min: 0.5, speed: 420 };
 const PRESS = 0.22;
 const RELEASE = 0.2;
+/** The longest a hand waits over its spot for the moment to press (`when`) before it gives the touch up. */
+const HOVER_MAX = 6;
 /** A pause after each gesture, so what it did can be seen before the next one starts. */
 const REST = 0.55;
 /** The least time between two taps on one spot: the hand has to come back (the shortest travel), press and lift. A game that needs a rhythm adds a pause to this. */
@@ -33,6 +35,8 @@ interface Plan {
   tap: boolean;
   /** Seconds of rest after the gesture. */
   rest: number;
+  /** Press only when this is true: the hand waits over the first spot until then. */
+  when?: () => boolean | 'cancel';
 }
 
 const spotGlobal = (s: Spot): Pt => s.on.toGlobal({ x: s.x ?? 0, y: s.y ?? 0 });
@@ -87,9 +91,9 @@ export class GhostFinger {
     if (this.phase !== 'idle') return;
     let plan: Plan;
     const rest = Math.max(0.05, intent.pause ?? REST);
-    if ('tap' in intent) plan = { stops: [intent.tap], target: intent.receiver ?? intent.tap.on, lift: 0, tap: true, rest };
-    else if ('drag' in intent) plan = { stops: [intent.drag, intent.to], target: intent.receiver ?? intent.drag.on, lift: intent.lift ?? RIDE, tap: false, rest };
-    else plan = { stops: [intent.trace, ...intent.via], target: intent.receiver ?? intent.trace.on, lift: 0, tap: false, rest };
+    if ('tap' in intent) plan = { stops: [intent.tap], target: intent.receiver ?? intent.tap.on, lift: 0, tap: true, rest, when: intent.when };
+    else if ('drag' in intent) plan = { stops: [intent.drag, intent.to], target: intent.receiver ?? intent.drag.on, lift: intent.lift ?? RIDE, tap: false, rest, when: intent.when };
+    else plan = { stops: [intent.trace, ...intent.via], target: intent.receiver ?? intent.trace.on, lift: 0, tap: false, rest, when: intent.when };
     if (plan.target.destroyed) return;
     this.plan = plan;
     this.leg = 0;
@@ -134,11 +138,14 @@ export class GhostFinger {
         this.moveTo(this.from, this.point(0), ease.inOutSine(k));
         if (done) {
           this.pos = this.point(0);
-          this.emit('pointerdown', this.pos);
-          this.down = true;
-          this.ripple = 0;
-          this.begin('press', this.pos, PRESS);
+          this.hoverOrLand(plan.when?.() ?? true);
         }
+        break;
+      }
+      case 'hover': {
+        // Over the spot, waiting for the moment (a ball reaching a flipper); a moment that never comes is let go.
+        this.pos = this.point(0);
+        this.hoverOrLand(plan.when!(), done);
         break;
       }
       case 'press': {
@@ -174,6 +181,22 @@ export class GhostFinger {
       }
     }
     this.draw(dt);
+  }
+
+  /** Over the first spot: press if the moment is here, give the touch up if it has gone (or never came), else wait. */
+  private hoverOrLand(ready: boolean | 'cancel', timedOut = false) {
+    const plan = this.plan!;
+    if (ready === true) this.land();
+    else if (ready === 'cancel' || timedOut) this.begin('rest', this.pos, plan.rest);
+    else if (this.phase !== 'hover') this.begin('hover', this.pos, HOVER_MAX);
+  }
+
+  /** Touch down on the first spot. */
+  private land() {
+    this.emit('pointerdown', this.pos);
+    this.down = true;
+    this.ripple = 0;
+    this.begin('press', this.pos, PRESS);
   }
 
   private begin(phase: Phase, from: Pt, len: number) {
