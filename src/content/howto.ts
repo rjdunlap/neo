@@ -920,7 +920,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Build or inspect a garden where its visitors have food, water and shelter.',
     steps: [
       { to: 3, text: 'Tap a garden piece to put it in the habitat. Tap it again to take it out.' },
-      { from: 4, to: 4, text: 'Look at the prepared habitat, then tap Bunny or Duck to predict who will visit.' },
+      { from: 4, to: 4, text: 'Tap the pieces in the prepared habitat to hear what each one gives, then tap Bunny or Duck to predict who will visit.' },
       { from: 5, text: 'Tap garden pieces to fill the open spaces. Some pieces meet more than one need.' },
       'Tap the green gate to test the habitat and see who comes.',
     ],
