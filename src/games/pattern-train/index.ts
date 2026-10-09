@@ -9,8 +9,8 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { buildTrain, patternPlan, type PatternPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { buildTrain, patternPlan, wantedChoice, type PatternPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 9 } };
@@ -36,6 +36,8 @@ class PatternTrain implements Game {
   private wrong = 0;
   private done = false;
   private playing = false;
+  /** The bell pattern has been played once, so a listener has something to go on. */
+  private played = false;
   private clock = 0;
   // Couch play: a ring over the three choices.
   private focus = 0;
@@ -91,6 +93,7 @@ class PatternTrain implements Game {
       c.scale.set(1);
     }
     this.playing = false;
+    this.played = true;
   }
 
   private choose(value: number) {
@@ -150,6 +153,19 @@ class PatternTrain implements Game {
   }
   destroy() {}
 
+  /**
+   * The ghost finger on the how-to card: tap the choice that fits the empty car, then on the bell levels press the green
+   * button to confirm it; on the bell levels it first waits for the notes to be played.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    const bell = this.plan.kind === 'bell';
+    if (bell && (!this.played || this.playing)) return null;
+    const want = wantedChoice(this.sequence, this.targets, this.target);
+    if (bell && this.selected === want) return { tap: { on: this.confirm } };
+    return { tap: { on: this.choices[want] } };
+  }
+
   /** The round is over. The couch checks read this name on every game. */
   get finished() {
     return this.done;
@@ -174,7 +190,7 @@ class PatternTrain implements Game {
     out.players[0].active = true;
     this.botWait -= dt;
     if (this.done || this.botWait > 0) return out;
-    const want = this.sequence[this.targets[this.target]];
+    const want = wantedChoice(this.sequence, this.targets, this.target);
     if (want === this.focus) {
       out.players[0].action = true;
       this.botWait = 1;
@@ -191,5 +207,5 @@ export const patternTrain: GameModule = {
   skills: ['patterns', 'sequencing', 'listening'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly, offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
-  hubIcon: () => new WigglyIcon(trainArt()), sticker: () => trainArt(), create: (ctx) => new PatternTrain(ctx),
+  hubIcon: () => new WigglyIcon(trainArt()), touchDemo: true, sticker: () => trainArt(), create: (ctx) => new PatternTrain(ctx),
 };

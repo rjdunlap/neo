@@ -8,14 +8,14 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (582 tests, on the tree that merges the treehouse take-down, the ghost finger and Lemonade Stand) | Lemonade Stand entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (COUNT tests, on the tree that merges the treehouse take-down, both ghost-finger slices and Lemonade Stand) | Lemonade Stand entry | Run with every code change |
 | `npm run test:offline` | 2026-10-08, on that merged tree | Lemonade Stand entry (and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
-| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations and the ghost finger; Lemonade Stand's card alone (`HOWTO_ONLY`) after it was added | Ghost finger and Lemonade Stand entries | About three minutes |
-| `fingerdemo` | 2026-10-08, the three games with a ghost finger, first and last level | Ghost finger entry | About 15 seconds a play; Chrome automation, so the hand's look on an iPad is not established |
+| `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations and the ghost finger (again after the teardown fix); Lemonade Stand's card alone (`HOWTO_ONLY`) after it was added | Ghost finger on ten couch games and Lemonade Stand entries | About three minutes |
+| `fingerdemo` | 2026-10-08, all 13 games with a ghost finger, first and last level, clean play asserted | Ghost finger on ten couch games entry | About 15 seconds a play; Chrome automation, so the hand's look on an iPad is not established |
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
 | `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
@@ -23,7 +23,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchcourse` | 2026-10-08, with twelve courses | Island Bridges entry | About four to seven minutes |
 | `couchnames` | 2026-10-08 | Pond Conga entry | |
 | `couchsettings` | 2026-10-08 | Pond Conga entry | About 30 seconds |
-| `couchsolo` | 2026-10-08, after Pond Conga joined the shelf | Pond Conga entry | About 40 seconds |
+| `couchsolo` | 2026-10-08, after Pond Conga joined the shelf; again after the demonstration teardown fix | Pond Conga entry | About 40 seconds |
 | `couchbeds` | 2026-10-07, after Lantern Lights joined the shelf | Lantern Lights entry | About three minutes; plays a full six-bed course with the bot |
 | `couchlanterns` | 2026-10-07 | Lantern Lights entry |
 | `couchpictures` | 2026-10-08 | Picture Logic entry | About three minutes; plays a full three-picture course with the bot |
@@ -72,6 +72,15 @@ What changed: researched the remembered Coolmath/MECC Lemonade Stand and Neopets
 - Documentation checks: repository-relative Markdown links and the new external source links were checked; `git diff --check` passed.
 - Not run: typecheck, unit, build or browser suites; no runtime code, save, game registration, count or behavior changed.
 - Still open: play Lemonade Stand after it is built; test whether tickets create real choices rather than farming; choose the first guaranteed purchase and unlock price; test whether children understand each wheel's displayed odds; and add the bank only after the Harbor balance has a worthwhile use.
+
+### The ghost finger on ten of the couch games, and a fix for a demonstration's teardown (2026-10-08)
+
+What changed: following the first slice (3 of 72), ghost fingers for Memory Match, Frog Hop, Pattern Train, Light Lab, Penguin Slide, Secret Code, Robot Path, Rhythm Neighbors, Sink or Float and Ferry Jam, which are ten of the fifteen couch games whose island cards showed the controller highlight; **13 of 72** now. Where the couch bot already held the choice, it moved into `logic.ts` and both bots call it (Memory Match's `nextCard`, Frog Hop's `answerSlot`, Pattern Train's `wantedChoice`, Secret Code's `nextMove`, Robot Path's `nextPress`, which the hint ring also uses, and Penguin Slide's `tapDirection`, which the tap handler itself now uses). Harness: an intent's `pause` and `receiver`, a longer limit (75 s) for a finger, `MIN_TAP_GAP`. Rhythm Neighbors plays its rhythm by resting longer for a long gap (the game's check is relative). Duckling Parade's bot (first slice) was not clean (1 to 3 "not me" misses at levels 3 to 8, from sweeping its finger past wrong ducklings and from spare ducklings joining on the way): it now plans a clear way, with a waypoint when the straight way is blocked and a tap when a drag would sweep, and a refusal now needs a touch first (a wrong duckling beside Mama's start no longer counted as a miss before anyone touched anything).
+
+- `npm run typecheck` and `npm test` passed (the new rule tests: a remembering Memory Match player finishes every deck without a penalty, the answer is always on screen in Frog Hop, a Secret Code reasoner cracks every code ignoring no clue, Robot Path's presses reach the star on all ten levels from nothing and after a wrong step, a Penguin Slide tap exists for every slide of a fewest route and decodes to that direction, Rhythm Neighbors' replies are accepted with the ghost's real minimum spacing, Duckling Parade's way is clear of wrong ducklings and finishes every round, Sink or Float names the right basket, the ghost points at one object and sends the touch to another).
+- `BROWSER_SUITE=fingerdemo` passed for all 13 games at their first and last level, now also asserting the demonstration plays cleanly (no wrong move, no hint); a probe of the middle levels found every one clean too. `howto` in full passed (72 cards both orientations; it now picks the controller-demo games it watches by property, since Penguin Slide and Memory Match no longer have one). `arcade` (`parade`, 1 to 8), `pattern`, `memory`, `robot`, `woods` (`penguin`), `smoke` on the ten new games and `couchgames` on the refactored couch bots (Memory Match, Secret Code, Frog Hop, Pattern Train, Robot Path) passed.
+- **A page error found and fixed:** one `howto` run (and one stress run that opened and abandoned 52 cards at random moments) logged "Cannot set properties of null (setting 'y')" from Frog Hop's `leap`, an `await` continuation that was ready in the same frame its scene's objects were destroyed. `Demo` now takes a finished round's objects out of sight and destroys them a task later. Two stress runs of all 13 cards after the change (52 and then 117 opens, each leaving at a random moment by Back, the map or Play) logged no error, against one error in 52 opens before it; that is suggestive for an intermittent fault, not proof. The same hazard exists in the real game (leaving Frog Hop within a frame of a hop landing) and is not fixed in this slice.
+- Not run: `world`, the other couch suites, `npm run test:offline`. Not established: the hand on an iPad; Secret Code's demonstration is long (29 to 58 s); Bumper Garden needs a tap inside a fifth of a second and Bouncy Launch releases on the window, so they wait for the harness to learn those.
 
 ### The ghost finger on the how-to card (2026-10-08)
 

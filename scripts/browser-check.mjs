@@ -5938,21 +5938,25 @@ async function howToIntro() {
   await scene('GameScene');
   assert.equal((await intro()).intro, true, 'a game tapped on the trail shows its card');
 
-  // --- A game with a bot: a demonstration plays in a window, nothing touched reaches it, and it goes when the card does.
-  for (const id of ['penguin-slide', 'memory-match']) {
+  // --- A game with a bot: a demonstration plays in a window, nothing touched reaches it, and it goes when the card does. The controller's
+  // highlight is the stopgap for a couch game with no ghost finger yet; the rest of this block is the same for a finger (it waits for the hand).
+  const controllerOnly = couchBots.filter((id) => !touchBots.includes(id));
+  const watched = [...controllerOnly.slice(0, 2), ...touchBots.filter((id) => !controllerOnly.includes(id)).slice(0, Math.max(1, 2 - controllerOnly.length))];
+  const lit = (id) => controllerOnly.includes(id) ? () => neo.scene.helpCard.intro.demo.lit.size > 0 : () => neo.scene.helpCard.intro.demo.finger?.hand.visible;
+  for (const id of watched) {
     const band = await page.evaluate(async (id) => (await import('/src/games/registry.ts')).gameById(id).bands.at(-1), id);
     await goGame(id, band);
     assert.deepEqual(await intro(), { open: true, intro: true, game: false }, `${id}: the card, with no round built`);
     let d = await demo();
     assert.deepEqual({ bot: d.bot, dead: d.dead, mode: d.mode }, { bot: true, dead: false, mode: 'none' }, `${id}: the demonstration is a bot in a window that takes no touches`);
-    await page.waitForFunction(() => neo.scene.helpCard.intro.demo.lit.size > 0, null, { timeout: 30000 });
+    await page.waitForFunction(lit(id), null, { timeout: 30000 });
     // Taps on the window do nothing: the card stays, and the demonstration's game is not a real one.
     const win = await page.evaluate(() => { const b = neo.scene.helpCard.intro.demo.root.getBounds(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
     await page.mouse.click(win.x, win.y); await page.waitForTimeout(300);
     assert.deepEqual(await intro(), { open: true, intro: true, game: false }, `${id}: a tap in the demonstration window does nothing`);
     await page.waitForTimeout(1500);
     assert.ok((await demo()).age > 1, `${id}: the demonstration keeps running`);
-    if (id === 'penguin-slide') { await page.waitForTimeout(500); await screenshot('howto-demo-landscape'); }
+    if (id === watched[0]) { await page.waitForTimeout(500); await screenshot('howto-demo-landscape'); }
     assert.deepEqual(errors, [], `${id}: page errors`);
     // Back takes the demonstration with it.
     await page.evaluate(() => { window.__demo = neo.scene.helpCard.intro.demo; });
@@ -6039,9 +6043,9 @@ async function howToIntro() {
     log(`How-to intro ${name}: ${picked.length} games' cards fit, with large Play and Back and a demonstration window for each of the games with a bot`);
   }
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
-  const demoId = withBot.includes('penguin-slide') ? 'penguin-slide' : withBot[0];
+  const demoId = watched[0];
   await goGame(demoId, await page.evaluate(async (id) => (await import('/src/games/registry.ts')).gameById(id).bands.at(-1), demoId));
-  await page.waitForFunction(() => neo.scene.helpCard.intro.demo.lit.size > 0, null, { timeout: 30000 });
+  await page.waitForFunction(lit(demoId), null, { timeout: 30000 });
   await page.waitForTimeout(600);
   await screenshot('howto-demo-portrait');
   if (tallest.id) {
@@ -6060,7 +6064,7 @@ async function howToIntro() {
 
 /**
  * The ghost finger's bot plays every touch game's demonstration to the end (the touch version of `couchgames`'s "the bot finishes
- * a round"): at the game's first and last level, within the 40 seconds a demonstration gets before it replays, with no page error.
+ * a round"): at the game's first and last level, within the time a demonstration gets before it replays (75 seconds for a finger), with no page error.
  * `FINGER_ONLY=bubble-pop,shape-sorter` picks games.
  */
 async function fingerDemos() {
@@ -6085,8 +6089,12 @@ async function fingerDemos() {
       await page.evaluate(({ id, band, level }) => { kit.store.data.profile.band = band; kit.store.stats(id).pinned = level; neo.go.game(id, band); }, { id: g.id, band, level });
       await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !!neo.scene.helpCard?.intro?.demo, { id: g.id, level });
       assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
-      await page.waitForFunction(() => neo.scene.helpCard.intro.demo.finishedRounds > 0, null, { timeout: 44000, polling: 250 });
+      const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
+      await page.waitForFunction(() => neo.scene.helpCard.intro.demo.finishedRounds > 0, null, { timeout: (limit + 4) * 1000, polling: 250 });
       assert.deepEqual(errors, [], `${g.id} level ${level}: page errors`);
+      // A demonstration shows right play: the bot makes no wrong move and needs no hint (for the games that count them).
+      const clean = await page.evaluate(() => { const game = neo.scene.helpCard.intro.demo.game; return game && typeof game.misses === 'number' ? { misses: game.misses, hints: game.hints } : null; });
+      assert.ok(!clean || (clean.misses === 0 && clean.hints === 0), `${g.id} level ${level}: the demonstration played cleanly (${JSON.stringify(clean)})`);
       log(`Finger demo: ${g.id} level ${level} (${band}) finished in ${(await page.evaluate(() => neo.scene.helpCard.intro.demo.age)).toFixed(1)}s`);
     }
   }

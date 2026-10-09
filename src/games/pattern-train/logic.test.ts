@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { buildTrain, CHOICES, PATTERN_PLANS } from './logic';
+import { buildTrain, CHOICES, PATTERN_PLANS, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -42,6 +42,20 @@ describe('Pattern Train', () => {
         expect(targets[0]).toBeLessThan(plan.pattern.length);
         expect(targets[0]).toBeGreaterThan(0);
       } else expect(targets).toEqual([sequence.length - 1]);
+    }
+  });
+
+  it('has a choice on offer for every empty car, in order, that fits the pattern', () => {
+    for (const plan of PATTERN_PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const { sequence, targets } = buildTrain(plan, new Rng(seed));
+        targets.forEach((t, k) => {
+          const want = wantedChoice(sequence, targets, k);
+          expect(want).toBeGreaterThanOrEqual(0);
+          expect(want).toBeLessThan(CHOICES);
+          expect(want).toBe(sequence[t]);
+        });
+      }
     }
   });
 });

@@ -17,6 +17,8 @@ const PRESS = 0.22;
 const RELEASE = 0.2;
 /** A pause after each gesture, so what it did can be seen before the next one starts. */
 const REST = 0.55;
+/** The least time between two taps on one spot: the hand has to come back (the shortest travel), press and lift. A game that needs a rhythm adds a pause to this. */
+export const MIN_TAP_GAP = TRAVEL.min + PRESS + RELEASE;
 /** How much bigger than life the hand or cursor is drawn, to read in a window a third the size of the screen. */
 const WINDOW_SCALE = 1.35;
 /** A held thing rides this far above the finger unless the intent says otherwise (`draggable`'s own height). */
@@ -29,6 +31,8 @@ interface Plan {
   /** The finger ends this many units below the last stop (a dragged thing rides above it). */
   lift: number;
   tap: boolean;
+  /** Seconds of rest after the gesture. */
+  rest: number;
 }
 
 const spotGlobal = (s: Spot): Pt => s.on.toGlobal({ x: s.x ?? 0, y: s.y ?? 0 });
@@ -82,9 +86,10 @@ export class GhostFinger {
   start(intent: TouchIntent) {
     if (this.phase !== 'idle') return;
     let plan: Plan;
-    if ('tap' in intent) plan = { stops: [intent.tap], target: intent.tap.on, lift: 0, tap: true };
-    else if ('drag' in intent) plan = { stops: [intent.drag, intent.to], target: intent.drag.on, lift: intent.lift ?? RIDE, tap: false };
-    else plan = { stops: [intent.trace, ...intent.via], target: intent.trace.on, lift: 0, tap: false };
+    const rest = Math.max(0.05, intent.pause ?? REST);
+    if ('tap' in intent) plan = { stops: [intent.tap], target: intent.receiver ?? intent.tap.on, lift: 0, tap: true, rest };
+    else if ('drag' in intent) plan = { stops: [intent.drag, intent.to], target: intent.receiver ?? intent.drag.on, lift: intent.lift ?? RIDE, tap: false, rest };
+    else plan = { stops: [intent.trace, ...intent.via], target: intent.receiver ?? intent.trace.on, lift: 0, tap: false, rest };
     if (plan.target.destroyed) return;
     this.plan = plan;
     this.leg = 0;
@@ -157,7 +162,7 @@ export class GhostFinger {
       }
       case 'release': {
         this.press = Math.max(0, 1 - this.t / 0.12);
-        if (done) this.begin('rest', this.pos, REST);
+        if (done) this.begin('rest', this.pos, plan.rest);
         break;
       }
       case 'rest': {

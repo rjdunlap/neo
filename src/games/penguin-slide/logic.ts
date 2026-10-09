@@ -53,6 +53,12 @@ const DX = [1, 0, -1, 0];
 const DY = [0, 1, 0, -1];
 const key = (c: Cell) => `${c.x},${c.y}`;
 
+/** Which way a tap on the ice sends the penguin: the side of it the tap is on, along the longer way. */
+export const tapDirection = (dx: number, dy: number): Dir => (Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3);
+
+/** The cell beside `from` in direction `dir`: where the how-to card's ghost finger taps to send the penguin that way. */
+export const beside = (from: Cell, dir: Dir): Cell => ({ x: from.x + DX[dir], y: from.y + DY[dir] });
+
 /** Where a slide stops, and every cell it passes over on the way (including where it stops). */
 export function slide(p: SlidePuzzle, from: Cell, dir: Dir): { to: Cell; passed: Cell[] } {
   const rocks = new Set(p.rocks.map(key));

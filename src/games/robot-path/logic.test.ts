@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compress, expand, ROBOT_PLANS, runPath, shortestPath, slotOfStep } from './logic';
+import { compress, expand, nextPress, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
 
 describe('robot routes', () => {
   it('makes every level solvable inside the program limit', () => {
@@ -36,5 +36,41 @@ describe('robot routes', () => {
     expect(expand([{ dir: 'right', n: 2 }, { dir: 'down', n: 1 }], 2)).toEqual(['right', 'right', 'down', 'right', 'right', 'down']);
     expect(slotOfStep([{ dir: 'right', n: 2 }, { dir: 'down', n: 1 }], 2)).toEqual([0, 0, 1, 0, 0, 1]);
     expect(compress(['up', 'up', 'left', 'up'])).toEqual([{ dir: 'up', n: 2 }, { dir: 'left', n: 1 }, { dir: 'up', n: 1 }]);
+  });
+});
+
+describe('the buttons the ghost finger presses', () => {
+  /** Press the way the game does (an arrow adds a step or one more of the last, the loop button counts 1 to 4) until play. */
+  function playOut(plan: (typeof ROBOT_PLANS)[number], start: Slot[]) {
+    const mode = plan.mode ?? 'steps';
+    const solution = plan.solution?.slots ?? shortestPath(plan).map((dir) => ({ dir, n: 1 }));
+    const wantLoop = plan.solution?.loop ?? 1;
+    const program = start.map((s) => ({ ...s }));
+    let loop = 1;
+    for (let presses = 0; presses < 60; presses++) {
+      const press = nextPress(solution, program, mode, loop, wantLoop);
+      if ('play' in press) return runPath(plan, expand(program, loop)).success;
+      if ('clear' in press) {
+        program.length = 0;
+        loop = 1;
+      } else if ('loop' in press) loop = (loop % 4) + 1;
+      else {
+        const last = program[program.length - 1];
+        if (mode !== 'steps' && last && last.dir === press.arrow && last.n < 5) last.n++;
+        else {
+          expect(program.length, plan.name).toBeLessThan(plan.limit);
+          program.push({ dir: press.arrow, n: 1 });
+        }
+      }
+    }
+    return false;
+  }
+
+  it('reaches the star on every level, from nothing and after a wrong first step', () => {
+    for (const plan of ROBOT_PLANS) {
+      expect(playOut(plan, []), plan.name).toBe(true);
+      const wrong = [{ dir: plan.goal[0] === 0 ? 'left' : 'up', n: 1 }] as Slot[];
+      expect(playOut(plan, wrong), `${plan.name} (after a wrong step)`).toBe(true);
+    }
   });
 });

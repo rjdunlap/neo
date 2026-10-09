@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { arrive, canJoin, makeRound, needed, nextStop, PLANS, readyForPond, type DemoDuckling } from './logic';
 
+const POND = { x: 800, y: 420 };
+
 describe('Duckling Parade', () => {
   it('always has enough of the right ducklings to finish', () => {
     for (const plan of PLANS) {
@@ -51,7 +53,7 @@ describe('Duckling Parade', () => {
         let home = 0;
         let mama = { x: 60, y: 400 };
         for (let guard = 0; guard < 30; guard++) {
-          const stop = nextStop(plan, round, line.map((d) => d.color), home, ducks, mama);
+          const stop = nextStop(plan, round, line.map((d) => d.color), home, ducks, mama, POND);
           expect(stop, `${plan.name} seed ${seed}`).not.toBeNull();
           if (stop!.to === 'pond') {
             const { swimIn } = arrive(round, home, line.length);
@@ -77,7 +79,18 @@ describe('Duckling Parade', () => {
     const round = makeRound(plan, new Rng(3));
     const near: DemoDuckling = { color: 'yellow', loose: true, x: 200, y: 400 };
     const far: DemoDuckling = { color: 'yellow', loose: true, x: 700, y: 400 };
-    expect(nextStop(plan, round, [], 0, [far, near], { x: 150, y: 400 })).toEqual({ to: 'duckling', index: 1 });
-    expect(nextStop(plan, round, [], 0, [{ ...near, loose: false }], { x: 150, y: 400 })).toBeNull();
+    expect(nextStop(plan, round, [], 0, [far, near], { x: 150, y: 400 }, POND)).toMatchObject({ to: 'duckling', index: 1 });
+    expect(nextStop(plan, round, [], 0, [{ ...near, loose: false }], { x: 150, y: 400 }, POND)).toBeNull();
+  });
+
+  it('leads her by a way that no wrong duckling sits on, so the demonstration is never a "not me", and taps when no way is clear', () => {
+    const plan = PLANS.find((p) => p.mode === 'color')!;
+    const round = { ducklings: ['yellow', 'blue'] as const, want: 'yellow' as const };
+    const mama = { x: 100, y: 400 };
+    const wanted: DemoDuckling = { color: 'yellow', loose: true, x: 500, y: 400 };
+    const wrongOnTheWay: DemoDuckling = { color: 'blue', loose: true, x: 300, y: 420 };
+    const wrongAside: DemoDuckling = { color: 'blue', loose: true, x: 300, y: 650 };
+    expect(nextStop(plan, { ...round, ducklings: [...round.ducklings] }, [], 0, [wanted, wrongAside], mama, POND)).toMatchObject({ to: 'duckling', drag: true });
+    expect(nextStop(plan, { ...round, ducklings: [...round.ducklings] }, [], 0, [wanted, wrongOnTheWay], mama, POND)).toMatchObject({ to: 'duckling', drag: false });
   });
 });

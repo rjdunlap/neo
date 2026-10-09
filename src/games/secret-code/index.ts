@@ -11,8 +11,8 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { candidates, ignoredClues, makeCode, planFor, score, STONES, suggestion, type CodePlan, type Guess, type Mark } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { ignoredClues, makeCode, nextMove, planFor, score, STONES, suggestion, type CodePlan, type Guess, type Mark } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
@@ -151,13 +151,13 @@ class SecretCode implements Game {
     out.players[0].active = true;
     this.botWait -= dt;
     if (this.busy || this.finished || this.botWait > 0) return out;
-    const empty = this.guess.indexOf(null);
-    if (empty < 0) {
+    const move = nextMove(this.plan, this.history, this.code, this.guess);
+    if ('key' in move) {
       out.players[0].action = true;
       this.botWait = 1;
       return out;
     }
-    const want = (candidates(this.plan, this.history)[0] ?? this.code)[empty];
+    const want = move.stone;
     if (want === this.trayFocus) {
       out.players[0].action = true;
       this.botWait = 0.5;
@@ -166,6 +166,13 @@ class SecretCode implements Game {
       this.botWait = 0.35;
     }
     return out;
+  }
+
+  /** The ghost finger on the how-to card: tap the stone the clues point to, slot by slot, then the key. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const move = nextMove(this.plan, this.history, this.code, this.guess);
+    return 'key' in move ? { tap: { on: this.key }, pause: 0.9 } : { tap: { on: this.tray[move.stone] }, pause: 0.3 };
   }
 
   private async next() {
@@ -389,6 +396,7 @@ export const secretCode: GameModule = {
   coplayHint: 'After each try, say what the marks tell you: "Red is right! Blue is in the code, but somewhere else."',
   offScreen: 'Hide three toys in a row behind your back and let her guess the order, saying which ones are in the right spot.',
   hubIcon: () => new CodeIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new SecretCode(ctx),
 };

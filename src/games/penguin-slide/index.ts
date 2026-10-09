@@ -13,9 +13,9 @@ import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { eaten, HINT_AFTER, makePuzzle, planFor, slide, solve, type Cell, type Dir, type SlidePlan, type SlidePuzzle } from './logic';
+import { beside, eaten, HINT_AFTER, makePuzzle, planFor, slide, solve, tapDirection, type Cell, type Dir, type SlidePlan, type SlidePuzzle } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -152,6 +152,15 @@ class PenguinSlide implements Game {
 
   destroy() {}
 
+  /** The ghost finger on the how-to card: tap the ice beside the penguin, on the side of the solver's next slide. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.puzzle) return null;
+    const { first } = solve(this.puzzle, this.at, this.have);
+    if (first === -1) return null;
+    const cell = this.at2(beside(this.at, first));
+    return { tap: { on: this.board, x: cell.x, y: cell.y } };
+  }
+
   /** The "watch me" demo: slide along the solver's best route, pausing between slides like a person thinking. */
   autoplay(dt: number): CouchControls {
     const out = idle();
@@ -237,8 +246,7 @@ class PenguinSlide implements Game {
       sfx.squeak();
       return;
     }
-    const dir: Dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3;
-    await this.go(dir);
+    await this.go(tapDirection(dx, dy));
   }
 
   private async go(dir: Dir) {
@@ -448,6 +456,7 @@ export const penguinSlide: GameModule = {
   coplayHint: 'Before each slide, guess together where the penguin will stop.',
   offScreen: 'Slide a toy car across the floor: where does it stop, and what stops it?',
   hubIcon: () => new SlideIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new PenguinSlide(ctx),
 };
