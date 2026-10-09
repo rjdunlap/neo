@@ -4,6 +4,7 @@ import { swatch } from '../art/palette';
 import type { JournalEntry } from '../content/journal';
 import { snackPicture } from '../games/animal-snack';
 import { launchJournalPicture } from '../games/bouncy-launch';
+import { habitatJournalPicture } from '../games/habitat-helpers/art';
 import { safariJournalPicture } from '../games/photo-safari';
 import type { Action } from '../games/photo-safari/logic';
 import { seesawJournalPicture } from '../games/seesaw-balance';
@@ -20,6 +21,7 @@ export function entryPicture(entry: JournalEntry): Container {
     case 'photo-safari': return safariJournalPicture(entry.key as Action);
     case 'seesaw-balance': return seesawJournalPicture(entry.key as BalanceObservation);
     case 'bouncy-launch': return launchJournalPicture();
+    case 'habitat-helpers': return habitatJournalPicture(entry.key as 'bunny' | 'duck');
   }
 }
 

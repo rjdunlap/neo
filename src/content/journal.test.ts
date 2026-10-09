@@ -7,13 +7,14 @@ import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, ha
 import { SCRIPT } from './voice-script';
 
 describe('the entries', () => {
-  it('covers every promised observation from all five source games, and no others', () => {
+  it('covers every promised observation from all six source games, and no others', () => {
     expect(entriesOf('sink-float').map((e) => e.key).sort()).toEqual([...ALL_THINGS].sort());
     expect(entriesOf('animal-snack').map((e) => e.key).sort()).toEqual([...ANIMALS].sort());
     expect(entriesOf('photo-safari').map((e) => e.key).sort()).toEqual([...ACTIONS].sort());
     expect(entriesOf('seesaw-balance').map((e) => e.key).sort()).toEqual(['equal-level', 'heavy-down']);
     expect(entriesOf('bouncy-launch').map((e) => e.key)).toEqual(['bigger-pull']);
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 3);
+    expect(entriesOf('habitat-helpers').map((e) => e.key).sort()).toEqual(['bunny', 'duck']);
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -59,6 +60,12 @@ describe('the entries', () => {
           expect(said, e.id).toContain('bigger pull');
           expect(said, e.id).toContain('farther');
           break;
+        case 'habitat-helpers':
+          expect(said, e.id).toContain(e.key);
+          expect(said, e.id).toContain('food');
+          expect(said, e.id).toContain('water');
+          expect(said, e.id).toContain('shelter');
+          break;
       }
     }
   });
@@ -94,9 +101,15 @@ describe('the entries', () => {
       } else if (e.game === 'seesaw-balance') {
         expect(find).toContain('seesaw');
         expect(found).toContain('side');
-      } else {
+      } else if (e.game === 'bouncy-launch') {
         expect(find).toContain('pulls');
         expect(found).toContain('bigger pull');
+      } else {
+        expect(find.toLowerCase()).toContain(e.key);
+        expect(found.toLowerCase()).toContain(e.key);
+        expect(find).toContain('food');
+        expect(find).toContain('water');
+        expect(find).toContain('shelter');
       }
     }
   });
