@@ -229,6 +229,8 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `third`, `fourth`, `expansion` | Feelings Faces and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps | |
 | `pattern`, `memory`, `letters`, `robot`, `stickers` | Pattern Train; Memory Match; all 26 letter trails and the word and name modes; Robot Path 1–10; sticker placement, removal, paging and portrait | |
 
+`scripts/abandon-cards.mjs` is not a suite: it opens each ghost-finger game's card and leaves it at a random moment (by the map, Back or Play), over and over, and fails on any page error; it found a rare fault where a game's `await` is ready in the frame its objects are destroyed (`GAME_URL=… GAME_ONLY=id,id ROUNDS=n`).
+
 `FROM_LEVEL=n` starts `next`, `creative`, `woods` and `shortlist` at a later level; `TO_LEVEL=n` can limit the paint or salon loop for lap checks.
 
 With `npm run build-and-preview` running in another terminal:
