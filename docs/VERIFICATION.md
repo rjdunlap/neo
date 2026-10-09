@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-09: typecheck and 660 unit tests with five more bots (Little Helpers, Market Stall, Garden Rows, Garden Grow, Owl Walk Home; no build); `npm run build` last ran with 654 tests on the tree that merged the journal sources, deferred teardown, the gear and the last five couch ghost fingers | Ghost finger on Little Helpers, Market Stall, Garden Rows, Garden Grow and Owl Walk Home entry, five more ghost-finger games entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09: typecheck and 663 unit tests with the quiet music-making games (no build); earlier that day 660 with five more bots (Little Helpers, Market Stall, Garden Rows, Garden Grow, Owl Walk Home; no build); `npm run build` last ran with 654 tests on the tree that merged the journal sources, deferred teardown, the gear and the last five couch ghost fingers | Quiet music-making games entry, ghost finger on Little Helpers, Market Stall, Garden Rows, Garden Grow and Owl Walk Home entry | Run with every code change |
 | `npm run test:offline` | 2026-10-09, with the gear and no play timer | Gear entry (2026-10-08: Lemonade Stand entry and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error); Egg Catch, Bounce Back, Bouncy Launch, Peg Garden and Bumper Garden filtered (2026-10-09) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
@@ -19,7 +19,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `howto` | 2026-10-09, all 73 games on the tree merged with phone support (29 with a demonstration), landscape and portrait; filtered again for the newest bots (Treasure Map, Feelings Faces, Critter Crossing, Scoop Shop, Picture Graph; then Little Helpers, Market Stall, Garden Rows, Garden Grow, Owl Walk Home), now 39 with a ghost finger | Phone support entry, five more ghost-finger games entry | About three minutes |
 | `howtolevel` | 2026-10-08 | Level arrows entry | About 10 seconds; also run by `howto` |
 | `fingerdemo` | 2026-10-09, Little Helpers, Market Stall and Garden Grow at every level (Owl Walk 1 and Garden Rows did not pass the suite itself: the Mac was loaded and the wall-clock limit ran out; their levels were played clean on the demonstration's own clock by a probe), Treasure Map, Feelings Faces, Critter Crossing, Scoop Shop and Picture Graph at every level, the last five couch games (Egg Catch, Bounce Back, Bouncy Launch, Peg Garden, Bumper Garden) and the eleven before them at every level, the other thirteen of the 29 on 2026-10-08 (first and last level), clean play asserted | Little Helpers, Market Stall, Garden Rows, Garden Grow and Owl Walk Home, five more, last five couch games and eleven more games entries | Under a minute a play (Bumper Garden's first level 49 s, its fifth 12 to 45 s), the longest 66 s of the 75 allowed; Chrome automation, so the hand's look on an iPad is not established. The wall-clock limit assumes an idle machine |
-| `creations` | 2026-10-08 | Treehouse take-down entry | |
+| `creations` | 2026-10-09, after the tune plaque began dipping the room's music | Quiet music-making games entry (2026-10-08: Treehouse take-down entry) | |
 | `journal` | 2026-10-09, again on the tree that merges the journal with the couch ghost fingers | More discovery-journal sources entry, five more ghost-finger games entry | Real play of all five source games, all three pages, reload and portrait |
 | `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
@@ -49,6 +49,15 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Quiet music-making games (2026-10-09)
+
+What changed: Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors and Clap the Syllables use `silenced(STYLES.x)` (same tempo and seed, every layer off, volume 0.0001) instead of the island's loop, so it no longer competes with the sounds she makes; the treehouse tune plaque calls the new `music.duck()` while her song plays. Beat Builder and Pet Says already used `STYLES.quiet`.
+
+- `npm run typecheck` and `npm test` (114 files, 663 tests) passed. Three new registry tests: the seven music-making games all have a near-silent style, Jelly Drums and Song Maker keep their 92 bpm clock, and `silenced` keeps tempo and seed. Putting Sound Garden's old `STYLES.lullaby` back made the first fail on that game.
+- A headless probe on a private dev server (not kept in the suite) opened each game, then read the music engine: the five changed games and Beat Builder sat at a gain of 0.0001 with `bpm()` and `beats()` live at their own tempos (92, 92, 66, 92, 76), while Bubble Pop stayed at 0.45; `music.duck(2)` on the hub took the gain from 0.5 to 0.0002 and back to 0.4997 with no page errors.
+- `BROWSER_SUITE=creations` passed without page errors, including the pet singing the kept song from the plaque.
+- Not run: `npm run build` (shared audio code, but no assets or persistence changed), `smoke`, `world`, couch suites (couch play reads the same `music` field and has no music-making game). Not established: how the near-silence sounds or feels, which needs the iPad (roadmap, *Needs a person or a device*). Pattern Train was left alone.
 
 ### The ghost finger on Little Helpers, Market Stall, Garden Rows, Garden Grow and Owl Walk Home (2026-10-09)
 

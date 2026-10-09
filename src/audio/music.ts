@@ -36,6 +36,18 @@ export const STYLES = {
   quiet: { bpm: 100, chords: [I], lead: 'none', density: 0, range: [0, 0], bass: false, pad: false, shaker: false, volume: 0.0001, seed: 1 },
 } satisfies Record<string, MusicStyle>;
 
+/** At or below this the loop is as good as off (`quiet` sits at 0.0001). */
+const SILENT_VOLUME = 0.001;
+export const isSilent = (style: MusicStyle) => style.volume <= SILENT_VOLUME;
+
+/**
+ * The same tempo and seed with every layer off and the volume near zero. For a game where she makes the
+ * music, so the island's loop never competes with it. Not `music.stop()`: a playhead or a bobbing jelly that
+ * reads `music.beats()`, `beat()` or `bpm()` needs a style playing, and this keeps the game's own tempo.
+ */
+export const silenced = (style: MusicStyle): MusicStyle =>
+  ({ ...style, lead: 'none', density: 0, bass: false, pad: false, shaker: false, volume: 0.0001 });
+
 /** Generative background music: a short seeded melody over a chord loop, slowly mutating. */
 class Music {
   private style: MusicStyle | null = null;
@@ -75,6 +87,23 @@ class Music {
     }
     this.out = null;
     this.style = null;
+  }
+
+  /**
+   * Lets the music fall away for a few seconds and then return, while she listens to something she made.
+   * Scheduled on the audio clock, so a scene that leaves first has nothing to undo: the next style's loop
+   * has its own gain.
+   */
+  duck(seconds: number) {
+    const ctx = audio.ctx;
+    const out = this.out;
+    const s = this.style;
+    if (!ctx || !out || !s || isSilent(s)) return;
+    const t = ctx.currentTime;
+    out.gain.cancelScheduledValues(t);
+    out.gain.setValueAtTime(Math.max(0.0001, out.gain.value), t);
+    out.gain.setTargetAtTime(0.0001, t, 0.15);
+    out.gain.setTargetAtTime(s.volume, t + seconds, 0.4);
   }
 
   /** Beats since the music started, or null when nothing is playing (so callers keep their own time). */

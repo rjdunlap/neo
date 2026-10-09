@@ -1,7 +1,7 @@
 import { Circle, Container, Graphics } from 'pixi.js';
 import { cream, swatch } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
-import { STYLES } from '../../audio/music';
+import { STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
@@ -135,6 +135,6 @@ class RhythmNeighbors implements Game{
 export const rhythmNeighbors:GameModule={
  id:'rhythm-neighbors',name:'Rhythm Neighbors',titleLine:'game.rhythm-neighbors',region:'music-mountain',skills:['turn-taking','rhythm','musical-expression'],bands:['lap','toddler','preschool','prek','school'],
  levels:b=>b==='school'?{min:5,max:6}:b==='lap'?{min:1,max:2}:b==='toddler'?{min:2,max:3}:b==='preschool'?{min:3,max:4}:{min:4,max:6},describeLevel:l=>planFor(l).name,
- music:{...STYLES.jelly,shaker:false,volume:0.15},coplayHint:'Let {name} answer the woodpecker with a frog. Any timing is welcome in the first turns.',offScreen:'Take turns knocking on a table. Try a short question and a different answering rhythm.',
+ music:silenced(STYLES.jelly),coplayHint:'Let {name} answer the woodpecker with a frog. Any timing is welcome in the first turns.',offScreen:'Take turns knocking on a table. Try a short question and a different answering rhythm.',
  hubIcon:()=>{const c=new Container();const f=frog(0);f.y=-35;c.addChild(f);return new WigglyIcon(c);},touchDemo:true,sticker:seed=>frog(new Rng(seed).int(0,1),80),create:ctx=>new RhythmNeighbors(ctx),
 };
