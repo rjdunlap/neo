@@ -9,8 +9,8 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { doubled, fair, ingredientHint, nextPlate, planFor, recipe } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { doubled, fair, ingredientHint, kitchenTouch, nextPlate, planFor, recipe } from './logic';
 
 function sandwich(parts = 1) {
   const g = new Graphics(), w=parts===2?90:parts===4?62:135, h=parts===2?48:parts===4?62:110;
@@ -160,13 +160,24 @@ class PetKitchen implements Game {
     this.layoutPieces();this.drawHint();
   }
   update(dt:number){this.clock+=dt;this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)this.meal.rotation=Math.sin(this.clock*7)*0.04;}
+  /** Cut for an equal share, fill the least-full plate, or double the pictured ingredients exactly. */
+  autotouch():TouchIntent|null{
+    if(this.done)return null;
+    const move=kitchenTouch(this.plan,this.split,this.pieces.map(p=>p.plate),this.base,this.made);
+    if(!move)return null;
+    if(move.kind==='cut')return {tap:{on:this.cuts[this.plan.cuts.findIndex((parts:number)=>parts===move.parts)]}};
+    if(move.kind==='piece')return {drag:{on:this.pieces[move.piece].node},to:{on:this.plates[move.plate]}};
+    if(move.kind==='ingredient')return {tap:{on:this.ingredients[move.ingredient]}};
+    if(move.kind==='undo')return {tap:{on:this.undo}};
+    return {tap:{on:this.serve}};
+  }
   destroy(){this.clearPieces();}
 }
 export const petKitchen:GameModule={
   id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',
   skills:['equal-shares','fractions','doubling'],bands:['toddler','preschool','prek','school'],
   levels:b=>b==='school'?{min:5,max:6}:b==='toddler'?{min:1,max:1}:b==='preschool'?{min:1,max:4}:{min:3,max:6},
-  describeLevel:l=>planFor(l).name,music:STYLES.paint,
+  describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
   coplayHint:'Cut the sandwich together. Help {name} give a piece to each friend, then serve it.',
   offScreen:'Share a sandwich or paper circle in equal parts. Put every piece back together to see the whole.',
   hubIcon:()=>{const c=new Container();const f=sandwich();f.y=-75;c.addChild(f);return new WigglyIcon(c);},

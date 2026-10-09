@@ -5,9 +5,9 @@ import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon, tile } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bugBody, bugSticker, bugToken } from './art';
-import { BUG_PLANS, BUG_TOKENS, bugPuzzle, type BugSpot } from './logic';
+import { BUG_PLANS, BUG_TOKENS, bugPuzzle, nextBugMove, type BugSpot } from './logic';
 
 interface Spot extends BugSpot { node: Container; filled: boolean; wrong: number }
 class BugBuilder implements Game {
@@ -103,6 +103,12 @@ class BugBuilder implements Game {
     this.paletteGlow.roundRect(choice.drag.home.x - 59, choice.drag.home.y - 59, 118, 118, 24).stroke({ width: 7, color: swatch.yellow.line });
   }
   update(dt: number) { this.clock += dt; this.glow.alpha = this.paletteGlow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3); if (this.done) this.board.rotation = Math.sin(this.clock * 8) * 0.035; }
+  /** Carry the matching reusable token to the next open spot. */
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    const move = nextBugMove(this.targets, this.choices);
+    return move ? { drag: { on: move.choice.node }, to: { on: this.board, x: move.spot.x, y: move.spot.y } } : null;
+  }
   destroy() { this.choices.forEach((c) => c.drag.destroy()); }
 }
 export const bugBuilder: GameModule = {
@@ -110,7 +116,7 @@ export const bugBuilder: GameModule = {
   skills: ['spatial-reasoning', 'symmetry', 'visual-matching'], bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
   describeLevel: (l) => BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, l - 1))].name,
-  music: STYLES.paint, coplayHint: 'Help {name} move a shape to a matching spot on the bug.',
+  music: STYLES.paint, touchDemo: true, coplayHint: 'Help {name} move a shape to a matching spot on the bug.',
   offScreen: 'Fold paper in half, dab paint on one side, and press it closed to make matching butterfly wings.',
   hubIcon: () => new WigglyIcon(bugSticker()), sticker: (seed) => bugSticker(seed), create: (ctx) => new BugBuilder(ctx),
 };

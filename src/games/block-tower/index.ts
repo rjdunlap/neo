@@ -12,8 +12,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { compare, finish, makeRounds, makeStand, middleFrom, planFor, REACH, reached, topples, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { compare, finish, makeRounds, makeStand, middleFrom, planFor, REACH, reached, topples, towerTouch, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -219,6 +219,37 @@ class BlockTower implements Game {
     for (const f of this.flying.filter((x) => x.node.alpha <= 0)) f.node.destroy();
     this.flying = this.flying.filter((x) => !x.node.destroyed);
     this.drawGlow();
+  }
+
+  /** Use the mode's real touch controls; the reach level follows the same exact balance solver as its hint. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.index < 0) return null;
+    const move = towerTouch(this.plan.mode, {
+      stack: this.stack.length,
+      target: this.round.target,
+      full: this.full,
+      stands: this.stand?.stands,
+      guess: this.guess,
+      placed: this.placed.map((t) => t.x!),
+      reach: this.reachRound,
+    });
+    if (!move) return null;
+    if (move.kind === 'stack') return { tap: { on: this.plan.mode === 'tumble' || this.plan.mode === 'friend' ? this.input : this.bin } };
+    if (move.kind === 'knock') return { tap: { on: this.input } };
+    if (move.kind === 'check') return { tap: { on: this.bell } };
+    if (move.kind === 'stand') {
+      const block = this.standTowers[move.tower]?.at(-1);
+      return block ? { tap: { on: block } } : null;
+    }
+    if (move.kind === 'place') {
+      const block = this.tray.find((t) => t.x === null && t.drag.enabled && !t.drag.dragging);
+      return block ? { drag: { on: block.node }, to: { on: this.layer, x: this.edge + px(move.x), y: this.tableTop - this.placed.length * BH } } : null;
+    }
+    if (this.plan.mode === 'reach') {
+      const top = this.placed.at(-1);
+      return top ? { drag: { on: top.node }, to: { on: this.layer, x: this.view.w - 210, y: this.floor + 30 } } : null;
+    }
+    return { tap: { on: this.towerHit } };
   }
 
   destroy() {
@@ -791,6 +822,7 @@ export const blockTower: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
+  touchDemo: true,
   coplayHint: 'Stack real blocks or cups with {name} and knock them down together: "One, two, three... crash!"',
   offScreen: 'Build towers with cups or books: which is taller? Then try leaning a stack over the edge of a table.',
   hubIcon: () => new TowerIcon(),

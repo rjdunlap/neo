@@ -7,9 +7,9 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon, SCENES, type Scene } from './art';
-import { dropSlot, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
+import { dropSlot, nextPuzzleMove, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
 
 interface PieceView {
   piece: Piece;
@@ -231,6 +231,13 @@ class PuzzlePals implements Game {
     this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 4);
   }
 
+  /** Carry the next waiting picture piece to the middle of its own grid cell. */
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    const move = nextPuzzleMove(this.plan, this.pieces.filter((p) => !p.drag.dragging));
+    return move ? { drag: { on: move.piece.node }, to: { on: this.board, x: move.to.x, y: move.to.y } } : null;
+  }
+
   destroy() {
     // The live picture only joins the stage when finished; otherwise it is ours to clean up.
     if (!this.picture.root.parent) this.picture.root.destroy({ children: true });
@@ -250,6 +257,7 @@ export const puzzlePals: GameModule = {
   levels: (b) => (b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 5, max: 7 } : b === 'preschool' ? { min: 4, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
   describeLevel: (l) => puzzlePlan(l).name,
   music: STYLES.paint,
+  touchDemo: true,
   coplayHint: 'Ask {name} what is in each piece: an ear, a sun, a flower? Then find where it goes.',
   offScreen: 'Cut an old card or a cereal box picture into two or three pieces and put it back together.',
   hubIcon: () => new WigglyIcon(puzzleIcon()),

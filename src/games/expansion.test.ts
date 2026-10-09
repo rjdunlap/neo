@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../engine/random';
-import { BUG_PLANS, BUG_TOKENS, bugPuzzle } from './bug-builder/logic';
+import { BUG_PLANS, BUG_TOKENS, bugPuzzle, nextBugMove } from './bug-builder/logic';
 import { SIZE_PLANS, sizeOrder, sizeScale } from './size-parade/logic';
 import { STORIES, STORY_PLANS, sameCard, storyPuzzle } from './story-steps/logic';
 
@@ -33,6 +33,21 @@ describe('Bug Builder', () => {
         if (plan.mode === 'mirror') expect(t.x).toBeGreaterThan(0);
         for (const other of targets) if (other !== t) expect(Math.hypot(t.x - other.x, t.y - other.y)).toBeGreaterThan(114);
       }
+    }
+  });
+
+  it('finishes every bug by carrying a matching token to each open spot', () => {
+    for (const plan of BUG_PLANS) for (let seed = 1; seed <= 40; seed++) {
+      const spots = bugPuzzle(plan, new Rng(seed)).targets.map((s) => ({ ...s, filled: false }));
+      const choices = Array.from({ length: plan.colors }, (_, token) => ({ token }));
+      let moves = 0;
+      for (let move = nextBugMove(spots, choices); move; move = nextBugMove(spots, choices)) {
+        expect(move.choice.token).toBe(move.spot.token);
+        move.spot.filled = true;
+        moves++;
+      }
+      expect(moves).toBe(spots.length);
+      expect(spots.every((s) => s.filled)).toBe(true);
     }
   });
 });
