@@ -13,8 +13,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { anotherWay, fewest, makeOrders, PAID, planFor, sameWay, sum, target, type Order, type ShopPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, type Order, type ShopPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -176,6 +176,15 @@ class MarketStall implements Game {
   }
 
   update() {}
+
+  /** The ghost finger: put the coins of the payment on the counter one at a time, then ring the bell. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.order) return null;
+    const touch = payTouch(paymentFor(this.plan, this.order, this.firstWay), this.onMat.map((c) => c.value));
+    if (touch === 'bell') return { tap: { on: this.bell } };
+    const coin = this.purse.find((p) => p.value === touch.coin);
+    return coin ? { tap: { on: coin.node } } : null;
+  }
 
   destroy() {}
 
@@ -377,6 +386,7 @@ export const marketStall: GameModule = {
   coplayHint: 'Take turns being the shopkeeper: "That will be 4, please!" and count the coins together.',
   offScreen: 'Play shop with real coins or buttons: price a few toys and pay for them.',
   hubIcon: () => new StallIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new MarketStall(ctx),
 };

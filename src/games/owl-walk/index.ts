@@ -12,8 +12,8 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { allHome, drawCard, farthest, hop, hops, makePath, planFor, type OwlPlan, type Spot } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { allHome, drawCard, farthest, hop, hops, makePath, owlToHop, planFor, type OwlPlan, type Spot } from './logic';
 
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
@@ -192,6 +192,15 @@ class OwlWalk implements Game {
 
   update() {}
 
+  /** The ghost finger: flip a card, then hop the owl it carries the farthest. The pet's turns play themselves. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.turn !== 'child') return null;
+    if (!this.card) return { tap: { on: this.deck } };
+    const i = owlToHop(this.path, this.owls.map((o) => o.spot), this.card);
+    // The owl's tap area is centered a little above its feet.
+    return i === null ? null : { tap: { on: this.owls[i].critter, x: 0, y: -125 } };
+  }
+
   destroy() {}
 
   private async intro() {
@@ -312,7 +321,7 @@ class OwlWalk implements Game {
     this.ctx.pet.cheer();
     await this.ctx.say('owl.my-turn');
     await this.flip('pet');
-    const best = farthest(this.path, this.owls.map((o) => o.spot), this.card!)[0];
+    const best = owlToHop(this.path, this.owls.map((o) => o.spot), this.card!)!;
     this.owls[best].glow.visible = true;
     await this.ctx.say('owl.pet-move', { color: this.card! });
     await this.move(best);
@@ -407,6 +416,7 @@ export const owlWalk: GameModule = {
   coplayHint: 'Take turns with {name}: you flip a card, then {name} does. Say the color together, and cheer each owl home.',
   offScreen: 'Play a cooperative board game together, like Hoot Owl Hoot! or First Orchard, where everyone wins together.',
   hubIcon: () => new OwlIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new OwlWalk(ctx),
 };
