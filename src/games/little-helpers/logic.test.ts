@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BUNCHES, CROWD, makeFruits, PLANS, skipCount, tryLift } from './logic';
+import { BUNCHES, CROWD, helperTouch, makeFruits, PLANS, skipCount, tryLift, usesWhistle } from './logic';
 
 describe('Little Helpers', () => {
   it('never needs more helpers than the crowd, and leaves something to send', () => {
@@ -40,6 +40,27 @@ describe('Little Helpers', () => {
     }
     expect(skipCount({ need: 6, already: 0, groups: 3 })).toBe('2, 4, 6');
     expect(skipCount({ need: 6, already: 0, groups: 2 })).toBe('3, 6');
+  });
+
+  it("sends exactly enough helpers and then lifts (or whistles), so the demonstration's every fruit goes home with no bounce", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        for (const f of makeFruits(plan, new Rng(seed))) {
+          let carrying = f.already;
+          let sent = 0;
+          while (helperTouch(plan, f.need, carrying) === 'send') {
+            carrying++;
+            sent++;
+            expect(carrying).toBeLessThanOrEqual(CROWD);
+          }
+          expect(carrying, `${plan.name} seed ${seed}`).toBe(f.need);
+          expect(tryLift(f.need, carrying)).toBe('lift');
+          expect(helperTouch(plan, f.need, carrying)).toBe(usesWhistle(plan) ? 'whistle' : null);
+          // Helpers already on the fruit are not sent again.
+          expect(sent).toBe(f.need - f.already);
+        }
+      }
+    }
   });
 
   it('lifts only with exactly enough helpers', () => {
