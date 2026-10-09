@@ -52,6 +52,8 @@ export class HoldButton extends Container {
     private readonly radius: number,
     private readonly seconds: number,
     private readonly onDone: () => void,
+    /** The ring that fills while held: white for a button over a scene, a color where the button sits on a pale card. */
+    private readonly ringColor = 0xffffff,
   ) {
     super();
     this.addChild(disc(radius, sw), icon, this.ring);
@@ -93,7 +95,7 @@ export class HoldButton extends Container {
         const start = -Math.PI / 2;
         this.ring
           .arc(0, 0, this.radius + 10, start, start + this.progress * Math.PI * 2)
-          .stroke({ width: 8, color: 0xffffff, cap: 'round' });
+          .stroke({ width: 8, color: this.ringColor, cap: 'round' });
       }
     }
   }

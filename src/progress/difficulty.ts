@@ -19,6 +19,9 @@ export const isStruggle = (r: RoundRecord) => r.misses >= 4 || r.hints >= 2;
 
 const clamp = (level: number, range: LevelRange) => Math.min(range.max, Math.max(range.min, level));
 
+/** One level up or down from `level`, held inside the range: what the how-to card's arrows do. */
+export const stepLevel = (level: number, delta: number, range: LevelRange): number => clamp(level + delta, range);
+
 /**
  * Two smooth rounds in a row at the current level step up; two struggling rounds step down.
  * The child never sees a level number, and the range comes from her age band.
