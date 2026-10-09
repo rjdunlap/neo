@@ -138,6 +138,12 @@ Keep these open until someone actually does them. None of them blocks the list a
 - [ ] Device basics: offline speech voices, first-touch audio, small-hand dragging, herding and pulling, orientation changes, Add to Home Screen, Guided Access, and that a new version arrives after the home-screen app is closed and reopened (how long iPadOS keeps a suspended app on the old one is unknown).
 - [ ] Compare the swipe path with subject cards for reaching and returning from a wanted game (not for fitting more icons), and whether the favorites shelf and twinkles are found and used. Check that every game is reachable in every band it supports, in portrait too, as the catalog grows.
 
+**On a phone (the stand-in until the iPad arrives; built 2026-10-09, [README](../README.md#try-it-on-a-phone))**
+
+- [ ] On a real iPhone and a real Android phone, sideways: does the island read at about half the iPad's size (the grown-up tip, the how-to cards and the pet's speech bubbles are the smallest text), does a notch or rounded corner leave only a cream strip (the safe-area insets are checked with faked values in Chrome, never on a real device), and does the island button, the book and the gate's top corners sit where a thumb lands?
+- [ ] Held upright, does the turn prompt appear, go when the phone turns (iOS settles its safe area a moment after a turn) and leave the game where it was? Does the phone's rotation lock leave a grown-up stuck on it with no way past (there is deliberately no "play upright" button)?
+- [ ] First-touch sound, the silent switch (`navigator.audioSession.type = 'playback'`, iOS 16.4 and later) and the phone's own speech voices; Add to Home Screen on both platforms and an update arriving after the app is closed and reopened.
+
 **With her now (lap and toddler)**
 
 - [ ] Whether tapping the soil (Garden Grow), the singing flowers, saying goodnight (Goodnight Room), Animal Snack, Stop and Go and Opposites hold a one-year-old's attention; Block Tower's tumbling; Pet Says as co-play; Owl Walk Home's turn-taking; whether she notices the heart, the treehouse or the journal at all.

@@ -44,6 +44,7 @@ const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', cls = ''
 /** Adult-only host: separate navigation, session goal and save; games retain their own rules. */
 export class CouchScene extends Scene {
   countsTime = false;
+  upright = true;
   readonly couch = couchStore;
   private input!: CouchInput;
   private readonly overlay = node('section', '', 'couch');
@@ -712,7 +713,7 @@ export class CouchScene extends Scene {
     if (!demo || !win) return;
     demo.update(dt);
     const r = win.getBoundingClientRect(), s = this.view.scale;
-    if (r.width > 10) demo.layout(r.left / s, r.top / s, r.width / s);
+    if (r.width > 10) demo.layout((r.left - this.app.insets.left) / s, (r.top - this.app.insets.top) / s, r.width / s);
     // A best-route replay has no controller diagram to light.
     if (!info) return;
     // Without a bot, walk through the rows so the diagram still explains each control.

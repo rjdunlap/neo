@@ -8,13 +8,14 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (596 tests, on the tree with the level arrows) | Level arrows entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09 (607 tests, on the tree with phone support) | Phone support entry | Run with every code change |
 | `npm run test:offline` | 2026-10-08, on that merged tree | Lemonade Stand entry (and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
+| `phonefit`, `phone` | 2026-10-09: `phonefit` (a faked notch, the turn prompt, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
 | `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
 | `picnic`, `island` | 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `room` | 2026-10-07 | Discovery journal entry | |
-| `howto` | 2026-10-08, all 73 games, landscape and portrait, with the demonstrations, the ghost finger and the level arrows | Level arrows entry | About three minutes |
+| `howto` | 2026-10-09, all 73 games, landscape and portrait, with the demonstrations, the ghost finger and the level arrows (again after the phone support) | Phone support entry | About three minutes |
 | `howtolevel` | 2026-10-08 | Level arrows entry | About 10 seconds; also run by `howto` |
 | `fingerdemo` | 2026-10-08, all 13 games with a ghost finger, first and last level, clean play asserted | Ghost finger on ten couch games entry | About 15 seconds a play; Chrome automation, so the hand's look on an iPad is not established |
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
@@ -41,11 +42,22 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-06 in the combined flow | Archived combined-flow entry | |
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
-Never established by any of these: physical iPad touch, device speech, first-touch audio, orientation on a device, Add to Home Screen, Guided Access, real controllers, a TV, and a child's reaction.
+Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access, real controllers, a TV, and a child's reaction.
 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Phone support: safe areas, the turn prompt and a phone-size pass (2026-10-09)
+
+What changed: the island can be tried on a phone before the iPad arrives. `App` reads the notch and home-indicator insets (`--safe-*` custom properties through a hidden `#safe-area` element, `env(safe-area-inset-*)` by default), places the root inside them and computes the view in what is left; a phone held upright (a touch screen taller than 1.6 times its width) gets a `TurnPrompt` over a paused scene; the grown-up tip is lifted by `textBoost` where the island is drawn small; the parent panel and the hatch name field keep clear of the insets. `README.md` has a "Try it on a phone" section; `docs/DESIGN.md`, `AGENTS.md` and the roadmap say what changed and what is open.
+
+- Typecheck, 607 unit tests (new: insets in `computeView`, `clampInsets`, which screen shapes get the prompt (iPhone sizes yes; every iPad, a 16:10 tablet, a sideways phone and a mouse no), `textBoost`, the prompt's turn curve) and `npm run build` passed.
+- New `BROWSER_SUITE=phonefit` passed (and failed when the root's offset was removed, which proves it checks): with 47 px either side and 21 px below faked through `--safe-*`, the root sits at 47, the view fills exactly the usable rectangle, nothing touchable on the map's, a place's or a game's UI layer is under an inset, a tap on the island button lands, holding both gate corners (inside the insets) opens the grown-up panel and the panel sits inside them; at 390 × 844 the prompt shows, a tap on it does nothing, turning the window to 844 × 390 removes it, 768 × 1024, 744 × 1133, 820 × 1180, 1024 × 1366 and a sideways phone get none, 360 × 780 and 430 × 932 do, and a mouse in a narrow window does not.
+- New `BROWSER_SUITE=phone` passed for all 73 games at their middle level at 844 × 390: stray taps, nothing stranded at the origin, nothing on a UI layer off the window. I looked at all 73 screenshots as five contact sheets: every layout holds at that 2.2 to 1 shape; the wide ones leave the design area in the middle with scenery to the sides, as on a wide desktop window. Also looked at: the map, a place and Bubble Pop with and without the faked notch (cream strips at the sides, buttons moved in), the hatch name step (the grown-up field sits below the three name buttons and does not cover them), the Clap the Syllables card (readable), the prompt at three moments of its turn, and the tip before (about 10 CSS pixels) and after the boost.
+- `BROWSER_SUITE=howto` (all 73 cards, landscape and portrait, the tip's position and the home-button clearance at 1024 × 768), `BROWSER_SUITE=smoke` on Bubble Pop, Robot Path, Clap the Syllables and Fluffy Salon (their portrait resize), and `BROWSER_SUITE=couchgames COUCH_ONLY=peg-garden` (the couch scene gained `upright` and a demo-window offset) passed.
+- Not run: `world` (no route changed), the offline check (no persistence, asset or route change), the other couch suites, and anything on a phone. Not established: that a real notch reports what was faked; that iOS settles the insets as expected after a turn; that sound plays through a phone's silent switch; and that the how-to card's text is comfortable on a phone.
+- Found on the way, not changed: Fluffy Salon's picture card overlaps the "?" button a little in the top-left, at tablet size too.
 
 ### Level arrows and per-level how-to steps (2026-10-08)
 

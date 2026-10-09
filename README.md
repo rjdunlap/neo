@@ -29,6 +29,23 @@ npm run build      # type-check + production build into dist/
 - **The real thing:** open <https://rjdunlap.github.io/neo/> in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
 - **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app.
 
+## Try it on a phone
+
+A phone is a good way to look at the island before the iPad arrives. It differs from the iPad in four ways:
+
+- **Hold it sideways.** The islands are drawn wide. An upright phone shows a picture asking to turn it, and the game waits behind it; turn off the rotation lock (iPhone: Control Center; Android: quick settings). An installed Android app is locked to landscape; an iPhone cannot be locked by a web app.
+- **Everything is about half the iPad's size.** At 844 × 390 the island is drawn at about 0.5 scale, so a 100-unit target is about 50 points across, against about 110 on an 11-inch iPad. The phone shows whether the games flow, read and sound right; it cannot show whether a small hand can drag, herd or pull. Judge those on the iPad.
+- **The notch and rounded corners are respected.** The island sits inside the safe area, so a phone with a notch shows a cream strip at each side, and the buttons in the corners (and the grown-up gate's two top corners) stay reachable.
+- **It has its own save.** A phone browser, and the home-screen app made from it, each keep a separate save from the iPad's. To carry one over, use Save a backup and Restore from a backup in the grown-up zone.
+
+To get it there:
+
+- **Live site (the merged `main`):** open <https://rjdunlap.github.io/neo/> in Safari (iPhone) or Chrome (Android). Share → Add to Home Screen on iPhone, or ⋮ → Install app on Android, runs it full screen and offline; in a plain Safari or Chrome tab the browser's own bars take some of the screen.
+- **A branch not yet merged:** with the phone on the same Wi-Fi, run `npm run dev:lan` and open the "Network" address it prints. That page is plain HTTP, so there is no install and no offline mode; it is for looking and playing.
+- **On the computer:** Chrome's device toolbar (⌥⌘I, then ⇧⌘M) with an iPhone preset, rotated sideways, shows the layout. It does not fake a notch: to see the safe-area handling, set `--safe-left`, `--safe-right` and `--safe-bottom` on `<html>` in the console (for example `document.documentElement.style.setProperty('--safe-left', '47px')`).
+
+Couch play is for a computer or TV with a keyboard or controller and is not a phone feature. Sound should play through an iPhone's silent switch (iOS 16.4 and later, as on the iPad) and speech uses the phone's own voices; neither has been heard on a phone yet (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
+
 ## The island and its games
 
 The island is an **age trail**. It climbs from **Puddle Lagoon** (lap, 18–24 months) on the shore through **Daisy Meadow** (toddler) and **Bumpy Hills** (preschool) to **Starry Peak** (pre-K), and over the top to **Wonder Woods** (early school, ages 6–8). Each place lays out every game for that age, at that age's levels. A game that grows with her, like Bubble Pop, stands in each place it supports. The play button goes straight to her own place; the island button there opens the trail, where her pet waits by her place and every place is open to explore. When there are more games than fit, swipe the land sideways or tap the arrows. When a grown-up moves her up an age band, the pet has a birthday and walks up the trail.
@@ -199,6 +216,8 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `howto` | The how-to card every time a game opens: every game's card fits in landscape and portrait with large Play and Back, a demonstration window exactly for the games with a bot (playing, touch-proof, destroyed with the card; a hand for a game with a ghost finger, the controller highlight for a couch game without one yet), the ghost finger (a mouse pointer until a touch, effects lowered while it plays, a real drag working after Play), stray taps, Back, Play, "again", a story request and the grown-up switch (about three minutes) | `HOWTO_ONLY=id,id` |
 | `howtolevel` | The level arrows on the intro card: held to step (a tap does nothing), within her band, the "this level" line, steps and demonstration follow, the arrow at an end is dimmed, Play builds the chosen level and finishing it keeps it, a grown-up's pin stays, no arrows for a one-level band or on the "?" card (about 10 seconds) | |
 | `fingerdemo` | The ghost finger's bot plays each game's demonstration to the end at the game's first and last level, inside the 40 seconds a demonstration gets (about 15 seconds a play) | `FINGER_ONLY=id,id` |
+| `phonefit` | A phone's needs: a faked notch and home indicator through the `--safe-*` properties (island inside them, nothing on a scene's UI layer covered, a tap on a button, the parent gate and panel reachable), the turn prompt for an upright phone (390 × 844) and not for a sideways phone, any tablet shape or a mouse (about 15 seconds) | |
+| `phone` | `phonefit`, then every game's middle level at 844 × 390: stray taps, nothing stranded at the origin or off the window on the UI layer, and a screenshot of each in `test-results/browser/phone/` (about 3 seconds a game) | `PHONE_ONLY=id,id` |
 | `world` | Hatching, the map, both place layouts, every subject and game card in all bands and both orientations, return memory, cancellation, birthdays, the parent gate (about 4½ minutes) | |
 | `island` | The NEW twinkle, the heart after a round, the shelf and Favorites card, a reload, a portrait shelf | |
 | `room` | The treehouse: moving, flipping and using furnishings, hanging a sticker, tidy, a reload | |
