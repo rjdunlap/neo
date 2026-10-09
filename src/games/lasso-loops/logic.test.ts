@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { choices, gridFor, inside, makeRound, nearestGroup, PLANS, scatter } from './logic';
+import { choices, demoLoop, gridFor, inside, makeRound, nearestGroup, PLANS, scatter } from './logic';
 
 describe('Lasso Loops', () => {
   it('has enough fireflies for every jar, and a question whose answer is what was caught', () => {
@@ -82,5 +82,22 @@ describe('Lasso Loops', () => {
     expect(new Set(g).size).toBe(4);
     for (const i of g) expect(free).toContain(i);
     expect(nearestGroup(pts, [1, 2], 3)).toEqual([]);
+  });
+
+  it('gives the demonstration a loop around exactly each jar\'s requested group', () => {
+    for (const plan of PLANS) for (let seed = 1; seed <= 100; seed++) {
+      const round = makeRound(plan, new Rng(seed));
+      const grid = gridFor(round.fireflies);
+      let points = scatter(round.fireflies, new Rng(seed + 1000), grid.cols, grid.rows).map((p) => ({ x: p.x * 800, y: p.y * 420 }));
+      for (let jar = 0; jar < round.jars.length; jar++) {
+        const want = plan.mode === 'free' ? Math.ceil(points.length / (round.jars.length - jar)) : round.jars[jar];
+        const move = demoLoop(points, want, 34);
+        expect(move, `${plan.name}, seed ${seed}, jar ${jar}`).not.toBeNull();
+        const got = points.map((p, i) => inside(move!.loop, p) ? i : -1).filter((i) => i >= 0);
+        expect(got).toEqual(move!.indices);
+        expect(got).toHaveLength(want);
+        points = points.filter((_, i) => !got.includes(i));
+      }
+    }
   });
 });

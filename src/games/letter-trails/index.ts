@@ -6,9 +6,9 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { letterPicture, WORDS } from './pictures';
-import { advanceTrace, LETTERS, nameLetters, sampleStroke, type Point } from './strokes';
+import { advanceTrace, LETTERS, nameLetters, sampleStroke, traceWaypoints, type Point } from './strokes';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PLANS = [
@@ -155,6 +155,16 @@ class LetterTrails implements Game {
     this.beacon.circle(p[0] * this.size, p[1] * this.size, 12).fill({ color: swatch.yellow.fill, alpha: 0.7 });
     if (this.wrong >= 2) this.beacon.circle(this.firefly.x, this.firefly.y, 40 + Math.sin(this.clock * 4) * 5).stroke({ width: 6, color: swatch.yellow.line });
   }
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.done || !this.firefly.visible) return null;
+    const route = traceWaypoints(this.points.slice(this.progress));
+    if (route.length < 2) return null;
+    return {
+      trace: { on: this.firefly },
+      via: route.slice(1).map((p) => ({ on: this.canvas, x: p[0] * this.size, y: p[1] * this.size })),
+      pause: 0.12,
+    };
+  }
   destroy() { this.handle.destroy(); }
 }
 
@@ -170,4 +180,5 @@ export const letterTrails: GameModule = {
   describeLevel: (l) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, offScreen: 'Draw large letters with a finger in sand or on a foggy window, saying the letter together.',
   hubIcon: () => new WigglyIcon(trailArt()), sticker: (seed) => letterPicture('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.abs(seed)) % 26]), create: (ctx) => new LetterTrails(ctx),
+  touchDemo: true,
 };

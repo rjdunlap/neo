@@ -43,6 +43,12 @@ export interface ClockTask {
   options?: string[];
 }
 
+export type ClockDemoAction =
+  | { kind: 'pick'; id: string }
+  | { kind: 'minute'; minute: number }
+  | { kind: 'hour'; hour: number }
+  | { kind: 'check' };
+
 /** Daily-life pictures for reading the clock, each at a usual time (hours on the 12-hour face). */
 export const EVENTS: { id: string; hour: number; minute: number }[] = [
   { id: 'breakfast', hour: 7, minute: 0 },
@@ -104,3 +110,19 @@ export function spoken(time: number): string {
 
 /** The hour shown on the face for a time (1–12). */
 export const hourOf = (time: number) => Math.floor(time / 60) % 12 || 12;
+
+/** The next real control a demonstration player should use to solve the current task. */
+export function demoAction(mode: ClockMode, hour: number, minute: number, task: ClockTask): ClockDemoAction {
+  if (mode === 'read') {
+    const id = task.options!.find((candidate) => {
+      const event = EVENTS.find((x) => x.id === candidate)!;
+      return timeOf(event.hour, event.minute) === task.time;
+    })!;
+    return { kind: 'pick', id };
+  }
+  const targetMinute = task.time % 60;
+  if (mode !== 'hour' && minute !== targetMinute) return { kind: 'minute', minute: targetMinute };
+  const targetHour = hourOf(task.time);
+  if (hour !== targetHour) return { kind: 'hour', hour: targetHour };
+  return { kind: 'check' };
+}

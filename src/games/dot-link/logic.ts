@@ -128,10 +128,20 @@ export function findSquare(grid: Grid): Cell[] | null {
   return null;
 }
 
+/** A clean next move for the demonstration, including the return to the first dot for a square. */
+export function demoMove(plan: DotPlan, grid: Grid, target?: ColorName): Cell[] | null {
+  if (plan.mode === 'tap') return [{ r: 0, c: 0 }];
+  if (plan.mode === 'square') {
+    const square = findSquare(grid);
+    return square ? [...square, square[0]] : null;
+  }
+  return findLine(grid, plan.mode === 'chain' ? plan.length! : 2, plan.mode === 'color' ? target : undefined);
+}
+
 /** Make sure the level's next move exists, repainting a few dots if it doesn't. */
 export function ensureMove(plan: DotPlan, grid: Grid, rng: Rng, target?: ColorName): Grid {
   const g = grid.map((row) => [...row]);
-  const has = () => (plan.mode === 'square' ? findSquare(g) : findLine(g, plan.mode === 'chain' ? plan.length! : plan.mode === 'tap' ? 1 : 2, plan.mode === 'color' ? target : undefined));
+  const has = () => demoMove(plan, g, target);
   if (has()) return g;
   const r = rng.int(0, g.length - 2);
   const c = rng.int(0, g[0].length - 2);

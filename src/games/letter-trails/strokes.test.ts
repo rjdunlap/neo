@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advanceTrace, LETTERS, nameLetters, sampleStroke, type Point } from './strokes';
+import { advanceTrace, LETTERS, nameLetters, sampleStroke, traceWaypoints, type Point } from './strokes';
 import { WORDS } from './pictures';
 
 describe('capital trails', () => {
@@ -30,6 +30,20 @@ describe('capital trails', () => {
     expect(advanceTrace(curve, 0, curve[0], curve.at(-1)!, 0.075)).toBeLessThan(curve.length / 3);
     const far: Point = [2, 2];
     expect(advanceTrace(curve, 0, far, [3, 3], 0.075)).toBe(0);
+  });
+  it('gives the demonstration a short route that still completes every stroke', () => {
+    for (const strokes of Object.values(LETTERS)) for (const stroke of strokes) {
+      const points = sampleStroke(stroke);
+      const route = traceWaypoints(points);
+      let index = 0;
+      let previous = route[0];
+      for (const point of route.slice(1)) {
+        index = advanceTrace(points, index, previous, point, 0.075);
+        previous = point;
+      }
+      expect(index).toBe(points.length - 1);
+      expect(route.length).toBeLessThanOrEqual(stroke.length + 1);
+    }
   });
   it('normalizes names to the supported capital strokes with a safe fallback', () => {
     expect(nameLetters('Zoë-Rose')).toBe('ZOEROSE');
