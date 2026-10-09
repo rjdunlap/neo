@@ -10,7 +10,7 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { doubled, fair, ingredientHint, kitchenTouch, nextPlate, planFor, recipe } from './logic';
+import { doubled, fair, fairCut, ingredientHint, nextPlate, planFor, plateAt, recipe } from './logic';
 
 function sandwich(parts = 1) {
   const g = new Graphics(), w=parts===2?90:parts===4?62:135, h=parts===2?48:parts===4?62:110;
@@ -101,8 +101,7 @@ class PetKitchen implements Game {
         onPick:()=>sfx.tick(),
         onDrop:(x,y)=>{
           if(this.done)return false;
-          let nearest=-1, distance=88;
-          this.plates.forEach((p,i)=>{const d=Math.hypot(x-p.x,y-p.y);if(d<distance){distance=d;nearest=i;}});
+          const nearest=plateAt(this.plates,x,y);
           // Moving food back to the tray is also an undo. No exploratory move counts as wrong.
           if(nearest<0 && y<this.view.h-260)return false;
           piece.plate=nearest;this.layoutPieces();this.drawHint();sfx.bell(5,0.2);return true;
@@ -160,15 +159,20 @@ class PetKitchen implements Game {
     this.layoutPieces();this.drawHint();
   }
   update(dt:number){this.clock+=dt;this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)this.meal.rotation=Math.sin(this.clock*7)*0.04;}
-  /** Cut for an equal share, fill the least-full plate, or double the pictured ingredients exactly. */
+  /** The ghost finger on the how-to card: cut fairly, give each plate a piece in turn, serve; or add fruit until the recipe is doubled, serve. */
   autotouch():TouchIntent|null{
     if(this.done)return null;
-    const move=kitchenTouch(this.plan,this.split,this.pieces.map(p=>p.plate),this.base,this.made);
-    if(!move)return null;
-    if(move.kind==='cut')return {tap:{on:this.cuts[this.plan.cuts.findIndex((parts:number)=>parts===move.parts)]}};
-    if(move.kind==='piece')return {drag:{on:this.pieces[move.piece].node},to:{on:this.plates[move.plate]}};
-    if(move.kind==='ingredient')return {tap:{on:this.ingredients[move.ingredient]}};
-    if(move.kind==='undo')return {tap:{on:this.undo}};
+    if(this.plan.mode==='recipe'){
+      const i=ingredientHint(this.base,this.made);
+      return i>=0?{tap:{on:this.ingredients[i]}}:{tap:{on:this.serve}};
+    }
+    if(!this.split){
+      const cut=this.cuts[(this.plan.cuts as readonly number[]).indexOf(fairCut(this.plan)!)];
+      return cut?{tap:{on:cut}}:null;
+    }
+    if(this.pieces.some(p=>p.drag.dragging))return null;
+    const loose=this.pieces.find(p=>p.plate<0);
+    if(loose)return {drag:{on:loose.node},to:{on:this.plates[nextPlate(this.counts())]}};
     return {tap:{on:this.serve}};
   }
   destroy(){this.clearPieces();}

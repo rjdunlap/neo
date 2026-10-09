@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { doubled, fair, ingredientHint, kitchenTouch, nextPlate, PLANS, recipe } from './logic';
+import { doubled, fair, fairCut, ingredientHint, nextPlate, PLANS, plateAt, PLATE_REACH, recipe } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
    expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
@@ -17,21 +17,32 @@ it('doubling is exact and hints lead to a repair for missing or extra fruit',()=
  expect(doubled(base,made)).toBe(true);made[0]++;expect(ingredientHint(base,made)).toBe(0);expect(doubled(base,made)).toBe(false);
  }
 });
-it('the demonstration shares every cut fairly and doubles every recipe before serving',()=>{
- for(const [i,plan] of PLANS.entries())for(let seed=1;seed<=20;seed++){
-   const base=recipe(i+1,new Rng(seed)),made=[0,0];let split=0,assignments:number[]=[];let served=false;
-   for(let step=0;step<20&&!served;step++){
-     const move=kitchenTouch(plan,split,assignments,base,made);expect(move).not.toBeNull();
-     if(move!.kind==='cut'){split=move!.parts;assignments=Array(plan.wholes*split).fill(-1);}
-     else if(move!.kind==='piece')assignments[move!.piece]=move!.plate;
-     else if(move!.kind==='ingredient')made[move!.ingredient]++;
-     else if(move!.kind==='undo')throw new Error('clean play never needs undo');
-     else served=true;
-   }
-   expect(served,`${plan.name} seed ${seed}`).toBe(true);
-   if(plan.mode==='share'){
-     const counts=Array.from({length:plan.friends},(_,plate)=>assignments.filter(p=>p===plate).length);
-     expect(fair(counts,assignments.length)).toBe(true);
-   }else expect(doubled(base,made)).toBe(true);
+it('the ghost finger makes a cut that shares out evenly, the fewest pieces that do, and serving it is never a miss',()=>{
+ for(const p of PLANS.filter(p=>p.mode==='share')) {
+   const cut=fairCut(p);expect(cut).toBeDefined();expect(p.cuts as readonly number[]).toContain(cut);
+   for(const c of p.cuts)if(c<cut!)expect(p.wholes*c%p.friends).not.toBe(0);
+   // Hand the pieces round the plates the way the bot does, and the plates come out equal.
+   const plates=Array(p.friends).fill(0);for(let i=0;i<p.wholes*cut!;i++)plates[nextPlate(plates)]++;
+   expect(fair(plates,p.wholes*cut!)).toBe(true);
+ }
+ // One sandwich for four friends: halves would leave two friends with nothing, so only quarters are fair.
+ const level2=PLANS[1];expect(fairCut(level2)).toBe(4);
+ expect(fair([1,1,0,0],level2.wholes*2)).toBe(false);
+ // Two sandwiches for four friends: halves already share out evenly, which keeps the demonstration short.
+ expect(fairCut(PLANS[3])).toBe(2);
+});
+it('a piece let go on a plate lands on that plate, the nearest wins, and far from every plate it returns to the tray',()=>{
+ const plates=[{x:300,y:310},{x:485,y:310},{x:670,y:310}];
+ plates.forEach((p,i)=>expect(plateAt(plates,p.x,p.y)).toBe(i));
+ expect(plateAt(plates,380,310)).toBe(0);expect(plateAt(plates,405,310)).toBe(1);
+ // Plates close together: the nearer one wins, not the first.
+ expect(plateAt([{x:300,y:310},{x:380,y:310}],345,310)).toBe(1);expect(plateAt([{x:300,y:310},{x:380,y:310}],330,310)).toBe(0);
+ expect(plateAt(plates,300+PLATE_REACH+1,310+PLATE_REACH+1)).toBe(-1);expect(plateAt(plates,485,700)).toBe(-1);
+});
+it('the ghost finger doubles every recipe with exactly the fruit that is missing and never a spare',()=>{
+ for(const level of [5,6])for(let seed=1;seed<=50;seed++){
+   const base=recipe(level,new Rng(seed)),made=[0,0];let taps=0;
+   for(let i=ingredientHint(base,made);i>=0;i=ingredientHint(base,made)){made[i]++;taps++;expect(made[i]).toBeLessThanOrEqual(base[i]*2);}
+   expect(doubled(base,made)).toBe(true);expect(taps).toBe(2*(base[0]+base[1]));
  }
 });

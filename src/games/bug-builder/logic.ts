@@ -31,12 +31,18 @@ export function bugPuzzle(plan: BugPlan, rng: Rng): { model: BugSpot[]; targets:
   return { model: spots, targets: spots.map((s) => ({ ...s, x: plan.mode === 'mirror' ? -s.x : s.x })) };
 }
 
-/** The next matching token and open spot for a capable child (and the how-to card's ghost finger). */
-export function nextBugMove<S extends { token: number; filled: boolean }, C extends { token: number }>(
-  spots: readonly S[],
-  choices: readonly C[],
-): { spot: S; choice: C } | undefined {
-  const spot = spots.find((s) => !s.filled);
-  const choice = spot && choices.find((c) => c.token === spot.token);
-  return spot && choice ? { spot, choice } : undefined;
+/** How near to a spot's middle a stamp can be let go to land in it: a little more than the outline, and clear of the neighbouring spots (116 apart). */
+export const SLOT_REACH = 57;
+
+/** The empty spot a stamp let go at (x, y) lands in, in the board's own units, if any. */
+export function slotAt<S extends BugSpot & { filled: boolean }>(spots: readonly S[], x: number, y: number): S | undefined {
+  return spots.find((s) => !s.filled && Math.hypot(x - s.x, y - s.y) < SLOT_REACH);
+}
+
+/**
+ * What a capable child does next: stamp the first empty spot with the token it needs (the faint ghost, the model bug
+ * or the mirrored wing shows which). The ghost finger follows this, so a test can check that every stamp lands.
+ */
+export function nextStamp<S extends BugSpot & { filled: boolean }>(spots: readonly S[]): S | undefined {
+  return spots.find((s) => !s.filled);
 }

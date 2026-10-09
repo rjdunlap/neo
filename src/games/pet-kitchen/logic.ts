@@ -16,36 +16,19 @@ export function recipe(level: number, rng: Rng): [number,number] {
 export const doubled = (base: number[], made: number[]) => base.length === made.length && base.every((n,i) => made[i] === n*2);
 export const ingredientHint = (base: number[], made: number[]) => made.findIndex((n,i) => n !== base[i]*2);
 
-export type KitchenTouch =
-  | { kind: 'cut'; parts: number }
-  | { kind: 'piece'; piece: number; plate: number }
-  | { kind: 'ingredient'; ingredient: number }
-  | { kind: 'undo' }
-  | { kind: 'serve' };
-
+/** How near a plate's middle a piece must be let go to land on it. */
+export const PLATE_REACH = 88;
+/** The plate a piece let go at (x, y) lands on: the nearest one within reach, or -1 (it goes back to the tray). */
+export function plateAt(plates: readonly { x: number; y: number }[], x: number, y: number): number {
+  let nearest = -1, distance = PLATE_REACH;
+  plates.forEach((p, i) => { const d = Math.hypot(x - p.x, y - p.y); if (d < distance) { distance = d; nearest = i; } });
+  return nearest;
+}
 /**
- * The next real control a capable child uses: choose a cut that can be shared equally, fill the least-full plate,
- * or add exactly what the doubled recipe still needs. `assignments` holds each cut piece's plate, or -1 in the tray.
+ * The cut a capable child makes: of the cuts that share out evenly, the one with the fewest pieces (halves for two
+ * sandwiches and four friends; quarters only when one sandwich has to reach four). A cut that leaves a friend short
+ * is a miss when she serves it, so the ghost finger never makes one.
  */
-export function kitchenTouch(
-  plan: { mode: string; wholes: number; friends: number; cuts: readonly number[] },
-  split: number,
-  assignments: readonly number[],
-  base: readonly number[],
-  made: readonly number[],
-): KitchenTouch | null {
-  if (plan.mode === 'share') {
-    if (!split) {
-      const parts = plan.cuts.find((cut) => (plan.wholes * cut) % plan.friends === 0);
-      return parts === undefined ? null : { kind: 'cut', parts };
-    }
-    const piece = assignments.indexOf(-1);
-    const counts = Array.from({ length: plan.friends }, (_, plate) => assignments.filter((p) => p === plate).length);
-    if (piece >= 0) return { kind: 'piece', piece, plate: nextPlate(counts) };
-    return fair(counts, assignments.length) ? { kind: 'serve' } : null;
-  }
-  const extra = made.findIndex((n, i) => n > (base[i] ?? 0) * 2);
-  if (extra >= 0) return { kind: 'undo' };
-  const ingredient = made.findIndex((n, i) => n < (base[i] ?? 0) * 2);
-  return ingredient >= 0 ? { kind: 'ingredient', ingredient } : doubled([...base], [...made]) ? { kind: 'serve' } : null;
+export function fairCut(plan: { wholes: number; friends: number; cuts: readonly number[] }): number | undefined {
+  return [...plan.cuts].sort((a, b) => a - b).find((c) => (plan.wholes * c) % plan.friends === 0);
 }

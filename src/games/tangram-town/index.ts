@@ -9,7 +9,7 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game,GameContext,GameModule,TouchIntent } from '../types';
-import { hintFor, makePieces, planFor, tangramTouch, targetFor, VERTICES, type Piece, type Shape } from './logic';
+import { bestTarget, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
 
 function shape(shape:Shape,color:ColorName,outline=true){return new Graphics().poly(VERTICES[shape]).fill(swatch[color].fill).stroke({width:outline?5:0,color:swatch[color].line,join:'round'});}
 interface Choice {piece:Piece;node:Container;art:Graphics;drag:DragHandle;placed:boolean}
@@ -84,15 +84,18 @@ class TangramTown implements Game {
  }
  private previousBoard={x:0,y:0};
  update(dt:number){this.clock+=dt;this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)for(const c of this.pieces)c.node.y=c.drag.home.y+Math.sin(this.clock*5)*5;}
- /** Turn the selected piece with the real turn button, then carry it into its matching open outline. */
+ /** The ghost finger on the how-to card: turn the piece in hand until it fits its place (the turn button, never the help hand), then carry it there. */
  autotouch():TouchIntent|null{
   if(this.done)return null;
-  if(!this.selected||this.selected.placed)this.selected=this.pieces.find(p=>!p.placed)??null;
-  if(!this.selected)return null;
-  const move=tangramTouch(this.selected.piece,this.plan.targets,this.filled);if(!move)return null;
-  if(move.kind==='turn')return {tap:{on:this.turn}};
-  const target=this.plan.targets[move.target];
-  return {drag:{on:this.selected.node},to:{on:this.board,x:target.x,y:target.y}};
+  const c=this.pieces.find(p=>!p.placed);
+  if(!c||c.drag.dragging)return null;
+  const goal=bestTarget(c.piece,this.plan.targets,this.filled);
+  if(!goal)return null;
+  // The turn button turns the piece picked up last; the first in the tray is already in hand, so this only takes a touch if it is not.
+  if(this.selected!==c)return {tap:{on:c.node}};
+  if(goal.turns>0)return {tap:{on:this.turn}};
+  const t=this.plan.targets[goal.index];
+  return {drag:{on:c.node},to:{on:this.board,x:t.x,y:t.y}};
  }
  destroy(){this.pieces.forEach(p=>p.drag.destroy());}
 }

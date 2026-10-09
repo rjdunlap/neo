@@ -63,8 +63,10 @@ export function dropSlot(plan: PuzzlePlan, x: number, y: number, empty: Piece[])
 /** Tray rows: one row of big pieces for small puzzles, two rows of smaller ones otherwise. */
 export const trayRows = (count: number) => (count <= 4 ? 1 : 2);
 
-/** The next waiting piece and the middle of its own empty place, for the how-to card's ghost finger. */
-export function nextPuzzleMove<P extends { piece: Piece; placed: boolean }>(plan: PuzzlePlan, pieces: readonly P[]): { piece: P; to: { x: number; y: number } } | undefined {
-  const piece = pieces.find((p) => !p.placed);
-  return piece ? { piece, to: slotCenter(plan, piece.piece) } : undefined;
+/**
+ * What a capable child does next: carry the first piece still in the tray to its own place. The ghost finger follows
+ * this, so a test can check that letting each piece go on the middle of its place finds that place and no other.
+ */
+export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[]): P | undefined {
+  return pieces.find((p) => !p.placed);
 }
