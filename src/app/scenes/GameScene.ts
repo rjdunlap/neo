@@ -28,7 +28,6 @@ import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, treehouseIcon }
 import { FONT } from '../../ui/text';
 import type { App, StoryRound } from '../App';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 /**
  * Hosts one round of a minigame and owns everything around it:
@@ -155,12 +154,6 @@ export class GameScene extends Scene {
     this.game?.update(dt);
   }
 
-  sleepyWarning() {
-    this.pet.setMood('sleepy', 2.5);
-    sfx.yawn();
-    void voice.say('sleepy.warn');
-  }
-
   destroy() {
     this.gone = true;
     this.closeHelp();
@@ -275,7 +268,7 @@ export class GameScene extends Scene {
     void this.celebrate(seed);
   }
 
-  /** Happy pet, confetti, a sticker, then "again?" — or goodnight if time is up. */
+  /** Happy pet, confetti, a sticker, then "again?". */
   private async celebrate(seed: number) {
     const v = this.view;
     const layer = new Container();
@@ -336,12 +329,6 @@ export class GameScene extends Scene {
       confetti.burst(pill.x, pill.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 12, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
       void voice.say('journal.new');
       await this.tw.wait(1.8);
-    }
-
-    if (session.over) {
-      await this.tw.wait(0.8);
-      this.app.go.goodnight();
-      return;
     }
 
     const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true));

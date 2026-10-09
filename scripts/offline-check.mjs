@@ -87,7 +87,7 @@ try {
         profile: { name: 'Mia', band: 'toddler' },
         pet: { name: 'Clover', color: 'pink', hatched: true },
         world: { band: 'toddler' },
-        settings: { placeLayout: 'subjects', sessionMinutes: 0, volume: 0.2, music: false, coplayHints: false },
+        settings: { placeLayout: 'subjects', volume: 0.2, music: false, coplayHints: false },
         games: { 'monster-munch': { plays: 0, level: 2, pinned: 2, history: [] } },
         stickers: [],
         room: {

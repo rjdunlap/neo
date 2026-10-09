@@ -43,8 +43,9 @@ const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', cls = ''
 
 /** Adult-only host: separate navigation, session goal and save; games retain their own rules. */
 export class CouchScene extends Scene {
-  countsTime = false;
   upright = true;
+  /** Couch play has its own pause menu on Esc. */
+  canPause = false;
   readonly couch = couchStore;
   private input!: CouchInput;
   private readonly overlay = node('section', '', 'couch');
@@ -907,7 +908,7 @@ export class CouchScene extends Scene {
     }
     grid.append(names);
     const actions = node('div', '', 'couch-actions'); sheet.append(actions, this.warning);
-    sheet.append(node('p', 'The island has its own grown-up zone, for her name, session length, levels and backup: on the island map, press and hold both top corners for three seconds.', 'couch-keys'));
+    sheet.append(node('p', 'The island has its own grown-up zone, for her name, levels and backup: on the island, press and hold the gear in the top corner for two seconds, or press Esc in a game and hold the gear there.', 'couch-keys'));
     this.button(actions, 'Couch backup', () => this.backup());
     this.button(actions, 'Controller setup', () => this.setup());
     this.button(actions, 'Back to couch play', () => this.menu(), 'couch-primary');

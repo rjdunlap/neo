@@ -6,9 +6,12 @@ import { voice } from '../audio/voice';
 import { trackPointers } from '../engine/input';
 import { Tweener } from '../engine/tween';
 import { clampInsets, computeView, needsTurn, NO_INSETS, type Insets, type View } from '../engine/view';
+import { isParentPanelOpen, openParentPanel } from '../parent/panel';
+import { store } from '../progress/store';
+import { openPauseSheet, type PauseSheet } from '../ui/pause-sheet';
 import { TurnPrompt } from '../ui/TurnPrompt';
+import { escapeAction } from './pause';
 import type { Scene } from './Scene';
-import { session } from './session';
 import type { Band } from '../progress/bands';
 import type { PicnicStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
@@ -40,7 +43,6 @@ export interface Routes {
   /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. */
   room(): void;
   journal(): void;
-  goodnight(): void;
 }
 
 /** Owns the Pixi app, the logical-unit root, scene switching and the frame loop. */
@@ -66,6 +68,9 @@ export class App {
   private readonly turn = new TurnPrompt();
   private turning = false;
   private layoutKey = '';
+  /** Esc was pressed: the scene holds still behind the pause sheet (or the grown-ups' page opened from it). */
+  paused = false;
+  private sheet: PauseSheet | null = null;
 
   get renderer(): Renderer {
     return this.pixi.renderer;
@@ -94,7 +99,7 @@ export class App {
     // iOS settles the safe area a moment after a turn; the probe's box changes when it does.
     if (typeof ResizeObserver === 'function') new ResizeObserver(() => this.applyView()).observe(this.probe);
     document.addEventListener('visibilitychange', () => this.syncSleep());
-    session.onWarn = () => this.scene?.sleepyWarning();
+    window.addEventListener('keydown', (e) => this.onKey(e));
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
   }
 
@@ -102,6 +107,7 @@ export class App {
   async show(next: Scene) {
     if (this.switching) return;
     this.switching = true;
+    this.unpause();
     this.curtain.eventMode = 'static'; // swallow taps mid-transition
     const old = this.scene;
     if (old) {
@@ -173,7 +179,48 @@ export class App {
   }
 
   private syncSleep() {
-    audio.sleep(document.hidden || this.turning);
+    audio.sleep(document.hidden || this.turning || this.paused);
+  }
+
+  /** Esc: hold the scene still behind the pause sheet, or let it go again. */
+  private onKey(e: KeyboardEvent) {
+    if (e.key !== 'Escape' || e.repeat) return;
+    const action = escapeAction({
+      panelOpen: isParentPanelOpen(),
+      paused: this.paused,
+      canPause: !!this.scene?.canPause && !this.turning,
+      busy: this.switching,
+    });
+    if (action === 'pause') this.pause();
+    else if (action === 'resume') this.unpause();
+  }
+
+  private pause() {
+    this.paused = true;
+    voice.stop();
+    this.syncSleep();
+    this.sheet = openPauseSheet({
+      onResume: () => this.unpause(),
+      onShort: () => void voice.say('parent.ask'),
+      onGrownUps: () => {
+        // The scene stays frozen behind the page; closing it goes to the island map, which shows any change at once.
+        this.closeSheet();
+        voice.stop();
+        openParentPanel(() => (store.data.pet.hatched ? this.go.hub() : this.go.hatch()));
+      },
+    });
+  }
+
+  private unpause() {
+    this.closeSheet();
+    if (!this.paused) return;
+    this.paused = false;
+    this.syncSleep();
+  }
+
+  private closeSheet() {
+    this.sheet?.close();
+    this.sheet = null;
   }
 
   private tick(dt: number) {
@@ -182,8 +229,7 @@ export class App {
       this.turn.update(dt);
       return;
     }
-    if (!this.scene) return;
+    if (!this.scene || this.paused) return;
     this.scene.update(dt);
-    if (this.scene.countsTime) session.update(dt);
   }
 }

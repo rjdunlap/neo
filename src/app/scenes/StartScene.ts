@@ -8,16 +8,18 @@ import { voice } from '../../audio/voice';
 import { onTap } from '../../engine/input';
 import { ControllerSampler } from '../../engine/controller';
 import type { View } from '../../engine/view';
+import { isParentPanelOpen, openParentPanel } from '../../parent/panel';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
+import { gearButton } from '../../ui/grownups';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 /** A sleeping Pip and a big play button. The first tap anywhere wakes the sound, the voice and Pip. */
 export class StartScene extends Scene {
-  countsTime = false;
+  /** The gear is already on screen, and no round has started to pause. */
+  canPause = false;
   private backdrop!: Backdrop;
   private readonly pip = makePet();
   private readonly egg = drawEgg(new Graphics());
@@ -28,9 +30,26 @@ export class StartScene extends Scene {
   private clock = 0;
   private couchButton: HTMLButtonElement | null = null;
   private readonly controllers = new ControllerSampler();
+  /** Grown-ups' way in: hold the gear. A tap only says who it is for. */
+  private readonly gear = gearButton({
+    onOpen: () => this.openGrownUps(),
+    onShort: () => {
+      // A press is a user gesture, so this is when speech can first be unlocked.
+      audio.unlock();
+      voice.unlock();
+      void voice.say('parent.ask');
+    },
+  });
   private readonly couchKey = (e: KeyboardEvent) => {
-    if (e.code === 'KeyC' && !e.metaKey && !e.ctrlKey && !this.started) this.openCouch();
+    // Typing a name in the grown-ups' page must not start couch play at the letter C.
+    if (e.code === 'KeyC' && !e.metaKey && !e.ctrlKey && !this.started && !isParentPanelOpen()) this.openCouch();
   };
+
+  private openGrownUps() {
+    if (this.started) return;
+    voice.stop();
+    openParentPanel(() => this.app.go.start());
+  }
 
   private openCouch() {
     if (this.started) return;
@@ -42,7 +61,7 @@ export class StartScene extends Scene {
     this.couchButton.className = 'couch-entry';
     this.couchButton.textContent = 'Couch play · C / controller';
     this.couchButton.onclick = () => this.openCouch();
-    document.body.append(this.couchButton);
+    document.body.append(this.couchButton, this.gear.el);
     window.addEventListener('keydown', this.couchKey);
     this.backdrop = this.track(
       new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xaee39a, 0x9edb86], horizon: 0.62, clouds: 3, sun: true, seed: 12 }, this.view),
@@ -69,7 +88,7 @@ export class StartScene extends Scene {
   update(dt: number) {
     super.update(dt);
     this.clock += dt;
-    if (!this.started && this.clock > 0.35) {
+    if (!this.started && this.clock > 0.35 && !isParentPanelOpen()) {
       try {
         const input = this.controllers.sample([...(navigator.getGamepads?.() ?? [])], new Set());
         if (input.players.some(p => p.action)) this.openCouch();
@@ -82,10 +101,10 @@ export class StartScene extends Scene {
     if (this.started) return;
     this.started = true;
     this.couchButton?.remove();
+    this.gear.hide(true);
     // Both must happen inside this tap, or iOS keeps the game silent.
     audio.unlock();
     voice.unlock();
-    session.start(store.data.settings.sessionMinutes);
 
     this.pip.setMood('happy');
     this.pip.cheer();
@@ -97,6 +116,6 @@ export class StartScene extends Scene {
   }
 
   destroy() {
-    this.couchButton?.remove(); window.removeEventListener('keydown', this.couchKey); super.destroy();
+    this.couchButton?.remove(); this.gear.destroy(); window.removeEventListener('keydown', this.couchKey); super.destroy();
   }
 }

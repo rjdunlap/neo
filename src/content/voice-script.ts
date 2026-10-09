@@ -57,7 +57,8 @@ export const SCRIPT = {
   'couch.robot.start': ['Help the robot reach the star! Move the stick to add steps, then press the bottom button to play.'],
   'couch.hop.gap': ['How many hops from {n} to {m}? Move to a number card, then press the bottom button.'],
   'couch.sink.guess': ['Will the {thing} float or sink? Choose with left and right, then press the bottom button!'],
-  'start.hi': ['Hi, {name}!', 'Hello, {name}!', 'Yay, {name} is here!'],
+  'parent.ask': ['That one is for grown-ups. Ask a grown-up to help!'],
+  'start.hi':['Hi, {name}!', 'Hello, {name}!', 'Yay, {name} is here!'],
   'hub.pick': ['What should we play?', 'Pick a game!', "Let's play!"],
   'hub.again': ['What next?', 'Ooh, what now?'],
   'map.pick': ['Where shall we play, {pet}? Tap a place on our island!'],
@@ -970,9 +971,6 @@ export const SCRIPT = {
   'heart.on': ['A favorite! I love it too!', 'A heart for this one!'],
   'heart.off': ['Okay! We can heart it again any time.'],
   'place.favorites': ['Your favorites! Tap one to play.'],
-
-  'sleepy.warn': ["I'm getting sleepy. One more game!"],
-  'sleepy.night': ['Goodnight, {name}. Sweet dreams!'],
 
   'bubble.free': ['Pop the bubbles!', 'Bubbles! Pop pop pop!'],
   'bubble.color': ['Pop the {color} bubbles!'],

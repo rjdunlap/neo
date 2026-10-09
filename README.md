@@ -12,7 +12,7 @@ What's in it:
 - **A pet** she hatches and names, a **sticker book**, and the pet's **treehouse**, where things she made hang on the wall and a discovery journal fills up.
 - **The Windy Picnic**, a short story that connects three activities.
 - **Couch play** for two grown-ups with controllers or a keyboard on a computer: trips, face-offs and challenge courses, with its own save.
-- A **grown-up zone** behind a parent gate, and offline play once installed.
+- A **grown-up zone** behind a press-and-hold gear (or Esc in a game), and offline play once installed.
 
 ## Run it
 
@@ -27,7 +27,8 @@ npm run build      # type-check + production build into dist/
 
 - **Quick look, same Wi-Fi:** `npm run dev:lan`, then open the "Network" URL it prints in Safari on the iPad. Fine for playing; offline mode and "Add to Home Screen" as a full app need HTTPS (below).
 - **The real thing:** open <https://rjdunlap.github.io/neo/> in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
-- **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app.
+- **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app. Guided Access can also set a time limit.
+- **Limit her time:** the app has no timer of its own. Use Screen Time → App Limits (check Screen Time → See All Activity after a few minutes of play to see where the Home Screen app is listed) or a Guided Access time limit.
 
 ## Try it on a phone
 
@@ -35,7 +36,7 @@ A phone is a good way to look at the island before the iPad arrives. It differs 
 
 - **Hold it sideways.** The islands are drawn wide. An upright phone shows a picture asking to turn it, and the game waits behind it; turn off the rotation lock (iPhone: Control Center; Android: quick settings). An installed Android app is locked to landscape; an iPhone cannot be locked by a web app.
 - **Everything is about half the iPad's size.** At 844 × 390 the island is drawn at about 0.5 scale, so a 100-unit target is about 50 points across, against about 110 on an 11-inch iPad. The phone shows whether the games flow, read and sound right; it cannot show whether a small hand can drag, herd or pull. Judge those on the iPad.
-- **The notch and rounded corners are respected.** The island sits inside the safe area, so a phone with a notch shows a cream strip at each side, and the buttons in the corners (and the grown-up gate's two top corners) stay reachable.
+- **The notch and rounded corners are respected.** The island sits inside the safe area, so a phone with a notch shows a cream strip at each side, and the buttons in the corners (and the grown-ups' gear in the top-right corner) stay reachable.
 - **It has its own save.** A phone browser, and the home-screen app made from it, each keep a separate save from the iPad's. To carry one over, use Save a backup and Restore from a backup in the grown-up zone.
 
 To get it there:
@@ -148,7 +149,7 @@ The treehouse button at the bottom-left of the map opens the pet's **treehouse**
 
 ## Grown-up zone
 
-Press and hold **both top corners** of the island map for three seconds. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), session length, whether each game shows how to play before it starts, place layout, volume, and see what she played this week. Backups save to Files.
+Press and hold the **gear** for two seconds: it is in the top-right corner of the title screen and the island map, and on a keyboard **Esc** pauses any island scene (couch play keeps its own pause menu) and shows the gear on the pause sheet. A tap only shows a hint, and says (in the pet's voice) that it is for grown-ups. Set her name (the voice says it), pet name and color, age band (her pet's home on the trail, and where play starts), whether each game shows how to play before it starts, place layout, volume, and see what she played this week. Backups save to Files, and a reset or restore can be undone from the same page (one step back, kept on the device; undoing twice puts things back). There is no play timer: limits belong to the device.
 
 ## Couch play
 
@@ -177,7 +178,7 @@ TypeScript + Vite + PixiJS 8, installed as a PWA. See the [design doc](docs/DESI
 
 ```text
 src/
-  app/        boot, scene switching, session timer, routes, scenes/ (start, hatch, map, place, game host, picnic, stickers, treehouse room, journal, goodnight, couch)
+  app/        boot, scene switching, Esc pause, routes, scenes/ (start, hatch, map, place, game host, picnic, stickers, treehouse room, journal, couch)
   engine/     view scaling, tweens, seeded random, toddler input rules
   art/        palette, shapes, critter builder, particles, scenery, sticker frame
   audio/      Web Audio engine, instruments, sound effects, generative music, voice
@@ -185,7 +186,7 @@ src/
   progress/   age bands, save format + migration, difficulty, IndexedDB store
   couch/      grown-up couch play: the catalog of how-to data, trips, unlocks and face-off rules, its own save, the demo runner, the controller diagram
   parent/     the grown-up panel (plain HTML)
-  ui/         buttons, icons, parent gate, text
+  ui/         buttons, icons, grown-ups gear, pause sheet, text
   content/    voice script, how-to cards, the age-trail places, stable world IDs, the Windy Picnic's story rules, and the treehouse's room, creations and journal rules
 ```
 
@@ -216,9 +217,10 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `howto` | The how-to card every time a game opens: every game's card fits in landscape and portrait with large Play and Back, a demonstration window exactly for the games with a bot (playing, touch-proof, destroyed with the card; a hand for a game with a ghost finger, the controller highlight for a couch game without one yet), the ghost finger (a mouse pointer until a touch, effects lowered while it plays, a real drag working after Play), stray taps, Back, Play, "again", a story request and the grown-up switch (about three minutes) | `HOWTO_ONLY=id,id` |
 | `howtolevel` | The level arrows on the intro card: held to step (a tap does nothing), within her band, the "this level" line, steps and demonstration follow, the arrow at an end is dimmed, Play builds the chosen level and finishing it keeps it, a grown-up's pin stays, no arrows for a one-level band or on the "?" card (about 10 seconds) | |
 | `fingerdemo` | The ghost finger's bot plays each game's demonstration to the end at the game's first and last level, with no wrong move and no hint, inside the 75 seconds a finger demonstration gets (a few seconds to about a minute a play) | `FINGER_ONLY=id,id`, `FINGER_LEVELS=3,4` (play these levels instead, to time the ones between) |
-| `phonefit` | A phone's needs: a faked notch and home indicator through the `--safe-*` properties (island inside them, the strips left plain cream, nothing on a scene's UI layer covered, a tap on a button, the parent gate and panel reachable), the turn prompt for an upright phone (390 × 844, with couch play's button hidden under it) and not for a sideways phone, any tablet shape or a mouse (about 20 seconds) | |
+| `phonefit` | A phone's needs: a faked notch and home indicator through the `--safe-*` properties (island inside them, the strips left plain cream, nothing on a scene's UI layer covered, a tap on a button, the grown-ups' gear and panel reachable), the turn prompt for an upright phone (390 × 844, with couch play's button hidden under it) and not for a sideways phone, any tablet shape or a mouse (about 20 seconds) | |
 | `phone` | `phonefit`, then every game's middle level at 844 × 390: stray taps, nothing stranded at the origin or off the window on the UI layer, and a screenshot of each in `test-results/browser/phone/` (about 3 seconds a game) | `PHONE_ONLY=id,id` |
-| `world` | Hatching, the map, both place layouts, every subject and game card in all bands and both orientations, return memory, cancellation, birthdays, the parent gate (about 4½ minutes) | |
+| `grownups` | The gear on the title screen (a tap shows a hint, a mouse hold or held Enter opens the page, a C typed in the name field does not start couch play), Esc and the pause sheet in a game (the round holds still, Esc resumes, the sheet's gear opens the page and Esc closes that to the map), no play timer, undoing a reset after a reload, and a touch tap and hold on the map's gear (about 45 seconds) | |
+| `world` | Hatching, the map, both place layouts, every subject and game card in all bands and both orientations, return memory, cancellation, birthdays, the grown-ups' gear and panel (about 4½ minutes) | |
 | `island` | The NEW twinkle, the heart after a round, the shelf and Favorites card, a reload, a portrait shelf | |
 | `room` | The treehouse: moving, flipping and using furnishings, hanging a sticker, tidy, a reload | |
 | `creations` | Stamp Studio pictures, a free Rainbow Fingers painting, Pixel Pictures designs and a free Song Maker song kept from the end-of-round screen, shown in the treehouse, swapped, taken down and brought back, kept through a reload | |

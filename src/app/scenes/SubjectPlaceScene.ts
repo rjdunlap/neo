@@ -20,7 +20,6 @@ import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene, type Updatable } from '../Scene';
-import { session } from '../session';
 import { gamesFor } from './PlaceScene';
 
 interface Card { node: Container; id: string; mod?: GameModule; sparkle?: Sparkle }
@@ -239,6 +238,5 @@ export class SubjectPlaceScene extends Scene {
     this.dots.eventMode = 'none';
   }
   enter() { music.play(STYLES.hub); this.speak(); }
-  update(dt: number) { super.update(dt); if (session.over && !this.leaving) this.leave(() => this.app.go.goodnight()); }
   exit() { voice.stop(); this.cancel(); window.removeEventListener('blur', this.lost); window.removeEventListener('pointercancel', this.release); window.removeEventListener('pointerup', this.release); document.removeEventListener('visibilitychange', this.lost); }
 }

@@ -13,12 +13,11 @@ import { openParentPanel } from '../../parent/panel';
 import { bandInfo, BANDS, type Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
+import { gearButton } from '../../ui/grownups';
 import { bookIcon, treehouseIcon } from '../../ui/icons';
-import { ParentGate } from '../../ui/ParentGate';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
-import { session } from '../session';
 
 const rank = (band: Band | null) => BANDS.findIndex((b) => b.id === band);
 
@@ -36,10 +35,14 @@ export class MapScene extends Scene {
   private readonly title = label('Puddle Island', 42, ink);
   private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () => this.app.go.stickers());
   private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => { void voice.say('map.room'); this.app.go.room(); });
-  private readonly gate = new ParentGate(() => {
-    voice.stop();
-    this.countsTime = false;
-    openParentPanel(() => (store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch()));
+  /** Grown-ups' way in: hold the gear (the iPad has no Esc key, so this is the way in once a child is playing). */
+  private readonly gear = gearButton({
+    onOpen: () => {
+      if (this.leaving) return;
+      voice.stop();
+      openParentPanel(() => (store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch()));
+    },
+    onShort: () => void voice.say('parent.ask'),
   });
   readonly places: { def: Place; node: Container }[] = [];
   /** The Windy Picnic, on the open grass beside Daisy Meadow: a story, not an age place. */
@@ -90,7 +93,8 @@ export class MapScene extends Scene {
     this.pip.scale.set(0.4);
     onTap(this.pip, () => { this.pip.hop(); void voice.say('map.pick'); }, { radius: 70 });
     this.map.addChild(this.track(this.pip));
-    this.ui.addChild(this.title, this.book, this.treehouse, this.track(this.gate));
+    this.ui.addChild(this.title, this.book, this.treehouse);
+    document.body.appendChild(this.gear.el);
   }
 
   private spot(band: Band) {
@@ -135,7 +139,6 @@ export class MapScene extends Scene {
     this.title.position.set(v.w / 2, 50);
     this.book.position.set(v.w - 75, v.h - 70);
     this.treehouse.position.set(75, v.h - 70);
-    this.gate.layout(v);
   }
 
   enter() {
@@ -173,6 +176,7 @@ export class MapScene extends Scene {
     if (this.leaving) return;
     this.leaving = true;
     this.ui.eventMode = 'none';
+    this.gear.hide(true);
     void voice.say(def.line);
     await this.walk(this.petAt, def.band);
     const node = this.spot(def.band);
@@ -188,6 +192,7 @@ export class MapScene extends Scene {
     if (this.leaving || this.walking) return;
     this.leaving = true;
     this.ui.eventMode = 'none';
+    this.gear.hide(true);
     void voice.say('map.picnic');
     this.pip.hop(1.2);
     sfx.whoosh();
@@ -204,18 +209,14 @@ export class MapScene extends Scene {
     // A soft glow around her own place.
     const home = this.spot(store.data.profile.band);
     this.glow.clear().circle(home.x, home.y + 10, 104 + 6 * Math.sin(this.clock * 2.5)).fill({ color: swatch.yellow.light, alpha: 0.75 });
-    if (session.over && this.countsTime && !this.leaving) {
-      this.leaving = true;
-      this.app.go.goodnight();
-    }
-  }
-
-  sleepyWarning() {
-    this.pip.setMood('sleepy', 3);
-    void voice.say('sleepy.warn');
   }
 
   exit() {
     voice.stop();
+  }
+
+  destroy() {
+    this.gear.destroy();
+    super.destroy();
   }
 }
