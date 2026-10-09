@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-09: typecheck and 678 unit tests with the longer Inchworm Measure and Picture Graph ladders (no build); typecheck and 663 unit tests with the quiet music-making games (no build); earlier that day 660 with five more bots (Little Helpers, Market Stall, Garden Rows, Garden Grow, Owl Walk Home; no build); `npm run build` last ran with 654 tests on the tree that merged the journal sources, deferred teardown, the gear and the last five couch ghost fingers | Quiet music-making games entry, ghost finger on Little Helpers, Market Stall, Garden Rows, Garden Grow and Owl Walk Home entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-09: typecheck and 678 unit tests, again after the Picture Graph meadow test stopped timing out under the parallel run (no build); typecheck and 678 unit tests with the longer Inchworm Measure and Picture Graph ladders (no build); typecheck and 663 unit tests with the quiet music-making games (no build); earlier that day 660 with five more bots (Little Helpers, Market Stall, Garden Rows, Garden Grow, Owl Walk Home; no build); `npm run build` last ran with 654 tests on the tree that merged the journal sources, deferred teardown, the gear and the last five couch ghost fingers | Quiet music-making games entry, ghost finger on Little Helpers, Market Stall, Garden Rows, Garden Grow and Owl Walk Home entry | Run with every code change |
 | `npm run test:offline` | 2026-10-09, with the gear and no play timer | Gear entry (2026-10-08: Lemonade Stand entry and the treehouse take-down entry) | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error); Egg Catch, Bounce Back, Bouncy Launch, Peg Garden and Bumper Garden filtered (2026-10-09) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `phonefit`, `phone` | 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
@@ -49,6 +49,12 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Picture Graph meadow test no longer times out under load (2026-10-09)
+
+What changed: the "places every pair ... no two critters touching" test in `src/games/picture-graph/logic.test.ts` made over a million `expect` calls (every pair of critters, per seed, per count, at four view sizes) and took 1.2 s alone but passed 5 s in the full parallel run (114 files). It now compares with plain booleans, collects what is wrong, and makes one `expect` per size and count that reports the first five (seed, critter and which rule). The same seeds, sizes and rules are checked; the test went from 1.2 s to 14 ms.
+
+- Proof it still bites: with the key margin temporarily widened by 400 the test failed naming the seed and critter ("1024x768 n=1 seed 3: critter 0 is not clear of the key"); restored, it passes. `npx tsc --noEmit` and the full `npm test` pass (114 files, 678 tests, 6.6 s). Not run: browser suites, build (a test file only; no game code changed).
 
 ### Longer ladders: Inchworm Measure and Picture Graph (2026-10-09)
 
