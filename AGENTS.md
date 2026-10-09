@@ -13,13 +13,13 @@ Each activity needs a fun action and a clear learning purpose: sharing fills pla
 | Document / source | Role |
 | --- | --- |
 | [README.md](README.md) | Setup, the game inventory and count, browser suites |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Direction, current position, next up, checks that need a person or device, elementary horizons, planning rules |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Direction, current position, next up (chunks with a status, a next slice and a check tier), decisions waiting on the developer, checks that need a person or device, elementary horizons, planning rules |
 | [docs/DESIGN.md](docs/DESIGN.md) | Current architecture, systems and contracts |
 | [docs/GAMES.md](docs/GAMES.md) | What each game does: rules, misses, hints, level steps |
 | [docs/IDEAS.md](docs/IDEAS.md) | The idea notebook: candidates, modes for existing games, gestures, references, overlaps. Not a mandate |
 | [docs/COUCH-PLAY.md](docs/COUCH-PLAY.md) | Player guide for couch play: pairing controllers, rules, controls |
 | [docs/VERIFICATION.md](docs/VERIFICATION.md) | Checks actually performed, with a coverage summary of each suite's last pass |
-| `docs/archive/` | History, not instructions: superseded proposals, the old roadmap, older verification entries |
+| `docs/archive/` | History, not instructions: superseded proposals, the old roadmap, finished roadmap items and idea rows, older verification entries |
 | `src/games/registry.ts`, `src/games/types.ts` | Current registrations and the minigame contract |
 
 Check the working tree before editing. Local implementations, recorded verification and deployed features are distinct states; `origin/main` is what is deployed. Preserve unrelated work in progress.
@@ -148,7 +148,7 @@ Use scripted input for moving targets, then screenshots for visual review. Finis
 Keep this file provider-neutral and durable; update it when a shared contract or workflow changes. Where an update goes:
 
 - **A game added or changed:** its README row, [GAMES.md](docs/GAMES.md) entry and how-to card.
-- **Roadmap work:** edit its line in [ROADMAP.md](docs/ROADMAP.md) (counts live only there and in the README); move a built idea out of [IDEAS.md](docs/IDEAS.md); label new ideas as proposals.
+- **Roadmap work:** edit its line in [ROADMAP.md](docs/ROADMAP.md) (counts live only there and in the README). When an item is finished, move it and its build notes to the newest completed-work file in `docs/archive/` instead of leaving it checked off, and leave a one-line "built" mention only where a reader needs it. Give each open item a status (ready, sketch, define, decision, person), and add a call that only the developer can make to "Waiting on the developer". Move a built idea out of [IDEAS.md](docs/IDEAS.md); label new ideas as proposals.
 - **Checks run:** a ~six-line [VERIFICATION.md](docs/VERIFICATION.md) entry (what changed, what ran, what is open) and its coverage-summary row. Checks needing a person or device go in the roadmap and stay open until done.
 - **A contract or system behavior changed:** [DESIGN.md](docs/DESIGN.md), and only then.
 - **Superseded documents:** move to `docs/archive/` with a line in its index, rather than leaving stale status in a live doc.
