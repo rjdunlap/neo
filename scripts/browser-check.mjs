@@ -3102,7 +3102,7 @@ async function woodsBatch() {
     log(`Picture Graph ${level} (${mode}): bars built block by block, graph checked, questions answered on bars and number pads, misses, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'worm') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'worm') for (let level = fromLevel; level <= 6; level++) {
     await launch('inchworm', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); await page.waitForTimeout(250); };
@@ -3120,7 +3120,7 @@ async function woodsBatch() {
     const rounds = await page.evaluate(() => neo.scene.game.measures.length);
     for (let n = 0; n < rounds; n++) {
       await idle(n);
-      if (mode !== 'ruler') {
+      if (!mode.startsWith('ruler')) {
         const lens = await page.evaluate(() => neo.scene.game.rows.map((r) => r.length));
         const order = lens.map((l, i) => i).sort((a, b) => lens[a] - lens[b]);
         for (const [k, row] of order.entries()) {
@@ -3141,7 +3141,7 @@ async function woodsBatch() {
     }
     await finished('inchworm');
     assert.deepEqual(await score('inchworm'), mode === 'lay' ? [0, 0] : [2, 1]);
-    log(`Inchworm Measure ${level} (${mode}): worms dragged end to end, ${mode === 'ruler' ? 'ruler readings' : 'lengths counted'}, misses, hints, saved score and sticker passed`);
+    log(`Inchworm Measure ${level} (${mode}): worms dragged end to end, ${mode.startsWith('ruler') ? 'ruler readings' : 'lengths counted'}, misses, hints, saved score and sticker passed`);
   }
 
   if (!only || only === 'helpers') {

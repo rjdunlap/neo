@@ -122,7 +122,7 @@ There are seventy-three games, listed below. "Ages" lists the places each game a
 | Picture Graph | pre-K–school | count critters and build their bars, one block each | which has the most and fewest, how many more, reading a finished graph (how many in all, which two are the same) |
 | Rhyme Time | pre-K–school | which picture rhymes with "cat"? | four choices, find the rhyming pair, odd one out |
 | Beat Builder | preschool–school | tap squares on a beat grid; the playhead loops | copy a beat you can see, copy one by ear, make a pattern repeat, a longer three-instrument beat |
-| Inchworm Measure | pre-K–school | lay inchworms end to end along a leaf and count them | say how many worms long, compare two lengths, read a ruler even when the thing doesn't start at 0 |
+| Inchworm Measure | pre-K–school | lay inchworms end to end along a leaf and count them | say how many worms long, compare two lengths, read a ruler even when the thing doesn't start at 0, then use the ruler for how much longer one thing is and how long two are end to end |
 | Block Tower | lap–school | tap to stack blocks, then knock the tower down | as tall as a friend, up to the flag, as tall as Bear's (or one taller or shorter), which leaning tower will stand, then stacking out past a table edge to touch a star |
 | Lasso Loops | preschool–school | draw a loop around fireflies: they fly into a jar | loop exactly 2 or 3, jars of five and ten with the ones left over (34 is three tens and four), equal groups ("3 groups of 4") |
 | Pet Says | lap–pre-K | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow | body words ("touch your nose"), two moves in order, "Pet says" (move only when you hear it), freeze dance |

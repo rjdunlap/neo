@@ -829,12 +829,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the graph questions are answered.',
   },
   inchworm: {
-    goal: 'Measure things with inchworms.',
+    goal: 'Measure things, first with inchworms and then with a ruler.',
     steps: [
       { to: 1, text: 'Drag inchworms end to end along the leaf, and count them.' },
       { from: 2, to: 2, text: 'Drag inchworms end to end along the object, count them, then choose how many worms long it is.' },
       { from: 3, to: 3, text: 'Measure each thing with inchworms, then answer which is longer, and by how many worms.' },
-      { from: 4, text: 'Read the number on the ruler where the object ends, even when it does not start at 0.' },
+      { from: 4, to: 4, text: 'Count the ruler spaces the object covers, even when it does not start at 0.' },
+      { from: 5, to: 5, text: 'Two things sit on one ruler. Count the extra spaces the longer one covers, and choose how much longer it is.' },
+      { from: 6, text: 'Two things sit end to end on the ruler. Count the spaces of both, and choose how long they are together.' },
     ],
     finish: 'The round ends when the measurement is chosen.',
   },
