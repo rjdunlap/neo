@@ -10,8 +10,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import type { PixelPictureCreation } from '../../content/creations';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { clues, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { clues, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, pixelTouch, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -52,6 +52,8 @@ class PixelPictures implements Game {
   private wrongs = 0;
   private hinted: { x: number; y: number } | null = null;
   private lastCreation: PixelPictureCreation | null = null;
+  /** The square the ghost finger touched last, so its next one is near it. */
+  private ghostAt: { x: number; y: number } | undefined;
   private clock = 0;
 
   constructor(private readonly ctx: GameContext) {
@@ -93,6 +95,19 @@ class PixelPictures implements Game {
     this.clock += dt;
     const g = this.glow.clear();
     if (this.hinted && !this.busy) g.roundRect(this.hinted.x * CELL + 4, this.hinted.y * CELL + 4, CELL - 8, CELL - 8, 14).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+  }
+
+  /** The ghost finger: choose a color where there is a palette, then tap the squares the picture (or, on logic levels, its numbers) settles. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const move = pixelTouch(this.plan, this.picture, this.filled, this.color, this.ghostAt);
+    if (!move) return null;
+    if ('color' in move) {
+      const swatchNode = this.palette.find((p) => p.letter === move.color)?.node;
+      return swatchNode ? { tap: { on: swatchNode } } : null;
+    }
+    this.ghostAt = move.cell;
+    return { tap: { on: this.board, x: move.cell.x * CELL + CELL / 2, y: move.cell.y * CELL + CELL / 2 }, pause: 0.1 };
   }
 
   destroy() {}
@@ -325,6 +340,7 @@ export const pixelPictures: GameModule = {
   coplayHint: 'Guess together what the picture will be before it is finished.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',
   hubIcon: () => new PixelIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new PixelPictures(ctx),
 };

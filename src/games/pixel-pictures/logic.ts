@@ -161,3 +161,50 @@ export function lineSolvable(p: Picture): boolean {
   const g = toGrid(p);
   return known.every((r, y) => r.every((c, x) => c === (g[y][x] !== null)));
 }
+
+/** What a child has put on the board: a color letter, 'x' for a crossed-out square, or nothing. */
+export type Filled = (string | null)[][];
+
+/** One touch of the ghost finger: choose a paint color on a two-color level, or tap a square. */
+export type PixelTouch = { color: string } | { cell: { x: number; y: number } };
+
+const isFilled = (c: string | null | undefined) => !!c && c !== 'x';
+
+/**
+ * A square that picture logic decides is filled and is not yet: the row and column numbers, plus the squares the same
+ * logic has already shown to be empty (kept here, since the game only crosses out a square after a wrong tap), settle it.
+ * It prefers the square nearest `from`, so the hand sweeps along rather than jumping about.
+ */
+export function logicCell(p: Picture, filled: Filled, from?: { x: number; y: number }): { x: number; y: number } | null {
+  const known: Knowledge = filled.map((row) => row.map((c) => (isFilled(c) ? true : c === 'x' ? false : null)));
+  for (let pass = 0; pass < 50; pass++) {
+    const found = deduce(p, known);
+    const fills = found.filter((f) => f.fill);
+    if (fills.length) {
+      const far = (c: { x: number; y: number }) => (from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0);
+      return fills.reduce((best, c) => (far(c) < far(best) ? c : best));
+    }
+    if (!found.length) return null;
+    for (const f of found) known[f.y][f.x] = f.fill;
+  }
+  return null;
+}
+
+/**
+ * What a capable child touches next. Copy levels: the squares of the picture one after another (finishing a color before
+ * choosing the next on a two-color level); mirror levels: the squares of the right half, whose mirror image is already drawn;
+ * logic levels: the squares the numbers settle, nearest first. Every touch is a square the picture really has and
+ * that is still empty, so a demonstration makes no wrong move.
+ */
+export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, color: string, from?: { x: number; y: number }): PixelTouch | null {
+  const target = toGrid(picture);
+  const open = target.flatMap((row, y) => row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !(plan.mode === 'mirror' && givenInMirror(plan.size, x)) ? [{ x, y, c }] : [])));
+  if (!open.length) return null;
+  if (plan.mode === 'clues') {
+    const cell = logicCell(picture, filled, from);
+    return cell ? { cell } : null;
+  }
+  const mine = open.find((o) => plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
+  if (mine) return { cell: { x: mine.x, y: mine.y } };
+  return { color: open[0].c };
+}

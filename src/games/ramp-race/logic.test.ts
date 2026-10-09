@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { distance, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, onStar, PLANS, waysTo } from './logic';
+import { distance, EXPLORE_HEIGHTS, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, onStar, PLANS, rampTouch, waysTo, type Setup } from './logic';
 
 describe('Ramp Race', () => {
   it('higher ramps and slipperier floors always go farther', () => {
@@ -32,6 +32,47 @@ describe('Ramp Race', () => {
       const qs = makeQuestions(new Rng(seed), 3);
       expect(qs.map((q) => q.compare)).toContain('floor');
       expect(qs.map((q) => q.compare)).toContain('height');
+    }
+  });
+  it("the ghost finger plays every level through without a wrong move, never taps the floor where it cannot change, and never presses go on a miss", () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const rng = new Rng(seed);
+        const stars = plan.mode === 'height' || plan.mode === 'both' ? makeStars(plan, rng) : [];
+        const questions = plan.mode === 'fair' ? makeQuestions(rng, plan.rounds) : [];
+        const fresh = (): Setup[] => (plan.mode === 'fair' ? [{ height: 3, floor: 'wood' }, { height: 3, floor: 'wood' }] : [{ height: plan.mode === 'height' ? 2 : 3, floor: 'wood' }]);
+        let lanes = fresh();
+        let index = 0;
+        let rolls = 0;
+        let touches = 0;
+        const heights: number[] = [];
+        const total = plan.mode === 'explore' ? plan.rounds : plan.mode === 'fair' ? questions.length : stars.length;
+        while ((plan.mode === 'explore' ? rolls : index) < total) {
+          expect(++touches, `${plan.mode} seed ${seed}: finishes`).toBeLessThan(40);
+          const move = rampTouch(plan, lanes, { star: stars[index], question: questions[index], rolls });
+          expect(move, `${plan.mode} seed ${seed}: a touch to make`).not.toBeNull();
+          if (move === 'go') {
+            if (plan.mode === 'explore') { heights.push(lanes[0].height); rolls++; continue; }
+            if (plan.mode === 'fair') {
+              expect(judgeFair(questions[index], lanes[0], lanes[1]), 'a fair test').toBe('fair');
+              lanes = fresh();
+            } else {
+              // The setup stays as the child left it for the next star; only a fair test starts over.
+              expect(onStar(distance(lanes[0].height, lanes[0].floor), stars[index]), 'the roll reaches the star').toBe(true);
+            }
+            index++;
+            continue;
+          }
+          const lane = lanes[move!.lane];
+          if (move!.change === 'ramp') lane.height = HEIGHTS[(HEIGHTS.indexOf(lane.height as 2 | 3 | 4) + 1) % HEIGHTS.length];
+          else {
+            expect(['both', 'fair']).toContain(plan.mode);
+            lane.floor = FLOORS[(FLOORS.indexOf(lane.floor) + 1) % FLOORS.length];
+          }
+        }
+        // Explore: each roll beside the last is a different height, so higher goes farther is visible.
+        if (plan.mode === 'explore') expect(heights).toEqual([...EXPLORE_HEIGHTS].slice(0, plan.rounds));
+      }
     }
   });
 });

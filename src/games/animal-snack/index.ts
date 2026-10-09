@@ -14,8 +14,8 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { eaterOf, FAVORITE, makeRounds, planFor, type Food, type SnackPlan, type SnackRound } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { eaterOf, FAVORITE, makeRounds, planFor, snackTouch, type Food, type SnackPlan, type SnackRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -147,6 +147,24 @@ class AnimalSnack implements Game {
       const b = this.glowing.getBounds();
       g.roundRect(b.x - 12, b.y - 12, b.width + 24, b.height + 24, 30).stroke({ width: 6 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
     }
+  }
+
+  /** The ghost finger: tap the animals or snacks, carry a snack to the animal that eats it, count out the number asked for and ring the bell. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.index < 0) return null;
+    const move = snackTouch(this.plan, {
+      friends: this.friends.map((f) => f.name),
+      snacks: this.snacks.map((s) => ({ food: s.food, eaten: s.eaten })),
+      ask: this.round.ask,
+      n: this.round.n,
+      eatenCount: this.eatenCount,
+    });
+    if (!move) return null;
+    if (move === 'bell') return { tap: { on: this.bell } };
+    // An animal's body is the middle of its tap area, and a snack dropped there lands within reach of its mouth.
+    if ('friend' in move) return { tap: { on: this.friends[move.friend].node, y: -125 } };
+    if ('snack' in move) return { tap: { on: this.snacks[move.snack].node } };
+    return { drag: { on: this.snacks[move.give].node }, to: { on: this.friends[move.to].node, y: -200 } };
   }
 
   destroy() {
@@ -435,6 +453,7 @@ export const animalSnack: GameModule = {
   coplayHint: 'Make the animal sounds together, and say what each one eats: "The bunny eats a carrot. Crunch!"',
   offScreen: 'At snack time, offer a stuffed animal a pretend snack: "What does teddy like to eat?"',
   hubIcon: () => new SnackIcon(),
+  touchDemo: true,
   sticker,
   create: (ctx) => new AnimalSnack(ctx),
 };

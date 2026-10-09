@@ -82,3 +82,38 @@ export function judgeFair(q: FairQuestion, a: Setup, b: Setup): 'fair' | 'same' 
   if (q.compare === 'floor') return floorDiffers && !heightDiffers ? 'fair' : 'unfair';
   return heightDiffers && !floorDiffers ? 'fair' : 'unfair';
 }
+
+/** The explore level's ramp heights, one per roll, low to high, so each roll beside the last shows that higher goes farther. */
+export const EXPLORE_HEIGHTS = [2, 3, 4, 2] as const;
+
+/** One touch of the ghost finger: change a lane's ramp or its floor (each tap moves to the next), or press go. */
+export type RampTouch = { lane: number; change: 'ramp' | 'floor' } | 'go';
+
+/** How many taps turn a value that cycles through `list` into `to`. */
+const turns = <T>(list: readonly T[], from: T, to: T) => (list.indexOf(to) - list.indexOf(from) + list.length) % list.length;
+
+/**
+ * What a capable child touches next: on the explore level a new ramp height before every roll; on the star levels the
+ * way to the star that takes the fewest taps (only the ramp on the wood-floor level, where the floor is not changeable);
+ * on the fair-test level the second lane changed in only the thing the question names. It never presses go on a
+ * setup that would miss the star or an unfair test, so a demonstration makes no wrong move.
+ */
+export function rampTouch(plan: RampPlan, lanes: Setup[], goal: { star?: number; question?: FairQuestion; rolls: number }): RampTouch | null {
+  const [a, b] = lanes;
+  if (plan.mode === 'explore') {
+    return a.height === EXPLORE_HEIGHTS[Math.min(goal.rolls, EXPLORE_HEIGHTS.length - 1)] ? 'go' : { lane: 0, change: 'ramp' };
+  }
+  if (plan.mode === 'fair') {
+    if (!goal.question || !b) return null;
+    const verdict = judgeFair(goal.question, a, b);
+    if (verdict === 'fair') return 'go';
+    return verdict === 'same' ? { lane: 1, change: goal.question.compare === 'floor' ? 'floor' : 'ramp' } : null;
+  }
+  if (goal.star === undefined) return null;
+  const ways = waysTo(goal.star, plan.mode === 'height' ? ['wood'] : FLOORS);
+  const cost = (s: Setup) => turns(HEIGHTS, a.height as (typeof HEIGHTS)[number], s.height as (typeof HEIGHTS)[number]) + turns(FLOORS, a.floor, s.floor);
+  const way = [...ways].sort((x, y) => cost(x) - cost(y))[0];
+  if (!way) return null;
+  if (a.height !== way.height) return { lane: 0, change: 'ramp' };
+  return a.floor !== way.floor ? { lane: 0, change: 'floor' } : 'go';
+}
