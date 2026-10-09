@@ -28,3 +28,16 @@ export function storyPuzzle(plan: StoryPlan, rng: Rng) {
   for (let i = 0; i < plan.distractors; i++) choices.push({ story: other, stage: i * 3 });
   return { story, sequence, fixed, choices: rng.shuffle(choices) };
 }
+
+/** The first slot of the strip that is still empty: pictures go in from the beginning of the story, one after another. */
+export const nextSlot = (sequence: readonly StoryCard[], placed: ReadonlySet<number>) => sequence.findIndex((_, i) => !placed.has(i));
+
+/**
+ * What a capable child does next: carry the picture that comes next in the story to the first empty slot. A picture from
+ * another story is never picked. The ghost finger follows this.
+ */
+export function nextPicture<C extends { card: StoryCard; placed: boolean }>(sequence: readonly StoryCard[], placed: ReadonlySet<number>, choices: readonly C[]): { choice: C; slot: number } | undefined {
+  const slot = nextSlot(sequence, placed);
+  const choice = slot < 0 ? undefined : choices.find((c) => !c.placed && sameCard(c.card, sequence[slot]));
+  return choice ? { choice, slot } : undefined;
+}

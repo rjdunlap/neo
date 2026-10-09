@@ -6,9 +6,9 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, tile, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { storyCard, storySticker } from './art';
-import { STORIES, STORY_PLANS, sameCard, storyPuzzle, type StoryCard } from './logic';
+import { nextPicture, nextSlot, STORIES, STORY_PLANS, sameCard, storyPuzzle, type StoryCard } from './logic';
 
 class StorySteps implements Game {
   readonly plan;
@@ -75,7 +75,7 @@ class StorySteps implements Game {
   }
   start() { this.instruction(); }
   private instruction() { void this.ctx.instruct('story.start', { story: STORIES[this.puzzle.story].name }); }
-  private next(): number { return this.puzzle.sequence.findIndex((_, i) => !this.placed.has(i)); }
+  private next(): number { return nextSlot(this.puzzle.sequence, this.placed); }
   private async readPlaced() {
     if (this.playing || !this.alive) return;
     this.playing = true;
@@ -119,6 +119,12 @@ class StorySteps implements Game {
     }
   }
   update(dt: number) { this.clock += dt; this.glow.alpha = this.hintGlow.alpha = 0.75 + 0.25 * Math.sin(this.clock * 3); }
+  /** The ghost finger on the how-to card: carry the picture that comes next in the story to the first empty slot. */
+  autotouch(): TouchIntent | null {
+    if (this.done || this.playing || !this.alive) return null;
+    const next = nextPicture(this.puzzle.sequence, this.placed, this.choices.filter((c) => !c.drag.dragging));
+    return next ? { drag: { on: next.choice.node }, to: { on: this.ctx.stage, x: this.slots[next.slot].x, y: this.slots[next.slot].y } } : null;
+  }
   destroy() { this.alive = false; this.choices.forEach((c) => c.drag.destroy()); }
 }
 export const storySteps: GameModule = {
@@ -126,7 +132,7 @@ export const storySteps: GameModule = {
   skills: ['sequencing', 'cause-and-effect', 'storytelling'], bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
   describeLevel: (l) => STORY_PLANS[Math.max(0, Math.min(STORY_PLANS.length - 1, l - 1))].name,
-  music: STYLES.paint, coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
+  music: STYLES.paint, touchDemo: true, coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
   offScreen: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',
   hubIcon: () => new WigglyIcon(storySticker()), sticker: () => storySticker(), create: (ctx) => new StorySteps(ctx),
 };

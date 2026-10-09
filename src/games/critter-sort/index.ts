@@ -11,8 +11,8 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { fits, makeRound, placeOf, planFor, RULE_WORDS, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { fits, HOOP_R, hoopCenters, makeRound, nextToSort, placeAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
@@ -20,7 +20,6 @@ const LEVELS: BandLevels = {
 };
 
 const SCALE = 0.32;
-const HOOP_R = 150;
 export const KIND_WORDS: Record<string, string> = { cow: 'cow', duck: 'duck', pig: 'pig', cat: 'cat', bear: 'bear', dog: 'dog', bunny: 'bunny' };
 
 export function hatArt(): Graphics {
@@ -99,14 +98,8 @@ class CritterSort implements Game {
     void this.next();
   }
 
-  /** Hoop centers: one hoop in the middle, two apart, or two overlapping. */
   private centers() {
-    const v = this.view;
-    const y = v.h * 0.42;
-    const n = this.round?.rules.length ?? 1;
-    if (n === 1) return [{ x: v.w / 2, y }];
-    const gap = this.plan.mode === 'venn' ? 210 : 360;
-    return [{ x: v.w / 2 - gap / 2, y }, { x: v.w / 2 + gap / 2, y }];
+    return hoopCenters(this.plan.mode, this.round?.rules.length ?? 1, this.view);
   }
 
   resize(v: View) {
@@ -146,18 +139,25 @@ class CritterSort implements Game {
     g.circle(this.hinting.node.x, this.hinting.node.y - 50, 70).stroke({ width: pulse, color: swatch.yellow.fill });
   }
 
+  /** The ghost finger on the how-to card: carry each critter that fits a rule to its part of the diagram, or tap the picture of the rule. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.round) return null;
+    if (this.plan.mode === 'guess') {
+      const option = this.options.find((o) => o.rule === ruleToTap(this.round));
+      return option ? { tap: { on: option.node } } : null;
+    }
+    const next = nextToSort(this.sorters.filter((s) => !s.drag?.dragging && !s.node.destroyed), this.round.rules);
+    if (!next?.who.drag) return null;
+    const spot = this.spotFor(next.place, 1);
+    return { drag: { on: next.who.node }, to: { on: this.ctx.stage, x: spot.x, y: spot.y } };
+  }
+
   destroy() {
     for (const s of this.sorters) s.drag?.destroy();
   }
 
-  /** A good spot inside a part of the diagram. */
   private spotFor(place: Place, k = 0) {
-    const cs = this.centers();
-    const jitter = (k % 3) * 64 - 64;
-    if (place === 'both') return { x: (cs[0].x + cs[1].x) / 2, y: cs[0].y + 40 + jitter * 0.6 };
-    const c = cs[place === 'right' ? 1 : 0];
-    const out = cs.length === 2 && this.plan.mode === 'venn' ? (place === 'right' ? 70 : -70) : 0;
-    return { x: c.x + out + jitter, y: c.y + 50 + (k > 2 ? -70 : 0) };
+    return spotFor(this.centers(), this.plan.mode, place, k);
   }
 
   private async next() {
@@ -220,17 +220,9 @@ class CritterSort implements Game {
     return this.ctx.instruct('sort.guess');
   }
 
-  /** Which part of the diagram a drop landed in. */
-  private placeAt(x: number, y: number): Place {
-    const cs = this.centers();
-    const inA = Math.hypot(x - cs[0].x, y - 50 - cs[0].y) < HOOP_R;
-    const inB = cs[1] ? Math.hypot(x - cs[1].x, y - 50 - cs[1].y) < HOOP_R : false;
-    return inA && inB ? 'both' : inA ? 'left' : inB ? 'right' : 'out';
-  }
-
   private drop(s: Sorter, x: number, y: number): boolean {
     if (this.busy || this.finished) return false;
-    const at = this.placeAt(x, y);
+    const at = placeAt(this.centers(), x, y);
     // Back on the grass: just put down again, never a mistake.
     if (at === 'out') return false;
     const right = placeOf(s.c, this.round.rules);
@@ -345,6 +337,7 @@ export const critterSort: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  touchDemo: true,
   coplayHint: 'Ask why each critter goes where it does: "Why is the dog in the middle?"',
   offScreen: 'Sort toys or socks with two hula hoops or loops of string: "red" and "soft". What goes in the middle?',
   hubIcon: () => new SortIcon(),

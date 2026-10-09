@@ -115,3 +115,53 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     return { rules, critters };
   }
 }
+
+/** How big a hoop is. */
+export const HOOP_R = 150;
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+/** Hoop centers: one hoop in the middle, two apart, or two overlapping. */
+export function hoopCenters(mode: SortMode, hoops: number, v: { w: number; h: number }): Point[] {
+  const y = v.h * 0.42;
+  if (hoops === 1) return [{ x: v.w / 2, y }];
+  const gap = mode === 'venn' ? 210 : 360;
+  return [{ x: v.w / 2 - gap / 2, y }, { x: v.w / 2 + gap / 2, y }];
+}
+
+/**
+ * Which part of the diagram a critter let go at (x, y) lands in. A critter's origin is its feet, 50 units below the
+ * middle of the body, so the hoops are measured from 50 above the drop.
+ */
+export function placeAt(centers: readonly Point[], x: number, y: number): Place {
+  const inA = Math.hypot(x - centers[0].x, y - 50 - centers[0].y) < HOOP_R;
+  const inB = centers[1] ? Math.hypot(x - centers[1].x, y - 50 - centers[1].y) < HOOP_R : false;
+  return inA && inB ? 'both' : inA ? 'left' : inB ? 'right' : 'out';
+}
+
+/** A good spot inside a part of the diagram for a critter's feet (`k` spreads several apart; 1 is the middle of the part). */
+export function spotFor(centers: readonly Point[], mode: SortMode, place: Place, k = 0): Point {
+  const jitter = (k % 3) * 64 - 64;
+  if (place === 'both') return { x: (centers[0].x + centers[1].x) / 2, y: centers[0].y + 40 + jitter * 0.6 };
+  const c = centers[place === 'right' ? 1 : 0];
+  const out = centers.length === 2 && mode === 'venn' ? (place === 'right' ? 70 : -70) : 0;
+  return { x: c.x + out + jitter, y: c.y + 50 + (k > 2 ? -70 : 0) };
+}
+
+/**
+ * What a capable child does next: carry the first critter still on the grass that belongs in a hoop to the middle of
+ * its part of the diagram. A critter that fits neither rule stays where it is, so it is never carried. The ghost finger follows this.
+ */
+export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[]): { who: S; place: Place } | undefined {
+  for (const who of sorters) {
+    const place = placeOf(who.c, [...rules]);
+    if (!who.placed && place !== 'out') return { who, place };
+  }
+  return undefined;
+}
+
+/** In the "what is the rule?" round, the picture the ghost finger taps. */
+export const ruleToTap = (round: SortRound): Rule => round.rules[0];

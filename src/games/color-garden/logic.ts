@@ -48,3 +48,18 @@ export function basketAt<B extends { x: number; y: number; w: number }>(baskets:
   }
   return best;
 }
+
+/** The ghost finger lets an item go this far above a basket's base, over the middle of its mouth (inside `REACH_UP`, and clear of its neighbours). */
+export const DROP_ABOVE = 60;
+
+/**
+ * What a capable child does next: take the first piece of fruit still on the tree to the basket of its own color.
+ * The ghost finger follows this, so a test can check that it sorts everything and never picks the wrong basket.
+ */
+export function nextToSort<I extends { color: ColorName }, B extends { color: ColorName }>(items: readonly I[], baskets: readonly B[]): { item: I; basket: B } | undefined {
+  for (const item of items) {
+    const basket = baskets.find((b) => b.color === item.color);
+    if (basket) return { item, basket };
+  }
+  return undefined;
+}
