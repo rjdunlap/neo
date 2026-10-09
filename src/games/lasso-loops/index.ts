@@ -10,8 +10,8 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { choices, gridFor, inside, makeRound, nearestGroup, planFor, scatter, type LassoPlan, type LassoRound, type Point } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { choices, demoLoop, gridFor, inside, makeRound, nearestGroup, planFor, scatter, type LassoPlan, type LassoRound, type Point } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 3 },
@@ -192,6 +192,22 @@ class LassoLoops implements Game {
   }
 
   update() {}
+
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.touch) return null;
+    if (this.pads.length) {
+      const right = this.pads.find((p) => p.value === this.round.answer);
+      return right ? { tap: { on: right }, pause: 0.12 } : null;
+    }
+    const free = this.free;
+    const jar = this.jar;
+    if (!jar || !free.length) return null;
+    const want = this.plan.mode === 'free' ? Math.ceil(free.length / (this.jars.length - this.index)) : jar.want;
+    const move = demoLoop(free.map((f) => ({ x: f.x, y: f.y })), want, 34);
+    if (!move) return null;
+    const spots = move.loop.map((p) => ({ on: this.sky, x: p.x, y: p.y }));
+    return { trace: spots[0], via: spots.slice(1), pause: 0.12 };
+  }
 
   destroy() {
     this.touch = null;
@@ -508,5 +524,6 @@ export const lassoLoops: GameModule = {
   offScreen: 'Bundle straws or sticks into tens with rubber bands, then count the bundles and the loose ones.',
   hubIcon: () => new LassoIcon(),
   sticker,
+  touchDemo: true,
   create: (ctx) => new LassoLoops(ctx),
 };

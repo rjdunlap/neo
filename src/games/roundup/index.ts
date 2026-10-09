@@ -11,8 +11,8 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { enter, fleeSpeed, inRect, makeHerd, planFor, PLURAL, ringBell, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { enter, fleeSpeed, inRect, makeHerd, planFor, PLURAL, ringBell, shooPoint, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -75,6 +75,8 @@ class Roundup implements Game {
   private readonly world = new Container();
   private readonly touch = new Container();
   private readonly fingerRing = new Graphics();
+  /** An invisible moving target keeps the demonstration finger behind the animal it is shooing. */
+  private readonly autoSpot = new Container();
   private view: View;
   private pointer: number | null = null;
   private clock = 0;
@@ -84,13 +86,15 @@ class Roundup implements Game {
   private hinting = false;
   private helped = false;
   private placed = false;
+  private autoAnimal: Animal | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.herd = makeHerd(this.plan, ctx.rng);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xb5e39c, 0x9edb86], horizon: 0.26, clouds: 2, sun: true, seed: 72 }, ctx.view);
-    ctx.stage.addChild(this.backdrop, this.penLayer, this.world, this.signLayer, this.fingerRing, this.touch);
+    this.autoSpot.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.penLayer, this.world, this.signLayer, this.fingerRing, this.autoSpot, this.touch);
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => void this.ring());
     this.bell.visible = usesBell(this.plan);
     ctx.stage.addChild(this.bell);
@@ -237,6 +241,7 @@ class Roundup implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    this.placeAutoSpot();
     const f = this.field();
     for (const a of this.animals) {
       if (a.state === 'loose') this.roam(a, dt, f);
@@ -260,6 +265,33 @@ class Roundup implements Game {
       }
     }
     this.drawGlows();
+  }
+
+  private placeAutoSpot() {
+    const a = this.autoAnimal;
+    if (!a || a.state !== 'loose') return;
+    const i = this.needs(a);
+    if (i < 0) return;
+    const r = this.pens[i].rect;
+    const p = shooPoint({ x: a.critter.x, y: a.critter.y - 30 }, { x: r.x + 20, y: r.y + r.h / 2 - 30 });
+    this.autoSpot.position.set(p.x, p.y);
+  }
+
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const animal = this.animals.find((a) => a.state === 'loose' && this.needs(a) >= 0);
+    if (this.plan.mode === 'tap') return animal ? { tap: { on: animal.critter, y: -120 }, pause: 0.1 } : null;
+    if (animal) {
+      this.autoAnimal = animal;
+      this.placeAutoSpot();
+      const spot = { on: this.autoSpot };
+      return { trace: spot, via: [spot, spot, spot, spot, spot], receiver: this.touch, pause: 0.05 };
+    }
+    this.autoAnimal = null;
+    if (usesBell(this.plan) && ringBell(this.herd, this.pens.map((p) => p.inside)).every((r) => !r.extra && !r.short)) {
+      return { tap: { on: this.bell }, pause: 0.1 };
+    }
+    return null;
   }
 
   /** The pen an animal belongs in that is still short of animals, or -1. */
@@ -591,5 +623,6 @@ export const roundup: GameModule = {
   offScreen: 'Herd stuffed animals into a laundry-basket "pen", counting each one in.',
   hubIcon: () => new RoundupIcon(),
   sticker,
+  touchDemo: true,
   create: (ctx) => new Roundup(ctx),
 };

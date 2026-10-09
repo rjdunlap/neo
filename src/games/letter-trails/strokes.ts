@@ -41,6 +41,29 @@ export function sampleStroke(stroke: Stroke, spacing = 0.025): Point[] {
   return points;
 }
 
+/**
+ * The corners a demonstration finger must visit to follow a sampled stroke. Points along one
+ * straight segment collapse to its end, while every real turn stays in the route.
+ */
+export function traceWaypoints(points: readonly Point[]): Point[] {
+  if (points.length <= 2) return [...points];
+  const out: Point[] = [points[0]];
+  let ax = points[1][0] - points[0][0];
+  let ay = points[1][1] - points[0][1];
+  let al = Math.hypot(ax, ay) || 1;
+  ax /= al; ay /= al;
+  for (let i = 1; i < points.length - 1; i++) {
+    let bx = points[i + 1][0] - points[i][0];
+    let by = points[i + 1][1] - points[i][1];
+    const bl = Math.hypot(bx, by) || 1;
+    bx /= bl; by /= bl;
+    if (Math.hypot(ax - bx, ay - by) > 0.01) out.push(points[i]);
+    ax = bx; ay = by; al = bl;
+  }
+  out.push(points.at(-1)!);
+  return out;
+}
+
 function segmentDistance(p: Point, a: Point, b: Point): number {
   const dx = b[0] - a[0], dy = b[1] - a[1];
   const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy || 1)));

@@ -126,3 +126,38 @@ export function nearestGroup(points: readonly Point[], free: readonly number[], 
   const seed = [...free].sort((a, b) => points[a].x - points[b].x || points[a].y - points[b].y)[0];
   return [...free].sort((a, b) => Math.hypot(points[a].x - points[seed].x, points[a].y - points[seed].y) - Math.hypot(points[b].x - points[seed].x, points[b].y - points[seed].y)).slice(0, n);
 }
+
+export interface DemoLoop {
+  indices: number[];
+  loop: Point[];
+}
+
+/**
+ * Find an axis-aligned loop around exactly `n` fireflies. The scatter uses one firefly per
+ * cell, so a consecutive run from either axis normally leaves a generous lane for the finger.
+ */
+export function demoLoop(points: readonly Point[], n: number, padding = 0.02): DemoLoop | null {
+  if (n < 1 || n > points.length) return null;
+  const all = points.map((_, i) => i);
+  const candidates: number[][] = [];
+  const addWindows = (order: number[]) => {
+    for (let i = 0; i + n <= order.length; i++) candidates.push(order.slice(i, i + n));
+  };
+  addWindows([...all].sort((a, b) => points[a].x - points[b].x || points[a].y - points[b].y));
+  addWindows([...all].sort((a, b) => points[a].y - points[b].y || points[a].x - points[b].x));
+  for (const seed of all) {
+    candidates.push([...all].sort((a, b) => Math.hypot(points[a].x - points[seed].x, points[a].y - points[seed].y) - Math.hypot(points[b].x - points[seed].x, points[b].y - points[seed].y)).slice(0, n));
+  }
+  for (const scale of [1, 0.75, 0.5, 0.25, 0.1]) for (const indices of candidates) {
+    const chosen = indices.map((i) => points[i]);
+    const pad = padding * scale;
+    const x0 = Math.min(...chosen.map((p) => p.x)) - pad;
+    const x1 = Math.max(...chosen.map((p) => p.x)) + pad;
+    const y0 = Math.min(...chosen.map((p) => p.y)) - pad;
+    const y1 = Math.max(...chosen.map((p) => p.y)) + pad;
+    const loop = [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+    const got = all.filter((i) => inside(loop, points[i]));
+    if (got.length === n && indices.every((i) => got.includes(i))) return { indices: got, loop };
+  }
+  return null;
+}

@@ -11,8 +11,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { EVENTS, hourOf, makeTasks, minuteChoices, planFor, spoken, timeOf, type ClockPlan, type ClockTask } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { demoAction, EVENTS, hourOf, makeTasks, minuteChoices, planFor, spoken, timeOf, type ClockPlan, type ClockTask } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
@@ -159,6 +159,21 @@ class ClockTower implements Game {
       const right = this.choices.find((c) => this.isRight(c.id));
       if (right) g.roundRect(right.node.x - 78, right.node.y - 72, 156, 144, 26).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
     }
+  }
+
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.grab || !this.task) return null;
+    const action = demoAction(this.plan.mode, this.hour, this.minute, this.task);
+    if (action.kind === 'pick') {
+      const choice = this.choices.find((c) => c.id === action.id);
+      return choice ? { tap: { on: choice.node }, pause: 0.12 } : null;
+    }
+    if (action.kind === 'check') return { tap: { on: this.bell }, pause: 0.12 };
+    const radius = action.kind === 'minute' ? R * 0.82 : R * 0.5;
+    const fromTurns = action.kind === 'minute' ? this.minute / 60 : ((this.hour % 12) + this.minute / 60) / 12;
+    const toTurns = action.kind === 'minute' ? action.minute / 60 : ((action.hour % 12) + this.minute / 60) / 12;
+    const spot = (turns: number) => ({ on: this.face, x: Math.sin(turns * Math.PI * 2) * radius, y: -Math.cos(turns * Math.PI * 2) * radius });
+    return { trace: spot(fromTurns), via: [spot(toTurns)], pause: 0.12 };
   }
 
   destroy() {
@@ -382,5 +397,6 @@ export const clockTower: GameModule = {
   offScreen: 'Make a paper-plate clock with a split pin and set it for bedtime, bath time and breakfast.',
   hubIcon: () => new ClockIcon(),
   sticker,
+  touchDemo: true,
   create: (ctx) => new ClockTower(ctx),
 };

@@ -8,8 +8,8 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { collapse, DOT_COLORS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotPlan, type Grid } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { collapse, demoMove, DOT_COLORS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotPlan, type Grid } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -127,6 +127,16 @@ class DotLink implements Game {
       g.scale.x += (k - g.scale.x) * Math.min(1, dt * 12);
       g.scale.y = g.scale.x;
     }));
+  }
+
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.path.length) return null;
+    const move = demoMove(this.plan, this.grid, this.target);
+    if (!move) return null;
+    const spots = move.map((cell) => ({ on: this.touch, ...this.pos(cell) }));
+    return move.length === 1
+      ? { tap: spots[0], pause: 0.12 }
+      : { trace: spots[0], via: spots.slice(1), pause: 0.12 };
   }
 
   destroy() {
@@ -323,5 +333,6 @@ export const dotLink: GameModule = {
   offScreen: 'Line up colored blocks or buttons, then count how many of each color.',
   hubIcon: () => new DotsIcon(),
   sticker,
+  touchDemo: true,
   create: (ctx) => new DotLink(ctx),
 };

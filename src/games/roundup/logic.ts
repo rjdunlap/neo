@@ -99,6 +99,14 @@ export interface Rect {
 
 export const inRect = (r: Rect, x: number, y: number) => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h;
 
+/** Put a steering finger behind an animal, opposite the gate it should move toward. */
+export function shooPoint(animal: { x: number; y: number }, gate: { x: number; y: number }, distance = 105): { x: number; y: number } {
+  const dx = gate.x - animal.x;
+  const dy = gate.y - animal.y;
+  const d = Math.hypot(dx, dy) || 1;
+  return { x: animal.x - (dx / d) * distance, y: animal.y - (dy / d) * distance };
+}
+
 /** Pens open on their left side, across the middle of that wall. */
 export function throughGate(r: Rect, from: { x: number; y: number }, to: { x: number; y: number }, gate = 0.6): boolean {
   if (!(from.x <= r.x && to.x > r.x)) return false;
