@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { gameById } from '../games/registry';
 import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
 import { ALL_THINGS, floats } from '../games/sink-float/logic';
-import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen } from './journal';
+import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen, sourceText } from './journal';
 import { SCRIPT } from './voice-script';
 
 describe('the entries', () => {
@@ -47,6 +47,26 @@ describe('the entries', () => {
   it('lists the floaters before the sinkers', () => {
     const order = entriesOf('sink-float').map((e) => floats(e.key as (typeof ALL_THINGS)[number]));
     expect(order.indexOf(false)).toBeGreaterThan(order.lastIndexOf(true));
+  });
+
+  it('says exactly what to do to find an entry, and where a found one came from', () => {
+    for (const e of JOURNAL) {
+      const find = sourceText(e, e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack', false);
+      const found = sourceText(e, e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack', true);
+      expect(find).toContain(e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack');
+      expect(found).toContain(e.game === 'sink-float' ? 'Sink or Float' : 'Animal Snack');
+      expect(find.toLowerCase()).toContain(e.key);
+      expect(found.toLowerCase()).toContain(e.key);
+      expect(find).not.toMatch(/Not found yet/);
+      expect(found).toMatch(/^Found in .+ when the /);
+      if (e.game === 'sink-float') {
+        expect(find).toContain('water');
+        expect(found).toContain('water');
+      } else {
+        expect(find).toContain(FAVORITE[e.key as keyof typeof FAVORITE]!);
+        expect(found).toContain(FAVORITE[e.key as keyof typeof FAVORITE]!);
+      }
+    }
   });
 });
 

@@ -8,7 +8,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Unit tests, typecheck, build | 2026-10-08 (547 tests) | Treehouse take-down entry | Run with every code change |
+| Unit tests, typecheck, build | 2026-10-08 (548 tests) | Journal source-detail entry | Run with every code change |
 | `npm run test:offline` | 2026-10-08 | Treehouse take-down entry | Opens and reloads the treehouse, both creation kinds and the journal; does not open couch play |
 | `smoke` | 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08) | Clap the Syllables, Harbor Rush and how-to card entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `world` | 2026-10-08, after the demonstration cards (2026-10-07: all 72 games in every band and both orientations) | How-to card entries and release check entry | About five and a half minutes |
@@ -16,7 +16,8 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `room` | 2026-10-07 | Discovery journal entry | |
 | `howto` | 2026-10-08, all 72 games, landscape and portrait, with the demonstrations | How-to card with demonstrations entry | About three minutes |
 | `creations` | 2026-10-08 | Treehouse take-down entry | |
-| `journal`, `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
+| `journal` | 2026-10-08 | Journal source-detail entry | Real play of both source games, reload and portrait |
+| `clap`, `machines` | 2026-10-07 | Their own entries | `machines` covers Chain Reaction's first and top levels only |
 | `couch` | 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
 | `couchgames` | 2026-10-08, Pond Conga filtered (2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered) | Child's island, couch Settings, Just me, Island Bridges and Pond Conga entries | Peg Garden's bot needed one retry (its known flake) |
 | `couchcourse` | 2026-10-08, with twelve courses | Island Bridges entry | About four to seven minutes |
@@ -44,6 +45,15 @@ Never established by any of these: physical iPad touch, device speech, first-tou
 ## Entries, newest first
 
 Each entry is about six lines: what changed, which checks ran, what was not run or is still open.
+
+### Exact source actions in the discovery journal (2026-10-08)
+
+What changed: every one of the journal's sixteen cards now names the exact in-game action that reveals it instead of only naming its game. An unfound duck says to put the duck into the water in Sink or Float; once found, the same strip remembers that it was found when the duck went into the water. Animal Snack entries likewise name the animal and its own favorite food. These are fixed entry facts, so the existing bounded `{ found, seen }` save needs no new field or migration.
+
+- `npm run typecheck`, all unit tests (109 files, 548 tests) and a production build passed. The new table test checks every source line names its thing or animal, the right game, and the relevant water or favorite food.
+- `BROWSER_SUITE=journal` passed with real Sink or Float and Animal Snack rounds: an unfound card showed its exact next action, a found card remembered that action, the green arrow still opened the right game, discoveries and twinkles still survived reload, and there were no page errors.
+- Reviewed the found Sink or Float and Animal Snack pages and the portrait journal screenshot; the longer source line stays inside the detail strip and clear of the green arrow.
+- Not run: `room` (the journal route is covered by `journal`), the production offline check (no persistence, asset or navigation behavior changed), unrelated game, world or couch suites. Still open: journal entries from more games, notes, creation entries, and launching directly at an entry's exact level or request.
 
 ### Treehouse creation take-down and offline reloads (2026-10-08)
 

@@ -6335,16 +6335,20 @@ async function journalPlay() {
   const view = () => page.evaluate(() => ({ page: neo.scene.page, found: neo.scene.cards.filter((c) => c.found).length, twinkles: neo.scene.cards.filter((c) => c.sparkle).length, seen: kit.store.data.journal.seen }));
   assert.deepEqual(await view(), { page: 0, found: things.length, twinkles: things.length, seen: things.length });
   await screenshot('journal-page-one');
-  // A card she has not found says where to find it; a found card says what she saw.
-  const detail = () => page.evaluate(() => neo.scene.detail.children[1].text);
+  // A card she has not found names the exact action; a found card says what she saw and how she found it.
+  const detail = () => page.evaluate(() => ({ observation: neo.scene.detail.children[1].text, source: neo.scene.detail.children[2].text }));
   await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => !c.found && c.node.visible).node)); await page.waitForTimeout(300);
-  assert.match(await detail(), /Not found yet.*Sink or Float/);
+  assert.deepEqual(await detail(), { observation: 'Not found yet.', source: await page.evaluate(() => {
+    const e = neo.scene.selected;
+    return `In Sink or Float, Put the ${e.key} into the water.`;
+  }) });
   await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.found && c.node.visible).node)); await page.waitForTimeout(300);
-  assert.match(await detail(), /float|sink/i);
+  assert.match((await detail()).observation, /float|sink/i);
+  assert.match((await detail()).source, /^Found in Sink or Float when the .* went into the water\.$/);
   // Page two holds the animals; the green arrow goes to the game that shows the chosen one, at a band that game plays.
   await tap('neo.scene.next'); await page.waitForTimeout(400);
   await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.entry.id === 'animal-snack:cow').node)); await page.waitForTimeout(300);
-  assert.match(await detail(), /Animal Snack/);
+  assert.deepEqual(await detail(), { observation: 'Not found yet.', source: 'In Animal Snack, Let the cow eat hay.' });
   await page.evaluate(() => { kit.store.data.profile.band = 'school'; });
   await tap('neo.scene.play'); await scene('GameScene');
   assert.deepEqual(await page.evaluate(() => [neo.scene.mod.id, neo.scene.band]), ['animal-snack', 'preschool']);
@@ -6364,9 +6368,10 @@ async function journalPlay() {
   await page.evaluate(() => neo.go.journal()); await scene('JournalScene'); await page.waitForTimeout(500);
   assert.deepEqual(await view(), { page: 1, found: things.length + friends.length, twinkles: friends.length, seen: things.length + friends.length });
   await screenshot('journal-page-two');
-  assert.match(await detail(), /eats|chews/, 'the strip starts on the first new thing');
+  assert.match((await detail()).observation, /eats|chews/, 'the strip starts on the first new thing');
   await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.found && c.entry.game === 'animal-snack').node)); await page.waitForTimeout(300);
-  assert.match(await detail(), /eats|chews/);
+  assert.match((await detail()).observation, /eats|chews/);
+  assert.match((await detail()).source, /^Found in Animal Snack when the .* ate .+\.$/);
   // A reload keeps everything and nothing twinkles any more.
   await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(400);
   await page.reload(); await ready();
@@ -6381,7 +6386,7 @@ async function journalPlay() {
   assert.ok(await page.evaluate(() => { const bs = [neo.scene.journalButton, neo.scene.flip, neo.scene.tidyButton].map((b) => b.getBounds()); return bs.every((a, i) => bs.every((b, j) => i === j || a.x + a.width <= b.x || b.x + b.width <= a.x)); }), 'the buttons do not overlap');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
-  log('Journal: a Sink or Float round fills it with exactly what she watched, and an Animal Snack round with the animals she saw eat; the end of the round shows what is new and gives one sticker; the treehouse button twinkles until she opens the journal; an unfound card says where to find it, a found card says what she saw, the green arrow opens the game at a band it plays; the journal opens on the page with the new things; nothing is found twice; a reload keeps it all; portrait stays clear');
+  log('Journal: a Sink or Float round fills it with exactly what she watched, and an Animal Snack round with the animals she saw eat; the end of the round shows what is new and gives one sticker; the treehouse button twinkles until she opens the journal; every unfound card names the exact revealing action and every found card remembers it, while the green arrow opens the game at a band it plays; the journal opens on the page with the new things; nothing is found twice; a reload keeps it all; portrait stays clear');
 }
 
 /** Clap the Syllables: clap along, clap by yourself (a wrong count, a hint), sort by claps (wrong drops, a hint), match claps to a picture. */
