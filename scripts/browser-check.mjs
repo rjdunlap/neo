@@ -2643,7 +2643,7 @@ async function woodsBatch() {
     log(`Market Stall ${level} (${plan.mode}): coins tapped down and back, too much, hint coins, ${plan.mode === 'ways' ? 'a second way, ' : ''}saved score and sticker passed`);
   }
 
-  if (!only || only === 'grow') for (let level = fromLevel; level <= 5; level++) {
+  if (!only || only === 'grow') for (let level = fromLevel; level <= 7; level++) {
     await launch('garden-grow', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, requests: neo.scene.game.requests.length }));
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); };
@@ -2661,6 +2661,7 @@ async function woodsBatch() {
       await idle(n);
       const want = await page.evaluate(() => Object.entries(neo.scene.game.request.want));
       const right = want.flatMap(([c, k]) => Array(k).fill(c));
+      if (level === 7 && n === 0) await screenshot('garden-grow-7');
       if (plan.mode === 'color') {
         if (n === 0) {
           const other = await page.evaluate((w) => neo.scene.game.packets.find((p) => p.color !== w).color, want[0][0]);
@@ -2672,7 +2673,11 @@ async function woodsBatch() {
       }
       if (n === 0) {
         // One seed short, or the right number in the wrong colors: two gentle misses, then glowing beds.
-        const wrong = plan.mode === 'count' ? right.slice(1) : right.map(() => right[0]);
+        const wrong = plan.mode === 'count' || plan.mode === 'more'
+          ? right.slice(1)
+          : plan.mode === 'array'
+            ? [await page.evaluate((c) => neo.scene.game.packets.find((p) => p.color !== c).color, right[0]), ...right.slice(1)]
+            : right.map(() => right[0]);
         for (const c of wrong) await packet(c);
         await cloud(); await cloud();
         assert.deepEqual(await counts(), [2, 1]);
