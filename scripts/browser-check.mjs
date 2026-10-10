@@ -2319,7 +2319,7 @@ async function creativeBatch() {
     await tap('neo.scene.game.finish');await finished('stamp-studio');assert.deepEqual(await score('stamp-studio'),[0,0]);
     await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, saved round and sticker passed`);
   }
-  if (!only || only === 'kitchen') for(let level=fromLevel;level<=8;level++) {
+  if (!only || only === 'kitchen') for(let level=fromLevel;level<=9;level++) {
     await launch('pet-kitchen',level);
     if(level===4||level===6){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await page.evaluate(async()=>{

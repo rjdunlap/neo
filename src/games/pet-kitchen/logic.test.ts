@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, PLANS, plateAt, PLATE_REACH, recipe, servesFraction } from './logic';
+import { doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
    expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
@@ -66,4 +66,11 @@ it('the halving recipe is always whole-fruit exact and its hint repairs either d
    expect(halved(base,made)).toBe(true);
    made[0]++;expect(halfIngredientHint(base,made)).toBe(0);expect(halved(base,made)).toBe(false);
  }
+});
+it('level 9 cuts one pizza into exactly three equal shares for three friends',()=>{
+ const plan=PLANS[8]; expect(plan.mode).toBe('share'); expect(plan.wholes).toBe(1); expect(plan.friends).toBe(3); expect(plan.cuts).toEqual([3]);
+ const cut=fairCut(plan); expect(cut).toBe(3);
+ const plates=Array(plan.friends).fill(0); for(let i=0;i<plan.wholes*cut!;i++) plates[nextPlate(plates)]++;
+ expect(plates).toEqual([1,1,1]); expect(fair(plates,3)).toBe(true);
+ expect(planFor(9)).toBe(plan);
 });

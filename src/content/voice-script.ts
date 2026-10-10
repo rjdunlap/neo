@@ -278,6 +278,8 @@ export const SCRIPT = {
   'kitchen.fraction': ['Our friend asks for {amount} of the sandwich. Cut it into equal pieces, then give them that much.'],
   'kitchen.fraction-share': ['Give our friend {amount}. Two quarters make one half. Tap the green arrow to serve.'],
   'kitchen.fraction-hint': ['Count the equal pieces on the plate. Does that make the amount our friend asked for?'],
+  'kitchen.thirds-cut': ['One pizza for three friends. Cut it into three equal slices.'],
+  'kitchen.thirds-share': ['Give one equal pizza slice to each friend. Tap the green arrow to serve.'],
   'kitchen.half': ['This salad is for one friend. Make half the recipe: put in one fruit for every two fruits on the card.'],
   'kitchen.half-hint': ['For every two fruits on the card, put one in the bowl. The back arrow takes the last one out.'],
   'kitchen.undo': ['The bowl has lots of fruit. Use the back arrow to take the last one out.'],

@@ -637,7 +637,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Duck Pond (L–S · 10) | Ponds at night, frogs in place of ducks | R2: 11 *hiding ducks*. **12, Doubles:** the same number of ducks on each side of the bridge, so how many in all? | — |
 | Monster Munch (L–S · 8) | New monsters and foods | — (round two: leave) | — |
 | Little Helpers (L–S · 6) | Fruits and trees | — (audit: leave) | — |
-| Pet Kitchen (T–S · 8) | Round wholes (a pizza, a pie) as well as the sandwich | **9, Thirds:** a pizza cut into three equal slices for three friends, a new fraction | — |
+| Pet Kitchen (T–S · 9) | Round wholes (a pizza, a pie) as well as the sandwich | **Built 2026-10-10:** level 9, *Thirds*: cut one pizza into three equal slices and share one with each friend | — |
 | Frog Hop (P–S · 6) | Lines in new places (stepping stones, clouds) | R2: 7 *hop to ten first*. **8, Back over ten:** 13 − 5, hopping back to 10 first | — |
 | Picture Graph (K–S · 6) | More critter kinds and meadows | **7, Tally marks:** count by making tallies in fives, then build the bars | Preschool, at level 1 (two bars) |
 | Lasso Loops (P–S · 5) | Fireflies in new skies | — (audit: leave) | — |
@@ -707,7 +707,7 @@ The couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, W
 
 #### What this adds up to
 
-- **37 new levels on top**, beyond the ones from the first two rounds; four are built (Clap the Syllables 5, Garden Grow 6–7 and Pixel Pictures 6), leaving 33.
+- **37 new levels on top**, beyond the ones from the first two rounds; five are built (Clap the Syllables 5, Garden Grow 6–7, Pixel Pictures 6 and Pet Kitchen 9), leaving 32.
 - **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room). Animal Snack's planned levels 6–7 are replaced by its [deep dive](deep-dives/animal-snack.md) (6–8 and a school window with 9–10).
 - **Thirteen younger-band openings** that need no new level (kind C).
 - **A content pass for nearly every game.**
