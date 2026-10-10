@@ -27,6 +27,14 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Frog Hop deep dive
+
+- Wrote `docs/deep-dives/frog-hop.md` and updated the tracker (top level 6 → 7, designed), the IDEAS round-two and round-three rows for Frog Hop, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check, plus one-line ownership pointers in the Bubble Pop and Duck Pond deep dives. No code, tests or scripts changed.
+- Research: opened and read the Common Core pages for K.CC, 1.OA, 1.NBT, 2.NBT and 2.MD, Siegler's 2009 board-game paper (text extracted with `pdftotext`), the Math Learning Center's Number Line page, the *Teaching Number Lines* App Store listing, *Off Frog*, *Frog Jump*, and the Wikipedia pages for *Snakes and ladders*, *Five Little Speckled Frogs* and *Frogger*, and the Oak National Academy bridging-through-ten lesson. *Tiggly Addventure*, Ramani, Siegler and Hitti 2012, the Rhodes empty-number-line handbook, the BSRLM counting-strategy paper and the Ohio State tick-mark paper (403) are search summaries only, marked so in the write-up; 1.OA.B.4's page 404ed and is cited from memory.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
+- Read from the code, not played: the frog counts hops but never says the numerals it lands on, level 7 hides the sum and tells the split, a pad tapped on a card question is a bare squeak, wrong-way and one-off misses get the same line, level 7 can count two hints per question, `LEVELS.school.max` is hard-coded at 7, and the sticker and icon share `Pad` and `frogArt` with no pinned test. A suspected portrait overflow of the pad row was checked against `computeView` and is not real.
+- Open: every proposed level and entry is unbuilt; level 7 still has no recorded browser play; tens words, the open line and estimating are unchecked on a device or with a child.
+
 ## 2026-10-10 — Duck Pond deep dive
 
 - Wrote `docs/deep-dives/duck-pond.md` and updated the tracker, the IDEAS rows for Duck Pond (including Count the Peekers and the Kacheek Seek note), the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check, plus a one-line pointer in the Bubble Pop deep dive's evens-and-odds sketch. No code, tests or scripts changed.

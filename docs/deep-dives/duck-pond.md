@@ -75,7 +75,7 @@ The research makes three points. **First, the ladder lets her be right without c
 
 **Overlaps, and who owns what** (the other write-ups agree).
 
-- **Frog Hop** owns the number line and *crossing ten* (8 + 5 by hopping to 10 first). Duck Pond's teens are *composition* (ten ducks and four more are fourteen), not a hop across ten, and its pond never shows a line.
+- **Frog Hop** owns the number line and *crossing ten* (8 + 5 by hopping to 10 first; its [deep dive](frog-hop.md) adds back over ten, a free stop at ten and counting up to take away). Duck Pond's teens are *composition* (ten ducks and four more are fourteen), not a hop across ten, and its pond never shows a line.
 - **Bubble Pop** owns count sequences and counting back as a skill (its levels 12–14). Duck Pond's "Bye-bye ducks" is a song, not a question.
 - **Picture Graph** owns "how many more than" read from a graph. Duck Pond's comparison (below level 1, "Which pond has more?") is *more, fewer or the same* by matching one to one, not the difference. A "how many more" level was considered and left out for that reason.
 - **Little Helpers** owns equal groups (2 × 3); **Monster Munch** owns sharing and leftovers; **Garden Grow** owns arrays; **Market Stall** owns coins. Doubles here is two equal parts of a whole; it stops at the double and the near double.
