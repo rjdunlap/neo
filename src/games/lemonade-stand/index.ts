@@ -15,11 +15,11 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { coinArt } from '../market-stall';
 import { boardArt, bulbArt, cupArt, eventIcon, forecastIcon, miniStand, pitcherArt } from './art';
 import {
-  affordable, BATCHES, batchCost, helps, insight, makeWeek, planFor, priceChoice, rating, sellDay, settle, START_PURSE, WEATHER_WORD,
+  affordable, BATCHES, batchCost, forecastChoice, helps, insight, makeWeek, planFor, priceChoice, rating, sellDay, settle, START_PURSE, WEATHER_WORD,
   type Day, type Help, type Insight, type Row, type StandPlan,
 } from './logic';
 
@@ -382,6 +382,18 @@ class LemonadeStand implements Game {
         g.roundRect(this.m.panelX - 2, 40 + HEAD_H + i * ROW_H - 2, this.m.panelW + 4, ROW_H + 4, 20).stroke({ width: pulse, color: swatch.yellow.fill });
       }
     }
+  }
+
+  /**
+   * The ghost finger: read the sign, then tap the batch and the price a sensible child picks from it, then OPEN. It never
+   * asks the lightbulb, since asking counts as a hint, and it only uses what the sign shows.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.index < 0 || this.index >= this.week.length) return null;
+    const want = forecastChoice(this.plan, this.week[this.index], this.purse);
+    if (this.made !== want.made) return { tap: { on: this.cards.find((c) => c.n === want.made)!.node } };
+    if (this.price !== want.price) return { tap: { on: this.coins.find((c) => c.value === want.price)!.node } };
+    return { tap: { on: this.open } };
   }
 
   destroy() {
@@ -820,6 +832,7 @@ export const lemonadeStand: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
+  touchDemo: true,
   offScreen: 'Run a real juice stand at a picnic: guess how many cups to pour from the weather, then count what is left and write it in a table.',
   hubIcon: () => new StandIcon(),
   sticker,

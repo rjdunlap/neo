@@ -250,3 +250,16 @@ export function insight(plan: StandPlan, rows: Row[]): Insight {
   if (right) return { kind: 'right', rows: [right.day], vars: { day: right.day + 1, weather: WEATHER_WORD[right.weather], made: right.made, sold: right.sold } };
   return { kind: 'plain', rows: [], vars: {} };
 }
+
+/** What the sign shows before the stand opens: the weather and the event, never the day's noise. */
+export type Forecast = Pick<Day, 'weather' | 'event'>;
+
+/**
+ * The batch and price a sensible child picks from the sign alone (the demonstration's choice). It takes the middle of
+ * the day's unseen 0 to 2 extra friends, so it cannot read the future, and then the best choice for that crowd, which
+ * on the purse level never costs more than it earns.
+ */
+export function forecastChoice(plan: StandPlan, forecast: Forecast, purse = START_PURSE): { made: number; price: number } {
+  const { made, price } = bestChoice(plan, { ...forecast, noise: 1 }, 0, purse);
+  return { made, price };
+}
