@@ -511,7 +511,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
 | **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
-| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them |
+| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. Goodnight Room now has one: the 2026-10-10 quantity direction ([deep dive](deep-dives/goodnight-room.md)) |
 
 ### Sketch for the next one to build
 
