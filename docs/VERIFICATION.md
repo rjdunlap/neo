@@ -52,6 +52,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### 2026-10-10 · Clock Tower level 7 (five-minute times)
+
+Added `five` mode to `minuteChoices`/`makeTasks`, helper numbers on the face, how-to lines. Ran: typecheck, clock-tower/content/registry unit tests (pass), `fingerdemo` filtered to clock-tower (levels 1 and 7 pass, 20 s and 24 s). Not run: a portrait screenshot, an iPad, spoken "3:25" on device speech.
+
 ### Tangram Town: picture pools and the deep dive (2026-10-10)
 
 What changed: each level draws one of 2–5 pictures (11 in all) from a pool; `logic.ts` gained `PICTURES`, `buildFor` and a pool per level plan. The rest of the game is unchanged. The deep dive is [tangram-town.md](deep-dives/tangram-town.md).

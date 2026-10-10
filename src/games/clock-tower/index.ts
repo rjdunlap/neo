@@ -16,7 +16,7 @@ import { demoAction, EVENTS, hourOf, makeTasks, minuteChoices, planFor, spoken, 
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 6 },
+  school: { min: 2, max: 7 },
 };
 
 const R = 200;
@@ -118,6 +118,16 @@ class ClockTower implements Game {
       g.moveTo(Math.sin(a) * inner, -Math.cos(a) * inner).lineTo(Math.sin(a) * (R - 4), -Math.cos(a) * (R - 4)).stroke({ width: m % 5 ? 2 : 5, color: ink, alpha: m % 5 ? 0.4 : 0.8 });
     }
     this.face.addChild(g);
+    if (this.plan.mode === 'five') {
+      // Counting by fives: small helper numbers just outside the rim.
+      for (let m = 5; m <= 60; m += 5) {
+        const a = (m / 60) * Math.PI * 2;
+        const n = label(String(m), 24, ink);
+        n.alpha = 0.6;
+        n.position.set(Math.sin(a) * (R + 40), -Math.cos(a) * (R + 40));
+        this.face.addChild(n);
+      }
+    }
     for (let h = 1; h <= 12; h++) {
       const a = (h / 12) * Math.PI * 2;
       const n = label(String(h), 38, ink);

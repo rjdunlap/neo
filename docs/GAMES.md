@@ -164,7 +164,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Clock Tower
 
-*pre-K–school · after teaching clocks and JumpStart's clock activities.* Drag the clock's hands; the outer ring takes the long hand and the middle the short one, and each snaps to the marks the level uses. The short hand slides between numbers as the minutes pass, like real gears. Levels: the hour hand alone, o'clock, half past, quarter past and to, reading the clock to pick a daily-routine picture, and one hour later. A wrong time is read back aloud ("The clock says half past 4. We want 3 o'clock"); two misses show faint yellow target hands. On the hour, the tower chimes the hour.
+*pre-K–school · after teaching clocks and JumpStart's clock activities.* Drag the clock's hands; the outer ring takes the long hand and the middle the short one, and each snaps to the marks the level uses. The short hand slides between numbers as the minutes pass, like real gears. Levels: the hour hand alone, o'clock, half past, quarter past and to, reading the clock to pick a daily-routine picture, one hour later, and (school, level 7) five-minute times such as 3:25, counting by fives with small helper numbers around the rim. A wrong time is read back aloud ("The clock says half past 4. We want 3 o'clock"); two misses show faint yellow target hands. On the hour, the tower chimes the hour.
 
 ### Stop and Go
 
