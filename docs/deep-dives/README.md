@@ -117,7 +117,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Stamp Studio | `stamp-studio` | LTPKS | 6 | 2 | not started | — | — |
 | Stop and Go | `stop-and-go` | LTP | 4 | 4 | not started | — | — |
 | Story Steps | `story-steps` | TPKS | 7 | 1 | not started | — | — |
-| Tangram Town | `tangram-town` | TPKS | 6 | 1 | not started | — | — |
+| Tangram Town | `tangram-town` | TPKS | 6 | 1 | in progress | `claude/eager-babbage-wexkzg` | — |
 | Teddy Doctor | `teddy-doctor` | LTPKS | 6 | 4 | not started | — | — |
 | Treasure Map | `treasure-map` | KS | 5 | 4 | not started | — | — |
 | Weather Wardrobe | `weather-wardrobe` | LTPK | 6 | 4 | not started | — | — |
