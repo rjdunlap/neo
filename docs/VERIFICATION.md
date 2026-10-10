@@ -40,7 +40,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
 | Critter Sort 5 | 2026-10-10: rule tests, `WOODS_ONLY=sort FROM_LEVEL=5` (two wrong drops, hint and completion), and `FINGER_ONLY=critter-sort FINGER_LEVELS=5` clean | Critter Sort 5 entry | Portrait screenshot reviewed; iPad remains untested |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
-| `creative`, `next` | 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen fractions entry, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
+| `creative`, `next` | 2026-10-10: `creative` filtered to Tangram Town levels 1–6 (picture pools); 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen fractions entry, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
 | `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-06 in the combined flow, with later per-game reruns; `BATCH_ONLY=salon` (Fluffy Salon with real strokes) 2026-10-09: levels 1 and 2 pass, level 3 times out on the unchanged game too | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
 | `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |
@@ -50,6 +50,14 @@ The last recorded pass of each browser suite (suite names and filters are in the
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
 
 ## Entries, newest first
+
+### Tangram Town: picture pools and the deep dive (2026-10-10)
+
+What changed: each level draws one of 2–5 pictures (11 in all) from a pool; `logic.ts` gained `PICTURES`, `buildFor` and a pool per level plan. The rest of the game is unchanged. The deep dive is [tangram-town.md](deep-dives/tangram-town.md).
+- `npm run typecheck`, `npx vitest run` on the game, content and registry tests passed. New tests: no picture overlaps itself (checked to fail when a slot moved), each fits the room beside the buttons and tray, every slot fills in any order, each level's pool keeps its defining decision, pools vary by seed.
+- `BROWSER_SUITE=creative CREATIVE_ONLY=tangram` passed levels 1 to 6, with a portrait view at level 5 (one random picture per level, so not every picture was played in a browser).
+- Not run: `fingerdemo`, a screenshot of every picture, a device, a child.
+
 
 ### Bouncy Launch: shown-pull prediction (2026-10-10)
 

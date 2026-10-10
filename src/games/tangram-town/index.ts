@@ -9,7 +9,7 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game,GameContext,GameModule,TouchIntent } from '../types';
-import { bestTarget, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
+import { bestTarget, buildFor, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
 
 function shape(shape:Shape,color:ColorName,outline=true){return new Graphics().poly(VERTICES[shape]).fill(swatch[color].fill).stroke({width:outline?5:0,color:swatch[color].line,join:'round'});}
 interface Choice {piece:Piece;node:Container;art:Graphics;drag:DragHandle;placed:boolean}
@@ -20,7 +20,7 @@ class TangramTown implements Game {
  private selected:Choice|null=null;private wrong=0;private assisted=false;private clock=0;
  misses=0;hints=0;done=false;
  constructor(private readonly ctx:GameContext){
-  this.plan=planFor(ctx.level);this.filled=this.plan.targets.map(()=>false);
+  this.plan=buildFor(ctx.level,ctx.rng);this.filled=this.plan.targets.map(()=>false);
   ctx.stage.addChild(this.bg,this.board,this.paletteGlow);this.board.addChild(this.outlines,this.glow);this.glow.eventMode=this.paletteGlow.eventMode='none';
   this.turn=new RoundButton(againIcon(),swatch.blue,50,()=>{
     if(!this.selected||this.done||this.selected.placed)return;
@@ -34,7 +34,7 @@ class TangramTown implements Game {
     void ctx.say('tangram.help');this.drawHint();
   });ctx.stage.addChild(this.turn,this.help);
   const colors:ColorName[]=['pink','teal','yellow','purple'];
-  for(const [i,piece] of makePieces(ctx.level,ctx.rng).entries()){
+  for(const [i,piece] of makePieces(this.plan,ctx.rng).entries()){
     const node=new Container(),art=shape(piece.shape,colors[i%colors.length]);art.rotation=piece.turns*Math.PI/2;node.addChild(art);node.hitArea=new Circle(0,0,75);ctx.stage.addChild(node);
     const c:Choice={piece,node,art,drag:null!,placed:false};
     c.drag=draggable(node,ctx.tw,{

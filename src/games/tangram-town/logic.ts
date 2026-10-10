@@ -9,21 +9,40 @@ export const VERTICES: Record<Shape, number[]> = {
   rectangle: [-100,-50,100,-50,100,50,-100,50],
   hull: [-100,-45,100,-45,60,45,-60,45],
 };
-const HOUSE: Target[] = [{shape:'square',x:0,y:70,turns:0},{shape:'roof',x:0,y:-60,turns:0}];
-const BOAT: Target[] = [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:1}];
-const ROCKET: Target[] = [{shape:'rectangle',x:0,y:35,turns:1},{shape:'roof',x:0,y:-125,turns:0},{shape:'triangle',x:-120,y:65,turns:2},{shape:'triangle',x:120,y:65,turns:3}];
-const COTTAGE:Target[]=[{shape:'triangle',x:0,y:70,turns:0},{shape:'triangle',x:0,y:70,turns:2},{shape:'roof',x:0,y:-60,turns:0}];
-export const PLANS = [
-  { picture:'house', targets:HOUSE, rotate:false, outlines:true, name:'Two big shapes make a house' },
-  { picture:'boat', targets:BOAT, rotate:false, outlines:true, name:'Fit a hull and sail to make a boat' },
-  { picture:'house', targets:HOUSE, rotate:true, outlines:true, name:'Turn the roof with quarter-turn snaps' },
-  { picture:'cottage', targets:COTTAGE, rotate:true, outlines:true, name:'Two triangles make the square wall of a cottage' },
-  { picture:'rocket', targets:ROCKET, rotate:true, outlines:true, name:'Build a rocket from four shapes' },
-  { picture:'cottage', targets:COTTAGE, rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
-] as const;
+/** Each picture is a set of slots; the bounding box of all of them stays inside PICTURE_BOX so it clears the buttons and the tray. */
+export const PICTURES = {
+  house: [{shape:'square',x:0,y:70,turns:0},{shape:'roof',x:0,y:-60,turns:0}],
+  tree: [{shape:'roof',x:0,y:-60,turns:0},{shape:'rectangle',x:0,y:100,turns:1}],
+  boat: [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:1}],
+  sailboat: [{shape:'hull',x:0,y:100,turns:0},{shape:'roof',x:0,y:-5,turns:0}],
+  flag: [{shape:'rectangle',x:-60,y:100,turns:1},{shape:'triangle',x:60,y:70,turns:0}],
+  cottage: [{shape:'triangle',x:0,y:70,turns:0},{shape:'triangle',x:0,y:70,turns:2},{shape:'roof',x:0,y:-60,turns:0}],
+  truck: [{shape:'rectangle',x:-60,y:90,turns:0},{shape:'triangle',x:110,y:70,turns:0},{shape:'triangle',x:110,y:70,turns:2}],
+  tower: [{shape:'triangle',x:0,y:70,turns:0},{shape:'triangle',x:0,y:70,turns:2},{shape:'rectangle',x:0,y:-100,turns:1}],
+  ferry: [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:0},{shape:'triangle',x:0,y:-15,turns:2}],
+  rocket: [{shape:'rectangle',x:0,y:35,turns:1},{shape:'roof',x:0,y:-125,turns:0},{shape:'triangle',x:-120,y:65,turns:2},{shape:'triangle',x:120,y:65,turns:3}],
+  houseboat: [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:0},{shape:'triangle',x:0,y:-15,turns:2},{shape:'roof',x:0,y:-145,turns:0}],
+} as const satisfies Record<string, readonly Target[]>;
+export type PictureId = keyof typeof PICTURES;
+/** Picture names are spoken as "Build a {picture}!", so each starts with a consonant. */
+export const PICTURE_IDS = Object.keys(PICTURES) as PictureId[];
+/** The room a picture may take, around the board's centre: clear of the turn and help buttons and of the tray. */
+export const PICTURE_BOX = { x: 210, top: -220, bottom: 200 };
+export interface Plan { rotate: boolean; outlines: boolean; name: string; pool: readonly PictureId[] }
+export const PLANS: readonly Plan[] = [
+  { pool:['house','tree'], rotate:false, outlines:true, name:'Two big shapes, already the right way up, make a house or a tree' },
+  { pool:['boat','sailboat','flag'], rotate:false, outlines:true, name:'Fit a hull and a sail, or a pole and a flag' },
+  { pool:['house','tree','flag','sailboat'], rotate:true, outlines:true, name:'Turn the shapes with quarter-turn snaps' },
+  { pool:['cottage','truck','tower','ferry'], rotate:true, outlines:true, name:'Two triangles make a square; three shapes fill a picture' },
+  { pool:['rocket','houseboat'], rotate:true, outlines:true, name:'Build a rocket or a houseboat from four shapes' },
+  { pool:['cottage','truck','tower','ferry','houseboat'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
+];
 export const planFor=(l:number)=>PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
+/** The level's rules with the picture this round draws from its pool. */
+export interface Build extends Plan { picture: PictureId; targets: readonly Target[] }
+export function buildFor(level:number,rng:Rng):Build{const plan=planFor(level),picture=rng.pick(plan.pool);return {...plan,picture,targets:PICTURES[picture]};}
 export function sameOrientation(shape:Shape,a:number,b:number){const period=shape==='square'?1:shape==='rectangle'?2:4;return ((a-b)%period+period)%period===0;}
-export function makePieces(level:number,rng:Rng):Piece[]{const p=planFor(level);return rng.shuffle(p.targets.map(t=>({shape:t.shape,turns:p.rotate?(t.turns+rng.int(1,3))%4:t.turns})));}
+export function makePieces(build:Pick<Build,'targets'|'rotate'>,rng:Rng):Piece[]{return rng.shuffle(build.targets.map(t=>({shape:t.shape,turns:build.rotate?(t.turns+rng.int(1,3))%4:t.turns})));}
 /** Any identical piece can fill a slot, including symmetric turns and the two complementary wall triangles. */
 export function targetFor(piece:Piece,x:number,y:number,targets:readonly Target[],filled:boolean[]):number{
  const near=targets.map((t,i)=>({t,i,d:Math.hypot(t.x-x,t.y-y)})).filter(a=>!filled[a.i]&&a.d<76).sort((a,b)=>a.d-b.d);
