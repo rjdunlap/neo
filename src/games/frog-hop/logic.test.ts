@@ -32,6 +32,16 @@ describe('Frog Hop', () => {
       for (const q of makeQuestions(at('back'), new Rng(seed))) expect(q.hops).toBeLessThanOrEqual(-1), expect(q.hops).toBeGreaterThanOrEqual(-4);
       for (const q of makeQuestions(at('gap'), new Rng(seed))) expect(GAP_CARDS).toContain(answerOf('gap', q));
       for (const q of makeQuestions(at('big'), new Rng(seed))) expect(Math.abs(q.hops)).toBeGreaterThanOrEqual(2);
+      for (const q of makeQuestions(at('make-ten'), new Rng(seed))) {
+        expect(q.start).toBeGreaterThanOrEqual(6);
+        expect(q.start).toBeLessThanOrEqual(9);
+        expect(q.target).toBeGreaterThan(10);
+        expect(q.target).toBeLessThanOrEqual(20);
+        expect(q.toTen).toBe(10 - q.start);
+        expect(q.remaining).toBe(q.target - 10);
+        expect(q.hops).toBe(q.toTen! + q.remaining!);
+        expect(GAP_CARDS).toContain(q.toTen);
+      }
       // Finding numbers starts where the frog already sits.
       const finds = makeQuestions(at('find'), new Rng(seed));
       finds.slice(1).forEach((q, i) => expect(q.start).toBe(finds[i].target));

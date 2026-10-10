@@ -110,7 +110,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Frog Hop
 
-*preschool–school · after number-line hopping games and Frogger.* A number line of lily pads. Levels: find a number; one more and one less; add by hopping; take away by hopping back; how many hops between two numbers (number cards); a line to 20 that slides to keep the start and answer in view. A sign shows the sum (`4 + 3`, `7 − 3`, `3 → 8`). Two misses bring a counted demonstration, the frog hopping and counting aloud, then the answer glows.
+*preschool–school · after number-line hopping games and Frogger.* A number line of lily pads. Levels: find a number; one more and one less; add by hopping; take away by hopping back; how many hops between two numbers (number cards); a line to 20 that slides to keep the start and answer in view; then split a sum that crosses ten by first choosing the hops to 10 and then landing the rest. A sign shows the sum (`4 + 3`, `7 − 3`, `3 → 8`). Two misses bring a counted demonstration, the frog hopping and counting aloud, then the answer glows.
 
 ### Picture Graph
 
