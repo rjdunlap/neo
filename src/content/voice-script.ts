@@ -994,6 +994,7 @@ export const SCRIPT = {
   'memory.start': ['Turn over two cards to find a pair!'],
   'memory.number': ['Find the number and that many dots!'],
   'memory.letter': ['Find the big letter and its little letter!'],
+  'memory.number-word': ['Find the number word and the numeral that names it!'],
   'memory.wrong': ['Let us remember those cards. Try another pair!'],
   'memory.hint': ['You have seen its friend. Look at the glowing card!'],
   'memory.pair': ['A pair!'],

@@ -50,6 +50,14 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Memory Match: number words and numerals (2026-10-09)
+
+What changed: level 10 adds ten text-card pairs: each written number from one through ten matches its numeral. The school range now includes it; the spoken instruction and the level-relative how-to card say what is new. The existing remembering-player rule now proves the ghost finger can choose and finish ten-pair decks, as well as every earlier deck size.
+
+- `npm run typecheck` passed. `src/games/memory-match/logic.test.ts` passed (4 tests), including 60 shuffled ten-pair decks with no matched-card repeat and no penalized mismatch.
+- `BROWSER_SUITE=memory MEMORY_LEVELS=10` passed: real taps paired all twenty cards and awarded the round. Its top-level screenshot was captured. The memory browser suite now accepts `MEMORY_LEVELS` so a future added step can be checked without replaying the whole ladder.
+- Not run: `BROWSER_SUITE=fingerdemo FINGER_ONLY=memory-match FINGER_LEVELS=10`. The local runner dropped its command session before the longer 20-card demonstration produced output; that is an environment limitation, not a pass. The next machine should run this exact filtered command before claiming the card demo is browser-verified. Build, offline, couch, and broad navigation checks were not needed for this game-only ladder extension.
+
 ### Teddy Doctor: no boo-boo between the feet (2026-10-09)
 
 What changed: a "feet" boo-boo or bandage was drawn at (0, −6), the gap between the patient's two feet, and the tummy sat low on the belly. The how-to card's demonstration always plays seed 7, so every card at levels 1 to 4 opened on a bear with a boo-boo in that gap. The feet spot is now on the right foot, the tummy is mid-belly (the pig's stays under its lower mouth), and `nearestPart` treats the body as mirrored so a drop on the left foot or left ear still counts.

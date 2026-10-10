@@ -10,7 +10,7 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { knownMismatch, makeDeck, nextCard, type MemoryCard } from './logic';
+import { knownMismatch, makeDeck, nextCard, numberWord, type MemoryCard } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PLANS = [
@@ -23,8 +23,9 @@ const PLANS = [
   { pairs: 8, mode: 'numbers', name: 'Match numbers 1–8 to dots' },
   { pairs: 8, mode: 'attributes', name: 'Match both shape and color' },
   { pairs: 8, mode: 'letters', name: 'Match uppercase and lowercase letters' },
+  { pairs: 10, mode: 'number-words', name: 'Match number words one–ten to numerals' },
 ] as const;
-const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 9 } };
+const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 10 } };
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
 
@@ -84,6 +85,7 @@ class MemoryMatch implements Game {
 
   private face(card: MemoryCard): Container {
     if (this.plan.mode === 'letters') return label(card.side ? this.letters[card.pair].toLowerCase() : this.letters[card.pair], 74, swatch.purple.line);
+    if (this.plan.mode === 'number-words') return label(card.side ? String(card.pair + 1) : numberWord(card.pair), card.side ? 70 : 38, swatch.teal.line);
     if (this.plan.mode === 'numbers') {
       if (!card.side) return label(String(card.pair + 1), 74, swatch.teal.line);
       const g = new Graphics();
@@ -98,7 +100,7 @@ class MemoryMatch implements Game {
 
   get finished() { return this.remaining === 0; }
 
-  start() { void this.ctx.instruct(this.plan.mode === 'numbers' ? 'memory.number' : this.plan.mode === 'letters' ? 'memory.letter' : 'memory.start'); }
+  start() { void this.ctx.instruct(this.plan.mode === 'numbers' ? 'memory.number' : this.plan.mode === 'letters' ? 'memory.letter' : this.plan.mode === 'number-words' ? 'memory.number-word' : 'memory.start'); }
 
   private async choose(i: number) {
     const view = this.views[i];

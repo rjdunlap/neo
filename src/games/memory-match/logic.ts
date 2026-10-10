@@ -1,6 +1,9 @@
 import type { Rng } from '../../engine/random';
 
 export interface MemoryCard { pair: number; side: 0 | 1 }
+/** The reading pairs for level 10. Index zero is the numeral one. */
+export const NUMBER_WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'] as const;
+export function numberWord(pair: number): string { return NUMBER_WORDS[pair] ?? ''; }
 export function makeDeck(pairs: number, rng: Rng): MemoryCard[] {
   return rng.shuffle(Array.from({ length: pairs }, (_, pair) => [{ pair, side: 0 as const }, { pair, side: 1 as const }]).flat());
 }
