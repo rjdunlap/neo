@@ -2,6 +2,8 @@
 
 **Decided (the developer, 2026-10-10):** give every island game its own session that researches similar games in its genre and expands its levels and ladder across the age bands. This page is the tracker and the procedure. Each game's findings and ladder go in `docs/deep-dives/<game-id>.md`, written from the [template](TEMPLATE.md). The roadmap's [chunk 14](../ROADMAP.md#next-up) points here.
 
+**A deep dive session is research and ideation only: documents, no code.** Do not edit anything under `src/`, `scripts/` or `public/`, do not add or change tests, and do not build any slice, however small or ready it looks. The output is the write-up and the doc updates in step 7, nothing else. Building comes later, in its own session that the grown-up starts from the write-up's slices. If a bug, a trap or a missing guard turns up, write it into the write-up's known gaps or build slices instead of fixing it, and run no browser suites or tests (the docs-only tier in [Verification budget](../../AGENTS.md#verification-budget) applies: links and `git diff --check`). If the grown-up asks in the prompt for a slice to be built, that request overrides this paragraph.
+
 A deep dive turns the ladder rounds in [IDEAS.md](../IDEAS.md#short-ladder-audit-2026-10-09) (the audit, round two and round three) into one researched plan per game. Those rows are its starting point, not its limit. The [rules for every activity](../../AGENTS.md#rules-for-every-activity) still hold: more quantity is welcome (the developer's direction of 2026-10-10), while speed, timers, clutter, extra memory load and anything that punishes stay out.
 
 ## One session, one game
@@ -24,12 +26,12 @@ A deep dive turns the ladder rounds in [IDEAS.md](../IDEAS.md#short-ladder-audit
 
    Say which band window each level falls in. Mark anything that needs a decision from the developer, and add that decision to the roadmap's "Waiting on the developer".
 5. **Write it up** as `docs/deep-dives/<game-id>.md` from the [template](TEMPLATE.md), ending with an ordered list of build slices, each sized for one session.
-6. **Build the first slice if time allows.** The cheapest ready slice, verified at its [verification-budget](../../AGENTS.md#verification-budget) tier. If no time remains, the write-up alone is a complete deep dive.
+6. **Do not build.** The write-up alone is a complete deep dive. Order the build slices so the first is cheap and ready, and say which checks it would need, so the next session can start it at once.
 7. **Update the docs and close the row.**
    - Set the row's status and link its deep dive.
    - Point the game's rows in the IDEAS ladder rounds at the deep dive.
    - Add its build slices to the roadmap's chunk 14 list.
-   - If something was built, update its README row, GAMES.md entry, how-to card and VERIFICATION entry, as [AGENTS.md](../../AGENTS.md#documentation-and-git) routes them.
+   - Add a short VERIFICATION entry (docs only: what changed and that links and `git diff --check` ran).
 
 **Status values:** **not started**; **in progress** (a branch is on it); **designed** (the write-up is merged and slices are waiting); **building** (slices are being built from the write-up); **done** (every slice the write-up calls ready is built, or deliberately left).
 

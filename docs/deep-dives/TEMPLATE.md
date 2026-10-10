@@ -40,4 +40,4 @@ Which ideas fit Puddle Island's rules, and why the others do not. The game's lon
 
 ## What was built in this session
 
-Leave out if nothing was built; otherwise what was built and which checks ran.
+Nothing: a deep dive session is research and ideation only. Say so in one line (and what ran: links and `git diff --check`). A later session that builds a slice records its work here and in VERIFICATION.

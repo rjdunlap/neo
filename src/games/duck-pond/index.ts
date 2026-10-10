@@ -10,7 +10,7 @@ import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bankSize, duckMove, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan } from './logic';
+import { bankSize, duckMove, hidingPuzzle, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -18,7 +18,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 5 },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 9 },
-  school: { min: 8, max: 10 },
+  school: { min: 8, max: 11 },
 };
 
 const WATER = 0x7cc4f2;
@@ -31,6 +31,7 @@ const plural = (n: number) => `${n} duck${n === 1 ? '' : 's'}`;
 class Duck extends Container {
   readonly critter = new Critter(CRITTERS.duck);
   swimming = false;
+  pondOffset: [number, number] | null = null;
   /** Sitting this one out (for example once enough ducks are in). */
   resting = false;
   private readonly ripple = new Graphics().ellipse(0, -6, 66, 26).fill(WATER).stroke({ width: 4, color: 0xbfe6ff });
@@ -55,6 +56,11 @@ class Duck extends Container {
   setSwimming(on: boolean) {
     this.swimming = on;
     this.ripple.visible = on;
+  }
+
+  hideUnderBridge() {
+    this.critter.visible = false;
+    this.ripple.visible = false;
   }
 
   rest() {
@@ -123,6 +129,7 @@ class DuckPond implements Game {
   private readonly plan: DuckPlan;
   private readonly backdrop: Backdrop;
   private readonly pond = new Graphics();
+  private readonly bridge = new Graphics();
   private readonly sign = new Container();
   private readonly signText = label('', 76, 0x5a3a22);
   private readonly signDots = new Graphics();
@@ -160,7 +167,7 @@ class DuckPond implements Game {
     this.sign.visible = false;
     // Ducks lower on the screen (nearer to us) draw in front.
     this.ducks.sortableChildren = true;
-    ctx.stage.addChild(this.backdrop, this.pond, this.sign, this.ducks, this.padLayer);
+    ctx.stage.addChild(this.backdrop, this.pond, this.sign, this.ducks, this.bridge, this.padLayer);
   }
 
   private get tw(): Tweener {
@@ -185,10 +192,19 @@ class DuckPond implements Game {
       g.moveTo(x + dx, y + 60).quadraticCurveTo(x + dx + 6, y + 60 - h / 2, x + dx - 4, y + 60 - h).stroke({ width: 7, color: 0x4a9a35, cap: 'round' });
       g.ellipse(x + dx - 4, y + 60 - h, 7, 20).fill(0x8f6142);
     }
+    const bridge = this.bridge.clear();
+    bridge.rect(x - 190, y - 58, 28, 138).fill(wood.line);
+    bridge.rect(x + 162, y - 58, 28, 138).fill(wood.line);
+    bridge.roundRect(x - 220, y - 58, 440, 34, 8).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    bridge.roundRect(x - 220, y - 8, 440, 46, 8).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    bridge.visible = this.plan.mode === 'hide';
     this.sign.position.set(v.w / 2 + 380, 150);
     this.layoutBank();
     this.layoutPads();
-    this.swimmers.forEach((d, i) => d.position.set(x + SLOTS[i][0], y + SLOTS[i][1]));
+    this.swimmers.forEach((d, i) => {
+      const slot = d.pondOffset ?? SLOTS[i];
+      d.position.set(x + slot[0], y + slot[1]);
+    });
   }
 
   update(dt: number) {
@@ -236,8 +252,8 @@ class DuckPond implements Game {
   }
 
   /** A duck hops from wherever it is into the next free spot on the pond. */
-  private async swimIn(d: Duck) {
-    const slot = SLOTS[this.swimmers.length % SLOTS.length];
+  private async swimIn(d: Duck, slot = SLOTS[this.swimmers.length % SLOTS.length]) {
+    d.pondOffset = slot;
     this.swimmers.push(d);
     this.bank = this.bank.filter((b) => b !== d);
     const { x, y } = this.pondCenter();
@@ -255,6 +271,25 @@ class DuckPond implements Game {
       d.position.set(-80, this.view.h * 0.62);
       this.ducks.addChild(d);
       await this.swimIn(d);
+    }
+  }
+
+  /** Ducks beneath the bridge are real, but the bridge hides their count. */
+  private async arriveHiding(visible: number, hidden: number) {
+    const visibleSlots: [number, number][] = [[-260, -170], [-130, -170], [0, -170], [130, -170], [260, -170], [-290, 10], [290, 10], [-270, 100], [270, 100]];
+    for (let i = 0; i < visible; i++) {
+      const d = new Duck();
+      d.position.set(-80, this.view.h * 0.62);
+      this.ducks.addChild(d);
+      await this.swimIn(d, visibleSlots[i]);
+    }
+    for (let i = 0; i < hidden; i++) {
+      const d = new Duck();
+      d.position.set(-80, this.view.h * 0.62);
+      this.ducks.addChild(d);
+      // Keep hidden ducks directly under the broad center span of the bridge.
+      await this.swimIn(d, [-90 + (i % 5) * 45, -16]);
+      d.hideUnderBridge();
     }
   }
 
@@ -331,6 +366,17 @@ class DuckPond implements Game {
       this.answer = 10 - a;
       await this.arrive(a);
       await this.ctx.instruct('duck.ten', { a });
+      this.showPads(this.answer);
+      this.busy = false;
+      return;
+    }
+    if (p.mode === 'hide') {
+      const puzzle = hidingPuzzle(rng, p);
+      this.answer = puzzle.hidden;
+      this.want = puzzle.total;
+      this.showSign(puzzle.total, false);
+      await this.arriveHiding(puzzle.visible, puzzle.hidden);
+      await this.ctx.instruct('duck.hiding', { total: puzzle.total, visible: puzzle.visible });
       this.showPads(this.answer);
       this.busy = false;
       return;
@@ -450,7 +496,19 @@ class DuckPond implements Game {
     if (pad.value === this.answer) {
       pad.glow(true);
       sfx.bell(9, 0.3);
-      await this.countAloud();
+      if (this.plan.mode === 'hide') {
+        const visible = this.want - this.answer;
+        await this.ctx.say('duck.hidingCount', { visible, total: this.want });
+        for (let n = visible + 1; n <= this.want; n++) {
+          await this.ctx.say('count', { n });
+          await this.tw.wait(0.15);
+        }
+        await this.ctx.say('duck.hidingFound', { hidden: this.answer, visible, total: this.want });
+        await this.tw.wait(0.2);
+        this.clearPads();
+        await this.roundWon(this.want, false);
+        return;
+      } else await this.countAloud();
       await this.tw.wait(0.2);
       this.clearPads();
       await this.roundWon(this.answer);
@@ -465,6 +523,13 @@ class DuckPond implements Game {
       // Count on from the ducks already swimming, up to ten, on the fingers.
       await this.ctx.say('duck.counton', { a: this.swimmers.length });
       for (let n = this.swimmers.length + 1; n <= 10; n++) {
+        await this.ctx.say('count', { n });
+        await this.tw.wait(0.15);
+      }
+    } else if (this.plan.mode === 'hide') {
+      const visible = this.want - this.answer;
+      await this.ctx.say('duck.hidingCount', { visible, total: this.want });
+      for (let n = visible + 1; n <= this.want; n++) {
         await this.ctx.say('count', { n });
         await this.tw.wait(0.15);
       }
@@ -560,6 +625,7 @@ export const duckPond: GameModule = {
     if (p.mode === 'make') return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
     if (p.mode === 'howmany') return `How many ducks? ${p.min} to ${p.max}`;
     if (p.mode === 'ten') return 'Make ten: how many more ducks fill the pond to 10?';
+    if (p.mode === 'hide') return 'Part and whole: how many ducks hide under the bridge?';
     return p.subtract ? 'Adding and taking away, up to 10' : 'Adding, up to 5';
   },
   music: STYLES.hub,

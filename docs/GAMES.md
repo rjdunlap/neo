@@ -94,7 +94,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Duck Pond
 
-*lap–school.* Count along as ducks hop in; then put N in, how many?, adding and taking away. The dots beside a number are there to count. Level 10 (make ten): 3–9 ducks swim in. "How many more to make 10?" is answered on lily pads. The missing ducks then swim in to fill the pond's ten places ("7 and 3 make 10!"). A wrong pad counts on aloud from the ducks already there.
+*lap–school.* Count along as ducks hop in; then put N in, how many?, adding and taking away. The dots beside a number are there to count. Level 10 (make ten): 3–9 ducks swim in. "How many more to make 10?" is answered on lily pads. The missing ducks then swim in to fill the pond's ten places ("7 and 3 make 10!"). A wrong pad counts on aloud from the ducks already there. Level 11 (hiding ducks): the sign gives a whole from 5 to 10, some ducks paddle beneath a code-drawn bridge, and the child finds the hidden part on the lily pads. A wrong pad counts on from the visible ducks to the whole.
 
 ### Monster Munch
 
