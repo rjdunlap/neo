@@ -11,7 +11,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { makeRequests, NAMES, planFor, THINGS, thingToTap, type NightPlan, type Thing } from './logic';
+import { makeNight, makeRequests, NAMES, planFor, thingToTap, type NightPlan, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -96,6 +96,8 @@ class Sleeper extends Container {
 class GoodnightRoom implements Game {
   readonly plan: NightPlan;
   readonly requests: Thing[][];
+  /** The friends in the room this round, in the order they are drawn. */
+  readonly friends: Thing[];
   readonly sleepers: Sleeper[] = [];
   index = -1;
   /** Within a two-step request, how many are done. */
@@ -118,18 +120,22 @@ class GoodnightRoom implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.requests = makeRequests(this.plan, ctx.rng);
+    const night = makeNight(this.plan, ctx.rng);
+    this.friends = night.room;
+    this.requests = makeRequests(this.plan, ctx.rng, this.friends);
     this.dark.eventMode = 'none';
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.room, this.sky);
-    for (const thing of THINGS.slice(0, this.plan.things)) {
+    for (const thing of this.friends) {
       const s = new Sleeper(thing);
+      if (night.asleep.includes(thing)) s.sleep();
       onTap(s, () => void this.tap(s), { cooldown: 400 });
       ctx.track(s);
       this.sleepers.push(s);
       ctx.stage.addChild(s);
     }
     ctx.stage.addChild(this.dark, this.glow);
+    this.stars = night.asleep.length * 3;
   }
 
   start() {
@@ -187,7 +193,7 @@ class GoodnightRoom implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const asleep = new Set(this.sleepers.filter((s) => s.asleep).map((s) => s.thing));
-    const thing = thingToTap(this.plan, this.requests[this.index], this.step, asleep);
+    const thing = thingToTap(this.plan, this.requests[this.index], this.step, asleep, this.friends);
     const sleeper = this.sleepers.find((s) => s.thing === thing);
     return sleeper ? { tap: { on: sleeper, y: sleeper.mid } } : null;
   }
@@ -273,7 +279,7 @@ class GoodnightRoom implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
-    this.stars = 12;
+    this.stars = Math.max(this.stars, 12);
     this.drawSky();
     for (const step of [7, 5, 4, 2]) {
       sfx.bell(step, 0.2);

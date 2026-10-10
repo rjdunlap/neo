@@ -277,7 +277,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Goodnight Room
 
-*lap–preschool · after* Goodnight Moon *and bedtime routines.* A calm bedroom: lamp, wall clock, fishbowl, and teddy, kitten and puppy critters. Tap each to say goodnight: it gets sleepy eyes, a "z" floats up, the room darkens a little and stars appear in the window. When everyone is asleep, a soft chime ends the round. Later levels name who to say goodnight to, then two in order. A wrong friend, or the right two out of order, is a gentle miss with a glow after two; tapping someone already asleep is just a soft "shh".
+*lap–preschool · after* Goodnight Moon *and bedtime routines.* A calm bedroom: lamp, wall clock, fishbowl, and teddy, kitten and puppy critters. Tap each to say goodnight: it gets sleepy eyes, a "z" floats up, the room darkens a little and stars appear in the window. When everyone is asleep, a soft chime ends the round. Level 1 shows four of the six friends, chosen by the round's seed, and level 2 may open with up to two friends already asleep (tapping one is a soft tick). Later levels name who to say goodnight to, then two in order. A wrong friend, or the right two out of order, is a gentle miss with a glow after two; tapping someone already asleep is just a soft "shh".
 
 ### Rhyme Time
 

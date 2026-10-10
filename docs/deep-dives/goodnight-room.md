@@ -20,13 +20,13 @@ Levels 1–2 are **tap everyone** (no wrong answer, so no misses and no hints). 
 **Couplings.** A how-to card (three `LevelLine`s) and a ghost-finger bot (`autotouch()`, built on `thingToTap`). Voice lines `night.all`, `night.goodnight`, `night.named`, `night.two`, `night.notthat`, `night.order`, `night.done`. Home land: Story Grove. Music: `STYLES.lullaby`. No couch entry, no journal entry, no picnic step, no creation. The pet sleeps at the finale. The browser suite `night` plays levels 1–4.
 
 **Known gaps.**
-- **One room, one picture.** A round at level 1 never changes; a child who loves the game sees the same four friends in the same places.
-- **The stars shrink at the end.** Each friend adds three stars, so a six-friend room reaches 18, then the finale resets the sky to 12. (`this.stars = 12` in `finale()`.) A small bug on levels 2–4.
+- **One room, one picture** (level 1 and 2's variation is fixed by slice 1; the rest remains). Before slice 1 a round at level 1 never changed; a child who loves the game sees the same four friends in the same places.
+- **The stars shrink at the end.** Each friend adds three stars, so a six-friend room reaches 18, then the finale resets the sky to 12. (`this.stars = 12` in `finale()`.) A small bug on levels 2–4, fixed in slice 1.
 - **Levels 1–2 can never be wrong, and offer no nudge** if she is waiting. The pet repeats the instruction on tap; nothing in the room invites her.
 - **No sound of its own for each friend.** Every goodnight is a rising bell note; the kitten does not yawn.
 - **Two names in order at level 4 sits in the toddler window.** Sources disagree about whether two-year-olds follow two-step requests (see Similar games). It has a supported miss path and a glow, so it is a person check rather than a change.
 - **Ambiguous friends.** The teddy is the `bear` critter. A real bear cannot join its room, and a request for "the animals" would be unfair to a teddy (see level 5 below).
-- Person checks still open: whether a one-year-old holds a 160-unit tap target, and the real iPad ([roadmap](../ROADMAP.md#checks-that-need-a-person-or-device)).
+- Person checks still open: whether a one-year-old holds a 160-unit tap target, and the real iPad ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)).
 
 ## Similar games
 
@@ -137,4 +137,6 @@ Each is sized for one session. A slice that adds a level is built in level order
 
 ## What was built in this session
 
-See the end of this file once slice 1 is recorded.
+Slice 1, a different room each time. `logic.ts` gained `asleep` on each plan, `makeNight` (a seeded room of the right size in `THINGS` order, and who starts asleep, always leaving two awake), and `makeRequests` and `thingToTap` now take the drawn room. `index.ts` draws the room once, puts the sleepers to sleep and the stars up before the first frame, and the finale keeps `Math.max(stars, 12)`.
+
+Checks: typecheck; the full unit suite (854 pass); `BROWSER_SUITE=woods WOODS_ONLY=night` (levels 1 to 4, scored and stickered). Not run: `fingerdemo` for the game, a portrait screenshot, a device. See [VERIFICATION](../VERIFICATION.md).
