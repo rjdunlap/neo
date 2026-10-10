@@ -101,7 +101,7 @@ Building playable things is the point; checks serve it. Earlier sessions spent m
 | --- | --- |
 | Docs only | Link and `git diff --check`. No code checks. |
 | Game rules, level plans or puzzle generation (`logic.ts`) | `npm run typecheck` and that game's rule tests. Nothing else. |
-| New levels on an existing interaction | The above, plus one browser play of the new top level only. |
+| New levels on an existing interaction | The above, plus one browser play of the new top level only, and `fingerdemo` at it: every game has a ghost-finger bot, so the bot has to be able to play a new level. |
 | New game or a new interaction | Typecheck, unit tests, then **one** scripted play of the new game through a filter (first and last level, one wrong answer, one hint) and one portrait screenshot. Run `npm run build` only if shared files or assets changed. |
 | Shell, engine, save or navigation | Typecheck, unit tests, build, the one or two suites of the games that lean on the change most, `world` if navigation changed, and the production offline check only if persistence, assets or navigation changed. |
 | Couch catalog or controls | `BROWSER_SUITE=couchgames` filtered to the new or changed games. The full `couch` and `couchcourse` suites only when trip, face-off, finale or course code changed. |

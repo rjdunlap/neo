@@ -114,3 +114,150 @@ export function makeRequests(plan: SalonPlan, rng: Rng): Request[] {
   }
   return out;
 }
+
+// ----- the fur: where strands grow and what a touch does to them (moved here so the demonstration's strokes can be tested) -----
+
+export const STRANDS = 26;
+export const SEG = 12;
+/** How close (in body units) the finger has to come to a strand to work on it. */
+export const REACH = 38;
+
+export interface Pt {
+  x: number;
+  y: number;
+}
+
+export interface Anchor {
+  x: number;
+  y: number;
+  /** Which way the strand first grows, and which way it falls. */
+  out: number;
+  fall: number;
+}
+
+/** Where strands grow: around the top of the head, fanning out and falling to each side. */
+export function anchors(): Anchor[] {
+  return Array.from({ length: STRANDS }, (_, i) => {
+    const t = i / (STRANDS - 1);
+    const a = -Math.PI * (0.95 - 0.9 * t);
+    const x = Math.cos(a) * 118;
+    const y = -122 + Math.sin(a) * 122;
+    const side = x < 0 || (x === 0 && i % 2) ? -1 : 1;
+    // Fall down and slightly outward; on the left, turn the long way round (through "left").
+    const fall = side > 0 ? Math.PI * 0.42 : Math.PI * 0.58 - Math.PI * 2;
+    return { x, y, out: a, fall };
+  });
+}
+
+/** The points along one strand, in body units. */
+export function strandPoints(an: Anchor, s: Strand): Pt[] {
+  const n = Math.max(1, Math.ceil(s.length / SEG));
+  const step = s.length / n;
+  const pts = [{ x: an.x, y: an.y }];
+  let x = an.x;
+  let y = an.y;
+  for (let k = 1; k <= n; k++) {
+    const along = k * step;
+    // Short tufts stand up; longer hair bends over and falls. Strands on top rise higher first,
+    // so they fall to the sides instead of over the eyes.
+    const top = 1 - Math.abs(Math.cos(an.out));
+    const bend = Math.min(1, along / (100 + 110 * top));
+    const angle = an.out + (an.fall - an.out) * bend;
+    x += Math.cos(angle) * step;
+    y += Math.sin(angle) * step;
+    const wave = s.curl * 15 * Math.sin(k * 1.7);
+    pts.push({ x: x - Math.sin(angle) * wave, y: y + Math.cos(angle) * wave });
+  }
+  return pts;
+}
+
+/**
+ * The finger is at `p` (body units) with `tool`: every strand within `REACH` of it is worked on, at the first of its points that the
+ * finger reaches. A snip cuts the strand back to that point (only when it is not the tip), and the strands it cut by more than 10 are
+ * returned with their old tips, for the falling fluff.
+ */
+export function touchStrands(tool: Tool, strands: Strand[], an: Anchor[], p: Pt): { touched: number; snipped: { tip: Pt; color: ColorName }[] } {
+  let touched = 0;
+  const snipped: { tip: Pt; color: ColorName }[] = [];
+  strands.forEach((s, i) => {
+    const pts = strandPoints(an[i], s);
+    const k = pts.findIndex((q) => Math.hypot(q.x - p.x, q.y - p.y) < REACH);
+    if (k < 0) return;
+    touched++;
+    switch (tool) {
+      case 'grow':
+        s.length = Math.min(MAX_LENGTH, s.length + 9);
+        break;
+      case 'cut':
+        if (k < pts.length - 1) {
+          const before = s.length;
+          s.length = Math.max(MIN_LENGTH, k * SEG);
+          if (before - s.length > 10) snipped.push({ tip: pts[pts.length - 1], color: s.color });
+        }
+        break;
+      case 'comb':
+        s.curl = Math.max(0, s.curl - 0.06);
+        break;
+      case 'curl':
+        s.curl = Math.min(1, s.curl + 0.06);
+        break;
+      default:
+        s.color = tool;
+    }
+  });
+  return { touched, snipped };
+}
+
+// ----- the demonstration -----
+
+/** Free play with every tool: each is tried once, in this order, and then the mirror. */
+export const TOUR: Tool[] = ['grow', 'cut', 'curl', 'comb', 'pink'];
+/** The first level has one tool: it is used this many times before the mirror. */
+export const PLAY_STROKES = 2;
+
+export interface SalonState {
+  mode: SalonMode;
+  /** The style asked for, or null in free play. */
+  look: Look | null;
+  strands: Strand[];
+  /** The tool picked now, and how many strokes the demonstration has made in free play. */
+  tool: Tool;
+  strokes: number;
+  /** The mirror button is showing. */
+  mirror: boolean;
+}
+
+export type SalonMove = { do: 'tool'; tool: Tool } | { do: 'stroke' } | { do: 'mirror' };
+
+/**
+ * What a capable child does next. Free play: use the tools in turn, a stroke each, then the mirror when it shows. A request: pick the
+ * tool for what still needs doing and stroke until it is done; where the mirror checks (every level but one request at a time) look in it
+ * only once nothing is left to do, which is the only way to a miss there.
+ */
+export function salonMove(s: SalonState): SalonMove | null {
+  if (!s.look) {
+    const want = s.mode === 'play' ? 'grow' : TOUR[Math.min(s.strokes, TOUR.length - 1)];
+    const done = s.strokes >= (s.mode === 'play' ? PLAY_STROKES : TOUR.length);
+    if (done) return s.mirror ? { do: 'mirror' } : { do: 'stroke' };
+    return s.tool === want ? { do: 'stroke' } : { do: 'tool', tool: want };
+  }
+  const fix = needs(s.look, s.strands);
+  if (!fix) return s.mode === 'ask' ? null : { do: 'mirror' };
+  const tool = toolFor(fix);
+  return s.tool === tool ? { do: 'stroke' } : { do: 'tool', tool };
+}
+
+/**
+ * One sweep of the finger, in body units, along the roots of the fur from beyond one end to beyond the other (each strand is in reach
+ * for about 76 units of it); `back` sweeps the other way, so the hand does not travel back between strokes. A snip goes farther out,
+ * 190 units from the middle of the head (about 64 from the roots), where the first point of each strand in reach is the third or
+ * fourth, so the fur is cut back to about 30 and not shaved; its path has more corners, so it keeps that distance.
+ */
+export function strokePath(tool: Tool, back = false): Pt[] {
+  const cut = tool === 'cut';
+  const r = cut ? 190 : 120;
+  const n = cut ? 7 : 4;
+  const turns = Array.from({ length: n }, (_, i) => -1.12 + (1.24 * i) / (n - 1));
+  const path = turns.map((q) => ({ x: Math.cos(Math.PI * q) * r, y: -122 + Math.sin(Math.PI * q) * r }));
+  return back ? path.reverse() : path;
+}

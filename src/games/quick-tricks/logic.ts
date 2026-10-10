@@ -96,3 +96,23 @@ export const GAP = 300;
 export const plankLengths = (rng: Rng): number[] => rng.shuffle([GAP * 0.55, GAP * 0.8, GAP + 70]);
 /** A plank (or a stretched one's end) reaches when it lands on the far bank, with a little to rest on. */
 export const reaches = (length: number) => length >= GAP + 30;
+
+// ----- the demonstration -----
+
+/** Where the demonstration holds the leaf that keeps every friend dry: the widest one that shelters them all, over their middle, at the height the rain rolls off. */
+export function leafDrop(plan: TricksPlan, top: number): { leaf: number; x: number; y: number } {
+  const friends = friendsFor(plan);
+  const x = friends.reduce((a, b) => a + b, 0) / friends.length;
+  const leaves = leavesFor(plan);
+  const leaf = leaves.findIndex((l) => friends.every((f) => shelters(x, l, f)));
+  return { leaf, x, y: top - 40 };
+}
+
+/** The sock that is the monster's partner (exactly one is). */
+export const partnerSock = (held: Sock, choices: readonly Sock[]) => choices.findIndex((s) => sameSock(s, held));
+
+/** The plank that is long enough (exactly one is). */
+export const plankToPlace = (lengths: readonly number[]) => lengths.findIndex(reaches);
+
+/** Bridge Stretch's handle is let go this far from the near bank: past the far bank, with room to spare. */
+export const STRETCH_TO = GAP + 60;

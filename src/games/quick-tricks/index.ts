@@ -13,17 +13,21 @@ import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import { SecondShow } from './second-show';
 import { encoreFor } from './second-logic';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   friendsFor,
   GAP,
   judgeLeaf,
+  leafDrop,
   leavesFor,
   makeSocks,
+  partnerSock,
   plankLengths,
+  plankToPlace,
   planFor,
   reaches,
   sameSock,
+  STRETCH_TO,
   TRICKS,
   type Leaf,
   type Sock,
@@ -623,6 +627,33 @@ class QuickTricks implements Game {
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 
+  /**
+   * The ghost finger: carry the leaf that covers everyone over the friends, the partner sock to the monster, and a stretched handle or
+   * the long enough plank across the river; then the green arrow once the trick has had its payoff.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.finished) return null;
+    if (this.waiting) return { tap: { on: this.next } };
+    if (this.busy || this.springing) return null;
+    switch (this.trick) {
+      case 'umbrella': {
+        const drop = leafDrop(this.plan, this.rainSpan.top);
+        return { drag: { on: this.leaves[drop.leaf].node }, to: { on: this.layer, x: this.cx + drop.x, y: drop.y } };
+      }
+      case 'socks': {
+        const sock = this.socks[partnerSock(this.held!, this.socks.map((s) => s.sock))];
+        return sock && this.monster ? { drag: { on: sock.node }, to: { on: this.monster, x: 0, y: -110 } } : null;
+      }
+      case 'bridge': {
+        if (this.handle) return { drag: { on: this.handle.node }, to: { on: this.layer, x: this.banks[0] + STRETCH_TO, y: this.bankY - 40 } };
+        const plank = this.planks[plankToPlace(this.planks.map((p) => p.length))];
+        return plank ? { drag: { on: plank.node }, to: { on: this.layer, x: this.cx, y: this.bankY } } : null;
+      }
+      default:
+        return null;
+    }
+  }
+
   destroy() {
     for (const item of this.items) item.drag.destroy();
   }
@@ -656,6 +687,7 @@ export const quickTricks: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => level >= 4 ? encoreFor(level).name : planFor(level).name,
   music: STYLES.stickers,
+  touchDemo: true,
   coplayHint: 'Be the audience! Clap after each trick and ask {name} what happened.',
   offScreen: 'Put on a tiny show: keep a toy dry under a leaf, match a pair of socks, make a bridge from a book.',
   hubIcon: () => new WigglyIcon(showArt(1)),
