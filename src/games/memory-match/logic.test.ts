@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { knownMismatch, makeDeck, nextCard } from './logic';
+import { knownMismatch, makeDeck, nextCard, NUMBER_WORDS, numberWord } from './logic';
 
 describe('memory matching', () => {
   it('has exactly two of every pair after shuffling, at every deck size', () => {
@@ -10,6 +10,12 @@ describe('memory matching', () => {
       for (let pair = 0; pair < count; pair++) expect(deck.filter((c) => c.pair === pair).map((c) => c.side).sort()).toEqual([0, 1]);
     }
   });
+  it('pairs every written number from one through ten with its numeral', () => {
+    expect(NUMBER_WORDS).toEqual(['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']);
+    expect(NUMBER_WORDS.map((_, pair) => numberWord(pair))).toEqual(NUMBER_WORDS);
+    expect(numberWord(-1)).toBe('');
+    expect(numberWord(10)).toBe('');
+  });
   it('does not count exploration or matches as misses', () => {
     const deck = [{ pair: 0, side: 0 as const }, { pair: 0, side: 1 as const }, { pair: 1, side: 0 as const }, { pair: 1, side: 1 as const }];
     expect(knownMismatch(deck, 0, 2, new Set([0]))).toBe(false);
@@ -17,7 +23,7 @@ describe('memory matching', () => {
     expect(knownMismatch(deck, 0, 1, new Set([0, 1, 2, 3]))).toBe(false);
   });
   it('has a player who remembers always finish a deck, turning each card a few times at most, and never a matched card', () => {
-    for (const pairs of [2, 3, 4, 6, 8]) {
+    for (const pairs of [2, 3, 4, 6, 8, 10]) {
       for (let seed = 1; seed <= 60; seed++) {
         const cards = makeDeck(pairs, new Rng(seed));
         const seen = new Set<number>();

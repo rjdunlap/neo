@@ -212,7 +212,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Memory Match
 
-*preschool–school.* Grows from four to sixteen cards, then teaches number/dot, two-attribute, and upper/lowercase matches. Exploring unseen cards does not count as a miss: an incorrect pair counts only if the matching card was already known.
+*preschool–school.* Grows from four to sixteen cards, then teaches number/dot, two-attribute, upper/lowercase, and number-word/numeral matches (one through ten). Exploring unseen cards does not count as a miss: an incorrect pair counts only if the matching card was already known.
 
 ### Size Parade
 

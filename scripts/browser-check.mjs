@@ -370,7 +370,8 @@ async function patterns() {
 }
 
 async function memory() {
-  for (let level = 1; level <= 9; level++) {
+  const levels = process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 10 }, (_, i) => i + 1);
+  for (const level of levels) {
     await launch('memory-match', level);
     if (level === 1 || level === 8) {
       await page.evaluate(async () => {
@@ -385,7 +386,7 @@ async function memory() {
       });
       assert.ok(await page.evaluate(() => neo.scene.game.hints >= 1));
     }
-    if (level === 8) await screenshot('memory-match');
+    if (level === 10) await screenshot('memory-match');
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let pair = 0; pair < g.plan.pairs; pair++) {
