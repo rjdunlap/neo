@@ -67,6 +67,35 @@ describe('Teddy Doctor', () => {
     }
   });
 
+  it('keeps every boo-boo on the upper body or on a foot, never low in the gap between the feet', () => {
+    // The feet are ovals at x = ±40, 30 wide and 14 tall around the floor line (y = 0).
+    for (const patient of PATIENTS) {
+      for (const part of AIM_PARTS) {
+        const s = partSpot(patient, part);
+        const inGap = Math.abs(s.x) < 30 && s.y > -40;
+        expect(inGap, `${patient} ${part} at ${s.x},${s.y}`).toBe(false);
+      }
+      const foot = partSpot(patient, 'feet');
+      expect(Math.abs(foot.x), `${patient} feet`).toBe(40);
+      expect(Math.abs(foot.y), `${patient} feet`).toBeLessThan(14);
+      // The tummy is in the middle of the belly (the belly oval runs from -119 to -11), clear of the mouth.
+      const tummy = partSpot(patient, 'tummy');
+      const mouth = partSpot(patient, 'mouth');
+      expect(tummy.y, `${patient} tummy`).toBeLessThanOrEqual(-50);
+      expect(tummy.y - mouth.y, `${patient} tummy below the mouth`).toBeGreaterThanOrEqual(16);
+    }
+  });
+
+  it('counts either foot and either ear: the body is mirrored', () => {
+    for (const patient of PATIENTS) {
+      for (const part of ['feet', 'ear'] as const) {
+        const s = partSpot(patient, part);
+        expect(nearestPart(patient, -s.x, s.y), `${patient} left ${part}`).toBe(part);
+        expect(nearestPart(patient, -s.x, s.y, SCRAPE_PARTS), `${patient} left ${part} among the boo-boo places`).toBe(part);
+      }
+    }
+  });
+
   it('tells body parts apart: each part is found at its own spot on every patient', () => {
     for (const patient of PATIENTS) {
       for (const part of AIM_PARTS) {
