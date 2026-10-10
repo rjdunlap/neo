@@ -19,6 +19,14 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Duck Pond deep dive
+
+- Wrote `docs/deep-dives/duck-pond.md` and updated the tracker, the IDEAS rows for Duck Pond (including Count the Peekers and the Kacheek Seek note), the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check, plus a one-line pointer in the Bubble Pop deep dive's evens-and-odds sketch. No code, tests or scripts changed.
+- Research: opened and read the Common Core pages for K.CC, K.OA, K.NBT, K.MD, 1.OA and 2.OA, the Math Learning Center's Number Frames page, the Wikipedia pages for *Five Little Ducks* and *Hi Ho! Cherry-O*, and the IES subitizing progression (text extracted with `pdftotext`). *Count Your Chickens*, *Sum Swamp*, *Endless Numbers*, *Moose Math*, Khan Academy Kids, Counting Collections, the rekenrek pages, Kacheek Seek, Gelman and Gallistel's principles, Wynn's Give-N and Clements's subitizing are search summaries only, marked so in the write-up. *Potato Counter* was not opened.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
+- Read from the code, not played: the pad glows after one miss and hints count on every miss from the second, levels 1–5 can never be missed (so they climb on round count), the hidden ducks of level 11 are never shown, the pond is capped at ten places and pads at 1–10, `LEVELS.school.max` is hard-coded at 11, `duck.extra` is never spoken and the sticker has no pinned test.
+- Open: every proposed level and entry is unbuilt; teen number words, the toddler window's top level and the bridge on an iPad are unchecked on a device or with a child.
+
 ## 2026-10-10 — Pet Says deep dive
 
 - Wrote `docs/deep-dives/pet-says.md` and updated the tracker, the IDEAS round-two and "younger ladders" rows, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check, plus a one-line ownership note in the Opposites deep dive. No code, tests or scripts changed.
