@@ -26,7 +26,7 @@ import { HowToPanel, questionIcon } from '../../ui/howto-card';
 import { discoveryPill } from '../../ui/journal-art';
 import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
-import type { App, StoryRound } from '../App';
+import type { App, Origin, StoryRound } from '../App';
 import { Scene } from '../Scene';
 
 /**
@@ -58,12 +58,14 @@ export class GameScene extends Scene {
   constructor(
     app: App,
     private readonly mod: GameModule,
-    /** The place she came from: its age band sets the levels. */
+    /** The band whose levels this round plays: one the game has, resolved by the route (`playBand`). */
     private readonly band: Band,
     /** Set when the round is a picnic request: it plays the story's level and goes home to the picnic. */
     readonly story?: StoryRound,
     /** She tapped "again" after a round: no card, she has just seen it. */
     private readonly again = false,
+    /** Where the game was opened from: home goes back there. */
+    readonly origin?: Origin,
   ) {
     super(app);
   }
@@ -241,10 +243,14 @@ export class GameScene extends Scene {
     this.goHome();
   }
 
-  /** Back to the place she came from, or to the picnic for a story round. */
+  /** Back to where she came from (a land, a place, the journal), to the picnic for a story round, or else to her home spot. */
   private goHome() {
+    const from = this.origin;
     if (this.story) this.app.go.picnic(this.story.step);
-    else this.app.go.place(this.band);
+    else if (from && 'land' in from) this.app.go.land(from.land);
+    else if (from && 'place' in from) this.app.go.place(from.place);
+    else if (from && 'journal' in from) this.app.go.journal();
+    else this.app.go.place(store.data.profile.band);
   }
 
   private finish(result: RoundResult) {
@@ -333,7 +339,7 @@ export class GameScene extends Scene {
       await this.tw.wait(1.8);
     }
 
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true));
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true, this.origin));
     const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.goHome());
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);

@@ -6,17 +6,14 @@ import type { Band } from '../progress/bands';
 import type { LineId } from './voice-script';
 
 /**
- * The island is an age trail that switches back and forth from the lagoon on the shore, up past the peak to the woods. Each place holds
- * every game for its age band, at that band's levels. Places are open to everyone.
+ * The age places, one for each band, from the lagoon on the shore up past the peak to the woods. On the map of lands
+ * a person's own age place is their home spot, holding every game for their age and younger; a birthday changes it.
  */
 export interface Place {
   band: Band;
   /** Kid-facing name, spoken when she taps it. */
   name: string;
   line: LineId;
-  /** Fractions of the map's usable rectangle. */
-  x: number;
-  y: number;
   backdrop: BackdropStyle;
   landmark(): Container;
 }
@@ -88,8 +85,6 @@ export const PLACES: Place[] = [
     band: 'lap',
     name: 'Puddle Lagoon',
     line: 'place.lap',
-    x: 0.1,
-    y: 0.95,
     landmark: lagoon,
     backdrop: { sky: [swatch.blue.light, cream], hills: [swatch.teal.light, swatch.blue.light, swatch.yellow.light], horizon: 0.5, clouds: 3, sun: true, seed: 31 },
   },
@@ -97,8 +92,6 @@ export const PLACES: Place[] = [
     band: 'toddler',
     name: 'Daisy Meadow',
     line: 'place.toddler',
-    x: 0.62,
-    y: 0.76,
     landmark: meadow,
     backdrop: { sky: [swatch.blue.light, cream], hills: [swatch.green.light, grass, grass], horizon: 0.5, clouds: 3, sun: true, seed: 47 },
   },
@@ -106,8 +99,6 @@ export const PLACES: Place[] = [
     band: 'preschool',
     name: 'Bumpy Hills',
     line: 'place.preschool',
-    x: 0.16,
-    y: 0.54,
     landmark: hills,
     backdrop: { sky: [swatch.teal.light, cream], hills: [swatch.teal.light, swatch.green.light, grass], horizon: 0.5, clouds: 3, sun: true, seed: 53 },
   },
@@ -115,8 +106,6 @@ export const PLACES: Place[] = [
     band: 'prek',
     name: 'Starry Peak',
     line: 'place.prek',
-    x: 0.86,
-    y: 0.34,
     landmark: peak,
     backdrop: { sky: [swatch.purple.light, cream], hills: [swatch.purple.light, swatch.blue.light, grass], horizon: 0.5, clouds: 2, sun: true, seed: 71 },
   },
@@ -124,8 +113,6 @@ export const PLACES: Place[] = [
     band: 'school',
     name: 'Wonder Woods',
     line: 'place.school',
-    x: 0.42,
-    y: 0.04,
     landmark: woods,
     backdrop: { sky: [swatch.green.light, cream], hills: [swatch.teal.light, swatch.green.light, grass], horizon: 0.5, clouds: 2, sun: true, seed: 83 },
   },

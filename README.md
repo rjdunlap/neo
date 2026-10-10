@@ -8,7 +8,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 What's in it:
 
-- **74 small games** on an age trail of five places, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
+- **74 small games** in ten themed lands on one island map, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
 - **A pet** she hatches and names, a **sticker book**, and the pet's **treehouse**, where things she made hang on the wall and a discovery journal fills up.
 - **The Windy Picnic**, a short story that connects three activities.
 - **Couch play** for two grown-ups with controllers or a keyboard on a computer: trips, face-offs and challenge courses, with its own save.
@@ -19,7 +19,7 @@ What's in it:
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # unit tests: saves, difficulty, the age trail, every game's rules, tracing, matching
+npm test           # unit tests: saves, difficulty, the lands, every game's rules, tracing, matching
 npm run build      # type-check + production build into dist/
 ```
 
@@ -49,16 +49,16 @@ Couch play is for a computer or TV with a keyboard or controller and is not a ph
 
 ## The island and its games
 
-The island is an **age trail**. It climbs from **Puddle Lagoon** (lap, under 2) on the shore through **Daisy Meadow** (toddler, 2) and **Bumpy Hills** (preschool, 3) to **Starry Peak** (pre-K, 4 and 5), and over the top to **Wonder Woods** (early school, 6 and up; its games are made for 6 to 8). Each place lays out every game for that age, at that age's levels. A game that grows with her, like Bubble Pop, stands in each place it supports. Choosing her card on **Who's playing?** goes straight to her own place; the island button there opens the trail, where her pet waits by her place and every place is open to explore. When there are more games than fit, swipe the land sideways or tap the arrows. When her age (from the birth month and year a grown-up gave) or a grown-up moves her up a band, the pet has a birthday and walks up the trail.
+The island is a world of **ten themed lands**: **Bubble Beach** (4 games), **Music Mountain** (5), **Paint Pier** (4), **Barnyard** (6), **Counting Cove** (7), **Cozy Village** (11), **Rainbow Meadow** (7), **Puzzle Peaks** (11), **Story Grove** (8) and **Tinker Lab** (11). Each is one screen with a host who greets her and suggests a game, and shows its games for her age and younger, each played at the levels nearest her age; a **signpost** turns the land to its games for bigger kids, at their easiest levels. Her **home spot** on the map is her age place, from **Puddle Lagoon** (lap, under 2) through **Daisy Meadow** (toddler, 2), **Bumpy Hills** (preschool, 3) and **Starry Peak** (pre-K, 4 and 5) to **Wonder Woods** (early school, 6 and up; its games are made for 6 to 8), and lays out every game for her age and younger along one path (swipe the land sideways or tap the arrows). Choosing her card on **Who's playing?** opens the map, where her pet waits by the land she was in last; a land twinkles while it holds a game she has not played, and home from a game goes back to the land it came from. When her age (from the birth month and year a grown-up gave) or a grown-up moves her up a band, the pet has a birthday and her home spot becomes the next age place.
 
-**Who's playing?** is the front door: a card for each person on the device (a friend's face and a name) and **Add a player** (a name, a birth month and year, and a friend). A **tap or click** opens the island as that person; **Enter or a controller button** opens couch play with that person as Player 1, and so does the small controller button on each card. Their birth month and year set where the island starts and move them up by themselves; every place stays open. The map's top-left button comes back here for someone else's turn.
+**Who's playing?** is the front door: a card for each person on the device (a friend's face and a name) and **Add a player** (a name, a birth month and year, and a friend). A **tap or click** opens the island as that person; **Enter or a controller button** opens couch play with that person as Player 1, and so does the small controller button on each card. Their birth month and year set their home spot and where levels start, and move them up by themselves; every land stays open. The map's top-left button comes back here for someone else's turn.
 
-There are seventy-four games, listed below. "Ages" lists the places each game appears in; "school" is the early-school band at Wonder Woods (ages 6–8), where 52 games play their most demanding levels. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
+There are seventy-four games, listed below. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–8), where 52 games play their most demanding levels. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
 | Bubble Pop | lap–school | pop anything | pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 |
-| Rainbow Fingers | lap–school | rainbow or color-pot finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl |
+| Rainbow Fingers | lap–school | rainbow or color-pot finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering and mixing a pumpkin’s orange |
 | Jelly Drums | lap–school | free play on five notes | copy a tune of 2 to 5 notes |
 | Song Maker | lap–school | tap jellies on a looping beat | copy songs by shadows or a card, continue a pattern, find a tune by ear |
 | Peekaboo Barn | lap–pre-K | tap to find who's hiding | find an animal, then remember hiding places |
@@ -105,7 +105,7 @@ There are seventy-four games, listed below. "Ages" lists the places each game ap
 | Penguin Slide | preschool–school | tap the ice: the penguin slides until something stops it | plan two to six slides, two fish, soft snow that stops the penguin; undo and a hint arrow |
 | Secret Code | pre-K–school | fill a door's slots with stones; each slot says yes or no | yellow "wrong place" marks, more slots and colors, codes with a repeated color |
 | Frog Hop | preschool–school | hop to a number on the lily pads | one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20 |
-| Market Stall | preschool–school | count out shell coins for the price | ones and twos, fives, adding two prices, paying two different ways, giving change from 10 |
+| Market Stall | preschool–school | count out shell coins for the price | ones and twos, fives, adding two prices, paying two different ways, giving change from 10, paying with the fewest shells |
 | Lemonade Stand | school | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table | an event on the forecast (a ferry, a quiet day), a price in shells, then a five-day market week where a lemon (one shell, two cups) is a cost and the purse carries from day to day; running out or having cups left is a result, never a mistake |
 | Garden Grow | lap–preschool | tap the soil: a seed grows into a singing flower | rain from a cloud, planting the color asked for, exactly so many seeds, two colors with a number of each |
 | Clock Tower | pre-K–school | turn the short hand to an o'clock time | both hands, half past, quarter past and to, reading the clock for the time of day, one hour later |
@@ -144,7 +144,7 @@ Beside Daisy Meadow on the island map stands a picnic blanket: **the Windy Picni
 
 ## Your island friend and sticker book
 
-On the first visit, tap the egg four times, choose one of eight colors, then hear three pet names and pick one. A grown-up can type another name. The green arrow confirms each choice. The customized pet joins the trail, games, bath time, celebrations, and goodnight.
+On the first visit, tap the egg four times, choose one of eight colors, then hear three pet names and pick one. A grown-up can type another name. The green arrow confirms each choice. The customized pet joins the map, the lands, games, bath time, celebrations, and goodnight.
 
 The book button on the map or any place opens five scenes: meadow, beach, farm, under the sea, and space. Drag earned stickers from the tray onto a scene; return one to the tray to remove its placement. Scene arrows and tray arrows browse independently. Placements survive resizing, closing the app, and backups.
 
@@ -223,8 +223,9 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `phonefit` | A phone's needs: a faked notch and home indicator through the `--safe-*` properties (island inside them, the strips left plain cream, nothing on a scene's UI layer covered, a tap on a button, the grown-ups' gear and panel reachable), the turn prompt for an upright phone (390 × 844) on the island and not on **Who's playing?** (plain HTML that suits it), nor for a sideways phone, any tablet shape or a mouse (about 20 seconds) | |
 | `phone` | `phonefit`, then every game's middle level at 844 × 390: stray taps, nothing stranded at the origin or off the window on the UI layer, and a screenshot of each in `test-results/browser/phone/` (about 3 seconds a game) | `PHONE_ONLY=id,id` |
 | `grownups` | The gear on **Who's playing?** (a tap shows a hint, a mouse hold or held Enter opens the page without choosing a card, typing in the name field does not leave the page), Esc and the pause sheet in a game (the round holds still, Esc resumes, the sheet's gear opens the page and Esc closes that to the map), no play timer, undoing a reset after a reload, and a touch tap and hold on the map's gear (about 45 seconds) | |
-| `profiles` | **Who's playing?** from an empty device: only Add a player, the form refusing a missing name or birth and one that has not happened, Add filling the blank first profile (still at `neo.save`) and hatching an egg, a tap opening the island at the age's place, the map's button back, a 13-or-older player choosing a friend with no egg, Enter and the card's couch button opening couch play with that person as Player 1, an arrow key moving the ring, the grown-ups' page editing any player (birth, a chosen start band, following the age again, a birth that has not happened refused) and putting back whoever was playing, a backup of everyone, removing a player and their save, restoring from the file, a couch file refused, and a reload (about 1 minute) | |
-| `world` | Add a player, hatching, the map, both place layouts, every subject and game card in all bands and both orientations, return memory, cancellation, birthdays, the grown-ups' gear and panel (about 4½ minutes) | |
+| `profiles` | **Who's playing?** from an empty device: only Add a player, the form refusing a missing name or birth and one that has not happened, Add filling the blank first profile (still at `neo.save`) and hatching an egg, a tap opening the island map with the age's home spot, the map's button back, a 13-or-older player choosing a friend with no egg, Enter and the card's couch button opening couch play with that person as Player 1, an arrow key moving the ring, the grown-ups' page editing any player (birth, a chosen start band, following the age again, a birth that has not happened refused) and putting back whoever was playing, a backup of everyone, removing a player and their save, restoring from the file, a couch file refused, and a reload (about 1 minute) | |
+| `world` | Add a player, hatching, the lands map, a land's games against the rules, a game launched from a land and the way back to it, the home spot (both layouts: every subject and game card in all bands and both orientations, each game at its play band), return memory, cancellation, a birthday changing the home spot, the grown-ups' gear and panel (about 5 minutes) | |
+| `lands` | Every land at every band (all five sideways, lap and school upright): her games and the signpost's, all on one screen, every target at least 100 units, none overlapping, nothing at the origin; a bigger kids' game playing its easiest band and the turned signpost remembered; the host's suggestion; a land's twinkle on the map (about 2 minutes) | `LANDS_ONLY=barnyard,cozy-village` |
 | `island` | The NEW twinkle, the heart after a round, the shelf and Favorites card, a reload, a portrait shelf | |
 | `room` | The treehouse: moving, flipping and using furnishings, hanging a sticker, tidy, a reload | |
 | `creations` | Stamp Studio pictures, a free Rainbow Fingers painting, Pixel Pictures designs and a free Song Maker song kept from the end-of-round screen, shown in the treehouse, swapped, taken down and brought back, kept through a reload | |
@@ -267,6 +268,6 @@ With `npm run build-and-preview` running in another terminal:
 npm run test:offline
 ```
 
-The production check installs the service worker, disconnects the browser, reloads, starts in her place using subject cards, opens Counting Cove, plays Monster Munch, earns a sticker, and verifies the save survives another offline reload. It then opens the Windy Picnic from the map, finds the blanket, and checks that the step survives an offline reload; its seeded save predates stories, so it also checks that loading an older save adds the untold picnic. It also checks cached fonts and that the dev helpers are absent. Set `GAME_URL` to test another local port.
+The production check installs the service worker, disconnects the browser, reloads, opens the island map and her home spot (with subject cards), opens Counting Cove, plays Monster Munch, earns a sticker, and verifies the save survives another offline reload. It then opens the Windy Picnic from the map, finds the blanket, and checks that the step survives an offline reload; its seeded save predates stories, so it also checks that loading an older save adds the untold picnic. It also checks cached fonts and that the dev helpers are absent. Set `GAME_URL` to test another local port.
 
 A real iPad check is still needed for device speech, touch feel, Guided Access, and Add to Home Screen behavior.

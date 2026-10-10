@@ -21,8 +21,8 @@ export const THINGS: Thing[] = [
   { id: 'blueberry', color: 'blue', circles: [[0, 0, 82]] },
 ];
 
-/** free: rainbow painting. pots: pick a color. named: "paint the sun yellow". recall: "paint the sun" (what color is it?). mix: make the color from two pots. */
-export type PaintMode = 'free' | 'pots' | 'named' | 'recall' | 'mix';
+/** free: rainbow painting. pots: pick a color. named: "paint the sun yellow". recall: "paint the sun" (what color is it?). mix: make the color from two pots. recall-mix: remember the color, then mix it. */
+export type PaintMode = 'free' | 'pots' | 'named' | 'recall' | 'mix' | 'recall-mix';
 export interface PaintPlan {
   mode: PaintMode;
   /** Pictures on the page. */
@@ -36,6 +36,7 @@ export const PLANS: PaintPlan[] = [
   { mode: 'named', count: 3 },
   { mode: 'recall', count: 3 },
   { mode: 'mix', count: 2 },
+  { mode: 'recall-mix', count: 1 },
 ];
 
 export function planFor(level: number): PaintPlan {
@@ -57,6 +58,7 @@ export function mix(a: Primary, b: Primary): ColorName {
 
 /** The pictures for one page. Mixing pages only use colors that need mixing. */
 export function pickThings(plan: PaintPlan, rng: Rng): Thing[] {
+  if (plan.mode === 'recall-mix') return [THINGS.find((thing) => thing.id === 'pumpkin')!];
   const pool = plan.mode === 'mix' ? THINGS.filter((t) => RECIPES[t.color]) : THINGS;
   return rng.shuffle([...pool]).slice(0, plan.count);
 }
@@ -129,7 +131,7 @@ export function paintStep(s: PaintState): PaintMove | null {
   }
   if (!s.picture) return null;
   if (s.brush === s.picture) return { do: 'stroke' };
-  if (s.mode !== 'mix') return { do: 'pot', pot: s.picture };
+  if (s.mode !== 'mix' && s.mode !== 'recall-mix') return { do: 'pot', pot: s.picture };
   const [a, b] = RECIPES[s.picture]!;
   // One primary is in the bowl: add the other. Anything else in a half-full bowl is emptied first (a third pour would also start over).
   if (s.poured.length === 1) return s.poured[0] === a ? { do: 'pot', pot: b } : s.poured[0] === b ? { do: 'pot', pot: a } : { do: 'bowl' };

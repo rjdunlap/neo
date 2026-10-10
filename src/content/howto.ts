@@ -33,7 +33,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Tap a paint pot to pick a color and hear its name, then drag a finger across the page to paint.' },
       { from: 3, to: 4, text: 'Tap the paint pot for the color asked, then drag a finger across the named part, like the sun.' },
       { from: 5, to: 5, text: 'Think what color the named thing is (an apple), tap that paint pot, then drag a finger across it.' },
-      { from: 6, text: 'Tap two paint pots to pour them into the bowl, then drag a finger across the named part to paint it with the mixed color.' },
+      { from: 6, to: 6, text: 'Tap two paint pots to pour them into the bowl, then drag a finger across the named part to paint it with the mixed color.' },
+      { from: 7, to: 7, text: 'Remember the pumpkin’s color, then tap two paint pots to mix it before dragging a finger across the pumpkin.' },
     ],
     finish: [
       { to: 2, text: 'The round ends once there is plenty of color on the page.' },
@@ -613,11 +614,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 3, text: 'Tap coins onto the counter to add up the price, then ring the bell.' },
       { from: 4, to: 4, text: 'Add the two prices, tap coins onto the counter to pay for both, then ring the bell.' },
       { from: 5, to: 5, text: 'Pay the price and ring the bell, then buy another one at the same price and pay a different way with other coins, ringing the bell again.' },
-      { from: 6, text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.' },
+      { from: 6, to: 6, text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.' },
+      { from: 7, text: 'Tap coins onto the counter to pay the price with as few shells as you can, then ring the bell; tap a coin on the mat to put it back and swap it.' },
     ],
     finish: [
       { to: 5, text: 'The round ends when the right amount has been paid.' },
-      { from: 6, text: 'The round ends when the right change has been given.' },
+      { from: 6, to: 6, text: 'The round ends when the right change has been given.' },
+      { from: 7, text: 'The round ends when the price has been paid with the fewest shells.' },
     ],
   },
   'garden-grow': {

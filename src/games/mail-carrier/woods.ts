@@ -1,6 +1,7 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { cream, grass, ink, swatch, wood } from '../../art/palette';
+import { makeHazel } from '../../art/lands';
+import { cream, grass, swatch, wood } from '../../art/palette';
 import { flower, starPoints } from '../../art/shapes';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
@@ -57,16 +58,6 @@ function signBadge(sign: Sign, r = 30): Container {
   return c;
 }
 
-/** Hazel, the squirrel postkeeper: a critter with a bushy tail behind. */
-function squirrel(): Container {
-  const c = new Container();
-  const tail = new Graphics()
-    .moveTo(60, -40).bezierCurveTo(190, -60, 200, -230, 120, -270).bezierCurveTo(70, -290, 40, -250, 70, -220).bezierCurveTo(130, -200, 120, -110, 50, -90).closePath()
-    .fill(swatch.orange.fill).stroke(line(swatch.orange.line, 6));
-  const body = new Critter({ color: 'orange', ears: 'pointy', snout: 'nose', noseColor: ink, belly: true, tuft: true });
-  c.addChild(tail, body);
-  return c;
-}
 
 export class WoodsHouseView extends Container {
   readonly glow = new Graphics().circle(0, -30, 78).fill({ color: 0xfff3a0, alpha: 0.9 });
@@ -141,7 +132,7 @@ export class WoodsMail implements Game {
   private readonly office = new Container();
   private readonly keyCard = new Graphics();
   private readonly walker: Critter;
-  private readonly hazel = squirrel();
+  private readonly hazel = makeHazel();
   private wrongs = 0;
   private rect = { x: 0, y: 0, w: 0, h: 0 };
   /** The node the walker stands at, unless it is on its way somewhere. */
@@ -161,10 +152,10 @@ export class WoodsMail implements Game {
     const tree = new Graphics()
       .roundRect(-34, -90, 68, 96, 18).fill(wood.fill).stroke(line(wood.line, 5)).ellipse(0, -36, 16, 24).fill(wood.line)
       .circle(-34, -100, 34).circle(0, -126, 40).circle(34, -100, 34).fill(swatch.green.fill);
-    this.hazel.scale.set(0.24);
-    this.hazel.position.set(-62, 8);
-    ctx.track(this.hazel.children[1] as Critter);
-    this.office.addChild(tree, this.hazel);
+    this.hazel.node.scale.set(0.24);
+    this.hazel.node.position.set(-62, 8);
+    ctx.track(this.hazel.critter);
+    this.office.addChild(tree, this.hazel.node);
     this.office.eventMode = 'none';
     this.board.addChild(this.paper, this.decor, this.paths, this.preview, this.office);
     this.woods.forEach((house, i) => {
@@ -474,7 +465,7 @@ export class WoodsMail implements Game {
     if (this.finished) return;
     this.finished = true;
     sfx.tada();
-    (this.hazel.children[1] as Critter).cheer();
+    this.hazel.critter.cheer();
     for (const h of this.houses) void h.peek(this.ctx.tw, true);
     await this.ctx.say('mail.done');
     await this.ctx.tw.wait(0.8);

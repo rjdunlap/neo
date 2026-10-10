@@ -2,7 +2,7 @@
 
 What each game does and the design decisions behind its rules: what counts as a miss, what a hint shows, how the levels grow, and what was learned while building it. The [README inventory](../README.md#the-island-and-its-games) is the one-line summary and the game count; `src/games/registry.ts` and each game's `logic.ts` are the source of truth; the grown-up how-to cards in `src/content/howto.ts` say how to play each one. Shared systems (the shell, saves, the treehouse, couch play) are in [DESIGN.md](DESIGN.md).
 
-Games are grouped by subject, the stable IDs in `src/content/world.ts` that group them inside a place. Each entry gives the bands it plays in (from the registry) and, where there is one, what inspired it. Some games also play on the couch; [COUCH-PLAY.md](COUCH-PLAY.md) lists them.
+Games are grouped by subject, the stable IDs in `src/content/world.ts`. Each game also has a home land on the island map (`LANDS` in `src/content/lands.ts`); today each land holds one subject's games under the subject's name, and the art subject's land is Paint Pier. Each entry gives the bands it plays in (from the registry) and, where there is one, what inspired it. Some games also play on the couch; [COUCH-PLAY.md](COUCH-PLAY.md) lists them.
 
 When a game changes, update its entry here. A new game gets an entry in its subject.
 
@@ -46,11 +46,11 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 *preschool–school · after Chrome Music Lab's Rhythm and step sequencers.* A step-sequencer grid with a looping playhead: rows are drum, clap and bell, columns are 4 or 8 steps. Free play finishes with a green check once a beat has gone round twice. Copying a visible beat leaves wrong squares off as gentle misses; copying by ear has a listen button and a check (two misses show where the beats differ); repeat levels give the first half and ask for the second to match. The game uses a near-silent `quiet` music style so the child's beat is the music.
 
-## Treehouse (art)
+## Paint Pier (art)
 
 ### Rainbow Fingers
 
-*lap–school.* Finger painting that grows over six levels: rainbow or color-pot painting, paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), and mixing colors in a bowl. Any color is welcome in free painting. Lap play includes the second, unjudged free-play mode (color pots). A painting from either open-ended level can be kept on the treehouse picture board (bounded, normalized marks, never a bitmap); guided coloring pages offer nothing to keep.
+*lap–school.* Finger painting that grows over seven levels: rainbow or color-pot painting, paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering that a pumpkin is orange and mixing it. Any color is welcome in free painting. Lap play includes the second, unjudged free-play mode (color pots). A painting from either open-ended level can be kept on the treehouse picture board (bounded, normalized marks, never a bitmap); guided coloring pages offer nothing to keep.
 
 ### Fluffy Salon
 
@@ -148,7 +148,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Market Stall
 
-*preschool–school · after Neopets shops and pretend shops.* Tap shell coins worth 1, 2 and 5 onto the mat; tap one on the mat to take it back (the nearest coin to the finger); ring the bell. Price tags show the numeral and dots. Running totals are said aloud except where adding up is the puzzle (two items, giving change). Later levels pay two prices together, pay the same price a second, different way, and give change from a customer's 10. Too much or too little is a miss with a spoken comparison; two bring faint coins showing one way.
+*preschool–school · after Neopets shops and pretend shops.* Tap shell coins worth 1, 2 and 5 onto the mat; tap one on the mat to take it back (the nearest coin to the finger); ring the bell. Price tags show the numeral and dots. Running totals are said aloud except where adding up is the puzzle (two items, giving change). Later levels pay two prices together, pay the same price a second, different way, give change from a customer's 10, then pay prices from 4 to 10 with the fewest shells. An exact but longer payment at that last step stays on the mat with an invitation to swap; repeating the invitation counts as a miss. Too much or too little is a miss with a spoken comparison; two bring faint coins showing one way.
 
 ### Lemonade Stand
 

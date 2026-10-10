@@ -254,6 +254,8 @@ Today the pet is one creature design (`pip`) in nine colors, which she names (`p
 | **A couch companion** | Her own pet in couch play (a kind, a color and the name she already types), beside the child's | Stored in the couch save, bounded; it cheers on the finale and the shelf, takes the second seat in Bounce Back and the second cursor in co-op. Never touches the child's pet | S–M |
 | **Habitat kits** | A new environment is a bundle: a backdrop style, three or four critters, a prop set and music, then a few existing games dressed in its cast | Candidates: **Tide Pools and Reef** (crab, starfish, octopus, fish), **Rainforest Canopy** (monkey, parrot, sloth, frog), **Desert Oasis** (camel, fennec fox, lizard), **Savanna** (giraffe, zebra, elephant), **Bamboo Hill** (panda, red panda, crane) and **Night Garden** (owl, hedgehog, fireflies). Each should attach to a zone already proposed in the roadmap rather than become a seventh place; pick one and prove a cast swap in two games | M per kit |
 | **Couch backdrops** | Each course and shelf screen gets a scene instead of plain paper | `Backdrop` styles are code-drawn and cheap: a daylight frozen pond for Pond Practice, an aurora night for the Five Ponds, a sunrise sky for Cloud Hopper, lantern night for the shelf | S |
+| **Favorites on the map** (proposal, after the lands) | Her hearted games one tap from the map, not only on the home spot's shelf | A heart-shaped signboard spot on the map, or the shelf in the map's sky, launching at `playBand` with the map as the origin. Needs room among the twelve spots and a reason (does she use the hearts at all?) | S |
+| **A host who knows her** (proposal, after the lands) | A land's host says her name and remembers what she played there last ("Want to stack the tower again?") | Spoken lines with `{name}` and a game title; the host's suggestion already prefers unplayed and long-unplayed games (`suggest` in `src/content/lands.ts`). No obligation, no "you have not visited" | S |
 
 ## Extend existing games before making duplicates
 
@@ -620,7 +622,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
-| Rainbow Fingers (L–S · 6) | More coloring pages, and more things for "what color is an apple?" | R1: 7 *paint the pumpkin* | — |
+| Rainbow Fingers (L–S · 7) | More coloring pages, and more things for "what color is an apple?" | **Built 2026-10-10:** 7 *paint the pumpkin* | — |
 | Fluffy Salon (L–K · 5) | Accessories as a sixth tool (a bow, a hat) | **6, Two customers:** two tickets, styled one after the other | — |
 | Stamp Studio (L–S · 6) | **Stamp sets**: sea, space, farm and a picnic. Open-ended play gets more from content than from levels | — | — |
 | Pixel Pictures (P–S · 5) | More pictures per level (fifteen today, across three grid sizes) | **6, Two-color picture logic:** each clue number has a color. This is a new decision, not just a bigger grid | — |

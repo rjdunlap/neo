@@ -2,9 +2,10 @@ import { playerChanged, selectPlayer } from '../app/players';
 import { applySettings } from '../app/settings';
 import { voice } from '../audio/voice';
 import { GAMES } from '../games/registry';
-import { BANDS, type Band } from '../progress/bands';
+import { BANDS, playBand, type Band } from '../progress/bands';
 import { bandForYears, cardName, checkBirthInput, completedYears, isBlankProfile } from '../progress/profiles';
 import { store } from '../progress/store';
+import { visibleGames } from '../content/lands';
 import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
 
@@ -63,7 +64,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
         <input id="p-year" type="number" inputmode="numeric" placeholder="e.g. ${new Date().getFullYear() - 3}" />
       </div>
       <p class="muted" data-age></p>
-      <p class="muted">With a birth month and year, their age picks the band by itself and moves them up as they grow. Choose a band below to start somewhere else instead. Every place stays open to explore; each plays its games at that age's levels. The birth month and year stay on this device, and are in the backup file.</p>
+      <p class="muted">With a birth month and year, their age picks the band by itself and moves them up as they grow. Choose a band below to start somewhere else instead. It sets their home spot on the map and the levels games start at. Every land stays open: a land shows the games for their age and younger, each at the levels nearest their age, and its signpost leads to games for bigger kids at their easiest levels. The birth month and year stay on this device, and are in the backup file.</p>
       <div class="parent__bands" data-bands>
         ${BANDS.map((b) => `<button type="button" data-band="${b.id}">${b.label}<small>${b.ages} · ${esc(placeFor(b.id).name)}</small></button>`).join('')}
       </div>
@@ -92,10 +93,10 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
 
       <h2>Finding games</h2>
       <div class="parent__row">
-        <label for="p-layout">Place layout</label>
+        <label for="p-layout">Home spot layout</label>
         <select id="p-layout"><option value="path">Swiping path (original)</option><option value="subjects">Subject cards (try on iPad)</option></select>
       </div>
-      <p class="muted">Subject cards show four large choices at a time. Try both layouts when finding and returning from a favorite game.</p>
+      <p class="muted">The home spot on the map holds every game for their age in one place. Subject cards show four large choices at a time; the swiping path shows them all along one path.</p>
 
       <h2>Sound</h2>
       <p class="muted">Kept for each player.</p>
@@ -331,13 +332,14 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
 function weekSummary(): string {
   const since = Date.now() - 7 * DAY;
   const band = store.data.profile.band;
-  const games = GAMES.filter((g) => g.bands.includes(band));
+  // What the lands show her: every game for her age and younger, each with the levels it plays for her.
+  const games = visibleGames(band, GAMES);
   const rows = games.map((g) => {
     const stats = store.stats(g.id);
     const recent = stats.history.filter((r) => r.at >= since);
     const seconds = recent.reduce((t, r) => t + r.seconds, 0);
     const minutes = seconds > 0 ? Math.max(1, Math.round(seconds / 60)) : 0;
-    const range = g.levels(band);
+    const range = g.levels(playBand(g.bands, band));
     const now = store.levelFor(g.id, range);
     const options = [`<option value="">Automatic</option>`];
     for (let l = range.min; l <= range.max; l++) {
@@ -352,18 +354,18 @@ function weekSummary(): string {
         <td>${recent.length}</td><td>${minutes}</td>
       </tr>`;
   });
-  // Every place is open, so she may also have played games meant for other ages.
-  for (const g of GAMES.filter((g) => !g.bands.includes(band))) {
+  // A land's signpost leads to games for bigger kids, so she may also have played some of those.
+  for (const g of GAMES.filter((g) => !games.includes(g))) {
     const recent = store.stats(g.id).history.filter((r) => r.at >= since);
     if (!recent.length) continue;
     const minutes = Math.max(1, Math.round(recent.reduce((t, r) => t + r.seconds, 0) / 60));
-    rows.push(`<tr><td><strong>${esc(g.name)}</strong><br><span class="muted">Played in another place on the trail</span></td><td>${recent.length}</td><td>${minutes}</td></tr>`);
+    rows.push(`<tr><td><strong>${esc(g.name)}</strong><br><span class="muted">A game for bigger kids, from a signpost</span></td><td>${recent.length}</td><td>${minutes}</td></tr>`);
   }
   const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
   const ideas = (played.length ? played : games).filter((g) => g.offScreen).slice(0, 2);
   return `
-    <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Games for her age band are shown with levels for that band, plus anything she played elsewhere on the trail this week.</p>
+    <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Every game for her age and younger is shown with the levels it plays for her, plus any game for bigger kids she played this week.</p>
     <table>
       <tr><th>Game and level</th><th>Rounds</th><th>Minutes</th></tr>
       ${rows.join('')}

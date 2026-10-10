@@ -259,8 +259,8 @@ export class ChooserScene extends Scene {
     void voice.say('start.hi');
     await this.tw.wait(1.3);
     if (this.closed) return;
-    // Straight to their own place on the trail; the island button leads to the whole map.
-    if (store.data.pet.hatched) this.app.go.place(store.data.profile.band);
+    // To the island map: the lands, their home spot and the picnic, with their friend waiting where they were last.
+    if (store.data.pet.hatched) this.app.go.hub();
     else this.app.go.hatch(skipsEgg(store.entry.birth, new Date()));
   }
 
