@@ -57,6 +57,22 @@ Most sessions should build from this list; checks that need a person or a device
 5. **Bouncy Launch**: predict which cloud a shown pull will reach, as an unscored prediction. First confirm that the pull-to-cloud mapping is deterministic.
 6. **Rainbow Fingers**: "Paint the pumpkin", recalling that it is orange and then mixing it.
 
+**Then, from the [second ladder round](IDEAS.md#round-two-the-longer-ladders-2026-10-10) (2026-10-10, proposals).** That round covers the longer school ladders the audit skipped. Each item is one level appended above the game's current top, and the detail page says what its rule tests assert.
+
+7. **Market Stall 7, Fewest coins**: pay with as few shells as possible.
+8. **Clock Tower 7, Five-minute times**: count by fives around the face to set 3:25. First check that twelve snap marks stay 100 units apart.
+9. **Frog Hop 7, Hop to ten first**: split a sum that crosses ten at 10 (8 + 2 + 3).
+10. **Seesaw Balance 10, Two steps**: take the same off both sides, then share what is left between two boxes.
+11. **Secret Code 7, Detective door**: deduce the one code that fits guesses already on the door.
+12. **Robot Path 11, Fix the program**: find and change the one wrong slot (authored boards).
+13. **Egg Catch 7, Set it once**: one gate setting that routes a brown egg and a white egg.
+14. **Light Lab 7, Where will it shine?**: predict where the locked beam stops (unscored), then plan.
+15. **Duck Pond 11, Hiding ducks**: the whole is known, so how many are hiding under the bridge?
+16. **Word Monsters 8, Change the end**: cat, cap, can. Device speech is still unchecked.
+17. **Mail Carrier 8, Which way is shorter?**: needs a second map with a loop.
+
+Two pre-K ceilings could also grow: Feelings Faces 8 (*how can we help?*) and Weather Wardrobe 7 (*the weather changes*). The round's costlier steps are Photo Safari's two-clue scenes, elapsed time, two different unknowns and Garden Rows boxes; its "leave" verdicts are on the same page.
+
 Costlier, after these: Sink or Float's *make it float* is the strongest. **Ramp Race**'s "predict where the car stops" must have its finish rule and the half-marks the model produces (such as 1.5 × 3) worked out before it is built, and a recorded-trials table is a new screen. Fourteen more need a new interaction, art or a stated model first, and twelve should stay as they are; the older-band ceilings of Opposites, Goodnight Room, Stop and Go and Clap the Syllables wait for a reason to grow them ([audit](IDEAS.md#short-ladder-audit-2026-10-09)).
 
 ## Waiting on the developer
