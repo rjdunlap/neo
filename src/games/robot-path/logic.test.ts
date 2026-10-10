@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { compress, expand, nextPress, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
+import { compress, expand, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
 
 describe('robot routes', () => {
+  it('gives each shown prediction a distinct, reachable stop before the star', () => {
+    expect(new Set(PREDICT_PLANS.map((plan) => plan.mode))).toEqual(new Set(['steps', 'counts']));
+    for (const plan of PREDICT_PLANS) {
+      const end = predictionEnd(plan);
+      const withoutRocks = predictionEnd({ ...plan, rocks: [] });
+      const readBackwards = predictionEnd({ ...plan, program: [...plan.program].reverse() });
+      expect(end.every((n) => n >= 0 && n < plan.size), plan.name).toBe(true);
+      expect(end).not.toEqual(plan.goal);
+      expect(end).not.toEqual(withoutRocks);
+      expect(end).not.toEqual(readBackwards);
+    }
+  });
+
   it('makes every level solvable inside the program limit', () => {
     for (const plan of ROBOT_PLANS.filter((p) => !p.mode)) {
       const route = shortestPath(plan);

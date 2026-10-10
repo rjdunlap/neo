@@ -456,8 +456,29 @@ async function traceRound(level, name, wrong = false) {
 }
 
 async function robots() {
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 10; level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 10); level++) {
+    if (level === 11) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('robot-path', level);
+    if (level === 11) {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.prediction || !g.program.length) throw new Error('Prediction program was not built');
+        // A wrong prediction is a free experiment; the robot then shows the real stop.
+        kit.tapOn(g.predictionCells[4]); await kit.sleep(250);
+        if (!g.play.visible || g.queue.children.length !== g.plan.limit) throw new Error('Prediction controls or shown program are missing');
+      });
+      await page.waitForTimeout(250);
+      await screenshot('robot-path-prediction');
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        kit.tapOn(g.play);
+        if (!await kit.until(() => g.done, 12000)) throw new Error('Prediction playback did not finish');
+        if (g.misses !== 0 || g.hints !== 0) throw new Error('A prediction was counted as a miss or hint');
+      });
+      await finished('robot-path');
+      log('Robot Path level 11: a free prediction, step-through playback, and reward passed');
+      continue;
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let i = 0; i < 2; i++) {

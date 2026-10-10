@@ -1,6 +1,6 @@
 # Robot Path deep dive
 
-*ID `robot-path` · bands pre-K, school · levels 1–10 on 2026-10-10 · session `claude/roadmap-item-14-game-d0rjma` ([PR 82](https://github.com/rjdunlap/neo/pull/82))*
+*ID `robot-path` · bands pre-K, school · levels 1–11 on 2026-10-10 · session `claude/roadmap-item-14-game-d0rjma` ([PR 82](https://github.com/rjdunlap/neo/pull/82))*
 
 ## The game today
 
@@ -18,6 +18,7 @@ She builds a short program out of arrow buttons (up, right, down, left), presses
 | 8 | 5 × 5, a winding path, 4 slots | counts | school | four counted moves in order |
 | 9 | 5 × 5, a staircase of rocks, 2 slots + loop | loop | school | "right, down", then ×4 |
 | 10 | 5 × 5, rocks, 3 slots + loop | loop | school | a two-step body ("right ×2, down ×2"), then ×2 |
+| 11 | 5 × 5, one blocking rock, shown step or counted program | prediction | school | read a program, predict its stopping cell, then watch |
 
 **What a round draws from.** Nothing: it is **one authored board per level**, ten boards in all. Nothing uses the round's seeded RNG, so a replayed level is the same board. The program limit makes the idea necessary (the rule tests assert that the plain route does not fit the slots on levels 7–10 and that the given solution does). The hint follows a known solution (the breadth-first shortest route on levels 1–6, an authored one above).
 
@@ -120,8 +121,8 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 1. **Say what happened** (ready): the bump/stopped-short/empty messages, the hint that prefers a consistent known route, three new voice lines. Rule tests for `nextPress` on alternative valid routes. Tier: game rules plus typecheck; the voice test; one scripted play at level 6.
 2. **Three boards per level** (ready): `boards` per level, a seeded pick, the board-property tests for all ten levels. Tier: typecheck and the game's rule tests; `scripts/browser-check.mjs` `robots()` reads board geometry, so check it still plays (`BROWSER_SUITE=robot`).
 3. **Preschool at levels 1–2** (ready, person check afterwards): bands and registry tests. Tier: typecheck and the registry/bands tests.
-4. **Level 12, fix the program** (ready, after 2): the select-a-slot control, free first watch, authored boards, hint lit slot. New-level tier: rule tests, `fingerdemo` at the new level, one scripted play.
-5. **Level 11, where will it stop?** (ready): cell-tap layer, unscored prediction. Same tier.
+4. **Level 11, where will it stop?** (built 2026-10-10): a cell-tap layer for two shown programs (individual and counted steps), an unscored prediction and playback to the actual stopping square. Rule tests check that the correct stop differs from skipping the rock and reading the arrows backwards; the ghost finger predicts and plays it. Typecheck, rule tests, `robot` filtered to level 11 and `fingerdemo` at level 11.
+5. **Level 12, fix the program** (ready, after 2 and level 11): the select-a-slot control, free first watch, authored boards, hint lit slot. New-level tier: rule tests, `fingerdemo` at the new level, one scripted play.
 6. **Level 13, pick it up on the way** (ready): waypoint rule and art. Same tier.
 7. **Level 14, mend the loop** (after 4).
 8. **Level 15, a routine** (define first: the two-row UI, the call button and the bot).
@@ -129,4 +130,4 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 
 ## What was built in this session
 
-Nothing in the game. This session wrote the write-up and updated the tracker and the roadmap. No checks were run beyond a link check of the docs; the game's code was read, not changed.
+Level 11, Where will it stop?, is built from slice 4. The step-by-step and counted programs both stop at the rock; tapping a square is unscored, and playback shows where the program ends. The tracker and roadmap now reflect level 11. Checks are recorded in [VERIFICATION.md](../VERIFICATION.md); iPad target sizing, device speech and child play remain open.

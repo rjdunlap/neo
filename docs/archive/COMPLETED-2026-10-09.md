@@ -133,6 +133,10 @@ The last two followed (2026-10-09): **Quick Tricks** (both classes: the first sh
 
 The school ladder now reaches level 8. Keep the first two sounds in place and change the last sound to make the pictured word: cat, cap or can. The two spare endings make no other word with that beginning. New code-drawn cap and can pictures join the existing cat; three rounds use the same drag-to-slot interaction as level 7. The level has its own spoken instruction and scoped how-to step, and the bot chooses only the final letter. Device speech remains a stand-in for phonics and needs an iPad check.
 
+#### Robot Path 11: Where will it stop? (2026-10-10)
+
+The school ladder now asks the player to read a shown program, choose the square where the robot will stop, then watch it play. Both individual arrows and counted arrows are shown, with a rock that makes the actual stopping square differ from skipping the rock or reading the arrows backwards. Predictions are free experiments; a wrong guess is never a miss. The cell targets are 100 logical units across. The level has its own spoken instruction and scoped how-to step, and the ghost finger predicts and plays the program. Rule tests, the filtered level-11 round and its ghost-finger demonstration passed. iPad target review and device speech remain open.
+
 #### Treasure Map 5: two landmark clues (2026-10-10)
 
 Treasure Map's school range now reaches level 5 without changing its first four saved levels or pins. Each four-find round puts two different visible landmarks on the five-by-five parchment: a horizontal relation fixes the target column and a vertical relation fixes its row. The spoken, pictured clue card presents them in order; two wrong digs leave the usual marks and turn on the two actual landmark-to-target lines. Generated targets, landmarks and offsets stay in bounds and distinct, and the ghost finger continues to dig the generated target. Typecheck, the Treasure Map rule tests, a level-5 real-tap browser round (two wrong digs, hint, reward and portrait review), and its clean level-5 finger demonstration passed.
