@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { ALPHABET, fits, FIRST_WORDS, lookalike, makeQuestions, nextMonster, PLANS, sounded, WORDS } from './logic';
+import { ALPHABET, END_WORDS, fits, FIRST_WORDS, lookalike, makeQuestions, nextMonster, PLANS, sounded, WORDS } from './logic';
 
 describe('Word Monsters', () => {
   it('has a spoken sound for every letter', () => {
     for (const l of ALPHABET) expect(SCRIPT[`sound.${l}` as keyof typeof SCRIPT], l).toBeDefined();
+    expect(SCRIPT['monster.end']).toBeDefined();
   });
 
   it('always offers the answer, never twice, and never next to a lookalike', () => {
@@ -18,6 +19,12 @@ describe('Word Monsters', () => {
           expect(new Set(q.monsters).size).toBe(q.monsters.length);
           // Word families offer first sounds; the ending already stands in the slots.
           if (plan.mode === 'family') expect(q.fixed).toBe(q.answer.slice(1)), expect(q.monsters).toContain(q.answer[0]);
+          else if (plan.mode === 'end') {
+            expect(q.fixed).toBe(q.answer.slice(0, 2));
+            expect(END_WORDS).toContain(q.answer);
+            expect(q.monsters).toContain(q.answer[2]);
+            expect(q.monsters.filter((letter) => END_WORDS.some((word) => word.startsWith(q.fixed!) && word[2] === letter))).toEqual([q.answer[2]]);
+          }
           else for (const l of q.answer) expect(q.monsters).toContain(l);
           // Spare letters never look like a letter already in play.
           const spares = q.monsters.filter((l) => !q.answer.includes(l));
@@ -51,7 +58,7 @@ describe('Word Monsters', () => {
           continue;
         }
         for (const q of questions) {
-          const building = plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family';
+          const building = plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family' || plan.mode === 'end';
           // A word family's ending already stands in the slots, as monsters that cannot be picked up.
           const monsters = [...q.monsters.map((letter) => ({ letter, placed: false })), ...(q.fixed ?? '').split('').filter(Boolean).map((letter) => ({ letter, placed: true }))];
           if (!building) {
@@ -60,7 +67,7 @@ describe('Word Monsters', () => {
             continue;
           }
           // Drop the letter for each empty slot in turn; the game takes it only if it is that slot's letter.
-          let filled = 0;
+          let filled = plan.mode === 'end' ? 2 : 0;
           let drops = 0;
           while (filled < q.answer.length) {
             const pick = nextMonster(plan, q, monsters, filled, 0);

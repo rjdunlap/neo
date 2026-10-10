@@ -544,7 +544,7 @@ A **proposal**. The audit above read only the short ladders. This round reads th
 | **Egg Catch** (6 · 4–6) | The gates are locked: predict where the egg lands | **7, Set it once:** one brown and one white egg will drop from different hens. She sets the gates before either rolls so brown reaches the basket and white the nest, then taps go. One gate setting has to work for two paths | Every board has at least one setting that routes both eggs, and none routes both with the gates as dealt. The hint flips a gate the solution needs | S. It reuses the route and sort boards |
 | **Light Lab** (6 · 2–6) | A four-mirror path with spares and rocks | **7, Where will it shine?** Three locked-mirror predictions choose among reachable rock or edge endpoints; each replay explains the result without counting a miss. A fourth board returns to the ordinary plan puzzle. This is the [predict-then-compare](#extend-existing-games-before-making-duplicates) mode | Puzzle generation keeps three distinct reachable endpoints, including the actual one; the plan puzzle stays solvable | S–M. Three 100-unit targets on a 7 by 5 grid |
 | **Duck Pond** (10 · 8–10) | How many more make 10? | **11, Hiding ducks:** the sign says how many ducks live in the pond (5 to 10). Some paddle under the bridge, and she answers on lily pads how many are hiding. Part and whole with any total, not only ten | The hidden count is at least 1 and the total is at most 10. A wrong pad counts on aloud from the ducks she can see | S. The bridge is a new scenery shape in Graphics |
-| **Word Monsters** (7 · 5–7) | Word families: change the first sound (hat, cat, bat) | **8, Change the end:** the first two monsters stay and she changes the last sound (cat, cap, can). It is the same slot interaction as level 7, at the other end of the word | Every word in a set is a picturable three-letter word. The spare letters make no other real word in that slot | S. Picture art for the new words. Like every phonics level, its sounds need the [device-speech check](ROADMAP.md#needs-a-person-or-a-device) |
+| **Word Monsters** (8 · 5–8) | More picturable three-letter words | — | — |
 
 #### Extend later: a real next decision that costs more
 
@@ -688,7 +688,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | --- | --- | --- | --- |
 | Letter Trails (P–S · 8) | More words to trace | R1-later: lowercase | — |
 | Story Steps (T–S · 7) ([deep dive](deep-dives/story-steps.md)) | **Four stories today**, so add six more (a seed becomes an apple, washing the dog, making a sandwich, a rainy day, building a sandcastle, the pet's bedtime). Every level gains, and level 7's six-picture mix gets better | R1-later: choose the cause | — |
-| Word Monsters (L–S · 7) | More picturable three-letter words | R2: 8 *change the end* | — |
+| Word Monsters (L–S · 8) | More picturable three-letter words | — | — |
 | Photo Safari (L–S · 6) | **New actions** (swimming, climbing, waving) and animals | R2-later: two clues, no name | — |
 | Goodnight Room (L–P · 4) ([deep dive](deep-dives/goodnight-room.md)) | **One room today**; add a tent, a barn at night and a boat cabin. A seeded room draw and friends who start asleep are built | **5, Goodnight to every animal:** a category instead of a name, which opens a pre-K window; the deep dive adds 6–10 | — |
 | Rhyme Time (K–S · 4) | More rhyme families (twelve today) | — | Preschool, at level 1 |

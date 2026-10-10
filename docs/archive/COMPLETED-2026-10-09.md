@@ -129,6 +129,10 @@ The last two followed (2026-10-09): **Quick Tricks** (both classes: the first sh
 
 ### Short ladders: what was built and audited
 
+#### Word Monsters 8: Change the end (2026-10-10)
+
+The school ladder now reaches level 8. Keep the first two sounds in place and change the last sound to make the pictured word: cat, cap or can. The two spare endings make no other word with that beginning. New code-drawn cap and can pictures join the existing cat; three rounds use the same drag-to-slot interaction as level 7. The level has its own spoken instruction and scoped how-to step, and the bot chooses only the final letter. Device speech remains a stand-in for phonics and needs an iPad check.
+
 #### Treasure Map 5: two landmark clues (2026-10-10)
 
 Treasure Map's school range now reaches level 5 without changing its first four saved levels or pins. Each four-find round puts two different visible landmarks on the five-by-five parchment: a horizontal relation fixes the target column and a vertical relation fixes its row. The spoken, pictured clue card presents them in order; two wrong digs leave the usual marks and turn on the two actual landmark-to-target lines. Generated targets, landmarks and offsets stay in bounds and distinct, and the ghost finger continues to dig the generated target. Typecheck, the Treasure Map rule tests, a level-5 real-tap browser round (two wrong digs, hint, reward and portrait review), and its clean level-5 finger demonstration passed.

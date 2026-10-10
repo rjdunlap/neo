@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * that says its sound. The ladder goes from tapping to hear sounds, to finding a letter,
  * to matching first sounds, to building simple words sound by sound.
  */
-export type MonsterMode = 'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family';
+export type MonsterMode = 'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end';
 
 export interface MonsterPlan {
   mode: MonsterMode;
@@ -24,6 +24,7 @@ export const PLANS: MonsterPlan[] = [
   { mode: 'build', rounds: 3, choices: 3, name: 'Build a three-letter word with letters shown in the slots' },
   { mode: 'spell', rounds: 3, choices: 4, name: 'Build a three-letter word from its sounds, with a spare letter' },
   { mode: 'family', rounds: 6, choices: 4, name: 'Word families: change the first sound to make hat, cat, bat (two families)' },
+  { mode: 'end', rounds: 3, choices: 3, name: 'Change the end: keep the first two sounds and make cat, cap, can' },
 ];
 
 /** Word families: the ending stays, the first sound changes. Each word's onset is a plain consonant sound. */
@@ -61,13 +62,15 @@ export const FIRST_WORDS: Record<string, string> = {
 /** Three-letter words we can draw, each sounded out letter by letter. */
 export const WORDS = ['cat', 'dog', 'pig', 'sun', 'cup', 'hat', 'box'] as const;
 export type Word = (typeof WORDS)[number];
+export const END_WORDS = ['cat', 'cap', 'can'] as const;
+export const PICTURE_WORDS = [...WORDS, 'cap', 'can'] as const;
 
 export interface Question {
   /** The letter asked for (find/who/first), or the word to build. */
   answer: string;
   /** Monsters on the ground: letters, in screen order. */
   monsters: string[];
-  /** Word families: the ending already standing in the slots after the first. */
+  /** Letters already standing in fixed slots: a family ending (level 7) or beginning (level 8). */
   fixed?: string;
 }
 
@@ -95,6 +98,14 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
       }
     }
     return out;
+  }
+  if (plan.mode === 'end') {
+    for (const word of END_WORDS) {
+      // The first two letters are already in the slots. Only the answer makes a real word;
+      // the spare sounds cannot create another pictured word in this slot.
+      out.push({ answer: word, fixed: word.slice(0, 2), monsters: pickLetters(rng, plan.choices, [word[2]], ['x', 'z']) });
+    }
+    return rng.shuffle(out);
   }
   if (plan.mode === 'build' || plan.mode === 'spell') {
     for (const word of rng.shuffle([...WORDS]).slice(0, plan.rounds)) {
@@ -124,6 +135,6 @@ export const sounded = (word: string) => word.split('').map((l) => SOUNDS[l]).jo
  */
 export function nextMonster<M extends { letter: string; placed: boolean }>(plan: MonsterPlan, q: Question, monsters: readonly M[], filled: number, taps: number): M | undefined {
   if (plan.mode === 'play') return monsters.length ? monsters[taps % monsters.length] : undefined;
-  if (plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family') return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
+  if (plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family' || plan.mode === 'end') return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
   return monsters.find((m) => m.letter === q.answer);
 }
