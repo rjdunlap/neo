@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { flowerCount, hintMirror, makePuzzle, PLANS, reflect, solved, tiltFor, trace, type Dir, type Tilt } from './logic';
+import { beamEnd, flowerCount, hintMirror, makePuzzle, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type Tilt } from './logic';
 
 describe('Light Lab', () => {
   it('mirrors turn the beam a quarter, and the right tilt is found for every turn', () => {
@@ -59,6 +59,22 @@ describe('Light Lab', () => {
         }
         expect(solved(p, tilts)).toBe(true);
       }
+    }
+  });
+
+  it('level 7 predictions have three distinct reachable endpoints, including the real one', () => {
+    const plan = planFor(7);
+    for (let seed = 1; seed <= 200; seed++) {
+      const p = makePuzzle(plan, new Rng(seed));
+      const answer = beamEnd(p, p.start);
+      const choices = predictionChoices(p);
+      expect(solved(p, p.solution), `seed ${seed}`).toBe(true);
+      expect(solved(p, p.start), `seed ${seed}`).toBe(false);
+      expect(answer.kind === 'loop').toBe(false);
+      expect(choices.length, `seed ${seed}`).toBeGreaterThanOrEqual(3);
+      expect(choices[0].key).toBe(answer.key);
+      expect(new Set(choices.map((end) => `${end.targetX},${end.targetY}`)).size).toBe(choices.length);
+      expect(choices.every((end) => end.kind === 'edge' || end.kind === 'rock')).toBe(true);
     }
   });
 });

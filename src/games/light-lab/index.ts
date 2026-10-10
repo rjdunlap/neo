@@ -12,11 +12,11 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { hintMirror, makePuzzle, planFor, solved, trace, whyNot, type LightPlan, type LightPuzzle, type Tilt, type Tint } from './logic';
+import { beamEnd, hintMirror, makePuzzle, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Tilt, type Tint } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 6 },
+  school: { min: 2, max: 7 },
 };
 
 const CELL = 100;
@@ -116,6 +116,10 @@ class LightLab implements Game {
   private couchOn = false;
   private readonly ring = new Graphics();
   private botWait = 1;
+  private readonly predictionMarks = new Map<string, Container>();
+
+  private get predicting() { return this.plan.mode === 'predict' && this.index < 3; }
+  private get planning() { return this.plan.mode === 'plan' || (this.plan.mode === 'predict' && this.index >= 3); }
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -155,7 +159,7 @@ class LightLab implements Game {
       ring.circle(c.x, c.y, 52 + 3 * Math.sin(this.clock * 6)).stroke({ width: 8, color: swatch.teal.line });
     }
     // On planning levels the sun pulses to show it can be tapped.
-    if (this.plan.mode === 'plan' && !this.busy) this.sun.scale.set(1 + 0.05 * Math.sin(this.clock * 4));
+    if (this.planning && !this.busy) this.sun.scale.set(1 + 0.05 * Math.sin(this.clock * 4));
   }
 
   destroy() {}
@@ -169,7 +173,8 @@ class LightLab implements Game {
       if (p.undo) void this.shine();
       if (p.action) {
         const t = this.spots[this.focus].thing;
-        if (t < 0) void this.shine(); else this.turn(t);
+        if (t <= -2) void this.predict(predictionChoices(this.puzzle)[-t - 2]);
+        else if (t < 0) void this.shine(); else this.turn(t);
       }
     }
   }
@@ -181,7 +186,7 @@ class LightLab implements Game {
     this.botWait -= dt;
     if (this.busy || this.finished || this.botWait > 0 || !this.spots.length) return out;
     const want = hintMirror(this.puzzle, this.tilts);
-    const target = want >= 0 ? this.spots.findIndex((sp) => sp.thing === want) : this.spots.findIndex((sp) => sp.thing < 0);
+    const target = this.predicting ? 0 : want >= 0 ? this.spots.findIndex((sp) => sp.thing === want) : this.spots.findIndex((sp) => sp.thing < 0);
     if (target < 0) return out;
     if (target === this.focus) {
       out.players[0].action = true;
@@ -199,10 +204,15 @@ class LightLab implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle) return null;
+    if (this.predicting) {
+      const answer = predictionChoices(this.puzzle)[0];
+      const target = answer && this.predictionMarks.get(answer.key);
+      return target ? { tap: { on: target } } : null;
+    }
     const want = hintMirror(this.puzzle, this.tilts);
     const mirror = want >= 0 ? this.mirrors.get(want) : undefined;
     if (mirror) return { tap: { on: mirror } };
-    return this.plan.mode === 'plan' ? { tap: { on: this.sun } } : null;
+    return this.planning ? { tap: { on: this.sun } } : null;
   }
 
   private at(x: number, y: number) {
@@ -224,6 +234,7 @@ class LightLab implements Game {
     this.busy = false;
     if (this.plan.mode === 'live') this.drawBeam();
     if (this.index > 0) return;
+    if (this.plan.mode === 'predict') return this.ctx.instruct('light.predict');
     if (this.plan.glass) return this.ctx.instruct('light.color');
     if (this.plan.flowers === 2) return this.ctx.instruct('light.two');
     return this.ctx.instruct(this.plan.mode === 'live' ? 'light.live' : 'light.plan');
@@ -235,9 +246,16 @@ class LightLab implements Game {
     this.taps = 0;
     this.shinesMissed = 0;
     this.needed = p.pathMirrors.filter((i) => p.start[i] !== p.solution[i]).length;
-    this.spots = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [{ x: t.x, y: t.y, thing: i }] : []));
-    if (this.plan.mode === 'plan') this.spots.push({ x: 0, y: p.sunRow, thing: -1 });
-    this.focus = Math.max(0, this.spots.findIndex((sp) => sp.thing === p.pathMirrors[0]));
+    this.predictionMarks.clear();
+    if (this.predicting) {
+      const choices = predictionChoices(p).slice(0, 3);
+      this.spots = choices.map((end, i) => ({ x: end.targetX, y: end.targetY, thing: -2 - i }));
+      this.focus = 0;
+    } else {
+      this.spots = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [{ x: t.x, y: t.y, thing: i }] : []));
+      if (this.planning) this.spots.push({ x: 0, y: p.sunRow, thing: -1 });
+      this.focus = Math.max(0, this.spots.findIndex((sp) => sp.thing === p.pathMirrors[0]));
+    }
     this.mirrors.clear();
     this.blooms.clear();
     this.beam.clear();
@@ -265,11 +283,32 @@ class LightLab implements Game {
       node.position.set(c.x, c.y);
       this.pieces.addChild(node);
     });
+    if (this.predicting) for (const end of predictionChoices(p).slice(0, 3)) this.addPredictionMark(end);
+  }
+
+  private addPredictionMark(end: BeamEnd) {
+    const c = new Container();
+    const g = new Graphics().circle(0, 0, 43).fill({ color: 0xffffff, alpha: 0.78 }).stroke({ width: 7, color: swatch.teal.line });
+    if (end.kind === 'rock') {
+      g.poly([-20, 10, -15, -12, 0, -21, 18, -15, 21, 7, 12, 19, -10, 18]).fill(swatch.white.line).stroke({ width: 3, color: ink, alpha: 0.55 });
+    } else if (end.kind === 'edge') {
+      const dirs: Record<number, [number, number]> = { 0: [24, 0], 1: [0, 24], 2: [-24, 0], 3: [0, -24] };
+      const [dx, dy] = dirs[end.exit ?? 0];
+      g.moveTo(-dx * 0.55, -dy * 0.55).lineTo(dx * 0.55, dy * 0.55).stroke({ width: 7, color: swatch.teal.line, cap: 'round' });
+      g.poly([dx * 0.75, dy * 0.75, dx * 0.25 - dy * 0.28, dy * 0.25 + dx * 0.28, dx * 0.25 + dy * 0.28, dy * 0.25 - dx * 0.28]).fill(swatch.teal.line);
+    }
+    c.addChild(g);
+    const at = this.at(end.targetX, end.targetY);
+    c.position.set(at.x, at.y);
+    c.hitArea = new Circle(0, 0, 50);
+    onTap(c, () => void this.predict(end), { cooldown: 250 });
+    this.pieces.addChild(c);
+    this.predictionMarks.set(end.key, c);
   }
 
   /** Tap a mirror: it tilts the other way. Turning is always free; it is how you explore. */
   private turn(i: number) {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.predicting) return;
     this.taps++;
     this.tilts[i] = (1 - this.tilts[i]) as Tilt;
     const glass = this.mirrors.get(i)!.children[1];
@@ -310,7 +349,7 @@ class LightLab implements Game {
 
   /** Planning levels: the sun shines, the beam travels, and either everything wakes or we see why not. */
   private async shine() {
-    if (this.busy || this.finished || this.plan.mode !== 'plan') return;
+    if (this.busy || this.finished || !this.planning || this.predicting) return;
     this.busy = true;
     this.sun.scale.set(1);
     sfx.whoosh();
@@ -343,6 +382,29 @@ class LightLab implements Game {
     for (const b of this.blooms.values()) b.sleep();
     this.beam.clear();
     this.busy = false;
+  }
+
+  /** A prediction is an experiment: show the route and explain the endpoint without a miss. */
+  private async predict(choice?: BeamEnd) {
+    if (this.busy || this.finished || !this.predicting || !choice) return;
+    this.busy = true;
+    const answer = beamEnd(this.puzzle, this.tilts);
+    sfx.whoosh();
+    const route = trace(this.puzzle, this.tilts);
+    for (let n = 1; n <= route.cells.length; n++) {
+      this.drawBeam(n);
+      const cell = route.cells[n - 1];
+      const i = this.puzzle.things.findIndex((thing) => thing.x === cell.x && thing.y === cell.y);
+      if (i >= 0 && route.woken.includes(i)) this.blooms.get(i)?.wake(this.ctx.tw);
+      await this.ctx.tw.wait(0.09);
+    }
+    const line = choice.key === answer.key ? 'light.predict.right' : answer.kind === 'rock' ? 'light.predict.rock' : 'light.predict.edge';
+    await this.ctx.say(line);
+    await this.ctx.tw.wait(0.8);
+    for (const b of this.blooms.values()) b.sleep();
+    this.beam.clear();
+    this.board.alpha = 0;
+    await this.next();
   }
 
   private async win() {

@@ -238,3 +238,11 @@ School level 7 appends two seeded doors with two or three prior guesses, none al
 ## Egg Catch: one setting for two eggs (2026-10-10)
 
 School level 7 appends “Set it once”: brown enters the top fork; white enters the opposite branch from a second hen. Three seeded pairs ask for one arrangement before either rolls. A green arrow releases both paths one at a time, with gates locked. Unsuccessful pairs stay for revision, count one miss per attempt and give spoken guidance; two attempts show the needed directions. Boards are dealt unsolved with exactly one solution, and hint steps and ghost-finger taps use the tested rules. The school window is 4–7; saved levels, pins and couch course levels keep their meaning. Scoped how-to support, speech, browser coverage and inventory were extended with the level.
+
+## Light Lab: where will it shine? (2026-10-10)
+
+School level 7 locks the mirrors for three endpoint predictions, then unlocks them for a fourth planning puzzle. Prediction choices are actual reachable rock or edge endpoints, with three distinct 100-unit targets on each generated board. A wrong prediction reveals the beam and its endpoint without adding a miss or hint. The hint and ghost finger use the same endpoint rules; the couch bot uses the same choices through its focus ring. Existing school levels and saved level numbers stay in place.
+
+- `npm run typecheck` and 30 focused Light Lab, how-to and registry tests passed; 200 seeded boards checked distinct endpoints, the actual endpoint and the plan solution.
+- `BROWSER_SUITE=woods WOODS_ONLY=light FROM_LEVEL=7` passed with a wrong unscored prediction and the final plan. `BROWSER_SUITE=fingerdemo FINGER_ONLY=light-lab FINGER_LEVELS=7` finished cleanly in 17.1 seconds. The prediction screenshot was reviewed.
+- Device speech and iPad target size remain open in the roadmap.

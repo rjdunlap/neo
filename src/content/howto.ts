@@ -570,12 +570,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'light-lab': {
     goal: 'Aim the sunbeam at the sleeping flowers with mirrors.',
     steps: [
-      'Tap a mirror to turn it.',
-      { from: 3, text: 'Turn the mirrors first, then tap the sun to shine.' },
+      { to: 6, text: 'Tap a mirror to turn it.' },
+      { from: 3, to: 6, text: 'Turn the mirrors first, then tap the sun to shine.' },
       { from: 5, to: 5, text: 'Colored glass changes the beam: shine through the pink glass to wake the pink flower.' },
+      { from: 7, to: 7, text: 'For three puzzles, tap the rock or edge where you think the locked beam will stop. Then turn the mirrors and shine the sun on one final puzzle.' },
     ],
-    finish: 'The round ends when every flower has woken up.',
-    note: 'A mirror turned the wrong way is just another try; the glowing mirror is a hint.',
+    finish: [{ to: 6, text: 'The round ends when every flower has woken up.' }, { from: 7, text: 'The round ends when the final planning puzzle wakes every flower.' }],
+    note: [
+      { to: 6, text: 'A mirror turned the wrong way is just another try; the glowing mirror is a hint.' },
+      { from: 7, text: 'Predictions are experiments and never count as misses. On the final puzzle, the glowing mirror is a hint.' },
+    ],
   },
   'penguin-slide': {
     goal: 'Slide the penguin to the fish.',
