@@ -511,7 +511,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
 | **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
-| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. Goodnight Room now has one: the 2026-10-10 quantity direction ([deep dive](deep-dives/goodnight-room.md)) |
+| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. Goodnight Room now has one: the 2026-10-10 quantity direction ([deep dive](deep-dives/goodnight-room.md)); Opposites has the same reason and a school gap ([deep dive](deep-dives/opposites.md)) |
 
 ### Sketch for the next one to build
 
@@ -694,7 +694,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Photo Safari (L–S · 6) | **New actions** (swimming, climbing, waving) and animals | R2-later: two clues, no name | — |
 | Goodnight Room (L–P · 4) ([deep dive](deep-dives/goodnight-room.md)) | **One room today**; add a tent, a barn at night and a boat cabin. A seeded room draw and friends who start asleep are built | **5, Goodnight to every animal:** a category instead of a name, which opens a pre-K window; the deep dive adds 6–10 | — |
 | Rhyme Time (K–S · 4) | More rhyme families (twelve today) | — | Preschool, at level 1 |
-| Opposites (L–K · 4) | **Eight pairs today**; add wet and dry, loud and quiet, in and out, tall and short, heavy and light | **5, Find the pair:** spot the two opposites in a busy picture | — |
+| Opposites (L–K · 4) ([deep dive](deep-dives/opposites.md)) | **Eight pairs today**; add tall and short, on and off, awake and asleep, in and out first (with a family rule so no round is arguable), then wet and dry, clean and dirty, thick and thin; loud and quiet wait as sound cards | **5, Which two?** (five cards, no busy picture); the deep dive adds 6–10 (in between, line them up, only the word, un- words, two answers) and a school window | — |
 | Clap the Syllables (P–K · 4) | More words | **5, Long words:** three and four claps (wa-ter-mel-on), which opens a `school` window | — |
 | Robot Path (K–S · 10) | **One authored board per level today**; give each level three. The rule tests already check every authored board ([deep dive](deep-dives/robot-path.md)) | R2: *fix the program*, now planned as level 12 after 11 *where will it stop?* ([deep dive](deep-dives/robot-path.md#new-levels-on-top)) | Preschool, at levels 1–2 ([deep dive](deep-dives/robot-path.md#younger-band-openings)) |
 | Bug Builder (T–S · 7) | Bug and wing shapes | R1-later: fold a friend | — |
