@@ -102,7 +102,7 @@ There are seventy-four games, listed below. "Ages" lists the bands each game has
 | Peekaround Island | toddler–school | turn a little island to find who is hiding behind the tree | find a named friend, work out who is hiding from a picture card, put friends behind / in front of / next to the tree, two directions and then a half turn |
 | Robot Path | pre-K–school | two steps to a star | turns, rocks, programs of up to eight steps, counted steps ("right ×4"), then loops that repeat the program |
 | Light Lab | pre-K–school | tap mirrors to turn a sunbeam onto a sleeping flower | plan first and tap the sun to shine, rocks, two flowers on one beam, colored glass, four-mirror paths |
-| Penguin Slide | preschool–school | tap the ice: the penguin slides until something stops it | plan two to six slides, two fish, soft snow that stops the penguin; undo and a hint arrow |
+| Penguin Slide | preschool–school | tap the ice: the penguin slides until something stops it | plan two to six slides, two fish, soft snow that stops the penguin, ice blocks to push (level 6); undo and a hint arrow |
 | Secret Code | pre-K–school | fill a door's slots with stones; each slot says yes or no | yellow "wrong place" marks, more slots and colors, codes with a repeated color |
 | Frog Hop | preschool–school | hop to a number on the lily pads | one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20 |
 | Market Stall | preschool–school | count out shell coins for the price | ones and twos, fives, adding two prices, paying two different ways, giving change from 10, paying with the fewest shells |

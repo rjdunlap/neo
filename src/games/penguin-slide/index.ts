@@ -15,12 +15,12 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { beside, eaten, HINT_AFTER, makePuzzle, planFor, slide, solve, tapDirection, type Cell, type Dir, type SlidePlan, type SlidePuzzle } from './logic';
+import { beside, eaten, HINT_AFTER, makePuzzle, move, planFor, solve, tapDirection, type Cell, type Dir, type SlidePlan, type SlidePuzzle } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 5 },
+  school: { min: 2, max: 6 },
 };
 
 const CELL = 100;
@@ -57,9 +57,20 @@ function softArt(): Graphics {
   return puffs(new Graphics(), [[-24, 10, 22], [0, 2, 26], [24, 10, 22], [-10, 20, 20], [12, 20, 20]], 0xffffff, 0xc9d6e6, 4);
 }
 
+function blockArt(): Container {
+  const c = new Container();
+  const g = new Graphics().roundRect(-42, -42, 84, 84, 16).fill(0xa8dcff).stroke({ width: 5, color: 0x5aa7e0, join: 'round' });
+  g.roundRect(-30, -30, 60, 60, 10).fill({ color: 0xd7f0ff, alpha: 0.9 });
+  g.moveTo(-26, -8).lineTo(-8, -26).stroke({ width: 5, color: 0xffffff, cap: 'round' });
+  g.moveTo(-26, 12).lineTo(12, -26).stroke({ width: 3, color: 0xffffff, alpha: 0.8, cap: 'round' });
+  c.addChild(g);
+  return c;
+}
+
 interface Step {
   at: Cell;
   have: number;
+  blocks: Cell[];
 }
 
 class PenguinSlide implements Game {
@@ -67,6 +78,8 @@ class PenguinSlide implements Game {
   puzzle!: SlidePuzzle;
   at: Cell = { x: 0, y: 0 };
   have = 0;
+  /** Where each ice block is now (the puzzle's own list is where they started). */
+  blocks: Cell[] = [];
   moves = 0;
   index = -1;
   misses = 0;
@@ -84,6 +97,9 @@ class PenguinSlide implements Game {
   private readonly arrow = new Graphics();
   private readonly glow = new Graphics();
   private fishNodes: Graphics[] = [];
+  private blockNodes: Container[] = [];
+  /** The solver's answer for the state it was asked about, so the hint arrow does not search every frame. */
+  private route: { key: string; first: Dir | -1; moves: number } | null = null;
   private history: Step[] = [];
   private hinting = false;
   private stuck = false;
@@ -155,7 +171,7 @@ class PenguinSlide implements Game {
   /** The ghost finger on the how-to card: tap the ice beside the penguin, on the side of the solver's next slide. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle) return null;
-    const { first } = solve(this.puzzle, this.at, this.have);
+    const { first } = this.ahead();
     if (first === -1) return null;
     const cell = this.at2(beside(this.at, first));
     return { tap: { on: this.board, x: cell.x, y: cell.y } };
@@ -166,7 +182,7 @@ class PenguinSlide implements Game {
     const out = idle();
     this.botWait -= dt;
     if (this.busy || this.finished || !this.puzzle || this.botWait > 0) return out;
-    const { first } = solve(this.puzzle, this.at, this.have);
+    const { first } = this.ahead();
     if (first < 0) return out;
     this.botWait = 0.9;
     out.players[0].active = true;
@@ -189,6 +205,8 @@ class PenguinSlide implements Game {
     this.puzzle = this.course ? this.course.boards[this.index] : makePuzzle(this.plan, this.ctx.rng);
     this.at = { ...this.puzzle.start };
     this.have = 0;
+    this.blocks = (this.puzzle.blocks ?? []).map((c) => ({ ...c }));
+    this.route = null;
     this.moves = this.carry;
     this.carry = 0;
     this.history = [];
@@ -207,6 +225,7 @@ class PenguinSlide implements Game {
       return this.ctx.instruct('slide.go');
     }
     if (this.index > 0) return;
+    if (this.plan.blocks) return this.ctx.instruct('slide.ice');
     if (this.plan.soft) return this.ctx.instruct('slide.soft');
     if (this.plan.fish === 2) return this.ctx.instruct('slide.two');
     return this.ctx.instruct('slide.go');
@@ -223,6 +242,7 @@ class PenguinSlide implements Game {
     for (const c of p.soft) this.place(softArt(), c);
     for (const c of p.rocks) this.place(rockArt(), c);
     this.fishNodes = p.fish.map((c) => this.place(fishArt(), c));
+    this.blockNodes = this.blocks.map((c) => this.place(blockArt(), c));
     const s = this.at2(this.at);
     this.penguin.position.set(s.x, s.y);
   }
@@ -250,8 +270,8 @@ class PenguinSlide implements Game {
   }
 
   private async go(dir: Dir) {
-    const { to, passed } = slide(this.puzzle, this.at, dir);
-    if (!passed.length) {
+    const m = move(this.puzzle, this.at, dir, this.blocks);
+    if (!m) {
       // Already against something: a little bump, never a mistake.
       sfx.boing();
       this.busy = true;
@@ -262,10 +282,31 @@ class PenguinSlide implements Game {
       if (this.again) this.restart();
       return;
     }
+    const { to, passed, pushed } = m;
     this.busy = true;
-    this.history.push({ at: this.at, have: this.have });
+    this.history.push({ at: this.at, have: this.have, blocks: this.blocks });
     this.moves++;
     this.report();
+    if (pushed) {
+      // The penguin leans into the block and stays where it is; the block skates away.
+      const node = this.blockNodes[pushed.index];
+      const from = this.blocks[pushed.index];
+      const end = this.at2(pushed.to);
+      const far = Math.abs(pushed.to.x - from.x) + Math.abs(pushed.to.y - from.y);
+      this.blocks = m.blocks;
+      sfx.whoosh();
+      const home = this.at2(this.at);
+      const lean = async () => {
+        await this.ctx.tw.to(this.penguin, { x: home.x + [10, 0, -10, 0][dir], y: home.y + [0, 10, 0, -10][dir] }, { duration: 0.08 });
+        await this.ctx.tw.to(this.penguin, { x: home.x, y: home.y }, { duration: 0.12 });
+      };
+      await Promise.all([lean(), this.ctx.tw.to(node, { x: end.x, y: end.y }, { duration: 0.1 * far + 0.08, ease: ease.outQuad })]);
+      sfx.clunk();
+      this.checkHelp();
+      this.busy = false;
+      if (this.again) this.restart();
+      return;
+    }
     sfx.whoosh();
     this.penguin.rotation = [0.3, 0, -0.3, 0][dir];
     const end = this.at2(to);
@@ -291,6 +332,26 @@ class PenguinSlide implements Game {
     if (this.again) this.restart();
   }
 
+  /** The solver's next slide from where things stand now, remembered until something moves. */
+  private ahead() {
+    const key = `${this.at.x},${this.at.y},${this.have},${this.blocks.map((b) => `${b.x}.${b.y}`).join(' ')}`;
+    if (this.route?.key !== key) {
+      const { first, moves } = solve(this.puzzle, this.at, this.have, this.blocks);
+      this.route = { key, first, moves };
+    }
+    return this.route;
+  }
+
+  /** Put every ice block where `blocks` says, gliding or at once. */
+  private settleBlocks(blocks: Cell[], duration: number) {
+    this.blocks = blocks;
+    this.blockNodes.forEach((n, i) => {
+      const p = this.at2(blocks[i]);
+      if (duration) void this.ctx.tw.to(n, { x: p.x, y: p.y }, { duration, ease: ease.inOutSine });
+      else n.position.set(p.x, p.y);
+    });
+  }
+
   /**
    * Couch pause menu: start this pond over from its first position, fish and all. The slides already
    * taken keep counting (undone ones do too), so a restart never improves a score.
@@ -310,6 +371,7 @@ class PenguinSlide implements Game {
     this.at = { ...this.puzzle.start };
     this.have = 0;
     this.history = [];
+    this.settleBlocks((this.puzzle.blocks ?? []).map((c) => ({ ...c })), 0.3);
     this.fishNodes.forEach((f) => (f.visible = true));
     const p = this.at2(this.at);
     await this.ctx.tw.to(this.penguin, { x: p.x, y: p.y }, { duration: 0.3, ease: ease.inOutSine });
@@ -323,6 +385,7 @@ class PenguinSlide implements Game {
     const step = this.history.pop()!;
     this.at = step.at;
     this.have = step.have;
+    this.settleBlocks(step.blocks, 0.25);
     this.fishNodes.forEach((f, i) => (f.visible = !(this.have & (1 << i))));
     const p = this.at2(this.at);
     void this.ctx.tw.to(this.penguin, { x: p.x, y: p.y }, { duration: 0.25, ease: ease.inOutSine });
@@ -332,7 +395,7 @@ class PenguinSlide implements Game {
   /** After a few more slides than needed, a yellow arrow shows a best next slide; when there is no way on, undo glows. */
   private checkHelp() {
     const wasStuck = this.stuck;
-    this.stuck = solve(this.puzzle, this.at, this.have).moves < 0;
+    this.stuck = this.ahead().moves < 0;
     if (this.stuck && !wasStuck) void this.ctx.say('slide.stuck');
     if (!this.hinting && this.moves > this.puzzle.best + HINT_AFTER) {
       this.hinting = true;
@@ -375,7 +438,7 @@ class PenguinSlide implements Game {
   private drawArrow() {
     const g = this.arrow.clear();
     if (!this.hinting || this.stuck || this.busy || !this.puzzle) return;
-    const { first } = solve(this.puzzle, this.at, this.have);
+    const { first } = this.ahead();
     if (first < 0) return;
     const p = this.at2(this.at);
     const bob = 6 * Math.sin(this.clock * 6);

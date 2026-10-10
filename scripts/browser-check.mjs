@@ -2389,9 +2389,9 @@ async function woodsBatch() {
     log(`Light Lab ${level}: mirrors turned like a finger, ${plan.mode === 'plan' ? 'missed shines explained, hint glow, ' : 'live beam, '}saved score and sticker passed`);
   }
 
-  if (!only || only === 'penguin') for (let level = fromLevel; level <= 5; level++) {
+  if (!only || only === 'penguin') for (let level = fromLevel; level <= 6; level++) {
     await launch('penguin-slide', level);
-    if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 3 || level === 6) await page.setViewportSize({ width: 768, height: 1024 });
     const puzzles = await page.evaluate(() => neo.scene.game.plan.puzzles);
     // Tap the ice a little way from the penguin, in the direction to slide.
     const slideTo = async (dir) => {
@@ -2410,7 +2410,7 @@ async function woodsBatch() {
         for (let k = 0; k < 14 && !(await page.evaluate(() => neo.scene.game.hinting)); k++) {
           const dir = await page.evaluate(async () => {
             const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; const all = (1 << g.puzzle.fish.length) - 1;
-            for (const d of [0, 1, 2, 3]) { const s = S.slide(g.puzzle, g.at, d); if (s.passed.length && (g.have | S.eaten(g.puzzle, s.passed)) !== all) return d; }
+            for (const d of [0, 1, 2, 3]) { const m = S.move(g.puzzle, g.at, d, g.blocks); if (m && (g.have | S.eaten(g.puzzle, m.passed)) !== all) return d; }
             return -1;
           });
           if (dir < 0) break;
@@ -2420,12 +2420,12 @@ async function woodsBatch() {
         const before = await page.evaluate(() => neo.scene.game.history.length);
         await tap('neo.scene.game.undo'); await page.waitForTimeout(300);
         assert.equal(await page.evaluate(() => neo.scene.game.history.length), before - 1, 'undo steps back');
-        if (level === 3) await screenshot('penguin-slide-3-portrait');
+        if (level === 3 || level === 6) await screenshot(`penguin-slide-${level}-portrait`);
       }
       for (let k = 0; k < 30; k++) {
         const dir = await page.evaluate(async (n) => {
           const g = neo.scene.game; if (neo.scene.finished || g.index !== n) return -2;
-          const S = await import('/src/games/penguin-slide/logic.ts'); return S.solve(g.puzzle, g.at, g.have).first;
+          const S = await import('/src/games/penguin-slide/logic.ts'); return S.solve(g.puzzle, g.at, g.have, g.blocks).first;
         }, n);
         if (dir === -2) break;
         if (dir === -1) { await tap('neo.scene.game.undo'); await page.waitForTimeout(300); continue; }
@@ -2435,7 +2435,7 @@ async function woodsBatch() {
     await finished('penguin-slide');
     assert.deepEqual(await score('penguin-slide'), [0, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Penguin Slide ${level}: taps on the ice, bumps, undo, hint arrow, saved score and sticker passed`);
+    log(`Penguin Slide ${level}: taps on the ice, bumps, ${level === 6 ? 'pushed blocks, ' : ''}undo, hint arrow, saved score and sticker passed`);
   }
 
   if (!only || only === 'peek') for (let level = fromLevel; level <= 5; level++) {
@@ -3865,7 +3865,7 @@ async function couchPlay() {
       else for (let move = 0; move < 70; move++) {
         await page.waitForFunction(() => neo.scene.screen !== 'game' || !neo.scene.game.busy || neo.scene.game.finished, null, {timeout:20000});
         if (await page.evaluate(() => neo.scene.screen !== 'game' || neo.scene.game.finished)) break;
-        const dir = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; return S.solve(g.puzzle, g.at, g.have).first; });
+        const dir = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; return S.solve(g.puzzle, g.at, g.have, g.blocks).first; });
         await press(dir < 0 ? 2 : [15,13,14,12][dir]);
         await page.waitForTimeout(300);
       }
@@ -5370,7 +5370,7 @@ async function couchCourse() {
     await onCourse();
   };
   // Penguin Slide: the solver's next slide from where the penguin is now, and the d-pad press for it.
-  const next = () => page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; return S.solve(g.puzzle, g.at, g.have).first; });
+  const next = () => page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; return S.solve(g.puzzle, g.at, g.have, g.blocks).first; });
   const dpad = [15, 13, 14, 12];
   /** Slide optimally until this pond is eaten, and wait for the next one (or the end of the course). */
   const clearPond = async () => {
@@ -5438,7 +5438,7 @@ async function couchCourse() {
   // A slide the solver would not choose, then undo it: the slide still counts.
   const wasted = async () => {
     await page.waitForFunction(() => !neo.scene.game.busy);
-    const dir = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; const best = S.solve(g.puzzle, g.at, g.have).first; return [0, 1, 2, 3].find(d => d !== best && S.slide(g.puzzle, g.at, d).passed.length > 0); });
+    const dir = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; const best = S.solve(g.puzzle, g.at, g.have, g.blocks).first; return [0, 1, 2, 3].find(d => d !== best && S.slide(g.puzzle, g.at, d).passed.length > 0); });
     await press(dpad[dir]); await page.waitForTimeout(500);
     await page.waitForFunction(() => !neo.scene.game.busy);
     await press(2); await page.waitForTimeout(450);
@@ -5630,7 +5630,7 @@ async function couchCourse() {
   assert.deepEqual(await homeNow(), { moves: 1, home: true, have: 0, history: 0 }, 'back at the start, the slide still counted');
   assert.equal((await stored()).courses.practice.run.attempts, 1, 'and it is still saved');
   // A restart asked for in the middle of a slide waits for the penguin to stop, then puts it home.
-  const mid = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; const slid = g.go(S.solve(g.puzzle, g.at, g.have).first); const busy = g.busy; g.restart(); await slid; await kit.sleep(700); return { busy }; });
+  const mid = await page.evaluate(async () => { const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game; const slid = g.go(S.solve(g.puzzle, g.at, g.have, g.blocks).first); const busy = g.busy; g.restart(); await slid; await kit.sleep(700); return { busy }; });
   assert.equal(mid.busy, true, 'the slide was under way');
   assert.deepEqual(await homeNow(), { moves: 2, home: true, have: 0, history: 0 }, 'a restart asked for mid-slide still happens');
   await clearPond();
