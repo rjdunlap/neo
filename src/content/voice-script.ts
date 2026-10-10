@@ -1043,6 +1043,10 @@ export const SCRIPT = {
   'robot.wrong': ['A bump! Let us change our path and try again.'],
   'robot.hint': ['Follow the glowing arrow.'],
   'robot.clear': ['Let us try a new path.'],
+  'robot.predict': ['Read the arrows. Tap the square where the robot will stop, then press play and watch.'],
+  'robot.predict.choose': ['Choose a square where the robot might stop, then press play to find out.'],
+  'robot.predict.right': ['You knew where it would stop!'],
+  'robot.predict.reveal': ['The robot stopped right here. Where did the arrows take it?'],
 
   praise: ['Yay!', 'You did it!', 'Wow!', 'Great job, {name}!', 'Hooray!'],
   sticker: ['A sticker for you!', 'You got a sticker!'],

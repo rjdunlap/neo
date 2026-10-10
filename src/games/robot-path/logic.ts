@@ -10,6 +10,8 @@ export const DELTAS: Record<Direction, Cell> = { up: [0, -1], right: [1, 0], dow
 export type RobotMode = 'steps' | 'counts' | 'loop';
 export interface Slot { dir: Direction; n: number }
 export interface RobotPlan { size: number; goal: Cell; rocks: Cell[]; limit: number; name: string; mode?: RobotMode; solution?: { slots: Slot[]; loop: number } }
+/** An authored program for the prediction level; predictions are experiments, not answers to score. */
+export interface PredictPlan extends RobotPlan { mode: 'steps' | 'counts'; program: Slot[] }
 export const ROBOT_PLANS: RobotPlan[] = [
   { size: 3, goal: [2, 0], rocks: [], limit: 3, name: 'Two steps straight to the star' },
   { size: 3, goal: [2, 1], rocks: [], limit: 4, name: 'Three steps with a turn' },
@@ -23,6 +25,30 @@ export const ROBOT_PLANS: RobotPlan[] = [
   { size: 5, goal: [4, 4], rocks: [[2, 0], [3, 1], [4, 2], [0, 1], [1, 2], [2, 3], [3, 4]], limit: 2, mode: 'loop', name: 'A loop: repeat "right, down" up a staircase', solution: { slots: [{ dir: 'right', n: 1 }, { dir: 'down', n: 1 }], loop: 4 } },
   { size: 5, goal: [4, 4], rocks: [[0, 1], [1, 1], [3, 0], [3, 1], [2, 3], [3, 3]], limit: 3, mode: 'loop', name: 'A longer loop body: "right ×2, down ×2", twice', solution: { slots: [{ dir: 'right', n: 2 }, { dir: 'down', n: 2 }], loop: 2 } },
 ];
+
+/** The same blocked route shown as individual steps and as counted steps. */
+export const PREDICT_PLANS: PredictPlan[] = [
+  {
+    size: 5, goal: [4, 4], rocks: [[2, 0]], limit: 6, mode: 'steps', name: 'Where will it stop? Read each arrow.',
+    program: [{ dir: 'right', n: 1 }, { dir: 'right', n: 1 }, { dir: 'right', n: 1 }, { dir: 'down', n: 1 }, { dir: 'down', n: 1 }, { dir: 'left', n: 1 }],
+  },
+  {
+    size: 5, goal: [4, 4], rocks: [[2, 0]], limit: 3, mode: 'counts', name: 'Where will it stop? Read the counts.',
+    program: [{ dir: 'right', n: 3 }, { dir: 'down', n: 2 }, { dir: 'left', n: 1 }],
+  },
+];
+
+/** Run a shown program without treating its collision or short finish as a failed puzzle. */
+export function predictionEnd(plan: PredictPlan): Cell {
+  let cell: Cell = [0, 0];
+  for (const dir of expand(plan.program)) {
+    const next = step(cell, dir);
+    if (!allowed(next, plan)) break;
+    cell = next;
+    if (same(cell, plan.goal)) break;
+  }
+  return cell;
+}
 
 /** The steps a program of counted slots makes, with its loop. */
 export function expand(slots: readonly Slot[], loop = 1): Direction[] {

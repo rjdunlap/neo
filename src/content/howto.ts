@@ -159,13 +159,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'robot-path': {
     goal: 'Plan a path for the robot to reach the star.',
     steps: [
-      'Tap arrows to add steps to the program.',
-      'Tap a program slot to remove it (and what follows), then press play.',
-      { from: 7, text: 'Tap an arrow again to go further the same way ("right x4").' },
-      { from: 9, text: 'Use the loop button to repeat a few steps.' },
+      { to: 10, text: 'Tap arrows to add steps to the program.' },
+      { to: 10, text: 'Tap a program slot to remove it (and what follows), then press play.' },
+      { from: 7, to: 8, text: 'Tap an arrow again to go further the same way ("right x4").' },
+      { from: 9, to: 10, text: 'Use the loop button to repeat a few steps.' },
+      { from: 11, text: 'Read the shown program, tap the square where the robot will stop, then press play to watch.' },
     ],
-    finish: 'The round ends when the robot reaches the star.',
-    note: 'If the robot cannot get there it simply stops; edit the program and try again.',
+    finish: [
+      { to: 10, text: 'The round ends when the robot reaches the star.' },
+      { from: 11, text: 'The round ends after the robot shows where the program stops.' },
+    ],
+    note: [
+      { to: 10, text: 'If the robot cannot get there it simply stops; edit the program and try again.' },
+      { from: 11, text: 'Predictions are just a chance to think; every guess is welcome.' },
+    ],
   },
   'size-parade': {
     goal: 'Compare sizes of friends.',
