@@ -2,6 +2,13 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Bubble Pop deep dive and slice 1
+
+- Wrote `docs/deep-dives/bubble-pop.md` (research read through search summaries; page fetches failed) and built its first slice: friends name themselves and make their animal sound, the sticker's friend list pinned by a test, `staysPut` as the one drift-in-place rule, the how-to's last step bounded and its goal corrected.
+- Passed typecheck and all 864 unit tests (122 files). `BROWSER_SUITE=originals ORIGINALS_ONLY=bubbles` passed levels 1–3 in both runs and level 4 in one; `BROWSER_SUITE=woods WOODS_ONLY=bonds` passed levels 10 and 11.
+- Known flake, not from this change: the `bubbles` case fails with "no wrong bubble to tap" at a color level (4 in two runs, 5 in one) when only target-colored bubbles are showing; the same level-4 failure reproduced on the code before this slice. Levels 5–9 were not completed in either run, so the count levels (7–9) rest on the unit tests and the unchanged drift code. The script, not the game, needs a fix.
+- Not run: `fingerdemo`, `howto` and the production build (no shell or asset change). Open: the animal sound and spoken name on a device.
+
 ## 2026-10-10 — Duck Pond 11, Hiding ducks
 
 - Added a school step where the sign gives a total from 5 to 10; some ducks hide under a code-drawn bridge, and lily pads ask for the hidden part. A wrong answer counts on from the visible ducks. The how-to, voice, game guide and roadmap now include the step.

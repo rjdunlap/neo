@@ -84,6 +84,8 @@ describe('touch how-to cards', () => {
   it('changes with the level where the game does: a step that only holds for some levels is not on every card', () => {
     const bubble = [1, 4, 7, 10].map((level) => howToFor(GAMES.find((g) => g.id === 'bubble-pop')!, level)!.steps[0]);
     expect(new Set(bubble).size).toBe(4);
+    // Every step is bounded, so a level added above the ladder starts with no inherited step (it must write its own).
+    expect(howToFor(GAMES.find((g) => g.id === 'bubble-pop')!, 12)!.steps).toEqual([]);
     const stand = GAMES.find((g) => g.id === 'lemonade-stand')!;
     expect(howToFor(stand, 3)!.steps[0]).toContain('price in shells');
     expect(howToFor(stand, 2)!.steps[0]).not.toContain('price in shells');

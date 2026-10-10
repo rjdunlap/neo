@@ -1,7 +1,8 @@
 import { Container, Graphics } from 'pixi.js';
-import { Critter, CRITTERS, type CritterName } from '../../art/critter';
+import { Critter, CRITTERS } from '../../art/critter';
 import { RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { label } from '../../ui/text';
+import type { Friend } from './logic';
 
 const PLAIN_RIM = 0x8fd0ff;
 
@@ -35,7 +36,7 @@ export interface BubbleOptions {
   r: number;
   color: ColorName | null;
   number?: number;
-  critter?: CritterName;
+  critter?: Friend;
   rainbow?: boolean;
 }
 
@@ -45,6 +46,8 @@ export class Bubble extends Container {
   readonly color: ColorName | null;
   readonly number?: number;
   readonly rainbow: boolean;
+  /** Which friend rides inside, kept after the critter itself is let out. */
+  readonly friend?: Friend;
   critter: Critter | null = null;
   vx = 0;
   vy = 0;
@@ -67,6 +70,7 @@ export class Bubble extends Container {
     this.swayAmp = 14 + Math.random() * 16;
     this.addChild(this.ring, this.shell);
 
+    this.friend = o.critter;
     if (o.critter) {
       this.critter = new Critter(CRITTERS[o.critter]);
       this.critter.scale.set((o.r * 1.15) / 300);

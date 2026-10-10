@@ -10,7 +10,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Bubble Pop
 
-*lap–school.* Tap bubbles as they float up; later, one color, numbers in order, then pairs. A wrong bubble only wobbles and gets a spoken hint. Levels 10–11 (number bonds): every bubble has a partner that makes 5 (pre-K) or 10 (early school). Tap one to hold it still with a glow, then its partner: both pop with "3 and 2 make 5!" A wrong pair is a gentle miss that says both numbers and their total; two in a row glow a pair that works. Tapping the held bubble again lets it go. Because drifting bubbles overlap, a touch goes to the bubble whose middle is nearest the finger (a play-through found taps landing on the wrong, overlapping bubble).
+*lap–school.* Tap bubbles as they float up; some hold a friend, who drops to the sand and makes its own animal sound, and the first of each friend in a round says its name ("A duck!"). Later, one color, numbers in order, then pairs. A wrong bubble only wobbles and gets a spoken hint. Levels 10–11 (number bonds): every bubble has a partner that makes 5 (pre-K) or 10 (early school). Tap one to hold it still with a glow, then its partner: both pop with "3 and 2 make 5!" A wrong pair is a gentle miss that says both numbers and their total; two in a row glow a pair that works. Tapping the held bubble again lets it go. Because drifting bubbles overlap, a touch goes to the bubble whose middle is nearest the finger (a play-through found taps landing on the wrong, overlapping bubble).
 
 ### Peg Garden
 
