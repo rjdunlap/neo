@@ -12,7 +12,8 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { shapePath } from '../../art/shapes';
 import type { GameModule, HubIcon } from '../../games/types';
-import type { Band } from '../../progress/bands';
+import { playBand, type Band } from '../../progress/bands';
+import { gameById, GAMES } from '../../games/registry';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, bookIcon, islandIcon } from '../../ui/icons';
@@ -80,7 +81,8 @@ export class SubjectPlaceScene extends Scene {
     this.place = placeFor(band);
     this.games = gamesFor(band);
     this.subjects = SUBJECTS.filter(s => this.games.some(g => g.region === s.id));
-    this.hearted = shelfFor(store.favorites, this.games.map(g => g.id), FAVORITES_MAX).map(id => this.games.find(g => g.id === id)!);
+    // Every hearted game, a bigger kids' one from a signpost too: the heart after a round promises it a place.
+    this.hearted = shelfFor(store.favorites, GAMES.map(g => g.id), FAVORITES_MAX).map(id => gameById(id)!);
     this.state = { ...(positions.get(band) ?? { subject: null, subjectsPage: 0, gamesPage: 0 }) };
     // Hearts can be taken back between visits, so a remembered Favorites page may be gone or shorter.
     if (this.state.subject === FAVORITES && !this.hearted.length) this.state.subject = null;
@@ -200,7 +202,7 @@ export class SubjectPlaceScene extends Scene {
       this.leaving = true;
       this.remember();
       void voice.say(card.mod.titleLine);
-      this.app.go.game(card.mod.id, this.band);
+      this.app.go.game(card.mod.id, playBand(card.mod.bands, this.band), undefined, false, { place: this.band });
     } else {
       this.state.subject = card.id as Subject;
       this.state.gamesPage = 0;

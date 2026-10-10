@@ -33,14 +33,9 @@ describe('game registry', () => {
     for (const b of BANDS) expect(GAMES.filter((g) => g.bands.includes(b.id)).length, b.id).toBeGreaterThanOrEqual(3);
   });
 
-  it('gives every place on the age trail a spoken name and room for its games', () => {
+  it('gives every age place (each band\'s home spot on the map) a spoken name', () => {
     expect(PLACES.map((p) => p.band)).toEqual(BANDS.map((b) => b.id));
-    for (const place of PLACES) {
-      expect(SCRIPT[place.line], place.band).toBeDefined();
-      expect(place.x >= 0 && place.x <= 1 && place.y >= 0 && place.y <= 1, place.band).toBe(true);
-    }
-    // Places climb the island: each one sits higher on the map than the last.
-    PLACES.slice(1).forEach((p, i) => expect(p.y).toBeLessThan(PLACES[i].y));
+    for (const place of PLACES) expect(SCRIPT[place.line], place.band).toBeDefined();
   });
 
   it('files every game under a known subject, and every subject has a game by pre-K', () => {

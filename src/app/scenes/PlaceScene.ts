@@ -8,18 +8,20 @@ import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { placeFor, type Place } from '../../content/places';
 import { shelfFor } from '../../content/shelf';
+import { visibleGames } from '../../content/lands';
 import { REGION_IDS } from '../../content/world';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { GAMES } from '../../games/registry';
-import type { GameModule, HubIcon } from '../../games/types';
-import type { Band } from '../../progress/bands';
+import { gameById, GAMES } from '../../games/registry';
+import type { GameModule } from '../../games/types';
+import { playBand, type Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, bookIcon, islandIcon } from '../../ui/icons';
 import { Shelf, type ShelfItem } from '../../ui/shelf';
-import { Sparkle } from '../../ui/sparkle';
+import { makeLandmark, type Landmark } from '../../ui/landmark';
+import type { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -39,9 +41,12 @@ export function forgetPlaces() {
   toldMore.clear();
 }
 
-/** The games for a band, grouped by subject so music sits with music and numbers with numbers. */
+/**
+ * The home spot's games: every game for her age and younger (what the lands show her, all in one place), grouped
+ * by subject so music sits with music and numbers with numbers.
+ */
 export function gamesFor(band: Band): GameModule[] {
-  return GAMES.filter((g) => g.bands.includes(band))
+  return visibleGames(band, GAMES)
     .map((g, i) => ({ g, i }))
     .sort((a, b) => REGION_IDS.indexOf(a.g.region) - REGION_IDS.indexOf(b.g.region) || a.i - b.i)
     .map(({ g }) => g);
@@ -82,15 +87,10 @@ class Flower extends Container {
   }
 }
 
-interface Landmark {
-  mod: GameModule;
-  node: Container;
-  icon: HubIcon;
-}
-
 /**
- * One place on the age trail. All of its games stand along a winding path; when there are
- * more than fit, the land swipes sideways (or the arrows move it a screen at a time).
+ * The home spot: her age place, with every game for her age and younger along a winding path; when there are
+ * more than fit, the land swipes sideways (or the arrows move it a screen at a time). Each game plays at the
+ * band nearest hers that it has (`playBand`).
  */
 export class PlaceScene extends Scene {
   readonly place: Place;
@@ -133,26 +133,11 @@ export class PlaceScene extends Scene {
     this.land.addChild(this.path);
     this.content.addChild(this.backdrop, this.land);
     for (const mod of gamesFor(this.band)) {
-      const icon = this.track(mod.hubIcon());
-      const b = icon.getLocalBounds();
-      const s = Math.min(1, ICON_W / b.width, ICON_H / b.height);
-      icon.scale.set(s);
-      // Center the drawing over its spot, feet on the ground.
-      icon.position.set(-(b.x + b.width / 2) * s, -(b.y + b.height) * s);
-      const node = new Container();
-      node.addChild(new Graphics().ellipse(0, 0, Math.min(110, (b.width * s) / 2 + 20), 18).fill({ color: swatch.green.line, alpha: 0.18 }), icon);
-      // A twinkle on a game she has not finished a round of yet. It never blocks a touch.
-      if (store.isNew(mod.id)) {
-        const sparkle = this.track(new Sparkle());
-        sparkle.position.set(Math.min(95, (b.width * s) / 2 - 4), -b.height * s + 6);
-        node.addChild(sparkle);
-        this.sparkles.set(mod.id, sparkle);
-      }
-      node.eventMode = 'static';
-      node.cursor = 'pointer';
-      node.hitArea = new Rectangle(-Math.max(55, (b.width * s) / 2 + 15), -Math.max(100, b.height * s + 20), Math.max(110, b.width * s + 30), Math.max(100, b.height * s + 20) + 25);
-      this.landmarks.push({ mod, node, icon });
-      this.land.addChild(node);
+      const mark = makeLandmark(mod, { w: ICON_W, h: ICON_H }, store.isNew(mod.id));
+      this.track(mark.icon);
+      if (mark.sparkle) this.sparkles.set(mod.id, this.track(mark.sparkle));
+      this.landmarks.push(mark);
+      this.land.addChild(mark.node);
     }
     this.land.on('pointerdown', (e) => this.down(e));
     this.land.on('globalpointermove', (e) => this.move(e));
@@ -169,8 +154,8 @@ export class PlaceScene extends Scene {
     this.pip.scale.set(0.55);
     this.pip.hitArea = new Circle(0, -120, 155);
     onTap(this.pip, () => { this.pip.poke(); void voice.say('hub.pick'); });
-    const here = gamesFor(this.band);
-    const hearted = shelfFor(store.favorites, here.map((g) => g.id)).map((id) => here.find((g) => g.id === id)!);
+    // Every hearted game, a bigger kids' one from a signpost too: the heart after a round promises the shelf.
+    const hearted = shelfFor(store.favorites, GAMES.map((g) => g.id)).map((id) => gameById(id)!);
     if (hearted.length) {
       this.shelf = this.track(new Shelf(hearted, (item) => this.launch(item)));
       this.ui.addChild(this.shelf);
@@ -300,7 +285,8 @@ export class PlaceScene extends Scene {
     this.pip.cheer();
     void voice.say(mark.mod.titleLine);
     sfx.whoosh();
-    void this.tw.to(mark.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 }).then(() => this.app.go.game(mark.mod.id, this.band));
+    const mod = mark.mod;
+    void this.tw.to(mark.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 }).then(() => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { place: this.band }));
   }
 
   private leave(go: () => void) {

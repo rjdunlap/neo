@@ -32,8 +32,8 @@ const writeSave = (value) => page.evaluate((value) => new Promise((resolve, reje
 const fromStart = async (target, afterTarget) => {
   await page.waitForFunction(() => document.fonts.status === 'loaded');
   await page.waitForTimeout(1600);
+  // "Who's playing?" opens the island map itself.
   await page.locator('.chooser__play').first().click(); await page.waitForTimeout(4200);
-  await page.mouse.click(65, 65); await page.waitForTimeout(2800);
   await page.mouse.click(target.x, target.y); await page.waitForTimeout(afterTarget);
 };
 
@@ -41,7 +41,8 @@ const fromStart = async (target, afterTarget) => {
  * from a Start/place transition whose curtain intentionally swallowed a fixed-coordinate click. */
 const findBlanketOffline = async () => {
   for (let attempt = 0; attempt < 2; attempt++) {
-    await fromStart({ x: 842, y: 550 }, 3400);
+    // The picnic's map spot at 1024 by 768 (`mapLayout` in src/content/lands.ts: x 125 + 0.86 × 774, y 658).
+    await fromStart({ x: 791, y: 645 }, 3400);
     await page.screenshot({ path: 'test-results/offline/picnic.png' });
     for (const [x, y] of [[96, 296], [216, 320], [539, 354], [680, 353], [288, 426], [388, 418]]) {
       await page.mouse.click(x, y); await page.waitForTimeout(900);
@@ -118,10 +119,13 @@ try {
   await page.locator('#app canvas').waitFor();
   await page.waitForFunction(() => document.fonts.status === 'loaded');
   await page.waitForTimeout(1400);
-  // The start button leads straight to her place on the trail: Daisy Meadow for a toddler.
-  // Start waits for its greeting before changing scenes; allow the production/offline frame loop to finish the
-  // transition before paging through the place (a click during the curtain is intentionally swallowed).
+  // Her card opens the island map; her home spot (Daisy Meadow for a toddler) holds every game for her age.
+  // Start waits for its greeting before changing scenes; allow the production/offline frame loop to finish each
+  // transition before the next click (a click during the curtain is intentionally swallowed).
   await page.locator('.chooser__play').first().click(); await page.waitForTimeout(4000);
+  await page.screenshot({ path: 'test-results/offline/map.png' });
+  // The home spot at 1024 by 768 (`mapLayout`: x 125 + 0.63 × 774, y 195 + 0.5 × 463); the pet hops over and the map zooms in.
+  await page.mouse.click(613, 420); await page.waitForTimeout(3200);
   await page.screenshot({ path: 'test-results/offline/place.png' });
   // Four subject cards per page. Counting Cove is first on page two; Monster Munch
   // is its second game. Subject-local positions survive growth in earlier subjects.
@@ -183,7 +187,7 @@ try {
   assert.deepEqual(reloadedRoom.creations, roomSave.creations, 'Both creations survived another offline reload');
   assert.deepEqual(reloadedRoom.journal, { found: ['sink-float:duck', 'animal-snack:bunny'], seen: 2 }, 'The journal survived another offline reload');
   assert.deepEqual(errors, []);
-  console.log(`PASS: production reload, cached font and assets (${assets.length}), trail navigation, a how-to card and Play, new-game completion, reward, saved progress, the Windy Picnic, a rearranged treehouse with kept creations, and the discovery journal work offline and survive reloads.`);
+  console.log(`PASS: production reload, cached font and assets (${assets.length}), the lands map and home spot, a how-to card and Play, new-game completion, reward, saved progress, the Windy Picnic, a rearranged treehouse with kept creations, and the discovery journal work offline and survive reloads.`);
 } catch (error) {
   await page.screenshot({ path: 'test-results/offline/failure.png' });
   console.error(error); console.error('Page errors:', errors); process.exitCode = 1;

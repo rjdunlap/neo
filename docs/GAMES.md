@@ -2,7 +2,7 @@
 
 What each game does and the design decisions behind its rules: what counts as a miss, what a hint shows, how the levels grow, and what was learned while building it. The [README inventory](../README.md#the-island-and-its-games) is the one-line summary and the game count; `src/games/registry.ts` and each game's `logic.ts` are the source of truth; the grown-up how-to cards in `src/content/howto.ts` say how to play each one. Shared systems (the shell, saves, the treehouse, couch play) are in [DESIGN.md](DESIGN.md).
 
-Games are grouped by subject, the stable IDs in `src/content/world.ts` that group them inside a place. Each entry gives the bands it plays in (from the registry) and, where there is one, what inspired it. Some games also play on the couch; [COUCH-PLAY.md](COUCH-PLAY.md) lists them.
+Games are grouped by subject, the stable IDs in `src/content/world.ts`. Each game also has a home land on the island map (`LANDS` in `src/content/lands.ts`); today each land holds one subject's games under the subject's name, and the art subject's land is Paint Pier. Each entry gives the bands it plays in (from the registry) and, where there is one, what inspired it. Some games also play on the couch; [COUCH-PLAY.md](COUCH-PLAY.md) lists them.
 
 When a game changes, update its entry here. A new game gets an entry in its subject.
 
@@ -46,7 +46,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 *preschool–school · after Chrome Music Lab's Rhythm and step sequencers.* A step-sequencer grid with a looping playhead: rows are drum, clap and bell, columns are 4 or 8 steps. Free play finishes with a green check once a beat has gone round twice. Copying a visible beat leaves wrong squares off as gentle misses; copying by ear has a listen button and a check (two misses show where the beats differ); repeat levels give the first half and ask for the second to match. The game uses a near-silent `quiet` music style so the child's beat is the music.
 
-## Treehouse (art)
+## Paint Pier (art)
 
 ### Rainbow Fingers
 
