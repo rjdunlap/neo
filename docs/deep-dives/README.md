@@ -95,7 +95,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Peg Garden | `peg-garden` | LTPK | 5 | 4 | not started | — | — |
 | Penguin Slide | `penguin-slide` | PKS | 5 | 4 | not started | — | — |
 | Pet Kitchen | `pet-kitchen` | TPKS | 8 | 4 | not started | — | — |
-| Pet Says | `pet-says` | LTPK | 5 | 2 | not started | — | — |
+| Pet Says | `pet-says` | LTPK | 5 | 2 | in progress | `claude/roadmap-item-14-game-content-ghbpi1` | — |
 | Photo Safari | `photo-safari` | LTPKS | 6 | 4 | not started | — | — |
 | Picture Graph | `picture-graph` | KS | 6 | 4 | not started | — | — |
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |
