@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { addressedHouse, checkStop, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, SIGNS, walk, woodsTouch } from './logic';
+import { addressedHouse, checkStop, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
 
 describe('Mail Carrier', () => {
   it('builds a numbered street in order with different doors, and mails every house', () => {
@@ -27,7 +27,7 @@ describe('Mail Carrier in Wonder Woods', () => {
   const mapPlans = PLANS.filter((p) => isMapMode(p.mode));
 
   it('has a connected map where every walk follows the paths', () => {
-    expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route']);
+    expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route', 'shorter']);
     const edge = (a: number, b: number) => MAP_EDGES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
     for (const h of HOUSE_NODES) {
       const w = walk(POST_OFFICE, h);
@@ -82,6 +82,28 @@ describe('Mail Carrier in Wonder Woods', () => {
     expect(checkStop([3, 1], [3], 3)).toBe('planned');
     expect(checkStop([3, 1], [], 4)).toBe('nobody');
   });
+
+  it('gives level 8 four reachable houses with a short and long loop route, at least two stones apart', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const trips = makeTrips(PLANS[7], new Rng(seed));
+      expect(trips).toHaveLength(4);
+      for (const [house] of trips) {
+        expect([0, 2, 3, 4]).toContain(house);
+        const paths = routeChoices(house);
+        expect(paths.length).toBeGreaterThanOrEqual(2);
+        const [short, long] = shorterRoutes(house);
+        expect(short[0]).toBe(POST_OFFICE);
+        expect(short.at(-1)).toBe(HOUSE_NODES[house]);
+        expect(long[0]).toBe(POST_OFFICE);
+        expect(long.at(-1)).toBe(HOUSE_NODES[house]);
+        expect(routeLength(long) - routeLength(short)).toBeGreaterThanOrEqual(2);
+        for (const path of [short, long]) {
+          expect(new Set(path).size).toBe(path.length);
+          for (let i = 1; i < path.length; i++) expect(SHORTER_EDGES.some(([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]))).toBe(true);
+        }
+      }
+    }
+  });
 });
 
 describe('Mail Carrier demonstration', () => {
@@ -104,6 +126,10 @@ describe('Mail Carrier demonstration', () => {
     for (const plan of PLANS.filter((p) => isMapMode(p.mode))) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const trip of makeTrips(plan, new Rng(seed))) {
+          if (plan.mode === 'shorter') {
+            expect(woodsTouch(plan.mode, trip, [])).toEqual({ house: trip[0] });
+            continue;
+          }
           const planned: number[] = [];
           for (let step = 0; step < trip.length + 1; step++) {
             const touch = woodsTouch(plan.mode, trip, planned);

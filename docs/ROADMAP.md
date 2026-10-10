@@ -67,7 +67,7 @@ Most sessions should build from this list; checks that need a person or a device
 12. **Robot Path 12, Fix the program** (after a new 11, Where will it stop?; see its [deep dive](deep-dives/robot-path.md)): find and change the one wrong slot (authored boards).
 14. **Light Lab 7, Where will it shine?** — **built 2026-10-10**: three unscored predictions among reachable beam endpoints, then one ordinary plan puzzle.
 16. **Word Monsters 8, Change the end**: cat, cap, can. Device speech is still unchecked.
-17. **Mail Carrier 8, Which way is shorter?**: needs a second map with a loop.
+17. **Mail Carrier 8, Which way is shorter?** — **built 2026-10-10**: find the neighbor's house, then compare the two routes marked with stepping stones and walk the shorter one ([build note](archive/COMPLETED-2026-10-09.md#mail-carrier-level-8-which-way-is-shorter)).
 
 Two pre-K ceilings could also grow: Feelings Faces 8 (*how can we help?*) and Weather Wardrobe 7 (*the weather changes*). The round's costlier steps are Photo Safari's two-clue scenes, elapsed time, two different unknowns and Garden Rows boxes; its "leave" verdicts are on the same page.
 
@@ -365,7 +365,7 @@ The 6–8 pilot (the `school` band, built) bridges E1 and E2.
 
 ### E1: early elementary, roughly ages 5–7
 
-Built so far: the `school` band and Wonder Woods (where many games play their top levels), Seesaw Balance 8–9 (take the same off both sides), Robot Path loops with step-through playback (7–10), Mail Carrier's picture map and two planned stops (6–7), and Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it.
+Built so far: the `school` band and Wonder Woods (where many games play their top levels), Seesaw Balance 8–9 (take the same off both sides), Robot Path loops with step-through playback (7–10), Mail Carrier's picture map, two planned stops and shorter route (6–8), and Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it.
 
 - [ ] Wonder Woods as a thematic zone: a host, an errand and an identity separate from the band. [Lands](#lands-navigation-and-discovery) stage A gives every land a host, an identity and a launch and return context; what is left here is a woods land's own errand (below).
 - [ ] A woodland errand: the Woodland Picnic, or a delivery for a friend, using Mail Carrier's map; every participating game stays independently playable.

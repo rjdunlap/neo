@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  * shows who it's for (a door color, a number of dots, or a numeral) and the child taps the
  * matching mailbox. A wrong mailbox politely hands the letter back.
  */
-export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route';
+export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter';
 
 export interface MailPlan {
   mode: MailMode;
@@ -27,9 +27,10 @@ export const PLANS: MailPlan[] = [
   // Wonder Woods: a picture map with a key. `letters` counts letters; the route level carries them two at a time.
   { mode: 'map', houses: 5, letters: 4, top: 0, name: 'Picture map of Wonder Woods: find who the letter is for in the key, then the house with their sign' },
   { mode: 'route', houses: 5, letters: 6, top: 0, name: 'Plan two deliveries on the map in order (letter 1, then 2), then walk the route' },
+  { mode: 'shorter', houses: 5, letters: 4, top: 0, name: 'Find the house, then choose the shorter of two paths marked with stepping stones' },
 ];
 
-export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route';
+export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter';
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -93,6 +94,39 @@ export const MAP_EDGES: [number, number][] = [
   [0, 6], [6, 7], [7, 1], [7, 5], [6, 2], [6, 8], [8, 3], [8, 4],
 ];
 
+/** Level 8 adds a loop between the two forks. Its four stepping stones make that detour easy to compare. */
+export const SHORTER_EDGES: [number, number, number][] = [...MAP_EDGES.map(([a, b]) => [a, b, 1] as [number, number, number]), [7, 8, 4]];
+
+/** All simple routes from the post office to a house, ordered shortest first. */
+export function routeChoices(house: number): number[][] {
+  const target = HOUSE_NODES[house];
+  const paths: number[][] = [];
+  const visit = (at: number, path: number[]) => {
+    if (at === target) { paths.push(path); return; }
+    for (const [a, b] of SHORTER_EDGES) {
+      const next = a === at ? b : b === at ? a : -1;
+      if (next >= 0 && !path.includes(next)) visit(next, [...path, next]);
+    }
+  };
+  visit(POST_OFFICE, [POST_OFFICE]);
+  return paths.sort((a, b) => routeLength(a) - routeLength(b));
+}
+
+export function routeLength(path: number[]): number {
+  let total = 0;
+  for (let i = 1; i < path.length; i++) {
+    const edge = SHORTER_EDGES.find(([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]));
+    if (edge) total += edge[2];
+  }
+  return total;
+}
+
+/** The shortest route and the longest alternative; every eligible house has two routes at least two stones apart. */
+export function shorterRoutes(house: number): [number[], number[]] {
+  const paths = routeChoices(house);
+  return [paths[0], paths.at(-1)!];
+}
+
 /** The shortest walk along the paths from one node to another, both ends included. */
 export function walk(from: number, to: number): number[] {
   const prev = new Map<number, number>([[from, from]]);
@@ -141,7 +175,8 @@ export function makeTrips(plan: MailPlan, rng: Rng): number[][] {
   const trips: number[][] = [];
   let last = -1;
   const order: number[] = [];
-  while (order.length < plan.letters) order.push(...rng.shuffle(HOUSE_NODES.map((_, i) => i)));
+  const destinations = plan.mode === 'shorter' ? [0, 2, 3, 4] : HOUSE_NODES.map((_, i) => i);
+  while (order.length < plan.letters) order.push(...rng.shuffle(destinations));
   for (let i = 0; i < plan.letters; i += per) {
     const trip: number[] = [];
     while (trip.length < per) {
@@ -178,6 +213,6 @@ export type WoodsTouch = { house: number } | 'go';
  */
 export function woodsTouch(mode: MailMode, trip: number[], planned: number[]): WoodsTouch | null {
   if (!trip.length) return null;
-  if (mode === 'map') return { house: trip[0] };
+  if (mode === 'map' || mode === 'shorter') return { house: trip[0] };
   return planned.length < trip.length ? { house: trip[planned.length] } : 'go';
 }

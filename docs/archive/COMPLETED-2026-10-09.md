@@ -4,6 +4,10 @@
 
 ## From the roadmap
 
+### Mail Carrier level 8: Which way is shorter? (2026-10-10)
+
+Added a school round after the picture-map deliveries: identify the addressed house, compare the two loop paths marked with stepping stones, and choose the shorter route for the pet to walk. Every generated destination has a short and long simple path separated by at least two stones; the two displayed choices show the count. A wrong destination or path is gentle, and two route misses light the shorter choice. The level has its own spoken instruction, scoped how-to and ghost-finger demo. Typecheck, eight rule tests, the filtered level-8 play and its 22.3-second ghost-finger demo passed. No full unit run or build; iPad, device speech and child play remain open.
+
 ### Where we were (2026-10-09)
 
 The "Where we are" bullets before they were shortened. The playtest narrative in the couch bullet is the part that was cut.
