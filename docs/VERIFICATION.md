@@ -4,7 +4,7 @@ What has actually been checked, so nobody re-runs a check that already counts. H
 
 ## 2026-10-10 — Animal Snack deep dive
 
-- Wrote `docs/deep-dives/animal-snack.md` (research read through search summaries; no page was fetched) and updated the tracker, the IDEAS round-two row and mentions, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
+- Wrote `docs/deep-dives/animal-snack.md` (research read through search summaries; no page was fetched) and updated the tracker, the IDEAS round-three row and mentions, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
 - Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
 - Read from the code, not played: counted speech reads "3 carrot", the how-to's last step is unbounded and its finish line is false at three levels, five snacks are 94 apart in a 768-wide portrait view against 132-unit hit circles, and three animals' tap areas overlap by about 59 units there. Nothing was run in a browser, so the layout questions are open, as is every child and device check.
 

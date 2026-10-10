@@ -629,7 +629,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Duckling Parade (L–K · 8) | Ponds and paths | **9, Two of one, then another:** yellow, yellow, blue. **10, Fix the parade:** one duckling is out of pattern, so swap it. Then a `school` window at 9–10 | — |
 | Roundup (L–K · 6) | More animal kinds | **7, Two things at once:** big pigs in one pen, little pigs in the other. **8, Make the pens fair:** share 6 or 8 animals equally between two pens | — |
 | Egg Catch (L–S · 6) | More chute boards per level | R2: 7 *set it once* | — |
-| Animal Snack (L–P · 5) | Food eaten its own way, scenes, two ways to ask, and sheep, horse, hen and mouse (shared with Peekaboo Barn); see its [deep dive](deep-dives/animal-snack.md), which supersedes this row | **6, Who says moo?**, **7, Their own snacks**, **8, Who eats it too?**, then a school window with **9–10, the menu board** (a decision). The earlier *Snacks for two* and *Who is still hungry?* are dropped: Monster Munch, Garden Grow and Duck Pond hold them | Open wide, taste test and what does the cow eat? (lap and toddler); all wait on level order |
+| Animal Snack (L–P · 5) | Food eaten its own way, scenes, two ways to ask, and sheep, horse, hen and mouse (shared with Peekaboo Barn); see its [deep dive](deep-dives/animal-snack.md), which supersedes this row | **6, Who says moo?**, **7, Their own snacks**, **8, Who eats it too?**, then a school window with **9–10, the menu board** (a decision). Replaces the earlier *Snacks for two* and *Who is still hungry?*, which Monster Munch, Garden Grow and Duck Pond already hold | Open wide, taste test and what does the cow eat? (lap and toddler); all wait on level order |
 | Critter Sort (K–S · 5) | More critter features | **6, Where does the new one go?:** the hoops are already sorted and one more critter arrives, so she places it from the rule | Preschool, at level 1 (one hoop) |
 
 **Numbers**
@@ -710,7 +710,7 @@ The couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, W
 #### What this adds up to
 
 - **37 new levels on top**, beyond the ones from the first two rounds.
-- **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room). Animal Snack's levels are now planned in its [deep dive](deep-dives/animal-snack.md).
+- **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room). Animal Snack's planned levels 6–7 are replaced by its [deep dive](deep-dives/animal-snack.md) (6–8 and a school window with 9–10).
 - **Thirteen younger-band openings** that need no new level (kind C).
 - **A content pass for nearly every game.**
 
