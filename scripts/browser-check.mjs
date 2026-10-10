@@ -3358,10 +3358,10 @@ async function woodsBatch() {
     log(`Seesaw Balance ${level} (${level === 8 ? 'box and blocks' : level === 9 ? 'boxes on both sides' : 'two-box sharing'}): same off both sides, tips explained without misses, glow, putting back, visible block groups, saved score and sticker passed`);
   }
 
-  // Mail Carrier 6–7: Hazel's picture map of the woods, the key, and two planned stops.
-  if (!only || only === 'mailmap') for (let level = Math.max(6, fromLevel); level <= 7; level++) {
+  // Mail Carrier 6–8: Hazel's picture map, two planned stops, and a shorter-route choice.
+  if (!only || only === 'mailmap') for (let level = Math.max(6, fromLevel); level <= 8; level++) {
     await launch('mail-carrier', level);
-    if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level >= 7) await page.setViewportSize({ width: 768, height: 1024 });
     const trips = await page.evaluate(() => neo.scene.game.trips.length);
     // Tap a house's middle (the hit area is centered above its feet).
     const house = (i) => tap(`neo.scene.game.houses[${i}]`).then(() => page.waitForTimeout(250));
@@ -3374,19 +3374,41 @@ async function woodsBatch() {
           const wrong = (trip[0] + 1) % 5;
           await house(wrong); await page.waitForTimeout(1200); await house(wrong);
           assert.deepEqual(await counts(), [2, 1]);
-        } else {
+        } else if (level === 7) {
           // Letter 2's house first, then a house with no letter: both gentle misses, then a glow.
           const nobody = [0, 1, 2, 3, 4].find((i) => !trip.includes(i));
           await house(trip[1]); await house(nobody);
           assert.deepEqual(await counts(), [2, 1]);
         }
-        assert.ok(await page.evaluate((h) => { const g = neo.scene.game; return g.houses[h].glow.visible && g.key.find((r) => r.house === h).glow.visible; }, trip[0]), 'house and key row glow');
-        await screenshot(`mail-carrier-${level}`);
+        if (level < 8) assert.ok(await page.evaluate((h) => { const g = neo.scene.game; return g.houses[h].glow.visible && g.key.find((r) => r.house === h).glow.visible; }, trip[0]), 'house and key row glow');
+        if (level < 8) await screenshot(`mail-carrier-${level}`);
         if (level === 7) {
           // A planned stop can be taken out again by tapping it.
           await house(trip[0]); await house(trip[0]);
           assert.deepEqual(await page.evaluate(() => neo.scene.game.planned), []);
         }
+      }
+      if (level === 8) {
+        if (n === 0) {
+          const wrong = (trip[0] + 1) % 5;
+          await house(wrong); await page.waitForTimeout(1200); await house(wrong);
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate((h) => { const g = neo.scene.game; return g.houses[h].glow.visible && g.key.find((r) => r.house === h).glow.visible; }, trip[0]), 'house and key row glow');
+        }
+        await house(trip[0]);
+        await page.waitForFunction(() => neo.scene.game.routeChoiceButtons.every((b) => b.node.visible));
+        if (n === 0) {
+          await screenshot(`mail-carrier-${level}`);
+          await tap('neo.scene.game.routeChoiceButtons[1].node');
+          await page.waitForTimeout(450);
+          await tap('neo.scene.game.routeChoiceButtons[1].node');
+          assert.deepEqual(await counts(), [4, 2]);
+          assert.equal(await page.evaluate(() => neo.scene.game.routeChoiceButtons[0].glow.visible), true, 'short route hint glows');
+        }
+        await tap('neo.scene.game.routeChoiceButtons[0].node');
+        if (n < trips - 1) await page.waitForFunction((n) => neo.scene.game.index > n && !neo.scene.game.busy, n, { timeout: 20000 });
+        else await page.waitForFunction(() => neo.scene.game.finished, null, { timeout: 20000 });
+        continue;
       }
       for (const h of trip) await house(h);
       if (level === 7) {
@@ -3396,9 +3418,9 @@ async function woodsBatch() {
       }
     }
     await finished('mail-carrier');
-    assert.deepEqual(await score('mail-carrier'), [2, 1]);
+    assert.deepEqual(await score('mail-carrier'), level === 8 ? [4, 2] : [2, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : 'two planned stops'}): ${level === 6 ? 'wrong houses explained' : 'out-of-order and no-letter stops, undoing a stop'}, glowing key row, saved score and sticker passed`);
+    log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : level === 7 ? 'two planned stops' : 'shorter of two paths'}): wrong answers, hints and completion passed`);
   }
 
   // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.
