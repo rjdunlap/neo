@@ -20,13 +20,13 @@ const PAPER = 0xfffdf6;
 /** Degrees of hue per unit of stroke: the rainbow comes from moving. */
 const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
-/** Rainbows, then pots, then coloring pages: named colors, remembered colors, and mixed colors (`logic.ts`). */
+/** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 6 },
+  school: { min: 5, max: 7 },
 };
 const POTS: (ColorName | 'rainbow')[] = ['rainbow', ...RAINBOW];
 const PRIMARIES: Primary[] = ['red', 'yellow', 'blue'];
@@ -251,7 +251,7 @@ class RainbowFingers implements Game {
   }
 
   private buildPots() {
-    const mixing = this.plan.mode === 'mix';
+    const mixing = this.plan.mode === 'mix' || this.plan.mode === 'recall-mix';
     const list: (ColorName | 'rainbow')[] = mixing ? PRIMARIES : POTS;
     const slots = list.length + (mixing ? 1.4 : 0);
     this.pots.addChild(this.potGlow, this.potRing);
@@ -367,6 +367,8 @@ class RainbowFingers implements Game {
     if (this.plan.mode === 'mix') {
       const [a, b] = RECIPES[color]!;
       await this.ctx.instruct('paint.mix', { thing, color, a, b });
+    } else if (this.plan.mode === 'recall-mix') {
+      await this.ctx.instruct('paint.remix', { thing });
     } else if (this.plan.mode === 'recall') {
       await this.ctx.instruct('paint.what', { thing });
     } else {
@@ -378,7 +380,7 @@ class RainbowFingers implements Game {
   private rightPots(): (ColorName | 'rainbow')[] {
     const color = this.picture?.thing.color;
     if (!color) return [];
-    return this.plan.mode === 'mix' ? [...RECIPES[color]!] : [color];
+    return this.plan.mode === 'mix' || this.plan.mode === 'recall-mix' ? [...RECIPES[color]!] : [color];
   }
 
   private showHint() {
@@ -400,13 +402,13 @@ class RainbowFingers implements Game {
     this.lastNag = this.clock;
     const { id: thing, color } = pic.thing;
     if (!this.brushName) {
-      void this.ctx.say(this.plan.mode === 'mix' ? 'paint.mixhow' : 'paint.pick', { color, ...this.recipeVars() });
+      void this.ctx.say(this.plan.mode === 'mix' || this.plan.mode === 'recall-mix' ? 'paint.mixhow' : 'paint.pick', { color, ...this.recipeVars() });
       return;
     }
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'mix') void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
+    if (this.plan.mode === 'mix' || this.plan.mode === 'recall-mix') void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
     else void this.ctx.say('paint.wrong', { wrong: this.brushName, thing, color });
     if (this.wrongs === 2) this.showHint();
   }
@@ -762,7 +764,8 @@ export const rainbowFingers: GameModule = {
     if (p.mode === 'pots') return 'Paint pots: pick a color and hear its name';
     if (p.mode === 'named') return `Coloring page: "paint the sun yellow", ${p.count} pictures`;
     if (p.mode === 'recall') return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
-    return 'Mixing colors: red and yellow make orange';
+    if (p.mode === 'mix') return 'Mixing colors: red and yellow make orange';
+    return 'Paint the pumpkin: remember orange, then mix red and yellow';
   },
   music: STYLES.paint,
   touchDemo: true,

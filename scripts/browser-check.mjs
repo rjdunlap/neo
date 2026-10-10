@@ -907,7 +907,7 @@ async function early() {
       }
     };
   });
-  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 6) && (!only || only === 'paint'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL ?? 1); level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 6) && (!only || only === 'paint'); level++) {
     await launch('rainbow-fingers', level);
     await page.waitForTimeout(500);
     const coloring = await page.evaluate(() => neo.scene.game.pictures.length > 0);
@@ -923,7 +923,8 @@ async function early() {
         // Rainbow paint on the picture only reminds; two wrong colors are misses and light the right pot.
         await kit.drag(kit.line(center(g.picture), [center(g.picture)[0] + 30, center(g.picture)[1]], 4));
         if (g.misses !== 0) throw new Error('Rainbow paint counted as a miss');
-        const wrong = g.plan.mode === 'mix' ? (g.picture.thing.color === 'green' ? ['red'] : ['blue']) : [['red', 'blue'].find((c) => c !== g.picture.thing.color)];
+        const mixing = g.plan.mode === 'mix' || g.plan.mode === 'recall-mix';
+        const wrong = mixing ? (g.picture.thing.color === 'green' ? ['red'] : ['blue']) : [['red', 'blue'].find((c) => c !== g.picture.thing.color)];
         for (let i = 0; i < 2; i++) {
           await kit.sleep(4200);
           await pick(wrong);

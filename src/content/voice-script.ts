@@ -1099,6 +1099,7 @@ export const SCRIPT = {
   'paint.ask': ['Paint the {thing} {color}!'],
   'paint.what': ['Paint the {thing}! What color is it?'],
   'paint.mix': ['Paint the {thing} {color}! Mix {a} and {b}.'],
+  'paint.remix': ['Paint the {thing}! What color is it?'],
   'paint.mixhow': ['Mix {a} and {b} to make {color}!'],
   'paint.pick': ['Find the {color} pot!'],
   'paint.wrong': ["That's {wrong}. The {thing} is {color}!"],

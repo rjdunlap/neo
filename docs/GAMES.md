@@ -50,7 +50,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Rainbow Fingers
 
-*lap–school.* Finger painting that grows over six levels: rainbow or color-pot painting, paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), and mixing colors in a bowl. Any color is welcome in free painting. Lap play includes the second, unjudged free-play mode (color pots). A painting from either open-ended level can be kept on the treehouse picture board (bounded, normalized marks, never a bitmap); guided coloring pages offer nothing to keep.
+*lap–school.* Finger painting that grows over seven levels: rainbow or color-pot painting, paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering that a pumpkin is orange and mixing it. Any color is welcome in free painting. Lap play includes the second, unjudged free-play mode (color pots). A painting from either open-ended level can be kept on the treehouse picture board (bounded, normalized marks, never a bitmap); guided coloring pages offer nothing to keep.
 
 ### Fluffy Salon
 
