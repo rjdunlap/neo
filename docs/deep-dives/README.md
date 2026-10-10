@@ -101,7 +101,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |
 | Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |
-| Rainbow Fingers | `rainbow-fingers` | LTPKS | 6 | 2 | not started | — | — |
+| Rainbow Fingers | `rainbow-fingers` | LTPKS | 7 | 2 | designed | `claude/roadmap-item-14-game-content-0zaz9u` ([PR 107](https://github.com/rjdunlap/neo/pull/107)) | [rainbow-fingers.md](rainbow-fingers.md) |
 | Ramp Race | `ramp-race` | KS | 4 | 4 | not started | — | — |
 | Rhyme Time | `rhyme-time` | KS | 4 | 4 | not started | — | — |
 | Rhythm Neighbors | `rhythm-neighbors` | LTPKS | 6 | 4 | not started | — | — |

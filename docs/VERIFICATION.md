@@ -2,6 +2,13 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Rainbow Fingers deep dive
+
+- Wrote `docs/deep-dives/rainbow-fingers.md` and updated the tracker, the IDEAS round-three and Mirror Brush rows, the roadmap's chunk 14 cell, chunk 4's Mirror Brush mention, the pointer beside level 7's "built" line, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
+- Research: two pages were opened and read (the Kid Pix Wikipedia article and the Common Sense review of Draw and Tell); the MDPI article returned a 403, the *Physics Teacher* PDF is an image scan and the Kandinsky page needs JavaScript, and every other source is a search summary.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
+- Read from the code, not played: **level 7 cannot be finished** (`pick()` pours only in the `'mix'` mode while `buildPots()` builds the bowl for `'recall-mix'` too, so orange is never made; the rule test models pouring itself, so it passes), a pat or hold never counts as a stroke so a tap-only painter never reaches the frame at levels 1–2, the pots are 92 units across, the idle glow counts a hint, and a recall dab gives the answer at the first miss. Nothing was run in a browser, so every child and device check is open.
+
 ## 2026-10-10 — Fill and Dump (new game, roadmap chunk 4)
 
 - New lap–toddler game in Counting Cove: levels 1–2 tip a basket out and scoop it back by tap (no wrong move), levels 3–4 put in a stated number and tap a check (a wrong check is a miss, a glow after two). Rules, placement and the ghost-finger policy are in `logic.ts`, with 13 tests (random taps always finish levels 1–2 with no miss; the ghost finger finishes levels 3–4 from any state; landing spots stay apart and clear of the pet in four view shapes).
