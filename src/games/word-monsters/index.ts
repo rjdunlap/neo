@@ -15,7 +15,7 @@ import { label } from '../../ui/text';
 import { letterPicture } from '../letter-trails/pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, FIRST_WORDS, makeQuestions, nextMonster, planFor, sounded, SOUNDS, WORDS, type MonsterPlan, type Question } from './logic';
+import { fits, FIRST_WORDS, makeQuestions, nextMonster, planFor, sounded, SOUNDS, PICTURE_WORDS, type MonsterPlan, type Question } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -23,7 +23,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 7 },
+  school: { min: 5, max: 8 },
 };
 
 const FURS: ColorName[] = ['purple', 'teal', 'orange', 'pink', 'blue', 'green', 'red', 'yellow'];
@@ -114,10 +114,20 @@ function wordPicture(word: string): Container {
     g.ellipse(0, 50, 130, 30).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
     g.roundRect(-70, -80, 140, 130, 18).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
     g.rect(-70, 10, 140, 26).fill(swatch.yellow.fill);
-  } else {
+  } else if (word === 'box') {
     g.roundRect(-100, -60, 200, 130, 10).fill(wood.light).stroke(line(wood.line));
     g.poly([-100, -60, -60, -110, 140, -110, 100, -60]).fill(wood.fill).stroke(line(wood.line));
     g.moveTo(-100, 5).lineTo(100, 5).stroke(line(wood.line, 4));
+  } else if (word === 'cap') {
+    g.moveTo(-120, 45).quadraticCurveTo(-90, -85, 20, -85).quadraticCurveTo(105, -85, 112, 35).quadraticCurveTo(5, 15, -120, 45).closePath().fill(swatch.red.fill).stroke(line(swatch.red.line));
+    g.ellipse(15, 55, 115, 22).fill(swatch.red.light).stroke(line(swatch.red.line));
+    g.moveTo(15, -75).lineTo(15, 0).stroke(line(swatch.red.line, 4));
+  } else if (word === 'can') {
+    g.ellipse(0, -72, 70, 23).fill(swatch.teal.light).stroke(line(swatch.teal.line));
+    g.rect(-70, -72, 140, 145).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
+    g.ellipse(0, 72, 70, 23).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
+    g.ellipse(0, -72, 55, 13).fill(0xd9e3e8).stroke(line(swatch.teal.line, 4));
+    g.roundRect(-38, -20, 76, 45, 10).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
   }
   c.addChild(g);
   return c;
@@ -158,7 +168,7 @@ class WordMonsters implements Game {
   }
 
   private get building() {
-    return this.plan.mode === 'build' || this.plan.mode === 'spell' || this.plan.mode === 'family';
+    return this.plan.mode === 'build' || this.plan.mode === 'spell' || this.plan.mode === 'family' || this.plan.mode === 'end';
   }
 
   start() {
@@ -262,7 +272,7 @@ class WordMonsters implements Game {
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
     if (this.building) {
       // Word families only show real pictures: "sun" is drawn as a big S, which would give the answer away.
-      const drawn = (WORDS as readonly string[]).includes(q.answer) && !(q.fixed && q.answer === 'sun');
+      const drawn = (PICTURE_WORDS as readonly string[]).includes(q.answer) && !(this.plan.mode === 'family' && q.answer === 'sun');
       this.showPicture(drawn ? wordPicture(q.answer) : null, 0.5, -110);
       this.drawSlots(q.answer);
     } else if (this.plan.mode === 'first') {
@@ -271,7 +281,11 @@ class WordMonsters implements Game {
       this.showPicture(null);
     }
     this.setMonsters(q.monsters, this.plan.mode === 'find');
-    if (q.fixed) this.placeEnding(q.fixed);
+    if (q.fixed) {
+      if (this.plan.mode === 'end') this.placeBeginning(q.fixed);
+      else this.placeEnding(q.fixed);
+    }
+    if (this.plan.mode === 'end') this.filled = 2;
     await this.ctx.tw.wait(0.4);
     this.busy = false;
     await this.ask(q);
@@ -290,9 +304,23 @@ class WordMonsters implements Game {
     });
   }
 
+  /** Level 8 keeps the first two letters in the slots and changes the last sound. */
+  private placeBeginning(beginning: string) {
+    beginning.split('').forEach((letter, i) => {
+      const m = new Monster(letter, false, FURS[(i + 3) % FURS.length]);
+      m.placed = true;
+      m.slot = i;
+      m.position.copyFrom(this.slotAt(i));
+      this.ctx.track(m);
+      this.crowd.addChild(m);
+      this.monsters.push(m);
+    });
+  }
+
   private ask(q: Question) {
     const sound = SOUNDS[q.answer];
     if (this.plan.mode === 'family') return this.ctx.instruct('monster.family', { word: q.answer, sound: SOUNDS[q.answer[0]] });
+    if (this.plan.mode === 'end') return this.ctx.instruct('monster.end', { word: q.answer, first: SOUNDS[q.answer[0]], second: SOUNDS[q.answer[1]], sound: SOUNDS[q.answer[2]] });
     switch (this.plan.mode) {
       case 'find':
         return this.ctx.instruct('monster.find', { letter: q.answer.toUpperCase() });

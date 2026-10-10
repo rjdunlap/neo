@@ -912,6 +912,7 @@ export const SCRIPT = {
   'monster.first': ['{word} starts with {sound}. Who says {sound}?'],
   'monster.build': ['Let us make {word}! {sounds}.'],
   'monster.family': ['Make {word}! {word} starts with {sound}.'],
+  'monster.end': ['Make {word}! Keep {first} and {second}. Change the end to {sound}.'],
   'monster.blend': ['{word}!'],
   'monster.iam': ["I'm {letter}! I say {sound}."],
   'monster.next': ['Next sound: {sound}.'],

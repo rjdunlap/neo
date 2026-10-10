@@ -2731,6 +2731,27 @@ async function woodsBatch() {
     log('Word Monsters 7: word families with the ending in place, first sounds dragged in, wrong sounds, glow hint, saved score and sticker passed');
   }
 
+  if (!only || only === 'word-end') {
+    await launch('word-monsters', 8);
+    const drop = async (right) => {
+      await page.evaluate(async (right) => {
+        const g = neo.scene.game; const q = g.questions[g.index];
+        const m = g.monsters.find((x) => !x.placed && (right ? x.letter === q.answer[2] : x.letter !== q.answer[2]));
+        const slot = g.slotAt(g.filled); await kit.dragTo(m, { x: slot.x, y: slot.y + 40 }, 14);
+      }, right);
+      await page.waitForTimeout(500);
+      await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+    };
+    for (let n = 0; n < 3; n++) {
+      await idle(n);
+      if (n === 0) { await drop(false); await drop(false); assert.deepEqual(await counts(), [2, 1]); await screenshot('word-monsters-8'); }
+      await drop(true);
+    }
+    await finished('word-monsters');
+    assert.deepEqual(await score('word-monsters'), [2, 1]);
+    log('Word Monsters 8: keep the first two sounds, change the end, wrong sounds, glow hint, saved score and sticker passed');
+  }
+
   if (!only || only === 'pixels') for (let level = fromLevel; level <= 5; level++) {
     await launch('pixel-pictures', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, pictures: neo.scene.game.pictures.length }));
