@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  affordable, BANDS, BATCHES, batchCost, bestChoice, demand, EVENT_DELTA, EVENTS, helps, insight, makeWeek, MIN_PURSE, PLANS, planFor, PRICE_DROP, priceChoice,
+  affordable, BANDS, BATCHES, batchCost, bestChoice, demand, EVENT_DELTA, EVENTS, forecastChoice, helps, insight, makeWeek, MIN_PURSE, PLANS, planFor, PRICE_DROP, priceChoice,
   rating, sellDay, settle, START_PURSE, WEATHERS, type Day, type Row, type StandPlan,
 } from './logic';
 
@@ -373,5 +373,34 @@ describe('Lemonade Stand end-of-round comparison', () => {
     const sunny: Day = { weather: 'sunny', event: null, noise: 2 };
     const rows = [sellDay(plan, rainy, 0, 4, 1), sellDay(plan, sunny, 1, 12, 1), sellDay(plan, rainy, 2, 4, 1)];
     expect(insight(plan, rows)).toEqual({ kind: 'weather', rows: [0, 1], vars: { hot: 'sunny', cool: 'rainy', hotN: 12, coolN: 2 } });
+  });
+});
+
+describe('Lemonade Stand demonstration', () => {
+  it('chooses from the sign alone, whatever the unseen extra friends turn out to be', () => {
+    for (const plan of PLANS) {
+      for (const weather of WEATHERS) {
+        for (const event of [null, ...EVENTS] as const) {
+          const seen = forecastChoice(plan, { weather, event });
+          for (const noise of [0, 1, 2]) expect(forecastChoice(plan, { weather, event, noise } as Day)).toEqual(seen);
+        }
+      }
+    }
+  });
+
+  it('plays a sensible week on every plan: affordable every day, never a loss, and within two shells of the best choice', () => {
+    for (const plan of PLANS) {
+      for (const seed of SEEDS) {
+        const week = makeWeek(plan, new Rng(seed));
+        const { rows } = play(plan, week, (day, _i, purse) => forecastChoice(plan, day, purse));
+        let purse = START_PURSE;
+        rows.forEach((row, i) => {
+          expect(row.profit, `seed ${seed} day ${i}`).toBeGreaterThanOrEqual(0);
+          const best = bestChoice(plan, week[i], i, purse);
+          expect(best.row.profit - row.profit, `seed ${seed} day ${i}`).toBeLessThanOrEqual(2);
+          if (plan.purse) purse = settle(purse, row).purse;
+        });
+      }
+    }
   });
 });

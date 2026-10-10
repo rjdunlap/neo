@@ -9,8 +9,8 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
-import type { Game, GameContext } from '../types';
-import { checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, planFor, POST_OFFICE, route, walk, type MailPlan, type Sign, type WoodsHouse } from './logic';
+import type { Game, GameContext, TouchIntent } from '../types';
+import { checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, planFor, POST_OFFICE, route, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
 
 /**
  * Mail Carrier in Wonder Woods: Hazel the squirrel postkeeper hands over letters for the woods. The houses
@@ -244,6 +244,15 @@ export class WoodsMail implements Game {
   }
 
   update() {}
+
+  /** The ghost finger: tap the house of the letter's neighbor; on the route level plan each stop in letter order, then the walk button. */
+  autotouch(): TouchIntent | null {
+    const trip = this.trip;
+    if (this.busy || this.finished || !trip) return null;
+    const touch = woodsTouch(this.plan.mode, trip, this.planned);
+    if (!touch) return null;
+    return touch === 'go' ? { tap: { on: this.go } } : { tap: { on: this.houses[touch.house], y: -50 } };
+  }
 
   destroy() {}
 

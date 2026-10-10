@@ -10,8 +10,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { isMapMode, letterShows, mailboxShows, makeLetters, makeStreet, planFor, type House, type MailPlan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { addressedHouse, isMapMode, letterShows, mailboxShows, makeLetters, makeStreet, planFor, type House, type MailPlan } from './logic';
 import { WoodsMail } from './woods';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -159,6 +159,13 @@ class MailCarrier implements Game {
 
   update() {}
 
+  /** The ghost finger: post the letter at the house it is addressed to. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const i = addressedHouse(this.letters, this.index);
+    return i === null ? null : { tap: { on: this.houses[i], y: -60 } };
+  }
+
   destroy() {}
 
   /** The next letter comes out of the bag. */
@@ -303,6 +310,7 @@ export const mailCarrier: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
+  touchDemo: true,
   coplayHint: 'Read the house numbers together as you pass them: "two, four, five..."',
   offScreen: 'Find the number on your own front door, then spot numbers on a walk.',
   hubIcon: () => new MailIcon(),

@@ -165,3 +165,19 @@ export function checkStop(trip: number[], planned: number[], house: number): 'ok
   if (!trip.includes(house)) return 'nobody';
   return trip[planned.length] === house ? 'ok' : 'later';
 }
+
+/** The house on the street a letter is addressed to, or null when the letters have run out. The demonstration posts there. */
+export const addressedHouse = (letters: number[], index: number): number | null => letters[index] ?? null;
+
+/** What the demonstration touches in the woods: a house on the map, or the walk button once a trip is fully planned. */
+export type WoodsTouch = { house: number } | 'go';
+
+/**
+ * Map level: the house of the letter's neighbor. Route level: the next stop in letter order (the one `checkStop` calls
+ * ok), and, once every stop is planned, the green walk button.
+ */
+export function woodsTouch(mode: MailMode, trip: number[], planned: number[]): WoodsTouch | null {
+  if (!trip.length) return null;
+  if (mode === 'map') return { house: trip[0] };
+  return planned.length < trip.length ? { house: trip[planned.length] } : 'go';
+}
