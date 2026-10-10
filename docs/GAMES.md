@@ -124,7 +124,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Splish Splash
 
-*lap–pre-K.* Scrub mud off the pet; eight levels grow into named body parts in a shuffled order, two at once, then "first … then …". Washing the wrong part just makes the pet giggle and repeats the request.
+*lap–pre-K.* Scrub mud off the pet; eight levels grow into named body parts in a shuffled order, two at once, then "first … then …". Washing the wrong part just makes the pet giggle and repeats the request; a finger that has already scrubbed a part she was asked for is not told off for brushing a neighbor on the way (the ears reach into the head's patch).
 
 ### Feelings Faces
 

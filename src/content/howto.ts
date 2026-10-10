@@ -499,13 +499,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Make a picture with stamps.',
     steps: [
       { to: 2, text: 'Choose a stamp, then tap the paper to press it.' },
-      { from: 3, text: 'Choose a stamp and a color, then tap the paper to press it. Drag a stamp to move it.' },
+      { from: 3, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
       { from: 4, text: 'Turn a stamp, or make it big or small.' },
       'The back arrow undoes a stamp.',
       { from: 5, text: 'Make the picture you are asked for (a garden, or two friends on an adventure) and tell its story.' },
     ],
     finish: 'The round ends when the picture is done: tap the green arrow.',
-    note: "Every picture is welcome; there is no wrong way to stamp. After the round, a little tree house button hangs the picture in the pet's room (a new one replaces it, and the one it replaced can be brought back).",
+    note: "Every picture is welcome. After the round, the tree house button hangs it up.",
   },
   'pet-kitchen': {
     goal: 'Share food fairly with friends.',
@@ -905,18 +905,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Look at the weather sign, then tap how many cups to make.' },
       { from: 2, to: 2, text: 'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups to make.' },
-      { from: 3, text: 'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups to make and a price in shells.' },
+      { from: 3, text: 'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups and a price in shells.' },
       'Tap OPEN and watch the friends buy, then look at the new row of the table. Tap a row to hear it.',
       'The lightbulb asks the pet for help, based on the table so far.',
     ],
-    finish: 'The round ends after the last day, when the pet points out one comparison from the table.',
+    finish: 'The round ends after the last day, when the pet points out one comparison.',
     note: [
       {
         from: 4,
-        text: 'Running out or having cups left is never a mistake: it is a result to learn from, and spare cups go to a picnic. Asking for help counts once a day. A lemon costs a shell and makes two cups.',
+        text: 'Running out or having cups left is never a mistake: spare cups go to a picnic. Asking for help counts once a day. A lemon costs a shell and makes two cups.',
       },
       {
-        text: 'Running out or having cups left is never a mistake: it is a result to learn from, and spare cups go to a picnic. Asking for help counts once a day.',
+        text: 'Running out or having cups left is never a mistake: spare cups go to a picnic. Asking for help counts once a day.',
       },
     ],
   },

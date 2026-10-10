@@ -926,7 +926,8 @@ async function early() {
     window.scrubMud = async (m) => {
       const p = m.sprite.getGlobalPosition();
       const s = m.sprite.worldTransform.a * 40;
-      for (let dy = -s; dy <= s; dy += s / 3) await kit.drag(kit.line([p.x - s * 1.2, p.y + dy], [p.x + s * 1.2, p.y + dy], 8), 1, 8);
+      // Rub until it is clean and then stop, as a person does: more rows over a clean ear can slide into the head's patch and, a few seconds after the wrong-part check, count a second miss.
+      for (let dy = -s; dy <= s && !m.clean; dy += s / 3) await kit.drag(kit.line([p.x - s * 1.2, p.y + dy], [p.x + s * 1.2, p.y + dy], 8), 1, 8);
     };
   });
   for (let level = 1; level <= 8 && (!only || only === 'bath'); level++) {
