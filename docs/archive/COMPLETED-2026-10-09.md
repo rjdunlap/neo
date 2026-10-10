@@ -15,6 +15,14 @@ Added a pre-K round that combines two existing event and care interactions. The 
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=feelings-faces FINGER_LEVELS=8` finished all four questions cleanly in 22.2 seconds.
 - Not established: iPad touch feel, device speech or a child's response.
 
+### Weather Wardrobe level 7: The weather changes (2026-10-10)
+
+Added a pre-K round with three weather changes. The pet starts in a complete outfit for the first weather; the child taps its clothes to remove them, then chooses a complete outfit for the next weather. Each round changes to a different weather, and the third returns to the starting weather. The new action uses the existing clothing art and choice tray. Rule tests check all three transitions, every removal and dressing target, and the five offered choices. The level appends to pre-K's 4–6 range; other saved levels stay the same. The how-to, voice, inventory and game guide now describe the round; the built proposal has left [IDEAS](../IDEAS.md).
+
+- `npm run typecheck` and the targeted Weather Wardrobe rules passed. `BROWSER_SUITE=wardrobe7` passed the level in portrait with two wrong clothing choices, a hint, completion and a sticker; screenshot reviewed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=weather-wardrobe FINGER_LEVELS=7` completed cleanly.
+- Not established: iPad touch feel, device speech or a child's response.
+
 > **Archived 2026-10-09.** Finished items and build notes moved out of [ROADMAP.md](../ROADMAP.md) and [IDEAS.md](../IDEAS.md) as they stood at commit `6b2c02e`, so the live documents list only open work. This is history, not instructions: what each game does is in [GAMES.md](../GAMES.md), the checks that ran are in [VERIFICATION.md](../VERIFICATION.md), and what is still to do is in the [roadmap](../ROADMAP.md). Text is kept as written, so counts and "next" lists in it are as of the day it was written. Convention from here: when a roadmap item is finished, move it here (or to a later file in this folder) instead of leaving it checked off.
 
 ## From the roadmap

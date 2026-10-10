@@ -17,6 +17,14 @@
 - The scripted landscape screenshot was reviewed; no full unit run or build was run.
 - iPad touch targets, device speech and child play remain open.
 
+## 2026-10-10 — Weather Wardrobe level 7: The weather changes
+
+- Added a pre-K round where the child removes the old weather's clothes, then dresses the pet for three new forecasts. The hint applies to the dressing choices; taking off the old clothes is an unpenalized step.
+- Typecheck and the targeted Weather Wardrobe, how-to and registry checks passed (28 tests).
+- `BROWSER_SUITE=wardrobe7` passed the portrait play with two wrong clothing choices, a hint, completion, saved history and sticker; screenshot reviewed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=weather-wardrobe FINGER_LEVELS=7` completed cleanly in 20.7 seconds.
+- No build or full unit suite was run. iPad target feel, device speech and child play remain open.
+
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
 ## 2026-10-10 — Pet Says deep dive
@@ -151,6 +159,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | --- | --- | --- | --- |
 | Fill and Dump (`originals`, `fingerdemo`) | 2026-10-10: levels 1–4 played by taps (tip out, scoop, count, two wrong checks, glow, take back, done; portrait at level 4), saved score and sticker; clean ghost-finger demos at all four levels | Fill and Dump entry | Screenshots reviewed; no build or `smoke`; iPad feel, device speech and child play open |
 | Garden Grow 7 (`woods`, `fingerdemo`) | 2026-10-10: two-by-three array, two wrong rains, hint, saved round and sticker; clean ghost-finger demo in 38.8 s | Garden Grow levels 6–7 entry | Screenshot reviewed; iPad target feel, device speech and child play remain open |
+| Weather Wardrobe 7 (`wardrobe7`, `fingerdemo`) | 2026-10-10: removed the old outfit, dressed for three changing weathers, two wrong choices, hint and saved sticker; ghost finger clean in 20.7 s | Weather Wardrobe level 7 entry | Portrait screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Pixel Pictures 6 (`woods`, `fingerdemo`) | 2026-10-10: typecheck, six targeted logic tests, 15 how-to tests; two-color clues, empty-cell miss, hint, two authored pictures and saved reward; ghost finger clean in 59.1 s | Pixel Pictures level 6 entry | Browser automation; portrait/device feel and speech remain open |
 | Feelings Faces 8 (`feelings8`, `fingerdemo`) | 2026-10-10: both event scenarios, two wrong-helper retries, a hint and saved reward; ghost finger completes all four rounds cleanly | Feelings Faces level 8 entry | Chrome automation; iPad touch feel, device speech and child play remain open |
 | Clap the Syllables 5 (`clap`, `fingerdemo`) | 2026-10-10: level 5 sorts eight pictures into four bins, includes all four clap counts, handles a wrong-bin hint, and keeps cards and bins visible in portrait; the level-5 ghost finger finished in 24.8 s | Clap the Syllables level 5 entry | Screenshots reviewed; device speech, iPad target feel and child play remain open |

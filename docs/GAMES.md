@@ -136,7 +136,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Weather Wardrobe
 
-*lap–pre-K.* Sun, rain and snow fill the sky. At lap, tapping the sky changes the weather and the pet dresses itself; later the child picks one item, then every item that fits, then packs a suitcase for a two-weather trip. Each item belongs to exactly one weather, and a wrong choice says which weather it is for. Clothing is drawn in critter body coordinates and attached, so it hops with the pet. The pet is the star, so tapping the big pet repeats the instruction.
+*lap–pre-K.* Sun, rain and snow fill the sky. At lap, tapping the sky changes the weather and the pet dresses itself; later the child picks one item, then every item that fits, then packs a suitcase for a two-weather trip. Pre-K level 7 starts with an outfit for one weather, changes the forecast, and asks the child to remove each item that no longer fits before dressing the pet for the new weather. Each item belongs to exactly one weather, and a wrong choice says which weather it is for. Clothing is drawn in critter body coordinates and attached, so it hops with the pet. The pet is the star, so tapping the big pet repeats the instruction.
 
 ### Scoop Shop
 
