@@ -511,7 +511,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
 | **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
-| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them |
+| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. Goodnight Room now has one: the 2026-10-10 quantity direction ([deep dive](deep-dives/goodnight-room.md)) |
 
 ### Sketch for the next one to build
 
@@ -692,7 +692,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Story Steps (T–S · 7) ([deep dive](deep-dives/story-steps.md)) | **Four stories today**, so add six more (a seed becomes an apple, washing the dog, making a sandwich, a rainy day, building a sandcastle, the pet's bedtime). Every level gains, and level 7's six-picture mix gets better | R1-later: choose the cause | — |
 | Word Monsters (L–S · 7) | More picturable three-letter words | R2: 8 *change the end* | — |
 | Photo Safari (L–S · 6) | **New actions** (swimming, climbing, waving) and animals | R2-later: two clues, no name | — |
-| Goodnight Room (L–P · 4) | **One room today**; add a tent, a barn at night and a boat cabin | **5, Goodnight to every animal:** a category instead of a name, which opens a pre-K window | — |
+| Goodnight Room (L–P · 4) ([deep dive](deep-dives/goodnight-room.md)) | **One room today**; add a tent, a barn at night and a boat cabin. A seeded room draw and friends who start asleep are built | **5, Goodnight to every animal:** a category instead of a name, which opens a pre-K window; the deep dive adds 6–10 | — |
 | Rhyme Time (K–S · 4) | More rhyme families (twelve today) | — | Preschool, at level 1 |
 | Opposites (L–K · 4) | **Eight pairs today**; add wet and dry, loud and quiet, in and out, tall and short, heavy and light | **5, Find the pair:** spot the two opposites in a busy picture | — |
 | Clap the Syllables (P–K · 4) | More words | **5, Long words:** three and four claps (wa-ter-mel-on), which opens a `school` window | — |

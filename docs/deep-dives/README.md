@@ -72,7 +72,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Frog Hop | `frog-hop` | PKS | 6 | 3 | not started | — | — |
 | Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
 | Garden Rows | `garden-rows` | KS | 6 | 4 | not started | — | — |
-| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | not started | — | — |
+| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (slice 1 built) | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)) | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
 | Inchworm Measure | `inchworm` | KS | 6 | 4 | not started | — | — |
 | Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | not started | — | — |
