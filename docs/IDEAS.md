@@ -500,7 +500,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | Game | Why |
 | --- | --- |
 | **Jelly Drums** (9 · 8–9) | Each level adds a note to remember, which is memory load, not a decision; making tunes belongs to Song Maker and Beat Builder |
-| **Bubble Pop** (11 · 10–11) | A simple toy that has already grown pairs-to-10; arithmetic lives in Duck Pond and Frog Hop |
+| **Bubble Pop** (11 · 10–11) | A simple toy that has already grown pairs-to-10; arithmetic lives in Duck Pond and Frog Hop. **Its [deep dive](deep-dives/bubble-pop.md)** keeps that for arithmetic but proposes three counting-sequence levels (start at, count back, skip count) as a decision that overrides this leave |
 | **Size Parade** (8 · 7–8) | The school window only adds more friends, which is a bigger number rather than a new decision; measurement lives in Inchworm Measure |
 | **Scoop Shop** (6 · 5–6) | The top level is already "remember the order"; more would only add load |
 | **Stamp Studio** (6 · 5–6) | Open-ended; every story is welcome, so there is nothing to climb |
@@ -607,7 +607,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
-| Bubble Pop (L–S · 11) | Bubble scenes (bath, sea, night sky) and pictures inside bubbles (fish, stars) for the young levels | — (the audit's leave stands) | — |
+| Bubble Pop (L–S · 11) | Bubble scenes (bath, sea, night sky) and pictures inside bubbles (fish, stars) for the young levels (see its [deep dive](deep-dives/bubble-pop.md), which supersedes this row) | — (the audit's leave stands; the deep dive proposes 12–14 as a decision) | Pop anywhere (lap), big and little (toddler), which one has the dots (preschool); all wait on level order |
 | Peg Garden (L–K · 5) | More garden boards per level, each simulated in `ball.ts` | **6, Into the cup:** cups along the bottom show dots, and she aims so the pearl rests in the cup with four. Each cup is reachable by some aim (simulated) | — |
 | Bounce Back (L–K · 5) | Courts: beach, snow, a pond with lily pads | **6, Bounce to a color:** the pet calls a color and she bounces the ball to that zone of the wall | — |
 | Bumper Garden (L–K · 5) | More tables | **6, Count back:** bump 5, 4, 3, 2, 1, the first counting backwards on the island | — |

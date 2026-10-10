@@ -1,7 +1,35 @@
+import type { CritterName } from '../../art/critter';
 import { RAINBOW, type ColorName } from '../../art/palette';
+import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 
 export type BubbleMode = 'free' | 'color' | 'count' | 'bonds';
+
+/**
+ * Modes where a particular bubble is needed (the next number, a partner) are laid out whole and drift in place,
+ * so the one she needs never floats off the top. Free and color bubbles rise and leave; color mode sends the
+ * asked-for color again whenever none is showing (`spawnTarget`), so none of its rounds is stranded.
+ */
+export const staysPut = (mode: BubbleMode) => mode === 'count' || mode === 'bonds';
+
+/**
+ * The friends that can ride in a bubble, in this order. The sticker draws from this list with `rng.pick`, so growing
+ * or reordering it would change the picture on every sticker she already owns: a test pins it. New pictures in
+ * bubbles belong in their own pool.
+ */
+export const FRIENDS = ['duck', 'pig', 'cat', 'bunny', 'cow', 'bear', 'dog'] as const satisfies readonly CritterName[];
+export type Friend = (typeof FRIENDS)[number];
+
+/** The voice each friend has when it is let out of its bubble. */
+export const FRIEND_SOUND: Record<Friend, AnimalSound> = {
+  duck: 'quack',
+  pig: 'oink',
+  cat: 'meow',
+  bunny: 'hop',
+  cow: 'moo',
+  bear: 'growl',
+  dog: 'woof',
+};
 
 export interface BubblePlan {
   mode: BubbleMode;

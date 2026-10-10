@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import { Critter, CRITTERS, type CritterName } from '../../art/critter';
+import { Critter, CRITTERS } from '../../art/critter';
 import { ink, RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bubble, drawBubble } from './bubble';
-import { bondNumbers, bubbleToPop, choosePalette, inReach, isRight, meant, planFor, spawnTarget, TAP_REACH, type BubblePlan } from './logic';
+import { bondNumbers, bubbleToPop, choosePalette, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, planFor, spawnTarget, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -21,8 +21,6 @@ const LEVELS: BandLevels = {
   prek: { min: 6, max: 10 },
   school: { min: 10, max: 11 },
 };
-
-const FRIENDS: CritterName[] = ['duck', 'pig', 'cat', 'bunny', 'cow', 'bear', 'dog'];
 
 class BubblePop implements Game {
   private readonly plan: BubblePlan;
@@ -40,6 +38,8 @@ class BubblePop implements Game {
   private clock = 0;
   private lastNag = -10;
   private idle = 0;
+  /** Friends already named aloud this round: the first of each says who it is, the rest only make their sound. */
+  private readonly named = new Set<Friend>();
   /** Color mode: the color to pop, and the colors in play (target first). */
   private target: ColorName | null = null;
   private palette: ColorName[] = [];
@@ -83,7 +83,7 @@ class BubblePop implements Game {
   update(dt: number) {
     this.clock += dt;
     const p = this.plan;
-    if (this.phase === 'play' && p.mode !== 'count' && p.mode !== 'bonds') {
+    if (this.phase === 'play' && !staysPut(p.mode)) {
       this.spawnIn -= dt;
       const alive = this.bubbles.filter((b) => !b.popped).length;
       if (this.spawnIn <= 0 && alive < p.most) {
@@ -104,7 +104,7 @@ class BubblePop implements Game {
       if (b.popped) continue;
       b.update(dt);
       if (b === this.held) continue;
-      if (b.rainbow || p.mode === 'count' || p.mode === 'bonds') {
+      if (b.rainbow || staysPut(p.mode)) {
         this.drift(b, dt);
       } else {
         b.vx *= 1 - 1.5 * dt;
@@ -141,11 +141,11 @@ class BubblePop implements Game {
       const targetShowing = this.bubbles.some((b) => !b.popped && b.color === this.target);
       color = spawnTarget(this.spawned, targetShowing, rng) ? this.target : rng.pick(this.palette.slice(1));
     }
-    if (p.mode === 'count' || p.mode === 'bonds') color = RAINBOW[((number ?? 1) - 1) % RAINBOW.length];
+    if (staysPut(p.mode)) color = RAINBOW[((number ?? 1) - 1) % RAINBOW.length];
     const critter = p.mode === 'free' && rng.chance(0.3) ? rng.pick(FRIENDS) : undefined;
 
     const b = new Bubble({ r, color, number, critter });
-    if (p.mode === 'count' || p.mode === 'bonds') {
+    if (staysPut(p.mode)) {
       b.position.set(rng.range(150 + r, v.w - 50 - r), rng.range(130 + r, v.h - 60 - r));
       const a = rng.range(0, Math.PI * 2);
       b.vx = Math.cos(a) * p.speed;
@@ -284,13 +284,13 @@ class BubblePop implements Game {
       life: [0.4, 0.8],
     });
     sfx.pop(stepFromUnit(b.x / this.view.w, 5, 8));
-    if (b.critter) this.release(b);
+    if (b.critter) this.release(b, b.friend!);
     void this.ctx.tw.to(b, { alpha: 0 }, { duration: 0.12 });
     void this.ctx.tw.to(b.scale, { x: 1.3, y: 1.3 }, { duration: 0.12 }).then(() => this.remove(b));
   }
 
   /** A friend was inside! It drops to the sand, hops, giggles and waves goodbye. */
-  private release(b: Bubble) {
+  private release(b: Bubble, friend: Friend) {
     const c = b.critter!;
     b.critter = null;
     c.position.set(b.x, b.y + b.r * 0.55);
@@ -301,7 +301,11 @@ class BubblePop implements Game {
     const fall = Math.max(0.25, Math.sqrt(Math.max(0, floor - c.y) / 900));
     void this.ctx.tw.to(c, { y: floor }, { duration: fall, ease: ease.inQuad }).then(async () => {
       c.hop(0.8);
-      sfx.giggle();
+      sfx.animal(FRIEND_SOUND[friend]);
+      if (!this.named.has(friend)) {
+        this.named.add(friend);
+        void this.ctx.say('bubble.friend', { animal: friend });
+      }
       await this.ctx.tw.wait(1.4);
       await this.ctx.tw.to(c, { alpha: 0 }, { duration: 0.4 });
       this.ctx.untrack(c);

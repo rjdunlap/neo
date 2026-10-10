@@ -1055,6 +1055,7 @@ export const SCRIPT = {
   'bubble.wrong': ["That one's {wrong}. Find {color}!"],
   'bubble.count': ['Pop the numbers in order. Find one!'],
   'bubble.find': ['Find {n}!'],
+  'bubble.friend': ['A {animal}!', 'Hello, {animal}!'],
   'bubble.rainbow': ['A rainbow bubble! Pop it!'],
   'bubble.bonds': ['Find two bubbles that make {n} together. Tap one, then its partner!'],
   'bubble.made': ['{a} and {b} make {n}!'],
