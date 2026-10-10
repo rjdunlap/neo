@@ -490,7 +490,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Song Maker** (7 · 6–7) | *Answer the phrase:* end a given four-note start so it comes home | A rule for "comes home" that a test can check, and a mode that fits the loop grid |
 | **Story Steps** (7 · 6–7) | Choose the picture that caused what happened | Authored story content and art, near Story Theater |
 | **Letter Trails** (8 · 7–8) | Lowercase letters, then tracing the word a picture spells | Needs a four-line writing frame; digits are a separate preschool mode (Number Trails above) |
-| **Tangram Town** (6 · 5–6) | Flip a piece; make the same shape with fewer pieces | More silhouettes to author |
+| **Tangram Town** (6 · 5–6) | Flip a piece; make the same shape with fewer pieces | More silhouettes to author. **[Deep dive](deep-dives/tangram-town.md) (2026-10-10):** fewer pieces (needs cover sets), fix the picture and a flip (needs a parallelogram) are designed; the picture pool is built |
 | **Penguin Slide** (5 · 2–5) | *Mossy Path:* visit every square once | A new rule with its own solver (roadmap names it) |
 | **Beat Builder** (5 · 3–5) | Two sections (a verse and a chorus) | A bigger design in a thin subject; do it as a music slice |
 | **Pixel Pictures** (5 · 3–5) | Pixel Flipbook (above) | A new bounded creation shape |
@@ -668,7 +668,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Shape Sorter (T–K · 7) | New shapes (oval, heart, star) | **8, The feely bag:** a shape is described ("three corners") and she finds it | — |
 | Color Garden (T–K · 6) | More things to sort | **7, Light and dark:** light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
 | Dot Link (L–K · 5) | More dot colors and boards | **6, Exactly five:** a chain of exactly five dots | — |
-| Tangram Town (T–S · 6) | **Each level draws its one fixed picture today**, so give every level three or four silhouettes (a cat, a fish, a tree, a duck). This is the largest single content gain | R1-later: flip a piece | — |
+| Tangram Town (T–S · 6) | **Built 2026-10-10:** each level draws from a pool of 2–5 pictures (11 in all). More pictures, spoken shape names and the rest are in the [deep dive](deep-dives/tangram-town.md) | R1-later: flip a piece (the deep dive's level 9; it needs a parallelogram) | — |
 | Garden Grow (L–P · 5) | Flower kinds | **6, One more than the sign. 7, Two rows of three:** these open a pre-K window | — |
 | Treasure Map (K–S · 5) | Maps of new places | **6, Give directions:** the pet asks the way and she chooses the arrows, turning reading directions into writing them | Preschool, at level 1 (a picture row meets a color column) |
 | Owl Walk Home (T–K · 4) | Paths and seasons | — | — |

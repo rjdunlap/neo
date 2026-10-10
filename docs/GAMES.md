@@ -190,7 +190,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Tangram Town
 
-*toddler–school · after tangrams and silhouette puzzles.* Six authored house, boat, cottage and rocket puzzles use shuffled large pieces. Quarter-turn controls rotate the selected piece; identical triangles and symmetric rectangle/square rotations are accepted. Later silhouettes can reveal outlines and orient the next piece through help. Off-board drops and turning are exploration. Wrong placements on the picture get a spoken hint and a glow after two misses. Help affects hint accounting.
+*toddler–school · after tangrams and silhouette puzzles.* Each of six levels draws one of 2–5 pictures from its pool (eleven in all: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat), built from shuffled large pieces. Quarter-turn controls rotate the selected piece; identical triangles and symmetric rectangle/square rotations are accepted. Later silhouettes can reveal outlines and orient the next piece through help. Off-board drops and turning are exploration. Wrong placements on the picture get a spoken hint and a glow after two misses. Help affects hint accounting.
 
 ### Garden Grow
 
