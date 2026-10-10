@@ -15,7 +15,7 @@ How to use it:
 
 | Where | What is there |
 | --- | --- |
-| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | Fill and Dump, Sing-Along Barn, Number Trails, Read & Do |
+| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | Sing-Along Barn, Number Trails, Read & Do (Fill and Dump is built; its pour slice is on the [roadmap](ROADMAP.md#next-up)) |
 | [Sketch for the next one to build](#sketch-for-the-next-one-to-build) | Memory Match 10–12 |
 | [Fun and arcade review](#fun-and-arcade-review-2026-10-09) | Lander and Drift, a real-time grown-up game; waits on a scoring decision |
 | [Short-ladder audit](#short-ladder-audit-2026-10-09) | Every school-reaching ladder, with the ordered list of next decisions |
@@ -363,8 +363,8 @@ Areas and interactions no game covers yet, read from each game's skills and leve
 
 | Area | Covered now | Still missing | Candidates |
 | --- | --- | --- | --- |
-| **Lap play** | 37 games at Puddle Lagoon, mostly tapping to see something happen; Block Tower (stacking and knocking down) and Pet Says (copying actions) | Pretend use of everyday things, songs she already knows (Song Maker makes random songs; the CDC lists these kinds of skills around 15–18 months), filling and emptying containers | Brown Bear Parade, Keepy Uppy, Color Train, [Sing-Along Barn, Fill and Dump](#gap-review-2026-10-09) |
-| **Measurement** | Length (Inchworm Measure), weight (Seesaw Balance), time (Clock Tower), money (Market Stall) | Capacity, and estimating before measuring | Fill and Dump, Pour and Fill, Guess the Pumpkin, Count the Peekers |
+| **Lap play** | 38 games at Puddle Lagoon, mostly tapping to see something happen; Block Tower (stacking and knocking down) and Pet Says (copying actions) | Pretend use of everyday things, songs she already knows (Song Maker makes random songs; the CDC lists these kinds of skills around 15–18 months), filling and emptying containers (Fill and Dump, built) | Brown Bear Parade, Keepy Uppy, Color Train, [Sing-Along Barn](#gap-review-2026-10-09) |
+| **Measurement** | Length (Inchworm Measure), weight (Seesaw Balance), time (Clock Tower), money (Market Stall) | Capacity (Fill and Dump's counting levels are built; its pour slice is not), and estimating before measuring | Pour and Fill, Guess the Pumpkin, Count the Peekers |
 | **Number** | Counting, number bonds to ten, a number line to 20, fair shares with leftovers, tens and ones to 39 and equal groups (Lasso Loops) | A number shown as one thing that splits and joins; place value past 39; arrays (rows and columns) | Number Friends, Flip Ten, Number Munch Grid, [Orchard Rows](#gap-review-2026-10-09) |
 | **Shape and space** | Flat shapes, tangrams, symmetry, turning a scene, grid names | 3D shapes, views from above, and words for movement (through, around, over) | Shape Rollers, Skyline View, Bear Hunt Walk, Doghouse Directions |
 | **Science** | Floating, ramps, light, plants, dressing for the weather, balance, a marble machine, and food/water/shelter in a small habitat model | Gears and simple machines, electricity, life cycles, the moon's phases, material properties | Gear Garden, Circuit Garden, Caterpillar Week, Moon Window, Roll-a-Roll |
@@ -393,7 +393,6 @@ The review's findings as of 2026-10-09; the full read of the registry is in [the
 
 | Idea / likely range | Play and learning | Smallest useful version | Effort · tag |
 | --- | --- | --- | --- |
-| **Fill and Dump / lap–preschool** | Tip a basket and watch everything tumble out; scoop it back in; later tip a jug to a line | Basket and bin, items that chime as they fall; every dump is a success. Fill-to-a-line with a spill tray comes at toddler and preschool. Containment (in/out, full/empty), then capacity | S–M · promoted (the Pour and Fill and Fill the Cups seeds) |
 | **Sing-Along Barn / lap–toddler** | Tap and the next note of a song the grown-up sings plays; animals join each verse | Old MacDonald with three animals; each tap plays the animal's sound and the next phrase. Song order, animal words, anticipation | M · new |
 | **Number Trails / preschool–pre-K** | Trace a numeral with the firefly, then see that many things | A `DIGITS` table beside `LETTERS` for Letter Trails; 1 to 5, then 0 to 9, then "make this many ducks". Lowercase letters later | S (digits), M (lowercase) · new |
 | **Day by Day / pre-K–school** | Put the day cards of a pretend week in order; record each day's weather; watch a garden or a caterpillar change | Seven in-game days, "what comes after Tuesday?", "what was yesterday?", a tally of sunny days; Caterpillar Week and seasons as later modes | S–M · new, widens Caterpillar Week |
@@ -409,9 +408,8 @@ Already in this notebook and still the right small lap picks: Brown Bear Parade,
 
 ### Sketches (first drafts of the definition of ready)
 
-These four are the nearest to buildable. The other rows need the same treatment before they move to the roadmap.
+These three are the nearest to buildable (Fill and Dump's sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#fill-and-dump-2026-10-10) when it was built). The other rows need the same treatment before they move to the roadmap.
 
-**Fill and Dump.** *Fun action:* tip a basket and watch fruit tumble out with a chime for each piece; drag or tap pieces back in. *Skill:* containment and capacity. *Smallest round:* a big basket and a bin; any dump is a success; the round ends when everything is back in or after a few dumps. *Support:* lap has no wrong move; toddler fills a basket with a stated number; preschool tips a jug to a line, where the flow slows near the line and an overfill spills into a tray that can be poured back (from [Gestures the island does not use yet](#gestures-the-island-does-not-use-yet)); a glow marks the line after two overshoots. *Deeper play:* compare two cups, "which holds more?", pour one into the other. *Host alternative:* none; the pour gesture is new, so the first scene could be the third Quick Tricks show's "Fill the Cups" before it grows into a game. *Co-play and off-screen:* the grown-up dumps and she fills; real large containers and water or sand play.
 
 **Sing-Along Barn.** *Fun action:* tap the scene and the tune moves one note on; each verse brings an animal. *Skill:* song order and animal words for the youngest; memory for the tune. *Smallest round:* Old MacDonald, three animals. *Support:* any tap advances the tune; the verse line is spoken ("and on that farm he had a cow"); the animal answers. *Deeper play:* choose who is on the farm, then pick which animal comes next, then repeat a phrase. *Host alternative:* a mode of Song Maker or Peekaboo Barn would hide a game whose point is a known song. *Co-play:* the grown-up sings and she taps, which suits the American Academy of Pediatrics advice in [Design and learning references](#design-and-learning-references). *Constraints:* see the pentatonic note below. A song she plays by copying a card is not hers, so nothing is offered to the tune plaque.
 
@@ -447,7 +445,7 @@ What was found, and what it means for the sketches. These are starting points, n
 
 ### Suggested order (non-binding)
 
-Weighted to the next few years, because the youngest play comes first: **Fill and Dump** and **Sing-Along Barn** for lap and toddler; **Number Trails** as the cheapest build; **Day by Day**; then, for 6 to 8, **Read & Do** and **Orchard Rows**; the **touch puzzles** and **Rule Parade** for about 8 and 9; **Mirror Brush** and **Pixel Flipbook** as creative modes whenever convenient. Read & Do is the largest long-term hole, because reading is the main skill of the school band and nothing else covers it.
+Weighted to the next few years, because the youngest play comes first: **Sing-Along Barn** for lap and toddler (Fill and Dump is built); **Number Trails** as the cheapest build; **Day by Day**; then, for 6 to 8, **Read & Do** and **Orchard Rows**; the **touch puzzles** and **Rule Parade** for about 8 and 9; **Mirror Brush** and **Pixel Flipbook** as creative modes whenever convenient. Read & Do is the largest long-term hole, because reading is the main skill of the school band and nothing else covers it.
 
 ## Short-ladder audit (2026-10-09)
 
@@ -456,7 +454,7 @@ An audit of every school-reaching game's ladder, read from each game's `levels(b
 ### What the ladders look like
 
 - **Two populations overlap.** 25 island games have a whole ladder of only four or five levels (the roadmap's number); 12 of them reach the `school` band, and 13 end at pre-K by design. Separately, 23 games give the school band only one or two levels. Counting both, 33 school-reaching games are short in one sense or the other.
-- **Six levels is a convention, not a measure.** 28 of the 74 ladders top out at six, and the school band is usually its last two. A "school window" is whatever is left at the top, so extending every ladder evenly would be the wrong fix.
+- **Six levels is a convention, not a measure.** 28 of the 75 ladders top out at six, and the school band is usually its last two. A "school window" is whatever is left at the top, so extending every ladder evenly would be the wrong fix.
 - **The top is what she meets most at 7 and 8.** At a band's last level two smooth rounds step up to nothing, so she replays it. A top level that is a toy-sized idea shows up as repetition.
 - **How a level is added.** The plan lookups read (Pattern Train, Memory Match, Sink or Float, Song Maker, Rainbow Fingers) clamp the level to the table's length, so appending to the plan table and raising the school `max` is the safe edit; never renumber. A new level also needs its `describeLevel` text, `LevelLine` steps on the how-to card scoped to it, rule tests for the plan, and, for a game with a ghost finger, a bot that can play it, because `fingerdemo` plays each game's first and last level.
 - **Two couplings to budget for.** 11 of the 23 short-window games have a ghost-finger bot (Bouncy Launch, Little Helpers, Rhythm Neighbors, Scoop Shop, Sink or Float, Song Maker, Size Parade, Jelly Drums, Memory Match, Pattern Train, Bubble Pop). Five are also couch games (Bouncy Launch, Rhythm Neighbors, Sink or Float, Memory Match, Pattern Train), but a couch trip names its level for each stop, so appended levels leave trips and courses alone.

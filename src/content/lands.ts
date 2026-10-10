@@ -76,7 +76,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'pig' },
     backdrop: { sky: [0xb7ecf0, 0xfff6e0], hills: [0x8fd9df, 0x9fe0c9, 0xf6e3ad], horizon: 0.4, clouds: 2, sun: true, seed: 113 },
     music: tune(61, 'pluck', 98),
-    games: ['duck-pond', 'monster-munch', 'little-helpers', 'pet-kitchen', 'frog-hop', 'picture-graph', 'lasso-loops'],
+    games: ['duck-pond', 'monster-munch', 'little-helpers', 'pet-kitchen', 'frog-hop', 'picture-graph', 'lasso-loops', 'fill-dump'],
   },
   {
     id: 'cozy-village',

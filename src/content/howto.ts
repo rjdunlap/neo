@@ -97,6 +97,24 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: [{ from: 3, to: 4, text: 'The dots beside a number are there to count; counting them aloud together helps.' }],
   },
+  'fill-dump': {
+    goal: 'Play with a basket of fruit: tip it out, put it back, and fill it with a number.',
+    steps: [
+      { to: 2, text: 'Tap the basket to tip the fruit out. Then tap each piece (or the basket) to put it back.' },
+      { from: 3, text: 'Tap the fruit on the grass to put it in the basket, as many as the voice asks for.' },
+      { from: 3, text: 'Tap the basket to take the last one back out if there are too many.' },
+      { from: 3, text: 'Tap the green check when the basket has the right number.' },
+    ],
+    finish: [
+      { to: 1, text: 'The round ends when all the fruit is back in the basket.' },
+      { from: 2, to: 2, text: 'The round ends when all the fruit is back in after the second tip.' },
+      { from: 3, text: 'The round ends when the check is tapped with the right number in the basket.' },
+    ],
+    note: [
+      { to: 2, text: 'There is no wrong move here; every tap does something.' },
+      { from: 3, text: 'Tapping the check with the wrong number is a gentle miss. After two, a glow shows what to do next.' },
+    ],
+  },
   'shape-sorter': {
     goal: 'Put each shape in the hole it fits.',
     steps: [
