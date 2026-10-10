@@ -167,4 +167,4 @@ Each is sized for one session. The slices that add a level are built in level or
 
 ## What was built in this session
 
-Nothing in the game: this session wrote the research and the plan, and the docs were updated as the procedure says. Checks: docs only (links and `git diff --check`).
+Nothing in the game: this session wrote the research and the plan, and the docs were updated as the procedure says. Checks: docs only (links and `git diff --check`), plus one headless-Chrome probe (dev server, 1024×768) that screenshotted the level-7 tray for the dog, bunny, bear, duck and cow scenes (not the cat). It disproved my first reading of `art.ts`, which expected exact look-alike sky pieces; Known gaps has what it showed.
