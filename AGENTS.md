@@ -18,6 +18,7 @@ Each activity needs a fun action and a clear learning purpose: sharing fills pla
 | [docs/GAMES.md](docs/GAMES.md) | What each game does: rules, misses, hints, level steps |
 | [docs/IDEAS.md](docs/IDEAS.md) | The idea notebook: candidates, modes for existing games, gestures, references, overlaps. Not a mandate |
 | [docs/COUCH-PLAY.md](docs/COUCH-PLAY.md) | Player guide for couch play: pairing controllers, rules, controls |
+| [docs/deep-dives/](docs/deep-dives/README.md) | One session per game: the tracker of which games are researched and planned, the procedure, and each game's researched ladder (`<game-id>.md`) |
 | [docs/VERIFICATION.md](docs/VERIFICATION.md) | Checks actually performed, with a coverage summary of each suite's last pass |
 | `docs/archive/` | History, not instructions: superseded proposals, the old roadmap, finished roadmap items and idea rows, older verification entries |
 | `src/games/registry.ts`, `src/games/types.ts` | Current registrations and the minigame contract |

@@ -583,6 +583,8 @@ Not read in this round: the pre-K ceilings of Color Garden, Shape Sorter, Splish
 
 ### Round three: more to play in every band (2026-10-10)
 
+*Each game's rows here are a starting point for its [deep dive](deep-dives/README.md); once a game has one, its deep dive supersedes these rows.*
+
 **The developer's direction (2026-10-10):** "there could be a lot more quantity to a lot of the different games to allow more time to enjoy across age bands." The first two rounds admitted a level only if it changed what she decides. This round takes **quantity** as a goal in its own right: more fresh rounds and more levels in every band, so a favorite lasts for months. **Pressure is still out.** Nothing here adds speed, a timer, clutter, or more to remember than the band can hold, and targets stay at least 100 units. Everything below is a **proposal**, checked against each game's plan table and band ranges in `src/games/<id>/`. Nothing was played.
 
 #### Four ways to add more
