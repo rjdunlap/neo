@@ -2527,26 +2527,35 @@ async function woodsBatch() {
     log(`Secret Code ${level}: stones placed and cleared, marks, ignored clues as misses, suggestion hint, doors opened, saved score and sticker passed`);
   }
 
-  if (!only || only === 'hop') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'hop') for (let level = fromLevel; level <= 7; level++) {
     await launch('frog-hop', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-    // Answer by tapping a lily pad, or a number card on the gap level.
+    // Answer by tapping a lily pad, a number card on the gap level, or both for make-ten.
     const answer = async (right) => {
       await page.evaluate((right) => {
         const g = neo.scene.game; const q = g.questions[g.index];
         if (g.plan.mode === 'gap') { const n = Math.abs(q.hops); kit.tapOn(g.cards.find((c) => right ? c.n === n : c.n !== n).node); return; }
+        if (g.plan.mode === 'make-ten' && g.makeTenStage === 'bridge') { const n = q.toTen; kit.tapOn(g.cards.find((c) => right ? c.n === n : c.n !== n).node); return; }
         const pad = g.pads.find((p) => right ? p.n === q.target : p.n !== q.target && p.n !== q.start);
         kit.tapOn(pad);
       }, right);
       await page.waitForTimeout(250);
       await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
+      if (right && mode === 'make-ten') {
+        await page.evaluate(() => {
+          const g = neo.scene.game; const q = g.questions[g.index];
+          kit.tapOn(g.pads.find((p) => p.n === q.target));
+        });
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
+      }
     };
     for (let n = 0; n < 5; n++) {
       await idle(n);
       if (n === 0) {
         await answer(false); await answer(false);
         assert.deepEqual(await counts(), [2, 1]);
-        if (level === 5 || level === 6) await screenshot(`frog-hop-${level}`);
+        if (level >= 5) await screenshot(`frog-hop-${level}`);
       }
       await answer(true);
     }
