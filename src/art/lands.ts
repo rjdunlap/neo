@@ -28,17 +28,21 @@ function beach(): Graphics {
 
 function mountain(): Graphics {
   const g = new Graphics().ellipse(0, 28, 92, 24).fill(grass);
-  g.poly([-90, 34, -10, -86, 76, 34]).fill(swatch.purple.light).stroke(line(swatch.purple.line));
-  g.poly([-34, -50, -10, -86, 14, -52, 2, -46, -10, -60, -22, -44]).fill(swatch.white.fill);
-  // A drum at the foot and notes floating up.
-  g.roundRect(30, -2, 46, 32, 6).fill(swatch.red.fill).stroke(line(swatch.red.line, 4)).ellipse(53, -2, 23, 7).fill(swatch.white.fill).stroke(line(swatch.white.line, 3));
+  // A round green mountain with a xylophone of rainbow bars up its side, and notes floating off the top.
+  g.moveTo(-88, 34).quadraticCurveTo(-30, -112, 30, -60).quadraticCurveTo(64, -30, 88, 34).closePath().fill(swatch.teal.light).stroke(line(swatch.teal.line));
+  RAINBOW.forEach((name, i) => {
+    const x = -52 + i * 18;
+    const h = 46 - i * 5;
+    g.roundRect(x, 18 - h, 14, h, 4).fill(swatch[name].fill).stroke(line(swatch[name].line, 3));
+  });
+  g.moveTo(-60, 22).lineTo(56, 22).stroke(line(wood.line, 4));
   const notes = new Graphics();
   musicNote(notes, 30, swatch.blue.line);
-  notes.position.set(50, -60);
+  notes.position.set(46, -78);
   g.addChild(notes);
   const more = new Graphics();
   musicNote(more, 24, swatch.pink.line);
-  more.position.set(80, -88);
+  more.position.set(76, -100);
   g.addChild(more);
   return g;
 }
@@ -117,24 +121,36 @@ function rainbowMeadow(): Container {
 }
 
 function peaks(): Graphics {
-  const g = new Graphics();
-  g.moveTo(-96, 34).quadraticCurveTo(-56, -56, -10, 34).closePath().fill(swatch.blue.light).stroke(line(swatch.blue.line));
-  g.moveTo(-34, 34).quadraticCurveTo(22, -84, 84, 34).closePath().fill(swatch.teal.fill).stroke(line(swatch.teal.line));
-  // A puzzle-piece flag on top.
-  g.moveTo(22, -46).lineTo(22, -100).stroke(line(wood.line, 5));
-  g.roundRect(22, -100, 40, 30, 4).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4)).circle(62, -85, 8).fill(swatch.orange.fill);
-  g.circle(42, -100, 7).fill(swatch.orange.fill);
+  const g = new Graphics().ellipse(0, 28, 92, 24).fill(grass);
+  // Two craggy grey peaks with a big jigsaw piece on top, and a dropped piece at their foot.
+  g.poly([-92, 34, -54, -40, -30, -12, 0, -78, 40, 34]).fill(swatch.white.light).stroke(line(swatch.white.line));
+  g.poly([0, 34, 46, -50, 88, 34]).fill(0xd9d9e6).stroke(line(swatch.white.line));
+  const piece = (x: number, y: number, s: number, c: { fill: number; line: number }) => {
+    g.roundRect(x - 18 * s, y - 18 * s, 36 * s, 36 * s, 5 * s).fill(c.fill).stroke(line(c.line, 4));
+    g.circle(x, y - 22 * s, 8 * s).circle(x + 22 * s, y, 8 * s).fill(c.fill);
+  };
+  piece(0, -96, 1, swatch.yellow);
+  piece(62, 16, 0.6, swatch.red);
   return g;
 }
 
 function grove(): Graphics {
   const g = new Graphics().ellipse(0, 28, 92, 24).fill(grass);
-  g.roundRect(-22, -30, 30, 60, 8).fill(wood.fill).stroke(line(wood.line));
-  puffs(g, [[-40, -52, 30], [-6, -78, 34], [28, -52, 30], [-8, -40, 30]], swatch.green.fill, swatch.green.line, 5);
-  // An open book at the foot of the tree.
-  g.poly([20, 22, 50, 12, 50, 30, 20, 38]).fill(swatch.white.fill).stroke(line(swatch.white.line, 3));
-  g.poly([50, 12, 80, 22, 80, 38, 50, 30]).fill(swatch.white.fill).stroke(line(swatch.white.line, 3));
-  g.moveTo(26, 22).lineTo(44, 17).moveTo(26, 28).lineTo(44, 23).moveTo(56, 17).lineTo(74, 22).moveTo(56, 23).lineTo(74, 28).stroke(line(swatch.purple.light, 2));
+  // A giant storybook standing open on the grass, with little round trees behind it.
+  for (const [x, r] of [[-66, 24], [66, 26]]) {
+    g.rect(x - 4, -14, 8, 34).fill(wood.fill);
+    puffs(g, [[x, -26, r]], swatch.green.fill, swatch.green.line, 5);
+  }
+  g.poly([-56, 26, -2, 10, -2, -70, -56, -54]).fill(swatch.white.fill).stroke(line(swatch.purple.line, 4));
+  g.poly([2, 10, 56, 26, 56, -54, 2, -70]).fill(swatch.white.fill).stroke(line(swatch.purple.line, 4));
+  g.poly([-60, 30, -2, 14, 2, 14, 60, 30, 60, 36, 2, 20, -2, 20, -60, 36]).fill(swatch.purple.fill);
+  for (let i = 0; i < 4; i++) {
+    g.moveTo(-48, -42 + i * 14).lineTo(-12, -54 + i * 14 + 14 * 0.0).stroke(line(swatch.purple.light, 3));
+    g.moveTo(12, -54 + i * 14).lineTo(48, -42 + i * 14).stroke(line(swatch.purple.light, 3));
+  }
+  const star = new Graphics().poly(starPoints(10, 4)).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+  star.position.set(0, -84);
+  g.addChild(star);
   return g;
 }
 
