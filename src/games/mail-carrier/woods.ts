@@ -11,7 +11,7 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, planFor, POST_OFFICE, route, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
+import { checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, planFor, POST_OFFICE, route, routeLength, SHORTER_EDGES, shorterRoutes, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
 
 /**
  * Mail Carrier in Wonder Woods: Hazel the squirrel postkeeper hands over letters for the woods. The houses
@@ -131,6 +131,9 @@ export class WoodsMail implements Game {
   private readonly decor = new Container();
   private readonly office = new Container();
   private readonly keyCard = new Graphics();
+  private readonly routeChoicesLayer = new Container();
+  private readonly routeChoiceButtons: { node: Container; glow: Graphics }[] = [];
+  private shorterHouse: number | null = null;
   private readonly walker: Critter;
   private readonly hazel = makeHazel();
   private wrongs = 0;
@@ -166,7 +169,7 @@ export class WoodsMail implements Game {
       this.board.addChild(h);
     });
     this.board.addChild(this.walker);
-    ctx.stage.addChild(this.board, this.keyCard, this.letters, this.go);
+    ctx.stage.addChild(this.board, this.keyCard, this.routeChoicesLayer, this.letters, this.go);
     // The picture key: who lives behind each sign. Tapping a row says it.
     const rows = this.woods.map((house, i) => ({ house, i })).sort((a, b) => a.house.resident.localeCompare(b.house.resident));
     for (const { house, i } of rows) {
@@ -186,6 +189,7 @@ export class WoodsMail implements Game {
       this.key.push({ house: i, node, glow });
       ctx.stage.addChild(node);
     }
+    if (this.plan.mode === 'shorter') this.createRouteChoiceButtons();
     this.go.visible = false;
   }
 
@@ -210,6 +214,20 @@ export class WoodsMail implements Game {
       const q = this.at(b);
       this.paths.moveTo(p.x, p.y).lineTo(q.x, q.y);
     }
+    if (this.plan.mode === 'shorter') {
+      const [a, b] = SHORTER_EDGES.at(-1)!;
+      const p = this.at(a), q = this.at(b);
+      this.paths.moveTo(p.x, p.y).lineTo(q.x, q.y);
+    }
+    if (this.plan.mode === 'shorter') {
+      for (const [a, b, stones] of SHORTER_EDGES) {
+        const p = this.at(a), q = this.at(b);
+        for (let k = 1; k <= stones; k++) {
+          const t = k / (stones + 1);
+          this.paths.circle(p.x + (q.x - p.x) * t, p.y + (q.y - p.y) * t, 5).fill(wood.line);
+        }
+      }
+    }
     this.paths.stroke({ width: 22, color: wood.light, cap: 'round', join: 'round' });
     for (const [a, b] of MAP_EDGES) {
       const p = this.at(a);
@@ -230,6 +248,7 @@ export class WoodsMail implements Game {
     const rowH = Math.min(100, (v.h - 30 - top) / this.key.length);
     this.keyCard.clear().roundRect(kx - keyW / 2, top - 30, keyW, rowH * this.key.length + 40, 22).fill(0xfffdf6).stroke(line(wood.line, 5));
     this.key.forEach((r, i) => r.node.position.set(kx, top + rowH * (i + 0.5) - 10));
+    this.routeChoiceButtons.forEach((b, i) => b.node.position.set(kx, v.h * (i === 0 ? 0.62 : 0.81)));
     this.letters.position.set(kx, 118);
     this.go.position.set(x + w - 70, y + h - 70);
   }
@@ -242,6 +261,11 @@ export class WoodsMail implements Game {
     if (this.busy || this.finished || !trip) return null;
     const touch = woodsTouch(this.plan.mode, trip, this.planned);
     if (!touch) return null;
+    if (this.plan.mode === 'shorter') {
+      if (this.shorterHouse === null) return { tap: { on: this.houses[trip[0]], y: -50 } };
+      const button = this.routeChoiceButtons[0]?.node;
+      return button ? { tap: { on: button } } : null;
+    }
     return touch === 'go' ? { tap: { on: this.go } } : { tap: { on: this.houses[touch.house], y: -50 } };
   }
 
@@ -279,6 +303,12 @@ export class WoodsMail implements Game {
   /** The planned walk, drawn as a dotted purple line. */
   private drawPreview() {
     this.preview.clear();
+    if (this.plan.mode === 'shorter' && this.shorterHouse !== null) {
+      const [short, long] = shorterRoutes(this.shorterHouse);
+      this.drawPath(short, 0x36a76c, 7);
+      this.drawPath(long, 0xd29a32, 7);
+      return;
+    }
     if (this.plan.mode !== 'route' || !this.planned.length) return;
     const r = route(this.planned);
     for (let i = 1; i < r.length; i++) {
@@ -316,6 +346,8 @@ export class WoodsMail implements Game {
     if (this.plan.mode === 'map') {
       if (this.index === 0) await this.ctx.instruct('mail.map', { animal: who(trip[0]) });
       else await this.ctx.instruct('mail.map-for', { animal: who(trip[0]) });
+    } else if (this.plan.mode === 'shorter') {
+      await this.ctx.instruct('mail.shorter-for', { animal: who(trip[0]) });
     } else {
       if (this.index === 0) await this.ctx.say('mail.route');
       await this.ctx.instruct('mail.route-for', { first: who(trip[0]), second: who(trip[1]) });
@@ -349,8 +381,106 @@ export class WoodsMail implements Game {
   private tapHouse(i: number) {
     const trip = this.trip;
     if (!trip || this.busy || this.finished) return;
+    if (this.plan.mode === 'shorter') return void this.chooseShorterHouse(i, trip[0]);
     if (this.plan.mode === 'map') return void this.deliverOne(i, trip[0]);
     this.planStop(i, trip);
+  }
+
+  private async chooseShorterHouse(index: number, target: number) {
+    if (this.shorterHouse !== null || this.busy) return;
+    const h = this.houses[index];
+    if (index !== target) {
+      this.miss();
+      await h.peek(this.ctx.tw, false);
+      await this.ctx.say('mail.map-wrong', { sign: h.house.sign, resident: h.house.resident, animal: this.woods[target].resident });
+      h.resident.visible = false;
+      if (this.wrongs >= 2) this.hint(target);
+      return;
+    }
+    this.shorterHouse = index;
+    this.keyCard.visible = false;
+    this.key.forEach((r) => { r.node.visible = false; r.glow.visible = false; });
+    this.routeChoiceButtons.forEach((b) => { b.node.visible = true; b.glow.visible = false; });
+    const [short, long] = shorterRoutes(index);
+    this.drawPreview();
+    const shortStones = routeLength(short), longStones = routeLength(long);
+    for (let i = 0; i < 2; i++) {
+      const node = this.routeChoiceButtons[i].node;
+      const title = node.children[2] as ReturnType<typeof label>;
+      title.text = `${i === 0 ? 'Short' : 'Long'} · ${i === 0 ? shortStones : longStones} stones`;
+      const g = new Graphics();
+      const count = i === 0 ? shortStones : longStones;
+      const gap = Math.min(22, 160 / count);
+      for (let j = 0; j < count; j++) g.circle((j - (count - 1) / 2) * gap, 20, 5).fill(i === 0 ? 0x36a76c : 0xd29a32);
+      node.addChild(g);
+    }
+    await this.ctx.instruct('mail.shorter', { animal: this.woods[target].resident });
+  }
+
+  private drawPath(path: number[], color: number, width: number) {
+    for (let i = 1; i < path.length; i++) {
+      const p = this.at(path[i - 1]), q = this.at(path[i]);
+      this.preview.moveTo(p.x, p.y).lineTo(q.x, q.y).stroke({ color, width, cap: 'round' });
+    }
+  }
+
+  private async chooseShorterPath(choice: number) {
+    if (this.busy || this.shorterHouse === null) return;
+    const [short, long] = shorterRoutes(this.shorterHouse);
+    if (choice !== 0) {
+      this.miss();
+      sfx.boing();
+      await this.ctx.say('mail.shorter-hint', { n: routeLength(short), m: routeLength(long) });
+      if (this.wrongs >= 2) {
+        this.hints++;
+        this.routeChoiceButtons[0].glow.visible = true;
+        this.wrongs = 0;
+      }
+      return;
+    }
+    this.busy = true;
+    this.routeChoiceButtons[0].glow.visible = true;
+    this.routeChoiceButtons.forEach((b) => { b.node.eventMode = 'none'; });
+    for (let i = 1; i < short.length; i++) {
+      const edge = SHORTER_EDGES.find(([a, b]) => (a === short[i - 1] && b === short[i]) || (b === short[i - 1] && a === short[i]));
+      await this.walkTo(short.slice(i - 1, i + 1), 0.32 * (edge?.[2] ?? 1));
+    }
+    await this.welcome(this.shorterHouse);
+    await this.walkTo(walk(HOUSE_NODES[this.shorterHouse], POST_OFFICE), 0.12);
+    this.routeChoicesLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.routeChoiceButtons.length = 0;
+    this.createRouteChoiceButtons();
+    this.shorterHouse = null;
+    this.keyCard.visible = true;
+    this.key.forEach((r) => { r.node.visible = true; });
+    this.preview.clear();
+    this.busy = false;
+    await this.next();
+  }
+
+  private createRouteChoiceButtons() {
+    const options = [0, 1].map((i) => {
+      const node = new Container();
+      const glow = new Graphics().roundRect(-118, -54, 236, 108, 22).fill({ color: 0xfff3a0, alpha: 0.85 });
+      glow.visible = false;
+      const plate = new Graphics().roundRect(-112, -50, 224, 100, 20).fill(0xfffdf6).stroke(line(wood.line, 5));
+      const title = label(i === 0 ? 'Short path' : 'Long path', 23, wood.line);
+      title.y = -23;
+      node.addChild(glow, plate, title);
+      node.hitArea = new Rectangle(-118, -54, 236, 108);
+      onTap(node, () => void this.chooseShorterPath(i), { cooldown: 350 });
+      this.routeChoicesLayer.addChild(node);
+      return { node, glow };
+    });
+    this.routeChoiceButtons.push(...options);
+    this.routeChoiceButtons.forEach((b) => { b.node.visible = false; b.node.eventMode = 'static'; });
+    this.layoutRouteChoices();
+  }
+
+  private layoutRouteChoices() {
+    const keyW = 260;
+    const kx = this.ctx.view.w - keyW / 2 - 20;
+    this.routeChoiceButtons.forEach((b, i) => b.node.position.set(kx, this.ctx.view.h * (i === 0 ? 0.62 : 0.81)));
   }
 
   /** Map level: the right house gets a walk and a happy neighbor; a wrong one says who lives there. */

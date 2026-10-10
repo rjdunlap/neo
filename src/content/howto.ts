@@ -422,8 +422,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Count the dots on the letter, then tap the house with that number.' },
       { from: 6, to: 6, text: 'Find who the letter is for in the picture key, then tap the house with their sign.' },
       { from: 7, text: 'Tap the house for letter one, then the house for letter two, then tap the green arrow to walk the route.' },
+      { from: 8, text: 'Find who the letter is for in the picture key and tap their house. Then compare the two paths and tap the one with fewer stepping stones.' },
     ],
-    finish: 'The round ends when the letters are delivered.',
+    finish: [
+      { to: 7, text: 'The round ends when the letters are delivered.' },
+      { from: 8, text: 'The round ends when the shorter path is walked and the letter is delivered.' },
+    ],
+    note: [{ from: 8, text: 'The stones mark the path length. Count them together; every destination has one path with fewer stones.' }],
   },
   'photo-safari': {
     goal: 'Take photos of the animal that is named.',

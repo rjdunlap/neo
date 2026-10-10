@@ -20,7 +20,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
-  school: { min: 4, max: 7 },
+  school: { min: 4, max: 8 },
 };
 
 const NEIGHBORS: CritterName[] = ['cat', 'dog', 'bear', 'bunny', 'pig', 'cow'];
