@@ -11,6 +11,7 @@ import type { Rng } from '../../engine/random';
  * trying a stone again in a slot where an earlier guess already ruled it out.
  */
 export interface CodePlan {
+  detective?: boolean;
   slots: number;
   colors: number;
   /** Yellow marks for right-color-wrong-place; without them, a slot is only green or gray. */
@@ -28,6 +29,7 @@ export const PLANS: CodePlan[] = [
   { slots: 3, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Three slots and five colors, with yellow marks' },
   { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Four slots and five colors' },
   { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, name: 'A color can be used twice in the code' },
+  { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, name: 'Detective door: work out the one code that fits the shown guesses' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -129,4 +131,31 @@ export function nextMove(plan: CodePlan, history: Guess[], code: number[], guess
   const empty = guess.indexOf(null);
   if (empty < 0) return { key: true };
   return { stone: (candidates(plan, history)[0] ?? code)[empty] };
+}
+
+/** Build a seeded detective door with two or three non-answer clues, all visible together.
+ * Pick the clue that leaves the fewest candidates for this code; ties use the seeded order.
+ */
+export function detectiveDoor(plan: CodePlan, rng: Rng): { code: number[]; history: Guess[] } {
+  const code = makeCode(plan, rng);
+  const guesses = rng.shuffle(candidates(plan, []).filter((g) => g.join() !== code.join()));
+  const history: Guess[] = [];
+  while (history.length < 2 || candidates(plan, history).length > 1) {
+    let best: Guess | undefined;
+    let remaining = Infinity;
+    for (const stones of guesses) {
+      if (history.some((h) => h.stones.join() === stones.join())) continue;
+      const clue = { stones, marks: score(code, stones, plan.yellow) };
+      const count = candidates(plan, [...history, clue]).length;
+      if (count < remaining) { best = clue; remaining = count; }
+    }
+    if (!best || history.length >= 3) throw new Error('Detective door needs more than three clues');
+    history.push(best);
+  }
+  return { code, history };
+}
+
+/** Detective guesses must agree with the whole evidence, including color quantities. */
+export function contradictsClues(plan: CodePlan, history: Guess[], guess: number[]): boolean {
+  return !candidates(plan, history).some((c) => c.join() === guess.join());
 }

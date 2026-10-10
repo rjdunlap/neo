@@ -12,11 +12,11 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ignoredClues, makeCode, nextMove, planFor, score, STONES, suggestion, type CodePlan, type Guess, type Mark } from './logic';
+import { contradictsClues, detectiveDoor, ignoredClues, makeCode, nextMove, planFor, score, STONES, suggestion, type CodePlan, type Guess, type Mark } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 6 },
+  school: { min: 2, max: 7 },
 };
 
 /** Each stone has a shape as well as a color, so colors never have to be told apart by hue alone. */
@@ -181,10 +181,12 @@ class SecretCode implements Game {
     this.wrongs = 0;
     this.hinted = false;
     if (this.index >= this.plan.codes) return void this.finale();
-    this.code = makeCode(this.plan, this.ctx.rng);
-    this.history = [];
+    const door = this.plan.detective ? detectiveDoor(this.plan, this.ctx.rng) : { code: makeCode(this.plan, this.ctx.rng), history: [] };
+    this.code = door.code;
+    this.history = door.history;
     this.past.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.history.forEach((g) => this.addPast(g));
     this.leaf.clear();
     this.guess = Array(this.plan.slots).fill(null);
     this.slotLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -200,6 +202,7 @@ class SecretCode implements Game {
     this.resize(this.view);
     this.busy = false;
     if (this.index > 0) return;
+    if (this.plan.detective) return this.ctx.instruct('code.detective');
     if (this.plan.repeats) return this.ctx.instruct('code.repeat');
     return this.ctx.instruct(this.plan.yellow ? 'code.yellow' : 'code.yesno');
   }
@@ -239,6 +242,7 @@ class SecretCode implements Game {
     this.guesses++;
     const stones = this.guess as number[];
     const ignored = ignoredClues(this.plan, this.history, stones);
+    const contradiction = this.plan.detective && contradictsClues(this.plan, this.history, stones);
     const marks = score(this.code, stones, this.plan.yellow);
     this.history.push({ stones: [...stones], marks });
     sfx.knock();
@@ -261,17 +265,18 @@ class SecretCode implements Game {
       badges.forEach((b) => b.destroy());
       return void this.open();
     }
-    if (ignored.length) {
+    if (ignored.length || contradiction) {
       // The only mistake here: putting a stone where a mark already said it can't go.
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      await this.ctx.say('code.ignored', { color: STONES[stones[ignored[0]]] });
+      if (this.plan.detective) await this.ctx.say('code.contradiction');
+      else await this.ctx.say('code.ignored', { color: STONES[stones[ignored[0]]] });
     } else if (this.plan.yellow) await this.ctx.say('code.marks', { g: green, y: marks.filter((m) => m === 'yellow').length });
     else await this.ctx.say('code.green', { g: green });
     await this.ctx.tw.wait(0.4);
     badges.forEach((b) => b.destroy());
-    this.addPast(this.history.at(-1)!);
+    if (!this.plan.detective) this.addPast(this.history.at(-1)!);
     // Keep the stones that were green; the rest come back to the tray.
     marks.forEach((m, i) => {
       if (m !== 'green') this.clear0(i);

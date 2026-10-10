@@ -466,7 +466,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Put the presents on the seesaw to see which side drops; the heaviest goes in the wagon.' },
       { from: 5, to: 5, text: 'Tap number weights onto the other side until it weighs the same as this side, using different pieces.' },
       { from: 6, to: 7, text: 'Tap blocks onto the other side until the seesaw balances, then tap the answer button for how heavy the box is.' },
-      { from: 8, text: 'Take the same thing off both sides, one at a time, until a box is alone; then tap the answer button for how heavy it is.' },
+      { from: 8, to: 9, text: 'Take the same thing off both sides, one at a time, until a box is alone; then tap the answer button for how heavy it is.' },
+      { from: 10, text: 'Take the same things off both sides. When two boxes balance the blocks, share the blocks fairly and tap how many belong to each box.' },
     ],
     finish: [
       { to: 4, text: 'The round ends when the seesaw is balanced or the heaviest is chosen, as asked.' },
@@ -592,10 +593,11 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap stones to fill the slots, then turn the key.',
       { to: 2, text: 'A green check means the right stone is in the right place; gray means try another stone there.' },
       { from: 3, text: 'Green means the right stone in the right place; yellow means that color is in the code but in another slot; gray means try another stone.' },
-      { from: 6, text: 'A color can be used twice in the code.' },
+      { from: 6, to: 6, text: 'A color can be used twice in the code.' },
+      { from: 7, text: 'Two or three guesses are already shown. Find the one code that fits every mark; its colors are all different.' },
     ],
     finish: 'The round ends when the code is cracked.',
-    note: 'A wrong try is how you learn the code.',
+    note: [{ to: 6, text: 'A wrong try is how you learn the code.' }, { from: 7, text: 'A try that contradicts the shown clues gets a reminder. After two, faint stones help; the original clues stay visible.' }],
   },
   'frog-hop': {
     goal: 'Hop the frog along a number line.',

@@ -8,7 +8,7 @@ import type { Rng } from '../../engine/random';
  * how far out something sits. The early-school steps, after DragonBox and PhET's Equality Explorer, start
  * balanced with a box and blocks on one side: take the same off both sides until the box is alone.
  */
-export type SeesawMode = 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same';
+export type SeesawMode = 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share';
 export type Side = 'left' | 'right';
 
 export interface SeesawPlan {
@@ -28,6 +28,7 @@ export const PLANS: SeesawPlan[] = [
   { mode: 'mystery', rounds: 3, boxes: 2, name: 'Two identical boxes: weigh both, then find the weight of one' },
   { mode: 'same', rounds: 3, name: 'A box and blocks balance blocks: take the same off both sides until the box is alone, then say its weight' },
   { mode: 'same', rounds: 3, boxes: 2, name: 'Boxes on both sides: take a box for a box and a block for a block until one box is alone' },
+  { mode: 'share', rounds: 3, name: 'Take the same off both sides, then share the blocks between two identical boxes' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -157,6 +158,15 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
         rounds.push({ fixed: [...boxes(two ? 2 : 1), ...blocks(k)], fixedSide, offered: [], across: [...boxes(two ? 1 : 0), ...blocks(m + k)], answer: m });
         break;
       }
+      case 'share': {
+        // Three boxes + k blocks balance one box + twice the box weight + k blocks.
+        // Taking equal things away leaves two equal boxes facing two equal groups of blocks.
+        const m = fresh(2, 4);
+        const k = rng.int(1, 2);
+        const boxes = (n: number): Thing[] => Array.from({ length: n }, () => ({ kind: 'box', weight: m }));
+        rounds.push({ fixed: [...boxes(3), ...blocks(k)], fixedSide, offered: [], across: [...boxes(1), ...blocks(2 * m + k)], answer: m });
+        break;
+      }
       case 'mystery': {
         const m = fresh(2, plan.boxes === 2 ? 3 : 5);
         rounds.push({ fixed: Array.from({ length: plan.boxes ?? 1 }, () => ({ kind: 'box', weight: m })), fixedSide, offered: blocks(plan.boxes === 2 ? 7 : 6), answer: m });
@@ -179,6 +189,16 @@ export function aloneSide(sides: Record<Side, readonly Thing[]>): Side | null {
     const here = sides[side];
     const there = sides[other(side)];
     if (here.length === 1 && here[0].kind === 'box' && there.length > 0 && there.every((t) => t.kind === 'block')) return side;
+  }
+  return null;
+}
+
+/** Level 10: two identical boxes face only blocks, so the blocks can be shared between them. */
+export function shareSide(sides: Record<Side, readonly Thing[]>): Side | null {
+  for (const side of ['left', 'right'] as Side[]) {
+    const here = sides[side];
+    const there = sides[other(side)];
+    if (here.length === 2 && here.every((t) => t.kind === 'box') && there.length > 0 && there.every((t) => t.kind === 'block')) return side;
   }
   return null;
 }
@@ -251,7 +271,7 @@ export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonl
     return match ? { kind: 'move', item: match.index, to: 'ground' } : null;
   }
   const sides = { left: on('left').map(({ item }) => item.thing), right: on('right').map(({ item }) => item.thing) };
-  if (aloneSide(sides)) return null;
+  if (aloneSide(sides) || (plan.mode === 'share' && shareSide(sides))) return null;
   const boxes = { left: on('left').filter(({ item }) => item.thing.kind === 'box'), right: on('right').filter(({ item }) => item.thing.kind === 'box') };
   if (boxes.left.length && boxes.right.length && (boxes.left.length > 1 || boxes.right.length > 1)) {
     const side: Side = boxes.left.length > boxes.right.length ? 'left' : 'right';

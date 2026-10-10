@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { aloneSide, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, PLANS, seesawTouch, tilt, total, ways, weigh, type SeesawTouchItem, type Thing } from './logic';
+import { aloneSide, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, PLANS, seesawTouch, shareSide, tilt, total, ways, weigh, type SeesawTouchItem, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
   it('demonstrates every mode with only moves that lead to its answer', () => {
     for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
       for (const round of makeRounds(plan, new Rng(seed))) {
-        const same = plan.mode === 'same';
+        const same = plan.mode === 'same' || plan.mode === 'share';
         const items: SeesawTouchItem[] = [
           ...round.fixed.map((thing) => ({ thing, fixed: !same, side: round.fixedSide })),
           ...(round.across ?? []).map((thing) => ({ thing, fixed: false, side: other(round.fixedSide) })),
@@ -19,7 +19,7 @@ describe('Seesaw Balance', () => {
         for (let step = 0; step < 30; step++) {
           if (plan.mode === 'heaviest') for (const item of items) if (item.side) item.tested = true;
           const sides = { left: items.filter((i) => i.side === 'left').map((i) => i.thing), right: items.filter((i) => i.side === 'right').map((i) => i.thing) };
-          const readyForNumber = plan.mode === 'mystery' ? weight(target) === total(round.fixed) : plan.mode === 'same' ? !!aloneSide(sides) : false;
+          const readyForNumber = plan.mode === 'mystery' ? weight(target) === total(round.fixed) : plan.mode === 'same' ? !!aloneSide(sides) : plan.mode === 'share' ? !!shareSide(sides) : false;
           if (readyForNumber && !numbers) numbers = true;
           const move = seesawTouch(plan, round, items, numbers);
           if (!move) break;
@@ -43,7 +43,7 @@ describe('Seesaw Balance', () => {
 
         if (plan.mode === 'up' || plan.mode === 'heavy') expect(weight(target)).toBeGreaterThan(total(round.fixed));
         if (plan.mode === 'level' || plan.mode === 'parts') expect(weight(target)).toBe(total(round.fixed));
-        if (plan.mode === 'mystery' || plan.mode === 'same') expect(answered).toBe(true);
+        if (plan.mode === 'mystery' || plan.mode === 'same' || plan.mode === 'share') expect(answered).toBe(true);
         if (plan.mode === 'heaviest') expect(items.some((item) => item.inWagon && item.thing.weight === round.answer)).toBe(true);
       }
     }
@@ -107,6 +107,12 @@ describe('Seesaw Balance', () => {
               expect(r.offered).toHaveLength(0);
               expect(aloneSide({ [r.fixedSide]: r.fixed, [other(r.fixedSide)]: r.across! } as Record<'left' | 'right', Thing[]>)).toBeNull();
               break;
+            case 'share':
+              expect(fixed).toBe(total(r.across!));
+              expect(r.offered).toHaveLength(0);
+              expect(r.fixed.filter((t) => t.kind === 'box')).toHaveLength(3);
+              expect(r.across!.filter((t) => t.kind === 'box')).toHaveLength(1);
+              break;
             case 'parts':
               // At least two different ways to make the same weight.
               expect(fixed).toBe(r.answer);
@@ -116,7 +122,7 @@ describe('Seesaw Balance', () => {
           for (const t of [...r.fixed, ...r.offered]) if (t.kind === 'friend') expect(FRIEND_FOR[t.weight as keyof typeof FRIEND_FOR]).toBeDefined();
         }
         // Counting levels never ask the same number twice in a row.
-        if (plan.mode === 'level' || plan.mode === 'mystery' || plan.mode === 'parts' || plan.mode === 'same') {
+        if (plan.mode === 'level' || plan.mode === 'mystery' || plan.mode === 'parts' || plan.mode === 'same' || plan.mode === 'share') {
           for (let i = 1; i < rounds.length; i++) expect(rounds[i].answer).not.toBe(rounds[i - 1].answer);
         }
       }
@@ -164,5 +170,21 @@ describe('Seesaw Balance', () => {
     }
     // A box alone is not enough if the other side still has a box.
     expect(aloneSide({ left: [{ kind: 'box', weight: 3 }], right: [{ kind: 'box', weight: 3 }] })).toBeNull();
+  });
+
+  it('leaves two boxes against two equal groups of blocks at the sharing level', () => {
+    for (let seed = 1; seed <= 100; seed++) for (const r of makeRounds(PLANS[9], new Rng(seed))) {
+      const here = [...r.fixed];
+      const there = [...r.across!];
+      const off = (side: Thing[], kind: Thing['kind']) => side.splice(side.findIndex((t) => t.kind === kind), 1)[0];
+      // Cancel one box pair and the common blocks, keeping the seesaw level after each pair.
+      off(here, 'box'); off(there, 'box');
+      while (here.some((t) => t.kind === 'block')) { off(here, 'block'); off(there, 'block'); }
+      expect(total(here)).toBe(total(there));
+      const sides = { left: here, right: there };
+      expect(shareSide(sides)).toBe('left');
+      expect(there).toHaveLength(2 * r.answer);
+      expect(r.answer).toBeGreaterThanOrEqual(2);
+    }
   });
 });
