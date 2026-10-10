@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-10 — Memory Match level 11
+
+- Added three fraction-picture/name pairs to the school ladder, with spoken card names and a two-line "three quarters" label.
+- Updated the how-to, inventory, GAMES guide, roadmap and idea status; build note is in the completed-work archive.
+- `npm run typecheck` passed using the sibling checkout's installed dependencies; the temporary dependency link was removed afterward.
+- Not run: rule tests, browser play, portrait screenshot or `fingerdemo`.
+- Not established: iPad legibility/touch feel, device speech or a child's response.
+- Coverage status: Memory Match level 11 remains unverified until rule tests, filtered play and its ghost-finger demonstration can run.
+
 ## 2026-10-10 — Feelings Faces level 8: How can we help?
 
 - Added a pre-K round that follows the balloon drifting away or the moon rising with a choice of a hug or pillow.
@@ -203,7 +212,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `originals`, `robot`, `third` | 2026-10-10: Duck Pond 11 wrong answers, hint, five rounds and completion; 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-06 in the combined flow, with later per-game reruns; `BATCH_ONLY=salon` (Fluffy Salon with real strokes) 2026-10-09: levels 1 and 2 pass, level 3 times out on the unchanged game too | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
 | `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |
-| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-10: `pattern` filtered to level 12 (wrong answer, hint, reward); 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash, all eight levels, real touches) 2026-10-09 | Pattern Train seventh-car entry; archived combined-flow entry; Stop and Go to Splish Splash bots entry | |
+| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-10: `pattern` filtered to level 12 (wrong answer, hint, reward); 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash, all eight levels, real touches) 2026-10-09 | Pattern Train seventh-car entry; archived combined-flow entry; Stop and Go to Splish Splash bots entry | Memory Match level 11 rule tests and browser checks remain open |
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
