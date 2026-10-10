@@ -61,6 +61,15 @@ Written 2026-10-09 and built the same day in two slices (PRs #60 and #62). Slice
 - **Added to the checklist while building:** a "Who's playing?" button top-left on the map (otherwise changing player needed a reload); the page returning to whoever was playing; a click with no pointer behind it (Enter, a screen reader) counting as a key, never as the island; keys and the controller stopped while the add form or the page is open; `selectPlayer` as the one place a player is switched.
 - **Cut, and recorded in the roadmap:** the comfort questions, a device-level sound setting, a friend's `kind`, and linking couch records to people.
 
+### Profiles stages 2 to 5, as written before the lands plan
+
+On 2026-10-09 the developer chose themed lands for the map, and these four stages moved into the roadmap's [Lands](../ROADMAP.md#lands-navigation-and-discovery) stages B to E. As they stood:
+
+2. **The island shell takes a controller.** Only `CouchScene` drives `control()` and the pause menu's *Start again* and *Show a hint* (`restart`, `askForHint`); `GameScene` does none of it. Before any grown-up game can live on the map, `GameScene` must sample keys and the controller, call `control()`, offer those two pause entries, and show the demonstration for the input in use. The games already read `ctx.couch?.course`, so a missing couch context is tolerated. If this proves large, Lantern Lake can instead hand a chosen game to the couch shell until it lands.
+3. **The grown-up band and Lantern Lake.** Move the six couch-only games into the catalog and give the island couch games a grown-up range, with input gating. Price each moved game: a how-to card (couch how-tos live in `catalog.ts`), voice lines, registry subject and place coverage, a `smoke` case, and the README and roadmap counts.
+4. **Touch and mouse for grown-up games**, a few at a time, with prompts that follow the last input.
+5. **Game night on profiles.** Move trips, face-offs, courses, the shelf and records onto profiles, link the old couch records, retire unlock tiers and the couch shell, and archive the couch guide.
+
 ### Habitat Helpers, the new-games item (built 2026-10-09)
 
 - [ ] **New games from the shortlist:** **Habitat Helpers is built (2026-10-09)** for the science gap: Bunny and Duck each need food, water and shelter; the six-level ladder moves from obvious pieces to distractors, a prediction, compact multipurpose habitats and one three-piece garden compatible with both. Its definition of ready was two stylized visitors, explicit needs, prediction before a test, a compatible-needs puzzle, free experimental revisions, supported completion, discoveries only for visitors actually shown, the complete band ladder and normal game integration. Story Theater or Shape Buddies remain ([candidates](../IDEAS.md#candidates)).
