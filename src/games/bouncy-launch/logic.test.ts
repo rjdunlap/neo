@@ -16,6 +16,14 @@ describe('Bouncy Launch', () => {
     expect(revealsPullRule([0.9, 0.2])).toBe(true);
   });
 
+  it('uses one deterministic pull-to-cloud mapping for shown-pull predictions', () => {
+    for (let i = 0; i < PADS; i++) {
+      const shownPull = pullFor(padAt(i));
+      expect(reach(shownPull)).toBe(padAt(i));
+      expect(padHit(reach(shownPull))).toBe(i);
+    }
+  });
+
   it('never asks for the same cloud twice in a row', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 200; seed++) {
@@ -38,6 +46,8 @@ describe('Bouncy Launch', () => {
     expect(judge(compare, 0.2, 0, 'nearer', 0.7)).toBe('yes');
     expect(nextAsk(0.8)).toBe('nearer');
     expect(nextAsk(0.2)).toBe('farther');
+    // A prediction shows what happened; it never judges the picked cloud as a miss.
+    expect(judge(planFor(6), padAt(0), 4)).toBe('yes');
   });
 
   it("gives the ghost finger's bot only right pulls: every launch lands where it was asked, within the leash, and the round is finished in its own number of shots", () => {
@@ -51,6 +61,11 @@ describe('Bouncy Launch', () => {
           const pull = pullToTake(plan, shot, tgs, last);
           if (plan.mode === 'tap') {
             expect(pull).toBe(0);
+            continue;
+          }
+          if (plan.mode === 'predict') {
+            // The bot taps the cloud that the fixed shown pull reaches; no child pull is needed at this level.
+            expect(padHit(reach(pullFor(padAt(tgs[shot]))))).toBe(tgs[shot]);
             continue;
           }
           expect(pull).toBeGreaterThanOrEqual(MIN_PULL);

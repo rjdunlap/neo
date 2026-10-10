@@ -37,7 +37,8 @@ Most sessions should build from this list; checks that need a person or a device
 
 | # | Chunk | Status | One session's next slice | Check tier | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Deepen short ladders** with a real next decision | ready | Confirm Bouncy Launch's pull-to-cloud mapping is deterministic, then build its unscored cloud prediction | New levels on an existing interaction | [Below](#short-ladders-in-order) |
+| 2 | **Deepen short ladders** with a real next decision | ready | Build Rainbow Fingers' pumpkin recall-and-mixing level | New levels on an existing interaction | [Below](#short-ladders-in-order) |
+| 13 | **More to play in every band** (the developer's direction, 2026-10-10: more quantity across age bands) | ready | Content first: give each Tangram Town level three or four silhouettes, since each level draws one fixed picture today. Then Story Steps' stories go from four to ten | Content: typecheck, that game's rule tests and one screenshot of the new art. Younger-band openings: unit and registry tests. New levels: the "new levels" tier | [Below](#more-to-play-in-every-band) |
 | 3 | **Lands: navigation and discovery**, the island as themed lands (stage A built 2026-10-09) with the couch puzzles brought onto it, ending with couch play retired | define (stage B) | Write stage B's definition of ready: the `grownup` band and its home spot, Lantern Lake, the six puzzles in `GAMES`, `GameModule.inputs`, and touch for Lantern Lights; then build it | Docs only; then the shell and navigation tier | [Lands](#lands-navigation-and-discovery) |
 | 4 | **New games from the gap review**: Fill and Dump, Number Trails, Sing-Along Barn, Read & Do; then Day by Day, Orchard Rows, Mirror Brush | sketch for the first four (Number Trails waits on the stroke convention, Sing-Along Barn on the pentatonic exception); define for the rest | Fill and Dump needs no decision: check its sketch against the planning rules and build the first round | New game: typecheck, unit tests, one scripted play, one portrait screenshot | [Gap review sketches](IDEAS.md#sketches-first-drafts-of-the-definition-of-ready) and [suggested order](IDEAS.md#suggested-order-non-binding) |
 | 5 | **Story Theater or Shape Buddies** | define | Write the definition of ready for one | Docs only | [Candidates](IDEAS.md#candidates) |
@@ -53,10 +54,35 @@ Most sessions should build from this list; checks that need a person or a device
 25 games top out at four or five levels and 23 give the school band only one or two (33 school-reaching games in all). The [short-ladder audit](IDEAS.md#short-ladder-audit-2026-10-09) read every ladder and ordered the ones with a **real next decision** (something new to decide, not a bigger number, a faster pace or more to remember). Append levels, never renumber saved levels or pins. Each new level needs its `describeLevel`, scoped how-to steps, rule tests and a bot that can play it (every game has a ghost finger now, and `fingerdemo` plays each game's top level). Already built: Inchworm Measure 5–6, Picture Graph 5–6, Pet Kitchen 7–8, Pattern Train 10–12, Treasure Map 5 and Critter Sort 5 ([archive](archive/COMPLETED-2026-10-09.md#short-ladders-what-was-built-and-audited)).
 
 1. **Memory Match 10, "Same, said differently"** — **built 2026-10-09**: number words one through ten to numerals (text cards). Levels 11 (fraction pictures) and 12 (clock faces) need small new art and a legibility look at the 140-unit card first. [Sketch](IDEAS.md#sketch-for-the-next-one-to-build).
-5. **Bouncy Launch**: predict which cloud a shown pull will reach, as an unscored prediction. First confirm that the pull-to-cloud mapping is deterministic.
+5. **Bouncy Launch** — **built 2026-10-10**: school level 6 shows a fixed pull, asks for a cloud prediction, then releases it; different guesses stay unscored. The pure pull-to-cloud mapping is tested as deterministic. [Build note](archive/COMPLETED-2026-10-09.md#bouncy-launch-shown-pull-predictions-2026-10-10).
 6. **Rainbow Fingers**: "Paint the pumpkin", recalling that it is orange and then mixing it.
 
+**Then, from the [second ladder round](IDEAS.md#round-two-the-longer-ladders-2026-10-10) (2026-10-10, proposals).** That round covers the longer school ladders the audit skipped. Each item is one level appended above the game's current top, and the detail page says what its rule tests assert.
+
+7. **Market Stall 7, Fewest coins**: pay with as few shells as possible.
+8. **Clock Tower 7, Five-minute times**: count by fives around the face to set 3:25. First check that twelve snap marks stay 100 units apart.
+9. **Frog Hop 7, Hop to ten first**: split a sum that crosses ten at 10 (8 + 2 + 3).
+10. **Seesaw Balance 10, Two steps**: take the same off both sides, then share what is left between two boxes.
+11. **Secret Code 7, Detective door**: deduce the one code that fits guesses already on the door.
+12. **Robot Path 11, Fix the program**: find and change the one wrong slot (authored boards).
+13. **Egg Catch 7, Set it once**: one gate setting that routes a brown egg and a white egg.
+14. **Light Lab 7, Where will it shine?**: predict where the locked beam stops (unscored), then plan.
+15. **Duck Pond 11, Hiding ducks**: the whole is known, so how many are hiding under the bridge?
+16. **Word Monsters 8, Change the end**: cat, cap, can. Device speech is still unchecked.
+17. **Mail Carrier 8, Which way is shorter?**: needs a second map with a loop.
+
+Two pre-K ceilings could also grow: Feelings Faces 8 (*how can we help?*) and Weather Wardrobe 7 (*the weather changes*). The round's costlier steps are Photo Safari's two-clue scenes, elapsed time, two different unknowns and Garden Rows boxes; its "leave" verdicts are on the same page.
+
 Costlier, after these: Sink or Float's *make it float* is the strongest. **Ramp Race**'s "predict where the car stops" must have its finish rule and the half-marks the model produces (such as 1.5 × 3) worked out before it is built, and a recorded-trials table is a new screen. Fourteen more need a new interaction, art or a stated model first, and twelve should stay as they are; the older-band ceilings of Opposites, Goodnight Room, Stop and Go and Clap the Syllables wait for a reason to grow them ([audit](IDEAS.md#short-ladder-audit-2026-10-09)).
+
+### More to play in every band
+
+The developer asked on 2026-10-10 for "a lot more quantity to a lot of the different games to allow more time to enjoy across age bands". [Round three](IDEAS.md#round-three-more-to-play-in-every-band-2026-10-10) goes through every island game and proposes four kinds of addition: **fresh content inside a level** (no level change, any band), **new levels on top**, **opening a game to a younger band** from its existing level 1, and **levels below level 1**. The last kind waits on the level-order decisions below. Quantity is welcome; speed, timers, clutter and memory load stay out. In order:
+
+1. **Content where one round repeats today:** Tangram Town (one picture per level), Story Steps (four stories), Robot Path (one authored board per level), Goodnight Room (one room), Opposites (eight pairs), Puzzle Pals (six scenes). Each item in a pool gets a rule test that it fits its level.
+2. **Younger-band openings in batches of four**, from: Beat Builder (toddler and lap), Memory Match and Habitat Helpers (toddler); Critter Sort, Picture Graph, Inchworm Measure, Treasure Map, Secret Code, Rhyme Time, Robot Path, Light Lab, Ramp Race and Chain Reaction (preschool). Each batch updates the band counts, puts more games in the younger bands' lands (`lands.test.ts` fails if a land would no longer fit on one screen) and adds its fit to [Needs a person or a device](#needs-a-person-or-a-device).
+3. **37 new levels on top**, interleaved with items 1–17 above, cheapest first. Seven of them give a ladder a new band window: Duckling Parade, Feelings Faces and Clap the Syllables reach school; Animal Snack, Stop and Go, Garden Grow and Goodnight Room reach pre-K.
+4. **More content for the rest**, game by game, as the round's tables list it.
 
 ## Waiting on the developer
 
@@ -76,8 +102,8 @@ Decisions that are already written down in the docs, collected so a session know
 | **A racing time as a main score** | The ground rules let a timer be a second statistic but never end a round; a time trial's main score is a lap time, which needs an explicit rule change | Time Trial with a ghost | Fun and arcade review |
 | **A par rule for Wordle-style games** | There is no exact minimum (the same problem Secret Code has), so a par rule is chosen first | Word Code | Fun and arcade review |
 | **Whether a pace or assist setting makes a run "helped"** | Records keep helped and unhelped runs apart; a slower pace changes the physics, so it probably counts as its own category | Comfort options in the real-time games | Fun and arcade review |
-| **May a band's range skip levels?** | A new lap level has to be appended at the end of a ladder, so first decide whether the range may skip | Chunk 11; Color Train | [Next up](#next-up) (11); [IDEAS](IDEAS.md#gaps-in-the-catalog) |
-| **Is two levels enough for a favorite?** And are Memory Match 10–12's matching levels a bridge or a duplicate of Pet Kitchen and Clock Tower? | The audit favors giving the best games more depth over stretching all of them; decide the second question once the levels can be played | How far chunk 2 goes | [Short-ladder audit](IDEAS.md#open-questions) |
+| **May a band's range skip levels?** | A new lap level has to be appended at the end of a ladder, so first decide whether the range may skip | Chunk 11; Color Train; round three's levels below level 1 (kind D) | [Next up](#next-up) (11); [IDEAS](IDEAS.md#gaps-in-the-catalog) |
+| **Are Memory Match 10–12's matching levels a bridge or a duplicate** of Pet Kitchen and Clock Tower? (The first half of this row, "is two levels enough for a favorite?", was answered on 2026-10-10: more quantity is wanted; see [More to play in every band](#more-to-play-in-every-band)) | Decide once the levels can be played | Memory Match 11–12 | [Short-ladder audit](IDEAS.md#open-questions) |
 | **Must a new island game ship a ghost-finger bot?** | All 74 games have one now. AGENTS.md still calls a bot a "welcome extra" in the new-game steps; making it required would add a rule test, an `autotouch()` and a `fingerdemo` pass to every new game, and a card with no demonstration is text alone | Every new game's slice | [AGENTS.md](../AGENTS.md#adding-or-extending-a-minigame) step 7 |
 | **Later (E2):** which of Maker Harbor and Storybook Square comes first, and whether branching modes need their own progress records | Choose by the next desired skill area | The middle-elementary expansion | [E2](#e2-middle-elementary) |
 

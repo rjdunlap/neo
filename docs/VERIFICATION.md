@@ -63,6 +63,14 @@ What changed: the island map became ten themed lands plus the person's home spot
 - Screenshots of the map (landscape, portrait, after a birthday), a sparse land with its signpost, the fullest land (Cozy Village at school) and a suggestion were reviewed; three land drawings were redrawn afterwards because they looked like age places (Music Mountain, Puzzle Peaks, Story Grove), checked by screenshot only.
 - Not run: `howto`, `smoke`, `fingerdemo` and the couch suites (no game or couch code changed beyond Hazel's move). An iPad, a phone and a child are open in the roadmap.
 
+### Bouncy Launch: shown-pull prediction (2026-10-10)
+
+What changed: Bouncy Launch's school range reaches level 6. A fixed, visible pull asks for a cloud prediction before the pet launches; every prediction shows the outcome, and a different guess is never a miss. The same pure pull-to-cloud mapping is used for the display, flight and ghost-finger answer.
+
+- `npm run typecheck` passed; `src/games/bouncy-launch/logic.test.ts` passed (5 tests), including every cloud's shown pull reaching that cloud deterministically.
+- Not run to completion: `BROWSER_SUITE=arcade ARCADE_ONLY=launch npm run test:browser` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=6 npm run test:browser`. The local command runner ended the browser process before a final result; neither is a pass. Build, offline, couch and broad navigation checks were not needed for this game-only ladder extension.
+- iPad touch and device speech remain open.
+
 ### Treasure Map: two landmark clues (2026-10-10)
 
 What changed: Treasure Map's school ladder now has level 5, where two visible landmark clues meet at one target square. The generated clues are bounded and distinct, and after two wrong digs the hint draws the two actual clue lines instead of a whole row and column.

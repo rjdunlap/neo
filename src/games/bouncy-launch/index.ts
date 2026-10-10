@@ -25,7 +25,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 5 },
+  school: { min: 4, max: 6 },
 };
 
 const PET_SCALE = 0.5;
@@ -69,6 +69,8 @@ class BouncyLaunch implements Game {
   private readonly replay = new Container();
   private readonly star = starArt(30);
   private readonly flag = new Graphics();
+  /** A ring around the cloud the child predicted; it stays there while the flight proves the answer. */
+  private readonly predictionRing = new Graphics();
   /** The finger pulling the spring, and where it first touched. */
   private grab: { id: number; from: { x: number; y: number } } | null = null;
   private readonly release = (e: { pointerId: number }) => {
@@ -94,6 +96,8 @@ class BouncyLaunch implements Game {
   private assisted = false;
   private told = false;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /** The cloud chosen before this shown pull is released. Predictions are never misses. */
+  prediction: number | undefined;
 
   /** The "watch me" demo: hold toward the next cloud's power, then press the launch button. */
   autoplay(dt: number): CouchControls {
@@ -118,6 +122,10 @@ class BouncyLaunch implements Game {
   autotouch(): TouchIntent | null {
     if (this.flying || this.finished || this.grab) return null;
     if (this.plan.mode === 'tap') return { tap: { on: this.pet, y: -125 } };
+    if (this.plan.mode === 'predict') {
+      const target = this.targets[this.shot];
+      return target === undefined ? null : { tap: { on: this.pads[target] } };
+    }
     const pull = pullToTake(this.plan, this.shot, this.targets, this.last);
     // Back and down, the way the leash allows; the finger travels as far as the pet is to be pulled.
     const from = { x: this.seat.x, y: this.seat.y - 125 * PET_SCALE };
@@ -178,7 +186,7 @@ class BouncyLaunch implements Game {
       this.course = null;
     }
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.78, clouds: 4, sun: true, seed: 88 }, ctx.view);
-    ctx.stage.addChild(this.backdrop, this.flag);
+    ctx.stage.addChild(this.backdrop, this.flag, this.predictionRing);
     const padW = this.course?.padWidth ?? 0.85;
     for (let i = 0; i < PADS; i++) {
       const pad = new Container();
@@ -191,6 +199,7 @@ class BouncyLaunch implements Game {
       }
       this.pads.push(pad);
       ctx.stage.addChild(pad);
+      if (this.plan.mode === 'predict') onTap(pad, () => void this.predict(i), { cooldown: 500 });
     }
     this.star.visible = this.plan.mode === 'star';
     this.stick = !!ctx.couch;
@@ -297,6 +306,7 @@ class BouncyLaunch implements Game {
     this.wrongs = 0;
     this.hinting = this.plan.mode === 'free';
     this.placeStar();
+    if (this.plan.mode === 'predict') this.showPredictionPull();
     if (this.course) {
       // The misses already made at this cloud (after a reload) count towards the hint.
       this.wrongs = this.tries;
@@ -321,6 +331,8 @@ class BouncyLaunch implements Game {
         if (this.last === undefined) return this.instruct('launch.pull');
         this.ask = nextAsk(this.last);
         return this.instruct(this.ask === 'farther' ? 'launch.farther' : 'launch.nearer');
+      case 'predict':
+        return this.instruct('launch.predict');
     }
   }
 
@@ -339,6 +351,28 @@ class BouncyLaunch implements Game {
 
   private pullNow() {
     return Math.hypot(this.pet.x - this.seat.x, this.pet.y - this.seat.y);
+  }
+
+  /** Set the pet at a fixed, visible pull. The pure pull/landing mapping makes this repeatable on every device. */
+  private showPredictionPull() {
+    const target = this.targets[this.shot];
+    if (target === undefined) return;
+    const pull = pullFor(padAt(target));
+    const d = { x: -0.35, y: 0.94 };
+    const len = Math.hypot(d.x, d.y);
+    this.pet.position.set(this.seat.x + (d.x / len) * pull, this.seat.y + (d.y / len) * pull);
+    this.drawSpring();
+  }
+
+  /** Pick first, then watch the same fixed pull fly. A different guess teaches by showing, never by marking a miss. */
+  private async predict(pad: number) {
+    if (this.plan.mode !== 'predict' || this.flying || this.finished || this.prediction !== undefined) return;
+    this.prediction = pad;
+    const x = this.landX(padAt(pad));
+    this.predictionRing.clear().ellipse(x, this.strip.y - 4, 67, 30).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.95 });
+    sfx.pop(5);
+    await this.ctx.say('launch.lets-see');
+    if (!this.finished) void this.launch(padAt(this.targets[this.shot]));
   }
 
   private letGo(): boolean {
@@ -426,8 +460,11 @@ class BouncyLaunch implements Game {
     const verdict = judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
     if (this.plan.mode === 'star' || this.plan.mode === 'number') this.off += Math.abs(f - padAt(this.targets[this.shot]));
     const firstCompare = this.plan.mode === 'compare' && this.last === undefined;
+    const predicted = this.plan.mode === 'predict' ? this.prediction === this.targets[this.shot] : undefined;
     if (verdict === 'yes') {
-      if (!firstCompare && this.plan.mode !== 'tap' && this.plan.mode !== 'free') {
+      if (this.plan.mode === 'predict') {
+        await this.ctx.say(predicted ? 'launch.predicted' : 'launch.revealed', { n: (this.targets[this.shot] ?? 0) + 1 });
+      } else if (!firstCompare && this.plan.mode !== 'tap' && this.plan.mode !== 'free') {
         this.pet.cheer();
         sfx.sparkle();
         this.ctx.particles.burst(this.pet.x, this.pet.y - 100, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 18, speed: [120, 300], gravity: 0, life: [0.6, 1] });
@@ -438,6 +475,8 @@ class BouncyLaunch implements Game {
       this.last = f;
       this.drawFlag();
       this.shot++;
+      this.prediction = undefined;
+      this.predictionRing.clear();
       if (this.course) {
         this.done.push(this.tries);
         this.tries = 0;

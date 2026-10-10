@@ -19,6 +19,8 @@ How to use it:
 | [Sketch for the next one to build](#sketch-for-the-next-one-to-build) | Memory Match 10–12 |
 | [Fun and arcade review](#fun-and-arcade-review-2026-10-09) | Lander and Drift, a real-time grown-up game; waits on a scoring decision |
 | [Short-ladder audit](#short-ladder-audit-2026-10-09) | Every school-reaching ladder, with the ordered list of next decisions |
+| [Round two: the longer ladders](#round-two-the-longer-ladders-2026-10-10) | Next levels for eleven longer ladders and two pre-K ceilings, with what each test asserts |
+| [Round three: more to play in every band](#round-three-more-to-play-in-every-band-2026-10-10) | Every island game: fresh content inside levels, new levels on top, and openings to a younger band |
 | [Candidates](#candidates), [Gap review proposals](#proposals) and [Extend existing games](#extend-existing-games-before-making-duplicates) | The rest; each needs its definition of ready first |
 
 ## Design lessons
@@ -519,9 +521,207 @@ This is a mode of an existing game, extends a ladder the child already knows, an
 
 ### Open questions
 
-1. **Is two levels enough for a favorite?** The adaptive clamp means a child stays at the last level, so a favorite she plays often may want a longer school window (three or four levels). The audit favors giving the best games more depth over stretching all of them.
+1. **Is two levels enough for a favorite?** *The developer's direction on 2026-10-10 favors more:* see [round three](#round-three-more-to-play-in-every-band-2026-10-10). The adaptive clamp means a child stays at the last level, so a favorite she plays often may want a longer school window (three or four levels). The audit favors giving the best games more depth over stretching all of them.
 2. **Representations versus a new game.** Memory Match 10–12 teaches fractions and a clock through matching; Pet Kitchen and Clock Tower teach them by doing. Decide whether the matching levels are a bridge or a duplicate once they can be played.
 3. **Order.** Pet Kitchen first (no new art), then Memory Match 10 (text cards) and Pattern Train, with Memory Match 11 and 12 after a legibility look; then Treasure Map and Critter Sort (already on the roadmap), then Bouncy Launch and Rainbow Fingers. Sink or Float's *make it float* is the strongest of the costlier set.
+
+### Round two: the longer ladders (2026-10-10)
+
+A **proposal**. The audit above read only the short ladders. This round reads the school-reaching ladders it skipped, whose school window is already three levels or more, plus two pre-K ceilings. It applies the same test: a new level must change what she decides, reuse the game's own interaction, and have a property a unit test can assert. Every level here is **appended above the current top** and is harder than it. An easier or entry level would wait on two decisions: [how levels are ordered](ROADMAP.md#waiting-on-the-developer) and whether a band's range may skip. Each level was checked against the game's plan table in `logic.ts`, its `levels(band)` and its [GAMES.md](GAMES.md) entry. Nothing was played.
+
+**Every row has the same couplings.** It needs a `describeLevel` line, how-to steps scoped with a `LevelLine`, voice lines and rule tests. Every game has a ghost finger, so the bot must also play the new top level, because `fingerdemo` plays it. Couch trips and courses name their levels in `src/couch/catalog.ts` and `courses.ts`, so an appended level leaves Light Lab, Secret Code, Egg Catch, Robot Path, Frog Hop and Ferry Jam's couch play alone. Such a level reaches the couch only if its `control()` is taught the new mode.
+
+#### Extend now: a real next decision, small to build
+
+| Game (top · school levels) | What the top asks now | Next level | What a test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- |
+| **Market Stall** (6 · 3–6) | Give change from a customer's 10 | **7, Fewest coins:** pay a price from 4 to 10 with as few shells as possible. Any payment that totals the price still buys the fruit. A payment with more coins than needed gets "can you use fewer shells?" and the coins stay on the mat to swap. That counts as a miss only after the swap is offered twice. Optimization replaces "any way works" | With coins 1, 2 and 5, taking the biggest coin each time always gives the fewest. Every price has its fewest count, and the hint's faint coins are a fewest set | S. The plan, a check against the minimum and two voice lines |
+| **Clock Tower** (6 · 2–6) | Set the time one hour later (o'clock and half past) | **7, Five-minute times:** the long hand snaps to all twelve numbers, and she sets a digital time such as 3:25 by counting by fives around the face. The face's small numbers 5, 10, 15 … sit outside the ring as a support, and a wrong time is read back ("the long hand says 3:20"). Reading minutes as fives is a new decision; quarter and half past are special cases of it | `minuteChoices('five')` holds the twelve multiples of 5. The short hand's position is consistent with the minutes. The hint's target hands are the asked time | S. A new mode in `minuteChoices`, a digital time on the sign, and voice for "three twenty-five". Check that the 12 snap marks stay at least 100 units apart on the ring |
+| **Frog Hop** (6 · 3–6) | Hop on or back up to 6 on a line to 20 | **7, Hop to ten first:** a sum that crosses 10 (8 + 5). First a number card asks "how many hops to 10?" (2), and the frog hops there. Then she taps where the rest of the hops (3) land. Splitting a number to bridge ten is a strategy, not a bigger sum | Every question starts at 6 to 9 and crosses 10 without passing 20. The two parts add up to the sum. The second hop always starts at 10 | S. It reuses the card mode from level 5 and the line to 20 from level 6 |
+| **Seesaw Balance** (9 · 6–9) | Boxes on both sides: take the same off both until one box is alone | **10, Two steps:** two identical boxes and some blocks balance blocks (2 boxes + 2 = 8). First take the same off both sides, as on levels 8 and 9, then share what is left between the two boxes, as on level 7. This is the "two-step" stretch of [Box Balance](#new-ideas-from-the-gap-review) | Every seesaw starts level. The box weight is a whole number from 1 to 5. Only same-on-both-sides removals keep it level. The answer is unique | S. Both halves already exist (`same` and the two-box division) |
+| **Secret Code** (6 · 2–6) | Crack a code that can repeat a color | **7, Detective door:** the door opens with two or three guesses and their marks already shown, made by "the pet earlier". She works out the one code that fits every clue and enters it on her first try. Any try that contradicts a shown mark is the existing miss. Pure deduction replaces guessing | `candidates(plan, history)` is exactly one code for every generated door. No shown guess is already the answer. The hint's faint stones are that code | S. The generator loops until one candidate remains. No par rule is involved, so the [par decision](ROADMAP.md#waiting-on-the-developer) for Word Code does not block it |
+| **Robot Path** (10 · 4–10) | A loop with a body of "right ×2, down ×2" | **11, Fix the program:** a finished program runs and the robot bumps a rock or stops short. Exactly one slot is wrong; she taps it, changes its arrow or count, and runs it again. Step-through playback already lights each slot. This is debugging, the [E1 step](ROADMAP.md#how-familiar-games-keep-growing) "repair one wrong command" | Each authored board has exactly one one-slot change that reaches the star. The broken program fails visibly before the end. The hint lights the wrong slot | S–M, authored boards. The school `max` is `ROBOT_PLANS.length`, so appending a plan widens the range by itself. Editing one slot in place may need a small control change |
+| **Egg Catch** (6 · 4–6) | The gates are locked: predict where the egg lands | **7, Set it once:** one brown and one white egg will drop from different hens. She sets the gates before either rolls so brown reaches the basket and white the nest, then taps go. One gate setting has to work for two paths | Every board has at least one setting that routes both eggs, and none routes both with the gates as dealt. The hint flips a gate the solution needs | S. It reuses the route and sort boards |
+| **Light Lab** (6 · 2–6) | A four-mirror path with spares and rocks | **7, Where will it shine?** the mirrors are set and locked. She taps the flower, rock or edge where she thinks the beam will stop, then taps the sun and the beam draws cell by cell. A wrong guess is an unscored prediction, as in Egg Catch 6 and Sink or Float, and the replay explains it. A round of three predictions is followed by one ordinary plan puzzle with the same mirrors unlocked. This is the [predict-then-compare](#extend-existing-games-before-making-duplicates) mode | The traced beam has one end cell. Every round has three or more tappable candidates. The plan puzzle stays solvable | S–M. A tap target on every candidate end cell, kept at least 100 units on a 7 by 5 grid |
+| **Duck Pond** (10 · 8–10) | How many more make 10? | **11, Hiding ducks:** the sign says how many ducks live in the pond (5 to 10). Some paddle under the bridge, and she answers on lily pads how many are hiding. Part and whole with any total, not only ten | The hidden count is at least 1 and the total is at most 10. A wrong pad counts on aloud from the ducks she can see | S. The bridge is a new scenery shape in Graphics |
+| **Word Monsters** (7 · 5–7) | Word families: change the first sound (hat, cat, bat) | **8, Change the end:** the first two monsters stay and she changes the last sound (cat, cap, can). It is the same slot interaction as level 7, at the other end of the word | Every word in a set is a picturable three-letter word. The spare letters make no other real word in that slot | S. Picture art for the new words. Like every phonics level, its sounds need the [device-speech check](ROADMAP.md#needs-a-person-or-a-device) |
+| **Mail Carrier** (7 · 4–7) | Plan two deliveries in order, then walk them | **8, Which way is shorter?** a second map whose paths make a loop, so two routes reach a house. Stepping stones mark each path's length. She taps the shorter route before the pet walks, and a tie never occurs. This is "compare routes" from the [E1 table](ROADMAP.md#how-familiar-games-keep-growing) | `walk()` finds the shorter route. The two routes always differ by at least two stones. The hint glows the shorter one | M. Today's `MAP_EDGES` are a tree with one route to each house, so this needs a second graph and a stone count drawn along its edges |
+
+#### Extend later: a real next decision that costs more
+
+| Game | Next decision | Why it waits |
+| --- | --- | --- |
+| **Photo Safari** (6 · 4–6) | *Two clues, no name:* "the animal jumping by the pond", where two animals jump and two stand by the pond, so neither clue alone is enough | Today every animal has its own spot (`makeScene` takes one spot each), so level 5's place word alone already identifies the animal. Two animals sharing a spot is a layout change |
+| **Clock Tower** (after 7) | *How long?* from 3 o'clock to half past 5, answered by turning the long hand around and counting half hours | Elapsed time needs a stated answer form (hours and half hours) and a picker that is not yet designed |
+| **Seesaw Balance** (after 10) | Two different unknown boxes on two seesaws: the first gives the square, then the second uses it | A second seesaw on screen, and the substitution idea is closer to age 8–9 |
+| **Garden Rows** (6 · 3–6) | A 4 by 4 bed with 2 by 2 boxes, a third rule | Overlaps the couch-only Sudoku Garden and the [island forms of couch puzzles](ROADMAP.md#waiting-on-the-developer) decision. A bigger bed is only a size step |
+| **Light Lab** (after 7) | A splitter that sends one beam two ways to wake two flowers | A new piece with its own beam rule and solver change |
+| **Robot Path** (after 11) | A reusable routine: a purple "do this" box called twice | A second program row; the next idea after the loop |
+| **Word Monsters** (after 8) | *Blend it:* the monsters say c, a, t slowly and she picks the picture | Device speech for isolated sounds must be heard on the iPad first |
+
+#### Two pre-K ceilings
+
+These games stop at pre-K, so appending a level only widens the pre-K range.
+
+| Game (top · pre-K levels) | Next level | What a test asserts | Cost |
+| --- | --- | --- | --- |
+| **Feelings Faces** (7 · 5–7) | **8, How can we help?** watch a small event, then choose what would help the pet feel better. Level 6's cause and level 5's help become one two-step choice, and a wrong helper says what it would help instead | Every event has one feeling and one helper that fits it | S, with the existing events and helpers |
+| **Weather Wardrobe** (6 · 4–6) | **7, The weather changes:** the pet is dressed for rain and the sun comes out, so she taps what to take off and then what to put on | Every change has at least one item to remove and one to add, and each item belongs to one weather | S–M. Tapping a worn item to take it off is new to this game |
+
+#### Leave: the ceiling is right, or it was just raised
+
+| Game | Why |
+| --- | --- |
+| **Monster Munch** (8 · 6–8) | Fair shares with leftovers is the right end. An average (Share Fairly) is for ages 8–10 |
+| **Habitat Helpers** (6 · 4–6) | The model is deliberately small. A third visitor would be more of the same, and real ecology needs a stated model first |
+| **Chain Reaction** (6 · 3–6) | Its top level already accepts several valid designs. Bigger machines would be a size step |
+| **Ferry Jam** (6 · 3–6) | The ladder is already a size ladder, and the couch course owns the hardest harbors |
+| **Pet Kitchen, Inchworm Measure, Picture Graph** | Raised from the first audit in the last two days. Play them before going higher |
+| **Lemonade Stand** | Owned by the economy pilot |
+
+Not read in this round: the pre-K ceilings of Color Garden, Shape Sorter, Splish Splash, Peekaboo Barn, Duckling Parade, Roundup and Sound Garden.
+
+**Suggested order** (non-binding): Market Stall, Clock Tower, Frog Hop, Seesaw Balance and Secret Code first. They are plan entries on modes that already exist. Then Robot Path and Egg Catch, which need authored or searched boards. Then Light Lab, Duck Pond and Word Monsters, which need a little new drawing. Mail Carrier is last, because it needs a second map.
+
+### Round three: more to play in every band (2026-10-10)
+
+**The developer's direction (2026-10-10):** "there could be a lot more quantity to a lot of the different games to allow more time to enjoy across age bands." The first two rounds admitted a level only if it changed what she decides. This round takes **quantity** as a goal in its own right: more fresh rounds and more levels in every band, so a favorite lasts for months. **Pressure is still out.** Nothing here adds speed, a timer, clutter, or more to remember than the band can hold, and targets stay at least 100 units. Everything below is a **proposal**, checked against each game's plan table and band ranges in `src/games/<id>/`. Nothing was played.
+
+#### Four ways to add more
+
+| Kind | What it is | What it touches | Blocked by |
+| --- | --- | --- | --- |
+| **A. Fresh content inside a level** | A larger pool for the level to draw from: more pictures, stories, animals, words, boards and scenes. The rule and the level number stay the same, but she rarely sees the same round twice. This is the only route that adds play to lap and toddler today | A content table in `logic.ts` (or art in `src/art/`), voice lines, and a rule test that every item in the pool satisfies the level's rule (each story has its steps, each silhouette is solvable, each word has its picture) | Nothing |
+| **B. New levels on top** | Appended above the current top, never renumbered. The new modes from the first two rounds, and now also a **next board**: a richer version of the top level (a bigger bed, a third visitor, a new weather) when it keeps targets large and adds no memory load | The plan, `describeLevel`, how-to `LevelLine`s, rule tests and the ghost-finger bot (`fingerdemo` plays the new top). The band's `max` rises, and a game that stops at pre-K gains a `school` window when its new levels suit ages 6–8 | Nothing |
+| **C. Open a game to a younger band** | A game whose level 1 is already gentle adds the next band down, with a range starting at 1. No new level and no save change | The game's `bands` and levels table, then the place's game count (README and roadmap) and the registry tests. Whether level 1 suits a younger child is a judgment, so each opening goes on the [person checks](ROADMAP.md#needs-a-person-or-a-device) | Nothing for the code; the fit is checked later by a person |
+| **D. New levels below level 1** | An easier entry for lap or toddler under an existing ladder | Level order | The [two level-order decisions](ROADMAP.md#waiting-on-the-developer) (whether a range may skip, and how levels are ordered for a band) |
+
+Kinds A and C need no decision and reach the youngest bands. Kind B carries the older ones. Kind D should wait. The cheap option for it is an appended slice ordered easy to hard and given to the younger band.
+
+#### Every island game, by subject
+
+*Bands:* L lap, T toddler, P preschool, K pre-K, S school. "R1" and "R2" mark levels already proposed in the [audit](#short-ladder-audit-2026-10-09) and [round two](#round-two-the-longer-ladders-2026-10-10); new numbers continue after them. A dash means nothing is proposed for that kind.
+
+**Senses and music**
+
+| Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
+| --- | --- | --- | --- |
+| Bubble Pop (L–S · 11) | Bubble scenes (bath, sea, night sky) and pictures inside bubbles (fish, stars) for the young levels | — (the audit's leave stands) | — |
+| Peg Garden (L–K · 5) | More garden boards per level, each simulated in `ball.ts` | **6, Into the cup:** cups along the bottom show dots, and she aims so the pearl rests in the cup with four. Each cup is reachable by some aim (simulated) | — |
+| Bounce Back (L–K · 5) | Courts: beach, snow, a pond with lily pads | **6, Bounce to a color:** the pet calls a color and she bounces the ball to that zone of the wall | — |
+| Bumper Garden (L–K · 5) | More tables | **6, Count back:** bump 5, 4, 3, 2, 1, the first counting backwards on the island | — |
+| Jelly Drums (L–S · 9) | More tunes that fit the pentatonic steps; the [pentatonic exception](ROADMAP.md#waiting-on-the-developer) would add more | — (more notes is memory load) | — |
+| Song Maker (T–S · 7) | More tunes to copy and patterns to continue | R1-later: *answer the phrase* | — |
+| Sound Garden (L–K · 6) | More singer pairs (owl and mouse for high and low; snail and hare for slow and fast) | **7, Loud or quiet**, a new contrast. **8, Two at once:** "high and fast", a two-attribute listen | — |
+| Rhythm Neighbors (L–S · 6) | More frog voices and call shapes | — (audit: leave) | — |
+| Beat Builder (P–S · 5) | A library of beats to copy | R1-later: verse and chorus | Toddler, and lap too, on level 1's free beat |
+
+**Art and animals**
+
+| Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
+| --- | --- | --- | --- |
+| Rainbow Fingers (L–S · 6) | More coloring pages, and more things for "what color is an apple?" | R1: 7 *paint the pumpkin* | — |
+| Fluffy Salon (L–K · 5) | Accessories as a sixth tool (a bow, a hat) | **6, Two customers:** two tickets, styled one after the other | — |
+| Stamp Studio (L–S · 6) | **Stamp sets**: sea, space, farm and a picnic. Open-ended play gets more from content than from levels | — | — |
+| Pixel Pictures (P–S · 5) | More pictures per level (fifteen today, across three grid sizes) | **6, Two-color picture logic:** each clue number has a color. This is a new decision, not just a bigger grid | — |
+| Peekaboo Barn (L–K · 8) | Hiding places in new scenes (a bedroom, a beach) and more animals (seven today) | — (more hiding is memory load) | — |
+| Duckling Parade (L–K · 8) | Ponds and paths | **9, Two of one, then another:** yellow, yellow, blue. **10, Fix the parade:** one duckling is out of pattern, so swap it. Then a `school` window at 9–10 | — |
+| Roundup (L–K · 6) | More animal kinds | **7, Two things at once:** big pigs in one pen, little pigs in the other. **8, Make the pens fair:** share 6 or 8 animals equally between two pens | — |
+| Egg Catch (L–S · 6) | More chute boards per level | R2: 7 *set it once* | — |
+| Animal Snack (L–P · 5) | **More animals and favorite foods** (horse and oats, monkey and banana, squirrel and acorn) | **6, Snacks for two:** two animals, a number of snacks each. **7, Who is still hungry?:** give one more snack to each animal that has fewer. Together these open a pre-K window | — |
+| Critter Sort (K–S · 5) | More critter features | **6, Where does the new one go?:** the hoops are already sorted and one more critter arrives, so she places it from the rule | Preschool, at level 1 (one hoop) |
+
+**Numbers**
+
+| Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
+| --- | --- | --- | --- |
+| Duck Pond (L–S · 10) | Ponds at night, frogs in place of ducks | R2: 11 *hiding ducks*. **12, Doubles:** the same number of ducks on each side of the bridge, so how many in all? | — |
+| Monster Munch (L–S · 8) | New monsters and foods | — (round two: leave) | — |
+| Little Helpers (L–S · 6) | Fruits and trees | — (audit: leave) | — |
+| Pet Kitchen (T–S · 8) | Round wholes (a pizza, a pie) as well as the sandwich | **9, Thirds:** a pizza cut into three equal slices for three friends, a new fraction | — |
+| Frog Hop (P–S · 6) | Lines in new places (stepping stones, clouds) | R2: 7 *hop to ten first*. **8, Back over ten:** 13 − 5, hopping back to 10 first | — |
+| Picture Graph (K–S · 6) | More critter kinds and meadows | **7, Tally marks:** count by making tallies in fives, then build the bars | Preschool, at level 1 (two bars) |
+| Lasso Loops (P–S · 5) | Fireflies in new skies | — (audit: leave) | — |
+| Market Stall (P–S · 6) | Fruit and toys to sell | R2: 7 *fewest coins*. **8, The ten-shell shell:** pay prices to 20 with tens and ones | — |
+| Clock Tower (K–S · 6) | More daily-routine pictures (six today) | R2: 7 *five-minute times* | — |
+| Inchworm Measure (K–S · 6) | More things to measure | — (raised this week) | Preschool, at level 1 (count the worms) |
+
+**Everyday life**
+
+| Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
+| --- | --- | --- | --- |
+| Splish Splash (L–K · 8) | Other things to wash (a toy car, a teddy) | **9, The picture card:** scrub three parts in the order a card shows | — |
+| Feelings Faces (L–K · 7) | More small events | R2: 8 *how can we help?*. **9, Two friends, one event:** the same thing happens and they feel differently (perspective), which opens a `school` window | — |
+| Weather Wardrobe (L–K · 6) | **New weathers: wind and fog**, with a kite and a bright coat | R2: 7 *the weather changes* | — |
+| Scoop Shop (L–S · 6) | Toppings and cones | — (audit: leave) | — |
+| Mail Carrier (L–S · 7) | A second street and more neighbors | R2: 8 *which way is shorter?* | — |
+| Teddy Doctor (L–S · 6) | More patients (five today) and boo-boos | — (audit: leave) | — |
+| Stop and Go (L–P · 4) | Bikes and boats as well as cars | **5, Walk signal:** the walker crosses only on the little green figure, which opens a pre-K window | — |
+| Pet Says (L–K · 5) | **More moves** (hop like a frog, stretch like a cat) and more body words | **6, Opposite day:** do the opposite of the pet (up becomes down). Self-control, nothing judged | — |
+
+**Colors, shapes and puzzles**
+
+| Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
+| --- | --- | --- | --- |
+| Shape Sorter (T–K · 7) | New shapes (oval, heart, star) | **8, The feely bag:** a shape is described ("three corners") and she finds it | — |
+| Color Garden (T–K · 6) | More things to sort | **7, Light and dark:** light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
+| Dot Link (L–K · 5) | More dot colors and boards | **6, Exactly five:** a chain of exactly five dots | — |
+| Tangram Town (T–S · 6) | **Each level draws its one fixed picture today**, so give every level three or four silhouettes (a cat, a fish, a tree, a duck). This is the largest single content gain | R1-later: flip a piece | — |
+| Garden Grow (L–P · 5) | Flower kinds | **6, One more than the sign. 7, Two rows of three:** these open a pre-K window | — |
+| Treasure Map (K–S · 5) | Maps of new places | **6, Give directions:** the pet asks the way and she chooses the arrows, turning reading directions into writing them | Preschool, at level 1 (a picture row meets a color column) |
+| Owl Walk Home (T–K · 4) | Paths and seasons | — | — |
+| Pattern Train (L–S · 12) | Car kinds | **13, Growing patterns:** one red, two red, three red … what comes next? | — |
+| Memory Match (P–S · 10) | **Picture decks** (vehicles, fruit, the island's friends) at the same sizes | R1: 11 fractions, 12 clocks | Toddler, at levels 1–2 (four cards) |
+| Size Parade (T–S · 8) | More friends | — (audit: leave) | — |
+| Puzzle Pals (T–S · 7) | **Six scenes today**; make it twelve | R1-later: turned pieces | — |
+| Quick Tricks (T–S · 6) | More props per trick | R1-later: a third show | — |
+| Peekaround Island (L–S · 5) | More friends and landmarks | R1-later: view from above | — |
+| Penguin Slide (P–S · 5) | More rinks per level | **6, Three fish, in any order**, a next board. R1-later: Mossy Path | — |
+| Secret Code (K–S · 6) | Stone sets | R2: 7 *detective door* | Preschool, at level 1 (two slots) |
+| Garden Rows (K–S · 6) | Flower sets | **7, A 5 by 5 bed with fewer flowers to start**, a next board. Boxes wait (round two) | — |
+| Ferry Jam (K–S · 6) | **More harbors** in the frozen, solver-checked list for each level | — | — |
+| Critter Crossing (K–S · 5) | More critter features | — (audit: leave, then Rule Parade) | — |
+
+**Stories, words and science**
+
+| Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
+| --- | --- | --- | --- |
+| Letter Trails (P–S · 8) | More words to trace | R1-later: lowercase | — |
+| Story Steps (T–S · 7) | **Four stories today**, so add six more (a seed becomes an apple, washing the dog, making a sandwich, a rainy day, building a sandcastle, the pet's bedtime). Every level gains, and level 7's six-picture mix gets better | R1-later: choose the cause | — |
+| Word Monsters (L–S · 7) | More picturable three-letter words | R2: 8 *change the end* | — |
+| Photo Safari (L–S · 6) | **New actions** (swimming, climbing, waving) and animals | R2-later: two clues, no name | — |
+| Goodnight Room (L–P · 4) | **One room today**; add a tent, a barn at night and a boat cabin | **5, Goodnight to every animal:** a category instead of a name, which opens a pre-K window | — |
+| Rhyme Time (K–S · 4) | More rhyme families (twelve today) | — | Preschool, at level 1 |
+| Opposites (L–K · 4) | **Eight pairs today**; add wet and dry, loud and quiet, in and out, tall and short, heavy and light | **5, Find the pair:** spot the two opposites in a busy picture | — |
+| Clap the Syllables (P–K · 4) | More words | **5, Long words:** three and four claps (wa-ter-mel-on), which opens a `school` window | — |
+| Robot Path (K–S · 10) | **One authored board per level today**; give each level three. The rule tests already check every authored board | R2: 11 *fix the program* | Preschool, at level 1 (two steps) |
+| Bug Builder (T–S · 7) | Bug and wing shapes | R1-later: fold a friend | — |
+| Sink or Float (T–S · 6) | More things to test (nine today) | R1-later: make it float | — |
+| Bouncy Launch (L–S · 5) | Cloud skies | R1: 6 *predict the cloud* | — |
+| Seesaw Balance (T–S · 9) | Friends and presents | R2: 10 *two steps* | — |
+| Light Lab (K–S · 6) | — (generated) | R2: 7 *where will it shine?* | Preschool, at level 1 (the live beam) |
+| Ramp Race (K–S · 4) | Floors and cars | R1-later: predict the stop | Preschool, at level 1 (higher goes farther) |
+| Block Tower (L–S · 6) | Block shapes | R1-later: a counterweight | — |
+| Chain Reaction (K–S · 6) | Machine parts and themes | — | Preschool, at level 1 (one ramp) |
+| Habitat Helpers (P–S · 6) | **A third visitor**, Bird (seeds, a birdbath, a tree), as a next board on the same three needs. The quantity direction now welcomes what round two left alone | **7, Three visitors:** one garden in four spaces for Bunny, Duck and Bird | Toddler, at level 1 (Bunny's three obvious pieces) |
+| Lemonade Stand (S · 4) | — (owned by the economy pilot) | — | — |
+
+The couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, Word Search, Pond Conga, Island Bridges) gain from more frozen or seeded boards per level. Their courses keep their own versions.
+
+#### What this adds up to
+
+- **37 new levels on top**, beyond the ones from the first two rounds.
+- **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room).
+- **Thirteen younger-band openings** that need no new level (kind C).
+- **A content pass for nearly every game.**
+
+The youngest bands gain most from kinds A and C. Puddle Lagoon and Daisy Meadow gain fresh rounds in their favorites without waiting on the level-order decisions.
+
+**Suggested order** (non-binding):
+
+1. **Content where one round repeats today:** Tangram Town, Story Steps, Robot Path's boards, Goodnight Room, Opposites and Puzzle Pals.
+2. **Younger-band openings in batches of four**, each batch one change to the bands and registry, with its person check written down.
+3. **New levels**, interleaved with the first two rounds' lists, cheapest first. Each level is one session at the "new levels" check tier.
 
 ## Reference backlog
 
