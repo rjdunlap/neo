@@ -11,6 +11,14 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Stamp Studio deep dive
+
+- Wrote `docs/deep-dives/stamp-studio.md` and updated the tracker, the IDEAS audit and round-three rows, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
+- Research: opened and read the Wikipedia pages for Kid Pix, Mario Paint, Storybook Weaver, ScratchJr, Tux Paint and Colorforms, the Tux Paint quickstart, the Common Sense review of Beck and Bo, the NCETM pattern progression, the University of Chicago note on the spatial-language study and the Common Core K.G page. *Daniel Tiger*, *Caillou Stickers!* (a 403) and *Sticker Doodle Yoodle* are search summaries only; a potato-printing page was a 404 and is not cited.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
+- Read from the code, not played: a late undo drops a stamp the screen still shows (it pops before it tests `done`), levels 4–6 share every tool, every round climbs (0 misses, 0 hints), levels 1–2 show an orange button and land a purple stamp, lap rounds end only on the arrow, `StampKind` and `STAMP_KINDS` are two hand-kept lists and the sticker pool is a literal array.
+- Open: every proposed level and entry is unbuilt; stamp names, animal sounds, composed sentences and the place words are unchecked on a device or with a child.
+
 ## 2026-10-10 — Rainbow Fingers deep dive
 
 - Wrote `docs/deep-dives/rainbow-fingers.md` and updated the tracker, the IDEAS round-three and Mirror Brush rows, the roadmap's chunk 14 cell, chunk 4's Mirror Brush mention, the pointer beside level 7's "built" line, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
