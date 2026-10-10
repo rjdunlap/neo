@@ -157,7 +157,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'robot-path': {
-    goal: 'Plan a path for the robot to reach the star.',
+    goal: 'Explore how the robot follows a program.',
     steps: [
       { to: 10, text: 'Tap arrows to add steps to the program.' },
       { to: 10, text: 'Tap a program slot to remove it (and what follows), then press play.' },

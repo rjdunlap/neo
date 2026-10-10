@@ -10,7 +10,7 @@ What has actually been checked, so nobody re-runs a check that already counts. H
 
 ## 2026-10-10 — Robot Path 11, Where will it stop?
 
-- Added a school level with authored step and counted programs; a player predicts the stop, then watches the robot. Predictions do not count as misses.
+- Added a school level with authored step and counted programs; the player predicts the stop, then watches the robot. The how-to goal covers both planning and reading a program. Predictions do not count as misses.
 - `npm run typecheck` and 31 targeted Robot Path, how-to and registry tests passed.
 - `BROWSER_SUITE=robot FROM_LEVEL=11 TO_LEVEL=11` passed in portrait, including a wrong prediction, playback, zero misses and reward; screenshot reviewed.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=robot-path FINGER_LEVELS=11` passed cleanly in 3.3 seconds.
