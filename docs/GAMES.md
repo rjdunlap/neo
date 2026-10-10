@@ -307,7 +307,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Bouncy Launch
 
-*lap–school · after Kass Basher (Neopets) and Toss the Turtle (Kongregate).* Tap the spring and the pet boings onto a cloud (pull and release); later, pull back farther to fly farther, land on the star cloud, then a numbered cloud, farther or nearer than last time. After two plainly different pulls, the observed bigger-pull/farther-landing rule goes into the discovery journal. On the couch the spring squashes straight down instead of stretching sideways, and the game's twelve small clouds make the Cloud Hopper challenge course ([DESIGN](DESIGN.md#couch-play)).
+*lap–school · after Kass Basher (Neopets) and Toss the Turtle (Kongregate).* Tap the spring and the pet boings onto a cloud (pull and release); later, pull back farther to fly farther, land on the star cloud, then a numbered cloud, farther or nearer than last time. School's last level shows a fixed pull: choose the cloud it will reach, then watch, with predictions unscored. After two plainly different pulls, the observed bigger-pull/farther-landing rule goes into the discovery journal. On the couch the spring squashes straight down instead of stretching sideways, and the game's twelve small clouds make the Cloud Hopper challenge course ([DESIGN](DESIGN.md#couch-play)).
 
 ### Seesaw Balance
 
