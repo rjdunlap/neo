@@ -116,7 +116,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Splish Splash | `splish-splash` | LTPK | 8 | 2 | not started | — | — |
 | Stamp Studio | `stamp-studio` | LTPKS | 6 | 2 | not started | — | — |
 | Stop and Go | `stop-and-go` | LTP | 4 | 4 | not started | — | — |
-| Story Steps | `story-steps` | TPKS | 7 | 1 | not started | — | — |
+| Story Steps | `story-steps` | TPKS | 7 | 1 | designed | `claude/charming-mayer-27wh8m` ([PR 81](https://github.com/rjdunlap/neo/pull/81)) | [story-steps.md](story-steps.md) |
 | Tangram Town | `tangram-town` | TPKS | 6 | 1 | building (slice 1 built) | `claude/eager-babbage-wexkzg` ([PR 79](https://github.com/rjdunlap/neo/pull/79)) | [tangram-town.md](tangram-town.md) |
 | Teddy Doctor | `teddy-doctor` | LTPKS | 6 | 4 | not started | — | — |
 | Treasure Map | `treasure-map` | KS | 5 | 4 | not started | — | — |
