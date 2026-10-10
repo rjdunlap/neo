@@ -509,7 +509,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
 | **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
-| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. The quantity direction gives Garden Grow a pre-K window (levels 6–7 built), Goodnight Room more levels ([deep dive](deep-dives/goodnight-room.md)), and Opposites the same reason plus a school gap ([deep dive](deep-dives/opposites.md)); Animal Snack's [deep dive](deep-dives/animal-snack.md) proposes pre-K and school windows |
+| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. The quantity direction gives Garden Grow a pre-K window (levels 6–7 built), Goodnight Room more levels ([deep dive](deep-dives/goodnight-room.md)), and Opposites the same reason plus a school gap ([deep dive](deep-dives/opposites.md)); Animal Snack's [deep dive](deep-dives/animal-snack.md) proposes pre-K and school windows; Pet Says' [deep dive](deep-dives/pet-says.md) proposes levels 6–10 for pre-K and a school window 10–12 |
 
 ### Sketch for the next one to build
 
@@ -655,7 +655,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Scoop Shop (L–S · 6) | Toppings and cones | — (audit: leave) | — |
 | Teddy Doctor (L–S · 6) | More patients (five today) and boo-boos | — (audit: leave) | — |
 | Stop and Go (L–P · 4) | Bikes and boats as well as cars | **5, Walk signal:** the walker crosses only on the little green figure, which opens a pre-K window | — |
-| Pet Says (L–K · 5) | **More moves** (hop like a frog, stretch like a cat) and more body words | **6, Opposite day:** do the opposite of the pet (up becomes down). Self-control, nothing judged | — |
+| Pet Says (L–K · 5) ([deep dive](deep-dives/pet-says.md)) | Moves in tiers (peekaboo, pat-a-cake, tiptoe, march, frog, cat, duck, bird), ten body words and a chant, counts, richer tricks, four tunes with named statue poses and five scenes; the deep dive supersedes this row | **6 Opposite day, 7 Quiet dance, 8 More opposites, 9 A walk in the woods, 10 Sun or moon** (pre-K 3–10), and as a decision a school window **10–12** with 11 Pet says, opposite and 12 This hand (nothing is judged: the pet reveals the opposite) | Pat the pet (lap) and Your turn! (toddler); both wait on level order |
 
 **Colors, shapes and puzzles**
 

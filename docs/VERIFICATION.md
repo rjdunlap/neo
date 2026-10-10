@@ -11,6 +11,14 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Pet Says deep dive
+
+- Wrote `docs/deep-dives/pet-says.md` and updated the tracker, the IDEAS round-two and "younger ladders" rows, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check, plus a one-line ownership note in the Opposites deep dive. No code, tests or scripts changed.
+- Research: opened and read the Wikipedia pages for Simon Says, "Head, Shoulders, Knees and Toes", the Hokey Pokey and the Just Dance series, the GoNoodle home page, the first 100,000 characters of the 2014 Frontiers paper on the HTKS task, Oregon State's HTKS page, the CDC milestone pages for one, three and five years, and Diamond and Lee (2011). Red Light, Purple Light, Cosmic Kids Yoga and the left-and-right studies are search summaries only; Wikipedia's GoNoodle page was a 404 and the Musical Chairs, Follow the Leader and Just Dance Kids pages held nothing used.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
+- Read from the code, not played: every round climbs (0 misses, 0 hints), level 2 deals the same five words, move ids share the `says.` voice-line namespace, the mitten targets are hand-set and a duck has no ears for "touch your ears", only the arrow continues and it never nudges, and the how-to's freeze line has no upper level.
+- Open: every proposed level and entry is unbuilt; whether a one-year-old copies, whether the mittens read on every pet, and the new spoken words are unchecked on a device or with a child.
+
 ## 2026-10-10 — Stamp Studio deep dive
 
 - Wrote `docs/deep-dives/stamp-studio.md` and updated the tracker, the IDEAS audit and round-three rows, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
