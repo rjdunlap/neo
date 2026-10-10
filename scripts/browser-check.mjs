@@ -953,7 +953,7 @@ async function early() {
     if ([1, 6, 8].includes(level)) await screenshot(`splish-splash-${level}`);
     await finished('splish-splash');
     const r = await page.evaluate(() => { const r = kit.store.stats('splish-splash').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, parts ? [1, 0] : [0, 0], `bath ${level} score`);
+    assert.deepEqual(r, parts ? [1, 0] : [0, 0], `bath ${level} score (misses, hints): ${JSON.stringify(r)}`);
     log(`Splish Splash ${level}: ${parts ? 'wrong part, ' : ''}every part washed, sticker passed`);
   }
 }

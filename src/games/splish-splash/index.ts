@@ -10,23 +10,9 @@ import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import type { Game, GameContext, GameModule } from '../types';
-import { allowedParts, askedParts, planFor, type Part, type Plan } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { allowedParts, askedParts, MUD_H, MUD_W, nearMud, nextToScrub, PART_SPOTS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part, type Plan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const PART_SPOTS: Record<Part, [number, number, number][]> = {
-  tummy: [[0, -72, 1]],
-  head: [[6, -214, 0.9]],
-  cheeks: [
-    [-98, -100, 0.62],
-    [98, -100, 0.62],
-  ],
-  ears: [
-    [-74, -226, 0.7],
-    [74, -226, 0.7],
-  ],
-  nose: [[0, -112, 0.42]],
-};
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -36,10 +22,6 @@ const LEVELS: BandLevels = {
 };
 
 const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
-const MUD_W = 120;
-const MUD_H = 96;
-/** Scrub radius, in Pip body units. */
-const SCRUB_R = 26;
 /** A spot counts as clean when this much of it is gone; the last specks vanish on their own. */
 const CLEAN_ENOUGH = 0.75;
 const PIP_SCALE = 1.2;
@@ -59,7 +41,7 @@ class Mud {
     readonly part: Part,
     x: number,
     y: number,
-    size: number,
+    readonly size: number,
     rng: Rng,
     private readonly renderer: Renderer,
   ) {
@@ -95,7 +77,7 @@ class Mud {
 
   /** True if (lx, ly), in sprite-local coordinates, is near enough to scrub. */
   near(lx: number, ly: number): boolean {
-    return Math.abs(lx) < MUD_W / 2 + this.reach && Math.abs(ly) < MUD_H / 2 + this.reach;
+    return nearMud(lx, ly, this.size);
   }
 
   /** Erase around a sprite-local point. Returns how much is now gone (0..1). */
@@ -131,6 +113,8 @@ class SplishSplash implements Game {
   private readonly eraser = new Sprite();
   private readonly muds: Mud[] = [];
   private readonly last = new Map<number, { x: number; y: number }>();
+  /** Fingers that have scrubbed a part she was asked for during this touch: brushing a neighbor afterwards is not a mistake. */
+  private readonly scrubbing = new Set<number>();
   private view: View;
   private partIndex = 0;
   private misses = 0;
@@ -144,7 +128,10 @@ class SplishSplash implements Game {
   private hinted = false;
   private finished = false;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
-  private readonly lift = (e: { pointerId: number }) => this.last.delete(e.pointerId);
+  private readonly lift = (e: { pointerId: number }) => {
+    this.last.delete(e.pointerId);
+    this.scrubbing.delete(e.pointerId);
+  };
 
   constructor(private readonly ctx: GameContext) {
     this.pip = new Critter(ctx.petSpec);
@@ -232,6 +219,16 @@ class SplishSplash implements Game {
     for (const m of this.muds) if (m.glow.visible) m.glow.alpha = 0.5 + 0.4 * Math.sin(this.clock * 7);
   }
 
+  /** The ghost finger: scrub the next muddy splotch the question allows, back and forth until no mud is left in reach. */
+  autotouch(): TouchIntent | null {
+    if (this.finished) return null;
+    const part = nextToScrub(this.plan, this.partIndex, (p) => this.partClean(p));
+    const mud = part && this.muds.find((m) => m.part === part && !m.clean);
+    if (!mud) return null;
+    const [start, ...via] = scrubPath(mud.size).map((p) => ({ on: mud.sprite, x: p.x, y: p.y }));
+    return { trace: start, via, receiver: this.scrubZone };
+  }
+
   destroy() {
     window.removeEventListener('pointerup', this.lift);
     window.removeEventListener('pointercancel', this.lift);
@@ -282,7 +279,7 @@ class SplishSplash implements Game {
     let onPip = false;
     for (let i = 1; i <= steps; i++) {
       const g = { x: prev.x + ((now.x - prev.x) * i) / steps, y: prev.y + ((now.y - prev.y) * i) / steps };
-      onPip = this.scrubPoint(g) || onPip;
+      onPip = this.scrubPoint(g, e.pointerId) || onPip;
     }
     if (!onPip) return;
 
@@ -304,17 +301,24 @@ class SplishSplash implements Game {
   }
 
   /** Scrub at one point (canvas pixels). Returns true if the point was on Pip. */
-  private scrubPoint(global: { x: number; y: number }): boolean {
+  private scrubPoint(global: { x: number; y: number }, pointerId: number): boolean {
     const body = this.pip.toLocal(global);
     const onPip = Math.abs(body.x) < 170 && body.y < 20 && body.y > -320;
-    for (const m of this.muds) {
-      if (m.clean) continue;
+    // The splotches this point is on. A point on one that is asked for is scrubbing it, even where a neighbor's reach overlaps.
+    const touched = this.muds.filter((m) => {
+      if (m.clean) return false;
       const l = m.sprite.toLocal(global);
-      if (!m.near(l.x, l.y)) continue;
-      if (this.plan.mode === 'parts' && !this.allowed().includes(m.part)) {
-        this.notThatPart(m.part);
+      return m.near(l.x, l.y);
+    });
+    const parts = this.plan.mode === 'parts';
+    const wrong = parts ? wrongTouches(this.allowed(), touched.map((m) => m.part), this.scrubbing.has(pointerId)) : [];
+    for (const m of touched) {
+      const l = m.sprite.toLocal(global);
+      if (parts && !this.allowed().includes(m.part)) {
+        if (wrong.includes(m.part)) this.notThatPart(m.part);
         continue;
       }
+      this.scrubbing.add(pointerId);
       const gone = m.scrub(l.x, l.y, this.eraser);
       this.sinceProgress = 0;
       if (gone >= CLEAN_ENOUGH) void this.cleaned(m);
@@ -457,6 +461,7 @@ export const splishSplash: GameModule = {
     return p.shuffle ? `Wash ${p.parts.length} body parts in a different order each round` : p.mode === 'free' ? 'Scrub all the mud off' : `Wash one body part at a time: ${p.parts.join(', ')}`;
   },
   music: STYLES.paint,
+  touchDemo: true,
   coplayHint: 'Name the body parts as {name} scrubs: "tummy", "ears", "cheeks".',
   offScreen: 'At bath time, ask "Where are your toes? Let\'s wash your ears!"',
   hubIcon: () => new TubIcon(),
