@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { bondNumbers, bubbleToPop, choosePalette, inReach, isRight, meant, PLANS, planFor, spawnTarget, TAP_REACH, type DemoBubble } from './logic';
+import { bondNumbers, bubbleToPop, choosePalette, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
 
 describe('Bubble Pop', () => {
   it('keeps every bubble a big target, and number rounds within what fits on screen', () => {
@@ -69,6 +69,32 @@ describe('Bubble Pop', () => {
         for (const n of nums) expect(n).toBeGreaterThanOrEqual(1), expect(n).toBeLessThan(plan.sum!);
       }
     }
+  });
+});
+
+describe('bubbles she needs', () => {
+  it('stay on the screen in every mode that needs a particular one', () => {
+    // The next number and a partner are laid out whole at the start, so they drift in place instead of floating off.
+    expect(staysPut('count')).toBe(true);
+    expect(staysPut('bonds')).toBe(true);
+    // Free and color bubbles rise and leave; color mode makes up for it by sending the asked-for color when none shows.
+    expect(staysPut('free')).toBe(false);
+    expect(staysPut('color')).toBe(false);
+    for (const plan of PLANS.filter((p) => staysPut(p.mode))) {
+      const bubbles = plan.mode === 'bonds' ? plan.goal * 2 : plan.goal;
+      expect(bubbles, `${plan.mode} ${plan.goal}`).toBeLessThanOrEqual(plan.most);
+    }
+  });
+});
+
+describe('the friends in the bubbles', () => {
+  it('stay exactly these seven in this order, because the sticker draws from the list', () => {
+    expect([...FRIENDS]).toEqual(['duck', 'pig', 'cat', 'bunny', 'cow', 'bear', 'dog']);
+  });
+
+  it('each have an animal voice of their own to say hello with', () => {
+    expect(Object.keys(FRIEND_SOUND).sort()).toEqual([...FRIENDS].sort());
+    expect(new Set(Object.values(FRIEND_SOUND)).size).toBe(FRIENDS.length);
   });
 });
 

@@ -165,4 +165,9 @@ Each is sized for one session. Slices that add a level are built in level order 
 
 ## What was built in this session
 
-Nothing yet in the game: the write-up and the doc updates came first. See below if a slice was built.
+**Slice 1, the guards and friends who name themselves** (the first half of build slice 1; the pinned-list and drift tests are the rest of its guards).
+
+- `FRIENDS` moved into `logic.ts` and a test pins it to the seven in order; `staysPut(mode)` is the one rule that count and bonds bubbles drift in place (used by `update()` and `spawn()`), with a test that their whole set fits `most`; each friend has an animal voice (`FRIEND_SOUND`, a test checks all seven are distinct) and the first of each friend in a round says its name (`bubble.friend`, "A duck!") as it makes the sound, replacing the giggle.
+- The how-to card's last step is bounded (`from: 11, to: 11`), its goal no longer says the bubbles "float up", and a test asserts a level above the ladder starts with no inherited step.
+- Checks: `npm run typecheck` and `npm test` (122 files, 864 tests) pass. Browser results are in `docs/VERIFICATION.md`.
+- Not done: the sound and the spoken name on a device (they are synthesized and device speech), and how often a child hears the name.
