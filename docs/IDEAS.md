@@ -499,7 +499,7 @@ A new interaction, authored art, a stated model, or a precondition.
 
 | Game | Why |
 | --- | --- |
-| **Jelly Drums** (9 · 8–9) | Each level adds a note to remember, which is memory load, not a decision; making tunes belongs to Song Maker and Beat Builder |
+| **Jelly Drums** (9 · 8–9) | Each level adds a note to remember, which is memory load, not a decision; making tunes belongs to Song Maker and Beat Builder. **Its [deep dive](deep-dives/jelly-drums.md)** keeps that for length (nothing past five notes for a child) but proposes three levels that add a decision at five notes or fewer (backwards, same or different, lowest to highest) as a decision that overrides this leave |
 | **Bubble Pop** (11 · 10–11) | A simple toy that has already grown pairs-to-10; arithmetic lives in Duck Pond and Frog Hop. **Its [deep dive](deep-dives/bubble-pop.md)** keeps that for arithmetic but proposes three counting-sequence levels (start at, count back, skip count) as a decision that overrides this leave |
 | **Size Parade** (8 · 7–8) | The school window only adds more friends, which is a bigger number rather than a new decision; measurement lives in Inchworm Measure |
 | **Scoop Shop** (6 · 5–6) | The top level is already "remember the order"; more would only add load |
@@ -611,7 +611,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Peg Garden (L–K · 5) | More garden boards per level, each simulated in `ball.ts` | **6, Into the cup:** cups along the bottom show dots, and she aims so the pearl rests in the cup with four. Each cup is reachable by some aim (simulated) | — |
 | Bounce Back (L–K · 5) | Courts: beach, snow, a pond with lily pads | **6, Bounce to a color:** the pet calls a color and she bounces the ball to that zone of the wall | — |
 | Bumper Garden (L–K · 5) | More tables | **6, Count back:** bump 5, 4, 3, 2, 1, the first counting backwards on the island | — |
-| Jelly Drums (L–S · 9) | More tunes that fit the pentatonic steps; the [pentatonic exception](ROADMAP.md#waiting-on-the-developer) would add more | — (more notes is memory load) | — |
+| Jelly Drums (L–S · 9) ([deep dive](deep-dives/jelly-drums.md)) | Tunes with shapes and names (*Hot Cross Buns*, *Mary*, *Oh! Susanna*, all five-note songs), a replay target, color and size words, sound sets and stages; the deep dive supersedes this row | **10, Backwards, 11, Same or different?, 12, Lowest to highest** (the leave stands for length; the deep dive proposes these as a decision), and a couch memory duel for grown-ups | Between-level entries: echo jellies and one big jelly (lap), follow the glow and which jelly sang (toddler), finish the song (preschool); all wait on level order |
 | Song Maker (T–S · 7) | More tunes to copy and patterns to continue | R1-later: *answer the phrase* | — |
 | Sound Garden (L–K · 6) | More singer pairs (owl and mouse for high and low; snail and hare for slow and fast) | **7, Loud or quiet**, a new contrast. **8, Two at once:** "high and fast", a two-attribute listen | — |
 | Rhythm Neighbors (L–S · 6) | More frog voices and call shapes | — (audit: leave) | — |

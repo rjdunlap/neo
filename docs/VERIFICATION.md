@@ -2,6 +2,12 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Jelly Drums deep dive
+
+- Wrote `docs/deep-dives/jelly-drums.md` (only the Simon page was opened; every other source was read through search summaries) and updated the tracker, the two IDEAS rows, the roadmap's chunk 14 cell, a Waiting-on-the-developer row, the pentatonic-exception row and a person check. No code, tests or scripts changed.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
+- Read from the code, not played: no control replays a tune (the how-to note and GAMES.md say one does), a slip restarts the copy from the first note, a round can draw the same tune twice, the echo levels open with the free-play line, the picnic's invitation tune is random, and `browser-check.mjs` hard-codes nine levels. Nothing was run in a browser, so every child and device check is open.
+
 ## 2026-10-10 — Splish Splash deep dive
 
 - Wrote `docs/deep-dives/splish-splash.md` (research read through search summaries; no page was opened) and updated the tracker, the IDEAS round-three row, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
