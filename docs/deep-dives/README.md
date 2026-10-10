@@ -65,7 +65,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Critter Crossing | `critter-crossing` | KS | 5 | 4 | not started | — | — |
 | Critter Sort | `critter-sort` | KS | 5 | 4 | not started | — | — |
 | Dot Link | `dot-link` | LTPK | 5 | 4 | not started | — | — |
-| Duck Pond | `duck-pond` | LTPKS | 10 | 3 | not started | — | — |
+| Duck Pond | `duck-pond` | LTPKS | 11 | 3 | designed | `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114)) | [duck-pond.md](duck-pond.md) |
 | Duckling Parade | `duckling-parade` | LTPK | 8 | 4 | not started | — | — |
 | Egg Catch | `egg-catch` | LTPKS | 6 | 4 | not started | — | — |
 | Feelings Faces | `feelings-faces` | LTPK | 7 | 4 | not started | — | — |
