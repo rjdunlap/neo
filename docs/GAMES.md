@@ -88,7 +88,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Critter Sort
 
-*pre-K–school · after Venn-diagram sorting and Zoombinis.* Critters, some wearing top hats, are dragged into hoops labelled with picture signs (a hat, a brown or white paint blob, floppy or pointy ears, whiskers). Levels: one hoop, two separate hoops (rules that never overlap), overlapping hoops where the middle means both, and a guessing level where critters are already sorted and the child picks the rule from three pictures. Every part of the diagram gets at least one critter and exactly one offered rule sorts the critters that way (rule-tested). A wrong hoop is a miss with a reason ("the cow is not brown"; "the dog is brown and has floppy ears, so it goes in the middle"); putting a critter back on the grass is never a miss.
+*pre-K–school · after Venn-diagram sorting and Zoombinis.* Critters, some wearing top hats, are dragged into hoops labelled with picture signs (a hat, a brown or white paint blob, floppy or pointy ears, whiskers). Levels: one hoop, two separate hoops (rules that never overlap), overlapping hoops where the middle means both, a guessing level where critters are already sorted and the child picks the rule from three pictures, then a red-lined picture that means **not**: the critters outside the hoop share the pictured property. Every part of the diagram gets at least one critter and exactly one offered rule sorts the guessing round that way (rule-tested). A wrong hoop is a miss with a reason ("the cow is not brown"; "the dog is brown and has floppy ears, so it goes in the middle"); putting a critter back on the grass is never a miss.
 
 ## Counting Cove (numbers)
 

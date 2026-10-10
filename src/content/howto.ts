@@ -797,7 +797,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 3, text: 'Drag a critter into the hoop where it fits.' },
       { from: 3, to: 3, text: 'In the overlapping hoops, the middle is for critters that fit both rules.' },
-      { from: 4, text: 'Look at the sorted pictures, work out the rule, then tap the picture that shows it.' },
+      { from: 4, to: 4, text: 'Look at the sorted pictures, work out the rule, then tap the picture that shows it.' },
+      { from: 5, text: 'The red line means not. Drag every critter that is not like the picture into the hoop.' },
     ],
     finish: 'The round ends when every critter has been sorted.',
   },

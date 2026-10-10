@@ -20,7 +20,7 @@ describe('Critter Sort', () => {
         const r = makeRound(plan, new Rng(seed));
         expect(r.critters).toHaveLength(plan.critters);
         expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}`)).size).toBe(plan.critters);
-        const places = new Set(r.critters.map((c) => placeOf(c, r.rules)));
+        const places = new Set(r.critters.map((c) => placeOf(c, r.rules, plan.mode === 'not')));
         expect(places.has('out')).toBe(true);
         expect(places.has('left')).toBe(true);
         if (plan.mode === 'two') expect(places.has('right')).toBe(true), expect(places.has('both')).toBe(false);
@@ -37,8 +37,8 @@ describe('Critter Sort', () => {
   it('drops a critter on the middle of its part of the diagram, in every layout and at either screen size', () => {
     for (const plan of PLANS) {
       if (plan.mode === 'guess') continue;
-      const hoops = plan.mode === 'one' ? 1 : 2;
-      const places: Place[] = plan.mode === 'one' ? ['left'] : plan.mode === 'two' ? ['left', 'right'] : ['left', 'right', 'both'];
+      const hoops = plan.mode === 'one' || plan.mode === 'not' ? 1 : 2;
+      const places: Place[] = plan.mode === 'one' || plan.mode === 'not' ? ['left'] : plan.mode === 'two' ? ['left', 'right'] : ['left', 'right', 'both'];
       for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 1024 }, { w: 768, h: 1024 }]) {
         const centers = hoopCenters(plan.mode, hoops, v);
         // k = 1 is the spot the ghost finger uses; 0 is the hint's glow.
@@ -55,18 +55,30 @@ describe('Critter Sort', () => {
       for (let seed = 1; seed <= 100; seed++) {
         const round = makeRound(plan, new Rng(seed));
         const centers = hoopCenters(plan.mode, round.rules.length, { w: 1024, h: 768 });
+        const not = plan.mode === 'not';
         const sorters = round.critters.map((c) => ({ c, placed: null as Place | null }));
         let moves = 0;
-        for (let next = nextToSort(sorters, round.rules); next; next = nextToSort(sorters, round.rules)) {
+        for (let next = nextToSort(sorters, round.rules, not); next; next = nextToSort(sorters, round.rules, not)) {
           const spot = spotFor(centers, plan.mode, next.place, 1);
           // It lands where the game puts it right, and that is the part the critter belongs in.
-          expect(placeAt(centers, spot.x, spot.y), `${plan.mode} seed ${seed}`).toBe(placeOf(next.who.c, round.rules));
+          expect(placeAt(centers, spot.x, spot.y), `${plan.mode} seed ${seed}`).toBe(placeOf(next.who.c, round.rules, not));
           next.who.placed = next.place;
           moves++;
         }
-        const wanted = round.critters.filter((c) => placeOf(c, round.rules) !== 'out');
+        const wanted = round.critters.filter((c) => placeOf(c, round.rules, not) !== 'out');
         expect(moves).toBe(wanted.length);
-        expect(sorters.filter((s) => s.placed === null).every((s) => placeOf(s.c, round.rules) === 'out')).toBe(true);
+        expect(sorters.filter((s) => s.placed === null).every((s) => placeOf(s.c, round.rules, not) === 'out')).toBe(true);
+      }
+    }
+  });
+
+  it('makes the not hoop the complement of its pictured rule, leaving every pictured critter outside', () => {
+    const plan = PLANS.find((p) => p.mode === 'not')!;
+    for (let seed = 1; seed <= 200; seed++) {
+      const round = makeRound(plan, new Rng(seed));
+      for (const critter of round.critters) {
+        expect(placeOf(critter, round.rules, true) === 'left').toBe(!fits(critter, round.rules[0]));
+        expect(placeOf(critter, round.rules, true) === 'out').toBe(fits(critter, round.rules[0]));
       }
     }
   });

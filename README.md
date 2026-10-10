@@ -119,7 +119,7 @@ There are seventy-four games, listed below. "Ages" lists the places each game ap
 | Animal Snack | lap–preschool | tap an animal and it munches its favorite snack | snacks float to their eaters, "who eats the carrot?", drag each snack to its animal, give 2 to 4 |
 | Stop and Go | lap–preschool | tap the traffic light: red stops the car, green makes it go | send a car only on green, red light, green light with the pet, a two-road crossing that takes turns |
 | Ramp Race | pre-K–school | tap the ramp to make it taller and roll a toy car | stop on a star, choose height and floor (carpet, wood, ice), fair tests comparing two lanes |
-| Critter Sort | pre-K–school | drag critters into a hoop: "wearing a hat" | two hoops, overlapping hoops where the middle is both, guess the rule |
+| Critter Sort | pre-K–school | drag critters into a hoop: "wearing a hat" | two hoops, overlapping hoops where the middle is both, guess the rule, a hoop for "not" |
 | Treasure Map | pre-K–school | dig where the apple row meets the red column | grid names like B3, putting things at named squares, following directions ("2 left, then 3 up"), then combining two landmark clues |
 | Opposites | lap–pre-K | tap a picture: it flips to its opposite (big, small; open, closed) | find the one named, find the opposite among three, match opposite pairs |
 | Picture Graph | pre-K–school | count critters and build their bars, one block each | which has the most and fewest, how many more, reading a finished graph (how many in all, which two are the same), then a key where each block is two critters (build from pairs, then read it: how many in all, how many more) |

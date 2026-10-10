@@ -16,7 +16,7 @@ import { fits, HOOP_R, hoopCenters, makeRound, nextToSort, placeAt, placeOf, pla
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 4 },
+  school: { min: 2, max: 5 },
 };
 
 const SCALE = 0.32;
@@ -114,7 +114,10 @@ class CritterSort implements Game {
       const sign = new Container();
       sign.addChild(new Graphics().roundRect(-52, -46, 104, 92, 20).fill(0xffffff).stroke({ width: 6, color: colors[i].fill }));
       if (this.plan.mode === 'guess') sign.addChild(label('?', 64, ink));
-      else sign.addChild(ruleIcon(this.round.rules[i]));
+      else {
+        sign.addChild(ruleIcon(this.round.rules[i]));
+        if (this.plan.mode === 'not') sign.addChild(new Graphics().moveTo(-38, -34).lineTo(38, 34).stroke({ width: 9, color: swatch.red.fill, cap: 'round' }));
+      }
       sign.position.set(c.x + (this.round.rules.length === 2 ? (i ? 80 : -80) : 0), c.y - HOOP_R - 50);
       this.signs.addChild(sign);
     });
@@ -134,7 +137,7 @@ class CritterSort implements Game {
     const g = this.glow.clear();
     if (!this.hinting || this.busy) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
-    const target = this.spotFor(placeOf(this.hinting.c, this.round.rules));
+    const target = this.spotFor(placeOf(this.hinting.c, this.round.rules, this.plan.mode === 'not'));
     g.circle(target.x, target.y, 60).stroke({ width: pulse, color: swatch.yellow.fill });
     g.circle(this.hinting.node.x, this.hinting.node.y - 50, 70).stroke({ width: pulse, color: swatch.yellow.fill });
   }
@@ -146,7 +149,7 @@ class CritterSort implements Game {
       const option = this.options.find((o) => o.rule === ruleToTap(this.round));
       return option ? { tap: { on: option.node } } : null;
     }
-    const next = nextToSort(this.sorters.filter((s) => !s.drag?.dragging && !s.node.destroyed), this.round.rules);
+    const next = nextToSort(this.sorters.filter((s) => !s.drag?.dragging && !s.node.destroyed), this.round.rules, this.plan.mode === 'not');
     if (!next?.who.drag) return null;
     const spot = this.spotFor(next.place, 1);
     return { drag: { on: next.who.node }, to: { on: this.ctx.stage, x: spot.x, y: spot.y } };
@@ -217,6 +220,7 @@ class CritterSort implements Game {
     if (this.plan.mode === 'one') return this.ctx.instruct('sort.one', { a });
     if (this.plan.mode === 'two') return this.ctx.instruct('sort.two', { a, b });
     if (this.plan.mode === 'venn') return this.ctx.instruct('sort.venn', { a, b });
+    if (this.plan.mode === 'not') return this.ctx.instruct('sort.not', { a });
     return this.ctx.instruct('sort.guess');
   }
 
@@ -225,7 +229,7 @@ class CritterSort implements Game {
     const at = placeAt(this.centers(), x, y);
     // Back on the grass: just put down again, never a mistake.
     if (at === 'out') return false;
-    const right = placeOf(s.c, this.round.rules);
+    const right = placeOf(s.c, this.round.rules, this.plan.mode === 'not');
     if (at === right) {
       s.placed = at;
       if (s.drag) s.drag.enabled = false;
@@ -234,7 +238,7 @@ class CritterSort implements Game {
       this.wrongs = 0;
       if (this.hinting === s) this.hinting = null;
       this.resize(this.view);
-      if (this.sorters.every((x) => x.placed || placeOf(x.c, this.round.rules) === 'out')) void this.roundDone();
+      if (this.sorters.every((x) => x.placed || placeOf(x.c, this.round.rules, this.plan.mode === 'not') === 'out')) void this.roundDone();
       return true;
     }
     this.misses++;
@@ -244,7 +248,7 @@ class CritterSort implements Game {
     void this.explain(s, at);
     if (this.wrongs >= 2 && !this.hinting) {
       this.hints++;
-      this.hinting = this.sorters.find((x) => !x.placed && placeOf(x.c, this.round.rules) !== 'out') ?? null;
+      this.hinting = this.sorters.find((x) => !x.placed && placeOf(x.c, this.round.rules, this.plan.mode === 'not') !== 'out') ?? null;
     }
     return false;
   }
@@ -253,6 +257,7 @@ class CritterSort implements Game {
   private explain(s: Sorter, at: Place) {
     const who = KIND_WORDS[s.c.kind];
     const rules = this.round.rules;
+    if (this.plan.mode === 'not') return this.ctx.say(fits(s.c, rules[0]) ? 'sort.not.in' : 'sort.not.out', { who, rule: RULE_WORDS[rules[0]] });
     const wantA = at === 'left' || at === 'both';
     const wantB = at === 'right' || at === 'both';
     if (wantA && !fits(s.c, rules[0])) return this.ctx.say('sort.isnot', { who, rule: RULE_WORDS[rules[0]] });

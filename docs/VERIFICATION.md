@@ -38,6 +38,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchconga` | 2026-10-08 | Pond Conga entry | About two minutes; plays a full four-pond course with the bot |
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
 | `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
+| Critter Sort 5 | 2026-10-10: rule tests, `WOODS_ONLY=sort FROM_LEVEL=5` (two wrong drops, hint and completion), and `FINGER_ONLY=critter-sort FINGER_LEVELS=5` clean | Critter Sort 5 entry | Portrait screenshot reviewed; iPad remains untested |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen fractions entry, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
 | `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
@@ -173,6 +174,15 @@ What changed: the five "sorting and choosing" games gained `autotouch()` and `to
 - `npm run typecheck` and `npm test` (117 files, 706 tests) passed. New tests: every Color Garden deal at every level and both screen widths is sorted with no drop outside its basket; every Critter Sort layout drops each critter in its own part at three screen sizes, the bot never carries a critter that fits neither rule, and a guess round taps the true rule; Story Steps got its first `logic.test.ts` (the puzzle and the bot, at every level, never picking a distractor); Word Monsters' bot finishes every generated question at every level; Clap's bots finish all four modes and the clap gap stays well inside `PAUSE`.
 - `BROWSER_SUITE=fingerdemo` on a dev server of this tree (port 5195, headless Chromium) passed with no wrong move and no hint, on a busy Mac: Color Garden 1 and 6 (15 and 44 s), Story Steps 1, 2, 3, 6 and 7 (5 to 15 s), Word Monsters 1 to 7 (8 to 33 s: free play, find, sound, first sound, build, spell and word families), Critter Sort 1 to 4 (6 to 18 s) and Clap the Syllables 1 to 4 (14 to 17 s), the clap-by-yourself level included. Story Steps 4 and 5 and Color Garden 2 to 5 were not played (the same drops at other sizes).
 - Not run: `howto`, `smoke` and `world` (no shell, registry or layout change beyond a flag on five modules; `src/content/howto.test.ts` checks the flag), `scripts/abandon-cards.mjs` for these five cards, a portrait screenshot of the demonstration window. Chrome automation only: the hand's look on an iPad, and whether the 40% effects level suits the sound of a demonstration, are still open.
+
+### Critter Sort 5: a not hoop (2026-10-10)
+
+What changed: Critter Sort gained a fifth school level, appended after the existing guessing level. A red slash over the picture means **not**: matching critters remain outside the hoop and every non-matching critter goes in.
+
+- `npm run typecheck` passed. The targeted Critter Sort rule tests passed (6 tests), including generated complementary rounds, valid drop geometry, and the ghost-finger's no-miss choices.
+- `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=5` passed: two deliberately wrong drops produced the complement hint, then all three rounds finished and saved the expected score. The resulting portrait screenshot was reviewed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=5` passed cleanly, with the demonstration finishing the new rung without a miss or hint.
+- Not run: the full unit suite, build, `howto`, `smoke`, `world` and offline checks; the change touches only this game's level plan, art drawn in code, speech and docs. An iPad check remains open.
 
 ### Habitat Helpers review: merge with main, a hidden answer and a ghost finger (2026-10-09)
 

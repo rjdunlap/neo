@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * into a hoop: first one rule (in or out), then two separate hoops, then two overlapping hoops
  * where the middle means "both", and finally, with critters already sorted, work out the rule.
  */
-export type SortMode = 'one' | 'two' | 'venn' | 'guess';
+export type SortMode = 'one' | 'two' | 'venn' | 'guess' | 'not';
 
 export interface SortPlan {
   mode: SortMode;
@@ -20,6 +20,7 @@ export const PLANS: SortPlan[] = [
   { mode: 'two', critters: 6, rounds: 2, name: 'Two hoops with different rules; some critters fit neither' },
   { mode: 'venn', critters: 6, rounds: 2, name: 'Overlapping hoops: the middle is for critters that fit both rules' },
   { mode: 'guess', critters: 6, rounds: 3, name: 'Already sorted: what is the rule? Pick the right picture' },
+  { mode: 'not', critters: 6, rounds: 3, name: 'A not hoop: put in every critter that does not fit the picture rule' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -77,8 +78,8 @@ export const OVERLAPPING: [Rule, Rule][] = [
 /** Where a critter belongs: in the left hoop, the right hoop, both (the middle) or neither. */
 export type Place = 'left' | 'right' | 'both' | 'out';
 
-export function placeOf(c: SortCritter, rules: Rule[]): Place {
-  const a = fits(c, rules[0]);
+export function placeOf(c: SortCritter, rules: Rule[], not = false): Place {
+  const a = not ? !fits(c, rules[0]) : fits(c, rules[0]);
   const b = rules[1] ? fits(c, rules[1]) : false;
   return a && b ? 'both' : a ? 'left' : b ? 'right' : 'out';
 }
@@ -155,9 +156,9 @@ export function spotFor(centers: readonly Point[], mode: SortMode, place: Place,
  * What a capable child does next: carry the first critter still on the grass that belongs in a hoop to the middle of
  * its part of the diagram. A critter that fits neither rule stays where it is, so it is never carried. The ghost finger follows this.
  */
-export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[]): { who: S; place: Place } | undefined {
+export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[], not = false): { who: S; place: Place } | undefined {
   for (const who of sorters) {
-    const place = placeOf(who.c, [...rules]);
+    const place = placeOf(who.c, [...rules], not);
     if (!who.placed && place !== 'out') return { who, place };
   }
   return undefined;
