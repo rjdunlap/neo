@@ -51,6 +51,14 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Rainbow Fingers: pumpkin recall and mixing (2026-10-10)
+
+What changed: the school range now reaches level 7 without changing earlier saved levels or pins. The round always shows one pumpkin, asks its color without naming it, and requires the existing red-and-yellow bowl mixing before it can be painted. The how-to card and spoken support follow that sequence; the ghost finger uses the same `paintStep` rule.
+
+- `npm run typecheck` and `src/games/rainbow-fingers/logic.test.ts` passed (7 tests), including that the top page is always the pumpkin and that the bot completes it with the two required primaries.
+- Not run to completion: `BROWSER_SUITE=early EARLY_ONLY=paint FROM_LEVEL=7 TO_LEVEL=7 npm run test:browser` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=rainbow-fingers FINGER_LEVELS=7 npm run test:browser`. In this worktree the command returned without a completion result or level-7 screenshot, so neither is a pass. Build, offline, broad navigation and earlier-level browser suites were not needed for this game-only ladder extension.
+- iPad touch and device speech remain open.
+
 ### Bouncy Launch: shown-pull prediction (2026-10-10)
 
 What changed: Bouncy Launch's school range reaches level 6. A fixed, visible pull asks for a cloud prediction before the pet launches; every prediction shows the outcome, and a different guess is never a miss. The same pure pull-to-cloud mapping is used for the display, flight and ghost-finger answer.

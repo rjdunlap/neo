@@ -18,8 +18,15 @@ describe('Rainbow Fingers', () => {
         const things = pickThings(plan, new Rng(seed));
         expect(things).toHaveLength(plan.count);
         expect(new Set(things.map((t) => t.color)).size).toBe(plan.count);
-        if (plan.mode === 'mix') for (const t of things) expect(RECIPES[t.color]).toBeDefined();
+        if (plan.mode === 'mix' || plan.mode === 'recall-mix') for (const t of things) expect(RECIPES[t.color]).toBeDefined();
       }
+    }
+  });
+
+  it('keeps the recall-and-mix pumpkin page fixed, so the prompt never reveals its color', () => {
+    const plan = PLANS.find((candidate) => candidate.mode === 'recall-mix')!;
+    for (let seed = 1; seed <= 100; seed++) {
+      expect(pickThings(plan, new Rng(seed))).toEqual([THINGS.find((thing) => thing.id === 'pumpkin')]);
     }
   });
 
@@ -48,7 +55,7 @@ describe('Rainbow Fingers', () => {
           if (m.do === 'frame') framed = true;
           else if (m.do === 'bowl') { st.poured = []; st.brush = null; }
           else if (m.do === 'pot') {
-            if (plan.mode === 'mix') {
+            if (plan.mode === 'mix' || plan.mode === 'recall-mix') {
               if (st.poured.length >= 2) st.poured = [];
               st.poured.push(m.pot as Primary);
               st.brush = st.poured.length === 2 ? mix(st.poured[0], st.poured[1]) : (m.pot as ColorName);

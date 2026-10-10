@@ -618,7 +618,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
-| Rainbow Fingers (L–S · 6) | More coloring pages, and more things for "what color is an apple?" | R1: 7 *paint the pumpkin* | — |
+| Rainbow Fingers (L–S · 7) | More coloring pages, and more things for "what color is an apple?" | **Built 2026-10-10:** 7 *paint the pumpkin* | — |
 | Fluffy Salon (L–K · 5) | Accessories as a sixth tool (a bow, a hat) | **6, Two customers:** two tickets, styled one after the other | — |
 | Stamp Studio (L–S · 6) | **Stamp sets**: sea, space, farm and a picnic. Open-ended play gets more from content than from levels | — | — |
 | Pixel Pictures (P–S · 5) | More pictures per level (fifteen today, across three grid sizes) | **6, Two-color picture logic:** each clue number has a color. This is a new decision, not just a bigger grid | — |
