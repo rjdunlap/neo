@@ -2818,7 +2818,7 @@ async function woodsBatch() {
     log('Word Monsters 8: keep the first two sounds, change the end, wrong sounds, glow hint, saved score and sticker passed');
   }
 
-  if (!only || only === 'pixels') for (let level = fromLevel; level <= 5; level++) {
+  if (!only || only === 'pixels') for (let level = fromLevel; level <= 6; level++) {
     await launch('pixel-pictures', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, pictures: neo.scene.game.pictures.length }));
     const cellTap = async (x, y) => {
@@ -2837,6 +2837,7 @@ async function woodsBatch() {
         await page.waitForTimeout(300);
         assert.deepEqual(await counts(), [2, 1]);
         if (level === 4) await screenshot('pixel-pictures-4-hint');
+        if (level === 6) await screenshot('pixel-pictures-6-color-clues');
       }
       for (const t of todo) {
         // Two-color copying: pick the square's color from the palette first.
@@ -2847,7 +2848,7 @@ async function woodsBatch() {
     }
     await finished('pixel-pictures');
     assert.deepEqual(await score('pixel-pictures'), [2, 1]);
-    log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
+    log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
   }
 
   if (!only || only === 'night') for (let level = fromLevel; level <= 4; level++) {
