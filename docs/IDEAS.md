@@ -625,7 +625,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Fluffy Salon (L–K · 5) | Accessories as a sixth tool (a bow, a hat) | **6, Two customers:** two tickets, styled one after the other | — |
 | Stamp Studio (L–S · 6) | **Stamp sets**: sea, space, farm and a picnic. Open-ended play gets more from content than from levels | — | — |
 | Pixel Pictures (P–S · 5) | More pictures per level (fifteen today, across three grid sizes) | **6, Two-color picture logic:** each clue number has a color. This is a new decision, not just a bigger grid | — |
-| Peekaboo Barn (L–K · 8) | Hiding places in new scenes (a bedroom, a beach) and more animals (seven today) | — (more hiding is memory load) | — |
+| Peekaboo Barn (L–K · 8) | Hiding places in new scenes (a bedroom, a beach), covers that open their own ways, animals who name how they feel and more animals (seven today); see its [deep dive](deep-dives/peekaboo-barn.md), which supersedes this row | — (the audit's leave stands; the deep dive proposes 9–15 as a decision) | One door, where did it go?, who says moo? and hide it yourself (lap and toddler); all wait on level order |
 | Duckling Parade (L–K · 8) | Ponds and paths | **9, Two of one, then another:** yellow, yellow, blue. **10, Fix the parade:** one duckling is out of pattern, so swap it. Then a `school` window at 9–10 | — |
 | Roundup (L–K · 6) | More animal kinds | **7, Two things at once:** big pigs in one pen, little pigs in the other. **8, Make the pens fair:** share 6 or 8 animals equally between two pens | — |
 | Egg Catch (L–S · 6) | More chute boards per level | R2: 7 *set it once* | — |
