@@ -44,10 +44,12 @@ async function launch(id, level, childName = 'Mia') {
   await page.evaluate(async ({ id, level, childName }) => {
     const { gameById } = await import('/src/games/registry.ts');
     const mod = gameById(id);
-    kit.store.data.profile.band = mod.bands.find((band) => { const r = mod.levels(band); return level >= r.min && level <= r.max; });
+    const band = mod.bands.find((candidate) => { const r = mod.levels(candidate); return level >= r.min && level <= r.max; });
+    kit.store.entry.birth = null; kit.store.entry.startBand = band;
+    kit.store.data.profile.band = band;
     kit.store.data.profile.name = childName;
     kit.store.stats(id).pinned = level;
-    neo.go.game(id);
+    neo.go.game(id, band);
   }, { id, level, childName });
   await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !neo.scene.finished, { id, level });
 }
@@ -7364,14 +7366,28 @@ async function clapPlay() {
   }
   await finished('clap-syllables');
   assert.deepEqual(await results(), { misses: 2, hints: 1, stickers: 4 });
+  // Level 5: long words in four size classes. The two rows leave room for all eight large picture cards.
+  await launch('clap-syllables', 5); await idleGame();
+  await screenshot('clap-5');
+  const longCounts = await page.evaluate(() => neo.scene.game.cards.map((c) => c.word.parts.length));
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.cards.length, neo.scene.game.bins.length]), [8, 4]);
+  assert.deepEqual([...new Set(longCounts)].sort(), [1, 2, 3, 4], 'the round has words for every bin');
+  assert.ok(await page.evaluate(() => neo.scene.game.cards.every((c) => c.node.hitArea.width >= 100)), 'each picture keeps a large drag target');
+  const levelFiveWrongBin = (n) => (n === 1 ? 2 : 1);
+  await drop(0, levelFiveWrongBin(longCounts[0])); await page.waitForTimeout(700);
+  await drop(0, levelFiveWrongBin(longCounts[0])); await page.waitForTimeout(1400);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, !!neo.scene.game.glowing]), [2, 1, true], 'two wrong bins: two misses and the right bin glows');
+  for (let i = 0; i < longCounts.length; i++) { await drop(i, longCounts[i]); await page.waitForTimeout(550); }
+  await finished('clap-syllables');
+  assert.deepEqual(await results(), { misses: 2, hints: 1, stickers: 5 });
   // Portrait: the same game, the hands and the cards stay on screen.
-  await launch('clap-syllables', 3); await idleGame();
+  await launch('clap-syllables', 5); await idleGame();
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
-  assert.ok(await page.evaluate(() => neo.scene.game.cards.every((c) => { const p = c.node.getGlobalPosition(); return p.x > 0 && p.x < innerWidth && p.y > 0 && p.y < innerHeight; })), 'cards on screen in portrait');
-  await screenshot('clap-3-portrait');
+  assert.ok(await page.evaluate(() => [...neo.scene.game.cards, ...neo.scene.game.bins].every((c) => { const p = c.node.getGlobalPosition(); return p.x > 0 && p.x < innerWidth && p.y > 0 && p.y < innerHeight; })), 'cards and bins on screen in portrait');
+  await screenshot('clap-5-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
-  log('Clap the Syllables: level 1 (clap along: beads light with each clap, the pet repeats the word after a quiet moment), 2 (a wrong count brings a demonstration, a second one the beats as a hint, then it finishes), 3 (a wrong bin plays the claps, two glow the right bin, empty space is free, all pictures sorted), 4 (claps shown and heard, a wrong picture twice then the glow, four questions); one sticker per round; portrait cards on screen');
+  log('Clap the Syllables: levels 1–4 retain their clap-along, solo, three-bin sort and matching rounds; level 5 sorts eight long-word pictures into four large bins, including all four clap counts, with a wrong-bin hint and a portrait layout; one sticker per round');
 }
 
 async function chainPlay() {

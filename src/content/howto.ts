@@ -768,6 +768,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 2, text: 'Tap the big hands once for each beat in the word: "but-ter-fly" is three claps.' },
       { from: 3, to: 3, text: 'Drag each picture to the number of beats in its name.' },
       { from: 4, text: 'Listen to the claps, then tap the picture with that many beats.' },
+      { from: 5, text: 'Sort long words into the one-, two-, three- and four-clap bins.' },
     ],
     finish: 'The round ends after the last word, sort or question.',
     note: 'The pet says each word whole and claps its beats with beads lighting up; a wrong count just brings the demonstration and another try. Check on the device that the words are said clearly.',

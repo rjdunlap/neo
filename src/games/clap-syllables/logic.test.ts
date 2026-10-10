@@ -17,12 +17,13 @@ describe('the words', () => {
     expect(new Set(WORDS.map((x) => x.word)).size).toBe(WORDS.length);
   });
 
-  it('has one to three beats, with enough words of each size for every level', () => {
-    expect(WORDS.every((x) => syllables(x) >= 1 && syllables(x) <= 3)).toBe(true);
+  it('has one to four beats, with enough words of each size for every level', () => {
+    expect(WORDS.every((x) => syllables(x) >= 1 && syllables(x) <= 4)).toBe(true);
     // A match round uses four 3-beat words at most; a sort needs one of each.
     expect(byCount(1).length).toBeGreaterThanOrEqual(8);
     expect(byCount(2).length).toBeGreaterThanOrEqual(5);
     expect(byCount(3).length).toBeGreaterThanOrEqual(5);
+    expect(byCount(4).length).toBeGreaterThanOrEqual(2);
   });
 
   it('every word has a picture: one of Rhyme Time\'s or one drawn here', () => {
@@ -31,10 +32,10 @@ describe('the words', () => {
 });
 
 describe('the levels', () => {
-  it('are four, in order of how much they ask', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['along', 'solo', 'sort', 'match']);
+  it('are five, in order of how much they ask', () => {
+    expect(PLANS.map((p) => p.mode)).toEqual(['along', 'solo', 'sort', 'match', 'sort']);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[3]);
+    expect(planFor(99)).toBe(PLANS[4]);
   });
 
   it('clap along: words of one or two beats, both kinds present, none twice', () => {
@@ -56,12 +57,14 @@ describe('the levels', () => {
   });
 
   it('sort: every bin gets at least one picture and no picture twice', () => {
-    for (let seed = 1; seed <= 200; seed++) {
-      const [q] = makeQuestions(PLANS[2], new Rng(seed));
-      expect(q.words).toHaveLength(5);
-      const counts = q.words.map(syllables);
-      for (const n of [1, 2, 3]) expect(counts.filter((c) => c === n).length).toBeGreaterThanOrEqual(1);
-      expect(new Set(q.words.map((x) => x.word)).size).toBe(5);
+    for (const plan of PLANS.filter((p) => p.mode === 'sort')) {
+      for (let seed = 1; seed <= 200; seed++) {
+        const [q] = makeQuestions(plan, new Rng(seed));
+        expect(q.words).toHaveLength(plan.count);
+        const counts = q.words.map(syllables);
+        for (let n = 1; n <= plan.max; n++) expect(counts.filter((c) => c === n).length).toBeGreaterThanOrEqual(1);
+        expect(new Set(q.words.map((x) => x.word)).size).toBe(plan.count);
+      }
     }
   });
 
@@ -91,8 +94,8 @@ describe('the levels', () => {
 });
 
 describe('the spoken count', () => {
-  it('says one clap, two claps, three claps', () => {
-    expect([1, 2, 3].map(clapsWord)).toEqual(['one clap', 'two claps', 'three claps']);
+  it('says one, two, three and four claps', () => {
+    expect([1, 2, 3, 4].map(clapsWord)).toEqual(['one clap', 'two claps', 'three claps', 'four claps']);
   });
 });
 
@@ -112,16 +115,17 @@ describe('the ghost finger (what the how-to card plays)', () => {
   });
 
   it('carries every picture to the hoop with as many claps as its name has beats, leaving none behind', () => {
-    const plan = PLANS.find((p) => p.mode === 'sort')!;
-    for (let seed = 1; seed <= 100; seed++) {
-      const [q] = makeQuestions(plan, new Rng(seed));
-      const bins = Array.from({ length: plan.max }, (_, i) => ({ count: i + 1 }));
-      const cards = q.words.map((word) => ({ word, sorted: false }));
-      for (let next = nextToSort(cards, bins); next; next = nextToSort(cards, bins)) {
-        expect(next.bin.count, next.card.word.word).toBe(syllables(next.card.word));
-        next.card.sorted = true;
+    for (const plan of PLANS.filter((p) => p.mode === 'sort')) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const [q] = makeQuestions(plan, new Rng(seed));
+        const bins = Array.from({ length: plan.max }, (_, i) => ({ count: i + 1 }));
+        const cards = q.words.map((word) => ({ word, sorted: false }));
+        for (let next = nextToSort(cards, bins); next; next = nextToSort(cards, bins)) {
+          expect(next.bin.count, next.card.word.word).toBe(syllables(next.card.word));
+          next.card.sorted = true;
+        }
+        expect(cards.every((c) => c.sorted)).toBe(true);
       }
-      expect(cards.every((c) => c.sorted)).toBe(true);
     }
   });
 
