@@ -62,7 +62,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Pixel Pictures
 
-*preschool–school · after Picross and Mario Paint.* Tap squares to copy a small picture (4×4, then 5×5 with two colors from a palette), finish a mirror half (the left half is drawn), then solve picture-logic puzzles (nonograms) from run numbers along rows and columns. Only pictures that row-and-column logic alone can solve are used (rule-tested). A square that should stay empty is a gentle miss and, on logic levels, gets a gray cross. Two misses glow a square that can be decided (on logic levels, by the same line logic). The finished picture shows in its colors and is named; after the round, the final design can be kept on the treehouse picture board.
+*preschool–school · after Picross and Mario Paint.* Tap squares to copy a small picture (4×4, then 5×5 with two colors from a palette), finish a mirror half (the left half is drawn), then solve picture-logic puzzles (nonograms) from run numbers along rows and columns. Level 6 gives each run clue its own color, so both the length and color of every run matter. Earlier single-color puzzles use only pictures that row-and-column logic alone can solve (rule-tested). A square that should stay empty is a gentle miss and, on logic levels, gets a gray cross. Two misses glow a useful square; level 6 also selects its matching color. The finished picture shows in its colors and is named; after the round, the final design can be kept on the treehouse picture board.
 
 ## Barnyard (animals)
 
