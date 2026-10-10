@@ -61,7 +61,7 @@ Most sessions should build from this list; checks that need a person or a device
 **Then, from the [second ladder round](IDEAS.md#round-two-the-longer-ladders-2026-10-10) (2026-10-10, proposals).** That round covers the longer school ladders the audit skipped. Each item is one level appended above the game's current top, and the detail page says what its rule tests assert.
 
 7. **Market Stall 7, Fewest coins** — **built 2026-10-10**: pay prices from 4 to 10 with as few 1-, 2- and 5-shell coins as possible. An exact longer payment stays on the mat for a swap; only repeating that nudge is a miss.
-8. **Clock Tower 7, Five-minute times**: count by fives around the face to set 3:25. First check that twelve snap marks stay 100 units apart.
+8. **Clock Tower 7, Five-minute times** — **built 2026-10-10**: set times like 3:25 by counting by fives; small helper numbers ring the rim. The twelve snap marks are about 86 units apart at the long hand's tip (105 at the rim), a drag that snaps by angle rather than a tap target; not checked on an iPad.
 9. **Frog Hop 7, Hop to ten first**: split a sum that crosses ten at 10 (8 + 2 + 3).
 10. **Seesaw Balance 10, Two steps**: take the same off both sides, then share what is left between two boxes.
 11. **Secret Code 7, Detective door**: deduce the one code that fits guesses already on the door.

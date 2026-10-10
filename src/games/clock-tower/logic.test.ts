@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { demoAction, EVENTS, handsFor, hourOf, makeTasks, minuteChoices, PLANS, spoken, timeOf } from './logic';
+import { demoAction, EVENTS, FIVE_ASKED, handsFor, hourOf, makeTasks, minuteChoices, PLANS, spoken, timeOf } from './logic';
 
 describe('Clock Tower', () => {
   it('says times the way people do, and places the hour hand between numbers after the hour', () => {
@@ -28,6 +28,17 @@ describe('Clock Tower', () => {
         if (plan.mode === 'quarter') expect(new Set(tasks.map((t) => t.time % 60)).size).toBe(4);
       }
     }
+  });
+
+  it('five-minute level asks only for new minutes, each on a mark the long hand snaps to', () => {
+    const plan = PLANS.find((p) => p.mode === 'five')!;
+    expect(minuteChoices('five')).toHaveLength(12);
+    for (let seed = 1; seed <= 200; seed++) for (const t of makeTasks(plan, new Rng(seed))) {
+      expect(FIVE_ASKED).toContain(t.time % 60);
+      expect(minuteChoices('five')).toContain(t.time % 60);
+    }
+    expect(spoken(timeOf(3, 25))).toBe('3:25');
+    expect(handsFor(timeOf(3, 25)).minute).toBe(25);
   });
 
   it('offers three pictures with only one matching the clock', () => {

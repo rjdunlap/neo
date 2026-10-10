@@ -8,7 +8,7 @@ import type { Rng } from '../../engine/random';
  * Times are in minutes after midnight on a 12-hour face; the hour hand moves with the minutes,
  * as on a real clock, so half past three has it halfway between 3 and 4.
  */
-export type ClockMode = 'hour' | 'oclock' | 'half' | 'quarter' | 'read' | 'later';
+export type ClockMode = 'hour' | 'oclock' | 'half' | 'quarter' | 'read' | 'later' | 'five';
 
 export interface ClockPlan {
   mode: ClockMode;
@@ -23,6 +23,7 @@ export const PLANS: ClockPlan[] = [
   { mode: 'quarter', rounds: 4, name: 'Quarter past and quarter to' },
   { mode: 'read', rounds: 4, name: 'Read the clock, then pick what happens at that time of day' },
   { mode: 'later', rounds: 4, name: "One hour later: set the clock an hour after the time shown (o'clock and half past)" },
+  { mode: 'five', rounds: 4, name: 'Five-minute times: count by fives to set 3:25 (the long hand stops at any number)' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -31,8 +32,12 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 export function minuteChoices(mode: ClockMode): number[] {
   if (mode === 'hour' || mode === 'oclock') return [0];
   if (mode === 'half' || mode === 'read' || mode === 'later') return [0, 30];
+  if (mode === 'five') return Array.from({ length: 12 }, (_, i) => i * 5);
   return [0, 15, 30, 45];
 }
+
+/** Minutes on the five level that are not already a quarter or half: the new decision. */
+export const FIVE_ASKED = [5, 10, 20, 25, 35, 40, 50, 55];
 
 /** A time to set or read, in minutes (0–719 on the 12-hour face). */
 export interface ClockTask {
@@ -75,7 +80,7 @@ export function makeTasks(plan: ClockPlan, rng: Rng): ClockTask[] {
   while (out.length < plan.rounds) {
     const hour = rng.int(1, 12);
     // Quarter levels show every quarter at least once, half levels mostly ask for half past.
-    const minute = plan.mode === 'quarter' ? minutes[(out.length + 1) % 4] : plan.mode === 'half' ? (rng.chance(0.75) ? 30 : 0) : rng.pick(minutes);
+    const minute = plan.mode === 'five' ? FIVE_ASKED[(out.length * 2 + rng.int(0, 1)) % FIVE_ASKED.length] : plan.mode === 'quarter' ? minutes[(out.length + 1) % 4] : plan.mode === 'half' ? (rng.chance(0.75) ? 30 : 0) : rng.pick(minutes);
     const shown = toMinutes(hour, minute);
     const task: ClockTask = plan.mode === 'later' ? { time: (shown + 60) % 720, from: shown } : { time: shown };
     if (out.some((t) => t.time === task.time)) continue;
