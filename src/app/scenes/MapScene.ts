@@ -1,42 +1,48 @@
 import { Container, Graphics } from 'pixi.js';
+import { landmarkFor } from '../../art/lands';
 import { cream, grass, ink, RAINBOW, swatch } from '../../art/palette';
 import { makePet } from '../../art/pet';
 import { checkBadge, picnicLandmark } from '../../art/picnic';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { PLACES, type Place } from '../../content/places';
+import { LANDS, MAP_RADIUS, mapLayout, visibleIn, type Land, type MapSpotId } from '../../content/lands';
+import { placeFor } from '../../content/places';
+import { anyNew } from '../../content/shelf';
 import { onTap } from '../../engine/input';
-import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import { GAMES } from '../../games/registry';
 import { openParentPanel } from '../../parent/panel';
-import { bandInfo, BANDS, type Band } from '../../progress/bands';
+import { bandRank, type Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { gearButton } from '../../ui/grownups';
 import { bookIcon, peopleIcon, treehouseIcon } from '../../ui/icons';
+import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
+import { lastLand } from './LandScene';
 
-const rank = (band: Band | null) => BANDS.findIndex((b) => b.id === band);
+/** Land drawings are a little smaller on the map than the age places were, so twelve spots fit. */
+const LANDMARK_SCALE = 0.85;
 
 /**
- * The island as an age trail: Puddle Lagoon on the shore, past Starry Peak, up to Wonder Woods. Every place is open;
- * the pet waits at her own place, and walks up the trail (with a birthday) when she grows.
+ * The island: ten themed lands, her home spot (her age place, with every game for her age and younger) and the
+ * Windy Picnic. Every land is open; a land twinkles while it holds a game she has not played. The pet waits
+ * where she was last, and when she has a birthday the home spot becomes her new age place.
  */
 export class MapScene extends Scene {
   private readonly sea = new Graphics();
   private readonly island = new Graphics();
-  private readonly trail = new Graphics();
   private readonly glow = new Graphics();
   private readonly map = new Container();
   readonly pip = makePet();
   private readonly title = label('Puddle Island', 42, ink);
-  private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () => this.app.go.stickers());
-  private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => { void voice.say('map.room'); this.app.go.room(); });
+  private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () => this.leave(() => this.app.go.stickers()));
+  private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => this.leave(() => { void voice.say('map.room'); this.app.go.room(); }));
   /** Back to "Who's playing?", for someone else's turn. It changes nothing and removes nothing, so it needs no hold. */
-  private readonly players = new RoundButton(peopleIcon(), swatch.white, 52, () => this.app.go.start());
+  readonly players = new RoundButton(peopleIcon(), swatch.white, 52, () => this.leave(() => this.app.go.start()));
   /** Grown-ups' way in: hold the gear (the iPad has no Esc key, so this is the way in once a child is playing). */
   private readonly gear = gearButton({
     onOpen: () => {
@@ -46,97 +52,112 @@ export class MapScene extends Scene {
     },
     onShort: () => void voice.say('parent.ask'),
   });
-  readonly places: { def: Place; node: Container }[] = [];
-  /** The Windy Picnic, on the open grass beside Daisy Meadow: a story, not an age place. */
+  /** The lands, each with its drawing and, while it holds a game she has not played, a twinkle. */
+  readonly lands: { def: Land; node: Container; sparkle: Sparkle | null }[] = [];
+  /** Her home spot: her age place. */
+  readonly home = new Container();
+  /** The age place the home spot shows (the old one until a birthday's swap). */
+  homeBand: Band;
+  /** The Windy Picnic: a story, open to every age. */
   readonly picnic = new Container();
   private readonly picnicDone = checkBadge(20);
   private leaving = false;
-  private walking = false;
-  /** A grown-up moved her up a band since the last visit: the pet starts at the old place. */
+  walking = false;
+  /** Her band went up since the last visit: the home spot changes, with a party. */
   readonly birthday: boolean;
-  /** The place the pet is standing at. */
-  private petAt: Band;
+  /** Where the pet waits: the last land she was in this session, or home. */
+  petAt: MapSpotId;
   private clock = 0;
 
   constructor(app: App) {
     super(app);
     const { world, profile } = store.data;
-    this.birthday = world.band !== null && rank(profile.band) > rank(world.band);
-    this.petAt = this.birthday ? world.band! : profile.band;
+    this.birthday = world.band !== null && bandRank(profile.band) > bandRank(world.band);
+    this.homeBand = this.birthday ? world.band! : profile.band;
+    this.petAt = this.birthday ? 'home' : (lastLand() ?? 'home');
   }
 
   init() {
     const { world, profile } = store.data;
-    this.map.addChild(this.island, this.trail, this.glow);
+    this.map.addChild(this.island, this.glow);
     this.content.addChild(this.sea, this.map);
-    for (const def of PLACES) {
+    for (const def of LANDS) {
       const node = new Container();
+      const art = landmarkFor(def.id);
+      art.scale.set(LANDMARK_SCALE);
       const name = label(def.name, 21, ink);
-      name.y = 78;
-      // Small print for grown-ups; nothing here needs reading to play.
-      const ages = label(bandInfo(def.band).ages, 14, swatch.white.line, '500');
-      ages.y = 100;
-      node.addChild(new Graphics().ellipse(0, 40, 92, 34).fill(cream), def.landmark(), name, ages);
-      onTap(node, () => void this.visit(def), { radius: 100 });
-      this.places.push({ def, node });
+      name.y = 70;
+      node.addChild(new Graphics().ellipse(0, 34, 84, 28).fill(cream), art, name);
+      let sparkle: Sparkle | null = null;
+      if (anyNew(store.data.games, visibleIn(def, profile.band, GAMES).map((g) => g.id))) {
+        sparkle = this.track(new Sparkle(24));
+        sparkle.position.set(70, -70);
+        node.addChild(sparkle);
+      }
+      onTap(node, () => void this.visit(def), { radius: MAP_RADIUS });
+      this.lands.push({ def, node, sparkle });
       this.map.addChild(node);
     }
+    this.drawHome(this.homeBand);
+    onTap(this.home, () => void this.visitHome(), { radius: MAP_RADIUS });
+    this.map.addChild(this.home);
+
     const name = label('Windy Picnic', 21, ink);
-    name.y = 78;
+    name.y = 70;
     const note = label('a story · 4–8 years', 14, swatch.white.line, '500');
-    note.y = 100;
+    note.y = 90;
     this.picnicDone.position.set(70, -40);
     this.picnicDone.visible = store.picnic.keepsake;
-    this.picnic.addChild(new Graphics().ellipse(0, 40, 92, 34).fill(cream), picnicLandmark(), name, note, this.picnicDone);
-    onTap(this.picnic, () => void this.visitPicnic(), { radius: 100 });
+    const picnicArt = picnicLandmark();
+    picnicArt.scale.set(LANDMARK_SCALE);
+    this.picnic.addChild(new Graphics().ellipse(0, 34, 84, 28).fill(cream), picnicArt, name, note, this.picnicDone);
+    onTap(this.picnic, () => void this.visitPicnic(), { radius: MAP_RADIUS });
     this.map.addChild(this.picnic);
-    if (rank(profile.band) > rank(world.band)) world.band = profile.band;
+
+    if (world.band === null || bandRank(profile.band) > bandRank(world.band)) world.band = profile.band;
     store.save();
-    this.pip.scale.set(0.4);
-    onTap(this.pip, () => { this.pip.hop(); void voice.say('map.pick'); }, { radius: 70 });
+    // The pet only decorates the map: it stands beside a spot, so it must never take a tap meant for one.
+    this.pip.scale.set(0.3);
+    this.pip.eventMode = 'none';
     this.map.addChild(this.track(this.pip));
     this.ui.addChild(this.title, this.book, this.treehouse, this.players);
     document.body.appendChild(this.gear.el);
   }
 
-  private spot(band: Band) {
-    return this.places.find((p) => p.def.band === band)!.node;
+  /** The home spot's drawing: an age place's landmark, its name and a note that it holds all her games. */
+  private drawHome(band: Band) {
+    for (const c of this.home.removeChildren()) c.destroy({ children: true });
+    const place = placeFor(band);
+    const art = place.landmark();
+    art.scale.set(LANDMARK_SCALE);
+    const name = label(place.name, 21, ink);
+    name.y = 70;
+    const note = label('all your games', 14, swatch.white.line, '500');
+    note.y = 90;
+    this.home.addChild(new Graphics().ellipse(0, 34, 84, 28).fill(cream), art, name, note);
+    this.homeBand = band;
   }
 
-  /** Where the pet stands beside a place. */
-  private petSpot(band: Band) {
-    const n = this.spot(band);
-    // Toward the middle of the island, where the switchback leaves room.
-    const side = n.x < this.view.w / 2 ? 1 : -1;
-    return { x: n.x + side * 150, y: n.y + 46 };
+  private spot(id: MapSpotId): Container {
+    if (id === 'home') return this.home;
+    if (id === 'picnic') return this.picnic;
+    return this.lands.find((l) => l.def.id === id)!.node;
+  }
+
+  /** Where the pet stands beside a spot: at the left edge of its drawing, not over it. */
+  private petSpot(id: MapSpotId) {
+    const n = this.spot(id);
+    return { x: n.x - 112, y: n.y + 52 };
   }
 
   resize(v: View) {
     this.sea.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light);
     for (let i = 0; i < 12; i++) this.sea.ellipse((i * 193) % v.w, 140 + ((i * 127) % (v.h - 180)), 40, 6).fill({ color: swatch.white.fill, alpha: 0.5 });
-    this.island.clear().ellipse(v.w / 2, v.h / 2 + 22, v.w * 0.48, v.h * 0.4).fill(cream).ellipse(v.w / 2, v.h / 2 + 10, v.w * 0.455, v.h * 0.375).fill(grass);
-    this.places.forEach(({ def, node }) => node.position.set(130 + def.x * (v.w - 290), 150 + def.y * (v.h - 360)));
-    this.picnic.position.set(130 + 0.97 * (v.w - 290), 150 + 0.98 * (v.h - 360));
-
-    // The trail climbs from the lagoon to the peak through every place.
-    const pts = this.places.map((p) => ({ x: p.node.x, y: p.node.y + 30 }));
-    const t = this.trail.clear().moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) {
-      const a = pts[i - 1];
-      const b = pts[i];
-      t.quadraticCurveTo(b.x, a.y, b.x, b.y);
-    }
-    t.stroke({ width: 26, color: cream, cap: 'round', join: 'round' });
-    for (let i = 1; i < pts.length; i++) {
-      const a = pts[i - 1];
-      const b = pts[i];
-      for (let k = 1; k < 6; k++) {
-        const u = k / 6;
-        const x = (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * b.x + u * u * b.x;
-        const y = (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * a.y + u * u * b.y;
-        t.circle(x, y, 4).fill(swatch.yellow.fill);
-      }
-    }
+    this.island.clear().ellipse(v.w / 2, v.h / 2 + 22, v.w * 0.48, v.h * 0.43).fill(cream).ellipse(v.w / 2, v.h / 2 + 10, v.w * 0.455, v.h * 0.405).fill(grass);
+    const at = mapLayout(v);
+    for (const { def, node } of this.lands) node.position.set(at[def.id].x, at[def.id].y);
+    this.home.position.set(at.home.x, at.home.y);
+    this.picnic.position.set(at.picnic.x, at.picnic.y);
     if (!this.walking) this.pip.position.copyFrom(this.petSpot(this.petAt));
     this.title.position.set(v.w / 2, 50);
     this.book.position.set(v.w - 75, v.h - 70);
@@ -150,7 +171,7 @@ export class MapScene extends Scene {
     else void voice.say('map.pick');
   }
 
-  /** The pet's birthday: confetti, then a walk up the trail to her new place. */
+  /** The pet's birthday: confetti, then the home spot becomes her new age place. */
   private async party() {
     await this.tw.wait(0.7);
     void voice.say('map.birthday');
@@ -158,60 +179,65 @@ export class MapScene extends Scene {
     this.pip.cheer();
     this.particles.burst(this.view.w / 2, this.view.h * 0.55, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 70, speed: [200, 500], gravity: 160 });
     await this.tw.wait(1.2);
-    await this.walk(this.petAt, store.data.profile.band);
+    await this.tw.to(this.home.scale, { x: 0, y: 0 }, { duration: 0.25 });
+    this.drawHome(store.data.profile.band);
+    sfx.sparkle();
+    this.particles.burst(this.home.x, this.home.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 18, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
+    await this.tw.to(this.home.scale, { x: 1, y: 1 }, { duration: 0.35 });
   }
 
-  /** Hops along the trail from one place to another, stopping at each place on the way. */
-  private async walk(from: Band, to: Band) {
-    const step = rank(to) > rank(from) ? 1 : -1;
+  /** The pet hops over to a spot. */
+  private async hopTo(id: MapSpotId) {
+    if (id === this.petAt) return;
+    const p = this.petSpot(id);
     this.walking = true;
-    for (let r = rank(from); r !== rank(to); r += step) {
-      const p = this.petSpot(BANDS[r + step].id);
-      this.pip.hop(1.2);
-      sfx.animal('hop');
-      await this.tw.to(this.pip, { x: p.x, y: p.y }, { duration: 0.55, ease: ease.inOutSine });
-    }
+    this.pip.hop(1.2);
+    sfx.animal('hop');
+    await this.tw.to(this.pip, { x: p.x, y: p.y }, { duration: 0.5 });
     this.walking = false;
-    this.petAt = to;
+    this.petAt = id;
   }
 
-  private async visit(def: Place) {
-    if (this.leaving) return;
-    this.leaving = true;
-    this.ui.eventMode = 'none';
-    this.gear.hide(true);
-    void voice.say(def.line);
-    await this.walk(this.petAt, def.band);
-    const node = this.spot(def.band);
-    sfx.whoosh();
-    this.map.pivot.set(node.x, node.y);
-    this.map.position.set(node.x, node.y);
-    await this.tw.to(this.map.scale, { x: 1.5, y: 1.5 }, { duration: 0.4 });
-    this.app.go.place(def.band);
-  }
-
-  /** The pet hops over, and in we go. The picnic is open to every age, like the places. */
-  private async visitPicnic() {
+  /** Into a spot: the pet hops over, the map zooms in, and `go` opens the scene. */
+  private async enterSpot(id: MapSpotId, line: Parameters<typeof voice.say>[0], go: () => void) {
     if (this.leaving || this.walking) return;
     this.leaving = true;
     this.ui.eventMode = 'none';
     this.gear.hide(true);
-    void voice.say('map.picnic');
-    this.pip.hop(1.2);
+    void voice.say(line);
+    await this.hopTo(id);
+    const node = this.spot(id);
     sfx.whoosh();
-    const n = this.picnic;
-    this.map.pivot.set(n.x, n.y);
-    this.map.position.set(n.x, n.y);
+    this.map.pivot.set(node.x, node.y);
+    this.map.position.set(node.x, node.y);
     await this.tw.to(this.map.scale, { x: 1.5, y: 1.5 }, { duration: 0.4 });
-    this.app.go.picnic();
+    go();
+  }
+
+  private visit(def: Land) {
+    return this.enterSpot(def.id, def.line, () => this.app.go.land(def.id));
+  }
+
+  private visitHome() {
+    return this.enterSpot('home', 'island.home', () => this.app.go.place(store.data.profile.band));
+  }
+
+  /** The picnic is open to every age, like the lands. */
+  private visitPicnic() {
+    return this.enterSpot('picnic', 'map.picnic', () => this.app.go.picnic());
+  }
+
+  private leave(go: () => void) {
+    if (this.leaving) return;
+    this.leaving = true;
+    go();
   }
 
   update(dt: number) {
     super.update(dt);
     this.clock += dt;
-    // A soft glow around her own place.
-    const home = this.spot(store.data.profile.band);
-    this.glow.clear().circle(home.x, home.y + 10, 104 + 6 * Math.sin(this.clock * 2.5)).fill({ color: swatch.yellow.light, alpha: 0.75 });
+    // A soft glow around her home spot.
+    this.glow.clear().circle(this.home.x, this.home.y + 10, 96 + 6 * Math.sin(this.clock * 2.5)).fill({ color: swatch.yellow.light, alpha: 0.75 });
   }
 
   exit() {

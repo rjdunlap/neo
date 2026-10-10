@@ -1,5 +1,5 @@
 import type { Rng } from '../engine/random';
-import { BANDS, type Band } from '../progress/bands';
+import { playBand, type Band } from '../progress/bands';
 import type { PicnicStep } from './world';
 import type { LineId } from './voice-script';
 
@@ -35,13 +35,8 @@ export const stepLine: Record<PicnicStep, { ask: LineId; done: LineId; recap: Li
   invitation: { ask: 'picnic.invitation', done: 'picnic.invitation-done', recap: 'picnic.invitation-recap' },
 };
 
-const rank = (band: Band) => BANDS.findIndex((b) => b.id === band);
-
-/** The band to play a game in: the child's own if the game has it, otherwise the nearest one it supports. */
-export function bandForGame(bands: Band[], child: Band): Band {
-  if (bands.includes(child)) return child;
-  return [...bands].sort((a, b) => Math.abs(rank(a) - rank(child)) - Math.abs(rank(b) - rank(child)) || rank(b) - rank(a))[0];
-}
+/** The band to play a story's game in: the child's own if the game has it, otherwise its nearest (`playBand`). */
+export const bandForGame = playBand;
 
 // The blanket -----------------------------------------------------------------------------------
 

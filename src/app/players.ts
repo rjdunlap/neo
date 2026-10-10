@@ -1,5 +1,6 @@
 import { store } from '../progress/store';
 import { forgetJournalPage } from './scenes/JournalScene';
+import { forgetLands } from './scenes/LandScene';
 import { forgetPlaces } from './scenes/PlaceScene';
 import { forgetSubjects } from './scenes/SubjectPlaceScene';
 import { applySettings } from './settings';
@@ -22,6 +23,7 @@ export async function selectPlayer(id: string): Promise<boolean> {
 export function playerChanged() {
   forgetPlaces();
   forgetSubjects();
+  forgetLands();
   forgetJournalPage();
   applySettings();
 }

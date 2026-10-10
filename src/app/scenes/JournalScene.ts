@@ -178,13 +178,12 @@ export class JournalScene extends Scene {
     if (this.left) return;
     const mod = gameById(this.selected.game);
     if (!mod) return;
-    const profile = store.data.profile.band;
-    const band = mod.bands.includes(profile) ? profile : mod.bands[mod.bands.length - 1];
     this.left = true;
     lastPage = this.page;
     voice.stop();
     void voice.say(mod.titleLine);
-    this.app.go.game(mod.id, band);
+    // At the band nearest hers that the game has, and back here afterwards.
+    this.app.go.game(mod.id, undefined, undefined, false, { journal: true });
   }
 
   private leave() {

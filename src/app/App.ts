@@ -13,6 +13,7 @@ import { TurnPrompt } from '../ui/TurnPrompt';
 import { escapeAction } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
+import type { LandId } from '../content/lands';
 import type { PicnicStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 
@@ -21,6 +22,9 @@ export interface StoryRound {
   step: PicnicStep;
   level: number;
 }
+
+/** Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home. */
+export type Origin = { land: LandId } | { place: Band } | { journal: true };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -31,14 +35,19 @@ export interface Routes {
   couch(play?: boolean | CourseId): void;
   /** "Who's playing?": the front door, and the way back to it from the map. */
   start(): void;
-  /** The island map: the age trail. */
+  /** The island map: the themed lands, her home spot and the picnic. */
   hub(): void;
-  /** One place on the trail, with every game for that age band laid out. */
+  /** A themed land: its host and its games for her age and younger, with a signpost to the bigger kids' ones. */
+  land(id: LandId): void;
+  /** The home spot for an age band: every game for that age and younger along one path. */
   place(band: Band): void;
   /** The new friend's egg; `quick` skips the egg for someone old enough to choose a friend straight away. */
   hatch(quick?: boolean): void;
-  /** Plays a game at the levels for `band` (her own band if omitted), or as a step of the picnic story. */
-  game(id: string, band?: Band, story?: StoryRound, again?: boolean): void;
+  /**
+   * Plays a game at the levels for `band` (her own band if omitted), resolved to a band the game has
+   * (`playBand`), or as a step of the picnic story. `origin` is where home goes afterwards; without one, her home spot.
+   */
+  game(id: string, band?: Band, story?: StoryRound, again?: boolean, origin?: Origin): void;
   /** The Windy Picnic. `from` is the request whose round just finished, so the scene can show what changed. */
   picnic(from?: PicnicStep): void;
   stickers(): void;
