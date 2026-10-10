@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bankSize, duckMove, padValues, PLANS, SLOTS, story } from './logic';
+import { bankSize, duckMove, hidingPuzzle, padValues, PLANS, SLOTS, story } from './logic';
 import { tenStarts } from './logic';
 
 describe('Duck Pond', () => {
@@ -57,6 +57,21 @@ describe('Duck Pond', () => {
         expect(SLOTS.length).toBe(10);
         if (i > 0) expect(a).not.toBe(starts[i - 1]);
       });
+    }
+  });
+
+  it('hiding rounds use totals from 5 to 10, with visible and hidden parts that add to the whole', () => {
+    const plan = PLANS.find((p) => p.mode === 'hide')!;
+    for (let seed = 1; seed <= 1000; seed++) {
+      const puzzle = hidingPuzzle(new Rng(seed), plan);
+      expect(puzzle.total).toBeGreaterThanOrEqual(5);
+      expect(puzzle.total).toBeLessThanOrEqual(10);
+      expect(puzzle.hidden).toBeGreaterThanOrEqual(1);
+      expect(puzzle.hidden).toBeLessThanOrEqual(5);
+      expect(puzzle.visible).toBeGreaterThanOrEqual(1);
+      expect(puzzle.visible + puzzle.hidden).toBe(puzzle.total);
+      const pads = padValues(new Rng(seed + 9000), puzzle.hidden);
+      expect(duckMove(plan, 0, puzzle.total, 0, pads, puzzle.hidden)).toEqual({ pad: pads.indexOf(puzzle.hidden) });
     }
   });
 
