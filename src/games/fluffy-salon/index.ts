@@ -12,8 +12,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { describe, HAIR_COLORS, makeRequests, MAX_LENGTH, MIN_LENGTH, needs, planFor, toolFor, type Look, type Request, type SalonPlan, type Strand, type Tool } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { anchors, describe, HAIR_COLORS, makeRequests, needs, planFor, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -23,55 +23,7 @@ const LEVELS: BandLevels = {
   prek: { min: 3, max: 5 },
 };
 
-const STRANDS = 26;
-const SEG = 12;
-/** How close (in body units) the finger has to come to a strand to work on it. */
-const REACH = 38;
 const PET_SCALE = 1.15;
-
-interface Anchor {
-  x: number;
-  y: number;
-  /** Which way the strand first grows, and which way it falls. */
-  out: number;
-  fall: number;
-}
-
-/** Where strands grow: around the top of the head, fanning out and falling to each side. */
-function anchors(): Anchor[] {
-  return Array.from({ length: STRANDS }, (_, i) => {
-    const t = i / (STRANDS - 1);
-    const a = -Math.PI * (0.95 - 0.9 * t);
-    const x = Math.cos(a) * 118;
-    const y = -122 + Math.sin(a) * 122;
-    const side = x < 0 || (x === 0 && i % 2) ? -1 : 1;
-    // Fall down and slightly outward; on the left, turn the long way round (through "left").
-    const fall = side > 0 ? Math.PI * 0.42 : Math.PI * 0.58 - Math.PI * 2;
-    return { x, y, out: a, fall };
-  });
-}
-
-/** The points along one strand, in body units. */
-function strandPoints(an: Anchor, s: Strand): { x: number; y: number }[] {
-  const n = Math.max(1, Math.ceil(s.length / SEG));
-  const step = s.length / n;
-  const pts = [{ x: an.x, y: an.y }];
-  let x = an.x;
-  let y = an.y;
-  for (let k = 1; k <= n; k++) {
-    const along = k * step;
-    // Short tufts stand up; longer hair bends over and falls. Strands on top rise higher first,
-    // so they fall to the sides instead of over the eyes.
-    const top = 1 - Math.abs(Math.cos(an.out));
-    const bend = Math.min(1, along / (100 + 110 * top));
-    const angle = an.out + (an.fall - an.out) * bend;
-    x += Math.cos(angle) * step;
-    y += Math.sin(angle) * step;
-    const wave = s.curl * 15 * Math.sin(k * 1.7);
-    pts.push({ x: x - Math.sin(angle) * wave, y: y + Math.cos(angle) * wave });
-  }
-  return pts;
-}
 
 function drawHair(g: Graphics, an: Anchor[], strands: Strand[]) {
   g.clear();
@@ -168,6 +120,8 @@ class FluffySalon implements Game {
   /** Free play has no request card, so a tap on the pet's clear face repeats instead. */
   private readonly faceReplay = new Container();
   private pointer: number | null = null;
+  /** Strokes the demonstration has made: free play tours its tools by this count, and each stroke goes the other way from the last. */
+  private sweeps = 0;
   private dirty = true;
   private clock = 0;
   private lastSound = 0;
@@ -285,6 +239,23 @@ class FluffySalon implements Game {
     }
   }
 
+  /**
+   * The ghost finger: in free play a stroke through the fur with each tool in turn, then the mirror; with a request, the tool for what still
+   * needs doing and strokes (each the other way from the last) until it is done, and the mirror only once nothing is left to do.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.finished || this.busy) return null;
+    const move = salonMove({ mode: this.plan.mode, look: this.look ?? null, strands: this.strands, tool: this.tool, strokes: this.sweeps, mirror: this.mirror.visible });
+    if (!move) return null;
+    if (move.do === 'tool') {
+      const button = this.buttons.find((b) => b.tool === move.tool);
+      return button ? { tap: { on: button } } : null;
+    }
+    if (move.do === 'mirror') return { tap: { on: this.mirror }, when: () => (this.finished ? 'cancel' : !this.busy && (!this.look || needs(this.look, this.strands) === null)) };
+    const [start, ...via] = strokePath(this.tool, this.sweeps++ % 2 === 1).map((p) => ({ on: this.hair, x: p.x, y: p.y }));
+    return { trace: start, via, receiver: this.touch, pause: 0.1 };
+  }
+
   destroy() {
     this.touch.removeAllListeners();
   }
@@ -317,33 +288,8 @@ class FluffySalon implements Game {
   /** The finger is in the fur: whichever strands it touches get the current tool. */
   private work1(e: FederatedPointerEvent) {
     const p = this.hair.toLocal(e.global);
-    let touched = 0;
-    this.strands.forEach((s, i) => {
-      const pts = strandPoints(this.an[i], s);
-      const k = pts.findIndex((q) => Math.hypot(q.x - p.x, q.y - p.y) < REACH);
-      if (k < 0) return;
-      touched++;
-      switch (this.tool) {
-        case 'grow':
-          s.length = Math.min(MAX_LENGTH, s.length + 9);
-          break;
-        case 'cut':
-          if (k < pts.length - 1) {
-            const before = s.length;
-            s.length = Math.max(MIN_LENGTH, k * SEG);
-            if (before - s.length > 10) this.snipped(pts[pts.length - 1], s.color);
-          }
-          break;
-        case 'comb':
-          s.curl = Math.max(0, s.curl - 0.06);
-          break;
-        case 'curl':
-          s.curl = Math.min(1, s.curl + 0.06);
-          break;
-        default:
-          s.color = this.tool;
-      }
-    });
+    const { touched, snipped } = touchStrands(this.tool, this.strands, this.an, p);
+    for (const s of snipped) this.snipped(s.tip, s.color);
     if (!touched) return;
     this.dirty = true;
     this.work += touched;
@@ -507,6 +453,7 @@ export const fluffySalon: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  touchDemo: true,
   coplayHint: 'Be the customer! Ask {name} for "long and pink, please!" and say how you like it.',
   offScreen: 'Play hair salon with a doll or stuffed animal: brushing, ribbons, and a mirror.',
   hubIcon: () => new SalonIcon(),
