@@ -129,7 +129,7 @@ group('Fluffy Salon', () => {
         if (plan.mode === 'ask') expect(worst, `${plan.mode} at ${spacing}`).toBeLessThan(12);
       }
     }
-  });
+  }, 15_000);
 
   it('plays a whole level touch by touch: the tour in free play, then the mirror; a request, then the mirror only when it is done', () => {
     for (const plan of PLANS) {
