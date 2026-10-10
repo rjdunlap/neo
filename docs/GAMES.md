@@ -144,7 +144,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Teddy Doctor
 
-*lap–school · after Toca Doctor and Dr. Panda.* Soft-toy patients (bear, cat, dog, bunny, pig) visit a little clinic; tools are reusable and dragged onto the body. Levels: tap boo-boos for bandages, bandage the part the patient names (open to lap play as a naming game: "on my ear"), choose what helps a symptom you can see (ice for a bump, a tissue for sniffles, a warm bottle for a tummy ache, socks for cold feet), then the same from a spoken clue alone, where the tool must also land on the right body part, and check-ups (heart, temperature, ears) in the order on a picture card or in the order the patient says. Where a tool lands is judged by the nearest body part, and a tap on boo-boos goes to the nearest one.
+*lap–school · after Toca Doctor and Dr. Panda.* Soft-toy patients (bear, cat, dog, bunny, pig) visit a little clinic; tools are reusable and dragged onto the body. Levels: tap boo-boos for bandages, bandage the part the patient names (open to lap play as a naming game: "on my ear"), choose what helps a symptom you can see (ice for a bump, a tissue for sniffles, a warm bottle for a tummy ache, socks for cold feet), then the same from a spoken clue alone, where the tool must also land on the right body part, and check-ups (heart, temperature, ears) in the order on a picture card or in the order the patient says. Where a tool lands is judged by the nearest body part (the body is mirrored, so either foot or ear counts), and a tap on boo-boos goes to the nearest one. A boo-boo or bandage always sits mid-belly, on the head or an ear, or on a foot, never low in the gap between the feet (a rule test checks it).
 
 ### Market Stall
 

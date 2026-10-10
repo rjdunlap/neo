@@ -56,7 +56,11 @@ export const CURE: Record<Ailment, { tool: Cure; part: Part | null }> = {
 export const CHECKS: Check[] = ['stethoscope', 'thermometer', 'flashlight'];
 export const CHECK_PART: Record<Check, Part> = { stethoscope: 'tummy', thermometer: 'mouth', flashlight: 'ear' };
 
-/** Body spots in the critter's own units (feet at 0, about 250 tall). Ears differ by kind. */
+/**
+ * Body spots in the critter's own units (feet at 0, about 250 tall). Ears differ by kind. A boo-boo or bandage is drawn
+ * here, so it must sit on the body where a child expects it: the tummy in the middle of the belly and the feet on a foot
+ * (the right one), never in the gap between the feet.
+ */
 export function partSpot(patient: Patient, part: Part): { x: number; y: number } {
   switch (part) {
     case 'head':
@@ -68,19 +72,23 @@ export function partSpot(patient: Patient, part: Part): { x: number; y: number }
     case 'mouth':
       return { x: 0, y: patient === 'pig' ? -70 : -86 };
     case 'tummy':
-      return { x: 0, y: -50 };
+      // The pig's mouth sits lower than the others', so its tummy stays a little under it.
+      return { x: 0, y: patient === 'pig' ? -50 : -62 };
     case 'feet':
-      return { x: 0, y: -6 };
+      return { x: 40, y: -4 };
   }
 }
 
-/** The part nearest a drop, among the given parts (spots in the critter's own units). */
+/**
+ * The part nearest a drop, among the given parts (spots in the critter's own units). The body is mirrored, so the left
+ * foot and the left ear count as much as the right ones the spots are drawn on.
+ */
 export function nearestPart(patient: Patient, x: number, y: number, parts: readonly Part[] = AIM_PARTS): Part {
   let best = parts[0];
   let bestD = Infinity;
   for (const part of parts) {
     const s = partSpot(patient, part);
-    const d = Math.hypot(s.x - x, s.y - y);
+    const d = Math.min(Math.hypot(s.x - x, s.y - y), Math.hypot(-s.x - x, s.y - y));
     if (d < bestD) [best, bestD] = [part, d];
   }
   return best;
