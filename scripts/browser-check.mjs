@@ -2362,11 +2362,23 @@ async function woodsBatch() {
   };
   const counts = () => page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]);
 
-  if (!only || only === 'light') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'light') for (let level = fromLevel; level <= 7; level++) {
     await launch('light-lab', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, puzzles: neo.scene.game.plan.puzzles }));
     for (let n = 0; n < plan.puzzles; n++) {
       await idle(n);
+      if (plan.mode === 'predict' && n < 3) {
+        if (n === 0) { await page.waitForTimeout(300); await screenshot('light-lab-7-predict'); }
+        await page.evaluate(async (wrong) => {
+          const L = await import('/src/games/light-lab/logic.ts'); const g = neo.scene.game;
+          const choices = L.predictionChoices(g.puzzle, g.tilts);
+          if (choices.length < 3 || !g.predictionMarks.has(choices[0].key)) throw new Error('Three prediction targets are shown');
+          kit.tapOn(g.predictionMarks.get(choices[wrong ? 1 : 0].key));
+        }, n === 0);
+        await page.waitForFunction((n) => neo.scene.finished || neo.scene.game.index > n, n, { timeout: 20000 });
+        assert.deepEqual(await counts(), [0, 0], 'beam predictions are experiments, not misses or hints');
+        continue;
+      }
       if (plan.mode === 'plan' && n === 0) {
         // Shining before planning: two gentle misses that show where the light went, then a glowing mirror.
         for (let k = 0; k < 2; k++) { await tap('neo.scene.game.sun'); await page.waitForTimeout(300); await idle(0); }
@@ -2381,12 +2393,13 @@ async function woodsBatch() {
         if (m < 0) break;
         await tap(`neo.scene.game.mirrors.get(${m})`);
       }
-      if (plan.mode === 'plan') await tap('neo.scene.game.sun');
+      if (plan.mode === 'plan' || (plan.mode === 'predict' && n >= 3)) await tap('neo.scene.game.sun');
       if (level === 5 && n === 0) { await page.waitForTimeout(600); await screenshot('light-lab-5'); }
     }
     await finished('light-lab');
     assert.deepEqual(await score('light-lab'), plan.mode === 'plan' ? [2, 1] : [0, 0]);
-    log(`Light Lab ${level}: mirrors turned like a finger, ${plan.mode === 'plan' ? 'missed shines explained, hint glow, ' : 'live beam, '}saved score and sticker passed`);
+    const play = plan.mode === 'predict' ? 'three unscored predictions and a final plan, ' : plan.mode === 'plan' ? 'missed shines explained, hint glow, ' : 'live beam, ';
+    log(`Light Lab ${level}: mirrors turned like a finger, ${play}saved score and sticker passed`);
   }
 
   if (!only || only === 'penguin') for (let level = fromLevel; level <= 6; level++) {
