@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * pet back on a big spring and let go. Farther pull, farther flight. Every landing is soft;
  * the ladder asks for a particular landing spot.
  */
-export type LaunchMode = 'tap' | 'free' | 'star' | 'number' | 'compare';
+export type LaunchMode = 'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict';
 
 export interface LaunchPlan {
   mode: LaunchMode;
@@ -20,6 +20,7 @@ export const PLANS: LaunchPlan[] = [
   { mode: 'star', shots: 3, name: 'Land on the cloud with the star' },
   { mode: 'number', shots: 3, name: 'Land on a numbered cloud: "land on 3"' },
   { mode: 'compare', shots: 4, name: 'Farther or not as far as last time' },
+  { mode: 'predict', shots: 4, name: 'Watch a shown pull and predict which cloud the pet will reach' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -72,7 +73,8 @@ export type Verdict = 'yes' | 'short' | 'long';
 
 /** Did a landing meet the ask? `last` is the previous landing for compare levels; `width` is how forgiving the clouds are. */
 export function judge(plan: LaunchPlan, f: number, target: number, ask?: 'farther' | 'nearer', last?: number, width = 0.85): Verdict {
-  if (plan.mode === 'tap' || plan.mode === 'free') return 'yes';
+  // A prediction is an observation, rather than an accuracy test: every chosen answer gets to see its result.
+  if (plan.mode === 'tap' || plan.mode === 'free' || plan.mode === 'predict') return 'yes';
   if (plan.mode === 'compare') {
     if (last === undefined) return 'yes';
     if (ask === 'farther') return f > last + 0.04 ? 'yes' : 'short';
@@ -103,5 +105,8 @@ export function pullToTake(plan: LaunchPlan, shot: number, targets: readonly num
       if (last === undefined) return pullFor(0.5);
       return pullFor(nextAsk(last) === 'farther' ? last + 0.3 : last - 0.3);
     }
+    case 'predict':
+      // The child does not pull at this level; this is the fixed pull shown on screen.
+      return pullFor(padAt(targets[shot]));
   }
 }

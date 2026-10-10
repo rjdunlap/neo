@@ -1155,7 +1155,7 @@ async function arcade() {
       await kit.until(() => !g.flying, 10000);
     };
   });
-  for (let level = 1; level <= 5 && (!only || only === 'launch'); level++) {
+  for (let level = 1; level <= 6 && (!only || only === 'launch'); level++) {
     await launch('bouncy-launch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -1164,6 +1164,14 @@ async function arcade() {
       const { padAt } = await import('/src/games/bouncy-launch/logic.ts');
       if (g.plan.mode === 'tap') {
         for (let i = 0; i < g.plan.shots; i++) { await kit.until(() => !g.flying, 10000); kit.tapOn(g.pet, 0, -60); await kit.until(() => g.flying, 2000); }
+        return;
+      }
+      if (g.plan.mode === 'predict') {
+        while (!g.finished) {
+          await kit.until(() => !g.flying, 10000);
+          kit.tapOn(g.pads[g.targets[g.shot]]);
+          await kit.until(() => g.flying, 4000);
+        }
         return;
       }
       if (g.plan.mode === 'free') { for (const f of [0.2, 0.9, 0.5, 0.7]) await fling(f); return; }
@@ -1188,7 +1196,7 @@ async function arcade() {
     await screenshot(`bouncy-launch-${level}`);
     await finished('bouncy-launch');
     const r = await page.evaluate(() => { const r = kit.store.stats('bouncy-launch').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, { tap: [0, 0], free: [0, 0], star: [2, 1], number: [2, 1], compare: [1, 0] }[mode], `launch ${level} score`);
+    assert.deepEqual(r, { tap: [0, 0], free: [0, 0], star: [2, 1], number: [2, 1], compare: [1, 0], predict: [0, 0] }[mode], `launch ${level} score`);
     log(`Bouncy Launch ${level} (${mode}): pulls, flights, landings, saved score and sticker passed`);
   }
 }
