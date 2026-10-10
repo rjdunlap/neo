@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { candidates, ignoredClues, makeCode, nextMove, PLANS, ruledOut, score, suggestion, type Guess } from './logic';
+import { contradictsClues, detectiveDoor, candidates, ignoredClues, makeCode, nextMove, PLANS, ruledOut, score, suggestion, type Guess } from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -83,6 +83,29 @@ describe('Secret Code', () => {
           guess = Array(plan.slots).fill(null);
         }
         expect(history.at(-1)?.marks.every((m) => m === 'green'), `${plan.name} seed ${seed}`).toBe(true);
+      }
+    }
+  });
+});
+
+describe('Detective doors', () => {
+  it('shows two or three distinct non-answer guesses identifying exactly one code, reproducibly', () => {
+    const plan = PLANS[6];
+    for (let seed = 1; seed <= 500; seed++) {
+      const door = detectiveDoor(plan, new Rng(seed));
+      expect(door).toEqual(detectiveDoor(plan, new Rng(seed)));
+      expect(door.history.length).toBeGreaterThanOrEqual(2);
+      expect(door.history.length).toBeLessThanOrEqual(3);
+      expect(new Set(door.history.map((h) => h.stones.join())).size).toBe(door.history.length);
+      for (const h of door.history) {
+        expect(h.marks).toEqual(score(door.code, h.stones, plan.yellow));
+        expect(h.stones).not.toEqual(door.code);
+      }
+      expect(candidates(plan, door.history)).toEqual([door.code]);
+      expect(suggestion(plan, door.history, door.code)).toEqual(door.code);
+      expect(contradictsClues(plan, door.history, door.code)).toBe(false);
+      for (const other of candidates(plan, [])) if (other.join() !== door.code.join()) {
+        expect(contradictsClues(plan, door.history, other)).toBe(true);
       }
     }
   });
