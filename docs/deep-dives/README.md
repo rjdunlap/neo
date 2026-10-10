@@ -97,7 +97,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Photo Safari | `photo-safari` | LTPKS | 6 | 4 | not started | — | — |
 | Picture Graph | `picture-graph` | KS | 6 | 4 | not started | — | — |
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |
-| Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | not started | — | — |
+| Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | in progress | `claude/zealous-franklin-64zmgc` | — |
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |
 | Rainbow Fingers | `rainbow-fingers` | LTPKS | 6 | 2 | not started | — | — |
 | Ramp Race | `ramp-race` | KS | 4 | 4 | not started | — | — |
