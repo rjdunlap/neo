@@ -776,6 +776,7 @@ export const SCRIPT = {
   'slide.go': ['Tap the ice where the penguin should slide. It only stops when it bumps into something!'],
   'slide.two': ['Two fish this time! Slide past both of them.'],
   'slide.soft': ['Soft snow stops the penguin. Use it to stop in just the right place!'],
+  'slide.ice': ['An ice block! Slide into it to push it. It skates until it bumps into something, so you can park it in just the right place!'],
   'slide.stuck': ['Oh no, the penguin cannot reach the fish from here. Tap the round arrow to go back.'],
   'slide.hint': ['Follow the yellow arrow.'],
   'slide.yum': ['Yum!', 'A fish!', 'Gulp!'],
