@@ -614,11 +614,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 3, text: 'Tap coins onto the counter to add up the price, then ring the bell.' },
       { from: 4, to: 4, text: 'Add the two prices, tap coins onto the counter to pay for both, then ring the bell.' },
       { from: 5, to: 5, text: 'Pay the price and ring the bell, then buy another one at the same price and pay a different way with other coins, ringing the bell again.' },
-      { from: 6, text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.' },
+      { from: 6, to: 6, text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.' },
+      { from: 7, text: 'Tap coins onto the counter to pay the price with as few shells as you can, then ring the bell; tap a coin on the mat to put it back and swap it.' },
     ],
     finish: [
       { to: 5, text: 'The round ends when the right amount has been paid.' },
-      { from: 6, text: 'The round ends when the right change has been given.' },
+      { from: 6, to: 6, text: 'The round ends when the right change has been given.' },
+      { from: 7, text: 'The round ends when the price has been paid with the fewest shells.' },
     ],
   },
   'garden-grow': {

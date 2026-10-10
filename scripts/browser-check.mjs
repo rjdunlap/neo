@@ -2555,7 +2555,7 @@ async function woodsBatch() {
     log(`Frog Hop ${level} (${mode}): pads and cards tapped, wrong answers, counted demonstration and glow, saved score and sticker passed`);
   }
 
-  if (!only || only === 'shop') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'shop') for (let level = fromLevel; level <= 7; level++) {
     await launch('market-stall', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, orders: neo.scene.game.orders.length }));
     const ring = async () => { await tap('neo.scene.game.bell'); await page.waitForTimeout(300); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); };
@@ -2568,13 +2568,25 @@ async function woodsBatch() {
     for (let n = 0; n < plan.orders; n++) {
       await idle(n);
       const want = await wanted();
-      if (n === 0) {
-        await putDown(Array(want + 1).fill(1)); await ring(); await ring();
-        assert.deepEqual(await counts(), [2, 1]);
-        if (level === 6) await screenshot('market-stall-6');
-      }
       const first = await page.evaluate(async (want) => { const S = await import('/src/games/market-stall/logic.ts'); return S.fewest(want, neo.scene.game.plan.coins); }, want);
-      await putDown(first); await ring();
+      if (n === 0) {
+        if (plan.mode === 'fewest') {
+          await putDown(Array(want).fill(1)); await ring();
+          assert.deepEqual(await counts(), [0, 0]);
+          await ring();
+          assert.deepEqual(await counts(), [1, 0]);
+          await ring();
+          assert.deepEqual(await counts(), [2, 1]);
+          await putDown(first); await ring();
+          if (level === 7) await screenshot('market-stall-7');
+        } else {
+          await putDown(Array(want + 1).fill(1)); await ring(); await ring();
+          assert.deepEqual(await counts(), [2, 1]);
+          if (level === 6) await screenshot('market-stall-6');
+        }
+      }
+      // The first fewest-mode order was already paid after its supported retry.
+      if (!(plan.mode === 'fewest' && n === 0)) await putDown(first), await ring();
       if (plan.mode === 'ways') {
         const second = await page.evaluate(async ({ want, first }) => { const S = await import('/src/games/market-stall/logic.ts'); return S.anotherWay(want, neo.scene.game.plan.coins, first); }, { want, first });
         await putDown(second); await ring();

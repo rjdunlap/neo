@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target } from './logic';
+import { anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
 
 describe('Market Stall', () => {
   it('asks for amounts from 1 to 10 that the level\'s coins can make, never the same twice running', () => {
@@ -32,6 +32,15 @@ describe('Market Stall', () => {
         expect(sum(second)).toBe(amount);
         expect(sameWay(second, first)).toBe(false);
       }
+    }
+  });
+
+  it('makes every fewest-coins price with a minimum-size payment, while a longer exact payment is not enough', () => {
+    const plan = PLANS.find((entry) => entry.mode === 'fewest')!;
+    for (let amount = plan.price[0]; amount <= plan.price[1]; amount++) {
+      const payment = fewest(amount, plan.coins);
+      expect(usesFewestCoins(amount, plan.coins, payment)).toBe(true);
+      expect(usesFewestCoins(amount, plan.coins, Array(amount).fill(1))).toBe(false);
     }
   });
 

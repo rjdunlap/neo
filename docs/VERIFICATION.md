@@ -38,7 +38,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot |
 | `couchconga` | 2026-10-08 | Pond Conga entry | About two minutes; plays a full four-pond course with the bot |
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
-| `woods` | `mailmap` 2026-10-09 after Hazel's drawing moved to `src/art/lands.ts`; 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
+| `woods` | `mailmap` 2026-10-09 after Hazel's drawing moved to `src/art/lands.ts`; 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `shop` (Market Stall level 7, an extra-shell payment, nudge, hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
 | Critter Sort 5 | 2026-10-10: rule tests, `WOODS_ONLY=sort FROM_LEVEL=5` (two wrong drops, hint and completion), and `FINGER_ONLY=critter-sort FINGER_LEVELS=5` clean | Critter Sort 5 entry | Portrait screenshot reviewed; iPad remains untested |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen fractions entry, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
@@ -62,6 +62,15 @@ What changed: the island map became ten themed lands plus the person's home spot
 - `npm run test:offline` passed against a fresh production preview (the served `index-*.js` matched `dist/index.html`): chooser, map, home spot, Monster Munch, the picnic from its new map spot, the treehouse and journal.
 - Screenshots of the map (landscape, portrait, after a birthday), a sparse land with its signpost, the fullest land (Cozy Village at school) and a suggestion were reviewed; three land drawings were redrawn afterwards because they looked like age places (Music Mountain, Puzzle Peaks, Story Grove), checked by screenshot only.
 - Not run: `howto`, `smoke`, `fingerdemo` and the couch suites (no game or couch code changed beyond Hazel's move). An iPad, a phone and a child are open in the roadmap.
+
+### Market Stall: fewest shell coins (2026-10-10)
+
+What changed: Market Stall's school range now reaches level 7. Prices from 4 to 10 still accept any exact payment at first, but an extra-shell payment stays on the mat with a spoken swap prompt; repeating that nudge is the first miss, and the usual second miss shows a minimum-coin hint. The ghost finger, hint and validator use the same minimum payment rule.
+
+- `npm run typecheck`, `src/games/market-stall/logic.test.ts` (4 tests), and `src/content/howto.test.ts` (15 tests) passed: all generated orders stay payable and non-repeating, every price from 4 through 10 has a minimum-size payment, longer exact all-one payments are rejected by the level-7 rule, the bot's payment is always accepted, and the card remains level-scoped.
+- `GAME_URL=http://127.0.0.1:5177 BROWSER_SUITE=woods WOODS_ONLY=shop FROM_LEVEL=7 npm run test:browser` passed: an exact inefficient payment received one free nudge, repeats recorded two misses and a hint, then each of the three orders finished; the level-7 portrait screenshot was reviewed.
+- `GAME_URL=http://127.0.0.1:5177 BROWSER_SUITE=fingerdemo FINGER_ONLY=market-stall FINGER_LEVELS=7 npm run test:browser` passed cleanly.
+- Not run: build, offline, navigation and earlier-level browser suites; this is a game-only ladder extension. iPad touch and device speech remain open.
 
 ### Rainbow Fingers: pumpkin recall and mixing (2026-10-10)
 

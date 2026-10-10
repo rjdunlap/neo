@@ -37,7 +37,7 @@ Most sessions should build from this list; checks that need a person or a device
 
 | # | Chunk | Status | One session's next slice | Check tier | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Deepen short ladders** with a real next decision | ready | Build Market Stall 7, fewest coins | New levels on an existing interaction | [Below](#short-ladders-in-order) |
+| 2 | **Deepen short ladders** with a real next decision | ready | Build Clock Tower 7, five-minute times | New levels on an existing interaction | [Below](#short-ladders-in-order) |
 | 13 | **More to play in every band** (the developer's direction, 2026-10-10: more quantity across age bands) | ready | Content first: give each Tangram Town level three or four silhouettes, since each level draws one fixed picture today. Then Story Steps' stories go from four to ten | Content: typecheck, that game's rule tests and one screenshot of the new art. Younger-band openings: unit and registry tests. New levels: the "new levels" tier | [Below](#more-to-play-in-every-band) |
 | 14 | **Game deep dives**: one session per game, researching similar games and expanding its whole ladder (the developer's decision, 2026-10-10) | ready | Deep dive the first **not started** game in the tracker's lowest wave, starting with Tangram Town, then build its cheapest slice if time allows | Docs only for the write-up; whatever it builds at its own tier | [Deep-dive tracker](deep-dives/README.md) |
 | 3 | **Lands: navigation and discovery**, the island as themed lands (stage A built 2026-10-09) with the couch puzzles brought onto it, ending with couch play retired | define (stage B) | Write stage B's definition of ready: the `grownup` band and its home spot, Lantern Lake, the six puzzles in `GAMES`, `GameModule.inputs`, and touch for Lantern Lights; then build it | Docs only; then the shell and navigation tier | [Lands](#lands-navigation-and-discovery) |
@@ -60,7 +60,7 @@ Most sessions should build from this list; checks that need a person or a device
 
 **Then, from the [second ladder round](IDEAS.md#round-two-the-longer-ladders-2026-10-10) (2026-10-10, proposals).** That round covers the longer school ladders the audit skipped. Each item is one level appended above the game's current top, and the detail page says what its rule tests assert.
 
-7. **Market Stall 7, Fewest coins**: pay with as few shells as possible.
+7. **Market Stall 7, Fewest coins** — **built 2026-10-10**: pay prices from 4 to 10 with as few 1-, 2- and 5-shell coins as possible. An exact longer payment stays on the mat for a swap; only repeating that nudge is a miss.
 8. **Clock Tower 7, Five-minute times**: count by fives around the face to set 3:25. First check that twelve snap marks stay 100 units apart.
 9. **Frog Hop 7, Hop to ten first**: split a sum that crosses ten at 10 (8 + 2 + 3).
 10. **Seesaw Balance 10, Two steps**: take the same off both sides, then share what is left between two boxes.

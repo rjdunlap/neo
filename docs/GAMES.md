@@ -148,7 +148,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Market Stall
 
-*preschool–school · after Neopets shops and pretend shops.* Tap shell coins worth 1, 2 and 5 onto the mat; tap one on the mat to take it back (the nearest coin to the finger); ring the bell. Price tags show the numeral and dots. Running totals are said aloud except where adding up is the puzzle (two items, giving change). Later levels pay two prices together, pay the same price a second, different way, and give change from a customer's 10. Too much or too little is a miss with a spoken comparison; two bring faint coins showing one way.
+*preschool–school · after Neopets shops and pretend shops.* Tap shell coins worth 1, 2 and 5 onto the mat; tap one on the mat to take it back (the nearest coin to the finger); ring the bell. Price tags show the numeral and dots. Running totals are said aloud except where adding up is the puzzle (two items, giving change). Later levels pay two prices together, pay the same price a second, different way, give change from a customer's 10, then pay prices from 4 to 10 with the fewest shells. An exact but longer payment at that last step stays on the mat with an invitation to swap; repeating the invitation counts as a miss. Too much or too little is a miss with a spoken comparison; two bring faint coins showing one way.
 
 ### Lemonade Stand
 

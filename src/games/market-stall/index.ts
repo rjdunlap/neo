@@ -14,12 +14,12 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, type Order, type ShopPlan } from './logic';
+import { anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 
 const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
@@ -89,6 +89,8 @@ class MarketStall implements Game {
   private readonly ghost = new Container();
   private view: View;
   private wrongs = 0;
+  /** Exact but inefficient payments heard at the bell this order. The second is a supported miss. */
+  private fewestOffers = 0;
   private hinted = false;
   private names: string[] = [];
 
@@ -193,6 +195,7 @@ class MarketStall implements Game {
     this.index++;
     this.wrongs = 0;
     this.hinted = false;
+    this.fewestOffers = 0;
     this.firstWay = null;
     this.clearGhost();
     if (this.index >= this.orders.length) return void this.finale();
@@ -221,6 +224,7 @@ class MarketStall implements Game {
     const n = o.prices[0];
     if (this.plan.mode === 'pair') return this.ctx.instruct('shop.pair', { a: this.names[0], n, b: this.names[1], m: o.prices[1] });
     if (this.plan.mode === 'change') return this.ctx.instruct('shop.change', { fruit: this.names[0], n });
+    if (this.plan.mode === 'fewest') return this.ctx.instruct('shop.fewest', { fruit: this.names[0], n });
     return this.ctx.instruct('shop.pay', { fruit: this.names[0], n });
   }
 
@@ -280,6 +284,15 @@ class MarketStall implements Game {
       await this.wrong(got < want ? (change ? 'shop.change.short' : 'shop.short') : change ? 'shop.change.over' : 'shop.over', { n });
       return;
     }
+    if (this.plan.mode === 'fewest' && !usesFewestCoins(want, this.plan.coins, coins)) {
+      this.fewestOffers++;
+      if (this.fewestOffers >= 2) await this.wrong('shop.fewer', { n: want });
+      else {
+        await this.ctx.say('shop.fewer', { n: want });
+        this.busy = false;
+      }
+      return;
+    }
     // Paid: the coins slide over the counter.
     sfx.bell(7, 0.3);
     sfx.bell(9, 0.3);
@@ -302,7 +315,7 @@ class MarketStall implements Game {
     await this.next();
   }
 
-  private async wrong(line: 'shop.short' | 'shop.over' | 'shop.change.short' | 'shop.change.over' | 'shop.sameway', vars: { n?: number }) {
+  private async wrong(line: 'shop.short' | 'shop.over' | 'shop.change.short' | 'shop.change.over' | 'shop.sameway' | 'shop.fewer', vars: { n?: number }) {
     this.misses++;
     this.wrongs++;
     sfx.boing();

@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * then ring the bell. Later: add two prices, pay the same price a second, different way, and
  * finally keep the stall: a customer pays with a 10 and the child gives the change.
  */
-export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change';
+export type ShopMode = 'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest';
 
 export interface ShopPlan {
   mode: ShopMode;
@@ -23,6 +23,7 @@ export const PLANS: ShopPlan[] = [
   { mode: 'pair', coins: [1, 2, 5], price: [1, 5], orders: 3, name: 'Two things to buy: add the prices, then pay' },
   { mode: 'ways', coins: [1, 2, 5], price: [4, 10], orders: 3, name: 'Pay the same price two different ways' },
   { mode: 'change', coins: [1, 2, 5], price: [2, 9], orders: 3, name: 'Keep the stall: a customer pays 10, give the change' },
+  { mode: 'fewest', coins: [1, 2, 5], price: [4, 10], orders: 3, name: 'Pay 4 to 10 with as few shell coins as possible' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -65,6 +66,9 @@ export function fewest(amount: number, coins: number[]): number[] {
   for (const c of [...coins].sort((a, b) => b - a)) while (left >= c) out.push(c), (left -= c);
   return out;
 }
+
+/** An exact payment is efficient when it uses no more coins than the best available payment. */
+export const usesFewestCoins = (amount: number, coins: number[], payment: number[]) => sum(payment) === amount && payment.length === fewest(amount, coins).length;
 
 /** Two payments count as different ways if they use different coins, not just a different order. */
 export const sameWay = (a: number[], b: number[]) => [...a].sort().join() === [...b].sort().join();
