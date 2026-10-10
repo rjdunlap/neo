@@ -1,4 +1,4 @@
-import type { ColorName } from '../../art/palette';
+import { RAINBOW, type ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 
 export type Primary = 'red' | 'yellow' | 'blue';
@@ -91,4 +91,89 @@ export class Coverage {
   get covered(): number {
     return 1 - this.points.length / this.total;
   }
+}
+
+/** The paper's margin, and the brush: stamps are `BRUSH_RADIUS` wide, `SPACING` apart along a stroke, and every second one dabs a picture. */
+export const MARGIN = 18;
+export const BRUSH_RADIUS = 24;
+export const SPACING = 5;
+/** A picture counts as painted when this much of it is covered; then it fills in neatly. */
+export const PAINTED = 0.7;
+
+export interface PaintState {
+  mode: PaintMode;
+  /** Strokes finished so far: the free levels show the hang-it-up button after five. */
+  strokes: number;
+  /** The picked color (null: rainbow, or none yet), and what has been poured into the bowl. */
+  brush: ColorName | null;
+  poured: Primary[];
+  /** The color of the picture being asked for, or null when there is none (the free levels, or every picture done). */
+  picture: ColorName | null;
+  /** The hang-it-up button is showing. */
+  frame: boolean;
+}
+
+export type PaintMove = { do: 'pot'; pot: ColorName } | { do: 'bowl' } | { do: 'stroke' } | { do: 'frame' };
+
+/**
+ * What a capable child does next. Free painting: five strokes, then the frame. Pots: a different color for each of five strokes.
+ * A picture: pick the pot of its color (or pour the two primaries that make it), then fill it; and when every picture is painted, the
+ * frame. It never paints with a color that is not the picture's, which is the one wrong move.
+ */
+export function paintStep(s: PaintState): PaintMove | null {
+  if (s.frame) return { do: 'frame' };
+  if (s.mode === 'free') return { do: 'stroke' };
+  if (s.mode === 'pots') {
+    const want = RAINBOW[s.strokes % RAINBOW.length];
+    return s.brush === want ? { do: 'stroke' } : { do: 'pot', pot: want };
+  }
+  if (!s.picture) return null;
+  if (s.brush === s.picture) return { do: 'stroke' };
+  if (s.mode !== 'mix') return { do: 'pot', pot: s.picture };
+  const [a, b] = RECIPES[s.picture]!;
+  // One primary is in the bowl: add the other. Anything else in a half-full bowl is emptied first (a third pour would also start over).
+  if (s.poured.length === 1) return s.poured[0] === a ? { do: 'pot', pot: b } : s.poured[0] === b ? { do: 'pot', pot: a } : { do: 'bowl' };
+  return { do: 'pot', pot: a };
+}
+
+export interface Pt {
+  x: number;
+  y: number;
+}
+
+/** The part of the paper free strokes stay in: clear of the home button, the pet, the pots below and the frame button above right. */
+export const scribbleArea = (w: number, h: number) => ({ x: 150, y: 140, w: Math.max(200, w - 150 - 130), h: Math.max(120, h - 140 - 180) });
+
+/** A wavy band across the paper for the i-th free stroke, long enough to count as a stroke (over 40 units), the bands one above the other. */
+export function scribble(i: number, area: { x: number; y: number; w: number; h: number }): Pt[] {
+  const row = i % 5;
+  const y = area.y + ((row + 0.5) * area.h) / 5;
+  const amp = Math.min(30, area.h / 12);
+  const forward = row % 2 === 0;
+  return Array.from({ length: 7 }, (_, k) => {
+    const t = forward ? k / 6 : 1 - k / 6;
+    return { x: area.x + area.w * (0.1 + 0.8 * t), y: y + (k % 2 ? amp : -amp) };
+  });
+}
+
+/**
+ * A zig-zag, in a picture's own units, that paints at least `PAINTED` of it: horizontal rows across the union of its circles, a
+ * little over one brush reach apart (the brush reaches `BRUSH_RADIUS + 6` paper units, `1 / scale` times that in picture units),
+ * each pulled in a few units from the edge so every dab lands on the picture.
+ */
+export function fillPath(circles: Circle[], scale: number): Pt[] {
+  const reach = (BRUSH_RADIUS + 6) / scale;
+  const y0 = Math.min(...circles.map(([, y, r]) => y - r));
+  const y1 = Math.max(...circles.map(([, y, r]) => y + r));
+  const rows = Math.max(2, Math.ceil((y1 - y0) / (reach * 1.1)));
+  const path: Pt[] = [];
+  for (let k = 0; k < rows; k++) {
+    const y = y0 + ((k + 0.5) * (y1 - y0)) / rows;
+    const spans = circles.filter(([, cy, r]) => Math.abs(y - cy) < r - 4).map(([cx, cy, r]) => [cx - Math.sqrt(r * r - (y - cy) ** 2), cx + Math.sqrt(r * r - (y - cy) ** 2)]);
+    if (!spans.length) continue;
+    const x0 = Math.min(...spans.map((q) => q[0])) + 4;
+    const x1 = Math.max(...spans.map((q) => q[1])) - 4;
+    path.push(...(k % 2 ? [{ x: x1, y }, { x: x0, y }] : [{ x: x0, y }, { x: x1, y }]));
+  }
+  return path;
 }
