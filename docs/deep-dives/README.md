@@ -53,7 +53,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Block Tower | `block-tower` | LTPKS | 6 | 4 | not started | — | — |
 | Bounce Back | `bounce-back` | LTPK | 5 | 4 | not started | — | — |
 | Bouncy Launch | `bouncy-launch` | LTPKS | 6 | 4 | not started | — | — |
-| Bubble Pop | `bubble-pop` | LTPKS | 11 | 2 | in progress | `claude/adoring-albattani-euqsnp` | — |
+| Bubble Pop | `bubble-pop` | LTPKS | 11 | 2 | designed | `claude/adoring-albattani-euqsnp` ([PR 93](https://github.com/rjdunlap/neo/pull/93)) | [bubble-pop.md](bubble-pop.md) |
 | Bug Builder | `bug-builder` | TPKS | 7 | 4 | not started | — | — |
 | Bumper Garden | `bumper-garden` | LTPK | 5 | 4 | not started | — | — |
 | Chain Reaction | `chain-reaction` | KS | 6 | 4 | not started | — | — |
