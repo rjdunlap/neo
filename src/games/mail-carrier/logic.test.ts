@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { checkStop, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, SIGNS, walk } from './logic';
+import { addressedHouse, checkStop, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, SIGNS, walk, woodsTouch } from './logic';
 
 describe('Mail Carrier', () => {
   it('builds a numbered street in order with different doors, and mails every house', () => {
@@ -81,5 +81,48 @@ describe('Mail Carrier in Wonder Woods', () => {
     expect(checkStop([3, 1], [3], 1)).toBe('ok');
     expect(checkStop([3, 1], [3], 3)).toBe('planned');
     expect(checkStop([3, 1], [], 4)).toBe('nobody');
+  });
+});
+
+describe('Mail Carrier demonstration', () => {
+  it('posts every street letter to the house it is addressed to', () => {
+    for (const plan of PLANS.filter((p) => !isMapMode(p.mode))) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const rng = new Rng(seed);
+        const street = makeStreet(plan, rng);
+        const letters = makeLetters(plan, street, rng);
+        const posted: number[] = [];
+        for (let i = 0; addressedHouse(letters, i) !== null; i++) posted.push(addressedHouse(letters, i)!);
+        expect(posted).toEqual(letters);
+        expect(posted.every((h) => h >= 0 && h < street.length)).toBe(true);
+        expect(addressedHouse(letters, letters.length)).toBeNull();
+      }
+    }
+  });
+
+  it('taps the neighbor on the map, and plans each route stop in letter order before the walk button', () => {
+    for (const plan of PLANS.filter((p) => isMapMode(p.mode))) {
+      for (let seed = 1; seed <= 100; seed++) {
+        for (const trip of makeTrips(plan, new Rng(seed))) {
+          const planned: number[] = [];
+          for (let step = 0; step < trip.length + 1; step++) {
+            const touch = woodsTouch(plan.mode, trip, planned);
+            if (plan.mode === 'map') {
+              expect(touch).toEqual({ house: trip[0] });
+              break;
+            }
+            if (touch === 'go') {
+              expect(planned).toEqual(trip);
+              break;
+            }
+            expect(touch).not.toBeNull();
+            expect(checkStop(trip, planned, (touch as { house: number }).house)).toBe('ok');
+            planned.push((touch as { house: number }).house);
+          }
+          if (plan.mode === 'route') expect(woodsTouch(plan.mode, trip, planned)).toBe('go');
+        }
+      }
+    }
+    expect(woodsTouch('map', [], [])).toBeNull();
   });
 });
