@@ -79,6 +79,12 @@ Added the school ladder's tenth level: three hidden boxes and common blocks bala
 
 Added pushable ice blocks: `move()` (a slide, or a push when the penguin is beside a block that can move), a solver over penguin, fish and block positions, a level-6 plan (one block, one fish, each pond must need a push), block art, undo and restart that restore blocks, a memoized hint, `slide.ice`, a how-to line. Ran: typecheck, all 855 unit tests (150 seeds per plan for solvability, fewest route, ghost-finger taps and "blocks matter"; couch courses unchanged), `BROWSER_SUITE=woods WOODS_ONLY=penguin FROM_LEVEL=6` (taps, bumps, pushes, hint arrow, undo, score and sticker; the script now solves with `g.blocks`), a reviewed portrait screenshot, `fingerdemo` filtered to Penguin Slide level 6 (clean, 17 s). `howto` filtered to Penguin Slide at her level and, with the new `HOWTO_LEVEL=6`, at level 6 (the card fits in landscape and portrait; the longer level-6 step was shortened first). Not run: levels 1–5 in the browser again, the couch suites (no couch code changed; couch trips play levels 4 and 5 and the courses' boards have no blocks), an iPad, a child.
 
+### 2026-10-10 · Puzzle Pals deep dive (docs only)
+
+What changed: `docs/deep-dives/puzzle-pals.md` (the game today, nine similar games and the developmental sources, a ladder with four new levels, two below level 1 and a build order), the tracker row, the roadmap's chunk 14 slices and a Waiting-on-the-developer row, and two IDEAS rows.
+What ran: `git diff --check` and a link check. No code changed, so no typecheck or tests.
+Also: one headless-Chrome probe (dev server on port 5199, 1024×768) screenshotted the level-7 tray for dog, bunny, bear, duck and cow (the cat was not viewed). It corrected a first reading of `art.ts`: no two pieces are exact twins, but the duck's two top-middle pieces differ by a few pixels and ground pieces differ mostly by a flower's colour. Open: whether that costs misses in real play is unmeasured. Every outside source was read through search summaries because page fetches failed. Nothing was judged on a device.
+
 ### 2026-10-10 · Goodnight Room deep dive and slice 1 (a different room each time)
 
 What changed: [goodnight-room.md](deep-dives/goodnight-room.md) (research, ladder, build slices). In the game: level 1 draws four of the six friends with the seeded RNG, level 2 may start up to two friends asleep (at least two stay awake), and the finale no longer drops the star count. `makeRequests` and `thingToTap` take the drawn room.
