@@ -73,7 +73,7 @@ Added pushable ice blocks: `move()` (a slide, or a push when the penguin is besi
 
 What changed: `docs/deep-dives/puzzle-pals.md` (the game today, nine similar games and the developmental sources, a ladder with four new levels, two below level 1 and a build order), the tracker row, the roadmap's chunk 14 slices and a Waiting-on-the-developer row, and two IDEAS rows.
 What ran: `git diff --check` and a link check. No code changed, so no typecheck or tests.
-Open: the fairness finding (look-alike sky pieces at 12 pieces in the duck, bunny, bear and dog scenes, and flower columns that cannot be told apart) was worked out from `art.ts` coordinates and has not been seen in a screenshot; slice 1 starts with one. Every outside source was read through search summaries because page fetches failed. Nothing was judged on a device.
+Also: one headless-Chrome probe (dev server on port 5199, 1024×768) screenshotted the level-7 tray for dog, bunny, bear, duck and cow (the cat was not viewed). It corrected a first reading of `art.ts`: no two pieces are exact twins, but the duck's two top-middle pieces differ by a few pixels and ground pieces differ mostly by a flower's colour. Open: whether that costs misses in real play is unmeasured. Every outside source was read through search summaries because page fetches failed. Nothing was judged on a device.
 
 ### 2026-10-10 · Goodnight Room deep dive and slice 1 (a different room each time)
 
