@@ -12,15 +12,11 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { frameIcon } from '../../ui/icons';
-import type { Game, GameContext, GameModule } from '../types';
-import { Coverage, mix, pickThings, planFor, RECIPES, type PaintPlan, type Primary, type Thing } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { BRUSH_RADIUS, Coverage, fillPath, MARGIN, mix, paintStep, PAINTED, pickThings, planFor, RECIPES, scribble, scribbleArea, SPACING, type PaintPlan, type Primary, type Thing } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PAPER = 0xfffdf6;
-const MARGIN = 18;
-const BRUSH_RADIUS = 24;
-/** Brush stamps are this far apart along a stroke, in logical units. */
-const SPACING = 5;
 /** Degrees of hue per unit of stroke: the rainbow comes from moving. */
 const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
@@ -34,8 +30,6 @@ const LEVELS: BandLevels = {
 };
 const POTS: (ColorName | 'rainbow')[] = ['rainbow', ...RAINBOW];
 const PRIMARIES: Primary[] = ['red', 'yellow', 'blue'];
-/** A picture counts as painted when this much of it is covered; then it fills in neatly. */
-const PAINTED = 0.7;
 const LINE = 0x5a4a3c;
 
 /** A coloring-page picture: an outline that stays on top of the paint, plus its painting progress. */
@@ -494,6 +488,27 @@ class RainbowFingers implements Game {
     }
   }
 
+  /**
+   * The ghost finger: wavy strokes and then the frame in the free levels; in the picture levels the pot (or the two primaries) for the
+   * picture's color, then a fill over the whole picture, and the frame once the page is done. Never a stroke in a wrong color.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.done || this.strokes.size > 0) return null;
+    const pic = this.picture;
+    const move = paintStep({ mode: this.plan.mode, strokes: this.finished, brush: this.brushName, poured: this.poured, picture: pic?.thing.color ?? null, frame: this.frameButton.visible });
+    if (!move) return null;
+    if (move.do === 'frame') return { tap: { on: this.frameButton } };
+    if (move.do === 'bowl') return { tap: { on: this.bowl } };
+    if (move.do === 'pot') {
+      const pot = this.potNodes.get(move.pot);
+      return pot ? { tap: { on: pot } } : null;
+    }
+    const [start, ...via] = pic
+      ? fillPath(pic.thing.circles, pic.scale).map((p) => ({ on: pic.node, x: p.x, y: p.y }))
+      : scribble(this.finished, scribbleArea(this.view.w, this.view.h)).map((p) => ({ on: this.paper, x: p.x, y: p.y }));
+    return { trace: start, via, receiver: this.paper };
+  }
+
   destroy() {
     window.removeEventListener('pointerup', this.endStroke);
     window.removeEventListener('pointercancel', this.endStroke);
@@ -750,6 +765,7 @@ export const rainbowFingers: GameModule = {
     return 'Mixing colors: red and yellow make orange';
   },
   music: STYLES.paint,
+  touchDemo: true,
   coplayHint: 'Guide {name}\'s finger in big swoops, then let go and watch.',
   offScreen: 'Finger-paint with yogurt and a drop of food coloring on the high-chair tray.',
   hubIcon: () => new Easel(),

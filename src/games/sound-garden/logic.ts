@@ -86,3 +86,23 @@ export function judgeEcho(pattern: Gap[], taps: number[]): boolean {
 
 /** Scale steps for an up or down tune. */
 export const tune = (answer: 'up' | 'down') => (answer === 'up' ? [1, 3, 5, 7] : [7, 5, 3, 1]);
+
+/** The singers in free play, in the order they stand. */
+export const SINGERS = ['bird', 'frog', 'bunny', 'bell', 'woodpecker'] as const;
+
+/** The singer the demonstration touches for the next tap: each in turn, so the garden is heard whole. */
+export const singerToTap = (played: number) => SINGERS[played % SINGERS.length];
+
+/** Which of the two answer tiles shows the answer (the tiles show the two choices in order). */
+export const tileFor = (q: Question): 0 | 1 => (CHOICES[q.ask][0] === q.answer ? 0 : 1);
+
+/**
+ * The seconds the demonstration's hand rests after a drum tap so that the next tap makes a short or a long gap. The hand needs at least
+ * `minGap` seconds to lift, come back and press (`MIN_TAP_GAP`), slower than the game's own short gap, so the whole echo is slowed together:
+ * `judgeEcho` only compares long gaps with short ones, so a long gap 1.7 times a short one is a clear long and a short is a short, and
+ * every gap is the same as the others of its kind.
+ */
+export function echoRest(gap: Gap, minGap: number): number {
+  const short = minGap + 0.05;
+  return gap === 'S' ? 0.05 : short * 1.7 - minGap;
+}
