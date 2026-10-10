@@ -717,6 +717,8 @@ export const SCRIPT = {
   'grow.color': ['Plant a {color} flower! Tap the {color} seeds.'],
   'grow.count': ['Plant {n} seeds, then tap the cloud to make them grow.'],
   'grow.mix': ['Plant {n} {a} and {m} {b}. Then tap the cloud!'],
+  'grow.more-than': ['The sign shows {n} {color} flowers. Plant one more {color}, then tap the cloud!'],
+  'grow.array': ['Plant two rows of three flowers like the sign, then tap the cloud!'],
   'grow.notthat': ['Those are {color} seeds. Can you find the {want} ones?'],
   'grow.fewer': ['We planted {n}. We need {m}! Plant some more.'],
   'grow.more': ['We planted {n}. That is too many! We need {m}. Tap a seed to take it out.'],

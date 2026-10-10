@@ -655,6 +655,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Tap the seeds of the color asked for to plant them; tap a seed to take it out.' },
       { from: 4, to: 4, text: 'Plant exactly the number of seeds asked for, then tap the cloud to make it rain; tap a seed to take it out.' },
       { from: 5, text: 'Plant the number of seeds of each color asked for, like "2 red and 3 yellow", then tap the cloud; tap a seed to take it out.' },
+      { from: 6, to: 6, text: 'Look at the flowers on the sign. Plant one more of that color than the sign shows, then tap the cloud; tap a seed to take it out.' },
+      { from: 7, text: 'Plant the flowers shown in two rows of three, then tap the cloud; tap a seed to take it out.' },
     ],
     finish: 'The round ends when the garden has grown as asked.',
   },

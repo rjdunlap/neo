@@ -511,7 +511,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
 | **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
-| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. Goodnight Room now has one: the 2026-10-10 quantity direction ([deep dive](deep-dives/goodnight-room.md)); Opposites has the same reason and a school gap ([deep dive](deep-dives/opposites.md)); Animal Snack's [deep dive](deep-dives/animal-snack.md) proposes pre-K and school windows |
+| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. The quantity direction gives Garden Grow a pre-K window (levels 6–7 built), Goodnight Room more levels ([deep dive](deep-dives/goodnight-room.md)), and Opposites the same reason plus a school gap ([deep dive](deep-dives/opposites.md)); Animal Snack's [deep dive](deep-dives/animal-snack.md) proposes pre-K and school windows |
 
 ### Sketch for the next one to build
 
@@ -667,7 +667,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Color Garden (T–K · 6) | More things to sort | **7, Light and dark:** light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
 | Dot Link (L–K · 5) | More dot colors and boards | **6, Exactly five:** a chain of exactly five dots | — |
 | Tangram Town (T–S · 6) | **Built 2026-10-10:** each level draws from a pool of 2–5 pictures (11 in all). More pictures, spoken shape names and the rest are in the [deep dive](deep-dives/tangram-town.md) | R1-later: flip a piece (the deep dive's level 9; it needs a parallelogram) | — |
-| Garden Grow (L–P · 5) | Flower kinds | **6, One more than the sign. 7, Two rows of three:** these open a pre-K window | — |
+| Garden Grow (L–P · 5) | Flower kinds | **Built 2026-10-10:** levels 6, *One more than the sign*, and 7, *Two rows of three*, open a pre-K window ([build note](archive/COMPLETED-2026-10-09.md#garden-grow-levels-6-7-one-more-and-two-rows-of-three-2026-10-10)) | — |
 | Treasure Map (K–S · 5) | Maps of new places | **6, Give directions:** the pet asks the way and she chooses the arrows, turning reading directions into writing them | Preschool, at level 1 (a picture row meets a color column) |
 | Owl Walk Home (T–K · 4) | Paths and seasons | — | — |
 | Pattern Train (L–S · 12) | Car kinds | **13, Growing patterns:** one red, two red, three red … what comes next? | — |
@@ -709,7 +709,7 @@ The couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, W
 
 #### What this adds up to
 
-- **37 new levels on top**, beyond the ones from the first two rounds.
+- **37 new levels on top**, beyond the ones from the first two rounds; three are built (Clap the Syllables 5 and Garden Grow 6–7), leaving 34.
 - **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room). Animal Snack's planned levels 6–7 are replaced by its [deep dive](deep-dives/animal-snack.md) (6–8 and a school window with 9–10).
 - **Thirteen younger-band openings** that need no new level (kind C).
 - **A content pass for nearly every game.**

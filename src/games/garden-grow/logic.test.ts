@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BEDS, gardenTouch, makeRequests, matches, packetsFor, PLANS, total, type BedState, type Request } from './logic';
+import { BEDS, gardenTouch, makeRequests, matches, packetsFor, planFor, PLANS, total, type BedState, type Request } from './logic';
 
 describe('Garden Grow', () => {
   it('asks for things that fit the beds, offers the packets needed, and never repeats a request back to back', () => {
@@ -18,10 +18,26 @@ describe('Garden Grow', () => {
           if (plan.mode === 'color') expect(total(r)).toBe(1);
           if (plan.mode === 'count') expect(total(r)).toBeGreaterThanOrEqual(2), expect(packets).toHaveLength(1);
           if (plan.mode === 'mix') expect(Object.keys(r.want)).toHaveLength(2);
+          if (plan.mode === 'more') {
+            const color = Object.keys(r.want)[0] as keyof typeof r.want;
+            expect(r.want[color]).toBe((r.shown?.[color] ?? 0) + 1);
+            expect(r.shown?.[color]).toBeGreaterThanOrEqual(1);
+          }
+          if (plan.mode === 'array') {
+            expect(total(r)).toBe(6);
+            expect(r.shown).toEqual(r.want);
+          }
           if (i > 0) expect(JSON.stringify(r.want)).not.toBe(JSON.stringify(rs[i - 1].want));
         });
       }
     }
+  });
+
+  it('keeps the two new levels appended and opens pre-K at level 6', () => {
+    expect(planFor(5).mode).toBe('mix');
+    expect(planFor(6).mode).toBe('more');
+    expect(planFor(7).mode).toBe('array');
+    expect(planFor(8).mode).toBe('array');
   });
 
   it('checks plantings by color and number, in any order', () => {

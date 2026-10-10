@@ -194,7 +194,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Garden Grow
 
-*lap–preschool · after toy gardens and Viva Piñata.* Tap the soil and a seed grows into a smiling flower that sings when tapped. Level 2 adds the cloud: plant, then make it rain. Later levels plant the color asked for (a wrong packet shakes, as a miss), then exactly 2–5 seeds before the rain, then two colors with a number of each. A picture sign shows what was asked and each planted seed has a marker in its color. Tapping a planted seed takes it out; two misses make the sign and the beds still to plant glow.
+*lap–pre-K · after toy gardens and Viva Piñata.* Tap the soil and a seed grows into a smiling flower that sings when tapped. Level 2 adds the cloud: plant, then make it rain. Later levels plant the color asked for (a wrong packet shakes, as a miss), then exactly 2–5 seeds before the rain, then two colors with a number of each. Pre-K level 6 asks for one more of a color than the flower sign shows; level 7 shows a two-by-three array and asks for those six flowers. A picture sign shows what was asked and each planted seed has a marker in its color. Tapping a planted seed takes it out; two misses make the sign and the beds still to plant glow.
 
 ### Treasure Map
 

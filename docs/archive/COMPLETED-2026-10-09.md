@@ -4,6 +4,10 @@
 
 ## From the roadmap
 
+### Garden Grow levels 6–7: One more and two rows of three (2026-10-10)
+
+Added a pre-K window at levels 6–7. Level 6 asks for one more flower than the pictured sign; level 7 presents six flowers in two rows of three and six garden beds in the same arrangement. The child can remove planted seeds and try again, and two misses glow the sign and the beds still to fill. Seeded rule tests cover both prompts and the bot's complete routes. Typecheck and 42 focused Garden Grow, registry, how-to and land tests passed; the filtered level-7 play passed with a hint and saved reward; its clean ghost finger finished in 38.8 seconds. The level-7 screenshot was reviewed. No build or full suite; iPad target feel, device speech and child play remain open.
+
 ### Mail Carrier level 8: Which way is shorter? (2026-10-10)
 
 Added a school round after the picture-map deliveries: identify the addressed house, compare the two loop paths marked with stepping stones, and choose the shorter route for the pet to walk. Every generated destination has a short and long simple path separated by at least two stones; the two displayed choices show the count. A wrong destination or path is gentle, and two route misses light the shorter choice. The level has its own spoken instruction, scoped how-to and ghost-finger demo. Typecheck, eight rule tests, the filtered level-8 play and its 22.3-second ghost-finger demo passed. No full unit run or build; iPad, device speech and child play remain open.

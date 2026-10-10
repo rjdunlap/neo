@@ -17,6 +17,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
+  prek: { min: 6, max: 7 },
 };
 
 /** A smiling flower on a stem; its stem grows from the soil, then the head pops open. */
@@ -88,7 +89,7 @@ class GardenGrow implements Game {
     for (let i = 0; i < BEDS; i++) {
       const node = new Container();
       node.addChild(new Graphics().ellipse(0, 6, 56, 22).fill(wood.line).ellipse(0, 0, 50, 18).fill(0x8a5a36));
-      node.hitArea = new Rectangle(-62, -200, 124, 240);
+      node.hitArea = this.plan.mode === 'array' ? new Rectangle(-62, -80, 124, 150) : new Rectangle(-62, -200, 124, 240);
       const bed: Bed = { node, seed: null, bloom: null, seedArt: null };
       onTap(node, () => void this.tapBed(bed), { cooldown: 250 });
       this.beds.push(bed);
@@ -107,10 +108,17 @@ class GardenGrow implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const xs = spread(BEDS, 170, v.w - 60, 140);
-    this.beds.forEach((b, i) => b.node.position.set(xs[i], v.h * 0.7));
-    this.cloud.position.set(v.w / 2 + 60, 150);
-    this.sign.position.set(v.w - 190, 300);
+    if (this.plan.mode === 'array') {
+      const xs = spread(3, 210, v.w - 210, 220);
+      this.beds.forEach((b, i) => b.node.position.set(xs[i % 3], v.h * (i < 3 ? 0.44 : 0.68)));
+      this.cloud.position.set(v.w - 140, 150);
+      this.sign.position.set(v.w / 2, 150);
+    } else {
+      const xs = spread(BEDS, 170, v.w - 60, 140);
+      this.beds.forEach((b, i) => b.node.position.set(xs[i], v.h * 0.7));
+      this.cloud.position.set(v.w / 2 + 60, 150);
+      this.sign.position.set(v.w - 190, 300);
+    }
     const ps = spread(this.packets.length, 220, v.w - 120, 160);
     this.packets.forEach((p, i) => p.node.position.set(ps[i], v.h - 75));
   }
@@ -170,17 +178,23 @@ class GardenGrow implements Game {
     const [a, b] = Object.entries(r.want) as [ColorName, number][];
     if (this.plan.mode === 'color') return this.ctx.instruct('grow.color', { color: a[0] });
     if (this.plan.mode === 'count') return this.ctx.instruct('grow.count', { n: a[1], color: a[0] });
+    if (this.plan.mode === 'more') return this.ctx.instruct('grow.more-than', { n: r.shown?.[a[0]] ?? 0, color: a[0] });
+    if (this.plan.mode === 'array') return this.ctx.instruct('grow.array');
     return this.ctx.instruct('grow.mix', { n: a[1], a: a[0], m: b[1], b: b[0] });
   }
 
   private buildSign() {
     this.sign.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const want = (Object.entries(this.request.want) as [ColorName, number][]).flatMap(([c, n]) => Array(n).fill(c) as ColorName[]);
-    const w = want.length * 46 + 30;
+    const shown = this.request.shown ?? this.request.want;
+    const want = (Object.entries(shown) as [ColorName, number][]).flatMap(([c, n]) => Array(n).fill(c) as ColorName[]);
+    const w = this.plan.mode === 'array' ? 190 : want.length * 46 + 30;
     this.sign.addChild(new Graphics().roundRect(-w / 2, -40, w, 80, 18).fill(0xfff8ec).stroke({ width: 5, color: wood.line }).rect(-6, 40, 12, 60).fill(wood.fill));
     want.forEach((c, i) => {
       const f = flower(new Graphics(), 18, swatch[c].fill, swatch[c].line);
-      f.x = -w / 2 + 38 + i * 46;
+      if (this.plan.mode === 'array') {
+        f.x = -48 + (i % 3) * 48;
+        f.y = i < 3 ? -18 : 14;
+      } else f.x = -w / 2 + 38 + i * 46;
       this.sign.addChild(f);
     });
   }
@@ -249,7 +263,7 @@ class GardenGrow implements Game {
       return;
     }
     // Counting levels: tap a planted seed to take it back out.
-    if (bed.seed && (mode === 'count' || mode === 'mix')) {
+    if (bed.seed && (mode === 'count' || mode === 'mix' || mode === 'more' || mode === 'array')) {
       bed.seed = null;
       bed.seedArt?.destroy({ children: true });
       bed.seedArt = null;
@@ -405,7 +419,7 @@ export const gardenGrow: GameModule = {
   titleLine: 'game.garden-grow',
   region: 'rainbow-meadow',
   skills: ['cause-and-effect', 'colors', 'counting', 'living-things'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

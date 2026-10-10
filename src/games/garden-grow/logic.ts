@@ -4,9 +4,9 @@ import type { Rng } from '../../engine/random';
 /**
  * Garden Grow: tap the soil and a seed goes in; rain makes it grow into a smiling flower that
  * sings when tapped. Lap levels are pure cause and effect. Later levels plant the color asked for,
- * grow exactly so many flowers before the rain, then two colors with a number of each.
+ * count flowers, mix colors, find one more than a picture, and build a two-by-three array.
  */
-export type GardenMode = 'plant' | 'water' | 'color' | 'count' | 'mix';
+export type GardenMode = 'plant' | 'water' | 'color' | 'count' | 'mix' | 'more' | 'array';
 
 export interface GardenPlan {
   mode: GardenMode;
@@ -21,6 +21,8 @@ export const PLANS: GardenPlan[] = [
   { mode: 'color', requests: 4, name: 'Plant the color asked for: "a red flower"' },
   { mode: 'count', requests: 3, name: 'Plant exactly 2 to 5 seeds, then make it rain' },
   { mode: 'mix', requests: 3, name: 'Two colors with a number of each: "2 red and 3 yellow"' },
+  { mode: 'more', requests: 3, name: 'Plant one more flower than the sign shows' },
+  { mode: 'array', requests: 3, name: 'Plant two rows of three flowers' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -32,6 +34,8 @@ export const SEEDS: ColorName[] = ['red', 'yellow', 'blue', 'pink', 'purple', 'o
 /** What a request asks for: how many seeds of each color (one color for 'color' and 'count'). */
 export interface Request {
   want: Partial<Record<ColorName, number>>;
+  /** A pictured amount that the child uses to work out the requested amount. */
+  shown?: Partial<Record<ColorName, number>>;
 }
 
 export function makeRequests(plan: GardenPlan, rng: Rng): Request[] {
@@ -41,7 +45,14 @@ export function makeRequests(plan: GardenPlan, rng: Rng): Request[] {
     let r: Request;
     if (plan.mode === 'color') r = { want: { [rng.pick(SEEDS.slice(0, 3))]: 1 } };
     else if (plan.mode === 'count') r = { want: { [rng.pick(SEEDS)]: rng.int(2, 5) } };
-    else {
+    else if (plan.mode === 'more') {
+      const color = rng.pick(SEEDS);
+      const shown = rng.int(1, 4);
+      r = { want: { [color]: shown + 1 }, shown: { [color]: shown } };
+    } else if (plan.mode === 'array') {
+      const color = SEEDS[out.length % SEEDS.length];
+      r = { want: { [color]: 6 }, shown: { [color]: 6 } };
+    } else {
       const [a, b] = rng.shuffle(SEEDS.slice(0, 4)).slice(0, 2);
       const n = rng.int(1, 3);
       const m = rng.int(1, Math.min(3, BEDS - n));
