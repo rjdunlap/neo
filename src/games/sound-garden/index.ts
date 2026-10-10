@@ -12,8 +12,9 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { CHOICES, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, planFor, tune, type Answer, type Gap, type GardenPlan, type Question } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, planFor, SINGERS, singerToTap, tileFor, tune, type Answer, type Gap, type GardenPlan, type Question } from './logic';
+import { MIN_TAP_GAP } from '../../engine/ghost';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -185,7 +186,7 @@ class SoundGarden implements Game {
     ctx.stage.addChild(this.woodpecker, this.drum, this.rhythmHint);
 
     if (this.plan.mode === 'play') {
-      for (const kind of ['bird', 'frog', 'bunny', 'bell', 'woodpecker'] as Kind[]) {
+      for (const kind of SINGERS as readonly Kind[]) {
         const node = art(kind);
         const s = { kind, node, taps: 0 };
         node.hitArea = new Circle(0, 0, 100);
@@ -238,6 +239,24 @@ class SoundGarden implements Game {
       const want = this.rhythms[this.index]?.length + 1;
       if (this.echoTimer > (this.taps.length >= want ? 0.9 : 2.2)) void this.judge();
     }
+  }
+
+  /**
+   * The ghost finger: tap each singer in turn in free play; in the listening levels wait for the sound and tap the tile that shows its
+   * answer; on the echo level tap the drum with the woodpecker's rhythm, as long and short gaps made with the hand's rest between taps.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.finished) return null;
+    if (this.plan.mode === 'play') return { tap: { on: this.singers.find((s) => s.kind === singerToTap(this.played))!.node } };
+    if (this.busy) return null;
+    if (this.plan.mode === 'echo') {
+      const r = this.rhythms[this.index];
+      const made = this.taps.length;
+      if (!r || made > r.length) return null;
+      return { tap: { on: this.drum, y: -10 }, pause: made < r.length ? echoRest(r[made], MIN_TAP_GAP) : 0.05 };
+    }
+    const q = this.question;
+    return q ? { tap: { on: this.tiles[tileFor(q)] } } : null;
   }
 
   destroy() {
@@ -479,6 +498,7 @@ export const soundGarden: GameModule = {
   describeLevel: (level) => planFor(level).name,
   // Quiet music, so the listening questions are easy to hear.
   music: silenced(STYLES.lullaby),
+  touchDemo: true,
   coplayHint: 'Sing along: a high "tweet" with your hand up high, a low "ribbit" with your hand down low.',
   offScreen: 'Play a pot-and-spoon drum: copy each other\'s taps, fast and slow.',
   hubIcon: () => new GardenIcon(),
