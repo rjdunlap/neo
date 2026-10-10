@@ -37,7 +37,7 @@ Most sessions should build from this list; checks that need a person or a device
 
 | # | Chunk | Status | One session's next slice | Check tier | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Deepen short ladders** with a real next decision | ready | Build Rainbow Fingers' pumpkin recall-and-mixing level | New levels on an existing interaction | [Below](#short-ladders-in-order) |
+| 2 | **Deepen short ladders** with a real next decision | ready | Build Market Stall 7, fewest coins | New levels on an existing interaction | [Below](#short-ladders-in-order) |
 | 13 | **More to play in every band** (the developer's direction, 2026-10-10: more quantity across age bands) | ready | Content first: give each Tangram Town level three or four silhouettes, since each level draws one fixed picture today. Then Story Steps' stories go from four to ten | Content: typecheck, that game's rule tests and one screenshot of the new art. Younger-band openings: unit and registry tests. New levels: the "new levels" tier | [Below](#more-to-play-in-every-band) |
 | 14 | **Game deep dives**: one session per game, researching similar games and expanding its whole ladder (the developer's decision, 2026-10-10) | ready | Deep dive the first **not started** game in the tracker's lowest wave, starting with Tangram Town, then build its cheapest slice if time allows | Docs only for the write-up; whatever it builds at its own tier | [Deep-dive tracker](deep-dives/README.md) |
 | 3 | **Profiles stage 2: the island shell takes a controller** | define | Write the definition of ready: `GameScene` samples keys and the controller, calls `control()`, offers the pause menu's *Start again* and *Show a hint*, and shows the demonstration for the input in use, so a grown-up game can live on the map and the chooser's Enter no longer has to mean couch play. If it proves large, Lantern Lake can hand a chosen game to the couch shell | Docs only | [Profiles first](#profiles-first-one-map-for-every-age) (stage 2) |
@@ -57,7 +57,7 @@ Most sessions should build from this list; checks that need a person or a device
 
 1. **Memory Match 10, "Same, said differently"** — **built 2026-10-09**: number words one through ten to numerals (text cards). Levels 11 (fraction pictures) and 12 (clock faces) need small new art and a legibility look at the 140-unit card first. [Sketch](IDEAS.md#sketch-for-the-next-one-to-build).
 5. **Bouncy Launch** — **built 2026-10-10**: school level 6 shows a fixed pull, asks for a cloud prediction, then releases it; different guesses stay unscored. The pure pull-to-cloud mapping is tested as deterministic. [Build note](archive/COMPLETED-2026-10-09.md#bouncy-launch-shown-pull-predictions-2026-10-10).
-6. **Rainbow Fingers**: "Paint the pumpkin", recalling that it is orange and then mixing it.
+6. **Rainbow Fingers 7, "Paint the pumpkin"** — **built 2026-10-10**: recall that the pumpkin is orange, then mix red and yellow before painting it.
 
 **Then, from the [second ladder round](IDEAS.md#round-two-the-longer-ladders-2026-10-10) (2026-10-10, proposals).** That round covers the longer school ladders the audit skipped. Each item is one level appended above the game's current top, and the detail page says what its rule tests assert.
 
