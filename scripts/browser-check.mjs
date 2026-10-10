@@ -1916,6 +1916,44 @@ async function originals() {
     log(`Shape Sorter ${level}: dragging into holes, wrong holes, glow hint, saved score and sticker passed`);
   }
 
+  // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
+  for (let level = 1; level <= 4 && (!only || only === 'fill'); level++) {
+    if (level === 4) await portrait(true);
+    await launch('fill-dump', level);
+    await page.waitForTimeout(400);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const idle = () => kit.until(() => !g.busy && g.flying === 0, 8000);
+      const hit = async (obj, dy = 0) => { kit.tapOn(obj, 0, dy); await kit.sleep(250); };
+      const basket = () => hit(g.basket.front, -75);
+      const outside = () => g.pieces.find((p) => !g.state.inside[p.i]);
+      if (g.state.target === null) {
+        for (let guard = 0; guard < 60 && !g.state.done; guard++) {
+          await idle();
+          if (g.state.order.length === g.state.plan.pieces) await basket();
+          else await hit(outside().view);
+        }
+        if (!g.state.done || g.state.misses || g.state.hints) throw new Error(`Fill tip-out: ${JSON.stringify(g.state)}`);
+      } else {
+        const n = g.state.target;
+        await hit(g.tick); // nothing in yet: said again, no miss
+        if (g.state.misses) throw new Error('Fill: an empty check is not a miss');
+        for (let k = 0; k <= n; k++) { await idle(); await hit(outside().view); }
+        await idle();
+        await hit(g.tick); await hit(g.tick);
+        if (g.state.misses !== 2 || g.state.hints !== 1 || g.glow?.target !== 'basket') throw new Error(`Fill hint: ${g.state.misses} ${g.state.hints} ${g.glow?.target}`);
+        await basket(); await idle();
+        if (g.state.order.length !== n) throw new Error('Fill: the basket takes one back out');
+        await hit(g.tick);
+      }
+    });
+    await screenshot(`fill-dump-${level}`);
+    await finished('fill-dump');
+    assert.deepEqual(await score('fill-dump'), level <= 2 ? [0, 0] : [2, 1], `fill ${level} score`);
+    if (level === 4) await portrait(false);
+    log(`Fill and Dump ${level}: tipping, scooping, counting, the check, glow hint, saved score and sticker passed`);
+  }
+
   // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
   for (let level = 1; level <= 6 && (!only || only === 'garden'); level++) {
     if (level === 6) await portrait(true);
