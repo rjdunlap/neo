@@ -846,6 +846,8 @@ export const SCRIPT = {
   'egg.catch': ['Slide the basket to catch the eggs!'],
   'egg.brown': ['Catch the brown eggs! Let the white eggs fall in the hay.'],
   'egg.route': ['Tap the gates so the egg rolls into the basket!'],
+  'egg.pair': ['Set the gates for both eggs. Brown goes to the basket, white goes to the nest. Tap the green arrow when you are ready. The gates stay still while both roll.'],
+  'egg.pairretry': ['Let us try that pair again. Follow both paths: brown to the basket, white to the nest.'],
   'egg.sort': ['Brown eggs go in the basket. White eggs go to the nest. Tap the gates!'],
   'egg.white': ['Oops, that one is white! White eggs hatch in the hay.'],
   'egg.wrongway': ['Oops! It rolled the other way. Peep!'],

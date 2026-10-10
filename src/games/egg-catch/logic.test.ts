@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir } from './logic';
+import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -153,4 +153,26 @@ describe('Egg Catch', () => {
       }
     }
   });
+});
+
+it('deals solvable unsolved two-hen boards, with hints that fix a needed gate', () => {
+  for (let seed = 1; seed <= 200; seed++) {
+    const boards = pairBoards(new Rng(seed), 12);
+    expect(boards).toEqual(pairBoards(new Rng(seed), 12));
+    for (const b of boards) {
+      expect(b.basket).not.toBe(b.nest);
+      expect(pairExits(b.gates, b.whiteBranch)).not.toEqual([b.basket, b.nest]);
+      const solutions = Array.from({ length: 8 }, (_, bits) => [!!(bits & 1), !!(bits & 2), !!(bits & 4)] as [boolean, boolean, boolean])
+        .filter((g) => pairExits(g, b.whiteBranch).every((exit, i) => exit === [b.basket, b.nest][i]));
+      expect(solutions).toHaveLength(1);
+      const gates = [...b.gates];
+      let steps = 0;
+      for (let gate = pairGateToFlip(b, gates); gate !== null; gate = pairGateToFlip(b, gates)) {
+        expect(++steps).toBeLessThanOrEqual(3);
+        expect(pairNeeds(b).find((n) => n.gate === gate)?.right).not.toBe(gates[gate]);
+        gates[gate] = !gates[gate];
+      }
+      expect(pairExits(gates as [boolean, boolean, boolean], b.whiteBranch)).toEqual([b.basket, b.nest]);
+    }
+  }
 });

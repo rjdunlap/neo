@@ -65,7 +65,6 @@ Most sessions should build from this list; checks that need a person or a device
 9. **Frog Hop 7, Hop to ten first** — **built 2026-10-10**: split a sum that crosses ten at 10 (8 + 2 + 3), choosing the bridge on number cards before landing the rest.
 10. **Seesaw Balance 10, Two steps** — **built 2026-10-10**: take the same things off both sides, then share the blocks left across two identical boxes.
 12. **Robot Path 12, Fix the program** (after a new 11, Where will it stop?; see its [deep dive](deep-dives/robot-path.md)): find and change the one wrong slot (authored boards).
-13. **Egg Catch 7, Set it once**: one gate setting that routes a brown egg and a white egg.
 14. **Light Lab 7, Where will it shine?**: predict where the locked beam stops (unscored), then plan.
 15. **Duck Pond 11, Hiding ducks**: the whole is known, so how many are hiding under the bridge?
 16. **Word Monsters 8, Change the end**: cat, cap, can. Device speech is still unchecked.

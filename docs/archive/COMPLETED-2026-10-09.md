@@ -234,3 +234,7 @@ Read from each game's `bands`, `region` and level table on 2026-10-09 (counts of
 ### Secret Code: detective doors (2026-10-10)
 
 School level 7 appends two seeded doors with two or three prior guesses, none already correct, identifying exactly one distinct-color code. Existing stone taps, clear-slot taps and the key carry the round. Original clues stay visible; guesses contradicting the whole evidence count once, with a spoken reminder and faint solution stones after two misses. The ghost finger and controller bot reason from the same candidate rules. Levels 1–6 and saved pins retain their meanings; pre-K stays at 1–3, school extends to 2–7.
+
+## Egg Catch: one setting for two eggs (2026-10-10)
+
+School level 7 appends “Set it once”: brown enters the top fork; white enters the opposite branch from a second hen. Three seeded pairs ask for one arrangement before either rolls. A green arrow releases both paths one at a time, with gates locked. Unsuccessful pairs stay for revision, count one miss per attempt and give spoken guidance; two attempts show the needed directions. Boards are dealt unsolved with exactly one solution, and hint steps and ghost-finger taps use the tested rules. The school window is 4–7; saved levels, pins and couch course levels keep their meaning. Scoped how-to support, speech, browser coverage and inventory were extended with the level.

@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -19,7 +19,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 6 },
+  school: { min: 4, max: 7 },
 };
 
 const SHELL = { brown: { fill: 0xd9a066, line: 0x9c6b3c }, white: { fill: 0xfffdf6, line: 0xc9bfae } };
@@ -92,6 +92,11 @@ class EggCatch implements Game {
   private clock = 0;
   private readonly targets: { basket: number; nest: number }[];
   private routed = 0;
+  readonly pairBoards: PairBoard[] = [];
+  readonly goButton = new Graphics();
+  pairReady = false;
+  private pairNodes: Graphics[] = [];
+  private pairSuccess = false;
   /** Route levels: how many gates the egg on its way has gone by (2 when nothing is waiting to be set). */
   private passed = 2;
 
@@ -103,7 +108,7 @@ class EggCatch implements Game {
     this.backdrop = new Backdrop({ sky: [0xf6d1b8, 0xfff1e3], hills: [0xc8ecb0, 0x9edb86], horizon: 0.72, clouds: 2, seed: 9 }, ctx.view);
     ctx.stage.addChild(this.backdrop, this.shelf, this.chutes, this.exits, this.hay, this.gateArt);
     const routing = this.routing;
-    const henCount = routing ? 1 : LANES;
+    const henCount = this.plan.mode === 'pair' ? 2 : routing ? 1 : LANES;
     for (let i = 0; i < henCount; i++) {
       const h = hen();
       h.scale.set(0.42);
@@ -131,6 +136,12 @@ class EggCatch implements Game {
       this.touch.on('pointerup', up);
       this.touch.on('pointerupoutside', up);
     }
+    if (this.plan.mode === 'pair') {
+      this.pairBoards = pairBoards(ctx.rng, this.plan.eggs);
+      this.goButton.circle(0, 0, 55).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line }).poly([-14, -25, 25, 0, -14, 25]).fill(0xffffff);
+      onTap(this.goButton, () => void this.sendPair());
+      ctx.stage.addChild(this.goButton);
+    }
     if (routing) {
       // The steering layer is only for catching; here it would sit over the bins and swallow taps.
       this.touch.eventMode = 'none';
@@ -146,7 +157,7 @@ class EggCatch implements Game {
   }
 
   get routing() {
-    return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'predict';
+    return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'predict' || this.plan.mode === 'pair';
   }
 
   /** Predict levels: the gates for each egg, and the egg waiting at the top for a guess. */
@@ -154,7 +165,7 @@ class EggCatch implements Game {
   private waiting: { node: Graphics; egg: Egg } | null = null;
 
   start() {
-    const line = { tap: 'egg.tap', catch: 'egg.catch', brown: 'egg.brown', route: 'egg.route', sort: 'egg.sort', predict: 'egg.predict' } as const;
+    const line = { tap: 'egg.tap', catch: 'egg.catch', brown: 'egg.brown', route: 'egg.route', sort: 'egg.sort', predict: 'egg.predict', pair: 'egg.pair' } as const;
     if (this.plan.mode === 'predict') this.predictions = predictGates(this.ctx.rng, this.plan.eggs * 3);
     void this.ctx.instruct(line[this.plan.mode]);
     if (this.routing) void this.nextRoute();
@@ -177,6 +188,13 @@ class EggCatch implements Game {
       this.hens[0].position.set(v.w / 2, 150);
       s.roundRect(v.w / 2 - 110, 150, 220, 24, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
       this.drawChutes();
+      if (this.plan.mode === 'pair') {
+        const o = this.geo();
+        const b = this.pairBoards[this.routed]?.whiteBranch ?? 2;
+        this.hens[1].position.set(o.gate[b].x + (b === 1 ? -100 : 100), 275);
+        this.goButton.position.set(v.w - 95, 95);
+        if (this.pairReady) this.placePair();
+      }
     } else {
       s.roundRect(150, 150, v.w - 190, 24, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
       this.hens.forEach((h, i) => h.position.set(this.laneX(i), 152));
@@ -260,6 +278,11 @@ class EggCatch implements Game {
       const x = basketMove(air, this.basketTarget, [...Array(LANES).keys()].map((i) => this.laneX(i)));
       return x === null ? null : { tap: { on: this.touch, x, y: this.floor - 40 }, pause: 0.2 };
     }
+    if (mode === 'pair') {
+      if (!this.pairReady || this.rolling) return null;
+      const gate = pairGateToFlip(this.pairBoards[this.routed], this.gates);
+      return { tap: { on: gate === null ? this.goButton : this.gateHits[gate] }, pause: 0.25 };
+    }
     if (mode === 'predict') return this.waiting ? { tap: { on: this.exits.children[exitFor(this.gates)], y: -20 } } : null;
     if (this.passed >= 2) return null;
     const egg = this.eggs[this.routed % this.eggs.length];
@@ -333,7 +356,7 @@ class EggCatch implements Game {
     });
   }
 
-  private miss(line: 'egg.white' | 'egg.wrongway' | 'egg.predictwrong' | null) {
+  private miss(line: 'egg.white' | 'egg.wrongway' | 'egg.predictwrong' | 'egg.pairretry' | null) {
     this.misses++;
     this.wrongs++;
     if (line) void this.ctx.say(line);
@@ -377,6 +400,10 @@ class EggCatch implements Game {
       seg(o.gate[i < 2 ? 1 : 2], o.exit[i]);
       seg(o.exit[i], o.bin[i]);
     }
+    if (this.plan.mode === 'pair') {
+      const b = this.pairBoards[this.routed]?.whiteBranch ?? 2;
+      seg({ x: o.gate[b].x + (b === 1 ? -100 : 100), y: o.gate[b].y - 110 }, o.gate[b]);
+    }
     this.gateHits.forEach((h, i) => h.position.copyFrom(o.gate[i]));
     this.drawExits();
   }
@@ -385,7 +412,7 @@ class EggCatch implements Game {
     this.exits.removeChildren().forEach((c) => c.destroy({ children: true }));
     const o = this.geo();
     for (let i = 0; i < 4; i++) {
-      const node = i === this.target.basket ? basketArt() : i === this.target.nest && this.plan.mode === 'sort' ? this.nestArt() : hayArt(150);
+      const node = i === this.target.basket ? basketArt() : i === this.target.nest && (this.plan.mode === 'sort' || this.plan.mode === 'pair') ? this.nestArt() : hayArt(150);
       node.position.set(o.bin[i].x, o.bin[i].y + 20);
       // Predict levels: tap a bin to say where the egg will land.
       if (this.plan.mode === 'predict') {
@@ -424,7 +451,7 @@ class EggCatch implements Game {
       }
       return;
     }
-    const want = this.hinting ? this.wanted() : [];
+    const want = this.hinting ? this.plan.mode === 'pair' ? pairNeeds(this.pairBoards[this.routed]) : this.wanted() : [];
     for (let i = 0; i < 3; i++) {
       const p = o.gate[i];
       const right = this.gates[i];
@@ -445,7 +472,7 @@ class EggCatch implements Game {
   }
 
   private flip(i: number) {
-    if (this.finished || this.plan.mode === 'predict') return;
+    if (this.finished || this.plan.mode === 'predict' || (this.plan.mode === 'pair' && (!this.pairReady || this.rolling))) return;
     this.gates[i] = !this.gates[i];
     sfx.tick();
     sfx.pop(4 + i * 2);
@@ -453,6 +480,7 @@ class EggCatch implements Game {
 
   private async nextRoute() {
     if (this.finished) return;
+    if (this.plan.mode === 'pair') { this.preparePair(); return; }
     this.target = this.targets[this.routed % this.targets.length];
     this.drawExits();
     const egg = this.eggs[this.routed % this.eggs.length];
@@ -478,6 +506,51 @@ class EggCatch implements Game {
     await this.roll(node, egg);
   }
 
+  private placePair() {
+    const o = this.geo();
+    const b = this.pairBoards[this.routed].whiteBranch;
+    this.pairNodes[0]?.position.set(o.entry.x, o.entry.y - 30);
+    this.pairNodes[1]?.position.set(o.gate[b].x + (b === 1 ? -100 : 100), o.gate[b].y - 110);
+    this.hens[1].position.set(o.gate[b].x + (b === 1 ? -100 : 100), 275);
+  }
+
+  private preparePair(retry = false) {
+    const board = this.pairBoards[this.routed];
+    this.target = { basket: board.basket, nest: board.nest };
+    if (!retry) this.gates = [...board.gates];
+    this.pairNodes = [eggArt('brown'), eggArt('white')];
+    this.pairNodes.forEach((node) => this.ctx.stage.addChild(node));
+    this.pairReady = true;
+    this.goButton.alpha = 1;
+    this.drawChutes();
+    this.placePair();
+  }
+
+  private async sendPair() {
+    if (!this.pairReady || this.rolling || this.finished) return;
+    this.pairReady = false;
+    this.rolling = true;
+    this.goButton.alpha = 0.4;
+    this.pairSuccess = true;
+    // Both use the same frozen gates; watching one at a time keeps the paths readable.
+    await this.roll(this.pairNodes[0], { lane: 0, shell: 'brown' });
+    await this.roll(this.pairNodes[1], { lane: 1, shell: 'white' });
+    this.pairNodes = [];
+    this.rolling = false;
+    if (this.pairSuccess) {
+      this.caughtCount++;
+      this.wrongs = 0;
+      this.hinting = false;
+      if (this.caughtCount >= this.plan.eggs) { void this.finale(); return; }
+      this.routed++;
+      this.preparePair();
+    } else {
+      sfx.boing();
+      this.miss('egg.pairretry');
+      this.preparePair(true);
+    }
+  }
+
   /** Predict: the chosen bin gets the basket, then the egg rolls (slowly) to show where it really goes. */
   private async predict(bin: number) {
     if (!this.waiting || this.finished) return;
@@ -499,17 +572,24 @@ class EggCatch implements Game {
       await tw.to(node, { x: p.x, y: p.y }, { duration: (d / 170) * speed, ease: ease.linear });
       sfx.tick();
     };
-    await go(o.gate[0]);
+    const whitePair = this.plan.mode === 'pair' && egg.shell === 'white';
+    if (!whitePair) await go(o.gate[0]);
     this.passed = 1;
-    const right = this.gates[0];
-    const second = right ? 2 : 1;
+    const second = whitePair ? this.pairBoards[this.routed].whiteBranch : this.gates[0] ? 2 : 1;
+    const right = second === 2;
     await go(o.gate[second]);
     this.passed = 2;
     // The first gate was read when the egg passed it; the second is read now.
     const exit = right ? (this.gates[2] ? 3 : 2) : this.gates[1] ? 1 : 0;
     await go(o.exit[exit]);
     await go({ x: o.bin[exit].x, y: o.bin[exit].y - 10 });
-    const want = exitWanted(this.plan.mode, egg.shell, this.target);
+    const want = this.plan.mode === 'pair' && egg.shell === 'white' ? this.target.nest : exitWanted(this.plan.mode, egg.shell, this.target);
+    if (this.plan.mode === 'pair') {
+      if (exit !== want) this.pairSuccess = false;
+      else { sfx.sparkle(); this.ctx.particles.burst(node.x, node.y - 30, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 8 }); }
+      node.destroy();
+      return;
+    }
     if (exit === want) {
       sfx.sparkle();
       this.ctx.particles.burst(node.x, node.y - 30, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 12, speed: [100, 240], gravity: 0, life: [0.5, 0.8] });

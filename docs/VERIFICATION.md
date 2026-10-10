@@ -2,6 +2,14 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Egg Catch 7, Set it once
+
+- Added a school level with two hens, three frozen gates and three successful brown/white pairs; retries preserve the board.
+- Passed typecheck, all 861 unit tests (122 files), and the production build; pair rules cover unique solvability, unsolved deals, seeded repeatability and useful hint steps.
+- Passed `BROWSER_SUITE=woods WOODS_ONLY=pair`: two failed attempts, gates locked during rolling, hint, completion, saved misses/hints and sticker.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=7`: clean completion in about 30 demonstration seconds. Portrait and landscape screenshots reviewed; arrow moved clear of the hen.
+- Device speech, real iPad touches and child play remain untested. Release checks recorded below once complete.
+
 ## Coverage summary
 
 The last recorded pass of each browser suite (suite names and filters are in the [README](../README.md#browser-checks)). Entries from 2026-10-07 are below; earlier ones are in the [archived log](archive/VERIFICATION-2026-10-05-06.md). Re-check this table when an entry adds a pass.
@@ -38,6 +46,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot |
 | `couchconga` | 2026-10-08 | Pond Conga entry | About two minutes; plays a full four-pond course with the bot |
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
+| Egg Catch 7 | 2026-10-10: paired-route rules, `woods` filtered to `pair`, ghost finger at level 7, portrait and landscape | Egg Catch 7 entry | iPad and child play untested |
 | `woods` | `code` level 7 (detective doors) 2026-10-10;  `night` (Goodnight Room, levels 1 to 4) 2026-10-10 after the seeded room draw; `penguin` level 6 (Ice Blocks) 2026-10-10; `mailmap` 2026-10-09 after Hazel's drawing moved to `src/art/lands.ts`; 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `shop` (Market Stall level 7, an extra-shell payment, nudge, hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
 | Critter Sort 5 | 2026-10-10: rule tests, `WOODS_ONLY=sort FROM_LEVEL=5` (two wrong drops, hint and completion), and `FINGER_ONLY=critter-sort FINGER_LEVELS=5` clean | Critter Sort 5 entry | Portrait screenshot reviewed; iPad remains untested |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
