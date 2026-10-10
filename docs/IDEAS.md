@@ -19,6 +19,7 @@ How to use it:
 | [Sketch for the next one to build](#sketch-for-the-next-one-to-build) | Memory Match 10–12 |
 | [Fun and arcade review](#fun-and-arcade-review-2026-10-09) | Lander and Drift, a real-time grown-up game; waits on a scoring decision |
 | [Short-ladder audit](#short-ladder-audit-2026-10-09) | Every school-reaching ladder, with the ordered list of next decisions |
+| [Round two: the longer ladders](#round-two-the-longer-ladders-2026-10-10) | Next levels for eleven longer ladders and two pre-K ceilings, with what each test asserts |
 | [Candidates](#candidates), [Gap review proposals](#proposals) and [Extend existing games](#extend-existing-games-before-making-duplicates) | The rest; each needs its definition of ready first |
 
 ## Design lessons
@@ -521,6 +522,64 @@ This is a mode of an existing game, extends a ladder the child already knows, an
 1. **Is two levels enough for a favorite?** The adaptive clamp means a child stays at the last level, so a favorite she plays often may want a longer school window (three or four levels). The audit favors giving the best games more depth over stretching all of them.
 2. **Representations versus a new game.** Memory Match 10–12 teaches fractions and a clock through matching; Pet Kitchen and Clock Tower teach them by doing. Decide whether the matching levels are a bridge or a duplicate once they can be played.
 3. **Order.** Pet Kitchen first (no new art), then Memory Match 10 (text cards) and Pattern Train, with Memory Match 11 and 12 after a legibility look; then Treasure Map and Critter Sort (already on the roadmap), then Bouncy Launch and Rainbow Fingers. Sink or Float's *make it float* is the strongest of the costlier set.
+
+### Round two: the longer ladders (2026-10-10)
+
+A **proposal**. The audit above read only the short ladders. This round reads the school-reaching ladders it skipped, whose school window is already three levels or more, plus two pre-K ceilings. It applies the same test: a new level must change what she decides, reuse the game's own interaction, and have a property a unit test can assert. Every level here is **appended above the current top** and is harder than it. An easier or entry level would wait on two decisions: [how levels are ordered](ROADMAP.md#waiting-on-the-developer) and whether a band's range may skip. Each level was checked against the game's plan table in `logic.ts`, its `levels(band)` and its [GAMES.md](GAMES.md) entry. Nothing was played.
+
+**Every row has the same couplings.** It needs a `describeLevel` line, how-to steps scoped with a `LevelLine`, voice lines and rule tests. Every game has a ghost finger, so the bot must also play the new top level, because `fingerdemo` plays it. Couch trips and courses name their levels in `src/couch/catalog.ts` and `courses.ts`, so an appended level leaves Light Lab, Secret Code, Egg Catch, Robot Path, Frog Hop and Ferry Jam's couch play alone. Such a level reaches the couch only if its `control()` is taught the new mode.
+
+#### Extend now: a real next decision, small to build
+
+| Game (top · school levels) | What the top asks now | Next level | What a test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- |
+| **Market Stall** (6 · 3–6) | Give change from a customer's 10 | **7, Fewest coins:** pay a price from 4 to 10 with as few shells as possible. Any payment that totals the price still buys the fruit. A payment with more coins than needed gets "can you use fewer shells?" and the coins stay on the mat to swap. That counts as a miss only after the swap is offered twice. Optimization replaces "any way works" | With coins 1, 2 and 5, taking the biggest coin each time always gives the fewest. Every price has its fewest count, and the hint's faint coins are a fewest set | S. The plan, a check against the minimum and two voice lines |
+| **Clock Tower** (6 · 2–6) | Set the time one hour later (o'clock and half past) | **7, Five-minute times:** the long hand snaps to all twelve numbers, and she sets a digital time such as 3:25 by counting by fives around the face. The face's small numbers 5, 10, 15 … sit outside the ring as a support, and a wrong time is read back ("the long hand says 3:20"). Reading minutes as fives is a new decision; quarter and half past are special cases of it | `minuteChoices('five')` holds the twelve multiples of 5. The short hand's position is consistent with the minutes. The hint's target hands are the asked time | S. A new mode in `minuteChoices`, a digital time on the sign, and voice for "three twenty-five". Check that the 12 snap marks stay at least 100 units apart on the ring |
+| **Frog Hop** (6 · 3–6) | Hop on or back up to 6 on a line to 20 | **7, Hop to ten first:** a sum that crosses 10 (8 + 5). First a number card asks "how many hops to 10?" (2), and the frog hops there. Then she taps where the rest of the hops (3) land. Splitting a number to bridge ten is a strategy, not a bigger sum | Every question starts at 6 to 9 and crosses 10 without passing 20. The two parts add up to the sum. The second hop always starts at 10 | S. It reuses the card mode from level 5 and the line to 20 from level 6 |
+| **Seesaw Balance** (9 · 6–9) | Boxes on both sides: take the same off both until one box is alone | **10, Two steps:** two identical boxes and some blocks balance blocks (2 boxes + 2 = 8). First take the same off both sides, as on levels 8 and 9, then share what is left between the two boxes, as on level 7. This is the "two-step" stretch of [Box Balance](#new-ideas-from-the-gap-review) | Every seesaw starts level. The box weight is a whole number from 1 to 5. Only same-on-both-sides removals keep it level. The answer is unique | S. Both halves already exist (`same` and the two-box division) |
+| **Secret Code** (6 · 2–6) | Crack a code that can repeat a color | **7, Detective door:** the door opens with two or three guesses and their marks already shown, made by "the pet earlier". She works out the one code that fits every clue and enters it on her first try. Any try that contradicts a shown mark is the existing miss. Pure deduction replaces guessing | `candidates(plan, history)` is exactly one code for every generated door. No shown guess is already the answer. The hint's faint stones are that code | S. The generator loops until one candidate remains. No par rule is involved, so the [par decision](ROADMAP.md#waiting-on-the-developer) for Word Code does not block it |
+| **Robot Path** (10 · 4–10) | A loop with a body of "right ×2, down ×2" | **11, Fix the program:** a finished program runs and the robot bumps a rock or stops short. Exactly one slot is wrong; she taps it, changes its arrow or count, and runs it again. Step-through playback already lights each slot. This is debugging, the [E1 step](ROADMAP.md#how-familiar-games-keep-growing) "repair one wrong command" | Each authored board has exactly one one-slot change that reaches the star. The broken program fails visibly before the end. The hint lights the wrong slot | S–M, authored boards. The school `max` is `ROBOT_PLANS.length`, so appending a plan widens the range by itself. Editing one slot in place may need a small control change |
+| **Egg Catch** (6 · 4–6) | The gates are locked: predict where the egg lands | **7, Set it once:** one brown and one white egg will drop from different hens. She sets the gates before either rolls so brown reaches the basket and white the nest, then taps go. One gate setting has to work for two paths | Every board has at least one setting that routes both eggs, and none routes both with the gates as dealt. The hint flips a gate the solution needs | S. It reuses the route and sort boards |
+| **Light Lab** (6 · 2–6) | A four-mirror path with spares and rocks | **7, Where will it shine?** the mirrors are set and locked. She taps the flower, rock or edge where she thinks the beam will stop, then taps the sun and the beam draws cell by cell. A wrong guess is an unscored prediction, as in Egg Catch 6 and Sink or Float, and the replay explains it. A round of three predictions is followed by one ordinary plan puzzle with the same mirrors unlocked. This is the [predict-then-compare](#extend-existing-games-before-making-duplicates) mode | The traced beam has one end cell. Every round has three or more tappable candidates. The plan puzzle stays solvable | S–M. A tap target on every candidate end cell, kept at least 100 units on a 7 by 5 grid |
+| **Duck Pond** (10 · 8–10) | How many more make 10? | **11, Hiding ducks:** the sign says how many ducks live in the pond (5 to 10). Some paddle under the bridge, and she answers on lily pads how many are hiding. Part and whole with any total, not only ten | The hidden count is at least 1 and the total is at most 10. A wrong pad counts on aloud from the ducks she can see | S. The bridge is a new scenery shape in Graphics |
+| **Word Monsters** (7 · 5–7) | Word families: change the first sound (hat, cat, bat) | **8, Change the end:** the first two monsters stay and she changes the last sound (cat, cap, can). It is the same slot interaction as level 7, at the other end of the word | Every word in a set is a picturable three-letter word. The spare letters make no other real word in that slot | S. Picture art for the new words. Like every phonics level, its sounds need the [device-speech check](ROADMAP.md#needs-a-person-or-a-device) |
+| **Mail Carrier** (7 · 4–7) | Plan two deliveries in order, then walk them | **8, Which way is shorter?** a second map whose paths make a loop, so two routes reach a house. Stepping stones mark each path's length. She taps the shorter route before the pet walks, and a tie never occurs. This is "compare routes" from the [E1 table](ROADMAP.md#how-familiar-games-keep-growing) | `walk()` finds the shorter route. The two routes always differ by at least two stones. The hint glows the shorter one | M. Today's `MAP_EDGES` are a tree with one route to each house, so this needs a second graph and a stone count drawn along its edges |
+
+#### Extend later: a real next decision that costs more
+
+| Game | Next decision | Why it waits |
+| --- | --- | --- |
+| **Photo Safari** (6 · 4–6) | *Two clues, no name:* "the animal jumping by the pond", where two animals jump and two stand by the pond, so neither clue alone is enough | Today every animal has its own spot (`makeScene` takes one spot each), so level 5's place word alone already identifies the animal. Two animals sharing a spot is a layout change |
+| **Clock Tower** (after 7) | *How long?* from 3 o'clock to half past 5, answered by turning the long hand around and counting half hours | Elapsed time needs a stated answer form (hours and half hours) and a picker that is not yet designed |
+| **Seesaw Balance** (after 10) | Two different unknown boxes on two seesaws: the first gives the square, then the second uses it | A second seesaw on screen, and the substitution idea is closer to age 8–9 |
+| **Garden Rows** (6 · 3–6) | A 4 by 4 bed with 2 by 2 boxes, a third rule | Overlaps the couch-only Sudoku Garden and the [island forms of couch puzzles](ROADMAP.md#waiting-on-the-developer) decision. A bigger bed is only a size step |
+| **Light Lab** (after 7) | A splitter that sends one beam two ways to wake two flowers | A new piece with its own beam rule and solver change |
+| **Robot Path** (after 11) | A reusable routine: a purple "do this" box called twice | A second program row; the next idea after the loop |
+| **Word Monsters** (after 8) | *Blend it:* the monsters say c, a, t slowly and she picks the picture | Device speech for isolated sounds must be heard on the iPad first |
+
+#### Two pre-K ceilings
+
+These games stop at pre-K, so appending a level only widens the pre-K range.
+
+| Game (top · pre-K levels) | Next level | What a test asserts | Cost |
+| --- | --- | --- | --- |
+| **Feelings Faces** (7 · 5–7) | **8, How can we help?** watch a small event, then choose what would help the pet feel better. Level 6's cause and level 5's help become one two-step choice, and a wrong helper says what it would help instead | Every event has one feeling and one helper that fits it | S, with the existing events and helpers |
+| **Weather Wardrobe** (6 · 4–6) | **7, The weather changes:** the pet is dressed for rain and the sun comes out, so she taps what to take off and then what to put on | Every change has at least one item to remove and one to add, and each item belongs to one weather | S–M. Tapping a worn item to take it off is new to this game |
+
+#### Leave: the ceiling is right, or it was just raised
+
+| Game | Why |
+| --- | --- |
+| **Monster Munch** (8 · 6–8) | Fair shares with leftovers is the right end. An average (Share Fairly) is for ages 8–10 |
+| **Habitat Helpers** (6 · 4–6) | The model is deliberately small. A third visitor would be more of the same, and real ecology needs a stated model first |
+| **Chain Reaction** (6 · 3–6) | Its top level already accepts several valid designs. Bigger machines would be a size step |
+| **Ferry Jam** (6 · 3–6) | The ladder is already a size ladder, and the couch course owns the hardest harbors |
+| **Pet Kitchen, Inchworm Measure, Picture Graph** | Raised from the first audit in the last two days. Play them before going higher |
+| **Lemonade Stand** | Owned by the economy pilot |
+
+Not read in this round: the pre-K ceilings of Color Garden, Shape Sorter, Splish Splash, Peekaboo Barn, Duckling Parade, Roundup and Sound Garden.
+
+**Suggested order** (non-binding): Market Stall, Clock Tower, Frog Hop, Seesaw Balance and Secret Code first. They are plan entries on modes that already exist. Then Robot Path and Egg Catch, which need authored or searched boards. Then Light Lab, Duck Pond and Word Monsters, which need a little new drawing. Mail Carrier is last, because it needs a second map.
 
 ## Reference backlog
 
