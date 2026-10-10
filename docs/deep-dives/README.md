@@ -77,7 +77,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (slice 1 built) | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)) | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
 | Inchworm Measure | `inchworm` | KS | 6 | 4 | not started | — | — |
-| Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | not started | — | — |
+| Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | in progress | `claude/fervent-keller-f86ol8` | — |
 | Lasso Loops | `lasso-loops` | PKS | 5 | 4 | not started | — | — |
 | Lemonade Stand | `lemonade-stand` | S | 4 | 4 | not started | — | — |
 | Letter Trails | `letter-trails` | PKS | 8 | 3 | not started | — | — |
