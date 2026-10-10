@@ -417,6 +417,8 @@ export const SCRIPT = {
   'seesaw.same-hint': ['Try the glowing one.'],
   'seesaw.still-level': ['Still level!', 'Level! Keep going.'],
   'seesaw.alone': ['The box is alone, and the seesaw is level. How many blocks heavy is the box?'],
+  'seesaw.share': ['Take the same things off both sides. When two boxes are left, share the blocks fairly between them.'],
+  'seesaw.share-answer': ['Two boxes balance these blocks. Share the blocks fairly: how many blocks belong to each box?'],
   'game.teddy-doctor': ['Teddy doctor!'],
   'doctor.play': ['Oh no, boo-boos! Tap them to put on bandages.'],
   'doctor.part': ['Ouch! Please put a bandage on my {part}.'],

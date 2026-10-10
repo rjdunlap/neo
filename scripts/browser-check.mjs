@@ -3258,8 +3258,8 @@ async function woodsBatch() {
     log('Little Helpers 6: equal teams under each fruit of a bunch, short whistles counted by groups, hint, saved score and sticker passed');
   }
 
-  // Seesaw Balance 8–9: take the same off both sides until the box is alone, then say its weight.
-  if (!only || only === 'boxes') for (let level = Math.max(8, fromLevel); level <= 9; level++) {
+  // Seesaw Balance 8–10: take the same off both sides until a box is alone, or two boxes share the blocks.
+  if (!only || only === 'boxes') for (let level = Math.max(8, fromLevel); level <= 10; level++) {
     await launch('seesaw-balance', level);
     if (level === 9) await page.setViewportSize({ width: 768, height: 1024 });
     const rounds = await page.evaluate(() => neo.scene.game.rounds.length);
@@ -3288,13 +3288,13 @@ async function woodsBatch() {
         await move({ side: 'grass', kind: 'block' }, 'other');
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.tips, !!neo.scene.game.hintItem]), [0, false]);
       }
-      if (level === 9) { await move({ side: 'fixed', kind: 'box' }, 'grass'); await move({ side: 'other', kind: 'box' }, 'grass'); }
+      if (level >= 9) { await move({ side: 'fixed', kind: 'box' }, 'grass'); await move({ side: 'other', kind: 'box' }, 'grass'); }
       while (await page.evaluate(() => { const g = neo.scene.game; return g.items.some((i) => i.side === g.round.fixedSide && i.thing.kind === 'block'); })) {
         await move({ side: 'fixed', kind: 'block' }, 'grass');
         await move({ side: 'other', kind: 'block' }, 'grass');
       }
       await page.waitForFunction(() => neo.scene.game.pads.length === 3 && !neo.scene.game.busy, null, { timeout: 15000 });
-      assert.equal(await page.evaluate(() => { const g = neo.scene.game; return g.items.filter((i) => i.side && i.thing.kind === 'block').length === g.round.answer; }), true, 'the blocks across show the box weight');
+      assert.equal(await page.evaluate(() => { const g = neo.scene.game; const boxes = g.items.filter((i) => i.side && i.thing.kind === 'box').length; const blocks = g.items.filter((i) => i.side && i.thing.kind === 'block').length; return blocks === boxes * g.round.answer; }), true, 'the blocks show one equal group for each remaining box');
       if (n === 0) {
         await tap('neo.scene.game.pads.find((p) => p.value !== neo.scene.game.round.answer)');
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
@@ -3305,7 +3305,7 @@ async function woodsBatch() {
     await finished('seesaw-balance');
     assert.deepEqual(await score('seesaw-balance'), [1, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Seesaw Balance ${level} (${level === 8 ? 'box and blocks' : 'boxes on both sides'}): same off both sides, tips explained without misses, glow, putting back, a lone box's weight, saved score and sticker passed`);
+    log(`Seesaw Balance ${level} (${level === 8 ? 'box and blocks' : level === 9 ? 'boxes on both sides' : 'two-box sharing'}): same off both sides, tips explained without misses, glow, putting back, visible block groups, saved score and sticker passed`);
   }
 
   // Mail Carrier 6–7: Hazel's picture map of the woods, the key, and two planned stops.

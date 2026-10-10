@@ -22,6 +22,7 @@ import {
   other,
   planFor,
   seesawTouch,
+  shareSide,
   tilt,
   total,
   weigh,
@@ -39,7 +40,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 7 },
-  school: { min: 6, max: 9 },
+  school: { min: 6, max: 10 },
 };
 
 /** From the middle of the seesaw to each tray's post. */
@@ -448,7 +449,7 @@ class SeesawBalance implements Game {
     this.lastOff = null;
     this.demoTested.clear();
     const r = this.round;
-    const same = this.plan.mode === 'same';
+    const same = this.plan.mode === 'same' || this.plan.mode === 'share';
     // On the take-the-same-off levels everything starts on the trays, and anything can come off.
     r.fixed.forEach((thing, i) => this.addItem(thing, i, !same, r.fixedSide));
     r.across?.forEach((thing, i) => this.addItem(thing, i, false, other(r.fixedSide)));
@@ -467,6 +468,7 @@ class SeesawBalance implements Game {
     else if (mode === 'heaviest') await this.ctx.instruct('seesaw.heaviest');
     else if (mode === 'parts') await this.ctx.instruct('seesaw.parts', { n: r.answer });
     else if (mode === 'same') await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.same-boxes' : 'seesaw.same');
+    else if (mode === 'share') await this.ctx.instruct('seesaw.share');
     else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.twins' : 'seesaw.mystery');
     this.busy = false;
   }
@@ -565,7 +567,7 @@ class SeesawBalance implements Game {
     const mode = this.plan.mode;
     const r = this.round;
     if (mode === 'heaviest') return;
-    if (mode === 'same') return this.checkSame();
+    if (mode === 'same' || mode === 'share') return this.checkSame();
     if (mode === 'up' || mode === 'heavy') {
       this.busy = true;
       await this.ctx.tw.wait(0.7);
@@ -601,7 +603,7 @@ class SeesawBalance implements Game {
   private async removed() {
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
-    if (mode === 'same') return this.checkSame();
+    if (mode === 'same' || mode === 'share') return this.checkSame();
     if (mode !== 'level' && mode !== 'parts' && mode !== 'mystery') return;
     const side = other(this.round.fixedSide);
     const added = total(this.items.filter((i) => i.side === side).map((i) => i.thing));
@@ -632,7 +634,7 @@ class SeesawBalance implements Game {
     this.tips = 0;
     this.hintItem = null;
     const sides = { left: this.items.filter((i) => i.side === 'left').map((i) => i.thing), right: this.items.filter((i) => i.side === 'right').map((i) => i.thing) };
-    if (aloneSide(sides)) return this.balanced();
+    if (aloneSide(sides) || (this.plan.mode === 'share' && shareSide(sides))) return this.balanced();
     void this.ctx.say('seesaw.still-level');
   }
 
@@ -652,13 +654,14 @@ class SeesawBalance implements Game {
   private async balanced() {
     this.busy = true;
     await this.ctx.tw.wait(0.6);
-    if (this.plan.mode !== 'mystery' && this.plan.mode !== 'same') {
+    if (this.plan.mode !== 'mystery' && this.plan.mode !== 'same' && this.plan.mode !== 'share') {
       await this.ctx.say('seesaw.balanced');
       return this.won();
     }
     // How heavy is the box? The blocks tell us.
     this.hintItem = null;
     if (this.plan.mode === 'same') await this.ctx.instruct('seesaw.alone');
+    else if (this.plan.mode === 'share') await this.ctx.instruct('seesaw.share-answer');
     else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', { n: total(this.round.fixed) });
     this.pads = numberChoices(this.ctx.rng, this.round.answer).map((n) => {
       const pad = this.ctx.track(new Pad(n));

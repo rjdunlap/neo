@@ -52,6 +52,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### 2026-10-10 · Seesaw Balance level 10 (two steps)
+
+Added the school ladder's tenth level: three hidden boxes and common blocks balance one hidden box and extra blocks. Taking equal box and block pairs away leaves two identical boxes against two equal groups of visible blocks, so the last answer names one box's fair share. The level has its own spoken instruction and scoped how-to step; the ghost finger follows the same real drags and answer pads. Ran: `npm run typecheck`; Seesaw Balance's 7 rule tests (100 seeds for the new setup, its equal-pair reduction and bot path); `BROWSER_SUITE=woods WOODS_ONLY=boxes FROM_LEVEL=10` (three rounds, tips and glow, wrong answer, score and sticker); and `fingerdemo` filtered to Seesaw Balance level 10. Not run: an iPad, device speech, or a child playtest.
+
 ### 2026-10-10 · Penguin Slide level 6 (Ice Blocks)
 
 Added pushable ice blocks: `move()` (a slide, or a push when the penguin is beside a block that can move), a solver over penguin, fish and block positions, a level-6 plan (one block, one fish, each pond must need a push), block art, undo and restart that restore blocks, a memoized hint, `slide.ice`, a how-to line. Ran: typecheck, all 855 unit tests (150 seeds per plan for solvability, fewest route, ghost-finger taps and "blocks matter"; couch courses unchanged), `BROWSER_SUITE=woods WOODS_ONLY=penguin FROM_LEVEL=6` (taps, bumps, pushes, hint arrow, undo, score and sticker; the script now solves with `g.blocks`), a reviewed portrait screenshot, `fingerdemo` filtered to Penguin Slide level 6 (clean, 17 s). `howto` filtered to Penguin Slide at her level and, with the new `HOWTO_LEVEL=6`, at level 6 (the card fits in landscape and portrait; the longer level-6 step was shortened first). Not run: levels 1–5 in the browser again, the couch suites (no couch code changed; couch trips play levels 4 and 5 and the courses' boards have no blocks), an iPad, a child.
