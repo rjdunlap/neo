@@ -65,7 +65,7 @@ There are seventy-four games, listed below. "Ages" lists the bands each game has
 | Splish Splash | lap–pre-K | scrub mud off the pet | named body parts in a shuffled order, two at once, then "first … then …" |
 | Feelings Faces | lap–pre-K | tap bubbles to see the pet feel happy, sad, sleepy or surprised | match and name faces, choose what helps, say why a feeling happened, find a friend's feeling |
 | Weather Wardrobe | lap–pre-K | tap the sky to change the weather | dress the pet for sun, rain or snow, then pack for a two-weather trip |
-| Duck Pond | lap–school | count along as ducks hop in | put N in, how many?, adding and taking away, how many more make ten |
+| Duck Pond | lap–school | count along as ducks hop in | put N in, how many?, adding and taking away, how many more make ten, then find the ducks hiding under the bridge |
 | Monster Munch | lap–school | tap cookies into a hungry monster | count along, one cookie each, feed exactly N then ring the bell, cookies and apples, fair sharing, sharing with leftovers |
 | Puzzle Pals | lap–school | finish a two-piece picture | three to twelve pieces, first over a faint picture, then an empty frame |
 | Sink or Float | lap–school | drop things in the water and watch | guess and test, sort into baskets, surprises like a floating apple |
@@ -251,7 +251,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `woods` | Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Lemonade Stand, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure, and these ladder steps: Little Helpers' equal groups (`helpers`), Seesaw Balance 8–9 (`boxes`), Mail Carrier 6–8 (`mailmap`), Egg Catch 6 (`predict`) and 7 (`pair`), Bubble Pop 10–11 (`bonds`), Word Monsters 7 (`families`) | `WOODS_ONLY=light\|penguin\|peek\|code\|hop\|shop\|grow\|clock\|pixels\|night\|snack\|beat\|rhyme\|go\|ramp\|sort\|map\|opp\|graph\|worm\|bonds\|predict\|pair\|families\|helpers\|boxes\|mailmap\|lemon` |
 | `creative` | Stamp Studio, Pet Kitchen, Rhythm Neighbors, Tangram Town | `CREATIVE_ONLY=stamps\|kitchen\|rhythm\|tangram` |
 | `next` | Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks | `NEXT_ONLY=seesaw\|doctor\|bumper\|tricks` |
-| `originals` | Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond (with level 10), Shape Sorter, Color Garden | `ORIGINALS_ONLY=bubbles\|jelly\|peekaboo\|ducks\|shapes\|garden` |
+| `originals` | Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond (through level 11), Shape Sorter, Color Garden | `ORIGINALS_ONLY=bubbles\|jelly\|peekaboo\|ducks\|shapes\|garden`; `DUCK_LEVELS=11` to run only Duck Pond 11 |
 | `batch` | The follow-on ten (Photo Safari 6 too). `pegs` is flaky on the development Mac | `BATCH_ONLY=monsters\|pegs\|salon\|garden\|helpers\|eggs\|mail\|safari\|bounce\|dots` |
 | `arcade` | Duckling Parade, Scoop Shop, Roundup, Bouncy Launch | `ARCADE_ONLY=parade\|scoop\|roundup\|launch` |
 | `early` | Rainbow Fingers and Splish Splash | `EARLY_ONLY=paint\|bath` |

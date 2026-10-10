@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
 
-export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten';
+export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -27,7 +27,22 @@ export const PLANS: DuckPlan[] = [
   { mode: 'add', rounds: 5, min: 1, max: 10, subtract: true },
   // Early school: some ducks swim in; how many more fill the pond to ten?
   { mode: 'ten', rounds: 5, min: 3, max: 9 },
+  // School: the total is known, but some ducks are hidden beneath a bridge.
+  { mode: 'hide', rounds: 5, min: 5, max: 10 },
 ];
+
+export interface HidingPuzzle {
+  total: number;
+  visible: number;
+  hidden: number;
+}
+
+/** A fair part-whole question: always some ducks to see and at least one hiding. */
+export function hidingPuzzle(rng: Rng, plan: DuckPlan): HidingPuzzle {
+  const total = rng.int(plan.min, plan.max);
+  const hidden = rng.int(1, Math.min(5, total - 1));
+  return { total, visible: total - hidden, hidden };
+}
 
 /** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
 export function tenStarts(rng: Rng, plan: DuckPlan): number[] {

@@ -1829,7 +1829,8 @@ async function originals() {
   }
 
   // Duck Pond: tapping ducks in, stopping at a number, and answering on lily pads.
-  for (let level = 1; level <= 10 && (!only || only === 'ducks'); level++) {
+  const duckLevels = process.env.DUCK_LEVELS?.split(',').map(Number) ?? Array.from({ length: 11 }, (_, i) => i + 1);
+  for (const level of duckLevels.filter((n) => n >= 1 && n <= 11 && (!only || only === 'ducks'))) {
     if (level === 9) await portrait(true);
     await launch('duck-pond', level);
     await page.waitForTimeout(400);
@@ -2032,7 +2033,7 @@ async function next() {
         }
         await kit.until(() => g.index > r || g.finished, 15000);
       }
-    });
+    }, level);
     await screenshot(`seesaw-balance-${level}`);
     await finished('seesaw-balance');
     assert.deepEqual(await score('seesaw-balance'), mode === 'level' ? [0, 0] : [2, 1], `seesaw ${level} score`);
