@@ -19,6 +19,7 @@ import { answerOf, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, pictu
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
+  school: { min: 5, max: 5 },
 };
 
 const BEAT_COLORS: ColorName[] = ['red', 'yellow', 'blue'];
@@ -365,7 +366,7 @@ class ClapSyllables implements Game {
       const node = new Container();
       node.addChild(new Graphics().roundRect(-100, -78, 200, 156, 28).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 6, color: swatch.purple.line }));
       for (let i = 0; i < n; i++) {
-        const dot = new Bead(BEAT_COLORS[i], 17);
+        const dot = new Bead(BEAT_COLORS[i % BEAT_COLORS.length], 17);
         dot.light(true);
         dot.position.set((i - (n - 1) / 2) * 50, 38);
         node.addChild(dot);
@@ -486,14 +487,21 @@ class ClapSyllables implements Game {
       this.caption.position.set(v.w / 2, v.h * 0.34 + 160);
       this.beads.forEach((b, i) => b.position.set(v.w / 2 + (i - (this.beads.length - 1) / 2) * 76, v.h * 0.34 + 214));
     } else if (mode === 'sort') {
-      // The tray is across the top, far from the pet's corner, so it can use the whole width.
-      const xs = spread(this.cards.length, 100, v.w - 100, 165);
+      // Longer words use two rows of four; each picture keeps a large, clear drag target.
+      const perRow = this.cards.length > 5 ? 4 : this.cards.length;
       this.cards.forEach((c, i) => {
         if (c.drag?.enabled === false) return;
-        c.node.position.set(xs[i], v.h * 0.3);
-        if (c.drag) c.drag.home = { x: xs[i], y: v.h * 0.3 };
+        const row = Math.floor(i / perRow);
+        const rowStart = row * perRow;
+        const rowCount = Math.min(perRow, this.cards.length - rowStart);
+        const xs = spread(rowCount, 100, v.w - 100, 165);
+        const x = xs[i - rowStart];
+        const y = this.cards.length > 5 ? v.h * (0.22 + row * 0.22) : v.h * 0.3;
+        c.node.position.set(x, y);
+        if (c.drag) c.drag.home = { x, y };
       });
-      this.bins.forEach((b, i) => b.node.position.set(v.w / 2 + (i - (this.bins.length - 1) / 2) * 250, v.h * 0.72));
+      const binY = this.cards.length > 5 ? v.h * 0.66 : v.h * 0.72;
+      this.bins.forEach((b, i) => b.node.position.set(v.w / 2 + (i - (this.bins.length - 1) / 2) * 250, binY));
     } else {
       const xs = spread(this.cards.length, 190, v.w - 90, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * 0.62));
@@ -538,7 +546,7 @@ function sticker(seed: number): Container {
   art.y = -14;
   c.addChild(art);
   for (let i = 0; i < syllables(word); i++) {
-    const dot = new Bead(BEAT_COLORS[i], 11);
+    const dot = new Bead(BEAT_COLORS[i % BEAT_COLORS.length], 11);
     dot.light(true);
     dot.position.set((i - (syllables(word) - 1) / 2) * 30, 62);
     c.addChild(dot);
@@ -552,7 +560,7 @@ export const clapSyllables: GameModule = {
   titleLine: 'game.clap-syllables',
   region: 'story-grove',
   skills: ['syllables', 'phonological-awareness', 'rhythm', 'counting'],
-  bands: ['preschool', 'prek'],
+  bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   touchDemo: true,

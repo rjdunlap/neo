@@ -7,7 +7,7 @@ import { picture } from '../rhyme-time/pictures';
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 /** Words drawn here (the rest are Rhyme Time's pictures). Listed so a test can tell every word has a picture. */
-export const OWN_PICTURES = ['apple', 'orange', 'lemon', 'balloon', 'flower', 'bunny', 'blueberries', 'banana', 'butterfly', 'umbrella', 'ladybug'];
+export const OWN_PICTURES = ['apple', 'orange', 'lemon', 'balloon', 'flower', 'bunny', 'blueberries', 'banana', 'butterfly', 'umbrella', 'ladybug', 'watermelon', 'helicopter'];
 
 /** Scales a drawing to fit a square and centers it on (0, 0). */
 export function fitTo(art: Container, size: number): Container {
@@ -66,6 +66,19 @@ export function wordPicture(word: string): Container {
       g.ellipse(0, -38, 26, 16).fill(ink);
       g.circle(-9, -42, 5).circle(9, -42, 5).fill(0xffffff);
       for (const dx of [-1, 1]) g.moveTo(dx * 8, -52).lineTo(dx * 18, -66).stroke(line(ink, 3));
+      break;
+    case 'watermelon':
+      g.ellipse(0, 0, 58, 45).fill(swatch.green.fill).stroke(line(swatch.green.line, 5));
+      g.ellipse(0, 0, 46, 34).fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
+      for (const x of [-24, -8, 9, 25]) g.ellipse(x, 0, 2.5, 5).fill(ink);
+      break;
+    case 'helicopter':
+      g.roundRect(-42, -8, 78, 45, 22).fill(swatch.blue.fill).stroke(line(swatch.blue.line, 5));
+      g.moveTo(30, 12).lineTo(60, -4).lineTo(63, 4).lineTo(37, 22).stroke(line(swatch.blue.line, 8));
+      g.moveTo(-12, -10).lineTo(-12, -30).moveTo(-44, -31).lineTo(20, -31).stroke(line(swatch.brown.line, 5));
+      g.moveTo(-30, -38).lineTo(8, -38).stroke(line(swatch.brown.line, 4));
+      g.moveTo(-30, 40).lineTo(32, 40).moveTo(-18, 34).lineTo(-25, 42).moveTo(18, 34).lineTo(25, 42).stroke(line(swatch.brown.line, 5));
+      g.ellipse(-6, 4, 20, 14).fill(swatch.white.fill).stroke(line(swatch.blue.line, 3));
       break;
     default:
       return picture(word);

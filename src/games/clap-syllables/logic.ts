@@ -22,6 +22,8 @@ export const WORDS: readonly Word[] = [
   w('ap', 'ple'), w('or', 'ange'), w('lem', 'on'), w('bal', 'loon'), w('flow', 'er'), w('bun', 'ny'),
   // Three claps
   w('ba', 'na', 'na'), w('but', 'ter', 'fly'), w('um', 'brel', 'la'), w('la', 'dy', 'bug'), w('blue', 'ber', 'ries'),
+  // Four claps
+  w('wa', 'ter', 'mel', 'on'), w('hel', 'i', 'cop', 'ter'),
 ];
 
 export const byCount = (n: number) => WORDS.filter((x) => syllables(x) === n);
@@ -33,7 +35,7 @@ export interface ClapPlan {
   /** Words per round ('along', 'solo'), pictures to sort ('sort') or questions ('match'). */
   count: number;
   /** The most beats a word in this level has. */
-  max: 2 | 3;
+  max: 2 | 3 | 4;
   name: string;
 }
 
@@ -42,6 +44,7 @@ export const PLANS: ClapPlan[] = [
   { mode: 'solo', count: 3, max: 3, name: 'Clap a word by yourself: count its beats' },
   { mode: 'sort', count: 5, max: 3, name: 'Sort pictures by how many claps are in their names' },
   { mode: 'match', count: 4, max: 3, name: 'Hear the claps, then find the picture with that many beats' },
+  { mode: 'sort', count: 8, max: 4, name: 'Sort longer words by one, two, three or four claps' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -58,7 +61,7 @@ export const answerOf = (q: Question) => q.words.find((x) => syllables(x) === q.
 
 /** The questions for one round. Words never repeat within a round. */
 export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
-  const counts = plan.max === 2 ? [1, 2] : [1, 2, 3];
+  const counts = Array.from({ length: plan.max }, (_, i) => i + 1);
   const pool = (n: number) => rng.shuffle(byCount(n));
   const pools = new Map(counts.map((n) => [n, pool(n)]));
   const take = (n: number) => pools.get(n)!.pop()!;
@@ -71,7 +74,10 @@ export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
   }
   if (plan.mode === 'sort') {
     const picked = [...counts];
-    while (picked.length < plan.count) picked.push(rng.pick(counts));
+    while (picked.length < plan.count) {
+      const available = counts.filter((n) => pools.get(n)!.length > picked.filter((selected) => selected === n).length);
+      picked.push(rng.pick(available));
+    }
     return [{ words: rng.shuffle(picked.map(take)) }];
   }
   // match: each question shows one picture of each size and plays one of those sizes.
