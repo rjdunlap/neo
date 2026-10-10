@@ -230,3 +230,7 @@ Read from each game's `bands`, `region` and level table on 2026-10-09 (counts of
 - **Reading and writing stop early.** Letter Trails traces capitals and names; Word Monsters ends at three-letter words and word families; every prompt in the catalog is spoken. No game asks her to read a printed word for its meaning, or to write a numeral or a lowercase letter.
 - **Time stops at the clock.** Clock Tower is the only time game. No game names days, months or seasons or shows a life cycle.
 - **The lap band has no song she already knows.** Song Maker generates random songs from a seed.
+
+### Secret Code: detective doors (2026-10-10)
+
+School level 7 appends two seeded doors with two or three prior guesses, none already correct, identifying exactly one distinct-color code. Existing stone taps, clear-slot taps and the key carry the round. Original clues stay visible; guesses contradicting the whole evidence count once, with a spoken reminder and faint solution stones after two misses. The ghost finger and controller bot reason from the same candidate rules. Levels 1–6 and saved pins retain their meanings; pre-K stays at 1–3, school extends to 2–7.

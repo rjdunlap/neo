@@ -769,6 +769,8 @@ export const SCRIPT = {
   'hop.done': ['The frog hopped all the way home. Ribbit!'],
   'code.yesno': ['Tap stones to fill the slots, then turn the key. A green check means the right stone is in the right place. Gray means try another stone there.'],
   'code.yellow': ['Green means right stone, right place. Yellow means that stone is in the code, but in another slot. Gray means it is not in the code at all.'],
+  'code.detective': ['Your friend tried these stones already. Look at all the marks to work out the one code that fits. Tap stones to fill the slots, then turn the key. Green means right place, yellow means another place, and gray means that stone is not in the code.'],
+  'code.contradiction': ['That try does not fit all the clues. Look at the stones and marks your friend left above the door.'],
   'code.repeat': ['Careful, this door is tricky: a color can be used twice!'],
   'code.fill': ['Fill every slot first, then turn the key.'],
   'code.green': ['{g} green!'],
