@@ -511,7 +511,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
 | **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
-| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. Goodnight Room now has one: the 2026-10-10 quantity direction ([deep dive](deep-dives/goodnight-room.md)); Opposites has the same reason and a school gap ([deep dive](deep-dives/opposites.md)) |
+| The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. Goodnight Room now has one: the 2026-10-10 quantity direction ([deep dive](deep-dives/goodnight-room.md)); Opposites has the same reason and a school gap ([deep dive](deep-dives/opposites.md)); Animal Snack's [deep dive](deep-dives/animal-snack.md) proposes pre-K and school windows |
 
 ### Sketch for the next one to build
 
@@ -629,7 +629,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Duckling Parade (L–K · 8) | Ponds and paths | **9, Two of one, then another:** yellow, yellow, blue. **10, Fix the parade:** one duckling is out of pattern, so swap it. Then a `school` window at 9–10 | — |
 | Roundup (L–K · 6) | More animal kinds | **7, Two things at once:** big pigs in one pen, little pigs in the other. **8, Make the pens fair:** share 6 or 8 animals equally between two pens | — |
 | Egg Catch (L–S · 6) | More chute boards per level | R2: 7 *set it once* | — |
-| Animal Snack (L–P · 5) | **More animals and favorite foods** (horse and oats, monkey and banana, squirrel and acorn) | **6, Snacks for two:** two animals, a number of snacks each. **7, Who is still hungry?:** give one more snack to each animal that has fewer. Together these open a pre-K window | — |
+| Animal Snack (L–P · 5) | Food eaten its own way, scenes, two ways to ask, and sheep, horse, hen and mouse (shared with Peekaboo Barn); see its [deep dive](deep-dives/animal-snack.md), which supersedes this row | **6, Who says moo?**, **7, Their own snacks**, **8, Who eats it too?**, then a school window with **9–10, the menu board** (a decision). The earlier *Snacks for two* and *Who is still hungry?* are dropped: Monster Munch, Garden Grow and Duck Pond hold them | Open wide, taste test and what does the cow eat? (lap and toddler); all wait on level order |
 | Critter Sort (K–S · 5) | More critter features | **6, Where does the new one go?:** the hoops are already sorted and one more critter arrives, so she places it from the rule | Preschool, at level 1 (one hoop) |
 
 **Numbers**
@@ -710,7 +710,7 @@ The couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, W
 #### What this adds up to
 
 - **37 new levels on top**, beyond the ones from the first two rounds.
-- **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room).
+- **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room). Animal Snack's levels are now planned in its [deep dive](deep-dives/animal-snack.md).
 - **Thirteen younger-band openings** that need no new level (kind C).
 - **A content pass for nearly every game.**
 
