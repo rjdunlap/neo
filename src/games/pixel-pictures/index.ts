@@ -11,12 +11,12 @@ import { label } from '../../ui/text';
 import type { PixelPictureCreation } from '../../content/creations';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clues, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, pixelTouch, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
+import { clues, colorClues, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, pixelTouch, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 6 },
 };
 
 const CELL = 100;
@@ -79,15 +79,19 @@ class PixelPictures implements Game {
   resize(v: View) {
     this.view = v;
     const w = this.n * CELL;
-    const clueSpace = this.plan.mode === 'clues' ? 90 : 0;
+    const clueSpace = this.plan.mode === 'clues' || this.plan.mode === 'colorClues' ? 90 : 0;
     const modelSpace = this.plan.mode === 'copy' ? 230 : 0;
-    const x = Math.max(160, (v.w - w - clueSpace - modelSpace) / 2 + clueSpace);
+    const paletteSpace = this.plan.mode === 'colorClues' ? 130 : 0;
+    const x = Math.max(160, (v.w - w - clueSpace - modelSpace - paletteSpace) / 2 + clueSpace);
     const y = Math.max(clueSpace ? 90 + 60 : 110, (v.h - w) / 2 + (clueSpace ? 30 : 0));
     this.board.position.set(x, y);
     this.board.hitArea = new Rectangle(0, 0, w, w);
     this.model.position.set(x + w + 60, y);
     this.clueLayer.position.set(x, y);
-    this.palette.forEach((p, i) => p.node.position.set(x + w + 150, y + w - 60 - i * 120));
+    this.palette.forEach((p, i) => {
+      if (v.w < 920) p.node.position.set(v.w / 2 + (i ? 72 : -72), Math.min(v.h - 60, y + w + 64));
+      else p.node.position.set(x + w + 150, y + w - 60 - i * 120);
+    });
     this.draw();
   }
 
@@ -133,6 +137,7 @@ class PixelPictures implements Game {
     if (this.index > 0) return;
     if (this.plan.mode === 'mirror') return this.ctx.instruct('pixel.mirror');
     if (this.plan.mode === 'clues') return this.ctx.instruct('pixel.clues');
+    if (this.plan.mode === 'colorClues') return this.ctx.instruct('pixel.colorClues');
     return this.ctx.instruct(this.plan.colors === 2 ? 'pixel.copy2' : 'pixel.copy');
   }
 
@@ -151,6 +156,22 @@ class PixelPictures implements Game {
   /** Logic levels: run numbers to the left of each row and above each column. */
   private buildClues() {
     this.clueLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'colorClues') {
+      const { rows, cols } = colorClues(this.picture);
+      rows.forEach((runs, y) => runs.forEach((run, i) => {
+        const t = label(String(run.count), 26, run.count === 0 ? ink : swatch[colorOf(run.color)].line);
+        t.anchor.set(1, 0.5);
+        t.position.set(-16 - i * 42, y * CELL + CELL / 2);
+        this.clueLayer.addChild(t);
+      }));
+      cols.forEach((runs, x) => runs.forEach((run, i) => {
+        const t = label(String(run.count), 26, run.count === 0 ? ink : swatch[colorOf(run.color)].line);
+        t.anchor.set(0.5, 1);
+        t.position.set(x * CELL + CELL / 2, -12 - i * 32);
+        this.clueLayer.addChild(t);
+      }));
+      return;
+    }
     if (this.plan.mode !== 'clues') return;
     const { rows, cols } = clues(this.picture);
     rows.forEach((r, y) => {
@@ -169,7 +190,7 @@ class PixelPictures implements Game {
 
   private buildPalette() {
     for (const p of this.palette.splice(0)) p.node.destroy({ children: true });
-    if (this.plan.mode !== 'copy' || this.plan.colors !== 2) {
+    if (this.plan.mode !== 'colorClues' && (this.plan.mode !== 'copy' || this.plan.colors !== 2)) {
       this.color = this.plan.mode === 'clues' ? LOGIC_COLOR : colorsOf(this.picture)[0];
       return;
     }
@@ -222,8 +243,9 @@ class PixelPictures implements Game {
     if (have && have !== 'x') return;
     if (this.plan.mode === 'mirror' && givenInMirror(this.n, x)) return;
     const want = this.target[y][x];
+    const colorNeedsMatch = (this.plan.mode === 'copy' && this.plan.colors === 2) || this.plan.mode === 'colorClues';
     const fill = this.plan.mode === 'clues' ? (want ? LOGIC_COLOR : null) : want;
-    if (want && (this.plan.mode !== 'copy' || this.plan.colors === 1 || want === this.color)) {
+    if (want && (!colorNeedsMatch || want === this.color)) {
       this.filled[y][x] = fill;
       if (this.hinted?.x === x && this.hinted?.y === y) this.hinted = null;
       sfx.pop(4 + ((x + y) % 6));
@@ -235,12 +257,12 @@ class PixelPictures implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'clues' && !want) {
+    if ((this.plan.mode === 'clues' || this.plan.mode === 'colorClues') && !want) {
       this.filled[y][x] = 'x';
       this.draw();
     }
-    if (want && this.plan.mode === 'copy') void this.ctx.say('pixel.notcolor', { color: colorOf(want) });
-    else void this.ctx.say(this.plan.mode === 'mirror' ? 'pixel.notmirror' : this.plan.mode === 'clues' ? 'pixel.notclue' : 'pixel.notthere');
+    if (want && colorNeedsMatch) void this.ctx.say('pixel.notcolor', { color: colorOf(want) });
+    else void this.ctx.say(this.plan.mode === 'mirror' ? 'pixel.notmirror' : this.plan.mode === 'clues' || this.plan.mode === 'colorClues' ? 'pixel.notclue' : 'pixel.notthere');
     if (this.wrongs >= 2 && !this.hinted) this.hint();
   }
 
@@ -253,6 +275,10 @@ class PixelPictures implements Game {
     }
     cell ??= this.target.flatMap((row, y) => row.map((c, x) => ({ x, y, c }))).find(({ x, y, c }) => c && !(this.filled[y][x] && this.filled[y][x] !== 'x'));
     if (!cell) return;
+    if (this.plan.mode === 'colorClues' && this.target[cell.y][cell.x]) {
+      this.color = this.target[cell.y][cell.x]!;
+      this.draw();
+    }
     this.hinted = { x: cell.x, y: cell.y };
     this.hints++;
     this.wrongs = 0;

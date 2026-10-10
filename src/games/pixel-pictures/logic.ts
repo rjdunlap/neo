@@ -8,7 +8,7 @@ import type { Rng } from '../../engine/random';
  *
  * Pictures are authored as rows of characters: '.' is empty, letters are palette colors.
  */
-export type PixelMode = 'copy' | 'mirror' | 'clues';
+export type PixelMode = 'copy' | 'mirror' | 'clues' | 'colorClues';
 
 export interface PixelPlan {
   mode: PixelMode;
@@ -25,6 +25,7 @@ export const PLANS: PixelPlan[] = [
   { mode: 'mirror', size: 6, colors: 1, pictures: 2, name: 'Finish the other half: make both sides match like a mirror' },
   { mode: 'clues', size: 5, colors: 1, pictures: 2, name: 'Picture logic: the numbers say how many squares in a row are filled' },
   { mode: 'clues', size: 6, colors: 1, pictures: 2, name: 'Bigger picture logic: 6 by 6, with numbers for runs like "2 1"' },
+  { mode: 'colorClues', size: 6, colors: 2, pictures: 2, name: 'Two-color picture logic: each run has its own color' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -57,6 +58,8 @@ export const PICTURES: Record<4 | 5 | 6, Picture[]> = {
     { name: 'a rocket', rows: ['..bb..', '.bbbb.', '.bbbb.', '.bbbb.', 'bbbbbb', 'b.bb.b'] },
     { name: 'a cat face', rows: ['o....o', 'oo..oo', 'oooooo', 'o.oo.o', 'oooooo', '.oooo.'] },
     { name: 'a crown', rows: ['y.yy.y', 'yyyyyy', 'yyyyyy', 'yyyyyy', '......', '......'] },
+    { name: 'a little cat', rows: ['.oo..o', 'oonnno', 'oonnno', 'oooooo', 'o.oo.o', '.o..o.'] },
+    { name: 'a little sailboat', rows: ['....b.', '...bb.', '..bbb.', '.rrrr.', 'rrrrrr', '..rr..'] },
   ],
 };
 
@@ -73,6 +76,7 @@ export function picturesFor(plan: PixelPlan): Picture[] {
   return PICTURES[plan.size].filter((p) => {
     const n = colorsOf(p).length;
     if (plan.mode === 'copy') return plan.colors === 2 ? n === 2 : n === 1;
+    if (plan.mode === 'colorClues') return n === 2;
     if (plan.mode === 'mirror') return n === 1 && symmetric(p);
     // Logic puzzles only ask filled or empty, so any picture works if logic alone can solve it.
     return lineSolvable(p);
@@ -103,6 +107,30 @@ export function runs(line: boolean[]): number[] {
 export function clues(p: Picture): { rows: number[][]; cols: number[][] } {
   const g = toGrid(p).map((r) => r.map((c) => c !== null));
   return { rows: g.map(runs), cols: g[0].map((_, x) => runs(g.map((r) => r[x]))) };
+}
+
+/** Same-color runs make a clue; different colors may touch, so their colors stay attached. */
+export function colorRuns(line: string[]): { count: number; color: string }[] {
+  const out: { count: number; color: string }[] = [];
+  let previous: string | null = null;
+  for (const cell of line) {
+    if (cell === '.') {
+      previous = null;
+      continue;
+    }
+    const last = out.at(-1);
+    if (previous === cell && last?.color === cell) last.count++;
+    else out.push({ count: 1, color: cell });
+    previous = cell;
+  }
+  return out.length ? out : [{ count: 0, color: 'b' }];
+}
+
+export function colorClues(p: Picture): { rows: { count: number; color: string }[][]; cols: { count: number; color: string }[][] } {
+  return {
+    rows: p.rows.map((row) => colorRuns(row.split(''))),
+    cols: Array.from({ length: p.rows.length }, (_, x) => colorRuns(p.rows.map((row) => row[x]))),
+  };
 }
 
 /** Every way to place these runs on a line of `n` cells. */
@@ -204,7 +232,8 @@ export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, co
     const cell = logicCell(picture, filled, from);
     return cell ? { cell } : null;
   }
-  const mine = open.find((o) => plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
+  if (plan.mode === 'colorClues' && !open.some((o) => o.c === color)) return { color: open[0].c };
+  const mine = open.find((o) => plan.mode === 'colorClues' ? o.c === color : plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
   if (mine) return { cell: { x: mine.x, y: mine.y } };
   return { color: open[0].c };
 }
