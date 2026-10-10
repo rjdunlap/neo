@@ -7,6 +7,14 @@ Added a school round where one pizza is cut into three equal slices and shared a
 - `npm run typecheck` and the focused Pet Kitchen rule file passed (8 tests). `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen FROM_LEVEL=9` passed with two wrong serves, a hint and completion; the landscape screenshot was reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=9` finished cleanly in 10.8 seconds.
 - Not established: touch targets and speech on an iPad, or a child's response.
 
+### Feelings Faces level 8: How can we help? (2026-10-10)
+
+Added a pre-K round that combines two existing event and care interactions. The balloon drifting away leaves the pet sad; the moon rising makes it sleepy. The child then chooses the matching hug or pillow, and the pet feels better. The level appends to pre-K's 5–7 range as level 8; older levels and saves keep their numbers. Rule tests check each event's feeling, need and helper, and that all four questions include both scenarios with one correct choice each. The how-to, voice, README inventory and game guide now describe the new round; the built proposal has left [IDEAS](../IDEAS.md).
+
+- `npm run typecheck`, seven Feelings Faces rule tests and 15 how-to tests passed. `BROWSER_SUITE=feelings8` passed both scenarios, two wrong-helper retries, a hint, completion, saved history and sticker. The in-round screenshot was reviewed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=feelings-faces FINGER_LEVELS=8` finished all four questions cleanly in 22.2 seconds.
+- Not established: iPad touch feel, device speech or a child's response.
+
 > **Archived 2026-10-09.** Finished items and build notes moved out of [ROADMAP.md](../ROADMAP.md) and [IDEAS.md](../IDEAS.md) as they stood at commit `6b2c02e`, so the live documents list only open work. This is history, not instructions: what each game does is in [GAMES.md](../GAMES.md), the checks that ran are in [VERIFICATION.md](../VERIFICATION.md), and what is still to do is in the [roadmap](../ROADMAP.md). Text is kept as written, so counts and "next" lists in it are as of the day it was written. Convention from here: when a roadmap item is finished, move it here (or to a later file in this folder) instead of leaving it checked off.
 
 ## From the roadmap

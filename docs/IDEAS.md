@@ -562,7 +562,6 @@ These games stop at pre-K, so appending a level only widens the pre-K range.
 
 | Game (top · pre-K levels) | Next level | What a test asserts | Cost |
 | --- | --- | --- | --- |
-| **Feelings Faces** (7 · 5–7) | **8, How can we help?** watch a small event, then choose what would help the pet feel better. Level 6's cause and level 5's help become one two-step choice, and a wrong helper says what it would help instead | Every event has one feeling and one helper that fits it | S, with the existing events and helpers |
 | **Weather Wardrobe** (6 · 4–6) | **7, The weather changes:** the pet is dressed for rain and the sun comes out, so she taps what to take off and then what to put on | Every change has at least one item to remove and one to add, and each item belongs to one weather | S–M. Tapping a worn item to take it off is new to this game |
 
 #### Leave: the ceiling is right, or it was just raised
@@ -650,7 +649,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
 | Splish Splash (L–K · 8) ([deep dive](deep-dives/splish-splash.md)) | Rooms and messes (beach sand, garden grass, paint, jam), foam and bath toys, and **muddy friends in the tub** (a pig first) in place of a toy car or teddy, plus the part named as it goes clean; the deep dive supersedes this row | **9, What do we hear with?, 10, The picture card** (scrub three parts in the order a card shows), **11, Soap, scrub, rinse, 12, Top to bottom** (drips); left and right and a school window are left for a decision | Pat the bubbles, foam hunt, this one! and wash two (lap and toddler); all wait on level order |
-| Feelings Faces (L–K · 7) | More small events | R2: 8 *how can we help?*. **9, Two friends, one event:** the same thing happens and they feel differently (perspective), which opens a `school` window | — |
+| Feelings Faces (L–K · 8) | More small events | **9, Two friends, one event:** the same thing happens and they feel differently (perspective), which opens a `school` window | — |
 | Weather Wardrobe (L–K · 6) | **New weathers: wind and fog**, with a kite and a bright coat | R2: 7 *the weather changes* | — |
 | Scoop Shop (L–S · 6) | Toppings and cones | — (audit: leave) | — |
 | Teddy Doctor (L–S · 6) | More patients (five today) and boo-boos | — (audit: leave) | — |

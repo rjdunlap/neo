@@ -1162,6 +1162,7 @@ export const SCRIPT = {
   'feel.need-sleepy': ['{pet} is so sleepy. What would help?'],
   'feel.need-hungry': ["{pet}'s tummy is rumbling! What would help?"],
   'feel.need-cold': ['Brr! {pet} is cold. What would help?'],
+  'feel.care': ['What would help {pet} feel better?'],
   'feel.not-that': ['Hmm, {pet} needs something else.'],
   'feel.helped': ['That helps! Thank you!', '{pet} feels better now.'],
   'feel.event-balloon': ['Oh no! The balloon floated away.'],

@@ -791,6 +791,40 @@ async function third() {
   log('Puddle Lagoon shows both new games, and saved progress survives a reload');
 }
 
+/** Feelings Faces 8: connect the event to a helpful response, with a gentle retry and a hint. */
+async function feelings8() {
+  await launch('feelings-faces', 8);
+  await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.options.length === 4 && neo.scene.game.options.every((o) => o.node.scale.x > 0.99));
+  await screenshot('feelings-faces-8');
+  await page.evaluate(async () => {
+    const g = neo.scene.game;
+    const seen = new Set();
+    for (let round = 0; round < 4; round++) {
+      if (!await kit.until(() => !g.busy || g.done, 20000) || g.done) throw new Error(`Feelings Faces 8 round ${round + 1} did not open`);
+      if (!await kit.until(() => g.options.every((o) => o.node.scale.x > 0.99), 5000)) throw new Error(`Feelings Faces 8 round ${round + 1} cards did not finish appearing`);
+      const q = g.question;
+      seen.add(q.prompt);
+      const wrong = g.options.find((o) => o.value !== q.answer);
+      if (round === 0) {
+        for (let i = 0; i < 2; i++) {
+          const before = g.misses;
+          kit.tapOn(wrong.node);
+          if (!await kit.until(() => g.misses > before, 5000)) throw new Error(`Feelings Faces 8 retry ${i + 1} did not register`);
+          await kit.sleep(400);
+        }
+      }
+      const right = g.options.find((o) => o.value === q.answer);
+      const beforeQ = g.q;
+      kit.tapOn(right.node);
+      if (!await kit.until(() => g.q > beforeQ || g.done, 20000)) throw new Error(`Feelings Faces 8 round ${round + 1} did not finish (q=${g.q}, answer=${q.answer}, target=${right.node.x},${right.node.y}, scale=${right.node.scale.x})`);
+    }
+    if (seen.size !== 2) throw new Error(`Expected both care events, saw ${[...seen]}`);
+    if (g.misses !== 2 || g.hints !== 1) throw new Error(`Expected two retries and a hint, got ${g.misses} misses and ${g.hints} hints`);
+  });
+  await finished('feelings-faces');
+  log('Feelings Faces 8: both events, helpful choices, a retry, hint and sticker passed');
+}
+
 async function fourth() {
   // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
   for (let level = 1; level <= 7; level++) {
@@ -7764,6 +7798,7 @@ try {
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'expansion') await expansion();
   if (suite === 'all' || suite === 'third') await third();
+  if (suite === 'feelings8') await feelings8();
   if (suite === 'all' || suite === 'fourth') await fourth();
   if (suite === 'all' || suite === 'early') await early();
   if (suite === 'all' || suite === 'arcade') await arcade();
