@@ -6393,6 +6393,8 @@ async function howToIntro() {
   for (const [name, size] of [['landscape', { width: 1024, height: 768 }], ['portrait', { width: 768, height: 1024 }]]) {
     await page.setViewportSize(size); await page.waitForTimeout(400);
     for (const g of picked) {
+      // HOWTO_LEVEL=6: measure the card at that level (a pin, so the intro builds it) instead of her saved one.
+      if (process.env.HOWTO_LEVEL) await page.evaluate(({ id, level }) => { kit.store.stats(id).pinned = level; }, { id: g.id, level: Number(process.env.HOWTO_LEVEL) });
       await goGame(g.id, g.band);
       const { w, h } = await view();
       const fit = await page.evaluate(() => { const b = neo.scene.helpCard.body.getBounds(); return { x: b.x, y: b.y, r: b.x + b.width, b: b.y + b.height }; });

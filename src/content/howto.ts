@@ -580,7 +580,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap the ice where the penguin should slide.',
       { to: 4, text: 'It only stops when it bumps into something.' },
       { from: 5, to: 5, text: 'It stops when it bumps into something, or in soft snow.' },
-      { from: 6, text: 'It stops when it bumps into something. Slide into an ice block to push it: the block skates away until it bumps into something, and the penguin stays where it is.' },
+      { from: 6, text: 'Slide into an ice block to push it; it skates until it bumps into something.' },
       'If it gets stuck, tap the round arrow to go back.',
     ],
     finish: 'The round ends when the penguin has eaten every fish.',
