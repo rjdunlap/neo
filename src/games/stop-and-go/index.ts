@@ -11,8 +11,8 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
-import { judgeGo, lightAt, nextLight, planFor, safe, type GoPlan, type Light } from './logic';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { crossTouch, GO_TARGET, judgeGo, lightAt, nextLight, planFor, rightNow, safe, type GoPlan, type Light, type Road } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
@@ -213,6 +213,33 @@ class StopAndGo implements Game {
     }
   }
 
+  /**
+   * The ghost finger: tap the light at the toy level; at the others wait over the car at the front (or the step button) until the
+   * light is green and tap then; at the crossing give one road its green at a time.
+   */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const mode = this.plan.mode;
+    const spot = (t: TrafficLight) => ({ on: t, y: -84 });
+    if (mode === 'cross') {
+      const road = crossTouch({ ew: this.light.light, ns: this.light2.light }, { ew: this.waiting('ew'), ns: this.waiting('ns') });
+      return road ? { tap: spot(road === 'ew' ? this.light : this.light2) } : null;
+    }
+    if (GO_TARGET[mode] === 'light') return { tap: spot(this.light) };
+    const car = this.cars[0];
+    const target = GO_TARGET[mode] === 'car' ? car : this.step;
+    if (!target) return null;
+    return {
+      tap: { on: target, y: GO_TARGET[mode] === 'car' ? -30 : 0 },
+      when: () => (this.finished || (GO_TARGET[mode] === 'car' && this.cars[0] !== car) ? 'cancel' : !this.busy && rightNow(mode, this.light.light)),
+    };
+  }
+
+  /** Cars at the crossing that have not begun to roll, on one road. */
+  private waiting(road: Road) {
+    return this.cars.filter((c) => ((c as Container & { road?: string }).road === 'ns') === (road === 'ns')).length;
+  }
+
   destroy() {}
 
   // Toy ------------------------------------------------------------------------------------
@@ -396,6 +423,7 @@ export const stopAndGo: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
+  touchDemo: true,
   coplayHint: 'Say it together: "Red means stop! Green means go!" and freeze like statues on red.',
   offScreen: 'Play red light, green light in the hallway: walk on green, freeze on red.',
   hubIcon: () => new GoIcon(),
