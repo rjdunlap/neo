@@ -64,6 +64,7 @@ The genre is the opposites picture book and the "learn opposites" app. Nearly al
 - **Keep it off Size Parade's ground.** Size Parade already drags three or five friends into a size order. The in-between levels therefore use temperature, fullness, height and the sky, not size.
 - **Gradable and complementary pairs differ.** Only pairs on a scale have a middle (cold–warm–hot, empty–half–full); open/closed, on/off and awake/asleep do not. A rule test enforces it.
 - **The co-play line is the best part.** The grown-up says the second word; "opposite day" (answer with the other one) is the off-screen suggestion for pre-K and school.
+- **Who owns acting an opposite.** Opposites owns *knowing* the pairs on picture cards (and its acting flip moves the card's picture). [Pet Says](pet-says.md) owns *doing the opposite with her body* (levels 6–11 there: the pet shows one move and she does the other). They share up and down, fast and slow, open and closed; neither adds the other's mode.
 - **Long-term arc.** Lap: tap and see it flip. Toddler: find the named one. Preschool: find the opposite. Pre-K: match pairs, spot the pair, find the middle. School: hear a word and find its picture, un- words, and a word with two opposites.
 
 ## Proposed ladder
