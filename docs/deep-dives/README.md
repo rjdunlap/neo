@@ -50,7 +50,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 
 | Game | ID | Bands | Top level | Wave | Status | Branch / PR | Deep dive |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Animal Snack | `animal-snack` | LTP | 5 | 2 | not started | — | — |
+| Animal Snack | `animal-snack` | LTP | 5 | 2 | in progress | `claude/roadmap-item-14-game-content-fno5j7` | — |
 | Beat Builder | `beat-builder` | PKS | 5 | 4 | not started | — | — |
 | Block Tower | `block-tower` | LTPKS | 6 | 4 | not started | — | — |
 | Bounce Back | `bounce-back` | LTPK | 5 | 4 | not started | — | — |
