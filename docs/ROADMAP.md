@@ -62,7 +62,7 @@ Most sessions should build from this list; checks that need a person or a device
 
 7. **Market Stall 7, Fewest coins** — **built 2026-10-10**: pay prices from 4 to 10 with as few 1-, 2- and 5-shell coins as possible. An exact longer payment stays on the mat for a swap; only repeating that nudge is a miss.
 8. **Clock Tower 7, Five-minute times** — **built 2026-10-10**: set times like 3:25 by counting by fives; small helper numbers ring the rim. The twelve snap marks are about 86 units apart at the long hand's tip (105 at the rim), a drag that snaps by angle rather than a tap target; not checked on an iPad.
-9. **Frog Hop 7, Hop to ten first**: split a sum that crosses ten at 10 (8 + 2 + 3).
+9. **Frog Hop 7, Hop to ten first** — **built 2026-10-10**: split a sum that crosses ten at 10 (8 + 2 + 3), choosing the bridge on number cards before landing the rest.
 10. **Seesaw Balance 10, Two steps**: take the same off both sides, then share what is left between two boxes.
 11. **Secret Code 7, Detective door**: deduce the one code that fits guesses already on the door.
 12. **Robot Path 12, Fix the program** (after a new 11, Where will it stop?; see its [deep dive](deep-dives/robot-path.md)): find and change the one wrong slot (authored boards).

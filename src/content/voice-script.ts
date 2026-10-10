@@ -56,6 +56,8 @@ export const SCRIPT = {
   'couch.egg.catch': ['Use the stick or arrow keys to slide the basket under the falling eggs!'],
   'couch.robot.start': ['Help the robot reach the star! Move the stick to add steps, then press the bottom button to play.'],
   'couch.hop.gap': ['How many hops from {n} to {m}? Move to a number card, then press the bottom button.'],
+  'hop.ten': ['Start at {n}. How many hops reach 10? Choose that number card!'],
+  'hop.rest': ['We are at 10! Hop {n} more. Tap where the frog lands!'],
   'couch.sink.guess': ['Will the {thing} float or sink? Choose with left and right, then press the bottom button!'],
   'parent.ask': ['That one is for grown-ups. Ask a grown-up to help!'],
   'start.hi':['Hi, {name}!', 'Hello, {name}!', 'Yay, {name} is here!'],

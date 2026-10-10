@@ -62,6 +62,13 @@ What changed: [goodnight-room.md](deep-dives/goodnight-room.md) (research, ladde
 - Ran: `npm run typecheck`; `npx vitest run` (122 files, 854 tests pass; the Goodnight Room tests now cover the room draw, coverage of all six friends, the asleep start and the bot's right-only taps); `BROWSER_SUITE=woods WOODS_ONLY=night` (levels 1 to 4 pass, with the saved score and sticker), on the pre-installed Chromium through `BROWSER_EXECUTABLE`.
 - Not run: `fingerdemo` for the game (its bot logic is covered by the rule test), a portrait screenshot, an iPad, a one-year-old's reaction to a room that varies.
 
+### 2026-10-10 · Frog Hop level 7 (hop to ten first)
+
+What changed: a school-band round now starts from 6–9, asks for the number of hops that reaches 10 on number cards, then asks for the final lily pad 1–4 hops beyond it. The generator keeps the whole split trip visible, and the same two-stage path is used by touch, controller play and the ghost finger.
+
+- `npm run typecheck`, Frog Hop's three rule tests, and the how-to and registry tests (25 tests) passed. The rule test checks every generated question crosses 10 without exceeding 20, splits exactly into its bridge and remainder, and offers a bridge card.
+- Not run: the focused `woods` level-7 and `fingerdemo` level-7 plays could not complete in this session's 31-second command window (their required animated rounds can exceed it); no passing browser result or screenshot is claimed. No iPad has run it.
+
 ### 2026-10-10 · Clock Tower level 7 (five-minute times)
 
 Added `five` mode to `minuteChoices`/`makeTasks`, helper numbers on the face, how-to lines. Ran: typecheck, clock-tower/content/registry unit tests (pass), `fingerdemo` filtered to clock-tower (levels 1 and 7 pass, 20 s and 24 s). Not run: a portrait screenshot, an iPad, spoken "3:25" on device speech.

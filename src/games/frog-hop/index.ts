@@ -17,7 +17,7 @@ import { answerOf, answerSlot, GAP_CARDS, makeQuestions, planFor, WINDOW, type H
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 
 const STEP = 104;
@@ -79,6 +79,8 @@ class FrogHop implements Game {
   // Couch play: a ring over the lily pads (or the number cards on counting levels).
   private focus = 0;
   private couchOn = false;
+  /** Make-ten asks for the bridge to ten before its final landing. */
+  private makeTenStage: 'bridge' | 'rest' = 'bridge';
   private readonly ring = new Graphics();
   private botWait = 1.5;
 
@@ -100,7 +102,7 @@ class FrogHop implements Game {
       this.pads.push(pad);
       this.row.addChild(pad);
     }
-    if (this.plan.mode === 'gap') {
+    if (this.plan.mode === 'gap' || this.plan.mode === 'make-ten') {
       for (const n of GAP_CARDS) {
         const node = new Container();
         node.addChild(tile(104, 110, 'white'), label(String(n), 52, ink));
@@ -161,9 +163,11 @@ class FrogHop implements Game {
 
   destroy() {}
 
-  /** What the ring can rest on: the lily pads, or on counting levels the number cards. */
+  /** What the ring can rest on: the lily pads, or on number-card questions the cards. */
   private get spots(): Container[] {
-    return this.plan.mode === 'gap' ? this.cards.map((c) => c.node) : this.pads;
+    return this.plan.mode === 'gap' || (this.plan.mode === 'make-ten' && this.makeTenStage === 'bridge')
+      ? this.cards.map((c) => c.node)
+      : this.pads;
   }
 
   /** Couch play: left and right move the ring; the bottom button chooses what it is on. */
@@ -175,7 +179,7 @@ class FrogHop implements Game {
       if (p.direction === 0) this.focus = Math.min(last, this.focus + 1);
       else if (p.direction === 2) this.focus = Math.max(0, this.focus - 1);
       if (!p.action) continue;
-      if (this.plan.mode === 'gap') void this.tapCard(this.cards[this.focus].n);
+      if (this.plan.mode === 'gap' || (this.plan.mode === 'make-ten' && this.makeTenStage === 'bridge')) void this.tapCard(this.cards[this.focus].n);
       else void this.tapPad(this.pads[this.focus].n);
     }
   }
@@ -186,7 +190,9 @@ class FrogHop implements Game {
     out.players[0].active = true;
     this.botWait -= dt;
     if (this.busy || this.finished || !this.q || this.botWait > 0) return out;
-    const want = answerSlot(this.plan.mode, this.q, this.lo);
+    const want = this.plan.mode === 'make-ten' && this.makeTenStage === 'bridge'
+      ? GAP_CARDS.indexOf(this.q.toTen!)
+      : answerSlot(this.plan.mode, this.q, this.lo);
     if (want < 0) return out;
     if (want === this.focus) {
       out.players[0].action = true;
@@ -201,7 +207,9 @@ class FrogHop implements Game {
   /** The ghost finger on the how-to card: tap the lily pad (or on counting levels the number card) that answers the question. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.q) return null;
-    const slot = answerSlot(this.plan.mode, this.q, this.lo);
+    const slot = this.plan.mode === 'make-ten' && this.makeTenStage === 'bridge'
+      ? GAP_CARDS.indexOf(this.q.toTen!)
+      : answerSlot(this.plan.mode, this.q, this.lo);
     return slot < 0 ? null : { tap: { on: this.spots[slot] } };
   }
 
@@ -209,6 +217,8 @@ class FrogHop implements Game {
     this.busy = true;
     this.index++;
     this.wrongs = 0;
+    this.makeTenStage = 'bridge';
+    this.cards.forEach((c) => c.node.visible = true);
     this.glowing = null;
     if (this.index >= this.questions.length) return void this.finale();
     const q = this.q;
@@ -216,13 +226,14 @@ class FrogHop implements Game {
     if (this.at !== q.start) await this.leap(q.start);
     const mode = this.plan.mode;
     const k = Math.abs(q.hops);
-    this.signText.text = mode === 'find' ? String(q.target) : mode === 'gap' ? `${q.start} → ${q.target}` : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`;
+    this.signText.text = mode === 'find' ? String(q.target) : mode === 'gap' ? `${q.start} → ${q.target}` : mode === 'make-ten' ? `${q.start} + ? = 10` : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`;
     // The ring starts where the frog sits (or on the first card), so choosing is a few steps along.
-    this.focus = mode === 'gap' ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
+    this.focus = mode === 'gap' || mode === 'make-ten' ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     this.busy = false;
     if (mode === 'find') return this.ctx.instruct('hop.find', { n: q.target });
     if (mode === 'next') return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });
     if (mode === 'gap') return this.ctx.instruct('hop.gap', { n: q.start, m: q.target });
+    if (mode === 'make-ten') return this.ctx.instruct('hop.ten', { n: q.start });
     return this.ctx.instruct(q.hops > 0 ? 'hop.add' : 'hop.back', { n: q.start, k });
   }
 
@@ -274,14 +285,32 @@ class FrogHop implements Game {
       sfx.squeak();
       return;
     }
+    if (mode === 'make-ten' && this.makeTenStage === 'bridge') {
+      sfx.squeak();
+      return;
+    }
     if (n === this.q.target) return void this.right();
     this.miss(n);
   }
 
   private async tapCard(n: number) {
     if (this.busy || this.finished) return;
-    if (n === answerOf('gap', this.q)) return void this.right();
+    if (this.plan.mode === 'gap' && n === answerOf('gap', this.q)) return void this.right();
+    if (this.plan.mode === 'make-ten' && this.makeTenStage === 'bridge' && n === this.q.toTen) return void this.bridgeTen();
     this.miss(n);
+  }
+
+  private async bridgeTen() {
+    this.busy = true;
+    this.glowing = null;
+    await this.hopCount(10);
+    this.makeTenStage = 'rest';
+    this.cards.forEach((c) => c.node.visible = false);
+    this.wrongs = 0;
+    this.focus = Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
+    this.signText.text = `10 + ${this.q.remaining}`;
+    this.busy = false;
+    await this.ctx.instruct('hop.rest', { n: this.q.remaining! });
   }
 
   private async right() {
@@ -290,7 +319,8 @@ class FrogHop implements Game {
     const q = this.q;
     if (this.plan.mode === 'find' || this.plan.mode === 'next') await this.leap(q.target);
     else {
-      if (this.at !== q.start) await this.leap(q.start);
+      const hopStart = this.plan.mode === 'make-ten' ? 10 : q.start;
+      if (this.at !== hopStart) await this.leap(hopStart);
       await this.hopCount(q.target);
     }
     sfx.sparkle();
@@ -309,16 +339,19 @@ class FrogHop implements Game {
     const mode = this.plan.mode;
     if (mode === 'find') await this.ctx.say('hop.wrong.find', { m: n, n: q.target });
     else if (mode === 'next') await this.ctx.say(q.ask === 'more' ? 'hop.wrong.more' : 'hop.wrong.less');
-    else await this.ctx.say('hop.wrong.count', { n: q.start });
+    else await this.ctx.say('hop.wrong.count', { n: mode === 'make-ten' && this.makeTenStage === 'rest' ? 10 : q.start });
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       // Show it: count the hops along the line, then hop back and let her try.
       if (mode !== 'find' && mode !== 'next') {
-        await this.hopCount(q.target);
+        const shown = mode === 'make-ten' && this.makeTenStage === 'bridge' ? 10 : q.target;
+        await this.hopCount(shown);
         await this.ctx.tw.wait(0.3);
-        await this.leap(q.start);
+        await this.leap(mode === 'make-ten' && this.makeTenStage === 'rest' ? 10 : q.start);
       }
-      this.glowing = mode === 'gap' ? this.cards.find((c) => c.n === answerOf('gap', q))!.node : this.pads[q.target - this.lo];
+      this.glowing = mode === 'gap' || (mode === 'make-ten' && this.makeTenStage === 'bridge')
+        ? this.cards.find((c) => c.n === (mode === 'make-ten' ? q.toTen : answerOf('gap', q)))!.node
+        : this.pads[q.target - this.lo];
     }
     this.busy = false;
   }
