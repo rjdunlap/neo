@@ -8,6 +8,7 @@ export const PLANS = [
   { mode: 'recipe', wholes: 0, friends: 0, cuts: [], name: 'Double two berries and one apple for a bigger fruit salad' },
   { mode: 'fraction', wholes: 1, friends: 1, cuts: [2,4], name: 'Serve a named fraction of one sandwich' },
   { mode: 'half-recipe', wholes: 0, friends: 0, cuts: [], name: 'Halve a picture recipe for one friend' },
+  { mode: 'share', wholes: 1, friends: 3, cuts: [3], name: 'Cut one pizza into thirds and share one slice with each of three friends' },
 ] as const;
 export const planFor = (l: number) => PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
 export const fair = (plates: number[], pieces: number) => pieces > 0 && plates.length > 0 && plates.every(n => n > 0 && n === pieces / plates.length);

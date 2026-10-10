@@ -557,6 +557,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 6, text: 'Look at the recipe card and double it: put in two fruits for each fruit on the card.' },
       { from: 7, to: 7, text: 'Listen to the amount your friend asks for, cut equal pieces, then put that fraction on their plate.' },
       { from: 8, text: 'Look at the recipe card and halve it: put in one fruit for every two fruits on the card.' },
+      { from: 9, text: 'Cut the pizza into three equal slices, then give one slice to each friend.' },
       'Tap the green arrow to serve.',
     ],
     finish: 'The round ends when the food is served fairly.',

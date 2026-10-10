@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Pet Kitchen level 9: Thirds (2026-10-10)
+
+Added a school round where one pizza is cut into three equal slices and shared among three friends. The pizza and cut controls show thirds, the spoken instruction explains the task, and the ghost finger picks the three-piece cut and gives one slice to each friend. The appended school range is now 5–9; older levels and saved level numbers are unchanged. Focused rule tests cover the plan and bot route; the how-to, inventory, game guide and roadmap are updated.
+
+- `npm run typecheck` and the focused Pet Kitchen rule file passed (8 tests). `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen FROM_LEVEL=9` passed with two wrong serves, a hint and completion; the landscape screenshot was reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=9` finished cleanly in 10.8 seconds.
+- Not established: touch targets and speech on an iPad, or a child's response.
+
 > **Archived 2026-10-09.** Finished items and build notes moved out of [ROADMAP.md](../ROADMAP.md) and [IDEAS.md](../IDEAS.md) as they stood at commit `6b2c02e`, so the live documents list only open work. This is history, not instructions: what each game does is in [GAMES.md](../GAMES.md), the checks that ran are in [VERIFICATION.md](../VERIFICATION.md), and what is still to do is in the [roadmap](../ROADMAP.md). Text is kept as written, so counts and "next" lists in it are as of the day it was written. Convention from here: when a roadmap item is finished, move it here (or to a later file in this folder) instead of leaving it checked off.
 
 ## From the roadmap

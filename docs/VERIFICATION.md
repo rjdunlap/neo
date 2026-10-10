@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-10 — Pet Kitchen level 9: Thirds
+
+- Added a school level that cuts one pizza into three equal slices and shares one slice with each of three friends.
+- `npm run typecheck` and `npx vitest run src/games/pet-kitchen/logic.test.ts` passed (8 tests).
+- `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen FROM_LEVEL=9` passed the round with two wrong serves, a hint, completion, saved history and sticker.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=9` passed cleanly in 10.8 seconds.
+- The scripted landscape screenshot was reviewed; no full unit run or build was run.
+- iPad touch targets, device speech and child play remain open.
+
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
 ## 2026-10-10 — Stamp Studio deep dive
@@ -164,7 +173,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `woods` | 2026-10-10, `WOODS_ONLY=word-end`: Word Monsters 8, wrong drops, hint, all three words and saved reward; screenshot reviewed `mailmap` (Mail Carrier 8: wrong house and route, hint, four deliveries and completion) 2026-10-10; `code` level 7 (detective doors) 2026-10-10; `night` (Goodnight Room, levels 1 to 4) 2026-10-10 after the seeded room draw; `penguin` level 6 (Ice Blocks) 2026-10-10; `mailmap` 2026-10-09 after Hazel's drawing moved to `src/art/lands.ts`; 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `shop` (Market Stall level 7, an extra-shell payment, nudge, hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
 | Critter Sort 5 | 2026-10-10: rule tests, `WOODS_ONLY=sort FROM_LEVEL=5` (two wrong drops, hint and completion), and `FINGER_ONLY=critter-sort FINGER_LEVELS=5` clean | Critter Sort 5 entry | Portrait screenshot reviewed; iPad remains untested |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
-| `creative`, `next` | 2026-10-10: `creative` filtered to Tangram Town levels 1–6 (picture pools); 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen fractions entry, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
+| `creative`, `next` | 2026-10-10: `creative` filtered to Pet Kitchen level 9 (thirds; wrong serves, hint and completion), and Tangram Town levels 1–6 (picture pools); 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen thirds and fractions entries, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
 | `originals`, `robot`, `third` | 2026-10-10: Duck Pond 11 wrong answers, hint, five rounds and completion; 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-06 in the combined flow, with later per-game reruns; `BATCH_ONLY=salon` (Fluffy Salon with real strokes) 2026-10-09: levels 1 and 2 pass, level 3 times out on the unchanged game too | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
 | `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |

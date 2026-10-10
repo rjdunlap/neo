@@ -106,7 +106,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Pet Kitchen
 
-*toddler–school · after Cooking Mama and JumpStart's cafeteria.* Cut one or two sandwiches into halves or quarters, move equal pieces between plates, then serve. Both halves and quarters are accepted when they share the wholes equally. A round-arrow control restores the wholes to try another cut. The school ladder then asks for a named fraction of one sandwich (a half, a quarter or three quarters; two quarters count as a half), and ends by halving an even picture recipe for one friend. The earlier two recipe levels double two kinds of fruit; every recipe has undo. Only unsuccessful serving checks count as misses; cutting, arranging and undo are exploration. Two misses highlight a useful next action. The Windy Picnic plays a Pet Kitchen round as its sandwich step.
+*toddler–school · after Cooking Mama and JumpStart's cafeteria.* Cut one or two sandwiches into halves or quarters, move equal pieces between plates, then serve. Both halves and quarters are accepted when they share the wholes equally. A round-arrow control restores the wholes to try another cut. The school ladder then asks for a named fraction of one sandwich (a half, a quarter or three quarters; two quarters count as a half), halves an even picture recipe for one friend, then cuts one pizza into three equal slices for three friends. The earlier two recipe levels double two kinds of fruit; every recipe has undo. Only unsuccessful serving checks count as misses; cutting, arranging and undo are exploration. Two misses highlight a useful next action. The Windy Picnic plays a Pet Kitchen round as its sandwich step.
 
 ### Frog Hop
 
