@@ -485,7 +485,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Bug Builder** (7 · 6–7) | *Fold a Friend:* predict where each spot lands when the wing folds over; later, which crease makes the bug match | Pairs with Mirror Brush (above); the crease-choice step belongs near age 9 |
 | **Peekaround Island** (5 · 4–5) | *View from above:* which picture shows the island from the sky | A new top-down view to draw |
 | **Block Tower** (6 · 5–6) | Unclear. The top level is already the optimization (reach the star with only N blocks), and a farther star with more blocks is a bigger number. A counterweight block behind the table edge, which lets the stack reach out, would be a different decision | Needs design first. `finish()` already searches every slot, so solvability and the fewest blocks would be cheap to test once a decision is chosen |
-| **Puzzle Pals** (7 · 6–7) | Pieces that arrive turned, so she turns them to fit | A tap-to-turn interaction with its own hint; more pieces is not a next decision |
+| **Puzzle Pals** (7 · 6–7) | Pieces that arrive turned, so she turns them to fit. **Planned in its [deep dive](deep-dives/puzzle-pals.md)** as levels 8–11 (half turns, two pictures, mend, quarter turns), after a fairness guard | A tap-to-turn interaction with its own hint; more pieces is not a next decision |
 | **Quick Tricks** (6 · 5–6) | A third show, the remix | The new gestures (crank, pour, loop) and a visible condition; shares its gesture test with Fill and Dump |
 | **Song Maker** (7 · 6–7) | *Answer the phrase:* end a given four-note start so it comes home | A rule for "comes home" that a test can check, and a mode that fits the loop grid |
 | **Story Steps** (7 · 6–7) | Choose the picture that caused what happened | Authored story content and art, near Story Theater |
@@ -675,7 +675,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Pattern Train (L–S · 12) | Car kinds | **13, Growing patterns:** one red, two red, three red … what comes next? | — |
 | Memory Match (P–S · 10) | **Picture decks** (vehicles, fruit, the island's friends) at the same sizes | R1: 11 fractions, 12 clocks | Toddler, at levels 1–2 (four cards) |
 | Size Parade (T–S · 8) | More friends | — (audit: leave) | — |
-| Puzzle Pals (T–S · 7) | **Six scenes today**; make it twelve | R1-later: turned pieces | — |
+| Puzzle Pals (T–S · 7) | **Six scenes today**; make it twelve (see its [deep dive](deep-dives/puzzle-pals.md), which supersedes this row) | R1-later: turned pieces (deep dive levels 8–11) | Tap to hop in (lap) and Which piece fits? (toddler), both below level 1 |
 | Quick Tricks (T–S · 6) | More props per trick | R1-later: a third show | — |
 | Peekaround Island (L–S · 5) | More friends and landmarks | R1-later: view from above | — |
 | Penguin Slide (P–S · 5) | More rinks per level | **6, Three fish, in any order**, a next board. R1-later: Mossy Path | — |
