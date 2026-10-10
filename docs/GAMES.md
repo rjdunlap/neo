@@ -198,7 +198,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Treasure Map
 
-*pre-K–school · after Battleship and treasure-hunt maps.* A parchment grid where row 1 is at the bottom, as on maps and graphs. Levels: picture rows and colored columns ("the apple row, the red column"), letters and numbers ("B3"), putting a tree, house, boat or flag at a named square, and following directions from where the pet stands ("2 left, then 3 up"; the pet then walks it, counting). A sign shows each request in pictures or letters. A wrong dig leaves a mark and says what was right ("right column, now look along the row"); two misses glow the target's column and row.
+*pre-K–school · after Battleship and treasure-hunt maps.* A parchment grid where row 1 is at the bottom, as on maps and graphs. Levels: picture rows and colored columns ("the apple row, the red column"), letters and numbers ("B3"), putting a tree, house, boat or flag at a named square, following directions from where the pet stands ("2 left, then 3 up"; the pet then walks it, counting), and two landmark clues (for example, "the tree is 2 right" and "the boat is 1 up") whose lines meet at the treasure. A sign shows each request in pictures or letters. A wrong dig leaves a mark and says what was right ("right column, now look along the row"); two misses glow the target's column and row—or, for landmark clues, the two clue lines.
 
 ### Owl Walk Home
 

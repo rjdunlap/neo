@@ -37,7 +37,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `couchwords` | 2026-10-08 | Word Search entry | About two minutes; plays a full three-grid course with the bot |
 | `couchconga` | 2026-10-08 | Pond Conga entry | About two minutes; plays a full four-pond course with the bot |
 | `couchbridges` | 2026-10-08 | Island Bridges entry | About three minutes; plays a full five-sea course with the bot | About two minutes; plays a full five-pond course with the bot |
-| `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4, real taps) again 2026-10-09; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
+| `woods` | 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
 | `shortlist` | 2026-10-06 | Archived Windy Picnic entry | |
 | `creative`, `next` | 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen fractions entry, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
 | `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
@@ -49,6 +49,15 @@ The last recorded pass of each browser suite (suite names and filters are in the
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
 
 ## Entries, newest first
+
+### Treasure Map: two landmark clues (2026-10-10)
+
+What changed: Treasure Map's school ladder now has level 5, where two visible landmark clues meet at one target square. The generated clues are bounded and distinct, and after two wrong digs the hint draws the two actual clue lines instead of a whole row and column.
+
+- `npm run typecheck` and `src/games/treasure-map/logic.test.ts` passed (4 tests): every generated clue has one horizontal and one vertical relation, each ends at its generated target, and all targets and landmarks stay distinct and in bounds.
+- `GAME_URL=http://localhost:5175 BROWSER_SUITE=woods WOODS_ONLY=map FROM_LEVEL=5 npm run test:browser` passed: two wrong digs gave the row/column support and the two-line hint, then all four finds, the saved score and sticker completed. Its portrait screenshot was reviewed.
+- `GAME_URL=http://localhost:5175 BROWSER_SUITE=fingerdemo FINGER_ONLY=treasure-map FINGER_LEVELS=5 npm run test:browser` passed cleanly in 7.2 seconds.
+- Not run: build, offline, broad navigation and earlier-level browser suites; this is a game-only ladder extension. iPad touch and device speech remain open.
 
 ### Pattern Train: the seventh car, linked attributes and skip counting (2026-10-10)
 

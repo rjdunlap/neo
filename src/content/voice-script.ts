@@ -517,6 +517,7 @@ export const SCRIPT = {
   'map.letters': ['Dig at {sq}! Find column {col}, then go up to row {row}.'],
   'map.place': ['Put the {thing} at {sq}!'],
   'map.steps': ['Start where the pet is. Go {dirs}. Where do you end up? Tap that square!'],
+  'map.clues': ['The {firstThing} is {first}. The {secondThing} is {second}. Where do the two clues meet? Tap that square!'],
   'map.col': ['Right column! Now look up and down it for the row.'],
   'map.row': ['Right row! Now look along it for the column.'],
   'map.neither': ['Not there. Find the column first, then the row.'],

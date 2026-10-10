@@ -807,7 +807,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 1, text: 'Find the picture row and the color column, then tap the square where they meet.' },
       { from: 2, to: 2, text: 'Find the column letter, then the row number (like "B3"), and tap that square.' },
       { from: 3, to: 3, text: 'Drag the thing to the named square, like "a tree at D2".' },
-      { from: 4, text: 'Follow the directions from the start, like "3 right, then 1 up", and tap the square where you end up.' },
+      { from: 4, to: 4, text: 'Follow the directions from the start, like "3 right, then 1 up", and tap the square where you end up.' },
+      { from: 5, text: 'Read both landmark clues. Follow each line to the square where they meet, then tap it.' },
     ],
     finish: [
       { to: 2, text: 'The round ends when the treasure is found.' },

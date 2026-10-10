@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CELL, cellCenter, compare, digSpot, directions, makeFinds, name, PLANS, squareAt } from './logic';
+import { CELL, cellCenter, clueDirection, clueEnd, compare, digSpot, directions, makeFinds, name, PLANS, squareAt } from './logic';
 
 describe('Treasure Map', () => {
   it('names squares by column letter and row number, counting rows from the bottom', () => {
@@ -32,6 +32,24 @@ describe('Treasure Map', () => {
             expect(directions(f)).toMatch(/^\d (right|left), then \d (up|down)$/);
           }
           if (plan.mode === 'place') expect(f.thing).toBeDefined();
+          if (plan.mode === 'clues') {
+            expect(f.clues).toHaveLength(2);
+            const [horizontal, vertical] = f.clues!;
+            expect(horizontal.axis).toBe('horizontal');
+            expect(vertical.axis).toBe('vertical');
+            expect(clueEnd(horizontal)).toEqual(f.square);
+            expect(clueEnd(vertical)).toEqual(f.square);
+            expect(clueDirection(horizontal)).toMatch(/^\d (right|left)$/);
+            expect(clueDirection(vertical)).toMatch(/^\d (up|down)$/);
+            const occupied = [...finds.map((other) => other.square), ...finds.flatMap((other) => other.clues?.map((clue) => clue.landmark) ?? [])];
+            expect(new Set(occupied.map(name)).size).toBe(occupied.length);
+            for (const clue of f.clues!) {
+              expect(clue.landmark.col).toBeGreaterThanOrEqual(0);
+              expect(clue.landmark.col).toBeLessThan(plan.size);
+              expect(clue.landmark.row).toBeGreaterThanOrEqual(0);
+              expect(clue.landmark.row).toBeLessThan(plan.size);
+            }
+          }
         }
       }
     }

@@ -13,11 +13,11 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CELL, cellCenter, compare, COLUMN_COLORS, digSpot, directions, makeFinds, name, planFor, ROW_PICTURES, squareAt, type Find, type MapPlan, type Square } from './logic';
+import { CELL, cellCenter, clueDirection, compare, COLUMN_COLORS, digSpot, directions, makeFinds, name, planFor, ROW_PICTURES, squareAt, type Find, type MapPlan, type Square } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 4 },
+  school: { min: 1, max: 5 },
 };
 
 const PARCHMENT = 0xf3e2b8;
@@ -80,6 +80,7 @@ class TreasureMap implements Game {
   private readonly paper = new Graphics();
   private readonly headers = new Container();
   private readonly marks = new Container();
+  private readonly landmarks = new Container();
   private readonly sign = new Container();
   private readonly glow = new Graphics();
   private view: View;
@@ -94,7 +95,8 @@ class TreasureMap implements Game {
     this.glow.eventMode = 'none';
     this.marks.eventMode = 'none';
     this.sign.eventMode = 'none';
-    this.grid.addChild(this.paper, this.headers, this.marks, this.glow);
+    this.landmarks.eventMode = 'none';
+    this.grid.addChild(this.paper, this.headers, this.marks, this.landmarks, this.glow);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => void this.tapGrid(e), { cooldown: 250 });
     if (this.plan.mode === 'steps') {
@@ -124,7 +126,7 @@ class TreasureMap implements Game {
     this.view = v;
     const n = this.plan.size;
     const w = n * CELL;
-    this.grid.position.set(Math.max(240, (v.w - w) / 2 + 40), Math.max(150, (v.h - w) / 2 + 40));
+    this.grid.position.set(Math.max(240, (v.w - w) / 2 + 40), Math.max(this.plan.mode === 'clues' ? 220 : 150, (v.h - w) / 2 + 40));
     this.grid.hitArea = new Rectangle(0, 0, w, w);
     const g = this.paper.clear();
     g.roundRect(-90, -80, w + 110, w + 100, 26).fill(PARCHMENT).stroke({ width: 6, color: wood.line });
@@ -139,7 +141,7 @@ class TreasureMap implements Game {
       row.position.set(-45, (n - 1 - i) * CELL + CELL / 2);
       this.headers.addChild(col, row);
     }
-    this.sign.position.set(v.w / 2 + 40, 50);
+    this.sign.position.set(v.w / 2 + 40, this.plan.mode === 'clues' ? 75 : 50);
     if (this.pirate && this.find?.from) {
       const p = this.cellAt(this.find.from);
       this.pirate.position.set(p.x, p.y + 36);
@@ -153,6 +155,14 @@ class TreasureMap implements Game {
     const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
     const n = this.plan.size;
     const s = this.find.square;
+    if (this.plan.mode === 'clues' && this.find.clues) {
+      for (const clue of this.find.clues) {
+        const from = this.cellAt(clue.landmark);
+        const to = this.cellAt(this.find.square);
+        g.moveTo(from.x, from.y).lineTo(to.x, to.y).stroke({ width: 18, color: swatch.yellow.fill, alpha: pulse });
+      }
+      return;
+    }
     // The target's column and row light up.
     g.rect(s.col * CELL, 0, CELL, n * CELL).fill({ color: swatch.yellow.fill, alpha: pulse * 0.6 });
     g.rect(0, (n - 1 - s.row) * CELL, n * CELL, CELL).fill({ color: swatch.yellow.fill, alpha: pulse * 0.6 });
@@ -175,13 +185,26 @@ class TreasureMap implements Game {
     if (this.index >= this.finds.length) return void this.finale();
     const f = this.find;
     this.resize(this.view);
+    this.drawLandmarks(f);
     this.drawSign(f);
     this.busy = false;
     const mode = this.plan.mode;
     if (mode === 'pictures') return this.ctx.instruct('map.pictures', { pic: ROW_PICTURES[f.square.row], color: COLUMN_COLORS[f.square.col] });
     if (mode === 'letters') return this.ctx.instruct('map.letters', { sq: name(f.square), col: String.fromCharCode(65 + f.square.col), row: f.square.row + 1 });
     if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
+    if (mode === 'clues') return this.ctx.instruct('map.clues', { first: clueDirection(f.clues![0]), firstThing: f.clues![0].thing, second: clueDirection(f.clues![1]), secondThing: f.clues![1].thing });
     return this.ctx.instruct('map.steps', { dirs: directions(f) });
+  }
+
+  private drawLandmarks(f: Find) {
+    this.landmarks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    for (const clue of f.clues ?? []) {
+      const at = this.cellAt(clue.landmark);
+      const art = thingArt(clue.thing);
+      art.position.set(at.x, at.y);
+      art.scale.set(0.7);
+      this.landmarks.addChild(art);
+    }
   }
 
   /** The request in pictures and letters, so nothing depends on reading alone. */
@@ -197,6 +220,17 @@ class TreasureMap implements Game {
       this.sign.addChild(pic, dot);
     } else if (mode === 'steps') {
       this.sign.addChild(label(directions(f).replace(', then ', '  ·  '), 28, ink));
+    } else if (mode === 'clues') {
+      bg.clear().roundRect(-165, -60, 330, 120, 22).fill(0xffffff).stroke({ width: 5, color: wood.line });
+      f.clues!.forEach((clue, i) => {
+        const y = i === 0 ? -30 : 30;
+        const art = thingArt(clue.thing);
+        art.position.set(-118, y);
+        art.scale.set(0.58);
+        const words = label(clueDirection(clue), 30, ink);
+        words.position.set(-65, y);
+        this.sign.addChild(art, words);
+      });
     } else {
       const t = label(name(f.square), 44, ink);
       if (mode === 'place') {

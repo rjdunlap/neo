@@ -3028,7 +3028,7 @@ async function woodsBatch() {
     log('Egg Catch 6: locked gates, bins tapped as predictions, wrong guesses as misses, glowing path hint, saved score and sticker passed');
   }
 
-  if (!only || only === 'map') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'map') for (let level = fromLevel; level <= 5; level++) {
     await launch('treasure-map', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const dig = async (col, row) => {
@@ -3039,18 +3039,18 @@ async function woodsBatch() {
     };
     for (let n = 0; n < 4; n++) {
       await idle(n);
-      const { col, row } = await page.evaluate(() => neo.scene.game.find.square);
+      const { col, row, size } = await page.evaluate(() => ({ ...neo.scene.game.find.square, size: neo.scene.game.plan.size }));
       if (n === 0) {
         // Right column, wrong row; then wrong column, right row.
-        await dig(col, (row + 1) % 4); await dig((col + 1) % 4, row);
+        await dig(col, (row + 1) % size); await dig((col + 1) % size, row);
         assert.deepEqual(await counts(), [2, 1]);
-        if (level === 2) await screenshot('treasure-map-2-hint');
+        if (level === 5) await screenshot('treasure-map-5-two-clue-hint');
       }
       await dig(col, row);
     }
     await finished('treasure-map');
     assert.deepEqual(await score('treasure-map'), [2, 1]);
-    log(`Treasure Map ${level} (${mode}): squares tapped on the grid, row and column hints spoken, glowing column and row, ${mode === 'steps' ? 'the pet walking the directions, ' : ''}saved score and sticker passed`);
+    log(`Treasure Map ${level} (${mode}): squares tapped on the grid, row and column hints spoken, ${mode === 'clues' ? 'two landmark lines glowing, ' : 'glowing column and row, '}${mode === 'steps' ? 'the pet walking the directions, ' : ''}saved score and sticker passed`);
   }
 
   if (!only || only === 'opp') for (let level = fromLevel; level <= 4; level++) {

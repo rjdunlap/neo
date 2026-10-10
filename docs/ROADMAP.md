@@ -37,7 +37,7 @@ Most sessions should build from this list; checks that need a person or a device
 
 | # | Chunk | Status | One session's next slice | Check tier | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Deepen short ladders** with a real next decision | ready | Build Treasure Map level 5, the two-clue square, from the definition below | New levels on an existing interaction | [Below](#short-ladders-in-order) |
+| 2 | **Deepen short ladders** with a real next decision | ready | Build Critter Sort's "not" hoop as level 5 | New levels on an existing interaction | [Below](#short-ladders-in-order) |
 | 3 | **Profiles stage 2: the island shell takes a controller** | define | Write the definition of ready: `GameScene` samples keys and the controller, calls `control()`, offers the pause menu's *Start again* and *Show a hint*, and shows the demonstration for the input in use, so a grown-up game can live on the map and the chooser's Enter no longer has to mean couch play. If it proves large, Lantern Lake can hand a chosen game to the couch shell | Docs only | [Profiles first](#profiles-first-one-map-for-every-age) (stage 2) |
 | 4 | **New games from the gap review**: Fill and Dump, Number Trails, Sing-Along Barn, Read & Do; then Day by Day, Orchard Rows, Mirror Brush | sketch for the first four (Number Trails waits on the stroke convention, Sing-Along Barn on the pentatonic exception); define for the rest | Fill and Dump needs no decision: check its sketch against the planning rules and build the first round | New game: typecheck, unit tests, one scripted play, one portrait screenshot | [Gap review sketches](IDEAS.md#sketches-first-drafts-of-the-definition-of-ready) and [suggested order](IDEAS.md#suggested-order-non-binding) |
 | 5 | **Story Theater or Shape Buddies** | define | Write the definition of ready for one | Docs only | [Candidates](IDEAS.md#candidates) |
@@ -51,27 +51,14 @@ Most sessions should build from this list; checks that need a person or a device
 
 ### Short ladders, in order
 
-25 games top out at four or five levels and 23 give the school band only one or two (33 school-reaching games in all). The [short-ladder audit](IDEAS.md#short-ladder-audit-2026-10-09) read every ladder and ordered the ones with a **real next decision** (something new to decide, not a bigger number, a faster pace or more to remember). Append levels, never renumber saved levels or pins. Each new level needs its `describeLevel`, scoped how-to steps, rule tests and a bot that can play it (every game has a ghost finger now, and `fingerdemo` plays each game's top level). Already built: Inchworm Measure 5–6, Picture Graph 5–6, Pet Kitchen 7–8 and Pattern Train 10–12 ([archive](archive/COMPLETED-2026-10-09.md#short-ladders-what-was-built-and-audited)).
+25 games top out at four or five levels and 23 give the school band only one or two (33 school-reaching games in all). The [short-ladder audit](IDEAS.md#short-ladder-audit-2026-10-09) read every ladder and ordered the ones with a **real next decision** (something new to decide, not a bigger number, a faster pace or more to remember). Append levels, never renumber saved levels or pins. Each new level needs its `describeLevel`, scoped how-to steps, rule tests and a bot that can play it (every game has a ghost finger now, and `fingerdemo` plays each game's top level). Already built: Inchworm Measure 5–6, Picture Graph 5–6, Pet Kitchen 7–8, Pattern Train 10–12 and Treasure Map 5 ([archive](archive/COMPLETED-2026-10-09.md#short-ladders-what-was-built-and-audited)).
 
 1. **Memory Match 10, "Same, said differently"** — **built 2026-10-09**: number words one through ten to numerals (text cards). Levels 11 (fraction pictures) and 12 (clock faces) need small new art and a legibility look at the 140-unit card first. [Sketch](IDEAS.md#sketch-for-the-next-one-to-build).
-4. **Treasure Map**: a square found from two clues. Its ghost finger learns the new clue type.
-5. **Critter Sort**: a "not" hoop.
-6. **Bouncy Launch**: predict which cloud a shown pull will reach, as an unscored prediction. First confirm that the pull-to-cloud mapping is deterministic.
-7. **Rainbow Fingers**: "Paint the pumpkin", recalling that it is orange and then mixing it.
+4. **Critter Sort**: a "not" hoop.
+5. **Bouncy Launch**: predict which cloud a shown pull will reach, as an unscored prediction. First confirm that the pull-to-cloud mapping is deterministic.
+6. **Rainbow Fingers**: "Paint the pumpkin", recalling that it is orange and then mixing it.
 
 Costlier, after these: Sink or Float's *make it float* is the strongest. **Ramp Race**'s "predict where the car stops" must have its finish rule and the half-marks the model produces (such as 1.5 × 3) worked out before it is built, and a recorded-trials table is a new screen. Fourteen more need a new interaction, art or a stated model first, and twelve should stay as they are; the older-band ceilings of Opposites, Goodnight Room, Stop and Go and Clap the Syllables wait for a reason to grow them ([audit](IDEAS.md#short-ladder-audit-2026-10-09)).
-
-#### Treasure Map 5, two clues — definition of ready
-
-*Fun action:* read two little landmark clues and dig at the one square where their lines meet. *Skill:* compose a horizontal and a vertical spatial relation on a familiar grid, rather than following one route from a start. *Why it is a level, not a new game:* the child still reads a map and taps the square; the new decision is reconciling two pieces of map evidence.
-
-*Smallest complete round:* four finds on the existing five-by-five parchment. Each find has a target square and two different visible landmarks: one clue establishes its column (for example, “two right of the tree”), and the other establishes its row (“one below the rock”). The landmarks and their picture clues stay on the map and request sign. The answer is the unique intersection; no counting past the edge, diagonal relation, or hidden landmark is allowed.
-
-*Support and mistakes:* the request is spoken and pictured, with the two clues shown separately in reading order. A wrong dig leaves the usual mark and says whether its row, column, or neither relation is right; it is a miss under Treasure Map’s existing accounting. After two wrong digs, the two clue lines glow from their landmarks to the target, and that automatic glow counts as one hint. Looking at either clue, or tapping a landmark, is exploration and does not count as a miss. Completion with the glow remains available and earns the ordinary sticker.
-
-*Deeper play:* this becomes level 5 at the end of the school range, preserving levels 1–4 and every saved pin. A later map level must add a distinct map decision (such as comparing two possible intersections), not more landmarks or larger distances.
-
-*Build contract and proof:* add a `clues` plan entry and generated clue data in `logic.ts`; the generator must keep targets distinct, landmarks and their offsets in bounds, give one horizontal and one vertical clue, and make their intersection exactly the target. Unit tests assert those properties and that the clue lines lead to the target. The sign, instruction, wrong-answer copy, and two-line hint must work without reading alone. Extend the ghost-finger bot so it recognizes the new plan and digs each generated intersection. Add a scoped level-5 how-to line and GAMES/README/verification updates. Check with typecheck and the Treasure Map rule tests, then one filtered browser play at level 5 and its `fingerdemo` top-level run; include one wrong dig, the glow, and a portrait look.
 
 ## Waiting on the developer
 
