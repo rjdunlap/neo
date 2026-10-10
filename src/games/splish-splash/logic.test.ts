@@ -82,7 +82,7 @@ describe('Splish Splash', () => {
     expect(wrongTouches(['ears'], ['head'])).toEqual(['head']);
     expect(wrongTouches(['ears'], [])).toEqual([]);
     expect(wrongTouches(['nose'], ['tummy', 'nose'])).toEqual([]);
-    // A finger that has scrubbed an asked part this touch is not told off for rubbing on past it, but one that never did is.
+    // A finger still within reach of what it scrubbed is not told off for rubbing on, but one that is not is.
     expect(wrongTouches(['ears'], ['head'], true)).toEqual([]);
     expect(wrongTouches(['ears'], ['head'], false)).toEqual(['head']);
     // The reaches really do overlap, so the rule matters: scrubbing the path of every splotch of every level, some point is also near another part.
@@ -107,5 +107,27 @@ describe('Splish Splash', () => {
       }
     }
     expect(overlaps).toBeGreaterThan(0);
+  });
+
+  it('forgives a stroke rubbing on past a splotch it cleaned, but not a slide on to another part', () => {
+    const spots = Object.entries(PART_SPOTS).flatMap(([part, list]) => list.map(([x, y, size]) => ({ part: part as Part, x, y, size })));
+    /** Whether a point on Pip is within the reach of a splotch, as the game measures it: in that splotch's own texture units. */
+    const within = (p: { x: number; y: number }, m: { x: number; y: number; size: number }) => nearMud((p.x - m.x) / m.size, (p.y - m.y) / m.size, m.size);
+    // The whole scrub path of a splotch lies within that splotch's own reach, so a stroke that goes on after it is clean stays forgiven.
+    for (const m of spots) for (const step of scrubPath(m.size)) expect(within({ x: m.x + step.x * m.size, y: m.y + step.y * m.size }, m)).toBe(true);
+    // A finger that scrubbed one part and slides to the middle of a splotch of another part, outside the first's reach, is still told off for it
+    // (the "first this, then that" levels keep their correction).
+    let slides = 0;
+    for (const a of spots) {
+      for (const b of spots) {
+        if (a.part === b.part || within(b, a)) continue;
+        slides++;
+        expect(wrongTouches([a.part], [b.part], false)).toEqual([b.part]);
+      }
+    }
+    expect(slides).toBeGreaterThan(8);
+    // The overlap that needs forgiving is real: the far end of the second ear's stroke is near the head, and inside the first ear's own reach.
+    expect(within({ x: -74 + 22, y: -226 }, { x: -74, y: -226, size: 0.7 })).toBe(true);
+    expect(nearMud((-74 + 22 - 6) / 0.9, (-226 + 214) / 0.9, 0.9)).toBe(true);
   });
 });

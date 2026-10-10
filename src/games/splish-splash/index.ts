@@ -113,8 +113,8 @@ class SplishSplash implements Game {
   private readonly eraser = new Sprite();
   private readonly muds: Mud[] = [];
   private readonly last = new Map<number, { x: number; y: number }>();
-  /** Fingers that have scrubbed a part she was asked for during this touch: brushing a neighbor afterwards is not a mistake. */
-  private readonly scrubbing = new Set<number>();
+  /** The splotches each finger has scrubbed in this touch (clean now or not): rubbing on within their reach is not a mistake. */
+  private readonly scrubbed = new Map<number, Mud[]>();
   private view: View;
   private partIndex = 0;
   private misses = 0;
@@ -130,7 +130,7 @@ class SplishSplash implements Game {
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   private readonly lift = (e: { pointerId: number }) => {
     this.last.delete(e.pointerId);
-    this.scrubbing.delete(e.pointerId);
+    this.scrubbed.delete(e.pointerId);
   };
 
   constructor(private readonly ctx: GameContext) {
@@ -311,14 +311,20 @@ class SplishSplash implements Game {
       return m.near(l.x, l.y);
     });
     const parts = this.plan.mode === 'parts';
-    const wrong = parts ? wrongTouches(this.allowed(), touched.map((m) => m.part), this.scrubbing.has(pointerId)) : [];
+    // Still within reach of a splotch this finger has scrubbed in this touch (even one that is clean now): it is rubbing on, not changing part.
+    const forgiven = (this.scrubbed.get(pointerId) ?? []).some((m) => {
+      const l = m.sprite.toLocal(global);
+      return m.near(l.x, l.y);
+    });
+    const wrong = parts ? wrongTouches(this.allowed(), touched.map((m) => m.part), forgiven) : [];
     for (const m of touched) {
       const l = m.sprite.toLocal(global);
       if (parts && !this.allowed().includes(m.part)) {
         if (wrong.includes(m.part)) this.notThatPart(m.part);
         continue;
       }
-      this.scrubbing.add(pointerId);
+      const mine = this.scrubbed.get(pointerId) ?? [];
+      if (!mine.includes(m)) this.scrubbed.set(pointerId, [...mine, m]);
       const gone = m.scrub(l.x, l.y, this.eraser);
       this.sinceProgress = 0;
       if (gone >= CLEAN_ENOUGH) void this.cleaned(m);

@@ -94,10 +94,10 @@ export function nearMud(lx: number, ly: number, size: number): boolean {
 
 /**
  * The splotches a scrub point should count as "not that part" for. The splotches' reaches overlap (the ears reach into the head's,
- * the nose sits inside the tummy's), and a finger that has just finished one ear is still rubbing as the other is asked for, so a
- * point on a splotch that is asked for is scrubbing it, and a finger that has already scrubbed an asked one during this touch is
- * not told off for brushing a neighbor on the way. Only a finger on wrong splotches alone, which has not yet scrubbed the right one, is.
+ * the nose sits inside the tummy's), so a point on a splotch that is asked for is scrubbing it, and a finger rubbing on past one it
+ * has just cleaned is still within that splotch's reach (`forgiven`, the caller checks `nearMud` against each splotch it scrubbed): neither is a mistake. A finger that
+ * slides on to a different part (outside the reach of what it scrubbed) is told off, so "first this, then that" still teaches.
  */
-export function wrongTouches(allowed: Part[], near: Part[], scrubbing = false): Part[] {
-  return scrubbing || near.some((p) => allowed.includes(p)) ? [] : near;
+export function wrongTouches(allowed: Part[], near: Part[], forgiven = false): Part[] {
+  return forgiven || near.some((p) => allowed.includes(p)) ? [] : near;
 }
