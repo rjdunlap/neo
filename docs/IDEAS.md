@@ -651,7 +651,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
-| Splish Splash (L–K · 8) | Other things to wash (a toy car, a teddy) | **9, The picture card:** scrub three parts in the order a card shows | — |
+| Splish Splash (L–K · 8) ([deep dive](deep-dives/splish-splash.md)) | Rooms and messes (beach sand, garden grass, paint, jam), foam and bath toys, and **muddy friends in the tub** (a pig first) in place of a toy car or teddy, plus the part named as it goes clean; the deep dive supersedes this row | **9, What do we hear with?, 10, The picture card** (scrub three parts in the order a card shows), **11, Soap, scrub, rinse, 12, Top to bottom** (drips); left and right and a school window are left for a decision | Pat the bubbles, foam hunt, this one! and wash two (lap and toddler); all wait on level order |
 | Feelings Faces (L–K · 7) | More small events | R2: 8 *how can we help?*. **9, Two friends, one event:** the same thing happens and they feel differently (perspective), which opens a `school` window | — |
 | Weather Wardrobe (L–K · 6) | **New weathers: wind and fog**, with a kite and a bright coat | R2: 7 *the weather changes* | — |
 | Scoop Shop (L–S · 6) | Toppings and cones | — (audit: leave) | — |

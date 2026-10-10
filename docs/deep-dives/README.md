@@ -115,7 +115,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Size Parade | `size-parade` | TPKS | 8 | 4 | not started | — | — |
 | Song Maker | `song-maker` | LTPKS | 7 | 4 | not started | — | — |
 | Sound Garden | `sound-garden` | LTPK | 6 | 4 | not started | — | — |
-| Splish Splash | `splish-splash` | LTPK | 8 | 2 | not started | — | — |
+| Splish Splash | `splish-splash` | LTPK | 8 | 2 | designed | `claude/roadmap-item-14-game-content-jtnvee` ([PR 102](https://github.com/rjdunlap/neo/pull/102)) | [splish-splash.md](splish-splash.md) |
 | Stamp Studio | `stamp-studio` | LTPKS | 6 | 2 | not started | — | — |
 | Stop and Go | `stop-and-go` | LTP | 4 | 4 | not started | — | — |
 | Story Steps | `story-steps` | TPKS | 7 | 1 | designed | `claude/charming-mayer-27wh8m` ([PR 81](https://github.com/rjdunlap/neo/pull/81)) | [story-steps.md](story-steps.md) |

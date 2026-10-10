@@ -2,6 +2,12 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-10 — Splish Splash deep dive
+
+- Wrote `docs/deep-dives/splish-splash.md` (research read through search summaries; no page was opened) and updated the tracker, the IDEAS round-three row, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran.
+- Read from the code, not played: the how-to's last step, finish line and note are unbounded, the hint glow comes after seven idle seconds and counts a hint (not after two misses), free levels never name a part, a tap clears a disc of about 31 units, and levels 7 and 8 ask only two questions. Nothing was run in a browser, so every child and device check is open. The link check also flagged two roadmap anchors into `docs/archive/COMPLETED-2026-10-09.md` (their headings carry a date the links lack); they were noticed and not touched.
+
 ## 2026-10-10 — Animal Snack deep dive
 
 - Wrote `docs/deep-dives/animal-snack.md` (research read through search summaries; no page was fetched) and updated the tracker, the IDEAS round-three row and mentions, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
