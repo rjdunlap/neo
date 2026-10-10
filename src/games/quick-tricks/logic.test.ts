@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { friendsFor, judgeLeaf, leavesFor, makeSocks, plankLengths, PLANS, reaches, sameSock, shelters } from './logic';
+import { friendsFor, judgeLeaf, leafDrop, leavesFor, makeSocks, partnerSock, plankLengths, plankToPlace, PLANS, reaches, sameSock, shelters, STRETCH_TO } from './logic';
 
 describe('Quick Tricks', () => {
   it('Umbrella Up: one leaf keeps one friend dry; with two friends only the big leaf covers both', () => {
@@ -47,5 +47,28 @@ describe('Quick Tricks', () => {
       expect(lengths.filter(reaches)).toHaveLength(1);
       expect(new Set(lengths).size).toBe(3);
     }
+  });
+
+  it('demonstrates each trick right: the leaf that covers everyone, the partner sock, a long enough plank and a stretch past the far bank', () => {
+    // Heights as the game computes them: friends' heads 125 above the ground, which is 110 above the bottom of a 768-or-taller view; the cloud's bottom at 200.
+    for (const h of [768, 1024, 1366]) {
+      const [top, sky] = [h - 110 - 125, 200];
+      for (const plan of PLANS) {
+        const drop = leafDrop(plan, top);
+        expect(drop.leaf).toBeGreaterThanOrEqual(0);
+        expect(judgeLeaf(leavesFor(plan)[drop.leaf], drop.x, drop.y, friendsFor(plan), top, sky)).toBe('dry');
+      }
+    }
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 200; seed++) {
+        const { held, choices } = makeSocks(plan, new Rng(seed));
+        expect(sameSock(choices[partnerSock(held, choices)], held)).toBe(true);
+      }
+    }
+    for (let seed = 1; seed <= 50; seed++) {
+      const lengths = plankLengths(new Rng(seed));
+      expect(reaches(lengths[plankToPlace(lengths)])).toBe(true);
+    }
+    expect(reaches(STRETCH_TO)).toBe(true);
   });
 });

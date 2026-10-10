@@ -6,8 +6,8 @@ import {spread,type View} from '../../engine/view';
 import {RoundButton} from '../../ui/buttons';
 import {againIcon,arrowIcon} from '../../ui/icons';
 import {label} from '../../ui/text';
-import type {Game,GameContext} from '../types';
-import {encoreFor,encoreRound,fitsParcel,type ParcelShape} from './second-logic';
+import type {Game,GameContext,TouchIntent} from '../types';
+import {encoreFor,encoreMove,encoreRound,fitsParcel,type ParcelShape} from './second-logic';
 function parcel(shape:ParcelShape){const g=new Graphics();
  const points=shape==='rectangle'?[-85,-45,85,-45,85,45,-85,45]:shape==='triangle'?[-75,60,0,-70,75,60]:[-70,-70,0,-70,0,0,70,0,70,70,-70,70];
  return g.poly(points).fill(swatch.orange.fill).stroke({width:6,color:swatch.brown.line,join:'round'});
@@ -83,6 +83,21 @@ export class SecondShow implements Game{
   const xs=spread(this.seats.length,180,v.w-100,190);this.seats.forEach((s,i)=>s.node.position.set(xs[i],v.h*.45));
   if(this.bowl){this.drags[0].home={x:v.w/2,y:v.h-100};if(!this.drags[0].dragging)this.bowl.position.set(v.w/2,v.h-100);}
   this.berryPicture.position.set(v.w/2,v.h*.45);this.drawBerries();this.drawGlow();
+ }
+ /** The ghost finger: turn the parcel and carry it to its slot, a bowl to each empty place, the berries asked for and then submit, and the arrow after each step. */
+ autotouch():TouchIntent|null{
+  if(this.finished)return null;
+  const m=encoreMove(this.plan,this.round,{step:this.step as 0|1|2,waiting:this.waiting,turns:this.turns,seats:this.seats.map(s=>s.filled),berries:this.berries});
+  switch(m?.do){
+   case 'next':return {tap:{on:this.next}};
+   case 'turn':return {tap:{on:this.turn}};
+   case 'parcel':return this.parcel?{drag:{on:this.parcel},to:{on:this.layer,x:this.target.x,y:this.target.y}}:null;
+   case 'bowl':return this.bowl?{drag:{on:this.bowl},to:{on:this.seats[m.seat].node}}:null;
+   case 'berry':return {tap:{on:this.berry}};
+   case 'undo':return {tap:{on:this.undo}};
+   case 'submit':return {tap:{on:this.submit}};
+   default:return null;
+  }
  }
  update(dt:number){this.clock+=dt;this.glow.alpha=.7+.3*Math.sin(this.clock*4);if(this.waiting&&this.step===0&&this.parcel)this.parcel.scale.set(1+.04*Math.sin(this.clock*8));}
  destroy(){this.clear();}
