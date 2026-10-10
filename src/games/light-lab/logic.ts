@@ -8,7 +8,7 @@ import type { Rng } from '../../engine/random';
  * Puzzles are built backwards from a random beam path, so every one has a known solution; extra
  * mirrors and rocks are placed off that path, and the mirrors start tilted so it isn't solved yet.
  */
-export type LightMode = 'live' | 'plan';
+export type LightMode = 'live' | 'plan' | 'predict';
 
 export interface LightPlan {
   mode: LightMode;
@@ -33,6 +33,7 @@ export const PLANS: LightPlan[] = [
   { mode: 'plan', cols: 7, rows: 5, turns: 3, decoys: 2, rocks: 2, flowers: 2, glass: false, puzzles: 2, name: 'Wake two flowers with one beam (three mirrors to plan)' },
   { mode: 'plan', cols: 7, rows: 5, turns: 3, decoys: 2, rocks: 1, flowers: 2, glass: true, puzzles: 2, name: 'Colored glass: wake the yellow flower, then shine through pink glass for the pink one' },
   { mode: 'plan', cols: 7, rows: 5, turns: 4, decoys: 3, rocks: 2, flowers: 2, glass: false, puzzles: 2, name: 'A longer path: four mirrors, spare mirrors and rocks in the way' },
+  { mode: 'predict', cols: 7, rows: 5, turns: 4, decoys: 3, rocks: 2, flowers: 2, glass: false, puzzles: 4, name: 'Predict where the locked beam stops, then plan the mirrors and shine' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -88,6 +89,19 @@ export interface Trace {
   end: 'edge' | 'rock' | 'loop';
 }
 
+export interface BeamEnd {
+  key: string;
+  kind: 'edge' | 'rock' | 'loop';
+  /** The endpoint's board cell, or the last cell beyond the board for an edge. */
+  x: number;
+  y: number;
+  /** Where to place its tap target on the board. */
+  targetX: number;
+  targetY: number;
+  /** Direction the beam leaves the board, for edge endpoints. */
+  exit?: Dir;
+}
+
 export function trace(p: LightPuzzle, tilts: Tilt[]): Trace {
   const at = new Map(p.things.map((t, i) => [`${t.x},${t.y}`, i]));
   let x = 0;
@@ -122,6 +136,42 @@ export function trace(p: LightPuzzle, tilts: Tilt[]): Trace {
 
 export const flowerCount = (p: LightPuzzle) => p.things.filter((t) => t.kind === 'flower').length;
 export const solved = (p: LightPuzzle, tilts: Tilt[]) => trace(p, tilts).woken.length === flowerCount(p);
+
+export function beamEnd(p: LightPuzzle, tilts: Tilt[]): BeamEnd {
+  const result = trace(p, tilts);
+  const path = result.cells;
+  const last = path[path.length - 1];
+  const rock = p.things.find((t) => t.kind === 'rock' && t.x === last.x && t.y === last.y);
+  if (rock) return { key: `rock:${last.x},${last.y}`, kind: 'rock', x: last.x, y: last.y, targetX: last.x, targetY: last.y };
+  if (result.end === 'loop') {
+    const targetX = Math.max(0, Math.min(p.cols - 1, last.x));
+    const targetY = Math.max(0, Math.min(p.rows - 1, last.y));
+    return { key: `loop:${last.x},${last.y}`, kind: 'loop', x: last.x, y: last.y, targetX, targetY };
+  }
+  const before = path[path.length - 2];
+  const exit = ([0, 1, 2, 3] as Dir[]).find((d) => before.x + DX[d] === last.x && before.y + DY[d] === last.y)!;
+  const targetX = Math.max(0, Math.min(p.cols - 1, last.x));
+  const targetY = Math.max(0, Math.min(p.rows - 1, last.y));
+  return { key: `edge:${last.x},${last.y}`, kind: 'edge', x: last.x, y: last.y, targetX, targetY, exit };
+}
+
+/** Distinct board positions where any mirror arrangement could stop this beam. */
+export function predictionChoices(p: LightPuzzle, actual: Tilt[] = p.start): BeamEnd[] {
+  const mirrors = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [i] : []));
+  const outcomes = new Map<string, BeamEnd>();
+  const answer = beamEnd(p, actual);
+  if (answer.kind === 'loop') return [];
+  outcomes.set(`${answer.targetX},${answer.targetY}`, answer);
+  for (let mask = 0; mask < 2 ** mirrors.length; mask++) {
+    const tilts = [...actual];
+    mirrors.forEach((index, bit) => { tilts[index] = ((mask >> bit) & 1) as Tilt; });
+    const end = beamEnd(p, tilts);
+    if (end.kind === 'loop') continue;
+    const target = `${end.targetX},${end.targetY}`;
+    if (!outcomes.has(target)) outcomes.set(target, end);
+  }
+  return [...outcomes.values()];
+}
 
 /** Builds a puzzle backwards from a random path; retries until every rule holds. */
 export function makePuzzle(plan: LightPlan, rng: Rng): LightPuzzle {
@@ -215,7 +265,11 @@ function tryPuzzle(plan: LightPlan, rng: Rng): LightPuzzle | null {
     const start = solution.map((t, i) => (things[i].kind === 'mirror' && rng.chance(0.5) ? ((1 - t) as Tilt) : t));
     const first = pathMirrors[rng.int(0, pathMirrors.length - 1)];
     if (start[first] === solution[first]) start[first] = (1 - solution[first]) as Tilt;
-    if (!solved(puzzle, start)) return { ...puzzle, start };
+    if (!solved(puzzle, start)) {
+      const result = { ...puzzle, start };
+      if (plan.mode === 'predict' && predictionChoices(result).length < 3) continue;
+      return result;
+    }
   }
   return null;
 }

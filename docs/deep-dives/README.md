@@ -79,7 +79,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Lasso Loops | `lasso-loops` | PKS | 5 | 4 | not started | — | — |
 | Lemonade Stand | `lemonade-stand` | S | 4 | 4 | not started | — | — |
 | Letter Trails | `letter-trails` | PKS | 8 | 3 | not started | — | — |
-| Light Lab | `light-lab` | KS | 6 | 4 | not started | — | — |
+| Light Lab | `light-lab` | KS | 7 | 4 | not started | — | — |
 | Little Helpers | `little-helpers` | LTPKS | 6 | 4 | not started | — | — |
 | Mail Carrier | `mail-carrier` | LTPKS | 7 | 4 | not started | — | — |
 | Market Stall | `market-stall` | PKS | 7 | 3 | not started | — | — |
