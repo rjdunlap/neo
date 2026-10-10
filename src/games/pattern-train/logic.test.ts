@@ -15,7 +15,14 @@ describe('Pattern Train', () => {
   it('shows enough of the pattern that each empty car has exactly one answer', () => {
     for (const plan of PATTERN_PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
-        const { sequence, targets } = buildTrain(plan, new Rng(seed));
+        const { sequence, targets, choices } = buildTrain(plan, new Rng(seed));
+        if (plan.numberSteps) {
+          const step = sequence[1] - sequence[0];
+          expect(plan.numberSteps).toContain(step);
+          expect(sequence.every((value, i) => i === 0 || value - sequence[i - 1] === step), plan.name).toBe(true);
+          expect(new Set(choices[0]).size, plan.name).toBe(CHOICES);
+          continue;
+        }
         const showing = sequence.map((v, i) => (targets.includes(i) ? null : v));
         // The visible cars repeat exactly the planned unit, no shorter.
         const p = shortestRepeat(showing);
@@ -37,6 +44,7 @@ describe('Pattern Train', () => {
   it('puts the gap where each level says: the end, the middle, or the last two cars', () => {
     for (const plan of PATTERN_PLANS) {
       const { sequence, targets } = buildTrain(plan, new Rng(3));
+      if (plan.numberSteps) { expect(targets).toEqual([6]); continue; }
       if (plan.two) expect(targets).toEqual([sequence.length - 2, sequence.length - 1]);
       else if (plan.missing) {
         expect(targets[0]).toBeLessThan(plan.pattern.length);
@@ -48,12 +56,12 @@ describe('Pattern Train', () => {
   it('has a choice on offer for every empty car, in order, that fits the pattern', () => {
     for (const plan of PATTERN_PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
-        const { sequence, targets } = buildTrain(plan, new Rng(seed));
+        const { sequence, targets, choices } = buildTrain(plan, new Rng(seed));
         targets.forEach((t, k) => {
-          const want = wantedChoice(sequence, targets, k);
+          const want = wantedChoice(sequence, targets, choices, k);
           expect(want).toBeGreaterThanOrEqual(0);
           expect(want).toBeLessThan(CHOICES);
-          expect(want).toBe(sequence[t]);
+          expect(choices[k][want]).toBe(sequence[t]);
         });
       }
     }

@@ -43,12 +43,21 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `originals`, `robot`, `third` | 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-06 in the combined flow, with later per-game reruns; `BATCH_ONLY=salon` (Fluffy Salon with real strokes) 2026-10-09: levels 1 and 2 pass, level 3 times out on the unchanged game too | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
 | `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |
-| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash, all eight levels, real touches) 2026-10-09 | Archived combined-flow entry; Stop and Go to Splish Splash bots entry | |
+| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-10: `pattern` filtered to level 12 (wrong answer, hint, reward); 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash, all eight levels, real touches) 2026-10-09 | Pattern Train seventh-car entry; archived combined-flow entry; Stop and Go to Splish Splash bots entry | |
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
 
 ## Entries, newest first
+
+### Pattern Train: the seventh car, linked attributes and skip counting (2026-10-10)
+
+What changed: Pattern Train's school range now reaches levels 10–12. Two full ABC repeats identify a seventh car; color and shape then advance together; and numbered cars count by a generated 2, 5 or 10. Rule data now carries the choices as well as the sequence, so the touch and couch bots choose by the same generated answer. The targeted level-12 play found a real bug in the two-miss hint: it indexed a choice by the displayed numeral instead of its choice position; the highlight now uses the shared answer rule.
+
+- `npm run typecheck` and `src/games/pattern-train/logic.test.ts` passed (3 tests): visible repeats identify every non-number target, number sequences take only the stated steps, every answer has three distinct choices, and the generated choice is correct.
+- `GAME_URL=http://127.0.0.1:5174 BROWSER_SUITE=pattern PATTERN_LEVELS=12 npm run test:browser` passed a wrong-answer, hint and completed-reward round with no page error. The same check failed before the hint-index fix with an undefined choice, then passed after it.
+- `GAME_URL=http://127.0.0.1:5174 BROWSER_SUITE=fingerdemo FINGER_ONLY=pattern-train FINGER_LEVELS=12 npm run test:browser` passed cleanly in 1.2 seconds.
+- Not run: build, offline, broad navigation, couch and earlier-level browser suites; this is a game-only ladder extension and the couch trip remains on levels 4, 6 and 9. The seventh-car layout and number legibility still need an iPad look.
 
 ### Memory Match: number words and numerals (2026-10-09)
 

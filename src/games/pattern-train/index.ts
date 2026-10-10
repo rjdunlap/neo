@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
-import { cream, swatch } from '../../art/palette';
+import { cream, swatch, type ColorName } from '../../art/palette';
+import { shapePath, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
@@ -13,12 +14,22 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { buildTrain, patternPlan, wantedChoice, type PatternPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 9 } };
+const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 12 } };
+
+function trainSymbol(kind: PatternPlan['kind'], value: number, size: number): Container {
+  if (kind === 'number') return label(String(value), value >= 10 ? 31 : 42, swatch.purple.line);
+  if (kind !== 'pair') return symbol(kind, value, size);
+  const colors: ColorName[] = ['red', 'blue', 'yellow'];
+  const shapes: ShapeKind[] = ['circle', 'triangle', 'square'];
+  const color = swatch[colors[value % 3]];
+  return shapePath(new Graphics(), shapes[value % 3], size).fill(color.fill).stroke({ width: 4, color: color.line });
+}
 
 class PatternTrain implements Game {
   readonly plan: PatternPlan;
   readonly sequence: number[];
   readonly targets: number[];
+  readonly choiceValues: number[][];
   private target = 0;
   readonly cars: Container[] = [];
   readonly choices: Container[] = [];
@@ -47,13 +58,13 @@ class PatternTrain implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = patternPlan(ctx.level);
-    ({ sequence: this.sequence, targets: this.targets } = buildTrain(this.plan, ctx.rng));
+    ({ sequence: this.sequence, targets: this.targets, choices: this.choiceValues } = buildTrain(this.plan, ctx.rng));
     ctx.stage.addChild(this.background, this.tracks, this.scene);
     this.scene.addChild(this.glow, this.hintsGlow, this.selection);
     this.sequence.forEach((value, i) => {
       const car = new Container();
       car.addChild(tile(100, 108, 'white'));
-      const content = this.targets.includes(i) ? label('?',  60, swatch.purple.line) : symbol(this.plan.kind, value, 32);
+      const content = this.targets.includes(i) ? label('?', 60, swatch.purple.line) : trainSymbol(this.plan.kind, value, 32);
       car.addChild(content);
       car.addChild(new Graphics().circle(-27, 65, 12).circle(27, 65, 12).fill(swatch.brown.line));
       onTap(car, () => { if (!this.targets.slice(this.target).includes(i)) sfx.bell(4 + value * 3, 0.35); }, { radius: 55 });
@@ -61,7 +72,7 @@ class PatternTrain implements Game {
     });
     for (let i = 0; i < 3; i++) {
       const choice = new Container();
-      choice.addChild(tile(120, 120, 'white'), symbol(this.plan.kind, i, 36));
+      choice.addChild(tile(120, 120, 'white'), trainSymbol(this.plan.kind, this.choiceValues[0][i], 36));
       onTap(choice, () => {
         if (this.done) return;
         if (this.plan.kind === 'bell') { this.selected = i; sfx.bell(4 + i * 3, 0.45); this.layoutGlow(); }
@@ -77,7 +88,7 @@ class PatternTrain implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.plan.kind === 'bell' ? 'pattern.sound' : 'pattern.start');
+    void this.ctx.instruct(this.plan.kind === 'bell' ? 'pattern.sound' : this.plan.kind === 'number' ? 'pattern.number' : this.plan.kind === 'pair' ? 'pattern.pair' : this.plan.far ? 'pattern.far' : 'pattern.start');
     if (this.plan.kind === 'bell') void this.ctx.tw.wait(1.5).then(() => this.playPattern());
   }
 
@@ -99,7 +110,7 @@ class PatternTrain implements Game {
   private choose(value: number) {
     if (this.done) return;
     const index = this.targets[this.target];
-    if (value !== this.sequence[index]) {
+    if (this.choiceValues[this.target][value] !== this.sequence[index]) {
       this.misses++; this.wrong++;
       sfx.boing();
       void this.ctx.say('pattern.wrong');
@@ -110,7 +121,7 @@ class PatternTrain implements Game {
     sfx.bell(4 + value * 3, 0.4);
     const car = this.cars[index];
     car.removeChildAt(1).destroy({ children: true });
-    car.addChildAt(symbol(this.plan.kind, value, 32), 1);
+    car.addChildAt(trainSymbol(this.plan.kind, this.sequence[index], 32), 1);
     this.target++; this.wrong = 0; this.selected = null;
     if (this.target === this.targets.length) {
       this.done = true;
@@ -137,7 +148,7 @@ class PatternTrain implements Game {
     const car = this.cars[this.targets[this.target]];
     this.glow.roundRect(car.x -  60, car.y -  64, 120, 130, 22).stroke({ width: 7, color: swatch.yellow.line });
     if (this.wrong >= 2) {
-      const c = this.choices[this.sequence[this.targets[this.target]]];
+      const c = this.choices[wantedChoice(this.sequence, this.targets, this.choiceValues, this.target)];
       this.hintsGlow.roundRect(c.x - 68, c.y - 68, 136, 136, 24).stroke({ width: 8, color: swatch.green.fill });
     }
     if (this.selected !== null) {
@@ -161,7 +172,7 @@ class PatternTrain implements Game {
     if (this.done) return null;
     const bell = this.plan.kind === 'bell';
     if (bell && (!this.played || this.playing)) return null;
-    const want = wantedChoice(this.sequence, this.targets, this.target);
+    const want = wantedChoice(this.sequence, this.targets, this.choiceValues, this.target);
     if (bell && this.selected === want) return { tap: { on: this.confirm } };
     return { tap: { on: this.choices[want] } };
   }
@@ -190,7 +201,7 @@ class PatternTrain implements Game {
     out.players[0].active = true;
     this.botWait -= dt;
     if (this.done || this.botWait > 0) return out;
-    const want = wantedChoice(this.sequence, this.targets, this.target);
+    const want = wantedChoice(this.sequence, this.targets, this.choiceValues, this.target);
     if (want === this.focus) {
       out.players[0].action = true;
       this.botWait = 1;

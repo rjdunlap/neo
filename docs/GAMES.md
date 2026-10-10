@@ -208,7 +208,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Pattern Train
 
-*preschool–school.* Advances from AB through AAB/ABB and ABC, animal patterns, missing middle cars, bell patterns, and two-car gaps. Bell choices can be auditioned before confirming.
+*preschool–school.* Advances from AB through AAB/ABB and ABC, animal patterns, missing middle cars, bell patterns, and two-car gaps. The three school follow-ons ask for a seventh car after two repeats, then follow color and shape together, then count numbered cars by 2, 5 or 10. Bell choices can be auditioned before confirming; tapping a shown car is always free exploration.
 
 ### Memory Match
 
