@@ -54,6 +54,7 @@ class WeatherWardrobe implements Game {
   readonly options: Option[] = [];
   /** Clothing on the pet, by item. */
   readonly worn = new Map<Item, Container>();
+  private readonly wornCenters = new Map<Item, { x: number; y: number }>();
   weather: Weather = 'sunny';
   q = 0;
   taps = 0;
@@ -63,6 +64,7 @@ class WeatherWardrobe implements Game {
   hints = 0;
   busy = false;
   done = false;
+  private changePhase: 'remove' | 'add' | null = null;
 
   private readonly sky = new Graphics();
   private readonly ground = new Graphics();
@@ -86,7 +88,7 @@ class WeatherWardrobe implements Game {
     ctx.pet.visible = false;
     this.pet = new Critter(ctx.petSpec);
     this.pet.scale.set(0.8);
-    this.pet.hitArea = new Circle(0, -125, 150);
+    this.pet.hitArea = this.plan.mode === 'change' ? new Circle(0, -220, 370) : new Circle(0, -125, 150);
     onTap(this.pet, () => {
       this.pet.poke();
       sfx.giggle();
@@ -126,6 +128,12 @@ class WeatherWardrobe implements Game {
     }
     if (this.busy) return null;
     const item = itemToTap(this.outfit, new Set(this.options.filter((o) => o.used).map((o) => o.item)));
+    if (this.changePhase === 'remove') {
+      const worn = this.outfit.remove?.find((i) => this.worn.has(i));
+      const node = worn ? this.worn.get(worn) : null;
+      const center = worn ? this.wornCenters.get(worn) : null;
+      return node && center ? { tap: { on: node, x: center.x, y: center.y }, pause: 0.35 } : null;
+    }
     const option = this.options.find((o) => o.item === item);
     return option ? { tap: { on: option.node } } : null;
   }
@@ -169,9 +177,11 @@ class WeatherWardrobe implements Game {
   private ask() {
     const o = this.outfit;
     this.wrong = 0;
+    this.changePhase = this.plan.mode === 'change' ? 'remove' : null;
     this.undress();
     this.packed.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.setWeather(o.weathers[0]);
+    if (this.plan.mode === 'change') o.remove?.forEach((item) => this.put(item, true));
     this.drawForecast(o);
     for (const opt of this.options) opt.node.destroy({ children: true });
     this.options.length = 0;
@@ -182,12 +192,14 @@ class WeatherWardrobe implements Game {
       const opt: Option = { item, node, used: false };
       onTap(node, () => this.choose(opt));
       node.scale.set(0);
+      node.visible = this.plan.mode !== 'change';
       void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.35, delay: i * 0.07, ease: ease.outBack });
       this.options.push(opt);
       this.ctx.stage.addChild(node);
     });
     this.ctx.stage.addChild(this.glow);
-    if (this.plan.mode === 'trip') this.instruct('weather.trip', { a: o.weathers[0], b: o.weathers[1] });
+    if (this.plan.mode === 'change') this.instruct('weather.change.remove', { weather: o.weathers[1] });
+    else if (this.plan.mode === 'trip') this.instruct('weather.trip', { a: o.weathers[0], b: o.weathers[1] });
     else this.instruct(this.plan.mode === 'pick' ? 'weather.pick' : 'weather.all', { weather: o.weathers[0] });
     this.resize(this.view);
     this.busy = false;
@@ -195,6 +207,7 @@ class WeatherWardrobe implements Game {
 
   private choose(opt: Option) {
     if (this.busy || this.done || opt.used) return;
+    if (this.changePhase === 'remove') { void this.ctx.say('weather.change.remove.first'); return; }
     const o = this.outfit;
     if (!o.needed.includes(opt.item)) {
       this.misses++;
@@ -238,8 +251,17 @@ class WeatherWardrobe implements Game {
   }
 
   /** Dresses the pet in one item, with a little pop. */
-  private put(item: Item) {
+  private put(item: Item, removable = false) {
     const c = clothing(item);
+    if (removable) {
+      const b = c.getLocalBounds();
+      const width = Math.max(130, b.width + 48), height = Math.max(130, b.height + 48);
+      const center = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+      this.wornCenters.set(item, center);
+      c.hitArea = new Rectangle(center.x - width / 2, center.y - height / 2, width, height);
+      c.eventMode = 'static';
+      onTap(c, () => this.removeWorn(item));
+    }
     this.pet.attach(c);
     this.worn.set(item, c);
     c.scale.set(0.6);
@@ -248,9 +270,28 @@ class WeatherWardrobe implements Game {
     sfx.pop(8);
   }
 
+  private removeWorn(item: Item) {
+    if (this.changePhase !== 'remove' || this.busy || this.done || !this.outfit.remove?.includes(item)) return;
+    const worn = this.worn.get(item);
+    if (!worn) return;
+    this.worn.delete(item);
+    this.wornCenters.delete(item);
+    worn.destroy({ children: true });
+    this.pet.hop(0.45);
+    sfx.pop(6);
+    if (this.outfit.remove?.every((i) => !this.worn.has(i))) {
+      this.changePhase = 'add';
+      this.setWeather(this.outfit.weathers[1]);
+      this.options.forEach((o) => { o.node.visible = true; });
+      this.resize(this.view);
+      this.instruct('weather.change.add', { weather: this.outfit.weathers[1] });
+    }
+  }
+
   private undress() {
     for (const c of this.worn.values()) c.destroy({ children: true });
     this.worn.clear();
+    this.wornCenters.clear();
   }
 
   /** Trips: the item hops into the suitcase and shows on its lid. */
@@ -330,7 +371,7 @@ class WeatherWardrobe implements Game {
     this.suitcase.position.set(v.w * 0.7, v.h - 178);
     this.forecast.position.set(v.w / 2, 90);
     this.tray.clear();
-    if (this.options.length) {
+    if (this.options.length && this.changePhase !== 'remove') {
       this.tray.roundRect(160, v.h - 160, v.w - 190, 148, 30).fill({ color: swatch.white.fill, alpha: 0.85 });
       const xs = spread(this.options.length, 175, v.w - 40, 150);
       this.options.forEach((o, i) => {
@@ -396,7 +437,7 @@ export const weatherWardrobe: GameModule = {
   region: 'cozy-village',
   skills: ['reasoning', 'vocabulary', 'everyday-life'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (b) => (b === 'prek' ? { min: 4, max: 6 } : b === 'preschool' ? { min: 3, max: 5 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
+  levels: (b) => (b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 3, max: 5 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
   describeLevel: (l) => wardrobePlan(l).name,
   touchDemo: true,
   music: STYLES.hub,

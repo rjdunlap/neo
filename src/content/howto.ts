@@ -287,8 +287,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 3, text: 'Tap the one thing that suits the weather.' },
       { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
       { from: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
+      { from: 7, text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.' },
     ],
-    finish: 'The round ends when the pet is dressed for the weather (or the trip).',
+    finish: [
+      { to: 6, text: 'The round ends when the pet is dressed for the weather (or the trip).' },
+      { from: 7, text: 'The round ends when the pet has changed clothes for each new weather.' },
+    ],
     note: [{ from: 2, text: 'A wrong choice is told which weather it is for, and the glowing one helps.' }],
   },
   'sink-float': {

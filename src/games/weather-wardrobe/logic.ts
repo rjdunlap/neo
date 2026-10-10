@@ -29,7 +29,7 @@ export const ITEM_WORDS: Record<Item, string> = {
   mittens: 'Mittens are',
 };
 
-export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip';
+export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change';
 
 export interface WardrobePlan {
   mode: WardrobeMode;
@@ -48,6 +48,7 @@ export const WARDROBE_PLANS: WardrobePlan[] = [
   { mode: 'all', choices: 4, need: 2, rounds: 3, name: 'Find both things to wear, out of four' },
   { mode: 'all', choices: 5, need: 3, rounds: 3, name: 'Find everything to wear, out of five' },
   { mode: 'trip', choices: 6, need: 4, rounds: 2, name: 'Pack for a trip with two kinds of weather' },
+  { mode: 'change', choices: 5, need: 0, rounds: 3, name: 'Take off clothes that do not fit the new weather, then dress for it' },
 ];
 
 export const wardrobePlan = (level: number) => WARDROBE_PLANS[Math.max(0, Math.min(WARDROBE_PLANS.length - 1, level - 1))];
@@ -57,6 +58,8 @@ export interface Outfit {
   /** What to put on (or pack). */
   needed: Item[];
   options: Item[];
+  /** In weather-change rounds, these are the worn clothes to remove before dressing for the new weather. */
+  remove?: Item[];
 }
 
 /** One round's weather and choices. Weathers change from round to round. */
@@ -64,6 +67,15 @@ export function outfits(plan: WardrobePlan, rng: Rng): Outfit[] {
   const out: Outfit[] = [];
   let order: Weather[] = [];
   for (let r = 0; r < plan.rounds; r++) {
+    if (plan.mode === 'change') {
+      if (!order.length) order = rng.shuffle([...WEATHERS]);
+      const from = order[r]!;
+      const to = order[(r + 1) % order.length];
+      const needed = itemsFor(to);
+      const others = rng.shuffle((Object.keys(ITEMS) as Item[]).filter((i) => ITEMS[i] !== to));
+      out.push({ weathers: [from, to], remove: itemsFor(from), needed, options: rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]) });
+      continue;
+    }
     if (order.length < (plan.mode === 'trip' ? 2 : 1)) order = rng.shuffle([...WEATHERS]);
     const weathers = plan.mode === 'trip' ? [order.shift()!, order.shift()!] : [order.shift()!];
     // Sunny has only two things to wear, so "everything" there means both.

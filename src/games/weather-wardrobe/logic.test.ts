@@ -18,10 +18,22 @@ describe('Weather Wardrobe', () => {
           expect(new Set(o.options).size).toBe(o.options.length);
           for (const item of o.needed) expect(o.options).toContain(item);
           // Everything offered is either needed or clearly for a weather that is not coming.
-          for (const item of o.options) expect(o.needed.includes(item) || !o.weathers.includes(ITEMS[item])).toBe(true);
-          for (const item of o.needed) expect(o.weathers).toContain(ITEMS[item]);
+          const current = plan.mode === 'change' ? o.weathers[1] : null;
+          for (const item of o.options) expect(o.needed.includes(item) || (current ? ITEMS[item] !== current : !o.weathers.includes(ITEMS[item]))).toBe(true);
+          for (const item of o.needed) {
+            if (plan.mode === 'trip') expect(o.weathers).toContain(ITEMS[item]);
+            else expect(current ?? o.weathers[0]).toBe(ITEMS[item]);
+          }
           if (plan.mode === 'pick') expect(o.needed).toHaveLength(1);
           if (plan.mode === 'trip') expect(new Set(o.weathers).size).toBe(2);
+          if (plan.mode === 'change') {
+            expect(o.weathers).toHaveLength(2);
+            expect(o.weathers[0]).not.toBe(o.weathers[1]);
+            expect(o.remove?.sort()).toEqual(itemsFor(o.weathers[0]).sort());
+            expect(o.needed.sort()).toEqual(itemsFor(o.weathers[1]).sort());
+            expect(o.remove!.length).toBeGreaterThan(0);
+            expect(o.needed.length).toBeGreaterThan(0);
+          }
           if (i > 0 && plan.mode !== 'trip') expect(o.weathers[0]).not.toBe(rounds[i - 1].weathers[0]);
         });
       }
@@ -35,7 +47,8 @@ describe('Weather Wardrobe', () => {
           const used = new Set<Item>();
           for (let item = itemToTap(o, used); item; item = itemToTap(o, used)) {
             expect(o.options).toContain(item);
-            expect(o.weathers).toContain(ITEMS[item]);
+            if (plan.mode === 'trip') expect(o.weathers).toContain(ITEMS[item]);
+            else expect(plan.mode === 'change' ? o.weathers[1] : o.weathers[0]).toBe(ITEMS[item]);
             expect(used.has(item)).toBe(false);
             used.add(item);
           }
