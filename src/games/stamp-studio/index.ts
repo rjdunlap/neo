@@ -9,9 +9,9 @@ import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
-import { LIMIT, pixel, place, planFor, type Stamp, type StampKind } from './logic';
+import { LIMIT, pixel, place, planFor, STAMP_COLORS, stampDemo, type Stamp, type StampKind } from './logic';
 
 interface Mark { data: Stamp; node: Container; drag?: DragHandle }
 class StampStudio implements Game {
@@ -48,7 +48,7 @@ class StampStudio implements Game {
       const b = new RoundButton(stampArt(kind, 'orange', 33), swatch.white, 48, () => { this.kind = kind; void ctx.say('stamp.kind', { kind }); this.drawSelection(); });
       ctx.stage.addChild(b); this.choices.push(b);
     });
-    if (this.plan.color) for (const color of ['purple', 'blue', 'green', 'pink'] as ColorName[]) {
+    if (this.plan.color) for (const color of STAMP_COLORS) {
       const b = new RoundButton(new Graphics().circle(0, 0, 22).fill(swatch[color].fill), swatch.white, 43, () => { this.color = color; void ctx.say('color.' + color as 'color.blue'); this.drawSelection(); });
       ctx.stage.addChild(b); this.colors.push(b);
     }
@@ -94,7 +94,7 @@ class StampStudio implements Game {
     this.finish.visible = this.stamps.length > 0; this.undo.visible = this.stamps.length > 0;
     this.turn.visible = this.grow.visible = this.plan.transform && !!this.selected;
     this.choices.forEach((b, i) => b.alpha = this.plan.kinds[i] === this.kind ? 1 : 0.68);
-    this.colors.forEach((b, i) => b.alpha = ['purple', 'blue', 'green', 'pink'][i] === this.color ? 1 : 0.65);
+    this.colors.forEach((b, i) => b.alpha = STAMP_COLORS[i] === this.color ? 1 : 0.65);
   }
   start() { void this.ctx.instruct(`stamp.${this.plan.prompt}`); }
   resize(v: View) {
@@ -112,13 +112,27 @@ class StampStudio implements Game {
     this.drawSelection();
   }
   update() {}
+  /** The ghost finger: make a small picture with what this level offers (stamps, colors, a turn, a bigger stamp, a carried stamp), then press the green arrow. */
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    const move = stampDemo(this.plan, { stamps: this.stamps.map(s => s.data), kind: this.kind, color: this.color });
+    switch (move.do) {
+      case 'kind': return { tap: { on: this.choices[(this.plan.kinds as readonly StampKind[]).indexOf(move.kind)] } };
+      case 'color': return { tap: { on: this.colors[STAMP_COLORS.indexOf(move.color)] } };
+      case 'stamp': return { tap: { on: this.sheet, ...pixel(move, this.width, this.height) } };
+      case 'turn': return { tap: { on: this.turn } };
+      case 'grow': return { tap: { on: this.grow } };
+      case 'move': return { drag: { on: this.stamps[move.stamp].node }, to: { on: this.paper, ...pixel(move, this.width, this.height) } };
+      default: return { tap: { on: this.finish } };
+    }
+  }
   destroy() { this.stamps.forEach(s => s.drag?.destroy()); }
 }
 export const stampStudio: GameModule = {
   id: 'stamp-studio', name: 'Stamp Studio', titleLine: 'game.stamp-studio', region: 'treehouse',
   skills: ['composition', 'creative-expression', 'spatial-reasoning'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 2 } : b === 'toddler' ? { min: 2, max: 3 } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
-  describeLevel: l => planFor(l).name, music: STYLES.paint,
+  describeLevel: l => planFor(l).name, music: STYLES.paint, touchDemo: true,
   coplayHint: 'Let {name} choose where the picture goes. The green arrow finishes any creation.',
   offScreen: 'Stamp with a sponge or potato on scrap paper, then tell a story about the picture.',
   hubIcon: () => { const c = new Container(); c.addChild(new Graphics().roundRect(-90,-140,180,140,15).fill(cream).stroke({width:7,color:swatch.brown.line})); const a=stampArt('flower','pink');a.y=-70;c.addChild(a);return new WigglyIcon(c); },
