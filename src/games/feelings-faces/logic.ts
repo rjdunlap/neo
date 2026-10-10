@@ -14,7 +14,14 @@ export const HELPERS: Record<Need, Helper> = { sad: 'hug', sleepy: 'pillow', hun
 export const EVENTS = { balloon: 'sad', present: 'happy', jack: 'surprised', moon: 'sleepy' } as const satisfies Record<string, Feeling>;
 export type FeelingEvent = keyof typeof EVENTS;
 
-export type FeelingMode = 'play' | 'mirror' | 'name' | 'help' | 'why' | 'friends';
+/** Events that naturally lead to an existing need and a useful helper. */
+export const CARE_SCENARIOS = {
+  balloon: { feeling: 'sad', need: 'sad', helper: 'hug' },
+  moon: { feeling: 'sleepy', need: 'sleepy', helper: 'pillow' },
+} as const satisfies Partial<Record<FeelingEvent, { feeling: Feeling; need: Need; helper: Helper }>>;
+export type CareEvent = keyof typeof CARE_SCENARIOS;
+
+export type FeelingMode = 'play' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care';
 
 export interface FeelingPlan {
   mode: FeelingMode;
@@ -35,6 +42,7 @@ export const FEELING_PLANS: FeelingPlan[] = [
   { mode: 'help', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Choose what helps: a hug, a pillow, an apple or a scarf' },
   { mode: 'why', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Watch what happens, then choose how the pet feels' },
   { mode: 'friends', choices: 4, feelings: FEELINGS, rounds: 4, name: 'Find the friend who feels a named feeling' },
+  { mode: 'care', choices: 4, feelings: FEELINGS, rounds: 4, name: 'Watch what happens, then choose how to help the pet feel better' },
 ];
 
 export const feelingPlan = (level: number) => FEELING_PLANS[Math.max(0, Math.min(FEELING_PLANS.length - 1, level - 1))];
@@ -81,6 +89,8 @@ export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, stri
       return questions(rng, plan.rounds, NEEDS, Object.values(HELPERS), (n) => HELPERS[n], plan.choices);
     case 'why':
       return questions(rng, plan.rounds, Object.keys(EVENTS) as FeelingEvent[], FEELINGS, (e) => EVENTS[e], plan.choices);
+    case 'care':
+      return questions(rng, plan.rounds, Object.keys(CARE_SCENARIOS) as CareEvent[], Object.values(HELPERS), (e) => CARE_SCENARIOS[e].helper, plan.choices);
     default:
       // mirror, name and friends: the prompt is the feeling itself.
       return questions(rng, plan.rounds, plan.feelings, plan.feelings, (f) => f, plan.choices);

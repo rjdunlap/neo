@@ -132,7 +132,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Feelings Faces
 
-*lap–pre-K.* The critter gained `sad` and `calm` moods, with brows and a tear so feelings read even at sticker size. Lap play is cause and effect: four feeling bubbles change the big pet's face, with a matching sound, and tapping a sad pet gives it a hug. Later levels match the pet's face, find a named feeling, choose what helps a need (a hug, a pillow, an apple, or a scarf), watch a small event and choose how the pet feels (the pet stays `calm` until answered, so the event carries the answer), and find which of four friends feels a named feeling. The big pet replaces the corner guide and repeats the instruction when tapped.
+*lap–pre-K.* The critter gained `sad` and `calm` moods, with brows and a tear so feelings read even at sticker size. Lap play is cause and effect: four feeling bubbles change the big pet's face, with a matching sound, and tapping a sad pet gives it a hug. Later levels match the pet's face, find a named feeling, choose what helps a need (a hug, a pillow, an apple, or a scarf), watch a small event and choose how the pet feels (the pet stays `calm` until answered, so the event carries the answer), and find which of four friends feels a named feeling. Level 8 joins the event to a helpful choice: the balloon drifts away or the moon rises, then the child chooses a hug or pillow. The big pet replaces the corner guide and repeats the instruction when tapped.
 
 ### Weather Wardrobe
 

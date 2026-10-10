@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bubbleToTap, choiceToTap, EVENTS, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, NEEDS, playDone, type Feeling } from './logic';
+import { bubbleToTap, CARE_SCENARIOS, choiceToTap, EVENTS, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, NEEDS, playDone, type Feeling } from './logic';
 
 describe('Feelings Faces questions', () => {
   it('always offer the answer once among distinct choices, without repeating a prompt back to back', () => {
@@ -24,6 +24,26 @@ describe('Feelings Faces questions', () => {
     expect(new Set(Object.values(EVENTS)).size).toBe(Object.keys(EVENTS).length);
     const help = feelingRound(FEELING_PLANS.find((p) => p.mode === 'help')!, new Rng(3));
     for (const q of help) expect(q.answer).toBe(HELPERS[q.prompt as keyof typeof HELPERS]);
+  });
+
+  it('pairs each level-8 event with the feeling it causes and a fitting helper', () => {
+    for (const [event, scenario] of Object.entries(CARE_SCENARIOS)) {
+      expect(EVENTS[event as keyof typeof EVENTS]).toBe(scenario.feeling);
+      expect(HELPERS[scenario.need]).toBe(scenario.helper);
+    }
+    const plan = FEELING_PLANS.find((p) => p.mode === 'care')!;
+    for (let seed = 1; seed <= 200; seed++) {
+      const qs = feelingRound(plan, new Rng(seed));
+      expect(qs).toHaveLength(4);
+      expect(new Set(qs.map((q) => q.prompt))).toEqual(new Set(Object.keys(CARE_SCENARIOS)));
+      for (const q of qs) {
+        const scenario = CARE_SCENARIOS[q.prompt as keyof typeof CARE_SCENARIOS];
+        expect(q.answer).toBe(scenario.helper);
+        expect(q.options).toHaveLength(4);
+        expect(new Set(q.options).size).toBe(4);
+        expect(q.options[choiceToTap(q)]).toBe(scenario.helper);
+      }
+    }
   });
 
   it('shows every friend a different feeling on the friends level', () => {

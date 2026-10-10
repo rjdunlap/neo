@@ -14,7 +14,7 @@ import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawSpring, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, jackBox, moonAndStars, present } from './art';
-import { bubbleToTap, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type Feeling, type FeelingEvent, type FeelingPlan, type Helper, type Need, type Question } from './logic';
+import { bubbleToTap, CARE_SCENARIOS, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type CareEvent, type Feeling, type FeelingEvent, type FeelingPlan, type Helper, type Need, type Question } from './logic';
 
 const PET_SCALE = 0.85;
 
@@ -198,6 +198,17 @@ class FeelingsFaces implements Game {
         this.dealFaces(q.options as Feeling[]);
         this.instruct('feel.how');
         break;
+      case 'care': {
+        const event = q.prompt as CareEvent;
+        const scenario = CARE_SCENARIOS[event];
+        pet!.setMood('calm');
+        await this.playEvent(event);
+        if (this.done) return;
+        this.showNeed(scenario.need);
+        this.dealHelpers(q.options as Helper[]);
+        this.instruct('feel.care');
+        break;
+      }
       case 'friends':
         q.options.forEach((f, i) => {
           this.friends[i].feeling = f as Feeling;
@@ -251,7 +262,7 @@ class FeelingsFaces implements Game {
       if (this.wrong === 2) {
         this.hints++;
         void this.ctx.say('feel.hint');
-      } else if (this.plan.mode === 'help') void this.ctx.say('feel.not-that');
+      } else if (this.plan.mode === 'help' || this.plan.mode === 'care') void this.ctx.say('feel.not-that');
       else if (this.plan.mode === 'friends') void this.ctx.say('feel.friend-that', { feeling: value });
       else void this.ctx.say('feel.that', { feeling: value });
       this.drawGlow();
@@ -276,7 +287,8 @@ class FeelingsFaces implements Game {
         this.feelingBurst(value as Feeling);
         await this.ctx.say(`feel.${value as Feeling}`);
         break;
-      case 'help': {
+      case 'help':
+      case 'care': {
         // The helper floats over to the pet, and the need goes away.
         void this.ctx.tw.to(node, { x: pet!.x, y: pet!.y - 110 }, { duration: 0.5, ease: ease.inOutSine });
         await this.ctx.tw.to(node.scale, { x: 0.5, y: 0.5 }, { duration: 0.5 });
@@ -543,7 +555,7 @@ export const feelingsFaces: GameModule = {
   region: 'cozy-village',
   skills: ['emotions', 'empathy', 'vocabulary'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (b) => (b === 'prek' ? { min: 5, max: 7 } : b === 'preschool' ? { min: 3, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
+  levels: (b) => (b === 'prek' ? { min: 5, max: 8 } : b === 'preschool' ? { min: 3, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
   describeLevel: (l) => feelingPlan(l).name,
   music: STYLES.paint,
   coplayHint: 'Make the same face as the pet with {name}, and name the feeling together.',
