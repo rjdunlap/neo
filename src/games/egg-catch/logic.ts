@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * hens lay eggs that roll gently down to a basket. Missed eggs land in soft hay and hatch,
  * so nothing breaks. Later levels route eggs through chutes with flip gates.
  */
-export type EggMode = 'tap' | 'catch' | 'brown' | 'route' | 'sort' | 'predict';
+export type EggMode = 'tap' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair';
 
 export interface EggPlan {
   mode: EggMode;
@@ -23,6 +23,7 @@ export const PLANS: EggPlan[] = [
   { mode: 'route', eggs: 4, fall: 0, name: 'Flip the gates so the egg rolls into the basket' },
   { mode: 'sort', eggs: 5, fall: 0, name: 'Route brown eggs to the basket and white eggs to the nest' },
   { mode: 'predict', eggs: 5, fall: 0, name: 'The gates are set: tap where the egg will land, then watch it roll' },
+  { mode: 'pair', eggs: 3, fall: 0, name: 'Set the gates once for two eggs: brown to the basket, white to the nest' },
 ];
 
 /** Predict levels: gate settings for each egg, never landing in the same place twice running. */
@@ -129,4 +130,35 @@ export function basketMove(air: readonly EggInAir[], basketX: number, lanes: rea
       ? [air[k].x]
       : [...air.slice(k + 1).filter((e) => e.shell === 'brown').map((e) => e.x), ...[...lanes].sort((a, b) => Math.abs(a - basketX) - Math.abs(b - basketX))];
   return spots.find((x) => air.slice(0, k + 1).every((e) => fits(x, e)) && !air.slice(0, k).some((e) => crossing(x, e))) ?? null;
+}
+
+/** Brown enters above the shared fork; white enters the other branch from its own hen.
+ * Both paths must work with one frozen arrangement. Three gates matter, without a timer. */
+export interface PairBoard {
+  basket: number;
+  nest: number;
+  whiteBranch: 1 | 2;
+  gates: [boolean, boolean, boolean];
+}
+export function pairExits(gates: [boolean, boolean, boolean], branch: 1 | 2): [number, number] {
+  return [exitFor(gates), branch === 1 ? (gates[1] ? 1 : 0) : (gates[2] ? 3 : 2)];
+}
+export function pairNeeds(board: PairBoard): { gate: number; right: boolean }[] {
+  return [...gatesFor(board.basket), { gate: board.whiteBranch, right: board.nest % 2 === 1 }];
+}
+export function pairGateToFlip(board: PairBoard, gates: readonly boolean[]): number | null {
+  return pairNeeds(board).find(({ gate, right }) => gates[gate] !== right)?.gate ?? null;
+}
+export function pairBoards(rng: Rng, count: number): PairBoard[] {
+  return Array.from({ length: count }, () => {
+    const basket = rng.int(0, 3);
+    const whiteBranch = (basket < 2 ? 2 : 1) as 1 | 2;
+    const nest = (whiteBranch === 1 ? 0 : 2) + rng.int(0, 1);
+    const board: PairBoard = { basket, nest, whiteBranch, gates: [false, false, false] };
+    for (const { gate, right } of pairNeeds(board)) board.gates[gate] = right;
+    // At least one meaningful revision, sometimes all three. Never deal a solved board.
+    const bits = rng.int(1, 7);
+    board.gates = board.gates.map((g, i) => !!(bits & (1 << i)) !== g) as PairBoard['gates'];
+    return board;
+  });
 }

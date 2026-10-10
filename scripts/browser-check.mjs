@@ -3059,6 +3059,42 @@ async function woodsBatch() {
     log(`Critter Sort ${level} (${mode}): critters dragged into hoops and the middle, wrong hoops explained as misses, glow hint, ${mode === 'guess' ? 'rules guessed, ' : ''}saved score and sticker passed`);
   }
 
+  if (!only || only === 'pair') {
+    await launch('egg-catch', 7);
+    const readyPair = async () => {
+      await page.waitForFunction(() => neo.scene.game.pairReady || neo.scene.game.finished, null, { timeout: 25000 });
+      await page.waitForTimeout(150);
+    };
+    await readyPair();
+    // The dealt board is unsolved; gates stay frozen until both eggs have rolled.
+    for (let k = 0; k < 2; k++) {
+      const before = await page.evaluate(() => [...neo.scene.game.gates]);
+      await tap('neo.scene.game.goButton');
+      await page.waitForTimeout(300);
+      await tap('neo.scene.game.gateHits[0]');
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.gates), before);
+      await readyPair();
+    }
+    assert.deepEqual(await counts(), [2, 1]);
+    await screenshot('egg-catch-7-hint');
+    for (let n = 0; n < 3; n++) {
+      for (let k = 0; k < 3; k++) {
+        const gate = await page.evaluate(async () => {
+          const { pairGateToFlip } = await import('/src/games/egg-catch/logic.ts');
+          const g = neo.scene.game; return pairGateToFlip(g.pairBoards[g.routed], g.gates);
+        });
+        if (gate === null) break;
+        await tap(`neo.scene.game.gateHits[${gate}]`);
+        await page.waitForTimeout(300);
+      }
+      await tap('neo.scene.game.goButton');
+      await readyPair();
+    }
+    await finished('egg-catch');
+    assert.deepEqual(await score('egg-catch'), [2, 1]);
+    log('Egg Catch 7: unsolved pair retried, rolling gates locked, hint, three pairs and saved result passed');
+  }
+
   if (!only || only === 'predict') {
     await launch('egg-catch', 6);
     for (let k = 0; k < 12; k++) {

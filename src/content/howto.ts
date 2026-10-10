@@ -402,12 +402,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Slide the basket under the brown eggs only; white eggs hatch in the hay.' },
       { from: 4, to: 4, text: 'Tap the gates so the egg rolls into the basket.' },
       { from: 5, to: 5, text: 'Tap the gates to send brown eggs to the basket and white eggs to the nest.' },
-      { from: 6, text: 'The gates are already set: tap the hay where the egg will land, then watch it roll.' },
+      { from: 6, to: 6, text: 'The gates are already set: tap the hay where the egg will land, then watch it roll.' },
+      { from: 7, text: 'Set the gates for both waiting eggs, then tap the green arrow. Brown enters the top fork; white enters the other branch from its own hen.' },
     ],
-    finish: 'The round ends when the eggs have all been gathered or sorted.',
+    finish: [{ to: 6, text: 'The round ends when the eggs have all been gathered or sorted.' }, { from: 7, text: 'Route three pairs correctly to finish.' }],
     note: [
+      { from: 7, text: 'The gates lock while both eggs roll, one at a time. A missed pair stays for revision; two misses light the needed gate directions.' },
       { from: 2, to: 5, text: 'A missed egg only hatches in the hay.' },
-      { from: 6, text: 'A wrong guess shows how the gates send the egg; follow them and try again.' },
+      { from: 6, to: 6, text: 'A wrong guess shows how the gates send the egg; follow them and try again.' },
     ],
   },
   'mail-carrier': {
