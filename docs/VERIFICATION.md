@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train deep dive
+
+- Wrote `docs/deep-dives/pattern-train.md` and updated the tracker (designed), the IDEAS round-two and round-three rows for Pattern Train, the roadmap's chunk 14 cell and a Waiting-on-the-developer row. No code, tests or scripts changed.
+- Read `logic.ts`, `index.ts`, the tests, the how-to, the voice lines, the couch entry and the browser case. Findings from the code, not seen in play: levels 10 and 11 build the same train as level 4 (`far` and `pair` change only the words), the answer is almost always the first car, level 12's answer is always the smallest choice.
+- Opened the NCETM early-years pattern page, Core Standards 4.OA.C.5 and TERC's Zoombinis guide; the NCETM progression PDF, the Vanderbilt poster and Clements and Sarama are marked search summary only (no PDF reader here).
+- Docs only: `git diff --check` and a relative-link check on the changed docs ran.
+
 ## 2026-10-11 — Story Steps level 8: Choose the cause
 
 - Added eight code-drawn cause/effect pairs, a shown effect with three cause choices, explanatory speech, scoped how-to and pre-K/school ranges ending at 8. Reuses the strip drag, replay, gentle misses, two-miss hint and ghost finger. Old levels, saved pins and sticker art are preserved.
