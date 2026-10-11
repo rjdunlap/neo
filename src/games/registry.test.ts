@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BANDS } from '../progress/bands';
+import { nextLevel, stepLevel } from '../progress/difficulty';
+import { BANDS, playBand } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
 import { couchGameById, GAMES, GROWNUP_GAMES, gameById } from './registry';
 import { isSilent, silenced, STYLES } from '../audio/music';
@@ -35,6 +36,21 @@ describe('game registry', () => {
     expect(game.levels('toddler')).toEqual({ min: 2, max: 4 });
     expect(game.levels('preschool')).toEqual({ min: 3, max: 5 });
     expect(game.levels('prek')).toEqual({ min: 5, max: 6 });
+  });
+
+  it('opens only Robot Path’s small step boards to preschool and preserves older ranges', () => {
+    const game = gameById('robot-path')!;
+    expect(game.bands).toEqual(['preschool', 'prek', 'school']);
+    const range = game.levels('preschool');
+    expect(range).toEqual({ min: 1, max: 2 });
+    expect(game.levels('prek')).toEqual({ min: 1, max: 6 });
+    expect(game.levels('school')).toEqual({ min: 4, max: 12 });
+    expect(playBand(game.bands, 'preschool')).toBe('preschool');
+    expect(stepLevel(2, 1, range)).toBe(2);
+    expect(nextLevel(2, [
+      { level: 2, misses: 0, hints: 0, seconds: 10, at: 1 },
+      { level: 2, misses: 0, hints: 0, seconds: 10, at: 2 },
+    ], range)).toBe(2);
   });
 
   it('has something for every age band', () => {

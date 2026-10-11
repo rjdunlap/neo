@@ -6,6 +6,7 @@ import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
@@ -14,7 +15,11 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
 
 /** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict and repair. */
-const PREK_TOP = 6;
+const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 1, max: 6 },
+  school: { min: 4, max: ROBOT_PLANS.length + 2 },
+};
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
 
@@ -417,8 +422,8 @@ export const robotPath: GameModule = {
   titleLine: 'game.robot-path',
   region: 'tinker-lab',
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
-  bands: ['prek', 'school'],
-  levels: (b) => (b === 'school' ? { min: 4, max: ROBOT_PLANS.length + 2 } : { min: 1, max: PREK_TOP }),
+  bands: ['preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : l === 1 ? 'One or two steps straight to the star' : l === 2 ? 'A short program with a turn' : l === 3 ? 'Plan across a bigger grid' : planFor(l).name,
   music: STYLES.jelly,
   offScreen: 'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',

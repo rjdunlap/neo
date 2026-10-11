@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Robot Path preschool opening
+
+- Opened existing levels 1–2 to preschool; pre-K 1–6 and school 4–12 remain intact. All six preschool boards use rock-free 3 × 3 grids and solutions of one to three steps.
+- Tested base `9546d81` plus the implementation diff: `npm run typecheck` passed; 59 tests passed across Robot Path logic, registry, lands, difficulty and how-to files.
+- Command: `npm test -- src/games/robot-path/logic.test.ts src/games/registry.test.ts src/content/lands.test.ts src/progress/difficulty.test.ts src/content/howto.test.ts`. Coverage includes bounded adaptation, preschool visibility and every land’s fit at all bands in four views.
+- Checked changed local document links and `git diff --check`. No server used; build, browser suites and offline checks not run under the younger-band opening tier. Existing interaction and bot evidence is reused.
+- Actual iPad speech, finger comfort and a preschooler understanding “add arrows, then Play” remain open in the roadmap.
+
 ## 2026-10-11 — Memory Match deep dive (docs only)
 
 - Researched six physical/touch matching references and number, fraction and time standards; recorded current levels 1–11, content pools, accounting and couch couplings. App Store descriptions were search-only; direct opens failed.
@@ -457,6 +465,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |
 | Robot Path board pools (`robot`, `fingerdemo`) | 2026-10-11: 30 boards in rule/bot tests; level-6 regression and portrait; level-10 demo clean in 10.4 s; typecheck and build | Robot Path: three boards per programming level entry | Full browser ladder and couch not rerun; iPad, speech and child play open |
 | Day by Day (`week`, `fingerdemo`) | 2026-10-11: first/top-level real-input play, retries/hint, saved reward, reversible counting, portrait and interrupted speech; demos 1–3 clean (35.9, 43.6, 50.1 s), land entry/intro/return | Day by Day first slice entry | No iPad, actual device speech or child play; level-2 full speech play not run |
 | Orchard Rows (`orchard`, `fingerdemo`) | 2026-10-11: levels 1 and 3, replay, two misses/one hint, saved rewards, portrait and interrupted speech; demos 1–3 clean (23.1, 41.4, 46.5 s); land launch, intro and return | Orchard Rows first slice entry | No iPad, actual device speech or child play; separate level-2 manual play not run |
