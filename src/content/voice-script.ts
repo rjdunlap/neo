@@ -994,6 +994,7 @@ export const SCRIPT = {
   'parade.color': ['Find the {color} ducklings!'],
   'parade.colorcount': ['Bring {n} {color} ducklings to the pond!'],
   'parade.pattern': ['Make a pattern: {pattern}!'],
+  'parade.repair': ['One duckling does not fit. Bring the ducklings that make this pattern: {pattern}!'],
   'parade.home': ['Everyone is here! Take them to the pond!'],
   'parade.notme': ["Quack! I'm {color}. Find {want}!"],
   'parade.next': ['Next comes {want}!'],

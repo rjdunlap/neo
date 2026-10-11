@@ -1127,8 +1127,11 @@ async function arcade() {
       await kit.until(() => Math.hypot(g.mama.x - g.target.x, g.mama.y - g.target.y) < 3 || g.busy, 8000);
     };
     window.fetchDuck = async (d) => {
+      const g = neo.scene.game;
+      const stillWanted = () => g.plan.mode !== 'pattern' || g.round.pattern[g.line.length] === d.color;
+      if (!stillWanted()) return; // Another duck joined while Mama walked; choose the newly needed color.
       await walkTo(d.critter.x, d.critter.y);
-      if (!await kit.until(() => d.state === 'line', 3000)) throw new Error(`Duckling ${d.color} would not join: mama ${Math.round(neo.scene.game.mama.x)},${Math.round(neo.scene.game.mama.y)} target ${Math.round(neo.scene.game.target.x)},${Math.round(neo.scene.game.target.y)} duck ${Math.round(d.critter.x)},${Math.round(d.critter.y)} ${d.state} level ${neo.scene.level} busy ${neo.scene.game.busy} home ${neo.scene.game.homeCount} line ${neo.scene.game.line.length}`);
+      if (!await kit.until(() => d.state === 'line' || !stillWanted(), 3000)) throw new Error(`Duckling ${d.color} would not join: mama ${Math.round(neo.scene.game.mama.x)},${Math.round(neo.scene.game.mama.y)} target ${Math.round(neo.scene.game.target.x)},${Math.round(neo.scene.game.target.y)} duck ${Math.round(d.critter.x)},${Math.round(d.critter.y)} ${d.state} level ${neo.scene.level} busy ${neo.scene.game.busy} home ${neo.scene.game.homeCount} line ${neo.scene.game.line.length}`);
     };
     window.goHome = async () => {
       const g = neo.scene.game;
@@ -1138,7 +1141,9 @@ async function arcade() {
     };
   });
   const only = process.env.ARCADE_ONLY;
-  for (let level = 1; level <= 8 && (!only || only === 'parade'); level++) {
+  const paradeLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 10 }, (_, i) => i + 1);
+  for (const level of paradeLevels.filter((n) => n >= 1 && n <= 10)) {
+    if (only && only !== 'parade') continue;
     await launch('duckling-parade', level);
     await page.waitForTimeout(500);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -1156,7 +1161,12 @@ async function arcade() {
         const away = j ? Math.atan2(wrong.critter.y - j.critter.y, wrong.critter.x - j.critter.x) : Math.PI;
         g.mama.position.set(wrong.critter.x + Math.cos(away) * 95, wrong.critter.y + Math.sin(away) * 95); g.target.x = g.mama.x; g.target.y = g.mama.y; g.trail.length = 0;
         await walkTo(wrong.critter.x, wrong.critter.y);
+        await kit.until(() => g.misses > 0, 3000);
         await kit.sleep(3800);
+        if (g.misses < 2) {
+          await walkTo(wrong.critter.x, wrong.critter.y);
+          await kit.until(() => g.misses >= 2, 3000);
+        }
         if (g.misses !== 2 || g.hints !== 1) throw new Error(`Refusals: ${g.misses} misses, ${g.hints} hints, level ${neo.scene.level}, line ${g.line.map((d) => d.color)}, wrong ${wrong.color} ${wrong.state}, near ${g.ducklings.filter((d) => d !== wrong && Math.hypot(d.critter.x - wrong.critter.x, d.critter.y - wrong.critter.y) < 150).map((d) => d.color + d.state)}`);
         if (!g.ducklings.some((d) => d.glow.visible)) throw new Error('No hint glow');
         await walkTo(g.mama.x, g.mama.y - 160);

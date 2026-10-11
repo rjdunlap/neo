@@ -7,6 +7,13 @@
 - Ran `git diff --check` and a relative-link and anchor check (including cross-file `path#anchor` links) on `IDEAS.md`, `ROADMAP.md` and `VERIFICATION.md`. It flagged six links into `archive/COMPLETED-2026-10-09.md` (Dot Link, Garden Grow, Bouncy Launch, Robot Path and Mail Carrier headings) that predate this change and were left alone; every new link resolves. No code, tests or browser suites ran.
 - Open: every proposal is unbuilt; recalled rules need a recheck; the word-list and science/scale reviews and the idle-game decision are the developer's.
 
+## 2026-10-10 — Duckling Parade levels 9–10
+
+- Added the school ladder: level 9 repeats a two-of-one/one-of-another color unit; level 10 adds one out-of-pattern decoy to leave out. Updated the seeded round rules, school range, speech, scoped how-to and catalog notes.
+- `npm run typecheck` passed; Duckling Parade logic, registry and land tests passed (30 tests), and the how-to tests passed (15 tests). Seeded coverage checks the AAB cycle, decoy, six-duck finish and pond gate.
+- `BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=10` passed with two deliberate misses, hint glow, completion, score and sticker; the landscape screenshot was reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=duckling-parade FINGER_LEVELS=10` finished cleanly in 16.8 seconds.
+- The browser harness was extended to select a single parade level and to handle a decoy and a duck that joins while Mama is walking. No full unit suite ran; the production build passed. iPad touch feel, device speech and child play remain open.
+
 ## 2026-10-11 — JumpStart title-by-title research and additional languages (docs only)
 
 - Added `IDEAS.md` § "JumpStart, title by title": per-band catalogues of what each JumpStart title asked a child to do (Baby and Toddlers through 6th Grade, Pre-K, Spanish, Music, Numbers, Reading, Spelling, Haunted Island, Typing, 3D Virtual World) mapped to built games, notebook ideas or "not borrowed"; twenty-two new proposals and modes; the evidence for the "what not to borrow" rules; and a family-album decision.
@@ -251,6 +258,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Duckling Parade 10 (`arcade`, `fingerdemo`) | 2026-10-10: level 10 passed with two deliberate misses, hint, completion, saved sticker; ghost finger finished cleanly in 16.8 s | Duckling Parade 9–10 entry | Landscape screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |
 | Dot Link 6 (`batch`, `fingerdemo`) | 2026-10-10: levels 1–6 passed the filtered Dot Link play with two deliberate misses and a hint; level 6 ghost finger clean in 12.6 s | Dot Link level 6 entry | Browser automation; iPad touch feel, device speech and child play remain open |
 | Fill and Dump (`originals`, `fingerdemo`) | 2026-10-10: levels 1–4 played by taps (tip out, scoop, count, two wrong checks, glow, take back, done; portrait at level 4), saved score and sticker; clean ghost-finger demos at all four levels | Fill and Dump entry | Screenshots reviewed; no build or `smoke`; iPad feel, device speech and child play open |

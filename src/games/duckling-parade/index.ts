@@ -18,6 +18,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 6 },
   prek: { min: 4, max: 8 },
+  school: { min: 9, max: 10 },
 };
 
 const MAMA_SCALE = 0.5;
@@ -126,7 +127,7 @@ class DucklingParade implements Game {
         void this.ctx.instruct('parade.colorcount', { n: target!, color: want! });
         break;
       case 'pattern':
-        void this.ctx.instruct('parade.pattern', { pattern: pattern!.slice(0, (this.plan.unit ?? 2) * 2).join(', ') });
+        void this.ctx.instruct(this.plan.oddDuckling ? 'parade.repair' : 'parade.pattern', { pattern: pattern!.join(', ') });
         break;
     }
   }
@@ -552,7 +553,7 @@ export const ducklingParade: GameModule = {
   titleLine: 'game.duckling-parade',
   region: 'barnyard',
   skills: ['motor-planning', 'counting', 'colors', 'patterns'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,

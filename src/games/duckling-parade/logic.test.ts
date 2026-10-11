@@ -9,7 +9,7 @@ describe('Duckling Parade', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {
         const round = makeRound(plan, new Rng(seed));
-        expect(round.ducklings).toHaveLength(plan.ducklings);
+        expect(round.ducklings).toHaveLength(plan.ducklings + (plan.oddDuckling ? 1 : 0));
         expect(new Set(round.ducklings).size, plan.name).toBe(plan.colors);
         const joinable = round.ducklings.filter((c) => canJoin(plan, round, [], c) === 'join' || plan.mode === 'pattern').length;
         expect(joinable, plan.name).toBeGreaterThanOrEqual(needed(plan, round));
@@ -29,8 +29,27 @@ describe('Duckling Parade', () => {
     expect(canJoin(plan, round, [a, b], a)).toBe('wrong-next');
     expect(readyForPond(plan, round, 3)).toBe(false);
     expect(readyForPond(plan, round, round.pattern!.length)).toBe(true);
-    // Sorting the meadow back into order reproduces the pattern.
-    expect([...round.ducklings].sort()).toEqual([...round.pattern!].sort());
+    // The pattern ducklings are present in the meadow.
+    expect(round.pattern!.every((c) => round.ducklings.includes(c))).toBe(true);
+  });
+
+  it('makes an AAB pattern and adds one decoy to the level 10 meadow', () => {
+    const pairPlan = PLANS[8];
+    const pairRound = makeRound(pairPlan, new Rng(18));
+    expect(pairRound.pattern).toHaveLength(6);
+    expect(pairRound.pattern![0]).toBe(pairRound.pattern![1]);
+    expect(pairRound.pattern![2]).not.toBe(pairRound.pattern![1]);
+    expect(pairRound.pattern![3]).toBe(pairRound.pattern![0]);
+
+    const repairPlan = PLANS[9];
+    for (let seed = 1; seed <= 100; seed++) {
+      const round = makeRound(repairPlan, new Rng(seed));
+      expect(round.ducklings).toHaveLength(7);
+      expect(round.ducklings.filter((color) => !round.pattern!.includes(color))).toHaveLength(1);
+      expect(needed(repairPlan, round)).toBe(6);
+      expect(readyForPond(repairPlan, round, 5)).toBe(false);
+      expect(readyForPond(repairPlan, round, 6)).toBe(true);
+    }
   });
 
   it('turns away other colors, and sends extras back out of the pond', () => {

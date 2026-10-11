@@ -1,5 +1,13 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Duckling Parade levels 9–10: repeated color patterns (2026-10-10)
+
+Added a school range at levels 9–10. Level 9 follows a repeated AAB color unit; level 10 adds one duckling whose color does not fit, which stays out while the six pattern ducklings reach the pond. Existing steering, pattern hints and pond finish are reused, and saved levels keep their meaning. The how-to and spoken instruction explain the new choice.
+
+- Seeded tests check the AAB pattern, the single decoy, enough correct ducklings and that the pond accepts only the complete pattern.
+- Typecheck, focused logic/registry/land tests (30), how-to tests (15), filtered level-10 browser play and a clean 16.8-second ghost-finger demo passed. The landscape screenshot was reviewed.
+- iPad touch feel, device speech and child play remain open.
+
 ### Shape Sorter level 8: The feely bag (2026-10-10)
 
 Added a pre-K round where the box asks for each shape by a spoken property clue: corners, sides, points or its outline. The player finds and drags that shape into its hole; a wrong shape repeats the clue, and two misses glow the answer. The level extends the pre-K range from 5–7 to 5–8; earlier levels and saved numbers stay unchanged.

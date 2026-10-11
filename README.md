@@ -69,7 +69,7 @@ There are seventy-four games, listed below. "Ages" lists the bands each game has
 | Monster Munch | lap–school | tap cookies into a hungry monster | count along, one cookie each, feed exactly N then ring the bell, cookies and apples, fair sharing, sharing with leftovers |
 | Puzzle Pals | lap–school | finish a two-piece picture | three to twelve pieces, first over a faint picture, then an empty frame |
 | Sink or Float | lap–school | drop things in the water and watch | guess and test, sort into baskets, surprises like a floating apple |
-| Duckling Parade | lap–pre-K | tap the grass to walk Mama Duck; ducklings fall in behind | lead them to the pond, bring exactly N, find one color, build a color pattern in line |
+| Duckling Parade | lap–school | tap the grass to walk Mama Duck; ducklings fall in behind | lead them to the pond, bring exactly N, find one color, build repeated color patterns, leave out a duckling that breaks the pattern |
 | Scoop Shop | lap–school | tap tubs to pile scoops on a cone for a customer | one color, two scoops, "four blue scoops", three flavors stacked in order, then from memory |
 | Roundup | lap–pre-K | tap an animal and it hops into its pen | shoo animals through the gate with a finger, sort pigs and bunnies, put exactly N in and ring the bell |
 | Bouncy Launch | lap–school | tap the spring and the pet boings onto a cloud | pull back farther to fly farther, land on the star cloud, then a numbered cloud, farther or nearer than last time, then predict a shown pull's cloud |
@@ -254,7 +254,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `next` | Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks | `NEXT_ONLY=seesaw\|doctor\|bumper\|tricks` |
 | `originals` | Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond (through level 11), Shape Sorter (through level 8), Fill and Dump, Color Garden | `ORIGINALS_ONLY=bubbles\|jelly\|peekaboo\|ducks\|shapes\|fill\|garden`; `DUCK_LEVELS=11` to run only Duck Pond 11; `SHAPE_LEVELS=8` to run only Shape Sorter 8 |
 | `batch` | The follow-on ten (Photo Safari 6 too). `pegs` is flaky on the development Mac | `BATCH_ONLY=monsters\|pegs\|salon\|garden\|helpers\|eggs\|mail\|safari\|bounce\|dots` |
-| `arcade` | Duckling Parade, Scoop Shop, Roundup, Bouncy Launch | `ARCADE_ONLY=parade\|scoop\|roundup\|launch` |
+| `arcade` | Duckling Parade (levels 1–10), Scoop Shop, Roundup, Bouncy Launch | `ARCADE_ONLY=parade\|scoop\|roundup\|launch`; `ARCADE_LEVELS=10` runs only Duckling Parade 10 |
 | `early` | Rainbow Fingers and Splish Splash | `EARLY_ONLY=paint\|bath` |
 | `third`, `fourth`, `expansion` | Feelings Faces (levels 1–7) and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps | |
 | `feelings8` | Feelings Faces level 8: both event scenarios, a wrong helper, a hint, completion and reward | `BROWSER_SUITE=feelings8` |
