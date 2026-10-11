@@ -112,7 +112,7 @@ These **override the audit's leave** and so wait for decision 1 in "Decisions fo
 
 Windows: pre-K 6–12 means she meets bonds-to-10 (level 11) and "start at" (12) before reaching school, and school 10–14 keeps its lower bound so no saved level moves. Leaving pre-K at 6–10 is also fine and leaves the new levels to school alone; decision 2 asks.
 
-Sketches, not levels yet: **15, Evens and odds** (pop the numbers that pair up: 2.OA.C.3 pairs objects, and bubbles can show their pairs by joining two at a time; the [Duck Pond deep dive](duck-pond.md) proposes ducks swimming in pairs for the same idea, and whichever is built first owns it), and **a "make 20" bonds level** (11 + 9; it overlaps Duck Pond 10 and Frog Hop's crossing ten, so it only goes ahead if those do not cover it).
+Sketches, not levels yet: **15, Evens and odds** (pop the numbers that pair up: 2.OA.C.3 pairs objects, and bubbles can show their pairs by joining two at a time; the [Duck Pond deep dive](duck-pond.md) proposes ducks swimming in pairs for the same idea, and whichever is built first owns it), and **a "make 20" bonds level** (11 + 9; it overlaps Duck Pond 10 and Frog Hop's crossing ten, so it only goes ahead if those do not cover it). The [Frog Hop deep dive](frog-hop.md) draws the boundary the other way: it keeps *ten more and ten less as a jump* (level 11) and leaves counting sequences, and skip-hops of 2 and 5, to this game.
 
 ### Younger-band openings
 
