@@ -418,3 +418,8 @@ The first build slice of the [deep dive](../deep-dives/pattern-train.md#build-sl
 ## Goodnight Room: the light goes last (2026-10-11)
 
 Level 6 extends pre-K to 5–6. In a seeded bedroom or barn, put the other five friends to sleep in any order, then the lamp or lantern. Tapping the light early keeps it awake and explains that it helps us see; two misses glow an awake friend. Sleeping friends remain free to tap, and supported completion earns the same one sticker. The how-to, spoken instruction, demo and rule tests follow the light-last rule. Saved levels and pins are unchanged. [PR #150](https://github.com/rjdunlap/neo/pull/150); checks are in [VERIFICATION](../VERIFICATION.md).
+
+
+## Robot Path: say what happened (2026-10-11)
+
+Deep-dive slice 1 ([PR #151](https://github.com/rjdunlap/neo/pull/151)): empty Play asks for arrows without a miss; collisions jiggle the robot and say "A bump!"; an open-ground stop explains that it needs more steps. Step-level hints preserve any shortest route already started rather than clearing it to follow the default BFS route. Counted/looped teaching solutions, level IDs, bands and reward accounting are unchanged. Rule tests enumerate every shortest-route prefix across the 18 step boards; level-6 real-input regression and ghost-finger demonstration passed. Next: preschool opening at levels 1–2, then the remaining ladder slices in the deep dive.

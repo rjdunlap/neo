@@ -11,7 +11,7 @@ import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
+import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
 
 /** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict and repair. */
 const PREK_TOP = 6;
@@ -155,7 +155,11 @@ class RobotPath implements Game {
   }
 
   private async run() {
-    if (this.running || this.done || !this.program.length) return;
+    if (this.running || this.done) return;
+    if (!this.program.length) {
+      void this.ctx.say('robot.empty');
+      return;
+    }
     if (this.prediction && !this.predicted) {
       void this.ctx.say('robot.predict.choose');
       return;
@@ -197,7 +201,16 @@ class RobotPath implements Game {
     }
     this.misses++;
     sfx.boing();
-    void this.ctx.say('robot.wrong');
+    if (result.stop === 'bump') {
+      const x = this.robot.x;
+      const speech = this.ctx.say('robot.bump');
+      await this.ctx.tw.to(this.robot, { x: x + 12 }, { duration: 0.08 });
+      await this.ctx.tw.to(this.robot, { x: x - 12 }, { duration: 0.16 });
+      await this.ctx.tw.to(this.robot, { x }, { duration: 0.08 });
+      await speech;
+    } else {
+      await this.ctx.say('robot.short');
+    }
     await this.ctx.tw.wait(0.65);
     const p = this.position([0, 0]);
     await this.ctx.tw.to(this.robot, { x: p.x, y: p.y + 42 }, { duration: 0.4 });
@@ -270,7 +283,7 @@ class RobotPath implements Game {
       if (this.selectedSlot !== this.fixPlan.fixSlot) return this.slotTargets[this.fixPlan.fixSlot] ?? this.play;
       return this.arrows.find((a) => a.dir === this.fixPlan!.solution.slots[this.fixPlan!.fixSlot].dir)!.button;
     }
-    const press = nextPress(this.solution, this.program, this.mode, this.loop, this.plan.solution?.loop ?? 1);
+    const press = routePress(this.plan, this.program, this.loop);
     if ('clear' in press) return this.clear;
     if ('arrow' in press) return this.arrows.find((a) => a.dir === press.arrow)!.button;
     if ('loop' in press) return this.loopButton;

@@ -125,20 +125,20 @@ export function step(cell: Cell, dir: Direction): Cell { return [cell[0] + DELTA
 export function allowed(cell: Cell, plan: RobotPlan): boolean {
   return cell.every((n) => n >= 0 && n < plan.size) && !plan.rocks.some((r) => same(r, cell));
 }
-export function runPath(plan: RobotPlan, program: readonly Direction[]): { path: Cell[]; success: boolean } {
+export function runPath(plan: RobotPlan, program: readonly Direction[]): { path: Cell[]; success: boolean; stop: 'goal' | 'bump' | 'short' | 'empty' } {
   const path: Cell[] = [[0, 0]];
   // On counted and looped levels the limit is on slots, not steps.
   for (const dir of (plan.mode ?? 'steps') === 'steps' ? program.slice(0, plan.limit) : program) {
     const cell = step(path[path.length - 1], dir);
-    if (!allowed(cell, plan)) break;
+    if (!allowed(cell, plan)) return { path, success: false, stop: 'bump' };
     path.push(cell);
-    if (same(cell, plan.goal)) return { path, success: true };
+    if (same(cell, plan.goal)) return { path, success: true, stop: 'goal' };
   }
-  return { path, success: false };
+  return { path, success: false, stop: program.length ? 'short' : 'empty' };
 }
-export function shortestPath(plan: RobotPlan): Direction[] {
-  const queue: { cell: Cell; route: Direction[] }[] = [{ cell: [0, 0], route: [] }];
-  const seen = new Set(['0,0']);
+export function shortestPath(plan: RobotPlan, start: Cell = [0, 0]): Direction[] {
+  const queue: { cell: Cell; route: Direction[] }[] = [{ cell: start, route: [] }];
+  const seen = new Set([start.join(',')]);
   for (let i = 0; i < queue.length; i++) {
     const { cell, route } = queue[i];
     if (same(cell, plan.goal)) return route;
@@ -167,4 +167,22 @@ export function nextPress(solution: readonly Slot[], program: readonly Slot[], m
   if (program.length < solution.length) return { arrow: solution[program.length].dir };
   if (mode === 'loop' && loop !== wantLoop) return { loop: true };
   return { play: true };
+}
+
+/** Preserve any shortest step-route prefix before falling back to the authored teaching solution. */
+export function routePress(plan: RobotPlan, program: readonly Slot[], loop: number): Press {
+  const mode = plan.mode ?? 'steps';
+  let solution = plan.solution?.slots ?? shortestPath(plan).map(dir => ({ dir, n: 1 }));
+  if (mode === 'steps') {
+    const steps = expand(program);
+    const result = runPath(plan, steps);
+    if (result.success) return { play: true };
+    if (result.stop !== 'bump' && steps.length <= plan.limit) {
+      const tail = shortestPath(plan, result.path[result.path.length - 1]);
+      if (steps.length + tail.length === shortestPath(plan).length) {
+        solution = [...steps, ...tail].map(dir => ({ dir, n: 1 }));
+      }
+    }
+  }
+  return nextPress(solution, program, mode, loop, plan.solution?.loop ?? 1);
 }

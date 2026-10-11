@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { allowed, boardFor, compress, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
+import { allowed, boardFor, compress, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
 
 describe('robot routes', () => {
   it('offers three distinct valid boards per level without changing the controls or budget', () => {
@@ -121,12 +121,10 @@ describe('the buttons the ghost finger presses', () => {
   /** Press the way the game does (an arrow adds a step or one more of the last, the loop button counts 1 to 4) until play. */
   function playOut(plan: (typeof ROBOT_PLANS)[number], start: Slot[]) {
     const mode = plan.mode ?? 'steps';
-    const solution = plan.solution?.slots ?? shortestPath(plan).map((dir) => ({ dir, n: 1 }));
-    const wantLoop = plan.solution?.loop ?? 1;
     const program = start.map((s) => ({ ...s }));
     let loop = 1;
     for (let presses = 0; presses < 60; presses++) {
-      const press = nextPress(solution, program, mode, loop, wantLoop);
+      const press = routePress(plan, program, loop);
       if ('play' in press) return runPath(plan, expand(program, loop)).success;
       if ('clear' in press) {
         program.length = 0;
@@ -150,5 +148,47 @@ describe('the buttons the ghost finger presses', () => {
       const wrong = [{ dir: plan.goal[0] === 0 ? 'left' : 'up', n: 1 }] as Slot[];
       expect(playOut(plan, wrong), `${plan.name} (after a wrong step)`).toBe(true);
     }
+  });
+});
+
+describe('feedback and alternative-route help', () => {
+  it('distinguishes an empty program, a rock, an edge, a short run and arrival', () => {
+    const plan = ROBOT_PLANS[3];
+    expect(runPath(plan, []).stop).toBe('empty');
+    expect(runPath(plan, ['left']).stop).toBe('bump');
+    expect(runPath(plan, ['right', 'down']).stop).toBe('bump');
+    expect(runPath(plan, ['right']).stop).toBe('short');
+    expect(runPath(plan, ['right', 'right', 'down', 'down']).stop).toBe('goal');
+  });
+
+  it('keeps every prefix of every shortest route, including a route the default BFS did not choose', () => {
+    let alternatives = 0;
+    for (const plan of ROBOT_BOARDS.flat().filter(p => !p.mode)) {
+      const length = shortestPath(plan).length;
+      const visit = (route: import('./logic').Direction[]) => {
+        const result = runPath(plan, route);
+        if (result.stop === 'bump') return;
+        if (result.success) {
+          if (route.length !== length) return;
+          if (route.join() !== shortestPath(plan).join()) alternatives++;
+          for (let i = 0; i <= route.length; i++) {
+            const prefix = route.slice(0, i).map(dir => ({ dir, n: 1 }));
+            const press = routePress(plan, prefix, 1);
+            expect('clear' in press, JSON.stringify([plan.goal, prefix])).toBe(false);
+            if ('arrow' in press) {
+              const continued = [...route.slice(0, i), press.arrow];
+              const end = runPath(plan, continued);
+              expect(end.stop).not.toBe('bump');
+              const tail = shortestPath(plan, end.path[end.path.length - 1]);
+              expect(continued.length + tail.length).toBe(length);
+            } else expect(press).toEqual({ play: true });
+          }
+          return;
+        }
+        if (route.length < length) for (const dir of ['up', 'right', 'down', 'left'] as const) visit([...route, dir]);
+      };
+      visit([]);
+    }
+    expect(alternatives).toBeGreaterThan(0);
   });
 });
