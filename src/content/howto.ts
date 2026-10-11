@@ -97,6 +97,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: [{ from: 3, to: 4, text: 'The dots beside a number are there to count; counting them aloud together helps.' }],
   },
+  'read-do': {
+    goal: 'Read a sign and make its meaning happen in the scene.',
+    steps: [
+      'Tap any printed word to hear it, or the speaker to hear the whole sign. This support is free.',
+      { from: 1, to: 1, text: 'Choose the hat whose color matches the printed word.' },
+      { from: 2, to: 2, text: 'Choose the big or small duck named by the two-word sign.' },
+      { from: 3, to: 3, text: 'Choose both the animal and its action: the arrow means jump, and Z means sleep.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Choose all three color words to finish.' },
+      { from: 2, to: 2, text: 'Choose both duck sizes to finish.' },
+      { from: 3, to: 3, text: 'Act out all four sentences to finish.' },
+    ],
+    note: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.',
+  },
   'fill-dump': {
     goal: 'Play with a basket of fruit: tip it out, put it back, and fill it with a number.',
     steps: [
