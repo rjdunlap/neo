@@ -115,7 +115,7 @@ These wait on [how levels are ordered for a new band](../ROADMAP.md#waiting-on-t
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
 2. **More pictures** (ready): six to eight per level, `logic.ts` data only. Rule tests, one screenshot per new picture.
-3. **Spoken shape names** (ready): voice lines and a pickup call. Typecheck and the registry/voice tests; the speech itself is a device check.
+3. **Spoken shape names** (claimed 2026-10-11 on `codex/tangram-spoken-shapes`): voice lines and a pickup call. Typecheck and the registry/voice tests; the speech itself is a device check.
 4. **Level 7, fewer pieces** (needs a stated model): first a cover-set type with tests, then the level. New-level tier: `fingerdemo` at the new top level and a play.
 5. **Level 8, fix the picture** (ready after 4's re-pickable placed pieces).
 6. **Level 9, flip it** (waits on decision 1).
@@ -125,3 +125,7 @@ These wait on [how levels are ordered for a new band](../ROADMAP.md#waiting-on-t
 ## What was built in this session
 
 Slice 1: `logic.ts` now holds `PICTURES` (11), `PLANS` as level rules with a picture `pool`, and `buildFor(level, rng)`; `index.ts` draws the round's picture from the pool and builds the tray from it, so every other piece of the game (hints, the ghost finger, voice, saved round) is unchanged. `describeLevel` names no single picture. Checks: `npm run typecheck`, `npx vitest run` on the game, content and registry tests (8 and 80 tests, including a separating-axis overlap check proved to fail when a slot is moved), and one pass of `BROWSER_SUITE=creative CREATIVE_ONLY=tangram` over levels 1 to 6 with a portrait view at level 5. Not run: a screenshot review of every picture, `fingerdemo`, a device, a child.
+
+## Spoken shape names claim (2026-10-11)
+
+Slice 3: each physical piece names its geometric shape once on pickup in toddler, preschool and pre-K play. School play stays quiet on pickup. A roof is a triangle; a hull is a trapezoid. Selection, turns, help, completion and adaptive accounting stay intact. Expected files: `src/games/tangram-town/index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, README, GAMES, roadmap, tracker, this write-up and verification log. Check tier: typecheck and targeted Tangram Town/registry/voice-content tests; actual device pronunciation remains open. Slice 2 (more pictures) remains ready.
