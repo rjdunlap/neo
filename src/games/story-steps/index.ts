@@ -4,11 +4,17 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { spread, type View } from '../../engine/view';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { storyCard, storySticker } from './art';
-import { nextPicture, nextSlot, STORIES, STORY_PLANS, sameCard, storyPuzzle, type StoryCard } from './logic';
+import { nextPicture, nextSlot, CAUSES, pictureText, STORIES, LEVEL_PLANS, sameCard, storyPuzzle, type StoryCard } from './logic';
+
+const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 },
+  prek: { min: 4, max: 8 }, school: { min: 6, max: 8 },
+};
 
 class StorySteps implements Game {
   readonly plan;
@@ -30,10 +36,11 @@ class StorySteps implements Game {
   private clock = 0;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = STORY_PLANS[Math.max(0, Math.min(STORY_PLANS.length - 1, ctx.level - 1))];
+    this.plan = LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, ctx.level - 1))];
     this.puzzle = storyPuzzle(this.plan, ctx.rng);
     this.puzzle.fixed.forEach((i) => this.placed.add(i));
     this.replay = new RoundButton(replayArt(), swatch.yellow, 50, () => { if (!this.done) void this.readPlaced(); });
+    for (const decoration of [this.background, this.path, this.glow, this.hintGlow]) decoration.eventMode = 'none';
     ctx.stage.addChild(this.background, this.path, this.glow, this.hintGlow, this.replay);
     this.puzzle.sequence.forEach((card, i) => {
       const slot = new Container(); slot.addChild(this.placed.has(i) ? storyCard(card) : tile(164, 164, 'teal'));
@@ -51,14 +58,14 @@ class StorySteps implements Game {
           const index = this.next(), slot = this.slots[index];
           if (!slot || Math.abs(x - slot.x) > 91 || Math.abs(y - slot.y) > 98) return false;
           if (!sameCard(card, this.puzzle.sequence[index])) {
-            this.misses++; this.wrong++; sfx.boing(); void ctx.say('story.wrong');
+            this.misses++; this.wrong++; sfx.boing(); void ctx.say(this.puzzle.cause ? 'story.cause.wrong' : 'story.wrong', { action: pictureText(card) });
             if (this.wrong === 2) { this.hints++; void ctx.say('story.hint'); }
             this.drawGlow(); return false;
           }
           this.placed.add(index); choice.placed = true; choice.drag.enabled = false; node.visible = false;
           slot.removeChildren().forEach((c) => c.destroy({ children: true })); slot.addChild(storyCard(card));
           this.wrong = 0; sfx.bell(5 + index, 0.3);
-          void ctx.say('story.step', { step: STORIES[card.story].steps[card.stage] });
+          void ctx.say('story.step', { step: pictureText(card) });
           if (this.placed.size === this.slots.length) {
             this.done = true; this.choices.forEach((c) => c.drag.enabled = false);
             // Leave a moment to inspect the completed strip, then narrate it in order.
@@ -74,7 +81,10 @@ class StorySteps implements Game {
     }
   }
   start() { this.instruction(); }
-  private instruction() { void this.ctx.instruct('story.start', { story: STORIES[this.puzzle.story].name }); }
+  private instruction() {
+    if (this.puzzle.cause) void this.ctx.instruct('story.cause.start', { effect: pictureText(this.puzzle.sequence[1]) });
+    else void this.ctx.instruct('story.start', { story: STORIES[this.puzzle.story].name });
+  }
   private next(): number { return nextSlot(this.puzzle.sequence, this.placed); }
   private async readPlaced() {
     if (this.playing || !this.alive) return;
@@ -83,10 +93,11 @@ class StorySteps implements Game {
       if (!this.placed.has(i)) continue;
       const slot = this.slots[i], card = this.puzzle.sequence[i];
       this.glow.clear().roundRect(slot.x - 91, slot.y - 91, 182, 182, 24).stroke({ width: 7, color: swatch.yellow.line });
-      await this.ctx.say('story.step', { step: STORIES[card.story].steps[card.stage] });
+      await this.ctx.say('story.step', { step: pictureText(card) });
       if (!this.alive) return;
       await this.ctx.tw.wait(0.5);
     }
+    if (this.done && this.puzzle.cause) await this.ctx.say('story.cause.because', { explanation: CAUSES[this.puzzle.cause].because });
     this.playing = false; this.drawGlow();
     if (!this.done) this.instruction();
   }
@@ -130,8 +141,8 @@ class StorySteps implements Game {
 export const storySteps: GameModule = {
   id: 'story-steps', name: 'Story Steps', titleLine: 'game.story-steps', region: 'story-grove',
   skills: ['sequencing', 'cause-and-effect', 'storytelling'], bands: ['toddler', 'preschool', 'prek', 'school'],
-  levels: (b) => b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
-  describeLevel: (l) => STORY_PLANS[Math.max(0, Math.min(STORY_PLANS.length - 1, l - 1))].name,
+  levels: (b) => rangeFor(LEVELS, b),
+  describeLevel: (l) => LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, touchDemo: true, coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
   offScreen: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',
   hubIcon: () => new WigglyIcon(storySticker()), sticker: () => storySticker(), create: (ctx) => new StorySteps(ctx),
