@@ -1,3 +1,5 @@
+import type { ColorName } from '../../art/palette';
+import type { ShapeKind } from '../../art/shapes';
 import type { Rng } from '../../engine/random';
 
 export interface PatternPlan {
@@ -26,7 +28,7 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 1, 2], kind: 'bell', name: 'Listen and continue three bell notes' },
   { pattern: [0, 0, 1], kind: 'shape', two: true, name: 'Fill two cars in an AAB pattern' },
   { pattern: [0, 1, 2], kind: 'shape', far: true, name: 'Find the seventh car from two repeats' },
-  { pattern: [0, 1, 2], kind: 'pair', far: true, name: 'Follow color and shape together' },
+  { pattern: [0, 1, 2, 3], kind: 'pair', name: 'Color and shape on their own cycles' },
   { pattern: [], kind: 'number', numberSteps: [2, 5, 10], name: 'Count numbered cars by 2, 5, or 10' },
 ];
 
@@ -34,6 +36,19 @@ export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min
 
 /** Choices under the train: one of each symbol, so every answer is on offer. */
 export const CHOICES = 3;
+/** A color-and-shape train offers all four pieces of its two colors and two shapes. */
+export const PAIR_CHOICES = 4;
+/** A color-and-shape train's cars: two full repeats of four and the car to fill. */
+export const PAIR_CARS = 9;
+
+const PAIR_COLORS: readonly ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple'];
+const PAIR_SHAPES: readonly ShapeKind[] = ['circle', 'triangle', 'square'];
+
+/** A color-and-shape piece is 0–3: the color is `piece % 2` (a cycle of two), the shape `floor(piece / 2)` (a cycle of two, held for two cars). */
+export const pieceColor = (piece: number) => piece % 2;
+export const pieceShape = (piece: number) => Math.floor(piece / 2);
+/** What a color-and-shape train looks like this round. */
+export interface PairLook { colors: [ColorName, ColorName]; shapes: [ShapeKind, ShapeKind] }
 
 /** The highest number a numbered train shows, so every car reads as a number she counts with. */
 export const NUMBER_TOP = 100;
@@ -58,15 +73,30 @@ function numberTrain(steps: readonly number[], rng: Rng): { sequence: number[]; 
 }
 
 /**
+ * A color-and-shape train: the color alternates (a cycle of two) while the shape changes every second car (a cycle of two
+ * held for two), so the pair repeats every four cars and neither attribute explains the other. Eight cars show and the ninth
+ * place can be anywhere after the first, so a car four places away always shows the answer. The four choices are every
+ * combination of the two colors and two shapes: the answer, the right color in the wrong shape, the right shape in the wrong
+ * color, and neither, in a shuffled order.
+ */
+function pairTrain(rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look: PairLook } {
+  const start = rng.int(0, 3);
+  const sequence = Array.from({ length: PAIR_CARS }, (_, i) => (start + i) % 4);
+  const look: PairLook = { colors: rng.shuffle([...PAIR_COLORS]).slice(0, 2) as [ColorName, ColorName], shapes: rng.shuffle([...PAIR_SHAPES]).slice(0, 2) as [ShapeKind, ShapeKind] };
+  return { sequence, targets: [rng.int(1, PAIR_CARS - 1)], choices: [rng.shuffle([0, 1, 2, 3])], look };
+}
+
+/**
  * A train for one round: the symbols on each car, and which cars start empty. The pattern shows two full repeats, then
  * the train runs on part of the way into the next one (`phase` cars) before the empty car, so the car to fill can be any
  * place in the repeat rather than always a copy of the first car. Level 6's gap sits anywhere but the very start of a
- * repeat. The far levels (10 and 11) keep a seven-car train with the seventh car empty until they are rebuilt; their
- * lines name the seventh car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
+ * repeat. The far level (10) keeps a seven-car train with the seventh car empty until it is rebuilt; its
+ * line names the seventh car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
  * piece on the train is on offer, the near misses included.
  */
-export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
+export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook } {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
+  if (plan.kind === 'pair') return pairTrain(rng);
   const tokens = rng.shuffle([0, 1, 2]);
   const unit = plan.pattern.length;
   // Two empty cars may start at slot 0 or 1 (nine cars at most); a far or missing-middle train shows no extra cars.

@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train slice 2: level 11, color and shape on their own cycles
+
+- Level 11 (`buildTrain`'s `pairTrain`): nine cars, color alternating and shape held for two, four shuffled choices (every mix of two colors and two shapes), a gap anywhere after the first car, a wrong pick that names the right part. Voice lines `pattern.colorRight` and `pattern.shapeRight`; how-to step reworded.
+- Typecheck and the Pattern Train and content unit tests passed (84): one new rule test (different cycle lengths, a clue four cars away, exactly one answer, one color-only, one shape-only and one neither choice, every slot and choice place used, varied looks).
+- `GAME_URL=http://localhost:5191 BROWSER_SUITE=pattern PATTERN_LEVELS=11` passed (two wrong picks, one hint, reward). A portrait (768×1024) screenshot reviewed: nine cars fit, four choices centered and clear of the pet.
+- Not run: `fingerdemo` at level 11 (the bot's `wantedChoice` reads any choice list, unchanged), the other levels' loop, couch suites (the couch range stops at level 9), build, iPad or child play. Whether the green and yellow pairs read apart on a real screen is open.
+
 ## 2026-10-11 — Pattern Train slice 1: the train ends anywhere
 
 - `buildTrain` (`src/games/pattern-train/logic.ts`): trains end at any phase of the unit, level 6's gap moves, level 12 starts off the step with a middle gap and shuffled near-miss choices; levels 10–11 unchanged. School max follows the plan table; how-to last step bounded; `pattern.number` reworded ([PR 141](https://github.com/rjdunlap/neo/pull/141)).
