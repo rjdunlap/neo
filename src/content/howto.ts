@@ -113,21 +113,26 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.',
   },
   'fill-dump': {
-    goal: 'Play with a basket of fruit: tip it out, put it back, and fill it with a number.',
+    goal: 'Fill, empty and refill: count fruit or pour water to a line.',
     steps: [
       { to: 2, text: 'Tap the basket to tip the fruit out. Then tap each piece (or the basket) to put it back.' },
-      { from: 3, text: 'Tap the fruit on the grass to put it in the basket, as many as the voice asks for.' },
-      { from: 3, text: 'Tap the basket to take the last one back out if there are too many.' },
-      { from: 3, text: 'Tap the green check when the basket has the right number.' },
+      { from: 3, to: 4, text: 'Tap the fruit on the grass to put it in the basket, as many as the voice asks for.' },
+      { from: 3, to: 4, text: 'Tap the basket to take the last one back out if there are too many.' },
+      { from: 3, to: 4, text: 'Tap the green check when the basket has the right number.' },
+      { from: 5, text: 'Pull the jug right to pour. Pull farther for more water; lift at the purple line.' },
+      { from: 5, text: 'Tap the cup to empty into the tray. Tap the tray to refill the jug.' },
+      { from: 5, text: 'Tap the green check when the water reaches the line.' },
     ],
     finish: [
       { to: 1, text: 'The round ends when all the fruit is back in the basket.' },
       { from: 2, to: 2, text: 'The round ends when all the fruit is back in after the second tip.' },
-      { from: 3, text: 'The round ends when the check is tapped with the right number in the basket.' },
+      { from: 3, to: 4, text: 'The round ends when the check is tapped with the right number in the basket.' },
+      { from: 5, text: 'Fill three cups to their lines and check each one to finish the round.' },
     ],
     note: [
       { to: 2, text: 'There is no wrong move here; every tap does something.' },
-      { from: 3, text: 'Tapping the check with the wrong number is a gentle miss. After two, a glow shows what to do next.' },
+      { from: 3, to: 4, text: 'Tapping the check with the wrong number is a gentle miss. After two, a glow shows what to do next.' },
+      { from: 5, text: 'Spills and empty checks are free. Other wrong checks count misses. Two misses glow the next move, once per cup.' },
     ],
   },
   'shape-sorter': {

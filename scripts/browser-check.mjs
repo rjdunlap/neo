@@ -2100,10 +2100,48 @@ async function originals() {
   }
 
   // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
-  for (let level = 1; level <= 4 && (!only || only === 'fill'); level++) {
+  const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5').split(',').map(Number);
+  for (const level of (!only || only === 'fill' ? fillLevels : [])) {
     if (level === 4) await portrait(true);
     await launch('fill-dump', level);
     await page.waitForTimeout(400);
+    if (level === 5) {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const hit = async (on, y = 0) => { kit.tapOn(on, 0, y); await kit.sleep(300); };
+        const pull = async (amount) => {
+          const a = g.jug.toGlobal({ x: 0, y: 0 });
+          const b = g.jug.toGlobal({ x: amount * 240, y: 0 });
+          await kit.drag(kit.line([a.x, a.y], [b.x, b.y])); await kit.sleep(150);
+        };
+        await hit(g.tick);
+        if (g.state.misses) throw new Error('An empty pour check is a reminder');
+        await pull(1.25);
+        if (Math.abs(g.state.cup - 1) > 0.001 || Math.abs(g.state.tray - 0.25) > 0.001) throw new Error('Overflow must be caught');
+        await hit(g.tick); await hit(g.tick);
+        if (g.state.misses !== 2 || g.state.hints !== 1) throw new Error('Pour hint accounting');
+      });
+      await portrait(true); await screenshot('fill-dump-5-portrait');
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (let guard = 0; guard < 20 && !g.state.done; guard++) {
+          const intent = g.autotouch();
+          if (intent?.tap) kit.tapOn(intent.tap.on, intent.tap.x || 0, intent.tap.y || 0);
+          else if (intent?.drag) {
+            const a = intent.drag.on.toGlobal({ x: intent.drag.x || 0, y: intent.drag.y || 0 });
+            const b = intent.to.on.toGlobal({ x: intent.to.x || 0, y: intent.to.y || 0 });
+            await kit.drag(kit.line([a.x, a.y], [b.x, b.y]));
+          }
+          await kit.sleep(300);
+        }
+        if (!g.state.done) throw new Error('Pour supported completion');
+      });
+      await finished('fill-dump');
+      assert.deepEqual(await score('fill-dump'), [2, 1]);
+      await portrait(false);
+      log('Fill and Dump 5: pour displacement, caught overflow, two wrong checks, one hint, resize, recovery, three cups and one sticker passed');
+      continue;
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const idle = () => kit.until(() => !g.busy && g.flying === 0, 8000);
