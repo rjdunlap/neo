@@ -8,6 +8,13 @@
 - Checked local Markdown links/anchors in the new plan and changed references, opened research links where available, and ran `git diff --check` on claim `66605c8` plus docs diff.
 - No typecheck, unit tests, build, browser suites or device/child checks run: docs-only tier; existing suite coverage is unchanged.
 
+## 2026-10-11 — Deployment: Goodnight Room registry regression
+
+- Updated the stale pre-K registry assertion from maximum level 5 to 6, matching the implemented light-last mode; younger range assertions remain intact. Gameplay is unchanged.
+- Reproduced the exact GitHub failure locally with `npx vitest run src/games/registry.test.ts -t 'opens Goodnight Room'` before editing.
+- Tested claim commit `03fb0fb` plus implementation diff: `npm run typecheck` and `npx vitest run src/games/registry.test.ts src/games/goodnight-room/logic.test.ts` passed (19 tests). `git diff --check` passed; added tracker PR link points to PR 152.
+- Browser/build/offline suites not rerun locally for this test-only change; existing level-6 browser evidence below remains applicable. GitHub's deployment workflow runs the complete unit suite and production build after merge.
+
 ## 2026-10-11 — Robot Path: feedback and alternative-route hints
 
 - Deep-dive slice 1: empty/bump/short explanations, collision jiggle and step-level hints that preserve any shortest-route prefix. Empty Play remains free; unsuccessful runs still count one miss, two misses one hint.
