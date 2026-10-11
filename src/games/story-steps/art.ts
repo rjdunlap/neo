@@ -119,7 +119,7 @@ export function storyPicture(card: StoryCard): Container {
     }
     case 'apple': {
       g.roundRect(-58, 35, 116, 35, 8).fill(swatch.brown.fill).stroke(stroke(swatch.brown.line));
-      if (stage === 0) g.ellipse(0, 36, 11, 8).fill(swatch.brown.line).ellipse(-3, 34, 3, 2).fill(swatch.brown.light);
+      if (stage === 0) { g.moveTo(0, 8).bezierCurveTo(22, 24, 18, 44, 0, 48).bezierCurveTo(-18, 44, -22, 24, 0, 8).fill(swatch.orange.line).stroke(stroke(swatch.brown.line)); g.ellipse(-5, 28, 4, 7).fill(swatch.orange.light); }
       else if (stage === 1) {
         g.moveTo(0, 35).lineTo(0, -4).stroke({ width: 6, color: swatch.green.line });
         g.circle(-13, -6, 12).circle(13, -12, 12).fill(swatch.green.fill).stroke(stroke(swatch.green.line));

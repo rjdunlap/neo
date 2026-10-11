@@ -1,10 +1,10 @@
 # Puddle Island verification
 
-## 2026-10-11 — Story Steps: six new stories and per-level pools (docs deep-dive slice 1)
+## 2026-10-11 — Story Steps: six new stories and per-level pools (deep-dive slice 1)
 
 - Built `sandcastle`, `sandwich`, `apple`, `dog`, `rain` and `bedtime` (four code-drawn pictures and four spoken sentences each; ten stories in all), a story pool per level (levels 1–2 build-up stories only, level 4 change-over-time stories, 5–7 all ten) and a family rule: extra pictures never come from a lookalike family (stack, seed) of the round's story, and level 7's two extras come from two different families. Two `describeLevel` names were reworded because their pools now mix kinds.
 - `npm run typecheck` and the Story Steps tests (5: the ten stories' four distinct, punctuated sentences; pools non-empty and known, and level 1 stack-only; 150 seeds per level for the family rule, mixed round and every pool story appearing; the existing puzzle and bot tests) passed, plus the content and registry tests (86). No build: no shared file or asset changed.
-- One contact sheet of the 24 new pictures at 110 and 164 units reviewed (small details survive at 110). `BROWSER_SUITE=fingerdemo FINGER_ONLY=story-steps FINGER_LEVELS=1,5,7` finished clean in 5.4, 14.7 and 15.4 s; no page errors.
+- Contact sheets of the new pictures reviewed: every new story's first and last picture at 110 units, the rest of the stages in an earlier sheet, and the sandcastle and apple beginnings at 164. The apple seed was too small and dark on its soil, so it was redrawn larger (the redraw was re-viewed; the demos ran before it). `BROWSER_SUITE=fingerdemo FINGER_ONLY=story-steps FINGER_LEVELS=1,5,7` finished clean in 5.4, 14.7 and 15.4 s; no page errors.
 - Not run: a full play with a wrong answer and hint (no rule or contract changed), the portrait screenshot, and anything on an iPad or with a child (whether the new stories' order is clear to a toddler is a person check).
 
 ## 2026-10-10 — Read & Do first slice
