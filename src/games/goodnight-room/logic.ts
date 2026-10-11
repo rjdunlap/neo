@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * goodnight and it falls asleep; when everyone is asleep the lights go down and the stars come
  * out. Later the voice names who to say goodnight to, then two in order.
  */
-export type NightMode = 'all' | 'named' | 'two' | 'animals' | 'lightLast';
+export type NightMode = 'all' | 'named' | 'two' | 'animals' | 'lightLast' | 'count';
 
 export interface NightPlan {
   mode: NightMode;
@@ -25,6 +25,7 @@ export const PLANS: NightPlan[] = [
   { mode: 'two', things: 6, requests: 3, asleep: 0, name: 'Two in order: "the clock, then the lamp"' },
   { mode: 'animals', things: 5, requests: 1, asleep: 0, name: 'Say goodnight to the animals, in any order' },
   { mode: 'lightLast', things: 6, requests: 1, asleep: 0, name: 'Say goodnight to everyone, keeping the light on until last' },
+  { mode: 'count', things: 6, requests: 0, asleep: 0, name: 'Count out goodnights for 2–4 friends, choosing any awake friends' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -51,6 +52,8 @@ export interface Night {
   setting: NightRoom;
   room: Thing[];
   asleep: Thing[];
+  /** Number of free-choice goodnights; counting rounds leave some friends awake. */
+  targetCount: number;
 }
 
 export function makeNight(plan: NightPlan, rng: Rng): Night {
@@ -61,12 +64,12 @@ export function makeNight(plan: NightPlan, rng: Rng): Night {
   const room = rng.shuffle(pool).slice(0, plan.things).sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const most = Math.min(plan.asleep, room.length - 2);
   const asleep = most > 0 ? rng.shuffle([...room]).slice(0, rng.int(0, most)) : [];
-  return { setting, room, asleep };
+  return { setting, room, asleep, targetCount: plan.mode === 'count' ? rng.int(2, 4) : room.length };
 }
 
 /** Who to say goodnight to, as one or two things per request; every thing asked at most once per step. */
 export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[]): Thing[][] {
-  if (plan.mode === 'all') return [];
+  if (plan.mode === 'all' || plan.mode === 'count') return [];
   if (plan.mode === 'animals') return [room.filter(isAnimal)];
   if (plan.mode === 'lightLast') return [[...room.filter(t => !isLight(t)), ...room.filter(isLight)]];
   const order = rng.shuffle([...room]);
@@ -79,7 +82,8 @@ export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[]):
  * in any order), or the one the voice named, one at a time and in the order asked. `asleep` holds the things already
  * asleep, `step` how far through this request she is. Always a right one.
  */
-export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefined, step: number, asleep: ReadonlySet<Thing>, room: readonly Thing[]): Thing | null {
+export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefined, step: number, asleep: ReadonlySet<Thing>, room: readonly Thing[], targetCount = room.length): Thing | null {
+  if (plan.mode === 'count') return asleep.size < targetCount ? room.find(t => !asleep.has(t)) ?? null : null;
   if (plan.mode === 'all') return room.find((t) => !asleep.has(t)) ?? null;
   if (plan.mode === 'lightLast') return request?.find(t => !asleep.has(t) && (!isLight(t) || request.every(other => isLight(other) || asleep.has(other)))) ?? null;
   if (plan.mode === 'animals') return request?.find(t => !asleep.has(t)) ?? null;
@@ -87,8 +91,9 @@ export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefine
 }
 
 /** A named request keeps its order; a category accepts any remaining member. */
-export function acceptsTap(plan: NightPlan, request: readonly Thing[], step: number, asleep: ReadonlySet<Thing>, thing: Thing): boolean {
+export function acceptsTap(plan: NightPlan, request: readonly Thing[], step: number, asleep: ReadonlySet<Thing>, thing: Thing, targetCount = Infinity): boolean {
   if (asleep.has(thing)) return false;
+  if (plan.mode === 'count') return asleep.size < targetCount;
   if (plan.mode === 'lightLast') return request.includes(thing) && (!isLight(thing) || request.every(t => isLight(t) || asleep.has(t)));
   return plan.mode === 'all' || (plan.mode === 'animals' ? request.includes(thing) : request[step] === thing);
 }

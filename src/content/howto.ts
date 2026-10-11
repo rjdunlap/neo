@@ -819,15 +819,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the picture matches.',
   },
   'goodnight-room': {
-    goal: 'Say goodnight to everything in the room.',
+    goal: 'Listen, choose friends and say goodnight.',
     steps: [
       { to: 2, text: 'Tap each thing to say goodnight.' },
       { from: 3, to: 3, text: 'Tap the thing that is named to say goodnight.' },
       { from: 4, to: 4, text: 'Tap the two things in the order they are named.' },
       { from: 5, to: 5, text: 'Tap the animals in any order. The lamp and clock settle together afterwards.' },
       { from: 6, to: 6, text: 'Tap everyone else in any order, then the lamp or lantern last so its light helps you see.' },
+      { from: 7, to: 7, text: 'Listen for how many friends to say goodnight to, then tap that many awake friends. Any friends count; each goodnight is counted aloud.' },
     ],
-    finish: 'The round ends when the room is asleep.',
+    finish: [
+      { to: 6, text: 'The round ends when the room is asleep.' },
+      { from: 7, to: 7, text: 'Reaching the requested count finishes your goodnights. The other friends stay awake briefly, then settle together for the finale.' },
+    ],
   },
   'animal-snack': {
     goal: 'Feed the animals their favorite snacks.',

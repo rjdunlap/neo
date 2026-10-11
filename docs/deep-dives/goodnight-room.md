@@ -2,7 +2,7 @@
 
 *ID `goodnight-room` · bands lap, toddler, preschool · levels 1–4 on 2026-10-10 · session `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84))*
 
-## The game today
+## The game at the research session
 
 A cosy bedroom at bedtime: a lamp, a wall clock, a fishbowl, and a teddy, a kitten and a puppy. She taps a friend to say goodnight. It gets sleepy eyes, a "z" floats up, a bell note rises one step, the room darkens a little and three more stars come out in the window. When every friend is asleep, four soft bells play, the pet falls sleepy, and the round ends. The moon and window are the only scenery that changes.
 
@@ -48,6 +48,8 @@ The genre is the bedtime picture-book app: a calm scene, one tap per friend, and
 - **Bedtime routines.** A nightly routine reduced sleep problems and improved mothers' mood in infants (7–18 months) and toddlers (18–36 months) in [Mindell and colleagues' 2009 study of 405 mothers](https://aasm.org/study-shows-institution-of-a-consistent-nightly-bedtime-routine-improves-sleep-in-infants-and-toddlers-as-well-as-maternal-mood/) ([full text](https://pmc.ncbi.nlm.nih.gov/articles/PMC2675894/)). That is about real routines, so it supports the **off-screen suggestion** (say goodnight to the room together), not a claim about the game.
 - **Two steps at age two.** The CDC's 2022 milestones list "follows two-step instructions" for about 24 months ([as summarized by Understood](https://www.understood.org/en/articles/developmental-milestones-for-typical-2-year-olds)); a [University of Michigan health page](https://uofmhealth.org/health-library/ue5313) says two-year-olds usually manage simple requests but not two steps. Sources disagree, which is why level 4's toddler placement stays a person check.
 - **Sorting by an attribute.** Kindergarten math asks children to classify objects into given categories (CCSS K.MD.B.3, [standard text](https://webnew.ped.state.nm.us/wp-content/uploads/2020/07/K.MD_.B.pdf)); a [Curriculum Associates kindergarten lesson](https://www.curriculumassociates.com/-/media/mainsite/files/ready-classroom-mathematics/activity-based-assessments-grade-k-lesson-3.pdf) names color, size, shape and function as sorting rules. That is levels 5 and 8. Searches turned up nothing on "everything except" negation in early childhood, so level 9 has no source behind it, only its own tests.
+
+**Built since this research:** seeded bedroom/barn rooms, already-asleep variation, levels 5 animals and 6 light last, and level 7 counted goodnights (pre-K 5–7). See the build slices below and [current rules](../GAMES.md#goodnight-room).
 
 ## What makes sense here
 
@@ -127,7 +129,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 2. **Slot-based rooms and the barn** (built 2026-10-10): rooms as data (`spot()` becomes slot-based; `makeRequests` and `thingToTap` already take the drawn room after slice 1), a lantern, a window variant, `NAMES` for each new friend, and a pool test that every room fits every level. Tier: rule tests, one browser play, one portrait screenshot.
 3. **Level 5, the animals, and the pre-K window** (built 2026-10-10): `kind`, the band row, the level-4 `LevelLine` bound, registry tests, the browser loop, `fingerdemo`. Tier: new level on an existing interaction.
 4. **Level 6, the light goes last** (built 2026-10-11; [PR #150](https://github.com/rjdunlap/neo/pull/150)): any order for the other five friends, then the lamp or lantern. Pre-K 5–6; early light taps teach, two glow a remaining friend. Rule tests cover both rooms, alternative orders, rejection and useful hints; the ghost finger leaves the light last.
-5. **Level 7, how many?** (claimed on `codex/goodnight-count`, 2026-10-11): choose any 2–4 of six friends, count each goodnight aloud, then hold the remaining friends awake briefly before the finale. No misses or hints by design; the existing adaptation rule applies. Expected files: game logic/rendering/tests, voice, how-to, registry range test, filtered `night` browser case, README, GAMES, roadmap and verification. Tier: typecheck, rule tests, level-7 `night` play and `fingerdemo`.
+5. **Level 7, how many?** (built 2026-10-11; [PR #155](https://github.com/rjdunlap/neo/pull/155)): choose any 2–4 of six friends, count each goodnight aloud with a numeral/dot tally, then hold the remaining friends awake briefly before the finale. Pre-K 5–7. No misses or hints by design; the existing adaptation rule applies. Tier: typecheck, rule tests, level-7 `night` play and `fingerdemo`.
 6. **Level 8, the color** (ready).
 7. **Level 9, everyone but the one** (ready).
 8. **Tent and boat cabin rooms** (ready, new art).
