@@ -92,7 +92,7 @@ There are seventy-seven games, listed below. "Ages" lists the bands each game ha
 | Size Parade | toddler–school | tap the bigger or smaller friend | order three, then five friends in either direction |
 | Bug Builder | toddler–school | decorate matching shape outlines | copy a model, then mirror six spots using shape and color |
 | Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; ten stories |
-| Pattern Train | preschool–school | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps, a tunnel of hidden cars, color and shape on their own cycles, counting by 2, 5 or 10, the car that does not belong, fixing a swapped car |
+| Pattern Train | preschool–school | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps, a tunnel of hidden cars, color and shape on their own cycles, counting by 2, 5 or 10, the car that does not belong, fixing a swapped car, the same pattern in new pieces (pick the row, build it) |
 | Memory Match | preschool–school | four picture cards | sixteen cards, number↔dots, shape + color, A↔a, number words↔numerals, fraction pictures↔names |
 | Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals, short words, the child's name |
 | Stamp Studio | lap–school | press stars or animal stamps onto a picture | choose colors, arrange stamps, change size and orientation, tell a picture story; any creation can finish |

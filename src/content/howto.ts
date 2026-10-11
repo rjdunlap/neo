@@ -183,6 +183,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 12, to: 12, text: 'Count the numbered cars by 2, 5, or 10, then tap the number for the glowing car. It can be at the end or in the middle.' },
       { from: 13, to: 13, text: 'One car does not belong in the pattern. Tap it and it hops off. Tapping a car that fits is a gentle miss.' },
       { from: 14, to: 14, text: 'One car shows the wrong piece. Tap it, then choose the piece that belongs there.' },
+      { from: 15, to: 15, text: 'The train on top has a pattern. Tap the row of animals that repeats the same way, even though the pieces are different.' },
+      { from: 16, to: 16, text: 'Build the same pattern with the animals. Fill each glowing car so cars that match on top match below, and cars that differ on top differ below. Any animals that do this are right.' },
     ],
     finish: 'The round ends when the missing car or cars are filled in correctly, or the wrong car is found and mended.',
   },

@@ -15,6 +15,8 @@ export interface PatternPlan {
   tunnel?: boolean;
   /** The question is which car is wrong, not what comes next: one extra car crept in (`extra`), or one car was swapped (`swap`, then she picks the piece that belongs). */
   odd?: 'extra' | 'swap';
+  /** The question is about the structure of the pattern, shown as a model above the answer: pick the row that repeats the same way (`row`), or build the same pattern in other pieces (`build`). */
+  match?: 'row' | 'build';
   /** A numbered train counts by one of these amounts. */
   numberSteps?: readonly number[];
   name: string;
@@ -35,6 +37,8 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [], kind: 'number', numberSteps: [2, 5, 10], name: 'Count numbered cars by 2, 5, or 10' },
   { pattern: [0, 1], kind: 'shape', odd: 'extra', name: 'Find the car that does not belong' },
   { pattern: [0, 1, 2], kind: 'shape', odd: 'swap', name: 'Find the wrong car and fix the train' },
+  { pattern: [0, 0, 1], kind: 'shape', match: 'row', name: 'Find the row with the same pattern in new pieces' },
+  { pattern: [0, 0, 1], kind: 'shape', match: 'build', name: 'Build the same pattern in new pieces' },
 ];
 
 export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, level - 1))];
@@ -178,3 +182,51 @@ function plainTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets:
  * puts there. Always one of the `CHOICES` on offer.
  */
 export const wantedChoice = (sequence: readonly number[], targets: readonly number[], choices: readonly (readonly number[])[], target: number): number => choices[target].indexOf(sequence[targets[target]]);
+
+/** The model's cars and every row's cars in the same-pattern levels. */
+export const MATCH_CARS = 6;
+/** The units a model can repeat (each divides six cars); a row shares its model's unit only when it is the answer. */
+export const MATCH_UNITS: readonly (readonly number[])[] = [[0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 2]];
+
+/** A train's structure with the pieces forgotten: each piece renamed by when it first shows (so cat, cat, cow and A, A, B agree). */
+export function structure(cars: readonly number[]): string {
+  const seen: number[] = [];
+  return cars.map((c) => { if (!seen.includes(c)) seen.push(c); return seen.indexOf(c); }).join('');
+}
+
+/**
+ * Which pieces may go in the next car of a build: one that is the same as an earlier car exactly where the model's cars are
+ * the same, and different exactly where they differ. Any animals that keep the model's structure are right, not one fixed
+ * assignment, and some piece always fits (at most three roles, three pieces).
+ */
+export function validPieces(model: readonly number[], placed: readonly number[]): number[] {
+  const k = placed.length;
+  return [0, 1, 2].filter((p) => placed.every((q, j) => (model[j] === model[k]) === (q === p)));
+}
+
+export interface MatchRound {
+  /** The model's cars, as pieces 0–2 of the model's own kind (shapes). */
+  model: number[];
+  /** Level 15: three rows of animal pieces (0–2); `answer` is the row that repeats the model's way. */
+  rows: number[][];
+  answer: number;
+  /** Which animal trio the rows and the tray use. */
+  trio: number;
+}
+
+/** One train of a unit, its pieces renamed by a shuffle so no two rows or the model share their assignment. */
+const cars = (unit: readonly number[], rng: Rng): number[] => {
+  const names = rng.shuffle([0, 1, 2]);
+  return Array.from({ length: MATCH_CARS }, (_, i) => names[unit[i % unit.length]]);
+};
+
+/**
+ * The same-pattern levels: a model (shapes) and, for the row level, three rows of animals of which exactly one repeats the
+ * model's way; the others repeat other units, so each is a near miss in structure.
+ */
+export function buildMatch(rng: Rng): MatchRound {
+  const unit = rng.pick(MATCH_UNITS);
+  const others = rng.shuffle(MATCH_UNITS.filter((u) => u !== unit)).slice(0, 2);
+  const options = rng.shuffle([unit, ...others]);
+  return { model: cars(unit, rng), rows: options.map((u) => cars(u, rng)), answer: options.indexOf(unit), trio: rng.int(0, ANIMAL_TRIOS.length - 1) };
+}

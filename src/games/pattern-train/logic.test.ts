@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { buildMatch, MATCH_CARS, MATCH_UNITS, structure, validPieces } from './logic';
 import { ODD_CARS, ANIMAL_TRIOS, SHAPE_FAMILIES, buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
@@ -227,6 +228,48 @@ describe('Pattern Train', () => {
     }
     expect(extraAt.size).toBe(ODD_CARS.extra - 2);
     expect(swapAt.size).toBe(ODD_CARS.swap);
+  });
+
+  it('names structures by their shape, not their pieces', () => {
+    expect(structure([2, 2, 0, 2, 2, 0])).toBe(structure([1, 1, 2, 1, 1, 2]));
+    expect(structure([0, 0, 1, 0, 0, 1])).not.toBe(structure([0, 1, 1, 0, 1, 1]));
+  });
+
+  it('gives the row level exactly one row that repeats the model, the others other structures', () => {
+    const answers = new Set<number>(), units = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = buildMatch(new Rng(seed));
+      expect(r.model).toHaveLength(MATCH_CARS);
+      expect(r.rows).toHaveLength(3);
+      r.rows.forEach((row) => { expect(row).toHaveLength(MATCH_CARS); expect(row.every((p) => p >= 0 && p < 3)).toBe(true); });
+      const same = r.rows.map((row, i) => (structure(row) === structure(r.model) ? i : -1)).filter((i) => i >= 0);
+      expect(same).toEqual([r.answer]);
+      expect(new Set(r.rows.map(structure)).size).toBe(3);
+      expect(MATCH_UNITS.some((u) => structure(Array.from({ length: MATCH_CARS }, (_, i) => u[i % u.length])) === structure(r.model))).toBe(true);
+      answers.add(r.answer); units.add(structure(r.model));
+    }
+    expect(answers.size).toBe(3);
+    expect(units.size).toBe(MATCH_UNITS.length);
+  });
+
+  it('lets a build use any animals that keep the model structure, and always has one that fits', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const { model } = buildMatch(new Rng(seed));
+      // Every way of filling the cars left to right, always choosing among the valid pieces, copies the model's structure.
+      const rng = new Rng(seed + 1000);
+      const placed: number[] = [];
+      while (placed.length < MATCH_CARS) {
+        const valid = validPieces(model, placed);
+        expect(valid.length).toBeGreaterThan(0);
+        placed.push(rng.pick(valid));
+      }
+      expect(structure(placed)).toBe(structure(model));
+    }
+    // The first car takes any piece; a repeated car must match, a new one must differ.
+    expect(validPieces([0, 0, 1], [])).toEqual([0, 1, 2]);
+    expect(validPieces([0, 0, 1], [2])).toEqual([2]);
+    expect(validPieces([0, 1, 1], [2])).toEqual([0, 1]);
+    expect(validPieces([0, 0, 1], [2, 2])).toEqual([0, 1]);
   });
 
   it('has a choice on offer for every empty car, in order, that fits the pattern', () => {
