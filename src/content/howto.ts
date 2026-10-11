@@ -843,9 +843,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Tap a snack and it floats to the animal who loves it.' },
       { from: 3, to: 3, text: 'Tap the animal that eats the food asked for.' },
       { from: 4, to: 4, text: 'Drag each snack to the animal who eats it.' },
-      { from: 5, text: 'Give the animal the number of its snack that was asked for, then ring the bell.' },
+      { from: 5, to: 5, text: 'Give the animal the number of snacks shown by the dots and numeral, then ring the bell.' },
     ],
-    finish: 'The round ends when every animal has its snack.',
+    finish: [
+      { to: 2, text: 'The round ends after six snacks are eaten.' },
+      { from: 3, to: 3, text: 'The round ends after four food questions are answered.' },
+      { from: 4, to: 4, text: 'The round ends when all three animals have their snack.' },
+      { from: 5, to: 5, text: 'The round ends after three animals receive the requested count, confirmed with the bell.' },
+    ],
     note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
   },
   'beat-builder': {

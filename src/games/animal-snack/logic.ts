@@ -28,6 +28,34 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 
 export type Food = 'hay' | 'carrot' | 'bone' | 'fish' | 'seeds' | 'apple' | 'honey';
 
+/** Food names in ordinary speech, and the countable thing drawn on the blanket. */
+export const FOOD_WORDS: Record<Food, string> = { hay: 'hay', carrot: 'carrots', bone: 'bones', fish: 'fish', seeds: 'seeds', apple: 'apples', honey: 'honey' };
+export const FOOD_UNITS: Record<Food, { one: string; many: string }> = {
+  hay: { one: 'bale of hay', many: 'bales of hay' },
+  carrot: { one: 'carrot', many: 'carrots' },
+  bone: { one: 'bone', many: 'bones' },
+  fish: { one: 'fish', many: 'fish' },
+  seeds: { one: 'handful of seeds', many: 'handfuls of seeds' },
+  apple: { one: 'apple', many: 'apples' },
+  honey: { one: 'pot of honey', many: 'pots of honey' },
+};
+export const countedFood = (food: Food, n: number) => FOOD_UNITS[food][n === 1 ? 'one' : 'many'];
+
+/** Overlapping hit areas still select the closest body, within the same forgiving radius. */
+export function nearestFriend(points: { x: number; y: number }[], x: number, y: number): number {
+  let closest = -1;
+  let distance = 114;
+  points.forEach((p, i) => {
+    const d = Math.hypot(p.x - x, p.y - y);
+    if (d <= distance) { closest = i; distance = d; }
+  });
+  return closest;
+}
+
+/** An invitation in free play, never during eating or in a question, and never counted as help. */
+export const shouldNudge = (mode: SnackMode, idle: number, busy: boolean, finished: boolean) =>
+  (mode === 'munch' || mode === 'float') && idle >= 6 && !busy && !finished;
+
 /** Who eats what: one food each, so every question has one answer. */
 export const FAVORITE: Partial<Record<CritterName, Food>> = { cow: 'hay', bunny: 'carrot', dog: 'bone', cat: 'fish', duck: 'seeds', pig: 'apple', bear: 'honey' };
 export const ANIMALS = Object.keys(FAVORITE) as CritterName[];

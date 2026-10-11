@@ -13,9 +13,10 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
+import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { eaterOf, FAVORITE, makeRounds, planFor, snackTouch, type Food, type SnackPlan, type SnackRound } from './logic';
+import { countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, planFor, shouldNudge, snackTouch, type Food, type SnackPlan, type SnackRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -25,7 +26,6 @@ const LEVELS: BandLevels = {
 
 const VOICE: Partial<Record<CritterName, AnimalSound>> = { cow: 'moo', bunny: 'hop', dog: 'woof', cat: 'meow', duck: 'quack', pig: 'oink', bear: 'growl' };
 const ANIMAL_WORDS: Partial<Record<CritterName, string>> = { cow: 'cow', bunny: 'bunny', dog: 'dog', cat: 'cat', duck: 'duck', pig: 'pig', bear: 'bear' };
-const FOOD_WORDS: Record<Food, string> = { hay: 'hay', carrot: 'carrot', bone: 'bone', fish: 'fish', seeds: 'seeds', apple: 'apple', honey: 'honey' };
 
 function foodArt(food: Food): Container {
   const c = new Container();
@@ -102,6 +102,8 @@ class AnimalSnack implements Game {
   private wrongs = 0;
   private glowing: Container | null = null;
   private clock = 0;
+  private idle = 0;
+  private nudgeIndex = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -142,6 +144,15 @@ class AnimalSnack implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    if (!this.busy && !this.finished) this.idle += dt;
+    if (shouldNudge(this.plan.mode, this.idle, this.busy, this.finished) && this.friends.length) {
+      this.idle = 0;
+      const friend = this.friends[this.nudgeIndex++ % this.friends.length];
+      friend.node.poke();
+      const snack = this.snacks.find((s) => !s.eaten && s.food === FAVORITE[friend.name]);
+      const p = snack?.node ?? this.mouth(friend);
+      this.ctx.particles.burst(p.x, p.y, { colors: [swatch.yellow.fill, swatch.white.fill], count: 5, speed: [20, 50], gravity: 0, size: [0.2, 0.3] });
+    }
     const g = this.glow.clear();
     if (this.glowing && !this.busy) {
       const b = this.glowing.getBounds();
@@ -185,7 +196,12 @@ class AnimalSnack implements Game {
       node.scale.set(0.6);
       node.hitArea = new Circle(0, -125, 190);
       const f: Friend = { name, node };
-      onTap(node, () => void this.tapFriend(f), { cooldown: 350 });
+      onTap(node, (e) => {
+        this.idle = 0;
+        const p = this.ctx.stage.toLocal(e.global);
+        const i = nearestFriend(this.friends.map((friend) => ({ x: friend.node.x, y: friend.node.y - 125 * friend.node.scale.y })), p.x, p.y);
+        if (i >= 0) void this.tapFriend(this.friends[i]);
+      }, { cooldown: 350 });
       this.ctx.track(node);
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.blanket));
       this.friends.push(f);
@@ -216,6 +232,7 @@ class AnimalSnack implements Game {
   private async next() {
     this.busy = true;
     this.index++;
+    this.idle = 0;
     this.wrongs = 0;
     this.glowing = null;
     const mode = this.plan.mode;
@@ -232,10 +249,10 @@ class AnimalSnack implements Game {
     const food = FAVORITE[r.ask!]!;
     if (mode === 'count') this.setSnacks(Array<Food>(5).fill(food));
     else this.setSnacks([]);
-    this.showBubble(food);
+    this.showBubble(food, mode === 'count' ? r.n : undefined);
     this.busy = false;
     if (mode === 'who') return this.ctx.instruct('snack.who', { food: FOOD_WORDS[food] });
-    return this.ctx.instruct('snack.count', { animal: ANIMAL_WORDS[r.ask!]!, n: r.n!, food: FOOD_WORDS[food] });
+    return this.ctx.instruct('snack.count', { animal: ANIMAL_WORDS[r.ask!]!, n: r.n!, food: countedFood(food, r.n!) });
   }
 
   /** One snack for each animal, shuffled, for floating and matching. */
@@ -243,12 +260,21 @@ class AnimalSnack implements Game {
     this.setSnacks(this.ctx.rng.shuffle(this.friends.map((f) => FAVORITE[f.name]!)));
   }
 
-  private showBubble(food: Food) {
+  private showBubble(food: Food, n?: number) {
     this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const g = new Graphics().roundRect(-80, -60, 160, 120, 40).fill(0xffffff).stroke({ width: 5, color: swatch.white.line });
+    const counting = n !== undefined;
+    const g = new Graphics().roundRect(counting ? -100 : -80, -60, counting ? 200 : 160, counting ? 150 : 120, 40).fill(0xffffff).stroke({ width: 5, color: swatch.white.line });
     const art = foodArt(food);
     art.scale.set(1.4);
     this.bubble.addChild(g, art);
+    if (counting) {
+      art.x = -42;
+      const number = label(String(n), 48);
+      number.position.set(45, 0);
+      const dots = new Graphics();
+      for (let i = 0; i < n; i++) dots.circle((i - (n - 1) / 2) * 28, 60, 9).fill(ink);
+      this.bubble.addChild(number, dots);
+    }
   }
 
   private async eat(f: Friend, node: Container) {
@@ -321,6 +347,7 @@ class AnimalSnack implements Game {
   }
 
   private async tapSnack(item: SnackItem) {
+    this.idle = 0;
     if (this.busy || this.finished || item.eaten) return;
     if (this.plan.mode === 'float') {
       this.busy = true;
@@ -388,7 +415,7 @@ class AnimalSnack implements Game {
       }
       this.resize(this.view);
       await this.ctx.say('snack.toomany', { n: r.n! });
-    } else await this.ctx.say('snack.more', { n: r.n!, have: fed.length });
+    } else await this.ctx.say('snack.more', { animal: ANIMAL_WORDS[r.ask!]!, n: r.n!, have: fed.length });
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       this.glowing = fed.length === r.n ? this.bell : this.snacks.find((s) => !s.eaten)?.node ?? null;

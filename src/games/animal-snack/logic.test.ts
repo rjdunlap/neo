@@ -1,8 +1,39 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { ANIMALS, eaterOf, FAVORITE, makeRounds, PLANS, snackTouch, type Food, type SnackTable } from './logic';
+import { ANIMALS, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, snackTouch, type Food, type SnackTable } from './logic';
 
 describe('Animal Snack', () => {
+  it('names every drawn snack with a grammatical countable unit from one to six', () => {
+    const expected: Record<Food, string[]> = {
+      hay: ['bale of hay', 'bales of hay'], carrot: ['carrot', 'carrots'], bone: ['bone', 'bones'],
+      fish: ['fish', 'fish'], seeds: ['handful of seeds', 'handfuls of seeds'],
+      apple: ['apple', 'apples'], honey: ['pot of honey', 'pots of honey'],
+    };
+    for (const a of ANIMALS) {
+      const food = FAVORITE[a]!;
+      expect(FOOD_WORDS[food]).toBeTruthy();
+      for (let n = 1; n <= 6; n++) expect(countedFood(food, n)).toBe(expected[food][n === 1 ? 0 : 1]);
+    }
+  });
+
+  it('selects the closest body in overlapping hit areas and ignores distant touches', () => {
+    const friends = [{ x: 400, y: 400 }, { x: 520, y: 400 }, { x: 800, y: 400 }];
+    expect(nearestFriend(friends, 440, 400)).toBe(0);
+    expect(nearestFriend(friends, 490, 400)).toBe(1);
+    expect(nearestFriend(friends, 400, 500)).toBe(0);
+    expect(nearestFriend(friends, 400, 515)).toBe(-1);
+    expect(nearestFriend([], 400, 400)).toBe(-1);
+  });
+
+  it('nudges only idle free play, never eating, finished rounds or questions', () => {
+    for (const plan of PLANS) {
+      expect(shouldNudge(plan.mode, 5.9, false, false)).toBe(false);
+      expect(shouldNudge(plan.mode, 6, false, false)).toBe(['munch', 'float'].includes(plan.mode));
+      expect(shouldNudge(plan.mode, 60, true, false)).toBe(false);
+      expect(shouldNudge(plan.mode, 60, false, true)).toBe(false);
+    }
+  });
+
   it('gives every animal its own food, so each snack has one eater', () => {
     const foods = ANIMALS.map((a) => FAVORITE[a]!);
     expect(new Set(foods).size).toBe(foods.length);

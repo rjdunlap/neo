@@ -81,6 +81,22 @@ describe('touch how-to cards', () => {
     }
   });
 
+  it('keeps the guarded ladders bounded so new levels inherit no instructions or finish claims', () => {
+    for (const id of ['bubble-pop', 'animal-snack']) {
+      const game = GAMES.find((g) => g.id === id)!;
+      const last = Math.max(...levelsOf(game));
+      expect(howToFor(game, last + 1)!.steps, id).toEqual([]);
+    }
+    const snack = GAMES.find((g) => g.id === 'animal-snack')!;
+    const finishes = [1, 2, 3, 4, 5].map((level) => howToFor(snack, level)!.finish);
+    expect(finishes[0]).toContain('six snacks');
+    expect(finishes[1]).toBe(finishes[0]);
+    expect(finishes[2]).toContain('four food questions');
+    expect(finishes[3]).toContain('all three animals');
+    expect(finishes[4]).toContain('three animals receive the requested count');
+    expect(howToFor(snack, 6)!.finish).toBe('');
+  });
+
   it('changes with the level where the game does: a step that only holds for some levels is not on every card', () => {
     const bubble = [1, 4, 7, 10].map((level) => howToFor(GAMES.find((g) => g.id === 'bubble-pop')!, level)!.steps[0]);
     expect(new Set(bubble).size).toBe(4);
