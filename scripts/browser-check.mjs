@@ -59,6 +59,61 @@ async function finished(id) {
   assert.equal(errors.length, 0, errors.join('\n'));
 }
 
+async function weekPlay() {
+  const levels = (process.env.WEEK_LEVELS || '1,3').split(',').map(Number);
+  const wait = () => page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy);
+  const gesture = () => page.evaluate(() => {
+    const intent = neo.scene.game.autotouch();
+    if (intent) kit.tapOn(intent.tap.on);
+  });
+  for (const level of levels) {
+    await launch('day-by-day', level);
+    await wait();
+    // Naming a wrong card is exploration; only the placing arrow commits an answer.
+    await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node'); await wait();
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+    for (let attempt = 0; attempt < 2; attempt++) { await tap('neo.scene.game.confirm'); await wait(); }
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted]), [2, 1, true]);
+    let checkedWeather = false, checkedTally = false;
+    for (let guard = 0; guard < 80; guard++) {
+      if (await page.evaluate(() => neo.scene.finished)) break;
+      await wait();
+      const phase = await page.evaluate(() => neo.scene.game.phase);
+      if (phase === 'weather' && !checkedWeather) {
+        checkedWeather = true;
+        await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node'); await wait();
+        assert.equal(await page.evaluate(() => neo.scene.game.misses), 3);
+        if (level === 3) {
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+          await screenshot('day-by-day-3-portrait');
+        } else await screenshot('day-by-day-1-landscape');
+      }
+      if (phase === 'tally' && !checkedTally) {
+        checkedTally = true;
+        const weekBefore = await page.evaluate(() => [...neo.scene.game.week]);
+        await tap('neo.scene.game.records[0]'); await wait();
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.marks), [0]);
+        await tap('neo.scene.game.records[0]'); await wait();
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.marks), []);
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.week), weekBefore);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [3, 1]);
+      }
+      await gesture(); await page.waitForTimeout(170); await wait();
+    }
+    await finished('day-by-day');
+    assert.equal(await page.evaluate(() => neo.scene.game.recorded), 7);
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('day-by-day').history.at(-1); return [r.misses, r.hints]; }), [3, 1]);
+    if (level === 3) assert.ok(checkedTally, 'read the weather tally');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Day by Day ${level}: card naming, real placing/weather taps, retries, hint, seven records, tally revision and saved sticker passed`);
+  }
+  await launch('day-by-day', 3); await wait();
+  await tap('neo.scene.game.choices[0].node');
+  await page.evaluate(() => neo.go.land('cozy-village')); await scene('LandScene');
+  await page.waitForTimeout(300);
+  assert.deepEqual(errors, []);
+}
+
 async function orchardPlay() {
   const levels = (process.env.ORCHARD_LEVELS || '1,3').split(',').map(Number);
   const gesture = () => page.evaluate(() => {
@@ -8096,6 +8151,7 @@ try {
     await page.evaluate(() => { kit.store.data.pet = { name: 'Clover', color: 'pink', hatched: true }; kit.store.save(); kit.store.flush(); neo.go.start(); });
     await pickFirst(); await scene('MapScene');
   }
+  if (suite === 'all' || suite === 'week') await weekPlay();
   if (suite === 'all' || suite === 'orchard') await orchardPlay();
   if (suite === 'all' || suite === 'readdo') await readDoPlay();
   if (suite === 'all' || suite === 'pattern') await patterns();

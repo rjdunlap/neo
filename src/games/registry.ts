@@ -61,6 +61,7 @@ import { rampRace } from './ramp-race';
 import { critterSort } from './critter-sort';
 import { treasureMap } from './treasure-map';
 import { oppositesGame } from './opposites';
+import { dayByDay } from './day-by-day';
 import { orchardRows } from './orchard-rows';
 import { pictureGraph } from './picture-graph';
 import { inchworm } from './inchworm';
@@ -150,6 +151,7 @@ export const GAMES: GameModule[] = [
   oppositesGame,
   pictureGraph,
   orchardRows,
+  dayByDay,
   inchworm,
   blockTower,
   lassoLoops,
