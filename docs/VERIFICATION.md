@@ -1,11 +1,12 @@
 # Puddle Island verification
 
-## 2026-10-11 — JumpStart title-by-title research (docs only)
+## 2026-10-11 — JumpStart title-by-title research and additional languages (docs only)
 
-- Added `IDEAS.md` § "JumpStart, title by title": per-band catalogues of what each JumpStart title asked a child to do (Baby and Toddlers through 6th Grade, Pre-K, Spanish, Music, Typing, 3D Virtual World) mapped to built games, notebook ideas or "not borrowed"; sixteen new proposals and modes; the evidence for the "what not to borrow" rules; and two decisions for the developer (a family album, a second language).
-- Sources: Wikipedia and SuperKids pages opened and linked. The fan wiki refused every fetch, so its details are marked † (search summaries). A Gemini list for Pre-K, Spanish, Music, Numbers, Reading/Spelling and 4th Grade was checked by search: confirmed items are marked ‡, and conflicting or unconfirmed items (Haunted Island subjects, the Numbers and Reading rows, several Pre-K and Spanish names) are listed as left out.
-- Ran `git diff --check` and an anchor and relative-link check on the new section. No code, tests or browser suites ran.
-- Open: the † and ‡ details were not opened at the source; the two decisions; whether Star Dots is built before the Color Train lap mode; Numbers, Reading, Spelling and the Haunted Island minigames are still unknown.
+- Added `IDEAS.md` § "JumpStart, title by title": per-band catalogues of what each JumpStart title asked a child to do (Baby and Toddlers through 6th Grade, Pre-K, Spanish, Music, Numbers, Reading, Spelling, Haunted Island, Typing, 3D Virtual World) mapped to built games, notebook ideas or "not borrowed"; twenty-two new proposals and modes; the evidence for the "what not to borrow" rules; and a family-album decision.
+- Added a roadmap chunk 15 and an "Additional languages" section (stages, what travels, rules), two decisions under "Waiting on the developer" (which languages and reviewer; how the second language is added) and a device check for speech voices. Read `voice.ts`, `voice-script.ts` and `save.ts` to ground it; no code changed.
+- Sources: Wikipedia and SuperKids pages opened and linked; † marks fan-wiki details seen only in search summaries; ‡ marks a first Gemini list item confirmed by search; § marks a second Gemini list recorded as inspiration at the developer's request and **not checked** (¶ where a source I saw agrees).
+- Ran `git diff --check` and an anchor and relative-link check on `IDEAS.md` and `ROADMAP.md`. No code, tests or browser suites ran.
+- Open: the †, ‡ and § details were not opened at the source; the family-album and language decisions; Math Marbles and Milk Caps, 5th Grade's later missions and 3D Virtual World's pet games remain unknown.
 
 ## 2026-10-11 — Letter Trails deep dive (docs only)
 
