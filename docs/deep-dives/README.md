@@ -60,7 +60,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Bumper Garden | `bumper-garden` | LTPK | 5 | 4 | not started | — | — |
 | Chain Reaction | `chain-reaction` | KS | 6 | 4 | not started | — | — |
 | Clap the Syllables | `clap-syllables` | PK | 4 | 4 | not started | — | — |
-| Clock Tower | `clock-tower` | KS | 6 | 3 | not started | — | — |
+| Clock Tower | `clock-tower` | KS | 7 | 3 | in progress | `codex/clock-tower-deep-dive` | — |
 | Color Garden | `color-garden` | TPK | 6 | 4 | not started | — | — |
 | Critter Crossing | `critter-crossing` | KS | 5 | 4 | not started | — | — |
 | Critter Sort | `critter-sort` | KS | 5 | 4 | not started | — | — |
