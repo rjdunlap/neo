@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-10 — Fill and Dump preschool pouring
+
+- Added level 5 and a preschool range (1–5): a displacement-controlled jug, three fill lines, caught overflow, free empty/recover controls, one hint per cup and a ghost-finger demonstration. Existing basket levels and saved IDs are unchanged.
+- Typecheck, all 902 unit tests (124 files), and the production build passed. New rules prove seeded reachable targets, water conservation through experiments, tolerance boundaries, free empty checks, bounded hints and finished-state immutability; land, registry and scoped how-to tests passed.
+- `originals ORIGINALS_ONLY=fill FILL_LEVELS=1,5` passed: first-round taps, level-5 pouring/overflow, two wrong checks/one hint, portrait resize, recovery, three cups, saved score and one sticker. Portrait screenshot reviewed.
+- `fingerdemo FINGER_ONLY=fill-dump FINGER_LEVELS=5` finished cleanly in 10.3 seconds. The interruption probe passed immediate feedback, first-finger locking, cancellation, lost release, leaving the view, held resize and scene cleanup. Release checks are in progress.
+- Other game-specific suites were not repeated. iPad gesture feel, device speech and child comprehension remain open in the roadmap.
+
 ## 2026-10-10 — Read & Do first slice
 
 - Built three seeded reading levels in Story Grove: color words, duck-size phrases and animal/action sentences. Added per-word and whole-sign listening support, wrong-meaning animations, one persistent hint after two misses per sign and the ghost finger.
@@ -284,7 +292,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Duckling Parade 10 (`arcade`, `fingerdemo`) | 2026-10-10: level 10 passed with two deliberate misses, hint, completion, saved sticker; ghost finger finished cleanly in 16.8 s | Duckling Parade 9–10 entry | Landscape screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |
 | Dot Link 6 (`batch`, `fingerdemo`) | 2026-10-10: levels 1–6 passed the filtered Dot Link play with two deliberate misses and a hint; level 6 ghost finger clean in 12.6 s | Dot Link level 6 entry | Browser automation; iPad touch feel, device speech and child play remain open |
-| Fill and Dump (`originals`, `fingerdemo`) | 2026-10-10: levels 1–4 played by taps (tip out, scoop, count, two wrong checks, glow, take back, done; portrait at level 4), saved score and sticker; clean ghost-finger demos at all four levels | Fill and Dump entry | Screenshots reviewed; no build or `smoke`; iPad feel, device speech and child play open |
+| Fill and Dump (`originals`, `fingerdemo`) | 2026-10-10: levels 1/5 passed; level 5 pouring, overflow, two checks/one hint, recovery, portrait resize and saved reward; demo 5 clean in 10.3 s. Earlier levels 1–4 and demos remain recorded | Fill and Dump preschool pouring entry | Portrait reviewed; iPad gesture, device speech and child comprehension open |
 | Garden Grow 7 (`woods`, `fingerdemo`) | 2026-10-10: two-by-three array, two wrong rains, hint, saved round and sticker; clean ghost-finger demo in 38.8 s | Garden Grow levels 6–7 entry | Screenshot reviewed; iPad target feel, device speech and child play remain open |
 | Weather Wardrobe 7 (`wardrobe7`, `fingerdemo`) | 2026-10-10: removed the old outfit, dressed for three changing weathers, two wrong choices, hint and saved sticker; ghost finger clean in 20.7 s | Weather Wardrobe level 7 entry | Portrait screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Pixel Pictures 6 (`woods`, `fingerdemo`) | 2026-10-10: typecheck, six targeted logic tests, 15 how-to tests; two-color clues, empty-cell miss, hint, two authored pictures and saved reward; ghost finger clean in 59.1 s | Pixel Pictures level 6 entry | Browser automation; portrait/device feel and speech remain open |

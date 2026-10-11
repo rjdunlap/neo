@@ -1,3 +1,4 @@
+import { PourGame } from './pour';
 import { Circle, Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { cheek, ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { prop, FRUIT_FOR, type PropKind } from '../../art/props';
@@ -30,6 +31,7 @@ import {
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 4 },
+  preschool: { min: 1, max: 5 },
 };
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -537,8 +539,8 @@ export const fillDump: GameModule = {
   name: 'Fill and Dump',
   titleLine: 'game.fill-dump',
   region: 'counting-cove',
-  skills: ['containment', 'counting', 'cause-effect'],
-  bands: ['lap', 'toddler'],
+  skills: ['containment', 'counting', 'cause-effect', 'capacity'],
+  bands: ['lap', 'toddler', 'preschool'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeFill,
   music: STYLES.stickers,
@@ -547,5 +549,5 @@ export const fillDump: GameModule = {
   hubIcon: () => new BasketIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new FillDump(ctx),
+  create: (ctx) => ctx.level >= 5 ? new PourGame(ctx) : new FillDump(ctx),
 };

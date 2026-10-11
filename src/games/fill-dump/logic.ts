@@ -28,6 +28,7 @@ export const planFor = (level: number): FillPlan => FILL_PLANS[Math.min(FILL_PLA
 export const targetFor = (plan: FillPlan, rng: Rng): number | null => (plan.count ? rng.int(plan.count[0], plan.count[1]) : null);
 
 export const describeFill = (level: number): string => {
+  if (level >= 5) return 'Tip the jug to fill three cups to their lines; catch and reuse spills';
   const p = planFor(level);
   if (p.count) return `Put ${p.count[0]} to ${p.count[1]} in the basket, then check (${p.pieces} to pick from)`;
   return `Tip out ${p.pieces} and scoop them back${p.dumps > 1 ? `, ${p.dumps} times` : ''}`;
@@ -205,4 +206,65 @@ export function nextTouch(s: FillState): FillTap | null {
   if (s.order.length < s.target) return { on: 'piece', i: outsideIndexes(s)[0] };
   if (s.order.length > s.target) return { on: 'basket' };
   return { on: 'tick' };
+}
+
+// ---- Pouring: one cup unit, with all overflow retained in the tray -----------------------------------------------
+export const POUR_DISTANCE = 240;
+export const POUR_TOLERANCE = 0.06;
+export const POUR_TARGETS = [0.5, 0.25, 0.75] as const;
+export interface PourState {
+  jug: number;
+  cup: number;
+  tray: number;
+  targets: number[];
+  round: number;
+  misses: number;
+  hints: number;
+  roundMisses: number;
+  helped: boolean;
+  done: boolean;
+}
+export function startPour(rng: Rng): PourState {
+  return { jug: 3, cup: 0, tray: 0, targets: [0.5, ...rng.shuffle([0.25, 0.75])], round: 0,
+    misses: 0, hints: 0, roundMisses: 0, helped: false, done: false };
+}
+/** Amount follows the furthest rightward movement in a gesture, not time held or pointer-event frequency. */
+export const pourAmount = (dx: number) => Math.max(0, Math.min(3, dx / POUR_DISTANCE));
+export function pour(s: PourState, amount: number) {
+  if (s.done || !Number.isFinite(amount)) return;
+  const moved = Math.min(s.jug, Math.max(0, amount));
+  const intoCup = Math.min(1 - s.cup, moved);
+  s.jug -= moved;
+  s.cup += intoCup;
+  s.tray += moved - intoCup;
+}
+export function emptyCup(s: PourState) {
+  if (s.done) return;
+  s.tray += s.cup;
+  s.cup = 0;
+}
+export function recoverTray(s: PourState) {
+  if (s.done) return;
+  s.jug += s.tray;
+  s.tray = 0;
+}
+export const pourHint = (s: PourState): 'more' | 'empty' | 'check' =>
+  Math.abs(s.cup - s.targets[s.round]) <= POUR_TOLERANCE + 1e-9 ? 'check' :
+    s.cup > s.targets[s.round] ? 'empty' : 'more';
+export function checkPour(s: PourState): 'again' | 'wrong' | 'next' | 'done' | 'ignored' {
+  if (s.done) return 'ignored';
+  if (pourHint(s) !== 'check') {
+    if (s.cup === 0) return 'again';
+    s.misses++;
+    s.roundMisses++;
+    if (s.roundMisses >= 2 && !s.helped) { s.helped = true; s.hints++; }
+    return 'wrong';
+  }
+  s.round++;
+  if (s.round === s.targets.length) { s.done = true; return 'done'; }
+  // The filled cup is served, then its water is available again for the next experiment.
+  s.jug += s.cup + s.tray;
+  s.cup = s.tray = s.roundMisses = 0;
+  s.helped = false;
+  return 'next';
 }
