@@ -1,4 +1,4 @@
-import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
+import { ANIMALS, FAVORITE, FOOD_WORDS } from '../games/animal-snack/logic';
 import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
 import type { LineId } from './voice-script';
@@ -81,7 +81,7 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: a,
     name: `${cap(a)} and ${FAVORITE[a]}`,
     line: SNACK_LINES[a],
-    source: { find: `let the ${a} eat ${FAVORITE[a]}`, found: `the ${a} ate ${FAVORITE[a]}` },
+    source: { find: `let the ${a} eat ${FOOD_WORDS[FAVORITE[a]!]}`, found: `the ${a} ate ${FOOD_WORDS[FAVORITE[a]!]}` },
   })),
   ...ACTIONS.map((action): JournalEntry => ({
     id: entryId('photo-safari', action),

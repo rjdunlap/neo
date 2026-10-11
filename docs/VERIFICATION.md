@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-11 — Animal Snack words and guards
+
+- Built deep-dive slice 1: grammatical food units/plurals, level-5 numeral/dots, accurate bounded how-to finish lines, idle lap-play invitation, nearest-animal taps, and the missing animal in the too-few reply. Existing levels, band ranges, journal IDs and sticker pictures preserved.
+- Tested claim `623dd06` (base `15f7a57`) plus implementation diff: `npm run typecheck`, 34 focused tests in `src/games/animal-snack/logic.test.ts`, `src/content/howto.test.ts` and `src/content/journal.test.ts`, and `npm run build` passed (existing bundle-size warning).
+- `GAME_URL=http://localhost:5187 BROWSER_SUITE=woods WOODS_ONLY=snack npm run test:browser` passed levels 1–2; the new overlap assertion exposed a CSS/local coordinate mistake in the test. After correction, the same command with `FROM_LEVEL=3` passed 3–5: wrong answers, hints, exact counts, saved results/stickers and no page errors. `node test-results/snack-probe.mjs` passed; `OLD_RULE=1` failed as expected with the previous per-object tap rule.
+- Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=animal-snack FINGER_LEVELS=1,5`: clean demos in 10.3 and 25.6 seconds. Reviewed `test-results/browser/animal-snack-{3,5}-portrait.png` (level 3 refreshed without the temporary co-play tip). Portrait retains 1024 logical width, keeping original hit areas apart.
+- Changed-document local link paths and `git diff --check` checked; the archive's pre-existing `ROADMAP.md#e2-middle-elementary` link remains unresolved. Session dev server stopped after checks.
+- Not run: full unit/browser suites, world/couch/offline (no navigation, save schema or imported asset changes). Actual device speech, iPad touch and child play remain open.
+
 ## 2026-10-11 — Bubble Pop countable dots
 
 - Built deep-dive slice 2: quantity dots at 7, 8 and 10; unchanged-size numerals move above them, and their decorative lower glint is omitted. Levels 9/11 fade support; how-to and co-play updated.
@@ -507,6 +516,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Animal Snack words and guards (`woods`, `fingerdemo`) | 2026-10-11: 34 focused tests, typecheck/build; levels 1–5, retries/hints, exact count and saved rewards; demos 1/5 clean; portraits 3/5 and nearest-body regression | Animal Snack words and guards entry | Full suites/offline not rerun; iPad, speech and child play open |
 | Clock Tower deep dive | 2026-10-11: research and local Markdown links/anchors, diff check | Clock Tower deep dive entry | Docs only; no code or gameplay checks; device speech and child play open |
 | Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |
 | Bubble Pop dots (`fingerdemo`) | 2026-10-11: quantity/geometry rules, 28 focused tests, typecheck/build; level-10 demo clean in 12.8 s; portraits 7/9/10 and actual numeral clearance | Bubble Pop countable dots entry | No full ladder rerun; iPad, speech and child play open |

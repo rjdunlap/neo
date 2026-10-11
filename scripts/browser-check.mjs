@@ -3317,6 +3317,38 @@ async function woodsBatch() {
       await settle();
     };
     await idle(0);
+    if (level === 1 || level === 2) {
+      await page.evaluate(() => { neo.scene.game.idle = 6; });
+      await page.waitForTimeout(80);
+      assert.equal(await page.evaluate(() => neo.scene.game.nudgeIndex), 1, 'free play gets a gentle invitation');
+      assert.deepEqual(await counts(), [0, 0]);
+    }
+    if (level === 3 || level === 5) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      await screenshot(`animal-snack-${level}-portrait`);
+      assert.ok(await page.evaluate(() => {
+        const g = neo.scene.game;
+        return g.snacks.every((s, i) => i === 0 || s.node.x - g.snacks[i - 1].node.x >= 132);
+      }), 'portrait snacks keep their full hit areas apart');
+    }
+    if (level === 3) {
+      // Put two bodies close enough that the later drawing receives a touch nearer the first.
+      // Observe the recipient through the real Pixi event without answering a puzzle.
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        g.savedTapFriend = g.tapFriend;
+        g.tapFriend = (f) => { g.tappedName = f.name; };
+        g.friends.forEach((f, i) => { f.node.x = [400, 520, 800][i]; });
+      });
+      await page.waitForTimeout(80);
+      await page.evaluate(() => { const p = neo.scene.game.friends[0].node.toGlobal({ x: 40 / 0.6, y: -125 }); kit.tap(p.x, p.y); });
+      assert.equal(await page.evaluate(() => neo.scene.game.tappedName), await page.evaluate(() => neo.scene.game.friends[0].name), 'overlapping taps choose the closest animal');
+      await page.evaluate(() => { const g = neo.scene.game; g.tapFriend = g.savedTapFriend; delete g.savedTapFriend; g.resize(neo.view); });
+      await page.waitForTimeout(400);
+    }
+    if (level === 5) {
+      assert.equal(await page.evaluate(() => neo.scene.game.bubble.children.find((c) => typeof c.text === 'string')?.text), String(await page.evaluate(() => neo.scene.game.round.n)));
+    }
     // The animals must stand in the meadow, where a finger can reach them (at level 1 they once sat unplaced in the top-left corner).
     assert.ok(await page.evaluate(() => neo.scene.game.friends.every((f) => { const p = f.node.getGlobalPosition(); return p.x > 100 && p.x < innerWidth - 100 && p.y > innerHeight * 0.4; })), `animal snack level ${level}: the animals are on screen`);
     if (mode === 'munch') for (let k = 0; k < 6; k++) await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k % 3].name, k));
@@ -3350,6 +3382,7 @@ async function woodsBatch() {
     }
     await finished('animal-snack');
     assert.deepEqual(await score('animal-snack'), mode === 'munch' || mode === 'float' ? [0, 0] : [2, 1]);
+    if (level === 3 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Animal Snack ${level} (${mode}): animals and snacks tapped and dragged, wrong eaters as misses, glow hint, saved score and sticker passed`);
   }
 

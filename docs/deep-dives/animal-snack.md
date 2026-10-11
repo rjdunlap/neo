@@ -22,7 +22,7 @@ The ranges are lap 1–2, toddler 2–4 and preschool 3–5 (`LEVELS` in `src/ga
 
 **Couplings.** How-to card: five `LevelLine` steps, one finish line and a note. Ghost finger: `touchDemo` with `autotouch()` through `snackTouch` (a rule with a test that never touches a wrong animal and rings only on the exact number). Voice: `snack.munch`, `.float`, `.match`, `.who`, `.count`, `.yum`, `.nothanks`, `.full`, `.more`, `.toomany`, `.done`, plus seven `journal.snack.*` lines. Journal: `src/content/journal.ts` makes one entry per member of `ANIMALS`, and `journal.test.ts` asserts the entries equal `ANIMALS`. Land: Barnyard, fifth in its list. Music: `STYLES.hub`. Sticker: a seeded pick from a literal list of the seven plus its food; map icon: the bunny and a carrot. Browser: `WOODS_ONLY=snack` plays levels 1–5 (animals on screen, a wrong animal at levels 3–5 and the hint, saved score and sticker); `fingerdemo` plays 1 and 5. No couch entry, picnic step or saved creation.
 
-**Known gaps** (read from the code and docs; none has been seen on a device unless said).
+**Known gaps at the deep dive** (read from the code and docs; none has been seen on a device unless said). Slice 1 now fixes gaps 1–3 and 6, fixes nearest-animal selection in gap 5, and checks the portrait assumptions in gaps 4–5; see [the build note](#slice-1-built-2026-10-11).
 
 1. **Counted speech is ungrammatical.** `snack.count` is "Give the {animal} {n} {food}!" and `FOOD_WORDS` holds singular words, so the instruction says "Give the bunny 3 carrot" and "Give the dog 4 bone". Mass foods are no better ("3 hay", "3 honey"). `snack.yum` ("loves carrot", "loves bone") and `snack.nothanks` ("Who eats apple?") have the same missing article or plural. Each food needs a counted unit and a plural (bales of hay, pots of honey, handfuls of seeds). **Needs a listen on a device.**
 2. **The count is only spoken.** The bubble at level 5 shows the food, never how many. A three-year-old has to hold "3" from one spoken sentence while the pet's repeat is the only reminder. Garden Grow and Market Stall both show the number as dots and a numeral.
@@ -145,7 +145,7 @@ These are easier than levels that exist, or fall between them, so they wait on [
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (its Animal Snack loop stops at level 5), the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).
 
-1. **Words and guards** (ready, no decision). Counted units and plurals; the number sign at level 5; the how-to bounds and finish lines per level; the free-play nudge; the portrait check of five snacks and of the animals' tap areas (nearest animal wins). Tier: game rules, so typecheck, the game's rule tests and the how-to test; then `WOODS_ONLY=snack` at level 5 and one portrait screenshot (it changes the picture).
+1. **Words and guards** (built 2026-10-11, [PR 160](https://github.com/rjdunlap/neo/pull/160)). Counted units and plurals; the number sign at level 5; the how-to bounds and finish lines per level; the free-play nudge; the portrait check of five snacks and of the animals' tap areas (nearest animal wins). Tier: game rules, so typecheck, the game's rule tests and the how-to test; then `WOODS_ONLY=snack` at level 5 and one portrait screenshot (it changes the picture).
 2. **Food eaten its own way and scenes** (ready). Tier: rule tests, one screenshot per scene.
 3. **Two ways to ask in level 3** (ready). Tier: rule tests, `WOODS_ONLY=snack` at level 3.
 4. **More animals** (ready after decision 4; coordinates with Peekaboo Barn's animals slice). Tier: rule tests, `critter.test.ts`, `journal.test.ts`, a screenshot of all eleven and of the look-alike foods, `fingerdemo` at level 1.
@@ -159,3 +159,9 @@ Each is sized for one session. Slices that add a level are built in level order 
 ## What was built in this session
 
 Nothing: a deep dive session is research and ideation only. `git diff --check` and a relative-link check ran on the changed docs.
+
+## Slice 1 built (2026-10-11)
+
+Counted instructions now use the unit drawn (bales of hay, carrots, bones, fish, handfuls of seeds, apples and pots of honey); ordinary food references use grammatical plurals, including the journal's source text. The too-few reply now supplies its animal placeholder. Level 5 shows a numeral and one dot per requested snack. The how-to steps and finish lines end at their actual levels, and finish after six free-play snacks, four questions, three matched animals or three counted orders respectively. After six idle seconds in lap play, a friend squishes and a small sparkle invites a touch; this never counts a hint or runs during eating. Animal taps resolve to the closest body within the existing 114-unit screen radius.
+
+The portrait overlap arithmetic in gaps 4–5 used 768 CSS pixels as logical width. `computeView(768, 1024)` keeps the game's logical width at 1024, so five snack centers remain 140 logical units apart (132-unit hit diameters), and animal centers remain 254 apart (228-unit hit diameters). The layout therefore keeps its existing target sizes. A regression deliberately brings two animals' hit areas together and verifies that the nearer body receives the actual canvas touch. Levels and bands, sticker pictures and journal IDs are unchanged. Device speech and child comfort still need a person.

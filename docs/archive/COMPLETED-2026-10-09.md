@@ -443,3 +443,7 @@ Deep-dive slice 2 ([PR #158](https://github.com/rjdunlap/neo/pull/158)): seeded 
 ## Bubble Pop countable dots (2026-10-11)
 
 Deep-dive slice 2 ([PR 159](https://github.com/rjdunlap/neo/pull/159)): levels 7–8 and 10 show quantity beneath each numeral, with familiar dice arrangements through six and a row of five plus some more for seven. Levels 9 and 11 fade support; numerals keep their size and tap/reward/miss rules stay intact. The lower decorative glint is omitted on dotted bubbles so it cannot be mistaken for an extra dot. The how-to and co-play suggestion invite counting together. Rule tests cover quantity, spacing, numeral clearance, in-bubble bounds and support fading; focused tests/typecheck/build, portrait reviews and level-10 finger demo passed. See [verification](../VERIFICATION.md#2026-10-11--bubble-pop-countable-dots). Next: scene backgrounds.
+
+## Animal Snack words and guards (2026-10-11)
+
+Deep-dive slice 1 ([PR 160](https://github.com/rjdunlap/neo/pull/160)): grammatical counted food units, a numeral and countable dots on level 5, bounded how-to steps and accurate finish lines, a gentle idle lap-play invitation, and nearest-animal taps. The too-few count reply now names the animal instead of leaving an unresolved placeholder. Portrait review preserves the original target sizes; the earlier overlap concern had confused CSS and logical width. Existing levels, band windows, stickers and journal IDs stay stable. Next: food-specific eating and scenes, then a second kind of level-3 clue. Device speech and child play remain open.
