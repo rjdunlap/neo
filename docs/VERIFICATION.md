@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Clock Tower deep dive (docs only)
+
+- Researched six physical/browser/touch clock references and grades 1–3 time standards; recorded levels 1–7, content pools, hand controls, accounting and existing browser coverage. Learning Resources' product page was search-description only; Math Clock's official tutorial opened after its main page returned 403.
+- Planned truthful support and visible fictional appointments first, then earlier/half-hour endpoints, an explicit duration picker and fitting a visit. Preschool 1–1 and school extensions are proposals with decisions; no game slice built.
+- Source-reading findings: routine answers rely on unstated associations, the four-task finish/help note is inaccurate, and level 7 has no persistent digital target sign; final hand angles cannot measure full elapsed turns.
+- Checked new/changed local Markdown links and anchors, research links as noted, and `git diff --check` on claim `cb12767` (base `ac7a110`) plus docs diff.
+- Not run: typecheck, unit tests, build or browser suites (docs-only tier). No iPad speech, child play or new gameplay pass established; prior coverage unchanged.
+
 ## 2026-10-11 — Goodnight Room: counted goodnights
 
 - Added pre-K level 7: choose any 2–4 of six awake friends in either seeded room, hear each goodnight counted aloud and see a numeral/dot tally. Others stay awake briefly at the requested count, then settle together. Free choices have no misses/hints; one sticker.
@@ -473,6 +481,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Clock Tower deep dive | 2026-10-11: research and local Markdown links/anchors, diff check | Clock Tower deep dive entry | Docs only; no code or gameplay checks; device speech and child play open |
 | Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |
 | Robot Path board pools (`robot`, `fingerdemo`) | 2026-10-11: 30 boards in rule/bot tests; level-6 regression and portrait; level-10 demo clean in 10.4 s; typecheck and build | Robot Path: three boards per programming level entry | Full browser ladder and couch not rerun; iPad, speech and child play open |
 | Day by Day (`week`, `fingerdemo`) | 2026-10-11: first/top-level real-input play, retries/hint, saved reward, reversible counting, portrait and interrupted speech; demos 1–3 clean (35.9, 43.6, 50.1 s), land entry/intro/return | Day by Day first slice entry | No iPad, actual device speech or child play; level-2 full speech play not run |
