@@ -91,7 +91,7 @@ There are seventy-six games, listed below. "Ages" lists the bands each game has 
 | Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers |
 | Size Parade | toddler–school | tap the bigger or smaller friend | order three, then five friends in either direction |
 | Bug Builder | toddler–school | decorate matching shape outlines | copy a model, then mirror six spots using shape and color |
-| Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; ten stories |
+| Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; ten stories |
 | Pattern Train | preschool–school | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps, a seventh car, linked color-and-shape cars, counting by 2, 5 or 10 |
 | Memory Match | preschool–school | four picture cards | sixteen cards, number↔dots, shape + color, A↔a, number words↔numerals, fraction pictures↔names |
 | Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals, short words, the child's name |
@@ -257,7 +257,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `batch` | The follow-on ten (Photo Safari 6 too). `pegs` is flaky on the development Mac | `BATCH_ONLY=monsters\|pegs\|salon\|garden\|helpers\|eggs\|mail\|safari\|bounce\|dots` |
 | `arcade` | Duckling Parade (levels 1–10), Scoop Shop, Roundup, Bouncy Launch | `ARCADE_ONLY=parade\|scoop\|roundup\|launch`; `ARCADE_LEVELS=10` runs only Duckling Parade 10 |
 | `early` | Rainbow Fingers and Splish Splash | `EARLY_ONLY=paint\|bath` |
-| `third`, `fourth`, `expansion` | Feelings Faces (levels 1–7) and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps | |
+| `third`, `fourth`, `expansion` | Feelings Faces (levels 1–7) and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps (through level 8) | `EXPANSION_ONLY=size\|bug\|story`, `FROM_LEVEL=8 TO_LEVEL=8` for Story Steps 8 |
 | `readdo` | Read & Do levels 1–3: word and whole-sign replay, wrong pictures, hint, saved reward, portrait and leaving during an action | `READ_LEVELS=1,3` for first and last only |
 | `feelings8` | Feelings Faces level 8: both event scenarios, a wrong helper, a hint, completion and reward | `BROWSER_SUITE=feelings8` |
 | `wardrobe7` | Weather Wardrobe level 7: take off the old outfit, dress for three changing weathers, one wrong choice and a hint | `BROWSER_SUITE=wardrobe7` |

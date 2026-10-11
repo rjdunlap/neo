@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { flower, puffs } from '../../art/shapes';
 import { tile } from '../shared';
-import type { StoryCard } from './logic';
+import { isCause, type CauseId, type StoryCard } from './logic';
 
 const cloudGray = { fill: 0xd5d9e6, line: 0x8f95ab };
 /** A four-point sparkle. */
@@ -10,6 +10,7 @@ const sparkle = (g: Graphics, x: number, y: number, r: number) => g.poly([x, y -
 
 /** The same camera and palette at every step make the change itself easy to see. */
 export function storyPicture(card: StoryCard): Container {
+  if (isCause(card.story)) return causePicture(card.story, card.stage);
   const c = new Container(), g = new Graphics();
   c.addChild(g);
   const stroke = (color: number) => ({ width: 4, color, cap: 'round' as const, join: 'round' as const });
@@ -226,5 +227,91 @@ export function storySticker(): Container {
   const a = storyPicture({ story: 'flower', stage: 0 }), b = storyPicture({ story: 'flower', stage: 3 });
   a.scale.set(0.75); b.scale.set(0.75); a.position.set(-65, -65); b.position.set(65, -65);
   c.addChild(a, b, new Graphics().moveTo(-9, -77).lineTo(7, -65).lineTo(-9, -53).stroke({ width: 6, color: swatch.teal.line }));
+  return c;
+}
+
+/** Same objects in both pictures; the action is visible on the cause, its result on the effect. */
+function causePicture(id: CauseId, stage: number): Container {
+  const c = new Container(), g = new Graphics(); c.addChild(g);
+  const effect = stage === 1;
+  const outline = (color: number) => ({ width: 4, color, cap: 'round' as const, join: 'round' as const });
+  const hand = (x: number, y: number) => {
+    g.roundRect(x, y, 46, 20, 8).roundRect(x + 24, y - 17, 18, 28, 7).fill(swatch.orange.light).stroke(outline(swatch.brown.line));
+  };
+  const motion = (x: number, y: number) => {
+    g.moveTo(x - 15, y - 14).lineTo(x, y).lineTo(x - 15, y + 14).moveTo(x - 28, y).lineTo(x, y).stroke(outline(swatch.teal.line));
+  };
+  switch (id) {
+    case 'spill': {
+      g.roundRect(-70, 48, 140, 12, 5).fill(wood.fill).stroke(outline(wood.line));
+      const cup = new Graphics().poly([-25, -30, 25, -30, 20, 25, -20, 25]).fill(swatch.blue.fill).stroke(outline(swatch.blue.line));
+      cup.position.set(-22, effect ? 24 : -12); cup.rotation = effect ? Math.PI / 2 : Math.PI / 4; c.addChild(cup);
+      if (!effect) { hand(-72, -38); motion(65, 1); }
+      g.ellipse(38, 44, effect ? 28 : 18, 8).fill(swatch.blue.fill);
+      if (!effect) g.moveTo(10, -14).quadraticCurveTo(35, 0, 38, 38).stroke({ width: 8, color: swatch.blue.fill });
+      break;
+    }
+    case 'towerFall': {
+      const cols = [swatch.blue, swatch.yellow, swatch.pink];
+      cols.forEach((col, i) => { const x = effect ? -58 + i * 42 : -20, y = effect ? 28 + (i % 2) * 12 : 28 - i * 38; g.roundRect(x, y, 38, 36, 5).fill(col.fill).stroke(outline(col.line)); });
+      if (!effect) { hand(-72, -44); motion(63, -22); }
+      break;
+    }
+    case 'muddyBoot': {
+      if (!effect) g.ellipse(0, 52, 70, 16).fill(swatch.brown.fill).stroke(outline(swatch.brown.line));
+      g.poly([-24, -50, 18, -50, 18, 20, 48, 20, 56, 42, -24, 42]).fill(swatch.yellow.fill).stroke(outline(swatch.yellow.line));
+      if (effect) for (const [x, y, r] of [[-8, 10, 12], [27, 30, 14], [0, -24, 9]]) g.circle(x, y, r).fill(swatch.brown.fill);
+      else { g.moveTo(-48, -28).lineTo(-48, 24).lineTo(-58, 10).moveTo(-48, 24).lineTo(-38, 10).stroke(outline(swatch.teal.line)); for (const x of [-48, 44, 62]) g.moveTo(x, 36).lineTo(x + 4, 16).stroke(outline(swatch.brown.line)); }
+      break;
+    }
+    case 'balloonPop': {
+      if (!effect) {
+        g.ellipse(12, -18, 40, 49).fill(swatch.red.fill).stroke(outline(swatch.red.line));
+        g.poly([12, 31, 4, 40, 20, 40]).fill(swatch.red.fill);
+        g.moveTo(12, 40).quadraticCurveTo(-4, 54, 10, 72).stroke(outline(swatch.red.line));
+        g.moveTo(-62, -18).lineTo(-28, -18).stroke(outline(ink)); g.circle(-62, -18, 8).fill(swatch.yellow.fill).stroke(outline(swatch.yellow.line));
+        motion(-36, -45);
+      } else {
+        g.poly([-40, -35, -10, -22, -28, -8]).poly([22, -40, 48, -26, 35, -2]).poly([-6, 12, 20, 26, 0, 38]).fill(swatch.red.fill).stroke(outline(swatch.red.line));
+        for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.moveTo(Math.cos(a) * 46, Math.sin(a) * 46).lineTo(Math.cos(a) * 64, Math.sin(a) * 64); } g.stroke(outline(swatch.yellow.line));
+      }
+      break;
+    }
+    case 'lampOn': {
+      g.roundRect(-8, 2, 16, 52, 5).roundRect(-36, 50, 72, 12, 5).fill(swatch.teal.fill).stroke(outline(swatch.teal.line));
+      if (effect) { for (const [x, y] of [[-64, -34], [64, -34], [-58, 12], [58, 12], [0, -70]]) g.moveTo(x * 0.8, y * 0.8).lineTo(x, y).stroke({ width: 6, color: swatch.yellow.line, cap: 'round' }); }
+      g.poly([-24, -50, 24, -50, 44, 4, -44, 4]).fill(effect ? swatch.yellow.fill : swatch.blue.fill).stroke(outline(effect ? swatch.yellow.line : swatch.blue.line));
+      if (!effect) { g.roundRect(38, 28, 28, 36, 5).fill(swatch.white.fill).stroke(outline(ink)); g.roundRect(45, 33, 14, 15, 3).fill(swatch.teal.fill); hand(9, 38); }
+      break;
+    }
+    case 'bellRing': {
+      g.moveTo(-34, 24).quadraticCurveTo(-30, -43, 0, -46).quadraticCurveTo(30, -43, 34, 24).closePath().fill(swatch.yellow.fill).stroke(outline(swatch.yellow.line));
+      g.ellipse(0, 25, 38, 10).fill(swatch.yellow.light).stroke(outline(swatch.yellow.line)); g.circle(0, 33, 8).fill(swatch.yellow.line);
+      g.moveTo(0, -46).lineTo(0, -67).stroke(outline(swatch.brown.line));
+      if (!effect) { g.moveTo(-65, 58).lineTo(-31, 5).stroke({ width: 9, color: wood.line }); g.circle(-31, 5, 12).fill(wood.fill).stroke(outline(wood.line)); motion(-42, -27); }
+      else for (const side of [-1, 1]) { g.moveTo(side * 48, -32).quadraticCurveTo(side * 65, -5, side * 48, 20).moveTo(side * 62, -42).quadraticCurveTo(side * 82, -5, side * 62, 30).stroke(outline(swatch.teal.line)); }
+      break;
+    }
+    case 'paperCut': {
+      if (effect) { g.poly([-60, -45, -12, -45, -12, 48, -60, 48]).poly([12, -45, 60, -45, 60, 48, 12, 48]).fill(swatch.purple.fill).stroke(outline(swatch.purple.line)); }
+      else {
+        g.roundRect(-55, -52, 110, 112, 5).fill(swatch.purple.fill).stroke(outline(swatch.purple.line));
+        g.moveTo(0, 60).lineTo(0, 8).stroke({ width: 4, color: cream });
+        g.moveTo(-20, 23).lineTo(16, -34).moveTo(20, 23).lineTo(-16, -34).stroke({ width: 7, color: swatch.white.line });
+        g.circle(-22, 34, 13).circle(22, 34, 13).stroke({ width: 8, color: swatch.red.fill });
+      }
+      break;
+    }
+    case 'tracks': {
+      g.roundRect(-74, -45, 148, 110, 15).fill(swatch.yellow.light).stroke(outline(swatch.yellow.line));
+      const end = effect ? 60 : 10;
+      for (let x = -60; x < end; x += 14) for (const y of [-3, 34]) g.roundRect(x, y, 8, 6, 2).fill(swatch.brown.line);
+      if (!effect) {
+        g.roundRect(5, 0, 62, 30, 8).roundRect(19, -17, 30, 30, 7).fill(swatch.blue.fill).stroke(outline(swatch.blue.line));
+        g.circle(19, 32, 10).circle(54, 32, 10).fill(ink); motion(-23, -24);
+      }
+      break;
+    }
+  }
   return c;
 }

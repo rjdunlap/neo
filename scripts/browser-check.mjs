@@ -659,8 +659,9 @@ async function stickerBook() {
 }
 
 async function expansion() {
+  const only = process.env.EXPANSION_ONLY;
   // Both the smallest supported band and the upper ladder are exercised through real pointer events.
-  for (let level = 1; level <= 8; level++) {
+  for (let level = 1; level <= 8 && (!only || only === 'size'); level++) {
     await launch('size-parade', level);
     await page.evaluate(async () => {
       const g = neo.scene.game;
@@ -689,7 +690,7 @@ async function expansion() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Size Parade ${level}: comparison/order, mistakes, hint, saved round and sticker passed`);
   }
-  for (let level = 1; level <= 7; level++) {
+  for (let level = 1; level <= 7 && (!only || only === 'bug'); level++) {
     await launch('bug-builder', level);
     await page.evaluate(async () => {
       const g = neo.scene.game, target = g.targets[0], wrong = g.choices.find((c) => c.token !== target.token);
@@ -714,7 +715,7 @@ async function expansion() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bug Builder ${level}: drag, copy/symmetry, mistakes, hint, saved round and sticker passed`);
   }
-  for (let level = 1; level <= 7; level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 8) && (!only || only === 'story'); level++) {
     await launch('story-steps', level);
     await page.evaluate(async () => {
       const g = neo.scene.game, target = g.puzzle.sequence[g.next()];
@@ -722,11 +723,11 @@ async function expansion() {
       for (let i = 0; i < 2; i++) { const p = g.slots[g.next()].getGlobalPosition(); await kit.dragTo(wrong.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(550); }
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `story ${level} hint`);
-    if (level === 1 || level === 7) await screenshot(`story-steps-${level}`);
+    if (level === 1 || level >= 7) await screenshot(`story-steps-${level}`);
     // Narrating placed cards must not change the puzzle or count as a miss.
     await tap('neo.scene.game.replay');
     await page.waitForFunction(() => !neo.scene.game.playing, null, { timeout: 30000 });
-    if (level === 7) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot('story-steps-portrait'); }
+    if (level >= 7) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot('story-steps-portrait'); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       while (!g.done) {
@@ -741,6 +742,7 @@ async function expansion() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Story Steps ${level}: sequence, replay, mistakes, hint, saved round and sticker passed`);
   }
+  if (only) return;
   await page.waitForTimeout(500);
   const progress = await page.evaluate(() => ['size-parade', 'bug-builder', 'story-steps'].map((id) => ({ id, plays: kit.store.stats(id).plays, stickers: kit.store.data.stickers.filter((s) => s.game === id).length })));
   await page.reload(); await ready();
