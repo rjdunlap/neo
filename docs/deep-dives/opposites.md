@@ -139,7 +139,7 @@ Both wait on [how levels are ordered for a band and whether a band's range may s
 Each is sized for one session. The slices that add a level are built in level order so saved IDs stay unbroken.
 
 1. **Fairness guards, four new pairs and the card fixes** (built 2026-10-10, [PR 136](https://github.com/rjdunlap/neo/pull/136)): `family` and `from` on `CONCEPTS`, the unique-word, family and pool tests, tall/short, on/off, awake/asleep and in/out, the larger sticker pool, and the how-to `finish` and level-4 bound fixed. Tier: typecheck, the game's rule tests, the how-to and registry tests, one filtered browser play and a screenshot of each new picture. Update the "eight pairs" count in GAMES.md and the README row.
-2. **Same-subject variation and an acting flip** (ready): `who` on `Card`, per-side motion, optional sound. Tier: rule tests, one browser play, a portrait screenshot.
+2. **Same-subject variation and an acting flip** (claimed on `codex/opposites-same-subject`, 2026-10-11): `who` on `Card`, per-side motion, optional sound. Tier: rule tests, one browser play, a portrait screenshot.
 3. **Level 5, Which two?** (ready after 1; the band row becomes pre-K 3–5): the `spot` mode, bot, how-to step, browser loop, `fingerdemo`. Tier: new level on an existing interaction.
 4. **A second batch of pairs** (ready): wet/dry, clean/dirty, thick/thin, near/far, many/few, each at a `from` level.
 5. **Level 6, In between** (ready after 4): third pictures for cup, temperature, sky and height.
@@ -155,3 +155,7 @@ Each is sized for one session. The slices that add a level are built in level or
 Twelve pairs now: tall/short flowers, an on/off lamp, an awake/asleep cat, and a ball in/out of a basket enter at level 2. The eight-pair lap pool, four levels and band windows stay unchanged. Each concept has a lowest level and a family; size/stature, mood/wake, lid/cup and height/basket cannot compete on an opposite-choice or pair board. Words are unique and the eight-entry sticker pool is explicitly pinned. The how-to finish describes each mode's real completion count and the pair step is bounded to level 4.
 
 Typecheck and 30 focused rule/how-to/registry tests passed. The filtered `woods` play passed levels 2–4 with misses, hints, saved scores and stickers; both sides of the four new pairs were reviewed at card size. [Verification](../VERIFICATION.md#2026-10-10--opposites-content-and-fairness) records the tested tree. Device speech, iPad touch and child understanding remain open. Next: slice 2, same-subject variation and an acting flip.
+
+## Slice 2 claim — 2026-10-11
+
+Seeded bear/duck/bunny size pictures and cat/dog/pig mood pictures keep the same subject on both sides of a pair. Lap flips act out big/small, fast/slow and up/down using scene-owned tweens. Expected files: `src/games/opposites/{logic.ts,logic.test.ts,index.ts}`, how-to, README, GAMES, this ladder, roadmap and verification. Checks: typecheck, focused rule tests, filtered Opposites play, portrait screenshot and lap finger demo.
