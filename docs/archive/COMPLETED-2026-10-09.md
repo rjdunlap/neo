@@ -451,3 +451,8 @@ Deep-dive slice 1 ([PR 160](https://github.com/rjdunlap/neo/pull/160)): grammati
 ## Pet Says guards and words (2026-10-11)
 
 Built deep-dive slice 1 ([PR 161](https://github.com/rjdunlap/neo/pull/161)): explicit move speech IDs and a typed cue table, body-part mitten targets tested against pip shapes, a visible nose on the playing pet, original sticker recipes pinned for seeds 0–99, one gentle spoken/animated arrow nudge after a quiet wait, bounded freeze-dance how-to text, and browser coverage reading the plan length. Existing levels, band windows, reward accounting and sticker art remain unchanged. Only body-word poses need anatomical targets; the eight whole-body moves retain their existing animations. Next: ten body words, a chant and richer tricks, subject to the write-up's decisions.
+
+
+## Frog Hop guards and level-seven support (2026-10-11)
+
+[PR #162](https://github.com/rjdunlap/neo/pull/162) completes deep-dive slice 1 on existing levels 1–7: a full sum before the split at ten, a spoken explanation of both parts, direction and off-by-one feedback, a free card reminder after two inert pad taps, and one hint charged per question even if both stages need help. The school range follows the plan count and invalid descriptions do not silently clamp. Seeded sticker numerals and the frog drawing are pinned. No new bands, level IDs, saves or routes. Next: landing numerals, dots and landmark flowers ([deep dive](../deep-dives/frog-hop.md#build-slices-in-order)).
