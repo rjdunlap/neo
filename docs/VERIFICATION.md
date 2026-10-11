@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Robot Path: feedback and alternative-route hints
+
+- Deep-dive slice 1: empty/bump/short explanations, collision jiggle and step-level hints that preserve any shortest-route prefix. Empty Play remains free; unsuccessful runs still count one miss, two misses one hint.
+- Typecheck, 11 Robot Path rule tests and production build passed. Tests cover stop causes, all shortest-route prefixes on 18 step boards, and bot completion on all 30 programming boards. Temporarily restoring the default-route hint rule makes the alternative-prefix regression fail; restored the passing implementation afterward.
+- `GAME_URL=http://localhost:5200 BROWSER_SUITE=robot FROM_LEVEL=6 TO_LEVEL=6` passed real-input empty/short/bump speech IDs, accounting, useful-prefix help, completion and reward. Landscape screenshot reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=robot-path FINGER_LEVELS=6` passed in 10.9 demo seconds, no page errors. The first regression attempt had a missing evaluate argument in the new test; corrected before the passing run.
+- Changed-document link targets and `git diff --check` checked. Not run: broader robot/couch/world/offline suites (navigation and persistence unchanged), iPad, actual device speech or child play.
+
 ## 2026-10-11 — Goodnight Room: the light goes last
 
 - Added pre-K level 6 in both seeded rooms: any order for the five other friends, then the lamp or lantern. Early light taps explain why it stays on; two misses glow an awake friend. How-to and ghost finger follow the same rule.

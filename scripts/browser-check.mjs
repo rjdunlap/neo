@@ -693,13 +693,26 @@ async function robots() {
       log('Robot Path level 12: free watch, two repair misses, slot hint, and fixed program passed');
       continue;
     }
-    await page.evaluate(async () => {
+    await page.evaluate(async (level) => {
       const g = neo.scene.game;
-      for (let i = 0; i < 2; i++) {
-        kit.tapOn(g.clear); await kit.sleep(450); kit.tapOn(g.arrows.find((a) => a.dir === 'left').button); await kit.sleep(180); kit.tapOn(g.play);
-        if (!await kit.until(() => !g.running)) throw new Error('Robot return stuck');
+      const spoken = [];
+      if (level === 6) {
+        const say = g.ctx.say;
+        g.ctx.say = (id, ...args) => { spoken.push(id); return say(id, ...args); };
+        kit.tapOn(g.play); await kit.sleep(500);
+        if (!spoken.includes('robot.empty') || g.misses !== 0) throw new Error('Empty program feedback or accounting failed');
+        kit.tapOn(g.arrows.find(a => a.dir === g.solution[0].dir).button); await kit.sleep(450);
+        kit.tapOn(g.play);
+        if (!await kit.until(() => !g.running, 12000)) throw new Error('Short run stuck');
+        if (!spoken.includes('robot.short') || g.misses !== 1) throw new Error('Short program was not explained');
+        if (g.nextHelp() === g.clear) throw new Error('Hint discarded a useful prefix');
       }
-    });
+      for (let i = 0; i < (level === 6 ? 1 : 2); i++) {
+        kit.tapOn(g.clear); await kit.sleep(450); kit.tapOn(g.arrows.find((a) => a.dir === 'left').button); await kit.sleep(180); kit.tapOn(g.play);
+        if (!await kit.until(() => !g.running, 12000)) throw new Error('Robot return stuck');
+      }
+      if (level === 6 && !spoken.includes('robot.bump')) throw new Error('Collision was not explained');
+    }, level);
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
     if (level === 6) await screenshot('robot-path');
     await page.evaluate(async () => {
