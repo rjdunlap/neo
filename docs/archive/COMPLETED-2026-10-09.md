@@ -468,3 +468,9 @@ Deep-dive slice 1 ([PR #163](https://github.com/rjdunlap/neo/pull/163)): payment
 ## Clock Tower words and control support (2026-10-11)
 
 Deep-dive slice 1 ([PR #165](https://github.com/rjdunlap/neo/pull/165)): four-answer finish and automatic two-miss help in the how-to, bounded level-7 steps, persistent digital requests with free speech replay, explicit five-minute phrases, and short/long length and shape markings. The later request shows its start without revealing the answer. School ceiling follows the seven existing plans; pre-K, save IDs, icon and seeded stickers are unchanged. Native pointer cancellation now releases a grabbed hand with listener cleanup. The Clock Tower browser filter now covers 1–7. Next: level 5's visible fictional appointments, then coverage and explanations at 3/6/7. iPad touch and device speech remain open.
+
+## Tangram Town lamp, bus and castle (2026-10-11)
+
+[PR 166](https://github.com/rjdunlap/neo/pull/166) adds three authored pictures to the seeded pools: lamp at levels 1–3, bus at 4/6, and castle at 5/6. Fourteen pictures now provide 3–7 choices per level. Two-piece fitting, quarter turns, complementary triangle walls, four-piece builds and silhouettes retain their existing rules. More pictures remain ready toward the proposed six to eight per level.
+
+Typecheck and all eight game rule tests passed, including geometry, seeded variation, hints, interchangeable pieces and clean bot solutions over every pool. A focused isolated Chromium probe completed the lamp (1), bus (4), castle (5) and silhouette castle (6), cleanly; screenshots of the new art and portrait castle were reviewed. Build and broader suites were not run for this data-only change. Device speech and a child's recognition remain unchecked.

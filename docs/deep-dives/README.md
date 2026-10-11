@@ -119,7 +119,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Stamp Studio | `stamp-studio` | LTPKS | 6 | 2 | designed | `claude/roadmap-item-14-game-content-unyq86` ([PR 110](https://github.com/rjdunlap/neo/pull/110)) | [stamp-studio.md](stamp-studio.md) |
 | Stop and Go | `stop-and-go` | LTP | 4 | 4 | not started | — | — |
 | Story Steps | `story-steps` | TPKS | 8 | 1 | building (slices 1–2 built) | `claude/charming-mayer-27wh8m` ([PR 81](https://github.com/rjdunlap/neo/pull/81)); slice 1: `claude/story-steps-ten-stories`; slice 2: `codex/story-steps-choose-cause` ([PR 138](https://github.com/rjdunlap/neo/pull/138)) | [story-steps.md](story-steps.md) |
-| Tangram Town | `tangram-town` | TPKS | 6 | 1 | building (slices 1 and 3 built; more pictures claimed: lamp, bus, castle) | `claude/eager-babbage-wexkzg` ([PR 79](https://github.com/rjdunlap/neo/pull/79)); slice 3: `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)); picture batch: `codex/tangram-more-pictures` | [tangram-town.md](tangram-town.md) |
+| Tangram Town | `tangram-town` | TPKS | 6 | 1 | building (slices 1 and 3 built; lamp/bus/castle batch built; more pictures next) | `claude/eager-babbage-wexkzg` ([PR 79](https://github.com/rjdunlap/neo/pull/79)); slice 3: `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)); picture batch: `codex/tangram-more-pictures` ([PR 166](https://github.com/rjdunlap/neo/pull/166)) | [tangram-town.md](tangram-town.md) |
 | Teddy Doctor | `teddy-doctor` | LTPKS | 6 | 4 | not started | — | — |
 | Treasure Map | `treasure-map` | KS | 5 | 4 | not started | — | — |
 | Weather Wardrobe | `weather-wardrobe` | LTPK | 6 | 4 | not started | — | — |

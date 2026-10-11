@@ -17,7 +17,7 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 | 5 | Four pieces | pre-K, school (5–6) | order and fit across four shadows |
 | 6 | Silhouette, outlines on request | pre-K, school | what the shadow is made of, unaided |
 
-**What a round draws from.** Until this session every level drew one fixed picture (house, boat, house, cottage, rocket, cottage), so six levels held five different pictures and a replayed level was identical. Since slice 1 (below) each level draws from a pool of 2–5 pictures through the seeded round generator: 11 pictures in all.
+**What a round draws from.** Until this session every level drew one fixed picture (house, boat, house, cottage, rocket, cottage), so six levels held five different pictures and a replayed level was identical. Since slice 1 (below) each level draws from a pool of 3–7 pictures through the seeded round generator: 14 pictures in all after the lamp, bus and castle batch ([PR 166](https://github.com/rjdunlap/neo/pull/166)).
 
 **Couplings.** A how-to card (steps scoped from level 3 and 6) and a ghost-finger bot (`autotouch`, which turns each piece with the real button, then carries it). No couch entry, journal entry or picnic step. The how-to steps and `describeLevel` read at the level, not the picture, so they were safe to extend. Voice: "Build a {picture}!" is spoken at the start, so a picture name must begin with a consonant ("a owl" would be wrong); a test now asserts it.
 
@@ -55,16 +55,16 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 
 | Level | Pool |
 | --- | --- |
-| 1 | house, tree |
-| 2 | boat, sailboat, flag |
-| 3 | house, tree, flag, sailboat |
-| 4 | cottage, truck, tower, ferry |
-| 5 | rocket, houseboat |
-| 6 | cottage, truck, tower, ferry, houseboat |
+| 1 | house, tree, lamp |
+| 2 | boat, sailboat, flag, lamp |
+| 3 | house, tree, flag, sailboat, lamp |
+| 4 | cottage, truck, tower, ferry, bus |
+| 5 | rocket, houseboat, castle |
+| 6 | cottage, truck, tower, ferry, houseboat, bus, castle |
 
 Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is three pieces and always holds a pair of triangles that can only make a square, level 5 is four pieces, level 6 hides the outlines. Tests assert that no picture overlaps itself (a separating-axis check), that it stays within ±210 horizontally and −220…200 vertically (clear of the turn and help buttons at the narrowest portrait width and above the tray), that every slot is reachable in any order, and that every picture starts with a consonant.
 
-**Next content slices** (ready, small):
+**Next content slices** (ready, small; lamp, bus and castle built 2026-10-11):
 
 - **More pictures.** Aim for six to eight per level. A new picture is a few lines of slots in `PICTURES` and one line in a pool, and the tests above cover it. Candidates built from the same five shapes: a tent and a flag (roof and triangle), a fish (roof body with a triangle tail), a lamp post, a barn (a pair of triangles and a roof), a bridge (rectangle and two hulls), a pine tree of two roofs. Check the new picture reads as itself at 0.4 viewing distance.
 - **Spoken shape names** — **built 2026-10-11** ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each physical piece names its geometric shape once on pickup at toddler, preschool and pre-K. Roofs say triangle; hulls say trapezoid. School pickup is quiet. Actual device pronunciation remains unchecked.
@@ -86,7 +86,7 @@ The "fewer pieces" level and the "fix the picture" level can both stay at the sc
 
 ### Younger-band openings
 
-- **Toddler** already holds levels 1–2. With the new pools, a toddler's two levels now offer five pictures. No further opening.
+- **Toddler** already holds levels 1–2. With the expanded pools, a toddler's two levels offer six distinct pictures. No further opening.
 - **Lap.** The game does not serve the lap band. A one-year-old is below the age range of the supporting research (26 to 46 months). If the developer wants the opening, it is **level 0 below** (next section) and its first fit is a person check, not an automatic claim. It overlaps Shape Sorter and Puzzle Pals, so check whether Tangram Town is the right home.
 
 ### Levels below level 1 (waiting on the level-order decisions)
@@ -114,7 +114,7 @@ These wait on [how levels are ordered for a new band](../ROADMAP.md#waiting-on-t
 ## Build slices, in order
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
-2. **More pictures** (building: `codex/tangram-more-pictures`, lamp at 1–3, bus at 4/6, castle at 5/6; expected files `logic.ts`, game tests, README, GAMES, this tracker, roadmap, archive and verification; no level or control changes): six to eight per level, `logic.ts` data only. Rule tests, one screenshot per new picture.
+2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. More remain ready toward six to eight per level, `logic.ts` data only. Rule tests, one screenshot per new picture.
 3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
 4. **Level 7, fewer pieces** (needs a stated model): first a cover-set type with tests, then the level. New-level tier: `fingerdemo` at the new top level and a play.
 5. **Level 8, fix the picture** (ready after 4's re-pickable placed pieces).
