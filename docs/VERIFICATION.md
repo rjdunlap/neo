@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train slice 4 (hint): the train reads itself
+
+- After two misses (one hint, as before) the shown cars light and sound in turn, the unit hops, a tunnel's hidden cars roll through, and the choice still glows. `readTrain` in `src/games/pattern-train/index.ts`; no rule change.
+- Typecheck passed; `BROWSER_SUITE=pattern PATTERN_LEVELS=4,7,9,10,11,12` passed (two wrong picks, one hint, reward). Not looked at on screen, not run: unit tests (no logic changed), `fingerdemo`, build, iPad.
+
 ## 2026-10-11 — Pattern Train slice 4 (pool): fruit, flowers, animal trios and voices
 
 - `buildTrain` returns a `family` (drawn after the cars); `pieceArt` draws shapes, fruit, flowers or one of four animal trios; a tapped animal car plays its own `sfx.animal` voice. The reads-the-train hint is not built.
