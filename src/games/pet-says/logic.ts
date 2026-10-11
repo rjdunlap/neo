@@ -1,3 +1,4 @@
+import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -13,21 +14,40 @@ export const MOVES: Move[] = ['clap', 'stomp', 'wave', 'jump', 'spin', 'wiggle',
 export const BODY: Move[] = ['nose', 'tummy', 'ears', 'head', 'toes'];
 
 /** Spoken names, for "clap, then stomp" and "Pip says: wave". */
-export const MOVE_WORDS: Record<Move, string> = {
-  clap: 'clap',
-  stomp: 'stomp',
-  wave: 'wave',
-  jump: 'jump',
-  spin: 'turn around',
-  wiggle: 'wiggle',
-  up: 'reach up high',
-  down: 'crouch down low',
-  nose: 'touch your nose',
-  tummy: 'pat your tummy',
-  ears: 'touch your ears',
-  head: 'pat your head',
-  toes: 'touch your toes',
-};
+export const MOVE_CUES = {
+  clap: { word: 'clap', line: 'says.move.clap' },
+  stomp: { word: 'stomp', line: 'says.move.stomp' },
+  wave: { word: 'wave', line: 'says.move.wave' },
+  jump: { word: 'jump', line: 'says.move.jump' },
+  spin: { word: 'turn around', line: 'says.move.spin' },
+  wiggle: { word: 'wiggle', line: 'says.move.wiggle' },
+  up: { word: 'reach up high', line: 'says.move.up' },
+  down: { word: 'crouch down low', line: 'says.move.down' },
+  nose: { word: 'touch your nose', line: 'says.move.nose' },
+  tummy: { word: 'pat your tummy', line: 'says.move.tummy' },
+  ears: { word: 'touch your ears', line: 'says.move.ears' },
+  head: { word: 'pat your head', line: 'says.move.head' },
+  toes: { word: 'touch your toes', line: 'says.move.toes' },
+} satisfies Record<Move, { word: string; line: LineId }>;
+
+export const MOVE_WORDS = Object.fromEntries(Object.entries(MOVE_CUES).map(([id, cue]) => [id, cue.word])) as Record<Move, string>;
+
+/** Mitten centers in pip body coordinates; the nose is drawn only on the playing pet. */
+export const BODY_TARGETS = {
+  nose: { left: { x: -128, y: -95 }, right: { x: 0, y: -106 } },
+  tummy: { left: { x: -38, y: -65 }, right: { x: 38, y: -65 } },
+  ears: { left: { x: -72, y: -222 }, right: { x: 72, y: -222 } },
+  head: { left: { x: -128, y: -95 }, right: { x: 0, y: -250 } },
+  toes: { left: { x: -40, y: 0 }, right: { x: 40, y: 0 } },
+} as const;
+
+/** Waiting is co-play, never a missed answer or automatic advance. */
+export const shouldNudge = (idle: number, busy: boolean, finished: boolean) => idle >= 10 && !busy && !finished;
+
+/** Preserve the original color/pose draw order for owned stickers. */
+export function stickerRecipe(rng: Rng) {
+  return { color: rng.pick(['teal', 'pink', 'purple', 'orange'] as const), pose: rng.int(0, 2) };
+}
 
 export interface SaysPlan {
   mode: SaysMode;

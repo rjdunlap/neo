@@ -95,7 +95,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Peg Garden | `peg-garden` | LTPK | 5 | 4 | not started | — | — |
 | Penguin Slide | `penguin-slide` | PKS | 5 | 4 | not started | — | — |
 | Pet Kitchen | `pet-kitchen` | TPKS | 8 | 4 | not started | — | — |
-| Pet Says | `pet-says` | LTPK | 5 | 2 | building slice 1: move speech, mitten targets, pinned stickers, arrow nudge and bounded how-to; expected files `src/games/pet-says/*`, voice-script, howto, browser-check and game docs | `codex/pet-says-guards`; `claude/roadmap-item-14-game-content-ghbpi1` ([PR 112](https://github.com/rjdunlap/neo/pull/112)) | [pet-says.md](pet-says.md) |
+| Pet Says | `pet-says` | LTPK | 5 | 2 | building (slice 1 built) | `codex/pet-says-guards` ([PR 161](https://github.com/rjdunlap/neo/pull/161)); `claude/roadmap-item-14-game-content-ghbpi1` ([PR 112](https://github.com/rjdunlap/neo/pull/112)) | [pet-says.md](pet-says.md) |
 | Photo Safari | `photo-safari` | LTPKS | 6 | 4 | not started | — | — |
 | Picture Graph | `picture-graph` | KS | 6 | 4 | not started | — | — |
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |

@@ -4162,7 +4162,8 @@ async function shortlistBatch() {
       log(`Lasso Loops ${level}: loops drawn around fireflies${level > 1 ? ', wrong-sized loops explained, ringed hint' : ''}${level >= 3 ? ', how-many question with a counted miss' : ''}, saved score and sticker passed`);
     }
   }
-  if (!only || only === 'says') for (let level = fromLevel; level <= 5; level++) {
+  const saysTop = await page.evaluate(async () => (await import('/src/games/pet-says/logic.ts')).PLANS.length);
+  if (!only || only === 'says') for (let level = fromLevel; level <= saysTop; level++) {
     // Nothing is judged: the pet moves, and a grown-up taps the arrow. Tapping the big pet shows the move again.
     await launch('pet-says', level);
     if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
@@ -4170,6 +4171,12 @@ async function shortlistBatch() {
     assert.equal(await page.evaluate(() => neo.scene.pet.visible), false, 'the big pet stands in for the corner guide');
     for (let n = 0; n < turns; n++) {
       await page.waitForFunction((n) => { const g = neo.scene.game; return g.index === n && !g.busy && g.next.visible; }, n, { timeout: 40000 });
+      if (level === 2 && n === 0) {
+        await page.evaluate(() => neo.scene.game.update(10));
+        assert.equal(await page.evaluate(() => neo.scene.game.nudged), true, 'idle wait points out the arrow');
+        assert.equal(await page.evaluate(() => neo.scene.game.index), 0, 'the nudge never advances co-play');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+      }
       if (n === 1) {
         await tap('neo.scene.game.mover.pet');
         if (level !== 5) assert.equal(await page.evaluate(() => neo.scene.game.next.visible), false, 'showing the move again');

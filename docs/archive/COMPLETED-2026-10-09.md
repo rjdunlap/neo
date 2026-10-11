@@ -447,3 +447,7 @@ Deep-dive slice 2 ([PR 159](https://github.com/rjdunlap/neo/pull/159)): levels 7
 ## Animal Snack words and guards (2026-10-11)
 
 Deep-dive slice 1 ([PR 160](https://github.com/rjdunlap/neo/pull/160)): grammatical counted food units, a numeral and countable dots on level 5, bounded how-to steps and accurate finish lines, a gentle idle lap-play invitation, and nearest-animal taps. The too-few count reply now names the animal instead of leaving an unresolved placeholder. Portrait review preserves the original target sizes; the earlier overlap concern had confused CSS and logical width. Existing levels, band windows, stickers and journal IDs stay stable. Next: food-specific eating and scenes, then a second kind of level-3 clue. Device speech and child play remain open.
+
+## Pet Says guards and words (2026-10-11)
+
+Built deep-dive slice 1 ([PR 161](https://github.com/rjdunlap/neo/pull/161)): explicit move speech IDs and a typed cue table, body-part mitten targets tested against pip shapes, a visible nose on the playing pet, original sticker recipes pinned for seeds 0–99, one gentle spoken/animated arrow nudge after a quiet wait, bounded freeze-dance how-to text, and browser coverage reading the plan length. Existing levels, band windows, reward accounting and sticker art remain unchanged. Only body-word poses need anatomical targets; the eight whole-body moves retain their existing animations. Next: ten body words, a chant and richer tricks, subject to the write-up's decisions.
