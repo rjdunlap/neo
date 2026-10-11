@@ -3,10 +3,17 @@
 ## 2026-10-10 — Fill and Dump preschool pouring
 
 - Added level 5 and a preschool range (1–5): a displacement-controlled jug, three fill lines, caught overflow, free empty/recover controls, one hint per cup and a ghost-finger demonstration. Existing basket levels and saved IDs are unchanged.
-- Typecheck, all 902 unit tests (124 files), and the production build passed. New rules prove seeded reachable targets, water conservation through experiments, tolerance boundaries, free empty checks, bounded hints and finished-state immutability; land, registry and scoped how-to tests passed.
+- Typecheck, all 905 unit tests (124 files), and the production build passed after integrating the Story Steps update from `origin/main` (902 tests before integration). New rules prove seeded reachable targets, water conservation through experiments, tolerance boundaries, free empty checks, bounded hints and finished-state immutability; land, registry and scoped how-to tests passed.
 - `originals ORIGINALS_ONLY=fill FILL_LEVELS=1,5` passed: first-round taps, level-5 pouring/overflow, two wrong checks/one hint, portrait resize, recovery, three cups, saved score and one sticker. Portrait screenshot reviewed.
-- `fingerdemo FINGER_ONLY=fill-dump FINGER_LEVELS=5` finished cleanly in 10.3 seconds. The interruption probe passed immediate feedback, first-finger locking, cancellation, lost release, leaving the view, held resize and scene cleanup. Release checks are in progress.
+- `fingerdemo FINGER_ONLY=fill-dump FINGER_LEVELS=5` finished cleanly in 10.3 seconds. The interruption probe passed immediate feedback, first-finger locking, cancellation, lost release, leaving the view, held resize and scene cleanup. The level-5 intro card initially extended below landscape; shortening its copy fixed it, and both orientations now fit with the demonstration and Play button (screenshots reviewed). `world` and `picnic` release checks passed; couch and offline checks are in progress.
 - Other game-specific suites were not repeated. iPad gesture feel, device speech and child comprehension remain open in the roadmap.
+
+## 2026-10-11 — Story Steps: six new stories and per-level pools (deep-dive slice 1)
+
+- Built `sandcastle`, `sandwich`, `apple`, `dog`, `rain` and `bedtime` (four code-drawn pictures and four spoken sentences each; ten stories in all), a story pool per level (levels 1–2 build-up stories only, level 4 change-over-time stories, 5–7 all ten) and a family rule: extra pictures never come from a lookalike family (stack, seed) of the round's story, and level 7's two extras come from two different families. Two `describeLevel` names were reworded because their pools now mix kinds.
+- `npm run typecheck` and the Story Steps tests (5: the ten stories' four distinct, punctuated sentences; pools non-empty and known, and level 1 stack-only; 150 seeds per level for the family rule, mixed round and every pool story appearing; the existing puzzle and bot tests) passed, plus the content and registry tests (86). No build: no shared file or asset changed.
+- Contact sheets of the new pictures reviewed: every new story's first and last picture at 110 units, the rest of the stages in an earlier sheet, and the sandcastle and apple beginnings at 164. The apple seed was too small and dark on its soil, so it was redrawn larger (the redraw was re-viewed; the demos ran before it). `BROWSER_SUITE=fingerdemo FINGER_ONLY=story-steps FINGER_LEVELS=1,5,7` finished clean in 5.4, 14.7 and 15.4 s; no page errors.
+- Not run: a full play with a wrong answer and hint (no rule or contract changed), the portrait screenshot, and anything on an iPad or with a child (whether the new stories' order is clear to a toddler is a person check).
 
 ## 2026-10-10 — Read & Do first slice
 
@@ -286,6 +293,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Story Steps ten stories (`fingerdemo`) | 2026-10-11: levels 1, 5 and 7 demos clean (5.4, 14.7, 15.4 s); rule tests for the pools and the family rule | Story Steps: six new stories and per-level pools entry | Chrome automation, a contact sheet of the new art; no iPad or child |
 | Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
 | Goodnight Room barn and animals (`woods`, `fingerdemo`) | 2026-10-10: levels 1–5, wrong objects and ordered friends, hint, reverse-order animals, saved score/sticker; seeded barn in portrait; demos 1/5 clean in 8.8/7.1 s | Goodnight Room barn and animals entry | Portrait screenshots reviewed; iPad touch, device speech and child play open |

@@ -91,7 +91,7 @@ There are seventy-six games, listed below. "Ages" lists the bands each game has 
 | Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers |
 | Size Parade | toddler–school | tap the bigger or smaller friend | order three, then five friends in either direction |
 | Bug Builder | toddler–school | decorate matching shape outlines | copy a model, then mirror six spots using shape and color |
-| Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures |
+| Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; ten stories |
 | Pattern Train | preschool–school | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps, a seventh car, linked color-and-shape cars, counting by 2, 5 or 10 |
 | Memory Match | preschool–school | four picture cards | sixteen cards, number↔dots, shape + color, A↔a, number words↔numerals, fraction pictures↔names |
 | Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals, short words, the child's name |

@@ -273,7 +273,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Story Steps
 
-*toddler–school.* Seven levels progress from a shown beginning through three- and four-picture ordering, missing middles, and unrelated distractors. Four stories depict a flower, a block tower, a snow friend, and a butterfly. Completed pictures are narrated in sequence; the music-note button reads only already placed pictures. Cards belong to a known story and stage, so every missing position has one answer.
+*toddler–school.* Seven levels progress from a shown beginning through three- and four-picture ordering, missing middles, and unrelated distractors. Ten stories, each four pictures drawn with one camera: a flower, a block tower, a snow friend, a butterfly, a sandcastle, a sandwich, an apple tree, washing the dog, a rainy day and getting ready for bed. Each level draws from its own pool: levels 1–2 from the stories where a picture is built on the one before (a tower, a snow friend, a sandcastle, a sandwich, and a flower at level 2), level 3 adds the apple tree, level 4 draws from flower, butterfly, apple and dog, and levels 5–7 from all ten. Extra pictures from another story never come from a lookalike of the round's own story (a seed is a flower's or an apple tree's, and a stack is a tower's, a snow friend's, a castle's or a sandwich's), and level 7's two extras come from two different kinds of story, so the story cannot be spotted from one end. Completed pictures are narrated in sequence; the music-note button reads only already placed pictures. Cards belong to a known story and stage, so every missing position has one answer.
 
 ### Word Monsters
 

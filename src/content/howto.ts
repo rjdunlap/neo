@@ -113,14 +113,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.',
   },
   'fill-dump': {
-    goal: 'Play with a basket of fruit: tip it out, put it back, and fill it with a number or pour water to a line.',
+    goal: 'Fill, empty and refill: count fruit or pour water to a line.',
     steps: [
       { to: 2, text: 'Tap the basket to tip the fruit out. Then tap each piece (or the basket) to put it back.' },
       { from: 3, to: 4, text: 'Tap the fruit on the grass to put it in the basket, as many as the voice asks for.' },
       { from: 3, to: 4, text: 'Tap the basket to take the last one back out if there are too many.' },
       { from: 3, to: 4, text: 'Tap the green check when the basket has the right number.' },
-      { from: 5, text: 'Pull the jug to the right: the farther you pull, the more water pours. Lift to stop at the purple line.' },
-      { from: 5, text: 'Tap the cup to empty it into the spill tray. Tap the tray to return the water to the jug. Retries are free.' },
+      { from: 5, text: 'Pull the jug right to pour. Pull farther for more water; lift at the purple line.' },
+      { from: 5, text: 'Tap the cup to empty into the tray. Tap the tray to refill the jug.' },
       { from: 5, text: 'Tap the green check when the water reaches the line.' },
     ],
     finish: [
@@ -132,7 +132,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: [
       { to: 2, text: 'There is no wrong move here; every tap does something.' },
       { from: 3, to: 4, text: 'Tapping the check with the wrong number is a gentle miss. After two, a glow shows what to do next.' },
-      { from: 5, text: 'Spills and emptying are experiments, with no miss. Only a check with water above or below the line is a miss; two misses show a glow, at most once per cup.' },
+      { from: 5, text: 'Spills and empty checks are free. Other wrong checks count misses. Two misses glow the next move, once per cup.' },
     ],
   },
   'shape-sorter': {
