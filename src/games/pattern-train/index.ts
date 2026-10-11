@@ -78,6 +78,7 @@ class PatternTrain implements Game {
   private done = false;
   private playing = false;
   private revealing = false;
+  private reading = false;
   /** The bell pattern has been played once, so a listener has something to go on. */
   private played = false;
   private clock = 0;
@@ -160,6 +161,32 @@ class PatternTrain implements Game {
     if (voice) sfx.animal(voice); else sfx.bell(4 + value * 3, volume);
   }
 
+  /**
+   * The help after two misses: the train reads itself, each car lighting (and sounding) in turn, then the repeating unit
+   * hops once together, then a tunnel's hidden cars roll through. The right choice is already glowing.
+   */
+  private async readTrain() {
+    if (this.reading || this.done) return;
+    if (this.plan.kind === 'bell') { void this.playPattern(); return; }
+    this.reading = true;
+    const shown = this.cars.filter((_, i) => !this.targets.slice(this.target).includes(i));
+    for (const [i, car] of shown.entries()) {
+      if (this.plan.kind !== 'number') this.sound(this.sequence[this.cars.indexOf(car)], 0.3);
+      car.scale.set(1.12);
+      await this.ctx.tw.wait(0.35);
+      car.scale.set(1);
+      if (i === shown.length - 1) await this.ctx.tw.wait(0.15);
+    }
+    const unit = this.plan.pattern.length;
+    if (unit > 0) {
+      shown.slice(0, unit).forEach((c) => c.scale.set(1.15));
+      await this.ctx.tw.wait(0.5);
+      shown.slice(0, unit).forEach((c) => c.scale.set(1));
+    }
+    this.reading = false;
+    void this.showHidden();
+  }
+
   private async playPattern() {
     if (this.playing || this.done) return;
     this.playing = true;
@@ -184,7 +211,7 @@ class PatternTrain implements Game {
       const picked = this.choiceValues[this.target][value], answer = this.sequence[index];
       // A color-and-shape train says which part was right.
       void this.ctx.say(this.look && pieceColor(picked) === pieceColor(answer) ? 'pattern.colorRight' : this.look && pieceShape(picked) === pieceShape(answer) ? 'pattern.shapeRight' : 'pattern.wrong');
-      if (this.wrong === 2) { this.hints++; void this.ctx.say('pattern.hint'); void this.showHidden(); }
+      if (this.wrong === 2) { this.hints++; void this.ctx.say('pattern.hint'); void this.readTrain(); }
       this.layoutGlow();
       return;
     }

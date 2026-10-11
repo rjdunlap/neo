@@ -134,12 +134,12 @@ Appended after 12, never renumbered. A "car count" is the number of tiles includ
 
 ## Build slices, in order
 
-Each is one session. Slices 1–3 are built (2026-10-11; [slice 1 build note](../archive/COMPLETED-2026-10-09.md#pattern-train-slice-1-the-train-ends-anywhere-2026-10-11)); the rest are not.
+Each is one session. Slices 1–4 are built (2026-10-11; [slice 1 build note](../archive/COMPLETED-2026-10-09.md#pattern-train-slice-1-the-train-ends-anywhere-2026-10-11)); the rest are not.
 
 1. **Built.** **Make levels 4–9 and 12 ask what they say** (`logic.ts` only, with its rule tests, which must fail on today's code): the train ends anywhere in the unit (levels 1–5, 8, 9 and the middle gap of 6), level 12's starts, answer position and middle gap, near-miss distractors, `LEVELS.school.max` following the plan table, a pinned sticker test, a bounded how-to. Tier: *game rules*: typecheck and the game's rule tests; then the browser `patterns` loop filtered to levels 6, 9 and 12 (the bot still plays: `wantedChoice` is generic).
 2. **Built (2026-10-11).** **Level 11, color and shape on their own cycles,** with four choices and the part named when half right. Tier: *new levels on an existing interaction*: rule tests, one browser play at level 11, `fingerdemo` at it (the four-choice layout needs a portrait look).
 3. **Built (2026-10-11).** **Level 10, the tunnel.** A tunnel tile and the hidden-car hint; rule tests; a browser play and a portrait screenshot.
-4. **The hint that reads the train,** a car-kind pool (animals from `CRITTERS`, fruit, flowers), the sounds on tap, and the kind-distinctness test. Tier: rules plus one screenshot of the new art.
+4. **Built (2026-10-11), without boats, sizes, turns or acting kinds.** **The hint that reads the train,** a car-kind pool (animals from `CRITTERS`, fruit, flowers), the sounds on tap, and the kind-distinctness test. Tier: rules plus one screenshot of the new art.
 5. **Levels 13 and 14, odd car out and fix the train,** with the bot (`autotouch()` taps the car, then the choice) and the how-to's scoped lines. Tier: *new levels*: rule tests, one browser play of each, `fingerdemo`.
 6. **Levels 15 and 16, same pattern in new pieces and build the same,** with the model-and-rows layout. Tier: the same, plus a portrait screenshot.
 7. **Level 17, make your own,** with the toddler two-choice opening from level 1 (`bands` gets `toddler`; remove the dead lap entry). Tier: rules, one scripted play, one portrait screenshot, a person check for the toddler window.
@@ -159,3 +159,5 @@ Nothing: a deep dive session is research and ideation only. Links and `git diff 
 **Slice 3, built (2026-10-11).** Level 10 shows six cars, a tunnel tile with one dot per hidden car (4 to 7, `TUNNEL_HIDDEN`), then the empty car; the answer is the repeat's place `(6 + hidden) mod 3` and is the car before the tunnel in one round of four. Tapping the tunnel and the instruction say the count ({n}); after two misses the hidden cars roll through one by one above the tunnel. The `far` flag is gone (`tunnel` replaces it), and level 10 is the first level whose train is not all in `sequence`: the tunnel is drawn between the last two cars.
 
 **Slice 4, the pool half, built (2026-10-11).** Shape rounds draw shapes, fruit (apple, pear, grapes) or flowers (three colors); animal rounds draw one of four trios (`ANIMAL_TRIOS`) and a tapped animal car sounds with its own voice from `sfx.animal`. The family is drawn after the cars, so a seed's train does not change. Boats, sizes, turns and acting kinds are not built, and the hint that reads the train (each car lights and sounds, then the unit hops, a third miss lights the choice) is still to do.
+
+**Slice 4, the hint, built (2026-10-11).** After two misses the choice still glows (the project rule) and the train also reads itself: each shown car lights and sounds in turn, then the unit's cars hop once; a tunnel then rolls its hidden cars through, and the bell levels replay the notes. Still one hint per car. The plan's third-miss glow was not used, since a glow after two misses is a standing rule.
