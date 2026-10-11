@@ -14,6 +14,17 @@ import type { GameHowTo, GameModule, LevelLine } from '../games/types';
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'orchard-rows': {
+    goal: 'Plant an orchard in equal groups and count its trees.',
+    steps: [
+      { to: 2, text: 'Tap each empty row to plant all its trees.' },
+      { from: 3, to: 3, text: 'Choose how many trees fill the empty row, then tap that row to plant them.' },
+      'Tap each full row to count equal groups aloud, then choose the total on a number button.',
+      { from: 2, to: 3, text: 'Tap the turning arrow to view the same orchard from the side. Tap each group to count by columns, then choose the total again.' },
+    ],
+    finish: 'The round ends after two orchards are planted and counted.',
+    note: 'Rows can be planted or counted in any order. Replaying a counted row adds nothing and is free support. Two wrong number choices glow the answer.',
+  },
   'bubble-pop': {
     goal: 'Pop the bubbles.',
     steps: [
