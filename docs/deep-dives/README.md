@@ -118,7 +118,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Splish Splash | `splish-splash` | LTPK | 8 | 2 | designed | `claude/roadmap-item-14-game-content-jtnvee` ([PR 102](https://github.com/rjdunlap/neo/pull/102)) | [splish-splash.md](splish-splash.md) |
 | Stamp Studio | `stamp-studio` | LTPKS | 6 | 2 | designed | `claude/roadmap-item-14-game-content-unyq86` ([PR 110](https://github.com/rjdunlap/neo/pull/110)) | [stamp-studio.md](stamp-studio.md) |
 | Stop and Go | `stop-and-go` | LTP | 4 | 4 | not started | — | — |
-| Story Steps | `story-steps` | TPKS | 7 | 1 | building (slice 1 in progress) | `claude/charming-mayer-27wh8m` ([PR 81](https://github.com/rjdunlap/neo/pull/81)); slice 1: `claude/story-steps-ten-stories` | [story-steps.md](story-steps.md) |
+| Story Steps | `story-steps` | TPKS | 7 | 1 | building (slice 1 built) | `claude/charming-mayer-27wh8m` ([PR 81](https://github.com/rjdunlap/neo/pull/81)); slice 1: `claude/story-steps-ten-stories` | [story-steps.md](story-steps.md) |
 | Tangram Town | `tangram-town` | TPKS | 6 | 1 | building (slice 1 built) | `claude/eager-babbage-wexkzg` ([PR 79](https://github.com/rjdunlap/neo/pull/79)) | [tangram-town.md](tangram-town.md) |
 | Teddy Doctor | `teddy-doctor` | LTPKS | 6 | 4 | not started | — | — |
 | Treasure Map | `treasure-map` | KS | 5 | 4 | not started | — | — |
