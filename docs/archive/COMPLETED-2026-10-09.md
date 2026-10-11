@@ -1,5 +1,15 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Goodnight Room barn and animals (2026-10-10)
+
+Built roadmap deep-dive slices 2–3. Levels 1–4 now draw a bedroom or barn from the seeded room pool, with six spacious slots. The barn has a cow, pig, duck, bunny, barn cat and hanging lantern, all drawn in code. Existing names, ordered requests, asleep starts and the finale work in either setting.
+
+Level 5 asks for the living animals in any order, in a bedroom with kitten, puppy and fish plus lamp and clock. It excludes the ambiguous teddy. A wrong object gets a gentle boing and spoken category hint; two misses glow a remaining animal. After the animals settle, the objects settle together, and the shell awards one sticker. Preschool grows to 3–5; pre-K opens at 5. Younger levels keep their saved numbers and ranges.
+
+- Rule tests cover room variety, unique friends, request membership, category fairness, alternative orders and the bot's remaining target. How-to steps are bounded to the right levels.
+- Verification is recorded in [VERIFICATION](../VERIFICATION.md); iPad touch, device speech and a child's response stay open.
+
+
 ### Duckling Parade levels 9–10: repeated color patterns (2026-10-10)
 
 Added a school range at levels 9–10. Level 9 follows a repeated AAB color unit; level 10 adds one duckling whose color does not fit, which stays out while the six pattern ducklings reach the pond. Existing steering, pattern hints and pond finish are reused, and saved levels keep their meaning. The how-to and spoken instruction explain the new choice.

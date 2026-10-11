@@ -29,6 +29,14 @@ describe('game registry', () => {
     }
   });
 
+  it('opens Goodnight Room category play without renumbering younger levels', () => {
+    const game = gameById('goodnight-room')!;
+    expect(game.levels('lap')).toEqual({ min: 1, max: 2 });
+    expect(game.levels('toddler')).toEqual({ min: 2, max: 4 });
+    expect(game.levels('preschool')).toEqual({ min: 3, max: 5 });
+    expect(game.levels('prek')).toEqual({ min: 5, max: 5 });
+  });
+
   it('has something for every age band', () => {
     for (const b of BANDS) expect(GAMES.filter((g) => g.bands.includes(b.id)).length, b.id).toBeGreaterThanOrEqual(3);
   });

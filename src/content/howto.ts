@@ -769,7 +769,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 2, text: 'Tap each thing to say goodnight.' },
       { from: 3, to: 3, text: 'Tap the thing that is named to say goodnight.' },
-      { from: 4, text: 'Tap the two things in the order they are named.' },
+      { from: 4, to: 4, text: 'Tap the two things in the order they are named.' },
+      { from: 5, to: 5, text: 'Tap the animals in any order. The lamp and clock settle together afterwards.' },
     ],
     finish: 'The round ends when the room is asleep.',
   },

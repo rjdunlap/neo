@@ -2294,7 +2294,7 @@ async function next() {
 
   // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
   for (let level = Number(process.env.FROM_LEVEL || 1); level <= 5 && (!only || only === 'bumper'); level++) {
-    if (level === 5) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 1 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('bumper-garden', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -2336,7 +2336,7 @@ async function next() {
     const r = await score('bumper-garden');
     if (mode === 'spring' || mode === 'bloom') assert.deepEqual(r, [0, 0], `bumper ${level} score`);
     else assert.ok(r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints, `bumper ${level} score ${r}`);
-    if (level === 5) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 1 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bumper Garden ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`);
   }
 
@@ -2987,7 +2987,13 @@ async function woodsBatch() {
     log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
   }
 
-  if (!only || only === 'night') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 5); level++) {
+    if (level === 1) await page.evaluate(async () => {
+      const { goodnightRoom } = await import('/src/games/goodnight-room/index.ts');
+      const { Rng } = await import('/src/engine/random.ts');
+      const create = goodnightRoom.create;
+      goodnightRoom.create = (ctx) => { goodnightRoom.create = create; return create({ ...ctx, rng: new Rng(1) }); };
+    });
     await launch('goodnight-room', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     // Tap the middle of a thing, the way a finger would.
@@ -2998,6 +3004,17 @@ async function woodsBatch() {
       await page.waitForTimeout(420);
     };
     await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); await page.waitForTimeout(150);
+    if (level === 5) {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(250);
+      await screenshot('goodnight-room-5-portrait');
+    }
+    if (level === 1) {
+      assert.equal(await page.evaluate(() => neo.scene.game.setting.id), 'barn');
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(250);
+      await screenshot('goodnight-room-barn-portrait');
+    }
     if (mode === 'all') {
       for (const t of await page.evaluate(() => neo.scene.game.sleepers.map((s) => s.thing))) await touch(t);
     } else {
@@ -3006,16 +3023,17 @@ async function woodsBatch() {
         await idle(n);
         if (n === 0) {
           // A wrong friend, or the right two in the wrong order: gentle misses, then a glow.
-          const wrong = mode === 'two' ? r[1] : await page.evaluate((w) => neo.scene.game.sleepers.find((s) => s.thing !== w && !s.asleep).thing, r[0]);
+          const wrong = mode === 'two' ? r[1] : await page.evaluate((w) => neo.scene.game.sleepers.find((s) => !w.includes(s.thing) && !s.asleep).thing, r);
           await touch(wrong); await touch(wrong);
           assert.deepEqual(await counts(), [2, 1]);
         }
-        for (const t of r) await touch(t);
+        for (const t of (mode === 'animals' ? [...r].reverse() : r)) await touch(t);
       }
     }
     if (level === 2) await page.waitForTimeout(400), await screenshot('goodnight-room-asleep');
     await finished('goodnight-room');
     assert.deepEqual(await score('goodnight-room'), mode === 'all' ? [0, 0] : [2, 1]);
+    if (level === 1 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Goodnight Room ${level} (${mode}): goodnights by tapping, ${mode === 'all' ? 'the room going dark' : 'wrong friends and order as misses, glow hint'}, saved score and sticker passed`);
   }
 

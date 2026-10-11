@@ -124,8 +124,8 @@ Both wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-de
 Each is sized for one session. A slice that adds a level is built in level order so the saved IDs stay unbroken.
 
 1. **A different room each time** (ready, **built in this session**): the seeded draw, friends who start asleep, the finale's stars. Tier: typecheck, the game's rule tests, one `BROWSER_SUITE=night` pass.
-2. **Slot-based rooms and the barn** (ready): rooms as data (`spot()` becomes slot-based; `makeRequests` and `thingToTap` already take the drawn room after slice 1), a lantern, a window variant, `NAMES` for each new friend, and a pool test that every room fits every level. Tier: rule tests, one browser play, one portrait screenshot.
-3. **Level 5, the animals, and the pre-K window** (ready after 2): `kind`, the band row, the level-4 `LevelLine` bound, registry tests, the browser loop, `fingerdemo`. Tier: new level on an existing interaction.
+2. **Slot-based rooms and the barn** (built 2026-10-10): rooms as data (`spot()` becomes slot-based; `makeRequests` and `thingToTap` already take the drawn room after slice 1), a lantern, a window variant, `NAMES` for each new friend, and a pool test that every room fits every level. Tier: rule tests, one browser play, one portrait screenshot.
+3. **Level 5, the animals, and the pre-K window** (built 2026-10-10): `kind`, the band row, the level-4 `LevelLine` bound, registry tests, the browser loop, `fingerdemo`. Tier: new level on an existing interaction.
 4. **Level 6, the light goes last** (ready).
 5. **Level 7, how many?** (ready; decision 3).
 6. **Level 8, the color** (ready).
@@ -140,3 +140,6 @@ Each is sized for one session. A slice that adds a level is built in level order
 Slice 1, a different room each time. `logic.ts` gained `asleep` on each plan, `makeNight` (a seeded room of the right size in `THINGS` order, and who starts asleep, always leaving two awake), and `makeRequests` and `thingToTap` now take the drawn room. `index.ts` draws the room once, puts the sleepers to sleep and the stars up before the first frame, and the finale keeps `Math.max(stars, 12)`.
 
 Checks: typecheck; the full unit suite (854 pass); `BROWSER_SUITE=woods WOODS_ONLY=night` (levels 1 to 4, scored and stickered). Not run: `fingerdemo` for the game, a portrait screenshot, a device. See [VERIFICATION](../VERIFICATION.md).
+
+
+Slices 2–3 built 2026-10-10: bedroom/barn pools with slot-based positions, five barn animals and a lantern, then level 5 with three living animals and two objects in the bedroom. Preschool is 3–5; pre-K opens at 5 only until more levels are built. Category answers accept any order; its bot and hint pick any remaining animal. [Build notes](../archive/COMPLETED-2026-10-09.md#goodnight-room-barn-and-animals-2026-10-10).
