@@ -460,3 +460,7 @@ Built deep-dive slice 1 ([PR 161](https://github.com/rjdunlap/neo/pull/161)): ex
 ## Market Stall guards and payment support (2026-10-11)
 
 Deep-dive slice 1 ([PR #163](https://github.com/rjdunlap/neo/pull/163)): payment mistakes explain coin values, off-by-one totals, returning the price instead of change, paying one of two prices and oversized coins. Hint pictures can refresh in both ways of an order while help counts once. Full-counter speech is free. Levels and bands stay stable; school follows the plan count, how-to level 7 is bounded, and tests pin saved sticker art and shared shell coins. Next: coin names and pips, then count-up change.
+
+## Goodnight Room level 8, the color (2026-10-11)
+
+[PR #164](https://github.com/rjdunlap/neo/pull/164) adds a color decision to the same goodnight taps: two seeded four-friend bedrooms ask for brown (teddy and puppy) or orange (kitten and fish), in either order. Each arrangement has two clear decoys; the puppy's orange ears exclude it from the orange round, and the fish's shelf becomes blue only for this mode. A wrong color speaks its main color and asks for the requested one again; two misses glow a remaining answer. The others settle together, and the shell awards its usual one sticker. Pre-K extends from 5–7 to 5–8 with every saved level and younger range preserved. Device speech and child understanding remain untested.

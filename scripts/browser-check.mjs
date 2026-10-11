@@ -3254,7 +3254,7 @@ async function woodsBatch() {
     log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
   }
 
-  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
+  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
     if (level === 1) await page.evaluate(async () => {
       const { goodnightRoom } = await import('/src/games/goodnight-room/index.ts');
       const { Rng } = await import('/src/engine/random.ts');
@@ -3271,7 +3271,7 @@ async function woodsBatch() {
       await page.waitForTimeout(420);
     };
     await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); await page.waitForTimeout(150);
-    if (level === 5 || level === 6 || level === 7) {
+    if (level === 5 || level === 6 || level === 7 || level === 8) {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
       await screenshot(`goodnight-room-${level}-portrait`);
@@ -3318,7 +3318,7 @@ async function woodsBatch() {
           await touch(wrong); await touch(wrong);
           assert.deepEqual(await counts(), [2, 1]);
         }
-        const order = mode === 'lightLast' ? [...r.slice(0, -1).reverse(), r[r.length - 1]] : mode === 'animals' ? [...r].reverse() : r;
+        const order = mode === 'lightLast' ? [...r.slice(0, -1).reverse(), r[r.length - 1]] : (mode === 'animals' || mode === 'color') ? [...r].reverse() : r;
         if (mode === 'lightLast') assert.equal(await page.evaluate((light) => neo.scene.game.sleepers.find(s => s.thing === light).asleep, r[r.length - 1]), false);
         for (const t of order) await touch(t);
       }
@@ -3326,7 +3326,7 @@ async function woodsBatch() {
     if (level === 2) await page.waitForTimeout(400), await screenshot('goodnight-room-asleep');
     await finished('goodnight-room');
     assert.deepEqual(await score('goodnight-room'), mode === 'all' || mode === 'count' ? [0, 0] : [2, 1]);
-    if (level === 1 || level === 5 || level === 6 || level === 7) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 1 || level === 5 || level === 6 || level === 7 || level === 8) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Goodnight Room ${level} (${mode}): goodnights by tapping, ${mode === 'count' ? 'free choices counted aloud with the others left awake briefly' : mode === 'all' ? 'the room going dark' : 'wrong friends and order as misses, glow hint'}, saved score and sticker passed`);
   }
 

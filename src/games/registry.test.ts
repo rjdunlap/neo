@@ -30,12 +30,12 @@ describe('game registry', () => {
     }
   });
 
-  it('opens Goodnight Room category, light-last and counting play without renumbering younger levels', () => {
+  it('opens Goodnight Room category, light-last, counting and color play without renumbering younger levels', () => {
     const game = gameById('goodnight-room')!;
     expect(game.levels('lap')).toEqual({ min: 1, max: 2 });
     expect(game.levels('toddler')).toEqual({ min: 2, max: 4 });
     expect(game.levels('preschool')).toEqual({ min: 3, max: 5 });
-    expect(game.levels('prek')).toEqual({ min: 5, max: 7 });
+    expect(game.levels('prek')).toEqual({ min: 5, max: 8 });
   });
 
   it('opens only Robot Path’s small step boards to preschool and preserves older ranges', () => {

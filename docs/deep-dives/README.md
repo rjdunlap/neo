@@ -74,7 +74,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Frog Hop | `frog-hop` | PKS | 7 | 3 | designed | `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116)) | [frog-hop.md](frog-hop.md) |
 | Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
 | Garden Rows | `garden-rows` | KS | 6 | 4 | not started | — | — |
-| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (levels 1–7 built); next level 8, the color | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)); deployment fix: `codex/fix-goodnight-deployment` ([PR 152](https://github.com/rjdunlap/neo/pull/152)); counted goodnights: `codex/goodnight-count` ([PR 155](https://github.com/rjdunlap/neo/pull/155)) | [goodnight-room.md](goodnight-room.md) |
+| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (levels 1–8 built); next level 9, everyone but the one | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)); deployment fix: `codex/fix-goodnight-deployment` ([PR 152](https://github.com/rjdunlap/neo/pull/152)); counted goodnights: `codex/goodnight-count` ([PR 155](https://github.com/rjdunlap/neo/pull/155)); color groups: `codex/goodnight-color` ([PR 164](https://github.com/rjdunlap/neo/pull/164)) | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
 | Inchworm Measure | `inchworm` | KS | 6 | 4 | not started | — | — |
 | Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | designed | `claude/fervent-keller-f86ol8` ([PR 104](https://github.com/rjdunlap/neo/pull/104)) | [jelly-drums.md](jelly-drums.md) |

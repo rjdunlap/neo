@@ -11,13 +11,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { acceptsTap, makeNight, makeRequests, NAMES, planFor, SLOTS, thingToTap, type NightPlan, type NightRoom, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, planFor, SLOTS, thingToTap, type NightPlan, type NightRoom, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 7 },
+  prek: { min: 5, max: 8 },
 };
 
 const WALL = 0x9fb8e8;
@@ -41,7 +41,7 @@ class Sleeper extends Container {
   private readonly glow = new Graphics();
   private clock = Math.random() * 5;
 
-  constructor(readonly thing: Thing) {
+  constructor(readonly thing: Thing, private readonly colorRound = false) {
     super();
     const critters: Partial<Record<Thing, keyof typeof CRITTERS>> = { teddy: 'bear', kitten: 'cat', puppy: 'dog', cow: 'cow', pig: 'pig', duck: 'duck', bunny: 'bunny', cat: 'cat' };
     const kind = critters[thing];
@@ -80,7 +80,7 @@ class Sleeper extends Container {
       g.moveTo(0, 0).lineTo(0, -38).moveTo(0, 0).lineTo(26, 10).stroke({ width: 6, color: ink, cap: 'round' });
       eyes(g, 0, 26, open, 6);
     } else if (this.thing === 'fish') {
-      g.roundRect(-80, 52, 160, 20, 6).fill(wood.fill).stroke({ width: 4, color: wood.line });
+      g.roundRect(-80, 52, 160, 20, 6).fill(this.colorRound ? swatch.blue.fill : wood.fill).stroke({ width: 4, color: this.colorRound ? swatch.blue.line : wood.line });
       g.circle(0, 0, 58).fill({ color: 0xcde6ff, alpha: 0.85 }).stroke({ width: 5, color: swatch.blue.line });
       g.ellipse(4, 6, 24, 15).fill(swatch.orange.fill).poly([24, 6, 42, -6, 42, 18]).fill(swatch.orange.fill);
       if (open) g.circle(-8, 2, 4).fill(ink);
@@ -108,6 +108,7 @@ class GoodnightRoom implements Game {
   readonly friends: Thing[];
   readonly setting: NightRoom;
   readonly targetCount: number;
+  readonly color: string | null;
   readonly sleepers: Sleeper[] = [];
   index = -1;
   /** Within a two-step request, how many are done. */
@@ -136,12 +137,13 @@ class GoodnightRoom implements Game {
     this.friends = night.room;
     this.setting = night.setting;
     this.targetCount = night.targetCount;
-    this.requests = makeRequests(this.plan, ctx.rng, this.friends);
+    this.color = night.color;
+    this.requests = makeRequests(this.plan, ctx.rng, this.friends, this.color);
     this.dark.eventMode = 'none';
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.room, this.sky);
     for (const thing of this.friends) {
-      const s = new Sleeper(thing);
+      const s = new Sleeper(thing, this.plan.mode === 'color');
       if (night.asleep.includes(thing)) s.sleep();
       onTap(s, () => void this.tap(s), { cooldown: 400 });
       ctx.track(s);
@@ -259,6 +261,7 @@ class GoodnightRoom implements Game {
     }
     this.busy = false;
     if (this.plan.mode === 'named') return this.ctx.instruct('night.named', { who: NAMES[r[0]] });
+    if (this.plan.mode === 'color') return this.ctx.instruct('night.color', { color: this.color! });
     if (this.plan.mode === 'animals') return this.ctx.instruct('night.animals');
     if (this.plan.mode === 'lightLast') return this.ctx.instruct('night.lightLast', { light: NAMES[r[r.length - 1]] });
     return this.ctx.instruct('night.two', { a: NAMES[r[0]], b: NAMES[r[1]] });
@@ -327,7 +330,8 @@ class GoodnightRoom implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'lightLast') await this.ctx.say('night.lightEarly', { light: NAMES[s.thing] });
+    if (this.plan.mode === 'color') await this.ctx.say('night.notcolor', { what: NAMES[s.thing], actual: COLORS[s.thing].main, color: this.color! });
+    else if (this.plan.mode === 'lightLast') await this.ctx.say('night.lightEarly', { light: NAMES[s.thing] });
     else if (this.plan.mode === 'animals') await this.ctx.say('night.notanimal', { what: NAMES[s.thing] });
     else if (r.includes(s.thing)) await this.ctx.say('night.order', { a: NAMES[r[0]], b: NAMES[r[1]] });
     else await this.ctx.say('night.notthat', { what: NAMES[s.thing], who: NAMES[want] });

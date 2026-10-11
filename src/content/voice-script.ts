@@ -664,6 +664,8 @@ export const SCRIPT = {
   'night.named': ['Say goodnight to the {who}!'],
   'night.lightLast': ['Say goodnight to everyone, and the {light} last. The light helps us see!'],
   'night.lightEarly': ['The {light} helps us see. Let the others go to sleep first.'],
+  'night.color': ['Say goodnight to the {color} ones!'],
+  'night.notcolor': ['The {what} is {actual}. Which ones are {color}?'],
   'night.animals': ['Say goodnight to the animals!'],
   'night.notanimal': ['The {what} is not an animal. Which ones are animals?'],
   'night.two': ['Say goodnight to the {a}, and then the {b}!'],
