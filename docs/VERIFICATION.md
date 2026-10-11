@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Robot Path: three boards per programming level
+
+- Added three seeded boards at each existing level 1–10 (30 total), preserving the originals, grid sizes, slot limits, controls and saved level IDs. Level 1's third straight route is one step; prediction and repair pools at 11–12 are unchanged.
+- Tested base `e1e00bf` plus the implementation diff at `http://localhost:5199`: typecheck and 24 targeted Robot Path/how-to tests passed. Tests cover all board geometry, solvability, counted/loop requirements, reproducible draws and ghost-finger completion from empty and wrong programs. Production build passed before the final how-to wording refinement.
+- `GAME_URL=http://localhost:5199 BROWSER_SUITE=robot FROM_LEVEL=6 TO_LEVEL=6` passed collisions, two misses/one hint, editing and reward without page errors; landscape screenshot reviewed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=robot-path FINGER_LEVELS=10` passed cleanly in 10.4 demo seconds. `node test-results/robot-pool-portrait.mjs` captured the new level-6 goal `[2,3]` and rock layout in portrait; screenshot reviewed, no page errors.
+- Local changed-document links and `git diff --check` passed. Not run: full robot/couch/world/offline suites (interactions, navigation and persistence unchanged), iPad, actual device speech or child play. The original slice 1 feedback/hint work remains open.
+
 ## 2026-10-11 — Day by Day first slice
 
 - Added `day-by-day` in Cozy Village: pre-K 1–2 and school 2–3, seven in-game weekday placements/weather records, tomorrow/yesterday across Sunday/Monday, and a sunny-day tally. Card naming, record replay and reversible counting marks are free support; wrong committed answers teach and glow after two misses.
@@ -419,6 +427,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Robot Path board pools (`robot`, `fingerdemo`) | 2026-10-11: 30 boards in rule/bot tests; level-6 regression and portrait; level-10 demo clean in 10.4 s; typecheck and build | Robot Path: three boards per programming level entry | Full browser ladder and couch not rerun; iPad, speech and child play open |
 | Day by Day (`week`, `fingerdemo`) | 2026-10-11: first/top-level real-input play, retries/hint, saved reward, reversible counting, portrait and interrupted speech; demos 1–3 clean (35.9, 43.6, 50.1 s), land entry/intro/return | Day by Day first slice entry | No iPad, actual device speech or child play; level-2 full speech play not run |
 | Orchard Rows (`orchard`, `fingerdemo`) | 2026-10-11: levels 1 and 3, replay, two misses/one hint, saved rewards, portrait and interrupted speech; demos 1–3 clean (23.1, 41.4, 46.5 s); land launch, intro and return | Orchard Rows first slice entry | No iPad, actual device speech or child play; separate level-2 manual play not run |
 | Puzzle Pals scenes (`smoke`, `fingerdemo`) | 2026-10-11: levels 1, 4, 7 smoke with portrait; demos at levels 1 and 7 clean (3.1, 32.7 s); scene pin, sky/ground and per-piece rule tests; original six pixel-identical | Puzzle Pals scene data and six new scenes entry | New scenes reviewed on a contact sheet only; no run played each new scene as a puzzle; original-scene fairness (slice 1) open; iPad and speech not checked |

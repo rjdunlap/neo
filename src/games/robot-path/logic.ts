@@ -1,3 +1,5 @@
+import type { Rng } from '../../engine/random';
+
 export const DIRECTIONS = ['up', 'right', 'down', 'left'] as const;
 export type Direction = (typeof DIRECTIONS)[number];
 export type Cell = readonly [number, number];
@@ -27,6 +29,39 @@ export const ROBOT_PLANS: RobotPlan[] = [
   { size: 5, goal: [4, 4], rocks: [[2, 0], [3, 1], [4, 2], [0, 1], [1, 2], [2, 3], [3, 4]], limit: 2, mode: 'loop', name: 'A loop: repeat "right, down" up a staircase', solution: { slots: [{ dir: 'right', n: 1 }, { dir: 'down', n: 1 }], loop: 4 } },
   { size: 5, goal: [4, 4], rocks: [[0, 1], [1, 1], [3, 0], [3, 1], [2, 3], [3, 3]], limit: 3, mode: 'loop', name: 'A longer loop body: "right ×2, down ×2", twice', solution: { slots: [{ dir: 'right', n: 2 }, { dir: 'down', n: 2 }], loop: 2 } },
 ];
+
+/** Reflect across the diagonal: keep the route's idea while changing its first direction. */
+function transpose(plan: RobotPlan): RobotPlan {
+  const cell = ([x, y]: Cell): Cell => [y, x];
+  const direction: Record<Direction, Direction> = { up: 'left', right: 'down', down: 'right', left: 'up' };
+  return {
+    ...plan, goal: cell(plan.goal), rocks: plan.rocks.map(cell),
+    solution: plan.solution && {
+      slots: plan.solution.slots.map(({ dir, n }) => ({ dir: direction[dir], n })),
+      loop: plan.solution.loop,
+    },
+  };
+}
+
+/** Each pool preserves its level's grid, controls and slot budget. The originals remain first. */
+export const ROBOT_BOARDS: readonly (readonly RobotPlan[])[] = ROBOT_PLANS.map((plan, i) => {
+  const third: RobotPlan = i === 0 ? { ...plan, goal: [0, 1] }
+    : i === 1 ? { ...plan, goal: [1, 1] }
+    : i === 2 ? { ...plan, goal: [1, 2] }
+    : i === 3 ? { ...plan, goal: [3, 2], rocks: [[1, 0], [1, 1]] }
+    : i === 4 ? { ...plan, goal: [3, 2], rocks: [[1, 0], [1, 1], [2, 2]] }
+    : i === 5 ? { ...plan, goal: [2, 3], rocks: [[0, 1], [1, 1], [2, 1], [3, 3]] }
+    // Keep the counted/looped solution, but put the rocks in a different configuration.
+    : { ...plan, rocks: [...plan.rocks, i === 6 ? [2, 3] : i === 7 ? [2, 4] : i === 8 ? [4, 0] : [0, 4]] };
+  // The square, rock-free level 3 is unchanged by reflection; vary the straight-run lengths.
+  const second = i === 2 ? { ...plan, goal: [3, 1] as Cell } : transpose(plan);
+  return [plan, second, third];
+});
+
+/** A seeded round draw, separate from the stable descriptions and saved level IDs. */
+export function boardFor(level: number, rng: Rng): RobotPlan {
+  return rng.pick(ROBOT_BOARDS[Math.max(0, Math.min(ROBOT_BOARDS.length - 1, level - 1))]);
+}
 
 /** The same blocked route shown as individual steps and as counted steps. */
 export const PREDICT_PLANS: PredictPlan[] = [

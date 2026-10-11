@@ -119,7 +119,7 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 ## Build slices, in order
 
 1. **Say what happened** (ready): the bump/stopped-short/empty messages, the hint that prefers a consistent known route, three new voice lines. Rule tests for `nextPress` on alternative valid routes. Tier: game rules plus typecheck; the voice test; one scripted play at level 6.
-2. **Three boards per level** (ready): `boards` per level, a seeded pick, the board-property tests for all ten levels. Tier: typecheck and the game's rule tests; `scripts/browser-check.mjs` `robots()` reads board geometry, so check it still plays (`BROWSER_SUITE=robot`).
+2. **Three boards per level** (built 2026-10-11, [PR #149](https://github.com/rjdunlap/neo/pull/149)): `boards` per level, a seeded pick, the board-property tests for all ten levels. Tier: typecheck and the game's rule tests; `scripts/browser-check.mjs` `robots()` reads board geometry, so check it still plays (`BROWSER_SUITE=robot`).
 3. **Preschool at levels 1–2** (ready, person check afterwards): bands and registry tests. Tier: typecheck and the registry/bands tests.
 4. **Level 11, where will it stop?** (built 2026-10-10): a cell-tap layer for two shown programs (individual and counted steps), an unscored prediction and playback to the actual stopping square. Rule tests check that the correct stop differs from skipping the rock and reading the arrows backwards; the ghost finger predicts and plays it. Typecheck, rule tests, `robot` filtered to level 11 and `fingerdemo` at level 11.
 5. **Level 12, fix the program** (built 2026-10-10): three counted repair boards, the free first watch, select-a-slot editing, and a hint on the slot to change. Typecheck, logic tests, the filtered level-12 browser play, and the level-12 ghost-finger demo passed.
@@ -131,3 +131,9 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 ## What was built in this session
 
 Levels 11, Where will it stop?, and 12, Fix the program, are built. Level 12 shows a counted program, gives a free first watch, then asks the player to select its short slot and add a step. Three authored boards have exactly one single-slot repair. Checks are recorded in [VERIFICATION.md](../VERIFICATION.md); iPad target sizing, device speech and child play remain open.
+
+## Slice 2 build note (2026-10-11)
+
+Programming levels 1–10 now each draw from three seeded boards. The original is retained, a diagonal reflection varies the known route, and a third board varies the goal or rock layout. Level 3 uses a new goal instead of a duplicate reflection. Level 1 has only two two-step straight goals from its fixed corner; its third goal is one straight step away, preserving the no-turn opening. Levels 2–3 also admit shorter routes within their existing budgets. Rocks, grid sizes, controls and slot limits stay scoped to their existing modes; the counted and loop solutions still need their compact programs. Prediction and repair pools at 11–12 are unchanged.
+
+All 30 boards have valid geometry, a working route and ghost-finger completion tests from an empty or wrong program; seeded draws reach all three boards and repeat from the same seed. The level-6 regression play, portrait new-board review and level-10 demonstration passed. Device and child play remain open. Slice 1’s spoken feedback and alternative-route hints are still waiting.

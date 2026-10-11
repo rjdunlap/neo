@@ -1,7 +1,47 @@
 import { describe, expect, it } from 'vitest';
-import { compress, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
+import { Rng } from '../../engine/random';
+import { allowed, boardFor, compress, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
 
 describe('robot routes', () => {
+  it('offers three distinct valid boards per level without changing the controls or budget', () => {
+    expect(ROBOT_BOARDS).toHaveLength(10);
+    for (const [i, boards] of ROBOT_BOARDS.entries()) {
+      expect(boards).toHaveLength(3);
+      expect(new Set(boards.map((p) => JSON.stringify([p.goal, p.rocks]))).size).toBe(3);
+      for (const board of boards) {
+        expect(board.size).toBe(ROBOT_PLANS[i].size);
+        expect(board.limit).toBe(ROBOT_PLANS[i].limit);
+        expect(board.mode).toBe(ROBOT_PLANS[i].mode);
+        expect(allowed([0, 0], board)).toBe(true);
+        expect(allowed(board.goal, board)).toBe(true);
+        expect(board.goal).not.toEqual([0, 0]);
+        expect(new Set(board.rocks.map((r) => r.join(','))).size).toBe(board.rocks.length);
+        for (const rock of board.rocks) expect(rock.every((n) => n >= 0 && n < board.size)).toBe(true);
+        if (i < 3) expect(board.rocks).toEqual([]);
+        if (i === 0) expect(board.goal.includes(0)).toBe(true);
+        if (i >= 3 && i <= 5) expect(board.rocks.length).toBeGreaterThan(0);
+      }
+      const firstMoves = boards.map((p) => p.solution?.slots[0].dir ?? shortestPath(p)[0]);
+      // Rock-free turning boards allow either first move; obstacle boards vary the known route.
+      if (i >= 3) expect(new Set(firstMoves).size, `level ${i + 1}`).toBeGreaterThan(1);
+    }
+  });
+
+  it('draws reproducibly from the whole pool and leaves authored boards intact', () => {
+    const before = JSON.stringify(ROBOT_BOARDS);
+    for (let level = 1; level <= 10; level++) {
+      const seen = new Set();
+      for (let seed = 1; seed <= 100; seed++) {
+        const board = boardFor(level, new Rng(seed));
+        expect(board).toEqual(boardFor(level, new Rng(seed)));
+        expect(ROBOT_BOARDS[level - 1]).toContain(board);
+        seen.add(board);
+      }
+      expect(seen.size).toBe(3);
+    }
+    expect(JSON.stringify(ROBOT_BOARDS)).toBe(before);
+  });
+
   it('gives each repair board one visible, single-slot fix', () => {
     expect(FIX_PLANS).toHaveLength(3);
     for (const plan of FIX_PLANS) {
@@ -41,7 +81,7 @@ describe('robot routes', () => {
   });
 
   it('makes every level solvable inside the program limit', () => {
-    for (const plan of ROBOT_PLANS.filter((p) => !p.mode)) {
+    for (const plan of ROBOT_BOARDS.flat().filter((p) => !p.mode)) {
       const route = shortestPath(plan);
       expect(route.length, plan.name).toBeGreaterThan(0);
       expect(route.length, plan.name).toBeLessThanOrEqual(plan.limit);
@@ -57,7 +97,7 @@ describe('robot routes', () => {
   });
 
   it('counted and looped levels need their idea: the plain route does not fit in the slots, the given solution does', () => {
-    for (const plan of ROBOT_PLANS.filter((p) => p.mode)) {
+    for (const plan of ROBOT_BOARDS.flat().filter((p) => p.mode)) {
       const { slots, loop } = plan.solution!;
       expect(slots.length, plan.name).toBeLessThanOrEqual(plan.limit);
       expect(runPath(plan, expand(slots, loop)).success, plan.name).toBe(true);
@@ -105,7 +145,7 @@ describe('the buttons the ghost finger presses', () => {
   }
 
   it('reaches the star on every level, from nothing and after a wrong first step', () => {
-    for (const plan of ROBOT_PLANS) {
+    for (const plan of ROBOT_BOARDS.flat()) {
       expect(playOut(plan, []), plan.name).toBe(true);
       const wrong = [{ dir: plan.goal[0] === 0 ? 'left' : 'up', n: 1 }] as Slot[];
       expect(playOut(plan, wrong), `${plan.name} (after a wrong step)`).toBe(true);

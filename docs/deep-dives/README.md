@@ -105,7 +105,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Ramp Race | `ramp-race` | KS | 4 | 4 | not started | — | — |
 | Rhyme Time | `rhyme-time` | KS | 4 | 4 | not started | — | — |
 | Rhythm Neighbors | `rhythm-neighbors` | LTPKS | 6 | 4 | not started | — | — |
-| Robot Path | `robot-path` | KS | 12 | 1 | building (level 12 built; next slice 13) | `codex/robot-path-level-12-fix-program` (level 11: `codex/robot-path-where-will-it-stop`, [PR 100](https://github.com/rjdunlap/neo/pull/100)) | [robot-path.md](robot-path.md) |
+| Robot Path | `robot-path` | KS | 12 | 1 | building (boards slice 2 and levels 11–12 built; next feedback slice 1) | `codex/robot-path-level-12-fix-program` (level 11: `codex/robot-path-where-will-it-stop`, [PR 100](https://github.com/rjdunlap/neo/pull/100)); slice 2: `codex/robot-path-board-pool` ([PR #149](https://github.com/rjdunlap/neo/pull/149)) | [robot-path.md](robot-path.md) |
 | Roundup | `roundup` | LTPK | 6 | 4 | not started | — | — |
 | Scoop Shop | `scoop-shop` | LTPKS | 6 | 4 | not started | — | — |
 | Secret Code | `secret-code` | KS | 6 | 4 | not started | — | — |
