@@ -755,21 +755,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the garden has grown as asked.',
   },
   'clock-tower': {
-    goal: 'Set the hands of the clock.',
+    goal: 'Set, read and change times on a clock.',
     steps: [
-      { to: 1, text: 'Turn the short hand (the hour) to the time asked, then ring the bell.' },
-      { from: 2, to: 4, text: 'Turn the short hand (the hour) and the long hand (the minutes) to the time asked, then ring the bell.' },
+      { to: 1, text: 'Touch the middle to turn the short hour hand to the time asked, then ring the bell.' },
+      { from: 2, to: 4, text: 'Touch the middle to turn the short hour hand and the edge to turn the long minute hand, then ring the bell.' },
       { from: 5, to: 5, text: 'Look where the short and long hands point, then tap the picture of what happens at that time.' },
-      { from: 6, to: 6, text: 'Turn the hands to one hour after the time shown, then ring the bell.' },
-      { from: 7, text: 'Turn the hands to the time asked, like 3:25. The small numbers around the edge count by fives for the long hand. Then ring the bell.' },
+      { from: 6, to: 6, text: 'Turn the hands to one hour after the time on the sign, then ring the bell.' },
+      { from: 7, to: 7, text: 'Turn the hands to the time on the sign, like 3:25. The small numbers around the edge count by fives for the long hand. Then ring the bell.' },
+      { to: 4, text: 'Tap the time sign to hear the request again for free.' },
+      { from: 6, to: 7, text: 'Tap the time sign to hear the request again for free.' },
     ],
-    finish: [
-      { to: 4, text: 'The round ends when the clock shows the asked-for time.' },
-      { from: 5, to: 5, text: 'The round ends when the right picture is chosen.' },
-      { from: 6, to: 6, text: 'The round ends when the clock shows one hour after the time it showed.' },
-      { from: 7, text: 'The round ends when the clock shows the asked-for time.' },
+    finish: [{ to: 7, text: 'Four correct answers complete the round.' }],
+    note: [
+      { to: 4, text: 'After two misses on a time, yellow hands show the answer to copy. Turning or replaying is free.' },
+      { from: 5, to: 5, text: 'After two misses on a time, the matching picture glows.' },
+      { from: 6, to: 7, text: 'After two misses on a time, yellow hands show the answer to copy. Turning or replaying is free.' },
     ],
-    note: 'The yellow hands show the answer to copy when help is asked for.',
   },
   'garden-rows': {
     goal: 'Plant a flower bed so no flower repeats in a row, or in a column.',

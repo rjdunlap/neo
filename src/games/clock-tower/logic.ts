@@ -110,7 +110,10 @@ export function spoken(time: number): string {
   if (m === 30) return `half past ${h}`;
   if (m === 15) return `quarter past ${h}`;
   if (m === 45) return `quarter to ${next}`;
-  return `${h}:${String(m).padStart(2, '0')}`;
+  const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+  const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty'];
+  const minutes = m < 10 ? `oh ${words[m]}` : m === 10 ? 'ten' : `${tens[Math.floor(m / 10)]}${m % 10 ? ` ${words[m % 10]}` : ''}`;
+  return `${words[h]} ${minutes}`;
 }
 
 /** The hour shown on the face for a time (1–12). */
@@ -130,4 +133,14 @@ export function demoAction(mode: ClockMode, hour: number, minute: number, task: 
   const targetHour = hourOf(task.time);
   if (hour !== targetHour) return { kind: 'hour', hour: targetHour };
   return { kind: 'check' };
+}
+
+/** The request stays visible; later tasks show the starting time, never the answer. */
+export function requestFor(mode: ClockMode, task: ClockTask): { heading: string; time: string; speech: string } {
+  const time = mode === 'later' ? task.from! : task.time;
+  return {
+    heading: mode === 'later' ? 'One hour after' : 'Set the clock to',
+    time: `${hourOf(time)}:${String(time % 60).padStart(2, '0')}`,
+    speech: spoken(time),
+  };
 }

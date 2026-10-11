@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-11 — Clock Tower words and control support
+
+- Built deep-dive slice 1 ([PR #165](https://github.com/rjdunlap/neo/pull/165)): truthful four-answer/how-to help, visible free request replay, explicit five-minute speech, length/shape hand markings and native pointer cancellation with destroy cleanup.
+- Tested claim `9eb64e4` (base `1a9a19d`) plus implementation diff at `http://localhost:5199`, with worktree-local dependencies/cache.
+- Passed: typecheck, 24 focused Clock Tower/how-to tests, production build (existing bundle warning), original icon/sticker source comparison and pinned seeded drawing snapshots. Rules check attainable distinct times, correct request/speech, later requests without answers, four tasks, band coverage and bot actions.
+- Browser: `BROWSER_SUITE=woods WOODS_ONLY=clock` passed level 1; restarted at `FROM_LEVEL=2` passed 2; final `FROM_LEVEL=3` passed 3–7. Free replay, exact signs (starting time at 6), hand drags, two misses/one hint, four-answer completion and saved reward checked. Earlier passes retained after sign spacing/cancellation changes; the final probe covers those changes. `BROWSER_SUITE=fingerdemo FINGER_ONLY=clock-tower FINGER_LEVELS=7` clean in 24.0 demonstration seconds; no page errors.
+- `node test-results/clock-support-probe.mjs` passed four view sizes (1024×768, 768×1024, 1366×768, 820×1180), request/face clearance, native cancellation and leaving during a chime; portrait reviewed at `test-results/browser/clock-tower-7-portrait.png`. Removing the native listener (`OLD_CANCEL=1`) fails the same cancellation assertion. Initial probe exposed ring/sign overlap, repaired with spacing; CSS bounds compared with the viewport after correcting the probe's coordinate units.
+- Not run: broad unit/browser/world/picnic/couch/offline suites (no routes, save schema, imported assets or couch changes). iPad, device speech and child understanding remain open. Changed Markdown local paths and diff check passed; session dev server stopped after checks.
+
 ## 2026-10-11 — Goodnight Room color groups
 
 - Built level 8 ([PR #164](https://github.com/rjdunlap/neo/pull/164)): two seeded color arrangements with two matches/two fair decoys, any answer order, spoken color feedback and the two-miss glow; pre-K 5–8, younger ranges and saved levels unchanged.
@@ -554,6 +563,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | --- | --- | --- | --- |
 | Goodnight Room color groups (`woods`, `fingerdemo`) | 2026-10-11: 38 focused tests, typecheck/build; level 8 wrong colors, glow, reverse answers and saved reward; demo clean in 5.7 s; portrait reviewed | Goodnight Room color groups entry | Broad suites not rerun; iPad, device speech and child color interpretation open |
 | Animal Snack words and guards (`woods`, `fingerdemo`) | 2026-10-11: 34 focused tests, typecheck/build; levels 1–5, retries/hints, exact count and saved rewards; demos 1/5 clean; portraits 3/5 and nearest-body regression | Animal Snack words and guards entry | Full suites/offline not rerun; iPad, speech and child play open |
+| Clock Tower support | 2026-10-11: typecheck, 24 focused tests, build, Clock Tower 1–7, ghost finger at 7 (24.0 s), four layouts/cancellation/portrait | Clock Tower words and control support entry | iPad and device speech open; broad suites not run |
 | Clock Tower deep dive | 2026-10-11: research and local Markdown links/anchors, diff check | Clock Tower deep dive entry | Docs only; no code or gameplay checks; device speech and child play open |
 | Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |
 | Bubble Pop dots (`fingerdemo`) | 2026-10-11: quantity/geometry rules, 28 focused tests, typecheck/build; level-10 demo clean in 12.8 s; portraits 7/9/10 and actual numeral clearance | Bubble Pop countable dots entry | No full ladder rerun; iPad, speech and child play open |
