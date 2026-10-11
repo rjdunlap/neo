@@ -1,6 +1,6 @@
 # Day by Day — first playable slice
 
-Claim: `codex/day-by-day`, draft PR pending. Game ID: `day-by-day`.
+Built on `codex/day-by-day`: [PR #147](https://github.com/rjdunlap/neo/pull/147). Game ID: `day-by-day`.
 
 The fun action is making a pretend week unfold: place a day, record its pictured weather, and see a little flower garden grow. The learning goal is weekday order, yesterday and tomorrow, and reading a week of observations. All seven days happen in one round; nothing uses the device date or asks for a daily return.
 

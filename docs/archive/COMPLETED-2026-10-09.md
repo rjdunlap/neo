@@ -64,6 +64,10 @@ Added a pre-K round with three weather changes. The pet starts in a complete out
 
 > **Archived 2026-10-09.** Finished items and build notes moved out of [ROADMAP.md](../ROADMAP.md) and [IDEAS.md](../IDEAS.md) as they stood at commit `6b2c02e`, so the live documents list only open work. This is history, not instructions: what each game does is in [GAMES.md](../GAMES.md), the checks that ran are in [VERIFICATION.md](../VERIFICATION.md), and what is still to do is in the [roadmap](../ROADMAP.md). Text is kept as written, so counts and "next" lists in it are as of the day it was written. Convention from here: when a roadmap item is finished, move it here (or to a later file in this folder) instead of leaving it checked off.
 
+## Day by Day first slice (2026-10-11)
+
+Added `day-by-day` in Cozy Village: a complete pretend week with spoken day-card exploration, explicit placement, weather records, yesterday/tomorrow across Sunday and Monday, and a sunny-day tally. Pre-K 1–2 and school 2–3; seeded weather, three unique answers per question, reversible counting marks, one hint after two misses on a question, and shell-owned stickers. A code-drawn flower garden counts the days. Every level has a ghost-finger demonstration, scoped how-to and spoken support; co-play and off-screen card play are included. Months, seasons and caterpillar changes remain proposed. [Definition](../day-by-day.md) · [PR #147](https://github.com/rjdunlap/neo/pull/147).
+
 ## From the roadmap
 
 ### Memory Match level 11: Fraction pictures (2026-10-10)

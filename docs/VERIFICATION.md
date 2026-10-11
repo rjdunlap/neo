@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Day by Day first slice
+
+- Added `day-by-day` in Cozy Village: pre-K 1–2 and school 2–3, seven in-game weekday placements/weather records, tomorrow/yesterday across Sunday/Monday, and a sunny-day tally. Card naming, record replay and reversible counting marks are free support; wrong committed answers teach and glow after two misses.
+- Tested `32dacf5` plus the Day by Day implementation diff at `http://localhost:5198`: typecheck, all 937 unit tests (127 files), and production build passed after integrating current main. Five new rule tests cover deterministic varied weather, week wrap, distinct reachable answers, reversible marks and large non-overlapping controls in four views.
+- `GAME_URL=http://localhost:5198 BROWSER_SUITE=week WEEK_LEVELS=1,3` passed: real selection/confirmation/weather taps, free wrong-card naming, two placement misses/one hint, a weather miss, seven records, tally revision, saved results/stickers, portrait and interrupted speech. Landscape/portrait screenshots reviewed. Later changes only cleaned cloud silhouettes and made the demo count sunny records visibly.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=day-by-day FINGER_LEVELS=1,2,3` passed on the final code, no misses/hints, in 35.9, 43.6 and 50.1 demo seconds. `node test-results/day-week-route.mjs` passed land-icon launch, level-3 intro, Play and held-home return to Cozy Village. Final cloud art, portrait intro and land screenshots reviewed; no page errors.
+- Not run: full world/picnic/couch/offline suites (navigation and persistence implementations unchanged), separate level-2 full speech play, iPad, actual device speech or child play. New local document link targets and `git diff --check` passed.
+
 ## 2026-10-11 — Pattern Train slice 6: same pattern in new pieces (levels 15–16)
 
 - `src/games/pattern-train/match.ts` (a second game class) and `buildMatch`, `structure`, `validPieces` in `logic.ts`; scoped how-to lines, voice lines, `autotouch()` for both levels, the browser loop raised to 16 levels with paths for both.
@@ -411,6 +419,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Day by Day (`week`, `fingerdemo`) | 2026-10-11: first/top-level real-input play, retries/hint, saved reward, reversible counting, portrait and interrupted speech; demos 1–3 clean (35.9, 43.6, 50.1 s), land entry/intro/return | Day by Day first slice entry | No iPad, actual device speech or child play; level-2 full speech play not run |
 | Orchard Rows (`orchard`, `fingerdemo`) | 2026-10-11: levels 1 and 3, replay, two misses/one hint, saved rewards, portrait and interrupted speech; demos 1–3 clean (23.1, 41.4, 46.5 s); land launch, intro and return | Orchard Rows first slice entry | No iPad, actual device speech or child play; separate level-2 manual play not run |
 | Puzzle Pals scenes (`smoke`, `fingerdemo`) | 2026-10-11: levels 1, 4, 7 smoke with portrait; demos at levels 1 and 7 clean (3.1, 32.7 s); scene pin, sky/ground and per-piece rule tests; original six pixel-identical | Puzzle Pals scene data and six new scenes entry | New scenes reviewed on a contact sheet only; no run played each new scene as a puzzle; original-scene fairness (slice 1) open; iPad and speech not checked |
 | Opposites content (`woods`) | 2026-10-10: levels 2–4, wrong choices, hint glow, supported completion, saved scores/stickers; 30 focused tests and typecheck | Opposites content and fairness entry | Both sides of new art reviewed; portrait, iPad, device speech and child play unverified |

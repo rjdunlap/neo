@@ -170,6 +170,12 @@ Mistakes and help: nothing is a miss, so `misses` is always 0. Running out, spar
 
 Not built: a saved week or market-week chart in the journal, recipe quality and advertising, a "close the stand" button (the home button always works), the Maker Harbor tickets and fair board that this game is the first slice of, and a couch version.
 
+### Day by Day
+
+*pre-K–school.* Make a whole pretend week in one round: tap one of three day cards to hear its name, then tap the placing arrow to commit it. Record each day's code-drawn sky by choosing sunny, cloudy or rainy. Each recorded day opens another flower in a playful garden; this is a day counter, not a plant-growth model. Nothing follows the device date or requires daily returns.
+
+Level 1 explicitly names the next day and finishes after seven weather records. Level 2 asks what follows the preceding day, then asks tomorrow after Sunday and yesterday before Monday, explaining the repeating week. Level 3 adds a tally of sunny records: tap week cards to mark or unmark them as you count, then choose the total. Tapping recorded cards replays their day and weather. Card naming, replay and counting marks are free support; only mistaken day confirmations or weather/number answers count as misses. Each wrong answer gets a boing and spoken explanation; two on the same question glow its answer and add one hint. One sticker per complete week, even with help. Pre-K covers 1–2; school covers 2–3. A ghost finger demonstrates every mode. Months, seasons and a caterpillar are future modes.
+
 ### Clock Tower
 
 *pre-K–school · after teaching clocks and JumpStart's clock activities.* Drag the clock's hands; the outer ring takes the long hand and the middle the short one, and each snaps to the marks the level uses. The short hand slides between numbers as the minutes pass, like real gears. Levels: the hour hand alone, o'clock, half past, quarter past and to, reading the clock to pick a daily-routine picture, one hour later, and (school, level 7) five-minute times such as 3:25, counting by fives with small helper numbers around the rim. A wrong time is read back aloud ("The clock says half past 4. We want 3 o'clock"); two misses show faint yellow target hands. On the hour, the tower chimes the hour.

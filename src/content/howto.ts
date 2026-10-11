@@ -14,6 +14,21 @@ import type { GameHowTo, GameModule, LevelLine } from '../games/types';
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'day-by-day': {
+    goal: 'Make and read a pretend week of days and weather.',
+    steps: [
+      'Tap day cards to hear their names, then tap the arrow to place the selected day in the next slot.',
+      'Look at the sky picture, then tap the matching weather button to record that day.',
+      { from: 2, to: 3, text: 'After Sunday, choose tomorrow and yesterday for the days spoken. Tap the arrow to confirm. The week repeats from Sunday to Monday.' },
+      { from: 3, to: 3, text: 'Count the sunny records and choose the total. Tap records to mark or unmark them as you count.' },
+    ],
+    finish: [
+      { to: 1, text: 'The round ends after all seven days and their weather are recorded.' },
+      { from: 2, to: 2, text: 'Record the week and answer two yesterday/tomorrow questions to finish.' },
+      { from: 3, text: 'Record the week, answer two day questions, and count the sunny days to finish.' },
+    ],
+    note: 'Card naming, replaying recorded days, and counting marks are free support. Two wrong answers glow the right choice. This is a pretend week, independent of the real date.',
+  },
   'orchard-rows': {
     goal: 'Plant an orchard in equal groups and count its trees.',
     steps: [

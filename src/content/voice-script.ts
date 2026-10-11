@@ -1373,6 +1373,23 @@ export const SCRIPT = {
   'lemon.restock': ['The ferry captain gives you {n} shells so the stand can open tomorrow!'],
   'lemon.done': ['The stand is closed. What a good week of lemonade!'],
 
+  'game.day-by-day': ['Day by Day!'],
+  'week.place': ['Find {day} for our pretend week. Tap a card to hear its name, then tap the arrow to place it.'],
+  'week.next': ['We just placed {day}. What day comes next? Tap a card to hear it, then tap the arrow to place it.'],
+  'week.name': ['{day}.'],
+  'week.weather': ["Look at {day}'s pretend sky. Tap the matching weather picture to record it."],
+  'week.record': ['{day} was {weather} in our pretend week.'],
+  'week.tomorrow': ['The week repeats after Sunday. If today is {day}, what day is tomorrow? Choose a card, then tap the arrow.'],
+  'week.yesterday': ['The week repeats. If today is {day}, what day was yesterday? Choose a card, then tap the arrow.'],
+  'week.tomorrowyes': ['Tomorrow is {day}. Sunday goes round to Monday!'],
+  'week.yesterdayyes': ['Yesterday was {day}. Sunday comes just before Monday!'],
+  'week.tally': ['Look back at our weather records. How many days were sunny? Tap records to mark them as you count, then choose the total.'],
+  'week.dayhint': ['We need {day} here. Tap its card, then the arrow.'],
+  'week.weatherhint': ['Look at the sky picture. This day is {weather}. Find the matching picture.'],
+  'week.tallyhint': ['Count each sun once. There are {n} sunny days in our pretend week.'],
+  'week.total': ['{n} sunny days! We counted the weather records.'],
+  'week.done': ['A whole pretend week! We placed the days and recorded their weather.'],
+
   count: ['{n}!'],
 } satisfies Record<string, string[]>;
 
