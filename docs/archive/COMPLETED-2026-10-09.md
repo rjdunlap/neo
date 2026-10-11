@@ -370,3 +370,9 @@ Rules cover seeded targets, reachable completion, conservation, overflow, recove
 ## Story Steps: six new stories (2026-10-11)
 
 Story Steps now has ten stories of four pictures each: the sandcastle, the sandwich, an apple tree, washing the dog, a rainy day and getting ready for bed join the flower, tower, snow friend and butterfly. Each level draws from its own pool (levels 1–2 build-up stories, level 4 change-over-time stories, 5–7 all ten), and extra pictures never come from a lookalike of the round's story (stack: tower, snow, sandcastle, sandwich; seed: flower, apple); level 7's two extras come from two different families. See [the deep dive](../deep-dives/story-steps.md#build-slices-in-order), slice 1.
+
+## Rainbow Fingers level 7 mixing fix (2026-10-10)
+
+Deep-dive slice 1, `codex/rainbow-fingers-mixing-fix` ([PR 135](https://github.com/rjdunlap/neo/pull/135)): recall-and-mix pot taps now pour into the bowl, so red and yellow make orange and the pumpkin can be painted, framed and rewarded. The shared `pours(mode)` predicate serves pot layout, live taps, hints, the bot and the rule-test harness. Existing levels, bands and the scoped how-to card retain their meaning.
+
+Typecheck, eight Rainbow Fingers rule tests and level 7 touch play (two wrong colors, one hint, completion, saved result, one sticker) passed. The level 7 ghost finger finished cleanly in 14 seconds. A small live probe failed with the old pot-tap rule and passed when the fix was restored. The next slice is free-painting gestures, larger pots and a nudge. Device speech, iPad touch feel and child play remain open.

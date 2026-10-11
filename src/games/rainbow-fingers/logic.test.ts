@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BRUSH_RADIUS, Coverage, fillPath, inside, mix, paintStep, PAINTED, pickThings, PLANS, RECIPES, scribble, scribbleArea, SPACING, THINGS, type PaintState, type Primary } from './logic';
+import { BRUSH_RADIUS, Coverage, fillPath, inside, mix, paintStep, PAINTED, pickThings, PLANS, pours, RECIPES, scribble, scribbleArea, SPACING, THINGS, type PaintState, type Primary } from './logic';
 import type { ColorName } from '../../art/palette';
 
 describe('Rainbow Fingers', () => {
+  it('pours in both mixing modes and directly selects paint in every other mode', () => {
+    expect(PLANS.map((plan) => pours(plan.mode))).toEqual([false, false, false, false, false, true, true]);
+  });
+
   it('mixes the three secondary colors, and a color with itself stays the same', () => {
     expect(mix('red', 'yellow')).toBe('orange');
     expect(mix('blue', 'yellow')).toBe('green');
@@ -18,7 +22,7 @@ describe('Rainbow Fingers', () => {
         const things = pickThings(plan, new Rng(seed));
         expect(things).toHaveLength(plan.count);
         expect(new Set(things.map((t) => t.color)).size).toBe(plan.count);
-        if (plan.mode === 'mix' || plan.mode === 'recall-mix') for (const t of things) expect(RECIPES[t.color]).toBeDefined();
+        if (pours(plan.mode)) for (const t of things) expect(RECIPES[t.color]).toBeDefined();
       }
     }
   });
@@ -55,7 +59,7 @@ describe('Rainbow Fingers', () => {
           if (m.do === 'frame') framed = true;
           else if (m.do === 'bowl') { st.poured = []; st.brush = null; }
           else if (m.do === 'pot') {
-            if (plan.mode === 'mix' || plan.mode === 'recall-mix') {
+            if (pours(plan.mode)) {
               if (st.poured.length >= 2) st.poured = [];
               st.poured.push(m.pot as Primary);
               st.brush = st.poured.length === 2 ? mix(st.poured[0], st.poured[1]) : (m.pot as ColorName);
