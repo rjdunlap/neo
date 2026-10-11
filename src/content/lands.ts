@@ -112,7 +112,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'bunny', color: 'purple' },
     backdrop: { sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x86c98f, 0x8fcf73], horizon: 0.4, clouds: 2, sun: true, seed: 139 },
     music: tune(103, 'bell', 80),
-    games: ['letter-trails', 'story-steps', 'word-monsters', 'photo-safari', 'goodnight-room', 'rhyme-time', 'opposites', 'clap-syllables'],
+    games: ['letter-trails', 'story-steps', 'word-monsters', 'photo-safari', 'goodnight-room', 'rhyme-time', 'opposites', 'clap-syllables', 'read-do'],
   },
   {
     id: 'tinker-lab',
