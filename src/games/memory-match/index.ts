@@ -10,7 +10,7 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { knownMismatch, makeDeck, nextCard, numberWord, type MemoryCard } from './logic';
+import { fraction, knownMismatch, makeDeck, nextCard, numberWord, type MemoryCard } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PLANS = [
@@ -24,8 +24,9 @@ const PLANS = [
   { pairs: 8, mode: 'attributes', name: 'Match both shape and color' },
   { pairs: 8, mode: 'letters', name: 'Match uppercase and lowercase letters' },
   { pairs: 10, mode: 'number-words', name: 'Match number words one–ten to numerals' },
+  { pairs: 3, mode: 'fractions', name: 'Match fraction pictures to names' },
 ] as const;
-const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 10 } };
+const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 11 } };
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
 
@@ -84,6 +85,19 @@ class MemoryMatch implements Game {
   }
 
   private face(card: MemoryCard): Container {
+    if (this.plan.mode === 'fractions') {
+      const amount = fraction(card.pair)!;
+      if (card.side) return label(card.pair === 2 ? 'three\nquarters' : amount.name, card.pair === 2 ? 26 : 30, swatch.orange.line);
+      const g = new Graphics();
+      const whole = 64, cellW = whole / 2, cellH = amount.denominator === 2 ? whole : whole / 2;
+      for (let part = 0; part < amount.denominator; part++) {
+        const x = -whole / 2 + (part % 2) * cellW;
+        const y = -whole / 2 + Math.floor(part / 2) * cellH;
+        g.rect(x, y, cellW, cellH).fill(part < amount.numerator ? swatch.orange.fill : cream)
+          .stroke({ width: 3, color: swatch.orange.line });
+      }
+      return g;
+    }
     if (this.plan.mode === 'letters') return label(card.side ? this.letters[card.pair].toLowerCase() : this.letters[card.pair], 74, swatch.purple.line);
     if (this.plan.mode === 'number-words') return label(card.side ? String(card.pair + 1) : numberWord(card.pair), card.side ? 70 : 38, swatch.teal.line);
     if (this.plan.mode === 'numbers') {
@@ -100,13 +114,14 @@ class MemoryMatch implements Game {
 
   get finished() { return this.remaining === 0; }
 
-  start() { void this.ctx.instruct(this.plan.mode === 'numbers' ? 'memory.number' : this.plan.mode === 'letters' ? 'memory.letter' : this.plan.mode === 'number-words' ? 'memory.number-word' : 'memory.start'); }
+  start() { void this.ctx.instruct(this.plan.mode === 'numbers' ? 'memory.number' : this.plan.mode === 'letters' ? 'memory.letter' : this.plan.mode === 'number-words' ? 'memory.number-word' : this.plan.mode === 'fractions' ? 'memory.fraction' : 'memory.start'); }
 
   private async choose(i: number) {
     const view = this.views[i];
     if (this.locked || view.matched || this.first === i || this.remaining === 0) return;
     view.front.visible = true; view.back.visible = false;
     sfx.pop(5 + this.cards[i].pair % 5);
+    if (this.plan.mode === 'fractions') void this.ctx.say('memory.fraction-card', { amount: fraction(this.cards[i].pair)!.name });
     if (this.first === null) {
       this.first = i;
       this.seen.add(i);

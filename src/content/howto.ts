@@ -158,6 +158,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 8, to: 8, text: 'A match needs the same shape and the same color.' },
       { from: 9, to: 9, text: 'A capital letter matches its small letter.' },
       { from: 10, text: 'A number word matches the numeral that names it.' },
+      { from: 11, text: 'A picture of equal parts matches the fraction that names the shaded parts.' },
     ],
     finish: 'The round ends when every pair is found.',
     note: 'Turning over a card you have not seen is exploring, not a mistake.',
