@@ -87,7 +87,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Market Stall | `market-stall` | PKS | 7 | 3 | designed | `claude/exciting-ride-je8lip` ([PR 118](https://github.com/rjdunlap/neo/pull/118)) | [market-stall.md](market-stall.md) |
 | Memory Match | `memory-match` | PKS | 10 | 3 | not started | — | — |
 | Monster Munch | `monster-munch` | LTPKS | 8 | 4 | not started | — | — |
-| Opposites | `opposites` | LTPK | 4 | 1 | designed | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |
+| Opposites | `opposites` | LTPK | 4 | 1 | slice 1 built (twelve pairs, fairness) | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |
 | Owl Walk Home | `owl-walk` | TPK | 4 | 4 | not started | — | — |
 | Pattern Train | `pattern-train` | PKS | 12 | 3 | not started | — | — |
 | Peekaboo Barn | `peekaboo-barn` | LTPK | 8 | 2 | designed | `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96)) | [peekaboo-barn.md](peekaboo-barn.md) |

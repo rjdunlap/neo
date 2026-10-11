@@ -8,30 +8,35 @@ import type { Rng } from '../../engine/random';
 export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs';
 
 export interface OppPlan {
+  level: number;
   mode: OppMode;
   rounds: number;
   name: string;
 }
 
 export const PLANS: OppPlan[] = [
-  { mode: 'switch', rounds: 8, name: 'Tap the picture: it flips to its opposite (big, small; open, closed)' },
-  { mode: 'find', rounds: 5, name: 'Find the one named: "find the big one"' },
-  { mode: 'opposite', rounds: 4, name: 'This one is hot: find its opposite among three' },
-  { mode: 'pairs', rounds: 2, name: 'Match three pairs of opposites' },
+  { level: 1, mode: 'switch', rounds: 8, name: 'Tap the picture: it flips to its opposite (big, small; open, closed)' },
+  { level: 2, mode: 'find', rounds: 5, name: 'Find the one named: "find the big one"' },
+  { level: 3, mode: 'opposite', rounds: 4, name: 'This one is hot: find its opposite among three' },
+  { level: 4, mode: 'pairs', rounds: 2, name: 'Match three pairs of opposites' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Each concept has two sides; side 0 and side 1 are opposites. */
 export const CONCEPTS = {
-  size: ['big', 'small'],
-  mood: ['happy', 'sad'],
-  height: ['up', 'down'],
-  lid: ['open', 'closed'],
-  cup: ['full', 'empty'],
-  temp: ['hot', 'cold'],
-  sky: ['day', 'night'],
-  speed: ['fast', 'slow'],
+  size: { words: ['big', 'small'], family: 'size', from: 1 },
+  mood: { words: ['happy', 'sad'], family: 'face', from: 1 },
+  height: { words: ['up', 'down'], family: 'position', from: 1 },
+  lid: { words: ['open', 'closed'], family: 'container', from: 1 },
+  cup: { words: ['full', 'empty'], family: 'container', from: 1 },
+  temp: { words: ['hot', 'cold'], family: 'temperature', from: 1 },
+  sky: { words: ['day', 'night'], family: 'sky', from: 1 },
+  speed: { words: ['fast', 'slow'], family: 'speed', from: 1 },
+  stature: { words: ['tall', 'short'], family: 'size', from: 2 },
+  lamp: { words: ['on', 'off'], family: 'lamp', from: 2 },
+  wake: { words: ['awake', 'asleep'], family: 'face', from: 2 },
+  basket: { words: ['in', 'out'], family: 'position', from: 2 },
 } as const;
 
 export type Concept = keyof typeof CONCEPTS;
@@ -42,7 +47,7 @@ export interface Card {
   side: 0 | 1;
 }
 
-export const word = (c: Card) => CONCEPTS[c.concept][c.side];
+export const word = (c: Card) => CONCEPTS[c.concept].words[c.side];
 
 export interface OppRound {
   /** Cards on screen. */
@@ -51,9 +56,28 @@ export interface OppRound {
   ask?: Card;
 }
 
+export const poolFor = (level: number): Concept[] => CONCEPT_IDS.filter((c) => CONCEPTS[c].from <= level);
+
+/** Keep stickers independent of future playable-pool edits. */
+export const STICKER_CONCEPTS = ['sky', 'temp', 'cup', 'lid', 'stature', 'lamp', 'wake', 'basket'] as const satisfies readonly Concept[];
+
+/** Choose different families so incidental size, mood or container clues cannot supply a second reasonable answer. */
+function differentFamilies(pool: readonly Concept[], rng: Rng, count: number, exclude?: Concept): Concept[] {
+  const selected: Concept[] = [];
+  const families = new Set(exclude ? [CONCEPTS[exclude].family] : []);
+  for (const c of rng.shuffle([...pool])) {
+    if (families.has(CONCEPTS[c].family)) continue;
+    selected.push(c);
+    families.add(CONCEPTS[c].family);
+    if (selected.length === count) return selected;
+  }
+  throw new Error('Opposites pool needs more distinct families');
+}
+
 export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   const out: OppRound[] = [];
-  const order = rng.shuffle([...CONCEPT_IDS]);
+  const pool = poolFor(plan.level);
+  const order = rng.shuffle([...pool]);
   for (let i = 0; i < plan.rounds; i++) {
     const concept = order[i % order.length];
     const side = rng.int(0, 1) as 0 | 1;
@@ -61,10 +85,10 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
     else if (plan.mode === 'find') out.push({ cards: rng.shuffle([{ concept, side: 0 }, { concept, side: 1 }]), ask: { concept, side } });
     else if (plan.mode === 'opposite') {
       // The opposite, plus two pictures from other concepts.
-      const others = rng.shuffle(CONCEPT_IDS.filter((c) => c !== concept)).slice(0, 2).map((c) => ({ concept: c, side: rng.int(0, 1) as 0 | 1 }));
+      const others = differentFamilies(pool, rng, 2, concept).map((c) => ({ concept: c, side: rng.int(0, 1) as 0 | 1 }));
       out.push({ ask: { concept, side }, cards: rng.shuffle([{ concept, side: (1 - side) as 0 | 1 }, ...others]) });
     } else {
-      const three = rng.shuffle([...CONCEPT_IDS]).slice(0, 3);
+      const three = differentFamilies(pool, rng, 3);
       out.push({ cards: rng.shuffle(three.flatMap((c) => [{ concept: c, side: 0 as const }, { concept: c, side: 1 as const }])) });
     }
   }

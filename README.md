@@ -121,7 +121,7 @@ There are seventy-six games, listed below. "Ages" lists the bands each game has 
 | Ramp Race | pre-K–school | tap the ramp to make it taller and roll a toy car | stop on a star, choose height and floor (carpet, wood, ice), fair tests comparing two lanes |
 | Critter Sort | pre-K–school | drag critters into a hoop: "wearing a hat" | two hoops, overlapping hoops where the middle is both, guess the rule, a hoop for "not" |
 | Treasure Map | pre-K–school | dig where the apple row meets the red column | grid names like B3, putting things at named squares, following directions ("2 left, then 3 up"), then combining two landmark clues |
-| Opposites | lap–pre-K | tap a picture: it flips to its opposite (big, small; open, closed) | find the one named, find the opposite among three, match opposite pairs |
+| Opposites | lap–pre-K | tap a picture: it flips to its opposite (big, small; open, closed) | twelve picture pairs from level 2; find the one named, find the opposite among three, match opposite pairs |
 | Picture Graph | pre-K–school | count critters and build their bars, one block each | which has the most and fewest, how many more, reading a finished graph (how many in all, which two are the same), then a key where each block is two critters (build from pairs, then read it: how many in all, how many more); level 7 records one graph in tallies grouped by five, then builds it and compares counts |
 | Rhyme Time | pre-K–school | which picture rhymes with "cat"? | four choices, find the rhyming pair, odd one out |
 | Beat Builder | preschool–school | tap squares on a beat grid; the playhead loops | copy a beat you can see, copy one by ear, make a pattern repeat, a longer three-instrument beat |
