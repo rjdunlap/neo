@@ -35,6 +35,16 @@ const VIEWS = {
 const groundOf = (h: number) => h * 0.4;
 
 describe('lands', () => {
+  it('shows Robot Path among preschool’s Tinker Lab games and keeps it on younger signposts', () => {
+    const land = landOf('robot-path')!;
+    expect(land.id).toBe('tinker-lab');
+    expect(visibleIn(land, 'preschool', GAMES).map(g => g.id)).toContain('robot-path');
+    expect(olderIn(land, 'preschool', GAMES).map(g => g.id)).not.toContain('robot-path');
+    for (const band of ['lap', 'toddler'] as const) {
+      expect(olderIn(land, band, GAMES).map(g => g.id)).toContain('robot-path');
+    }
+  });
+
   it('give every island game exactly one land, and only island games', () => {
     const listed = LANDS.flatMap((l) => l.games);
     expect(new Set(listed).size).toBe(listed.length);

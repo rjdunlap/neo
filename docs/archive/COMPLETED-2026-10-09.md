@@ -423,3 +423,7 @@ Level 6 extends pre-K to 5–6. In a seeded bedroom or barn, put the other five 
 ## Robot Path: say what happened (2026-10-11)
 
 Deep-dive slice 1 ([PR #151](https://github.com/rjdunlap/neo/pull/151)): empty Play asks for arrows without a miss; collisions jiggle the robot and say "A bump!"; an open-ground stop explains that it needs more steps. Step-level hints preserve any shortest route already started rather than clearing it to follow the default BFS route. Counted/looped teaching solutions, level IDs, bands and reward accounting are unchanged. Rule tests enumerate every shortest-route prefix across the 18 step boards; level-6 real-input regression and ghost-finger demonstration passed. Next: preschool opening at levels 1–2, then the remaining ladder slices in the deep dive.
+
+## Robot Path preschool opening (2026-10-11)
+
+[PR #154](https://github.com/rjdunlap/neo/pull/154) opens existing levels 1–2 to preschool. Six seeded boards are rock-free 3 × 3 grids with solutions of one to three steps; level 2 keeps its fourth spare slot. Pre-K 1–6 and school 4–12, saved IDs, couch play, narration and controls retain their ranges and behavior. The preschool inventory grows from 60 to 61 games. Typecheck and 59 targeted rule, registry, lands, difficulty and how-to tests passed; build and browser checks were not repeated under the band-opening tier. Device speech and preschool understanding remain person checks.

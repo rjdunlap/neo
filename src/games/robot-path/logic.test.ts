@@ -3,6 +3,19 @@ import { Rng } from '../../engine/random';
 import { allowed, boardFor, compress, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
 
 describe('robot routes', () => {
+  it('keeps every preschool board small, rock-free and solvable in at most three single steps', () => {
+    for (const board of ROBOT_BOARDS.slice(0, 2).flat()) {
+      expect(board.size).toBe(3);
+      expect(board.rocks).toEqual([]);
+      expect(board.mode ?? 'steps').toBe('steps');
+      expect(board.limit).toBeLessThanOrEqual(4);
+      const route = shortestPath(board);
+      expect(route.length).toBeGreaterThan(0);
+      expect(route.length).toBeLessThanOrEqual(3);
+      expect(runPath(board, route).success).toBe(true);
+    }
+  });
+
   it('offers three distinct valid boards per level without changing the controls or budget', () => {
     expect(ROBOT_BOARDS).toHaveLength(10);
     for (const [i, boards] of ROBOT_BOARDS.entries()) {
