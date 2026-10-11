@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, pieceColor, pieceShape, wantedChoice } from './logic';
+import { buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -23,7 +23,7 @@ describe('Pattern Train', () => {
           expect(new Set(choices[0]).size, plan.name).toBe(CHOICES);
           continue;
         }
-        if (plan.kind === 'pair') continue; // its own test below
+        if (plan.kind === 'pair' || plan.tunnel) continue; // their own tests below
         const showing = sequence.map((v, i) => (targets.includes(i) ? null : v));
         // The visible cars repeat exactly the planned unit, no shorter.
         const p = shortestRepeat(showing);
@@ -70,7 +70,7 @@ describe('Pattern Train', () => {
 
   it('asks for every place in the repeat, so copying the first car is not the answer', () => {
     PATTERN_PLANS.forEach((plan, i) => {
-      if (plan.numberSteps || plan.far) return;
+      if (plan.numberSteps || plan.tunnel) return;
       const unit = plan.pattern.length;
       const slots = new Set<number>();
       let notFirst = 0;
@@ -86,15 +86,25 @@ describe('Pattern Train', () => {
     });
   });
 
-  it('keeps the far levels at the seventh car, as their lines say, until they are rebuilt', () => {
-    for (const plan of PATTERN_PLANS.filter((p) => p.far)) {
-      expect(plan.kind).not.toBe('pair');
-      for (let seed = 1; seed <= 50; seed++) {
-        const { sequence, targets } = buildTrain(plan, new Rng(seed));
-        expect(sequence).toHaveLength(7);
-        expect(targets).toEqual([6]);
-      }
+  it('rolls the tunnel train through four to seven hidden cars, and the car that comes out is found by counting', () => {
+    const plan = PATTERN_PLANS.find((p) => p.tunnel)!;
+    const hiddenSeen = new Set<number>();
+    let notBefore = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const { sequence, targets, hidden, choices } = buildTrain(plan, new Rng(seed));
+      expect(sequence).toHaveLength(7);
+      expect(targets).toEqual([6]);
+      expect(hidden).toBeGreaterThanOrEqual(TUNNEL_HIDDEN.min);
+      expect(hidden).toBeLessThanOrEqual(TUNNEL_HIDDEN.max);
+      hiddenSeen.add(hidden!);
+      // Six cars show two repeats of the unit; the answer is the place (6 + hidden) mod 3.
+      expect(sequence.slice(3, 6)).toEqual(sequence.slice(0, 3));
+      expect(sequence[6]).toBe(sequence[(6 + hidden!) % 3]);
+      if (sequence[6] !== sequence[5]) notBefore++;
+      expect(choices[0]).toEqual([0, 1, 2]);
     }
+    expect(hiddenSeen.size).toBe(4);
+    expect(notBefore).toBeGreaterThan(100);
   });
 
   it('makes the numbered train a counting question: varied starts, answers and places, no rule of thumb', () => {

@@ -33,6 +33,9 @@ class PatternTrain implements Game {
   readonly choiceValues: number[][];
   /** The colors and shapes a color-and-shape train uses this round. */
   readonly look?: PairLook;
+  /** How many cars hide in the tunnel (the tunnel level only). */
+  readonly hidden?: number;
+  private readonly tunnel = new Container();
   private target = 0;
   readonly cars: Container[] = [];
   readonly choices: Container[] = [];
@@ -50,6 +53,7 @@ class PatternTrain implements Game {
   private wrong = 0;
   private done = false;
   private playing = false;
+  private revealing = false;
   /** The bell pattern has been played once, so a listener has something to go on. */
   private played = false;
   private clock = 0;
@@ -61,7 +65,7 @@ class PatternTrain implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = patternPlan(ctx.level);
-    ({ sequence: this.sequence, targets: this.targets, choices: this.choiceValues, look: this.look } = buildTrain(this.plan, ctx.rng));
+    ({ sequence: this.sequence, targets: this.targets, choices: this.choiceValues, look: this.look, hidden: this.hidden } = buildTrain(this.plan, ctx.rng));
     ctx.stage.addChild(this.background, this.tracks, this.scene);
     this.scene.addChild(this.glow, this.hintsGlow, this.selection);
     this.sequence.forEach((value, i) => {
@@ -83,15 +87,46 @@ class PatternTrain implements Game {
       });
       this.choices.push(choice); this.scene.addChild(choice);
     }
+    if (this.hidden !== undefined) this.buildTunnel(this.hidden);
     this.replay = new RoundButton(replayArt(), swatch.yellow,  50, () => void this.playPattern());
     this.confirm = new RoundButton(playIcon(), swatch.green,  50, () => { if (this.selected !== null) this.choose(this.selected); });
     this.confirm.visible = this.plan.kind === 'bell';
     this.ring.eventMode = 'none';
-    this.scene.addChild(this.replay, this.confirm, this.ring);
+    this.scene.addChild(this.tunnel, this.replay, this.confirm, this.ring);
+  }
+
+  /** The tunnel after the sixth car: a dark arch with one dot for each hidden car. Tapping it says the count again. */
+  private buildTunnel(hidden: number) {
+    const arch = new Graphics().roundRect(-44, -66, 88, 140, 40).fill(swatch.brown.line).roundRect(-34, -56, 68, 130, 32).fill(0x3b2f3f);
+    this.tunnel.addChild(arch);
+    for (let i = 0; i < hidden; i++) {
+      const row = i < 4 ? 0 : 1, inRow = row === 0 ? Math.min(4, hidden) : hidden - 4;
+      this.tunnel.addChild(new Graphics().circle(((i % 4) - (inRow - 1) / 2) * 16, -22 + row * 28, 6).fill(swatch.yellow.fill));
+    }
+    onTap(this.tunnel, () => void this.ctx.say('pattern.tunnel', { n: hidden }), { radius: 55 });
+  }
+
+  /** After two misses the hidden cars roll through one by one, so she can count them and see where the pattern goes. */
+  private async showHidden() {
+    if (this.hidden === undefined || this.revealing) return;
+    this.revealing = true;
+    const unit = this.plan.pattern.length, start = this.sequence.length - 1;
+    const tokens = this.sequence.slice(0, unit);
+    const minis: Container[] = [];
+    for (let j = 0; j < this.hidden; j++) {
+      const mini = trainSymbol(this.plan.kind, tokens[(start + j) % unit], 16);
+      mini.position.set(this.tunnel.x + ((j % 4) - (Math.min(4, this.hidden - Math.floor(j / 4) * 4) - 1) / 2) * 54, this.tunnel.y - 120 - Math.floor(j / 4) * 40);
+      this.scene.addChild(mini); minis.push(mini);
+      sfx.bell(4 + tokens[(start + j) % unit] * 3, 0.3);
+      await this.ctx.tw.wait(0.45);
+    }
+    await this.ctx.tw.wait(1.2);
+    for (const m of minis) m.destroy({ children: true });
+    this.revealing = false;
   }
 
   start() {
-    void this.ctx.instruct(this.plan.kind === 'bell' ? 'pattern.sound' : this.plan.kind === 'number' ? 'pattern.number' : this.plan.kind === 'pair' ? 'pattern.pair' : this.plan.far ? 'pattern.far' : 'pattern.start');
+    void this.ctx.instruct(this.plan.kind === 'bell' ? 'pattern.sound' : this.plan.kind === 'number' ? 'pattern.number' : this.plan.kind === 'pair' ? 'pattern.pair' : this.hidden !== undefined ? 'pattern.tunnel' : 'pattern.start', this.hidden !== undefined ? { n: this.hidden } : undefined);
     if (this.plan.kind === 'bell') void this.ctx.tw.wait(1.5).then(() => this.playPattern());
   }
 
@@ -119,7 +154,7 @@ class PatternTrain implements Game {
       const picked = this.choiceValues[this.target][value], answer = this.sequence[index];
       // A color-and-shape train says which part was right.
       void this.ctx.say(this.look && pieceColor(picked) === pieceColor(answer) ? 'pattern.colorRight' : this.look && pieceShape(picked) === pieceShape(answer) ? 'pattern.shapeRight' : 'pattern.wrong');
-      if (this.wrong === 2) { this.hints++; void this.ctx.say('pattern.hint'); }
+      if (this.wrong === 2) { this.hints++; void this.ctx.say('pattern.hint'); void this.showHidden(); }
       this.layoutGlow();
       return;
     }
@@ -140,7 +175,10 @@ class PatternTrain implements Game {
     const y = v.h * 0.4;
     this.tracks.clear().moveTo(35, y + 80).lineTo(v.w - 35, y + 80).stroke({ width: 8, color: swatch.brown.line });
     for (let x = 35; x < v.w; x += 32) this.tracks.moveTo(x, y + 70).lineTo(x + 8, y + 94).stroke({ width: 5, color: swatch.brown.fill });
-    this.cars.forEach((c, i) => c.position.set(55 + (i + 0.5) * (v.w - 110) / this.cars.length, y));
+    // The tunnel takes a place of its own before the last car.
+    const slots = this.cars.length + (this.hidden !== undefined ? 1 : 0), slot = (i: number) => 55 + (i + 0.5) * (v.w - 110) / slots;
+    this.cars.forEach((c, i) => c.position.set(slot(this.hidden !== undefined && i === this.cars.length - 1 ? i + 1 : i), y));
+    if (this.hidden !== undefined) this.tunnel.position.set(slot(this.cars.length - 1), y + 4);
     this.choices.forEach((c, i) => c.position.set(v.w / 2 + (i - (this.choices.length - 1) / 2) * 170, v.h * 0.76));
     this.replay.position.set(v.w -  70,  70);
     this.confirm.position.set(v.w - 90, v.h * 0.76);
