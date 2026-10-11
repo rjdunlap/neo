@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-10 — Read & Do first slice
+
+- Built three seeded reading levels in Story Grove: color words, duck-size phrases and animal/action sentences. Added per-word and whole-sign listening support, wrong-meaning animations, one persistent hint after two misses per sign and the ghost finger.
+- Typecheck, all 898 unit tests (124 files) and the production build passed. Rules cover unambiguous answers, complete pools, seeded variation, animal/verb distractors, spoken vocabulary and band windows; registry, land layout and scoped how-to tests passed.
+- `BROWSER_SUITE=readdo` passed levels 1–3: real word/speaker taps with no hint charge, two wrong choices and one glow, supported completion, saved miss/hint counts and a sticker. Leaving during an action produced no page errors.
+- Landscape and level 3 portrait screenshots reviewed. `fingerdemo FINGER_ONLY=read-do FINGER_LEVELS=1,2,3` finished cleanly in 7.7, 5.3 and 10.5 seconds. `git diff --check` passed; new local links resolve.
+- Release checks are pending before publishing to main; no unrelated game suites were repeated during feature verification.
+- iPad touch feel, device speech, child comprehension and independent reading remain open in the roadmap.
+
 ## 2026-10-10 — Goodnight Room barn and animals
 
 - Built seeded bedroom/barn rooms and level 5 living-animal category play; preschool is 3–5 and pre-K opens at 5. Updated the spoken hints, scoped how-to, registry, inventory and roadmap.
@@ -269,6 +278,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
 | Goodnight Room barn and animals (`woods`, `fingerdemo`) | 2026-10-10: levels 1–5, wrong objects and ordered friends, hint, reverse-order animals, saved score/sticker; seeded barn in portrait; demos 1/5 clean in 8.8/7.1 s | Goodnight Room barn and animals entry | Portrait screenshots reviewed; iPad touch, device speech and child play open |
 | Duckling Parade 10 (`arcade`, `fingerdemo`) | 2026-10-10: level 10 passed with two deliberate misses, hint, completion, saved sticker; ghost finger finished cleanly in 16.8 s | Duckling Parade 9–10 entry | Landscape screenshot reviewed; iPad touch feel, device speech and child play remain open |

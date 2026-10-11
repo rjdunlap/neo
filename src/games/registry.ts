@@ -79,6 +79,7 @@ import { islandBridges } from './island-bridges';
 import { lemonadeStand } from './lemonade-stand';
 import { habitatHelpers } from './habitat-helpers';
 import { fillDump } from './fill-dump';
+import { readDo } from './read-do';
 import type { GameModule } from './types';
 
 /**
@@ -160,6 +161,7 @@ export const GAMES: GameModule[] = [
   lemonadeStand,
   habitatHelpers,
   fillDump,
+  readDo,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

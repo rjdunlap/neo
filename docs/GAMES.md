@@ -263,6 +263,10 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ## Story Grove (stories)
 
+### Read & Do
+
+*pre-K–school · from the gap-review Read & Do sketch.* Read a printed sign, then tap a picture to bring its meaning into the scene. Level 1 visits red, blue and yellow once each, with three hat choices. Level 2 visits big duck and small duck with two picture choices. School level 3 visits all four combinations of duck/cat and jump/sleep: four picture cards use an upward arrow for jump and a Z for sleep, so both the animal and verb matter. Each pool and its choice positions are shuffled with the round's seeded RNG; no sign is automatically spoken or decorated with its answer. Every printed word is an unscaled 108-by-100 target, and a separate speaker replays the sign word by word. These listening supports are free and do not count as hints. A wrong choice acts out its meaning and names it, then re-reads the sign; each wrong choice is one miss and the second on that sign adds one glow hint. The hint remains through retries without further hint charges. Complete the pool for one shell-awarded sticker, including with help. Co-play: read the sign together and let the child choose; off-screen: write a short sign to match a toy or drawing. Listening-supported completion is not independent reading evidence; actual device speech and child comprehension remain unjudged. More vocabulary, ordered actions and connected stories remain proposals.
+
 ### Letter Trails
 
 *preschool–school.* Defines all 26 capitals as ordered strokes. A firefly and moving beacon guide the finger; successive checkpoints enforce the trail while tolerating imprecise motion. Each finished letter becomes a code-drawn illustration with a spoken association. Top levels spell short words and the child's name. Accented Latin names normalize to A–Z; names with no supported letters fall back to PIP. Additional scripts would need their own stroke data.
