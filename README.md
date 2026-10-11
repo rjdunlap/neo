@@ -58,7 +58,7 @@ There are seventy-six games, listed below. "Ages" lists the bands each game has 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
 | Bubble Pop | lap–school | pop anything | pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 |
-| Rainbow Fingers | lap–school | rainbow or color-pot finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering and mixing a pumpkin’s orange |
+| Rainbow Fingers | lap–school | rainbow or color-pot finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering a pumpkin’s orange, pouring red and yellow into the bowl and painting it |
 | Jelly Drums | lap–school | free play on five notes | copy a tune of 2 to 5 notes |
 | Song Maker | lap–school | tap jellies on a looping beat | copy songs by shadows or a card, continue a pattern, find a tune by ear |
 | Peekaboo Barn | lap–pre-K | tap to find who's hiding | find an animal, then remember hiding places |

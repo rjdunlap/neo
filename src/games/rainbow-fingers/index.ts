@@ -13,7 +13,7 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { frameIcon } from '../../ui/icons';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { BRUSH_RADIUS, Coverage, fillPath, MARGIN, mix, paintStep, PAINTED, pickThings, planFor, RECIPES, scribble, scribbleArea, SPACING, type PaintPlan, type Primary, type Thing } from './logic';
+import { BRUSH_RADIUS, Coverage, fillPath, MARGIN, mix, paintStep, PAINTED, pickThings, planFor, pours, RECIPES, scribble, scribbleArea, SPACING, type PaintPlan, type Primary, type Thing } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PAPER = 0xfffdf6;
@@ -251,7 +251,7 @@ class RainbowFingers implements Game {
   }
 
   private buildPots() {
-    const mixing = this.plan.mode === 'mix' || this.plan.mode === 'recall-mix';
+    const mixing = pours(this.plan.mode);
     const list: (ColorName | 'rainbow')[] = mixing ? PRIMARIES : POTS;
     const slots = list.length + (mixing ? 1.4 : 0);
     this.pots.addChild(this.potGlow, this.potRing);
@@ -286,7 +286,7 @@ class RainbowFingers implements Game {
 
   private pick(color: ColorName | 'rainbow', pot: Container, i: number) {
     sfx.bell(4 + i, 0.25);
-    if (this.plan.mode === 'mix' && color !== 'rainbow') {
+    if (pours(this.plan.mode) && color !== 'rainbow') {
       void this.pour(color as Primary, pot);
       return;
     }
@@ -380,7 +380,7 @@ class RainbowFingers implements Game {
   private rightPots(): (ColorName | 'rainbow')[] {
     const color = this.picture?.thing.color;
     if (!color) return [];
-    return this.plan.mode === 'mix' || this.plan.mode === 'recall-mix' ? [...RECIPES[color]!] : [color];
+    return pours(this.plan.mode) ? [...RECIPES[color]!] : [color];
   }
 
   private showHint() {
@@ -402,13 +402,13 @@ class RainbowFingers implements Game {
     this.lastNag = this.clock;
     const { id: thing, color } = pic.thing;
     if (!this.brushName) {
-      void this.ctx.say(this.plan.mode === 'mix' || this.plan.mode === 'recall-mix' ? 'paint.mixhow' : 'paint.pick', { color, ...this.recipeVars() });
+      void this.ctx.say(pours(this.plan.mode) ? 'paint.mixhow' : 'paint.pick', { color, ...this.recipeVars() });
       return;
     }
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'mix' || this.plan.mode === 'recall-mix') void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
+    if (pours(this.plan.mode)) void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
     else void this.ctx.say('paint.wrong', { wrong: this.brushName, thing, color });
     if (this.wrongs === 2) this.showHint();
   }

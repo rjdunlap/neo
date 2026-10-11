@@ -106,9 +106,13 @@ Building playable things is the point; checks serve it. Earlier sessions spent m
 | New game or a new interaction | Typecheck, unit tests, then **one** scripted play of the new game through a filter (first and last level, one wrong answer, one hint) and one portrait screenshot. Run `npm run build` only if shared files or assets changed. |
 | Shell, engine, save or navigation | Typecheck, unit tests, build, the one or two suites of the games that lean on the change most, `world` if navigation changed, and the production offline check only if persistence, assets or navigation changed. |
 | Couch catalog or controls | `BROWSER_SUITE=couchgames` filtered to the new or changed games. The full `couch` and `couchcourse` suites only when trip, face-off, finale or course code changed. |
-| Release candidate, before a push to `main` | Typecheck, unit tests, build, then `world`, `picnic`, `couch` and the offline check. The hour-long combined flow only when the grown-up asks for it. |
+| Existing-game bug fix on an unchanged interaction | Typecheck, that game's rule tests, and one filtered regression play. Run its `fingerdemo` if the fix affects the bot or its demonstrated action. Build only if shared files or assets changed. |
+| Publishing a verified change to `main` | Use the change's tier above; publication adds no extra checks. Reuse passing evidence for unchanged code. |
+| Full release check, explicitly requested by the grown-up | Typecheck, unit tests, build, then `world`, `picnic`, `couch` and the offline check. The hour-long combined flow only when the grown-up asks for it. |
 
 How to keep it light:
+
+- **Publishing does not widen the check scope.** A one-game fix or level uses its filtered checks, even when pushed to `main`. Run broader suites only for affected shared behavior: `world` for navigation, the offline check for persistence/assets/navigation, `picnic` for story flow, and full `couch`/`couchcourse` for trip/face-off/finale/course changes. A docs-only push uses links and `git diff --check`.
 
 - **Unit tests are the main proof.** Put rules in `logic.ts` and test each property you would otherwise check by playing: solvable, fair, valid targets, a hint that leads somewhere. Do not drive the browser to learn something a test can assert.
 - **Do not repeat what is already recorded.** If the [coverage summary](docs/VERIFICATION.md#coverage-summary) records a suite passing and the area has not changed since, it counts. Never re-run a passing suite after a comment, docs or test-only edit, or "to be sure".

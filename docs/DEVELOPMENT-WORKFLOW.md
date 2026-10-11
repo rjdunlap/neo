@@ -1,6 +1,6 @@
 # Game and level development workflow review
 
-Reviewed on 2026-10-10 from eight past Codex chats, current Git worktrees and branches, pull requests, and the verification log. This is a sampled review, not a timing study of all development. The [contributor guidance](../AGENTS.md) remains the workflow contract; the [verification budget](../AGENTS.md#verification-budget) remains unchanged.
+Reviewed on 2026-10-10 from eight past Codex chats, current Git worktrees and branches, pull requests, and the verification log. This is a sampled review, not a timing study of all development. The [contributor guidance](../AGENTS.md) remains the workflow contract; the [verification budget](../AGENTS.md#verification-budget) now includes the developer's 2026-10-10 decision: publishing to main adds no checks beyond the changed area's tier.
 
 ## What the sessions show
 
@@ -10,7 +10,7 @@ Reviewed on 2026-10-10 from eight past Codex chats, current Git worktrees and br
 | Fresh worktrees repeatedly lacked dependencies | Robot Path, Duckling Parade and Market Stall sessions first failed to find TypeScript; borrowed dependency directories then caused cache/write problems | Use worktree-local `npm ci`. Reuse the package-manager download cache, rather than another worktree's dependency directory. |
 | Server ports and caches consumed debugging time | Fill and Dump and Read & Do tried occupied ports; Robot Path tried several borrowed cache arrangements | Choose an explicit port with `--strictPort`; use the identical URL in checks and keep caches local. Stop servers at closeout. |
 | Final integration sometimes repeated feature verification | Market Stall integrated newer map work after its first browser pass, then repeated the filtered play and demo | Fetch and integrate before the final checks. After later integration, inspect dependencies and rerun the proportionate checks; preserve evidence for unaffected code. |
-| Release checks dominate some otherwise small slices | Fill and Dump's logged `world`, `picnic`, `couch` and offline commands took about 16.6 minutes combined; Goodnight Room recorded the same release set shortly before it | Keep feature checks targeted. Release batching could save substantial time, but needs a developer decision; current pre-main checks still apply. |
+| Release checks dominate some otherwise small slices | Fill and Dump's logged `world`, `picnic`, `couch` and offline commands took about 16.6 minutes combined; Goodnight Room recorded the same release set shortly before it | Decision 2026-10-10: use the changed area's tier for publication too. Broad suites follow affected shared behavior or an explicit full-release request. |
 | Completion and verification records can diverge | Read & Do's idle chat had no final answer in the retrieved turn, its verification entry still said release checks pending, but PR 130 was merged | Close the verification entry on the published tree and include an explicit final status, tested revision, remaining checks and server cleanup. |
 | Shared documentation conflicts add work | Market Stall and Duckling Parade encountered integration conflicts around verification records | Append a short entry, edit only the affected coverage row, and avoid reformatting unrelated tables. Keep counts in README and roadmap as already required. |
 
@@ -29,11 +29,10 @@ For a docs-only session, step 5 means local links and `git diff --check`; no Typ
 
 ## Further improvements worth a separate slice
 
-These are proposals, not implemented helpers or changes to release policy.
+These are proposals, not implemented helpers. Targeted verification before publication is already the policy.
 
 - **One game check command.** A small manifest could map stable game IDs to existing suite filters and level selectors. A command accepting a game and level could print its rule test, play-through and finger-demo commands, with a dry-run default. Fail on unknown IDs or unsupported selectors instead of silently running the entire suite. Keep the README suite table authoritative until that helper exists.
 - **Safer snapshot serving.** The current snapshot script uses one default directory and port 5180. Two sessions can overwrite that shared copy. Give each snapshot its own directory, port and cache, include the source revision in the startup output, and freeze the test script along with the source. This requires a scripts change and a focused startup/isolation check.
-- **Batch releases, if the developer wants them.** Several verified, non-overlapping level PRs could share one release candidate with one `world`/`picnic`/`couch`/offline pass. That would reduce repeated release work, but delay individual deployment. Do not skip today's pre-main requirement without a decision to adopt this policy.
 - **Keep coverage summaries short.** The unit/build coverage row currently carries a long history. Retain its latest pass and relevant limitations there, with older details in the dated entries/archive. This would reduce conflicts and make the most recent evidence easier to find.
 
 ## Cleanup performed
