@@ -51,7 +51,7 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 
 ### Fresh content inside existing levels
 
-**Built in slice 1 (this session).** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat.
+**Built in slice 1.** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat. The 2026-10-11 batch adds lamp, bus and castle. Current pools:
 
 | Level | Pool |
 | --- | --- |

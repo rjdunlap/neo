@@ -6,7 +6,7 @@
 - Tested claim `12e6942` (base `4f6a71f`) plus `logic.ts` diff: `npm run typecheck` and `npm test -- src/games/tangram-town/logic.test.ts` passed (8 tests, all authored pictures and seeded trays).
 - `node test-results/tangram-more-pictures.mjs` at `http://localhost:5196`: forced each new picture through the normal build, then real pointer turns/drags; lamp 1, bus 4, castle 5 and castle 6 completed with zero misses/hints and no page errors. Chromium required sandbox escalation.
 - New-picture screenshots reviewed; `PORTRAIT_ONLY=1 node test-results/tangram-more-pictures.mjs` captured the level-6 castle before play at 768×1024 for clearance review.
-- Local document links and `git diff --check` passed. Existing how-to wording still holds at every level.
+- Changed local document links and `git diff --check` passed. Existing how-to wording still holds at every level.
 - Not run: build, full unit suite, broader browser suites, device speech or child recognition (data-only content tier).
 
 ## 2026-10-11 — Clock Tower words and control support
