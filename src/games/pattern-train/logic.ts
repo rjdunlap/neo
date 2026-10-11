@@ -35,21 +35,48 @@ export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min
 /** Choices under the train: one of each symbol, so every answer is on offer. */
 export const CHOICES = 3;
 
+/** The highest number a numbered train shows, so every car reads as a number she counts with. */
+export const NUMBER_TOP = 100;
+/** A numbered train's length. */
+export const NUMBER_CARS = 7;
+
 /**
- * A train for one round: the symbols on each car (the pattern repeated twice, plus the cars to fill),
- * and which cars start empty.
+ * A numbered train: it starts at a multiple of the step that is not the step itself (12, 14, 16… by twos), the empty car
+ * can sit anywhere after the first two, and the two wrong numbers are drawn from the near misses (one step back, one step
+ * on, one off), so the answer is not always the smallest choice and is found by counting.
+ */
+function numberTrain(steps: readonly number[], rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
+  const step = rng.pick(steps);
+  const highest = Math.floor((NUMBER_TOP - step * (NUMBER_CARS - 1)) / step);
+  const start = step * rng.int(2, highest);
+  const sequence = Array.from({ length: NUMBER_CARS }, (_, i) => start + step * i);
+  const target = rng.int(2, NUMBER_CARS - 1);
+  const answer = sequence[target];
+  const near = [answer - step, answer + step, answer - 1, answer + 1].filter((n) => n > 0 && n <= NUMBER_TOP);
+  const wrong = rng.shuffle(near).slice(0, CHOICES - 1);
+  return { sequence, targets: [target], choices: [rng.shuffle([answer, ...wrong])] };
+}
+
+/**
+ * A train for one round: the symbols on each car, and which cars start empty. The pattern shows two full repeats, then
+ * the train runs on part of the way into the next one (`phase` cars) before the empty car, so the car to fill can be any
+ * place in the repeat rather than always a copy of the first car. Level 6's gap sits anywhere but the very start of a
+ * repeat. The far levels (10 and 11) keep a seven-car train with the seventh car empty until they are rebuilt; their
+ * lines name the seventh car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
+ * piece on the train is on offer, the near misses included.
  */
 export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
-  if (plan.numberSteps) {
-    const step = rng.pick(plan.numberSteps);
-    const sequence = Array.from({ length: 7 }, (_, i) => step * (i + 1));
-    const targets = [sequence.length - 1];
-    return { sequence, targets, choices: [rng.shuffle([sequence[6], sequence[6] + step, sequence[6] + step * 2])] };
-  }
+  if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
   const tokens = rng.shuffle([0, 1, 2]);
-  const length = plan.pattern.length * 2 + (plan.two ? 2 : 1);
-  const sequence = Array.from({ length }, (_, i) => tokens[plan.pattern[i % plan.pattern.length]]);
-  const targets = plan.two ? [length - 2, length - 1] : [plan.missing ? 2 : length - 1];
+  const unit = plan.pattern.length;
+  // Two empty cars may start at slot 0 or 1 (nine cars at most); a far or missing-middle train shows no extra cars.
+  const phase = plan.far || plan.missing ? 0 : rng.int(0, plan.two ? 1 : unit - 1);
+  const length = unit * 2 + phase + (plan.two ? 2 : 1);
+  const sequence = Array.from({ length }, (_, i) => tokens[plan.pattern[i % unit]]);
+  let targets: number[];
+  if (plan.two) targets = [length - 2, length - 1];
+  else if (plan.missing) targets = [rng.int(0, 1) * unit + rng.int(1, unit - 1)];
+  else targets = [length - 1];
   return { sequence, targets, choices: targets.map(() => [0, 1, 2]) };
 }
 

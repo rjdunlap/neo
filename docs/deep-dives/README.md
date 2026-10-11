@@ -89,7 +89,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Monster Munch | `monster-munch` | LTPKS | 8 | 4 | not started | — | — |
 | Opposites | `opposites` | LTPK | 4 | 1 | slice 1 built (twelve pairs, fairness) | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |
 | Owl Walk Home | `owl-walk` | TPK | 4 | 4 | not started | — | — |
-| Pattern Train | `pattern-train` | PKS | 12 | 3 | building (slice 1: the train ends anywhere in the unit, level 12 counts) | `claude/pattern-train-deep-dive` ([PR 139](https://github.com/rjdunlap/neo/pull/139)); slice 1: `claude/pattern-train-slice-1` | [pattern-train.md](pattern-train.md) |
+| Pattern Train | `pattern-train` | PKS | 12 | 3 | building (slice 1 built) | `claude/pattern-train-deep-dive` ([PR 139](https://github.com/rjdunlap/neo/pull/139)); slice 1: `claude/pattern-train-slice-1` ([PR 141](https://github.com/rjdunlap/neo/pull/141)) | [pattern-train.md](pattern-train.md) |
 | Peekaboo Barn | `peekaboo-barn` | LTPK | 8 | 2 | designed | `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96)) | [peekaboo-barn.md](peekaboo-barn.md) |
 | Peekaround Island | `peekaround-island` | TPKS | 5 | 4 | not started | — | — |
 | Peg Garden | `peg-garden` | LTPK | 5 | 4 | not started | — | — |

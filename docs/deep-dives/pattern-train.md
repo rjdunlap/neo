@@ -134,9 +134,9 @@ Appended after 12, never renumbered. A "car count" is the number of tiles includ
 
 ## Build slices, in order
 
-Each is one session; none is built.
+Each is one session. Slice 1 is built (2026-10-11, [build note](../archive/COMPLETED-2026-10-09.md#pattern-train-slice-1-the-train-ends-anywhere-2026-10-11)); the rest are not.
 
-1. **Make levels 4–9 and 12 ask what they say** (`logic.ts` only, with its rule tests, which must fail on today's code): the train ends anywhere in the unit (levels 1–5, 8, 9 and the middle gap of 6), level 12's starts, answer position and middle gap, near-miss distractors, `LEVELS.school.max` following the plan table, a pinned sticker test, a bounded how-to. Tier: *game rules*: typecheck and the game's rule tests; then the browser `patterns` loop filtered to levels 6, 9 and 12 (the bot still plays: `wantedChoice` is generic).
+1. **Built.** **Make levels 4–9 and 12 ask what they say** (`logic.ts` only, with its rule tests, which must fail on today's code): the train ends anywhere in the unit (levels 1–5, 8, 9 and the middle gap of 6), level 12's starts, answer position and middle gap, near-miss distractors, `LEVELS.school.max` following the plan table, a pinned sticker test, a bounded how-to. Tier: *game rules*: typecheck and the game's rule tests; then the browser `patterns` loop filtered to levels 6, 9 and 12 (the bot still plays: `wantedChoice` is generic).
 2. **Level 11, color and shape on their own cycles,** with four choices and the part named when half right. Tier: *new levels on an existing interaction*: rule tests, one browser play at level 11, `fingerdemo` at it (the four-choice layout needs a portrait look).
 3. **Level 10, the tunnel.** A tunnel tile and the hidden-car hint; rule tests; a browser play and a portrait screenshot.
 4. **The hint that reads the train,** a car-kind pool (animals from `CRITTERS`, fruit, flowers), the sounds on tap, and the kind-distinctness test. Tier: rules plus one screenshot of the new art.
@@ -151,3 +151,5 @@ Every new level needs its `describeLevel`, scoped how-to lines (the last `{ from
 ## What was built in this session
 
 Nothing: a deep dive session is research and ideation only. Links and `git diff --check` ran. The NCETM early-years page, the Core Standards page and TERC's guide were opened; the two NCETM and Vanderbilt PDFs and the Clements and Sarama book were not readable here and are marked search summary only.
+
+**Slice 1, built in a later session (2026-10-11, [PR 141](https://github.com/rjdunlap/neo/pull/141)).** The train ends anywhere in the unit (levels 1–9 bar the far levels), level 6's gap moves, and level 12 counts (starts off the step, a middle gap, near-miss choices). Two choices differ from the plan above: the near-miss distractors needed no new logic, because the three pieces are always all on offer in a fixed order (the bells sound by their place), so every near miss is already a choice and a test now pins that; and no pinned sticker test was added, because the sticker is one fixed train with no seed or list. On level 12 the "step on" distractor can be a number already on the train when the gap is in the middle; it stays as a counted-one-too-far near miss.

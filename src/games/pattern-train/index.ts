@@ -11,10 +11,10 @@ import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { buildTrain, patternPlan, wantedChoice, type PatternPlan } from './logic';
+import { buildTrain, PATTERN_PLANS, patternPlan, wantedChoice, type PatternPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
-const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 12 } };
+const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: PATTERN_PLANS.length } };
 
 function trainSymbol(kind: PatternPlan['kind'], value: number, size: number): Container {
   if (kind === 'number') return label(String(value), value >= 10 ? 31 : 42, swatch.purple.line);
