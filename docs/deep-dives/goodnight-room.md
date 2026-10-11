@@ -126,7 +126,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 1. **A different room each time** (ready, **built in this session**): the seeded draw, friends who start asleep, the finale's stars. Tier: typecheck, the game's rule tests, one `BROWSER_SUITE=night` pass.
 2. **Slot-based rooms and the barn** (built 2026-10-10): rooms as data (`spot()` becomes slot-based; `makeRequests` and `thingToTap` already take the drawn room after slice 1), a lantern, a window variant, `NAMES` for each new friend, and a pool test that every room fits every level. Tier: rule tests, one browser play, one portrait screenshot.
 3. **Level 5, the animals, and the pre-K window** (built 2026-10-10): `kind`, the band row, the level-4 `LevelLine` bound, registry tests, the browser loop, `fingerdemo`. Tier: new level on an existing interaction.
-4. **Level 6, the light goes last** (ready).
+4. **Level 6, the light goes last** (claimed on `codex/goodnight-light-last`, 2026-10-11). Put every friend to sleep in any order with the lamp or lantern last; pre-K 5–6. Expected files: game logic, rendering and rule tests; how-to and voice; filtered browser case; README, GAMES, roadmap and verification. No save or navigation changes.
 5. **Level 7, how many?** (ready; decision 3).
 6. **Level 8, the color** (ready).
 7. **Level 9, everyone but the one** (ready).
