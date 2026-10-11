@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * goodnight and it falls asleep; when everyone is asleep the lights go down and the stars come
  * out. Later the voice names who to say goodnight to, then two in order.
  */
-export type NightMode = 'all' | 'named' | 'two';
+export type NightMode = 'all' | 'named' | 'two' | 'animals';
 
 export interface NightPlan {
   mode: NightMode;
@@ -23,36 +23,49 @@ export const PLANS: NightPlan[] = [
   { mode: 'all', things: 6, requests: 0, asleep: 2, name: 'Say goodnight to everyone in the room (6 things)' },
   { mode: 'named', things: 6, requests: 5, asleep: 0, name: 'Say goodnight to the one named: "the kitten"' },
   { mode: 'two', things: 6, requests: 3, asleep: 0, name: 'Two in order: "the clock, then the lamp"' },
+  { mode: 'animals', things: 5, requests: 1, asleep: 0, name: 'Say goodnight to the animals, in any order' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Everything that can be in the room, in the order they appear. */
-export const THINGS = ['lamp', 'teddy', 'kitten', 'clock', 'puppy', 'fish'] as const;
+export const THINGS = ['lamp', 'teddy', 'kitten', 'clock', 'puppy', 'fish', 'lantern', 'cow', 'pig', 'duck', 'bunny', 'cat'] as const;
 export type Thing = (typeof THINGS)[number];
 
 /** The words spoken for each thing. */
-export const NAMES: Record<Thing, string> = { lamp: 'lamp', teddy: 'teddy bear', kitten: 'kitten', clock: 'clock', puppy: 'puppy', fish: 'fish' };
+export const NAMES: Record<Thing, string> = { lamp: 'lamp', teddy: 'teddy bear', kitten: 'kitten', clock: 'clock', puppy: 'puppy', fish: 'fish', lantern: 'lantern', cow: 'cow', pig: 'pig', duck: 'duck', bunny: 'bunny', cat: 'barn cat' };
 
-/** Who is in the room this round and who is already asleep. */
+/** Rooms have six spacious slots: four on the floor, one on the wall and one on a shelf. */
+export const ROOMS = [
+  { id: 'bedroom', friends: ['lamp', 'teddy', 'kitten', 'clock', 'puppy', 'fish'] },
+  { id: 'barn', friends: ['cow', 'pig', 'duck', 'lantern', 'bunny', 'cat'] },
+] as const;
+export type NightRoom = (typeof ROOMS)[number];
+export const SLOTS: readonly [number, number][] = [[0.22, 0.86], [0.4, 0.86], [0.58, 0.88], [0.42, 0.26], [0.78, 0.88], [0.66, 0.46]];
+export const isAnimal = (thing: Thing) => !['lamp', 'lantern', 'clock', 'teddy'].includes(thing);
+
+/** A category round has two objects and three unmistakable living animals; no teddy. */
 export interface Night {
-  /** The friends in the room, in `THINGS` order. */
+  setting: NightRoom;
   room: Thing[];
-  /** Friends asleep when the round opens; always inside the room, with at least two left awake. */
   asleep: Thing[];
 }
 
-/** Draws this round's room (a seeded few of the six friends) and who starts asleep. */
 export function makeNight(plan: NightPlan, rng: Rng): Night {
-  const room = plan.things >= THINGS.length ? [...THINGS] : rng.shuffle([...THINGS]).slice(0, plan.things).sort((a, b) => THINGS.indexOf(a) - THINGS.indexOf(b));
+  // The barn has just one object, so category rounds use the bedroom.
+  const setting = plan.mode === 'animals' ? ROOMS[0] : rng.pick([...ROOMS]);
+  const order: readonly Thing[] = setting.friends;
+  const pool: Thing[] = order.filter(t => plan.mode !== 'animals' || t !== 'teddy');
+  const room = rng.shuffle(pool).slice(0, plan.things).sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const most = Math.min(plan.asleep, room.length - 2);
   const asleep = most > 0 ? rng.shuffle([...room]).slice(0, rng.int(0, most)) : [];
-  return { room, asleep };
+  return { setting, room, asleep };
 }
 
 /** Who to say goodnight to, as one or two things per request; every thing asked at most once per step. */
 export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[]): Thing[][] {
   if (plan.mode === 'all') return [];
+  if (plan.mode === 'animals') return [room.filter(isAnimal)];
   const order = rng.shuffle([...room]);
   if (plan.mode === 'named') return order.slice(0, plan.requests).map((t) => [t]);
   return Array.from({ length: plan.requests }, (_, i) => [order[i * 2], order[i * 2 + 1]]);
@@ -65,5 +78,12 @@ export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[]):
  */
 export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefined, step: number, asleep: ReadonlySet<Thing>, room: readonly Thing[]): Thing | null {
   if (plan.mode === 'all') return room.find((t) => !asleep.has(t)) ?? null;
+  if (plan.mode === 'animals') return request?.find(t => !asleep.has(t)) ?? null;
   return request?.[step] ?? null;
+}
+
+/** A named request keeps its order; a category accepts any remaining member. */
+export function acceptsTap(plan: NightPlan, request: readonly Thing[], step: number, asleep: ReadonlySet<Thing>, thing: Thing): boolean {
+  if (asleep.has(thing)) return false;
+  return plan.mode === 'all' || (plan.mode === 'animals' ? request.includes(thing) : request[step] === thing);
 }

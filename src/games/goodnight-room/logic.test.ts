@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { makeNight, makeRequests, PLANS, THINGS, thingToTap, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, PLANS, THINGS, ROOMS, SLOTS, isAnimal, thingToTap, type Thing } from './logic';
 
 describe('Goodnight Room', () => {
   it('draws a room of the right size from the six friends, in order, with no repeats', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 200; seed++) {
-        const { room } = makeNight(plan, new Rng(seed));
+        const { room, setting } = makeNight(plan, new Rng(seed));
         expect(room).toHaveLength(plan.things);
         expect(new Set(room).size).toBe(room.length);
         for (const t of room) expect(THINGS).toContain(t);
-        expect(room).toEqual([...room].sort((a, b) => THINGS.indexOf(a) - THINGS.indexOf(b)));
+        const order: readonly Thing[] = setting.friends;
+        expect(room).toEqual([...room].sort((a, b) => order.indexOf(a) - order.indexOf(b)));
       }
     }
   });
@@ -55,7 +56,46 @@ describe('Goodnight Room', () => {
         const asked = rs.flat();
         expect(new Set(asked).size).toBe(asked.length);
         for (const t of asked) expect(room).toContain(t);
-        for (const r of rs) expect(r).toHaveLength(plan.mode === 'two' ? 2 : 1);
+        for (const r of rs) expect(r).toHaveLength(plan.mode === 'two' ? 2 : plan.mode === 'animals' ? 3 : 1);
+      }
+    }
+  });
+
+  it('keeps every room distinct and reachable in spacious slots, with one light', () => {
+    expect(SLOTS).toHaveLength(6);
+    for (const setting of ROOMS) {
+      expect(new Set(setting.friends).size).toBe(6);
+      expect(setting.friends.filter(t => t === 'lamp' || t === 'lantern')).toHaveLength(1);
+      for (const [x, y] of SLOTS) {
+        expect(x).toBeGreaterThan(0.15);
+        expect(x).toBeLessThan(0.85);
+        expect(y).toBeGreaterThan(0.15);
+        expect(y).toBeLessThan(0.95);
+      }
+    }
+  });
+
+  it('asks for living animals with no ambiguous teddy and accepts every order', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const night = makeNight(PLANS[4], rng);
+      const [request] = makeRequests(PLANS[4], rng, night.room);
+      expect(night.room).not.toContain('teddy');
+      expect(request).toHaveLength(3);
+      expect(night.room.filter(t => !isAnimal(t))).toHaveLength(2);
+      expect(request.every(isAnimal)).toBe(true);
+      for (const order of [request, [...request].reverse(), [request[1], request[2], request[0]]]) {
+        const asleep = new Set<Thing>();
+        for (const tap of order) {
+          expect(acceptsTap(PLANS[4], request, asleep.size, asleep, tap)).toBe(true);
+          expect(asleep.has(tap)).toBe(false);
+          expect(acceptsTap(PLANS[4], request, asleep.size, asleep, 'lamp')).toBe(false);
+          expect(acceptsTap(PLANS[4], request, asleep.size, asleep, 'clock')).toBe(false);
+          asleep.add(tap);
+          const hint = thingToTap(PLANS[4], request, asleep.size, asleep, night.room);
+          if (hint) expect(asleep.has(hint)).toBe(false);
+        }
+        expect(thingToTap(PLANS[4], request, 3, asleep, night.room)).toBeNull();
       }
     }
   });
@@ -80,7 +120,11 @@ describe('Goodnight Room', () => {
         }
         for (const r of rs) {
           const done: Thing[] = [];
-          for (let step = 0; step < r.length; step++) done.push(thingToTap(plan, r, step, asleep, room)!);
+          for (let step = 0; step < r.length; step++) {
+            const tap = thingToTap(plan, r, step, asleep, room)!;
+            done.push(tap);
+            asleep.add(tap);
+          }
           expect(done).toEqual(r);
           expect(thingToTap(plan, r, r.length, asleep, room)).toBeNull();
           for (const t of done) asleep.add(t);

@@ -11,12 +11,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { makeNight, makeRequests, NAMES, planFor, thingToTap, type NightPlan, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, NAMES, planFor, SLOTS, thingToTap, type NightPlan, type NightRoom, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
-  preschool: { min: 3, max: 4 },
+  preschool: { min: 3, max: 5 },
+  prek: { min: 5, max: 5 },
 };
 
 const WALL = 0x9fb8e8;
@@ -42,7 +43,7 @@ class Sleeper extends Container {
 
   constructor(readonly thing: Thing) {
     super();
-    const critters: Partial<Record<Thing, keyof typeof CRITTERS>> = { teddy: 'bear', kitten: 'cat', puppy: 'dog' };
+    const critters: Partial<Record<Thing, keyof typeof CRITTERS>> = { teddy: 'bear', kitten: 'cat', puppy: 'dog', cow: 'cow', pig: 'pig', duck: 'duck', bunny: 'bunny', cat: 'cat' };
     const kind = critters[thing];
     if (kind) {
       this.critter = new Critter(CRITTERS[kind]);
@@ -61,7 +62,14 @@ class Sleeper extends Container {
   private drawArt() {
     const g = this.art.clear();
     const open = !this.asleep;
-    if (this.thing === 'lamp') {
+    if (this.thing === 'lantern') {
+      g.roundRect(-45, -60, 90, 120, 12).fill(open ? swatch.yellow.light : wood.light).stroke({ width: 7, color: wood.line });
+      g.roundRect(-25, -85, 50, 25, 10).stroke({ width: 6, color: wood.line });
+      g.rect(-52, 50, 104, 12).rect(-52, -62, 104, 12).fill(wood.line);
+      eyes(g, 0, 0, open, 6);
+      this.glow.clear();
+      if (open) this.glow.circle(0, 0, 100).fill({ color: swatch.yellow.light, alpha: 0.25 });
+    } else if (this.thing === 'lamp') {
       g.rect(-6, -170, 12, 170).fill(wood.line).ellipse(0, 0, 44, 12).fill(wood.line);
       g.poly([-60, -170, 60, -170, 36, -250, -36, -250]).fill(this.asleep ? 0xd9c38a : swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
       eyes(g, 0, -205, open, 6);
@@ -98,6 +106,7 @@ class GoodnightRoom implements Game {
   readonly requests: Thing[][];
   /** The friends in the room this round, in the order they are drawn. */
   readonly friends: Thing[];
+  readonly setting: NightRoom;
   readonly sleepers: Sleeper[] = [];
   index = -1;
   /** Within a two-step request, how many are done. */
@@ -122,6 +131,7 @@ class GoodnightRoom implements Game {
     this.plan = planFor(ctx.level);
     const night = makeNight(this.plan, ctx.rng);
     this.friends = night.room;
+    this.setting = night.setting;
     this.requests = makeRequests(this.plan, ctx.rng, this.friends);
     this.dark.eventMode = 'none';
     this.glow.eventMode = 'none';
@@ -145,16 +155,22 @@ class GoodnightRoom implements Game {
   /** Where each thing sits, as fractions of the room. */
   private spot(thing: Thing) {
     const v = this.view;
-    const at: Record<Thing, [number, number]> = { lamp: [0.22, 0.86], teddy: [0.4, 0.86], kitten: [0.58, 0.88], clock: [0.42, 0.26], puppy: [0.78, 0.88], fish: [0.66, 0.46] };
-    return { x: v.w * at[thing][0], y: v.h * at[thing][1] };
+    const slot = this.setting.friends.findIndex(t => t === thing);
+    const [x, y] = SLOTS[slot];
+    return { x: v.w * x, y: v.h * y };
   }
 
   resize(v: View) {
     this.view = v;
     const floor = v.h * 0.7;
-    this.room.clear().rect(0, 0, v.w, floor).fill(WALL).rect(0, floor, v.w, v.h - floor).fill(wood.light);
+    this.room.clear().rect(0, 0, v.w, floor).fill(this.setting.id === 'barn' ? wood.light : WALL).rect(0, floor, v.w, v.h - floor).fill(wood.light);
     for (let x = 0; x < v.w; x += 90) this.room.moveTo(x, floor).lineTo(x, v.h).stroke({ width: 2, color: wood.fill, alpha: 0.6 });
     this.room.ellipse(v.w * 0.55, v.h * 0.9, 300, 50).fill({ color: swatch.pink.light, alpha: 0.8 });
+    if (this.setting.id === 'barn') {
+      for (let x = 0; x < v.w; x += 110) this.room.moveTo(x, 0).lineTo(x, floor).stroke({ width: 4, color: wood.fill });
+      this.room.roundRect(v.w * 0.55, v.h * 0.47, v.w * 0.22, 20, 6).fill(wood.line);
+      for (const [x, y] of SLOTS.filter((_, i) => i !== 3)) this.room.ellipse(v.w * x, v.h * y + 4, 70, 18).fill(swatch.yellow.light);
+    }
     this.drawSky();
     for (const s of this.sleepers) {
       const p = this.spot(s.thing);
@@ -218,6 +234,7 @@ class GoodnightRoom implements Game {
     }
     this.busy = false;
     if (this.plan.mode === 'named') return this.ctx.instruct('night.named', { who: NAMES[r[0]] });
+    if (this.plan.mode === 'animals') return this.ctx.instruct('night.animals');
     return this.ctx.instruct('night.two', { a: NAMES[r[0]], b: NAMES[r[1]] });
   }
 
@@ -251,8 +268,8 @@ class GoodnightRoom implements Game {
       return;
     }
     const r = this.requests[this.index];
-    const want = r[this.step];
-    if (s.thing === want) {
+    const want = thingToTap(this.plan, r, this.step, new Set(this.sleepers.filter(x => x.asleep).map(x => x.thing)), this.friends)!;
+    if (acceptsTap(this.plan, r, this.step, new Set(this.sleepers.filter(x => x.asleep).map(x => x.thing)), s.thing)) {
       this.busy = true;
       this.glowing = null;
       this.wrongs = 0;
@@ -266,7 +283,8 @@ class GoodnightRoom implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (r.includes(s.thing)) await this.ctx.say('night.order', { a: NAMES[r[0]], b: NAMES[r[1]] });
+    if (this.plan.mode === 'animals') await this.ctx.say('night.notanimal', { what: NAMES[s.thing] });
+    else if (r.includes(s.thing)) await this.ctx.say('night.order', { a: NAMES[r[0]], b: NAMES[r[1]] });
     else await this.ctx.say('night.notthat', { what: NAMES[s.thing], who: NAMES[want] });
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
@@ -320,7 +338,7 @@ export const goodnightRoom: GameModule = {
   titleLine: 'game.goodnight-room',
   region: 'story-grove',
   skills: ['words', 'listening', 'routines', 'cause-and-effect'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,

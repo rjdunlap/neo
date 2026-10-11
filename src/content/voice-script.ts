@@ -623,6 +623,8 @@ export const SCRIPT = {
   'night.all': ['It is bedtime! Tap everyone to say goodnight.'],
   'night.goodnight': ['Goodnight, {who}!', 'Sleep tight, {who}!', 'Night night, {who}!'],
   'night.named': ['Say goodnight to the {who}!'],
+  'night.animals': ['Say goodnight to the animals!'],
+  'night.notanimal': ['The {what} is not an animal. Which ones are animals?'],
   'night.two': ['Say goodnight to the {a}, and then the {b}!'],
   'night.notthat': ['That is the {what}. Where is the {who}?'],
   'night.order': ['First the {a}, then the {b}.'],
