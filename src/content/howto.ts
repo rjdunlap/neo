@@ -1034,7 +1034,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Listen to the body word, then do it yourself away from the screen.' },
       { from: 3, to: 3, text: 'Do the two moves in order, away from the screen: "clap, then stomp".' },
       { from: 4, to: 4, text: "Move only when you hear the pet's name first, away from the screen." },
-      { from: 5, text: 'Dance away from the screen while the music plays, and freeze when it stops.' },
+      { from: 5, to: 5, text: 'Dance away from the screen while the music plays, and freeze when it stops.' },
       'A grown-up taps the arrow to go on.',
     ],
     finish: 'The round ends after the last move.',

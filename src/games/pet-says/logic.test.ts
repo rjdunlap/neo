@@ -1,8 +1,50 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BODY, danceSeconds, makeTurns, MOVE_WORDS, MOVES, PLANS } from './logic';
+import stickerSeeds from './sticker-seeds.json';
+import { SCRIPT } from '../../content/voice-script';
+import { BODY_TARGETS, MOVE_CUES, shouldNudge, stickerRecipe, BODY, danceSeconds, makeTurns, MOVE_WORDS, MOVES, PLANS } from './logic';
 
 describe('Pet Says', () => {
+  it('pins the original sticker color and pose draw for seeds 0–99', () => {
+    expect(stickerSeeds).toHaveLength(100);
+    stickerSeeds.forEach((expected, seed) => {
+      const { color, pose } = stickerRecipe(new Rng(seed));
+      expect(`${color}:${pose}`).toBe(expected);
+    });
+  });
+
+  it('every move has a real move-only speech line and spoken words', () => {
+    for (const move of [...MOVES, ...BODY]) {
+      expect(MOVE_CUES[move].line).toBe(`says.move.${move}`);
+      expect(SCRIPT[MOVE_CUES[move].line].length).toBeGreaterThan(0);
+      expect(MOVE_CUES[move].word).toBe(MOVE_WORDS[move]);
+    }
+    expect(new Set(Object.values(MOVE_CUES).map(c => c.line)).size).toBe(13);
+  });
+
+  it('places mittens on the named pip shapes, including the game-only nose', () => {
+    const inEllipse = (p: { x: number; y: number }, x: number, y: number, rx: number, ry: number) =>
+      ((p.x - x) / rx) ** 2 + ((p.y - y) / ry) ** 2 <= 1;
+    // Shape measurements from Critter.buildEars/buildBody/buildFace, not the target table.
+    // A 27-radius mitten should fit inside the 34-radius round ear.
+    expect(inEllipse(BODY_TARGETS.nose.right, 0, -106, 12, 9)).toBe(true);
+    for (const side of ['left', 'right'] as const) {
+      const sign = side === 'left' ? -1 : 1;
+      expect(inEllipse(BODY_TARGETS.ears[side], sign * 72, -222, 34 - 27, 34 - 27)).toBe(true);
+      expect(inEllipse(BODY_TARGETS.tummy[side], 0, -65, 80, 54)).toBe(true);
+      expect(inEllipse(BODY_TARGETS.toes[side], sign * 40, 0, 30, 14)).toBe(true);
+    }
+    expect(BODY_TARGETS.head.right.x).toBe(0);
+    expect(BODY_TARGETS.head.right.y).toBeGreaterThanOrEqual(-264);
+    expect(BODY_TARGETS.head.right.y).toBeLessThan(-220);
+  });
+
+  it('nudges only after a quiet wait, never during a move or after completion', () => {
+    expect(shouldNudge(9.99, false, false)).toBe(false);
+    expect(shouldNudge(10, false, false)).toBe(true);
+    expect(shouldNudge(20, true, false)).toBe(false);
+    expect(shouldNudge(20, false, true)).toBe(false);
+  });
   it('names every move, and never asks for the same move twice in a row', () => {
     for (const m of [...MOVES, ...BODY]) expect(MOVE_WORDS[m].length).toBeGreaterThan(2);
     for (const plan of PLANS) for (let seed = 1; seed <= 300; seed++) {
