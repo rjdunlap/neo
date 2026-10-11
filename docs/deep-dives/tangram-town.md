@@ -114,7 +114,7 @@ These wait on [how levels are ordered for a new band](../ROADMAP.md#waiting-on-t
 ## Build slices, in order
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
-2. **More pictures** (ready): six to eight per level, `logic.ts` data only. Rule tests, one screenshot per new picture.
+2. **More pictures** (building: `codex/tangram-more-pictures`, lamp at 1–3, bus at 4/6, castle at 5/6; expected files `logic.ts`, game tests, README, GAMES, this tracker, roadmap, archive and verification; no level or control changes): six to eight per level, `logic.ts` data only. Rule tests, one screenshot per new picture.
 3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
 4. **Level 7, fewer pieces** (needs a stated model): first a cover-set type with tests, then the level. New-level tier: `fingerdemo` at the new top level and a play.
 5. **Level 8, fix the picture** (ready after 4's re-pickable placed pieces).
