@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train slice 4 (pool): fruit, flowers, animal trios and voices
+
+- `buildTrain` returns a `family` (drawn after the cars); `pieceArt` draws shapes, fruit, flowers or one of four animal trios; a tapped animal car plays its own `sfx.animal` voice. The reads-the-train hint is not built.
+- Typecheck and all 928 unit tests passed (every family turns up, trios are three different animals, a seed is deterministic).
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=4,5` passed (wrong picks, hint, reward). Portrait screenshots of a fruit round and an animal round reviewed: pieces fit the tiles and read apart.
+- Not run: the other levels' loop, `fingerdemo`, build, couch suites (couch trips use levels 4, 6 and 9, which now draw families too, so a couch play of the game is worth one look), how the voices sound on an iPad.
+
 ## 2026-10-11 — Pattern Train slice 3: level 10, the tunnel
 
 - Level 10 (`tunnelTrain`): two repeats, a tunnel with 4–7 hidden cars shown as dots, then the empty car; the hint rolls the hidden cars through above the tunnel. Voice line `pattern.tunnel` (with the count), how-to step reworded, `far` replaced by `tunnel`.

@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
+import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 
 export interface PatternPlan {
@@ -36,6 +37,17 @@ export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min
 
 /** Choices under the train: one of each symbol, so every answer is on offer. */
 export const CHOICES = 3;
+/** What a round's three pieces are made of, so the same pattern comes in different things. Shape levels draw one of these. */
+export const SHAPE_FAMILIES = ['shapes', 'fruit', 'flowers'] as const;
+export type ShapeFamily = (typeof SHAPE_FAMILIES)[number];
+/** Animal levels draw one of these trios; each trio is three different animals with their own voices. */
+export const ANIMAL_TRIOS: readonly (readonly [CritterName, CritterName, CritterName])[] = [
+  ['cat', 'cow', 'duck'],
+  ['pig', 'dog', 'bunny'],
+  ['bear', 'cat', 'pig'],
+  ['duck', 'dog', 'cow'],
+];
+
 /** The tunnel hides this many cars, so the car that comes out is `hidden mod unit` places on from the first. */
 export const TUNNEL_HIDDEN = { min: 4, max: 7 } as const;
 
@@ -109,10 +121,16 @@ function tunnelTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets
  * repeat. The tunnel level (10) shows six cars, then the tunnel, then the empty car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
  * piece on the train is on offer, the near misses included.
  */
-export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook; hidden?: number } {
+export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook; hidden?: number; family?: number } {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
   if (plan.kind === 'pair') return pairTrain(rng);
-  if (plan.tunnel) return tunnelTrain(plan, rng);
+  const train = plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
+  // Drawn last, so the cars and gaps of a seed do not depend on what they are made of.
+  const family = plan.kind === 'shape' ? rng.int(0, SHAPE_FAMILIES.length - 1) : plan.kind === 'animal' ? rng.int(0, ANIMAL_TRIOS.length - 1) : undefined;
+  return { ...train, family };
+}
+
+function plainTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
   const tokens = rng.shuffle([0, 1, 2]);
   const unit = plan.pattern.length;
   // Two empty cars may start at slot 0 or 1 (nine cars at most); a missing-middle train shows no extra cars.
