@@ -2,10 +2,10 @@
 
 ## 2026-10-11 — JumpStart title-by-title research (docs only)
 
-- Added `IDEAS.md` § "JumpStart, title by title": per-band catalogues of what each JumpStart title asked a child to do (Baby and Toddlers through 6th Grade, Typing, 3D Virtual World) mapped to built games, notebook ideas or "not borrowed"; ten new proposals; the evidence for the "what not to borrow" rules; and a family-album decision.
-- Sources: Wikipedia and SuperKids pages opened and linked. The fan wiki refused every fetch, so details from its search summaries are marked † in the section and need rechecking. Not found: Pre-K, Numbers, Spanish, Music, Spelling and Reading titles, both 4th Grade games' minigames, and 3D Virtual World's pet games.
+- Added `IDEAS.md` § "JumpStart, title by title": per-band catalogues of what each JumpStart title asked a child to do (Baby and Toddlers through 6th Grade, Pre-K, Spanish, Music, Typing, 3D Virtual World) mapped to built games, notebook ideas or "not borrowed"; sixteen new proposals and modes; the evidence for the "what not to borrow" rules; and two decisions for the developer (a family album, a second language).
+- Sources: Wikipedia and SuperKids pages opened and linked. The fan wiki refused every fetch, so its details are marked † (search summaries). A Gemini list for Pre-K, Spanish, Music, Numbers, Reading/Spelling and 4th Grade was checked by search: confirmed items are marked ‡, and conflicting or unconfirmed items (Haunted Island subjects, the Numbers and Reading rows, several Pre-K and Spanish names) are listed as left out.
 - Ran `git diff --check` and an anchor and relative-link check on the new section. No code, tests or browser suites ran.
-- Open: the † details; the family-album decision; whether Star Dots is built before the Color Train lap mode.
+- Open: the † and ‡ details were not opened at the source; the two decisions; whether Star Dots is built before the Color Train lap mode; Numbers, Reading, Spelling and the Haunted Island minigames are still unknown.
 
 ## 2026-10-11 — Letter Trails deep dive (docs only)
 
