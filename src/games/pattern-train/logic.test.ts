@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
+import { ANIMAL_TRIOS, SHAPE_FAMILIES, buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -177,6 +177,24 @@ describe('Pattern Train', () => {
     expect(places.size).toBe(4);
     expect(spots.size).toBe(PAIR_CHOICES);
     expect(looks.size).toBeGreaterThan(10);
+  });
+
+  it('makes each round of shapes or animals from one family of things, and every family turns up', () => {
+    for (const trio of ANIMAL_TRIOS) expect(new Set(trio).size).toBe(3);
+    expect(new Set(ANIMAL_TRIOS.map((t) => [...t].sort().join())).size).toBe(ANIMAL_TRIOS.length);
+    for (const plan of PATTERN_PLANS) {
+      const seen = new Set<number | undefined>();
+      for (let seed = 1; seed <= 200; seed++) seen.add(buildTrain(plan, new Rng(seed)).family);
+      const count = plan.kind === 'shape' ? SHAPE_FAMILIES.length : plan.kind === 'animal' ? ANIMAL_TRIOS.length : 0;
+      expect(seen.size, plan.name).toBe(Math.max(count, 1));
+      if (!count) expect(seen.has(undefined), plan.name).toBe(true);
+    }
+  });
+
+  it('builds the same train and family for the same seed', () => {
+    const plan = PATTERN_PLANS[3];
+    const a = buildTrain(plan, new Rng(9)), b = buildTrain(plan, new Rng(9));
+    expect(a).toEqual(b);
   });
 
   it('has a choice on offer for every empty car, in order, that fits the pattern', () => {

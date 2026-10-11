@@ -1,6 +1,9 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
+import { Critter, CRITTERS, type CritterName } from '../../art/critter';
+import { prop, type PropKind } from '../../art/props';
 import { shapePath } from '../../art/shapes';
+import type { AnimalSound } from '../../audio/sfx';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
@@ -11,19 +14,38 @@ import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { buildTrain, PATTERN_PLANS, patternPlan, pieceColor, pieceShape, wantedChoice, type PairLook, type PatternPlan } from './logic';
+import { ANIMAL_TRIOS, buildTrain, PATTERN_PLANS, patternPlan, pieceColor, pieceShape, wantedChoice, type PairLook, type PatternPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: PATTERN_PLANS.length } };
 
-function trainSymbol(kind: PatternPlan['kind'], value: number, size: number, look?: PairLook): Container {
+function trainSymbol(kind: PatternPlan['kind'], value: number, size: number, look?: PairLook, family?: number): Container {
   if (kind === 'number') return label(String(value), value >= 10 ? 31 : 42, swatch.purple.line);
   if (kind === 'pair' && look) {
     const color: (typeof swatch)[ColorName] = swatch[look.colors[pieceColor(value)]];
     return shapePath(new Graphics(), look.shapes[pieceShape(value)], size).fill(color.fill).stroke({ width: 4, color: color.line });
   }
   if (kind === 'pair') return label('?', 40, swatch.purple.line);
-  return symbol(kind, value, size);
+  return pieceArt(kind, family, value, size);
+}
+
+/** Each animal's own voice, for the car that is tapped. */
+const VOICE: Partial<Record<CritterName, AnimalSound>> = { cow: 'moo', duck: 'quack', pig: 'oink', cat: 'meow', dog: 'woof', bear: 'growl', bunny: 'hop' };
+const FRUITS: readonly [PropKind, ColorName][] = [['apple', 'red'], ['pear', 'green'], ['grapes', 'purple']];
+const FLOWERS: readonly ColorName[] = ['red', 'blue', 'yellow'];
+
+/** One of a round's three pieces, made of the round's family of things (see `SHAPE_FAMILIES` and `ANIMAL_TRIOS`). */
+function pieceArt(kind: PatternPlan['kind'], family: number | undefined, value: number, size: number): Container {
+  if (kind === 'shape' && family === 1) { const [fruit, color] = FRUITS[value % 3]; const c = prop(fruit, color); c.scale.set(size / 48); return c; }
+  if (kind === 'shape' && family === 2) { const c = prop('flower', FLOWERS[value % 3]); c.scale.set(size / 48); return c; }
+  if (kind === 'animal' && family !== undefined) {
+    const c = new Critter(CRITTERS[ANIMAL_TRIOS[family][value % 3]]);
+    c.alive = false;
+    c.scale.set(size / 150);
+    c.y = size * 0.8;
+    return c;
+  }
+  return symbol(kind as 'shape' | 'animal' | 'bell', value, size);
 }
 
 class PatternTrain implements Game {
@@ -35,6 +57,8 @@ class PatternTrain implements Game {
   readonly look?: PairLook;
   /** How many cars hide in the tunnel (the tunnel level only). */
   readonly hidden?: number;
+  /** Which family of things the pieces are made of (see `pieceArt`). */
+  readonly family?: number;
   private readonly tunnel = new Container();
   private target = 0;
   readonly cars: Container[] = [];
@@ -65,21 +89,21 @@ class PatternTrain implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = patternPlan(ctx.level);
-    ({ sequence: this.sequence, targets: this.targets, choices: this.choiceValues, look: this.look, hidden: this.hidden } = buildTrain(this.plan, ctx.rng));
+    ({ sequence: this.sequence, targets: this.targets, choices: this.choiceValues, look: this.look, hidden: this.hidden, family: this.family } = buildTrain(this.plan, ctx.rng));
     ctx.stage.addChild(this.background, this.tracks, this.scene);
     this.scene.addChild(this.glow, this.hintsGlow, this.selection);
     this.sequence.forEach((value, i) => {
       const car = new Container();
       car.addChild(tile(100, 108, 'white'));
-      const content = this.targets.includes(i) ? label('?', 60, swatch.purple.line) : trainSymbol(this.plan.kind, value, 32, this.look);
+      const content = this.targets.includes(i) ? label('?', 60, swatch.purple.line) : trainSymbol(this.plan.kind, value, 32, this.look, this.family);
       car.addChild(content);
       car.addChild(new Graphics().circle(-27, 65, 12).circle(27, 65, 12).fill(swatch.brown.line));
-      onTap(car, () => { if (!this.targets.slice(this.target).includes(i)) sfx.bell(4 + value * 3, 0.35); }, { radius: 55 });
+      onTap(car, () => { if (!this.targets.slice(this.target).includes(i)) this.sound(value, 0.35); }, { radius: 55 });
       this.cars.push(car); this.scene.addChild(car);
     });
     for (let i = 0; i < this.choiceValues[0].length; i++) {
       const choice = new Container();
-      choice.addChild(tile(120, 120, 'white'), trainSymbol(this.plan.kind, this.choiceValues[0][i], 36, this.look));
+      choice.addChild(tile(120, 120, 'white'), trainSymbol(this.plan.kind, this.choiceValues[0][i], 36, this.look, this.family));
       onTap(choice, () => {
         if (this.done) return;
         if (this.plan.kind === 'bell') { this.selected = i; sfx.bell(4 + i * 3, 0.45); this.layoutGlow(); }
@@ -114,7 +138,7 @@ class PatternTrain implements Game {
     const tokens = this.sequence.slice(0, unit);
     const minis: Container[] = [];
     for (let j = 0; j < this.hidden; j++) {
-      const mini = trainSymbol(this.plan.kind, tokens[(start + j) % unit], 16);
+      const mini = trainSymbol(this.plan.kind, tokens[(start + j) % unit], 16, this.look, this.family);
       mini.position.set(this.tunnel.x + ((j % 4) - (Math.min(4, this.hidden - Math.floor(j / 4) * 4) - 1) / 2) * 54, this.tunnel.y - 120 - Math.floor(j / 4) * 40);
       this.scene.addChild(mini); minis.push(mini);
       sfx.bell(4 + tokens[(start + j) % unit] * 3, 0.3);
@@ -128,6 +152,12 @@ class PatternTrain implements Game {
   start() {
     void this.ctx.instruct(this.plan.kind === 'bell' ? 'pattern.sound' : this.plan.kind === 'number' ? 'pattern.number' : this.plan.kind === 'pair' ? 'pattern.pair' : this.hidden !== undefined ? 'pattern.tunnel' : 'pattern.start', this.hidden !== undefined ? { n: this.hidden } : undefined);
     if (this.plan.kind === 'bell') void this.ctx.tw.wait(1.5).then(() => this.playPattern());
+  }
+
+  /** A tapped or placed piece sounds: an animal with its own voice, anything else as a bell for its place. */
+  private sound(value: number, volume: number) {
+    const voice = this.plan.kind === 'animal' && this.family !== undefined ? VOICE[ANIMAL_TRIOS[this.family][value % 3]] : undefined;
+    if (voice) sfx.animal(voice); else sfx.bell(4 + value * 3, volume);
   }
 
   private async playPattern() {
@@ -161,7 +191,7 @@ class PatternTrain implements Game {
     sfx.bell(4 + value * 3, 0.4);
     const car = this.cars[index];
     car.removeChildAt(1).destroy({ children: true });
-    car.addChildAt(trainSymbol(this.plan.kind, this.sequence[index], 32, this.look), 1);
+    car.addChildAt(trainSymbol(this.plan.kind, this.sequence[index], 32, this.look, this.family), 1);
     this.target++; this.wrong = 0; this.selected = null;
     if (this.target === this.targets.length) {
       this.done = true;
