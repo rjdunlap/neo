@@ -100,7 +100,7 @@ There are seventy-four games, listed below. "Ages" lists the bands each game has
 | Rhythm Neighbors | lap–school | tap a bird and a frog chorus | trade different musical parts, follow two frog voices, play long/short replies with a guided option |
 | Tangram Town | toddler–school | fit two big shapes into a house, tree or boat | eleven pictures drawn per level, quarter-turn snaps, two triangles making a wall, a four-piece rocket or houseboat, silhouettes with optional help |
 | Peekaround Island | toddler–school | turn a little island to find who is hiding behind the tree | find a named friend, work out who is hiding from a picture card, put friends behind / in front of / next to the tree, two directions and then a half turn |
-| Robot Path | pre-K–school | two steps to a star | turns, rocks, programs of up to eight steps, counted steps ("right ×4"), loops that repeat the program, then predict where a shown program stops (school) |
+| Robot Path | pre-K–school | two steps to a star | turns, rocks, programs of up to eight steps, counted steps ("right ×4"), loops that repeat the program, then predict where a shown program stops and fix a short program (school) |
 | Light Lab | pre-K–school | tap mirrors to turn a sunbeam onto a sleeping flower | plan first and tap the sun to shine, rocks, two flowers on one beam, colored glass, four-mirror paths, three unscored beam-stop predictions before a final plan (school) |
 | Penguin Slide | preschool–school | tap the ice: the penguin slides until something stops it | plan two to six slides, two fish, soft snow that stops the penguin, ice blocks to push (level 6); undo and a hint arrow |
 | Secret Code | pre-K–school | fill a door's slots with stones; each slot says yes or no | yellow "wrong place" marks, more slots and colors, repeated colors, detective doors with prior clues |
@@ -259,7 +259,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `third`, `fourth`, `expansion` | Feelings Faces (levels 1–7) and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps | |
 | `feelings8` | Feelings Faces level 8: both event scenarios, a wrong helper, a hint, completion and reward | `BROWSER_SUITE=feelings8` |
 | `wardrobe7` | Weather Wardrobe level 7: take off the old outfit, dress for three changing weathers, one wrong choice and a hint | `BROWSER_SUITE=wardrobe7` |
-| `pattern`, `memory`, `letters`, `robot`, `stickers` | Pattern Train; Memory Match; all 26 letter trails and the word and name modes; Robot Path 1–11; sticker placement, removal, paging and portrait | |
+| `pattern`, `memory`, `letters`, `robot`, `stickers` | Pattern Train; Memory Match; all 26 letter trails and the word and name modes; Robot Path 1–12; sticker placement, removal, paging and portrait | |
 
 `scripts/abandon-cards.mjs` is not a suite: it opens each ghost-finger game's card and leaves it at a random moment (by the map, Back or Play), over and over, and fails on any page error; it found a rare fault where a game's `await` is ready in the frame its objects are destroyed (`GAME_URL=… GAME_ONLY=id,id ROUNDS=n`).
 

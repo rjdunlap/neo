@@ -12,6 +12,8 @@ export interface Slot { dir: Direction; n: number }
 export interface RobotPlan { size: number; goal: Cell; rocks: Cell[]; limit: number; name: string; mode?: RobotMode; solution?: { slots: Slot[]; loop: number } }
 /** An authored program for the prediction level; predictions are experiments, not answers to score. */
 export interface PredictPlan extends RobotPlan { mode: 'steps' | 'counts'; program: Slot[] }
+/** A counted program with one short final run that can be fixed by extending that slot. */
+export interface FixPlan extends RobotPlan { mode: 'counts'; solution: { slots: Slot[]; loop: 1 }; broken: Slot[]; fixSlot: number }
 export const ROBOT_PLANS: RobotPlan[] = [
   { size: 3, goal: [2, 0], rocks: [], limit: 3, name: 'Two steps straight to the star' },
   { size: 3, goal: [2, 1], rocks: [], limit: 4, name: 'Three steps with a turn' },
@@ -37,6 +39,17 @@ export const PREDICT_PLANS: PredictPlan[] = [
     program: [{ dir: 'right', n: 3 }, { dir: 'down', n: 2 }, { dir: 'left', n: 1 }],
   },
 ];
+
+/** The first run is a free watch; each program needs one counted step added to its last slot. */
+export const FIX_PLANS: FixPlan[] = [
+  { size: 5, goal: [4, 4], rocks: [[2, 0]], limit: 2, mode: 'counts', name: 'Add one step to reach the star', solution: { slots: [{ dir: 'down', n: 4 }, { dir: 'right', n: 4 }], loop: 1 }, broken: [{ dir: 'down', n: 4 }, { dir: 'right', n: 3 }], fixSlot: 1 },
+  { size: 5, goal: [4, 3], rocks: [[0, 2]], limit: 2, mode: 'counts', name: 'Read the program and add its missing step', solution: { slots: [{ dir: 'right', n: 4 }, { dir: 'down', n: 3 }], loop: 1 }, broken: [{ dir: 'right', n: 4 }, { dir: 'down', n: 2 }], fixSlot: 1 },
+  { size: 5, goal: [3, 4], rocks: [[4, 2]], limit: 2, mode: 'counts', name: 'Fix the short program', solution: { slots: [{ dir: 'down', n: 4 }, { dir: 'right', n: 3 }], loop: 1 }, broken: [{ dir: 'down', n: 4 }, { dir: 'right', n: 2 }], fixSlot: 1 },
+];
+
+export function sameProgram(a: readonly Slot[], b: readonly Slot[]): boolean {
+  return a.length === b.length && a.every((slot, i) => slot.dir === b[i].dir && slot.n === b[i].n);
+}
 
 /** Run a shown program without treating its collision or short finish as a failed puzzle. */
 export function predictionEnd(plan: PredictPlan): Cell {

@@ -459,7 +459,7 @@ async function traceRound(level, name, wrong = false) {
 
 async function robots() {
   for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 10); level++) {
-    if (level === 11) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 11 || level === 12) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('robot-path', level);
     if (level === 11) {
       await page.evaluate(async () => {
@@ -479,6 +479,32 @@ async function robots() {
       });
       await finished('robot-path');
       log('Robot Path level 11: a free prediction, step-through playback, and reward passed');
+      continue;
+    }
+    if (level === 12) {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.fixPlan || g.program.length !== g.fixPlan.solution.slots.length) throw new Error('Repair program was not built');
+        kit.tapOn(g.play);
+        if (!await kit.until(() => g.watched && !g.running, 12000)) throw new Error('Free first watch did not finish');
+        if (g.misses !== 0 || g.hints !== 0) throw new Error('The first watch was counted');
+      });
+      await screenshot('robot-path-12');
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (let i = 0; i < 2; i++) {
+          kit.tapOn(g.play);
+          if (!await kit.until(() => !g.running)) throw new Error('Failed repair run did not finish');
+        }
+        if (g.hints !== 1) throw new Error('Two failed repairs did not show the slot hint');
+        kit.tapOn(g.slotTargets[g.fixPlan.fixSlot]); await kit.sleep(250);
+        kit.tapOn(g.arrows.find((a) => a.dir === g.fixPlan.solution.slots[g.fixPlan.fixSlot].dir).button); await kit.sleep(250);
+        kit.tapOn(g.play);
+        if (!await kit.until(() => g.done, 12000)) throw new Error('Fixed program did not reach the star');
+        if (g.misses !== 2 || g.hints !== 1) throw new Error('Repair misses or hint were not accounted for');
+      });
+      await finished('robot-path');
+      log('Robot Path level 12: free watch, two repair misses, slot hint, and fixed program passed');
       continue;
     }
     await page.evaluate(async () => {

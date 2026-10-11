@@ -1,7 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { compress, expand, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
+import { compress, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
 
 describe('robot routes', () => {
+  it('gives each repair board one visible, single-slot fix', () => {
+    expect(FIX_PLANS).toHaveLength(3);
+    for (const plan of FIX_PLANS) {
+      expect(runPath(plan, expand(plan.broken)).success, plan.name).toBe(false);
+      expect(runPath(plan, expand(plan.solution.slots)).success, plan.name).toBe(true);
+      expect(plan.broken).toHaveLength(plan.solution.slots.length);
+      const successfulEdits: { slot: number; program: Slot[] }[] = [];
+      for (let i = 0; i < plan.broken.length; i++) {
+        for (const dir of ['up', 'right', 'down', 'left'] as const) {
+          const program = plan.broken.map((s) => ({ ...s }));
+          program[i].dir = dir;
+          if (runPath(plan, expand(program)).success) successfulEdits.push({ slot: i, program });
+        }
+        for (const n of [plan.broken[i].n - 1, plan.broken[i].n + 1]) {
+          if (n < 1 || n > 5) continue;
+          const program = plan.broken.map((s) => ({ ...s }));
+          program[i].n = n;
+          if (runPath(plan, expand(program)).success) successfulEdits.push({ slot: i, program });
+        }
+      }
+      expect(successfulEdits, plan.name).toEqual([{ slot: plan.fixSlot, program: plan.solution.slots }]);
+      expect(plan.fixSlot).toBe(plan.solution.slots.length - 1);
+    }
+  });
+
   it('gives each shown prediction a distinct, reachable stop before the star', () => {
     expect(new Set(PREDICT_PLANS.map((plan) => plan.mode))).toEqual(new Set(['steps', 'counts']));
     for (const plan of PREDICT_PLANS) {
