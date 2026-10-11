@@ -17,6 +17,8 @@ export interface DotPlan {
   goal: number;
   /** chain: how long a chain must be. */
   length?: number;
+  /** chain: only a line with exactly this many dots counts. */
+  exactLength?: boolean;
   name: string;
 }
 
@@ -26,9 +28,14 @@ export const PLANS: DotPlan[] = [
   { mode: 'color', rows: 5, cols: 5, colors: 4, goal: 8, name: 'Pop 8 dots of one color' },
   { mode: 'chain', rows: 5, cols: 6, colors: 4, goal: 3, length: 4, name: 'Make three chains of 4 dots' },
   { mode: 'square', rows: 5, cols: 6, colors: 4, goal: 2, name: 'Close a square to clear a whole color, twice' },
+  { mode: 'chain', rows: 5, cols: 6, colors: 4, goal: 3, length: 5, exactLength: true, name: 'Make three chains of exactly 5 dots' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+export function chainCounts(plan: DotPlan, length: number, loop: boolean): boolean {
+  return plan.exactLength ? length === plan.length && !loop : length >= (plan.length ?? 2) || loop;
+}
 
 export const DOT_COLORS: ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple'];
 

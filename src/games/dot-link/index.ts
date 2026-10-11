@@ -9,14 +9,14 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { collapse, demoMove, DOT_COLORS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotPlan, type Grid } from './logic';
+import { chainCounts, collapse, demoMove, DOT_COLORS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotPlan, type Grid } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
+  prek: { min: 3, max: 6 },
 };
 
 const GAP = 108;
@@ -75,7 +75,7 @@ class DotLink implements Game {
       case 'color':
         return void this.ctx.instruct('dots.color', { n: p.goal, color: this.target! });
       case 'chain':
-        return void this.ctx.instruct('dots.chain', { n: p.length! });
+        return void this.ctx.instruct(p.exactLength ? 'dots.exact' : 'dots.chain', { n: p.length! });
       case 'square':
         return void this.ctx.instruct('dots.square');
     }
@@ -214,14 +214,14 @@ class DotLink implements Game {
     const color = this.grid[path[0].r][path[0].c];
     const p = this.plan;
     let counts = 0;
-    let line: 'dots.notthat' | 'dots.longer' | 'dots.around' | null = null;
+    let line: 'dots.notthat' | 'dots.longer' | 'dots.around' | 'dots.exact' | null = null;
     if (p.mode === 'pair') counts = 1;
     else if (p.mode === 'color') {
       if (color === this.target) counts = loop ? popped(this.grid, path, true).length : path.length;
       else line = 'dots.notthat';
     } else if (p.mode === 'chain') {
-      if (path.length >= p.length! || loop) counts = 1;
-      else line = 'dots.longer';
+      if (chainCounts(p, path.length, loop)) counts = 1;
+      else line = p.exactLength ? 'dots.exact' : 'dots.longer';
     } else if (p.mode === 'square') {
       if (loop) counts = 1;
       else line = 'dots.around';

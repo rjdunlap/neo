@@ -82,7 +82,7 @@ There are seventy-four games, listed below. "Ages" lists the bands each game has
 | Mail Carrier | lap–school | tap any mailbox to post a letter | match colors, then dots, then house numbers 1 to 9; in Wonder Woods, read a picture map's key, plan two deliveries in order, then choose the shorter of two stepping-stone paths |
 | Photo Safari | lap–school | tap any animal to take its photo | photograph the animal named, then "the bunny jumping", "the duck under the tree", and both, then "the animal that is not sleeping" |
 | Bounce Back | lap–pre-K | bounce a slow ball back to the pet with a huge paddle | keep a rally going, play with a grown-up on the other paddle, aim through stars, count to ten |
-| Dot Link | lap–pre-K | tap dots to pop them | join two dots of one color, pop one color, chains of four, then close a square |
+| Dot Link | lap–pre-K | tap dots to pop them | join two dots of one color, pop one color, chains of four, close a square, then make chains of exactly five |
 | Teddy Doctor | lap–school | tap boo-boos to put on bandages | bandage the part a patient names, choose what helps a bump or sniffles, then what helps from a spoken clue, check-ups in order from a card or from what the patient says |
 | Bumper Garden | lap–pre-K | tap to launch a ladybug through flower bumpers | flip it back up until every flower blooms, bloom one color, bump numbered flowers in order |
 | Shape Sorter | toddler–pre-K | one circle hole | six plain holes, one color, tilted pieces |

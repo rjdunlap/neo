@@ -1,5 +1,13 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Dot Link level 6: Exactly five (2026-10-10)
+
+Added a pre-K level that asks for three lines of exactly five neighboring dots in one color. Shorter, longer and closed lines still pop, but do not count; the pet reminds the player to make a line of five. The move generator, hint and ghost finger each offer an exact five-dot line. The pre-K range now ends at level 6, and earlier saved levels keep their numbers. The how-to, inventory and game guide describe the new round; its proposal has left [IDEAS](../IDEAS.md#round-three-more-to-play-in-every-band-2026-10-10).
+
+- Rule tests check exact length and reject short, long and closed chains, and check that the demo's line is legal.
+- Checks run: typecheck, focused Dot Link rules, filtered `dots` play and filtered level-6 `fingerdemo` (results recorded in [VERIFICATION](../VERIFICATION.md)).
+- Not established: iPad touch feel, device speech or a child's response.
+
 ### Pet Kitchen level 9: Thirds (2026-10-10)
 
 Added a school round where one pizza is cut into three equal slices and shared among three friends. The pizza and cut controls show thirds, the spoken instruction explains the task, and the ghost finger picks the three-piece cut and gives one slice to each friend. The appended school range is now 5–9; older levels and saved level numbers are unchanged. Focused rule tests cover the plan and bot route; the how-to, inventory, game guide and roadmap are updated.

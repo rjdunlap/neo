@@ -390,6 +390,7 @@ export const SCRIPT = {
   'dots.pair': ['Draw a line between two dots of the same color!'],
   'dots.color': ['Pop {n} {color} dots!'],
   'dots.chain': ['Make a chain of {n} dots!'],
+  'dots.exact': ['Make a line of exactly {n} dots!'],
   'dots.square': ['Make a square! Go all the way around four dots of one color.'],
   'dots.notthat': ["That's {wrong}! Pop the {color} dots."],
   'dots.longer': ['Longer! Try {n} in a row.'],

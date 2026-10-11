@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { collapse, demoMove, ensureMove, findLine, findSquare, makeGrid, PLANS, popped, step, type Grid } from './logic';
+import { chainCounts, collapse, demoMove, ensureMove, findLine, findSquare, makeGrid, PLANS, popped, step, type Grid } from './logic';
 
 const R: ColorName = 'red';
 const B: ColorName = 'blue';
@@ -59,5 +59,24 @@ describe('Dot Link', () => {
         if (plan.mode === 'color') expect(grid[walked[0].r][walked[0].c]).toBe(target);
       }
     }
+  });
+
+  it('makes the new level count exactly five dots and offers an exact five-dot demo', () => {
+    const plan = PLANS[5];
+    expect(plan).toMatchObject({ mode: 'chain', length: 5, exactLength: true, goal: 3 });
+    expect(chainCounts(plan, 4, false)).toBe(false);
+    expect(chainCounts(plan, 5, false)).toBe(true);
+    expect(chainCounts(plan, 6, false)).toBe(false);
+    expect(chainCounts(plan, 5, true)).toBe(false);
+    const grid: Grid = [
+      [R, R, R, R, R, B],
+      [B, B, B, B, B, B],
+      [R, B, R, B, R, B],
+      [B, R, B, R, B, R],
+      [R, B, R, B, R, B],
+    ];
+    const line = demoMove(plan, grid)!;
+    expect(line).toHaveLength(5);
+    for (let i = 1; i < line.length; i++) expect(step(grid, line.slice(0, i), line[i])).toBe('extend');
   });
 });

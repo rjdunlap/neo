@@ -494,6 +494,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Drag from one dot to another of the color asked for, until the number asked for have popped.' },
       { from: 4, to: 4, text: 'Drag from dot to dot of one color to make a chain of four; make three chains.' },
       { from: 5, text: 'Drag a line all the way around four dots of one color to close a square; do it twice.' },
+      { from: 6, to: 6, text: 'Drag through exactly five neighboring dots of one color; make three chains.' },
     ],
     finish: 'The round ends when the asked-for dots are cleared.',
   },

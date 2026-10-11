@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-10 — Dot Link level 6: Exactly five
+
+- Added a pre-K level for three exact five-dot lines. Shorter, longer and closed lines pop without counting; the move picker and demonstration provide a five-dot line.
+- `npm run typecheck`, the five focused Dot Link rule tests and the focused how-to tests passed.
+- `BROWSER_SUITE=batch BATCH_ONLY=dots` passed Dot Link levels 1–6, including two deliberate misses and a hint at level 6.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=6` completed cleanly in 12.6 seconds.
+- No build or full unit suite was run; the level adds no shared system or asset.
+- iPad touch feel, device speech and child play remain open.
+
 ## 2026-10-10 — Feelings Faces level 8: How can we help?
 
 - Added a pre-K round that follows the balloon drifting away or the moon rising with a choice of a hug or pillow.
@@ -165,6 +174,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Dot Link 6 (`batch`, `fingerdemo`) | 2026-10-10: levels 1–6 passed the filtered Dot Link play with two deliberate misses and a hint; level 6 ghost finger clean in 12.6 s | Dot Link level 6 entry | Browser automation; iPad touch feel, device speech and child play remain open |
 | Fill and Dump (`originals`, `fingerdemo`) | 2026-10-10: levels 1–4 played by taps (tip out, scoop, count, two wrong checks, glow, take back, done; portrait at level 4), saved score and sticker; clean ghost-finger demos at all four levels | Fill and Dump entry | Screenshots reviewed; no build or `smoke`; iPad feel, device speech and child play open |
 | Garden Grow 7 (`woods`, `fingerdemo`) | 2026-10-10: two-by-three array, two wrong rains, hint, saved round and sticker; clean ghost-finger demo in 38.8 s | Garden Grow levels 6–7 entry | Screenshot reviewed; iPad target feel, device speech and child play remain open |
 | Weather Wardrobe 7 (`wardrobe7`, `fingerdemo`) | 2026-10-10: removed the old outfit, dressed for three changing weathers, two wrong choices, hint and saved sticker; ghost finger clean in 20.7 s | Weather Wardrobe level 7 entry | Portrait screenshot reviewed; iPad touch feel, device speech and child play remain open |

@@ -1752,8 +1752,8 @@ async function batch() {
     log(`Bounce Back ${level} (${mode}): rally, pet and grown-up paddles, misses, hint, saved score and sticker passed`);
   }
 
-  // Dot Link: drag real lines through dots; wrong colors, short chains and open lines are gentle misses.
-  for (let level = 1; level <= 5 && (!only || only === 'dots'); level++) {
+  // Dot Link: drag real lines through dots; wrong colors, short/long chains and open lines are gentle misses.
+  for (let level = 1; level <= 6 && (!only || only === 'dots'); level++) {
     await launch('dot-link', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
