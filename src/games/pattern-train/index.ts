@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
-import { shapePath, type ShapeKind } from '../../art/shapes';
+import { shapePath } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
@@ -11,18 +11,19 @@ import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { buildTrain, PATTERN_PLANS, patternPlan, wantedChoice, type PatternPlan } from './logic';
+import { buildTrain, PATTERN_PLANS, patternPlan, pieceColor, pieceShape, wantedChoice, type PairLook, type PatternPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: PATTERN_PLANS.length } };
 
-function trainSymbol(kind: PatternPlan['kind'], value: number, size: number): Container {
+function trainSymbol(kind: PatternPlan['kind'], value: number, size: number, look?: PairLook): Container {
   if (kind === 'number') return label(String(value), value >= 10 ? 31 : 42, swatch.purple.line);
-  if (kind !== 'pair') return symbol(kind, value, size);
-  const colors: ColorName[] = ['red', 'blue', 'yellow'];
-  const shapes: ShapeKind[] = ['circle', 'triangle', 'square'];
-  const color = swatch[colors[value % 3]];
-  return shapePath(new Graphics(), shapes[value % 3], size).fill(color.fill).stroke({ width: 4, color: color.line });
+  if (kind === 'pair' && look) {
+    const color: (typeof swatch)[ColorName] = swatch[look.colors[pieceColor(value)]];
+    return shapePath(new Graphics(), look.shapes[pieceShape(value)], size).fill(color.fill).stroke({ width: 4, color: color.line });
+  }
+  if (kind === 'pair') return label('?', 40, swatch.purple.line);
+  return symbol(kind, value, size);
 }
 
 class PatternTrain implements Game {
@@ -30,6 +31,8 @@ class PatternTrain implements Game {
   readonly sequence: number[];
   readonly targets: number[];
   readonly choiceValues: number[][];
+  /** The colors and shapes a color-and-shape train uses this round. */
+  readonly look?: PairLook;
   private target = 0;
   readonly cars: Container[] = [];
   readonly choices: Container[] = [];
@@ -58,21 +61,21 @@ class PatternTrain implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = patternPlan(ctx.level);
-    ({ sequence: this.sequence, targets: this.targets, choices: this.choiceValues } = buildTrain(this.plan, ctx.rng));
+    ({ sequence: this.sequence, targets: this.targets, choices: this.choiceValues, look: this.look } = buildTrain(this.plan, ctx.rng));
     ctx.stage.addChild(this.background, this.tracks, this.scene);
     this.scene.addChild(this.glow, this.hintsGlow, this.selection);
     this.sequence.forEach((value, i) => {
       const car = new Container();
       car.addChild(tile(100, 108, 'white'));
-      const content = this.targets.includes(i) ? label('?', 60, swatch.purple.line) : trainSymbol(this.plan.kind, value, 32);
+      const content = this.targets.includes(i) ? label('?', 60, swatch.purple.line) : trainSymbol(this.plan.kind, value, 32, this.look);
       car.addChild(content);
       car.addChild(new Graphics().circle(-27, 65, 12).circle(27, 65, 12).fill(swatch.brown.line));
       onTap(car, () => { if (!this.targets.slice(this.target).includes(i)) sfx.bell(4 + value * 3, 0.35); }, { radius: 55 });
       this.cars.push(car); this.scene.addChild(car);
     });
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < this.choiceValues[0].length; i++) {
       const choice = new Container();
-      choice.addChild(tile(120, 120, 'white'), trainSymbol(this.plan.kind, this.choiceValues[0][i], 36));
+      choice.addChild(tile(120, 120, 'white'), trainSymbol(this.plan.kind, this.choiceValues[0][i], 36, this.look));
       onTap(choice, () => {
         if (this.done) return;
         if (this.plan.kind === 'bell') { this.selected = i; sfx.bell(4 + i * 3, 0.45); this.layoutGlow(); }
@@ -113,7 +116,9 @@ class PatternTrain implements Game {
     if (this.choiceValues[this.target][value] !== this.sequence[index]) {
       this.misses++; this.wrong++;
       sfx.boing();
-      void this.ctx.say('pattern.wrong');
+      const picked = this.choiceValues[this.target][value], answer = this.sequence[index];
+      // A color-and-shape train says which part was right.
+      void this.ctx.say(this.look && pieceColor(picked) === pieceColor(answer) ? 'pattern.colorRight' : this.look && pieceShape(picked) === pieceShape(answer) ? 'pattern.shapeRight' : 'pattern.wrong');
       if (this.wrong === 2) { this.hints++; void this.ctx.say('pattern.hint'); }
       this.layoutGlow();
       return;
@@ -121,7 +126,7 @@ class PatternTrain implements Game {
     sfx.bell(4 + value * 3, 0.4);
     const car = this.cars[index];
     car.removeChildAt(1).destroy({ children: true });
-    car.addChildAt(trainSymbol(this.plan.kind, this.sequence[index], 32), 1);
+    car.addChildAt(trainSymbol(this.plan.kind, this.sequence[index], 32, this.look), 1);
     this.target++; this.wrong = 0; this.selected = null;
     if (this.target === this.targets.length) {
       this.done = true;
@@ -136,7 +141,7 @@ class PatternTrain implements Game {
     this.tracks.clear().moveTo(35, y + 80).lineTo(v.w - 35, y + 80).stroke({ width: 8, color: swatch.brown.line });
     for (let x = 35; x < v.w; x += 32) this.tracks.moveTo(x, y + 70).lineTo(x + 8, y + 94).stroke({ width: 5, color: swatch.brown.fill });
     this.cars.forEach((c, i) => c.position.set(55 + (i + 0.5) * (v.w - 110) / this.cars.length, y));
-    this.choices.forEach((c, i) => c.position.set(v.w / 2 + (i - 1) * 170, v.h * 0.76));
+    this.choices.forEach((c, i) => c.position.set(v.w / 2 + (i - (this.choices.length - 1) / 2) * 170, v.h * 0.76));
     this.replay.position.set(v.w -  70,  70);
     this.confirm.position.set(v.w - 90, v.h * 0.76);
     this.layoutGlow();

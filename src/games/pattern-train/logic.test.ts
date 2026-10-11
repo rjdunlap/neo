@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PATTERN_PLANS, wantedChoice } from './logic';
+import { buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, pieceColor, pieceShape, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -23,6 +23,7 @@ describe('Pattern Train', () => {
           expect(new Set(choices[0]).size, plan.name).toBe(CHOICES);
           continue;
         }
+        if (plan.kind === 'pair') continue; // its own test below
         const showing = sequence.map((v, i) => (targets.includes(i) ? null : v));
         // The visible cars repeat exactly the planned unit, no shorter.
         const p = shortestRepeat(showing);
@@ -50,6 +51,7 @@ describe('Pattern Train', () => {
           expect(targets[0]).toBeGreaterThanOrEqual(2);
           continue;
         }
+        if (plan.kind === 'pair') continue;
         if (plan.two) expect(targets).toEqual([sequence.length - 2, sequence.length - 1]);
         else if (plan.missing) {
           // Inside the two repeats, never the first car of one.
@@ -86,6 +88,7 @@ describe('Pattern Train', () => {
 
   it('keeps the far levels at the seventh car, as their lines say, until they are rebuilt', () => {
     for (const plan of PATTERN_PLANS.filter((p) => p.far)) {
+      expect(plan.kind).not.toBe('pair');
       for (let seed = 1; seed <= 50; seed++) {
         const { sequence, targets } = buildTrain(plan, new Rng(seed));
         expect(sequence).toHaveLength(7);
@@ -125,11 +128,45 @@ describe('Pattern Train', () => {
   });
 
   it('offers every piece on the train, so the near miss is always a choice', () => {
-    for (const plan of PATTERN_PLANS.filter((p) => !p.numberSteps)) {
+    for (const plan of PATTERN_PLANS.filter((p) => !p.numberSteps && p.kind !== 'pair')) {
       const { sequence, choices } = buildTrain(plan, new Rng(5));
       for (const options of choices) for (const piece of sequence) expect(options).toContain(piece);
       for (const options of choices) expect(options).toEqual([0, 1, 2]);
     }
+  });
+
+  it('gives color and shape their own cycles, with the half-right pieces on offer', () => {
+    const plan = PATTERN_PLANS.find((p) => p.kind === 'pair')!;
+    const places = new Set<number>(), spots = new Set<number>(), looks = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const { sequence, targets, choices, look } = buildTrain(plan, new Rng(seed));
+      expect(sequence).toHaveLength(PAIR_CARS);
+      expect(look).toBeDefined();
+      expect(new Set(look!.colors).size).toBe(2);
+      expect(new Set(look!.shapes).size).toBe(2);
+      looks.add(look!.colors.join() + look!.shapes.join());
+      // The two attributes run on different periods: color alternates, shape holds for two cars.
+      const colors = sequence.map(pieceColor), shapes = sequence.map(pieceShape);
+      expect(colors.every((c, i) => i < 2 || c === colors[i - 2])).toBe(true);
+      expect(colors.some((c, i) => i > 0 && c === colors[i - 1])).toBe(false);
+      expect(shapes.every((s, i) => i < 4 || s === shapes[i - 4])).toBe(true);
+      expect(shapes.some((s, i) => i > 0 && s === shapes[i - 1])).toBe(true);
+      const t = targets[0], answer = sequence[t];
+      // A car four places away shows the whole answer, and the gap is never the first car.
+      expect(t).toBeGreaterThanOrEqual(1);
+      expect(sequence[t - 4] ?? sequence[t + 4]).toBe(answer);
+      // Four choices: the answer, same color other shape, same shape other color, and neither.
+      expect(choices[0]).toHaveLength(PAIR_CHOICES);
+      expect(new Set(choices[0]).size).toBe(PAIR_CHOICES);
+      const rest = choices[0].filter((c) => c !== answer);
+      expect(rest.filter((c) => pieceColor(c) === pieceColor(answer) && pieceShape(c) !== pieceShape(answer))).toHaveLength(1);
+      expect(rest.filter((c) => pieceShape(c) === pieceShape(answer) && pieceColor(c) !== pieceColor(answer))).toHaveLength(1);
+      expect(rest.filter((c) => pieceColor(c) !== pieceColor(answer) && pieceShape(c) !== pieceShape(answer))).toHaveLength(1);
+      places.add(t % 4); spots.add(choices[0].indexOf(answer));
+    }
+    expect(places.size).toBe(4);
+    expect(spots.size).toBe(PAIR_CHOICES);
+    expect(looks.size).toBeGreaterThan(10);
   });
 
   it('has a choice on offer for every empty car, in order, that fits the pattern', () => {
@@ -139,7 +176,7 @@ describe('Pattern Train', () => {
         targets.forEach((t, k) => {
           const want = wantedChoice(sequence, targets, choices, k);
           expect(want).toBeGreaterThanOrEqual(0);
-          expect(want).toBeLessThan(CHOICES);
+          expect(want).toBeLessThan(choices[k].length);
           expect(choices[k][want]).toBe(sequence[t]);
         });
       }
