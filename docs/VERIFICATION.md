@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Orchard Rows first slice
+
+- Added school levels 1–3 in Counting Cove: plant equal rows, count groups, turn the orchard to count columns, and find a missing row. Registered the game, scoped how-to, voice, demonstration and co-play/off-screen suggestions.
+- Tested `1f0b5ae` plus the implementation diff (committed as `c1e67d1`; integrated documentation-only `92d0680` without changing tested code) at `http://localhost:5197`: typecheck, all 920 unit tests (126 files) and production build passed. Five new rule tests cover seeded distinct arrays, regrouping and totals, missing-row solvability, unique answers/decoys, replay without double counting, and 100-unit row controls in four views.
+- `BROWSER_SUITE=orchard ORCHARD_LEVELS=1,3` passed: real row/number/turn taps, free replay, two misses/one hint, supported completion, saved results/stickers, portrait resize and leaving during speech. Landscape and portrait screenshots reviewed; no page errors. The initial polling loop stopped sending taps before the last answer; a three-action probe measured 3–7.5 second speech waits, and the corrected harness waits per action.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=orchard-rows FINGER_LEVELS=1,2,3` passed cleanly in 23.1, 41.4 and 46.5 demo seconds, with no misses or hints. The navigation probe passed the actual land icon launch, level-3 intro fit, Play and held-home return to Counting Cove; land and intro screenshots reviewed, with no page errors.
+- Not run: full world/picnic/couch/offline suites (save and navigation implementations unchanged), separate level-2 manual play, iPad/device speech or child play. New local documentation links and `git diff --check` passed; an older archive-relative roadmap link remains pre-existing.
+
 ## 2026-10-11 — Pattern Train deep dive
 
 - Wrote `docs/deep-dives/pattern-train.md` and updated the tracker (designed), the IDEAS round-two and round-three rows for Pattern Train, the roadmap's chunk 14 cell and a Waiting-on-the-developer row. No code, tests or scripts changed.
@@ -356,6 +364,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Orchard Rows (`orchard`, `fingerdemo`) | 2026-10-11: levels 1 and 3, replay, two misses/one hint, saved rewards, portrait and interrupted speech; demos 1–3 clean (23.1, 41.4, 46.5 s); land launch, intro and return | Orchard Rows first slice entry | No iPad, actual device speech or child play; separate level-2 manual play not run |
 | Puzzle Pals scenes (`smoke`, `fingerdemo`) | 2026-10-11: levels 1, 4, 7 smoke with portrait; demos at levels 1 and 7 clean (3.1, 32.7 s); scene pin, sky/ground and per-piece rule tests; original six pixel-identical | Puzzle Pals scene data and six new scenes entry | New scenes reviewed on a contact sheet only; no run played each new scene as a puzzle; original-scene fairness (slice 1) open; iPad and speech not checked |
 | Opposites content (`woods`) | 2026-10-10: levels 2–4, wrong choices, hint glow, supported completion, saved scores/stickers; 30 focused tests and typecheck | Opposites content and fairness entry | Both sides of new art reviewed; portrait, iPad, device speech and child play unverified |
 | Workflow and repository cleanup | 2026-10-10: local docs links/anchors, diff check, verified refs bundle, preserved dirty diffs and post-cleanup inventory | Worktree cleanup and development workflow review entry | Docs only; no game checks repeated |

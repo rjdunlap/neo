@@ -4,6 +4,21 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'game.orchard-rows': ['Orchard rows!'],
+  'orchard.plant': ['Plant {rows} rows with {each} trees in each row. Tap an empty row to make it grow!'],
+  'orchard.planted': ['{each} trees in this row. {total} trees planted altogether!'],
+  'orchard.rows': ['Count by rows. Each row has {each} trees. Tap each row once to count it.'],
+  'orchard.columns': ['We turned the same orchard! Its columns now run across the screen. Each has {each} trees. Tap each one to count by columns.'],
+  'orchard.counted': ['{each} trees in each {group}. We have counted {total} trees altogether.'],
+  'orchard.total': ['How many trees altogether? Tap that number. You can tap the rows to hear the count again.'],
+  'orchard.totalhint': ['There are {groups} equal groups with {each} trees in each. Count them together: {total} trees.'],
+  'orchard.missing': ['We want {rows} rows of {each}, making {total} trees. One row is empty. How many trees will fill that row? Tap that number.'],
+  'orchard.missinghint': ['Every row needs the same number of trees. Look at a full row: {each} trees. That is how many the empty row needs too.'],
+  'orchard.fill': ['Yes, {each} trees! Tap the empty row to plant them.'],
+  'orchard.yes': ['{rows} rows of {each} make {total} trees!'],
+  'orchard.turn': ['Tap the turning arrow. We will look at the same orchard from the side and count by columns.'],
+  'orchard.same': ['Still {total} trees! Rows or columns, no trees were added or taken away.'],
+  'orchard.done': ['Two orchards planted and counted! Equal groups help us count.'],
   'couch.next': ['Another lantern is lit! What shall we play next?'],
   'couch.done': ['Six lanterns! We made a whole trip together.'],
   'couch.turn': ['{who}, it is your turn!'],
