@@ -10,8 +10,8 @@ export interface PatternPlan {
   missing?: boolean;
   /** Two empty cars at the end. */
   two?: boolean;
-  /** The question is after two complete repeats, rather than simply the next car. */
-  far?: boolean;
+  /** The train rolls into a tunnel after two repeats; the car that comes out is the empty one. */
+  tunnel?: boolean;
   /** A numbered train counts by one of these amounts. */
   numberSteps?: readonly number[];
   name: string;
@@ -27,7 +27,7 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 1], kind: 'bell', name: 'Listen and continue two bell notes' },
   { pattern: [0, 1, 2], kind: 'bell', name: 'Listen and continue three bell notes' },
   { pattern: [0, 0, 1], kind: 'shape', two: true, name: 'Fill two cars in an AAB pattern' },
-  { pattern: [0, 1, 2], kind: 'shape', far: true, name: 'Find the seventh car from two repeats' },
+  { pattern: [0, 1, 2], kind: 'shape', tunnel: true, name: 'Count the cars in the tunnel' },
   { pattern: [0, 1, 2, 3], kind: 'pair', name: 'Color and shape on their own cycles' },
   { pattern: [], kind: 'number', numberSteps: [2, 5, 10], name: 'Count numbered cars by 2, 5, or 10' },
 ];
@@ -36,6 +36,9 @@ export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min
 
 /** Choices under the train: one of each symbol, so every answer is on offer. */
 export const CHOICES = 3;
+/** The tunnel hides this many cars, so the car that comes out is `hidden mod unit` places on from the first. */
+export const TUNNEL_HIDDEN = { min: 4, max: 7 } as const;
+
 /** A color-and-shape train offers all four pieces of its two colors and two shapes. */
 export const PAIR_CHOICES = 4;
 /** A color-and-shape train's cars: two full repeats of four and the car to fill. */
@@ -87,20 +90,33 @@ function pairTrain(rng: Rng): { sequence: number[]; targets: number[]; choices: 
 }
 
 /**
+ * A tunnel train: two full repeats, then the tunnel hides 4 to 7 more cars, then the empty car rolls out. The car is the
+ * repeat's place `(6 + hidden) mod unit`, so she counts the hidden cars and jumps whole units; it is the car just before
+ * the tunnel in only one round of four. The cars shown are the first six; the tunnel is not a car in `sequence`.
+ */
+function tunnelTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; hidden: number } {
+  const tokens = rng.shuffle([0, 1, 2]);
+  const unit = plan.pattern.length;
+  const hidden = rng.int(TUNNEL_HIDDEN.min, TUNNEL_HIDDEN.max);
+  const sequence = Array.from({ length: unit * 2 + 1 }, (_, i) => tokens[plan.pattern[(i < unit * 2 ? i : unit * 2 + hidden) % unit]]);
+  return { sequence, targets: [sequence.length - 1], choices: [[0, 1, 2]], hidden };
+}
+
+/**
  * A train for one round: the symbols on each car, and which cars start empty. The pattern shows two full repeats, then
  * the train runs on part of the way into the next one (`phase` cars) before the empty car, so the car to fill can be any
  * place in the repeat rather than always a copy of the first car. Level 6's gap sits anywhere but the very start of a
- * repeat. The far level (10) keeps a seven-car train with the seventh car empty until it is rebuilt; its
- * line names the seventh car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
+ * repeat. The tunnel level (10) shows six cars, then the tunnel, then the empty car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
  * piece on the train is on offer, the near misses included.
  */
-export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook } {
+export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook; hidden?: number } {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
   if (plan.kind === 'pair') return pairTrain(rng);
+  if (plan.tunnel) return tunnelTrain(plan, rng);
   const tokens = rng.shuffle([0, 1, 2]);
   const unit = plan.pattern.length;
-  // Two empty cars may start at slot 0 or 1 (nine cars at most); a far or missing-middle train shows no extra cars.
-  const phase = plan.far || plan.missing ? 0 : rng.int(0, plan.two ? 1 : unit - 1);
+  // Two empty cars may start at slot 0 or 1 (nine cars at most); a missing-middle train shows no extra cars.
+  const phase = plan.missing ? 0 : rng.int(0, plan.two ? 1 : unit - 1);
   const length = unit * 2 + phase + (plan.two ? 2 : 1);
   const sequence = Array.from({ length }, (_, i) => tokens[plan.pattern[i % unit]]);
   let targets: number[];

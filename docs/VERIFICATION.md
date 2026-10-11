@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train slice 3: level 10, the tunnel
+
+- Level 10 (`tunnelTrain`): two repeats, a tunnel with 4–7 hidden cars shown as dots, then the empty car; the hint rolls the hidden cars through above the tunnel. Voice line `pattern.tunnel` (with the count), how-to step reworded, `far` replaced by `tunnel`.
+- Typecheck and all 926 unit tests passed; the new rule test pins six cars, counts 4–7 all seen, the answer at place `(6 + hidden) mod 3`, and the car before the tunnel not the answer in over half the rounds.
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=10` passed (two wrong picks, one hint, reward). Portrait (768×1024) screenshots of the tunnel and of the hint reveal reviewed; the reveal's first spacing overlapped and was widened afterwards, that last change checked by typecheck only.
+- Not run: `fingerdemo` at level 10 (the bot reads `wantedChoice`, unchanged), other levels' loop, couch suites (range stops at level 9), build, iPad or child play.
+
 ## 2026-10-11 — Pattern Train slice 2: level 11, color and shape on their own cycles
 
 - Level 11 (`buildTrain`'s `pairTrain`): nine cars, color alternating and shape held for two, four shuffled choices (every mix of two colors and two shapes), a gap anywhere after the first car, a wrong pick that names the right part. Voice lines `pattern.colorRight` and `pattern.shapeRight`; how-to step reworded.

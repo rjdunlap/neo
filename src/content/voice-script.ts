@@ -1065,7 +1065,7 @@ export const SCRIPT = {
   'story.cause.wrong': ['{action} That makes something else happen. What made the picture above happen?'],
   'story.cause.because': ['{explanation}'],
   'pattern.start': ['Look at the train. What comes in the glowing space?'],
-  'pattern.far': ['Look at the two repeats. What belongs in the seventh car?'],
+  'pattern.tunnel': ['The train goes into the tunnel. {n} cars are hiding inside! Keep the pattern going. Which car comes out?'],
   'pattern.pair': ['Watch the colors and the shapes. Each one has its own pattern. What belongs in the glowing car?'],
   'pattern.colorRight': ['The color is right! Now look at the shape.'],
   'pattern.shapeRight': ['The shape is right! Now look at the color.'],
