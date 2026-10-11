@@ -127,7 +127,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 2. **Slot-based rooms and the barn** (built 2026-10-10): rooms as data (`spot()` becomes slot-based; `makeRequests` and `thingToTap` already take the drawn room after slice 1), a lantern, a window variant, `NAMES` for each new friend, and a pool test that every room fits every level. Tier: rule tests, one browser play, one portrait screenshot.
 3. **Level 5, the animals, and the pre-K window** (built 2026-10-10): `kind`, the band row, the level-4 `LevelLine` bound, registry tests, the browser loop, `fingerdemo`. Tier: new level on an existing interaction.
 4. **Level 6, the light goes last** (built 2026-10-11; [PR #150](https://github.com/rjdunlap/neo/pull/150)): any order for the other five friends, then the lamp or lantern. Pre-K 5–6; early light taps teach, two glow a remaining friend. Rule tests cover both rooms, alternative orders, rejection and useful hints; the ghost finger leaves the light last.
-5. **Level 7, how many?** (ready; decision 3).
+5. **Level 7, how many?** (claimed on `codex/goodnight-count`, 2026-10-11): choose any 2–4 of six friends, count each goodnight aloud, then hold the remaining friends awake briefly before the finale. No misses or hints by design; the existing adaptation rule applies. Expected files: game logic/rendering/tests, voice, how-to, registry range test, filtered `night` browser case, README, GAMES, roadmap and verification. Tier: typecheck, rule tests, level-7 `night` play and `fingerdemo`.
 6. **Level 8, the color** (ready).
 7. **Level 9, everyone but the one** (ready).
 8. **Tent and boat cabin rooms** (ready, new art).
