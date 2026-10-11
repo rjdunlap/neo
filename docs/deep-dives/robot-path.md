@@ -119,7 +119,7 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 ## Build slices, in order
 
 1. **Say what happened** (ready): the bump/stopped-short/empty messages, the hint that prefers a consistent known route, three new voice lines. Rule tests for `nextPress` on alternative valid routes. Tier: game rules plus typecheck; the voice test; one scripted play at level 6.
-2. **Three boards per level** (ready): `boards` per level, a seeded pick, the board-property tests for all ten levels. Tier: typecheck and the game's rule tests; `scripts/browser-check.mjs` `robots()` reads board geometry, so check it still plays (`BROWSER_SUITE=robot`).
+2. **Three boards per level** (claimed on `codex/robot-path-board-pool`): `boards` per level, a seeded pick, the board-property tests for all ten levels. Tier: typecheck and the game's rule tests; `scripts/browser-check.mjs` `robots()` reads board geometry, so check it still plays (`BROWSER_SUITE=robot`).
 3. **Preschool at levels 1–2** (ready, person check afterwards): bands and registry tests. Tier: typecheck and the registry/bands tests.
 4. **Level 11, where will it stop?** (built 2026-10-10): a cell-tap layer for two shown programs (individual and counted steps), an unscored prediction and playback to the actual stopping square. Rule tests check that the correct stop differs from skipping the rock and reading the arrows backwards; the ghost finger predicts and plays it. Typecheck, rule tests, `robot` filtered to level 11 and `fingerdemo` at level 11.
 5. **Level 12, fix the program** (built 2026-10-10): three counted repair boards, the free first watch, select-a-slot editing, and a hint on the slot to change. Typecheck, logic tests, the filtered level-12 browser play, and the level-12 ghost-finger demo passed.
@@ -131,3 +131,7 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 ## What was built in this session
 
 Levels 11, Where will it stop?, and 12, Fix the program, are built. Level 12 shows a counted program, gives a free first watch, then asks the player to select its short slot and add a step. Three authored boards have exactly one single-slot repair. Checks are recorded in [VERIFICATION.md](../VERIFICATION.md); iPad target sizing, device speech and child play remain open.
+
+## Current build claim
+
+`codex/robot-path-board-pool` claims slice 2: three seeded boards at each existing programming level 1–10, preserving the level rules, slot limits and saved IDs. Expected files: `src/games/robot-path/logic.ts`, `logic.test.ts`, `index.ts`, README, GAMES, roadmap, this write-up and verification notes. Checks: typecheck, Robot Path rule tests and a filtered `robot` browser play with a board screenshot.
