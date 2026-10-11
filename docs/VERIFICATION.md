@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Flash portals, cozy and brain games research (docs only)
+
+- Added `IDEAS.md` § "Flash portals, cozy and brain games (2026-10-11)": an access log, what the portals show, a house-rule screen (idle, tower defense, daily puzzles, merge, network, aquarium, platformer), how sources land on existing rows, sixteen new proposals and two seeds, a set-aside list, a suggested order and four decisions. Added pointer rows to the Flash and web table, a pointer row to the "Closest to buildable" table and Samorost to the gentle-flash-games shelf; added one Waiting-on-the-developer row to `ROADMAP.md` (a finite idle-shaped game).
+- Sources: 25 Wikipedia pages and Kongregate's notable-games page opened and linked. Blocked: the Web Design Museum and Kongregate staff picks (403); the Flash-games list, Flashpoint, Hapland, Tents and NYT Connections (404). Search excerpts were background only. Queens' and Tango's rules, Hundreds' and The Scale of the Universe's mechanics, Sugar Sugar, Gorillas and cipher wheels are **recalled, not opened** and marked so.
+- Ran `git diff --check` and a relative-link and anchor check on `IDEAS.md`, `ROADMAP.md` and `VERIFICATION.md`. No code, tests or browser suites ran.
+- Open: every proposal is unbuilt; recalled rules need a recheck; the word-list and science/scale reviews and the idle-game decision are the developer's.
+
 ## 2026-10-11 — JumpStart title-by-title research and additional languages (docs only)
 
 - Added `IDEAS.md` § "JumpStart, title by title": per-band catalogues of what each JumpStart title asked a child to do (Baby and Toddlers through 6th Grade, Pre-K, Spanish, Music, Numbers, Reading, Spelling, Haunted Island, Typing, 3D Virtual World) mapped to built games, notebook ideas or "not borrowed"; twenty-two new proposals and modes; the evidence for the "what not to borrow" rules; and a family-album decision.
