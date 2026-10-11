@@ -114,3 +114,22 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   }
   return out;
 }
+
+/** Distinguish a direction mistake from counting the starting pad as a hop. */
+export type HopMiss = 'correct' | 'forward' | 'backward' | 'one-more' | 'one-less' | 'count';
+export function missKind(start: number, answer: number, chosen: number, card: boolean): HopMiss {
+  if (chosen === answer) return 'correct';
+  if (!card && (chosen - start) * (answer - start) <= 0) return answer > start ? 'forward' : 'backward';
+  const direction = card ? 1 : Math.sign(answer - start);
+  if (chosen === answer + direction) return 'one-more';
+  if (chosen === answer - direction) return 'one-less';
+  return 'count';
+}
+
+/** Both stages can show help; only the first demonstration charges a hint. */
+export function hintCharge(wrongs: number, glowing: boolean, helped: boolean): number {
+  return wrongs >= 2 && !glowing && !helped ? 1 : 0;
+}
+
+/** Keep the original seeded sticker draw separate from round content. */
+export const stickerNumber = (rng: Rng) => rng.int(1, 9);

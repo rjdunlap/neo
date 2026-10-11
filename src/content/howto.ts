@@ -720,9 +720,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Start at the number shown and hop back the number of hops asked for: tap the lily pad where the frog lands.' },
       { from: 5, to: 5, text: 'Count the hops from one number to the other, then tap a number card.' },
       { from: 6, to: 6, text: 'Hop on or back along the long line, and tap the lily pad where the frog lands.' },
-      { from: 7, text: 'First tap the number card for the hops that reach 10. Then tap the lily pad where the rest of the hops land.' },
+      { from: 7, to: 7, text: 'The sign shows the whole sum. First tap the number card for the hops that reach 10. Listen to the split, then tap the lily pad where the rest of the hops land.' },
     ],
-    finish: 'The round ends when the frog lands on the right number.',
+    finish: 'Answer five questions to bring the frog home.',
+    note: 'Two misses show the hops and glow the answer. Help counts once per question; tapping a pad when a number card is wanted is free.',
   },
   'market-stall': {
     goal: 'Pay for things with shell coins.',

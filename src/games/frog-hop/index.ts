@@ -12,17 +12,17 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { answerOf, answerSlot, GAP_CARDS, makeQuestions, planFor, WINDOW, type HopPlan, type HopQuestion } from './logic';
+import { answerOf, answerSlot, GAP_CARDS, makeQuestions, planFor, PLANS, missKind, hintCharge, stickerNumber, WINDOW, type HopPlan, type HopQuestion } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: PLANS.length },
 };
 
 const STEP = 104;
 
-function frogArt(): Container {
+export function frogArt(): Container {
   const c = new Container();
   const g = new Graphics();
   g.ellipse(-26, 4, 16, 9).ellipse(26, 4, 16, 9).fill(swatch.green.line);
@@ -74,6 +74,8 @@ class FrogHop implements Game {
   private readonly glow = new Graphics();
   private view: View;
   private wrongs = 0;
+  private helped = false;
+  private inertTaps = 0;
   private glowing: Container | null = null;
   private clock = 0;
   // Couch play: a ring over the lily pads (or the number cards on counting levels).
@@ -217,6 +219,8 @@ class FrogHop implements Game {
     this.busy = true;
     this.index++;
     this.wrongs = 0;
+    this.helped = false;
+    this.inertTaps = 0;
     this.makeTenStage = 'bridge';
     this.cards.forEach((c) => c.node.visible = true);
     this.glowing = null;
@@ -226,14 +230,14 @@ class FrogHop implements Game {
     if (this.at !== q.start) await this.leap(q.start);
     const mode = this.plan.mode;
     const k = Math.abs(q.hops);
-    this.signText.text = mode === 'find' ? String(q.target) : mode === 'gap' ? `${q.start} → ${q.target}` : mode === 'make-ten' ? `${q.start} + ? = 10` : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`;
+    this.signText.text = mode === 'find' ? String(q.target) : mode === 'gap' ? `${q.start} → ${q.target}` : mode === 'make-ten' ? `${q.start} + ${q.hops}` : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`;
     // The ring starts where the frog sits (or on the first card), so choosing is a few steps along.
     this.focus = mode === 'gap' || mode === 'make-ten' ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     this.busy = false;
     if (mode === 'find') return this.ctx.instruct('hop.find', { n: q.target });
     if (mode === 'next') return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });
     if (mode === 'gap') return this.ctx.instruct('hop.gap', { n: q.start, m: q.target });
-    if (mode === 'make-ten') return this.ctx.instruct('hop.ten', { n: q.start });
+    if (mode === 'make-ten') return this.ctx.instruct('hop.ten', { n: q.start, k: q.hops });
     return this.ctx.instruct(q.hops > 0 ? 'hop.add' : 'hop.back', { n: q.start, k });
   }
 
@@ -280,13 +284,16 @@ class FrogHop implements Game {
   private async tapPad(n: number) {
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
-    if (mode === 'gap') {
-      // Pads aren't the answer here; the frog just says hi.
+    if (mode === 'gap' || (mode === 'make-ten' && this.makeTenStage === 'bridge')) {
+      this.inertTaps++;
       sfx.squeak();
-      return;
-    }
-    if (mode === 'make-ten' && this.makeTenStage === 'bridge') {
-      sfx.squeak();
+      if (this.inertTaps === 2) {
+        void this.ctx.say('hop.cards');
+        for (const { node } of this.cards) {
+          void this.ctx.tw.to(node.scale, { x: 1.08, y: 1.08 }, { duration: 0.15 })
+            .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.15 }));
+        }
+      }
       return;
     }
     if (n === this.q.target) return void this.right();
@@ -308,9 +315,9 @@ class FrogHop implements Game {
     this.cards.forEach((c) => c.node.visible = false);
     this.wrongs = 0;
     this.focus = Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
-    this.signText.text = `10 + ${this.q.remaining}`;
+    this.signText.text = `${this.q.start} + ${this.q.toTen} + ${this.q.remaining}`;
     this.busy = false;
-    await this.ctx.instruct('hop.rest', { n: this.q.remaining! });
+    await this.ctx.instruct('hop.rest', { a: this.q.toTen!, k: this.q.hops, n: this.q.remaining! });
   }
 
   private async right() {
@@ -337,11 +344,23 @@ class FrogHop implements Game {
     sfx.boing();
     const q = this.q;
     const mode = this.plan.mode;
-    if (mode === 'find') await this.ctx.say('hop.wrong.find', { m: n, n: q.target });
+    if (mode === 'find') {
+      this.frog.scale.x = q.target > n ? 1 : -1;
+      await this.ctx.say(q.target > n ? 'hop.wrong.find-forward' : 'hop.wrong.find-backward', { m: n, n: q.target });
+    }
     else if (mode === 'next') await this.ctx.say(q.ask === 'more' ? 'hop.wrong.more' : 'hop.wrong.less');
-    else await this.ctx.say('hop.wrong.count', { n: mode === 'make-ten' && this.makeTenStage === 'rest' ? 10 : q.start });
+    else {
+      const card = mode === 'gap' || (mode === 'make-ten' && this.makeTenStage === 'bridge');
+      const start = mode === 'make-ten' && this.makeTenStage === 'rest' ? 10 : q.start;
+      const answer = card ? (mode === 'gap' ? answerOf(mode, q) : q.toTen!) : q.target;
+      const kind = missKind(start, answer, n, card);
+      if (kind === 'forward' || kind === 'backward') await this.ctx.say(kind === 'forward' ? 'hop.wrong.forward' : 'hop.wrong.backward');
+      else if (kind === 'one-more' || kind === 'one-less') await this.ctx.say(kind === 'one-more' ? 'hop.wrong.one-more' : 'hop.wrong.one-less');
+      else await this.ctx.say('hop.wrong.count', { n: start });
+    }
     if (this.wrongs >= 2 && !this.glowing) {
-      this.hints++;
+      this.hints += hintCharge(this.wrongs, !!this.glowing, this.helped);
+      this.helped = true;
       // Show it: count the hops along the line, then hop back and let her try.
       if (mode !== 'find' && mode !== 'next') {
         const shown = mode === 'make-ten' && this.makeTenStage === 'bridge' ? 10 : q.target;
@@ -387,7 +406,7 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
   const p = new Pad();
-  p.set(rng.int(1, 9));
+  p.set(stickerNumber(rng));
   p.scale.set(1.4);
   p.y = 40;
   const f = frogArt();
@@ -405,7 +424,7 @@ export const frogHop: GameModule = {
   skills: ['number-line', 'adding', 'taking-away', 'counting-on'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (level) => planFor(level).name,
+  describeLevel: (level) => PLANS[level - 1]?.name,
   music: STYLES.bubbles,
   coplayHint: 'Count the hops out loud together, tapping the table for each one.',
   offScreen: 'Make a number line with chalk or tape on the floor and hop along it: "Start at 2, hop 3 more!"',

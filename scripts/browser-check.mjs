@@ -2977,9 +2977,22 @@ async function woodsBatch() {
     log(`Secret Code ${level}: stones placed and cleared, marks, ignored clues as misses, suggestion hint, doors opened, saved score and sticker passed`);
   }
 
-  if (!only || only === 'hop') for (let level = fromLevel; level <= 7; level++) {
+  if (!only || only === 'hop') for (const level of process.env.HOP_LEVELS?.split(',').map(Number) || Array.from({ length: Math.max(0, 8 - fromLevel) }, (_, i) => fromLevel + i)) {
     await launch('frog-hop', level);
+    await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
+    await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (mode === 'gap' || mode === 'make-ten') {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (let i = 0; i < 2; i++) { kit.tapOn(g.pads[0]); await kit.sleep(350); }
+      });
+      assert.deepEqual(await counts(), [0, 0], 'pad nudges are free');
+      assert.equal(await page.evaluate(() => neo.scene.game.inertTaps), 2);
+    }
+    if (mode === 'make-ten') assert.equal(await page.evaluate(() => {
+      const g = neo.scene.game; return g.signText.text === `${g.q.start} + ${g.q.hops}`;
+    }), true, 'the whole sum appears before the split');
     // Answer by tapping a lily pad, a number card on the gap level, or both for make-ten.
     const answer = async (right) => {
       await page.evaluate((right) => {
@@ -2992,6 +3005,16 @@ async function woodsBatch() {
       await page.waitForTimeout(250);
       await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
       if (right && mode === 'make-ten') {
+        if (await page.evaluate(() => neo.scene.game.index === 0)) {
+          assert.equal(await page.evaluate(() => { const g = neo.scene.game; return g.signText.text === `${g.q.start} + ${g.q.toTen} + ${g.q.remaining}`; }), true);
+          await answer(false); await answer(false);
+          assert.deepEqual(await counts(), [4, 1], 'help in both stages charges one hint');
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(250);
+          await screenshot('frog-hop-7-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(250);
+        }
         await page.evaluate(() => {
           const g = neo.scene.game; const q = g.questions[g.index];
           kit.tapOn(g.pads.find((p) => p.n === q.target));
@@ -3010,7 +3033,7 @@ async function woodsBatch() {
       await answer(true);
     }
     await finished('frog-hop');
-    assert.deepEqual(await score('frog-hop'), [2, 1]);
+    assert.deepEqual(await score('frog-hop'), [mode === 'make-ten' ? 4 : 2, 1]);
     log(`Frog Hop ${level} (${mode}): pads and cards tapped, wrong answers, counted demonstration and glow, saved score and sticker passed`);
   }
 
