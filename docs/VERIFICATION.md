@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-10 — Worktree cleanup and development workflow review
+
+- Reviewed eight past chats, current worktree/branch status and GitHub PRs. Removed 14 clean merged worktrees, 111 merged local branches and 126 merged remote branches; remote deletion was atomic with expected-tip leases. Stopped five finished-session Vite servers.
+- Verified a full refs bundle before removal; saved the cleanup manifest, PR inventory, dirty-tree patches, screenshots/probes and local settings under the common Git directory's `cleanup-backups/2026-10-10/`. Preserved three dirty worktrees, main's checkout, the current checkout, unmerged Splish Splash research and open PR 131.
+- Added the workflow review, an exact-slice claim rule, worktree-local dependency/cache setup, strict ports, tested-revision evidence and safe closeout guidance. Release batching and helper scripts remain proposals; no gameplay or release-check policy changed.
+- Ran local documentation link/anchor checks, `git diff --check` and the post-cleanup Git inventory. Confirmed preserved working diffs match their saved patches.
+- Not run: typecheck, unit tests, build or browser suites (docs and Git cleanup only). No new iPad, speech or child-play evidence.
+
 ## 2026-10-10 — Fill and Dump preschool pouring
 
 - Added level 5 and a preschool range (1–5): a displacement-controlled jug, three fill lines, caught overflow, free empty/recover controls, one hint per cup and a ghost-finger demonstration. Existing basket levels and saved IDs are unchanged.
@@ -294,6 +302,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Workflow and repository cleanup | 2026-10-10: local docs links/anchors, diff check, verified refs bundle, preserved dirty diffs and post-cleanup inventory | Worktree cleanup and development workflow review entry | Docs only; no game checks repeated |
 | Story Steps ten stories (`fingerdemo`) | 2026-10-11: levels 1, 5 and 7 demos clean (5.4, 14.7, 15.4 s); rule tests for the pools and the family rule | Story Steps: six new stories and per-level pools entry | Chrome automation, a contact sheet of the new art; no iPad or child |
 | Fill and Dump release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations; story resume/rewards; Together and Face-off trips; integrated production build and offline reload/saves | Fill and Dump preschool pouring entry | Chrome automation; iPad and child judgment remain open |
 | Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |

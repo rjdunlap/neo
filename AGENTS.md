@@ -122,6 +122,12 @@ Suite names, filters and durations are in the [README](README.md#browser-checks)
 
 When a browser check fails, probe with a small logging script before changing the test: many failures here were real bugs, such as a hint glow swallowing touches, a destroyed drawing freezing a show, and overlapping tap targets. Prove a fix by briefly restoring the old rule and watching the check fail. Put one-off Playwright probes in `test-results/` so `import 'playwright'` resolves. Vite listens on IPv6 `localhost`, so use `GAME_URL=http://localhost:5173`. Before an offline run, confirm the preview serves the current build by comparing the `assets/index-*.js` name in the served page with `dist/index.html`.
 
+### Session setup and closeout
+
+Use the [development workflow review](docs/DEVELOPMENT-WORKFLOW.md) for the reasons behind these steps. In a fresh worktree, use `npm ci` for its own dependencies; do not borrow another disposable worktree's `node_modules`. Choose an explicit available port, start Vite with `--strictPort`, and set `GAME_URL` to exactly that URL. Keep any custom Vite cache within that worktree; concurrent worktrees must not share a mutable cache. Stop the session's dev, preview and snapshot servers when its checks finish.
+
+After publication and merge, remove a finished worktree only after checking its owning session is complete, its tip is in current `origin/main`, it has no uncommitted or untracked work, and no live PR still uses its branch. Preserve needed ignored screenshots, probes and local settings before removal. Use the app's recoverable archive for a managed worktree when available; otherwise keep a recovery manifest with its path and commit, and back up needed artifacts before `git worktree remove`. Delete only merged feature branches after their worktree is released; preserve `main`, active branches and unmerged research. Do not force removal of a dirty worktree. Cleanup does not require closing the historical chat.
+
 ### Scripted play
 
 Dev-only `neo` exposes the app (`neo.scene`, `neo.view`, `neo.go.game(id, band)`); `kit` in `src/dev/testkit.ts` provides `tap`, `tapOn`, `drag`, `dragTo`, `line`, `until`, `sleep`, and `store`. Start on "Who's playing?" by clicking the first card (`.chooser__play`; the browser harness does it in `pickFirst()`) and wait about three seconds for the transition before navigating. Set the test profile band and `kit.store.stats(id).level`, then drive the game and inspect `neo.scene.game`.
@@ -153,9 +159,9 @@ Before choosing a roadmap slice or making edits:
 1. Fetch `origin` with pruning and make sure the new feature branch starts at the latest `origin/main`; fast-forward a clean local `main` first when needed. Never pull blindly into a dirty worktree.
 2. Inspect active worktrees, unmerged local and remote branches, and open pull requests for the same roadmap chunk, game IDs or files. Work that is in flight counts even when it has not reached `main` yet.
 3. If another branch is already implementing the slice, do not build a second version. Reconcile with that branch, help finish it, or choose the next non-overlapping ready slice unless the grown-up explicitly wants competing approaches.
-4. Create a clearly named feature branch before substantial edits, and publish its first coherent commit and pull request promptly so later sessions can see that the slice is claimed.
+4. Create a clearly named feature branch before substantial edits. Before coding, publish a small docs-only claim commit and draft pull request naming the game ID, exact level/content slice, and expected files; put the branch/PR on the existing roadmap or deep-dive row. An uncommitted implementation in another worktree also claims that slice. Update that same PR as the playable work becomes coherent.
 
-Fetch and inspect for overlap again immediately before publishing a follow-up commit, and once more before merging or pushing `main`. If `origin/main` moved or overlapping work landed, integrate the current remote version and rerun the proportionate checks before publishing. Never push a local `main` whose view of `origin/main` is stale.
+Fetch and inspect for overlap again immediately before publishing a follow-up commit, and once more before merging or pushing `main`. If `origin/main` moved or overlapping work landed, integrate the current remote version and rerun the proportionate checks before publishing. Never push a local `main` whose view of `origin/main` is stale. Do the upstream integration before the final feature checks when practical. After integration, rerun checks for changed dependencies; a docs-only integration does not invalidate a passing game play-through. Record the tested commit (or base commit plus working diff), exact filters and server URL so reuse is inspectable.
 
 Keep this file provider-neutral and durable; update it when a shared contract or workflow changes. Where an update goes:
 
