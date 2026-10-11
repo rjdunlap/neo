@@ -13,6 +13,8 @@ export interface PatternPlan {
   two?: boolean;
   /** The train rolls into a tunnel after two repeats; the car that comes out is the empty one. */
   tunnel?: boolean;
+  /** The question is which car is wrong, not what comes next: one extra car crept in (`extra`), or one car was swapped (`swap`, then she picks the piece that belongs). */
+  odd?: 'extra' | 'swap';
   /** A numbered train counts by one of these amounts. */
   numberSteps?: readonly number[];
   name: string;
@@ -31,6 +33,8 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 1, 2], kind: 'shape', tunnel: true, name: 'Count the cars in the tunnel' },
   { pattern: [0, 1, 2, 3], kind: 'pair', name: 'Color and shape on their own cycles' },
   { pattern: [], kind: 'number', numberSteps: [2, 5, 10], name: 'Count numbered cars by 2, 5, or 10' },
+  { pattern: [0, 1], kind: 'shape', odd: 'extra', name: 'Find the car that does not belong' },
+  { pattern: [0, 1, 2], kind: 'shape', odd: 'swap', name: 'Find the wrong car and fix the train' },
 ];
 
 export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, level - 1))];
@@ -121,13 +125,38 @@ function tunnelTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets
  * repeat. The tunnel level (10) shows six cars, then the tunnel, then the empty car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
  * piece on the train is on offer, the near misses included.
  */
-export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook; hidden?: number; family?: number } {
+export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook; hidden?: number; family?: number; shown?: number[] } {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
   if (plan.kind === 'pair') return pairTrain(rng);
-  const train = plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
+  const train = plan.odd ? oddTrain(plan, rng) : plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
   // Drawn last, so the cars and gaps of a seed do not depend on what they are made of.
   const family = plan.kind === 'shape' ? rng.int(0, SHAPE_FAMILIES.length - 1) : plan.kind === 'animal' ? rng.int(0, ANIMAL_TRIOS.length - 1) : undefined;
   return { ...train, family };
+}
+
+/** A spot-the-mistake train's length: three repeats of an ABC unit fill nine cars. */
+export const ODD_CARS = { extra: 7, swap: 9 } as const;
+
+/**
+ * A train with a mistake in it. `extra`: three repeats of AB with the third piece slipped in somewhere in the middle (seven
+ * cars); it shows once, so it is the only car that does not belong, and taking it out leaves a perfect pattern. `swap`: nine
+ * cars of ABC with one car showing a wrong piece (`shown`), while `sequence` keeps the car that belongs there; the other
+ * eight cars show each place of the unit at least twice, so the fix is certain. `targets` is the car to find.
+ */
+function oddTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; shown?: number[] } {
+  const tokens = rng.shuffle([0, 1, 2]);
+  const unit = plan.pattern.length;
+  if (plan.odd === 'extra') {
+    const sequence = Array.from({ length: unit * 3 }, (_, i) => tokens[plan.pattern[i % unit]]);
+    const at = rng.int(1, sequence.length - 1);
+    sequence.splice(at, 0, tokens[2]);
+    return { sequence, targets: [at], choices: [[0, 1, 2]] };
+  }
+  const sequence = Array.from({ length: ODD_CARS.swap }, (_, i) => tokens[plan.pattern[i % unit]]);
+  const at = rng.int(0, sequence.length - 1);
+  const shown = sequence.slice();
+  shown[at] = rng.pick([0, 1, 2].filter((p) => p !== sequence[at]));
+  return { sequence, targets: [at], choices: [[0, 1, 2]], shown };
 }
 
 function plainTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {

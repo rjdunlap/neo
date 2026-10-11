@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train slice 5: odd car out and fix the train (levels 13–14)
+
+- Two spot-the-mistake levels (`oddTrain`, a `find` phase in `src/games/pattern-train/index.ts`), `autotouch()` taps the wrong car then the choice, scoped how-to lines, voice lines, the browser loop raised to 14 levels with a spot-the-mistake path.
+- Typecheck and all 929 unit tests passed (the extra car shows once and its removal leaves a perfect AB; the swapped car is one, the others show each place twice and the answer is certain; every place gets asked).
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=13,14,9,12` passed (two wrong taps, one hint, reward) after the loop caught a real bug in the reading hint (a removed car); `fingerdemo` at levels 13 and 14 finished cleanly (1.6 s and 3.2 s). A portrait screenshot of level 14 reviewed (nine cars fit; the swapped car reads as wrong).
+- Not run: the full 14-level loop, build, couch suites (range stops at level 9), an iPad or child play (is tapping a car to remove it clear to a six-year-old?).
+
 ## 2026-10-11 — Pattern Train slice 4 (hint): the train reads itself
 
 - After two misses (one hint, as before) the shown cars light and sound in turn, the unit hops, a tunnel's hidden cars roll through, and the choice still glows. `readTrain` in `src/games/pattern-train/index.ts`; no rule change.

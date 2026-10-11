@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { ANIMAL_TRIOS, SHAPE_FAMILIES, buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
+import { ODD_CARS, ANIMAL_TRIOS, SHAPE_FAMILIES, buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -23,7 +23,7 @@ describe('Pattern Train', () => {
           expect(new Set(choices[0]).size, plan.name).toBe(CHOICES);
           continue;
         }
-        if (plan.kind === 'pair' || plan.tunnel) continue; // their own tests below
+        if (plan.kind === 'pair' || plan.tunnel || plan.odd) continue; // their own tests below
         const showing = sequence.map((v, i) => (targets.includes(i) ? null : v));
         // The visible cars repeat exactly the planned unit, no shorter.
         const p = shortestRepeat(showing);
@@ -51,7 +51,7 @@ describe('Pattern Train', () => {
           expect(targets[0]).toBeGreaterThanOrEqual(2);
           continue;
         }
-        if (plan.kind === 'pair') continue;
+        if (plan.kind === 'pair' || plan.odd) continue;
         if (plan.two) expect(targets).toEqual([sequence.length - 2, sequence.length - 1]);
         else if (plan.missing) {
           // Inside the two repeats, never the first car of one.
@@ -70,7 +70,7 @@ describe('Pattern Train', () => {
 
   it('asks for every place in the repeat, so copying the first car is not the answer', () => {
     PATTERN_PLANS.forEach((plan, i) => {
-      if (plan.numberSteps || plan.tunnel) return;
+      if (plan.numberSteps || plan.tunnel || plan.odd) return;
       const unit = plan.pattern.length;
       const slots = new Set<number>();
       let notFirst = 0;
@@ -195,6 +195,38 @@ describe('Pattern Train', () => {
     const plan = PATTERN_PLANS[3];
     const a = buildTrain(plan, new Rng(9)), b = buildTrain(plan, new Rng(9));
     expect(a).toEqual(b);
+  });
+
+  it('hides one wrong car in the spot-the-mistake trains, and the mended train is a perfect pattern', () => {
+    const extra = PATTERN_PLANS.find((p) => p.odd === 'extra')!, swap = PATTERN_PLANS.find((p) => p.odd === 'swap')!;
+    const extraAt = new Set<number>(), swapAt = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const a = buildTrain(extra, new Rng(seed));
+      expect(a.sequence).toHaveLength(ODD_CARS.extra);
+      const at = a.targets[0];
+      // The extra car is the one piece that shows once, and without it the train is exactly the unit repeated.
+      expect(a.sequence.filter((v) => v === a.sequence[at])).toHaveLength(1);
+      const mended = a.sequence.filter((_, i) => i !== at);
+      expect(shortestRepeat(mended)).toBe(2);
+      expect(mended.every((v, i) => v === mended[i % 2])).toBe(true);
+      expect(at).toBeGreaterThan(0);
+      expect(at).toBeLessThan(a.sequence.length - 1);
+      extraAt.add(at);
+
+      const b = buildTrain(swap, new Rng(seed));
+      expect(b.sequence).toHaveLength(ODD_CARS.swap);
+      expect(b.shown).toBeDefined();
+      const wrong = b.shown!.map((v, i) => (v !== b.sequence[i] ? i : -1)).filter((i) => i >= 0);
+      expect(wrong).toEqual(b.targets);
+      expect(shortestRepeat(b.sequence)).toBe(3);
+      // The other cars show every place of the unit at least twice, so the right piece is certain.
+      for (let slot = 0; slot < 3; slot++) expect(b.shown!.filter((v, i) => i % 3 === slot && i !== b.targets[0] && v === b.sequence[slot])).toHaveLength(slot === b.targets[0] % 3 ? 2 : 3);
+      expect(b.choices[0]).toEqual([0, 1, 2]);
+      expect(wantedChoice(b.sequence, b.targets, b.choices, 0)).toBe(b.choices[0].indexOf(b.sequence[b.targets[0]]));
+      swapAt.add(b.targets[0]);
+    }
+    expect(extraAt.size).toBe(ODD_CARS.extra - 2);
+    expect(swapAt.size).toBe(ODD_CARS.swap);
   });
 
   it('has a choice on offer for every empty car, in order, that fits the pattern', () => {
