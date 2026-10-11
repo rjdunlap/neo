@@ -6,7 +6,8 @@
 - Typecheck, 46 focused rule/registry/land/how-to tests, all 895 unit tests and the production build passed.
 - `BROWSER_SUITE=woods WOODS_ONLY=night` passed levels 1–5: real taps, two wrong answers and a glow in requested modes, animals accepted in reverse order, saved score and one sticker. Level 5 portrait reviewed.
 - Seeded barn level 1 also passed in portrait; both new-screen screenshots were reviewed. `fingerdemo` completed levels 1 and 5 cleanly in 8.8 s and 7.1 s. Relative file links and `git diff --check` passed.
-- iPad touch feel, device speech and child play remain open; broader release checks are recorded below when completed.
+- Release checks `world`, `picnic`, `couch` (Together and Face-off) and production offline passed. Preview and `dist/index.html` matched asset `index-CANKcnJC.js`; offline reload kept progress, rewards, story, treehouse and journal.
+- iPad touch feel, device speech and child play remain open.
 
 
 ## 2026-10-11 — Flash portals, cozy and brain games research (docs only)
@@ -268,6 +269,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
 | Goodnight Room barn and animals (`woods`, `fingerdemo`) | 2026-10-10: levels 1–5, wrong objects and ordered friends, hint, reverse-order animals, saved score/sticker; seeded barn in portrait; demos 1/5 clean in 8.8/7.1 s | Goodnight Room barn and animals entry | Portrait screenshots reviewed; iPad touch, device speech and child play open |
 | Duckling Parade 10 (`arcade`, `fingerdemo`) | 2026-10-10: level 10 passed with two deliberate misses, hint, completion, saved sticker; ghost finger finished cleanly in 16.8 s | Duckling Parade 9–10 entry | Landscape screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |
