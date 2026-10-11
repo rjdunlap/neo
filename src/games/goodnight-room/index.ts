@@ -17,7 +17,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 5 },
+  prek: { min: 5, max: 6 },
 };
 
 const WALL = 0x9fb8e8;
@@ -235,6 +235,7 @@ class GoodnightRoom implements Game {
     this.busy = false;
     if (this.plan.mode === 'named') return this.ctx.instruct('night.named', { who: NAMES[r[0]] });
     if (this.plan.mode === 'animals') return this.ctx.instruct('night.animals');
+    if (this.plan.mode === 'lightLast') return this.ctx.instruct('night.lightLast', { light: NAMES[r[r.length - 1]] });
     return this.ctx.instruct('night.two', { a: NAMES[r[0]], b: NAMES[r[1]] });
   }
 
@@ -283,7 +284,8 @@ class GoodnightRoom implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'animals') await this.ctx.say('night.notanimal', { what: NAMES[s.thing] });
+    if (this.plan.mode === 'lightLast') await this.ctx.say('night.lightEarly', { light: NAMES[s.thing] });
+    else if (this.plan.mode === 'animals') await this.ctx.say('night.notanimal', { what: NAMES[s.thing] });
     else if (r.includes(s.thing)) await this.ctx.say('night.order', { a: NAMES[r[0]], b: NAMES[r[1]] });
     else await this.ctx.say('night.notthat', { what: NAMES[s.thing], who: NAMES[want] });
     if (this.wrongs >= 2 && !this.glowing) {

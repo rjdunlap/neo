@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Goodnight Room: the light goes last
+
+- Added pre-K level 6 in both seeded rooms: any order for the five other friends, then the lamp or lantern. Early light taps explain why it stays on; two misses glow an awake friend. How-to and ghost finger follow the same rule.
+- Tested base `242c2ec` plus implementation diff at `http://localhost:5200`: typecheck and 23 targeted Goodnight Room/how-to tests passed. New rules cover both rooms, alternate orders, the light staying awake, replayed sleepers and hints that lead to completion.
+- `GAME_URL=http://localhost:5200 BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=6 TO_LEVEL=6` passed two early light taps, one glow hint, reverse-order friends and the saved score/sticker. Portrait screenshot reviewed; no page errors.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=6` finished cleanly in 12.6 demo seconds. Headless Chromium required sandbox escalation to launch.
+- New local document links and `git diff --check` passed. Not run: full unit/browser suites, build, couch/world/offline (new-level tier; navigation, persistence and existing interactions unchanged), iPad, device speech or child play. A broader docs-link probe found an existing archive-relative `ROADMAP.md` link; it is outside this slice.
+
 ## 2026-10-11 — Robot Path: three boards per programming level
 
 - Added three seeded boards at each existing level 1–10 (30 total), preserving the originals, grid sizes, slot limits, controls and saved level IDs. Level 1's third straight route is one step; prediction and repair pools at 11–12 are unchanged.
@@ -438,6 +446,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Fill and Dump release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations; story resume/rewards; Together and Face-off trips; integrated production build and offline reload/saves | Fill and Dump preschool pouring entry | Chrome automation; iPad and child judgment remain open |
 | Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
+| Goodnight Room light last (`woods`, `fingerdemo`) | 2026-10-11: level 6, early light taps, two misses/one hint, reverse-order friends, saved reward; portrait reviewed; demo clean in 12.6 s | Goodnight Room light-last entry | iPad, device speech and child play open |
 | Goodnight Room barn and animals (`woods`, `fingerdemo`) | 2026-10-10: levels 1–5, wrong objects and ordered friends, hint, reverse-order animals, saved score/sticker; seeded barn in portrait; demos 1/5 clean in 8.8/7.1 s | Goodnight Room barn and animals entry | Portrait screenshots reviewed; iPad touch, device speech and child play open |
 | Duckling Parade 10 (`arcade`, `fingerdemo`) | 2026-10-10: level 10 passed with two deliberate misses, hint, completion, saved sticker; ghost finger finished cleanly in 16.8 s | Duckling Parade 9–10 entry | Landscape screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |

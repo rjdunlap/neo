@@ -413,3 +413,8 @@ The first build slice of the [deep dive](../deep-dives/pattern-train.md#build-sl
 ## Robot Path: three boards per programming level (2026-10-11)
 
 [PR #149](https://github.com/rjdunlap/neo/pull/149) builds deep-dive slice 2: three seeded boards at each level 1–10, with the original boards preserved and no level or pin renumbering. Geometry, solvability, counts/loops and both supported bots are checked over all 30 boards. Level 1’s third straight board takes one step rather than two; the description reflects it. The level-6 regression play and portrait review, level-10 finger demo, typecheck, targeted rule/card tests and build passed; hardware and child play remain open.
+
+
+## Goodnight Room: the light goes last (2026-10-11)
+
+Level 6 extends pre-K to 5–6. In a seeded bedroom or barn, put the other five friends to sleep in any order, then the lamp or lantern. Tapping the light early keeps it awake and explains that it helps us see; two misses glow an awake friend. Sleeping friends remain free to tap, and supported completion earns the same one sticker. The how-to, spoken instruction, demo and rule tests follow the light-last rule. Saved levels and pins are unchanged. [PR #150](https://github.com/rjdunlap/neo/pull/150); checks are in [VERIFICATION](../VERIFICATION.md).

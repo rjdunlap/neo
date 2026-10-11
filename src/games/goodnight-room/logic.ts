@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * goodnight and it falls asleep; when everyone is asleep the lights go down and the stars come
  * out. Later the voice names who to say goodnight to, then two in order.
  */
-export type NightMode = 'all' | 'named' | 'two' | 'animals';
+export type NightMode = 'all' | 'named' | 'two' | 'animals' | 'lightLast';
 
 export interface NightPlan {
   mode: NightMode;
@@ -24,6 +24,7 @@ export const PLANS: NightPlan[] = [
   { mode: 'named', things: 6, requests: 5, asleep: 0, name: 'Say goodnight to the one named: "the kitten"' },
   { mode: 'two', things: 6, requests: 3, asleep: 0, name: 'Two in order: "the clock, then the lamp"' },
   { mode: 'animals', things: 5, requests: 1, asleep: 0, name: 'Say goodnight to the animals, in any order' },
+  { mode: 'lightLast', things: 6, requests: 1, asleep: 0, name: 'Say goodnight to everyone, keeping the light on until last' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -42,6 +43,7 @@ export const ROOMS = [
 ] as const;
 export type NightRoom = (typeof ROOMS)[number];
 export const SLOTS: readonly [number, number][] = [[0.22, 0.86], [0.4, 0.86], [0.58, 0.88], [0.42, 0.26], [0.78, 0.88], [0.66, 0.46]];
+export const isLight = (thing: Thing) => thing === 'lamp' || thing === 'lantern';
 export const isAnimal = (thing: Thing) => !['lamp', 'lantern', 'clock', 'teddy'].includes(thing);
 
 /** A category round has two objects and three unmistakable living animals; no teddy. */
@@ -66,6 +68,7 @@ export function makeNight(plan: NightPlan, rng: Rng): Night {
 export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[]): Thing[][] {
   if (plan.mode === 'all') return [];
   if (plan.mode === 'animals') return [room.filter(isAnimal)];
+  if (plan.mode === 'lightLast') return [[...room.filter(t => !isLight(t)), ...room.filter(isLight)]];
   const order = rng.shuffle([...room]);
   if (plan.mode === 'named') return order.slice(0, plan.requests).map((t) => [t]);
   return Array.from({ length: plan.requests }, (_, i) => [order[i * 2], order[i * 2 + 1]]);
@@ -78,6 +81,7 @@ export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[]):
  */
 export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefined, step: number, asleep: ReadonlySet<Thing>, room: readonly Thing[]): Thing | null {
   if (plan.mode === 'all') return room.find((t) => !asleep.has(t)) ?? null;
+  if (plan.mode === 'lightLast') return request?.find(t => !asleep.has(t) && (!isLight(t) || request.every(other => isLight(other) || asleep.has(other)))) ?? null;
   if (plan.mode === 'animals') return request?.find(t => !asleep.has(t)) ?? null;
   return request?.[step] ?? null;
 }
@@ -85,5 +89,6 @@ export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefine
 /** A named request keeps its order; a category accepts any remaining member. */
 export function acceptsTap(plan: NightPlan, request: readonly Thing[], step: number, asleep: ReadonlySet<Thing>, thing: Thing): boolean {
   if (asleep.has(thing)) return false;
+  if (plan.mode === 'lightLast') return request.includes(thing) && (!isLight(thing) || request.every(t => isLight(t) || asleep.has(t)));
   return plan.mode === 'all' || (plan.mode === 'animals' ? request.includes(thing) : request[step] === thing);
 }
