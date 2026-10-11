@@ -84,7 +84,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Light Lab | `light-lab` | KS | 7 | 4 | not started | — | — |
 | Little Helpers | `little-helpers` | LTPKS | 6 | 4 | not started | — | — |
 | Mail Carrier | `mail-carrier` | LTPKS | 7 | 4 | not started | — | — |
-| Market Stall | `market-stall` | PKS | 7 | 3 | in progress | `claude/exciting-ride-je8lip` | — |
+| Market Stall | `market-stall` | PKS | 7 | 3 | designed | `claude/exciting-ride-je8lip` ([PR 118](https://github.com/rjdunlap/neo/pull/118)) | [market-stall.md](market-stall.md) |
 | Memory Match | `memory-match` | PKS | 10 | 3 | not started | — | — |
 | Monster Munch | `monster-munch` | LTPKS | 8 | 4 | not started | — | — |
 | Opposites | `opposites` | LTPK | 4 | 1 | designed | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |

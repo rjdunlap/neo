@@ -36,6 +36,14 @@
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
 
+## 2026-10-11 — Market Stall deep dive
+
+- Wrote `docs/deep-dives/market-stall.md` and updated the tracker (designed), the IDEAS round-two and round-three rows for Market Stall, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check. No code, tests or scripts changed.
+- Research: opened and read the Common Core pages for K.CC, 1.OA, 1.NBT and 2.MD, England's national curriculum programmes of study (money statements for Years 1 to 3), the Math Learning Center's *Money Pieces* page, the Australian Council on Children and the Media's *Toca Store* review and the Wikipedia page for *Lemonade Stand*. *Neopets* shops (403), the Montessori Bank Game, the register toy, *Monopoly Junior* (page unreachable), *Animal Crossing* shop prices, the counting-up-for-change sources (405 on fetch), Wynn's Give-N study (502) and the coin-value parent articles are search summaries only, marked so in the write-up.
+- Docs only: `git diff --check` and a relative-link check on the changed docs ran.
+- Read from the code, not played: every target is capped at ten, the school range is a literal 7, new coins arrive unnamed, misses are named by size, change is spoken as values rather than counted up, level 5 can earn two hints per order, and the sticker and `coinArt` are shared with Lemonade Stand and unpinned.
+- Open: every proposed level and entry is unbuilt; counting up, pips and ten words are unchecked with a child or on a device.
+
 ## 2026-10-10 — Frog Hop deep dive
 
 - Wrote `docs/deep-dives/frog-hop.md` and updated the tracker (top level 6 → 7, designed), the IDEAS round-two and round-three rows for Frog Hop, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check, plus one-line ownership pointers in the Bubble Pop and Duck Pond deep dives. No code, tests or scripts changed.
