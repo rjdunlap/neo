@@ -85,7 +85,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Little Helpers | `little-helpers` | LTPKS | 6 | 4 | not started | — | — |
 | Mail Carrier | `mail-carrier` | LTPKS | 7 | 4 | not started | — | — |
 | Market Stall | `market-stall` | PKS | 7 | 3 | designed | `claude/exciting-ride-je8lip` ([PR 118](https://github.com/rjdunlap/neo/pull/118)) | [market-stall.md](market-stall.md) |
-| Memory Match | `memory-match` | PKS | 10 | 3 | not started | — | — |
+| Memory Match | `memory-match` | PKS | 11 | 3 | in progress: research and ladder, docs only | `codex/memory-match-deep-dive` (expected files: this tracker, `memory-match.md`, `docs/ROADMAP.md`, `docs/IDEAS.md`, `docs/VERIFICATION.md`) | — |
 | Monster Munch | `monster-munch` | LTPKS | 8 | 4 | not started | — | — |
 | Opposites | `opposites` | LTPK | 4 | 1 | slice 1 built (twelve pairs, fairness) | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |
 | Owl Walk Home | `owl-walk` | TPK | 4 | 4 | not started | — | — |
