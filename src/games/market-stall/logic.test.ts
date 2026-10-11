@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
+import { coinArt, marketStall } from './index';
+import { anotherWay, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
 
 describe('Market Stall', () => {
   it('asks for amounts from 1 to 10 that the level\'s coins can make, never the same twice running', () => {
@@ -66,4 +67,79 @@ describe('Market Stall', () => {
       }
     }
   });
+  it('explains amount errors with specific, applicable feedback', () => {
+    expect(missKind(PLANS[5], { prices: [4] }, [2, 2])).toBe('price');
+    expect(missKind(PLANS[3], { prices: [3, 4] }, [2, 1])).toBe('one-price');
+    expect(missKind(PLANS[2], { prices: [4] }, [2, 1, 1, 1])).toBe('counted-coins');
+    expect(missKind(PLANS[2], { prices: [4] }, [2, 1])).toBe('one-more');
+    expect(missKind(PLANS[2], { prices: [4] }, [5])).toBe('one-less');
+    expect(missKind(PLANS[2], { prices: [3] }, [5])).toBe('big-coin');
+    expect(missKind(PLANS[2], { prices: [9] }, [2])).toBe('short');
+    expect(missKind(PLANS[2], { prices: [3] }, [2, 2, 2, 2])).toBe('over');
+    for (const plan of PLANS) for (const order of makeOrders(plan, new Rng(37))) {
+      const want = target(plan, order);
+      expect(missKind(plan, order, fewest(want, plan.coins))).toBeNull();
+      for (let amount = 1; amount <= 12; amount++) {
+        const coins = Array(amount).fill(1);
+        const kind = missKind(plan, order, coins);
+        expect(kind === null).toBe(amount === want);
+        if (kind === 'price') expect(plan.mode).toBe('change');
+        if (kind === 'one-price') expect(plan.mode).toBe('pair');
+        if (kind === 'one-more') expect(amount).toBe(want - 1);
+        if (kind === 'one-less') expect(amount).toBe(want + 1);
+      }
+    }
+  });
+
+  it('charges help once across both payments of an order', () => {
+    expect(hintCharge(1, false, false)).toBe(0);
+    expect(hintCharge(2, false, false)).toBe(1);
+    expect(hintCharge(3, true, true)).toBe(0);
+    expect(hintCharge(2, false, true)).toBe(0);
+  });
+
+  it('describes only real levels and includes every plan in school', () => {
+    expect(marketStall.levels('school')).toEqual({ min: 3, max: PLANS.length });
+    expect(marketStall.describeLevel(0)).toBeUndefined();
+    expect(marketStall.describeLevel(PLANS.length + 1)).toBeUndefined();
+  });
+
+  it('pins the original six-fruit sticker draw and shared shell drawings', () => {
+    expect(Array.from({ length: 100 }, (_, seed) => stickerGood(new Rng(seed)))).toMatchSnapshot('fruit draws');
+    // Pin actual fruit geometry/color as well as the RNG draw and coin recipes.
+    const serialize = (node: import('pixi.js').Container): unknown => {
+      const g = node as import('pixi.js').Graphics;
+      const text = node as import('pixi.js').Text;
+      return {
+        x: node.x, y: node.y, scale: [node.scale.x, node.scale.y],
+        drawing: g.context?.instructions.map(i => {
+          if (i.action === 'texture') throw new Error('Sticker art must remain code-drawn');
+          const { texture: _texture, ...style } = i.data.style;
+          return { action: i.action, path: i.data.path.instructions, style };
+        }),
+        text: text.text, children: node.children.map(serialize),
+      };
+    };
+    expect(Array.from({ length: 100 }, (_, seed) => {
+      const art = marketStall.sticker(seed);
+      const fingerprint = [...JSON.stringify(serialize(art))].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+      art.destroy({ children: true });
+      return fingerprint;
+    })).toMatchSnapshot('sticker art');
+    for (const value of [1, 2, 5]) {
+      const art = coinArt(value);
+      const g = art.children[0] as import('pixi.js').Graphics;
+      const drawing = g.context.instructions.map(i => {
+        if (i.action === 'texture') throw new Error('Shells must remain code-drawn');
+        const { texture: _texture, ...style } = i.data.style;
+        return { action: i.action, path: i.data.path.instructions, style };
+      });
+      const fingerprint = [...JSON.stringify(drawing)].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+      expect(fingerprint).toMatchSnapshot(`coin ${value} drawing`);
+      const text = art.children[1] as import('pixi.js').Text;
+      expect([text.text, text.style.fontSize, text.style.fill]).toMatchSnapshot(`coin ${value} numeral`);
+      art.destroy({ children: true });
+    }
+  });
+
 });
