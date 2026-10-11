@@ -8,7 +8,7 @@ import type { Rng } from '../../engine/random';
  * levels use a key: one block stands for two critters, so the bars no longer match a count of one,
  * and the number of blocks is the tempting wrong answer.
  */
-export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread';
+export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally';
 
 export interface GraphPlan {
   mode: GraphMode;
@@ -19,6 +19,8 @@ export interface GraphPlan {
   /** How many critters one block stands for. Only 1 and 2 are built (the spoken lines say "two"). */
   per: number;
   name: string;
+  /** Lowest count; the tally level uses this to make the group of five visible. */
+  min?: number;
 }
 
 export const PLANS: GraphPlan[] = [
@@ -28,6 +30,7 @@ export const PLANS: GraphPlan[] = [
   { mode: 'read', kinds: 4, max: 6, graphs: 2, per: 1, name: 'A graph is already built: how many in all? which two are the same?' },
   { mode: 'scale', kinds: 3, max: 4, graphs: 2, per: 2, name: 'Each block is two critters: build the bars from the pairs, then how many more?' },
   { mode: 'scaleread', kinds: 3, max: 5, graphs: 2, per: 2, name: 'A graph where each block is two critters: how many in all? how many more?' },
+  { mode: 'tally', kinds: 3, min: 4, max: 7, graphs: 1, per: 1, name: 'Record each kind in tally marks, grouping every five, then build and compare one graph' },
 ];
 
 /** The levels whose graph is already built when the round opens, so there is nothing to build. */
@@ -55,11 +58,11 @@ export type Question =
 export function makeGraph(plan: GraphPlan, rng: Rng): Graph {
   for (;;) {
     const kinds = rng.shuffle([...KINDS]).slice(0, plan.kinds);
-    const counts = kinds.map(() => rng.int(1, plan.max) * plan.per);
+    const counts = kinds.map(() => rng.int(plan.min ?? 1, plan.max) * plan.per);
     const top = Math.max(...counts);
     const low = Math.min(...counts);
     if (plan.mode === 'most' && (counts.filter((c) => c === top).length > 1 || counts.filter((c) => c === low).length > 1)) continue;
-    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread') && new Set(counts).size < counts.length) continue;
+    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally') && new Set(counts).size < counts.length) continue;
     // Reading levels: exactly one pair of equal bars, for "which two are the same?".
     if (plan.mode === 'read') {
       const pairs = counts.flatMap((c, i) => counts.slice(i + 1).map((d, j) => (c === d ? [i, i + 1 + j] : null))).filter(Boolean);
@@ -77,7 +80,7 @@ export function questionsFor(plan: GraphPlan, g: Graph, rng: Rng): Question[] {
   };
   if (plan.mode === 'build') return [];
   if (plan.mode === 'most') return [{ ask: 'most', answer: c.indexOf(Math.max(...c)) }, { ask: 'fewest', answer: c.indexOf(Math.min(...c)) }];
-  if (plan.mode === 'more') return [more()];
+  if (plan.mode === 'more' || plan.mode === 'tally') return [more()];
   if (plan.mode === 'scale') return [more()];
   if (plan.mode === 'scaleread') return [{ ask: 'total', answer: c.reduce((s, x) => s + x, 0) }, more()];
   const pair = c.flatMap((x, i) => c.slice(i + 1).map((y, j) => (x === y ? [i, i + 1 + j] : null))).find(Boolean) as [number, number];
@@ -153,5 +156,11 @@ export function graphMove(plan: GraphPlan, graph: Graph, bars: number[], questio
   }
   if (prebuilt(plan)) return null;
   const short = bars.findIndex((n, i) => n < graph.counts[i] / plan.per);
+  return short >= 0 ? { do: 'add', kind: short } : { do: 'check' };
+}
+
+/** What the ghost finger adds to the tally chart, then checks when each kind is recorded. */
+export function tallyMove(graph: Graph, tallies: number[]): GraphMove {
+  const short = tallies.findIndex((n, i) => n < graph.counts[i]);
   return short >= 0 ? { do: 'add', kind: short } : { do: 'check' };
 }

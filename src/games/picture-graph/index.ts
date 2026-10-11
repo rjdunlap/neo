@@ -12,11 +12,11 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, planFor, prebuilt, questionsFor, type Graph, type GraphPlan, type Question } from './logic';
+import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, planFor, prebuilt, questionsFor, tallyMove, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 6 },
+  school: { min: 1, max: 7 },
 };
 
 const COL_W = 110;
@@ -49,6 +49,8 @@ class PictureGraph implements Game {
   graph!: Graph;
   /** Blocks in each column. */
   bars: number[] = [];
+  tallies: number[] = [];
+  phase: 'tally' | 'graph' = 'graph';
   index = -1;
   misses = 0;
   hints = 0;
@@ -122,6 +124,10 @@ class PictureGraph implements Game {
       else g.roundRect(this.colX(this.hint) - COL_W / 2 - 8, this.baseY() - 8 * BLOCK_H - 20, COL_W + 16, 8 * BLOCK_H + 90, 20).stroke({ width: pulse, color: swatch.yellow.fill });
       return;
     }
+    if (this.phase === 'tally') {
+      g.roundRect(this.colX(this.hint) - COL_W / 2 - 8, this.baseY() - 104, COL_W + 16, 116, 20).stroke({ width: pulse, color: swatch.yellow.fill });
+      return;
+    }
     for (const c of this.critters.filter((x) => x.kind === this.hint)) g.circle(c.node.x, c.node.y - 30, 40).stroke({ width: pulse, color: swatch.yellow.fill });
   }
 
@@ -131,7 +137,9 @@ class PictureGraph implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.graph) return null;
-    const move = graphMove(this.plan, this.graph, this.bars, this.questions[this.q], this.firstSame);
+    const move = this.phase === 'tally'
+      ? tallyMove(this.graph, this.tallies)
+      : graphMove(this.plan, this.graph, this.bars, this.questions[this.q], this.firstSame);
     if (!move) return null;
     if (move.do === 'check') return { tap: { on: this.check } };
     if (move.do === 'number') {
@@ -141,7 +149,7 @@ class PictureGraph implements Game {
     const column = this.columns[move.kind];
     if (!column) return null;
     // A tap above the bar adds a block there, where the next one will sit.
-    if (move.do === 'add') return { tap: { on: column, x: 0, y: -(this.bars[move.kind] + 0.5) * BLOCK_H }, pause: 0.15 };
+    if (move.do === 'add') return { tap: { on: column, x: 0, y: this.phase === 'tally' ? -64 : -(this.bars[move.kind] + 0.5) * BLOCK_H }, pause: 0.15 };
     return { tap: { on: column, x: 0, y: -Math.max(1, this.bars[move.kind]) * BLOCK_H * 0.5 } };
   }
 
@@ -157,13 +165,16 @@ class PictureGraph implements Game {
     if (this.index >= this.plan.graphs) return void this.finale();
     this.graph = makeGraph(this.plan, this.ctx.rng);
     const read = prebuilt(this.plan);
+    this.phase = this.plan.mode === 'tally' ? 'tally' : 'graph';
     this.bars = read ? barsFor(this.plan, this.graph) : this.graph.kinds.map(() => 0);
+    this.tallies = this.graph.kinds.map(() => 0);
     this.buildMeadow(!read);
     this.buildColumns();
     this.clearPads();
     this.check.visible = !read;
     this.resize(this.view);
     this.busy = false;
+    if (this.phase === 'tally') return this.ctx.instruct('graph.tally');
     if (read) return this.askNext();
     return this.ctx.instruct(this.plan.per > 1 ? 'graph.buildpairs' : 'graph.build');
   }
@@ -229,10 +240,29 @@ class PictureGraph implements Game {
 
   private draw() {
     const g = this.blocks.clear();
+    this.chart.children.filter((c) => {
+      const tag = (c as Container & { tag?: string }).tag;
+      return tag === 'num' || tag === 'tally-title';
+    }).forEach((c) => c.destroy());
     const base = this.baseY();
     const left = this.colX(0) - COL_W / 2 - 30;
     const right = this.colX(this.graph.kinds.length - 1) + COL_W / 2 + 20;
     g.roundRect(left - 10, base - 8 * BLOCK_H - 30, right - left + 20, 8 * BLOCK_H + 110, 18).fill({ color: 0xffffff, alpha: 0.75 });
+    if (this.phase === 'tally') {
+      const title = label('Tally marks', 24, ink);
+      title.position.set(this.view.w / 2, base - 154);
+      const taggedTitle = title as unknown as Container & { tag?: string };
+      taggedTitle.tag = 'tally-title';
+      this.chart.addChild(taggedTitle);
+      this.tallies.forEach((count, i) => {
+        const x = this.colX(i) - (Math.min(count, 5) === 5 ? 35 : count * 8);
+        const y = base - 52;
+        for (let k = 0; k < Math.min(count, 4); k++) g.moveTo(x + k * 17, y).lineTo(x + k * 17, y + 38).stroke({ width: 6, color: swatch[COLORS[i % COLORS.length]].line, cap: 'round' });
+        if (count >= 5) g.moveTo(x - 2, y + 34).lineTo(x + 52, y + 4).stroke({ width: 7, color: swatch[COLORS[i % COLORS.length]].line, cap: 'round' });
+        for (let k = 5; k < count; k++) g.moveTo(this.colX(i) + 28 + (k - 5) * 17, y).lineTo(this.colX(i) + 28 + (k - 5) * 17, y + 38).stroke({ width: 6, color: swatch[COLORS[i % COLORS.length]].line, cap: 'round' });
+      });
+      return;
+    }
     // Grid lines with numbers, for reading the bars.
     for (let n = 1; n <= 8; n++) {
       g.moveTo(left + 20, base - n * BLOCK_H).lineTo(right, base - n * BLOCK_H).stroke({ width: 2, color: ink, alpha: 0.12 });
@@ -244,7 +274,6 @@ class PictureGraph implements Game {
       for (let k = 0; k < n; k++) g.roundRect(x - 40, base - (k + 1) * BLOCK_H + 2, 80, BLOCK_H - 4, 6).fill(sw.fill).stroke({ width: 3, color: sw.line });
     });
     // Number labels down the side.
-    this.chart.children.filter((c) => (c as Container & { tag?: string }).tag === 'num').forEach((c) => c.destroy());
     // With a key, every row says how many critters the bar stands for up to there (2, 4, 6...).
     const per = this.plan.per;
     for (let n = per > 1 ? 1 : 2; n <= 8; n += per > 1 ? 1 : 2) {
@@ -262,6 +291,17 @@ class PictureGraph implements Game {
     if (q && (q.ask === 'most' || q.ask === 'fewest' || q.ask === 'same')) return void this.answerColumn(i);
     if (prebuilt(this.plan) || this.questions.length) return;
     const p = this.columns[i].toLocal(e.global);
+    if (this.phase === 'tally') {
+      if (p.y < -52 && this.tallies[i] < this.graph.counts[i]) {
+        this.tallies[i]++;
+        sfx.pop(3 + this.tallies[i]);
+      } else if (this.tallies[i] > 0) {
+        this.tallies[i]--;
+        sfx.pop(2);
+      }
+      this.draw();
+      return;
+    }
     const top = -this.bars[i] * BLOCK_H;
     if (p.y < top && this.bars[i] < 8) {
       this.bars[i]++;
@@ -276,6 +316,32 @@ class PictureGraph implements Game {
 
   private async checkGraph() {
     if (this.busy || this.finished || prebuilt(this.plan) || this.questions.length) return;
+    if (this.phase === 'tally') {
+      const wrongTally = this.tallies.findIndex((n, i) => n !== this.graph.counts[i]);
+      if (wrongTally < 0) {
+        this.busy = true;
+        this.phase = 'graph';
+        this.wrongs = 0;
+        this.hint = null;
+        this.tallies = this.graph.kinds.map(() => 0);
+        this.draw();
+        sfx.sparkle();
+        await this.ctx.say('graph.tally.done');
+        this.busy = false;
+        return this.ctx.instruct('graph.build');
+      }
+      this.busy = true;
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      await this.ctx.say('graph.tally.recount', { kind: NAMES[this.graph.kinds[wrongTally]]!, count: this.graph.counts[wrongTally] });
+      if (this.wrongs >= 2 && this.hint === null) {
+        this.hints++;
+        this.hint = wrongTally;
+      }
+      this.busy = false;
+      return;
+    }
     const wrong = this.bars.findIndex((n, i) => n !== this.graph.counts[i] / this.plan.per);
     if (wrong < 0) {
       this.busy = true;

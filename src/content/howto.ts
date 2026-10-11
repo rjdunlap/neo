@@ -903,6 +903,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Tap the green check when the bars are built.' },
       { from: 5, to: 5, text: 'Then answer how many more critters of one kind there are than another: each block counts for two.' },
       { from: 6, text: 'Read the graph, remembering that each block is two critters, then answer: how many critters in all, and how many more of one kind than another.' },
+      { from: 7, text: 'Count each kind in the meadow and add tally marks above its face. Four lines and one across make five. Tap the green check, then build the bar graph from the critters and answer how many more.' },
     ],
     finish: 'The round ends when the graph questions are answered.',
   },
