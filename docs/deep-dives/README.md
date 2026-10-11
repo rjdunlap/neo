@@ -99,7 +99,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Photo Safari | `photo-safari` | LTPKS | 6 | 4 | not started | — | — |
 | Picture Graph | `picture-graph` | KS | 6 | 4 | not started | — | — |
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |
-| Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed; slice 2 (scene data, pinned stickers, six new scenes) in progress on `claude/puzzle-pals-scenes` | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
+| Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed; slice 2 (scene data, pinned stickers, six new scenes) built | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |
 | Rainbow Fingers | `rainbow-fingers` | LTPKS | 7 | 2 | designed | `claude/roadmap-item-14-game-content-0zaz9u` ([PR 107](https://github.com/rjdunlap/neo/pull/107)) | [rainbow-fingers.md](rainbow-fingers.md) |
 | Ramp Race | `ramp-race` | KS | 4 | 4 | not started | — | — |

@@ -8,7 +8,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { pictureScene, pictureThumb, puzzleIcon, SCENES, type Scene } from './art';
+import { pictureScene, pictureThumb, puzzleIcon } from './art';
+import { SCENES, type SceneDef } from './scenes';
 import { dropSlot, nextToPlace, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
 
 interface PieceView {
@@ -20,7 +21,7 @@ interface PieceView {
 
 class PuzzlePals implements Game {
   readonly plan: PuzzlePlan;
-  readonly scene: Scene;
+  readonly scene: SceneDef;
   readonly pieces: PieceView[] = [];
   wrong = 0;
   misses = 0;

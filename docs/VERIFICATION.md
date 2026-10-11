@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Puzzle Pals scene data and six new scenes
+
+- Scenes became data (`scenes.ts`); six new scenes added; stickers and the map icon pinned to the first six. Levels, bands and the how-to card are unchanged.
+- Tested the working diff on `42ddeaf` at `http://localhost:5191`: `npm run typecheck` and `npm test` (125 files, 914 tests) passed, including the new `scenes.test.ts` (seed-to-scene pin for seeds 1–200 from a list recorded before the change, unique ids and spoken names, sky or ground distinct, every piece of every grid in the new scenes has something to find it by across 25 seeds, drawing is repeatable).
+- In the browser: the 36 original draws (six scenes, six seeds) were pixel-identical to the old `art.ts`; a contact sheet of the six new scenes (two seeds, so both sun sides) was reviewed; `BROWSER_SUITE=smoke SMOKE_ONLY=puzzle-pals` (levels 1, 4, 7, with the portrait check) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=puzzle-pals` (levels 1 and 7 clean in 3.1 and 32.7 s) passed.
+- Open: the original scenes still hold the slice-1 fairness gap (bunny and dog leave a middle piece empty; the duck's sky pieces differ by a few pixels, which a box test cannot see). A round draws a random scene, so no run played each new scene as a full puzzle. Spoken names ("a cow in the snow") are unchecked on a device. No build, `expansion` or `world` suite; the shared files were not touched.
+
 ## 2026-10-11 — Mario Party and the family table research (docs only)
 
 - Added `IDEAS.md` § "Mario Party and the family table (2026-10-11)": an access log; the series game by game (Mario Party to Jamboree, plus Wii Party and 1-2-Switch); the minigame kinds with twelve opened examples; what parents and the research say, with evidence labels; a house-rule screen and the Cooney Center's joint-media-engagement principles as a second screen; a seat contract for games two people play; a bands table; an overlap map; eight candidates (Row Together, Two-Knob Doodle, Tilt Together, Same Pick, Make One for Me, Island Party Board, Skip Rope, Lantern Keeper's Manual), five seeds and two-seat modes of nine built games; an order, five decisions and seven Gemini prompts. Added a pointer row to "Closest to buildable", pointers on the Raft Delivery, Who Is It?, Island Toy Fair, Play together and Playing together rows, and five reference rows; in `ROADMAP.md`, a chunk 16 and five Waiting-on-the-developer rows (competition on the island, where games made for two live, a second seat's contract, kept things made together, table mode and a second screen).
@@ -334,6 +341,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Puzzle Pals scenes (`smoke`, `fingerdemo`) | 2026-10-11: levels 1, 4, 7 smoke with portrait; demos at levels 1 and 7 clean (3.1, 32.7 s); scene pin, sky/ground and per-piece rule tests; original six pixel-identical | Puzzle Pals scene data and six new scenes entry | New scenes reviewed on a contact sheet only; no run played each new scene as a puzzle; original-scene fairness (slice 1) open; iPad and speech not checked |
 | Opposites content (`woods`) | 2026-10-10: levels 2–4, wrong choices, hint glow, supported completion, saved scores/stickers; 30 focused tests and typecheck | Opposites content and fairness entry | Both sides of new art reviewed; portrait, iPad, device speech and child play unverified |
 | Workflow and repository cleanup | 2026-10-10: local docs links/anchors, diff check, verified refs bundle, preserved dirty diffs and post-cleanup inventory | Worktree cleanup and development workflow review entry | Docs only; no game checks repeated |
 | Story Steps ten stories (`fingerdemo`) | 2026-10-11: levels 1, 5 and 7 demos clean (5.4, 14.7, 15.4 s); rule tests for the pools and the family rule | Story Steps: six new stories and per-level pools entry | Chrome automation, a contact sheet of the new art; no iPad or child |

@@ -224,7 +224,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Puzzle Pals
 
-*lap–school.* Six code-drawn scenes (a cow on the farm, a duck in the pond, and so on) are rendered once into a texture and cut into 2 to 12 pieces. Faint pictures guide the early levels; later ones show only an empty frame. Dropping off the frame is exploration; a wrong place is a gentle miss. The finished picture comes alive and the animal says hello.
+*lap–school.* Twelve code-drawn scenes (a cow on the farm, a duck in the pond, a pig in the mud, a cat at night, a dog in the rain, and so on) are rendered once into a texture and cut into 2 to 12 pieces. Faint pictures guide the early levels; later ones show only an empty frame. Dropping off the frame is exploration; a wrong place is a gentle miss. The finished picture comes alive and the animal says hello. A round draws any of the twelve; stickers and the map icon always show one of the first six, so a saved sticker never changes picture.
 
 ### Quick Tricks
 
