@@ -439,3 +439,7 @@ Deep-dive slice 3 ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each phy
 ## Opposites varied subjects and acting flips (2026-10-11)
 
 Deep-dive slice 2 ([PR #158](https://github.com/rjdunlap/neo/pull/158)): seeded bear/duck/bunny size pairs and cat/dog/pig mood pairs keep one subject across both sides. Lap flips retain it and act out big/small, fast/slow and up/down inside the fixed card, with scene-owned tweens. Existing levels, bands, rewards and pinned sticker art stay unchanged. Focused checks are recorded in [VERIFICATION](../VERIFICATION.md#2026-10-11--opposites-varied-subjects-and-acting-flips).
+
+## Bubble Pop countable dots (2026-10-11)
+
+Deep-dive slice 2 ([PR 159](https://github.com/rjdunlap/neo/pull/159)): levels 7–8 and 10 show quantity beneath each numeral, with familiar dice arrangements through six and a row of five plus some more for seven. Levels 9 and 11 fade support; numerals keep their size and tap/reward/miss rules stay intact. The lower decorative glint is omitted on dotted bubbles so it cannot be mistaken for an extra dot. The how-to and co-play suggestion invite counting together. Rule tests cover quantity, spacing, numeral clearance, in-bubble bounds and support fading; focused tests/typecheck/build, portrait reviews and level-10 finger demo passed. See [verification](../VERIFICATION.md#2026-10-11--bubble-pop-countable-dots). Next: scene backgrounds.

@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bubble, drawBubble } from './bubble';
-import { bondNumbers, bubbleToPop, choosePalette, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, planFor, spawnTarget, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
+import { bondNumbers, bubbleToPop, choosePalette, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -144,7 +144,7 @@ class BubblePop implements Game {
     if (staysPut(p.mode)) color = RAINBOW[((number ?? 1) - 1) % RAINBOW.length];
     const critter = p.mode === 'free' && rng.chance(0.3) ? rng.pick(FRIENDS) : undefined;
 
-    const b = new Bubble({ r, color, number, critter });
+    const b = new Bubble({ r, color, number, critter, dots: showsDots(this.ctx.level) });
     if (staysPut(p.mode)) {
       b.position.set(rng.range(150 + r, v.w - 50 - r), rng.range(130 + r, v.h - 60 - r));
       const a = rng.range(0, Math.PI * 2);
@@ -456,7 +456,7 @@ export const bubblePop: GameModule = {
     return `Numbers in order, 1 to ${p.goal}`;
   },
   music: STYLES.bubbles,
-  coplayHint: 'Say "pop!" together, and name the colors as {name} pops them.',
+  coplayHint: 'Say "pop!" together, name the colors as {name} pops them, and count any dots together.',
   offScreen: 'Blow real bubbles outside and pop them together. Count the pops out loud.',
   hubIcon: () => new BubbleMachine(),
   touchDemo: true,

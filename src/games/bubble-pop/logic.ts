@@ -145,3 +145,23 @@ export function bubbleToPop<T extends DemoBubble>(
   if (held) return live.find((b) => b !== held && held.number! + b.number! === sum) ?? null;
   return live.find((a) => live.some((b) => b !== a && a.number! + b.number! === sum)) ?? null;
 }
+
+/** Quantity support fades once the numerals or bonds to ten are being practised. */
+export const showsDots = (level: number) => level === 7 || level === 8 || level === 10;
+
+/** Radius-relative dots: familiar dice through six, then a full row of five and some more. */
+export function numberDots(n: number): { x: number; y: number }[] {
+  if (!Number.isInteger(n) || n < 1 || n > 10) return [];
+  const dice = [
+    [[0, 0.59]],
+    [[-0.24, 0.44], [0.24, 0.74]],
+    [[-0.24, 0.44], [0, 0.59], [0.24, 0.74]],
+    [[-0.24, 0.44], [0.24, 0.44], [-0.24, 0.74], [0.24, 0.74]],
+    [[-0.24, 0.44], [0.24, 0.44], [0, 0.59], [-0.24, 0.74], [0.24, 0.74]],
+    [[-0.24, 0.44], [0.24, 0.44], [-0.24, 0.59], [0.24, 0.59], [-0.24, 0.74], [0.24, 0.74]],
+  ];
+  return n <= 6 ? dice[n - 1].map(([x, y]) => ({ x, y }))
+    : Array.from({ length: n }, (_, i) => ({ x: (i % 5 - 2) * 0.2, y: i < 5 ? 0.49 : 0.72 }));
+}
+export const DOT_RADIUS = 0.06;
+export const DOT_NUMERAL_Y = -0.30;
