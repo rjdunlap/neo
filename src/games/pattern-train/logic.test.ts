@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, pieceColor, pieceShape, wantedChoice } from './logic';
+import { buildMatch, MATCH_CARS, MATCH_UNITS, structure, validPieces } from './logic';
+import { ODD_CARS, ANIMAL_TRIOS, SHAPE_FAMILIES, buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -23,7 +24,7 @@ describe('Pattern Train', () => {
           expect(new Set(choices[0]).size, plan.name).toBe(CHOICES);
           continue;
         }
-        if (plan.kind === 'pair') continue; // its own test below
+        if (plan.kind === 'pair' || plan.tunnel || plan.odd) continue; // their own tests below
         const showing = sequence.map((v, i) => (targets.includes(i) ? null : v));
         // The visible cars repeat exactly the planned unit, no shorter.
         const p = shortestRepeat(showing);
@@ -51,7 +52,7 @@ describe('Pattern Train', () => {
           expect(targets[0]).toBeGreaterThanOrEqual(2);
           continue;
         }
-        if (plan.kind === 'pair') continue;
+        if (plan.kind === 'pair' || plan.odd) continue;
         if (plan.two) expect(targets).toEqual([sequence.length - 2, sequence.length - 1]);
         else if (plan.missing) {
           // Inside the two repeats, never the first car of one.
@@ -70,7 +71,7 @@ describe('Pattern Train', () => {
 
   it('asks for every place in the repeat, so copying the first car is not the answer', () => {
     PATTERN_PLANS.forEach((plan, i) => {
-      if (plan.numberSteps || plan.far) return;
+      if (plan.numberSteps || plan.tunnel || plan.odd) return;
       const unit = plan.pattern.length;
       const slots = new Set<number>();
       let notFirst = 0;
@@ -86,15 +87,25 @@ describe('Pattern Train', () => {
     });
   });
 
-  it('keeps the far levels at the seventh car, as their lines say, until they are rebuilt', () => {
-    for (const plan of PATTERN_PLANS.filter((p) => p.far)) {
-      expect(plan.kind).not.toBe('pair');
-      for (let seed = 1; seed <= 50; seed++) {
-        const { sequence, targets } = buildTrain(plan, new Rng(seed));
-        expect(sequence).toHaveLength(7);
-        expect(targets).toEqual([6]);
-      }
+  it('rolls the tunnel train through four to seven hidden cars, and the car that comes out is found by counting', () => {
+    const plan = PATTERN_PLANS.find((p) => p.tunnel)!;
+    const hiddenSeen = new Set<number>();
+    let notBefore = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const { sequence, targets, hidden, choices } = buildTrain(plan, new Rng(seed));
+      expect(sequence).toHaveLength(7);
+      expect(targets).toEqual([6]);
+      expect(hidden).toBeGreaterThanOrEqual(TUNNEL_HIDDEN.min);
+      expect(hidden).toBeLessThanOrEqual(TUNNEL_HIDDEN.max);
+      hiddenSeen.add(hidden!);
+      // Six cars show two repeats of the unit; the answer is the place (6 + hidden) mod 3.
+      expect(sequence.slice(3, 6)).toEqual(sequence.slice(0, 3));
+      expect(sequence[6]).toBe(sequence[(6 + hidden!) % 3]);
+      if (sequence[6] !== sequence[5]) notBefore++;
+      expect(choices[0]).toEqual([0, 1, 2]);
     }
+    expect(hiddenSeen.size).toBe(4);
+    expect(notBefore).toBeGreaterThan(100);
   });
 
   it('makes the numbered train a counting question: varied starts, answers and places, no rule of thumb', () => {
@@ -167,6 +178,98 @@ describe('Pattern Train', () => {
     expect(places.size).toBe(4);
     expect(spots.size).toBe(PAIR_CHOICES);
     expect(looks.size).toBeGreaterThan(10);
+  });
+
+  it('makes each round of shapes or animals from one family of things, and every family turns up', () => {
+    for (const trio of ANIMAL_TRIOS) expect(new Set(trio).size).toBe(3);
+    expect(new Set(ANIMAL_TRIOS.map((t) => [...t].sort().join())).size).toBe(ANIMAL_TRIOS.length);
+    for (const plan of PATTERN_PLANS) {
+      const seen = new Set<number | undefined>();
+      for (let seed = 1; seed <= 200; seed++) seen.add(buildTrain(plan, new Rng(seed)).family);
+      const count = plan.kind === 'shape' ? SHAPE_FAMILIES.length : plan.kind === 'animal' ? ANIMAL_TRIOS.length : 0;
+      expect(seen.size, plan.name).toBe(Math.max(count, 1));
+      if (!count) expect(seen.has(undefined), plan.name).toBe(true);
+    }
+  });
+
+  it('builds the same train and family for the same seed', () => {
+    const plan = PATTERN_PLANS[3];
+    const a = buildTrain(plan, new Rng(9)), b = buildTrain(plan, new Rng(9));
+    expect(a).toEqual(b);
+  });
+
+  it('hides one wrong car in the spot-the-mistake trains, and the mended train is a perfect pattern', () => {
+    const extra = PATTERN_PLANS.find((p) => p.odd === 'extra')!, swap = PATTERN_PLANS.find((p) => p.odd === 'swap')!;
+    const extraAt = new Set<number>(), swapAt = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const a = buildTrain(extra, new Rng(seed));
+      expect(a.sequence).toHaveLength(ODD_CARS.extra);
+      const at = a.targets[0];
+      // The extra car is the one piece that shows once, and without it the train is exactly the unit repeated.
+      expect(a.sequence.filter((v) => v === a.sequence[at])).toHaveLength(1);
+      const mended = a.sequence.filter((_, i) => i !== at);
+      expect(shortestRepeat(mended)).toBe(2);
+      expect(mended.every((v, i) => v === mended[i % 2])).toBe(true);
+      expect(at).toBeGreaterThan(0);
+      expect(at).toBeLessThan(a.sequence.length - 1);
+      extraAt.add(at);
+
+      const b = buildTrain(swap, new Rng(seed));
+      expect(b.sequence).toHaveLength(ODD_CARS.swap);
+      expect(b.shown).toBeDefined();
+      const wrong = b.shown!.map((v, i) => (v !== b.sequence[i] ? i : -1)).filter((i) => i >= 0);
+      expect(wrong).toEqual(b.targets);
+      expect(shortestRepeat(b.sequence)).toBe(3);
+      // The other cars show every place of the unit at least twice, so the right piece is certain.
+      for (let slot = 0; slot < 3; slot++) expect(b.shown!.filter((v, i) => i % 3 === slot && i !== b.targets[0] && v === b.sequence[slot])).toHaveLength(slot === b.targets[0] % 3 ? 2 : 3);
+      expect(b.choices[0]).toEqual([0, 1, 2]);
+      expect(wantedChoice(b.sequence, b.targets, b.choices, 0)).toBe(b.choices[0].indexOf(b.sequence[b.targets[0]]));
+      swapAt.add(b.targets[0]);
+    }
+    expect(extraAt.size).toBe(ODD_CARS.extra - 2);
+    expect(swapAt.size).toBe(ODD_CARS.swap);
+  });
+
+  it('names structures by their shape, not their pieces', () => {
+    expect(structure([2, 2, 0, 2, 2, 0])).toBe(structure([1, 1, 2, 1, 1, 2]));
+    expect(structure([0, 0, 1, 0, 0, 1])).not.toBe(structure([0, 1, 1, 0, 1, 1]));
+  });
+
+  it('gives the row level exactly one row that repeats the model, the others other structures', () => {
+    const answers = new Set<number>(), units = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = buildMatch(new Rng(seed));
+      expect(r.model).toHaveLength(MATCH_CARS);
+      expect(r.rows).toHaveLength(3);
+      r.rows.forEach((row) => { expect(row).toHaveLength(MATCH_CARS); expect(row.every((p) => p >= 0 && p < 3)).toBe(true); });
+      const same = r.rows.map((row, i) => (structure(row) === structure(r.model) ? i : -1)).filter((i) => i >= 0);
+      expect(same).toEqual([r.answer]);
+      expect(new Set(r.rows.map(structure)).size).toBe(3);
+      expect(MATCH_UNITS.some((u) => structure(Array.from({ length: MATCH_CARS }, (_, i) => u[i % u.length])) === structure(r.model))).toBe(true);
+      answers.add(r.answer); units.add(structure(r.model));
+    }
+    expect(answers.size).toBe(3);
+    expect(units.size).toBe(MATCH_UNITS.length);
+  });
+
+  it('lets a build use any animals that keep the model structure, and always has one that fits', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const { model } = buildMatch(new Rng(seed));
+      // Every way of filling the cars left to right, always choosing among the valid pieces, copies the model's structure.
+      const rng = new Rng(seed + 1000);
+      const placed: number[] = [];
+      while (placed.length < MATCH_CARS) {
+        const valid = validPieces(model, placed);
+        expect(valid.length).toBeGreaterThan(0);
+        placed.push(rng.pick(valid));
+      }
+      expect(structure(placed)).toBe(structure(model));
+    }
+    // The first car takes any piece; a repeated car must match, a new one must differ.
+    expect(validPieces([0, 0, 1], [])).toEqual([0, 1, 2]);
+    expect(validPieces([0, 0, 1], [2])).toEqual([2]);
+    expect(validPieces([0, 1, 1], [2])).toEqual([0, 1]);
+    expect(validPieces([0, 0, 1], [2, 2])).toEqual([0, 1]);
   });
 
   it('has a choice on offer for every empty car, in order, that fits the pattern', () => {

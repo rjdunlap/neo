@@ -74,7 +74,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Frog Hop | `frog-hop` | PKS | 7 | 3 | designed | `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116)) | [frog-hop.md](frog-hop.md) |
 | Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
 | Garden Rows | `garden-rows` | KS | 6 | 4 | not started | — | — |
-| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (slices 1–2 built) | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)) | [goodnight-room.md](goodnight-room.md) |
+| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (slices 1–6 built) | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)) | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
 | Inchworm Measure | `inchworm` | KS | 6 | 4 | not started | — | — |
 | Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | designed | `claude/fervent-keller-f86ol8` ([PR 104](https://github.com/rjdunlap/neo/pull/104)) | [jelly-drums.md](jelly-drums.md) |
@@ -89,7 +89,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Monster Munch | `monster-munch` | LTPKS | 8 | 4 | not started | — | — |
 | Opposites | `opposites` | LTPK | 4 | 1 | slice 1 built (twelve pairs, fairness) | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |
 | Owl Walk Home | `owl-walk` | TPK | 4 | 4 | not started | — | — |
-| Pattern Train | `pattern-train` | PKS | 12 | 3 | building (slice 1 built) | `claude/pattern-train-deep-dive` ([PR 139](https://github.com/rjdunlap/neo/pull/139)); slice 1: `claude/pattern-train-slice-1` ([PR 141](https://github.com/rjdunlap/neo/pull/141)); slice 2: `claude/pattern-train-level-11` | [pattern-train.md](pattern-train.md) |
+| Pattern Train | `pattern-train` | PKS | 12 | 3 | building (slice 1 built) | `claude/pattern-train-deep-dive` ([PR 139](https://github.com/rjdunlap/neo/pull/139)); slice 1: `claude/pattern-train-slice-1` ([PR 141](https://github.com/rjdunlap/neo/pull/141)); slice 2: `claude/pattern-train-level-11`; slice 3: `claude/pattern-train-tunnel`; slice 4 pool: `claude/pattern-train-families`; slice 5: `claude/pattern-train-odd-car`; slice 6: `claude/pattern-train-same-pattern` | [pattern-train.md](pattern-train.md) |
 | Peekaboo Barn | `peekaboo-barn` | LTPK | 8 | 2 | designed | `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96)) | [peekaboo-barn.md](peekaboo-barn.md) |
 | Peekaround Island | `peekaround-island` | TPKS | 5 | 4 | not started | — | — |
 | Peg Garden | `peg-garden` | LTPK | 5 | 4 | not started | — | — |

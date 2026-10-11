@@ -1,5 +1,38 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train slice 6: same pattern in new pieces (levels 15–16)
+
+- `src/games/pattern-train/match.ts` (a second game class) and `buildMatch`, `structure`, `validPieces` in `logic.ts`; scoped how-to lines, voice lines, `autotouch()` for both levels, the browser loop raised to 16 levels with paths for both.
+- Typecheck and all 932 unit tests passed: `structure` names a pattern without its pieces, exactly one of three rows repeats the model, the model's four units all turn up, and any valid left-to-right fill of a build keeps the structure with a piece always available.
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=15,16,13` passed (two wrong, one hint, reward); `fingerdemo` at 15 and 16 finished cleanly (1.9 s, 9.7 s). Portrait (768×1024) screenshots of both levels with the hint showing reviewed: rows and tray fit, the pet corner is clear.
+- Not run: the full 16-level loop, build, couch suites (range stops at level 9), iPad or child play (does "same pattern, different pieces" read to a six-year-old?). Level 16's placed animals look small beside the question marks; a look on an iPad would say if they need to be bigger.
+
+## 2026-10-11 — Pattern Train slice 5: odd car out and fix the train (levels 13–14)
+
+- Two spot-the-mistake levels (`oddTrain`, a `find` phase in `src/games/pattern-train/index.ts`), `autotouch()` taps the wrong car then the choice, scoped how-to lines, voice lines, the browser loop raised to 14 levels with a spot-the-mistake path.
+- Typecheck and all 929 unit tests passed (the extra car shows once and its removal leaves a perfect AB; the swapped car is one, the others show each place twice and the answer is certain; every place gets asked).
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=13,14,9,12` passed (two wrong taps, one hint, reward) after the loop caught a real bug in the reading hint (a removed car); `fingerdemo` at levels 13 and 14 finished cleanly (1.6 s and 3.2 s). A portrait screenshot of level 14 reviewed (nine cars fit; the swapped car reads as wrong).
+- Not run: the full 14-level loop, build, couch suites (range stops at level 9), an iPad or child play (is tapping a car to remove it clear to a six-year-old?).
+
+## 2026-10-11 — Pattern Train slice 4 (hint): the train reads itself
+
+- After two misses (one hint, as before) the shown cars light and sound in turn, the unit hops, a tunnel's hidden cars roll through, and the choice still glows. `readTrain` in `src/games/pattern-train/index.ts`; no rule change.
+- Typecheck passed; `BROWSER_SUITE=pattern PATTERN_LEVELS=4,7,9,10,11,12` passed (two wrong picks, one hint, reward). Not looked at on screen, not run: unit tests (no logic changed), `fingerdemo`, build, iPad.
+
+## 2026-10-11 — Pattern Train slice 4 (pool): fruit, flowers, animal trios and voices
+
+- `buildTrain` returns a `family` (drawn after the cars); `pieceArt` draws shapes, fruit, flowers or one of four animal trios; a tapped animal car plays its own `sfx.animal` voice. The reads-the-train hint is not built.
+- Typecheck and all 928 unit tests passed (every family turns up, trios are three different animals, a seed is deterministic).
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=4,5` passed (wrong picks, hint, reward). Portrait screenshots of a fruit round and an animal round reviewed: pieces fit the tiles and read apart.
+- Not run: the other levels' loop, `fingerdemo`, build, couch suites (couch trips use levels 4, 6 and 9, which now draw families too, so a couch play of the game is worth one look), how the voices sound on an iPad.
+
+## 2026-10-11 — Pattern Train slice 3: level 10, the tunnel
+
+- Level 10 (`tunnelTrain`): two repeats, a tunnel with 4–7 hidden cars shown as dots, then the empty car; the hint rolls the hidden cars through above the tunnel. Voice line `pattern.tunnel` (with the count), how-to step reworded, `far` replaced by `tunnel`.
+- Typecheck and all 926 unit tests passed; the new rule test pins six cars, counts 4–7 all seen, the answer at place `(6 + hidden) mod 3`, and the car before the tunnel not the answer in over half the rounds.
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=10` passed (two wrong picks, one hint, reward). Portrait (768×1024) screenshots of the tunnel and of the hint reveal reviewed; the reveal's first spacing overlapped and was widened afterwards, that last change checked by typecheck only.
+- Not run: `fingerdemo` at level 10 (the bot reads `wantedChoice`, unchanged), other levels' loop, couch suites (range stops at level 9), build, iPad or child play.
+
 ## 2026-10-11 — Pattern Train slice 2: level 11, color and shape on their own cycles
 
 - Level 11 (`buildTrain`'s `pairTrain`): nine cars, color alternating and shape held for two, four shuffled choices (every mix of two colors and two shapes), a gap anywhere after the first car, a wrong pick that names the right part. Voice lines `pattern.colorRight` and `pattern.shapeRight`; how-to step reworded.

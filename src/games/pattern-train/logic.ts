@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
+import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 
 export interface PatternPlan {
@@ -10,8 +11,12 @@ export interface PatternPlan {
   missing?: boolean;
   /** Two empty cars at the end. */
   two?: boolean;
-  /** The question is after two complete repeats, rather than simply the next car. */
-  far?: boolean;
+  /** The train rolls into a tunnel after two repeats; the car that comes out is the empty one. */
+  tunnel?: boolean;
+  /** The question is which car is wrong, not what comes next: one extra car crept in (`extra`), or one car was swapped (`swap`, then she picks the piece that belongs). */
+  odd?: 'extra' | 'swap';
+  /** The question is about the structure of the pattern, shown as a model above the answer: pick the row that repeats the same way (`row`), or build the same pattern in other pieces (`build`). */
+  match?: 'row' | 'build';
   /** A numbered train counts by one of these amounts. */
   numberSteps?: readonly number[];
   name: string;
@@ -27,15 +32,33 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 1], kind: 'bell', name: 'Listen and continue two bell notes' },
   { pattern: [0, 1, 2], kind: 'bell', name: 'Listen and continue three bell notes' },
   { pattern: [0, 0, 1], kind: 'shape', two: true, name: 'Fill two cars in an AAB pattern' },
-  { pattern: [0, 1, 2], kind: 'shape', far: true, name: 'Find the seventh car from two repeats' },
+  { pattern: [0, 1, 2], kind: 'shape', tunnel: true, name: 'Count the cars in the tunnel' },
   { pattern: [0, 1, 2, 3], kind: 'pair', name: 'Color and shape on their own cycles' },
   { pattern: [], kind: 'number', numberSteps: [2, 5, 10], name: 'Count numbered cars by 2, 5, or 10' },
+  { pattern: [0, 1], kind: 'shape', odd: 'extra', name: 'Find the car that does not belong' },
+  { pattern: [0, 1, 2], kind: 'shape', odd: 'swap', name: 'Find the wrong car and fix the train' },
+  { pattern: [0, 0, 1], kind: 'shape', match: 'row', name: 'Find the row with the same pattern in new pieces' },
+  { pattern: [0, 0, 1], kind: 'shape', match: 'build', name: 'Build the same pattern in new pieces' },
 ];
 
 export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, level - 1))];
 
 /** Choices under the train: one of each symbol, so every answer is on offer. */
 export const CHOICES = 3;
+/** What a round's three pieces are made of, so the same pattern comes in different things. Shape levels draw one of these. */
+export const SHAPE_FAMILIES = ['shapes', 'fruit', 'flowers'] as const;
+export type ShapeFamily = (typeof SHAPE_FAMILIES)[number];
+/** Animal levels draw one of these trios; each trio is three different animals with their own voices. */
+export const ANIMAL_TRIOS: readonly (readonly [CritterName, CritterName, CritterName])[] = [
+  ['cat', 'cow', 'duck'],
+  ['pig', 'dog', 'bunny'],
+  ['bear', 'cat', 'pig'],
+  ['duck', 'dog', 'cow'],
+];
+
+/** The tunnel hides this many cars, so the car that comes out is `hidden mod unit` places on from the first. */
+export const TUNNEL_HIDDEN = { min: 4, max: 7 } as const;
+
 /** A color-and-shape train offers all four pieces of its two colors and two shapes. */
 export const PAIR_CHOICES = 4;
 /** A color-and-shape train's cars: two full repeats of four and the car to fill. */
@@ -87,20 +110,64 @@ function pairTrain(rng: Rng): { sequence: number[]; targets: number[]; choices: 
 }
 
 /**
+ * A tunnel train: two full repeats, then the tunnel hides 4 to 7 more cars, then the empty car rolls out. The car is the
+ * repeat's place `(6 + hidden) mod unit`, so she counts the hidden cars and jumps whole units; it is the car just before
+ * the tunnel in only one round of four. The cars shown are the first six; the tunnel is not a car in `sequence`.
+ */
+function tunnelTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; hidden: number } {
+  const tokens = rng.shuffle([0, 1, 2]);
+  const unit = plan.pattern.length;
+  const hidden = rng.int(TUNNEL_HIDDEN.min, TUNNEL_HIDDEN.max);
+  const sequence = Array.from({ length: unit * 2 + 1 }, (_, i) => tokens[plan.pattern[(i < unit * 2 ? i : unit * 2 + hidden) % unit]]);
+  return { sequence, targets: [sequence.length - 1], choices: [[0, 1, 2]], hidden };
+}
+
+/**
  * A train for one round: the symbols on each car, and which cars start empty. The pattern shows two full repeats, then
  * the train runs on part of the way into the next one (`phase` cars) before the empty car, so the car to fill can be any
  * place in the repeat rather than always a copy of the first car. Level 6's gap sits anywhere but the very start of a
- * repeat. The far level (10) keeps a seven-car train with the seventh car empty until it is rebuilt; its
- * line names the seventh car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
+ * repeat. The tunnel level (10) shows six cars, then the tunnel, then the empty car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
  * piece on the train is on offer, the near misses included.
  */
-export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook } {
+export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook; hidden?: number; family?: number; shown?: number[] } {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
   if (plan.kind === 'pair') return pairTrain(rng);
+  const train = plan.odd ? oddTrain(plan, rng) : plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
+  // Drawn last, so the cars and gaps of a seed do not depend on what they are made of.
+  const family = plan.kind === 'shape' ? rng.int(0, SHAPE_FAMILIES.length - 1) : plan.kind === 'animal' ? rng.int(0, ANIMAL_TRIOS.length - 1) : undefined;
+  return { ...train, family };
+}
+
+/** A spot-the-mistake train's length: three repeats of an ABC unit fill nine cars. */
+export const ODD_CARS = { extra: 7, swap: 9 } as const;
+
+/**
+ * A train with a mistake in it. `extra`: three repeats of AB with the third piece slipped in somewhere in the middle (seven
+ * cars); it shows once, so it is the only car that does not belong, and taking it out leaves a perfect pattern. `swap`: nine
+ * cars of ABC with one car showing a wrong piece (`shown`), while `sequence` keeps the car that belongs there; the other
+ * eight cars show each place of the unit at least twice, so the fix is certain. `targets` is the car to find.
+ */
+function oddTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; shown?: number[] } {
   const tokens = rng.shuffle([0, 1, 2]);
   const unit = plan.pattern.length;
-  // Two empty cars may start at slot 0 or 1 (nine cars at most); a far or missing-middle train shows no extra cars.
-  const phase = plan.far || plan.missing ? 0 : rng.int(0, plan.two ? 1 : unit - 1);
+  if (plan.odd === 'extra') {
+    const sequence = Array.from({ length: unit * 3 }, (_, i) => tokens[plan.pattern[i % unit]]);
+    const at = rng.int(1, sequence.length - 1);
+    sequence.splice(at, 0, tokens[2]);
+    return { sequence, targets: [at], choices: [[0, 1, 2]] };
+  }
+  const sequence = Array.from({ length: ODD_CARS.swap }, (_, i) => tokens[plan.pattern[i % unit]]);
+  const at = rng.int(0, sequence.length - 1);
+  const shown = sequence.slice();
+  shown[at] = rng.pick([0, 1, 2].filter((p) => p !== sequence[at]));
+  return { sequence, targets: [at], choices: [[0, 1, 2]], shown };
+}
+
+function plainTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
+  const tokens = rng.shuffle([0, 1, 2]);
+  const unit = plan.pattern.length;
+  // Two empty cars may start at slot 0 or 1 (nine cars at most); a missing-middle train shows no extra cars.
+  const phase = plan.missing ? 0 : rng.int(0, plan.two ? 1 : unit - 1);
   const length = unit * 2 + phase + (plan.two ? 2 : 1);
   const sequence = Array.from({ length }, (_, i) => tokens[plan.pattern[i % unit]]);
   let targets: number[];
@@ -115,3 +182,51 @@ export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; t
  * puts there. Always one of the `CHOICES` on offer.
  */
 export const wantedChoice = (sequence: readonly number[], targets: readonly number[], choices: readonly (readonly number[])[], target: number): number => choices[target].indexOf(sequence[targets[target]]);
+
+/** The model's cars and every row's cars in the same-pattern levels. */
+export const MATCH_CARS = 6;
+/** The units a model can repeat (each divides six cars); a row shares its model's unit only when it is the answer. */
+export const MATCH_UNITS: readonly (readonly number[])[] = [[0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 2]];
+
+/** A train's structure with the pieces forgotten: each piece renamed by when it first shows (so cat, cat, cow and A, A, B agree). */
+export function structure(cars: readonly number[]): string {
+  const seen: number[] = [];
+  return cars.map((c) => { if (!seen.includes(c)) seen.push(c); return seen.indexOf(c); }).join('');
+}
+
+/**
+ * Which pieces may go in the next car of a build: one that is the same as an earlier car exactly where the model's cars are
+ * the same, and different exactly where they differ. Any animals that keep the model's structure are right, not one fixed
+ * assignment, and some piece always fits (at most three roles, three pieces).
+ */
+export function validPieces(model: readonly number[], placed: readonly number[]): number[] {
+  const k = placed.length;
+  return [0, 1, 2].filter((p) => placed.every((q, j) => (model[j] === model[k]) === (q === p)));
+}
+
+export interface MatchRound {
+  /** The model's cars, as pieces 0–2 of the model's own kind (shapes). */
+  model: number[];
+  /** Level 15: three rows of animal pieces (0–2); `answer` is the row that repeats the model's way. */
+  rows: number[][];
+  answer: number;
+  /** Which animal trio the rows and the tray use. */
+  trio: number;
+}
+
+/** One train of a unit, its pieces renamed by a shuffle so no two rows or the model share their assignment. */
+const cars = (unit: readonly number[], rng: Rng): number[] => {
+  const names = rng.shuffle([0, 1, 2]);
+  return Array.from({ length: MATCH_CARS }, (_, i) => names[unit[i % unit.length]]);
+};
+
+/**
+ * The same-pattern levels: a model (shapes) and, for the row level, three rows of animals of which exactly one repeats the
+ * model's way; the others repeat other units, so each is a near miss in structure.
+ */
+export function buildMatch(rng: Rng): MatchRound {
+  const unit = rng.pick(MATCH_UNITS);
+  const others = rng.shuffle(MATCH_UNITS.filter((u) => u !== unit)).slice(0, 2);
+  const options = rng.shuffle([unit, ...others]);
+  return { model: cars(unit, rng), rows: options.map((u) => cars(u, rng)), answer: options.indexOf(unit), trio: rng.int(0, ANIMAL_TRIOS.length - 1) };
+}
