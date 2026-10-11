@@ -755,6 +755,8 @@ export const SCRIPT = {
   'ferry.done': ['The harbor is clear. What a busy captain!'],
   'clock.hour': ["Turn the short hand to make it {time}. Then ring the bell!"],
   'clock.set': ['Make the clock say {time}. Turn the hands, then ring the bell!'],
+  'clock.control.hour': ['Touch the middle of the clock to turn the short hour hand.'],
+  'clock.controls': ['Touch the middle to turn the short hour hand. Touch near the edge to turn the long minute hand. Tap the time sign to hear the request again.'],
   'clock.read': ['Look at the clock. What do we do at this time? Tap the picture.'],
   'clock.later': ['The clock says {time}. Make it say one hour later, then ring the bell!'],
   'clock.shows': ['The clock says {now}. We want {time}.'],

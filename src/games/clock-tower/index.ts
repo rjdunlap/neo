@@ -12,11 +12,11 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { demoAction, EVENTS, hourOf, makeTasks, minuteChoices, planFor, spoken, timeOf, type ClockPlan, type ClockTask } from './logic';
+import { demoAction, EVENTS, hourOf, makeTasks, minuteChoices, planFor, PLANS, requestFor, spoken, timeOf, type ClockPlan, type ClockTask } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 7 },
+  school: { min: 2, max: PLANS.length },
 };
 
 const R = 200;
@@ -63,6 +63,10 @@ class ClockTower implements Game {
   busy = true;
   finished = false;
   readonly face = new Container();
+  readonly request = new Container();
+  private readonly requestHeading = label('', 22, ink);
+  private readonly requestTime = label('', 38, ink);
+  private readonly handKey = new Container();
   readonly bell: RoundButton;
   readonly choices: { id: string; node: Container }[] = [];
 
@@ -80,6 +84,9 @@ class ClockTower implements Game {
   /** While turning, the hand follows the finger freely; it snaps on release. */
   private freeAngle: number | null = null;
   private clock = 0;
+  private readonly cancelPointer = (e: PointerEvent) => {
+    if (this.grab?.id === e.pointerId) this.cancel();
+  };
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -98,9 +105,29 @@ class ClockTower implements Game {
     this.face.on('pointerup', (e: FederatedPointerEvent) => this.up(e));
     this.face.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
     this.face.on('pointercancel', () => this.cancel());
+    // Pixi's pointer event system listens for pointerup, but not native pointercancel.
+    window.addEventListener('pointercancel', this.cancelPointer);
+    this.request.addChild(new Graphics().roundRect(-125, -60, 250, 120, 22).fill(cream).stroke({ width: 4, color: wood.line }), this.requestHeading, this.requestTime);
+    this.requestHeading.y = -34;
+    this.requestTime.y = 4;
+    const replay = label('Tap to hear again', 18, ink);
+    replay.y = 40;
+    this.request.addChild(replay);
+    this.request.hitArea = new Rectangle(-125, -60, 250, 120);
+    this.request.visible = this.plan.mode !== 'read';
+    onTap(this.request, () => { if (!this.busy && !this.finished) void this.instruction(); });
+    // A length and shape key, so color is never the only cue for choosing a hand.
+    const key = new Graphics().moveTo(-90, 0).lineTo(-35, 0).stroke({ width: 10, color: swatch.blue.line, cap: 'round' }).circle(-35, 0, 10).fill(swatch.blue.line);
+    key.moveTo(-90, 44).lineTo(0, 44).stroke({ width: 7, color: swatch.red.line, cap: 'round' }).poly([-10, 44, 0, 34, 10, 44, 0, 54]).fill(swatch.red.line);
+    this.handKey.addChild(key);
+    const short = label('Short: middle', 20, ink); short.position.set(50, 0);
+    const long = label('Long: edge', 20, ink); long.position.set(65, 44);
+    this.handKey.addChild(short, long);
+    this.handKey.visible = this.plan.mode !== 'read';
+    this.handKey.eventMode = 'none';
     this.bell = new RoundButton(this.bellArt(), swatch.white, 60, () => void this.check());
     this.bell.visible = this.plan.mode !== 'read';
-    ctx.stage.addChild(this.backdrop, this.tower, this.face, this.glow, this.bell);
+    ctx.stage.addChild(this.backdrop, this.tower, this.face, this.glow, this.bell, this.request, this.handKey);
   }
 
   private bellArt() {
@@ -158,6 +185,8 @@ class ClockTower implements Game {
     this.tower.clear().roundRect(cx - R - 50, cy - R - 60, 2 * R + 100, v.h - (cy - R - 60) + 40, 30).fill(0xe8dcc8).stroke({ width: 6, color: wood.line });
     this.tower.poly([cx - R - 70, cy - R - 56, cx, cy - R - 150, cx + R + 70, cy - R - 56]).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line, join: 'round' });
     this.bell.position.set(cx + R + 150, cy);
+    this.request.position.set(cx + R + 185, cy - 170);
+    this.handKey.position.set(cx + R + 150, cy + 120);
     this.choices.forEach((c, i) => c.node.position.set(cx + R + 170, cy - 160 + i * 160));
   }
 
@@ -187,7 +216,8 @@ class ClockTower implements Game {
   }
 
   destroy() {
-    this.grab = null;
+    window.removeEventListener('pointercancel', this.cancelPointer);
+    this.cancel();
   }
 
   private drawHands() {
@@ -196,7 +226,9 @@ class ClockTower implements Game {
     const minuteAngle = this.grab?.hand === 'minute' && this.freeAngle !== null ? this.freeAngle : (this.minute / 60) * Math.PI * 2;
     const hand = (g: Graphics, angle: number, len: number, width: number, color: number, lifted: boolean) => {
       g.clear().moveTo(0, 0).lineTo(Math.sin(angle) * len, -Math.cos(angle) * len).stroke({ width: lifted ? width + 6 : width, color, cap: 'round' });
-      g.circle(Math.sin(angle) * len, -Math.cos(angle) * len, width * 0.9).fill(color);
+      const x = Math.sin(angle) * len, y = -Math.cos(angle) * len;
+      if (g === this.minuteHand) g.poly([x - 12, y, x, y - 12, x + 12, y, x, y + 12]).fill(color);
+      else g.circle(x, y, width * 0.9).fill(color);
     };
     hand(this.hourHand, hourAngle, R * 0.52, 18, swatch.blue.line, this.grab?.hand === 'hour');
     hand(this.minuteHand, minuteAngle, R * 0.82, 11, swatch.red.line, this.grab?.hand === 'minute');
@@ -275,6 +307,15 @@ class ClockTower implements Game {
       this.minute = 0;
     }
     this.busy = false;
+    const request = requestFor(this.plan.mode, t);
+    this.requestHeading.text = request.heading;
+    this.requestTime.text = request.time;
+    await this.instruction();
+    if (this.index === 0 && this.plan.mode !== 'read') await this.ctx.say(this.plan.mode === 'hour' ? 'clock.control.hour' : 'clock.controls');
+  }
+
+  private instruction() {
+    const t = this.task;
     if (this.plan.mode === 'read') return this.ctx.instruct('clock.read');
     if (this.plan.mode === 'later') return this.ctx.instruct('clock.later', { time: spoken(t.from!) });
     return this.ctx.instruct(this.plan.mode === 'hour' ? 'clock.hour' : 'clock.set', { time: spoken(t.time) });

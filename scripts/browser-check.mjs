@@ -3133,7 +3133,7 @@ async function woodsBatch() {
     log(`Garden Grow ${level} (${plan.mode}): soil, seed packets, taking seeds back, rain, misses and glowing hints, saved score and sticker passed`);
   }
 
-  if (!only || only === 'clock') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'clock') for (let level = fromLevel; level <= 7; level++) {
     await launch('clock-tower', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); };
@@ -3156,6 +3156,13 @@ async function woodsBatch() {
     for (let n = 0; n < 4; n++) {
       await idle(n);
       const time = await page.evaluate(() => neo.scene.game.task.time);
+      if (mode !== 'read') {
+        const before = await counts();
+        const shown = await page.evaluate(() => { const g = neo.scene.game; return { text: g.requestTime.text, time: g.plan.mode === 'later' ? g.task.from : g.task.time }; });
+        assert.equal(shown.text, `${Math.floor(shown.time / 60) % 12 || 12}:${String(shown.time % 60).padStart(2, '0')}`);
+        await tap('neo.scene.game.request'); await settle();
+        assert.deepEqual(await counts(), before, 'replay is free');
+      }
       if (mode === 'read') {
         if (n === 0) {
           for (let k = 0; k < 2; k++) { await tap('neo.scene.game.choices.find((c) => !neo.scene.game.isRight(c.id)).node'); await settle(); }
@@ -3167,7 +3174,7 @@ async function woodsBatch() {
       if (n === 0) {
         await ring(); await ring();
         assert.deepEqual(await counts(), [2, 1]);
-        if (level === 4) await screenshot('clock-tower-4-hint');
+        if (level === 4 || level === 7) await screenshot(`clock-tower-${level}-hint`);
       }
       await setTo(time);
       assert.equal(await page.evaluate(() => neo.scene.game.shown), time, `hands set to ${time}`);
