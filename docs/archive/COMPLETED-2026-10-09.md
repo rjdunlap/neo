@@ -431,3 +431,7 @@ Deep-dive slice 1 ([PR #151](https://github.com/rjdunlap/neo/pull/151)): empty P
 ## Goodnight Room level 7: counted goodnights (2026-10-11)
 
 Pre-K level 7 asks for 2–4 friends of her choice among six in a seeded bedroom or barn. Each goodnight is counted aloud, with a numeral/dot tally. On reaching the count, the remaining friends stay awake briefly before settling together for the finale; no misses or hints, and one sticker for the round. Pre-K expands from 5–6 to 5–7; saved levels and younger ranges retain their meanings. The how-to and ghost finger follow this rule. [PR #155](https://github.com/rjdunlap/neo/pull/155); checks are in [verification](../VERIFICATION.md).
+
+## Tangram Town spoken shape names (2026-10-11)
+
+Deep-dive slice 3 ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each physical piece names its geometric shape once on pickup in toddler, preschool and pre-K play. Roofs are triangles; hulls are trapezoids. Repeated pickups remain quiet; this support counts no hint. The how-to and game documentation describe it. More pictures (slice 2) remains ready; actual device pronunciation is still a person/device check.

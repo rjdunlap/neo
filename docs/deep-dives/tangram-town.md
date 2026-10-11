@@ -67,7 +67,7 @@ Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is th
 **Next content slices** (ready, small):
 
 - **More pictures.** Aim for six to eight per level. A new picture is a few lines of slots in `PICTURES` and one line in a pool, and the tests above cover it. Candidates built from the same five shapes: a tent and a flag (roof and triangle), a fish (roof body with a triangle tail), a lamp post, a barn (a pair of triangles and a roof), a bridge (rectangle and two hulls), a pine tree of two roofs. Check the new picture reads as itself at 0.4 viewing distance.
-- **Spoken shape names.** On picking a piece up, say "a triangle" once per piece, per round, at toddler, preschool and pre-K bands (the how-to and the `tangram.try` line already name no shape). Voice lines only; check on a device.
+- **Spoken shape names** — **built 2026-10-11** ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each physical piece names its geometric shape once on pickup at toddler, preschool and pre-K. Roofs say triangle; hulls say trapezoid. School pickup is quiet. Actual device pronunciation remains unchecked.
 - **Avoid the same picture twice in a row.** A pool of two repeats half the time. The shell does not keep round history for a game; leave it, or pass the previous picture through the stored `stats` in a later slice.
 - **Colour per picture.** Colours are by tray slot today, not by role; a roof that is always a roof colour would make the picture readable as a picture.
 
@@ -115,7 +115,7 @@ These wait on [how levels are ordered for a new band](../ROADMAP.md#waiting-on-t
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
 2. **More pictures** (ready): six to eight per level, `logic.ts` data only. Rule tests, one screenshot per new picture.
-3. **Spoken shape names** (ready): voice lines and a pickup call. Typecheck and the registry/voice tests; the speech itself is a device check.
+3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
 4. **Level 7, fewer pieces** (needs a stated model): first a cover-set type with tests, then the level. New-level tier: `fingerdemo` at the new top level and a play.
 5. **Level 8, fix the picture** (ready after 4's re-pickable placed pieces).
 6. **Level 9, flip it** (waits on decision 1).

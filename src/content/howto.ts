@@ -646,6 +646,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, text: 'Fill the whole silhouette; the yellow button shows outlines and the next turn.' },
     ],
     finish: 'The round ends when the shapes fill the picture.',
+    note: 'For toddler, preschool and pre-K play, each piece says its shape name the first time you pick it up.',
   },
   'rhythm-neighbors': {
     goal: 'Answer the woodpecker with frog sounds.',
