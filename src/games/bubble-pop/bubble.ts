@@ -1,8 +1,8 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { RAINBOW, swatch, type ColorName } from '../../art/palette';
+import { ink, RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { label } from '../../ui/text';
-import type { Friend } from './logic';
+import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, type Friend } from './logic';
 
 const PLAIN_RIM = 0x8fd0ff;
 
@@ -16,13 +16,15 @@ function shine(g: Graphics, r: number, width: number, alpha: number) {
 }
 
 /** A soap bubble: a clear body, a colored rim and a bright highlight. */
-export function drawBubble(g: Graphics, r: number, color: ColorName | null, fillAlpha?: number): Graphics {
+export function drawBubble(g: Graphics, r: number, color: ColorName | null, fillAlpha?: number, lowerGlint = true): Graphics {
   const tint = color ? swatch[color].fill : 0xcfeeff;
   // Colored bubbles are nearly solid so the color is unmistakable; plain ones stay see-through.
   g.circle(0, 0, r).fill({ color: tint, alpha: fillAlpha ?? (color ? 0.78 : 0.2) });
   g.circle(0, 0, r).stroke({ width: Math.max(3, r * 0.07), color: color ? swatch[color].line : PLAIN_RIM, alpha: 0.9 });
   shine(g, r * 0.72, r * 0.1, 0.85);
-  return g.circle(r * 0.45, r * 0.42, r * 0.06).fill({ color: 0xffffff, alpha: 0.7 });
+  // A decorative spot beside quantity dots can look like one more to count.
+  if (lowerGlint) g.circle(r * 0.45, r * 0.42, r * 0.06).fill({ color: 0xffffff, alpha: 0.7 });
+  return g;
 }
 
 /** The finale bubble, ringed with every color. */
@@ -36,6 +38,7 @@ export interface BubbleOptions {
   r: number;
   color: ColorName | null;
   number?: number;
+  dots?: boolean;
   critter?: Friend;
   rainbow?: boolean;
 }
@@ -79,11 +82,17 @@ export class Bubble extends Container {
     }
     const g = new Graphics();
     if (o.rainbow) drawRainbowBubble(g, o.r);
-    else drawBubble(g, o.r, o.color);
+    else drawBubble(g, o.r, o.color, undefined, !o.dots);
     this.shell.addChild(g);
     if (o.number !== undefined) {
-      const t = label(String(o.number), o.r * 1.05, 0x2b2b3a);
-      t.y = o.r * 0.04;
+      const t = label(String(o.number), o.r * 1.05, ink);
+      t.y = o.r * (o.dots ? DOT_NUMERAL_Y : 0.04);
+      if (o.dots) {
+        const dots = new Graphics();
+        dots.eventMode = 'none';
+        for (const dot of numberDots(o.number)) dots.circle(dot.x * o.r, dot.y * o.r, DOT_RADIUS * o.r).fill(ink);
+        this.shell.addChild(dots);
+      }
       this.shell.addChild(t);
     }
   }

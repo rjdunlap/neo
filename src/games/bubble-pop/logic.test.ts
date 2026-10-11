@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { bondNumbers, bubbleToPop, choosePalette, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
+import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, showsDots, bondNumbers, bubbleToPop, choosePalette, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
 
 describe('Bubble Pop', () => {
   it('keeps every bubble a big target, and number rounds within what fits on screen', () => {
@@ -156,5 +156,32 @@ describe('the bubble the ghost finger pops', () => {
     expect(bubbleToPop('color', [at(100, 300, { color: 'blue' })], 'red', 1, undefined, null)).toBeNull();
     expect(bubbleToPop('count', [at(100, 300, { number: 3 })], null, 2, undefined, null)).toBeNull();
     expect(planFor(11).mode).toBe('bonds');
+  });
+});
+
+describe('quantity support', () => {
+  it('shows exactly the quantity in distinct, countable dots inside the bubble below the numeral', () => {
+    for (let n = 1; n <= 10; n++) {
+      const dots = numberDots(n);
+      expect(dots).toHaveLength(n);
+      for (const dot of dots) {
+        expect(Math.hypot(dot.x, dot.y) + DOT_RADIUS).toBeLessThan(0.9);
+        // The unchanged 1.05-radius numeral reserves a 1.3-radius-high box.
+        expect(dot.y - DOT_RADIUS).toBeGreaterThan(DOT_NUMERAL_Y + 0.65);
+        for (const other of dots) if (other !== dot) expect(Math.hypot(dot.x - other.x, dot.y - other.y)).toBeGreaterThan(DOT_RADIUS * 2);
+      }
+      expect(numberDots(n)).toEqual(dots);
+      if (n > 6) expect(dots.filter((d) => d.y === 0.49)).toHaveLength(5);
+    }
+    for (const n of [0, 11, -1, 1.5, NaN]) expect(numberDots(n)).toEqual([]);
+  });
+
+  it('supports the first number rounds and bonds to five, then fades without changing their rules', () => {
+    expect(PLANS.map((_, i) => i + 1).filter(showsDots)).toEqual([7, 8, 10]);
+    for (const level of [7, 8, 10]) {
+      const plan = planFor(level);
+      const numbers = plan.mode === 'count' ? Array.from({ length: plan.goal }, (_, i) => i + 1) : bondNumbers(plan.sum!, plan.goal, new Rng(4));
+      for (const n of numbers) expect(numberDots(n)).toHaveLength(n);
+    }
   });
 });

@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-11 — Bubble Pop countable dots
+
+- Built deep-dive slice 2: quantity dots at 7, 8 and 10; unchanged-size numerals move above them, and their decorative lower glint is omitted. Levels 9/11 fade support; how-to and co-play updated.
+- Tested claim `1057e2b` (base `58d449e`) plus implementation diff: typecheck, 28 focused tests (`npm test -- src/games/bubble-pop/logic.test.ts src/content/howto.test.ts`) and production build passed. Quantity, spacing, bounds, clearance and support fading covered.
+- `GAME_URL=http://localhost:5196 BROWSER_SUITE=fingerdemo FINGER_ONLY=bubble-pop FINGER_LEVELS=10 npm run test:browser` passed cleanly in 12.8 demo seconds; no page errors. macOS Chromium launch needed sandbox escalation.
+- `node test-results/bubble-dots.mjs` verified actual numeral bounds and captured portrait levels 7/9/10. Reviewed `test-results/browser/bubble-dots-{7,9,10}-portrait.png`; final art-only glint removal followed by refreshed portraits/typecheck/build, reusing the passing demo (input/rules unchanged).
+- Changed local Markdown link paths and `git diff --check` passed; a pre-existing archive link to `ROADMAP.md` is unresolved. Session dev server stopped after checks.
+- Not run: full unit/browser suites, world/couch/offline (no navigation, persistence or imported assets changed). iPad comfort, device speech and child understanding remain open.
+
 ## 2026-10-11 — Opposites varied subjects and acting flips
 
 - Built deep-dive slice 2: seeded size/mood subjects stay consistent across pairs and lap flips; big/small, fast/slow and up/down pictures act inside fixed cards with scene-owned tweens. Levels, bands and pinned sticker art stay intact.
@@ -500,6 +509,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | --- | --- | --- | --- |
 | Clock Tower deep dive | 2026-10-11: research and local Markdown links/anchors, diff check | Clock Tower deep dive entry | Docs only; no code or gameplay checks; device speech and child play open |
 | Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |
+| Bubble Pop dots (`fingerdemo`) | 2026-10-11: quantity/geometry rules, 28 focused tests, typecheck/build; level-10 demo clean in 12.8 s; portraits 7/9/10 and actual numeral clearance | Bubble Pop countable dots entry | No full ladder rerun; iPad, speech and child play open |
 | Robot Path board pools (`robot`, `fingerdemo`) | 2026-10-11: 30 boards in rule/bot tests; level-6 regression and portrait; level-10 demo clean in 10.4 s; typecheck and build | Robot Path: three boards per programming level entry | Full browser ladder and couch not rerun; iPad, speech and child play open |
 | Day by Day (`week`, `fingerdemo`) | 2026-10-11: first/top-level real-input play, retries/hint, saved reward, reversible counting, portrait and interrupted speech; demos 1–3 clean (35.9, 43.6, 50.1 s), land entry/intro/return | Day by Day first slice entry | No iPad, actual device speech or child play; level-2 full speech play not run |
 | Orchard Rows (`orchard`, `fingerdemo`) | 2026-10-11: levels 1 and 3, replay, two misses/one hint, saved rewards, portrait and interrupted speech; demos 1–3 clean (23.1, 41.4, 46.5 s); land launch, intro and return | Orchard Rows first slice entry | No iPad, actual device speech or child play; separate level-2 manual play not run |
