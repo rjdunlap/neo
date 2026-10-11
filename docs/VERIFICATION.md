@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-11 — Letter Trails deep dive (docs only)
+
+- Wrote `docs/deep-dives/letter-trails.md`: the game read from `index.ts`, `strokes.ts`, `pictures.ts`, `strokes.test.ts`, the how-to, the voice script, the journal and the save; nine reference rows (the Handwriting Without Tears teaching-order sheet opened, Common Core L.K.1.a, a pre-writing checklist and the Puranik and Lonigan name-writing paper opened; the apps, Montessori, clinic handouts and tracing research as search summaries only); levels 9–18, Shape Trails below level 1, a grown-up targeting table and thirteen build slices. Updated the tracker, the chunk 14 row, "Waiting on the developer" (a new row and the stroke-convention row) and the IDEAS rows.
+- Ran `git diff --check` and a relative-link check on the changed docs. No code, tests or browser suites ran and this session had no installed dependencies. One scan of the strokes file (first points of each first stroke) found A, M and N starting at the bottom; the other gaps are read from code and not played.
+- Open: the iPad speech check for capital letter names; corridor sizes for a three-year-old and a toddler's long line (person checks in the write-up's decision 9); the programme chart for I and T and for pen lifts.
+
 ## 2026-10-11 — Word Monsters deep dive (docs only)
 
 - Wrote `docs/deep-dives/word-monsters.md`: the ladder read from `index.ts`, `logic.ts`, the tests, the how-to and the voice script; ten references and the Common Core foundational-skills pages; levels 9–17, a grown-up window, four younger entries and fifteen build slices. Updated the tracker, the chunk 14 row, "Waiting on the developer" and the IDEAS rows.
