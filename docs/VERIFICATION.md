@@ -8,6 +8,14 @@
 - Ran `git diff --check` and an anchor and relative-link check on `IDEAS.md` and `ROADMAP.md`. No code, tests or browser suites ran.
 - Open: the †, ‡ and § details were not opened at the source; the family-album and language decisions; Math Marbles and Milk Caps, 5th Grade's later missions and 3D Virtual World's pet games remain unknown.
 
+## 2026-10-10 — Shape Sorter level 8: The feely bag
+
+- Added six seeded spoken shape clues to the pre-K ladder; the child finds each matching shape and drags it into the box.
+- After integrating the current `origin/main`, `npm run typecheck` passed; focused Shape Sorter, Picture Graph, how-to, registry and lands tests passed (55 tests).
+- `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes` passed levels 1–8, including two wrong clue answers and the hint glow at level 8. Level 8 was re-run alone after the miss-accounting fix, with the portrait screenshot reviewed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=8` finished cleanly in 18.5 seconds.
+- No build or full suite was run; the level uses the existing interaction and art. iPad touch feel, device speech and child play remain open.
+
 ## 2026-10-11 — Letter Trails deep dive (docs only)
 
 - Wrote `docs/deep-dives/letter-trails.md`: the game read from `index.ts`, `strokes.ts`, `pictures.ts`, `strokes.test.ts`, the how-to, the voice script, the journal and the save; nine reference rows (the Handwriting Without Tears teaching-order sheet opened, Common Core L.K.1.a, a pre-writing checklist and the Puranik and Lonigan name-writing paper opened; the apps, Montessori, clinic handouts and tracing research as search summaries only); levels 9–18, Shape Trails below level 1, a grown-up targeting table and thirteen build slices. Updated the tracker, the chunk 14 row, "Waiting on the developer" (a new row and the stroke-convention row) and the IDEAS rows.
@@ -236,6 +244,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |
 | Dot Link 6 (`batch`, `fingerdemo`) | 2026-10-10: levels 1–6 passed the filtered Dot Link play with two deliberate misses and a hint; level 6 ghost finger clean in 12.6 s | Dot Link level 6 entry | Browser automation; iPad touch feel, device speech and child play remain open |
 | Fill and Dump (`originals`, `fingerdemo`) | 2026-10-10: levels 1–4 played by taps (tip out, scoop, count, two wrong checks, glow, take back, done; portrait at level 4), saved score and sticker; clean ghost-finger demos at all four levels | Fill and Dump entry | Screenshots reviewed; no build or `smoke`; iPad feel, device speech and child play open |
 | Garden Grow 7 (`woods`, `fingerdemo`) | 2026-10-10: two-by-three array, two wrong rains, hint, saved round and sticker; clean ghost-finger demo in 38.8 s | Garden Grow levels 6–7 entry | Screenshot reviewed; iPad target feel, device speech and child play remain open |

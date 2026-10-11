@@ -182,7 +182,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Shape Sorter
 
-*toddler–pre-K.* One circle hole, growing to six plain holes, one color, and tilted pieces. A shape that does not fit slides back with a hint.
+*toddler–pre-K.* One circle hole, growing to six plain holes, one color, and tilted pieces. At pre-K level 8, she listens for a shape's properties—such as three corners—and finds that shape among the holes. A wrong shape slides back with the clue repeated; after two misses, its hole glows.
 
 ### Color Garden
 

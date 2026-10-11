@@ -85,7 +85,7 @@ There are seventy-four games, listed below. "Ages" lists the bands each game has
 | Dot Link | lap–pre-K | tap dots to pop them | join two dots of one color, pop one color, chains of four, close a square, then make chains of exactly five |
 | Teddy Doctor | lap–school | tap boo-boos to put on bandages | bandage the part a patient names, choose what helps a bump or sniffles, then what helps from a spoken clue, check-ups in order from a card or from what the patient says |
 | Bumper Garden | lap–pre-K | tap to launch a ladybug through flower bumpers | flip it back up until every flower blooms, bloom one color, bump numbered flowers in order |
-| Shape Sorter | toddler–pre-K | one circle hole | six plain holes, one color, tilted pieces |
+| Shape Sorter | toddler–pre-K | one circle hole | six plain holes, one color, tilted pieces, then spoken shape clues |
 | Seesaw Balance | toddler–school | put a big friend on the seesaw so a little one goes up | which friend is heavy enough, level it with blocks, find the heaviest look-alike present, match a weight two ways, weigh one mystery box, infer one of two identical boxes, then take the same off both sides until a box is alone; at the top, share blocks between two identical boxes |
 | Quick Tricks | toddler–school | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle | which leaf covers two friends, matching socks and bridge lengths; a second show turns parcels, sets picnic places and completes berry totals |
 | Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers |
@@ -252,7 +252,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `woods` | Light Lab, Penguin Slide, Peekaround Island, Secret Code, Frog Hop, Market Stall, Lemonade Stand, Garden Grow, Clock Tower, the other Wonder Woods games, Inchworm Measure, Pixel Pictures 6, Picture Graph 7, and these ladder steps: Little Helpers' equal groups (`helpers`), Seesaw Balance 8–9 (`boxes`), Mail Carrier 6–8 (`mailmap`), Egg Catch 6 (`predict`) and 7 (`pair`), Bubble Pop 10–11 (`bonds`), Word Monsters 7 (`families`) and 8 (`word-end`) | `WOODS_ONLY=light\|penguin\|peek\|code\|hop\|shop\|grow\|clock\|pixels\|night\|snack\|beat\|rhyme\|go\|ramp\|sort\|map\|opp\|graph\|worm\|bonds\|predict\|pair\|families\|word-end\|helpers\|boxes\|mailmap\|lemon` |
 | `creative` | Stamp Studio, Pet Kitchen, Rhythm Neighbors, Tangram Town | `CREATIVE_ONLY=stamps\|kitchen\|rhythm\|tangram` |
 | `next` | Seesaw Balance, Teddy Doctor, Bumper Garden, Quick Tricks | `NEXT_ONLY=seesaw\|doctor\|bumper\|tricks` |
-| `originals` | Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond (through level 11), Shape Sorter, Fill and Dump, Color Garden | `ORIGINALS_ONLY=bubbles\|jelly\|peekaboo\|ducks\|shapes\|fill\|garden`; `DUCK_LEVELS=11` to run only Duck Pond 11 |
+| `originals` | Bubble Pop, Jelly Drums, Peekaboo Barn, Duck Pond (through level 11), Shape Sorter (through level 8), Fill and Dump, Color Garden | `ORIGINALS_ONLY=bubbles\|jelly\|peekaboo\|ducks\|shapes\|fill\|garden`; `DUCK_LEVELS=11` to run only Duck Pond 11; `SHAPE_LEVELS=8` to run only Shape Sorter 8 |
 | `batch` | The follow-on ten (Photo Safari 6 too). `pegs` is flaky on the development Mac | `BATCH_ONLY=monsters\|pegs\|salon\|garden\|helpers\|eggs\|mail\|safari\|bounce\|dots` |
 | `arcade` | Duckling Parade, Scoop Shop, Roundup, Bouncy Launch | `ARCADE_ONLY=parade\|scoop\|roundup\|launch` |
 | `early` | Rainbow Fingers and Splish Splash | `EARLY_ONLY=paint\|bath` |

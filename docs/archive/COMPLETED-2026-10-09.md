@@ -1,5 +1,14 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Shape Sorter level 8: The feely bag (2026-10-10)
+
+Added a pre-K round where the box asks for each shape by a spoken property clue: corners, sides, points or its outline. The player finds and drags that shape into its hole; a wrong shape repeats the clue, and two misses glow the answer. The level extends the pre-K range from 5–7 to 5–8; earlier levels and saved numbers stay unchanged.
+
+- Seeded rule tests check that all six shapes are asked exactly once and that the clue order repeats for a seed.
+- The how-to, voice, inventory, game guide and roadmap now describe the level; its proposal has moved out of [IDEAS](../IDEAS.md#round-three-more-to-play-in-every-band-2026-10-10).
+- Checks run: typecheck, focused Shape Sorter and how-to tests, filtered level 8 play and `fingerdemo` at level 8 (results in [VERIFICATION](../VERIFICATION.md)).
+- Not established: iPad touch feel, device speech or a child's response.
+
 ### Picture Graph level 7: Tally marks (2026-10-10)
 
 Added a school level with one complete cycle: record three meadow counts with tally marks grouped by five, build the graph and compare two kinds. Seeded rule tests cover the level's count bounds, fair comparisons, corrections and bot route. Typecheck, 38 targeted rule, how-to and registry tests, filtered browser play, and a clean ghost-finger run in 39.2 seconds passed. The tally-hint screenshot was reviewed.

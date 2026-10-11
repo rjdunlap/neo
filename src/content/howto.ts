@@ -123,9 +123,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'The holes are plain, so match by shape alone.' },
       { from: 6, to: 6, text: 'Every shape is the same color, so match by shape alone.' },
       { from: 7, text: 'Every shape is the same color and tilted: match by shape, however it leans.' },
+      { from: 8, text: 'Listen to the shape clue, then drag that shape into the box.' },
     ],
     finish: 'The round ends when every shape is in a hole.',
-    note: 'A shape that does not fit slides back with a hint.',
+    note: [
+      { to: 7, text: 'A shape that does not fit slides back with a hint.' },
+      { from: 8, text: 'A shape that does not fit the clue slides back. After two misses, its hole glows.' },
+    ],
   },
   'color-garden': {
     goal: 'Sort the fruit, balloons and flowers into baskets by color.',

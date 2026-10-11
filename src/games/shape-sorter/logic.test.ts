@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { HOLE_R, holeAt, holeFor, holeLayout, pieceKinds, PLANS } from './logic';
+import { SHAPES } from '../../art/shapes';
+import { HOLE_R, clueKinds, holeAt, holeFor, holeLayout, pieceKinds, PLANS } from './logic';
 
 describe('Shape Sorter', () => {
   it('deals a piece for every hole and only pieces that fit somewhere', () => {
@@ -45,6 +46,18 @@ describe('Shape Sorter', () => {
           expect(holeAt(holes, hole!.x, hole!.y)?.kind).toBe(kind);
         }
       }
+    }
+  });
+
+  it('asks once for every shape in the clue level, in seeded order', () => {
+    const plan = PLANS[7];
+    expect(plan.clue).toBe(true);
+    expect(plan.holes).toEqual(SHAPES);
+    for (let seed = 1; seed <= 100; seed++) {
+      const order = clueKinds(new Rng(seed), plan);
+      expect(order).toHaveLength(SHAPES.length);
+      expect(new Set(order)).toEqual(new Set(SHAPES));
+      expect(clueKinds(new Rng(seed), plan)).toEqual(order);
     }
   });
 });
