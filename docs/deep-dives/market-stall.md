@@ -202,3 +202,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 ## What was built in this session
 
 Nothing: a deep dive session is research and ideation only. `git diff --check` and a relative-link check ran on the changed docs. Nothing was run in a browser or as a test: every gap above is read from `index.ts`, `logic.ts`, `logic.test.ts` and the docs.
+
+## Slice 1 claim (2026-10-11)
+
+`codex/market-stall-support` claims guards and named misses only, preserving levels 1–7 and saved art. Expected files: the game index, logic and rule tests; how-to and voice script; the filtered shop browser case; README, GAMES, roadmap, tracker, archive and verification docs.
