@@ -4,7 +4,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 **Play it:** <https://rjdunlap.github.io/neo/> (every push to `main` redeploys via GitHub Actions)
 
-[Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md)
+[Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md) · [Development workflow review](docs/DEVELOPMENT-WORKFLOW.md)
 
 What's in it:
 
