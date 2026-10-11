@@ -189,6 +189,10 @@ The school ladder now reaches level 8. Keep the first two sounds in place and ch
 
 The school ladder now asks the player to read a shown program, choose the square where the robot will stop, then watch it play. Both individual arrows and counted arrows are shown, with a rock that makes the actual stopping square differ from skipping the rock or reading the arrows backwards. Predictions are free experiments; a wrong guess is never a miss. The cell targets are 100 logical units across. The level has its own spoken instruction and scoped how-to step, and the ghost finger predicts and plays the program. Rule tests, the filtered level-11 round and its ghost-finger demonstration passed. iPad target review and device speech remain open.
 
+#### Robot Path 12: Fix the program (2026-10-10)
+
+The school ladder now reaches level 12. Three authored counted programs stop one step short after a free first watch. The player selects the final slot and taps its arrow once to add the missing step; each board has exactly one single-slot edit that reaches the star. The hint glows on that slot after two failed repairs, and the ghost finger watches, selects, edits and plays. Typecheck, seven Robot Path logic tests, the filtered level-12 browser play and the level-12 ghost-finger demo passed. A portrait screenshot was captured; device target sizing, speech and child play remain open.
+
 #### Treasure Map 5: two landmark clues (2026-10-10)
 
 Treasure Map's school range now reaches level 5 without changing its first four saved levels or pins. Each four-find round puts two different visible landmarks on the five-by-five parchment: a horizontal relation fixes the target column and a vertical relation fixes its row. The spoken, pictured clue card presents them in order; two wrong digs leave the usual marks and turn on the two actual landmark-to-target lines. Generated targets, landmarks and offsets stay in bounds and distinct, and the ghost finger continues to dig the generated target. Typecheck, the Treasure Map rule tests, a level-5 real-tap browser round (two wrong digs, hint, reward and portrait review), and its clean level-5 finger demonstration passed.

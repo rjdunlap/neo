@@ -11,9 +11,9 @@ import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { DELTAS, DIRECTIONS, expand, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Cell, type Direction, type PredictPlan, type RobotPlan, type Slot } from './logic';
+import { DELTAS, DIRECTIONS, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
 
-/** Levels 1–6 are the original one-step-per-slot programs; 7–10 add counted steps, then loops. */
+/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict and repair. */
 const PREK_TOP = 6;
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
@@ -30,6 +30,7 @@ function arrow(dir: Direction) {
 class RobotPath implements Game {
   readonly plan: RobotPlan;
   readonly prediction: PredictPlan | null;
+  readonly fixPlan: FixPlan | null;
   readonly mode: 'steps' | 'counts' | 'loop';
   readonly program: Slot[] = [];
   /** How many times the whole program runs (loop levels). */
@@ -45,7 +46,10 @@ class RobotPath implements Game {
   private readonly hint = new Graphics();
   private readonly predictionMark = new Graphics();
   private readonly predictionCells: Graphics[] = [];
+  private slotTargets: Container[] = [];
   private predicted: Cell | null = null;
+  private selectedSlot = -1;
+  private watched = false;
   private readonly loopLabel = label('×1', 30, ink);
   private readonly play: RoundButton;
   private readonly clear: RoundButton;
@@ -63,16 +67,19 @@ class RobotPath implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.prediction = ctx.level >= 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
-    this.plan = this.prediction ?? planFor(ctx.level);
+    this.prediction = ctx.level === 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
+    this.fixPlan = ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : null;
+    this.plan = this.prediction ?? this.fixPlan ?? planFor(ctx.level);
     this.mode = this.plan.mode ?? 'steps';
     this.solution = this.prediction?.program ?? this.plan.solution?.slots ?? shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
     if (this.prediction) this.program.push(...this.prediction.program.map((slot) => ({ ...slot })));
+    if (this.fixPlan) this.program.push(...this.fixPlan.broken.map((slot) => ({ ...slot })));
     this.play = new RoundButton(playIcon(), swatch.green, 50, () => void this.run());
     this.clear = new RoundButton(againIcon(), swatch.white, 50, () => {
       if (this.running || this.done) return;
       this.program.length = 0;
       this.loop = 1;
+      this.selectedSlot = -1;
       this.drawQueue();
       void ctx.say('robot.clear');
     });
@@ -112,12 +119,26 @@ class RobotPath implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.prediction ? 'robot.predict' : this.mode === 'loop' ? 'robot.loop' : this.mode === 'counts' ? 'robot.counts' : 'robot.start');
+    void this.ctx.instruct(this.prediction ? 'robot.predict' : this.fixPlan ? 'robot.fix' : this.mode === 'loop' ? 'robot.loop' : this.mode === 'counts' ? 'robot.counts' : 'robot.start');
   }
 
   /** An arrow tap: a new step, or on counted levels one more of the same step. */
   private add(dir: Direction) {
     if (this.running || this.done) return;
+    if (this.fixPlan && this.selectedSlot >= 0) {
+      const selected = this.program[this.selectedSlot];
+      if (selected) {
+        if (selected.dir === dir && selected.n < 5) selected.n++;
+        else selected.dir = dir;
+        this.drawQueue();
+        sfx.bell(5 + DIRECTIONS.indexOf(dir), 0.15);
+      } else if (this.selectedSlot === this.program.length && this.program.length < this.plan.limit) {
+        this.program.push({ dir, n: 1 });
+        this.drawQueue();
+        sfx.bell(5 + DIRECTIONS.indexOf(dir), 0.15);
+      }
+      return;
+    }
     const last = this.program[this.program.length - 1];
     if (this.mode !== 'steps' && last && last.dir === dir && last.n < 5) last.n++;
     else if (this.program.length < this.plan.limit) this.program.push({ dir, n: 1 });
@@ -160,6 +181,15 @@ class RobotPath implements Game {
       this.ctx.finish({ misses: 0, hints: 0 });
       return;
     }
+    if (this.fixPlan && !this.watched) {
+      this.watched = true;
+      const p = this.position([0, 0]);
+      await this.ctx.tw.to(this.robot, { x: p.x, y: p.y + 42 }, { duration: 0.4 });
+      this.running = false;
+      void this.ctx.say('robot.fix.watch');
+      this.drawQueue();
+      return;
+    }
     if (result.success) {
       this.done = true;
       this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -174,7 +204,7 @@ class RobotPath implements Game {
     this.running = false;
     if (this.misses === 2) {
       this.hints++;
-      void this.ctx.say('robot.hint');
+      void this.ctx.say(this.fixPlan ? 'robot.fix.hint' : 'robot.hint');
     }
     this.drawHint();
   }
@@ -185,6 +215,7 @@ class RobotPath implements Game {
 
   private drawQueue() {
     this.queue.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.slotTargets = [];
     const rows = this.plan.limit > 4 ? 2 : 1;
     const top = this.view.h - (rows > 1 ? 170 : 80);
     if (this.mode === 'loop') {
@@ -198,7 +229,7 @@ class RobotPath implements Game {
     for (let i = 0; i < this.plan.limit; i++) {
       const c = new Container();
       const slot = this.program[i];
-      c.addChild(tile(90, 90, i === this.active ? 'yellow' : slot ? 'white' : 'teal'));
+      c.addChild(tile(90, 90, i === this.active || i === this.selectedSlot ? 'yellow' : slot ? 'white' : 'teal'));
       if (slot) {
         const a = arrow(slot.dir);
         c.addChild(a);
@@ -211,10 +242,12 @@ class RobotPath implements Game {
       }
       c.position.set(this.slotX(i), top + Math.floor(i / 4) * 110);
       c.hitArea = new Rectangle(-50, -50, 100, 100);
-      // Tap a slot to take it, and everything after it, back out.
+      this.slotTargets.push(c);
+      // The repair level selects a slot; other levels take it and later steps out.
       if (!this.prediction) onTap(c, () => {
         if (!this.running && !this.done) {
-          this.program.splice(i);
+          if (this.fixPlan && i <= this.program.length) this.selectedSlot = i;
+          else this.program.splice(i);
           this.drawQueue();
         }
       });
@@ -231,7 +264,12 @@ class RobotPath implements Game {
     this.hint.circle(target.x, target.y, 62).stroke({ width: 8, color: swatch.yellow.line });
   }
 
-  private nextHelp(): RoundButton {
+  private nextHelp(): Container | RoundButton {
+    if (this.fixPlan) {
+      if (!this.watched || sameProgram(this.program, this.solution)) return this.play;
+      if (this.selectedSlot !== this.fixPlan.fixSlot) return this.slotTargets[this.fixPlan.fixSlot] ?? this.play;
+      return this.arrows.find((a) => a.dir === this.fixPlan!.solution.slots[this.fixPlan!.fixSlot].dir)!.button;
+    }
     const press = nextPress(this.solution, this.program, this.mode, this.loop, this.plan.solution?.loop ?? 1);
     if ('clear' in press) return this.clear;
     if ('arrow' in press) return this.arrows.find((a) => a.dir === press.arrow)!.button;
@@ -256,8 +294,9 @@ class RobotPath implements Game {
   resize(v: View) {
     this.view = v;
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    this.cell = Math.max(100, Math.min(128, (v.h - 350) / this.plan.size));
-    this.origin = [Math.max(150, v.w / 2 - 360), Math.max(40, (v.h - this.plan.size * this.cell - 250) / 2)];
+    const portrait = v.h > v.w;
+    this.cell = portrait ? 100 : Math.max(100, Math.min(128, (v.h - 350) / this.plan.size));
+    this.origin = portrait ? [20, 220] : [Math.max(150, v.w / 2 - 360), Math.max(40, (v.h - this.plan.size * this.cell - 250) / 2)];
     const g = this.grid.clear();
     for (let y = 0; y < this.plan.size; y++)
       for (let x = 0; x < this.plan.size; x++) {
@@ -274,7 +313,7 @@ class RobotPath implements Game {
     this.robot.scale.set(Math.min(1.2, this.cell / 100));
     this.star.position.set(goal.x, goal.y);
     const cx = v.w - 190;
-    const cy = v.h * 0.44;
+    const cy = portrait ? v.h - 300 : v.h * 0.44;
     this.arrows.forEach(({ dir, button }) => {
       const d = DELTAS[dir];
       button.position.set(cx + d[0] * 112, cy + d[1] * 112);
@@ -366,8 +405,8 @@ export const robotPath: GameModule = {
   region: 'tinker-lab',
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['prek', 'school'],
-  levels: (b) => (b === 'school' ? { min: 4, max: ROBOT_PLANS.length + 1 } : { min: 1, max: PREK_TOP }),
-  describeLevel: (l) => l === ROBOT_PLANS.length + 1 ? 'Where will it stop?' : planFor(l).name,
+  levels: (b) => (b === 'school' ? { min: 4, max: ROBOT_PLANS.length + 2 } : { min: 1, max: PREK_TOP }),
+  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : planFor(l).name,
   music: STYLES.jelly,
   offScreen: 'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
   hubIcon: () => new WigglyIcon(robotArt(160)),

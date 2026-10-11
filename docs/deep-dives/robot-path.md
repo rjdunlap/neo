@@ -1,6 +1,6 @@
 # Robot Path deep dive
 
-*ID `robot-path` · bands pre-K, school · levels 1–11 on 2026-10-10 · session `claude/roadmap-item-14-game-d0rjma` ([PR 82](https://github.com/rjdunlap/neo/pull/82))*
+*ID `robot-path` · bands pre-K, school · levels 1–12 on 2026-10-10 · session `claude/roadmap-item-14-game-d0rjma` ([PR 82](https://github.com/rjdunlap/neo/pull/82))*
 
 ## The game today
 
@@ -20,7 +20,7 @@ She builds a short program out of arrow buttons (up, right, down, left), presses
 | 10 | 5 × 5, rocks, 3 slots + loop | loop | school | a two-step body ("right ×2, down ×2"), then ×2 |
 | 11 | 5 × 5, one blocking rock, shown step or counted program | prediction | school | read a program, predict its stopping cell, then watch |
 
-**What a round draws from.** Nothing: it is **one authored board per level**, ten boards in all. Nothing uses the round's seeded RNG, so a replayed level is the same board. The program limit makes the idea necessary (the rule tests assert that the plain route does not fit the slots on levels 7–10 and that the given solution does). The hint follows a known solution (the breadth-first shortest route on levels 1–6, an authored one above).
+**What a round draws from.** Levels 1–10 each use one authored board; level 11 picks one of two authored prediction boards; level 12 picks one of three authored repair boards with the round's seeded RNG. Replaying a level with the same seed shows the same board. The program limit makes the idea necessary (the rule tests assert that the plain route does not fit the slots on levels 7–10 and that the given solution does). The hint follows a known solution (the breadth-first shortest route on levels 1–6, an authored one above).
 
 **Couplings.** A how-to card (goal, two steps, and one `LevelLine` each from level 7 and level 9) with a ghost-finger bot (`autotouch()`, built on `nextPress`). A couch entry at school's levels 4–6 as a **team** stop (`play: 'together'`, `faceoff: 'team'`: authored boards would be a path a second player had watched). No journal entry, no picnic step, no sticker art beyond the robot. Voice: `robot.start`, `robot.counts`, `robot.loop`, `robot.wrong`, `robot.hint`, `robot.clear`.
 
@@ -28,7 +28,7 @@ She builds a short program out of arrow buttons (up, right, down, left), presses
 - **"A bump!" is said for every miss**, including a program that simply stopped short of the star without touching anything. The robot never shows where or why it stopped.
 - **Playing an empty program does nothing**, silently.
 - **The hint can ask her to clear a good program.** `nextPress` checks her program against one known route, so a different valid route (very common on 4 × 4 boards with few rocks) is told to start over.
-- **One board per level**, so a replay or a pin repeats the exact puzzle; this is the main reason to add a pool.
+- **One board on levels 1–10**, so a replay or a pin repeats the exact puzzle; this remains the main reason to add a pool.
 - The school band's window starts at level 4, so the first school round is already "plan around rocks". A school child who meets counts at level 7 has never seen a program shorter than the route.
 - **Reading and repair are untouched.** She only writes programs. She never has to read one that someone else wrote, or find an error in it.
 - Person checks still open: a pre-K child on the real iPad (slot and arrow sizes), and the picture of "loop" for a six-year-old.
@@ -75,12 +75,12 @@ Also, optional polish with a voice cost: the goal can be a star, an apple, a flo
 
 ### New levels on top
 
-None of these renumbers a saved level. The school window is `{ min: 4, max: ROBOT_PLANS.length }` and widens by itself when a plan is appended. All are proposals, not built. Levels run in difficulty order; the roadmap's earlier "11, Fix the program" is now **12** (see decision 1).
+None of these renumbers a saved level. The school window widens as levels are appended. Levels 11 and 12 are built; levels 13–15 remain proposed and run in difficulty order.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 11 | **Where will it stop?** | school (and pre-K's top if wanted) | A finished program sits in the slots (steps, then counted); the robot waits. She taps the cell where it will end up, then presses play to watch | reading a program she did not write: trace it in her head | A prediction is never a miss (experiment). Right: "You knew!"; wrong: the robot walks and the pet says where it stopped. The round ends after the watch. No hint beyond lighting the first slot | the shown program ends on a cell that is not the star and not the cell a "reverse reading" or "ignore the rocks" would give (so a wrong tracing differs from a right one); its end cell is on the board; at least one board per mode | New `PredictPlan` type, a cell-tap layer over the grid (cells are 100 units at most; check a 5 × 5 grid keeps 100-unit taps), no finish through `run()`. The bot taps the right cell then play. A `LevelLine` how-to |
-| 12 | **Fix the program** | school | A finished program runs from the first tap on play (a free watch) and the robot bumps a rock or stops short. Exactly one slot is wrong; she taps it, taps an arrow to change its direction (or the same arrow again for one more step), and plays again | debugging: find the wrong slot from where the robot stopped and the lit slot, and fix it | The free watch is not a miss. A repair that still fails is a miss with the robot showing where. After two misses the wrong slot glows (a hint). Tapping a slot selects it instead of deleting what follows; a long press or the clear button still empties | each authored board's broken program fails, a single slot edit (a direction change or a count ±1) reaches the star, and the lit slot at the first failure is the slot or a slot after the slot to edit; no other single-slot edit is required for the hint to lead somewhere | Slot taps change meaning on this level (select, not truncate), so the slot control and the bot learn a "change slot" step. Authored boards, three per mode. Couch: a team entry stays on levels 4–6 until `control()` learns select |
+| 12 | **Fix the program** (built 2026-10-10) | school | A finished counted program runs from the first tap on play (a free watch) and stops short. Exactly one slot is wrong; she selects it and taps the same arrow once to add the missing step | debugging: find the short slot and fix it | The free watch is not a miss. A repair that still fails is a miss with the robot showing where. After two misses the wrong slot glows (a hint). Tapping a slot selects it instead of deleting what follows; clear still empties | each authored board's broken program fails; exactly one one-slot edit reaches the star; the first failure occurs on the slot to edit; no other single-slot edit is required for the hint to lead somewhere | Slot taps select rather than truncate on this level. Three authored boards. Couch stays at levels 4–6 |
 | 13 | **Pick it up on the way** | school (pre-K top if wanted) | A basket (or apple) sits on the grid; the program must pass through it before it ends on the star | one more constraint: a waypoint | A run that reaches the star without the apple is a miss: "You forgot the apple" and the apple glows. Hint: the ring leads to the first arrow of a route through it | the solution passes through the waypoint; the plain shortest route to the star does not (otherwise the constraint is empty); the waypoint is not a rock | `runPath` records visited cells; goal needs `via?: Cell`; art: an apple in `props.ts` style; the hint solution comes from a search over (cell, visited) states |
 | 14 | **Mend the loop** | school | A looped program ("right ×2, down ×1, ×3") nearly reaches the star; one body slot or the repeat count is wrong | debugging inside a loop | Same free watch, same single-edit hint; the loop count is a possible fix | like 12, plus: a count change alone fixes at least half the authored boards | Reuses 12's control and level 9–10's loop UI |
 | 15 | **A routine** | school | A second program row ("do this", purple); the main row has a "do this" call button. The route is a chunk that repeats with something in between: "do this, right, do this" | reuse a named chunk, not just the same count | A call before the routine has any steps is just ignored with a gentle nudge; wrong run is a miss | the authored solution needs ≥ 2 calls; the main row alone, without a routine, does not fit the slot limits; the routine row is bounded (3 slots) | **Define first.** Two program rows, a call button, call-depth of one (a routine cannot call itself), bot, how-to, a couch decision. This is the biggest slice; Lightbot's procedure set shows it is the hardest step, so keep boards few and the first one trivial |
@@ -110,9 +110,9 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 
 ## Decisions for the developer
 
-1. **Level order of the new levels.** I propose **11 Where will it stop?, 12 Fix the program, 13 Pick it up on the way, 14 Mend the loop, 15 A routine**, in difficulty order. The roadmap's chunk 12 item names "Robot Path 11, Fix the program"; moving it to 12 is a doc-only change if you agree. If you would rather keep fix at 11, prediction becomes 12.
+1. **Level order of the new levels.** Settled by the built ladder: **11 Where will it stop?, 12 Fix the program**. Proposed next: **13 Pick it up on the way, 14 Mend the loop, 15 A routine**, in difficulty order.
 2. **Is a pre-K or school robot player expected to reach "A routine" (level 15)?** It is the biggest slice and the first one that introduces a second program row. Lean: build 11–14 first, and decide 15 after a child has played 12.
-3. **Level 12's slot control.** Tapping a slot selects it (instead of deleting it and everything after). Lean: yes on levels 12 and 14 only, because the other levels' delete-the-rest is understood and the grown-up card already says it.
+3. **Level 12's slot control.** Built: tapping a slot selects it instead of deleting it and everything after. Level 14 can reuse this control; other levels retain delete-the-rest.
 4. **Preschool at levels 1–2.** Ready; includes a person check. Also: which is the right moment for the drive and one-step-then-play levels (they wait on the level-order decisions).
 5. **Couch.** The school window 4–6 stays a team stop. Do the new levels (which need select and predict controls) belong on the couch at all? Lean: no, leave couch at 4–6.
 
@@ -122,7 +122,7 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 2. **Three boards per level** (ready): `boards` per level, a seeded pick, the board-property tests for all ten levels. Tier: typecheck and the game's rule tests; `scripts/browser-check.mjs` `robots()` reads board geometry, so check it still plays (`BROWSER_SUITE=robot`).
 3. **Preschool at levels 1–2** (ready, person check afterwards): bands and registry tests. Tier: typecheck and the registry/bands tests.
 4. **Level 11, where will it stop?** (built 2026-10-10): a cell-tap layer for two shown programs (individual and counted steps), an unscored prediction and playback to the actual stopping square. Rule tests check that the correct stop differs from skipping the rock and reading the arrows backwards; the ghost finger predicts and plays it. Typecheck, rule tests, `robot` filtered to level 11 and `fingerdemo` at level 11.
-5. **Level 12, fix the program** (ready, after 2 and level 11): the select-a-slot control, free first watch, authored boards, hint lit slot. New-level tier: rule tests, `fingerdemo` at the new level, one scripted play.
+5. **Level 12, fix the program** (built 2026-10-10): three counted repair boards, the free first watch, select-a-slot editing, and a hint on the slot to change. Typecheck, logic tests, the filtered level-12 browser play, and the level-12 ghost-finger demo passed.
 6. **Level 13, pick it up on the way** (ready): waypoint rule and art. Same tier.
 7. **Level 14, mend the loop** (after 4).
 8. **Level 15, a routine** (define first: the two-row UI, the call button and the bot).
@@ -130,4 +130,4 @@ These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-d
 
 ## What was built in this session
 
-Level 11, Where will it stop?, is built from slice 4. The step-by-step and counted programs both stop at the rock; tapping a square is unscored, and playback shows where the program ends. The tracker and roadmap now reflect level 11. Checks are recorded in [VERIFICATION.md](../VERIFICATION.md); iPad target sizing, device speech and child play remain open.
+Levels 11, Where will it stop?, and 12, Fix the program, are built. Level 12 shows a counted program, gives a free first watch, then asks the player to select its short slot and add a step. Three authored boards have exactly one single-slot repair. Checks are recorded in [VERIFICATION.md](../VERIFICATION.md); iPad target sizing, device speech and child play remain open.
