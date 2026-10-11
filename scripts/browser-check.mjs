@@ -482,11 +482,17 @@ async function subjectPlaces() {
 }
 
 async function patterns() {
-  const levels = process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 12 }, (_, i) => i + 1);
+  const levels = process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 14 }, (_, i) => i + 1);
   for (const level of levels) {
     await launch('pattern-train', level);
     await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.odd) {
+        // Spot the mistake: tap two cars that fit.
+        const fits = g.cars.findIndex((_, i) => i !== g.targets[0]);
+        for (let i = 0; i < 2; i++) { kit.tapOn(g.cars[fits]); await kit.sleep(500); }
+        return;
+      }
       const answer = g.sequence[g.targets[g.target]], wrong = g.choiceValues[g.target].findIndex((value) => value !== answer);
       for (let i = 0; i < 2; i++) { kit.tapOn(g.choices[wrong]); await kit.sleep(160); if (g.plan.kind === 'bell') kit.tapOn(g.confirm); await kit.sleep(460); }
     });
@@ -494,6 +500,7 @@ async function patterns() {
     if (level === 12) await screenshot('pattern-train');
     await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.odd) { kit.tapOn(g.cars[g.targets[0]]); await kit.sleep(900); }
       while (!g.done) { const answer = g.sequence[g.targets[g.target]], choice = g.choiceValues[g.target].indexOf(answer); kit.tapOn(g.choices[choice]); await kit.sleep(160); if (g.plan.kind === 'bell') kit.tapOn(g.confirm); await kit.sleep(460); }
     });
     await finished('pattern-train');

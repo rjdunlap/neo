@@ -181,8 +181,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 10, to: 10, text: 'The train rolls into a tunnel with dots for the cars hiding inside. Keep the pattern going through them, then tap the car that comes out.' },
       { from: 11, to: 11, text: 'The colors repeat in their own pattern and the shapes in theirs. Look at both, then tap the car that fits the glowing space. It can be anywhere after the first car.' },
       { from: 12, to: 12, text: 'Count the numbered cars by 2, 5, or 10, then tap the number for the glowing car. It can be at the end or in the middle.' },
+      { from: 13, to: 13, text: 'One car does not belong in the pattern. Tap it and it hops off. Tapping a car that fits is a gentle miss.' },
+      { from: 14, to: 14, text: 'One car shows the wrong piece. Tap it, then choose the piece that belongs there.' },
     ],
-    finish: 'The round ends when the missing car or cars are filled in correctly.',
+    finish: 'The round ends when the missing car or cars are filled in correctly, or the wrong car is found and mended.',
   },
   'memory-match': {
     goal: 'Turn over cards to find matching pairs.',
