@@ -2,6 +2,7 @@ import { Circle, Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import type { LineId } from '../../content/voice-script';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
@@ -12,7 +13,9 @@ import type { Game,GameContext,GameModule,TouchIntent } from '../types';
 import { bestTarget, buildFor, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
 
 function shape(shape:Shape,color:ColorName,outline=true){return new Graphics().poly(VERTICES[shape]).fill(swatch[color].fill).stroke({width:outline?5:0,color:swatch[color].line,join:'round'});}
-interface Choice {piece:Piece;node:Container;art:Graphics;drag:DragHandle;placed:boolean}
+/** Name the geometry, even when the picture uses a triangle as a roof or a trapezoid as a hull. */
+const SHAPE_LINES = { square:'tangram.square', roof:'tangram.triangle', triangle:'tangram.triangle', rectangle:'tangram.rectangle', hull:'tangram.trapezoid' } as const satisfies Record<Shape, LineId>;
+interface Choice {piece:Piece;node:Container;art:Graphics;drag:DragHandle;placed:boolean;named:boolean}
 class TangramTown implements Game {
  readonly plan; readonly pieces:Choice[]=[]; readonly filled:boolean[]; readonly board=new Container();
  readonly turn:RoundButton; readonly help:RoundButton;
@@ -36,9 +39,14 @@ class TangramTown implements Game {
   const colors:ColorName[]=['pink','teal','yellow','purple'];
   for(const [i,piece] of makePieces(this.plan,ctx.rng).entries()){
     const node=new Container(),art=shape(piece.shape,colors[i%colors.length]);art.rotation=piece.turns*Math.PI/2;node.addChild(art);node.hitArea=new Circle(0,0,75);ctx.stage.addChild(node);
-    const c:Choice={piece,node,art,drag:null!,placed:false};
+    const c:Choice={piece,node,art,drag:null!,placed:false,named:false};
     c.drag=draggable(node,ctx.tw,{
-      onPick:()=>{this.selected=c;sfx.tick();this.drawHint();},
+      onPick:()=>{
+        this.selected=c;sfx.tick();this.drawHint();
+        if(!c.named && (ctx.band==='toddler'||ctx.band==='preschool'||ctx.band==='prek')){
+          c.named=true;void ctx.say(SHAPE_LINES[piece.shape]);
+        }
+      },
       onDrop:(x,y)=>{
         if(this.done)return false;
         const local={x:x-this.board.x,y:y-this.board.y};

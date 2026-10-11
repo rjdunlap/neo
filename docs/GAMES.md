@@ -204,7 +204,7 @@ Level 1 explicitly names the next day and finishes after seven weather records. 
 
 ### Tangram Town
 
-*toddler–school · after tangrams and silhouette puzzles.* Each of six levels draws one of 2–5 pictures from its pool (eleven in all: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat), built from shuffled large pieces. Quarter-turn controls rotate the selected piece; identical triangles and symmetric rectangle/square rotations are accepted. Later silhouettes can reveal outlines and orient the next piece through help. Off-board drops and turning are exploration. Wrong placements on the picture get a spoken hint and a glow after two misses. Help affects hint accounting.
+*toddler–school · after tangrams and silhouette puzzles.* Each of six levels draws one of 2–5 pictures from its pool (eleven in all: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat), built from shuffled large pieces. At toddler, preschool and pre-K, each physical piece says its geometric name once on pickup (square, triangle, rectangle or trapezoid); two separate triangles each name themselves. The roof is a triangle and the hull is a trapezoid. Picking it up again stays quiet; names are support, not hints. School play has no pickup speech. Quarter-turn controls rotate the selected piece; identical triangles and symmetric rectangle/square rotations are accepted. Later silhouettes can reveal outlines and orient the next piece through help. Off-board drops and turning are exploration. Wrong placements on the picture get a spoken hint and a glow after two misses. Help affects hint accounting.
 
 ### Garden Grow
 
