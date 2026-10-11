@@ -35,6 +35,13 @@ Added a pre-K round with three weather changes. The pet starts in a complete out
 
 ## From the roadmap
 
+### Memory Match level 11: Fraction pictures (2026-10-10)
+
+Added three pairs to the school ladder: equal-part pictures for a half, a quarter and three quarters, matched to their names. Each card names the fraction aloud when turned; the longest label is two lines. The school range now ends at 11. The level-relative how-to, game inventory, GAMES entry and roadmap are updated. The art is code-drawn; the existing id-based ghost finger can use the three-pair deck.
+
+- `npm run typecheck` passed using the sibling checkout's installed dependencies. Rule tests, browser play, screenshot review and the ghost-finger demonstration were not run.
+- Not established: actual legibility on a device, device speech, iPad touch feel or a child's response.
+
 ### Fill and Dump (2026-10-10)
 
 The first of the gap review's new games, built from its sketch (roadmap chunk 4): a lap and toddler game in Counting Cove, `src/games/fill-dump/`, region `counting-cove`, bands lap 1–2 and toddler 1–4. *Sketch as written:* "Fun action: tip a basket and watch fruit tumble out with a chime for each piece; drag or tap pieces back in. Skill: containment and capacity. Smallest round: a big basket and a bin; any dump is a success; the round ends when everything is back in or after a few dumps. Support: lap has no wrong move; toddler fills a basket with a stated number; preschool tips a jug to a line, where the flow slows near the line and an overfill spills into a tray that can be poured back; a glow marks the line after two overshoots. Deeper play: compare two cups, "which holds more?", pour one into the other. Co-play: the grown-up dumps and she fills."

@@ -9,6 +9,15 @@
 - No build or full unit suite was run; the level adds no shared system or asset.
 - iPad touch feel, device speech and child play remain open.
 
+## 2026-10-10 — Memory Match level 11
+
+- Added three fraction-picture/name pairs to the school ladder, with spoken card names and a two-line "three quarters" label.
+- Updated the how-to, inventory, GAMES guide, roadmap and idea status; build note is in the completed-work archive.
+- `npm run typecheck` passed using the sibling checkout's installed dependencies; the temporary dependency link was removed afterward.
+- Not run: rule tests, browser play, portrait screenshot or `fingerdemo`.
+- Not established: iPad legibility/touch feel, device speech or a child's response.
+- Coverage status: Memory Match level 11 remains unverified until rule tests, filtered play and its ghost-finger demonstration can run.
+
 ## 2026-10-10 — Feelings Faces level 8: How can we help?
 
 - Added a pre-K round that follows the balloon drifting away or the moon rising with a choice of a hug or pillow.
@@ -35,6 +44,14 @@
 - No build or full unit suite was run. iPad target feel, device speech and child play remain open.
 
 What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](ROADMAP.md#needs-a-person-or-a-device), not here.
+
+## 2026-10-10 — Frog Hop deep dive
+
+- Wrote `docs/deep-dives/frog-hop.md` and updated the tracker (top level 6 → 7, designed), the IDEAS round-two and round-three rows for Frog Hop, the roadmap's chunk 14 cell, a Waiting-on-the-developer row and a person check, plus one-line ownership pointers in the Bubble Pop and Duck Pond deep dives. No code, tests or scripts changed.
+- Research: opened and read the Common Core pages for K.CC, 1.OA, 1.NBT, 2.NBT and 2.MD, Siegler's 2009 board-game paper (text extracted with `pdftotext`), the Math Learning Center's Number Line page, the *Teaching Number Lines* App Store listing, *Off Frog*, *Frog Jump*, and the Wikipedia pages for *Snakes and ladders*, *Five Little Speckled Frogs* and *Frogger*, and the Oak National Academy bridging-through-ten lesson. *Tiggly Addventure*, Ramani, Siegler and Hitti 2012, the Rhodes empty-number-line handbook, the BSRLM counting-strategy paper and the Ohio State tick-mark paper (403) are search summaries only, marked so in the write-up; 1.OA.B.4's page 404ed and is cited from memory.
+- Docs only: `git diff --check` and a relative-link and anchor check on the changed docs ran. The anchor check flagged the same three links I did not touch (two in ROADMAP and one in IDEAS, into `archive/COMPLETED-2026-10-09.md`); they predate this change and were left alone.
+- Read from the code, not played: the frog counts hops but never says the numerals it lands on, level 7 hides the sum and tells the split, a pad tapped on a card question is a bare squeak, wrong-way and one-off misses get the same line, level 7 can count two hints per question, `LEVELS.school.max` is hard-coded at 7, and the sticker and icon share `Pad` and `frogArt` with no pinned test. A suspected portrait overflow of the pad row was checked against `computeView` and is not real.
+- Open: every proposed level and entry is unbuilt; level 7 still has no recorded browser play; tens words, the open line and estimating are unchecked on a device or with a child.
 
 ## 2026-10-10 — Duck Pond deep dive
 
@@ -221,7 +238,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | `originals`, `robot`, `third` | 2026-10-10: Duck Pond 11 wrong answers, hint, five rounds and completion; 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-06 in the combined flow, with later per-game reruns; `BATCH_ONLY=salon` (Fluffy Salon with real strokes) 2026-10-09: levels 1 and 2 pass, level 3 times out on the unchanged game too | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
 | `arcade` | 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |
-| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-10: `pattern` filtered to level 12 (wrong answer, hint, reward); 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash, all eight levels, real touches) 2026-10-09 | Pattern Train seventh-car entry; archived combined-flow entry; Stop and Go to Splish Splash bots entry | |
+| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-10: `pattern` filtered to level 12 (wrong answer, hint, reward); 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash, all eight levels, real touches) 2026-10-09 | Pattern Train seventh-car entry; archived combined-flow entry; Stop and Go to Splish Splash bots entry | Memory Match level 11 rule tests and browser checks remain open |
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
