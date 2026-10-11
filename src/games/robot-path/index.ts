@@ -11,7 +11,7 @@ import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { DELTAS, DIRECTIONS, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
+import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, nextPress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
 
 /** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict and repair. */
 const PREK_TOP = 6;
@@ -69,7 +69,7 @@ class RobotPath implements Game {
     this.view = ctx.view;
     this.prediction = ctx.level === 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
     this.fixPlan = ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : null;
-    this.plan = this.prediction ?? this.fixPlan ?? planFor(ctx.level);
+    this.plan = this.prediction ?? this.fixPlan ?? boardFor(ctx.level, ctx.rng);
     this.mode = this.plan.mode ?? 'steps';
     this.solution = this.prediction?.program ?? this.plan.solution?.slots ?? shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
     if (this.prediction) this.program.push(...this.prediction.program.map((slot) => ({ ...slot })));
@@ -406,7 +406,7 @@ export const robotPath: GameModule = {
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['prek', 'school'],
   levels: (b) => (b === 'school' ? { min: 4, max: ROBOT_PLANS.length + 2 } : { min: 1, max: PREK_TOP }),
-  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : planFor(l).name,
+  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : l === 1 ? 'One or two steps straight to the star' : l === 2 ? 'A short program with a turn' : l === 3 ? 'Plan across a bigger grid' : planFor(l).name,
   music: STYLES.jelly,
   offScreen: 'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
   hubIcon: () => new WigglyIcon(robotArt(160)),

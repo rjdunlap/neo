@@ -245,7 +245,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 12, text: 'The round ends when the fixed program reaches the star.' },
     ],
     note: [
-      { to: 10, text: 'If the robot cannot get there it simply stops; edit the program and try again.' },
+      { to: 10, text: 'The board is drawn from three possible layouts. If the robot cannot get there it simply stops; edit the program and try again.' },
       { from: 11, to: 11, text: 'Predictions are just a chance to think; every guess is welcome.' },
       { from: 12, text: 'The first watch is free. A repair that still stops short gets a gentle hint after two tries.' },
     ],
