@@ -267,7 +267,7 @@ Proposed modes, by the game they would extend. Steps already built are in [GAMES
 | Robot Path | Step through and repair one wrong command; a reusable routine | 8–10: conditions, then nested loops, each with a visual trace |
 | Little Helpers / Monster Munch / Pet Kitchen | Split a visible group two ways; **Slice to Fit** fractions as measures | 8–10: remainders as friends or items to redistribute, never discarded; **Share Fairly** (the fair share as an average) |
 | Mail Carrier | Compare routes; dock routes for a future Maker Harbor | 8–10: several route constraints; shortest route as an optional puzzle |
-| Word Monsters / Letter Trails / Rhyme Time | Blend a small set of clear sounds into words; build a word that fits a spoken clue; the pet as a learner who reads the word back (after Teach Your Monster to Read) | 8–10: meaningful prefixes; content review before adding rules |
+| Word Monsters ([deep dive](deep-dives/word-monsters.md)) / Letter Trails / Rhyme Time | Blend a small set of clear sounds into words; build a word that fits a spoken clue; the pet as a learner who reads the word back (after Teach Your Monster to Read) | 8–10: meaningful prefixes; content review before adding rules |
 | Song Maker / Sound Garden | Compose an answer to a phrase; alternate parts with the pet; **Sing Higher** (sliding pitch snapped to pentatonic steps) | Longer forms and rhythm changes; keep the shared pentatonic pitch system |
 | Peg Garden / Bouncy Launch | Predict a landing, compare two launches, and explain with replay; **Block Topple** as a launch mode | 8–10: controlled trials and a picture chart, with no claim that arcade physics models everything |
 | Bug Builder / Rainbow Fingers | **Fold a Friend** (symmetry by folding); **Build-a-Bug** counting mode | 8–10: area on a large grid and equivalent shapes (PhET's Area Builder) |
@@ -542,7 +542,7 @@ A **proposal**. The audit above read only the short ladders. This round reads th
 | **Egg Catch** (6 · 4–6) | The gates are locked: predict where the egg lands | **7, Set it once:** one brown and one white egg will drop from different hens. She sets the gates before either rolls so brown reaches the basket and white the nest, then taps go. One gate setting has to work for two paths | Every board has at least one setting that routes both eggs, and none routes both with the gates as dealt. The hint flips a gate the solution needs | S. It reuses the route and sort boards |
 | **Light Lab** (6 · 2–6) | A four-mirror path with spares and rocks | **7, Where will it shine?** Three locked-mirror predictions choose among reachable rock or edge endpoints; each replay explains the result without counting a miss. A fourth board returns to the ordinary plan puzzle. This is the [predict-then-compare](#extend-existing-games-before-making-duplicates) mode | Puzzle generation keeps three distinct reachable endpoints, including the actual one; the plan puzzle stays solvable | S–M. Three 100-unit targets on a 7 by 5 grid |
 | **Duck Pond** (11 · 8–11; **[deep dive](deep-dives/duck-pond.md)**, which keeps round three's 12 Doubles and adds 13 Ten and some more and a to-define 14 Every way) | How many more make 10? | **11, Hiding ducks (built):** the sign says how many ducks live in the pond (5 to 10). Some paddle under the bridge, and she answers on lily pads how many are hiding. Part and whole with any total, not only ten | The hidden count is at least 1 and the total is at most 10. A wrong pad counts on aloud from the ducks she can see | S. The bridge is a new scenery shape in Graphics |
-| **Word Monsters** (8 · 5–8) | More picturable three-letter words | — | — |
+| **Word Monsters** (8 · 5–8; **[deep dive](deep-dives/word-monsters.md)**, which adds 9 Last sound, 10 Blend it, 11 Say it slowly, 12 Fix the pet's word, 13 Two letters one sound, 14 Four sounds, 15 The magic e, 16 Change one sound and a to-define 17 Which vowel?) | Change the last sound to make a pictured word (cat, cap, can) | **Planned in the deep dive as 9–16** (a school window of 5–16): it finds that levels 3–8 all say the sound aloud, so the new levels ask for a word and let the sound be the hint | Offered sounds are pairwise distinct; every built word is pictured; slot count equals sound count | S–M each; about 40 small pictures across the plan; every level waits on the iPad speech check |
 
 #### Extend later: a real next decision that costs more
 
@@ -554,7 +554,7 @@ A **proposal**. The audit above read only the short ladders. This round reads th
 | **Garden Rows** (6 · 3–6) | A 4 by 4 bed with 2 by 2 boxes, a third rule | Overlaps the couch-only Sudoku Garden and the [island forms of couch puzzles](ROADMAP.md#waiting-on-the-developer) decision. A bigger bed is only a size step |
 | **Light Lab** (after 7) | A splitter that sends one beam two ways to wake two flowers | A new piece with its own beam rule and solver change |
 | **Robot Path** (after 11) | A reusable routine: a purple "do this" box called twice | A second program row; the next idea after the loop |
-| **Word Monsters** (after 8) | *Blend it:* the monsters say c, a, t slowly and she picks the picture | Device speech for isolated sounds must be heard on the iPad first |
+| **Word Monsters** (after 8) | *Blend it:* the monsters say c, a, t slowly and she picks the picture. **Planned as level 10 in its [deep dive](deep-dives/word-monsters.md)** | Device speech for isolated sounds must be heard on the iPad first |
 
 #### Two pre-K ceilings
 
@@ -684,7 +684,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | --- | --- | --- | --- |
 | Letter Trails (P–S · 8) | More words to trace | R1-later: lowercase | — |
 | Story Steps (T–S · 7) ([deep dive](deep-dives/story-steps.md)) | **Four stories today**, so add six more (a seed becomes an apple, washing the dog, making a sandwich, a rainy day, building a sandcastle, the pet's bedtime). Every level gains, and level 7's six-picture mix gets better | R1-later: choose the cause | — |
-| Word Monsters (L–S · 8) | More picturable three-letter words | — | — |
+| Word Monsters (L–S · 8) ([deep dive](deep-dives/word-monsters.md)) | More picturable three-letter words, including short-e words and drawn family words; a sound-twin guard (c and k both say "kuh") and real decoys on level 8 | R1-later: levels 9–16 (last sound, blend it, say it slowly, fix the pet's word, two letters one sound, four sounds, the magic e, change one sound) | Below level 1 and between: one big monster, my letter, big and little, spell my name (all wait on the level-order decisions) |
 | Photo Safari (L–S · 6) | **New actions** (swimming, climbing, waving) and animals | R2-later: two clues, no name | — |
 | Goodnight Room (L–P · 4) ([deep dive](deep-dives/goodnight-room.md)) | **One room today**; add a tent, a barn at night and a boat cabin. A seeded room draw and friends who start asleep are built | **5, Goodnight to every animal:** a category instead of a name, which opens a pre-K window; the deep dive adds 6–10 | — |
 | Rhyme Time (K–S · 4) | More rhyme families (twelve today) | — | Preschool, at level 1 |

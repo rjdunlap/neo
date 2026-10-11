@@ -123,5 +123,5 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Teddy Doctor | `teddy-doctor` | LTPKS | 6 | 4 | not started | — | — |
 | Treasure Map | `treasure-map` | KS | 5 | 4 | not started | — | — |
 | Weather Wardrobe | `weather-wardrobe` | LTPK | 6 | 4 | not started | — | — |
-| Word Monsters | `word-monsters` | LTPKS | 7 | 3 | in progress | `claude/roadmap-item-14-game-content-msedsy` | — |
+| Word Monsters | `word-monsters` | LTPKS | 8 | 3 | designed | `claude/roadmap-item-14-game-content-msedsy` ([PR 120](https://github.com/rjdunlap/neo/pull/120)) | [word-monsters.md](word-monsters.md) |
 The six couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, Word Search, Pond Conga and Island Bridges) are not on the island, so they are not in this table. A deep dive for one follows the same steps once Profiles stage 3 brings it onto the map.
