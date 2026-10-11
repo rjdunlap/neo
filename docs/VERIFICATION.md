@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Memory Match deep dive (docs only)
+
+- Researched six physical/touch matching references and number, fraction and time standards; recorded current levels 1–11, content pools, accounting and couch couplings. App Store descriptions were search-only; direct opens failed.
+- Planned support/content first, proposed clocks/composed totals/equivalent shares, a toddler 1–1 opening, and explicit quantity/order decisions. No game slice implemented.
+- Source-reading findings include how-to leakage, absent card-label replay, potentially inaccurate hint speech and level-10 word scaling; the twenty-card base-view targets calculate to 103.6 logical units, above the minimum.
+- Checked local Markdown links/anchors in the new plan and changed references, opened research links where available, and ran `git diff --check` on claim `66605c8` plus docs diff.
+- No typecheck, unit tests, build, browser suites or device/child checks run: docs-only tier; existing suite coverage is unchanged.
+
 ## 2026-10-11 — Robot Path: feedback and alternative-route hints
 
 - Deep-dive slice 1: empty/bump/short explanations, collision jiggle and step-level hints that preserve any shortest-route prefix. Empty Play remains free; unsuccessful runs still count one miss, two misses one hint.
