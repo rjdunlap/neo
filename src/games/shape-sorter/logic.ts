@@ -10,6 +10,8 @@ export interface SorterPlan {
   sameColor: boolean;
   /** Pieces arrive tilted. */
   tilt: boolean;
+  /** A spoken shape clue asks the player to find one matching shape. */
+  clue?: boolean;
 }
 
 const FOUR: ShapeKind[] = ['circle', 'square', 'triangle', 'star'];
@@ -21,6 +23,7 @@ export const PLANS: SorterPlan[] = [
   { holes: FOUR, pieces: 6, coded: false, sameColor: false, tilt: false },
   { holes: [...FOUR, 'heart'], pieces: 7, coded: false, sameColor: true, tilt: false },
   { holes: SHAPES, pieces: 8, coded: false, sameColor: true, tilt: true },
+  { holes: SHAPES, pieces: SHAPES.length, coded: false, sameColor: true, tilt: false, clue: true },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -37,6 +40,9 @@ export function pieceKinds(rng: Rng, plan: SorterPlan): ShapeKind[] {
   while (kinds.length < plan.pieces) kinds.push(rng.pick(plan.holes));
   return rng.shuffle(kinds);
 }
+
+/** One spoken clue for each shape, in a seeded order. */
+export const clueKinds = (rng: Rng, plan: SorterPlan): ShapeKind[] => rng.shuffle([...plan.holes]);
 
 /** The lid's holes in rows of up to four (three when there are more), relative to the lid's top middle. */
 export function holeLayout(plan: SorterPlan) {

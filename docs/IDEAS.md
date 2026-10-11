@@ -659,7 +659,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
-| Shape Sorter (T–K · 7) | New shapes (oval, heart, star) | **8, The feely bag:** a shape is described ("three corners") and she finds it | — |
+| Shape Sorter (T–K · 8) | New shapes (oval, heart, star) | **Built 2026-10-10:** level 8, *The feely bag*: a spoken property clue asks her to find the matching shape ([build note](archive/COMPLETED-2026-10-09.md#shape-sorter-level-8-the-feely-bag-2026-10-10)) | — |
 | Color Garden (T–K · 6) | More things to sort | **7, Light and dark:** light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
 | Dot Link (L–K · 6) | More dot colors and boards | — (level 6 built; see [completed work](archive/COMPLETED-2026-10-09.md#dot-link-level-6-exactly-five)) | — |
 | Tangram Town (T–S · 6) | **Built 2026-10-10:** each level draws from a pool of 2–5 pictures (11 in all). More pictures, spoken shape names and the rest are in the [deep dive](deep-dives/tangram-town.md) | R1-later: flip a piece (the deep dive's level 9; it needs a parallelogram) | — |
@@ -705,7 +705,7 @@ The couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, W
 
 #### What this adds up to
 
-- **37 new levels on top**, beyond the ones from the first two rounds; six are built (Clap the Syllables 5, Garden Grow 6–7, Pixel Pictures 6, Pet Kitchen 9 and Dot Link 6), leaving 31.
+- **37 new levels on top**, beyond the ones from the first two rounds; seven are built (Clap the Syllables 5, Garden Grow 6–7, Pixel Pictures 6, Pet Kitchen 9, Dot Link 6 and Shape Sorter 8), leaving 30.
 - **Seven ladders gain a band window:** three reach school (Duckling Parade, Feelings Faces and Clap the Syllables), and four reach pre-K (Animal Snack, Stop and Go, Garden Grow and Goodnight Room). Animal Snack's planned levels 6–7 are replaced by its [deep dive](deep-dives/animal-snack.md) (6–8 and a school window with 9–10).
 - **Thirteen younger-band openings** that need no new level (kind C).
 - **A content pass for nearly every game.**

@@ -9,7 +9,7 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { HOLE_R, holeAt, holeFor, holeLayout, pieceKinds, planFor, type SorterPlan } from './logic';
+import { HOLE_R, clueKinds, holeAt, holeFor, holeLayout, pieceKinds, planFor, type SorterPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Each shape's own color, used while colors still help. */
@@ -26,7 +26,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 5 },
   preschool: { min: 3, max: 7 },
-  prek: { min: 5, max: 7 },
+  prek: { min: 5, max: 8 },
 };
 
 const PIECE_R = 48;
@@ -159,6 +159,10 @@ class ShapeSorter implements Game {
   private lastNag = -10;
   private clock = 0;
   private finished = false;
+  private clueQueue: ShapeKind[] = [];
+  private asked: ShapeKind | null = null;
+  private clueReady = false;
+  private clueMisses = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -167,6 +171,7 @@ class ShapeSorter implements Game {
     ctx.stage.addChild(this.bg, this.floor, this.layer);
 
     const kinds = pieceKinds(ctx.rng, this.plan);
+    if (this.plan.clue) this.clueQueue = clueKinds(ctx.rng, this.plan);
     const one: ColorName = ctx.rng.pick(['teal', 'purple', 'blue'] as ColorName[]);
     this.pieces = kinds.map((kind) => {
       const view = new Container();
@@ -186,7 +191,9 @@ class ShapeSorter implements Game {
   }
 
   start() {
-    void this.ctx.instruct('shape.start');
+    void this.ctx.instruct(this.plan.clue ? 'shape.find.start' : 'shape.start').then(() => {
+      if (this.plan.clue) void this.askNextClue();
+    });
   }
 
   resize(v: View) {
@@ -217,10 +224,12 @@ class ShapeSorter implements Game {
     this.clock += dt;
   }
 
-  /** The ghost finger on the how-to card: carry the next waiting piece to the hole of its own shape. */
+  /** The ghost finger on the how-to card: carry the next waiting piece to its matching hole. */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
-    const piece = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed);
+    if (this.plan.clue && (!this.asked || !this.clueReady)) return null;
+    const kind = this.plan.clue ? this.asked ?? undefined : undefined;
+    const piece = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed && (!kind || p.kind === kind));
     const hole = piece && holeFor(this.box.holes, piece.kind);
     return piece && hole ? { drag: { on: piece.view }, to: { on: this.box, x: hole.x, y: hole.y } } : null;
   }
@@ -231,24 +240,30 @@ class ShapeSorter implements Game {
 
   private drop(piece: Piece, x: number, y: number): boolean {
     if (this.finished) return false;
+    if (this.plan.clue && !this.clueReady) return false;
     const near = holeAt(this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })), x, y);
     if (!near) return false;
 
-    if (near.h.kind === piece.kind) {
+    if (near.h.kind === piece.kind && (!this.plan.clue || (this.clueReady && this.asked === piece.kind))) {
+      if (this.plan.clue) {
+        this.clueReady = false;
+        this.clueMisses = 0;
+      }
       void this.swallow(piece, near.x, near.y);
       return true;
     }
     this.misses++;
-    piece.wrongs++;
+    if (this.plan.clue) this.clueMisses++;
+    else piece.wrongs++;
     sfx.boing();
     this.box.nope();
     if (this.clock - this.lastNag > 3) {
       this.lastNag = this.clock;
-      void this.ctx.say('shape.wrong', { hole: near.h.kind });
+      void this.ctx.say(this.plan.clue && this.asked ? `shape.find.hint.${this.asked}` : 'shape.wrong', { hole: near.h.kind });
     }
-    if (piece.wrongs === 2) {
+    if (this.plan.clue ? this.clueMisses === 2 : piece.wrongs === 2) {
       this.hints++;
-      this.box.hint(piece.kind, 4);
+      this.box.hint(this.plan.clue && this.asked ? this.asked : piece.kind, 4);
     }
     return false;
   }
@@ -269,6 +284,17 @@ class ShapeSorter implements Game {
     this.placed++;
     if (this.placed % 3 === 0) this.ctx.pet.cheer();
     if (this.pieces.length === 0) void this.finale();
+    else if (this.plan.clue) void this.askNextClue();
+  }
+
+  private async askNextClue() {
+    const next = this.clueQueue.shift();
+    if (!next || this.finished) return;
+    this.asked = next;
+    this.clueMisses = 0;
+    this.clueReady = true;
+    await this.ctx.say(`shape.find.clue.${next}`);
+    if (this.finished) this.clueReady = false;
   }
 
   private async finale() {
@@ -356,6 +382,7 @@ export const shapeSorter: GameModule = {
     const n = p.holes.length;
     const shapes = `${n} shape${n === 1 ? '' : 's'}`;
     if (p.coded) return `${shapes}, color-matched holes`;
+    if (p.clue) return 'hear a shape clue, then find it';
     if (!p.sameColor) return `${shapes}, plain holes`;
     return `${shapes}, all one color${p.tilt ? ', tilted' : ''}`;
   },

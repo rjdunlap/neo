@@ -1998,8 +1998,9 @@ async function originals() {
   }
 
   // Shape Sorter: pieces dragged into holes, two wrong holes, then the right hole glows.
-  for (let level = 1; level <= 7 && (!only || only === 'shapes'); level++) {
-    if (level === 7) await portrait(true);
+  const shapeLevels = process.env.SHAPE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 8 }, (_, i) => i + 1);
+  for (const level of shapeLevels.filter((n) => n >= 1 && n <= 8 && (!only || only === 'shapes'))) {
+    if (level === 8) await portrait(true);
     await launch('shape-sorter', level);
     await page.waitForTimeout(400);
     const holes = await page.evaluate(async () => {
@@ -2007,6 +2008,24 @@ async function originals() {
       // Pieces ride above the finger, so aim the finger just below the hole.
       const into = async (piece, hole) => { await kit.dragTo(piece.view, g.box.toGlobal({ x: hole.x, y: hole.y + 40 }), 12); await kit.sleep(450); };
       const holeFor = (kind) => g.box.holes.find((h) => h.kind === kind);
+      if (g.plan.clue) {
+        await kit.until(() => g.clueReady || g.finished, 10000);
+        let checkedHint = false;
+        while (g.pieces.length) {
+          await kit.until(() => g.clueReady || g.finished, 10000);
+          if (g.finished) break;
+          if (!checkedHint) {
+            const wrong = g.pieces.find((p) => p.kind !== g.asked);
+            for (let k = 0; k < 2; k++) await into(wrong, holeFor(g.asked));
+            if (g.misses !== 2 || g.hints !== 1 || !holeFor(g.asked).glow.visible) throw new Error(`Shape clue hint: ${g.misses} ${g.hints}`);
+            checkedHint = true;
+          }
+          const asked = g.asked;
+          await into(g.pieces.find((p) => p.kind === asked), holeFor(asked));
+          await kit.until(() => g.clueReady || g.finished, 10000);
+        }
+        return g.box.holes.length;
+      }
       if (g.box.holes.length > 1) {
         const piece = g.pieces[0];
         const wrong = g.box.holes.find((h) => h.kind !== piece.kind);
@@ -2019,7 +2038,7 @@ async function originals() {
     await screenshot(`shape-sorter-${level}`);
     await finished('shape-sorter');
     assert.deepEqual(await score('shape-sorter'), holes > 1 ? [2, 1] : [0, 0], `shapes ${level} score`);
-    if (level === 7) await portrait(false);
+    if (level === 8) await portrait(false);
     log(`Shape Sorter ${level}: dragging into holes, wrong holes, glow hint, saved score and sticker passed`);
   }
 
@@ -2097,7 +2116,7 @@ async function originals() {
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 9, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 7, 'color-garden': 6 };
+  const want = { 'bubble-pop': 9, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 6 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }
