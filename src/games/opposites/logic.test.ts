@@ -1,8 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { cardToTap, makeRounds, opposites, PLANS, word } from './logic';
+import { CONCEPTS, CONCEPT_IDS, STICKER_CONCEPTS, poolFor, cardToTap, makeRounds, opposites, PLANS, word } from './logic';
 
 describe('Opposites', () => {
+  it('keeps spoken words unique and the lap pool at its original eight pairs', () => {
+    const words = CONCEPT_IDS.flatMap((c) => [...CONCEPTS[c].words]);
+    expect(new Set(words).size).toBe(words.length);
+    expect(poolFor(1)).toEqual(['size', 'mood', 'height', 'lid', 'cup', 'temp', 'sky', 'speed']);
+    expect(poolFor(2)).toEqual(CONCEPT_IDS);
+    expect(STICKER_CONCEPTS).toEqual(['sky', 'temp', 'cup', 'lid', 'stature', 'lamp', 'wake', 'basket']);
+  });
+
+  it('has enough families at every level, respects entry levels, and draws every eligible pair', () => {
+    for (const plan of PLANS) {
+      const pool = poolFor(plan.level);
+      expect(new Set(pool.map((c) => CONCEPTS[c].family)).size).toBeGreaterThanOrEqual(3);
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const rounds = makeRounds(plan, new Rng(seed));
+        expect(rounds).toEqual(makeRounds(plan, new Rng(seed)));
+        expect(rounds).toHaveLength(plan.rounds);
+        for (const round of rounds) {
+          const cards = [...round.cards, ...(round.ask ? [round.ask] : [])];
+          const concepts = [...new Set(cards.map((c) => c.concept))];
+          for (const c of concepts) {
+            seen.add(c);
+            expect(CONCEPTS[c].from).toBeLessThanOrEqual(plan.level);
+          }
+          if (plan.mode === 'opposite' || plan.mode === 'pairs')
+            expect(new Set(concepts.map((c) => CONCEPTS[c].family)).size).toBe(concepts.length);
+        }
+      }
+      expect([...seen].sort()).toEqual([...pool].sort());
+    }
+  });
+
   it('asks only about pictures on screen, with exactly one right answer', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 200; seed++) {

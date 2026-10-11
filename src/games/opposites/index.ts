@@ -12,7 +12,7 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { cardToTap, makeRounds, opposites, planFor, word, type Card, type OppPlan, type OppRound } from './logic';
+import { STICKER_CONCEPTS, cardToTap, makeRounds, opposites, planFor, word, type Card, type OppPlan, type OppRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
@@ -81,6 +81,51 @@ export function picture(card: Card): Container {
         g.circle(18, -16, 24).fill(swatch.yellow.light).circle(30, -24, 20).fill(0x2b2f63);
         for (const [x, y] of [[-36, -30], [-20, 24], [30, 34]]) g.poly(starPoints(8, 3).map((n, i) => n + (i % 2 ? y : x))).fill(swatch.yellow.fill);
       }
+      break;
+    case 'stature': {
+      const top = side === 0 ? -52 : 14;
+      g.rect(-64, 58, 128, 6).fill(swatch.green.fill);
+      g.moveTo(0, 58).lineTo(0, top).stroke({ width: 7, color: swatch.green.line });
+      g.ellipse(-14, (top + 58) / 2, 16, 7).fill(swatch.green.fill);
+      for (let i = 0; i < 6; i++) {
+        const angle = i * Math.PI / 3;
+        g.circle(Math.cos(angle) * 15, top + Math.sin(angle) * 15, 12).fill(swatch.purple.fill);
+      }
+      g.circle(0, top, 10).fill(swatch.yellow.fill);
+      break;
+    }
+    case 'lamp':
+      g.moveTo(0, 0).lineTo(0, 52).stroke({ width: 8, color: wood.line });
+      g.roundRect(-34, 48, 68, 12, 6).fill(wood.fill).stroke({ width: 3, color: wood.line });
+      g.poly([-28, -46, 28, -46, 46, 4, -46, 4]).fill(side === 0 ? swatch.yellow.light : swatch.blue.light).stroke({ width: 4, color: swatch.blue.line, join: 'round' });
+      if (side === 0) {
+        for (const [x, y] of [[-58, -34], [58, -34], [0, -66]])
+          g.moveTo(x, y).lineTo(x * 1.2, y - 10).stroke({ width: 5, color: swatch.yellow.line, cap: 'round' });
+        g.circle(0, 9, 8).fill(swatch.yellow.fill);
+      }
+      break;
+    case 'wake': {
+      const cat = new Critter(CRITTERS.cat);
+      cat.alive = false;
+      cat.scale.set(0.4);
+      cat.y = 58;
+      cat.setMood(side === 0 ? 'calm' : 'sleepy');
+      c.addChild(cat);
+      if (side === 1) {
+        // Code-drawn sleep marks; the closed eyes carry the answer without reading.
+        for (const [x, y, r] of [[30, -48, 9], [48, -66, 7]])
+          g.moveTo(x - r, y - r).lineTo(x + r, y - r).lineTo(x - r, y + r).lineTo(x + r, y + r).stroke({ width: 3, color: swatch.blue.line, cap: 'round', join: 'round' });
+      }
+      break;
+    }
+    case 'basket':
+      // The same basket and ball in each picture: only the ball's position changes.
+      g.ellipse(-20, 0, 32, 12).fill(wood.line);
+      g.circle(side === 0 ? -20 : 52, side === 0 ? 0 : 39, 18).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+      g.poly([-54, 0, 14, 0, 6, 60, -46, 60]).fill(wood.fill).stroke({ width: 4, color: wood.line, join: 'round' });
+      for (const y of [16, 32, 48]) g.moveTo(-48, y).lineTo(8, y).stroke({ width: 3, color: wood.line });
+      for (const x of [-34, -18, -2]) g.moveTo(x, 5).lineTo(x, 57).stroke({ width: 3, color: wood.line });
+      g.moveTo(-52, 0).quadraticCurveTo(-20, 13, 12, 0).stroke({ width: 4, color: wood.light });
       break;
     case 'speed':
       if (side === 0) {
@@ -325,7 +370,7 @@ class OppIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const concept = rng.pick(['sky', 'temp', 'cup', 'lid'] as const);
+  const concept = rng.pick(STICKER_CONCEPTS);
   const a = picture({ concept, side: 0 });
   a.position.set(-70, 0);
   const b = picture({ concept, side: 1 });

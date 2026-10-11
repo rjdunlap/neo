@@ -295,7 +295,7 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 
 ### Opposites
 
-*lap–pre-K · after concept board books and Sesame Street.* Eight concept pairs drawn in code: big and small (bears), happy and sad (cat moods), up and down (a balloon with arrows), open and closed (a box), full and empty (a glass), hot and cold (a steaming mug, an ice cube), day and night, fast and slow (a bunny, a snail). On the lap, tapping the picture flips it to its opposite while the word is spoken. Then find the one named, find the opposite among three, and match three opposite pairs. Wrong picks are gentle misses naming the words; two glow the answer.
+*lap–pre-K · after concept board books and Sesame Street.* Twelve concept pairs drawn in code; the original eight start at level 1: big and small (bears), happy and sad (cat moods), up and down (a balloon with arrows), open and closed (a box), full and empty (a glass), hot and cold (a steaming mug, an ice cube), day and night, fast and slow (a bunny, a snail). Level 2 adds tall/short flowers, an on/off lamp, an awake/asleep cat and a ball in/out of a basket. Related concepts never compete in opposite-choice or pair boards: size, face, container and position families each supply at most one pair. Spoken words are unique, and the sticker pool is pinned independently. On the lap, tapping the picture flips it to its opposite while the word is spoken. Then find the one named, find the opposite among three, and match three opposite pairs. Wrong picks are gentle misses naming the words; two glow the answer.
 
 ### Clap the Syllables
 

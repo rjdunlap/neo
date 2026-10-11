@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+
+## 2026-10-10 — Opposites content and fairness
+
+- Added four picture pairs from level 2, lowest-level/family metadata, a pinned larger sticker pool and truthful level-scoped how-to finish text; levels and band windows unchanged.
+- Tested `cb19726` plus the Opposites working diff (published in PR 136); upstream remained `cf8512b`. `npm run typecheck` and `npm test -- src/games/opposites/logic.test.ts src/content/howto.test.ts src/games/registry.test.ts` passed (30 tests). Seeded properties cover unique words, entry levels, pool coverage, family exclusion, determinism, unique answers and bot completion.
+- At `http://localhost:5196`, `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=2` passed levels 2–4 with two misses/one hint, supported completion, saved score/sticker and no page errors.
+- Reviewed `test-results/opposites-new-pairs.png`: both sides of all four additions at card size; tall/short stems, lamp rays, closed eyes and the ball's basket position are visible. `git diff --check` and changed local file links passed.
+- Not run: build (content and scoped copy only), full unit/browser suites, finger demos (bot action unchanged), portrait, iPad, device speech or child play. The session's Vite server was stopped after checks.
+
 ## 2026-10-10 — Rainbow Fingers level 7 mixing fix and targeted publication checks
 
 - Fixed deep-dive slice 1: recall-and-mix taps pour into the bowl, so the pumpkin can be painted, framed and rewarded. Shared `pours(mode)` serves pot layout, input, hints, bot and tests; levels and bands are unchanged. The existing scoped how-to card already describes this action and was reviewed.
@@ -310,6 +319,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Opposites content (`woods`) | 2026-10-10: levels 2–4, wrong choices, hint glow, supported completion, saved scores/stickers; 30 focused tests and typecheck | Opposites content and fairness entry | Both sides of new art reviewed; portrait, iPad, device speech and child play unverified |
 | Workflow and repository cleanup | 2026-10-10: local docs links/anchors, diff check, verified refs bundle, preserved dirty diffs and post-cleanup inventory | Worktree cleanup and development workflow review entry | Docs only; no game checks repeated |
 | Story Steps ten stories (`fingerdemo`) | 2026-10-11: levels 1, 5 and 7 demos clean (5.4, 14.7, 15.4 s); rule tests for the pools and the family rule | Story Steps: six new stories and per-level pools entry | Chrome automation, a contact sheet of the new art; no iPad or child |
 | Fill and Dump release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations; story resume/rewards; Together and Face-off trips; integrated production build and offline reload/saves | Fill and Dump preschool pouring entry | Chrome automation; iPad and child judgment remain open |
