@@ -9,6 +9,10 @@ Added a pre-K round where the box asks for each shape by a spoken property clue:
 - Checks run: typecheck, focused Shape Sorter and how-to tests, filtered level 8 play and `fingerdemo` at level 8 (results in [VERIFICATION](../VERIFICATION.md)).
 - Not established: iPad touch feel, device speech or a child's response.
 
+### Picture Graph level 7: Tally marks (2026-10-10)
+
+Added a school level with one complete cycle: record three meadow counts with tally marks grouped by five, build the graph and compare two kinds. Seeded rule tests cover the level's count bounds, fair comparisons, corrections and bot route. Typecheck, 38 targeted rule, how-to and registry tests, filtered browser play, and a clean ghost-finger run in 39.2 seconds passed. The tally-hint screenshot was reviewed.
+
 ### Dot Link level 6: Exactly five (2026-10-10)
 
 Added a pre-K level that asks for three lines of exactly five neighboring dots in one color. Shorter, longer and closed lines still pop, but do not count; the pet reminds the player to make a line of five. The move generator, hint and ghost finger each offer an exact five-dot line. The pre-K range now ends at level 6, and earlier saved levels keep their numbers. The how-to, inventory and game guide describe the new round; its proposal has left [IDEAS](../IDEAS.md#round-three-more-to-play-in-every-band-2026-10-10).

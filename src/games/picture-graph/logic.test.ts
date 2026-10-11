@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, PLANS, prebuilt, questionsFor, type Question } from './logic';
+import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, PLANS, prebuilt, questionsFor, tallyMove, type Question } from './logic';
 
 describe('Picture Graph', () => {
   it('makes graphs whose questions have one clear answer', () => {
@@ -80,7 +80,7 @@ describe('Picture Graph with a key: one block is two critters', () => {
   const scale = PLANS.filter((p) => p.per > 1);
 
   it('appends the two keyed levels after reading a graph, leaving the first four as they were', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread']);
+    expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread']);
     expect(PLANS.slice(0, 4).every((p) => p.per === 1)).toBe(true);
     expect(scale.map((p) => p.per)).toEqual([2, 2]);
   });
@@ -149,6 +149,56 @@ describe('Picture Graph with a key: one block is two critters', () => {
       }
       expect(bars).toEqual(graph.counts.map((n) => n / 2));
       expect(graphMove(build, graph, bars, undefined, null)).toEqual({ do: 'check' });
+    }
+  });
+});
+
+describe('Picture Graph level 7: tally, then graph', () => {
+  const plan = PLANS[6];
+
+  it('adds level 7 without changing the first six plans', () => {
+    expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread']);
+    expect(plan).toMatchObject({ mode: 'tally', kinds: 3, min: 4, max: 7, per: 1, graphs: 1 });
+  });
+
+  it('generates distinct counts that exercise tally groups of five and fair comparisons', () => {
+    for (let seed = 1; seed <= 500; seed++) {
+      const graph = makeGraph(plan, new Rng(seed));
+      expect(graph.counts.every((n) => n >= 4 && n <= 7)).toBe(true);
+      expect(new Set(graph.counts).size).toBe(3);
+      expect(tallyMove(graph, [0, 0, 0])).toEqual({ do: 'add', kind: 0 });
+      const tallies = [...graph.counts];
+      expect(tallyMove(graph, tallies)).toEqual({ do: 'check' });
+      tallies[0]--;
+      expect(tallyMove(graph, tallies)).toEqual({ do: 'add', kind: 0 });
+      const question = questionsFor(plan, graph, new Rng(seed + 900)).at(0) as Extract<Question, { ask: 'more' }>;
+      expect(question.ask).toBe('more');
+      expect(question.answer).toBe(graph.counts[question.a] - graph.counts[question.b]);
+      expect(question.answer).toBeGreaterThan(0);
+    }
+  });
+
+  it('has a bot path from five-mark tallies through bars to the comparison', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const graph = makeGraph(plan, rng);
+      const tallies = [0, 0, 0];
+      let move = tallyMove(graph, tallies);
+      while (move.do === 'add') {
+        tallies[move.kind]++;
+        move = tallyMove(graph, tallies);
+      }
+      expect(tallies).toEqual(graph.counts);
+      const bars = [0, 0, 0];
+      move = graphMove(plan, graph, bars, undefined, null)!;
+      while (move.do === 'add') {
+        bars[move.kind]++;
+        move = graphMove(plan, graph, bars, undefined, null)!;
+      }
+      expect(bars).toEqual(graph.counts);
+      expect(move).toEqual({ do: 'check' });
+      const q = questionsFor(plan, graph, rng)[0] as Extract<Question, { ask: 'more' }>;
+      expect(graphMove(plan, graph, bars, q, null)).toEqual({ do: 'number', n: q.answer });
     }
   });
 });

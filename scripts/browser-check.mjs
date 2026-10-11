@@ -3411,7 +3411,7 @@ async function woodsBatch() {
     log(`Opposites ${level} (${mode}): picture cards tapped and flipped, wrong picks as misses, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'graph') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'graph') for (let level = fromLevel; level <= 7; level++) {
     await launch('picture-graph', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const per = await page.evaluate(() => neo.scene.game.plan.per);
@@ -3422,6 +3422,10 @@ async function woodsBatch() {
       await page.evaluate((i) => { const g = neo.scene.game; const p = g.columns[i].toGlobal({ x: 0, y: -(g.bars[i] + 1) * 34 - 12 }); kit.tap(p.x, p.y); }, i);
       await page.waitForTimeout(170);
     };
+    const addTally = async (i) => {
+      await page.evaluate((i) => { const p = neo.scene.game.columns[i].toGlobal({ x: 0, y: -64 }); kit.tap(p.x, p.y); }, i);
+      await page.waitForTimeout(170);
+    };
     const column = async (i) => { await page.evaluate((i) => { const p = neo.scene.game.columns[i].toGlobal({ x: 0, y: -100 }); kit.tap(p.x, p.y); }, i); await settle(); };
     const pad = async (n) => { await tap(`neo.scene.game.pads.find((p) => p.n === ${n}).node`); await settle(); };
     let missed = false;
@@ -3429,6 +3433,18 @@ async function woodsBatch() {
       await idle(n);
       const counts0 = await page.evaluate(() => neo.scene.game.graph.counts);
       if (!prebuilt) {
+        if (mode === 'tally' && await page.evaluate(() => neo.scene.game.phase === 'tally')) {
+          if (!missed) {
+            await tap('neo.scene.game.check'); await settle();
+            await tap('neo.scene.game.check'); await settle();
+            missed = true;
+            assert.deepEqual(await counts(), [2, 1]);
+            await screenshot('picture-graph-7-tally-hint');
+          }
+          for (const [i, count] of counts0.entries()) for (let k = 0; k < count; k++) await addTally(i);
+          await tap('neo.scene.game.check'); await settle();
+          assert.equal(await page.evaluate(() => neo.scene.game.phase), 'graph');
+        }
         if (mode === 'build' && !missed) { for (let k = 0; k < 2; k++) { await tap('neo.scene.game.check'); await settle(); } missed = true; assert.deepEqual(await counts(), [2, 1]); }
         for (const [i, c] of counts0.entries()) for (let k = 0; k < c / per; k++) await add(i);
         await tap('neo.scene.game.check'); await settle();
