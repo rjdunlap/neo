@@ -1319,7 +1319,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Pattern Train (L–S · 12) | Car kinds | **13, Growing patterns:** one red, two red, three red … what comes next? | — |
 | Memory Match (P–S · 11) | **Picture decks** (vehicles, fruit, the island's friends) at the same sizes | **Built 2026-10-10:** R1 level 11 fraction pictures; R1: 12 clocks | Toddler, at levels 1–2 (four cards) |
 | Size Parade (T–S · 8) | More friends | — (audit: leave) | — |
-| Puzzle Pals (T–S · 7) | **Six scenes today**; make it twelve (see its [deep dive](deep-dives/puzzle-pals.md), which supersedes this row) | R1-later: turned pieces (deep dive levels 8–11) | — (below-level-1 ideas are in the deep dive) |
+| Puzzle Pals (T–S · 7) | **Twelve scenes** (built 2026-10-11, the first six pinned for stickers and the map icon; see its [deep dive](deep-dives/puzzle-pals.md), which supersedes this row) | R1-later: turned pieces (deep dive levels 8–11) | — (below-level-1 ideas are in the deep dive) |
 | Quick Tricks (T–S · 6) | More props per trick | R1-later: a third show | — |
 | Peekaround Island (L–S · 5) | More friends and landmarks | R1-later: view from above | — |
 | Penguin Slide (P–S · 5) | More rinks per level | **6, Three fish, in any order**, a next board. R1-later: Mossy Path | — |
