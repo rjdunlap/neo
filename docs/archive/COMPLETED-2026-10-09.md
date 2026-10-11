@@ -427,3 +427,7 @@ Deep-dive slice 1 ([PR #151](https://github.com/rjdunlap/neo/pull/151)): empty P
 ## Robot Path preschool opening (2026-10-11)
 
 [PR #154](https://github.com/rjdunlap/neo/pull/154) opens existing levels 1–2 to preschool. Six seeded boards are rock-free 3 × 3 grids with solutions of one to three steps; level 2 keeps its fourth spare slot. Pre-K 1–6 and school 4–12, saved IDs, couch play, narration and controls retain their ranges and behavior. The preschool inventory grows from 60 to 61 games. Typecheck and 59 targeted rule, registry, lands, difficulty and how-to tests passed; build and browser checks were not repeated under the band-opening tier. Device speech and preschool understanding remain person checks.
+
+## Goodnight Room level 7: counted goodnights (2026-10-11)
+
+Pre-K level 7 asks for 2–4 friends of her choice among six in a seeded bedroom or barn. Each goodnight is counted aloud, with a numeral/dot tally. On reaching the count, the remaining friends stay awake briefly before settling together for the finale; no misses or hints, and one sticker for the round. Pre-K expands from 5–6 to 5–7; saved levels and younger ranges retain their meanings. The how-to and ghost finger follow this rule. [PR #155](https://github.com/rjdunlap/neo/pull/155); checks are in [verification](../VERIFICATION.md).

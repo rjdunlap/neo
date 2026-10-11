@@ -3226,7 +3226,7 @@ async function woodsBatch() {
     log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
   }
 
-  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
+  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
     if (level === 1) await page.evaluate(async () => {
       const { goodnightRoom } = await import('/src/games/goodnight-room/index.ts');
       const { Rng } = await import('/src/engine/random.ts');
@@ -3243,7 +3243,7 @@ async function woodsBatch() {
       await page.waitForTimeout(420);
     };
     await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); await page.waitForTimeout(150);
-    if (level === 5 || level === 6) {
+    if (level === 5 || level === 6 || level === 7) {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
       await screenshot(`goodnight-room-${level}-portrait`);
@@ -3254,7 +3254,31 @@ async function woodsBatch() {
       await page.waitForTimeout(250);
       await screenshot('goodnight-room-barn-portrait');
     }
-    if (mode === 'all') {
+    if (mode === 'count') {
+      const { target, friends } = await page.evaluate(() => ({ target: neo.scene.game.targetCount, friends: neo.scene.game.friends }));
+      assert.ok(target >= 2 && target <= 4);
+      // Watch the scene's speech boundary to prove every chosen goodnight is counted,
+      // and the extra friends are still awake when the requested count is reached.
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        const say = g.ctx.say.bind(g.ctx);
+        g.countSpeech = [];
+        g.ctx.say = (id, params) => {
+          if (id === 'night.counted' || id === 'night.countDone') g.countSpeech.push({ id, n: params.n, asleep: g.sleepers.filter(s => s.asleep).length });
+          return say(id, params);
+        };
+      });
+      const chosen = [...friends].reverse().slice(0, target);
+      await touch(chosen[0]);
+      // An already sleeping friend contributes nothing and is never a mistake.
+      await touch(chosen[0]);
+      assert.equal(await page.evaluate(() => neo.scene.game.sleepers.filter(s => s.asleep).length), 1);
+      for (const t of chosen.slice(1)) await touch(t);
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.countSpeech), [
+        ...Array.from({ length: target }, (_, i) => ({ id: 'night.counted', n: i + 1, asleep: i + 1 })),
+        { id: 'night.countDone', n: target, asleep: target },
+      ]);
+    } else if (mode === 'all') {
       for (const t of await page.evaluate(() => neo.scene.game.sleepers.map((s) => s.thing))) await touch(t);
     } else {
       const requests = await page.evaluate(() => neo.scene.game.requests);
@@ -3273,9 +3297,9 @@ async function woodsBatch() {
     }
     if (level === 2) await page.waitForTimeout(400), await screenshot('goodnight-room-asleep');
     await finished('goodnight-room');
-    assert.deepEqual(await score('goodnight-room'), mode === 'all' ? [0, 0] : [2, 1]);
-    if (level === 1 || level === 5 || level === 6) await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Goodnight Room ${level} (${mode}): goodnights by tapping, ${mode === 'all' ? 'the room going dark' : 'wrong friends and order as misses, glow hint'}, saved score and sticker passed`);
+    assert.deepEqual(await score('goodnight-room'), mode === 'all' || mode === 'count' ? [0, 0] : [2, 1]);
+    if (level === 1 || level === 5 || level === 6 || level === 7) await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Goodnight Room ${level} (${mode}): goodnights by tapping, ${mode === 'count' ? 'free choices counted aloud with the others left awake briefly' : mode === 'all' ? 'the room going dark' : 'wrong friends and order as misses, glow hint'}, saved score and sticker passed`);
   }
 
   if (!only || only === 'snack') for (let level = fromLevel; level <= 5; level++) {

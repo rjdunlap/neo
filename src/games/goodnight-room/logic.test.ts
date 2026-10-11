@@ -132,6 +132,41 @@ describe('Goodnight Room', () => {
     expect([...rooms].sort()).toEqual(['barn', 'bedroom']);
   });
 
+  it('counts 2–4 free choices in either room, with no repeated sleeper and no extra bot tap', () => {
+    const plan = PLANS[6];
+    expect(plan.mode).toBe('count');
+    const targets = new Set<number>();
+    const rooms = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const night = makeNight(plan, rng);
+      expect(night).toEqual(makeNight(plan, new Rng(seed)));
+      targets.add(night.targetCount);
+      rooms.add(night.setting.id);
+      expect(night.asleep).toEqual([]);
+      expect(night.targetCount).toBeLessThan(night.room.length);
+      expect(makeRequests(plan, rng, night.room)).toEqual([]);
+      // Every choice of awake friend works, including choosing the light first.
+      for (const order of [night.room, [...night.room].reverse(), rng.shuffle([...night.room])]) {
+        const asleep = new Set<Thing>();
+        for (const friend of order.slice(0, night.targetCount)) {
+          for (const other of night.room) {
+            expect(acceptsTap(plan, [], asleep.size, asleep, other, night.targetCount)).toBe(!asleep.has(other));
+          }
+          const bot = thingToTap(plan, undefined, 0, asleep, night.room, night.targetCount)!;
+          expect(acceptsTap(plan, [], asleep.size, asleep, bot, night.targetCount)).toBe(true);
+          asleep.add(friend);
+          expect(acceptsTap(plan, [], asleep.size, asleep, friend, night.targetCount)).toBe(false);
+        }
+        expect(thingToTap(plan, undefined, 0, asleep, night.room, night.targetCount)).toBeNull();
+        for (const friend of night.room) expect(acceptsTap(plan, [], asleep.size, asleep, friend, night.targetCount)).toBe(false);
+        expect(night.room.filter(t => !asleep.has(t))).toHaveLength(night.room.length - night.targetCount);
+      }
+    }
+    expect([...targets].sort()).toEqual([2, 3, 4]);
+    expect([...rooms].sort()).toEqual(['barn', 'bedroom']);
+  });
+
   it("gives the ghost finger's bot only right taps, until the room is asleep: everyone awake once, or each thing named in order", () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 100; seed++) {

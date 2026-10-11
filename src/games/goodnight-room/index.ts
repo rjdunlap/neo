@@ -17,7 +17,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 6 },
+  prek: { min: 5, max: 7 },
 };
 
 const WALL = 0x9fb8e8;
@@ -107,6 +107,7 @@ class GoodnightRoom implements Game {
   /** The friends in the room this round, in the order they are drawn. */
   readonly friends: Thing[];
   readonly setting: NightRoom;
+  readonly targetCount: number;
   readonly sleepers: Sleeper[] = [];
   index = -1;
   /** Within a two-step request, how many are done. */
@@ -120,6 +121,8 @@ class GoodnightRoom implements Game {
   private readonly sky = new Graphics();
   private readonly dark = new Graphics();
   private readonly glow = new Graphics();
+  private readonly tally = label('', 38, ink);
+  private readonly dots = new Graphics();
   private view: View;
   private wrongs = 0;
   private glowing: Sleeper | null = null;
@@ -132,6 +135,7 @@ class GoodnightRoom implements Game {
     const night = makeNight(this.plan, ctx.rng);
     this.friends = night.room;
     this.setting = night.setting;
+    this.targetCount = night.targetCount;
     this.requests = makeRequests(this.plan, ctx.rng, this.friends);
     this.dark.eventMode = 'none';
     this.glow.eventMode = 'none';
@@ -145,6 +149,10 @@ class GoodnightRoom implements Game {
       ctx.stage.addChild(s);
     }
     ctx.stage.addChild(this.dark, this.glow);
+    this.tally.eventMode = this.dots.eventMode = 'none';
+    this.tally.visible = this.dots.visible = this.plan.mode === 'count';
+    ctx.stage.addChild(this.tally, this.dots);
+    this.drawCount();
     this.stars = night.asleep.length * 3;
   }
 
@@ -177,6 +185,19 @@ class GoodnightRoom implements Game {
       s.position.set(p.x, p.y);
     }
     this.drawDark();
+    this.tally.position.set(v.w / 2, 65);
+    this.dots.position.set(v.w / 2, 110);
+  }
+
+  private drawCount() {
+    if (this.plan.mode !== 'count') return;
+    const count = this.sleepers.filter(s => s.asleep).length;
+    this.tally.text = `${count} / ${this.targetCount}`;
+    this.dots.clear();
+    for (let i = 0; i < this.targetCount; i++) {
+      this.dots.circle((i - (this.targetCount - 1) / 2) * 32, 0, 10)
+        .fill(i < count ? swatch.yellow.fill : wood.light).stroke({ width: 3, color: wood.line });
+    }
   }
 
   /** The window: evening, then a night sky with the moon and as many stars as friends asleep. */
@@ -209,7 +230,7 @@ class GoodnightRoom implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const asleep = new Set(this.sleepers.filter((s) => s.asleep).map((s) => s.thing));
-    const thing = thingToTap(this.plan, this.requests[this.index], this.step, asleep, this.friends);
+    const thing = thingToTap(this.plan, this.requests[this.index], this.step, asleep, this.friends, this.targetCount);
     const sleeper = this.sleepers.find((s) => s.thing === thing);
     return sleeper ? { tap: { on: sleeper, y: sleeper.mid } } : null;
   }
@@ -222,6 +243,10 @@ class GoodnightRoom implements Game {
     this.step = 0;
     this.wrongs = 0;
     this.glowing = null;
+    if (this.plan.mode === 'count') {
+      this.busy = false;
+      return this.ctx.instruct('night.count', { n: this.targetCount });
+    }
     if (this.plan.mode === 'all') {
       this.busy = false;
       return this.ctx.instruct('night.all');
@@ -251,7 +276,11 @@ class GoodnightRoom implements Game {
     z.position.set(b.x + b.width * 0.7, b.y + 10);
     this.ctx.stage.addChild(z);
     void this.ctx.tw.to(z, { y: z.y - 70, alpha: 0 }, { duration: 1.4 }).then(() => z.destroy());
-    if (speak) await this.ctx.say('night.goodnight', { who: NAMES[s.thing] });
+    if (speak) {
+      this.drawCount();
+      if (this.plan.mode === 'count') await this.ctx.say('night.counted', { n: this.sleepers.filter(x => x.asleep).length, who: NAMES[s.thing] });
+      else await this.ctx.say('night.goodnight', { who: NAMES[s.thing] });
+    }
   }
 
   private async tap(s: Sleeper) {
@@ -259,6 +288,20 @@ class GoodnightRoom implements Game {
     if (s.asleep) {
       // Already asleep: a soft "shh", never a mistake.
       sfx.tick();
+      return;
+    }
+    if (this.plan.mode === 'count') {
+      const asleep = new Set(this.sleepers.filter(x => x.asleep).map(x => x.thing));
+      if (!acceptsTap(this.plan, [], this.step, asleep, s.thing, this.targetCount)) return;
+      this.busy = true;
+      await this.goodnight(s);
+      if (this.sleepers.filter(x => x.asleep).length === this.targetCount) {
+        await this.ctx.say('night.countDone', { n: this.targetCount });
+        await this.ctx.tw.wait(1.2);
+        for (const other of this.sleepers.filter(x => !x.asleep)) await this.goodnight(other, false);
+        return void this.finale();
+      }
+      this.busy = false;
       return;
     }
     if (this.plan.mode === 'all') {

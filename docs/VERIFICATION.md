@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Goodnight Room: counted goodnights
+
+- Added pre-K level 7: choose any 2–4 of six awake friends in either seeded room, hear each goodnight counted aloud and see a numeral/dot tally. Others stay awake briefly at the requested count, then settle together. Free choices have no misses/hints; one sticker.
+- Tested claim `ccf7dc7` (base `2c0fe6d`) plus implementation diff: typecheck passed; 36 targeted tests passed via `npm test -- src/games/goodnight-room/logic.test.ts src/games/registry.test.ts src/content/howto.test.ts`. Rules cover both rooms, every target, alternative choices, repeated sleepers and the bot stopping at the count.
+- `GAME_URL=http://localhost:5187 BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=7 TO_LEVEL=7 npm run test:browser` passed spoken count events, remaining friends awake at the count, repeated sleeping taps, completion and saved zero-miss/zero-hint reward. Portrait screenshot `test-results/browser/goodnight-room-7-portrait.png` reviewed; no page errors.
+- Same server, `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=7 npm run test:browser` passed cleanly in 8.5 demo seconds. Headless Chromium and Vite used sandbox escalation.
+- Changed local document link targets and `git diff --check` passed. Not run: build, full unit/browser suites, couch/world/offline (new-level tier); iPad, actual device speech or child play. Session server stopped after checks.
+
 ## 2026-10-11 — Robot Path preschool opening
 
 - Opened existing levels 1–2 to preschool; pre-K 1–6 and school 4–12 remain intact. All six preschool boards use rock-free 3 × 3 grids and solutions of one to three steps.
@@ -477,6 +485,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Fill and Dump release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations; story resume/rewards; Together and Face-off trips; integrated production build and offline reload/saves | Fill and Dump preschool pouring entry | Chrome automation; iPad and child judgment remain open |
 | Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
+| Goodnight Room counted goodnights (`woods`, `fingerdemo`) | 2026-10-11: level 7, spoken counts, repeated sleepers, remaining friends awake at the target and saved reward; portrait reviewed; demo clean in 8.5 s | Goodnight Room counted-goodnights entry | iPad, device speech and child play open |
 | Goodnight Room light last (`woods`, `fingerdemo`) | 2026-10-11: level 6, early light taps, two misses/one hint, reverse-order friends, saved reward; portrait reviewed; demo clean in 12.6 s | Goodnight Room light-last entry | iPad, device speech and child play open |
 | Goodnight Room barn and animals (`woods`, `fingerdemo`) | 2026-10-10: levels 1–5, wrong objects and ordered friends, hint, reverse-order animals, saved score/sticker; seeded barn in portrait; demos 1/5 clean in 8.8/7.1 s | Goodnight Room barn and animals entry | Portrait screenshots reviewed; iPad touch, device speech and child play open |
 | Duckling Parade 10 (`arcade`, `fingerdemo`) | 2026-10-10: level 10 passed with two deliberate misses, hint, completion, saved sticker; ghost finger finished cleanly in 16.8 s | Duckling Parade 9–10 entry | Landscape screenshot reviewed; iPad touch feel, device speech and child play remain open |
