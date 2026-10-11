@@ -3,10 +3,17 @@
 ## 2026-10-11 — Orchard Rows first slice
 
 - Added school levels 1–3 in Counting Cove: plant equal rows, count groups, turn the orchard to count columns, and find a missing row. Registered the game, scoped how-to, voice, demonstration and co-play/off-screen suggestions.
-- Tested `1f0b5ae` plus the implementation diff at `http://localhost:5197`: typecheck, all 920 unit tests (126 files) and production build passed. Five new rule tests cover seeded distinct arrays, regrouping and totals, missing-row solvability, unique answers/decoys, replay without double counting, and 100-unit row controls in four views.
+- Tested `1f0b5ae` plus the implementation diff (committed as `c1e67d1`; integrated documentation-only `92d0680` without changing tested code) at `http://localhost:5197`: typecheck, all 920 unit tests (126 files) and production build passed. Five new rule tests cover seeded distinct arrays, regrouping and totals, missing-row solvability, unique answers/decoys, replay without double counting, and 100-unit row controls in four views.
 - `BROWSER_SUITE=orchard ORCHARD_LEVELS=1,3` passed: real row/number/turn taps, free replay, two misses/one hint, supported completion, saved results/stickers, portrait resize and leaving during speech. Landscape and portrait screenshots reviewed; no page errors. The initial polling loop stopped sending taps before the last answer; a three-action probe measured 3–7.5 second speech waits, and the corrected harness waits per action.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=orchard-rows FINGER_LEVELS=1,2,3` passed cleanly in 23.1, 41.4 and 46.5 demo seconds, with no misses or hints. The navigation probe passed the actual land icon launch, level-3 intro fit, Play and held-home return to Counting Cove; land and intro screenshots reviewed, with no page errors.
 - Not run: full world/picnic/couch/offline suites (save and navigation implementations unchanged), separate level-2 manual play, iPad/device speech or child play. New local documentation links and `git diff --check` passed; an older archive-relative roadmap link remains pre-existing.
+
+## 2026-10-11 — Pattern Train deep dive
+
+- Wrote `docs/deep-dives/pattern-train.md` and updated the tracker (designed), the IDEAS round-two and round-three rows for Pattern Train, the roadmap's chunk 14 cell and a Waiting-on-the-developer row. No code, tests or scripts changed.
+- Read `logic.ts`, `index.ts`, the tests, the how-to, the voice lines, the couch entry and the browser case. Findings from the code, not seen in play: levels 10 and 11 build the same train as level 4 (`far` and `pair` change only the words), the answer is almost always the first car, level 12's answer is always the smallest choice.
+- Opened the NCETM early-years pattern page, Core Standards 4.OA.C.5 and TERC's Zoombinis guide; the NCETM progression PDF, the Vanderbilt poster and Clements and Sarama are marked search summary only (no PDF reader here).
+- Docs only: `git diff --check` and a relative-link check on the changed docs ran.
 
 ## 2026-10-11 — Story Steps level 8: Choose the cause
 
