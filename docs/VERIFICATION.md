@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-11 — Word Monsters deep dive (docs only)
+
+- Wrote `docs/deep-dives/word-monsters.md`: the ladder read from `index.ts`, `logic.ts`, the tests, the how-to and the voice script; ten references and the Common Core foundational-skills pages; levels 9–17, a grown-up window, four younger entries and fifteen build slices. Updated the tracker, the chunk 14 row, "Waiting on the developer" and the IDEAS rows.
+- Ran `git diff --check` and a relative-link check on the changed docs. No code, tests or browser suites ran, and this session had no installed dependencies, so the gaps (c and k share a sound, almost every prompt names the sound, level 8 repeats, 20 of 24 family words undrawn) are read from the code and not played.
+- Open: the iPad speech check for all 26 sound lines and the long vowels; reference pages marked "search summary only" were not opened; the person checks in the write-up's decision 10.
+
 ## 2026-10-10 — Dot Link level 6: Exactly five
 
 - Added a pre-K level for three exact five-dot lines. Shorter, longer and closed lines pop without counting; the move picker and demonstration provide a five-dot line.
