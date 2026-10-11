@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Pattern Train slice 6: same pattern in new pieces (levels 15–16)
+
+- `src/games/pattern-train/match.ts` (a second game class) and `buildMatch`, `structure`, `validPieces` in `logic.ts`; scoped how-to lines, voice lines, `autotouch()` for both levels, the browser loop raised to 16 levels with paths for both.
+- Typecheck and all 932 unit tests passed: `structure` names a pattern without its pieces, exactly one of three rows repeats the model, the model's four units all turn up, and any valid left-to-right fill of a build keeps the structure with a piece always available.
+- `BROWSER_SUITE=pattern PATTERN_LEVELS=15,16,13` passed (two wrong, one hint, reward); `fingerdemo` at 15 and 16 finished cleanly (1.9 s, 9.7 s). Portrait (768×1024) screenshots of both levels with the hint showing reviewed: rows and tray fit, the pet corner is clear.
+- Not run: the full 16-level loop, build, couch suites (range stops at level 9), iPad or child play (does "same pattern, different pieces" read to a six-year-old?). Level 16's placed animals look small beside the question marks; a look on an iPad would say if they need to be bigger.
+
 ## 2026-10-11 — Pattern Train slice 5: odd car out and fix the train (levels 13–14)
 
 - Two spot-the-mistake levels (`oddTrain`, a `find` phase in `src/games/pattern-train/index.ts`), `autotouch()` taps the wrong car then the choice, scoped how-to lines, voice lines, the browser loop raised to 14 levels with a spot-the-mistake path.

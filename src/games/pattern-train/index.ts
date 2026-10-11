@@ -14,6 +14,7 @@ import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { replayArt, symbol, tile, trainArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { PatternMatch } from './match';
 import { ANIMAL_TRIOS, buildTrain, PATTERN_PLANS, patternPlan, pieceColor, pieceShape, wantedChoice, type PairLook, type PatternPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -386,5 +387,5 @@ export const patternTrain: GameModule = {
   skills: ['patterns', 'sequencing', 'listening'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly, offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
-  hubIcon: () => new WigglyIcon(trainArt()), touchDemo: true, sticker: () => trainArt(), create: (ctx) => new PatternTrain(ctx),
+  hubIcon: () => new WigglyIcon(trainArt()), touchDemo: true, sticker: () => trainArt(), create: (ctx) => (patternPlan(ctx.level).match ? new PatternMatch(ctx) : new PatternTrain(ctx)),
 };
