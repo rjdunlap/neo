@@ -1,3 +1,4 @@
+import { checkPour, emptyCup, pour, pourAmount, pourHint, POUR_DISTANCE, POUR_TOLERANCE, recoverTray, startPour } from './logic';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { DESIGN_H, DESIGN_W } from '../../engine/view';
@@ -231,5 +232,74 @@ describe('Fill and Dump placement', () => {
       for (let j = i + 1; j < slots.length; j++) expect(Math.hypot(slots[i].x - slots[j].x, slots[i].y - slots[j].y)).toBeGreaterThan(30);
     }
     for (const s of slots) expect(Math.abs(s.x)).toBeLessThanOrEqual(110);
+  });
+});
+
+describe('Pouring to a line', () => {
+  it('has three reachable, distinct lines, first half full, seeded order after that', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const s = startPour(new Rng(seed));
+      expect(s).toEqual(startPour(new Rng(seed)));
+      expect(s.targets[0]).toBe(0.5);
+      expect([...s.targets].sort()).toEqual([0.25, 0.5, 0.75]);
+      for (const target of s.targets) {
+        pour(s, target);
+        expect(pourHint(s)).toBe('check');
+        checkPour(s);
+      }
+      expect(s.done).toBe(true);
+      expect([s.misses, s.hints]).toEqual([0, 0]);
+    }
+  });
+  it('conserves all water through overflows, emptying and recovery; any experiment can be retried', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const s = startPour(rng);
+      for (let i = 0; i < 40; i++) {
+        pour(s, rng.range(0, 4));
+        expect(s.cup).toBeLessThanOrEqual(1);
+        expect(s.jug + s.cup + s.tray).toBeCloseTo(3);
+        if (rng.chance(0.5)) emptyCup(s);
+        if (rng.chance(0.5)) recoverTray(s);
+        expect(Math.min(s.cup, s.jug, s.tray)).toBeGreaterThanOrEqual(-1e-9);
+      }
+      emptyCup(s); recoverTray(s);
+      pour(s, s.targets[0]);
+      expect(checkPour(s)).toBe('next');
+      expect([s.misses, s.hints]).toEqual([0, 0]);
+    }
+  });
+  it('checks the visible tolerance, empty checks are reminders, hints occur only once per cup', () => {
+    const s = startPour(new Rng(1));
+    expect(checkPour(s)).toBe('again');
+    pour(s, 0.9);
+    expect(checkPour(s)).toBe('wrong');
+    expect(s.hints).toBe(0);
+    expect(checkPour(s)).toBe('wrong');
+    expect(s.hints).toBe(1);
+    checkPour(s); checkPour(s);
+    expect(s.hints).toBe(1);
+    expect(pourHint(s)).toBe('empty');
+    emptyCup(s); recoverTray(s);
+    pour(s, s.targets[0] - POUR_TOLERANCE);
+    expect(checkPour(s)).toBe('next');
+    expect(s.helped).toBe(false);
+    pour(s, s.targets[1] - POUR_TOLERANCE - 0.001);
+    expect(pourHint(s)).toBe('more');
+    checkPour(s); checkPour(s);
+    expect(s.hints).toBe(2);
+  });
+  it('measures displacement, handles bad amounts, and freezes a completed round', () => {
+    expect(pourAmount(-100)).toBe(0);
+    expect(pourAmount(POUR_DISTANCE / 2)).toBe(0.5);
+    expect(pourAmount(POUR_DISTANCE * 8)).toBe(3);
+    const s = startPour(new Rng(1));
+    pour(s, NaN); pour(s, Infinity); pour(s, -1);
+    expect(s.jug).toBe(3);
+    for (const target of s.targets) { pour(s, target); checkPour(s); }
+    const before = structuredClone(s);
+    pour(s, 1); emptyCup(s); recoverTray(s);
+    expect(checkPour(s)).toBe('ignored');
+    expect(s).toEqual(before);
   });
 });
