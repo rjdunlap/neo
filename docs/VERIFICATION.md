@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-11 — Goodnight Room color groups
+
+- Built level 8 ([PR #164](https://github.com/rjdunlap/neo/pull/164)): two seeded color arrangements with two matches/two fair decoys, any answer order, spoken color feedback and the two-miss glow; pre-K 5–8, younger ranges and saved levels unchanged.
+- Tested claim `550aeab` (base `5418b0e`) plus implementation diff at `http://localhost:5197`, using worktree-local dependencies/cache.
+- Passed: typecheck, 38 focused Goodnight Room/registry/how-to tests, production build (existing bundle warning), and `git diff --check`. Rules cover seeded fairness, alternative orders, decoy trim and useful hints.
+- Passed: `BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=8 TO_LEVEL=8` (wrong taps, hint, reverse answer order, saved score/sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=8` clean in 5.7 seconds; no page errors. Portrait `test-results/browser/goodnight-room-8-portrait.png` reviewed: orange fish/kitten, brown teddy, yellow lamp, targets and pet clear.
+- Chromium initially failed to start under the macOS sandbox; the same filtered check passed outside it. Not run: broad suites/offline/couch (no navigation, persistence, assets or couch changes). iPad, device speech and child color interpretation remain open in the roadmap.
+- Changed-document local links checked; session dev server stopped after checks.
+
 ## 2026-10-11 — Market Stall guards and payment support
 
 - Built deep-dive slice 1 ([PR #163](https://github.com/rjdunlap/neo/pull/163)): named amount mistakes, free full-counter speech, one charged hint per order across both payments, plan-driven school coverage and bounded level-7 how-to. Original levels and saved sticker art preserved.
@@ -543,6 +552,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Goodnight Room color groups (`woods`, `fingerdemo`) | 2026-10-11: 38 focused tests, typecheck/build; level 8 wrong colors, glow, reverse answers and saved reward; demo clean in 5.7 s; portrait reviewed | Goodnight Room color groups entry | Broad suites not rerun; iPad, device speech and child color interpretation open |
 | Animal Snack words and guards (`woods`, `fingerdemo`) | 2026-10-11: 34 focused tests, typecheck/build; levels 1–5, retries/hints, exact count and saved rewards; demos 1/5 clean; portraits 3/5 and nearest-body regression | Animal Snack words and guards entry | Full suites/offline not rerun; iPad, speech and child play open |
 | Clock Tower deep dive | 2026-10-11: research and local Markdown links/anchors, diff check | Clock Tower deep dive entry | Docs only; no code or gameplay checks; device speech and child play open |
 | Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |

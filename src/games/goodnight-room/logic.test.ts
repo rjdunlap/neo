@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { acceptsTap, makeNight, makeRequests, PLANS, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, PLANS, COLORS, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
 
 describe('Goodnight Room', () => {
   it('draws a room of the right size from the six friends, in order, with no repeats', () => {
@@ -50,13 +50,13 @@ describe('Goodnight Room', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 200; seed++) {
         const rng = new Rng(seed);
-        const { room } = makeNight(plan, rng);
-        const rs = makeRequests(plan, rng, room);
+        const { room, color } = makeNight(plan, rng);
+        const rs = makeRequests(plan, rng, room, color);
         expect(rs).toHaveLength(plan.requests);
         const asked = rs.flat();
         expect(new Set(asked).size).toBe(asked.length);
         for (const t of asked) expect(room).toContain(t);
-        for (const r of rs) expect(r).toHaveLength(plan.mode === 'two' ? 2 : plan.mode === 'animals' ? 3 : plan.mode === 'lightLast' ? 6 : 1);
+        for (const r of rs) expect(r).toHaveLength(plan.mode === 'two' ? 2 : plan.mode === 'animals' ? 3 : plan.mode === 'lightLast' ? 6 : plan.mode === 'color' ? 2 : 1);
       }
     }
   });
@@ -167,12 +167,42 @@ describe('Goodnight Room', () => {
     expect([...rooms].sort()).toEqual(['barn', 'bedroom']);
   });
 
+  it('offers two clear color matches, two fair decoys and useful hints in every answer order', () => {
+    const plan = PLANS[7];
+    const colors = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const night = makeNight(plan, rng);
+      expect(night).toEqual(makeNight(plan, new Rng(seed)));
+      colors.add(night.color!);
+      const [request] = makeRequests(plan, rng, night.room, night.color);
+      expect(request).toHaveLength(2);
+      const decoys = night.room.filter(t => !request.includes(t));
+      expect(decoys).toHaveLength(2);
+      for (const t of request) expect(COLORS[t].main).toBe(night.color);
+      for (const t of decoys) expect(COLORS[t].visible).not.toContain(night.color);
+      for (const order of [request, [...request].reverse()]) {
+        const asleep = new Set<Thing>();
+        for (const t of order) {
+          const hint = thingToTap(plan, request, asleep.size, asleep, night.room)!;
+          expect(acceptsTap(plan, request, asleep.size, asleep, hint)).toBe(true);
+          for (const decoy of decoys) expect(acceptsTap(plan, request, asleep.size, asleep, decoy)).toBe(false);
+          expect(acceptsTap(plan, request, asleep.size, asleep, t)).toBe(true);
+          asleep.add(t);
+          expect(acceptsTap(plan, request, asleep.size, asleep, t)).toBe(false);
+        }
+        expect(thingToTap(plan, request, 2, asleep, night.room)).toBeNull();
+      }
+    }
+    expect([...colors].sort()).toEqual(['brown', 'orange']);
+  });
+
   it("gives the ghost finger's bot only right taps, until the room is asleep: everyone awake once, or each thing named in order", () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
         const rng = new Rng(seed);
-        const { room, asleep: start } = makeNight(plan, rng);
-        const rs = makeRequests(plan, rng, room);
+        const { room, color, asleep: start } = makeNight(plan, rng);
+        const rs = makeRequests(plan, rng, room, color);
         const asleep = new Set<Thing>(start);
         if (plan.mode === 'all') {
           const taps: Thing[] = [];
