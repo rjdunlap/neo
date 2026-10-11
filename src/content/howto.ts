@@ -180,7 +180,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Look to see what repeats, then tap the choice for each of the two empty cars.' },
       { from: 10, to: 10, text: 'Look at the two complete repeats, then tap what belongs in the seventh car.' },
       { from: 11, to: 11, text: 'Watch the color and shape change together, then tap the pair for the seventh car.' },
-      { from: 12, text: 'Count the numbered cars by 2, 5, or 10, then tap the next number.' },
+      { from: 12, to: 12, text: 'Count the numbered cars by 2, 5, or 10, then tap the number for the glowing car. It can be at the end or in the middle.' },
     ],
     finish: 'The round ends when the missing car or cars are filled in correctly.',
   },

@@ -216,7 +216,7 @@ Not built: a saved week or market-week chart in the journal, recipe quality and 
 
 ### Pattern Train
 
-*preschool–school.* Advances from AB through AAB/ABB and ABC, animal patterns, missing middle cars, bell patterns, and two-car gaps. The three school follow-ons ask for a seventh car after two repeats, then follow color and shape together, then count numbered cars by 2, 5 or 10. Bell choices can be auditioned before confirming; tapping a shown car is always free exploration.
+*preschool–school.* Advances from AB through AAB/ABB and ABC, animal patterns, missing middle cars, bell patterns, and two-car gaps. The three school follow-ons ask for a seventh car after two repeats, then follow color and shape together, then count numbered cars by 2, 5 or 10. Bell choices can be auditioned before confirming; tapping a shown car is always free exploration. A train shows two full repeats and then runs on part of the way into the next, so the empty car can be any place in the repeat (not always a copy of the first car); level 6's gap sits in either repeat. Numbered trains start off the step (such as 14, 16, 18…), may hide a middle car, and offer the answer among near misses (a step back, a step on, one off) in a shuffled order. The seventh-car and color-and-shape levels still build level 4's train until they are rebuilt.
 
 ### Memory Match
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { buildTrain, CHOICES, PATTERN_PLANS, wantedChoice } from './logic';
+import { buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PATTERN_PLANS, wantedChoice } from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
@@ -43,13 +43,92 @@ describe('Pattern Train', () => {
 
   it('puts the gap where each level says: the end, the middle, or the last two cars', () => {
     for (const plan of PATTERN_PLANS) {
-      const { sequence, targets } = buildTrain(plan, new Rng(3));
-      if (plan.numberSteps) { expect(targets).toEqual([6]); continue; }
-      if (plan.two) expect(targets).toEqual([sequence.length - 2, sequence.length - 1]);
-      else if (plan.missing) {
-        expect(targets[0]).toBeLessThan(plan.pattern.length);
-        expect(targets[0]).toBeGreaterThan(0);
-      } else expect(targets).toEqual([sequence.length - 1]);
+      for (let seed = 1; seed <= 100; seed++) {
+        const { sequence, targets } = buildTrain(plan, new Rng(seed));
+        if (plan.numberSteps) {
+          expect(sequence).toHaveLength(NUMBER_CARS);
+          expect(targets[0]).toBeGreaterThanOrEqual(2);
+          continue;
+        }
+        if (plan.two) expect(targets).toEqual([sequence.length - 2, sequence.length - 1]);
+        else if (plan.missing) {
+          // Inside the two repeats, never the first car of one.
+          expect(targets[0]).toBeLessThan(plan.pattern.length * 2);
+          expect(targets[0] % plan.pattern.length).not.toBe(0);
+        } else expect(targets).toEqual([sequence.length - 1]);
+      }
+    }
+  });
+
+  it('fits every train on the track: nine cars at most', () => {
+    for (const plan of PATTERN_PLANS) {
+      for (let seed = 1; seed <= 200; seed++) expect(buildTrain(plan, new Rng(seed)).sequence.length, plan.name).toBeLessThanOrEqual(9);
+    }
+  });
+
+  it('asks for every place in the repeat, so copying the first car is not the answer', () => {
+    PATTERN_PLANS.forEach((plan, i) => {
+      if (plan.numberSteps || plan.far) return;
+      const unit = plan.pattern.length;
+      const slots = new Set<number>();
+      let notFirst = 0;
+      for (let seed = 1; seed <= 200; seed++) {
+        const { sequence, targets } = buildTrain(plan, new Rng(seed));
+        slots.add(targets[0] % unit);
+        if (targets.some((t) => sequence[t] !== sequence[0])) notFirst++;
+      }
+      // Two empty cars start at slot 0 or 1 (a start at slot 2 would need a tenth car); a gap is never at a repeat's start.
+      const expected = plan.missing ? unit - 1 : plan.two ? 2 : unit;
+      expect(slots.size, `level ${i + 1}`).toBe(expected);
+      expect(notFirst, `level ${i + 1}`).toBeGreaterThan(200 / 3);
+    });
+  });
+
+  it('keeps the far levels at the seventh car, as their lines say, until they are rebuilt', () => {
+    for (const plan of PATTERN_PLANS.filter((p) => p.far)) {
+      for (let seed = 1; seed <= 50; seed++) {
+        const { sequence, targets } = buildTrain(plan, new Rng(seed));
+        expect(sequence).toHaveLength(7);
+        expect(targets).toEqual([6]);
+      }
+    }
+  });
+
+  it('makes the numbered train a counting question: varied starts, answers and places, no rule of thumb', () => {
+    const plan = PATTERN_PLANS.find((p) => p.numberSteps)!;
+    const answers = new Set<number>();
+    const places = new Set<number>();
+    let smallest = 0, largest = 0, notStep = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const { sequence, targets, choices } = buildTrain(plan, new Rng(seed));
+      const step = sequence[1] - sequence[0];
+      const answer = sequence[targets[0]];
+      expect(sequence.every((v, i) => v === sequence[0] + step * i)).toBe(true);
+      expect(sequence[0] % step).toBe(0);
+      expect(Math.max(...sequence, ...choices[0])).toBeLessThanOrEqual(NUMBER_TOP);
+      expect(Math.min(...choices[0])).toBeGreaterThan(0);
+      expect(choices[0].filter((c) => c === answer)).toHaveLength(1);
+      expect(new Set(choices[0]).size).toBe(CHOICES);
+      if (sequence[0] !== step) notStep++;
+      answers.add(answer);
+      places.add(choices[0].indexOf(answer));
+      if (answer === Math.min(...choices[0])) smallest++;
+      if (answer === Math.max(...choices[0])) largest++;
+    }
+    expect(notStep).toBe(200);
+    expect(answers.size).toBeGreaterThanOrEqual(20);
+    expect(places.size).toBe(CHOICES);
+    expect(smallest).toBeGreaterThan(0);
+    expect(smallest).toBeLessThan(110);
+    expect(largest).toBeGreaterThan(0);
+    expect(largest).toBeLessThan(110);
+  });
+
+  it('offers every piece on the train, so the near miss is always a choice', () => {
+    for (const plan of PATTERN_PLANS.filter((p) => !p.numberSteps)) {
+      const { sequence, choices } = buildTrain(plan, new Rng(5));
+      for (const options of choices) for (const piece of sequence) expect(options).toContain(piece);
+      for (const options of choices) expect(options).toEqual([0, 1, 2]);
     }
   });
 

@@ -1067,7 +1067,7 @@ export const SCRIPT = {
   'pattern.start': ['Look at the train. What comes in the glowing space?'],
   'pattern.far': ['Look at the two repeats. What belongs in the seventh car?'],
   'pattern.pair': ['Watch the colors and shapes change together. What belongs in the seventh car?'],
-  'pattern.number': ['Count the numbered cars. What number comes next?'],
+  'pattern.number': ['Count the numbered cars. What number belongs in the glowing car?'],
   'pattern.sound': ['Listen to the bells on the train. Which bell comes next? Tap a bell to listen, then tap the arrow.'],
   'pattern.wrong': ['Try another one. Look and listen to the pattern!'],
   'pattern.hint': ['This one! Can you find one just like it?'],
