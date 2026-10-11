@@ -732,12 +732,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Add the two prices, tap coins onto the counter to pay for both, then ring the bell.' },
       { from: 5, to: 5, text: 'Pay the price and ring the bell, then buy another one at the same price and pay a different way with other coins, ringing the bell again.' },
       { from: 6, to: 6, text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.' },
-      { from: 7, text: 'Tap coins onto the counter to pay the price with as few shells as you can, then ring the bell; tap a coin on the mat to put it back and swap it.' },
+      { from: 7, to: 7, text: 'Tap coins onto the counter to pay the price with as few shells as you can, then ring the bell; tap a coin on the mat to put it back and swap it.' },
     ],
+    note: 'Tap a coin on the mat to put it back. Two misses show a payment; help counts once per order, including when you pay two different ways.',
     finish: [
       { to: 5, text: 'The round ends when the right amount has been paid.' },
       { from: 6, to: 6, text: 'The round ends when the right change has been given.' },
-      { from: 7, text: 'The round ends when the price has been paid with the fewest shells.' },
+      { from: 7, to: 7, text: 'The round ends when the price has been paid with the fewest shells.' },
     ],
   },
   'garden-grow': {

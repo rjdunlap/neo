@@ -456,3 +456,7 @@ Built deep-dive slice 1 ([PR 161](https://github.com/rjdunlap/neo/pull/161)): ex
 ## Frog Hop guards and level-seven support (2026-10-11)
 
 [PR #162](https://github.com/rjdunlap/neo/pull/162) completes deep-dive slice 1 on existing levels 1–7: a full sum before the split at ten, a spoken explanation of both parts, direction and off-by-one feedback, a free card reminder after two inert pad taps, and one hint charged per question even if both stages need help. The school range follows the plan count and invalid descriptions do not silently clamp. Seeded sticker numerals and the frog drawing are pinned. No new bands, level IDs, saves or routes. Next: landing numerals, dots and landmark flowers ([deep dive](../deep-dives/frog-hop.md#build-slices-in-order)).
+
+## Market Stall guards and payment support (2026-10-11)
+
+Deep-dive slice 1 ([PR #163](https://github.com/rjdunlap/neo/pull/163)): payment mistakes explain coin values, off-by-one totals, returning the price instead of change, paying one of two prices and oversized coins. Hint pictures can refresh in both ways of an order while help counts once. Full-counter speech is free. Levels and bands stay stable; school follows the plan count, how-to level 7 is bounded, and tests pin saved sticker art and shared shell coins. Next: coin names and pips, then count-up change.

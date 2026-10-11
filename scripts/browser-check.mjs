@@ -3037,7 +3037,7 @@ async function woodsBatch() {
     log(`Frog Hop ${level} (${mode}): pads and cards tapped, wrong answers, counted demonstration and glow, saved score and sticker passed`);
   }
 
-  if (!only || only === 'shop') for (let level = fromLevel; level <= 7; level++) {
+  if (!only || only === 'shop') for (let level = fromLevel; level <= await page.evaluate(async () => (await import('/src/games/market-stall/logic.ts')).PLANS.length); level++) {
     await launch('market-stall', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, orders: neo.scene.game.orders.length }));
     const ring = async () => { await tap('neo.scene.game.bell'); await page.waitForTimeout(300); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); };
@@ -3071,11 +3071,16 @@ async function woodsBatch() {
       if (!(plan.mode === 'fewest' && n === 0)) await putDown(first), await ring();
       if (plan.mode === 'ways') {
         const second = await page.evaluate(async ({ want, first }) => { const S = await import('/src/games/market-stall/logic.ts'); return S.anotherWay(want, neo.scene.game.plan.coins, first); }, { want, first });
+        if (n === 0) {
+          await putDown(first); await ring(); await ring();
+          assert.deepEqual(await counts(), [4, 1], 'second-way help stays within the order');
+          assert.ok(await page.evaluate(() => neo.scene.game.ghost.children.length > 0));
+        }
         await putDown(second); await ring();
       }
     }
     await finished('market-stall');
-    assert.deepEqual(await score('market-stall'), [2, 1]);
+    assert.deepEqual(await score('market-stall'), [plan.mode === 'ways' ? 4 : 2, 1]);
     log(`Market Stall ${level} (${plan.mode}): coins tapped down and back, too much, hint coins, ${plan.mode === 'ways' ? 'a second way, ' : ''}saved score and sticker passed`);
   }
 

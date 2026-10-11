@@ -14,12 +14,12 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
+import { PLANS, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: PLANS.length },
 };
 
 const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
@@ -92,6 +92,7 @@ class MarketStall implements Game {
   /** Exact but inefficient payments heard at the bell this order. The second is a supported miss. */
   private fewestOffers = 0;
   private hinted = false;
+  private hintCharged = false;
   private names: string[] = [];
 
   constructor(private readonly ctx: GameContext) {
@@ -195,6 +196,7 @@ class MarketStall implements Game {
     this.index++;
     this.wrongs = 0;
     this.hinted = false;
+    this.hintCharged = false;
     this.fewestOffers = 0;
     this.firstWay = null;
     this.clearGhost();
@@ -232,6 +234,7 @@ class MarketStall implements Game {
     if (this.busy || this.finished) return;
     if (this.onMat.length >= 12) {
       sfx.boing();
+      void this.ctx.say('shop.full');
       return;
     }
     const node = coinArt(value);
@@ -280,8 +283,9 @@ class MarketStall implements Game {
       return;
     }
     if (got !== want) {
-      const change = this.plan.mode === 'change';
-      await this.wrong(got < want ? (change ? 'shop.change.short' : 'shop.short') : change ? 'shop.change.over' : 'shop.over', { n });
+      const kind = missKind(this.plan, this.order, coins)!;
+      const lines = { price: 'shop.price', 'one-price': 'shop.oneprice', 'counted-coins': 'shop.values', 'one-more': 'shop.one.more', 'one-less': 'shop.one.less', 'big-coin': 'shop.big', short: this.plan.mode === 'change' ? 'shop.change.short' : 'shop.short', over: this.plan.mode === 'change' ? 'shop.change.over' : 'shop.over' } as const;
+      await this.wrong(lines[kind], { n });
       return;
     }
     if (this.plan.mode === 'fewest' && !usesFewestCoins(want, this.plan.coins, coins)) {
@@ -315,14 +319,15 @@ class MarketStall implements Game {
     await this.next();
   }
 
-  private async wrong(line: 'shop.short' | 'shop.over' | 'shop.change.short' | 'shop.change.over' | 'shop.sameway' | 'shop.fewer', vars: { n?: number }) {
+  private async wrong(line: 'shop.short' | 'shop.over' | 'shop.change.short' | 'shop.change.over' | 'shop.sameway' | 'shop.fewer' | 'shop.price' | 'shop.oneprice' | 'shop.values' | 'shop.one.more' | 'shop.one.less' | 'shop.big', vars: { n?: number }) {
     this.misses++;
     this.wrongs++;
     sfx.boing();
     await this.ctx.say(line, vars);
     if (this.wrongs >= 2 && !this.hinted) {
+      this.hints += hintCharge(this.wrongs, this.hinted, this.hintCharged);
+      this.hintCharged = true;
       this.hinted = true;
-      this.hints++;
       const want = target(this.plan, this.order);
       const idea = this.firstWay ? anotherWay(want, this.plan.coins, this.firstWay) : fewest(want, this.plan.coins);
       idea.forEach((v, i) => {
@@ -372,7 +377,7 @@ class StallIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const good = rng.pick(GOODS);
+  const good = GOODS[stickerGood(rng)];
   const art = prop(good.kind, good.color);
   art.scale.set(1.6);
   art.y = -20;
@@ -394,7 +399,7 @@ export const marketStall: GameModule = {
   skills: ['counting', 'money', 'adding', 'counting-on'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (level) => planFor(level).name,
+  describeLevel: (level) => PLANS[level - 1]?.name,
   music: STYLES.stickers,
   coplayHint: 'Take turns being the shopkeeper: "That will be 4, please!" and count the coins together.',
   offScreen: 'Play shop with real coins or buttons: price a few toys and pay for them.',

@@ -92,3 +92,25 @@ export function paymentFor(plan: ShopPlan, order: Order, firstWay: number[] | nu
 export function payTouch(payment: number[], onMat: number[]): { coin: number } | 'bell' {
   return onMat.length < payment.length ? { coin: payment[onMat.length] } : 'bell';
 }
+
+/** Explain a wrong amount; specific misconceptions take precedence over its size. */
+export type MissKind = 'price' | 'one-price' | 'counted-coins' | 'one-more' | 'one-less' | 'big-coin' | 'short' | 'over';
+export function missKind(plan: ShopPlan, order: Order, coins: number[]): MissKind | null {
+  const want = target(plan, order);
+  const got = sum(coins);
+  if (got === want) return null;
+  if (plan.mode === 'change' && got === sum(order.prices)) return 'price';
+  if (plan.mode === 'pair' && order.prices.includes(got)) return 'one-price';
+  if (coins.length === want && coins.some(c => c > 1)) return 'counted-coins';
+  if (got === want - 1) return 'one-more';
+  if (got === want + 1) return 'one-less';
+  if (coins.some(c => c > want)) return 'big-coin';
+  return got < want ? 'short' : 'over';
+}
+
+/** The picture may be refreshed for a second payment, but help is charged once per order. */
+export const hintCharge = (wrongs: number, shown: boolean, charged: boolean): number =>
+  wrongs >= 2 && !shown && !charged ? 1 : 0;
+
+/** Original six-fruit sticker draw; adding stall goods must never reinterpret saved seeds. */
+export const stickerGood = (rng: Rng) => rng.int(0, 5);
