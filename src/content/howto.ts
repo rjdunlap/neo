@@ -241,15 +241,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the bug matches what was asked for.',
   },
   'story-steps': {
-    goal: 'Put pictures in story order.',
+    goal: 'Tell a story in pictures and notice what makes things happen.',
     steps: [
       { to: 2, text: 'Drag the picture that comes next into the glowing space.' },
       { from: 3, to: 5, text: 'Drag the pictures into the spaces in the order the story happens.' },
       { from: 6, to: 6, text: 'Drag the picture that belongs in the missing middle into the glowing space; some pictures are from another story.' },
-      { from: 7, text: 'Choose the four pictures that make one story, and drag them into place in order.' },
-      'Tap the music button to hear the pictures placed so far.',
+      { from: 7, to: 7, text: 'Choose the four pictures that make one story, and drag them into place in order.' },
+      { from: 8, to: 8, text: 'Look at the picture already shown. Drag the picture that made it happen into the glowing space before it.' },
+      { to: 8, text: 'Tap the music button to hear the pictures placed so far.' },
     ],
-    finish: 'The round ends when the story pictures are in a sensible order.',
+    finish: [
+      { to: 7, text: 'The round ends when the story pictures are in a sensible order.' },
+      { from: 8, to: 8, text: 'The round ends when the cause is before its effect, and the pet explains what happened.' },
+    ],
   },
   'feelings-faces': {
     goal: 'Notice how the pet and its friends feel.',

@@ -22,7 +22,22 @@ export const STORY_FAMILY: Record<StoryId, 'stack' | 'seed' | 'metamorph' | 'was
   tower: 'stack', snow: 'stack', sandcastle: 'stack', sandwich: 'stack',
   flower: 'seed', apple: 'seed', butterfly: 'metamorph', dog: 'wash', rain: 'weather', bedtime: 'bedtime',
 };
-export interface StoryCard { story: StoryId; stage: number }
+export const CAUSES = {
+  spill: { name: 'The spilled cup', steps: ['The cup tips and water pours out.', 'There is water beside the fallen cup.'], because: 'The water spilled because the cup tipped.', plausible: ['spill'] },
+  towerFall: { name: 'The fallen tower', steps: ['A hand pushes the block tower.', 'The blocks have fallen down.'], because: 'The tower fell because a hand pushed it.', plausible: ['towerFall'] },
+  muddyBoot: { name: 'The muddy boot', steps: ['A boot steps into a muddy puddle.', 'The boot is covered in mud.'], because: 'The boot got muddy because it stepped into mud.', plausible: ['muddyBoot'] },
+  balloonPop: { name: 'The popped balloon', steps: ['A pin touches the balloon.', 'The balloon has burst.'], because: 'The balloon burst because the pin poked it.', plausible: ['balloonPop'] },
+  lampOn: { name: 'The shining lamp', steps: ['A hand turns on the lamp switch.', 'The lamp is shining.'], because: 'The lamp shines because someone turned it on.', plausible: ['lampOn'] },
+  bellRing: { name: 'The ringing bell', steps: ['A beater strikes the bell.', 'The bell swings and rings.'], because: 'The bell rings because the beater struck it.', plausible: ['bellRing'] },
+  paperCut: { name: 'The cut paper', steps: ['Scissors cut the purple paper.', 'The purple paper is in two pieces.'], because: 'The paper is in two pieces because scissors cut it.', plausible: ['paperCut'] },
+  tracks: { name: 'The wheel tracks', steps: ['A toy car rolls through the sand.', 'There are wheel tracks in the sand.'], because: 'The tracks appeared because the car rolled through the sand.', plausible: ['tracks'] },
+} as const;
+export type CauseId = keyof typeof CAUSES;
+export const CAUSE_IDS = Object.keys(CAUSES) as CauseId[];
+export interface StoryCard { story: StoryId | CauseId; stage: number }
+export const isCause = (id: StoryCard['story']): id is CauseId => id in CAUSES;
+export const pictureText = (card: StoryCard): string => (isCause(card.story) ? CAUSES[card.story] : STORIES[card.story]).steps[card.stage];
+export const CAUSE_PLAN = { kind: 'cause', count: 2, name: 'Choose the picture that caused the shown effect' } as const;
 /** `mixed`: the extra pictures come from two different stories (a story cannot be spotted by one end alone); otherwise from one. */
 export const STORY_PLANS = [
   { count: 2, fixed: 'first', distractors: 1, mixed: false, stories: ['tower', 'snow', 'sandcastle', 'sandwich'], name: 'Finish a two-picture story, with the beginning shown' },
@@ -34,19 +49,36 @@ export const STORY_PLANS = [
   { count: 4, fixed: 'none', distractors: 2, mixed: true, stories: STORY_IDS, name: 'Build a four-picture story from six mixed pictures' },
 ] as const;
 export type StoryPlan = (typeof STORY_PLANS)[number];
+export const LEVEL_PLANS = [...STORY_PLANS, CAUSE_PLAN] as const;
 export function sameCard(a: StoryCard, b: StoryCard): boolean { return a.story === b.story && a.stage === b.stage; }
-export function storyPuzzle(plan: StoryPlan, rng: Rng) {
+export function causePuzzle(rng: Rng) {
+  const cause = rng.pick(CAUSE_IDS);
+  const pair = CAUSES[cause];
+  const others = rng.shuffle(CAUSE_IDS.filter((id) => !(pair.plausible as readonly string[]).includes(id))).slice(0, 2);
+  return {
+    story: cause, cause,
+    sequence: [{ story: cause, stage: 0 }, { story: cause, stage: 1 }] as StoryCard[],
+    fixed: [1],
+    choices: rng.shuffle([cause, ...others].map((story) => ({ story, stage: 0 } as StoryCard))),
+  };
+}
+export function storyPuzzle(plan: StoryPlan, rng: Rng): ReturnType<typeof sequencePuzzle>;
+export function storyPuzzle(plan: StoryPlan | typeof CAUSE_PLAN, rng: Rng): ReturnType<typeof sequencePuzzle> | ReturnType<typeof causePuzzle>;
+export function storyPuzzle(plan: StoryPlan | typeof CAUSE_PLAN, rng: Rng) {
+  return 'kind' in plan ? causePuzzle(rng) : sequencePuzzle(plan, rng);
+}
+function sequencePuzzle(plan: StoryPlan, rng: Rng) {
   const story: StoryId = rng.pick([...plan.stories]);
   const stages = plan.count === 2 ? [0, 3] : plan.count === 3 ? [0, 1, 3] : [0, 1, 2, 3];
   const sequence = stages.map((stage) => ({ story, stage }));
   const fixed = plan.fixed === 'none' ? [] : plan.fixed === 'first' ? [0] : [0, sequence.length - 1];
-  const choices: StoryCard[] = sequence.filter((_, i) => !fixed.includes(i));
+  const choices: (StoryCard & { story: StoryId })[] = sequence.filter((_, i) => !fixed.includes(i));
   // Extra pictures never come from the round's own family, and a mixed round takes its two from two different families.
   const others = STORY_IDS.filter((s) => STORY_FAMILY[s] !== STORY_FAMILY[story]);
   const other = rng.pick(others);
   const second = plan.mixed ? rng.pick(others.filter((s) => STORY_FAMILY[s] !== STORY_FAMILY[other])) : other;
   for (let i = 0; i < plan.distractors; i++) choices.push({ story: i === 0 ? other : second, stage: i * 3 });
-  return { story, sequence, fixed, choices: rng.shuffle(choices) };
+  return { story, cause: undefined, sequence, fixed, choices: rng.shuffle(choices) };
 }
 
 /** The first slot of the strip that is still empty: pictures go in from the beginning of the story, one after another. */

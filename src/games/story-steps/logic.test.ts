@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { nextPicture, nextSlot, sameCard, STORIES, STORY_FAMILY, STORY_IDS, STORY_PLANS, storyPuzzle, type StoryCard } from './logic';
+import { CAUSES, CAUSE_IDS, causePuzzle, LEVEL_PLANS, isCause, pictureText, nextPicture, nextSlot, sameCard, STORIES, STORY_FAMILY, STORY_IDS, STORY_PLANS, storyPuzzle, type StoryCard } from './logic';
 
 describe('Story Steps', () => {
   it('lays out a story in order, with every picture it needs among the choices and any extras from another story', () => {
@@ -15,13 +15,13 @@ describe('Story Steps', () => {
         const extras = puzzle.choices.filter((c) => !puzzle.sequence.some((s) => sameCard(s, c)));
         expect(extras).toHaveLength(plan.distractors);
         for (const e of extras) expect(e.story).not.toBe(puzzle.story);
-        for (const c of puzzle.sequence) expect(STORIES[c.story].steps[c.stage]).toBeTruthy();
+        for (const c of puzzle.sequence) expect(pictureText(c)).toBeTruthy();
       }
     }
   });
 
   it('has a bot that finishes the story in order, never picks a picture from another story, and so makes no miss (what the ghost finger plays)', () => {
-    for (const plan of STORY_PLANS) {
+    for (const plan of LEVEL_PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
         const puzzle = storyPuzzle(plan, new Rng(seed));
         const placed = new Set<number>(puzzle.fixed);
@@ -38,9 +38,37 @@ describe('Story Steps', () => {
         expect(placed.size).toBe(plan.count);
         expect(moves).toBe(plan.count - puzzle.fixed.length);
         // Pictures from the other story were left alone.
-        expect(choices.filter((c) => !c.placed)).toHaveLength(plan.distractors);
+        expect(choices.filter((c) => !c.placed)).toHaveLength('kind' in plan ? 2 : plan.distractors);
       }
     }
+  });
+
+  it('offers exactly one plausible cause, with three distinct choices, a shown effect and a reachable hint', () => {
+    const seen = new Set<string>();
+    expect(CAUSE_IDS).toHaveLength(8);
+    for (let seed = 1; seed <= 300; seed++) {
+      const p = causePuzzle(new Rng(seed));
+      expect(causePuzzle(new Rng(seed))).toEqual(p);
+      seen.add(p.cause);
+      expect(p.fixed).toEqual([1]);
+      expect(p.sequence).toEqual([{ story: p.cause, stage: 0 }, { story: p.cause, stage: 1 }]);
+      expect(p.choices).toHaveLength(3);
+      expect(new Set(p.choices.map((c) => c.story)).size).toBe(3);
+      const plausible = CAUSES[p.cause].plausible as readonly string[];
+      for (const id of plausible) expect(CAUSE_IDS).toContain(id);
+      expect(p.choices.every((c) => c.stage === 0)).toBe(true);
+      const answers = p.choices.filter((c) => plausible.includes(c.story));
+      expect(answers).toEqual([{ story: p.cause, stage: 0 }]);
+      const hint = nextPicture(p.sequence, new Set(p.fixed), p.choices.map((card) => ({ card, placed: false })));
+      expect(hint?.choice.card).toEqual(answers[0]);
+      expect(hint?.slot).toBe(0);
+      for (const card of [...p.sequence, ...p.choices]) {
+        expect(isCause(card.story)).toBe(true);
+        expect(pictureText(card)).toMatch(/^[A-Z].*[.!?]$/);
+      }
+      expect(CAUSES[p.cause].because).toContain('because');
+    }
+    expect([...seen].sort()).toEqual([...CAUSE_IDS].sort());
   });
 
   it('has ten stories, each a real sequence of four different, spoken sentences', () => {
