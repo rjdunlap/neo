@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — JumpStart title-by-title research (docs only)
+
+- Added `IDEAS.md` § "JumpStart, title by title": per-band catalogues of what each JumpStart title asked a child to do (Baby and Toddlers through 6th Grade, Typing, 3D Virtual World) mapped to built games, notebook ideas or "not borrowed"; ten new proposals; the evidence for the "what not to borrow" rules; and a family-album decision.
+- Sources: Wikipedia and SuperKids pages opened and linked. The fan wiki refused every fetch, so details from its search summaries are marked † in the section and need rechecking. Not found: Pre-K, Numbers, Spanish, Music, Spelling and Reading titles, both 4th Grade games' minigames, and 3D Virtual World's pet games.
+- Ran `git diff --check` and an anchor and relative-link check on the new section. No code, tests or browser suites ran.
+- Open: the † details; the family-album decision; whether Star Dots is built before the Color Train lap mode.
+
 ## 2026-10-11 — Letter Trails deep dive (docs only)
 
 - Wrote `docs/deep-dives/letter-trails.md`: the game read from `index.ts`, `strokes.ts`, `pictures.ts`, `strokes.test.ts`, the how-to, the voice script, the journal and the save; nine reference rows (the Handwriting Without Tears teaching-order sheet opened, Common Core L.K.1.a, a pre-writing checklist and the Puranik and Lonigan name-writing paper opened; the apps, Montessori, clinic handouts and tracing research as search summaries only); levels 9–18, Shape Trails below level 1, a grown-up targeting table and thirteen build slices. Updated the tracker, the chunk 14 row, "Waiting on the developer" (a new row and the stroke-convention row) and the IDEAS rows.

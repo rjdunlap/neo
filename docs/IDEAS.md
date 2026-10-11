@@ -844,7 +844,7 @@ That review compared both idea notebooks with the registry, which then held 63 g
 
 | Missing shelf | Why it matters here | Ideas it suggests below |
 | --- | --- | --- |
-| **JumpStart's full range** | Only JumpStart 1st and 3rd Grade were cited. [JumpStart Baby](https://www.mobygames.com/game/99805/jumpstart-baby/) (1998) was made for 9–24 months, her current age: eight activities around a house with a teddy bear, where any key press moves the activity along. JumpStart's 3D Virtual World and JumpStart.com (2007–2009) let children adopt and care for pets beside the learning games, the literal meeting point of this project's two inspirations. | Color Train; a model for the pet treehouse |
+| **JumpStart's full range** | Only JumpStart 1st and 3rd Grade were cited (the rest of the line is now catalogued in [JumpStart, title by title](#jumpstart-title-by-title-2026-10-11)). [JumpStart Baby](https://www.mobygames.com/game/99805/jumpstart-baby/) (1998) was made for 9–24 months, her current age: eight activities around a house with a teddy bear, where any key press moves the activity along. JumpStart's 3D Virtual World and JumpStart.com (2007–2009) let children adopt and care for pets beside the learning games, the literal meeting point of this project's two inspirations. | Color Train; a model for the pet treehouse |
 | **Preschool computer classics** | Edmark's Early Learning House (Millie's Math House, Bailey's Book House, Sammy's Science House) gave most activities an explore mode and a mode where a character asks for something, the same split as Puddle Island's free-play and named-target levels. Sierra's [Mixed-Up Mother Goose](https://mocagh.org/sierra/mothergoose-manual.pdf) (1987) is a whole adventure of returning lost things to nursery-rhyme characters, one at a time. | Build-a-Bug counting, Doghouse Directions, Fripple Orders, Mother Goose Muddle |
 | **Elementary reasoning classics** | The 6–11 plan cites curriculum standards but few games made for that age: Sunburst's The Factory and [Building Perspective](https://education.ti.com/html/eguides/discontinued/applications/EN/Building-Perspective-Guidebook-TI73_EN.pdf), The Learning Company's Rocky's Boots and Gertrude's Secrets, Edmark's [Thinkin' Things](https://www.atarimagazines.com/compute/issue168/78_Thinkin_things.php), MECC's The Oregon Trail, Number Munchers, Lemonade Stand and Storybook Weaver, Broderbund's Carmen Sandiego, and Maxis' SimTown, SimPark and SimSafari. | Machine Line, Skyline View, Sorting Machine, Number Munch Grid, Postcard Detective, Little Town Planner, Story Weaver |
 | **Other children's worlds** | Webkinz (pet rooms and minigame jobs), Poptropica (self-contained story islands), Animal Jam (animal facts in a social world) and Moshi Monsters (a monster, its room and collectible creatures) show what children loved about pet worlds, and which membership and neglect patterns to avoid. More Neopets and Club Penguin games also fit: Kacheek Seek, Lunar Temple and Thin Ice. | Count the Peekers, Guess the Pumpkin, Moon Window, Mossy Path |
@@ -855,6 +855,174 @@ That review compared both idea notebooks with the registry, which then held 63 g
 | **Picture books, rhymes and preschool TV** | What a one-year-old meets first: *Brown Bear, Brown Bear, What Do You See?*, *The Very Hungry Caterpillar*, *We're Going on a Bear Hunt*, *Rosie's Walk*, nursery and action songs, Numberblocks, Blue's Clues and Bluey. | Brown Bear Parade, Caterpillar Week, Bear Hunt Walk, Clue Paws, Keepy Uppy, Pet Says (built) |
 | **Hands-on science and simulations** | Stacking blocks, gears, water play and ramps, and the University of Colorado's free PhET simulations (Balancing Act, [Equality Explorer](https://phet.colorado.edu/en/simulations/equality-explorer), Mean: Share and Balance, Area Builder, Circuit Construction Kit). | Block Tower (built), Gear Garden, Pour and Fill, Shape Rollers, Circuit Garden, Share Fairly |
 | **Design and learning research** | Touch-gesture studies with preschoolers, developmental milestones for the lap band, and research-based orderings of early math skills. | [Design and learning references](#design-and-learning-references) |
+
+### JumpStart, title by title (2026-10-11)
+
+The notebook had cited JumpStart Baby, 1st Grade and 3rd Grade. This section goes through the rest of the line, from the lap titles to the 6th-grade adventures, to see what each one asked a child to do, which of it the island already has, and what is new. The rows under [New ideas from JumpStart](#new-ideas-from-jumpstart) are **proposals**, not decisions; the catalogue rows are history and mapping.
+
+**How reliable the details are.** Pages I opened are linked: [JumpStart Toddlers](https://superkids.com/aweb/pages/reviews/early1/toddlers/merge.shtml), [Preschool](https://superkids.com/aweb/pages/reviews/multisub/preschoo/1/jspre/merge.shtml), [Kindergarten 2.0](https://superkids.com/aweb/pages/reviews/early/2/jskind2/merge.shtml), [1st Grade](https://www.superkids.com/aweb/pages/reviews/multisub/1stgrade/1/js1st/merge.shtml), [Advanced 1st Grade](https://www.superkids.com/aweb/pages/reviews/multisub/1stgrade/02/jsadv1/merge.shtml) and [Baby](https://www.superkids.com/aweb/pages/reviews/multisub/baby/1/jsbaby/merge.shtml) (all SuperKids reviews); Wikipedia's pages for [Toddlers](https://en.wikipedia.org/wiki/JumpStart_Toddlers), [Preschool](https://en.wikipedia.org/wiki/JumpStart_Preschool), [1st Grade](https://en.wikipedia.org/wiki/JumpStart_1st_Grade), [Advanced 1st Grade](https://en.wikipedia.org/wiki/JumpStart_Advanced_1st_Grade), [Advanced 2nd Grade](https://en.wikipedia.org/wiki/JumpStart_Advanced_2nd_Grade), [3rd Grade: Mystery Mountain](https://en.wikipedia.org/wiki/JumpStart_Adventures_3rd_Grade:_Mystery_Mountain), [4th Grade: Haunted Island](https://en.wikipedia.org/wiki/JumpStart_Adventures_4th_Grade:_Haunted_Island), [5th Grade: Jo Hammet](https://en.wikipedia.org/wiki/JumpStart_Adventures_5th_Grade:_Jo_Hammet,_Kid_Detective), [6th Grade: Mission Earthquest](https://en.wikipedia.org/wiki/JumpStart_Adventures_6th_Grade:_Mission_Earthquest), [Typing](https://en.wikipedia.org/wiki/JumpStart_Typing) and [3D Virtual World](https://en.wikipedia.org/wiki/JumpStart_3D_Virtual_World). Wikipedia's pages for Baby, Kindergarten and 2nd Grade name no activities. **† marks a detail that came only from a search-engine summary of a fan-wiki page** (the wiki itself refused my fetch) or of a retail or magazine listing: recheck it before a design depends on it. Editions differ (Baby 1998 and 2000; Toddlers 1996, v2.0 and 2000; Preschool 1995 and 1998; Kindergarten 1994 and 1997; 1st Grade 1995 and 1999), and the sources do not always say which edition they describe.
+
+**Not found.** Activity lists for the JumpStart Pre-K, Numbers (1998), Spanish, Music, Spelling and Reading titles; the minigames of 4th Grade (both Haunted Island and Sapphire Falls) and of 5th Grade's later missions; and the pet minigames of 3D Virtual World. Math Marbles and Milk Caps (1st Grade) are named but not described. Wikipedia's 3rd Grade page does not name its mission games either.
+
+#### Lap and toddler: Baby and Toddlers
+
+JumpStart Baby (1998, ages 9–24 months) is the closest relative of her current age. SuperKids says that in every activity the baby presses keys on cue to keep it going, and that mobile-style scenes start on a key press while the object twirls. JumpStart Toddlers (1996) has a gopher guide, Giggles, and seven hotspots; reviewers describe any mouse movement or key press as earning a sound or animation ([Wikipedia](https://en.wikipedia.org/wiki/JumpStart_Toddlers)).
+
+| JumpStart activity | What the child did | On the island |
+| --- | --- | --- |
+| Where's Teddy? / Hide and Seek (Baby 1998†) | Search for Teddy | Built: Peekaboo Barn |
+| Dress Teddy (Baby 1998; in 2000† Teddy names the body part each garment goes on) | Dress the bear for snow or sand | Built: Weather Wardrobe, Teddy Doctor |
+| Color Train (Baby 1998) | Sort colored objects into train cars | Notebook idea [Color Train](#early-learning-software), waits on the lap-level decision |
+| Puzzle Time (Baby†) | Simple puzzles | Built: Puzzle Pals |
+| Connect-the-Stars (Baby†) | Connect stars to draw a sky picture | **Not on the island**: Dot Link is a color-chain game. See **Star Dots** below |
+| Picture Fun (Baby†, SuperKids "coloring") | Color part of an amusing picture | Built: Rainbow Fingers |
+| Down on the Farm (Baby 1998†) | Find Teddy's farm friends and hear them | Built: Peekaboo Barn, Animal Snack |
+| Let's Make Music / Sing-a-Long (Baby) | Join a song with a friendly band | Built: Sound Garden, Jelly Drums; sketch Sing-Along Barn |
+| Music Box (Baby 2000†) | A key press switches which animal sings | The Wind the Music Box trick in a third Quick Tricks show |
+| Dancing Baby (Baby 2000†) | A baby dances to action songs ("Where is Thumbkin?") | Built: Pet Says |
+| Turtle Hop (Baby 2000†) | Frogs and turtles introduce colors | A Color Garden or Frog Hop lap mode; nothing new |
+| Teddy's Talking Phone (Baby 2000†) | A toy phone says letters, numbers, colors and shapes | **New**: Phone Pal below |
+| Teddy's Family Tree, Baby World (Baby 2000†) | Relatives' pictures; a parent can swap in family photos | **Needs a decision**: see Family album below (the island has no camera or photo import) |
+| Peek-A-Boo (Toddlers, SuperKids) | Move the mouse to uncover a hidden animal; no clicking | Built: Peekaboo Barn (its [deep dive](deep-dives/peekaboo-barn.md) already cites the rubbing gesture) |
+| Give the Dog a Bone (SuperKids; a retail listing† says "Feed the Doggie") | A talking dog asks for various objects | Built: Animal Snack, Little Helpers |
+| Songbook (Toddlers) | Click nine singing animals | Built: Sound Garden |
+| ABC's, 123 (Toddlers) | Any letter or number key puts it on a blackboard with a picture and its word; other keys give a reward animation | Built: Word Monsters (letters say their sounds), Duck Pond's lap levels |
+| Bouncing Shapes (Toddlers) | The review does not describe it | Shape Sorter covers shapes; nothing to map |
+| Musical Instruments (Toddlers) | Click seven instruments to hear each named and three songs | Partly Jelly Drums; naming real instruments is in the notebook's music gaps (instrument sounds) |
+
+The pattern worth keeping from this band is the one the island already follows: **every touch gives something back, and nothing can be wrong.**
+
+#### Preschool and kindergarten: Preschool, Kindergarten, Math, ABC's, Phonics, the 2002 Advanced titles
+
+JumpStart Preschool (1995; re-released 1998 with a placement test that set the difficulty) has a schoolhouse with animal friends; finishing activities earned four train tickets, redeemed for a ride to one of ten† lands with one of twelve random songs and a passport stamp ([Wikipedia](https://en.wikipedia.org/wiki/JumpStart_Preschool)). Kindergarten (1994; 2.0 in 1997) has a classroom, a playground and 18 activities reached by clicking classroom objects, with many hidden surprise animations ([SuperKids](https://superkids.com/aweb/pages/reviews/early/2/jskind2/merge.shtml)).
+
+| JumpStart activity | What the child did | On the island |
+| --- | --- | --- |
+| Connect the Dots (Preschool) | Connect dots in order, numbers or letters†; the Preschool "book" holds more pictures† | **Not on the island**: see **Star Dots** |
+| "Color" bowling (Preschool) | Named in a review, not described | Pin Roll idea (Wii Bowling); a color-pins level is plausible |
+| Hide and seek (Preschool) | Named in a review | Built: Peekaboo Barn |
+| Baking virtual treats (Preschool) | Named in a review | Built: Pet Kitchen |
+| Blocks (Preschool†) | Sort a character's blocks and put them away | Built: Critter Sort; notebook idea Trash Sort |
+| Player-piano tunes (Preschool) | Tap feet to the tunes | Built: Song Maker |
+| Train tickets and passport stamps | Four activities buy a train ride | Not borrowed. One sticker per round is predictable on its own; the journal is the island's passport |
+| Class calendar (Kindergarten) | Study the twelve months and their holidays | Notebook idea [Day by Day](#proposals) |
+| Classroom clock (Kindergarten) | A typical kindergartner's day | Built: Clock Tower; Day by Day |
+| Number and letter blocks (Kindergarten) | Arrange blocks in sequence | Sketch Number Trails; alphabetic order is in **Floe Bridge** below |
+| Stacking dolls (Kindergarten) | Arrange by size | Built: Size Parade |
+| Hide and seek with Bebop, the classroom hamster | Bebop vanishes and leaves a spoken clue; clues are short rhyming sentences and each hiding place practices a different skill† | **New**: Rhyme Hunt below |
+| Paint table (Kindergarten) | Paint | Built: Rainbow Fingers, Stamp Studio |
+| Puzzle game (Kindergarten) | A large array of puzzles; finishing reveals a hidden picture | Built: Puzzle Pals |
+| Pattern Blaster (Kindergarten) | Move falling pieces onto matching blocks; SuperKids' child testers found the hand-eye speed beyond ages 4–6 and got frustrated | Shape Drop in the backlog, **only if it waits for her**; this is a worked example of speed lowering a game below its age |
+| Hidden surprise animations (Kindergarten) | Tap anything in the classroom and it does something | Toy Box Town and Busy Picture shelves |
+| Math for Kindergartners (1999†) | A birthday party for a giant: a cat blows up balloons and the child sorts them to family members' requests in a Venn diagram, leftovers going to the host | Built: Critter Sort's hoops |
+| ABC's, Pizza Palace and Tuna Mountain (1999†) | Find hidden letters that match a sign; steer a bear down a slope to learn letters and sounds | Critter Spotter level for hidden letters; **Letter Slalom** below |
+| Phonics, River Raft, Shipwreck Rhymes, Storybook Cave (1999) | Combine letters into words that characters sound out; match rhyming words†; pick the letter or word that finishes a sentence† | Built: Word Monsters, Rhyme Time; sentence completion is in Read & Do. Its "Read 'n' Respond" speech recognition stays out unless a grown-up opts in to a microphone |
+| Numbers (1998†) | Collect dog biscuits through dream settings (space, a pirate island, the Wild West) | Activities not found; theme only |
+| Advanced Preschool World (2002–2008†) | A free-roaming 3D neighborhood with a backpack, missions and a Craft Corner whose pictures decorate the neighborhood | The treehouse already frames what she made |
+
+#### Grades 1 to 3: the schoolhouse and the adventures
+
+**1st Grade (1995, 1999 edition).** A schoolhouse hub with a guide dog, Frankie, and four areas: a classroom with a library of eight original storybooks, a lunchroom, a playground and a bus to the zoo or beach. Points from correct answers buy "milk caps" at 100 points each; the program says it adapts difficulty and has three levels in many modules ([SuperKids](https://www.superkids.com/aweb/pages/reviews/multisub/1stgrade/1/js1st/merge.shtml), [Wikipedia](https://en.wikipedia.org/wiki/JumpStart_1st_Grade)).
+
+| JumpStart activity | What the child did | On the island |
+| --- | --- | --- |
+| Tick Tock | Match hours and minutes to movement on a game board | Built: Clock Tower |
+| Music in the Mouse Hole | A mouse orchestra | Built: Song Maker |
+| Concentration | A memory game (reviewed "very average") | Built: Memory Match |
+| Vending machines, cash register | Pay with the right coins; add up an order | Built: Market Stall (its deep dive covers coins) |
+| Food line | Serve food by fractions | Built: Pet Kitchen (the notebook already credits the cafeteria) |
+| Baking machine, pizza orders | Add ingredients; read and fill pizza orders | Built: Pet Kitchen; reading short orders is Read & Do |
+| Detect-o-matic | A beeping detector finds Frankie's buried bones in the sandbox | **New**: Warm-and-Cool Dig |
+| Pizza Picker† | Find the pizzas ordered **before a timer runs out** | Not borrowed: the timer |
+| Math Marbles, Milk Caps | Named, not described | Unknown |
+
+**2nd Grade (1996†).** A school after hours with a pen-pal club; most activities have three levels called Scout, Explorer and Trailblazer, and points buy post-office stamps for a stamp book†. Rooms include a clubhouse jukebox and a memory game called Treasure Tree, a blackboard where songs and animations teach grammar, a fish tank where the player follows instructions to feed the fish, and a log ride where math or spelling answers carry five gophers across a river†.
+
+| JumpStart activity | What the child did | On the island |
+| --- | --- | --- |
+| Treasure Tree† | Memory game | Built: Memory Match |
+| Blackboard grammar songs† | Songs and animations about grammar | **New**: Word Jobs |
+| Fish tank† | Follow instructions to feed the fish | Built in spirit: Goodnight Room's two names in order; Animal Snack |
+| Log ride† | Math or spelling answers carry gophers across a river | Frog Hop is a number-line game; choosing an answer by where she lands is a possible Frog Hop mode, not a new game |
+
+**3rd Grade, Mystery Mountain** (the notebook cites it from a [1999 review](https://people.potsdam.edu/betrusak/reviews/jumpstart3rdgrade.html)). Twenty-five missions each start from a history question where the child picks one of Polly's funny answers; four "Mission Clues" and enough "Invention Points" from unnamed games open a time machine to fetch a robot, passing a quiz-show wheel hosted by Monty Monitor ([Wikipedia](https://en.wikipedia.org/wiki/JumpStart_Adventures_3rd_Grade:_Mystery_Mountain)). The structure gates progress behind points; the island does not. The content idea is **history in order**: **Timeline Trail** below. Wikipedia's Mission Earthquest page mentions a door game in 3rd Grade where the child unscrambles letters, the only 3rd Grade minigame I could name.
+
+**Advanced 1st Grade (2000s).** A scooter tournament: eight friends' homes and shops each hold one activity, whose reward ("power-ups") buys scooter gadgets and track tricks, ending in a race ([Wikipedia](https://en.wikipedia.org/wiki/JumpStart_Advanced_1st_Grade), [SuperKids](https://www.superkids.com/aweb/pages/reviews/multisub/1stgrade/02/jsadv1/merge.shtml)). A walkie-talkie gives hints, and in Tutor Mode offers help automatically **after two consecutive wrong answers**, the same rule as the island's glow after two misses.
+
+| JumpStart activity | What the child did | On the island |
+| --- | --- | --- |
+| Frankie's pizzas | Top pizzas with fractions | Built: Pet Kitchen |
+| Casey's soccer | Pass a ball through teammates to build rhyming words | Mode of Word Monsters or Rhyme Time (word families) |
+| Hopsalot's Tree of Knowledge | Guide blimps into category sections: animal classes, shapes, parts of speech, syllable counts | Critter Sort covers sorting by shape and other attributes, and Clap the Syllables covers syllable counts; sorting animals into kinds (mammals, birds, fish) is a small content gap for Critter Sort; parts of speech are in **Word Jobs** |
+| C.J.'s swamp | Feed bubbles into a machine by completing equations or words; alligators pop bubbles | Built: Bubble Pop (without alligators) |
+| Eleanor's article | Read, then arrange word and punctuation tiles into correct sentences | Read & Do and Story Weaver |
+| Pierre's snow bear, Polar Test Track | Collect snowballs in a set order (ordinals, numbers, life-cycle steps); compare and sequence icons (reviewers found the icons too small) | **New**: Floe Bridge |
+| Edison's shop | Spend piggy-bank coins | Built: Market Stall |
+| Kisha's Painting and Music Rooms | Make cards and "Card Shows" from pictures and instrument clips | Built: Stamp Studio; Story Weaver |
+| Hopsalot's Bridge Builder | Sort words into nouns, verbs and adjectives | **New**: Word Jobs |
+| Scooter Design Shop, Race Prep Arena | Trade power-ups for gadgets, then match gadgets to obstacles on a track | **New**: Cart Workshop (without the tournament) |
+| All-Stars Match-Up Quiz | Answer likes and dislikes to be matched to one of seven All-Stars (Wordsmith, Artist, Athlete, Musician, Math Whiz, People Person, Explorer) | Not borrowed: it labels a child as a type |
+
+#### Grades 2 to 6: later horizons
+
+These titles are for her at seven to eleven. They matter now only as a source of well-built mechanics; none of the reasoning in the tables above needs them to be built soon.
+
+| JumpStart activity | What the child did | On the island |
+| --- | --- | --- |
+| **Advanced 2nd Grade** (2002), Africa | Read a short story, then place pictures to match it | Read & Do, Story Weaver |
+| Antarctica | Bridge ice floes by putting words in alphabetical order, Roman numerals in order, or life-cycle pictures in sequence | **New**: Floe Bridge |
+| Australia | Drive and collect gas cans matching a request (odd or even numbers, words with blends) | Notebook idea Number Munch Grid; steering as in Duckling Parade |
+| France | Find artworks that match a room's category (portraits, landscapes), sweep, push a crate | **New**: Gallery Walk |
+| New Orleans | Pick the note that fills a gap in a song; free creation mode | Built in part: Song Maker continuing patterns |
+| Russia | Race snowmen on a checkers-style board, blocked by antonyms | Opposites and the "board games against the pet" idea |
+| South America | Frogger-style: cross logs to the island with the answer Edison read | Frog Hop's lily pads, as a possible "land on the answer" mode |
+| Hopsalot's Laboratory | Arrange gadget pieces so a ball reaches an invention | Built: Chain Reaction |
+| **4th Grade, Haunted Island** (1996) | Rescue classmates cursed into monsters by playing games for keys; **a candle that drains** when answers are wrong | Not borrowed: the health candle |
+| **5th Grade, Jo Hammet**, crossword | A museum crossword whose highlighted letters unscramble to an address | A crossword was considered and set aside for the couch; the museum idea shows up in Gallery Walk |
+| Lockpicking | Four small triangles per lock with arithmetic on their sides; rotate and place so touching sides show the same number | **New**: Lock Tiles |
+| Grammar | Choose a word of the requested part of speech to fill the henchmen's thoughts | Word Jobs |
+| Dungeon escape | Stack boxes under Tower of Hanoi rules | Notebook idea Pancake Stack |
+| Squishy Juice Bar | Collect the juice amounts a recipe lists using six fraction-labeled beakers | The pour slice of Fill and Dump; Pet Kitchen fractions |
+| Jimmy's Junkyard | Tangram: seven pieces to a target shape | Built: Tangram Town |
+| Boulder Canyon mine | Fetch an artifact from each of three layers (colonial history, Native American history, geology) | Notebook idea Fossil Dig (layers: older is deeper) |
+| Bomb disarming | Switch batteries labeled with decimals on and off so their sum matches a target while androids chase the player and **touching one detonates the bomb** | Notebook idea Number Merge covers the sum puzzle; no chasers, no detonation |
+| **6th Grade, Mission Earthquest** | Seven named pod games (the page says six types, each in three places): answer questions to keep moving and dodge "bots"; a Robot Re-Organizer matches idiom halves; a Space Scan plots four coordinates on a grid | Idioms: Memory Match "same, said differently". Coordinates: Treasure Map's grid. The pod games put a quiz under pressure and are not borrowed |
+| **JumpStart Typing** (1997) | Typing-test games (Roller Racer, Keyboard Kicks, Trail Blazer, Cliff Hanger); **a "strength" meter drains as you play** | Pond Typing (laptop). Not the drain |
+| **3D Virtual World** | Character, missions and activities; **a limited number of levels, then an online subscription** | Not borrowed: the gate |
+
+#### What this does not copy
+
+Reading the sources in detail turned up evidence for the rules in [What not to borrow](#what-not-to-borrow):
+
+- **Speed puzzles.** Kindergarten's Pattern Blaster demanded hand-eye speed beyond ages 4–6 and frustrated testers; 1st Grade's testers lost interest in its timed activities.
+- **Far-off rewards.** 1st Grade's 100 points for a milk cap felt too distant to testers, and its reward animations repeated. A sticker per round, every time, is the island's answer.
+- **Health and fail states.** 4th Grade's draining candle, Jo Hammet's bomb that detonates and resets, Typing's draining strength, and Earthquest's chasing bots.
+- **Gates.** Mystery Mountain's points before the time machine, and 3D Virtual World's subscription after a few levels.
+- **Labels.** The All-Stars quiz sorted a child into one of seven types.
+- **Quiz shows.** Mystery Mountain's "Pollywood Squares" wheel ties one wrong answer to a loss.
+- **What it confirms.** Advanced 1st Grade offers help after two consecutive wrong answers; the island's glow after two misses is the same idea. Kindergarten hides surprise animations around its classroom and Toddlers rewards every key press, the same promise as "every tap does something".
+
+#### New ideas from JumpStart
+
+**Proposals only.** Each was checked against [GAMES.md](GAMES.md), the idea tables above and the deep dives, and none is present there. Bands follow the JumpStart title's age, adjusted for the island. Effort is as in [How to use it](#puddle-island-ideas).
+
+| Idea | Inspired by | First playable loop | Grows into | Notes |
+| --- | --- | --- | --- | --- |
+| **Star Dots / lap–school** | Baby's Connect-the-Stars†; Preschool's Connect the Dots (numbers or letters†); Advanced 1st Grade's skip counting | Lap: any tap on the next glowing star draws the line; toddler: tap stars in the drawn order to reveal a sleeping animal in the sky, which wakes and says its name | Number order 1–10, then letters A–E, then alphabet order, then count by 2s, 5s and 10s to reveal a picture; school: 1–100 dot-to-dot | A new game, not a Dot Link mode: Dot Link is a color-chain game and nothing on the island joins points in order. A wrong dot wobbles and the next dot glows after two misses. A pure order puzzle needs a stage for lap play where every tap draws the line. S–M |
+| **Phone Pal / lap–toddler** | Baby 2000's Teddy's Talking Phone† | A big toy phone on the floor; each key says its number, letter or color and a matching picture pops up; the last key "rings" a friend who answers with its animal voice | Ring the friend whose number is on the card; match the dot count to the key | A lap and toddler cause-and-effect toy; no real calls, no microphone. Could live inside a Toy Box Town shelf rather than stand alone. S |
+| **Rhyme Hunt / pre-K–school** | Kindergarten's Bebop, whose clues were short rhyming sentences† | A friend hides in one of three houses; the pet gives a spoken rhyming clue ("I'm somewhere red with a hat on top"); tap the house | Two-feature clues, then positions ("next to the tree") and ordinals ("the third house"); the clue's last word rhymes with the hider's name | A Peekaround Island mode that adds listening to a clue; Peekaboo Barn's sketch of ordinal houses fits here. S |
+| **Warm-and-Cool Dig / toddler–school** | 1st Grade's Detect-o-matic | Tap the sand; a detector beeps higher and faster the nearer you are, with a glow ring for anyone who cannot hear it; find one buried treasure | Two treasures, then bury a treat for the pet and let a friend find it; on a grid, say where it is | Near and far, search strategy, later coordinates (a bridge to Treasure Map). No timer; a hint circles the right area. A new action, unlike Garden Dig. S–M |
+| **Floe Bridge / pre-K–school** | Advanced 2nd Grade's Antarctica; Advanced 1st Grade's Pierre's snow bear | Place ice floes across a gap in a rule's order so the penguin can walk: numbers 1 to 5 | Alphabetical order by first letter, then second; ordinal words (first, second, third); days of the week; life-cycle pictures; Roman numerals for the oldest band | Ordering by a stated rule, including alphabetical order, which no game here teaches. Any valid order the rule accepts is fine; a floe in the wrong place sinks softly and returns. M |
+| **Word Jobs / school** | Advanced 1st Grade's Hopsalot's Bridge Builder; Jo Hammet's grammar | Critters with jobs: the pet shows a "naming word", an "action word" and a "describing word" with a picture and says them; sort cards into three trays | Sort a spoken sentence's words; fill a gap with the part of speech asked for | Grammar for roughly 6–8, spoken and picture-supported, with no reading required. Nouns, verbs and adjectives are the first-grade grammar terms; I did not open the standards, so check them. Pairs with Opposites' planned "doing words". S–M |
+| **Lock Tiles / school** | Jo Hammet's triangular locks | Slide and turn four triangles so touching sides match: first the same number of dots, then numerals | Sides show sums ("2 + 3" must touch "5"); later differences, then halves and quarters | An edge-matching puzzle that makes arithmetic the matching rule. Generate a board by solving it first, so a solution always exists; accept any valid arrangement. The island's own tile idea (Tile Village) is different (a village grows). M |
+| **Gallery Walk / pre-K–school** | Advanced 2nd Grade's France; Jo Hammet's museum | Hang code-drawn pictures in the right room: a portrait (a face), a landscape (hills) and a still life (a fruit bowl) | Sort by style (dotted, blocky, soft); later hang the pictures she made in the treehouse and tell a friend about one | Names the kinds of art and shows that a picture can be sorted several ways. Keep it to art words; a real painter's name needs review. Ties to Stamp Studio. M |
+| **Cart Workshop / pre-K–school** | Advanced 1st Grade's Scooter Design Shop and Race Prep Arena | Pick a part for each obstacle (wheels for the road, floats for the river, a spring for the gap), then watch the cart run the course and tip gently into soft grass if a part does not fit | Two obstacles per part; a cost to compare; the same course, two builds | Matching a tool to a need and predicting before running. Plan-then-run, like Robot Path, but the decision is choosing the part. No tournament and no bully to beat. Journal discoveries are possible. M |
+| **Timeline Trail / school** | Mystery Mountain's history questions and time machine | A clothesline of "long ago" and "now": hang everyday things in order (a candle, a lamp, a bulb) with the pet's time machine to visit each | Several rows, then a mystery object to place; family history prompts for a grown-up | History in order with real facts that need content review; a first step into a subject the island lacks. Keep the quiz show and the points out. M, plus review |
+| **Letter Slalom / toddler–preschool** | ABC's Tuna Mountain; the Snow Slalom backlog row | Steer a bear down a snowy slope; pass through the gates that match the spoken letter or picture | Left of red flags (Snow Slalom's idea); gates that begin with the same sound | Continuous steering as in Duckling Parade; gates are wide and nothing is lost by missing one. Build only after Snow Slalom exists. S–M |
+
+**Decision for the developer: a family album.** Baby 2000 let a parent put real family photos in "Teddy's Family Tree" and "Baby World"†. The island has no camera and never uses one unless a grown-up opts in. A family album that keeps photos only on the device and is chosen in the grown-ups' page could let a child hear "Nana" and "Grandpa" beside a picture; a version with drawn characters needs no decision. Add it to [Waiting on the developer](ROADMAP.md#waiting-on-the-developer) only if the developer wants it. Nothing is built.
+
+**What is nearest to her now.** At one year old her bands are lap and toddler, so the nearest are **Star Dots** (the lap form), **Phone Pal** and the Color Train lap mode already in the notebook. Rhyme Hunt and Warm-and-Cool Dig reach the toddler and preschool bands next. Floe Bridge, Word Jobs, Lock Tiles, Gallery Walk, Cart Workshop and Timeline Trail are school-band horizons and need no work until the earlier bands are served.
 
 ### New ideas from the gap review
 
