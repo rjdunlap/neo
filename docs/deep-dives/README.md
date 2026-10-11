@@ -80,7 +80,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | designed | `claude/fervent-keller-f86ol8` ([PR 104](https://github.com/rjdunlap/neo/pull/104)) | [jelly-drums.md](jelly-drums.md) |
 | Lasso Loops | `lasso-loops` | PKS | 5 | 4 | not started | — | — |
 | Lemonade Stand | `lemonade-stand` | S | 4 | 4 | not started | — | — |
-| Letter Trails | `letter-trails` | PKS | 8 | 3 | not started | — | — |
+| Letter Trails | `letter-trails` | PKS | 8 | 3 | in progress | `claude/tender-faraday-xt9q70` | — |
 | Light Lab | `light-lab` | KS | 7 | 4 | not started | — | — |
 | Little Helpers | `little-helpers` | LTPKS | 6 | 4 | not started | — | — |
 | Mail Carrier | `mail-carrier` | LTPKS | 7 | 4 | not started | — | — |
