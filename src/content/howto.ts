@@ -951,7 +951,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   opposites: {
     goal: 'Find opposite words and pictures.',
     steps: [
-      { to: 1, text: 'Tap a picture to flip it to its opposite.' },
+      { to: 1, text: 'Tap a picture to flip it to its opposite. Big and small friends step, fast and slow friends move, and the balloon rises or sinks.' },
       { from: 2, to: 2, text: 'Tap the one that is named, like "the big one".' },
       { from: 3, to: 3, text: 'Look at the picture, then tap its opposite.' },
       { from: 4, to: 4, text: 'Tap a picture, then tap its opposite, to match all three pairs.' },

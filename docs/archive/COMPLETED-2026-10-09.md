@@ -435,3 +435,7 @@ Pre-K level 7 asks for 2–4 friends of her choice among six in a seeded bedroom
 ## Tangram Town spoken shape names (2026-10-11)
 
 Deep-dive slice 3 ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each physical piece names its geometric shape once on pickup in toddler, preschool and pre-K play. Roofs are triangles; hulls are trapezoids. Repeated pickups remain quiet; this support counts no hint. The how-to and game documentation describe it. More pictures (slice 2) remains ready; actual device pronunciation is still a person/device check.
+
+## Opposites varied subjects and acting flips (2026-10-11)
+
+Deep-dive slice 2 ([PR #158](https://github.com/rjdunlap/neo/pull/158)): seeded bear/duck/bunny size pairs and cat/dog/pig mood pairs keep one subject across both sides. Lap flips retain it and act out big/small, fast/slow and up/down inside the fixed card, with scene-owned tweens. Existing levels, bands, rewards and pinned sticker art stay unchanged. Focused checks are recorded in [VERIFICATION](../VERIFICATION.md#2026-10-11--opposites-varied-subjects-and-acting-flips).

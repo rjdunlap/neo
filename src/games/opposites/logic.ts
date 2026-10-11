@@ -42,9 +42,14 @@ export const CONCEPTS = {
 export type Concept = keyof typeof CONCEPTS;
 export const CONCEPT_IDS = Object.keys(CONCEPTS) as Concept[];
 
+/** Variation changes the subject, never the meaning of the pair. */
+export const SUBJECTS = { size: ['bear', 'duck', 'bunny'], mood: ['cat', 'dog', 'pig'] } as const;
+export type Subject = (typeof SUBJECTS)[keyof typeof SUBJECTS][number];
+
 export interface Card {
   concept: Concept;
   side: 0 | 1;
+  who?: Subject;
 }
 
 export const word = (c: Card) => CONCEPTS[c.concept].words[c.side];
@@ -81,15 +86,22 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   for (let i = 0; i < plan.rounds; i++) {
     const concept = order[i % order.length];
     const side = rng.int(0, 1) as 0 | 1;
-    if (plan.mode === 'switch') out.push({ cards: [{ concept, side }] });
-    else if (plan.mode === 'find') out.push({ cards: rng.shuffle([{ concept, side: 0 }, { concept, side: 1 }]), ask: { concept, side } });
+    // Choose once per concept so find, opposite and matching cards keep the same animal.
+    const subjects = new Map<Concept, Subject>();
+    const card = (c: Concept, side: 0 | 1): Card => {
+      if (c !== 'size' && c !== 'mood') return { concept: c, side };
+      if (!subjects.has(c)) subjects.set(c, rng.pick([...SUBJECTS[c]]));
+      return { concept: c, side, who: subjects.get(c)! };
+    };
+    if (plan.mode === 'switch') out.push({ cards: [card(concept, side)] });
+    else if (plan.mode === 'find') out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1)]), ask: card(concept, side) });
     else if (plan.mode === 'opposite') {
       // The opposite, plus two pictures from other concepts.
-      const others = differentFamilies(pool, rng, 2, concept).map((c) => ({ concept: c, side: rng.int(0, 1) as 0 | 1 }));
-      out.push({ ask: { concept, side }, cards: rng.shuffle([{ concept, side: (1 - side) as 0 | 1 }, ...others]) });
+      const others = differentFamilies(pool, rng, 2, concept).map((c) => card(c, rng.int(0, 1) as 0 | 1));
+      out.push({ ask: card(concept, side), cards: rng.shuffle([card(concept, (1 - side) as 0 | 1), ...others]) });
     } else {
       const three = differentFamilies(pool, rng, 3);
-      out.push({ cards: rng.shuffle(three.flatMap((c) => [{ concept: c, side: 0 as const }, { concept: c, side: 1 as const }])) });
+      out.push({ cards: rng.shuffle(three.flatMap((c) => [card(c, 0), card(c, 1)])) });
     }
   }
   return out;

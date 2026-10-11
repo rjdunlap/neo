@@ -28,15 +28,16 @@ export function picture(card: Card): Container {
   const side = card.side;
   switch (card.concept) {
     case 'size': {
-      const bear = new Critter(CRITTERS.bear);
+      const bear = new Critter(CRITTERS[card.who ?? 'bear']);
       bear.alive = false;
-      bear.scale.set(side === 0 ? 0.48 : 0.22);
+      // Long bunny ears still fit inside the card at both sizes.
+      bear.scale.set(card.who === 'bunny' ? (side === 0 ? 0.38 : 0.17) : (side === 0 ? 0.48 : 0.22));
       bear.y = 60;
       c.addChild(bear);
       return c;
     }
     case 'mood': {
-      const cat = new Critter(CRITTERS.cat);
+      const cat = new Critter(CRITTERS[card.who ?? 'cat']);
       cat.alive = false;
       cat.scale.set(0.4);
       cat.y = 58;
@@ -278,6 +279,25 @@ class Opposites implements Game {
     await this.ctx.tw.to(c.node.scale, { x: s }, { duration: 0.18, ease: ease.outBack });
   }
 
+  /** Move only the picture inside its fixed card; layout and the generous tap target stay put. */
+  private async act(c: CardView) {
+    const pic = c.node.getChildAt<Container>(1);
+    const { concept, side } = c.card;
+    if (concept === 'size') {
+      // Heavy stomps versus little tiptoes, both returning to the same resting pose.
+      for (let step = 0; step < 2; step++) {
+        await this.ctx.tw.to(pic, { y: side === 0 ? -9 : -4, rotation: side === 0 ? 0 : 0.04 }, { duration: side === 0 ? 0.18 : 0.12 });
+        await this.ctx.tw.to(pic, { y: 0, rotation: 0 }, { duration: side === 0 ? 0.12 : 0.18 });
+      }
+    } else if (concept === 'speed') {
+      await this.ctx.tw.to(pic, { x: 18 }, { duration: side === 0 ? 0.12 : 0.6, ease: ease.linear });
+      await this.ctx.tw.to(pic, { x: 0 }, { duration: side === 0 ? 0.12 : 0.6, ease: ease.linear });
+    } else if (concept === 'height') {
+      await this.ctx.tw.to(pic, { y: side === 0 ? -14 : 14 }, { duration: 0.35, ease: ease.inOutSine });
+      await this.ctx.tw.to(pic, { y: 0 }, { duration: 0.35, ease: ease.inOutSine });
+    }
+  }
+
   private async tap(c: CardView) {
     if (this.busy || this.finished || c.done) return;
     const mode = this.plan.mode;
@@ -285,9 +305,9 @@ class Opposites implements Game {
     if (mode === 'switch') {
       // Tap: it flips to its opposite, and the word is said.
       this.busy = true;
-      const to = { concept: c.card.concept, side: (1 - c.card.side) as 0 | 1 };
+      const to: Card = { ...c.card, side: (1 - c.card.side) as 0 | 1 };
       await this.flip(c, to);
-      await this.ctx.say('opp.word', { word: word(to) });
+      await Promise.all([this.act(c), this.ctx.say('opp.word', { word: word(to) })]);
       await this.ctx.tw.wait(0.5);
       return void this.next();
     }
