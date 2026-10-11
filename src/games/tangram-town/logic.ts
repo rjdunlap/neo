@@ -12,6 +12,8 @@ export const VERTICES: Record<Shape, number[]> = {
 /** Each picture is a set of slots; the bounding box of all of them stays inside PICTURE_BOX so it clears the buttons and the tray. */
 export const PICTURES = {
   house: [{shape:'square',x:0,y:70,turns:0},{shape:'roof',x:0,y:-60,turns:0}],
+  tent: [{shape:'roof',x:0,y:0,turns:0},{shape:'rectangle',x:0,y:110,turns:0}],
+  barn: [{shape:'triangle',x:0,y:70,turns:0},{shape:'triangle',x:0,y:70,turns:2},{shape:'hull',x:0,y:-45,turns:2}],
   tree: [{shape:'roof',x:0,y:-60,turns:0},{shape:'rectangle',x:0,y:100,turns:1}],
   boat: [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:1}],
   sailboat: [{shape:'hull',x:0,y:100,turns:0},{shape:'roof',x:0,y:-5,turns:0}],
@@ -33,12 +35,12 @@ export const PICTURE_IDS = Object.keys(PICTURES) as PictureId[];
 export const PICTURE_BOX = { x: 210, top: -220, bottom: 200 };
 export interface Plan { rotate: boolean; outlines: boolean; name: string; pool: readonly PictureId[] }
 export const PLANS: readonly Plan[] = [
-  { pool:['house','tree','lamp'], rotate:false, outlines:true, name:'Two big shapes, already the right way up, make a house, tree or lamp' },
-  { pool:['boat','sailboat','flag','lamp'], rotate:false, outlines:true, name:'Fit a hull and a sail, a pole and a flag, or a lamp' },
-  { pool:['house','tree','flag','sailboat','lamp'], rotate:true, outlines:true, name:'Turn the shapes with quarter-turn snaps' },
-  { pool:['cottage','truck','tower','ferry','bus'], rotate:true, outlines:true, name:'Two triangles make a square; three shapes fill a picture' },
+  { pool:['house','tree','lamp','tent'], rotate:false, outlines:true, name:'Two big shapes, already the right way up, make a house, tree, lamp or tent' },
+  { pool:['boat','sailboat','flag','lamp','tent'], rotate:false, outlines:true, name:'Fit a hull and a sail, a pole and a flag, a lamp or a tent' },
+  { pool:['house','tree','flag','sailboat','lamp','tent'], rotate:true, outlines:true, name:'Turn the shapes with quarter-turn snaps' },
+  { pool:['cottage','truck','tower','ferry','bus','barn'], rotate:true, outlines:true, name:'Two triangles make a square; three shapes fill a picture' },
   { pool:['rocket','houseboat','castle'], rotate:true, outlines:true, name:'Build a rocket, houseboat or castle from four shapes' },
-  { pool:['cottage','truck','tower','ferry','houseboat','bus','castle'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
+  { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
 ];
 export const planFor=(l:number)=>PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
 /** The level's rules with the picture this round draws from its pool. */
