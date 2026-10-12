@@ -28,12 +28,12 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation `neo-roadmap-coordinator` active hourly.
-- Worker `01a1321a-2868-77b2-90c1-0a151df9bdd4`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939`; dispatch `block-tower-support-20261012T215149Z`; branch `codex/block-tower-support`, [PR #213](https://github.com/rjdunlap/neo/pull/213), claim `b18c79d`. Source `c05306b`, coordinator dispatch `2426c51` integrated before publication.
-- State: **Block Tower support slice 1 complete and verified; publication/merge through #213 follows**. Truthful 1–6 controls/goal/completion/task counts, friend's tap instruction and floor-play suggestion; bounded how-to tested. No rules/gameplay/accounting/reach/settling/art/levels/bands/bot/other-game changes.
-- Proof: typecheck and focused how-to/registry checks passed (29 tests) on claim plus source diff; subsequent integration only changes coordinator docs. Changed local links/anchors and diff check passed. Not run: build/browser/demo/offline at assigned plain-word content tier. No server started. Actual device touch/speech, child fit and pre-K subtlety remain open.
-- Usage: admission 21:51:49 UTC **4% / 74%**, resets `1791856034` / `1792295993`, estimate **15 / 2.5 points**. Worker first **6% / 74%**, same resets; before implementation and focused verification **8% / 75%**, resets `1791856034` / `1792295992`; pre-publication **9% / 75%**, same worker reset identities. Ordinary usage allowed throughout. Aggregate five-hour +5 points from admission; weekly reset identity drift formally unknown (apparent +1). Final after-commit reading belongs in worker response; carry once without overhead-only commit.
-- Overlap: only this implementation active (coordinator exempt); only #213 open, no competing Block Tower claim. Unrelated dirty registry/deep-dive repair and existing checkouts preserved; branch created from origin/main in the clean project checkout. No external checkout altered.
-- Next action: confirm #213 published/merged and reconcile final usage once, release this complete worker. Next ready slice is shared reach slots/settling audit, then height variety. Prediction replay/mirrored reach need definitions; 7–9/accounting/bands need decisions. This worker stops without dispatching or messaging anyone.
+- Worker `01a1324e-52ea-7e52-a6f4-ada55e72f433`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`; dispatch `block-tower-reach-20261012T224849Z`; branch `codex/block-tower-reach`, draft PR pending, base `d77e0b1`.
+- State: **claimed Block Tower build slice 2 only**, shared -12..8 reach domain and settling audit. Preserve level 6 accounting and two tasks; other risks fixed only when reproduced. Exclude height/prediction content, new levels/bands, storage and other games.
+- Expected files: Block Tower implementation/rules/tests, focused browser regression, deep-dive/tracker, roadmap, verification and queue. Proof pending; next action: probe once, implement reproduced fixes, run existing-game filtered tier and publish.
+- Usage: worker first **13% / 75%**, resets `1791856034` / `1792295992`; scope-defined **15% / 76%**, same resets. Ordinary usage allowed; provisional estimate 15 / 2.5 points fits remaining allowance.
+- Overlap: coordinator exempt; no other active implementation, no open PR, no competing Block Tower branch. Clean project checkout branched from current origin/main; external worktrees preserved.
+- Next action: complete/checkpoint this slice, publish proof/usage; stop without dispatching or messaging anyone.
 
 ## Usage observations
 
