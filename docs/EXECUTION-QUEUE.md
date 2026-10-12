@@ -28,12 +28,17 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation `neo-roadmap-coordinator` active hourly.
-- Worker `01a1324e-52ea-7e52-a6f4-ada55e72f433`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`; dispatch `block-tower-reach-20261012T224849Z`; branch `codex/block-tower-reach`, draft PR pending, base `d77e0b1`.
-- State: **claimed Block Tower build slice 2 only**, shared -12..8 reach domain and settling audit. Preserve level 6 accounting and two tasks; other risks fixed only when reproduced. Exclude height/prediction content, new levels/bands, storage and other games.
-- Expected files: Block Tower implementation/rules/tests, focused browser regression, deep-dive/tracker, roadmap, verification and queue. Proof pending; next action: probe once, implement reproduced fixes, run existing-game filtered tier and publish.
-- Usage: worker first **13% / 75%**, resets `1791856034` / `1792295992`; scope-defined **15% / 76%**, same resets. Ordinary usage allowed; provisional estimate 15 / 2.5 points fits remaining allowance.
-- Overlap: coordinator exempt; no other active implementation, no open PR, no competing Block Tower branch. Clean project checkout branched from current origin/main; external worktrees preserved.
-- Next action: complete/checkpoint this slice, publish proof/usage; stop without dispatching or messaging anyone.
+- State: **Block Tower shared reach domain/settling slice 2 complete and verified; #216 publication/merge follows**. Shared slots, input held through landing/result, committed depth, cancellation to tray and clearing stale help. Two tasks and accounting preserved.
+- Dispatch `block-tower-reach-20261012T224849Z`; worker `01a1324e-52ea-7e52-a6f4-ada55e72f433`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`). Requested title "Block Tower: reach domain and settling audit". Fresh project/local chat, minimal handoff, no history/model override. Branch `codex/block-tower-reach`, [PR #216](https://github.com/rjdunlap/neo/pull/216), claim `ce7ebb8`; source base `d77e0b1`, coordinator dispatch `6308a59` integrated.
+- Scope/source: [Block Tower build slices](deep-dives/block-tower.md#build-slices-in-order), slice 2: shared -12..8 drop/solver/ghost slots, prevent second committed drop before settling, coherent top-lift/resize/cancellation; additional risks fixed only when reproduced. Expected Block Tower implementation/rules/tests, filtered regression and related docs. Preserve level 6 accounting and two tasks; exclude height/prediction content, new levels/bands, storage and other games.
+- Admission 2026-10-12 22:48:49 UTC: **12% five-hour / 75% weekly used**, resets `1791856034` / `1792295993`; ordinary usage allowed. Conservative gameplay estimate **15 / 2.5 points**, fits actual remaining **88% / 25%**. No daily cap/reserve; worker rechecks actual allowance.
+- Previous proof confirmed: #213 typecheck, 29 focused how-to/registry tests and docs checks passed; deployment succeeded, no servers started. Final aggregate usage 21:57:46 UTC **12% / 75%**, resets `1791856034` / `1792295993`; admission 4% / 74% with same identities. Aggregate endpoints **8 / 1 points**, intermediate weekly identity drift; reconciled once below and duplicate pending row consolidated. No unchanged proof rerun.
+- Proof: claim `ce7ebb8` plus source diff, upstream dispatch `6308a59` docs integrated. Typecheck and eight Block Tower rule tests passed. `BROWSER_SUITE=shortlist SHORTLIST_ONLY=tower FROM_LEVEL=6` on `http://localhost:5176` passed: landing lock/resize/top-lift/cancellation, two misses/one hint, both tasks/sticker. `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-tower FINGER_LEVELS=6` passed clean in 16.0s. Old extra-slot clamp made new domain test fail, then restored. One audit probe found cancellation committing, concurrent pickup and stale help; resize/leave during a fall had no errors.
+- Usage: first **13% / 75%**, scope-defined **15% / 76%**, pre-code **18% / 76%**, before browser **19% / 76%**, pre-publication **21% / 77%**; five-hour reset `1791856034`, weekly `1792295992` (browser `1792295993`). Ordinary usage allowed throughout. Aggregate admission→pre-publication +9 five-hour points; weekly formally unknown due identity drift, apparent +2. Final after-commit reading belongs in this worker response; carry once without overhead-only commit.
+- Not run: build/offline/full suites (unchanged runtime shared infrastructure/assets/navigation/persistence). Existing how-to/voice still describe these controls. Actual device touch/speech and child fit remain open. Session dev server will be stopped at closeout.
+- Overlap: no other active Neo implementation/open PR or Block Tower claim/dirty work found; remaining Beat Builder branches correspond to merged PRs. Unrelated dirty registry/deep-dive repair preserved. Coordinator servers: none.
+- Next action: confirm #216 merge/deployment and reconcile final usage once; release this complete worker. Next ready is fair height variety 3–4, then define replay/mirror; 7–9/accounting/bands require decisions. This worker stops without dispatching or messaging anyone.
+
 
 ## Usage observations
 
@@ -56,9 +61,11 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-12 | Block Tower dive / [#209](https://github.com/rjdunlap/neo/pull/209), dispatch `block-tower-dive-20261012T204519Z` | Docs only | 48% → 3% / `1791838034` → `1791856047` | 73% → 74% / `1792295993` → `1792295992` | Estimate 12 / 2.5 points | Merged #209; final 20:52:52 UTC. Five-hour reset crossing and weekly identity drift: aggregate unknown; worker complete, reconciled once |
 
-| 2026-10-12 | Block Tower support 1–6, dispatch `block-tower-support-20261012T215149Z` | Content wording | 4% → pending / `1791856034` | 74% → pending / `1792295993` | Estimate 15 / 2.5 points | Fresh worker `01a1321a-2868-77b2-90c1-0a151df9bdd4` admitted; implementation/proof pending |
 
-| 2026-10-12 | Block Tower support / [#213](https://github.com/rjdunlap/neo/pull/213), dispatch `block-tower-support-20261012T215149Z` | Content words | 4% → 9% / `1791856034` | 74% → 75% / `1792295993` → `1792295992` | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate five-hour +5, weekly formally unknown due identity drift (apparent +1). Final after-commit reading in worker response |
+
+| 2026-10-12 | Block Tower support / [#213](https://github.com/rjdunlap/neo/pull/213), dispatch `block-tower-support-20261012T215149Z` | Content wording | 4% → 12% / `1791856034` | 74% → 75% / `1792295993` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #213; final 21:57:46 UTC. Aggregate endpoints 8 / 1 points; worker complete, reconciled once |
+
+| 2026-10-12 | Block Tower reach / [#216](https://github.com/rjdunlap/neo/pull/216), dispatch `block-tower-reach-20261012T224849Z` | Existing interaction fix | 12% → 21% / `1791856034` | 75% → 77% / `1792295993` → `1792295992` | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate five-hour +9, weekly formally unknown due identity drift (apparent +2). Final after-commit reading in worker response |
 
 ## Fresh-worker dispatch and handoff
 

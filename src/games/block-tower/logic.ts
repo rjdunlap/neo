@@ -143,6 +143,9 @@ export const REACH: ReachRound[] = [
 /** Positions blocks can be dropped at, relative to the table edge (a little either side of it). */
 export const SLOTS = Array.from({ length: 2 * W + W / 2 + 1 }, (_, i) => i - W - W / 2);
 
+/** Snap a horizontal drag (in eighths) to the same domain searched by hints and the finger bot. */
+export const reachSlot = (x: number) => Math.max(SLOTS[0], Math.min(SLOTS[SLOTS.length - 1], Math.round(x)));
+
 export const rightSide = (x: number) => x + W / 2;
 export const reached = (xs: readonly number[], star: number) => xs.some((x) => rightSide(x) >= star);
 

@@ -13,7 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, planFor, REACH, reached, stackMove, standingTower, topples, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
+import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, planFor, REACH, reached, reachSlot, stackMove, standingTower, topples, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -69,6 +69,10 @@ interface TrayBlock {
   drag: DragHandle;
   /** Eighths from the table edge, once on the stack. */
   x: number | null;
+  /** Committed height, independent of animated screen coordinates. */
+  depth: number;
+  cancelled: boolean;
+  pointerId: number | null;
 }
 
 class BlockTower implements Game {
@@ -116,9 +120,15 @@ class BlockTower implements Game {
   private hinted = false;
   private glowTop = false;
   private clock = 0;
+  // The shared drag helper reports window cancellation as a release. Mark it before that listener runs.
+  private readonly cancelReach = (e: PointerEvent) => {
+    if (this.plan.mode !== 'reach') return;
+    for (const t of this.tray) if (t.drag.dragging && t.pointerId === e.pointerId) t.cancelled = true;
+  };
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
+    window.addEventListener('pointercancel', this.cancelReach, true);
     this.plan = planFor(ctx.level);
     this.rounds = this.plan.mode === 'reach' ? REACH.map(() => ({ target: 0 })) : makeRounds(this.plan, ctx.rng);
     this.bell = new RoundButton(symbol('bell', 0, 30), swatch.yellow, 54, () => void this.check());
@@ -252,6 +262,7 @@ class BlockTower implements Game {
   }
 
   destroy() {
+    window.removeEventListener('pointercancel', this.cancelReach, true);
     for (const t of this.tray) t.drag.destroy();
   }
 
@@ -365,6 +376,7 @@ class BlockTower implements Game {
         break;
     }
     this.busy = false;
+    this.layoutReach();
   }
 
   /** Knocks everything from the last round away and tidies up. */
@@ -590,12 +602,18 @@ class BlockTower implements Game {
       const t: TrayBlock = {
         node,
         x: null,
+        depth: -1,
+        cancelled: false,
+        pointerId: null,
         drag: draggable(node, this.ctx.tw, {
           onPick: () => this.pick(t),
           onMove: (x, y) => this.aim(x, y),
           onDrop: (x, y) => this.place(t, x, y),
         }),
       };
+      node.on('pointerdown', (e) => {
+        if (t.drag.dragging && t.pointerId === null) t.pointerId = e.pointerId;
+      });
       this.tray.push(t);
     }
     this.layoutReach();
@@ -603,7 +621,7 @@ class BlockTower implements Game {
 
   /** The stack on the table, bottom first. */
   get placed(): TrayBlock[] {
-    return this.tray.filter((t) => t.x !== null).sort((a, b) => a.node.y > b.node.y ? -1 : 1);
+    return this.tray.filter((t) => t.x !== null).sort((a, b) => a.depth - b.depth);
   }
 
   private layoutReach() {
@@ -630,19 +648,24 @@ class BlockTower implements Game {
       if (!t.drag.dragging && !this.ctx.tw.busy(t.node)) t.node.position.set(e + px(t.x!), top - k * BH);
     });
     // Blocks in the tray move freely; on the stack only the top one lifts off again.
-    for (const t of this.tray) if (!t.drag.dragging) t.drag.enabled = t.x === null || t === placed[placed.length - 1];
+    for (const t of this.tray) if (!t.drag.dragging) t.drag.enabled = !this.busy && !this.finished && (t.x === null || t === placed[placed.length - 1]);
   }
 
   /** The slot a block over (x, y) would drop into: the next level up, snapped to eighths. */
   private slot(x: number, y: number): number | null {
     const e = this.edge;
     if (x < e - 2 * BW || x > e + 1.6 * BW || y > this.tableTop + 40) return null;
-    return Math.max(-12, Math.min(10, Math.round(((x - e) / BW) * W)));
+    return reachSlot(((x - e) / BW) * W);
   }
 
   private pick(t: TrayBlock) {
     sfx.tick();
     t.x = null;
+    t.depth = -1;
+    t.cancelled = false;
+    t.pointerId = null;
+    this.hintGhost.visible = false;
+    this.glowTop = false;
   }
 
   private aim(x: number, y: number) {
@@ -657,7 +680,7 @@ class BlockTower implements Game {
   private place(t: TrayBlock, x: number, y: number): boolean {
     this.ghost.visible = false;
     const s = this.slot(x, y);
-    if (this.busy || this.finished || s === null) {
+    if (this.busy || this.finished || t.cancelled || s === null) {
       t.x = null;
       this.layoutReach();
       return false;
@@ -668,6 +691,9 @@ class BlockTower implements Game {
     t.x = s;
     this.hintGhost.visible = false;
     const k = placedBelow.length;
+    t.depth = k;
+    this.busy = true;
+    for (const block of this.tray) block.drag.enabled = false;
     void this.ctx.tw.to(t.node, { x: this.edge + px(s), y: this.tableTop - k * BH }, { duration: 0.15, ease: ease.outQuad }).then(() => void this.settled());
     sfx.clunk();
     return true;
@@ -676,7 +702,7 @@ class BlockTower implements Game {
   /** After a block lands: does it all stand, and does anything touch the star? */
   private async settled() {
     const round = this.reachRound;
-    if (!round || this.busy) return;
+    if (!round || this.finished) return;
     const stack = this.placed;
     const xs = stack.map((t) => t.x!);
     const falls = topples(xs, 0);
@@ -712,11 +738,11 @@ class BlockTower implements Game {
       this.layoutReach();
       for (const t of down) {
         t.node.visible = true;
-        t.drag.enabled = true;
         t.node.alpha = 0;
         void this.ctx.tw.to(t.node, { alpha: 1 }, { duration: 0.3 });
       }
       this.busy = false;
+      this.layoutReach();
       if (this.wrongs >= 2) this.reachHint();
       return;
     }
@@ -739,6 +765,8 @@ class BlockTower implements Game {
       await this.ctx.say('tower.not-yet');
       if (this.wrongs >= 2) this.reachHint();
     }
+    this.busy = false;
+    this.layoutReach();
   }
 
   /** A glowing place for the next block that leads to the star, or a glow on the top block to take off. */
