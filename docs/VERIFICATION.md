@@ -951,6 +951,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Block Tower reach-audit worker dispatch (2026-10-12)
+
+Coordinator confirmed support #213 merged and worker complete with typecheck/29 focused tests and docs proof. Actual allowance admits fresh worker `01a1324e-52ea-7e52-a6f4-ada55e72f433` for slice 2 only; no active implementation or overlapping Block Tower claim/dirty work found. Queue records scope/admission/pending checks and prior final usage once; duplicate pending row consolidated. Unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Worker owes proportionate rule/regression/demo checks; no coordinator code checks or servers.
+
 ### Block Tower support worker dispatch (2026-10-12)
 
 Coordinator confirmed dive #209 merged and worker complete with docs-only proof. Actual allowance admits one fresh worker for truthful support at existing 1–6; no active implementation or overlapping Block Tower claim/dirty work found. Queue records worker `01a1321a-2868-77b2-90c1-0a151df9bdd4`, scope/admission/pending checks and prior final usage once; reset-crossing samples remain unknown. Unrelated dirty repair preserved. Coordinator docs source link/anchor and `git diff --check` passed. Worker owes content-tier typecheck and focused how-to/registry checks; no coordinator code checks or servers.
