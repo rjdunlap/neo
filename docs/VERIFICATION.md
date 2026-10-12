@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-12 — Coordinator: Stamp Studio bin/lap dispatch
+
+- Admitted one fresh project/local worker for remaining Stamp Studio slice 1c, thread `01a12fe8-fbe1-75b1-8d93-163af291d64d`. Handoff contains only slice/source, essential exclusions and repo-workflow instructions; no prior conversation or model override.
+- Actual allowance 95% five-hour / 42% weekly remaining; estimate 15 / 2.5 points fits. No artificial daily cap/reserve and no other active implementation or overlapping claim. Unrelated dirty checkout preserved.
+- Queue records the worker ID, scope and next retrieval action. Coordinator changed-doc links/diff check only; implementation/tests/browser proof remain pending in the worker. No coordinator server started.
+
 ## 2026-10-12 — Coordinator: actual account limits only
 
 - Removed the artificial daily pacing cap at the developer's request. The old allocation/debits are historical records, never admission limits; fresh actual five-hour and weekly allowance now governs admission alongside slice estimates and concurrency checks.
