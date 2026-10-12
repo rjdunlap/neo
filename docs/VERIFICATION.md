@@ -1,5 +1,15 @@
 # Puddle Island verification
 
+
+## 2026-10-11 — Shape Buddies first solo round definition
+
+- [Definition](definitions/shape-buddies.md), proposal only: two reshaped creatures, one gap, deterministic seed delivery, multiple acceptable constructions, undo/replay and unscored exploration. No game registered or implemented.
+- Read-only overlap checks: GAMES/IDEAS/deep-dive tracker and existing Chain Reaction logic, ball/input helpers, module and land contracts. No external research or whole-game deep dive.
+- Branch `codex/shape-buddies-solo-definition`, [PR #180](https://github.com/rjdunlap/neo/pull/180), claim `be018b0`; coordinator record `311674b` integrated through `8158d53`. Validated that integrated base plus definition/closeout diff.
+- Changed Markdown links/anchors and `git diff --check` passed. Queue retains dispatch key and one conservative debit; Stamp Studio #179 debit preserved without recharging.
+- Not run: typecheck, tests, build, browser/offline/device checks; docs-only tier, no servers started. Future implementation tier is specified, not claimed as performed.
+- Definition complete; no developer decision blocks it. Review the sketch before a separately admitted implementation; future levels and independent second seat remain outside this slice.
+
 ## 2026-10-11 — Coordinator: seeded-choice result and docs-only dispatch
 
 - Confirmed fresh worker `01a12e67-572a-7a72-b67c-0fd214722b60` complete and #179 merged (`171dfdd`): its typecheck, 60 tests, build and creative/fingerdemo 1/3 proof remain recorded; no checks rerun. Its 2.5 weekly-point debit was already charged once; cumulative 6.5, daily remaining 0.642857.
