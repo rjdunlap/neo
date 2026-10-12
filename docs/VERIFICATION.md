@@ -942,6 +942,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Block Tower support worker dispatch (2026-10-12)
+
+Coordinator confirmed dive #209 merged and worker complete with docs-only proof. Actual allowance admits one fresh worker for truthful support at existing 1–6; no active implementation or overlapping Block Tower claim/dirty work found. Queue records worker `01a1321a-2868-77b2-90c1-0a151df9bdd4`, scope/admission/pending checks and prior final usage once; reset-crossing samples remain unknown. Unrelated dirty repair preserved. Coordinator docs source link/anchor and `git diff --check` passed. Worker owes content-tier typecheck and focused how-to/registry checks; no coordinator code checks or servers.
+
 ### Block Tower deep-dive worker dispatch (2026-10-12)
 
 Coordinator confirmed woodland #197 merged, worker complete and its proof recorded. External implementation claims inspected and merged; no active Neo implementation/open PR or Block Tower overlap at admission. Fresh actual allowance admits docs-only research worker `01a131dd-8e6d-7692-8d50-25f3f37bd641`; queue records scope, usage, pending docs validation and prior aggregate closeout once. Unrelated dirty repair preserved. Coordinator edits only dispatch documentation: source links and `git diff --check` passed. Worker owes research/docs validation; no code checks or servers here.
