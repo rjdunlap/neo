@@ -44,7 +44,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Beat Builder
 
-*preschool–school · after Chrome Music Lab's Rhythm and step sequencers.* A step-sequencer grid with a looping playhead: rows are drum, clap and bell, columns are 4 or 8 steps. Free play finishes with a green check once a beat has gone round twice. Copying a visible beat leaves wrong squares off as gentle misses; copying by ear has a listen button and a check (two misses show where the beats differ); repeat levels give the first half and ask for the second to match. The game uses a near-silent `quiet` music style so the child's beat is the music.
+*preschool–school · after Chrome Music Lab's Rhythm and step sequencers.* A step-sequencer grid with a looping playhead: rows are drum, clap and bell, columns are 4 or 8 steps. Free play reveals a green check with at least three active squares and two playhead returns to the start since the last edit; one composition finishes with that check. Visible copying completes three exact matches automatically; ear copying uses replay/check for three matches (two on the longer three-row grid); repeating completes two exact matches automatically. The how-to states these controls and counts separately for each of the five modes. Copying a visible beat leaves wrong squares off as gentle misses; copying by ear has a listen button and a check (two misses show where the beats differ); repeat levels give the first half and ask for the second to match. The game uses a near-silent `quiet` music style so the child's beat is the music.
 
 ## Paint Pier (art)
 

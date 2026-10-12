@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Beat Builder truthful how-to (2026-10-12)
+
+Built deep-dive slice 1 ([PR #192](https://github.com/rjdunlap/neo/pull/192)): bounded cards for 1–5 explain the three-hit/two-return free-play gate, automatic visible/repeat matching, fixed repeat half, replay/check ear controls and one/three/three/two/two round counts. Focused assertions guard these claims and prevent appended levels inheriting instructions. Game rules, input, progress, replay/help, phrases, levels and bands unchanged. Typecheck, 17 focused how-to tests, changed local links/anchors and diff check passed; unchanged browser/game suites and build not run at this wording tier. Next is complete audible replay and add/remove help; device sound/touch and child fit remain open. See [verification](../VERIFICATION.md).
+
+
 ### Story Steps clue endings (2026-10-12)
 
 Built deep-dive slice 5 / level 11 ([PR #187](https://github.com/rjdunlap/neo/pull/187)): eight authored three-picture stories ask for the ending supported by a visible clue. Both endings can be tried; the first unsupported prediction is free, repeats count misses, and the second glows the clue with one hint. Picture speech/replay remain free. The supported ending explains the evidence and awards one shell-owned sticker. School 6–11; saved levels/pins, younger ranges and save format preserved. Kept stories and new bands excluded. Automated proof and device gaps are in [VERIFICATION](../VERIFICATION.md).

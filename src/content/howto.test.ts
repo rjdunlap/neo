@@ -98,6 +98,37 @@ describe('touch how-to cards', () => {
     expect(howToFor(snack, 6)!.finish).toBe('');
   });
 
+  it('explains Beat Builder controls, finish gates and target counts for each current mode', () => {
+    const game = GAMES.find((g) => g.id === 'beat-builder')!;
+    const cards = [1, 2, 3, 4, 5].map((level) => howToFor(game, level)!);
+    const steps = cards.map((card) => card.steps.join(' '));
+    expect(steps[0]).toContain('at least three squares on');
+    expect(steps[0]).toContain('return to the start twice after your last edit');
+    expect(cards[0].finish).toContain('One composition');
+    for (const i of [1, 3]) {
+      expect(steps[i]).toContain('no green check');
+      expect(steps[i]).not.toContain('Tap the green check');
+      expect(steps[i]).not.toContain('note button');
+      expect(cards[i].finish).toContain('automatically');
+    }
+    expect(cards[1].finish).toContain('three visible beats');
+    expect(steps[3]).toContain('first four columns are fixed');
+    expect(steps[3]).toContain('last four columns');
+    expect(cards[3].finish).toContain('two repeating patterns');
+    for (const i of [2, 4]) {
+      expect(steps[i]).toContain('note button');
+      expect(steps[i]).toContain('Tap the green check');
+      expect(cards[i].finish).toContain('confirmed with the green check');
+    }
+    expect(cards[2].finish).toContain('three heard beats');
+    expect(cards[4].finish).toContain('two heard beats');
+    expect(steps[4]).toContain('bell below');
+    expect(steps.slice(0, 4).join(' ')).not.toContain('bell');
+    // Appended modes must supply their own instructions and completion claims.
+    expect(howToFor(game, 6)!.steps).toEqual([]);
+    expect(howToFor(game, 6)!.finish).toBe('');
+  });
+
   it('changes with the level where the game does: a step that only holds for some levels is not on every card', () => {
     const bubble = [1, 4, 7, 10].map((level) => howToFor(GAMES.find((g) => g.id === 'bubble-pop')!, level)!.steps[0]);
     expect(new Set(bubble).size).toBe(4);
