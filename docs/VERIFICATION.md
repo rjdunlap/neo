@@ -835,6 +835,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Beat Builder how-to worker dispatch (2026-10-12)
+
+Coordinator confirmed Beat Builder deep dive #190 merged at `69f04de` and its worker complete. Fresh actual allowance permits one new worker for build slice 1 (truthful how-to 1–5); no concurrent implementation, open PR, unmerged branch or overlapping dirty work found. Recorded worker `01a130ce-079c-7a30-97ac-5c1a016bc107` and scope in the queue. Coordinator changes only dispatch documentation: local source links/anchor and `git diff --check` passed. No implementation checks run here; typecheck and focused how-to assertions remain the worker’s responsibility. Unchanged gameplay/browser suites are outside this slice’s source tier.
+
 ### 2026-10-10 · Pixel Pictures level 6 (two-color picture logic)
 
 What changed: a school level where each row and column run number is colored to identify its color; two new authored pictures, palette-aware hints, and a ghost finger that finishes all runs of a color before switching. The school range now reaches level 6.
