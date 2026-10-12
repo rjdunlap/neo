@@ -58,7 +58,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Stamp Studio
 
-*lap–school · after Mario Paint and Kid Pix.* Two simple lap modes stamp stars or animals. Later modes offer colors, moving stamps, two sizes, quarter-turn rotation and spoken garden/story invitations. Any picture is valid; the green arrow can finish after the first stamp. Undo removes the latest stamp, and 24 stamps bound the scene. Coordinates stay normalized when resizing. A finished picture can be kept on the treehouse picture board.
+*lap–school · after Mario Paint and Kid Pix.* Two simple lap modes stamp stars or animals. Later modes offer colors, moving stamps, two sizes, quarter-turn rotation and spoken garden/story invitations. Any picture is valid; the green arrow can finish after the first stamp. Undo removes the latest stamp, and 24 stamps bound the scene. Coordinates stay normalized when resizing. The green arrow freezes a copy of the picture immediately; late Undo, transform, color and stamp choices cannot edit it during the celebration, and a held stamp settles at its last accepted position. That finished picture can be kept on the treehouse picture board.
 
 ### Pixel Pictures
 

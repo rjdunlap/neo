@@ -2773,7 +2773,8 @@ async function creativeBatch() {
   const only = process.env.CREATIVE_ONLY;
   const score = id => page.evaluate(id => { const r=kit.store.stats(id).history.at(-1);return [r.misses,r.hints]; },id);
   const fromLevel = Number(process.env.FROM_LEVEL || 1);
-  if (!only || only === 'stamps') for(let level=fromLevel;level<=6;level++) {
+  const stampLevels = process.env.STAMP_LEVELS?.split(',').map(Number) ?? Array.from({ length: Math.max(0, 7 - fromLevel) }, (_, i) => fromLevel + i);
+  if (!only || only === 'stamps') for(const level of stampLevels) {
     await launch('stamp-studio',level);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
@@ -2793,8 +2794,31 @@ async function creativeBatch() {
     }
     await screenshot(`stamp-studio-${level}`);
     await tap('neo.scene.game.undo');assert.equal(await page.evaluate(()=>neo.scene.game.stamps.length),2);
-    await tap('neo.scene.game.finish');await finished('stamp-studio');assert.deepEqual(await score('stamp-studio'),[0,0]);
-    await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, saved round and sticker passed`);
+    await page.waitForTimeout(450); // Undo's cooldown must expire before the late-edit regression.
+    const frozen = await page.evaluate(async () => {
+      const g = neo.scene.game, before = g.stamps.map(s => ({ ...s.data }));
+      const canvas = document.querySelector('canvas');
+      const send = (type, p) => canvas.dispatchEvent(new PointerEvent(type, { clientX: p.x, clientY: p.y, pointerId: 2, pointerType: 'touch', bubbles: true, buttons: type === 'pointerup' ? 0 : 1 }));
+      const held = g.stamps[0], start = held.node.getGlobalPosition();
+      if (g.plan.move) { send('pointerdown', start); await kit.sleep(100); }
+      kit.tapOn(g.finish);
+      if (!g.done) throw new Error('Finish did not freeze the picture');
+      kit.tapOn(g.undo); kit.tapOn(g.turn); kit.tapOn(g.grow);
+      if (g.plan.move) {
+        send('pointermove', { x: start.x + 90, y: start.y + 60 });
+        send('pointerup', { x: start.x + 90, y: start.y + 60 });
+        if (held.drag.dragging) throw new Error('Finish left a held stamp dragging');
+      }
+      if (JSON.stringify(g.stamps.map(s => s.data)) !== JSON.stringify(before)) throw new Error('A late edit changed the finished picture');
+      if (g.stamps.some(s => s.drag && s.drag.enabled)) throw new Error('Finished stamps remain draggable');
+      return before;
+    });
+    await finished('stamp-studio');assert.deepEqual(await score('stamp-studio'),[0,0]);
+    await page.waitForFunction(() => !!neo.scene.after?.keep, null, { timeout: 25000 });
+    await page.waitForTimeout(800);
+    await tap('neo.scene.after.keep');
+    assert.deepEqual(await page.evaluate(() => kit.store.data.creations.picture.current.stamps), frozen, 'the kept picture is exactly the picture finished before late edits');
+    await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, late editing/held-drag guards, frozen kept picture, saved round and sticker passed`);
   }
   if (!only || only === 'kitchen') for(let level=fromLevel;level<=9;level++) {
     await launch('pet-kitchen',level);
