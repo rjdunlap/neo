@@ -2776,14 +2776,25 @@ async function creativeBatch() {
   const stampLevels = process.env.STAMP_LEVELS?.split(',').map(Number) ?? Array.from({ length: Math.max(0, 7 - fromLevel) }, (_, i) => fromLevel + i);
   if (!only || only === 'stamps') for(const level of stampLevels) {
     await launch('stamp-studio',level);
+    // The youngest-band co-play tip temporarily covers the color row; dismiss it before testing choices.
+    await page.evaluate(() => { if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40); });
+    await page.waitForTimeout(500);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
+      const say = g.ctx.say;
+      g.choiceSpeech = [];
+      g.ctx.say = (line, vars) => { if (line === 'stamp.kind') g.choiceSpeech.push(vars.kind); return say(line, vars); };
       for(let i=0;i<3;i++) {
         kit.tapOn(g.choices[i%g.choices.length]); await kit.sleep(420);
         if(g.colors.length){kit.tapOn(g.colors[i%g.colors.length]);await kit.sleep(420);}
         const p=g.paper.toGlobal({x:120+i*180,y:130+i%2*170});kit.tap(p.x,p.y);await kit.sleep(180);
       }
       if(g.stamps.length!==3)throw new Error(`Only ${g.stamps.length} stamps`);
+      const { STAMP_NAMES, STAMP_COLORS } = await import('/src/games/stamp-studio/logic.ts');
+      const expectedNames = [...new Set(Array.from({ length: 3 }, (_, i) => STAMP_NAMES[g.plan.kinds[i % g.plan.kinds.length]]))];
+      kit.tapOn(g.choices[0]); await kit.sleep(420); kit.tapOn(g.choices[0]); await kit.sleep(420);
+      if (JSON.stringify(g.choiceSpeech) !== JSON.stringify(expectedNames)) throw new Error('Stamp names repeat or use raw ids');
+      if (!g.stamps.every((s, i) => s.data.color === (g.plan.color ? STAMP_COLORS[i % STAMP_COLORS.length] : 'purple'))) throw new Error('Chosen stamp colors did not reach the paper');
       if(g.plan.move){const s=g.stamps[0],p=g.paper.toGlobal({x:180,y:300+40});await kit.dragTo(s.node,p,16);await kit.sleep(450);}
       if(g.plan.transform){kit.tapOn(g.turn);await kit.sleep(450);kit.tapOn(g.grow);await kit.sleep(450);}
     });

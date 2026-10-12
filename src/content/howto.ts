@@ -622,10 +622,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Make a picture with stamps.',
     steps: [
       { to: 2, text: 'Choose a stamp, then tap the paper to press it.' },
-      { from: 3, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
-      { from: 4, text: 'Turn a stamp, or make it big or small.' },
+      { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
+      { from: 4, to: 6, text: 'Turn a stamp, or make it big or small.' },
       'The back arrow undoes a stamp.',
-      { from: 5, text: 'Make the picture you are asked for (a garden, or two friends on an adventure) and tell its story.' },
+      { from: 5, to: 6, text: 'Make the picture you are asked for (a garden, or two friends on an adventure) and tell its story.' },
     ],
     finish: 'The round ends when the picture is done: tap the green arrow.',
     note: "Every picture is welcome. After the round, the tree house button hangs it up.",

@@ -21,7 +21,7 @@ Resume this coordinator's unfinished slice first. Otherwise revalidate the candi
 
 | Order | Candidate | Scope source | State |
 | --- | --- | --- | --- |
-| 1 | Stamp Studio slice 1 remainder: words and creative controls (snapshot guards built) | [Build slices](deep-dives/stamp-studio.md#build-slices-in-order); explicitly ready with no decision | Candidate; recheck claims and size before admitting |
+| 1 | Stamp Studio slice 1c: early seeded choices, bin and lap nudge/limit completion (1a–b built) | [Build slices](deep-dives/stamp-studio.md#build-slices-in-order); explicitly ready with no decision | Candidate; recheck claims and size before admitting |
 | 2 | Story Steps level 10: untangle two stories | [Build slices](deep-dives/story-steps.md#build-slices-in-order); level 9 is built | Candidate; define the two-row interaction and exclude ambiguous story pairings before claiming |
 | 3 | Next ready slice in roadmap order | [Next up](ROADMAP.md#next-up), then the relevant game's build slices | Select only after rechecking current scope and dependencies |
 
@@ -30,12 +30,13 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Coordinator: chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; active automation `neo-roadmap-coordinator` returns here hourly.
-- State: prior Stamp Studio slice 1a merged in PR #175 (`9f82866`); admitted slice 1b, choice colors and spoken guards at existing levels 1–6. No new interaction, levels, band or save-schema changes.
-- Owner branch: `codex/stamp-studio-choice-words`; draft PR pending. Expected files: Stamp Studio index/logic/tests, bounded how-to, README/GAMES, deep-dive/tracker, roadmap/archive/verification and this queue; targeted browser regression if needed.
-- Base: `9f82866`; implementation not started. Next: publish claim, reproduce the color mismatch and repeating full/name speech, implement shared kind/name and pinned sticker rules, verify typecheck/focused tests and one filtered regression play. Required checks not run yet.
-- Daily UTC date: 2026-10-12; weekly reset identity: `1792295992`; fixed daily allocation: **7.142857 weekly percentage points**; cumulative debit before this run: **2**. Admitted estimate: 15 five-hour points / 2 weekly points.
-- Before usage: 2026-10-12 03:32:30 UTC, five-hour used 65% (reset `1791782505`), weekly used 51% (reset `1792295992`); ordinary usage allowed.
-- Owned servers: none. Early seeding, bin and lap-nudge controls remain outside this bounded slice.
+- State: Stamp Studio slice 1b implementation and verification complete; [PR #176](https://github.com/rjdunlap/neo/pull/176) closes publication. Confirm its merge before the next slice. Slice 1a is already merged (#175, `9f82866`). No second slice admitted this run.
+- Owner branch: `codex/stamp-studio-choice-words`; base `9f82866`, claim `a599a6e` plus implementation/docs diff. Shared kind/name and pinned sticker mapping, matching choice colors, kind/full speech guards and scoped how-to cover existing levels 1–6. Early seeding/bin/lap controls remain queued as 1c.
+- Checks: typecheck, 58 Stamp Studio/save/how-to tests and build passed. Three regressions failed on old behavior. `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=3 GAME_URL=http://localhost:5202` passed after the logging probe identified and the harness dismissed the co-play overlay. `test-results/browser/stamp-studio-3.png` landscape reviewed; docs links/diff passed. No required checks remain for this bounded fix. Broad suites/howto/fingerdemo/portrait/offline not run; hardware not checked.
+- Next action: confirm merge/clean tree, carry any later closeout usage from this chat, then check admission for one ready slice. No logging-only commit needed.
+- Daily UTC date: 2026-10-12; weekly reset identity: `1792295992`; fixed daily allocation: **7.142857 weekly percentage points**; cumulative conservative debit: **4** (2 prior + max(2 estimate, 2 observed)). No reset crossed at the comparable before/closeout endpoints.
+- Before usage: 03:32:30 UTC, five-hour used 65% (reset `1791782505`), weekly used 51% (reset `1792295992`). Prepublication closeout: 03:42:48 UTC, five-hour 74%, weekly 53%, same endpoint reset identities, ordinary usage allowed. Intermediate weekly timestamps drifted one second; they were not treated as an actual reset or used to replenish the daily budget. Aggregate usage only.
+- Owned servers: Vite `http://localhost:5202` stopped; browser closed. No other session changed.
 
 For an admitted slice replace this checkpoint with: exact game/levels and expected files; owner branch/PR; latest commit and any uncommitted files; implementation done/remaining; checks run with tested revision, filters and server URL; checks not run; owned servers stopped; next action and blockers; UTC date and weekly reset identity; daily allocation/spent; before/after usage with timestamps and window reset identities.
 
@@ -46,6 +47,8 @@ Record one row per admitted run and retain the latest ten. Percentage-point diff
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Daily allocation / cumulative debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
 | 2026-10-12 | Stamp Studio finish snapshot / [#175](https://github.com/rjdunlap/neo/pull/175) | Gameplay bug fix | 57% → 64% / `1791782505` | 50% → 51% / `1792295992` | 7.142857 / 2 | Merged #175; aggregate closeout 02:35:16 UTC |
+
+| 2026-10-12 | Stamp Studio choice colors/words / [#176](https://github.com/rjdunlap/neo/pull/176) | Gameplay bug fix | 65% → 74% / `1791782505` | 51% → 53% / `1792295992` | 7.142857 / 4 | Verified; prepublication aggregate sample, final closeout in chat |
 
 ## Scheduling and limits
 

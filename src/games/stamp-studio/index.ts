@@ -4,14 +4,13 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
-import { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
-import { LIMIT, pixel, place, planFor, STAMP_COLORS, stampDemo, type Stamp, type StampKind } from './logic';
+import { LIMIT, pixel, place, planFor, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
 
 interface Mark { data: Stamp; node: Container; drag?: DragHandle }
 class StampStudio implements Game {
@@ -28,6 +27,8 @@ class StampStudio implements Game {
   readonly turn: RoundButton;
   readonly grow: RoundButton;
   private selected: Mark | null = null;
+  private readonly named = new Set<StampKind>();
+  private fullSaid = false;
   private kind: StampKind;
   private color: ColorName = 'purple';
   private width = 600;
@@ -41,15 +42,21 @@ class StampStudio implements Game {
     onTap(this.sheet, e => {
       if (this.done) return;
       const p = this.paper.toLocal(e.global);
-      if (this.stamps.length >= LIMIT) { void ctx.say('stamp.full'); return; }
+      if (this.stamps.length >= LIMIT) {
+        if (!this.fullSaid) { this.fullSaid = true; void ctx.say('stamp.full'); }
+        return;
+      }
       this.add(p.x, p.y);
     });
     this.plan.kinds.forEach(kind => {
-      const b = new RoundButton(stampArt(kind, 'orange', 33), swatch.white, 48, () => { if (this.done) return; this.kind = kind; void ctx.say('stamp.kind', { kind }); this.drawSelection(); });
+      const b = new RoundButton(stampArt(kind, this.color, 33), swatch.white, 48, () => { if (this.done) return; this.kind = kind;
+        if (!this.named.has(kind)) { this.named.add(kind); void ctx.say('stamp.kind', { kind: STAMP_NAMES[kind] }); }
+        this.drawSelection(); });
       ctx.stage.addChild(b); this.choices.push(b);
     });
     if (this.plan.color) for (const color of STAMP_COLORS) {
-      const b = new RoundButton(new Graphics().circle(0, 0, 22).fill(swatch[color].fill), swatch.white, 43, () => { if (this.done) return; this.color = color; void ctx.say('color.' + color as 'color.blue'); this.drawSelection(); });
+      const b = new RoundButton(new Graphics().circle(0, 0, 22).fill(swatch[color].fill), swatch.white, 43, () => { if (this.done) return; if (this.color !== color) { this.color = color; this.redrawChoices(); }
+        void ctx.say('color.' + color as 'color.blue'); this.drawSelection(); });
       ctx.stage.addChild(b); this.colors.push(b);
     }
     this.finish = new RoundButton(arrowIcon(1), swatch.green, 48, () => {
@@ -72,6 +79,12 @@ class StampStudio implements Game {
     this.turn = new RoundButton(againIcon(), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.turns = (this.selected.data.turns + 1) % 4; this.layoutStamp(this.selected); this.drawSelection(); } });
     this.grow = new RoundButton(new Graphics().circle(-13, 4, 12).circle(14, -4, 23).fill(swatch.purple.fill), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.size = this.selected.data.size === 1 ? 1.3 : 1; this.layoutStamp(this.selected); this.drawSelection(); } });
     ctx.stage.addChild(this.finish, this.undo, this.turn, this.grow);
+  }
+  private redrawChoices() {
+    this.choices.forEach((button, i) => {
+      button.removeChildAt(1).destroy({ children: true });
+      button.addChild(stampArt(this.plan.kinds[i], this.color, 33));
+    });
   }
   private add(x: number, y: number) {
     const data: Stamp = { kind: this.kind, color: this.color, ...place(x, y, this.width, this.height), size: 1, turns: 0 };
@@ -143,6 +156,6 @@ export const stampStudio: GameModule = {
   coplayHint: 'Let {name} choose where the picture goes. The green arrow finishes any creation.',
   offScreen: 'Stamp with a sponge or potato on scrap paper, then tell a story about the picture.',
   hubIcon: () => { const c = new Container(); c.addChild(new Graphics().roundRect(-90,-140,180,140,15).fill(cream).stroke({width:7,color:swatch.brown.line})); const a=stampArt('flower','pink');a.y=-70;c.addChild(a);return new WigglyIcon(c); },
-  sticker: seed => stampArt(new Rng(seed).pick(['star','flower','fish','cat'] as const),new Rng(seed+3).pick(['purple','pink','blue','green'] as const),70),
+  sticker: seed => { const { kind, color } = stickerStamp(seed); return stampArt(kind, color, 70); },
   create: ctx => new StampStudio(ctx),
 };

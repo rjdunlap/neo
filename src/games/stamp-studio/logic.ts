@@ -1,7 +1,26 @@
 import type { ColorName } from '../../art/palette';
-export type StampKind = 'star' | 'flower' | 'fish' | 'cat';
+import { STAMP_KINDS, type StampKindId } from '../../content/creations';
+import { Rng } from '../../engine/random';
+export { STAMP_KINDS };
+export type StampKind = StampKindId;
+export const STAMP_NAMES: Record<StampKind, string> = { star: 'A star', flower: 'A flower', fish: 'A fish', cat: 'A cat' };
+
+/** Saved sticker seeds always use these original four kinds and colors, in their historical order. */
+const STICKER_KINDS = STAMP_KINDS.slice(0, 4);
+const STICKER_COLORS = ['purple', 'pink', 'blue', 'green'] as const;
+export function stickerStamp(seed: number) {
+  return { kind: new Rng(seed).pick(STICKER_KINDS), color: new Rng(seed + 3).pick(STICKER_COLORS) };
+}
 export interface Stamp { kind: StampKind; color: ColorName; x: number; y: number; size: number; turns: number }
 export const LIMIT = 24;
+interface StampPlan {
+  kinds: readonly StampKind[];
+  color: boolean;
+  move: boolean;
+  transform: boolean;
+  prompt: string;
+  name: string;
+}
 export const PLANS = [
   { kinds: ['star'], color: false, move: false, transform: false, prompt: 'stars', name: 'Press big stars onto a picture' },
   { kinds: ['cat', 'fish'], color: false, move: false, transform: false, prompt: 'friends', name: 'Make an animal picture with two stamps' },
@@ -9,7 +28,7 @@ export const PLANS = [
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'sizes', name: 'Turn stamps and make them big or small' },
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'garden', name: 'Make an imaginary garden, then tell its story' },
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'story', name: 'Make two friends on an adventure; every story is welcome' },
-] as const;
+] as const satisfies readonly StampPlan[];
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 /** Normalized coordinates leave room for the largest stamp, including after resizing. */
 export function place(x: number, y: number, width: number, height: number) {

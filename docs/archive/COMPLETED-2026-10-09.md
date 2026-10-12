@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Stamp Studio choice colors and words (2026-10-12)
+
+Built bounded deep-dive slice 1b ([PR #176](https://github.com/rjdunlap/neo/pull/176)). The stamp buttons show the color they place and follow color changes; kind names and paper-full speech occur once per round. Allowed kinds share the save's source, historical sticker seeds are pinned, and how-to lines are bounded. Existing levels, creative completion, accounting and saved sticker art remain. Early seeding, bin and lap finishing/nudge remain slice 1c.
+
+Typecheck, 58 focused tests, build and one filtered level-3 browser regression passed after a logging probe identified the co-play overlay intercepting the first blue tap; the harness now dismisses it. Landscape reviewed. No broad browser suites or offline check rerun.
+
+
 ### Stamp Studio finished-picture guards (2026-10-12)
 
 Built the bounded slice 1a of guards and words ([PR #175](https://github.com/rjdunlap/neo/pull/175)). The green arrow snapshots the stamps before its celebration delay; late Undo/Turn/Big and choice taps leave the picture intact. Finishing also cancels a held drag and restores its accepted position. The optional treehouse keep action receives the snapshot. All existing levels, creative completion, miss/hint accounting and saves remain. Remaining slice-1 words, colors, bin and lap nudge stay in the deep dive.
