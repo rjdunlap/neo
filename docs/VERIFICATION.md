@@ -865,6 +865,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Beat Builder woodland-stage worker dispatch (2026-10-12)
+
+Coordinator confirmed authored phrases #196 merged at `59f6c32`, worker complete and rule-tier proof recorded. Actual allowance admits one fresh worker for the woodland stage only from ready slice 9; decision-dependent modes and picnic remain excluded. Queue records worker `01a13171-0f01-7fe1-85da-6213cd971298`, scope/admission and pending checks; prior usage reconciled once, duplicate pending row consolidated. No concurrent implementation or overlapping claim/dirty work found. Coordinator edits only documentation: source link/anchor and `git diff --check` passed. Worker owes typecheck/rules and one screenshot; no coordinator servers or code checks.
+
 ### Beat Builder authored-phrase worker dispatch (2026-10-12)
 
 Coordinator confirmed replay/help #194 merged at `382b907`, its worker complete and focused proof recorded. Actual allowance admits one fresh worker for build slice 3 (authored phrases at 2–5); no concurrent implementation or overlapping claim/dirty work found. Queue records worker `01a1313d-6c0f-7881-940c-2515740466b9`, scope, admission and pending rule-tier checks; previous aggregate usage reconciled once. Coordinator changed only dispatch documentation: source link/anchor and `git diff --check` passed. Implementation/typecheck/rule tests remain the worker’s responsibility; no coordinator servers or code checks.
