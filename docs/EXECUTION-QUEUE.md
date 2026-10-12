@@ -30,11 +30,12 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Coordinator: chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; active automation `neo-roadmap-coordinator` returns here hourly.
-- State: ready to recheck admission; the previously active Letter Trails implementation, [PR #172](https://github.com/rjdunlap/neo/pull/172), has merged. It belonged to another session and is not this coordinator's slice.
-- Owned gameplay slice/branch/PR: none. First scheduled run revalidates the queue; setup does not start a game implementation.
-- Next action: read fresh usage and concurrent-work status, then apply admission rules.
-- Daily UTC date, weekly reset identity, allocation and amount spent: not initialized; set on the first admitted run.
-- Checks: queue setup uses docs-only link checks and `git diff --check`. Gameplay checks remain those specified by AGENTS and each slice.
+- State: admitted Stamp Studio slice 1a, finish snapshot and editing guards at existing levels 1–6. No new interaction, levels, band or save-schema changes.
+- Owner branch: `codex/stamp-studio-finish-snapshot`; draft PR pending. Expected files: `src/games/stamp-studio/index.ts`, focused lifecycle regression tests/probe, README, GAMES, deep-dive/tracker, roadmap, archive, verification and this queue.
+- Base: `3519922`; implementation not started. Next: publish claim, reproduce late Undo/Turn/Big mutation, freeze the creation and guard editing, then run typecheck, Stamp Studio tests and one filtered regression play. Required checks not run yet.
+- Daily UTC date: 2026-10-12; weekly reset identity: `1792295992`; fixed daily allocation: **7.142857 weekly percentage points** (50 / 7 days); spent: 0. Admitted estimate: 15 five-hour points / 2 weekly points.
+- Before usage: 2026-10-12 02:27:30 UTC, five-hour used 57% (reset `1791782505`), weekly used 50% (reset `1792295992`); ordinary usage allowed.
+- Owned servers: none. Remaining slice-1 words, color matching, bin and lap nudge are out of this bounded fix.
 
 For an admitted slice replace this checkpoint with: exact game/levels and expected files; owner branch/PR; latest commit and any uncommitted files; implementation done/remaining; checks run with tested revision, filters and server URL; checks not run; owned servers stopped; next action and blockers; UTC date and weekly reset identity; daily allocation/spent; before/after usage with timestamps and window reset identities.
 
