@@ -74,13 +74,24 @@ export function freeBeat(plan: BeatPlan): Beat {
 export type BeatMove = { row: number; step: number } | 'check';
 
 /**
- * Her next move toward `goal` (the beat on show to copy, or the one she is making in free play): the first square of the
- * goal that is not on yet and is hers to tap (never one of the squares given on repeat levels), always a right one.
+ * Her next move toward `goal` (the beat on show to copy, or the one she is making in free play): the first square that differs from the
+ * goal and is hers to tap (never one of the squares given on repeat levels), always a right one.
  * When the beat is built, a level that asks her to check (by ear, or free play) presses the check once it is showing;
  * the levels that can see their beat finish by themselves.
  */
 export function beatMove(plan: BeatPlan, goal: Beat, beat: Beat, checkShowing: boolean): BeatMove | null {
   for (let step = 0; step < plan.steps; step++)
-    for (let row = 0; row < plan.rows; row++) if (goal[row][step] && !beat[row][step] && !givenStep(plan, step)) return { row, step };
+    for (let row = 0; row < plan.rows; row++) if (goal[row][step] !== beat[row][step] && !givenStep(plan, step)) return { row, step };
   return (plan.mode === 'hear' || plan.mode === 'free') && checkShowing ? 'check' : null;
+}
+
+/** One finite replay tick. The final tick returns to the live beat after the last target step's full interval. */
+export function replayTick(steps: number, remaining: number) {
+  return { step: (steps * 2 + 1 - remaining) % steps, target: remaining > 1, remaining: remaining - 1 };
+}
+
+/** Specific editable repairs, recomputed after every edit so help never asks for an already fixed cell. */
+export function repairs(plan: BeatPlan, target: Beat, have: Beat) {
+  return target.flatMap((row, r) => row.flatMap((on, step) =>
+    !givenStep(plan, step) && on !== have[r][step] ? [{ row: r, step, add: on }] : []));
 }

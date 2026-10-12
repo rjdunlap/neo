@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Beat Builder replay and repair help (2026-10-12)
+
+Built deep-dive slice 2 ([PR #194](https://github.com/rjdunlap/neo/pull/194)): ear targets traverse both full loops before editing/checking resumes; free replay restarts from the beginning. Two wrong checks show live plus/minus repairs, repeat mode shows missing-sound marks after two misses, and help counts once per target. The bot removes extra hits, and bell preview/playback shares the column pitch. Existing levels/bands, gates, phrase generation and storage are preserved. Typecheck, 23 focused rule/how-to tests, build, filtered level-5 play and ghost finger passed; restoring the old replay rule fails the new trace. Device sound/timing, touch and child fit remain open. Next is authored phrase library; see [verification](../VERIFICATION.md).
+
+
 ### Beat Builder truthful how-to (2026-10-12)
 
 Built deep-dive slice 1 ([PR #192](https://github.com/rjdunlap/neo/pull/192)): bounded cards for 1–5 explain the three-hit/two-return free-play gate, automatic visible/repeat matching, fixed repeat half, replay/check ear controls and one/three/three/two/two round counts. Focused assertions guard these claims and prevent appended levels inheriting instructions. Game rules, input, progress, replay/help, phrases, levels and bands unchanged. Typecheck, 17 focused how-to tests, changed local links/anchors and diff check passed; unchanged browser/game suites and build not run at this wording tier. Next is complete audible replay and add/remove help; device sound/touch and child fit remain open. See [verification](../VERIFICATION.md).

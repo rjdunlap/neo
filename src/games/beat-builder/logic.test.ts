@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beatMove, differences, empty, freeBeat, givenStep, hits, makeBeat, PLANS, same } from './logic';
+import { beatMove, differences, empty, freeBeat, givenStep, hits, makeBeat, PLANS, repairs, replayTick, same } from './logic';
 
 describe('Beat Builder', () => {
   it('makes beats that start on the drum, give every row a hit, and are never all sounds at once', () => {
@@ -24,6 +24,40 @@ describe('Beat Builder', () => {
     expect(differences(a, b)).toEqual([0]);
     b[0][0] = true;
     expect(same(a, b)).toBe(true);
+  });
+
+  it('traverses two full target loops including first and last hits, then returns to live playback', () => {
+    for (const steps of [4, 8]) {
+      let remaining = steps * 2 + 1;
+      const trace = [];
+      while (remaining) {
+        const tick = replayTick(steps, remaining);
+        trace.push([tick.step, tick.target]);
+        remaining = tick.remaining;
+      }
+      expect(trace).toEqual([...Array.from({ length: steps * 2 }, (_, i) => [i % steps, true]), [0, false]]);
+    }
+  });
+
+  it('names add/remove repairs, drops fixed cells after edits and never repairs the given half', () => {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+      const goal = makeBeat(plan, new Rng(42));
+      const have = goal.map((row) => row.map((on) => !on));
+      goal.forEach((row, r) => row.forEach((on, step) => { if (givenStep(plan, step)) have[r][step] = on; }));
+      const help = repairs(plan, goal, have);
+      expect(help.some((c) => c.add)).toBe(true);
+      expect(help.some((c) => !c.add)).toBe(true);
+      while (!same(goal, have)) {
+        const move = beatMove(plan, goal, have, true);
+        expect(move && move !== 'check').toBe(true);
+        if (!move || move === 'check') break;
+        expect(givenStep(plan, move.step)).toBe(false);
+        const before = repairs(plan, goal, have).length;
+        have[move.row][move.step] = !have[move.row][move.step];
+        expect(repairs(plan, goal, have)).toHaveLength(before - 1);
+      }
+      expect(same(goal, have)).toBe(true);
+    }
   });
 
   describe("the ghost finger's bot", () => {

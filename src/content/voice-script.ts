@@ -642,7 +642,7 @@ export const SCRIPT = {
   'beat.notsee': ['That square is not in this beat. Look for the faint ones.'],
   'beat.notrepeat': ['Look at the first half. Does that square have a sound there?'],
   'beat.nothear': ['Not quite the same. Listen again!'],
-  'beat.hint': ['The faint squares show where the beats are different.'],
+  'beat.hint': ['Glowing plus marks need a sound. Glowing minus marks have an extra sound. Tap those squares to repair the beat.'],
   'beat.yay': ['That is the beat!', 'Groovy!', 'You got the rhythm!'],
   'beat.done': ['What a band! Thank you for the music!'],
   'snack.munch': ['Who is hungry? Tap an animal to give it a snack!'],
