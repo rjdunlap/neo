@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Coordinator: fresh chat per roadmap slice
+
+- At the developer's request, changed the hourly coordinator into a dispatcher: each new admitted slice gets a fresh project chat and concise handoff; only an unfinished slice resumes its existing worker. The coordinator retains the shared budget and outstanding-worker checkpoint.
+- Updated the existing automation prompt, execution queue, AGENTS and workflow/roadmap links. Model defaults, hourly cadence, no reserve, weekly pacing and sequential work remain.
+- Validation: saved automation prompt and changed local Markdown links/anchors, `git diff --check`. Docs/config only; no code, build or browser suites run.
+- Not run: an actual scheduled worker dispatch. No empty test chat or new gameplay task created just to verify configuration.
+
 ## 2026-10-12 — Stamp Studio: choice colors and spoken guards
 
 - Bounded deep-dive slice 1b ([PR #176](https://github.com/rjdunlap/neo/pull/176)): button/stamp colors match, kind/name source shared with saved kinds, once-per-round kind/full speech, historical sticker seed fixture and bounded how-to. Full-paper wording supports lap Undo/Finish. Early seeding/bin/lap nudge remain open; levels, accounting, save schema and bot gestures unchanged.
