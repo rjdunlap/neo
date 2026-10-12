@@ -520,6 +520,7 @@ export const SCRIPT = {
   'tricks.next': ['Tap the arrow for the next trick!'],
   'tricks.done': ['What a show! Everybody bow!'],
   'bounce.solo': ['Slide your paddle and bounce the ball back to {pet}!'],
+  'bounce.rally': ['Keep it bouncing with {pet}! Let us bounce it {n} times.'],
   'bounce.together': ['Play together! One paddle each. Keep it bouncing!'],
   'bounce.stars': ['Bounce the ball through the stars!'],
   'bounce.count': ['Let us bounce it {n} times! Count with me.'],
