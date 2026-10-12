@@ -10,7 +10,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon } from './art';
 import { SCENES, type SceneDef } from './scenes';
-import { dropSlot, nextToPlace, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, type Piece, type PuzzlePlan } from './logic';
+import { dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, whereWords, type Piece, type PuzzlePlan } from './logic';
 
 interface PieceView {
   piece: Piece;
@@ -40,6 +40,7 @@ class PuzzlePals implements Game {
   private scale = 1;
   private trayScale = 0.5;
   private clock = 0;
+  private hinted?: PieceView;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = puzzlePlan(ctx.level);
@@ -72,6 +73,19 @@ class PuzzlePals implements Game {
         sprite,
         new Graphics().roundRect(-pw / 2, -ph / 2, pw, ph, 6).stroke({ width: 4, color: swatch.white.fill }),
       );
+      if (!this.plan.ghost) {
+        const sides = outerSides(this.plan, piece);
+        const rim = new Graphics();
+        const x = pw / 2 - 4;
+        const y = ph / 2 - 4;
+        if (sides.top) rim.moveTo(-x, -y).lineTo(x, -y);
+        if (sides.bottom) rim.moveTo(-x, y).lineTo(x, y);
+        if (sides.left) rim.moveTo(-x, -y).lineTo(-x, y);
+        if (sides.right) rim.moveTo(x, -y).lineTo(x, y);
+        rim.stroke({ width: 8, color: wood.line });
+        rim.eventMode = 'none';
+        node.addChild(rim);
+      }
       node.hitArea = new Rectangle(-pw / 2 - 10, -ph / 2 - 10, pw + 20, ph + 20);
       const view: PieceView = { piece, node, placed: false, drag: null as unknown as DragHandle };
       view.drag = draggable(node, ctx.tw, {
@@ -88,6 +102,7 @@ class PuzzlePals implements Game {
     }
     this.pieces.slice(0, this.plan.preplaced).forEach((p) => this.settle(p, false));
     ctx.stage.addChild(this.glow);
+    this.glow.eventMode = 'none';
   }
 
   start() {
@@ -109,8 +124,14 @@ class PuzzlePals implements Game {
     this.misses++;
     this.wrong++;
     sfx.boing();
-    void this.ctx.say(this.wrong === 2 ? 'puzzle.hint' : 'puzzle.wrong');
-    if (this.wrong === 2) this.hints++;
+    if (this.wrong === 2) {
+      const piece = hintPiece(this.plan, this.pieces.filter((p) => p.placed).map((p) => p.piece));
+      this.hinted = this.pieces.find((p) => p.piece.col === piece?.col && p.piece.row === piece?.row);
+      if (this.hinted) {
+        this.hints++;
+        void this.ctx.say(`puzzle.hint.${whereWords(this.plan, this.hinted.piece)}`);
+      }
+    } else void this.ctx.say('puzzle.wrong');
     this.drawGlow();
     return false;
   }
@@ -136,6 +157,7 @@ class PuzzlePals implements Game {
     sfx.bell(5 + (this.pieces.filter((p) => p.placed).length % 6), 0.25);
     this.ctx.particles.burst(x, y, { kind: 'star', colors: [swatch.yellow.fill], count: 8, speed: [80, 200] });
     this.wrong = 0;
+    this.hinted = undefined;
     this.drawGlow();
     if (this.pieces.every((p) => p.placed)) void this.complete();
   }
@@ -216,7 +238,7 @@ class PuzzlePals implements Game {
   private drawGlow() {
     const g = this.glow.clear();
     if (this.wrong < 2 || this.done) return;
-    const next = this.pieces.find((p) => !p.placed && !p.drag.dragging);
+    const next = this.hinted;
     if (!next) return;
     const pw = (PICTURE_W / this.plan.cols) * this.scale;
     const ph = (PICTURE_H / this.plan.rows) * this.scale;
@@ -261,7 +283,7 @@ export const puzzlePals: GameModule = {
   describeLevel: (l) => puzzlePlan(l).name,
   music: STYLES.paint,
   touchDemo: true,
-  coplayHint: 'Ask {name} what is in each piece: an ear, a sun, a flower? Then find where it goes.',
+  coplayHint: 'Ask {name} what is in each piece: an ear, a sun, a flower? Say where it goes: top, bottom, corner, next to.',
   offScreen: 'Cut an old card or a cereal box picture into two or three pieces and put it back together.',
   hubIcon: () => new WigglyIcon(puzzleIcon()),
   sticker: (seed) => pictureThumb(seed, 170),

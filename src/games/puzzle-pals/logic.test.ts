@@ -1,8 +1,57 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { dropSlot, nextToPlace, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows } from './logic';
+import { SCRIPT } from '../../content/voice-script';
+import { dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows, whereWords } from './logic';
 
 describe('Puzzle Pals', () => {
+  it('hinted corners lead to adjacent edges, then an interior beside a placed piece', () => {
+    const plan = { ...PUZZLE_PLANS[6], cols: 5, rows: 5 };
+    const corners = [{ col: 0, row: 0 }, { col: 4, row: 0 }, { col: 0, row: 4 }, { col: 4, row: 4 }];
+    expect(corners).toContainEqual(hintPiece(plan, []));
+    expect(hintPiece(plan, corners)).toEqual({ col: 1, row: 0 });
+    // All corners plus a central placed piece: an adjacent edge still takes priority.
+    expect(hintPiece(plan, [...corners, { col: 2, row: 2 }])).toEqual({ col: 1, row: 0 });
+    const border = piecesFor(plan).filter((p) => Object.values(outerSides(plan, p)).some(Boolean));
+    expect(hintPiece(plan, border)).toEqual({ col: 1, row: 1 });
+  });
+
+  it('hints finish every partial board without choosing a placed piece, including all 4096 top-level states', () => {
+    for (const plan of PUZZLE_PLANS) {
+      const all = piecesFor(plan);
+      for (let mask = 0; mask < 2 ** all.length; mask++) {
+        const placed = all.filter((_, i) => mask & (1 << i));
+        const next = hintPiece(plan, placed);
+        if (placed.length === all.length) { expect(next).toBeUndefined(); continue; }
+        expect(all).toContainEqual(next);
+        expect(placed).not.toContainEqual(next);
+        const corners = all.filter((p) => {
+          const s = outerSides(plan, p);
+          return (s.top || s.bottom) && (s.left || s.right) && !placed.some((q) => q.col === p.col && q.row === p.row);
+        });
+        if (corners.length) expect(corners).toContainEqual(next);
+        // Every suggestion can be placed through the real drop rule.
+        const c = slotCenter(plan, next!);
+        expect(dropSlot(plan, c.x, c.y, all.filter((p) => !placed.includes(p)))).toEqual(next);
+      }
+    }
+  });
+
+  it('names all nine grid positions and uses left, middle, right for strips', () => {
+    const plan = PUZZLE_PLANS[5];
+    expect(piecesFor(plan).map((p) => whereWords(plan, p))).toEqual([
+      'top-left', 'top', 'top-right', 'left', 'middle', 'right', 'bottom-left', 'bottom', 'bottom-right',
+    ]);
+    expect(piecesFor(PUZZLE_PLANS[2]).map((p) => whereWords(PUZZLE_PLANS[2], p))).toEqual(['left', 'middle', 'right']);
+    for (const plan of PUZZLE_PLANS) for (const p of piecesFor(plan)) {
+      expect(SCRIPT[`puzzle.hint.${whereWords(plan, p)}`].length).toBeGreaterThan(0);
+      const s = outerSides(plan, p);
+      expect(s.top).toBe(p.row === 0);
+      expect(s.bottom).toBe(p.row === plan.rows - 1);
+      expect(s.left).toBe(p.col === 0);
+      expect(s.right).toBe(p.col === plan.cols - 1);
+    }
+  });
+
   it('cuts every picture into its grid, leaving at least one piece to place', () => {
     for (const plan of PUZZLE_PLANS) {
       const pieces = piecesFor(plan);
