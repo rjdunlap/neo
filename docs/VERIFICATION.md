@@ -9,6 +9,12 @@
 - Not run: unchanged world/couch/picnic/offline suites (no routing/save/asset changes). Actual iPad touch, device speech and child understanding remain open in the roadmap. Session server stopped after verification; screenshot retained locally.
 
 
+## 2026-10-12 — Bubble Pop scenes and the next-level button
+
+- Bubble Pop draws a shore, bath, night or sea round (`scenes.ts`, `backdrop.ts`; decorations take no touches, plain rims per scene). The celebration of every game gains an orange next-level button (`nextLevelOffer`, `go.game`'s sixth argument, `GameScene.startLevel`) that plays the level above with no card, and is absent at the top of her band and in a story round; "again" now replays the level just finished (a smooth pair steps her saved level up, which the map applies next time).
+- Ran: typecheck; full unit tests; `BROWSER_SUITE=island` (next level offered, plays level 4 straight in, saved level stays 4, absent at 6; landscape and portrait screenshots), `ORIGINALS_ONLY=scenes` (each scene at levels 2 and 6, screenshots read), the bubbles and bonds plays after the scene change. Dev server `localhost:5291`, base `2139716` plus this branch.
+- Not run: `world`, the offline check and the other games' celebrations (the other buttons did not move; `after.next` is new). Open: device and a child's tap (roadmap person check).
+
 ## 2026-10-12 — Bubble Pop target sign and levels 12–14
 
 - A sign at the top of levels 10–11 shows the total to make; levels 12 (start at a number), 13 (count back to 1) and 14 (tens and fives) are count mode with `start`/`steps` plan fields (`countRun`, `signFor`). Pre-K 6–12, school 10–14.
@@ -835,6 +841,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Clock Tower support | 2026-10-11: typecheck, 24 focused tests, build, Clock Tower 1–7, ghost finger at 7 (24.0 s), four layouts/cancellation/portrait | Clock Tower words and control support entry | iPad and device speech open; broad suites not run |
 | Clock Tower deep dive | 2026-10-11: research and local Markdown links/anchors, diff check | Clock Tower deep dive entry | Docs only; no code or gameplay checks; device speech and child play open |
 | Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |
+| Bubble Pop scenes and next level (`island`, `originals`) | 2026-10-12: typecheck, unit tests, next level offered/plays/saved/absent at top, four scenes at two levels, portrait celebration | Bubble Pop scenes entry | No `world` or offline; iPad and child play open |
 | Bubble Pop sign and levels 12–14 (`woods`, `originals`, `fingerdemo`, `howto`) | 2026-10-12: typecheck, 110 tests, sign on 10–11, levels 12–14 played with misses/hint/rainbow, demos 10–14 clean, cards at 11 and 14 | Bubble Pop target sign entry | No build or full ladder; iPad, speech and child play open |
 | Bubble Pop dots (`fingerdemo`) | 2026-10-11: quantity/geometry rules, 28 focused tests, typecheck/build; level-10 demo clean in 12.8 s; portraits 7/9/10 and actual numeral clearance | Bubble Pop countable dots entry | No full ladder rerun; iPad, speech and child play open |
 | Robot Path board pools (`robot`, `fingerdemo`) | 2026-10-11: 30 boards in rule/bot tests; level-6 regression and portrait; level-10 demo clean in 10.4 s; typecheck and build | Robot Path: three boards per programming level entry | Full browser ladder and couch not rerun; iPad, speech and child play open |

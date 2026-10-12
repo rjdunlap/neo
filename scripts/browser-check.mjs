@@ -7800,6 +7800,16 @@ async function islandShelf() {
   await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
   await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(500);
   assert.equal(await page.evaluate(() => kit.store.stats('bubble-pop').level), 4, 'finishing it keeps her saved level where she played');
+  // "Again" replays the level just finished, even when two smooth rounds have moved her saved level up.
+  await page.evaluate(() => { const s = kit.store.stats('bubble-pop'); s.level = 3; s.history = [{ level: 3, misses: 0, hints: 0, seconds: 5, at: 1 }]; neo.go.game('bubble-pop', 'toddler'); });
+  await scene('GameScene'); await page.waitForTimeout(1000);
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(800);
+  assert.equal(await page.evaluate(() => kit.store.stats('bubble-pop').level), 4, 'two smooth rounds moved her saved level up');
+  assert.equal(await page.evaluate(() => !!neo.scene.after.next), true, 'the next level is offered even then');
+  await tap('neo.scene.after.again');
+  await scene('GameScene'); await page.waitForTimeout(800);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.level, !!neo.scene.helpCard]), [3, false], 'again plays the level just finished, straight in');
   await page.setViewportSize({ width: 1024, height: 768 });
   await playBubbles(2);
   await screenshot('next-level-offer-landscape');

@@ -342,9 +342,10 @@ export class GameScene extends Scene {
       await this.tw.wait(1.8);
     }
 
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true, this.origin));
+    // "Again" plays the level she just finished (a story round plays its own), so it means what it looks like; the map applies the step up or down.
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true, this.origin, this.story ? undefined : this.level));
     // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
-    const upTo = this.story ? null : nextLevelOffer(this.level, store.levelFor(this.mod.id, this.mod.levels(this.band)), this.mod.levels(this.band));
+    const upTo = this.story ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
     const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo));
     const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.goHome());
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.

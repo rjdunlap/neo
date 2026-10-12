@@ -22,14 +22,8 @@ const clamp = (level: number, range: LevelRange) => Math.min(range.max, Math.max
 /** One level up or down from `level`, held inside the range: what the how-to card's arrows do. */
 export const stepLevel = (level: number, delta: number, range: LevelRange): number => clamp(level + delta, range);
 
-/**
- * The level the celebration's "next level" button plays: one above the level just played. Null at the top of the range, and
- * when "again" already goes there (two smooth rounds moved her saved level up), so the two buttons never do the same thing.
- */
-export function nextLevelOffer(played: number, saved: number, range: LevelRange): number | null {
-  const next = played + 1;
-  return next > range.max || next === saved ? null : next;
-}
+/** The level the celebration's "next level" button plays: one above the level just played, or null at the top of the range. */
+export const nextLevelOffer = (played: number, range: LevelRange): number | null => (played + 1 > range.max ? null : played + 1);
 
 /**
  * Two smooth rounds in a row at the current level step up; two struggling rounds step down.

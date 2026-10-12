@@ -42,17 +42,9 @@ describe('nextLevel', () => {
 
 describe('nextLevelOffer', () => {
   const range = { min: 2, max: 5 };
-  it('offers the level above the one just played', () => {
-    expect(nextLevelOffer(3, 3, range)).toBe(4);
-    expect(nextLevelOffer(2, 2, range)).toBe(3);
-  });
-  it('offers nothing at the top of the range', () => {
-    expect(nextLevelOffer(5, 5, range)).toBeNull();
-  });
-  it('offers nothing when "again" already goes there, so the two buttons never repeat each other', () => {
-    expect(nextLevelOffer(3, 4, range)).toBeNull();
-  });
-  it('still offers a step up after a struggle stepped her saved level down', () => {
-    expect(nextLevelOffer(4, 3, range)).toBe(5);
+  it('offers the level above the one just played, up to the top of the range', () => {
+    expect(nextLevelOffer(2, range)).toBe(3);
+    expect(nextLevelOffer(4, range)).toBe(5);
+    expect(nextLevelOffer(5, range)).toBeNull();
   });
 });
