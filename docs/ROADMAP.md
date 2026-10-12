@@ -27,6 +27,8 @@ Puddle Island is an iPad learning game for the developer's daughter, who turns o
 
 ## Next up
 
+Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one slice per run, usage checks before admission, checkpoints between runs, and the same claim and verification rules as a human-started session. The queue selects from this roadmap; it does not change readiness or resolve developer decisions.
+
 Most sessions should build from this list; checks that need a person or a device never block it. Check effort follows the [verification budget](../AGENTS.md#verification-budget). Roughly in order. Each chunk has a **status**, **one session's next slice**, the **check tier** it needs and where its **detail** lives:
 
 - **ready**: the work is defined and nothing blocks it.

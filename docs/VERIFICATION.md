@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Roadmap usage queue and scheduled coordinator
+
+- Added `docs/EXECUTION-QUEUE.md`, linked from the roadmap, development workflow and AGENTS: one slice per run, reserves in both account windows, daily weekly-budget pacing, checkpoints and conservative measured estimates.
+- Read-only rehearsal inspected fresh usage, open PRs, branches, dirty worktrees and chat status; the existing active Letter Trails slice causes deferral. No gameplay work dispatched and no other session changed.
+- Created the active hourly follow-up `neo-roadmap-coordinator` in coordinator chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; scheduling requires the local app and computer available. No reset credits or purchases used.
+- Validation: local Markdown link/anchor checks and `git diff --check`. Docs-only: no typecheck, unit tests, build or browser suites run.
+- Not established: an unattended scheduled implementation, precise task cost, hard mid-turn quota enforcement or recovery from a rate-limit interruption. Review the first admitted runs; queue checkpoint preserves unfinished work.
+
 ## 2026-10-11 — Duck Pond hidden-part reveal and number sentences
 
 - Built deep-dive slice 1 ([PR #171](https://github.com/rjdunlap/neo/pull/171)): counted hidden ducks paddle into separate seats; answered stories show a spoken number sentence; bounded how-to, explicit mode descriptions and historical sticker-count guards. No levels, bands, saves or hint accounting changed.
