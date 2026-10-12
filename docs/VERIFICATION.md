@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-11 — Coordinator: seeded-choice result and docs-only dispatch
+
+- Confirmed fresh worker `01a12e67-572a-7a72-b67c-0fd214722b60` complete and #179 merged (`171dfdd`): its typecheck, 60 tests, build and creative/fingerdemo 1/3 proof remain recorded; no checks rerun. Its 2.5 weekly-point debit was already charged once; cumulative 6.5, daily remaining 0.642857.
+- Fresh five-hour allowance reset; weekly 44% remains. Dispatched one docs-only Shape Buddies first-solo-slice definition worker (`01a12e9e-57df-7191-94bf-eceb78bacf61`), new project/local chat, estimate 8 five-hour / 0.5 weekly points. No gameplay task admitted.
+- Queue records worker ID, definition-only scope/exclusions, budget and retrieval action. Coordinator diff/link validation only; no code/build/browser checks or servers started. Definition/completion proof remains pending in the worker.
+
 ## 2026-10-12 — Stamp Studio 1c1: seeded early choices
 
 - Levels 1/2/3 select one/two/three distinct existing kinds and an existing starting color with the round RNG; generic early words/how-to match any selection. No new levels, tools or storage. [PR #179](https://github.com/rjdunlap/neo/pull/179).
