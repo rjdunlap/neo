@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beatMove, differences, firstMismatch, mendCopy, givenCell, reviseStart, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
+import { beatMove, differences, firstMismatch, mendCopy, clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, givenCell, reviseStart, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
 
 describe('Beat Builder', () => {
   it('makes beats that start on the drum, give every row a hit, and are never all sounds at once', () => {
@@ -41,7 +41,7 @@ describe('Beat Builder', () => {
   });
 
   it('draws deterministic, distinct round targets, reaches every phrase and doubles only the repeat unit', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'sections')) {
       const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
       const seen = new Set<string>();
       for (let seed = 1; seed <= 300; seed++) {
@@ -74,7 +74,7 @@ describe('Beat Builder', () => {
   });
 
   it('can repair missing and excess sounds in every authored target with the existing bot and hint', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'revise')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'revise' && p.mode !== 'sections')) {
       const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
       for (const p of pool) {
         const target = p.score.map((row) => plan.mode === 'repeat' ? [...row, ...row] : [...row]);
@@ -119,7 +119,7 @@ describe('Beat Builder', () => {
   });
 
   it('names add/remove repairs, drops fixed cells after edits and never repairs the given half', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise' && p.mode !== 'sections')) {
       const goal = makeBeat(plan, new Rng(42));
       const have = goal.map((row) => row.map((on) => !on));
       goal.forEach((row, r) => row.forEach((on, step) => { if (givenStep(plan, step)) have[r][step] = on; }));
@@ -141,7 +141,7 @@ describe('Beat Builder', () => {
 
   describe("the ghost finger's bot", () => {
     it('builds the beat to copy with only right squares, leaving the given half alone, and checks only where a check is asked for', () => {
-      for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise')) {
+      for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise' && p.mode !== 'sections')) {
         for (let seed = 1; seed <= 100; seed++) {
           const target = makeBeat(plan, new Rng(seed));
           const beat = empty(plan.rows, plan.steps);
@@ -222,5 +222,41 @@ describe('Beat Builder', () => {
         expect(beatMove(plan, target, have, true)).toBe('check');
       }
     }
+  });
+
+  it('sections: Done gate, preview order, independent copies and a bot that finishes', () => {
+    const plan = PLANS[7];
+    const piece = newPiece(plan);
+    expect(pieceGate(piece, true)).toBe('empty-a');
+    piece.a[0][0] = true;
+    expect(pieceGate(piece, true)).toBe('empty-b');
+    const copy = clonePiece(piece);
+    piece.b = clonePiece(piece).a;
+    expect(pieceGate(piece, true)).toBe('same');
+    piece.b[1][1] = true;
+    expect(copy.b[1][1]).toBe(false);
+    expect(pieceGate(piece, false)).toBe('preview');
+    expect(pieceGate(piece, true)).toBeNull();
+    // Any distinct nonempty pair is accepted, including a B that only removes.
+    const other = newPiece(plan);
+    other.a[0][0] = other.a[1][1] = true;
+    other.b[0][0] = true;
+    expect(pieceGate(other, true)).toBeNull();
+    expect(previewOrder(4).map((p) => `${p.section}${p.step}`)).toEqual(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2', 'b3']);
+    // The bot: A, copy (which moves to B), one clap, preview, check.
+    const p = newPiece(plan);
+    let current: 'a' | 'b' = 'a';
+    let previewed = false;
+    const moves: string[] = [];
+    for (let n = 0; n < 20; n++) {
+      const m = sectionsMove(plan, p, current, previewed);
+      if (!m) throw new Error('bot stuck');
+      if (m === 'check') break;
+      if (m === 'copy') { p.b = clonePiece(p).a; current = 'b'; moves.push('copy'); }
+      else if (m === 'preview') { previewed = true; moves.push('preview'); }
+      else { p[current][m.row][m.step] = !p[current][m.row][m.step]; previewed = false; moves.push('cell'); }
+    }
+    expect(moves).toEqual(['cell', 'cell', 'copy', 'cell', 'preview']);
+    expect(pieceGate(p, previewed)).toBeNull();
   });
 });

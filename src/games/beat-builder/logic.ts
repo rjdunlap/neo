@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * that sound on. First free play, then copying a beat you can see, then copying one by ear, then
  * making a pattern repeat (the second half matches the first), then a longer beat by ear.
  */
-export type BeatMode = 'free' | 'see' | 'hear' | 'repeat' | 'mend' | 'revise';
+export type BeatMode = 'free' | 'see' | 'hear' | 'repeat' | 'mend' | 'revise' | 'sections';
 
 export interface BeatPlan {
   mode: BeatMode;
@@ -25,6 +25,7 @@ export const PLANS: BeatPlan[] = [
   { mode: 'hear', steps: 8, rows: 3, beats: 2, name: 'A longer beat by ear, with drum, clap and bell' },
   { mode: 'mend', steps: 4, rows: 2, beats: 3, name: 'Mend the beat: one sound in your copy is missing or extra; fix it, then check' },
   { mode: 'revise', steps: 4, rows: 2, beats: 2, name: 'Keep the drum, change the claps: listen, then move the claps to match' },
+  { mode: 'sections', steps: 4, rows: 2, beats: 1, name: 'A and B: make a part, copy it, change the copy, then hear one part after the other' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -190,4 +191,41 @@ export function replayTick(steps: number, remaining: number) {
 export function repairs(plan: BeatPlan, target: Beat, have: Beat) {
   return target.flatMap((row, r) => row.flatMap((on, step) =>
     !givenCell(plan, r, step) && on !== have[r][step] ? [{ row: r, step, add: on }] : []));
+}
+
+/** Two sections of a piece (level 8): each a drum-and-clap loop of four steps. */
+export interface Piece { a: Beat; b: Beat }
+export type SectionId = 'a' | 'b';
+
+export const newPiece = (plan: BeatPlan): Piece => ({ a: empty(plan.rows, plan.steps), b: empty(plan.rows, plan.steps) });
+export const clonePiece = (p: Piece): Piece => ({ a: p.a.map((r) => [...r]), b: p.b.map((r) => [...r]) });
+
+/** Why Done is not ready yet, in the order a child would fix it; null when it is. Never a miss. */
+export function pieceGate(p: Piece, previewed: boolean): 'empty-a' | 'empty-b' | 'same' | 'preview' | null {
+  if (hits(p.a) === 0) return 'empty-a';
+  if (hits(p.b) === 0) return 'empty-b';
+  if (same(p.a, p.b)) return 'same';
+  return previewed ? null : 'preview';
+}
+
+/** The order the preview plays: every step of A, then every step of B. */
+export const previewOrder = (steps: number): { section: SectionId; step: number }[] =>
+  (['a', 'b'] as const).flatMap((section) => Array.from({ length: steps }, (_, step) => ({ section, step })));
+
+export type SectionMove = { row: number; step: number } | 'copy' | 'preview' | 'check';
+
+/** The ghost finger: drum on 0 and 2 in A, copy it into B, add one clap to B, hear it, then Done. */
+export function sectionsMove(plan: BeatPlan, p: Piece, current: SectionId, previewed: boolean): SectionMove | null {
+  const goalA = empty(plan.rows, plan.steps);
+  goalA[0][0] = goalA[0][2] = true;
+  if (!same(p.a, goalA)) {
+    if (current === 'a') {
+      const cell = beatMove(plan, goalA, p.a, false);
+      return cell && cell !== 'check' ? cell : null;
+    }
+    return null;
+  }
+  if (hits(p.b) === 0) return 'copy';
+  if (same(p.a, p.b)) return current === 'b' ? { row: 1, step: 1 } : null;
+  return pieceGate(p, previewed) === 'preview' ? 'preview' : 'check';
 }
