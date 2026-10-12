@@ -484,3 +484,7 @@ Typecheck, all eight game rule tests and focused pointer play passed; new art an
 ## Story Steps level 9: Fix the mixed-up story (2026-10-11)
 
 Built deep-dive slice 3 ([PR #168](https://github.com/rjdunlap/neo/pull/168)): four pictures from any of the ten stories, one neighboring pair reversed, tap-to-swap repair, free cancellation and undo, narration of the current order, and one hint after eight swaps. Experiments count no misses. School grows from 6–8 to 6–9 without changing younger levels or saved pins. Rule tests exhaust all four-picture permutations: the first misplaced-position hint always moves toward a solution, and the ghost finger finishes in at most three swaps. Checks and remaining device gaps are recorded in [VERIFICATION](../VERIFICATION.md).
+
+## Puzzle Pals spatial hints and outer rims (2026-10-11)
+
+Built the support portion of deep-dive slice 1 ([PR #169](https://github.com/rjdunlap/neo/pull/169)): thick flat rims on outer sides at levels 5–7, a hint that starts with a corner then builds beside placed pieces, and nine spoken positions for the paired glowing piece and destination. One hint is charged at the second consecutive miss, and any correct placement clears it. The glow keeps its selected piece during dragging and takes no touches. Co-play wording names positions; the how-to edge instruction is scoped to levels 5–7. Levels, bands, scenes and saved sticker art keep their behavior. Fairness/art and the box lid remain open; checks are in [VERIFICATION](../VERIFICATION.md).

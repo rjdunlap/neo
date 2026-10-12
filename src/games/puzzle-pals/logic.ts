@@ -63,6 +63,37 @@ export function dropSlot(plan: PuzzlePlan, x: number, y: number, empty: Piece[])
 /** Tray rows: one row of big pieces for small puzzles, two rows of smaller ones otherwise. */
 export const trayRows = (count: number) => (count <= 4 ? 1 : 2);
 
+export function outerSides(plan: PuzzlePlan, p: Piece) {
+  return {
+    top: p.row === 0,
+    bottom: p.row === plan.rows - 1,
+    left: p.col === 0,
+    right: p.col === plan.cols - 1,
+  };
+}
+
+/** Corners first; then build out from a placed piece, preferring the frame's edge. */
+export function hintPiece(plan: PuzzlePlan, placed: readonly Piece[]): Piece | undefined {
+  const waiting = piecesFor(plan).filter((p) => !placed.some((q) => q.col === p.col && q.row === p.row));
+  const rank = (p: Piece) => {
+    const sides = outerSides(plan, p);
+    if ((sides.top || sides.bottom) && (sides.left || sides.right)) return 0;
+    const beside = placed.some((q) => Math.abs(q.col - p.col) + Math.abs(q.row - p.row) === 1);
+    if (beside && Object.values(sides).some(Boolean)) return 1;
+    return beside ? 2 : 3;
+  };
+  return waiting.sort((a, b) => rank(a) - rank(b))[0];
+}
+
+/** A position that is true even for the single-row halves and strips. */
+export function whereWords(plan: PuzzlePlan, p: Piece) {
+  const sides = outerSides(plan, p);
+  if (plan.rows === 1) return sides.left ? 'left' : sides.right ? 'right' : 'middle';
+  if (sides.top) return sides.left ? 'top-left' : sides.right ? 'top-right' : 'top';
+  if (sides.bottom) return sides.left ? 'bottom-left' : sides.right ? 'bottom-right' : 'bottom';
+  return sides.left ? 'left' : sides.right ? 'right' : 'middle';
+}
+
 /**
  * What a capable child does next: carry the first piece still in the tray to its own place. The ghost finger follows
  * this, so a test can check that letting each piece go on the middle of its place finds that place and no other.

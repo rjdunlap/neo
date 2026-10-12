@@ -1147,8 +1147,9 @@ async function feelings8() {
 }
 
 async function fourth() {
+  const only = process.env.FOURTH_ONLY;
   // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
-  for (let level = 1; level <= 7; level++) {
+  if (!only || only === 'song') for (let level = 1; level <= 7; level++) {
     await launch('song-maker', level);
     await page.waitForTimeout(600);
     await page.evaluate(async () => {
@@ -1172,7 +1173,7 @@ async function fourth() {
   }
 
   // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
-  for (let level = 1; level <= 7; level++) {
+  if (!only || only === 'puzzle') for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7]) {
     await launch('puzzle-pals', level);
     await page.waitForTimeout(600);
     await page.evaluate(() => { window.slotAt = (p) => { const g = neo.scene.game; return { x: g.board.x + (600 / g.plan.cols) * (p.col + 0.5) * g.scale, y: g.board.y + (420 / g.plan.rows) * (p.row + 0.5) * g.scale + 40 }; }; });
@@ -1184,7 +1185,20 @@ async function fourth() {
       const other = waiting.find((p) => p !== waiting[0]);
       if (other) for (let i = 0; i < 2; i++) { await kit.dragTo(waiting[0].node, slotAt(other.piece)); await kit.sleep(600); }
     });
-    if ([1, 7].includes(level)) await screenshot(`puzzle-pals-${level}`);
+    if (level > 1) await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const { hintPiece, whereWords } = await import('/src/games/puzzle-pals/logic.ts');
+      const expected = hintPiece(g.plan, g.pieces.filter((p) => p.placed).map((p) => p.piece));
+      if (JSON.stringify(g.hinted?.piece) !== JSON.stringify(expected)) throw new Error('Hint does not choose the next useful piece');
+      if (g.hints !== 1 || g.glow.eventMode !== 'none') throw new Error('Hint accounting or touch clearance is wrong');
+      const pos = whereWords(g.plan, g.hinted.piece);
+      if (!['top-left', 'top-right', 'bottom-left', 'bottom-right', 'left', 'right'].includes(pos)) throw new Error('First hint is not a corner');
+    });
+    if (level === 7) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+      await screenshot('puzzle-pals-7-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (const p of g.pieces.filter((p) => !p.placed)) { await kit.dragTo(p.node, slotAt(p.piece)); await kit.sleep(450); if (!p.placed) throw new Error('Piece rejected its own place'); }
@@ -1198,7 +1212,7 @@ async function fourth() {
   }
 
   // Weather Wardrobe: free weather play, then dressing and packing.
-  for (let level = 1; level <= 6; level++) {
+  if (!only || only === 'weather') for (let level = 1; level <= 6; level++) {
     await launch('weather-wardrobe', level);
     await page.waitForTimeout(700);
     await page.evaluate(async () => {
@@ -1226,7 +1240,7 @@ async function fourth() {
   }
 
   // Sink or Float: guesses are never misses; wrong sorts are tested in the water.
-  for (let level = 1; level <= 6; level++) {
+  if (!only || only === 'sink') for (let level = 1; level <= 6; level++) {
     await launch('sink-float', level);
     await page.waitForTimeout(700);
     await page.evaluate(async () => {
@@ -1257,6 +1271,8 @@ async function fourth() {
     assert.deepEqual(r, level === 4 || level === 5 ? [2, 1] : [0, 0], `sink ${level} score`);
     log(`Sink or Float ${level}: splashes, guesses, sorting, saved round and sticker passed`);
   }
+
+  if (only) return;
 
   // All four start at lap, so Puddle Lagoon shows them, and progress survives a reload.
   await page.waitForTimeout(500);

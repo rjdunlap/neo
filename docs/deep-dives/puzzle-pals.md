@@ -4,6 +4,8 @@
 
 ## The game today
 
+This section records the research snapshot. Since then, twelve scenes and pinned sticker pictures were built in slice 2; the flat outer sides and corner-first spoken spatial hints were built on 2026-10-11 ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-spatial-hints-and-outer-rims-2026-10-11)). Near-blank-piece fairness and the box lid remain open.
+
 She drags pieces of a code-drawn picture into a frame. When the last one is in, the picture comes alive: the friend hops, makes its sound, and the voice says "You made a cow on the farm!". The learning purpose is part–whole and spatial reasoning (which part goes where), with fine motor control in the drag.
 
 | Level | Plan (`PUZZLE_PLANS`) | Cut | Guide in the frame | Bands whose window includes it | What she decides |
@@ -156,9 +158,9 @@ The level-order decision already has a row in [Waiting on the developer](../ROAD
 
 Each is sized for one session. The slices that add a level are built in level order so saved IDs stay unbroken.
 
-**Active claim (2026-10-11):** `codex/puzzle-pals-spatial-hints` implements the flat sides and spatial-hint part of slice 1: corner-first, then adjacent-edge, then adjacent-piece hints; a spoken position matching the glowing piece; flat outer rims at levels 5–7; level-scoped how-to and co-play wording. Expected files: `src/games/puzzle-pals/{logic.ts,logic.test.ts,index.ts}`, voice script, how-to, filtered browser case, README, GAMES, roadmap/deep-dive and verification docs. Fairness/art changes and the box lid remain open. Checks: typecheck, Puzzle Pals and how-to tests, one filtered play at levels 5 and 7 with a portrait screenshot, and its finger demo.
+**Built 2026-10-11:** the flat sides, corner-first adjacent-piece hint, spoken position, bounded how-to and co-play part of slice 1 ([PR #169](https://github.com/rjdunlap/neo/pull/169); [build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-spatial-hints-and-outer-rims-2026-10-11)). Fairness/art and the box lid remain open.
 
-1. **Fairness guard, the lid, flat sides and a useful hint** (ready; the lid depends on decision 1). The guard now covers **all twelve scenes**: slice 2 added a box-based empty-piece test (`scenes.test.ts`, which scores bounding boxes and counts a friend's plain corners), so the finer check (visible detail per piece) replaces it and must also pass the six new scenes, not just the originals. The test first (feature boxes in `art.ts`, a no-near-blank-cell test), then fix what it flags; lid; flat rims; `hintPiece` and `whereWords`; the how-to `to: 7` fix; the co-play line. Tier: typecheck, the game's rule tests, the how-to test, one filtered browser play at levels 5 and 7 and one portrait screenshot. Update the GAMES.md entry and the README row.
+1. **Fairness guard and the lid** (remaining; the lid depends on decision 1). Flat sides and useful spatial hints are built above. The guard now covers **all twelve scenes**: slice 2 added a box-based empty-piece test (`scenes.test.ts`, which scores bounding boxes and counts a friend's plain corners), so the finer check (visible detail per piece) replaces it and must also pass the six new scenes, not just the originals. The test first (feature boxes in `art.ts`, a no-near-blank-cell test), then fix what it flags; lid. Tier: typecheck, the game's rule tests, the how-to test, one filtered browser play at levels 5 and 7 and one portrait screenshot. Update the GAMES.md entry and the README row.
 2. **Scene data, pinned stickers and six new scenes** (**built 2026-10-11**; [build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-scene-data-and-six-new-scenes-2026-10-11)). Tier: rule tests including the seed pin, then a screenshot of the new pictures. Update the "six scenes" counts in GAMES.md and the README row, and chunk 13 item 1.
 3. **Level 8, Turn it round** (ready after 1; band row becomes pre-K 5–8). Tier: new level on an existing interaction, plus `fingerdemo` at level 8.
 4. **Level 9, Two pictures, one tray** (ready after 2 and 3).

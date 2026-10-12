@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-11 — Puzzle Pals spatial hints and outer rims
+
+- Built the support part of deep-dive slice 1 ([PR #169](https://github.com/rjdunlap/neo/pull/169)): flat outer rims at 5–7, corner-first then adjacent-piece help, spoken positions and a stable paired glow that takes no touches. Levels, bands, scenes and sticker drawings unchanged; art fairness and the box lid remain open.
+- Tested claim `a4ed78c` (base `844c2ee`) plus implementation diff at `http://localhost:5194`, using worktree-local dependencies/cache. Typecheck, 29 focused Puzzle Pals/scene/how-to tests and production build passed (existing bundle warning). Rule checks cover every partial board, including all 4,096 top-level states, valid drop targets and nine spoken positions.
+- `BROWSER_SUITE=fourth FOURTH_ONLY=puzzle PUZZLE_LEVELS=5,7` passed real drags, free off-board exploration, two misses/one useful hint, completion and saved reward; `BROWSER_SUITE=fingerdemo FINGER_ONLY=puzzle-pals FINGER_LEVELS=7` clean in 32.9 s. No page errors. Added the fourth-suite filters to the README.
+- Reviewed `test-results/browser/puzzle-pals-7-portrait.png`: marked outer sides, paired hint glow, tray and pet clear. Local Markdown links and `git diff --check` passed. Vite listening and Chromium startup required sandbox escalation; the session server was stopped after checks.
+- Not run: full unit/browser/world/couch/offline suites (no navigation, save schema, imported assets or couch changes). iPad touch, device speech and child understanding remain open.
+
 ## 2026-10-11 — Story Steps repair a mixed-up story
 
 - Built deep-dive slice 3 ([PR #168](https://github.com/rjdunlap/neo/pull/168)): school level 9, seeded adjacent-pair disruption, real tap swaps, cancellation, undo, current-order narration and one hint after eight experiments; swaps count no misses.
@@ -587,6 +595,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Puzzle Pals spatial support (`fourth`, `fingerdemo`) | 2026-10-11: 29 targeted tests, typecheck/build; filtered levels 5/7, two misses/one hint, reward and portrait; level-7 demo clean in 32.9 s | Puzzle Pals spatial hints and outer rims entry | Fairness and box lid open; iPad, device speech and child play untested |
 | Story Steps repair (`expansion`, `fingerdemo`) | 2026-10-11: typecheck, 971 tests/build; filtered levels 1 and 9, cancellation, undo, replay, experimental swaps, one hint, reward and portrait; level-9 demo clean in 8.1 s | Story Steps repair entry | iPad touch, speech and child understanding untested |
 | Goodnight Room color groups (`woods`, `fingerdemo`) | 2026-10-11: 38 focused tests, typecheck/build; level 8 wrong colors, glow, reverse answers and saved reward; demo clean in 5.7 s; portrait reviewed | Goodnight Room color groups entry | Broad suites not rerun; iPad, device speech and child color interpretation open |
 | Animal Snack words and guards (`woods`, `fingerdemo`) | 2026-10-11: 34 focused tests, typecheck/build; levels 1–5, retries/hints, exact count and saved rewards; demos 1/5 clean; portraits 3/5 and nearest-body regression | Animal Snack words and guards entry | Full suites/offline not rerun; iPad, speech and child play open |
