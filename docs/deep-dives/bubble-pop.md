@@ -152,6 +152,8 @@ The level-order decisions already have a row in [Waiting on the developer](../RO
 
 ## Build slices, in order
 
+> **Claimed 2026-10-12** (branch `claude/bubble-pop-scenes-next-level`): slice 3, the bath, night and sea backgrounds (`src/games/bubble-pop/*`, `src/art/scenery.ts` untouched), and, at the developer's request, a **next level** button on the celebration for every game (`GameScene`, `Routes.game`, `src/progress/difficulty.ts`, `src/ui/icons.ts`, `DESIGN.md`).
+
 > **Built 2026-10-12** ([PR #203](https://github.com/rjdunlap/neo/pull/203)), the developer having asked for the number needed on the bonds levels to be shown and for more levels "if there are some on the roadmap": a **target sign** at the top of levels 10–11 (two small bubbles, an equals bar and the total, with dice dots on 10), then levels 12 start at a number, 13 count back and 14 count by tens and fives, taking the leans from "Decisions for the developer": pre-K 6–12, school 10–14, count back here rather than in Bumper Garden 6. The sign also names the start (12, 13) or the step (14). Level 13 always runs down to 1 from a start of 5 to 10 (up to ten bubbles, a clump that level 9 already plays); level 14's runs are two-digit multiples (10 to 70, 5 to 35). A level above 14 still has no inherited how-to step. Still open: number words for tens and fives on a device (a person check), and the backgrounds, pictures in bubbles and below-level-1 play.
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken.
