@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beatMove, differences, firstMismatch, mendCopy, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
+import { beatMove, differences, firstMismatch, mendCopy, givenCell, reviseStart, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
 
 describe('Beat Builder', () => {
   it('makes beats that start on the drum, give every row a hit, and are never all sounds at once', () => {
@@ -74,7 +74,7 @@ describe('Beat Builder', () => {
   });
 
   it('can repair missing and excess sounds in every authored target with the existing bot and hint', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'revise')) {
       const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
       for (const p of pool) {
         const target = p.score.map((row) => plan.mode === 'repeat' ? [...row, ...row] : [...row]);
@@ -90,7 +90,7 @@ describe('Beat Builder', () => {
           expect(repairs(plan, target, have)).toHaveLength(remaining - 1);
         }
         expect(same(target, have)).toBe(true);
-        expect(beatMove(plan, target, have, true)).toBe(plan.mode === 'hear' || plan.mode === 'mend' ? 'check' : null);
+        expect(beatMove(plan, target, have, true)).toBe(plan.mode === 'hear' || plan.mode === 'mend' || plan.mode === 'revise' ? 'check' : null);
       }
     }
   });
@@ -119,7 +119,7 @@ describe('Beat Builder', () => {
   });
 
   it('names add/remove repairs, drops fixed cells after edits and never repairs the given half', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise')) {
       const goal = makeBeat(plan, new Rng(42));
       const have = goal.map((row) => row.map((on) => !on));
       goal.forEach((row, r) => row.forEach((on, step) => { if (givenStep(plan, step)) have[r][step] = on; }));
@@ -141,7 +141,7 @@ describe('Beat Builder', () => {
 
   describe("the ghost finger's bot", () => {
     it('builds the beat to copy with only right squares, leaving the given half alone, and checks only where a check is asked for', () => {
-      for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend')) {
+      for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise')) {
         for (let seed = 1; seed <= 100; seed++) {
           const target = makeBeat(plan, new Rng(seed));
           const beat = empty(plan.rows, plan.steps);
@@ -159,7 +159,7 @@ describe('Beat Builder', () => {
           expect(same(target, beat), plan.name).toBe(true);
           expect(taps).toBeGreaterThan(0);
           // Levels that see their beat finish when it matches; the ear levels press the check.
-          expect(move).toBe(plan.mode === 'hear' || plan.mode === 'mend' ? 'check' : null);
+          expect(move).toBe(plan.mode === 'hear' || plan.mode === 'mend' || plan.mode === 'revise' ? 'check' : null);
           if (plan.mode === 'hear') expect(beatMove(plan, target, beat, false)).toBeNull();
         }
       }
@@ -196,6 +196,30 @@ describe('Beat Builder', () => {
         expect(same(model, have)).toBe(true);
         expect(beatMove(plan, model, have, true)).toBe('check');
         expect(same(model, copy)).toBe(false);
+      }
+    }
+  });
+
+  it('revises: drum is locked and equal, claps need an addition and a removal, hints and the bot touch only claps', () => {
+    const plan = PLANS[6];
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      for (const p of SHORT_PHRASES) {
+        const target = p.score.map((row) => [...row]);
+        const have = reviseStart(target, rng);
+        expect(have[0]).toEqual(target[0]);
+        const help = repairs(plan, target, have);
+        expect(help.every((c) => c.row === 1)).toBe(true);
+        expect(help.some((c) => c.add)).toBe(true);
+        expect(help.some((c) => !c.add)).toBe(true);
+        expect(givenCell(plan, 0, 0)).toBe(true);
+        expect(givenCell(plan, 1, 0)).toBe(false);
+        for (let move = beatMove(plan, target, have, false); move && move !== 'check'; move = beatMove(plan, target, have, false)) {
+          expect(move.row).toBe(1);
+          have[move.row][move.step] = !have[move.row][move.step];
+        }
+        expect(same(target, have)).toBe(true);
+        expect(beatMove(plan, target, have, true)).toBe('check');
       }
     }
   });
