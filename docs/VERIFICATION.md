@@ -926,6 +926,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Block Tower deep-dive worker dispatch (2026-10-12)
+
+Coordinator confirmed woodland #197 merged, worker complete and its proof recorded. External implementation claims inspected and merged; no active Neo implementation/open PR or Block Tower overlap at admission. Fresh actual allowance admits docs-only research worker `01a131dd-8e6d-7692-8d50-25f3f37bd641`; queue records scope, usage, pending docs validation and prior aggregate closeout once. Unrelated dirty repair preserved. Coordinator edits only dispatch documentation: source links and `git diff --check` passed. Worker owes research/docs validation; no code checks or servers here.
+
 ### Beat Builder woodland-stage worker dispatch (2026-10-12)
 
 Coordinator confirmed authored phrases #196 merged at `59f6c32`, worker complete and rule-tier proof recorded. Actual allowance admits one fresh worker for the woodland stage only from ready slice 9; decision-dependent modes and picnic remain excluded. Queue records worker `01a13171-0f01-7fe1-85da-6213cd971298`, scope/admission and pending checks; prior usage reconciled once, duplicate pending row consolidated. No concurrent implementation or overlapping claim/dirty work found. Coordinator edits only documentation: source link/anchor and `git diff --check` passed. Worker owes typecheck/rules and one screenshot; no coordinator servers or code checks.
