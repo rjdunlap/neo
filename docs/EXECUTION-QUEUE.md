@@ -27,15 +27,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation `neo-roadmap-coordinator` remains active hourly.
-- State: authored-phrase worker complete and [#196](https://github.com/rjdunlap/neo/pull/196) merged at `59f6c32a9010124c02620e774a2136885f01b84b`; previous slot released. Newly admitted slice: **Beat Builder woodland visual stage only**, first stage of ready build slice 9. Slices 4–8 and storage remain developer-dependent; picnic is a later separate stage.
-- Dispatch `beat-builder-woodland-20261012T184648Z`; worker `01a13171-0f01-7fe1-85da-6213cd971298`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`). Requested title "Beat Builder: woodland visual stage". Fresh project/local chat, minimal handoff, no history/model override. Worker branch/claim PR pending; source base `59f6c32`.
-- Scope/source: [Beat Builder build slices](deep-dives/beat-builder.md#build-slices-in-order), slice 9, woodland only after completed support/content, using existing instruments. Expected files: Beat Builder drawing/layout, necessary art/rule assertions and related documentation. Exclude picnic stage, gameplay/rule changes, new modes/levels/bands, storage and other games.
-- Admission 2026-10-12 18:46:48 UTC: **25% five-hour / 69% weekly used**, resets `1791838034` / `1792295993`; ordinary usage allowed. Conservative content/art estimate **15 / 2.5 points**, fits actual remaining **75% / 31%**. No daily cap or reserve; worker rechecks actual allowance.
-- Previous proof confirmed: typecheck, ten focused phrase/generation rule tests, links/anchors and diff check passed; browser/build omitted per assigned generation tier. No servers started, clean publication. Final aggregate usage 17:55:07 UTC **25% / 69%**, resets `1791838034` / `1792295992`; admission 19% / 68% with same identities. Aggregate endpoints **6 / 1 points**, intermediate weekly 1s drift; reconciled once below and duplicate pending row consolidated. No unchanged proof rerun.
-- Current implementation/checks **not run by coordinator**. Worker owes source content/art tier: typecheck/rules and one screenshot; no unchanged browser suite. Shared changes receive proportionate AGENTS checks only if needed. Actual device sound/speech, touch and child fit remain open.
-- Admission overlap: no other active implementation/open PR/unmerged branch or overlapping dirty work; unrelated dirty repair checkout preserved. Coordinator servers: none.
-- Next action: retrieve this worker/PR next wake-up; confirm completion/publication and reconcile final usage once before another dispatch. Resume same worker if unfinished. Do not implement here.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; worker `01a13171-0f01-7fe1-85da-6213cd971298`, branch `codex/beat-builder-woodland`, [PR #197](https://github.com/rjdunlap/neo/pull/197), dispatch `beat-builder-woodland-20261012T184648Z`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`.
+- State: **woodland stage complete and verified; publication/merge through #197 follows**. Claim `861c467`, integrated base `b4e9d19` / upstream `a1c609f` plus final implementation/docs diff. No required implementation/check remains.
+- Scope: woodland portion of Beat Builder slice 9 only at existing 1–5, existing drum/clap/bell, forest framing and row-responsive friends. Picnic, rules, modes, levels, bands, storage and other games excluded. No new random draws; grid/input and sticker seeds preserved.
+- Proof: typecheck, ten focused rules, 17 how-to tests, build passed; one level-5 portrait screenshot reviewed, isolated row-response/input-decoration probe passed without page errors at `http://localhost:5213`. Local links/anchors and diff check passed. Initial browser profile setup and note type corrected; owned server/browser stopped. Probe/screenshot retained in ignored test-results.
+- Not run: unchanged browser suites/full unit/world/couch/picnic/offline, per source content/art tier. Actual iPad/Bluetooth sound/speech, touch and child fit remain open.
+- Usage: coordinator admission 18:46:48 UTC **25% / 69%**, resets `1791838034` / `1792295993`, estimate **15 / 2.5 points**. Worker first **27% / 69%**, resets `1791838034` / `1792295992`; pre-implementation **29% / 69%**, same resets; pre-verification **30% / 70%**, weekly `1792295993`; pre-publication **33% / 70%**, resets `1791838034` / `1792295993`, ordinary usage allowed. Aggregate admission endpoints 8 / 1 points; intermediate weekly reset identity drift. Final after-commit reading in worker response, carry once without overhead-only commit.
+- Overlap: no competing active implementation/open PR/unmerged branch; coordinator exempt and its dispatch integrated. Unrelated dirty repair checkout preserved.
+- Next action: confirm #197 merged/published and carry final usage from worker response, then release this complete worker. Picnic is independently ready but needs separate admission; slices 4–8 and storage remain decision-dependent. This worker stops without dispatch or coordinator messages.
 
 ## Usage observations
 
@@ -55,7 +54,7 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-12 | Beat Builder authored phrases / [#196](https://github.com/rjdunlap/neo/pull/196), dispatch `beat-builder-phrases-20261012T175018Z` | Gameplay generation | 19% → 25% / `1791838034` | 68% → 69% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #196; final 17:55:07 UTC. Aggregate endpoints 6 / 1 points; worker complete, reconciled once |
 
-| 2026-10-12 | Beat Builder woodland stage, dispatch `beat-builder-woodland-20261012T184648Z` | Content/art | 25% → pending / `1791838034` | 69% → pending / `1792295993` | Estimate 15 / 2.5 points | Fresh worker `01a13171-0f01-7fe1-85da-6213cd971298` admitted; implementation/proof pending |
+| 2026-10-12 | Beat Builder woodland / [#197](https://github.com/rjdunlap/neo/pull/197), dispatch `beat-builder-woodland-20261012T184648Z` | Content/art | 25% → 33% / `1791838034` | 69% → 70% / `1792295993` (intermediate 1s drift) | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate admission endpoints 8 / 1; final after-commit reading in worker response |
 
 ## Fresh-worker dispatch and handoff
 
