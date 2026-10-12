@@ -895,6 +895,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Listen to the target beat and build it by ear. Tap the note button to hear the target again.' },
       { from: 5, to: 5, text: 'The target plays two complete loops; squares and the green check wait until replay finishes. Then edit your beat. Tap the green check to compare it with the target and try again. After two wrong checks, glowing plus marks ask you to add a sound and minus marks ask you to remove one.' },
       { from: 6, to: 6, text: 'A small model beat sits under the buttons. Your grid starts as a copy with one square wrong: a sound is missing or one is extra. Tap the note to hear the model, tap squares to fix your copy, then tap the green check.' },
+      { from: 7, to: 7, text: 'The drum row is locked in the right place. Listen to the target beat, then move the claps in the bottom row to match it. Tap the clap button to hear only the target claps and the note button to hear the whole beat.' },
+      { from: 7, to: 7, text: 'Tap the green check to compare. A wrong check names the row and the square to look at; after two wrong checks, a glowing plus or minus marks a clap to add or take away. Tapping the locked drum does nothing but remind you.' },
       { from: 6, to: 6, text: 'A wrong check names the instrument row and the square to look at. After two wrong checks, a glowing plus or minus marks the square to fix.' },
     ],
     finish: [
@@ -904,12 +906,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'The round ends after two repeating patterns are matched automatically.' },
       { from: 5, to: 5, text: 'The round ends after two heard beats are matched and confirmed with the green check.' },
       { from: 6, to: 6, text: 'The round ends after three copies are mended and confirmed with the green check.' },
+      { from: 7, to: 7, text: 'The round ends after two clap patterns are matched and confirmed with the green check.' },
     ],
     note: [
       { from: 1, to: 2, text: 'On the woodland stage, the bear moves with the drum and the bunny with the clap. They respond to the sounds in your beat.' },
       { from: 3, to: 3, text: 'On the picnic blanket, the pig moves with the drum and the duck with the clap. They respond to the sounds in your beat and in target replay.' },
       { from: 4, to: 4, text: 'On the woodland stage, the bear moves with the drum and the bunny with the clap. They respond to the sounds in your beat.' },
-      { from: 6, to: 6, text: 'On the woodland stage, the bear moves with the drum and the bunny with the clap. They respond to the sounds in your beat and when you hear the model.' },
+      { from: 6, to: 7, text: 'On the woodland stage, the bear moves with the drum and the bunny with the clap. They respond to the sounds in your beat and when you hear the model or target.' },
       { from: 5, to: 5, text: 'On the picnic blanket, the pig moves with the drum, the duck with the clap and the dog with the bell. They respond to the sounds in your beat and in target replay.' },
     ],
   },

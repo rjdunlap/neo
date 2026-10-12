@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * that sound on. First free play, then copying a beat you can see, then copying one by ear, then
  * making a pattern repeat (the second half matches the first), then a longer beat by ear.
  */
-export type BeatMode = 'free' | 'see' | 'hear' | 'repeat' | 'mend';
+export type BeatMode = 'free' | 'see' | 'hear' | 'repeat' | 'mend' | 'revise';
 
 export interface BeatPlan {
   mode: BeatMode;
@@ -24,6 +24,7 @@ export const PLANS: BeatPlan[] = [
   { mode: 'repeat', steps: 8, rows: 2, beats: 2, name: 'Make the pattern repeat: the second half matches the first' },
   { mode: 'hear', steps: 8, rows: 3, beats: 2, name: 'A longer beat by ear, with drum, clap and bell' },
   { mode: 'mend', steps: 4, rows: 2, beats: 3, name: 'Mend the beat: one sound in your copy is missing or extra; fix it, then check' },
+  { mode: 'revise', steps: 4, rows: 2, beats: 2, name: 'Keep the drum, change the claps: listen, then move the claps to match' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -134,6 +135,21 @@ export function makeBeat(plan: BeatPlan, rng: Rng): Beat {
 /** On repeat levels, the first half is given; the child fills the second. */
 export const givenStep = (plan: BeatPlan, step: number) => plan.mode === 'repeat' && step < plan.steps / 2;
 
+/** A square she cannot change: the first half on repeat levels, the whole drum row when revising. */
+export const givenCell = (plan: BeatPlan, row: number, step: number) => givenStep(plan, step) || (plan.mode === 'revise' && row === 0);
+
+/**
+ * The start of a revise round: the drum is as in the target; the claps are a different pattern that
+ * needs at least one clap added and at least one taken away. Seeded.
+ */
+export function reviseStart(target: Beat, rng: Rng): Beat {
+  const want = target[1];
+  const options = Array.from({ length: 16 }, (_, n) => [0, 1, 2, 3].map((s) => ((n >> s) & 1) === 1)).filter((row) =>
+    row.some((on, s) => on && !want[s]) && want.some((on, s) => on && !row[s]));
+  const clap = rng.pick(options);
+  return [[...target[0]], clap];
+}
+
 export const same = (a: Beat, b: Beat) => a.every((row, r) => row.every((on, s) => on === b[r][s]));
 
 /** Steps where the child's beat differs from the target: for the hint. */
@@ -161,8 +177,8 @@ export type BeatMove = { row: number; step: number } | 'check';
  */
 export function beatMove(plan: BeatPlan, goal: Beat, beat: Beat, checkShowing: boolean): BeatMove | null {
   for (let step = 0; step < plan.steps; step++)
-    for (let row = 0; row < plan.rows; row++) if (goal[row][step] !== beat[row][step] && !givenStep(plan, step)) return { row, step };
-  return (plan.mode === 'hear' || plan.mode === 'free' || plan.mode === 'mend') && checkShowing ? 'check' : null;
+    for (let row = 0; row < plan.rows; row++) if (goal[row][step] !== beat[row][step] && !givenCell(plan, row, step)) return { row, step };
+  return (plan.mode === 'hear' || plan.mode === 'free' || plan.mode === 'mend' || plan.mode === 'revise') && checkShowing ? 'check' : null;
 }
 
 /** One finite replay tick. The final tick returns to the live beat after the last target step's full interval. */
@@ -173,5 +189,5 @@ export function replayTick(steps: number, remaining: number) {
 /** Specific editable repairs, recomputed after every edit so help never asks for an already fixed cell. */
 export function repairs(plan: BeatPlan, target: Beat, have: Beat) {
   return target.flatMap((row, r) => row.flatMap((on, step) =>
-    !givenStep(plan, step) && on !== have[r][step] ? [{ row: r, step, add: on }] : []));
+    !givenCell(plan, r, step) && on !== have[r][step] ? [{ row: r, step, add: on }] : []));
 }

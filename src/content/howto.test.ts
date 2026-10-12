@@ -131,8 +131,13 @@ describe('touch how-to cards', () => {
     expect(mend.steps.join(' ')).toContain('green check');
     expect(mend.steps.join(' ')).not.toContain('first four columns');
     expect(mend.finish).toContain('three copies are mended');
-    expect(howToFor(game, 7)!.steps).toEqual([]);
-    expect(howToFor(game, 7)!.finish).toBe('');
+    const revise = howToFor(game, 7)!;
+    expect(revise.steps.join(' ')).toContain('drum row is locked');
+    expect(revise.steps.join(' ')).toContain('clap button');
+    expect(revise.steps.join(' ')).not.toContain('one square wrong');
+    expect(revise.finish).toContain('two clap patterns');
+    expect(howToFor(game, 8)!.steps).toEqual([]);
+    expect(howToFor(game, 8)!.finish).toBe('');
   });
 
   it('changes with the level where the game does: a step that only holds for some levels is not on every card', () => {

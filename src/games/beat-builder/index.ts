@@ -12,12 +12,12 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beatMove, firstMismatch, mendCopy, repairs, replayTick, empty, freeBeat, givenStep, hits, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
+import { beatMove, firstMismatch, mendCopy, repairs, replayTick, empty, freeBeat, givenCell, givenStep, hits, reviseStart, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 6 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 
 const CELL = 100;
@@ -59,6 +59,9 @@ class BeatBuilder implements Game {
   readonly grid = new Container();
   readonly listen: RoundButton;
   readonly check: RoundButton;
+  /** Revise levels: hear only the target's claps. */
+  readonly solo: RoundButton;
+  private soloing = false;
 
   private readonly phrases: ReturnType<typeof roundPhrases>;
   private readonly backdrop: Backdrop;
@@ -95,10 +98,14 @@ class BeatBuilder implements Game {
     }
     this.grid.addChild(this.icons);
     this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 56, () => this.playTarget());
-    this.listen.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend';
+    this.listen.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend' || this.plan.mode === 'revise';
     this.check = new RoundButton(checkArt(), swatch.green, 56, () => void this.checkBeat());
-    this.check.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend';
-    ctx.stage.addChild(this.backdrop, this.woodland, this.grid, this.listen, this.check, this.model);
+    this.check.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend' || this.plan.mode === 'revise';
+    const soloArt = rowIcon(1);
+    soloArt.scale.set(0.8);
+    this.solo = new RoundButton(soloArt, swatch.teal, 56, () => this.playTarget(true));
+    this.solo.visible = this.plan.mode === 'revise';
+    ctx.stage.addChild(this.backdrop, this.woodland, this.grid, this.listen, this.solo, this.check, this.model);
     this.model.eventMode = 'none';
   }
 
@@ -115,8 +122,10 @@ class BeatBuilder implements Game {
     this.woodland.resize(v, this.grid.y);
     this.grid.hitArea = new Rectangle(0, 0, w, this.plan.rows * CELL);
     const y = this.grid.y + this.plan.rows * CELL + 95;
-    this.listen.position.set(v.w / 2 - 90, y);
-    this.check.position.set(v.w / 2 + 90, y);
+    const reviseRow = this.plan.mode === 'revise';
+    this.listen.position.set(v.w / 2 - (reviseRow ? 170 : 90), y);
+    this.solo.position.set(v.w / 2, y);
+    this.check.position.set(v.w / 2 + (reviseRow ? 170 : 90), y);
     this.model.position.set(v.w / 2, y + 95);
     this.draw();
   }
@@ -137,7 +146,7 @@ class BeatBuilder implements Game {
     if (this.step === 0 && !target) this.loops++;
     const playing = target ? this.target : this.beat;
     playing.forEach((row, r) => {
-      if (!row[this.step]) return;
+      if (!row[this.step] || (target && this.soloing && r === 0)) return;
       this.sound(r, this.step);
     });
     // Free play: once the beat has gone round a couple of times, the green check can finish.
@@ -179,10 +188,11 @@ class BeatBuilder implements Game {
     this.target = phrase?.beat ?? empty(this.plan.rows, this.plan.steps);
     this.beat = empty(this.plan.rows, this.plan.steps);
     // Repeat levels: the first half is already there.
+    if (this.plan.mode === 'revise') this.beat = reviseStart(this.target, this.ctx.rng);
     if (this.plan.mode === 'mend') this.beat = mendCopy(this.target, this.index, this.ctx.rng);
     if (this.plan.mode === 'repeat') this.target.forEach((row, r) => row.forEach((on, s) => (this.beat[r][s] = givenStep(this.plan, s) && on)));
     this.resize(this.view);
-    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat', mend: 'beat.mend' } as const;
+    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat', mend: 'beat.mend', revise: 'beat.revise' } as const;
     if (this.plan.mode === 'free') {
       this.busy = false;
       return this.ctx.instruct(line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
@@ -190,12 +200,13 @@ class BeatBuilder implements Game {
     if (this.index === 0) await this.ctx.instruct(line[this.plan.mode], { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
     if (phrase) await this.ctx.say('beat.phrase', { phrase: phrase.name });
     this.busy = false;
-    if (this.plan.mode === 'hear') this.playTarget();
+    if (this.plan.mode === 'hear' || this.plan.mode === 'revise') this.playTarget();
   }
 
   /** The beat to copy plays twice, with the playhead in its own color. */
-  private playTarget() {
+  private playTarget(solo = false) {
     if (this.busy || this.finished) return;
+    this.soloing = solo;
     this.playingTarget = this.plan.steps * 2 + 1;
     this.step = this.plan.steps - 1;
     this.timer = STEP_SECONDS;
@@ -230,7 +241,7 @@ class BeatBuilder implements Game {
         const x = s * CELL + 10;
         const y = r * CELL + 10;
         g.roundRect(x, y, CELL - 20, CELL - 20, 16).fill(on ? sw.fill : 0xffffff).stroke({ width: 4, color: on ? sw.line : 0xd8d8e2 });
-        if (givenStep(this.plan, s) && on) g.circle(x + CELL / 2 - 10, y + CELL / 2 - 10, 8).fill({ color: 0xffffff, alpha: 0.8 });
+        if (givenCell(this.plan, r, s) && on) g.circle(x + CELL / 2 - 10, y + CELL / 2 - 10, 8).fill({ color: 0xffffff, alpha: 0.8 });
         const repair = help.find((cell) => cell.row === r && cell.step === s);
         const faint = this.plan.mode === 'see' || repair?.add;
         if (faint && this.target[r][s] && !on) g.circle(x + CELL / 2 - 10, y + CELL / 2 - 10, 16).fill({ color: sw.fill, alpha: 0.35 });
@@ -251,7 +262,13 @@ class BeatBuilder implements Game {
     const s = Math.floor(p.x / CELL);
     const r = Math.floor(p.y / CELL);
     if (s < 0 || r < 0 || s >= this.plan.steps || r >= this.plan.rows) return;
-    if (givenStep(this.plan, s)) return;
+    if (givenCell(this.plan, r, s)) {
+      if (this.plan.mode === 'revise') {
+        sfx.tick();
+        void this.ctx.say('beat.locked');
+      }
+      return;
+    }
     const mode = this.plan.mode;
     // Seeing and repeating levels: a square that isn't in the beat stays off, as a gentle miss.
     if ((mode === 'see' || mode === 'repeat') && !this.beat[r][s] && !this.target[r][s]) {
@@ -282,7 +299,7 @@ class BeatBuilder implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'mend') {
+    if (this.plan.mode === 'mend' || this.plan.mode === 'revise') {
       const m = firstMismatch(this.target, this.beat);
       await this.ctx.say('beat.mendno', { instrument: INSTRUMENTS[m?.row ?? 0].name, place: ['first', 'second', 'third', 'fourth'][m?.step ?? 0] });
     } else await this.ctx.say('beat.nothear');
@@ -292,7 +309,7 @@ class BeatBuilder implements Game {
       void this.ctx.say('beat.hint');
     }
     this.busy = false;
-    if (this.plan.mode !== 'mend') this.playTarget();
+    if (this.plan.mode !== 'mend' && this.plan.mode !== 'revise') this.playTarget();
     this.draw();
   }
 

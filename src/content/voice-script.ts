@@ -645,6 +645,8 @@ export const SCRIPT = {
   'beat.hint': ['Glowing plus marks need a sound. Glowing minus marks have an extra sound. Tap those squares to repair the beat.'],
   'beat.phrase': ['This beat is called {phrase}.'],
   'beat.mend': ['One sound in your copy is different from the model. Fix it, then tap the green check!'],
+  'beat.revise': ['The drum stays put. Listen, then move the claps to match! Tap the clap button to hear just the claps.'],
+  'beat.locked': ['The drum keeps its place. Change the claps!'],
   'beat.mendno': ['Not quite. Look at the {instrument} row, {place} square.'],
   'beat.yay': ['That is the beat!', 'Groovy!', 'You got the rhythm!'],
   'beat.done': ['What a band! Thank you for the music!'],
