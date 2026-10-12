@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
+import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, reachSlot, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
 
 describe('Block Tower', () => {
   it('keeps a block up only while the middle of it and everything above is over the block below', () => {
@@ -49,6 +49,27 @@ describe('Block Tower', () => {
         expect(t[2]).not.toBe(0);
         if (subtle) expect(Math.abs(Math.abs(t[2]) - Math.abs(r.towers[1 - i][2]))).toBeLessThanOrEqual(1);
       });
+    }
+  });
+
+  it('snaps every offered drop to the solver domain, including the formerly extra right slots', () => {
+    expect(SLOTS).toEqual(Array.from({ length: 21 }, (_, i) => i - 12));
+    for (const slot of SLOTS) expect(reachSlot(slot)).toBe(slot);
+    for (let x = -16; x <= 12.8; x += 0.125) expect(SLOTS).toContain(reachSlot(x));
+    expect(reachSlot(9)).toBe(8);
+    expect(reachSlot(10)).toBe(8);
+    expect(reachSlot(-16)).toBe(-12);
+    expect(reachSlot(-2.2)).toBe(-2);
+    for (const round of REACH) for (const x of SLOTS) {
+      const way = finish([x], round);
+      if (!way) continue;
+      const prefix = [x];
+      for (const next of way) {
+        expect(reachSlot(next)).toBe(next);
+        prefix.push(next);
+        expect(topples(prefix, 0)).toBe(-1);
+      }
+      expect(reached(prefix, round.star)).toBe(true);
     }
   });
 

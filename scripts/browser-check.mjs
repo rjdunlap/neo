@@ -4474,6 +4474,49 @@ async function shortlistBatch() {
           await page.waitForTimeout(500);
         };
         if (n === 0) {
+          // Audit the landing window, cancelled releases, resize and top-only lifting before scored trials.
+          assert.deepEqual(await page.evaluate(() => {
+            const g = neo.scene.game;
+            return [-12, 8, 9, 10].map((x) => g.slot(g.edge + x * 13, g.tableTop));
+          }), [-12, 8, 8, 8], 'live drop and ghost share the solver domain');
+          assert.deepEqual(await page.evaluate(() => {
+            const g = neo.scene.game, t = g.tray[0];
+            t.node.emit('pointerdown', { pointerId: 81, global: t.node.getGlobalPosition() });
+            t.node.position.set(g.edge - 39, g.tableTop);
+            window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 81 }));
+            return [t.x, t.drag.dragging, g.misses, g.hints];
+          }), [null, false, 0, 0], 'cancel over table returns to tray without committing or scoring');
+          await page.waitForTimeout(500);
+          assert.deepEqual(await page.evaluate(async () => {
+            const g = neo.scene.game;
+            await kit.dragTo(g.tray[0].node, { x: g.edge - 39, y: g.tableTop + 40 }, 12);
+            neo.paused = true; // Freeze the real landing tween to inspect the brief input window.
+            const first = g.tray[0], second = g.tray[1];
+            second.node.emit('pointerdown', { pointerId: 82, global: second.node.getGlobalPosition() });
+            first.node.emit('pointerdown', { pointerId: 83, global: first.node.getGlobalPosition() });
+            return [g.busy, first.drag.dragging, second.drag.dragging, g.placed.length];
+          }), [true, false, false, 1], 'neither a second drop nor a top lift interrupts landing');
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.evaluate(() => { neo.paused = false; });
+          await idle(n);
+          assert.ok(await page.evaluate(() => {
+            const g = neo.scene.game, t = g.placed[0];
+            return t.node.x === g.edge - 39 && t.node.y === g.tableTop && t.drag.enabled;
+          }), 'landing relayouts against the resized table before controls reopen');
+          // Simulate an existing next-placement hint; lifting invalidates it and returns only the top.
+          assert.deepEqual(await page.evaluate(async () => {
+            const g = neo.scene.game, t = g.placed[0];
+            g.hintGhost.visible = true;
+            const p = t.node.getGlobalPosition();
+            t.node.emit('pointerdown', { pointerId: 84, global: p });
+            const cleared = !g.hintGhost.visible;
+            t.node.position.set(g.view.w - 200, g.floor + 30);
+            t.node.emit('pointerup', { pointerId: 84 });
+            await kit.sleep(500);
+            return [cleared, g.placed.length, g.misses, g.hints];
+          }), [true, 0, 0, 0], 'top lift clears stale help and returns the block without a miss');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(200);
           for (let k = 0; k < 2; k++) { await drop(3); await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.placed.length === 0, null, { timeout: 20000 }); }
           assert.deepEqual(await counts(), [2, 1]);
           assert.ok(await page.evaluate(() => neo.scene.game.hintGhost.visible), 'a glowing place for the next block');
