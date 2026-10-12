@@ -1,3 +1,5 @@
+# Puddle Island verification
+
 ## 2026-10-12 — Stamp Studio 1c1: seeded early choices
 
 - Levels 1/2/3 select one/two/three distinct existing kinds and an existing starting color with the round RNG; generic early words/how-to match any selection. No new levels, tools or storage. [PR #179](https://github.com/rjdunlap/neo/pull/179).
@@ -5,8 +7,6 @@
 - `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=1,3 GAME_URL=http://localhost:5203` passed isolated plays, color/name choices, arrangement, Undo, frozen kept creation and 0/0 with one sticker. `BROWSER_SUITE=fingerdemo FINGER_ONLY=stamp-studio FINGER_LEVELS=1,3` at the same URL passed (9.8s/29.6s), no page errors; browser budget under two minutes.
 - Reviewed `test-results/browser/stamp-studio-3.png` landscape: matching green choices, paper/control/pet clearance. Changed relative links and `git diff --check` passed; pre-existing archived links were excluded from changed-link proof. Server and browsers stopped. Current main integration is docs-only, so proof remains valid.
 - Not run: broad suites, howto browser, portrait, offline and device speech/touch. No layout/storage/assets/routes changed; existing #175/#176 proof reused. Chromium initially could not start in the sandbox and passed with escalation. Bin and lap nudge/limit completion remain separate work.
-
-# Puddle Island verification
 
 ## 2026-10-11 — First fresh-context worker dispatch
 
