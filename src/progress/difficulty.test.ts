@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextLevel, stepLevel } from './difficulty';
+import { nextLevel, nextLevelOffer, stepLevel } from './difficulty';
 import type { RoundRecord } from './save';
 
 const round = (level: number, misses: number, hints = 0): RoundRecord => ({ level, misses, hints, seconds: 60, at: 0 });
@@ -37,5 +37,14 @@ describe('nextLevel', () => {
     expect(nextLevel(1, [round(1, 9), round(1, 9)], range)).toBe(1);
     expect(nextLevel(9, [], range)).toBe(6);
     expect(nextLevel(1, [], { min: 4, max: 9 })).toBe(4);
+  });
+});
+
+describe('nextLevelOffer', () => {
+  const range = { min: 2, max: 5 };
+  it('offers the level above the one just played, up to the top of the range', () => {
+    expect(nextLevelOffer(2, range)).toBe(3);
+    expect(nextLevelOffer(4, range)).toBe(5);
+    expect(nextLevelOffer(5, range)).toBeNull();
   });
 });

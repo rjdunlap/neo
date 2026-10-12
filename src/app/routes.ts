@@ -23,10 +23,10 @@ export function createRoutes(app: App): Routes {
     place: (band) => void app.show(store.data.settings.placeLayout === 'subjects' ? new SubjectPlaceScene(app, band) : new PlaceScene(app, band)),
     hatch: (quick) => void app.show(new HatchScene(app, quick)),
     land: (id) => void app.show(new LandScene(app, id)),
-    game: (id, band = store.data.profile.band, story, again = false, origin) => {
+    game: (id, band = store.data.profile.band, story, again = false, origin, level) => {
       // Couch-only games are not island games, so they never open here.
       const mod = gameById(id);
-      if (mod) void app.show(new GameScene(app, mod, playBand(mod.bands, band), story, again, origin));
+      if (mod) void app.show(new GameScene(app, mod, playBand(mod.bands, band), story, again, origin, level));
     },
     picnic: (from) => void app.show(new PicnicScene(app, from)),
     stickers: () => void app.show(new StickerBookScene(app)),

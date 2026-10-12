@@ -22,6 +22,9 @@ const clamp = (level: number, range: LevelRange) => Math.min(range.max, Math.max
 /** One level up or down from `level`, held inside the range: what the how-to card's arrows do. */
 export const stepLevel = (level: number, delta: number, range: LevelRange): number => clamp(level + delta, range);
 
+/** The level the celebration's "next level" button plays: one above the level just played, or null at the top of the range. */
+export const nextLevelOffer = (played: number, range: LevelRange): number | null => (played + 1 > range.max ? null : played + 1);
+
 /**
  * Two smooth rounds in a row at the current level step up; two struggling rounds step down.
  * The child never sees a level number, and the range comes from her age band.

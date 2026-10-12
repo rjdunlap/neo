@@ -16,11 +16,11 @@ function shine(g: Graphics, r: number, width: number, alpha: number) {
 }
 
 /** A soap bubble: a clear body, a colored rim and a bright highlight. */
-export function drawBubble(g: Graphics, r: number, color: ColorName | null, fillAlpha?: number, lowerGlint = true): Graphics {
+export function drawBubble(g: Graphics, r: number, color: ColorName | null, fillAlpha?: number, lowerGlint = true, rim = PLAIN_RIM): Graphics {
   const tint = color ? swatch[color].fill : 0xcfeeff;
   // Colored bubbles are nearly solid so the color is unmistakable; plain ones stay see-through.
   g.circle(0, 0, r).fill({ color: tint, alpha: fillAlpha ?? (color ? 0.78 : 0.2) });
-  g.circle(0, 0, r).stroke({ width: Math.max(3, r * 0.07), color: color ? swatch[color].line : PLAIN_RIM, alpha: 0.9 });
+  g.circle(0, 0, r).stroke({ width: Math.max(3, r * 0.07), color: color ? swatch[color].line : rim, alpha: 0.9 });
   shine(g, r * 0.72, r * 0.1, 0.85);
   // A decorative spot beside quantity dots can look like one more to count.
   if (lowerGlint) g.circle(r * 0.45, r * 0.42, r * 0.06).fill({ color: 0xffffff, alpha: 0.7 });
@@ -39,6 +39,8 @@ export interface BubbleOptions {
   color: ColorName | null;
   number?: number;
   dots?: boolean;
+  /** The rim of a plain bubble, so it shows against the scene it floats in. */
+  rim?: number;
   critter?: Friend;
   rainbow?: boolean;
 }
@@ -82,7 +84,7 @@ export class Bubble extends Container {
     }
     const g = new Graphics();
     if (o.rainbow) drawRainbowBubble(g, o.r);
-    else drawBubble(g, o.r, o.color, undefined, !o.dots);
+    else drawBubble(g, o.r, o.color, undefined, !o.dots, o.rim);
     this.shell.addChild(g);
     if (o.number !== undefined) {
       const t = label(String(o.number), o.r * 1.05, ink);

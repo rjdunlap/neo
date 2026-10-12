@@ -2330,6 +2330,24 @@ async function originals() {
     log(`Bubble Pop ${level} (${mode}): moving taps, mistakes, hint, rainbow, saved score and sticker passed`);
   }
 
+  // Bubble Pop's scenes: a round draws one of four (shore, bath, night, sea); each is shown with plain bubbles and with five colors.
+  if (!only || only === 'bubbles' || only === 'scenes') {
+    for (const scenery of ['shore', 'bath', 'night', 'sea']) {
+      for (const level of [2, 6]) {
+        let found = false;
+        for (let tries = 0; tries < 60 && !found; tries++) {
+          await launch('bubble-pop', level);
+          found = await page.evaluate((want) => neo.scene.game.backdrop.scene === want, scenery);
+        }
+        assert.ok(found, `Bubble Pop: a ${scenery} round turned up at level ${level}`);
+        await page.waitForTimeout(2600);
+        assert.equal(await page.evaluate(() => neo.scene.game.backdrop.children.every((c) => c.eventMode === 'none' || c.eventMode === 'passive' || c.constructor.name === 'Backdrop')), true, `${scenery}: the scene takes no touches`);
+        await screenshot(`bubble-pop-scene-${scenery}-${level}`);
+      }
+    }
+    log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
+  }
+
   // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
   for (let level = 1; level <= 9 && (!only || only === 'jelly'); level++) {
     await launch('jelly-drums', level);
@@ -7766,8 +7784,40 @@ async function islandShelf() {
   });
   assert.equal(clear.arrows, false, 'the arrows stay clear of the shelf');
   await screenshot('island-shelf-portrait');
+  // "Next level" after a round: it plays the level above the one just finished (no card, since she has just seen it), and is absent at the top of her band's range.
+  const playBubbles = async (level) => {
+    await page.evaluate((level) => { kit.store.data.profile.band = 'toddler'; kit.store.data.settings.howToCards = false; kit.store.stats('bubble-pop').level = level; kit.store.stats('bubble-pop').history = []; kit.store.stats('bubble-pop').pinned = null; neo.go.game('bubble-pop', 'toddler'); }, level);
+    await scene('GameScene'); await page.waitForTimeout(1200);
+    await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+    await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(800);
+  };
+  await playBubbles(3);
+  assert.equal(await page.evaluate(() => !!neo.scene.after.next), true, 'a round below the top of the range offers a next level');
+  await screenshot('next-level-offer-portrait');
+  await tap('neo.scene.after.next');
+  await scene('GameScene'); await page.waitForTimeout(800);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.level, !!neo.scene.helpCard, neo.scene.game?.plan?.mode]), [4, false, 'color'], 'it plays level 4, straight in');
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(500);
+  assert.equal(await page.evaluate(() => kit.store.stats('bubble-pop').level), 4, 'finishing it keeps her saved level where she played');
+  // "Again" replays the level just finished, even when two smooth rounds have moved her saved level up.
+  await page.evaluate(() => { const s = kit.store.stats('bubble-pop'); s.level = 3; s.history = [{ level: 3, misses: 0, hints: 0, seconds: 5, at: 1 }]; neo.go.game('bubble-pop', 'toddler'); });
+  await scene('GameScene'); await page.waitForTimeout(1000);
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(800);
+  assert.equal(await page.evaluate(() => kit.store.stats('bubble-pop').level), 4, 'two smooth rounds moved her saved level up');
+  assert.equal(await page.evaluate(() => !!neo.scene.after.next), true, 'the next level is offered even then');
+  await tap('neo.scene.after.again');
+  await scene('GameScene'); await page.waitForTimeout(800);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.level, !!neo.scene.helpCard]), [3, false], 'again plays the level just finished, straight in');
   await page.setViewportSize({ width: 1024, height: 768 });
+  await playBubbles(2);
+  await screenshot('next-level-offer-landscape');
+  await playBubbles(6);
+  assert.equal(await page.evaluate(() => neo.scene.after.next), null, 'no next level at the top of her band');
+  await page.evaluate(() => { kit.store.data.settings.howToCards = true; });
   assert.deepEqual(errors, []);
+  log('Island: the celebration offers a next level that plays the level above with no card, keeps her saved level where she played, and is absent at the top of her band');
   log('Island: a fresh place twinkles on every game and has no shelf; a finished round gives one play and one sticker; the heart after a round toggles on, off and on, never touches stickers; the played game stops twinkling and the hearted one stands on the shelf and opens from it; the subject layout leads with a Favorites card (and drops it with no hearts); hearts survive a reload; a full shelf holds five in portrait clear of the arrows');
 }
 
