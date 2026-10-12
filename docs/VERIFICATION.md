@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-12 — Coordinator: Beat Builder deep-dive dispatch
+
+- Confirmed #187 merged (`564ba41`) and level-11 worker complete; existing proof retained without reruns. Kept-story work remains decision-dependent.
+- Dispatched first unstarted wave-4 game, Beat Builder, into fresh docs-only worker `01a13094-bf66-71b1-ba1b-c5b843fc16d2`. Procedure-based minimal handoff, no history/model override; actual remaining 60% / 37% fits conservative docs estimate 10 / 1.25 points.
+- Queue records worker/source/exclusions. Procedure link and diff check only in coordinator; research and doc proof pending in worker. No gameplay/tests/build/browser/server work admitted here. Unrelated dirty checkout preserved.
+
 ## 2026-10-12 — Story Steps clue endings
 
 - Level 11 only ([PR #187](https://github.com/rjdunlap/neo/pull/187)): eight authored clue stories/two endings, free first unsupported preview, counted repeats, one clue hint, picture speech/replay and evidence explanation. School 6–11; saved levels/pins and younger ranges preserved.
