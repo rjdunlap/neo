@@ -2212,8 +2212,11 @@ async function originals() {
   const portrait = async (on) => { await page.setViewportSize(on ? { width: 768, height: 1024 } : { width: 1024, height: 768 }); await page.waitForTimeout(300); };
 
   // Bubble Pop: moving bubbles tapped where they are, two wrong pops in a row, then the glow.
-  for (let level = 1; level <= 9 && (!only || only === 'bubbles'); level++) {
-    if (level === 9) await portrait(true);
+  // BUBBLE_LEVELS=13 plays only the counting-sequence level 13; levels 10 and 11 (pairs) are the `bonds` case.
+  const bubbleLevels = process.env.BUBBLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14];
+  for (const level of bubbleLevels) {
+    if (only && only !== 'bubbles') break;
+    if (level === 9 || level === 13) await portrait(true);
     await launch('bubble-pop', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -2252,7 +2255,7 @@ async function originals() {
         await kit.sleep(100); // hit-testing uses the transforms from the last drawn frame
         const at = g.layer.toGlobal({ x: want.x + want.r * 0.5, y: want.y });
         kit.tap(at.x, at.y); await kit.sleep(300);
-        if (g.misses !== 2 || !want.popped || g.nextNumber !== 2) throw new Error(`Bubble overlap: ${g.misses} ${want.popped} ${g.nextNumber}`);
+        if (g.misses !== 2 || !want.popped || g.nextNumber !== g.run[1]) throw new Error(`Bubble overlap: ${g.misses} ${want.popped} ${g.nextNumber}`);
         [over.vx, over.vy] = saved.slice(2);
       }
       for (let guard = 0; guard < 400 && g.phase === 'play'; guard++) {
@@ -2268,7 +2271,7 @@ async function originals() {
     await screenshot(`bubble-pop-${level}`);
     await finished('bubble-pop');
     assert.deepEqual(await score('bubble-pop'), mode === 'free' ? [0, 0] : [2, 1], `bubbles ${level} score`);
-    if (level === 9) await portrait(false);
+    if (level === 9 || level === 13) await portrait(false);
     log(`Bubble Pop ${level} (${mode}): moving taps, mistakes, hint, rainbow, saved score and sticker passed`);
   }
 
@@ -2544,7 +2547,7 @@ async function originals() {
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 9, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 6 };
+  const want = { 'bubble-pop': 12, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 6 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }
@@ -3770,6 +3773,8 @@ async function woodsBatch() {
   if (!only || only === 'bonds') for (const level of [10, 11]) {
     await launch('bubble-pop', level);
     await page.waitForTimeout(600);
+    // The total the pairs make is on a sign at the top, above where any bubble can drift, and takes no touches.
+    assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.sign.parent === g.backdrop.parent, g.sign.eventMode, g.sign.y + g.sign.height <= 110, g.sign.x === g.view.w / 2]; }), [true, 'none', true, true], `bubbles ${level}: sign`);
     // Tap a drifting bubble where it is now.
     const pop = async (i) => { await page.evaluate((i) => kit.tapOn(neo.scene.game.bubbles[i]), i); await page.waitForTimeout(330); };
     const live = () => page.evaluate(() => neo.scene.game.bubbles.map((b, i) => ({ i, n: b.number, popped: b.popped, rainbow: b.rainbow })).filter((b) => !b.popped && !b.rainbow));
