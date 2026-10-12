@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — Coordinator: remove usage reserve
+
+- Removed the 25% reserve at the developer's request. Admission uses the full remaining five-hour and weekly allowances; daily pacing no longer subtracts a reserved amount.
+- Updated the existing hourly automation prompt and durable queue/workflow instructions. Usage checks, one slice per run, overlap checks and checkpoints remain.
+- Validation: changed local Markdown links/anchors and `git diff --check`; confirmed the saved automation prompt contains no 25% reserve. Docs/config only: code, build and browser suites not run.
+- Unattended implementation and hard mid-turn quota enforcement remain unverified.
+
 ## 2026-10-11 — Letter Trails capital starts and rule guards
 
 - Built deep-dive slice 1 ([PR #172](https://github.com/rjdunlap/neo/pull/172)): A's legs go downward, M/N start at the top with continuous retracing, inspectable plans/selection/tolerance/name rules, pinned A–Z stickers, bounded how-to and the spoken word/name introduction. No levels, bands, save schema or reward changes.
