@@ -10,7 +10,7 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
-import { LIMIT, pixel, place, planFor, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
+import { LIMIT, pixel, place, planFor, roundPlan, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
 
 interface Mark { data: Stamp; node: Container; drag?: DragHandle }
 class StampStudio implements Game {
@@ -30,12 +30,13 @@ class StampStudio implements Game {
   private readonly named = new Set<StampKind>();
   private fullSaid = false;
   private kind: StampKind;
-  private color: ColorName = 'purple';
+  private color: ColorName;
   private width = 600;
   private height = 400;
   done = false;
   constructor(private readonly ctx: GameContext) {
-    this.plan = planFor(ctx.level); this.kind = this.plan.kinds[0];
+    const round = roundPlan(ctx.level, ctx.rng);
+    this.plan = round.plan; this.color = round.color; this.kind = this.plan.kinds[0];
     this.paper.addChild(this.sheet, this.selection);
     this.selection.eventMode = 'none';
     ctx.stage.addChild(this.background, this.paper);

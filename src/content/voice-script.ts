@@ -275,8 +275,8 @@ export const SCRIPT = {
   'picnic.again': ['Whoosh! Here comes the wind again. Let us help Juniper one more time!'],
 
   'game.stamp-studio': ['Stamp studio!'],
-  'stamp.stars': ['Tap the paper to stamp stars! The green arrow finishes your picture.'],
-  'stamp.friends': ['Choose a cat or a fish, then tap the paper! The green arrow finishes your picture.'],
+  'stamp.stars': ['Tap the paper to press your stamp! The green arrow finishes your picture.'],
+  'stamp.friends': ['Choose a stamp, then tap the paper! The green arrow finishes your picture.'],
   'stamp.picture': ['Choose a stamp and a color, then tap the paper. Drag your stamps to arrange them. Finish with the green arrow.'],
   'stamp.sizes': ['Make a picture! Touch a stamp to choose it, then turn it or make it big or small.'],
   'stamp.garden': ['What grows in your imaginary garden? Make any picture you like! Tell me about it, then tap the green arrow.'],

@@ -13,17 +13,17 @@ export function stickerStamp(seed: number) {
 }
 export interface Stamp { kind: StampKind; color: ColorName; x: number; y: number; size: number; turns: number }
 export const LIMIT = 24;
-interface StampPlan {
+export interface StampPlan {
   kinds: readonly StampKind[];
   color: boolean;
   move: boolean;
   transform: boolean;
-  prompt: string;
+  prompt: 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story';
   name: string;
 }
 export const PLANS = [
-  { kinds: ['star'], color: false, move: false, transform: false, prompt: 'stars', name: 'Press big stars onto a picture' },
-  { kinds: ['cat', 'fish'], color: false, move: false, transform: false, prompt: 'friends', name: 'Make an animal picture with two stamps' },
+  { kinds: ['star'], color: false, move: false, transform: false, prompt: 'stars', name: 'Press one kind of stamp onto a picture' },
+  { kinds: ['cat', 'fish'], color: false, move: false, transform: false, prompt: 'friends', name: 'Make a picture with two kinds of stamps' },
   { kinds: ['star', 'flower', 'fish'], color: true, move: true, transform: false, prompt: 'picture', name: 'Choose colors, stamp, and rearrange a picture' },
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'sizes', name: 'Turn stamps and make them big or small' },
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'garden', name: 'Make an imaginary garden, then tell its story' },
@@ -38,6 +38,16 @@ export const pixel = (s: Pick<Stamp, 'x' | 'y'>, width: number, height: number) 
 
 /** The colors on the color buttons, in order. */
 export const STAMP_COLORS: ColorName[] = ['purple', 'blue', 'green', 'pink'];
+
+/** Early rounds vary their existing tools without adding simultaneous choices. */
+export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName } {
+  const base = planFor(level);
+  if (level > 3) return { plan: base, color: 'purple' };
+  return {
+    plan: { ...base, kinds: rng.shuffle([...STAMP_KINDS]).slice(0, base.kinds.length) },
+    color: rng.pick(STAMP_COLORS),
+  };
+}
 
 /** What the demonstration needs to see of the sheet to know its next move. */
 export interface StampState {
@@ -70,7 +80,7 @@ const DEMO_MOVE = { stamp: 0, x: 0.5, y: 0.55 } as const;
  * where the level has colors) for each of five presses, turn the third and make the fourth big where a level has those buttons,
  * carry the first to the middle where stamps move, then press the green arrow. Nothing here is a right or wrong answer.
  */
-export function stampDemo(plan: (typeof PLANS)[number], st: StampState): StampMove {
+export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   const n = st.stamps.length;
   const last = st.stamps[n - 1];
   if (plan.transform && n === 3 && last.turns === 0) return { do: 'turn' };

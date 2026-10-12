@@ -516,3 +516,7 @@ Deep-dive support slice 1 ([PR #170](https://github.com/rjdunlap/neo/pull/170)):
 ## Duck Pond reveal and rule guards (2026-10-11)
 
 Deep-dive slice 1 ([PR #171](https://github.com/rjdunlap/neo/pull/171)): a correct hidden-part answer brings the ducks into view one by one, counted aloud. At levels 8–11 the sign shows the answered addition or subtraction sentence and the pet reads it. Separate seats keep every revealed duck countable. Bounded how-to lines, exhaustive mode descriptions, a historical sticker-count snapshot for seeds 0–99 and a plan-sized browser loop guard future additions. No levels, bands, saved IDs or miss/hint rules changed; the hint and stopping slices remain open.
+
+## Stamp Studio slice 1c1: seeded early choices (2026-10-12)
+
+[PR #179](https://github.com/rjdunlap/neo/pull/179), branch `codex/stamp-studio-1c1-seeded-choices`: `roundPlan` selects one/two/three distinct existing kinds and an existing starting color with the round RNG at levels 1–3. Choices match the placed color; generic early speech/descriptions and scoped how-to stay true for every selection. Creative harness reads the selected color when no color row is shown. Existing levels/bands, zero misses/hints, arrow completion, snapshot/speech guards and seeds 0–99 sticker fixture remain intact. No removal, lap stopping change, new content or save field. Typecheck, 60 focused Stamp Studio/how-to/save tests and build passed; browser evidence is recorded in [VERIFICATION](../VERIFICATION.md).

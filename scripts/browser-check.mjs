@@ -2794,7 +2794,7 @@ async function creativeBatch() {
       const expectedNames = [...new Set(Array.from({ length: 3 }, (_, i) => STAMP_NAMES[g.plan.kinds[i % g.plan.kinds.length]]))];
       kit.tapOn(g.choices[0]); await kit.sleep(420); kit.tapOn(g.choices[0]); await kit.sleep(420);
       if (JSON.stringify(g.choiceSpeech) !== JSON.stringify(expectedNames)) throw new Error('Stamp names repeat or use raw ids');
-      if (!g.stamps.every((s, i) => s.data.color === (g.plan.color ? STAMP_COLORS[i % STAMP_COLORS.length] : 'purple'))) throw new Error('Chosen stamp colors did not reach the paper');
+      if (!g.stamps.every((s, i) => s.data.color === (g.plan.color ? STAMP_COLORS[i % STAMP_COLORS.length] : g.color))) throw new Error('Chosen stamp colors did not reach the paper');
       if(g.plan.move){const s=g.stamps[0],p=g.paper.toGlobal({x:180,y:300+40});await kit.dragTo(s.node,p,16);await kit.sleep(450);}
       if(g.plan.transform){kit.tapOn(g.turn);await kit.sleep(450);kit.tapOn(g.grow);await kit.sleep(450);}
     });
