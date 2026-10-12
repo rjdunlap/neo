@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * that sound on. First free play, then copying a beat you can see, then copying one by ear, then
  * making a pattern repeat (the second half matches the first), then a longer beat by ear.
  */
-export type BeatMode = 'free' | 'see' | 'hear' | 'repeat';
+export type BeatMode = 'free' | 'see' | 'hear' | 'repeat' | 'mend';
 
 export interface BeatPlan {
   mode: BeatMode;
@@ -23,6 +23,7 @@ export const PLANS: BeatPlan[] = [
   { mode: 'hear', steps: 4, rows: 2, beats: 3, name: 'Copy a beat by ear: listen, build it, then check' },
   { mode: 'repeat', steps: 8, rows: 2, beats: 2, name: 'Make the pattern repeat: the second half matches the first' },
   { mode: 'hear', steps: 8, rows: 3, beats: 2, name: 'A longer beat by ear, with drum, clap and bell' },
+  { mode: 'mend', steps: 4, rows: 2, beats: 3, name: 'Mend the beat: one sound in your copy is missing or extra; fix it, then check' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -91,6 +92,26 @@ export function roundPhrases(plan: BeatPlan, rng: Rng): { id: string; name: stri
 }
 
 /**
+ * The copy to mend: the model with exactly one square flipped. Rounds alternate a missing sound
+ * (a hit turned off), an extra sound (a rest turned on) and a free pick, so both repairs come up.
+ * Every model keeps at least one hit in the copy.
+ */
+export function mendCopy(model: Beat, round: number, rng: Rng): Beat {
+  const cells = model.flatMap((row, r) => row.map((on, step) => ({ r, step, on })));
+  const kind = round % 3 === 0 ? true : round % 3 === 1 ? false : undefined;
+  const options = cells.filter((c) => (kind === undefined || c.on === kind) && (!c.on || hits(model) > 1));
+  const pick = rng.pick(options);
+  return model.map((row, r) => row.map((on, step) => (r === pick.r && step === pick.step ? !on : on)));
+}
+
+/** The first square where her beat differs from the model, for the spoken hint. */
+export const firstMismatch = (target: Beat, have: Beat) => {
+  for (let step = 0; step < target[0].length; step++)
+    for (let row = 0; row < target.length; row++) if (target[row][step] !== have[row][step]) return { row, step };
+  return null;
+};
+
+/**
  * Procedural source retained for future content; current copy rounds use roundPhrases.
  * A beat to copy: the drum always starts the bar, each row has one to three hits, and no step is
  * crowded with every instrument at once. On repeat levels the second half copies the first.
@@ -141,7 +162,7 @@ export type BeatMove = { row: number; step: number } | 'check';
 export function beatMove(plan: BeatPlan, goal: Beat, beat: Beat, checkShowing: boolean): BeatMove | null {
   for (let step = 0; step < plan.steps; step++)
     for (let row = 0; row < plan.rows; row++) if (goal[row][step] !== beat[row][step] && !givenStep(plan, step)) return { row, step };
-  return (plan.mode === 'hear' || plan.mode === 'free') && checkShowing ? 'check' : null;
+  return (plan.mode === 'hear' || plan.mode === 'free' || plan.mode === 'mend') && checkShowing ? 'check' : null;
 }
 
 /** One finite replay tick. The final tick returns to the live beat after the last target step's full interval. */

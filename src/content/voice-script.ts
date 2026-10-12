@@ -644,6 +644,8 @@ export const SCRIPT = {
   'beat.nothear': ['Not quite the same. Listen again!'],
   'beat.hint': ['Glowing plus marks need a sound. Glowing minus marks have an extra sound. Tap those squares to repair the beat.'],
   'beat.phrase': ['This beat is called {phrase}.'],
+  'beat.mend': ['One sound in your copy is different from the model. Fix it, then tap the green check!'],
+  'beat.mendno': ['Not quite. Look at the {instrument} row, {place} square.'],
   'beat.yay': ['That is the beat!', 'Groovy!', 'You got the rhythm!'],
   'beat.done': ['What a band! Thank you for the music!'],
   'snack.munch': ['Who is hungry? Tap an animal to give it a snack!'],

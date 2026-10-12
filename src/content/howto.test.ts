@@ -125,8 +125,14 @@ describe('touch how-to cards', () => {
     expect(steps[4]).toContain('bell below');
     expect(steps.slice(0, 4).join(' ')).not.toContain('bell');
     // Appended modes must supply their own instructions and completion claims.
-    expect(howToFor(game, 6)!.steps).toEqual([]);
-    expect(howToFor(game, 6)!.finish).toBe('');
+    const mend = howToFor(game, 6)!;
+    expect(mend.steps.join(' ')).toContain('one square wrong');
+    expect(mend.steps.join(' ')).toContain('model');
+    expect(mend.steps.join(' ')).toContain('green check');
+    expect(mend.steps.join(' ')).not.toContain('first four columns');
+    expect(mend.finish).toContain('three copies are mended');
+    expect(howToFor(game, 7)!.steps).toEqual([]);
+    expect(howToFor(game, 7)!.finish).toBe('');
   });
 
   it('changes with the level where the game does: a step that only holds for some levels is not on every card', () => {
