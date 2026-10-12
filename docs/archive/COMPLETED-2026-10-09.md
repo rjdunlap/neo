@@ -488,3 +488,8 @@ Built deep-dive slice 3 ([PR #168](https://github.com/rjdunlap/neo/pull/168)): f
 ## Puzzle Pals spatial hints and outer rims (2026-10-11)
 
 Built the support portion of deep-dive slice 1 ([PR #169](https://github.com/rjdunlap/neo/pull/169)): thick flat rims on outer sides at levels 5–7, a hint that starts with a corner then builds beside placed pieces, and nine spoken positions for the paired glowing piece and destination. One hint is charged at the second consecutive miss, and any correct placement clears it. The glow keeps its selected piece during dragging and takes no touches. Co-play wording names positions; the how-to edge instruction is scoped to levels 5–7. Levels, bands, scenes and saved sticker art keep their behavior. Fairness/art and the box lid remain open; checks are in [VERIFICATION](../VERIFICATION.md).
+
+
+## Memory Match spoken cards and stable hints (2026-10-11)
+
+Deep-dive support slice 1 ([PR #170](https://github.com/rjdunlap/neo/pull/170)): every picture, dot, numeral, letter, number word and fraction card names its contents. Tapping the first open card replays its name without another choice, miss or hint. An unseen mismatch gives a neutral description; known mismatches retain the gentle boing. One seen partner glows after two misses, and stays there until a match clears it. The how-to lines for number words and fractions are scoped to levels 10 and 11. Plans and identities are inspectable in `logic.ts`; all existing deck sizes, band windows, saved levels, sticker drawings and couch turns remain. Fresh picture decks/dot arrangements are next; level 10 quantity and toddler/clocks remain decisions. Checks are in [verification](../VERIFICATION.md).

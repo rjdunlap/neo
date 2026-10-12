@@ -1,4 +1,45 @@
+import type { ColorName } from '../../art/palette';
+import type { ShapeKind } from '../../art/shapes';
+import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
+
+export const PLANS = [
+  { pairs: 2, mode: 'pictures', name: 'Four cards: two picture pairs' },
+  { pairs: 3, mode: 'pictures', name: 'Six cards: three picture pairs' },
+  { pairs: 4, mode: 'pictures', name: 'Eight cards: four picture pairs' },
+  { pairs: 6, mode: 'pictures', name: 'Twelve cards: six picture pairs' },
+  { pairs: 8, mode: 'pictures', name: 'Sixteen cards: eight picture pairs' },
+  { pairs: 4, mode: 'numbers', name: 'Match numbers 1–4 to dots' },
+  { pairs: 8, mode: 'numbers', name: 'Match numbers 1–8 to dots' },
+  { pairs: 8, mode: 'attributes', name: 'Match both shape and color' },
+  { pairs: 8, mode: 'letters', name: 'Match uppercase and lowercase letters' },
+  { pairs: 10, mode: 'number-words', name: 'Match number words one–ten to numerals' },
+  { pairs: 3, mode: 'fractions', name: 'Match fraction pictures to names' },
+] as const;
+export const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 11 } };
+const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
+const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
+
+export type MemoryMode = typeof PLANS[number]['mode'];
+export function planFor(level: number) { return PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))]; }
+export function pictureIdentity(mode: MemoryMode, pair: number) {
+  return { color: mode === 'attributes' ? COLORS[pair % 2] : COLORS[pair],
+    shape: mode === 'attributes' ? SHAPES[Math.floor(pair / 2)] : SHAPES[pair] };
+}
+export function cardLabel(mode: MemoryMode, card: MemoryCard, letters: readonly string[]): string {
+  if (mode === 'fractions') return fraction(card.pair).name;
+  if (mode === 'letters') return letters[card.pair];
+  if (mode === 'numbers' || mode === 'number-words') return numberWord(card.pair);
+  const { color, shape } = pictureIdentity(mode, card.pair);
+  return `${color} ${shape}`;
+}
+
+/** Help only points to a partner this player has actually revealed. */
+export function hintPartner(cards: readonly MemoryCard[], first: number, seen: ReadonlySet<number>, wrong: number): number | null {
+  if (wrong < 2) return null;
+  const partner = cards.findIndex((card, i) => i !== first && card.pair === cards[first].pair);
+  return partner >= 0 && seen.has(partner) ? partner : null;
+}
 
 export interface MemoryCard { pair: number; side: 0 | 1 }
 /** The reading pairs for level 10. Index zero is the numeral one. */

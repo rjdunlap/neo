@@ -208,16 +208,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'memory-match': {
     goal: 'Turn over cards to find matching pairs.',
     steps: [
-      'Tap a card to flip it, then tap a second card.',
+      'Tap a card to flip it and hear its name, then tap a second card.',
+      'Tap your first open card again to hear its name without choosing another card.',
       'Matching cards stay up; others flip back so you can remember them.',
       { from: 6, to: 7, text: 'A number matches the card with that many dots.' },
       { from: 8, to: 8, text: 'A match needs the same shape and the same color.' },
       { from: 9, to: 9, text: 'A capital letter matches its small letter.' },
-      { from: 10, text: 'A number word matches the numeral that names it.' },
-      { from: 11, text: 'A picture of equal parts matches the fraction that names the shaded parts.' },
+      { from: 10, to: 10, text: 'A number word matches the numeral that names it.' },
+      { from: 11, to: 11, text: 'A picture of equal parts matches the fraction that names the shaded parts.' },
     ],
     finish: 'The round ends when every pair is found.',
-    note: 'Turning over a card you have not seen is exploring, not a mistake.',
+    note: 'A nonmatching pair counts as a miss only when the first card’s partner was already seen. After two misses, one known partner glows until a match clears it.',
   },
   'letter-trails': {
     goal: 'Trace a letter with one finger.',

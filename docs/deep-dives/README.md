@@ -85,7 +85,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Little Helpers | `little-helpers` | LTPKS | 6 | 4 | not started | — | — |
 | Mail Carrier | `mail-carrier` | LTPKS | 7 | 4 | not started | — | — |
 | Market Stall | `market-stall` | PKS | 7 | 3 | building (slice 1 built: guards and named misses) | `claude/exciting-ride-je8lip` ([PR 118](https://github.com/rjdunlap/neo/pull/118)); slice 1: `codex/market-stall-support` ([PR #163](https://github.com/rjdunlap/neo/pull/163)) | [market-stall.md](market-stall.md) |
-| Memory Match | `memory-match` | PKS | 11 | 3 | designed | `codex/memory-match-deep-dive` ([PR 153](https://github.com/rjdunlap/neo/pull/153)) | [memory-match.md](memory-match.md) |
+| Memory Match | `memory-match` | PKS | 11 | 3 | building (slice 1 built: spoken labels, replay and hint evidence) | `codex/memory-match-spoken-support` ([PR #170](https://github.com/rjdunlap/neo/pull/170)); `codex/memory-match-deep-dive` ([PR 153](https://github.com/rjdunlap/neo/pull/153)) | [memory-match.md](memory-match.md) |
 | Monster Munch | `monster-munch` | LTPKS | 8 | 4 | not started | — | — |
 | Opposites | `opposites` | LTPK | 4 | 1 | slice 1 built (twelve pairs, fairness) | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |
 | Owl Walk Home | `owl-walk` | TPK | 4 | 4 | not started | — | — |

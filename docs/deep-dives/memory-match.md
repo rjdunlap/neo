@@ -109,9 +109,9 @@ More than twenty cards, faster flip-back, a preview countdown, moving cards, man
 
 ## Build slices, in order
 
-Each is a later session; none was implemented here.
+Slice 1 is built ([PR #170](https://github.com/rjdunlap/neo/pull/170)); the remaining slices are future sessions. The audit above records the source as it stood before the support slice.
 
-1. **Ready: words and guards at existing levels.** Extract plans and content identities into `logic.ts`, bound the two how-to lines, pin unchanged icon/sticker behavior, label revealed cards and provide free replay on the open card, and make hint wording agree with whether its partner was seen. Add plan/partition/known-mismatch and hint-evidence tests. Preserve deck sizes until decision 1. Tier: existing-game bug fix, typecheck, rule tests, one filtered `memory` regression and `fingerdemo` because replay affects the demonstrated action. Preserve the existing touch-down flip during this slice; add no new mode.
+1. **Built: words and guards at existing levels** ([PR #170](https://github.com/rjdunlap/neo/pull/170)). Plans, picture identities and labels live in `logic.ts`; the number-word/fraction how-to lines are bounded. Every reveal speaks its contents, and the first open card replays freely without changing the choice or counters. Unseen exploration names both cards neutrally. After two known mismatches, a seen partner gets one stable glow until a match clears it; unrelated exploration cannot move that hint. Deck sizes, bands, icon/sticker art and couch scoring/turns are preserved. Rule tests cover plans, labels, equal parts and hint evidence. Actual device pronunciation and legibility remain open.
 2. **Ready: more picture decks and dot arrangements.** First eight animals and eight fruit/props using existing art, then vehicles in another session if art needs it. Seeded selection and unique-identity tests; spoken names; stable sticker. Tier: content, typecheck/rule tests and one screenshot of new art; a deck-selection regression only if interaction changes.
 3. **Decision: level 10 quantity and fit.** Implement chosen policy, prove 100-unit card minima and word fit in supported views; test selection coverage if sampling. Tier: existing interaction fix, filtered regression at 10 and its ghost finger; portrait look. Broaden to couchgames only if changing shared grid movement/layout affects the couch's 12/16-card boards.
 4. **Ready after support slice: varied fraction square pictures at 11.** Rotations and equal-area shading masks, preserving exactly three values and pairs. Tier: content, typecheck/rule tests and one screenshot; circle sectors are a separate optional slice.
@@ -120,6 +120,6 @@ Each is a later session; none was implemented here.
 7. **Decision: toddler 1–1.** After familiar art and words, update the band table, how-to and inventory counts; test registry and all land layouts without shrinking targets. Tier: younger-band opening, unit/registry/land tests; one four-card play if band support changes behavior. Add person/device gaps to the roadmap.
 8. **Define later:** face-up entries after level ordering; audio matching after an overlap check; split-seat play after family-table decisions. No solver or persistent creation system ahead of those defined needs.
 
-## What was built in this session
+## Research session outcome
 
-Nothing: research and ideation only. Updated this write-up, tracker, idea rows, roadmap and verification log. Links and `git diff --check` checked; no code, tests, build or browser play. Source inspection found support and legibility gaps; it did not establish child readiness, actual device speech or a new gameplay regression.
+The original deep-dive session built nothing: research and ideation only. Updated this write-up, tracker, idea rows, roadmap and verification log. Links and `git diff --check` checked; no code, tests, build or browser play. Source inspection found support and legibility gaps; it did not establish child readiness, actual device speech or a new gameplay regression.
