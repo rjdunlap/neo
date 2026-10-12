@@ -12,13 +12,16 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { returnGate, returnHint, returnMove, returnStarter, type SectionOrder } from './logic';
 import { clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, type Piece, type SectionId } from './logic';
+import { oneHit } from './logic';
 import { beatMove, firstMismatch, mendCopy, repairs, replayTick, empty, freeBeat, givenCell, givenStep, hits, reviseStart, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
 
 const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 6 },
-  school: { min: 3, max: 8 },
+  school: { min: 3, max: 9 },
 };
 
 const CELL = 100;
@@ -77,12 +80,19 @@ class BeatBuilder implements Game {
   /** Revise levels: hear only the target's claps. */
   readonly solo: RoundButton;
   private soloing = false;
+  /** Toddler play: the free beat can finish after a single sound has been heard. */
+  private readonly gentle: boolean;
   /** Level 8: the piece's two sections, the one on the grid, and what undo can step back to. */
   piece: Piece;
   current: SectionId = 'a';
   previewed = false;
   private previewIdx = -1;
-  private undoStack: Piece[] = [];
+  private undoStack: { piece: Piece; order: SectionOrder }[] = [];
+  /** Level 9: the three cards in time order, and the strip that shows them. */
+  order: SectionOrder = ['a', 'b', 'a'];
+  readonly slots = new Container();
+  private readonly slotView = new Graphics();
+  private previewSeq = previewOrder(4);
   readonly tabA: RoundButton;
   readonly tabB: RoundButton;
   readonly copyBtn: RoundButton;
@@ -110,6 +120,7 @@ class BeatBuilder implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.gentle = ctx.band === 'toddler' && this.plan.mode === 'free';
     this.phrases = roundPhrases(this.plan, ctx.rng);
     this.piece = newPiece(this.plan);
     this.target = empty(this.plan.rows, this.plan.steps);
@@ -133,16 +144,22 @@ class BeatBuilder implements Game {
     soloArt.scale.set(0.8);
     this.solo = new RoundButton(soloArt, swatch.teal, 56, () => this.playTarget(true));
     this.solo.visible = this.plan.mode === 'revise';
-    const sec = this.plan.mode === 'sections';
+    const sec = this.plan.mode === 'sections' || this.plan.mode === 'return';
+    const ret = this.plan.mode === 'return';
     this.tabA = new RoundButton(sectionArt('a'), swatch.orange, 56, () => this.switchTo('a'));
     this.tabB = new RoundButton(sectionArt('b'), swatch.purple, 56, () => this.switchTo('b'));
     this.copyBtn = new RoundButton(copyArt(), swatch.blue, 56, () => this.copyAToB());
     this.undoBtn = new RoundButton(undoArt(), swatch.teal, 56, () => this.undo());
     this.previewBtn = new RoundButton(playArt(), swatch.yellow, 56, () => this.preview());
     for (const b of [this.tabA, this.tabB, this.copyBtn, this.undoBtn, this.previewBtn]) b.visible = sec;
+    this.copyBtn.visible = this.plan.mode === 'sections';
+    this.slots.visible = ret;
+    this.slots.addChild(this.slotView);
+    this.slots.eventMode = 'static';
+    onTap(this.slots, (e) => this.tapSlot(e), { cooldown: 120 });
     if (sec) this.check.visible = true;
     this.marker.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.woodland, this.marker, this.tabA, this.tabB, this.copyBtn, this.undoBtn, this.previewBtn, this.grid, this.listen, this.solo, this.check, this.model);
+    ctx.stage.addChild(this.backdrop, this.woodland, this.marker, this.tabA, this.tabB, this.copyBtn, this.undoBtn, this.previewBtn, this.slots, this.grid, this.listen, this.solo, this.check, this.model);
     this.model.eventMode = 'none';
   }
 
@@ -164,6 +181,12 @@ class BeatBuilder implements Game {
     this.solo.position.set(v.w / 2, y);
     this.check.position.set(v.w / 2 + (reviseRow ? 170 : 90), y);
     this.model.position.set(v.w / 2, y + 95);
+    if (this.plan.mode === 'return') {
+      const x = v.w / 2;
+      [this.tabA, this.tabB, this.undoBtn, this.previewBtn, this.check].forEach((b, i) => b.position.set(x - 300 + i * 150, y));
+      this.slots.position.set(x - 185, y + 85);
+      this.slots.hitArea = new Rectangle(0, 0, 370, 110);
+    }
     if (this.plan.mode === 'sections') {
       const x = v.w / 2;
       [this.tabA, this.tabB, this.copyBtn, this.undoBtn].forEach((b, i) => b.position.set(x - 225 + i * 150, y));
@@ -198,9 +221,16 @@ class BeatBuilder implements Game {
       this.sound(r, this.step);
     });
     // Free play: once the beat has gone round a couple of times, the green check can finish.
-    if (this.plan.mode === 'free' && !this.check.visible && hits(this.beat) >= 3 && this.loops >= 2) {
-      this.check.visible = true;
-      void this.ctx.say('beat.done-when');
+    // Two-year-olds finish after one sound has gone round once; every creation is welcome, even a single hit.
+    if (this.plan.mode === 'free') {
+      const ready = this.gentle ? hits(this.beat) >= 1 && this.loops >= 1 : hits(this.beat) >= 3 && this.loops >= 2;
+      if (!this.check.visible && ready) {
+        this.check.visible = true;
+        void this.ctx.say('beat.done-when');
+      } else if (this.gentle && this.check.visible && hits(this.beat) === 0) {
+        this.check.visible = false;
+        void this.ctx.say('beat.toddler-empty');
+      }
     }
     this.draw();
   }
@@ -208,6 +238,13 @@ class BeatBuilder implements Game {
   /** The ghost finger on the how-to card: make the beat (the faint, heard or half-given one, or boom-clap in free play), then press the check where one is asked for. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.playingTarget > 0 || this.previewIdx >= 0) return null;
+    if (this.plan.mode === 'return') {
+      const move = returnMove(this.piece, this.order, this.previewed);
+      if (!move) return null;
+      if (move === 'preview') return { tap: { on: this.previewBtn } };
+      if (move === 'check') return { tap: { on: this.check } };
+      return { tap: { on: this.slots, x: move.slot * 130 + 55, y: 55 }, pause: 0.15 };
+    }
     if (this.plan.mode === 'sections') {
       const move = sectionsMove(this.plan, this.piece, this.current, this.previewed);
       if (!move) return null;
@@ -216,7 +253,7 @@ class BeatBuilder implements Game {
       if (move === 'check') return { tap: { on: this.check } };
       return { tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 }, pause: 0.15 };
     }
-    const goal = this.plan.mode === 'free' ? freeBeat(this.plan) : this.target;
+    const goal = this.plan.mode === 'free' ? (this.gentle ? oneHit(this.plan) : freeBeat(this.plan)) : this.target;
     const move = beatMove(this.plan, goal, this.beat, this.check.visible);
     if (!move) return null;
     if (move === 'check') return { tap: { on: this.check } };
@@ -227,7 +264,7 @@ class BeatBuilder implements Game {
   destroy() { this.finished = true; this.playingTarget = 0; this.previewIdx = -1; }
 
   private snapshot() {
-    this.undoStack.push(clonePiece(this.piece));
+    this.undoStack.push({ piece: clonePiece(this.piece), order: [...this.order] });
     if (this.undoStack.length > 50) this.undoStack.shift();
     this.previewed = false;
   }
@@ -252,7 +289,8 @@ class BeatBuilder implements Game {
     if (this.busy || this.finished || this.previewIdx >= 0) return;
     const before = this.undoStack.pop();
     if (!before) return;
-    this.piece = before;
+    this.piece = before.piece;
+    this.order = before.order;
     this.previewed = false;
     this.beat = this.piece[this.current];
     this.draw();
@@ -261,13 +299,13 @@ class BeatBuilder implements Game {
   /** Plays every step of A, then of B, once; Done waits for it. */
   private preview() {
     if (this.busy || this.finished || this.previewIdx >= 0) return;
+    this.previewSeq = previewOrder(this.plan.steps, this.plan.mode === 'return' ? this.order : ['a', 'b']);
     this.previewIdx = 0;
     this.timer = STEP_SECONDS;
   }
 
   private previewTick() {
-    const order = previewOrder(this.plan.steps);
-    const at = order[this.previewIdx];
+    const at = this.previewSeq[this.previewIdx];
     if (!at) {
       // One boundary tick lets the last step finish before the playhead goes back to looping.
       this.previewIdx = -1;
@@ -283,9 +321,38 @@ class BeatBuilder implements Game {
   }
 
   private async checkPiece() {
+    if (this.plan.mode === 'return') return this.checkReturn();
     const gate = pieceGate(this.piece, this.previewed);
     if (gate) return void this.ctx.say(`beat.ab-${gate}` as const);
     await this.win();
+  }
+
+  /** Sound and hearing gates only guide; a song that does not come back is one miss, with a reason. */
+  private async checkReturn() {
+    const gate = returnGate(this.piece, this.order, this.previewed);
+    if (gate && gate !== 'order') return void this.ctx.say(`beat.ab-${gate}` as const);
+    if (!gate) return void this.win();
+    this.busy = true;
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    await this.ctx.say('beat.ret-order');
+    if (this.wrongs >= 2 && !this.helped) {
+      this.hints++;
+      this.helped = true;
+      void this.ctx.say('beat.ret-hint');
+    }
+    this.busy = false;
+    this.draw();
+  }
+
+  private tapSlot(e: FederatedPointerEvent) {
+    if (this.busy || this.finished || this.previewIdx >= 0) return;
+    const i = Math.floor(this.slots.toLocal(e.global).x / 130);
+    if (i < 0 || i > 2) return;
+    this.snapshot();
+    this.order[i] = this.order[i] === 'a' ? 'b' : 'a';
+    this.draw();
   }
 
   private sound(row: number, step: number) {
@@ -310,10 +377,20 @@ class BeatBuilder implements Game {
     if (this.plan.mode === 'mend') this.beat = mendCopy(this.target, this.index, this.ctx.rng);
     if (this.plan.mode === 'repeat') this.target.forEach((row, r) => row.forEach((on, s) => (this.beat[r][s] = givenStep(this.plan, s) && on)));
     this.resize(this.view);
-    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat', mend: 'beat.mend', revise: 'beat.revise', sections: 'beat.ab' } as const;
+    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat', mend: 'beat.mend', revise: 'beat.revise', sections: 'beat.ab', return: 'beat.ret' } as const;
     if (this.plan.mode === 'free') {
       this.busy = false;
-      return this.ctx.instruct(line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
+      return this.ctx.instruct(this.gentle ? 'beat.free-toddler' : line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
+    }
+    if (this.plan.mode === 'return') {
+      const start = returnStarter(this.plan, this.ctx.rng);
+      this.piece = start.piece;
+      this.order = start.order;
+      this.current = 'a';
+      this.beat = this.piece.a;
+      this.undoStack = [];
+      this.previewed = false;
+      this.previewIdx = -1;
     }
     if (this.plan.mode === 'sections') { this.piece = newPiece(this.plan); this.current = 'a'; this.beat = this.piece.a; this.undoStack = []; this.previewed = false; this.previewIdx = -1; }
     if (this.index === 0) await this.ctx.instruct(line[this.plan.mode], { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
@@ -345,9 +422,25 @@ class BeatBuilder implements Game {
     if (this.playingTarget > 0) m.roundRect(x0 + this.step * c, -4, c, rows * c + 8, 10).stroke({ width: 4, color: swatch.yellow.line });
   }
 
+  /** Three big cards in time order, each showing its part's picture and its notes. */
+  private drawSlots() {
+    const g = this.slotView.clear();
+    if (this.plan.mode !== 'return') return;
+    const hint = this.helped ? returnHint(this.order) : -1;
+    const playing = this.previewIdx >= 0 ? Math.min(2, Math.floor(this.previewIdx / this.plan.steps)) : -1;
+    for (let i = 0; i < 3; i++) {
+      const x = i * 130, section = this.order[i], sw = section === 'a' ? swatch.orange : swatch.purple;
+      g.roundRect(x, 0, 110, 110, 18).fill(i === playing ? swatch.yellow.light : 0xffffff).stroke({ width: i === hint ? 8 : 5, color: i === hint ? swatch.yellow.line : sw.line });
+      if (section === 'a') g.circle(x + 22, 22, 11).fill(0xffffff).stroke({ width: 4, color: swatch.orange.line });
+      else g.roundRect(x + 11, 11, 22, 22, 4).fill(0xffffff).stroke({ width: 4, color: swatch.purple.line });
+      const m = this.piece[section];
+      m.forEach((row, r) => row.forEach((on, s) => g.roundRect(x + 11 + s * 24, 48 + r * 28, 20, 22, 4).fill(on ? ROW_COLORS[r].fill : 0xf2f2f6)));
+    }
+  }
+
   private drawMarker() {
     const m = this.marker.clear();
-    if (this.plan.mode !== 'sections') return;
+    if (this.plan.mode !== 'sections' && this.plan.mode !== 'return') return;
     const tab = this.current === 'a' ? this.tabA : this.tabB;
     m.circle(tab.x, tab.y, 68).fill({ color: swatch.yellow.light, alpha: 0.9 }).stroke({ width: 5, color: swatch.yellow.line });
     this.undoBtn.alpha = this.undoStack.length ? 1 : 0.45;
@@ -355,13 +448,14 @@ class BeatBuilder implements Game {
 
   private draw() {
     this.drawModel();
+    this.drawSlots();
     this.drawMarker();
     const g = this.cells.clear();
     const { rows, steps } = this.plan;
     g.roundRect(-14, -14, steps * CELL + 28, rows * CELL + 28, 24).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 5, color: wood.line });
     // The playhead column.
     g.roundRect(this.step * CELL + 2, -8, CELL - 4, rows * CELL + 16, 16).fill({ color: this.playingTarget > 0 ? swatch.yellow.light : swatch.blue.light, alpha: 0.8 });
-    const help = this.helped ? repairs(this.plan, this.target, this.beat) : [];
+    const help = this.helped && this.plan.mode !== 'return' ? repairs(this.plan, this.target, this.beat) : [];
     for (let r = 0; r < rows; r++)
       for (let s = 0; s < steps; s++) {
         const sw = ROW_COLORS[r];
@@ -412,7 +506,7 @@ class BeatBuilder implements Game {
       this.draw();
       return;
     }
-    if (mode === 'sections') this.snapshot();
+    if (mode === 'sections' || mode === 'return') this.snapshot();
     this.beat[r][s] = !this.beat[r][s];
     this.loops = 0;
     if (this.beat[r][s]) this.sound(r, s);
@@ -422,8 +516,8 @@ class BeatBuilder implements Game {
 
   private async checkBeat() {
     if (this.busy || this.finished || this.playingTarget > 0 || this.previewIdx >= 0) return;
-    if (this.plan.mode === 'free') return void this.finale();
-    if (this.plan.mode === 'sections') return void this.checkPiece();
+    if (this.plan.mode === 'free') return this.gentle && hits(this.beat) === 0 ? undefined : void this.finale();
+    if (this.plan.mode === 'sections' || this.plan.mode === 'return') return void this.checkPiece();
     if (same(this.target, this.beat)) return void this.win();
     this.busy = true;
     this.misses++;
@@ -494,7 +588,7 @@ export const beatBuilder: GameModule = {
   titleLine: 'game.beat-builder',
   region: 'music-mountain',
   skills: ['rhythm', 'patterns', 'listening', 'music'],
-  bands: ['preschool', 'prek', 'school'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beatMove, differences, firstMismatch, mendCopy, clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, givenCell, reviseStart, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
+import { beatMove, differences, firstMismatch, mendCopy, oneHit, isReturning, returnGate, returnHint, returnMove, returnStarter, clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, givenCell, reviseStart, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
 
 describe('Beat Builder', () => {
   it('makes beats that start on the drum, give every row a hit, and are never all sounds at once', () => {
@@ -41,7 +41,7 @@ describe('Beat Builder', () => {
   });
 
   it('draws deterministic, distinct round targets, reaches every phrase and doubles only the repeat unit', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'sections')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'sections' && p.mode !== 'return')) {
       const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
       const seen = new Set<string>();
       for (let seed = 1; seed <= 300; seed++) {
@@ -74,7 +74,7 @@ describe('Beat Builder', () => {
   });
 
   it('can repair missing and excess sounds in every authored target with the existing bot and hint', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'revise' && p.mode !== 'sections')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'revise' && p.mode !== 'sections' && p.mode !== 'return')) {
       const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
       for (const p of pool) {
         const target = p.score.map((row) => plan.mode === 'repeat' ? [...row, ...row] : [...row]);
@@ -119,7 +119,7 @@ describe('Beat Builder', () => {
   });
 
   it('names add/remove repairs, drops fixed cells after edits and never repairs the given half', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise' && p.mode !== 'sections')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise' && p.mode !== 'sections' && p.mode !== 'return')) {
       const goal = makeBeat(plan, new Rng(42));
       const have = goal.map((row) => row.map((on) => !on));
       goal.forEach((row, r) => row.forEach((on, step) => { if (givenStep(plan, step)) have[r][step] = on; }));
@@ -141,7 +141,7 @@ describe('Beat Builder', () => {
 
   describe("the ghost finger's bot", () => {
     it('builds the beat to copy with only right squares, leaving the given half alone, and checks only where a check is asked for', () => {
-      for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise' && p.mode !== 'sections')) {
+      for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend' && p.mode !== 'revise' && p.mode !== 'sections' && p.mode !== 'return')) {
         for (let seed = 1; seed <= 100; seed++) {
           const target = makeBeat(plan, new Rng(seed));
           const beat = empty(plan.rows, plan.steps);
@@ -258,5 +258,46 @@ describe('Beat Builder', () => {
     }
     expect(moves).toEqual(['cell', 'cell', 'copy', 'cell', 'preview']);
     expect(pieceGate(p, previewed)).toBeNull();
+  });
+
+  it('return: starters are distinct, never already returning; only a wrong order is a miss; the hint and bot reach A-B-A', () => {
+    const plan = PLANS[8];
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const { piece, order } = returnStarter(plan, new Rng(seed));
+      seen.add(order.join(''));
+      expect(isReturning(order)).toBe(false);
+      expect(returnGate(piece, order, true)).toBe('order');
+      expect(returnGate(piece, order, false)).toBe('preview');
+      expect(hits(piece.a)).toBeGreaterThan(0);
+      expect(same(piece.a, piece.b)).toBe(false);
+      const o = [...order] as typeof order;
+      for (let n = 0; n < 6; n++) {
+        const m = returnMove(piece, o, true);
+        if (m && typeof m === 'object') {
+          expect(m.slot).toBe(returnHint(o));
+          o[m.slot] = o[m.slot] === 'a' ? 'b' : 'a';
+        } else break;
+      }
+      expect(o).toEqual(['a', 'b', 'a']);
+      expect(returnGate(piece, o, true)).toBeNull();
+      expect(returnMove(piece, o, false)).toBe('preview');
+      expect(returnMove(piece, o, true)).toBe('check');
+      // Editing sounds never breaks the shared A: both occurrences read the same section.
+      expect(returnGate({ ...piece, a: piece.b }, o, true)).toBe('same');
+    }
+    expect(seen.size).toBe(5);
+    expect(previewOrder(4, ['a', 'b', 'a']).map((p) => p.section).join('')).toBe('aaaabbbbaaaa');
+  });
+
+  it('toddler free play: a single hit is a whole beat the bot makes before checking', () => {
+    const plan = PLANS[0];
+    const goal = oneHit(plan);
+    expect(hits(goal)).toBe(1);
+    const beat = empty(plan.rows, plan.steps);
+    expect(beatMove(plan, goal, beat, true)).toEqual({ row: 0, step: 0 });
+    beat[0][0] = true;
+    expect(beatMove(plan, goal, beat, false)).toBeNull();
+    expect(beatMove(plan, goal, beat, true)).toBe('check');
   });
 });
