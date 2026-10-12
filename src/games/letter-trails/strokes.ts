@@ -3,7 +3,7 @@ export type Stroke = readonly Point[];
 
 /** Capitals in a common 0..1 writing box, in stroke order. Curves use generous polylines. */
 export const LETTERS: Record<string, readonly Stroke[]> = {
-  A: [[[0.12, 1], [0.5, 0], [0.88, 1]], [[0.27, 0.6], [0.73, 0.6]]],
+  A: [[[0.5, 0], [0.12, 1]], [[0.5, 0], [0.88, 1]], [[0.27, 0.6], [0.73, 0.6]]],
   B: [[[0.15, 0], [0.15, 1]], [[0.15, 0], [0.6, 0], [0.8, 0.12], [0.8, 0.32], [0.6, 0.48], [0.15, 0.48]], [[0.15, 0.48], [0.65, 0.48], [0.88, 0.64], [0.88, 0.83], [0.65, 1], [0.15, 1]]],
   C: [[[0.87, 0.12], [0.68, 0], [0.35, 0], [0.12, 0.2], [0.08, 0.5], [0.12, 0.8], [0.35, 1], [0.68, 1], [0.87, 0.88]]],
   D: [[[0.14, 0], [0.14, 1]], [[0.14, 0], [0.52, 0], [0.8, 0.17], [0.9, 0.5], [0.8, 0.83], [0.52, 1], [0.14, 1]]],
@@ -15,8 +15,8 @@ export const LETTERS: Record<string, readonly Stroke[]> = {
   J: [[[0.75, 0], [0.75, 0.77], [0.65, 0.96], [0.4, 1], [0.18, 0.87], [0.13, 0.7]], [[0.4, 0], [0.94, 0]]],
   K: [[[0.15, 0], [0.15, 1]], [[0.87, 0], [0.15, 0.55], [0.88, 1]]],
   L: [[[0.18, 0], [0.18, 1], [0.88, 1]]],
-  M: [[[0.1, 1], [0.1, 0], [0.5, 0.57], [0.9, 0], [0.9, 1]]],
-  N: [[[0.15, 1], [0.15, 0], [0.85, 1], [0.85, 0]]],
+  M: [[[0.1, 0], [0.1, 1], [0.1, 0], [0.5, 0.57], [0.9, 0], [0.9, 1]]],
+  N: [[[0.15, 0], [0.15, 1], [0.15, 0], [0.85, 1], [0.85, 0]]],
   O: [[[0.5, 0], [0.23, 0.06], [0.08, 0.3], [0.08, 0.7], [0.23, 0.94], [0.5, 1], [0.77, 0.94], [0.92, 0.7], [0.92, 0.3], [0.77, 0.06], [0.5, 0]]],
   P: [[[0.15, 0], [0.15, 1]], [[0.15, 0], [0.65, 0], [0.86, 0.17], [0.86, 0.36], [0.65, 0.53], [0.15, 0.53]]],
   Q: [[[0.5, 0], [0.23, 0.06], [0.08, 0.3], [0.08, 0.7], [0.23, 0.94], [0.5, 1], [0.77, 0.94], [0.92, 0.7], [0.92, 0.3], [0.77, 0.06], [0.5, 0]], [[0.57, 0.7], [0.95, 1]]],
@@ -75,10 +75,12 @@ export function advanceTrace(points: readonly Point[], index: number, from: Poin
   let next = index;
   // A finger returning from far outside the trail must meet the current checkpoint first.
   if (segmentDistance(points[index], from, to) > tolerance) return index;
-  while (next + 1 < points.length && segmentDistance(points[next + 1], from, to) <= tolerance) next++;
+  while (next + 1 < points.length && segmentDistance(points[next + 1], from, to) <= tolerance) {
+    // At a retraced upright, proximity alone must not consume the return path while
+    // the finger is still travelling outward. Wait until its movement turns too.
+    const a = points[next], b = points[next + 1];
+    if ((b[0] - a[0]) * (to[0] - from[0]) + (b[1] - a[1]) * (to[1] - from[1]) < -1e-9) break;
+    next++;
+  }
   return next;
-}
-
-export function nameLetters(name: string): string {
-  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 40) || 'PIP';
 }

@@ -94,7 +94,7 @@ There are seventy-eight games, listed below. "Ages" lists the bands each game ha
 | Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; repair a mixed-up story with swaps and undo; ten stories |
 | Pattern Train | preschool–school | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps, a tunnel of hidden cars, color and shape on their own cycles, counting by 2, 5 or 10, the car that does not belong, fixing a swapped car, the same pattern in new pieces (pick the row, build it) |
 | Memory Match | preschool–school | four named picture cards, free replay | sixteen cards, number↔dots, shape + color, A↔a, number words↔numerals, fraction pictures↔names |
-| Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals, short words, the child's name |
+| Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals starting at the top, spoken short words and the child's name |
 | Stamp Studio | lap–school | press stars or animal stamps onto a picture | choose colors, arrange stamps, change size and orientation, tell a picture story; any creation can finish |
 | Pet Kitchen | toddler–school | cut a sandwich in halves and share | quarters, sharing multiple wholes with alternative equal cuts, doubling and halving a picture recipe, serving a named fraction, sharing pizza thirds |
 | Rhythm Neighbors | lap–school | tap a bird and a frog chorus | trade different musical parts, follow two frog voices, play long/short replies with a guided option |

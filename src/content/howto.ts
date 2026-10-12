@@ -225,15 +225,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'A nonmatching pair counts as a miss only when the first card’s partner was already seen. After two misses, one known partner glows until a match clears it.',
   },
   'letter-trails': {
-    goal: 'Trace a letter with one finger.',
+    goal: 'Form capital letters, words and names by following a trail with one finger.',
     steps: [
       'Start at the glowing dot.',
       "Drag along the firefly's path to draw the letter.",
-      { from: 7, text: 'Trace each letter in turn, from the first to the last.' },
+      { from: 7, to: 8, text: 'Trace each letter in turn, from the first to the last.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the whole letter has been traced.' },
-      { from: 7, text: 'The round ends when the whole word or name has been traced.' },
+      { from: 7, to: 8, text: 'The round ends when the whole word or name has been traced.' },
     ],
   },
   'robot-path': {

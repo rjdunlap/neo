@@ -8,20 +8,9 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { letterPicture, WORDS } from './pictures';
-import { advanceTrace, LETTERS, nameLetters, sampleStroke, traceWaypoints, type Point } from './strokes';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const PLANS = [
-  { letters: 'ILT', name: 'Follow straight strokes: I, L, T' },
-  { letters: 'EFH', name: 'More straight strokes: E, F, H' },
-  { letters: 'AKMNVWXYZ', name: 'Follow diagonal strokes' },
-  { letters: 'CGOQSU', name: 'Follow rounded strokes' },
-  { letters: 'BDJPR', name: 'Combine straight and rounded strokes' },
-  { letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', name: 'Explore all 26 capitals' },
-  { letters: '', name: 'Trace a short word: CAT, DOG, or SUN' },
-  { letters: '', name: 'Trace the child’s name in capitals' },
-];
-const LEVELS: BandLevels = { preschool: { min: 1, max: 6 }, prek: { min: 3, max: 8 }, school: { min: 7, max: 8 } };
+import { advanceTrace, LETTERS, sampleStroke, traceWaypoints, type Point } from './strokes';
+import { rangeFor } from '../../progress/difficulty';
+import { LEVELS, PLANS, offTrail, stickerLetter, trailLevel, trailTolerance, trailWord } from './logic';
 
 class LetterTrails implements Game {
   readonly word: string;
@@ -50,9 +39,8 @@ class LetterTrails implements Game {
   private tolerance: number;
 
   constructor(private readonly ctx: GameContext) {
-    const level = Math.max(1, Math.min(8, ctx.level));
-    this.word = level === 8 ? nameLetters(ctx.childName) : level === 7 ? ctx.rng.pick(['CAT', 'DOG', 'SUN']) : ctx.rng.pick(PLANS[level - 1].letters.split(''));
-    this.tolerance = level <= 2 ? 0.095 : 0.075;
+    this.word = trailWord(ctx.level, ctx.childName, ctx.rng);
+    this.tolerance = trailTolerance(ctx.level);
     ctx.stage.addChild(this.background, this.canvas, this.heading);
     this.canvas.addChild(this.outline, this.ink, this.beacon, this.firefly);
     this.firefly.addChild(new Graphics().ellipse(-14, -12, 16, 10).ellipse(14, -12, 16, 10).fill(swatch.teal.light).circle(0, 0, 18).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line }).circle(-6, -3, 3).circle(6, -3, 3).fill(swatch.brown.line));
@@ -84,7 +72,7 @@ class LetterTrails implements Game {
     if (this.busy || this.done) { this.placeFirefly(); return; }
     const next = advanceTrace(this.points, this.progress, this.previous, to, this.tolerance);
     const checkpoint = this.points[this.progress];
-    if (next === this.progress && Math.hypot(to[0] - checkpoint[0], to[1] - checkpoint[1]) > this.tolerance * 2 && !this.missedDrag) {
+    if (next === this.progress && offTrail(to, checkpoint, this.tolerance) && !this.missedDrag) {
       this.missedDrag = true; this.misses++; this.wrong++;
       sfx.boing(); void this.ctx.say('trails.wrong');
       if (this.wrong === 2) this.hints++;
@@ -146,7 +134,10 @@ class LetterTrails implements Game {
     this.draw(); this.placeFirefly();
     if (this.picture) this.picture.position.set(this.size / 2, this.size / 2);
   }
-  start() { void this.ctx.instruct('trails.start', { letter: this.letter }); }
+  async start() {
+    if (trailLevel(this.ctx.level) >= 7) await this.ctx.say('trails.word', { word: this.word });
+    void this.ctx.instruct('trails.start', { letter: this.letter });
+  }
   update(dt: number) {
     this.clock += dt; this.beacon.clear();
     if (this.busy || this.done) return;
@@ -177,8 +168,8 @@ function trailArt(): Container {
 export const letterTrails: GameModule = {
   id: 'letter-trails', name: 'Letter Trails', titleLine: 'game.letter-trails', region: 'story-grove',
   skills: ['letters', 'fine-motor', 'writing'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
-  describeLevel: (l) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))].name,
+  describeLevel: (l) => PLANS[trailLevel(l) - 1].name,
   music: STYLES.paint, offScreen: 'Draw large letters with a finger in sand or on a foggy window, saying the letter together.',
-  hubIcon: () => new WigglyIcon(trailArt()), sticker: (seed) => letterPicture('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.abs(seed)) % 26]), create: (ctx) => new LetterTrails(ctx),
+  hubIcon: () => new WigglyIcon(trailArt()), sticker: (seed) => letterPicture(stickerLetter(seed)), create: (ctx) => new LetterTrails(ctx),
   touchDemo: true,
 };

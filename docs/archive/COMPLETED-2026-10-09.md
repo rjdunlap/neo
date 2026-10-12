@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Letter Trails capital starts and rule guards (2026-10-11)
+
+Built deep-dive slice 1 ([PR #172](https://github.com/rjdunlap/neo/pull/172)). A traces downward legs separately; M and N begin at the top and retain continuous paths. Retraced uprights wait for the finger to reverse before consuming the return path, preventing an on-trail drag from receiving a stray miss. Plans, seeded word choice, tolerance, name normalization and the pinned sticker alphabet now live in `logic.ts`. Levels 7–8 speak the word/name introduction, with bounded how-to lines. All existing levels, band ranges, names' 40-letter cap and miss/hint accounting remain; word pictures and per-letter counting are next.
+
+
 ### Goodnight Room barn and animals (2026-10-10)
 
 Built roadmap deep-dive slices 2–3. Levels 1–4 now draw a bedroom or barn from the seeded room pool, with six spacious slots. The barn has a cow, pig, duck, bunny, barn cat and hanging lantern, all drawn in code. Existing names, ordered requests, asleep starts and the finale work in either setting.
