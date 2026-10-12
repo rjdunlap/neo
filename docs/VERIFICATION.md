@@ -845,6 +845,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Beat Builder replay/help worker dispatch (2026-10-12)
+
+Coordinator confirmed how-to #192 merged at `1cf3085` and its worker complete with typecheck/17 focused tests. Fresh actual allowance admits one new worker for build slice 2 (audible replay and repair help); no concurrent implementation or overlapping claim/dirty work found. Queue records worker `01a13105-31ef-7d00-a221-dc5e3c556986`, scope, admission and pending checks; duplicate prior dispatch ledger row consolidated. Coordinator edits only documentation: source link/anchor and `git diff --check` passed. Implementation/typecheck/rules/filtered regression/ghost finger and conditional build remain the worker’s responsibility. No coordinator servers or code checks.
+
 ### Beat Builder how-to worker dispatch (2026-10-12)
 
 Coordinator confirmed Beat Builder deep dive #190 merged at `69f04de` and its worker complete. Fresh actual allowance permits one new worker for build slice 1 (truthful how-to 1–5); no concurrent implementation, open PR, unmerged branch or overlapping dirty work found. Recorded worker `01a130ce-079c-7a30-97ac-5c1a016bc107` and scope in the queue. Coordinator changes only dispatch documentation: local source links/anchor and `git diff --check` passed. No implementation checks run here; typecheck and focused how-to assertions remain the worker’s responsibility. Unchanged gameplay/browser suites are outside this slice’s source tier.
