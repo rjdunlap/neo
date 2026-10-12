@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder level 9, a returning song
+
+- School 3–9. `returnStarter`, `returnGate`, `returnHint`, `returnMove`, card strip and preview in `index.ts`. Ran typecheck, content and games unit tests (810: starters never returning, five orders seen, hint/bot reach circle-square-circle, gates) and one portrait scripted play (unheard check = guide only, two wrong orders = 2 misses and 1 hint, bot finished). A screenshot caught the old repair glow showing on the grid at this level; fixed. Not run: `fingerdemo`, build, suites, offline; iPad and child open.
+
 ## 2026-10-12 — Bubble Pop target sign and levels 12–14
 
 - A sign at the top of levels 10–11 shows the total to make; levels 12 (start at a number), 13 (count back to 1) and 14 (tens and fives) are count mode with `start`/`steps` plan fields (`countRun`, `signFor`). Pre-K 6–12, school 10–14.

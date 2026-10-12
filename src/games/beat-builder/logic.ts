@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * that sound on. First free play, then copying a beat you can see, then copying one by ear, then
  * making a pattern repeat (the second half matches the first), then a longer beat by ear.
  */
-export type BeatMode = 'free' | 'see' | 'hear' | 'repeat' | 'mend' | 'revise' | 'sections';
+export type BeatMode = 'free' | 'see' | 'hear' | 'repeat' | 'mend' | 'revise' | 'sections' | 'return';
 
 export interface BeatPlan {
   mode: BeatMode;
@@ -26,6 +26,7 @@ export const PLANS: BeatPlan[] = [
   { mode: 'mend', steps: 4, rows: 2, beats: 3, name: 'Mend the beat: one sound in your copy is missing or extra; fix it, then check' },
   { mode: 'revise', steps: 4, rows: 2, beats: 2, name: 'Keep the drum, change the claps: listen, then move the claps to match' },
   { mode: 'sections', steps: 4, rows: 2, beats: 1, name: 'A and B: make a part, copy it, change the copy, then hear one part after the other' },
+  { mode: 'return', steps: 4, rows: 2, beats: 1, name: 'A returning song: put the first part back at the end, change the parts if you like, then hear it' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -209,8 +210,44 @@ export function pieceGate(p: Piece, previewed: boolean): 'empty-a' | 'empty-b' |
 }
 
 /** The order the preview plays: every step of A, then every step of B. */
-export const previewOrder = (steps: number): { section: SectionId; step: number }[] =>
-  (['a', 'b'] as const).flatMap((section) => Array.from({ length: steps }, (_, step) => ({ section, step })));
+export const previewOrder = (steps: number, order: readonly SectionId[] = ['a', 'b']): { section: SectionId; step: number }[] =>
+  order.flatMap((section) => Array.from({ length: steps }, (_, step) => ({ section, step })));
+
+/** Level 9: three cards in a row; the song returns when they read circle, square, circle. */
+export type SectionOrder = [SectionId, SectionId, SectionId];
+export const isReturning = (order: readonly SectionId[]) => order[0] === 'a' && order[1] === 'b' && order[2] === 'a';
+const WRONG_ORDERS: SectionOrder[] = [['a', 'a', 'b'], ['a', 'b', 'b'], ['b', 'a', 'a'], ['b', 'a', 'b'], ['b', 'b', 'a']];
+
+/** Two distinct authored phrases and a card order that does not return yet. Seeded. */
+export function returnStarter(plan: BeatPlan, rng: Rng): { piece: Piece; order: SectionOrder } {
+  const [a, b] = rng.shuffle([...SHORT_PHRASES]).slice(0, 2);
+  const piece = newPiece(plan);
+  piece.a = a.score.map((row) => [...row]);
+  piece.b = b.score.map((row) => [...row]);
+  return { piece, order: [...rng.pick(WRONG_ORDERS)] as SectionOrder };
+}
+
+/** Why Done is not ready: sound gates first, then hearing it, then the order (the only thing that counts a miss). */
+export function returnGate(p: Piece, order: readonly SectionId[], previewed: boolean) {
+  const gate = pieceGate(p, previewed);
+  if (gate) return gate;
+  return isReturning(order) ? null : ('order' as const);
+}
+
+/** The card the hint points at: the last one (the return) unless it is already right, else the first wrong one. */
+export function returnHint(order: readonly SectionId[]): number {
+  const want: SectionId[] = ['a', 'b', 'a'];
+  return order[2] !== 'a' ? 2 : Math.max(0, order.findIndex((s, i) => s !== want[i]));
+}
+
+export type ReturnMove = { slot: number } | 'preview' | 'check';
+
+/** The ghost finger: turn the first wrong card over, hear the song, then Done. */
+export function returnMove(p: Piece, order: readonly SectionId[], previewed: boolean): ReturnMove | null {
+  if (!isReturning(order)) return { slot: returnHint(order) };
+  if (pieceGate(p, previewed) === 'preview') return 'preview';
+  return pieceGate(p, previewed) ? null : 'check';
+}
 
 export type SectionMove = { row: number; step: number } | 'copy' | 'preview' | 'check';
 

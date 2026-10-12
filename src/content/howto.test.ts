@@ -141,8 +141,13 @@ describe('touch how-to cards', () => {
     expect(parts.steps.join(' ')).toContain('copy button');
     expect(parts.steps.join(' ')).toContain('nothing counts as a miss');
     expect(parts.finish).toContain('two-part piece');
-    expect(howToFor(game, 9)!.steps).toEqual([]);
-    expect(howToFor(game, 9)!.finish).toBe('');
+    const back = howToFor(game, 9)!;
+    expect(back.steps.join(' ')).toContain('three cards');
+    expect(back.steps.join(' ')).toContain('circle, square, circle');
+    expect(back.steps.join(' ')).toContain('one miss');
+    expect(back.finish).toContain('comes back');
+    expect(howToFor(game, 10)!.steps).toEqual([]);
+    expect(howToFor(game, 10)!.finish).toBe('');
   });
 
   it('changes with the level where the game does: a step that only holds for some levels is not on every card', () => {
