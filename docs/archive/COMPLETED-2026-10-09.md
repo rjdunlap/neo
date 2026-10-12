@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Stamp Studio finished-picture guards (2026-10-12)
+
+Built the bounded slice 1a of guards and words ([PR #175](https://github.com/rjdunlap/neo/pull/175)). The green arrow snapshots the stamps before its celebration delay; late Undo/Turn/Big and choice taps leave the picture intact. Finishing also cancels a held drag and restores its accepted position. The optional treehouse keep action receives the snapshot. All existing levels, creative completion, miss/hint accounting and saves remain. Remaining slice-1 words, colors, bin and lap nudge stay in the deep dive.
+
+Typecheck, ten focused Stamp Studio tests and one filtered level-4 regression play passed. The seven lifecycle tests first failed on old behavior; portrait reviewed. No broad suites or build run for this isolated game fix.
+
+
 ### Letter Trails capital starts and rule guards (2026-10-11)
 
 Built deep-dive slice 1 ([PR #172](https://github.com/rjdunlap/neo/pull/172)). A traces downward legs separately; M and N begin at the top and retain continuous paths. Retraced uprights wait for the finger to reverse before consuming the return path, preventing an on-trail drag from receiving a stray miss. Plans, seeded word choice, tolerance, name normalization and the pinned sticker alphabet now live in `logic.ts`. Levels 7–8 speak the word/name introduction, with bounded how-to lines. All existing levels, band ranges, names' 40-letter cap and miss/hint accounting remain; word pictures and per-letter counting are next.

@@ -45,25 +45,32 @@ class StampStudio implements Game {
       this.add(p.x, p.y);
     });
     this.plan.kinds.forEach(kind => {
-      const b = new RoundButton(stampArt(kind, 'orange', 33), swatch.white, 48, () => { this.kind = kind; void ctx.say('stamp.kind', { kind }); this.drawSelection(); });
+      const b = new RoundButton(stampArt(kind, 'orange', 33), swatch.white, 48, () => { if (this.done) return; this.kind = kind; void ctx.say('stamp.kind', { kind }); this.drawSelection(); });
       ctx.stage.addChild(b); this.choices.push(b);
     });
     if (this.plan.color) for (const color of STAMP_COLORS) {
-      const b = new RoundButton(new Graphics().circle(0, 0, 22).fill(swatch[color].fill), swatch.white, 43, () => { this.color = color; void ctx.say('color.' + color as 'color.blue'); this.drawSelection(); });
+      const b = new RoundButton(new Graphics().circle(0, 0, 22).fill(swatch[color].fill), swatch.white, 43, () => { if (this.done) return; this.color = color; void ctx.say('color.' + color as 'color.blue'); this.drawSelection(); });
       ctx.stage.addChild(b); this.colors.push(b);
     }
     this.finish = new RoundButton(arrowIcon(1), swatch.green, 48, () => {
       if (this.done || !this.stamps.length) return;
-      this.done = true; this.stamps.forEach(s => { if (s.drag) s.drag.enabled = false; });
+      this.done = true;
+      // Freeze at the arrow press, before the celebration: a second finger may still hold a stamp.
+      this.stamps.forEach(s => {
+        if (s.drag) { s.drag.enabled = false; s.drag.destroy(); }
+        this.ctx.tw.kill(s.node.scale); s.node.scale.set(1); this.layoutStamp(s);
+      });
+      const creation = { kind: 'picture' as const, stamps: this.stamps.map(s => ({ ...s.data })) };
       void ctx.say('stamp.done'); sfx.sparkle();
-      void ctx.tw.wait(0.9).then(() => ctx.finish({ misses: 0, hints: 0, creation: { kind: 'picture', stamps: this.stamps.map(s => ({ ...s.data })) } }));
+      void ctx.tw.wait(0.9).then(() => ctx.finish({ misses: 0, hints: 0, creation }));
     });
     this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () => {
-      const s = this.stamps.pop(); if (!s || this.done) return;
+      if (this.done) return;
+      const s = this.stamps.pop(); if (!s) return;
       s.drag?.destroy(); s.node.destroy({ children: true }); this.selected = this.stamps.at(-1) ?? null; this.drawSelection();
     });
-    this.turn = new RoundButton(againIcon(), swatch.white, 48, () => { if (this.selected) { this.selected.data.turns = (this.selected.data.turns + 1) % 4; this.layoutStamp(this.selected); this.drawSelection(); } });
-    this.grow = new RoundButton(new Graphics().circle(-13, 4, 12).circle(14, -4, 23).fill(swatch.purple.fill), swatch.white, 48, () => { if (this.selected) { this.selected.data.size = this.selected.data.size === 1 ? 1.3 : 1; this.layoutStamp(this.selected); this.drawSelection(); } });
+    this.turn = new RoundButton(againIcon(), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.turns = (this.selected.data.turns + 1) % 4; this.layoutStamp(this.selected); this.drawSelection(); } });
+    this.grow = new RoundButton(new Graphics().circle(-13, 4, 12).circle(14, -4, 23).fill(swatch.purple.fill), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.size = this.selected.data.size === 1 ? 1.3 : 1; this.layoutStamp(this.selected); this.drawSelection(); } });
     ctx.stage.addChild(this.finish, this.undo, this.turn, this.grow);
   }
   private add(x: number, y: number) {

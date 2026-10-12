@@ -21,7 +21,7 @@ Resume this coordinator's unfinished slice first. Otherwise revalidate the candi
 
 | Order | Candidate | Scope source | State |
 | --- | --- | --- | --- |
-| 1 | Stamp Studio slice 1: guards and words | [Build slices](deep-dives/stamp-studio.md#build-slices-in-order); explicitly ready with no decision | Candidate; recheck claims and size before admitting |
+| 1 | Stamp Studio slice 1 remainder: words and creative controls (snapshot guards built) | [Build slices](deep-dives/stamp-studio.md#build-slices-in-order); explicitly ready with no decision | Candidate; recheck claims and size before admitting |
 | 2 | Story Steps level 10: untangle two stories | [Build slices](deep-dives/story-steps.md#build-slices-in-order); level 9 is built | Candidate; define the two-row interaction and exclude ambiguous story pairings before claiming |
 | 3 | Next ready slice in roadmap order | [Next up](ROADMAP.md#next-up), then the relevant game's build slices | Select only after rechecking current scope and dependencies |
 
@@ -30,11 +30,13 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Coordinator: chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; active automation `neo-roadmap-coordinator` returns here hourly.
-- State: ready to recheck admission; the previously active Letter Trails implementation, [PR #172](https://github.com/rjdunlap/neo/pull/172), has merged. It belonged to another session and is not this coordinator's slice.
-- Owned gameplay slice/branch/PR: none. First scheduled run revalidates the queue; setup does not start a game implementation.
-- Next action: read fresh usage and concurrent-work status, then apply admission rules.
-- Daily UTC date, weekly reset identity, allocation and amount spent: not initialized; set on the first admitted run.
-- Checks: queue setup uses docs-only link checks and `git diff --check`. Gameplay checks remain those specified by AGENTS and each slice.
+- State: Stamp Studio slice 1a implementation and verification complete; [PR #175](https://github.com/rjdunlap/neo/pull/175) closes publication. Confirm its merge before choosing the next slice. No second slice admitted this run.
+- Owner branch: `codex/stamp-studio-finish-snapshot`; base `3519922`, claim `c4fb8a6` plus implementation/docs diff. Snapshot and late Undo/Turn/Big/choice/held-drag guards cover existing levels 1–6. Remaining slice-1 work stays queued.
+- Checks: typecheck and 10 Stamp Studio tests passed; 7 regressions failed on the old game. `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=4 GAME_URL=http://localhost:5202` passed; `test-results/browser/stamp-studio-4.png` portrait reviewed. Docs links/diff check passed. No required checks left for this bounded bug fix. Broad suites/build/howto/fingerdemo/offline not run; hardware not checked.
+- Next action: confirm merge and any uncommitted work, read fresh usage/concurrency, then admit one remaining ready slice if it fits. The last closeout reading in this chat can update the observation below without a logging-only commit.
+- Daily UTC date: 2026-10-12; weekly reset identity: `1792295992`; fixed daily allocation: **7.142857 weekly percentage points** (50 / 7 days); cumulative conservative debit: **2** (admitted estimate). No reset crossed; observed weekly consumption so far is 1 point.
+- Before usage: 02:27:30 UTC, five-hour used 57% (reset `1791782505`), weekly used 50% (reset `1792295992`). Prepublication closeout: 02:33:02 UTC, five-hour 63%, weekly 51%, same reset identities, ordinary usage allowed. Aggregate consumption, not exact task billing.
+- Owned servers: Vite `http://localhost:5202` stopped; browser closed. No other session changed.
 
 For an admitted slice replace this checkpoint with: exact game/levels and expected files; owner branch/PR; latest commit and any uncommitted files; implementation done/remaining; checks run with tested revision, filters and server URL; checks not run; owned servers stopped; next action and blockers; UTC date and weekly reset identity; daily allocation/spent; before/after usage with timestamps and window reset identities.
 
@@ -44,7 +46,7 @@ Record one row per admitted run and retain the latest ten. Percentage-point diff
 
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Daily allocation / cumulative debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
-| — | No admitted runs yet | — | — | — | — | Setup only |
+| 2026-10-12 | Stamp Studio finish snapshot / [#175](https://github.com/rjdunlap/neo/pull/175) | Gameplay bug fix | 57% → 63% / `1791782505` | 50% → 51% / `1792295992` | 7.142857 / 2 | Verified; prepublication aggregate sample, final closeout in chat |
 
 ## Scheduling and limits
 
