@@ -1140,7 +1140,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Letter Trails** (8 · 7–8; **[deep dive](deep-dives/letter-trails.md)**) | Lowercase letters, then tracing the word a picture spells. **Planned in its deep dive** as levels 9–18 (a fading guide, five groups of little letters, big and little, little words, her name as it is written, words that matter), after a fix so every capital starts at the top | Needs a four-line writing frame and the stroke-convention decision; digits are a separate preschool mode (Number Trails above) |
 | **Tangram Town** (6 · 5–6) | Flip a piece; make the same shape with fewer pieces | More silhouettes to author. **[Deep dive](deep-dives/tangram-town.md) (2026-10-10):** fewer pieces (needs cover sets), fix the picture and a flip (needs a parallelogram) are designed; the picture pool is built |
 | **Penguin Slide** (5 · 2–5) | *Mossy Path:* visit every square once | A new rule with its own solver (roadmap names it) |
-| **Beat Builder** (5 · 3–5) | Two sections (a verse and a chorus) | A bigger design in a thin subject; do it as a music slice |
+| **Beat Builder** (5 · 3–5) | Two contrasting sections; [deep dive](deep-dives/beat-builder.md) proposes A/B and returning ABA after repair/isolation | Superseded by the researched ladder; appended modes/windows need a developer decision |
 | **Pixel Pictures** (5 · 3–5) | Pixel Flipbook (above) | A new bounded creation shape |
 
 ### Leave: the ceiling is right
@@ -1261,7 +1261,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Song Maker (T–S · 7) | More tunes to copy and patterns to continue | R1-later: *answer the phrase* | — |
 | Sound Garden (L–K · 6) | More singer pairs (owl and mouse for high and low; snail and hare for slow and fast) | **7, Loud or quiet**, a new contrast. **8, Two at once:** "high and fast", a two-attribute listen | — |
 | Rhythm Neighbors (L–S · 6) | More frog voices and call shapes | — (audit: leave) | — |
-| Beat Builder (P–S · 5) | A library of beats to copy | R1-later: verse and chorus | Toddler, and lap too, on level 1's free beat |
+| Beat Builder (P–S · 5) | [Deep dive](deep-dives/beat-builder.md): authored phrase library after support fixes | Proposed 6 mend, 7 isolate, 8 A/B, 9 ABA; decision | Toddler single-hit finish and distinct lap pat-to-score opening; decision in the deep dive |
 
 **Art and animals**
 
