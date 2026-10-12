@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-12 — Block Tower truthful support 1–6
+
+- Built support slice 1 ([PR #213](https://github.com/rjdunlap/neo/pull/213)): truthful per-level input, task counts and finish; friend's tap instruction and floor-play suggestion. No gameplay/rules/accounting/bands/art/bot changes.
+- Tested claim `b18c79d` plus support diff; coordinator-only docs from `2426c51` integrated afterward, preserving source evidence. Typecheck and `npx vitest run src/content/howto.test.ts src/games/registry.test.ts` passed (29 tests); bounded Block Tower steps/finish tested beyond 6.
+- Changed local documentation links/anchors and `git diff --check` passed. No server started or URL used.
+- Not run: build, browser, ghost-finger and offline checks at the specified plain-word content tier. Actual iPad touch, speech and child fit remain person checks; reach/settling and height variety remain separate slices.
+- Dispatch `block-tower-support-20261012T215149Z`; queue records scope, worker, usage and next action.
+
 ## 2026-10-12 — Bounce Back deep dive (docs only)
 
 - Searched genre references (Pong, Breakout/Arkanoid, Kaboom!, Bluey Keepy Uppy, Young Athletes); inspected the five plans, hint and miss rules, bots, how-to, voice and couch entry. Added [the write-up](deep-dives/bounce-back.md), tracker row, roadmap slices and decisions; no gameplay changed.
@@ -851,6 +859,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Block Tower support words | 2026-10-12: typecheck, 29 focused how-to/registry tests, local links/anchors and diff check | Support 1–6 entry / [PR #213](https://github.com/rjdunlap/neo/pull/213) | Plain-word tier; browser/build not run; device speech/touch and child fit open |
 | Block Tower deep dive (docs only) | 2026-10-12: documentation links/anchors and diff check | [Deep dive](deep-dives/block-tower.md) / [PR #209](https://github.com/rjdunlap/neo/pull/209) | No gameplay/test/browser evidence added; proposals and device checks open |
 | `buddies`, `fingerdemo` (`shape-buddies`) | 2026-10-12: solo level 1, both bands and all solutions; free experiments, hints, occupied dock, undo/replay, portrait, reward and interruption; demo clean in 14.4s | Shape Buddies solo seed journey entry / [PR #204](https://github.com/rjdunlap/neo/pull/204) | iPad touch, device speech and child understanding open |
 | Beat Builder woodland stage | 2026-10-12: typecheck, ten rules, build; level-5 portrait and row-response probe | Woodland stage entry / [PR #197](https://github.com/rjdunlap/neo/pull/197) | Content/art only; no unchanged suite; device/child fit open |

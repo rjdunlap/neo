@@ -129,7 +129,7 @@ export const SCRIPT = {
   'tower.tumble': ['Tap to stack the blocks. Then knock them down!'],
   'tower.knock': ['Tap to knock it down!', 'Ready? Knock it down!'],
   'tower.crash': ['Crash!', 'Tumble, tumble!', 'Boom!'],
-  'tower.friend': ['Stack the blocks as tall as the {friend}!'],
+  'tower.friend': ['Tap anywhere to stack the blocks as tall as the {friend}! Then tap again to knock them down.'],
   'tower.as-tall': ['As tall as the {friend}!'],
   'tower.flag': ['Build the tower up to the flag. That is {n} blocks! Tap the basket for blocks, then ring the bell.'],
   'tower.short': ['Not up to the flag yet. Tap the basket for more blocks.'],

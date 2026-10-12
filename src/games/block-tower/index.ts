@@ -823,7 +823,7 @@ export const blockTower: GameModule = {
   music: STYLES.stickers,
   touchDemo: true,
   coplayHint: 'Stack real blocks or cups with {name} and knock them down together: "One, two, three... crash!"',
-  offScreen: 'Build towers with cups or books: which is taller? Then try leaning a stack over the edge of a table.',
+  offScreen: 'On the floor, build towers with blocks or cups: which is taller? Try shifting the top block a little and see whether it stands.',
   hubIcon: () => new TowerIcon(),
   sticker,
   create: (ctx) => new BlockTower(ctx),
