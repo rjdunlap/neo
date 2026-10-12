@@ -44,6 +44,13 @@ export interface BubblePlan {
   radius: [number, number];
   /** Bonds mode: the total each pair makes. */
   sum?: number;
+  /**
+   * Count mode: where the run begins, as an inclusive range drawn each round. Left out it begins at 1. For a skip count
+   * it is in steps (3 means the third multiple), so a run by tens can begin at 10, 20 or 30.
+   */
+  start?: [number, number];
+  /** Count mode: the steps a round may count by (one drawn each round). Left out it counts up by 1; -1 counts back to 1. */
+  steps?: number[];
 }
 
 /** One entry per level. Lap levels are pure popping; then colors; then numbers in order. */
@@ -60,6 +67,10 @@ export const PLANS: BubblePlan[] = [
   // Pre-K and early school: pop two bubbles that make a number together.
   { mode: 'bonds', goal: 4, speed: 28, most: 8, colors: 0, radius: [58, 68], sum: 5 },
   { mode: 'bonds', goal: 5, speed: 32, most: 10, colors: 0, radius: [54, 62], sum: 10 },
+  // Counting sequences, not sums: start at a number, count back to 1, count by tens or fives.
+  { mode: 'count', goal: 6, speed: 38, most: 6, colors: 0, radius: [58, 70], start: [2, 7] },
+  { mode: 'count', goal: 10, speed: 40, most: 10, colors: 0, radius: [52, 62], start: [5, 10], steps: [-1] },
+  { mode: 'count', goal: 5, speed: 40, most: 5, colors: 0, radius: [58, 70], start: [1, 3], steps: [10, 5] },
 ];
 
 /** Bonds mode: numbers for `pairs` pairs that each make `sum`, so every bubble has a partner. */
@@ -71,6 +82,19 @@ export function bondNumbers(sum: number, pairs: number, rng: Rng): number[] {
     out.push(a, sum - a);
   }
   return rng.shuffle(out);
+}
+
+/**
+ * Count mode: the numbers in the order they are popped. Counting up runs `goal` numbers from the start; counting back
+ * runs from the start down to 1 (so `goal` is the longest it can be); a skip count runs `goal` multiples of its step.
+ */
+export function countRun(plan: BubblePlan, rng: Rng): number[] {
+  if (!plan.start) return Array.from({ length: plan.goal }, (_, i) => i + 1);
+  const step = plan.steps ? rng.pick(plan.steps) : 1;
+  const begin = rng.int(plan.start[0], plan.start[1]);
+  if (step < 0) return Array.from({ length: begin }, (_, i) => begin - i);
+  const first = step > 1 ? begin * step : begin;
+  return Array.from({ length: plan.goal }, (_, i) => first + i * step);
 }
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -165,3 +189,24 @@ export function numberDots(n: number): { x: number; y: number }[] {
 }
 export const DOT_RADIUS = 0.06;
 export const DOT_NUMERAL_Y = -0.30;
+
+export type SignKind = 'bond' | 'start' | 'back' | 'by';
+
+/** What the sign at the top says the round is about, so the number she needs is always in sight. */
+export interface TargetSign {
+  kind: SignKind;
+  /** The total to make, the number to start or count back from, or the step to count by. */
+  n: number;
+  /** Dots beside the number, where the bubbles carry dots too. */
+  dots: boolean;
+}
+
+/** The sign for a round: bonds show the total, a run that does not begin at 1 shows its start, a skip count its step. Null when 1, 2, 3 is the whole story. */
+export function signFor(plan: BubblePlan, level: number, run: readonly number[]): TargetSign | null {
+  if (plan.mode === 'bonds') return { kind: 'bond', n: plan.sum!, dots: showsDots(level) };
+  if (plan.mode !== 'count' || !run.length) return null;
+  const step = run.length > 1 ? run[1] - run[0] : 1;
+  if (step < 0) return { kind: 'back', n: run[0], dots: false };
+  if (step > 1) return { kind: 'by', n: step, dots: false };
+  return run[0] > 1 ? { kind: 'start', n: run[0], dots: false } : null;
+}
