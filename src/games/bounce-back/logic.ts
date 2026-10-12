@@ -106,3 +106,15 @@ export function paddleTarget(arrive: number, star: { x: number; y: number } | nu
   }
   return best ? best.y : onTable(arrive);
 }
+
+/**
+ * What a ball past her paddle does to the help: two misses in a row start a hint (the ball slows and a ring shows where it will
+ * arrive). A bounce of hers ends it (`afterHit`), so a later run of misses can earn another. The rally is never reset by a miss.
+ */
+export function afterMiss(wrongs: number, hinting: boolean): { wrongs: number; hinting: boolean; newHint: boolean } {
+  const n = wrongs + 1;
+  if (n >= 2 && !hinting) return { wrongs: 0, hinting: true, newHint: true };
+  return { wrongs: n, hinting, newHint: false };
+}
+
+export const afterHit = () => ({ wrongs: 0, hinting: false });

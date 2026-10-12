@@ -10,7 +10,7 @@ import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { paddleBounce, paddleTarget, planFor, predictY, type BouncePlan } from './logic';
+import { afterHit, afterMiss, paddleBounce, paddleTarget, planFor, predictY, type BouncePlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -199,7 +199,6 @@ class BounceBack implements Game {
     this.ball.vx = 0;
     this.ball.vy = 0;
     this.serving = 1.1;
-    this.rally = 0;
     if (this.plan.mode === 'stars') this.placeStar();
   }
 
@@ -297,7 +296,7 @@ class BounceBack implements Game {
     this.squish = 1;
     this.rally++;
     sfx.bell(side === 'right' ? 7 : 5, 0.3);
-    if (side === 'right') this.wrongs = 0;
+    if (side === 'right') ({ wrongs: this.wrongs, hinting: this.hinting } = afterHit());
     if (this.plan.mode === 'stars') return;
     void this.ctx.say('count', { n: this.rally });
     if (this.rally >= this.plan.goal) void this.finale();
@@ -307,13 +306,11 @@ class BounceBack implements Game {
     sfx.boing();
     if (side === 'right') {
       this.misses++;
-      this.wrongs++;
       void this.ctx.say('bounce.whoops');
-      if (this.wrongs >= 2 && !this.hinting) {
-        this.hinting = true;
-        this.hints++;
-        this.wrongs = 0;
-      }
+      const next = afterMiss(this.wrongs, this.hinting);
+      this.wrongs = next.wrongs;
+      this.hinting = next.hinting;
+      if (next.newHint) this.hints++;
     }
     this.serve();
   }

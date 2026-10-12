@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import { afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -72,5 +72,33 @@ describe('Bounce Back', () => {
     expect(paddleTarget(300, null, g)).toBe(300);
     // When no star is asked for, every level meets the ball on the same line.
     for (const p of PLANS) expect(paddleTarget(250, null, { ...g, paddle: p.paddle, speed: p.speed })).toBe(250);
+  });
+
+  it('starts a hint after two misses in a row, ends it on her next bounce, and can start another', () => {
+    let st = { wrongs: 0, hinting: false };
+    let hints = 0;
+    const miss = () => {
+      const n = afterMiss(st.wrongs, st.hinting);
+      st = { wrongs: n.wrongs, hinting: n.hinting };
+      if (n.newHint) hints++;
+    };
+    miss();
+    expect(st.hinting).toBe(false);
+    miss();
+    expect(st.hinting).toBe(true);
+    miss();
+    miss();
+    expect(hints).toBe(1);
+    st = afterHit();
+    expect(st.hinting).toBe(false);
+    miss();
+    miss();
+    expect(hints).toBe(2);
+    // A bounce between misses means they were not in a row.
+    st = afterHit();
+    miss();
+    st = afterHit();
+    miss();
+    expect(st.hinting).toBe(false);
   });
 });
