@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-12 — Bubble Pop target sign and levels 12–14
+
+- A sign at the top of levels 10–11 shows the total to make; levels 12 (start at a number), 13 (count back to 1) and 14 (tens and fives) are count mode with `start`/`steps` plan fields (`countRun`, `signFor`). Pre-K 6–12, school 10–14.
+- Ran: typecheck; 110 rule, how-to and registry tests (run lengths, starts, ends, multiples, sign data, bounded how-to lines); `WOODS_ONLY=bonds` (sign position and no touches, plus the old pair play), `ORIGINALS_ONLY=bubbles BUBBLE_LEVELS=12,13,14` (wrong taps, glow hint, rainbow, saved score; level 13 in portrait), `FINGER_ONLY=bubble-pop FINGER_LEVELS=10,11,12,13,14` (all clean, 7–16 demo seconds), the how-to card at levels 11 and 14 in both orientations. Dev server `localhost:5291`, base `502ac48` plus this branch.
+- Not run: the full ladder, build, offline. Open: device speech for the new lines and number words, a child's reading of the sign (roadmap person check).
+
 ## 2026-10-12 — Beat Builder level 8, A and B
 
 - School 3–8. `Piece`, `pieceGate`, `previewOrder`, `sectionsMove`; tabs, copy, undo, preview in `index.ts`. Ran typecheck, content and games unit tests (802: gate, preview order, copy independence, bot) and one portrait scripted play (empty check = no miss, undo, bot copy/change/preview/check finished 0 misses). Undo of a section switch and resize during editing not separately tested. Not run: `fingerdemo`, build, suites, offline; iPad and child open.
@@ -819,6 +825,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Clock Tower support | 2026-10-11: typecheck, 24 focused tests, build, Clock Tower 1–7, ghost finger at 7 (24.0 s), four layouts/cancellation/portrait | Clock Tower words and control support entry | iPad and device speech open; broad suites not run |
 | Clock Tower deep dive | 2026-10-11: research and local Markdown links/anchors, diff check | Clock Tower deep dive entry | Docs only; no code or gameplay checks; device speech and child play open |
 | Robot Path preschool opening | 2026-10-11: typecheck and 59 targeted rules/registry/lands/difficulty/how-to tests; six small boards and all-band land fit | Robot Path preschool opening entry | No browser/build/offline rerun; iPad and child understanding open |
+| Bubble Pop sign and levels 12–14 (`woods`, `originals`, `fingerdemo`, `howto`) | 2026-10-12: typecheck, 110 tests, sign on 10–11, levels 12–14 played with misses/hint/rainbow, demos 10–14 clean, cards at 11 and 14 | Bubble Pop target sign entry | No build or full ladder; iPad, speech and child play open |
 | Bubble Pop dots (`fingerdemo`) | 2026-10-11: quantity/geometry rules, 28 focused tests, typecheck/build; level-10 demo clean in 12.8 s; portraits 7/9/10 and actual numeral clearance | Bubble Pop countable dots entry | No full ladder rerun; iPad, speech and child play open |
 | Robot Path board pools (`robot`, `fingerdemo`) | 2026-10-11: 30 boards in rule/bot tests; level-6 regression and portrait; level-10 demo clean in 10.4 s; typecheck and build | Robot Path: three boards per programming level entry | Full browser ladder and couch not rerun; iPad, speech and child play open |
 | Day by Day (`week`, `fingerdemo`) | 2026-10-11: first/top-level real-input play, retries/hint, saved reward, reversible counting, portrait and interrupted speech; demos 1–3 clean (35.9, 43.6, 50.1 s), land entry/intro/return | Day by Day first slice entry | No iPad, actual device speech or child play; level-2 full speech play not run |

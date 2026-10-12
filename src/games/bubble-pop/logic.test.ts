@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, showsDots, bondNumbers, bubbleToPop, choosePalette, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
+import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, showsDots, bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
 
 describe('Bubble Pop', () => {
   it('keeps every bubble a big target, and number rounds within what fits on screen', () => {
@@ -183,5 +183,81 @@ describe('quantity support', () => {
       const numbers = plan.mode === 'count' ? Array.from({ length: plan.goal }, (_, i) => i + 1) : bondNumbers(plan.sum!, plan.goal, new Rng(4));
       for (const n of numbers) expect(numberDots(n)).toHaveLength(n);
     }
+  });
+});
+
+describe('counting runs', () => {
+  const counts = PLANS.map((plan, i) => ({ plan, level: i + 1 })).filter(({ plan }) => plan.mode === 'count');
+
+  it('count levels 7 to 9 are still 1, 2, 3 … with no draw from the round\'s random numbers', () => {
+    for (const { plan, level } of counts.filter((c) => c.level <= 9)) {
+      const rng = new Rng(5);
+      expect(countRun(plan, rng)).toEqual(Array.from({ length: plan.goal }, (_, i) => i + 1));
+      expect(rng.next()).toBe(new Rng(5).next());
+      expect(signFor(plan, level, countRun(plan, new Rng(1)))).toBeNull();
+    }
+  });
+
+  it('level 12 starts at a number above 1 and keeps every number small enough for a pre-K player', () => {
+    const plan = planFor(12);
+    for (let seed = 1; seed <= 300; seed++) {
+      const run = countRun(plan, new Rng(seed));
+      expect(run[0]).toBeGreaterThanOrEqual(2);
+      expect(run).toHaveLength(plan.goal);
+      expect(run.every((n, i) => n === run[0] + i)).toBe(true);
+      expect(Math.max(...run)).toBeLessThanOrEqual(12);
+      expect(run.length).toBeLessThanOrEqual(plan.most);
+      expect(signFor(plan, 12, run)).toEqual({ kind: 'start', n: run[0], dots: false });
+    }
+  });
+
+  it('level 13 counts back one at a time and ends at 1, never below', () => {
+    const plan = planFor(13);
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const run = countRun(plan, new Rng(seed));
+      seen.add(run[0]);
+      expect(run[0]).toBeGreaterThanOrEqual(4);
+      expect(run.at(-1)).toBe(1);
+      expect(Math.min(...run)).toBeGreaterThanOrEqual(1);
+      expect(run.every((n, i) => n === run[0] - i)).toBe(true);
+      expect(run.length).toBeLessThanOrEqual(plan.most);
+      expect(signFor(plan, 13, run)).toEqual({ kind: 'back', n: run[0], dots: false });
+    }
+    expect(seen.size).toBeGreaterThan(3);
+  });
+
+  it('level 14 counts by tens and by fives, every number a multiple of the step and two digits', () => {
+    const plan = planFor(14);
+    const steps = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const run = countRun(plan, new Rng(seed));
+      const step = run[1] - run[0];
+      steps.add(step);
+      expect(plan.steps).toContain(step);
+      expect(run).toHaveLength(plan.goal);
+      expect(run.every((n, i) => n % step === 0 && n === run[0] + i * step)).toBe(true);
+      expect(run[0]).toBeGreaterThanOrEqual(step);
+      expect(Math.max(...run)).toBeLessThanOrEqual(99);
+      expect(run.length).toBeLessThanOrEqual(plan.most);
+      expect(signFor(plan, 14, run)).toEqual({ kind: 'by', n: step, dots: false });
+    }
+    expect([...steps].sort((a, b) => a - b)).toEqual([5, 10]);
+  });
+
+  it('a count run is always drawn whole and stays on the screen until it is popped', () => {
+    for (const { plan } of counts) expect(plan.goal).toBeLessThanOrEqual(plan.most);
+    expect(staysPut('count')).toBe(true);
+  });
+});
+
+describe('the sign at the top', () => {
+  it('shows the total on both bonds levels, with dots only where the bubbles carry dots', () => {
+    expect(signFor(planFor(10), 10, [])).toEqual({ kind: 'bond', n: 5, dots: true });
+    expect(signFor(planFor(11), 11, [])).toEqual({ kind: 'bond', n: 10, dots: false });
+  });
+
+  it('is not shown for free play, colors or counting from 1', () => {
+    for (const level of [1, 2, 3, 4, 5, 6]) expect(signFor(planFor(level), level, [])).toBeNull();
   });
 });
