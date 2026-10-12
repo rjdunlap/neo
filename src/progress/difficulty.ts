@@ -23,6 +23,15 @@ const clamp = (level: number, range: LevelRange) => Math.min(range.max, Math.max
 export const stepLevel = (level: number, delta: number, range: LevelRange): number => clamp(level + delta, range);
 
 /**
+ * The level the celebration's "next level" button plays: one above the level just played. Null at the top of the range, and
+ * when "again" already goes there (two smooth rounds moved her saved level up), so the two buttons never do the same thing.
+ */
+export function nextLevelOffer(played: number, saved: number, range: LevelRange): number | null {
+  const next = played + 1;
+  return next > range.max || next === saved ? null : next;
+}
+
+/**
  * Two smooth rounds in a row at the current level step up; two struggling rounds step down.
  * The child never sees a level number, and the range comes from her age band.
  */

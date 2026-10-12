@@ -19,12 +19,12 @@ import { ease } from '../../engine/tween';
 import { textBoost, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
 import type { Band } from '../../progress/bands';
-import { stepLevel } from '../../progress/difficulty';
+import { nextLevelOffer, stepLevel } from '../../progress/difficulty';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon } from '../../ui/howto-card';
 import { discoveryPill } from '../../ui/journal-art';
-import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, treehouseIcon } from '../../ui/icons';
+import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
 import type { App, Origin, StoryRound } from '../App';
 import { Scene } from '../Scene';
@@ -45,7 +45,7 @@ export class GameScene extends Scene {
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   /** The "again", heart and "home" buttons, once the celebration offers them. */
-  after: { again: RoundButton; heart: RoundButton; home: RoundButton; keep: RoundButton | null } | null = null;
+  after: { again: RoundButton; next: RoundButton | null; heart: RoundButton; home: RoundButton; keep: RoundButton | null } | null = null;
   /** What she made this round, offered for the treehouse (null when the game made nothing or it was empty). */
   private made: Creation | null = null;
   /** Journal entries this round showed her for the first time. */
@@ -66,13 +66,16 @@ export class GameScene extends Scene {
     private readonly again = false,
     /** Where the game was opened from: home goes back there. */
     readonly origin?: Origin,
+    /** Play this level (inside her band's range) instead of her saved one: the celebration's "next level". */
+    private readonly startLevel?: number,
   ) {
     super(app);
   }
 
   init() {
     const band = this.band;
-    this.level = this.story?.level ?? store.levelFor(this.mod.id, this.mod.levels(band));
+    const range = this.mod.levels(band);
+    this.level = this.story?.level ?? (this.startLevel === undefined ? store.levelFor(this.mod.id, range) : stepLevel(this.startLevel, 0, range));
     this.content.addChild(this.stage);
 
     this.pet.scale.set(0.42);
@@ -340,6 +343,9 @@ export class GameScene extends Scene {
     }
 
     const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true, this.origin));
+    // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
+    const upTo = this.story ? null : nextLevelOffer(this.level, store.levelFor(this.mod.id, this.mod.levels(this.band)), this.mod.levels(this.band));
+    const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo));
     const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.goHome());
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);
@@ -382,11 +388,13 @@ export class GameScene extends Scene {
       });
       keep.position.set(v.w / 2 - 195, v.h * 0.33);
     }
-    this.after = { again, heart, home, keep };
-    again.position.set(v.w / 2 - 230, v.h * 0.72);
+    this.after = { again, next, heart, home, keep };
+    // The celebrating pet fills the middle of the bottom row, so a next level goes above home, below the heart and clear of the discovery card.
+    again.position.set(v.w / 2 - 240, v.h * 0.72);
+    next?.position.set(v.w / 2 + 250, v.h * 0.525);
     heart.position.set(v.w / 2 + 195, v.h * 0.33);
-    home.position.set(v.w / 2 + 230, v.h * 0.72);
-    for (const b of [again, heart, home, ...(keep ? [keep] : [])]) {
+    home.position.set(v.w / 2 + 240, v.h * 0.72);
+    for (const b of [again, ...(next ? [next] : []), heart, home, ...(keep ? [keep] : [])]) {
       b.scale.set(0);
       layer.addChild(b);
       void this.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });

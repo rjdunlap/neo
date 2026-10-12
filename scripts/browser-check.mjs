@@ -7766,8 +7766,30 @@ async function islandShelf() {
   });
   assert.equal(clear.arrows, false, 'the arrows stay clear of the shelf');
   await screenshot('island-shelf-portrait');
+  // "Next level" after a round: it plays the level above the one just finished (no card, since she has just seen it), and is absent at the top of her band's range.
+  const playBubbles = async (level) => {
+    await page.evaluate((level) => { kit.store.data.profile.band = 'toddler'; kit.store.data.settings.howToCards = false; kit.store.stats('bubble-pop').level = level; kit.store.stats('bubble-pop').history = []; kit.store.stats('bubble-pop').pinned = null; neo.go.game('bubble-pop', 'toddler'); }, level);
+    await scene('GameScene'); await page.waitForTimeout(1200);
+    await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+    await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(800);
+  };
+  await playBubbles(3);
+  assert.equal(await page.evaluate(() => !!neo.scene.after.next), true, 'a round below the top of the range offers a next level');
+  await screenshot('next-level-offer-portrait');
+  await tap('neo.scene.after.next');
+  await scene('GameScene'); await page.waitForTimeout(800);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.level, !!neo.scene.helpCard, neo.scene.game?.plan?.mode]), [4, false, 'color'], 'it plays level 4, straight in');
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(500);
+  assert.equal(await page.evaluate(() => kit.store.stats('bubble-pop').level), 4, 'finishing it keeps her saved level where she played');
   await page.setViewportSize({ width: 1024, height: 768 });
+  await playBubbles(2);
+  await screenshot('next-level-offer-landscape');
+  await playBubbles(6);
+  assert.equal(await page.evaluate(() => neo.scene.after.next), null, 'no next level at the top of her band');
+  await page.evaluate(() => { kit.store.data.settings.howToCards = true; });
   assert.deepEqual(errors, []);
+  log('Island: the celebration offers a next level that plays the level above with no card, keeps her saved level where she played, and is absent at the top of her band');
   log('Island: a fresh place twinkles on every game and has no shelf; a finished round gives one play and one sticker; the heart after a round toggles on, off and on, never touches stickers; the played game stops twinkling and the hearted one stands on the shelf and opens from it; the subject layout leads with a Favorites card (and drops it with no hearts); hearts survive a reload; a full shelf holds five in portrait clear of the arrows');
 }
 

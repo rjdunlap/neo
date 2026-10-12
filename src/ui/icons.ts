@@ -35,6 +35,16 @@ export function againIcon(color = ink): Graphics {
   return g.poly([px + tx * 14, py + ty * 14, px + nx * 12, py + ny * 12, px - nx * 12, py - ny * 12]).fill(color).stroke(line(3, color));
 }
 
+/** "Next": a triangle running into a bar, the skip-forward mark (the again arrow is a circle, so the two are not alike). */
+export function nextIcon(color = ink): Graphics {
+  return new Graphics()
+    .poly([-18, -22, 12, 0, -18, 22])
+    .fill(color)
+    .stroke(line(5, color))
+    .roundRect(15, -22, 8, 44, 3)
+    .fill(color);
+}
+
 export function frameIcon(): Graphics {
   return new Graphics()
     .roundRect(-28, -24, 56, 48, 6)

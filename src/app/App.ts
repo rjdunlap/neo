@@ -45,9 +45,9 @@ export interface Routes {
   hatch(quick?: boolean): void;
   /**
    * Plays a game at the levels for `band` (her own band if omitted), resolved to a band the game has
-   * (`playBand`), or as a step of the picnic story. `origin` is where home goes afterwards; without one, her home spot.
+   * (`playBand`), or as a step of the picnic story. `origin` is where home goes afterwards; without one, her home spot. `level` plays that level (held inside her band's range) instead of her saved one, as the celebration's "next level" does.
    */
-  game(id: string, band?: Band, story?: StoryRound, again?: boolean, origin?: Origin): void;
+  game(id: string, band?: Band, story?: StoryRound, again?: boolean, origin?: Origin, level?: number): void;
   /** The Windy Picnic. `from` is the request whose round just finished, so the scene can show what changed. */
   picnic(from?: PicnicStep): void;
   stickers(): void;

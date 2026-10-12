@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextLevel, stepLevel } from './difficulty';
+import { nextLevel, nextLevelOffer, stepLevel } from './difficulty';
 import type { RoundRecord } from './save';
 
 const round = (level: number, misses: number, hints = 0): RoundRecord => ({ level, misses, hints, seconds: 60, at: 0 });
@@ -37,5 +37,22 @@ describe('nextLevel', () => {
     expect(nextLevel(1, [round(1, 9), round(1, 9)], range)).toBe(1);
     expect(nextLevel(9, [], range)).toBe(6);
     expect(nextLevel(1, [], { min: 4, max: 9 })).toBe(4);
+  });
+});
+
+describe('nextLevelOffer', () => {
+  const range = { min: 2, max: 5 };
+  it('offers the level above the one just played', () => {
+    expect(nextLevelOffer(3, 3, range)).toBe(4);
+    expect(nextLevelOffer(2, 2, range)).toBe(3);
+  });
+  it('offers nothing at the top of the range', () => {
+    expect(nextLevelOffer(5, 5, range)).toBeNull();
+  });
+  it('offers nothing when "again" already goes there, so the two buttons never repeat each other', () => {
+    expect(nextLevelOffer(3, 4, range)).toBeNull();
+  });
+  it('still offers a step up after a struggle stepped her saved level down', () => {
+    expect(nextLevelOffer(4, 3, range)).toBe(5);
   });
 });
