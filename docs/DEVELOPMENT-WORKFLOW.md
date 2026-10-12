@@ -29,7 +29,7 @@ For a docs-only session, step 5 means local links and `git diff --check`; no Typ
 
 ## Work across usage windows
 
-The [execution queue](EXECUTION-QUEUE.md) holds the Codex coordinator policy and its current checkpoint. An hourly follow-up in the coordinator chat admits at most one slice after checking both account usage windows and existing sessions. It keeps a 25% reserve, paces the remaining weekly allowance across days, and records observed consumption rather than assuming a fixed message cost. Waiting checks do not create commits or new worktrees. This is an agent workflow, not a hard quota enforcement service; local scheduled work needs the computer on and the app running.
+The [execution queue](EXECUTION-QUEUE.md) holds the Codex coordinator policy and its current checkpoint. An hourly follow-up in the coordinator chat admits at most one slice after checking both account usage windows and existing sessions. It uses the full remaining allowance, paces weekly usage across days, and records observed consumption rather than assuming a fixed message cost. Waiting checks do not create commits or new worktrees. This is an agent workflow, not a hard quota enforcement service; local scheduled work needs the computer on and the app running.
 
 ## Further improvements worth a separate slice
 

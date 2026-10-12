@@ -158,7 +158,7 @@ Use scripted input for moving targets, then screenshots for visual review. Finis
 
 ### Scheduled roadmap work
 
-For scheduled roadmap continuation, follow [the execution queue](docs/EXECUTION-QUEUE.md) before claiming work. Admit one slice per run, check both usage windows, resume its checkpoint first, and defer while another Neo implementation session is active. Preserve the queue checkpoint when stopping; usage reserves never justify reporting unfinished work as complete.
+For scheduled roadmap continuation, follow [the execution queue](docs/EXECUTION-QUEUE.md) before claiming work. Admit one slice per run, check both usage windows, resume its checkpoint first, and defer while another Neo implementation session is active. Preserve the queue checkpoint when stopping; usage limits never justify reporting unfinished work as complete.
 
 ### Avoid duplicate parallel work
 
