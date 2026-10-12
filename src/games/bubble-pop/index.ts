@@ -1,7 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, RAINBOW, swatch, type ColorName } from '../../art/palette';
-import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { stepFromUnit } from '../../audio/notes';
 import { sfx } from '../../audio/sfx';
@@ -11,6 +10,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bubble, drawBubble } from './bubble';
+import { BubbleBackdrop } from './backdrop';
+import { LOOKS, sceneFor } from './scenes';
 import { TargetSignView } from './sign';
 import { bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
@@ -25,7 +26,7 @@ const LEVELS: BandLevels = {
 
 class BubblePop implements Game {
   private readonly plan: BubblePlan;
-  private readonly backdrop: Backdrop;
+  private readonly backdrop: BubbleBackdrop;
   private readonly layer = new Container();
   private bubbles: Bubble[] = [];
   private view: View;
@@ -57,9 +58,7 @@ class BubblePop implements Game {
     this.view = ctx.view;
     if (this.plan.mode === 'count') this.run = countRun(this.plan, ctx.rng);
     this.goal = this.plan.mode === 'count' ? this.run.length : this.plan.goal;
-    this.backdrop = ctx.track(
-      new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0x7cc4f2, 0xf6dfb0], horizon: 0.78, clouds: 3, sun: true, seed: 3 }, ctx.view),
-    );
+    this.backdrop = ctx.track(new BubbleBackdrop(sceneFor(ctx.rng), ctx.view));
     const sign = signFor(this.plan, ctx.level, this.run);
     if (sign) {
       this.sign = new TargetSignView(sign);
@@ -167,7 +166,7 @@ class BubblePop implements Game {
     if (staysPut(p.mode)) color = RAINBOW[index % RAINBOW.length];
     const critter = p.mode === 'free' && rng.chance(0.3) ? rng.pick(FRIENDS) : undefined;
 
-    const b = new Bubble({ r, color, number, critter, dots: showsDots(this.ctx.level) });
+    const b = new Bubble({ r, color, number, critter, dots: showsDots(this.ctx.level), rim: LOOKS[this.backdrop.scene].rim });
     if (staysPut(p.mode)) {
       b.position.set(rng.range(150 + r, v.w - 50 - r), rng.range(130 + r, v.h - 60 - r));
       const a = rng.range(0, Math.PI * 2);

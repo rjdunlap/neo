@@ -2330,6 +2330,24 @@ async function originals() {
     log(`Bubble Pop ${level} (${mode}): moving taps, mistakes, hint, rainbow, saved score and sticker passed`);
   }
 
+  // Bubble Pop's scenes: a round draws one of four (shore, bath, night, sea); each is shown with plain bubbles and with five colors.
+  if (!only || only === 'bubbles' || only === 'scenes') {
+    for (const scenery of ['shore', 'bath', 'night', 'sea']) {
+      for (const level of [2, 6]) {
+        let found = false;
+        for (let tries = 0; tries < 60 && !found; tries++) {
+          await launch('bubble-pop', level);
+          found = await page.evaluate((want) => neo.scene.game.backdrop.scene === want, scenery);
+        }
+        assert.ok(found, `Bubble Pop: a ${scenery} round turned up at level ${level}`);
+        await page.waitForTimeout(2600);
+        assert.equal(await page.evaluate(() => neo.scene.game.backdrop.children.every((c) => c.eventMode === 'none' || c.eventMode === 'passive' || c.constructor.name === 'Backdrop')), true, `${scenery}: the scene takes no touches`);
+        await screenshot(`bubble-pop-scene-${scenery}-${level}`);
+      }
+    }
+    log('Bubble Pop scenes: shore, bath, night and sea each shown at level 2 and 6, taking no touches');
+  }
+
   // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
   for (let level = 1; level <= 9 && (!only || only === 'jelly'); level++) {
     await launch('jelly-drums', level);
