@@ -2803,6 +2803,18 @@ async function creativeBatch() {
       await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
       assert.deepEqual(await page.evaluate(()=>neo.scene.game.stamps.map(s=>({...s.data}))),before,'stamp placement survives resize');
     }
+    if (level >= 3) await page.evaluate(async () => {
+      const g = neo.scene.game, removed = g.stamps[0];
+      const survivors = g.stamps.slice(1).map(s => ({ ...s.data }));
+      kit.tapOn(g.bin); await kit.sleep(450); // The preceding drag selected the first stamp.
+      if (g.stamps.length !== 2 || !removed.node.destroyed || removed.drag.dragging) throw new Error('Bin left a stamp or drag behind');
+      if (JSON.stringify(g.stamps.map(s => s.data)) !== JSON.stringify(survivors)) throw new Error('Bin removed the latest instead of the selected stamp');
+      const next = g.stamps[0], p = g.paper.toGlobal({ x: 240, y: 300 + 40 });
+      await kit.dragTo(next.node, p, 16); await kit.sleep(450);
+      if (next.drag.dragging) throw new Error('Drag remained stuck after bin removal');
+      const at = g.paper.toGlobal({ x: 100, y: 130 }); kit.tap(at.x, at.y); await kit.sleep(180);
+      if (g.stamps.length !== 3) throw new Error('Bin did not leave paper editable');
+    });
     await screenshot(`stamp-studio-${level}`);
     await tap('neo.scene.game.undo');assert.equal(await page.evaluate(()=>neo.scene.game.stamps.length),2);
     await page.waitForTimeout(450); // Undo's cooldown must expire before the late-edit regression.
@@ -2814,7 +2826,7 @@ async function creativeBatch() {
       if (g.plan.move) { send('pointerdown', start); await kit.sleep(100); }
       kit.tapOn(g.finish);
       if (!g.done) throw new Error('Finish did not freeze the picture');
-      kit.tapOn(g.undo); kit.tapOn(g.turn); kit.tapOn(g.grow);
+      kit.tapOn(g.undo); kit.tapOn(g.turn); kit.tapOn(g.grow); kit.tapOn(g.bin);
       if (g.plan.move) {
         send('pointermove', { x: start.x + 90, y: start.y + 60 });
         send('pointerup', { x: start.x + 90, y: start.y + 60 });
@@ -2829,6 +2841,22 @@ async function creativeBatch() {
     await page.waitForTimeout(800);
     await tap('neo.scene.after.keep');
     assert.deepEqual(await page.evaluate(() => kit.store.data.creations.picture.current.stamps), frozen, 'the kept picture is exactly the picture finished before late edits');
+    if (level <= 2) {
+      await launch('stamp-studio', level);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (let i = 0; i < 24; i++) {
+          kit.tapOn(g.paper.children[0], 180 + i % 3 * 100, 150); await kit.sleep(180);
+          if (i === 3 && g.finish.rotation !== 0) throw new Error('Arrow nudged before five stamps');
+          if (i === 4 && Math.abs(g.finish.rotation) < 0.001) throw new Error('Arrow did not nudge after five stamps');
+          if (i < 23 && g.done) throw new Error('Paper ended below its limit');
+        }
+        if (!g.done || g.stamps.length !== 24) throw new Error('Full early paper did not finish itself');
+        kit.tapOn(g.undo); kit.tapOn(g.finish);
+        if (g.stamps.length !== 24) throw new Error('Auto-finished paper changed');
+      });
+      await finished('stamp-studio'); assert.deepEqual(await score('stamp-studio'), [0, 0]);
+    }
     await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, late editing/held-drag guards, frozen kept picture, saved round and sticker passed`);
   }
   if (!only || only === 'kitchen') for(let level=fromLevel;level<=9;level++) {

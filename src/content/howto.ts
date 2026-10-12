@@ -625,10 +625,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Choose either stamp, then tap the paper to press it.' },
       { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
       { from: 4, to: 6, text: 'Turn a stamp, or make it big or small.' },
-      'The back arrow undoes a stamp.',
+      { to: 2, text: 'The back arrow removes the latest stamp.' },
+      { from: 3, to: 6, text: 'The back arrow removes the latest stamp; pick up another and tap the bin to remove it.' },
       { from: 5, to: 6, text: 'Make the picture you are asked for (a garden, or two friends on an adventure) and tell its story.' },
     ],
-    finish: 'The round ends when the picture is done: tap the green arrow.',
+    finish: [
+      { to: 2, text: 'Tap the green arrow to finish; it wiggles after five stamps. A full paper finishes itself.' },
+      { from: 3, to: 6, text: 'Tap the green arrow when your picture is done.' },
+    ],
     note: "Every picture is welcome. After the round, the tree house button hangs it up.",
   },
   'pet-kitchen': {

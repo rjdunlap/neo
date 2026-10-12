@@ -6,7 +6,7 @@ import { Rng } from '../../engine/random';
 import { LIMIT, STAMP_NAMES, type StampPlan, type Stamp } from './logic';
 import * as artwork from './art';
 
-const { press } = vi.hoisted(() => ({ press: new WeakMap<object, (event?: FederatedPointerEvent) => void>() }));
+const { press, pick } = vi.hoisted(() => ({ press: new WeakMap<object, (event?: FederatedPointerEvent) => void>(), pick: new WeakMap<object, () => void>() }));
 vi.mock('../../engine/input', () => ({
   onTap: (node: object, callback: (event: FederatedPointerEvent) => void) => press.set(node, event => { if (event) callback(event); }),
 }));
@@ -16,7 +16,7 @@ vi.mock('../../ui/buttons', async () => {
     constructor(_icon: Container, _swatch: unknown, _radius: number, callback: () => void) { super(); this.addChild(new Container(), _icon); press.set(this, callback); }
   } };
 });
-vi.mock('../../engine/drag', () => ({ draggable: () => ({ enabled: true, home: { x: 0, y: 0 }, destroy: vi.fn() }) }));
+vi.mock('../../engine/drag', () => ({ draggable: (node: object, _tw: unknown, opts: { onPick: () => void }) => { pick.set(node, opts.onPick); return { enabled: true, home: { x: 0, y: 0 }, destroy: vi.fn() }; } }));
 vi.mock('../../audio/sfx', () => ({ sfx: { sparkle: vi.fn(), pop: vi.fn(), tick: vi.fn() } }));
 
 /** Exercise the game's real editing/finish callbacks, holding its scene-owned celebration wait open. */
@@ -31,14 +31,14 @@ function round(level: number) {
     finish,
   } as unknown as GameContext;
   const game = stampStudio.create(ctx) as ReturnType<typeof stampStudio.create> & {
-    paper: Container; finish: Container; undo: Container; turn: Container; grow: Container;
-    stamps: { data: Stamp; node: Container; drag?: { enabled: boolean } }[];
+    paper: Container; finish: Container; undo: Container; turn: Container; grow: Container; bin: Container;
+    stamps: { data: Stamp; node: Container; drag?: { enabled: boolean; destroy: () => void } }[];
     done: boolean; plan: StampPlan; color: Stamp["color"]; choices: Container[]; colors: Container[];
   };
   game.resize({ w: 1024, h: 768 } as Parameters<typeof game.resize>[0]);
   const stamp = () => press.get(game.paper.children[0])!({ global: new Point(400, 300) } as FederatedPointerEvent);
   const cleanup = () => { game.destroy(); stage.destroy({ children: true }); };
-  return { game, finish, say, stamp, wake: () => wake(), cleanup };
+  return { game, finish, say, kill: ctx.tw.kill, stamp, wake: () => wake(), cleanup };
 }
 
 describe('Stamp Studio finished picture', () => {
@@ -96,13 +96,72 @@ describe('Stamp Studio choices and speech', () => {
   });
 
   it('says paper full once, keeps choices free, and lets Undo make room', () => {
-    const r = round(1);
+    const r = round(3);
     for (let i = 0; i < LIMIT + 4; i++) r.stamp();
     expect(r.game.stamps).toHaveLength(LIMIT);
     expect(r.say.mock.calls.filter(([line]) => line === 'stamp.full')).toHaveLength(1);
     press.get(r.game.undo)!(); r.stamp(); r.stamp();
     expect(r.game.stamps).toHaveLength(LIMIT);
     expect(r.say.mock.calls.filter(([line]) => line === 'stamp.full')).toHaveLength(1);
+    r.cleanup();
+  });
+});
+
+
+describe('Stamp Studio bin and early stopping', () => {
+  it.each([3, 4, 6])('removes the picked stamp, frees its drag/tweens and selects a survivor at level %i', level => {
+    const r = round(level); r.stamp(); r.stamp(); r.stamp();
+    const [first, middle, last] = r.game.stamps;
+    const removedScale = middle.node.scale;
+    pick.get(middle.node)!(); press.get(r.game.bin)!();
+    expect(r.game.stamps).toEqual([first, last]);
+    expect(middle.node.destroyed).toBe(true); expect(middle.drag!.destroy).toHaveBeenCalledOnce();
+    expect(r.kill).toHaveBeenCalledWith(middle.node); expect(r.kill).toHaveBeenCalledWith(removedScale);
+    expect(r.game.bin.visible).toBe(true);
+    press.get(r.game.bin)!(); expect(r.game.stamps).toEqual([first]);
+    press.get(r.game.undo)!(); expect(r.game.stamps).toHaveLength(0);
+    expect(r.game.bin.visible).toBe(false); expect(r.game.finish.visible).toBe(false);
+    expect(r.game.paper.children[1].getLocalBounds().width).toBe(0);
+    r.stamp(); expect(r.game.bin.visible).toBe(true);
+    press.get(r.game.finish)!(); const frozen = r.game.stamps.map(s => ({ ...s.data }));
+    press.get(r.game.bin)!(); expect(r.game.stamps.map(s => s.data)).toEqual(frozen);
+    r.cleanup();
+  });
+  it.each([1, 2])('nudges after five and auto-finishes exactly once at the limit at level %i', async level => {
+    const r = round(level);
+    expect(r.game.bin.visible).toBe(false);
+    for (let i = 0; i < 4; i++) r.stamp();
+    r.game.update(0.2); expect(r.game.finish.rotation).toBe(0);
+    r.stamp(); r.game.update(0.2); expect(r.game.finish.rotation).not.toBe(0);
+    press.get(r.game.undo)!(); expect(r.game.finish.rotation).toBe(0);
+    for (let i = 4; i < LIMIT - 1; i++) r.stamp();
+    expect(r.game.done).toBe(false);
+    r.stamp(); expect(r.game.done).toBe(true); expect(r.game.finish.rotation).toBe(0);
+    const frozen = r.game.stamps.map(s => ({ ...s.data }));
+    r.stamp(); press.get(r.game.undo)!(); press.get(r.game.finish)!();
+    expect(r.game.stamps.map(s => s.data)).toEqual(frozen);
+    r.wake(); await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledExactlyOnceWith({ misses: 0, hints: 0, creation: { kind: 'picture', stamps: frozen } });
+    r.cleanup();
+  });
+  it('keeps the bin and side controls apart and large in four views', () => {
+    const r = round(4); r.stamp();
+    for (const [w, h] of [[1024, 768], [1024, 1365], [1365, 768], [1664, 768]]) {
+      r.game.resize({ w, h } as Parameters<typeof r.game.resize>[0]);
+      const buttons = [r.game.finish, r.game.bin, r.game.turn, r.game.grow, r.game.undo];
+      for (const b of buttons) {
+        expect(b.x - 62).toBeGreaterThanOrEqual(0); expect(b.x + 62).toBeLessThanOrEqual(w);
+        expect(b.y - 62).toBeGreaterThanOrEqual(0); expect(b.y + 62).toBeLessThanOrEqual(h);
+        expect(b.scale.x).toBe(1);
+      }
+      for (let i = 1; i < buttons.length; i++) expect(buttons[i].y - buttons[i - 1].y).toBeGreaterThanOrEqual(124);
+    }
+    r.cleanup();
+  });
+  it('keeps a full level 3 picture editable without nudging or auto-finishing', () => {
+    const r = round(3); for (let i = 0; i < LIMIT; i++) r.stamp();
+    r.game.update(0.2); expect(r.game.finish.rotation).toBe(0); expect(r.game.done).toBe(false);
+    press.get(r.game.bin)!(); r.stamp(); expect(r.game.stamps).toHaveLength(LIMIT); expect(r.game.done).toBe(false);
     r.cleanup();
   });
 });
