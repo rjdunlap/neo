@@ -136,8 +136,13 @@ describe('touch how-to cards', () => {
     expect(revise.steps.join(' ')).toContain('clap button');
     expect(revise.steps.join(' ')).not.toContain('one square wrong');
     expect(revise.finish).toContain('two clap patterns');
-    expect(howToFor(game, 8)!.steps).toEqual([]);
-    expect(howToFor(game, 8)!.finish).toBe('');
+    const parts = howToFor(game, 8)!;
+    expect(parts.steps.join(' ')).toContain('circle part');
+    expect(parts.steps.join(' ')).toContain('copy button');
+    expect(parts.steps.join(' ')).toContain('nothing counts as a miss');
+    expect(parts.finish).toContain('two-part piece');
+    expect(howToFor(game, 9)!.steps).toEqual([]);
+    expect(howToFor(game, 9)!.finish).toBe('');
   });
 
   it('changes with the level where the game does: a step that only holds for some levels is not on every card', () => {

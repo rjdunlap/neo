@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder level 8, A and B
+
+- School 3–8. `Piece`, `pieceGate`, `previewOrder`, `sectionsMove`; tabs, copy, undo, preview in `index.ts`. Ran typecheck, content and games unit tests (802: gate, preview order, copy independence, bot) and one portrait scripted play (empty check = no miss, undo, bot copy/change/preview/check finished 0 misses). Undo of a section switch and resize during editing not separately tested. Not run: `fingerdemo`, build, suites, offline; iPad and child open.
+
 ## 2026-10-12 — Beat Builder level 7, keep the drum
 
 - School 3–7. `reviseStart`, `givenCell` (locked drum row), solo clap replay. Tests: start claps need an add and a removal, repairs/bot touch only the clap row. Ran typecheck, content and games unit tests (801), one portrait scripted play (clap-only replay, locked drum tap = no miss, two wrong checks -> hint glow, bot repair advanced). Not run: `fingerdemo`, build, suites, offline; iPad and child open.
