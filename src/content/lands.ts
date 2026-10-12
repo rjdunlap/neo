@@ -121,7 +121,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat', color: 'blue' },
     backdrop: { sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 149 },
     music: tune(113, 'pluck', 100),
-    games: ['robot-path', 'bug-builder', 'sink-float', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'habitat-helpers'],
+    games: ['robot-path', 'bug-builder', 'sink-float', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'habitat-helpers', 'shape-buddies'],
   },
 ];
 

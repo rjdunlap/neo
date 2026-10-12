@@ -4,6 +4,17 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'game.shape-buddies': ['Shape Buddies!'],
+  'buddies.start': ['Make a bridge and a cup for the seed. Choose a friend, change its shape, and drag it to a dock.'],
+  'buddies.flatten': ['Flat can make a bridge.'],
+  'buddies.slope': ['A slope rolls it across.'],
+  'buddies.scoop': ['A scoop holds it.'],
+  'buddies.bridge': ['The seed needs a bridge. Choose the friend at the gap, or a parked friend. Make it flat or sloped and drag it to the bridge dock.'],
+  'buddies.cup': ['The seed needs a cup. Choose the friend at the catching dock, or a parked friend. Make it a scoop and drag it to the catching dock.'],
+  'buddies.try': ['Try your shapes. Tap the arrow to release the seed.'],
+  'buddies.plant': ['The cup caught it! Tap the pot to carry the seed home.'],
+  'buddies.occupied': ['A friend is already there. Drag that friend back to its parking spot first.'],
+  'buddies.done': ['Your shapes brought a seed home. A little sprout!'],
   'game.orchard-rows': ['Orchard rows!'],
   'orchard.plant': ['Plant {rows} rows with {each} trees in each row. Tap an empty row to make it grow!'],
   'orchard.planted': ['{each} trees in this row. {total} trees planted altogether!'],
