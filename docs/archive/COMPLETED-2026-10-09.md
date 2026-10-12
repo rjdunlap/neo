@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Story Steps clue endings (2026-10-12)
+
+Built deep-dive slice 5 / level 11 ([PR #187](https://github.com/rjdunlap/neo/pull/187)): eight authored three-picture stories ask for the ending supported by a visible clue. Both endings can be tried; the first unsupported prediction is free, repeats count misses, and the second glows the clue with one hint. Picture speech/replay remain free. The supported ending explains the evidence and awards one shell-owned sticker. School 6–11; saved levels/pins, younger ranges and save format preserved. Kept stories and new bands excluded. Automated proof and device gaps are in [VERIFICATION](../VERIFICATION.md).
+
+
 ### Story Steps two rows (2026-10-12)
 
 Built deep-dive slice 4 / level 10 ([PR #186](https://github.com/rjdunlap/neo/pull/186)): two three-picture stories share six 110-unit tray cards, with spoken picture markers beside each row. Either row advances first; wrong row/order drops teach gently, two misses glow a useful card, and placed-only replay narrates both rows before one sticker. Same-family and dog/bedtime pairings are excluded. School is 6–10; existing levels, pins, younger bands and save format remain. Level 11 and kept stories remain separate slices. Proof and device gaps are in [VERIFICATION](../VERIFICATION.md).

@@ -278,7 +278,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the bug matches what was asked for.',
   },
   'story-steps': {
-    goal: 'Tell a story in pictures and notice what makes things happen.',
+    goal: 'Tell a story in pictures, notice what makes things happen, and use clues to predict an ending.',
     steps: [
       { to: 2, text: 'Drag the picture that comes next into the glowing space.' },
       { from: 3, to: 5, text: 'Drag the pictures into the spaces in the order the story happens.' },
@@ -287,6 +287,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 8, to: 8, text: 'Look at the picture already shown. Drag the picture that made it happen into the glowing space before it.' },
       { to: 8, text: 'Tap the music button to hear the pictures placed so far.' },
       { from: 10, to: 10, text: 'Drag each picture into the first glowing space of its own story row, in order. Tap a picture beside a row to hear that story’s name.' },
+      { from: 11, to: 11, text: 'Look at the three shown pictures and drag one of the two endings into the glowing space. Tap a shown picture to hear it, or the music button to replay the three clues.' },
       { from: 10, to: 10, text: 'The music button tells the pictures placed so far in both rows.' },
       { from: 9, to: 9, text: 'Tap one picture, then another, to swap them; tap the selected picture again to leave it where it is.' },
       { from: 9, to: 9, text: 'Tap the music button to hear the current order. The curved arrow puts the last swapped pair back.' },
@@ -294,6 +295,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: [
       { to: 7, text: 'The round ends when the story pictures are in a sensible order.' },
       { from: 8, to: 8, text: 'The round ends when the cause is before its effect, and the pet explains what happened.' },
+      { from: 11, to: 11, text: 'The round ends with the ending supported by the clue and a spoken explanation. The first other prediction plays without a miss; repeating it counts a miss and glows the clue, with one hint per round.' },
       { from: 10, to: 10, text: 'The round ends when both three-picture stories are in order. Two misses glow a useful next picture.' },
       { from: 9, to: 9, text: 'The round ends when all four pictures tell the story in order. Swaps are experiments; after eight swaps, a glow helps with an out-of-place picture.' },
     ],
