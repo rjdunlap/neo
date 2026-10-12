@@ -110,4 +110,4 @@ Speeding up, shrinking paddles, lives, tokens, opponent scoring, power-ups that 
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Only links and `git diff --check` ran.
+The deep dive itself built nothing (links and `git diff --check` only). Slice 1's words then followed on `codex/bounce-back-words`: per-level how-to steps and finish lines, and a `bounce.rally` line that says the number at level 2. Typecheck and the content and game unit tests passed; no browser play was run (words only).

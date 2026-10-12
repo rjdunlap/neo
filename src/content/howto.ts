@@ -573,13 +573,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'bounce-back': {
     goal: 'Bounce the ball back and forth with the pet.',
     steps: [
-      'Slide the huge paddle under the ball.',
-      { from: 3, to: 3, text: 'A grown-up takes the other paddle.' },
-      { from: 4, to: 4, text: 'Bounce the ball through the stars.' },
-      { from: 5, text: 'Count the bounces out loud together.' },
+      { to: 1, text: 'Slide the huge paddle on the right toward the ball; it also drifts to help when nobody is touching it.' },
+      { from: 2, to: 2, text: 'Slide the paddle on the right under the ball.' },
+      { from: 3, to: 3, text: 'Slide the right paddle under the ball. A grown-up can slide the left one.' },
+      { from: 4, to: 4, text: 'Slide the paddle so the ball goes through the star: meet it with the end of the paddle to send it sideways.' },
+      { from: 5, text: 'Slide the paddle under the ball and count each bounce out loud together.' },
     ],
-    finish: 'The round ends when the rally reaches the goal.',
-    note: 'The pet takes the other paddle if no grown-up joins.',
+    finish: [
+      { from: 1, to: 3, text: 'The round ends when the bounces reach the goal; the pet\'s bounces count too.' },
+      { from: 4, to: 4, text: 'The round ends when the ball has gone through five stars.' },
+      { from: 5, text: 'The round ends at ten bounces in a row; the pet\'s bounces count too.' },
+    ],
+    note: 'The pet takes the left paddle if no grown-up joins.',
   },
   'dot-link': {
     goal: 'Link dots of the same color.',

@@ -157,7 +157,7 @@ class BounceBack implements Game {
   }
 
   start() {
-    const line = { solo: 'bounce.solo', rally: 'bounce.solo', together: 'bounce.together', stars: 'bounce.stars', count: 'bounce.count' } as const;
+    const line = { solo: 'bounce.solo', rally: 'bounce.rally', together: 'bounce.together', stars: 'bounce.stars', count: 'bounce.count' } as const;
     void this.ctx.instruct(line[this.plan.mode], { n: this.plan.goal });
     this.serve();
   }
