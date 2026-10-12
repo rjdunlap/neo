@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { repairPuzzle, repairMove, swapPictures, CAUSES, CAUSE_IDS, causePuzzle, LEVEL_PLANS, isCause, pictureText, nextPicture, nextSlot, sameCard, STORIES, STORY_FAMILY, STORY_IDS, STORY_PLANS, storyPuzzle, type StoryCard } from './logic';
+import { canPairStories, untanglePuzzle, untangleTarget, nextUntangle, repairPuzzle, repairMove, swapPictures, CAUSES, CAUSE_IDS, causePuzzle, LEVEL_PLANS, isCause, pictureText, nextPicture, nextSlot, sameCard, STORIES, STORY_FAMILY, STORY_IDS, STORY_PLANS, storyPuzzle, type StoryCard } from './logic';
 
 describe('Story Steps', () => {
   it('lays out a story in order, with every picture it needs among the choices and any extras from another story', () => {
@@ -158,5 +158,47 @@ describe('Story Steps repair', () => {
         expect(strip).toEqual(sequence);
       }
     }
+  });
+});
+
+
+describe('Story Steps untangle', () => {
+  it('excludes every same-family pair and both soap-bath orders', () => {
+    for (const a of STORY_IDS) for (const b of STORY_IDS) {
+      expect(canPairStories(a, b)).toBe(canPairStories(b, a));
+      if (STORY_FAMILY[a] === STORY_FAMILY[b]) expect(canPairStories(a, b)).toBe(false);
+    }
+    expect(canPairStories('dog', 'bedtime')).toBe(false);
+    expect(canPairStories('bedtime', 'dog')).toBe(false);
+  });
+  it('deals six distinct required pictures, seeded, with a unique row and independent ordering', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 500; seed++) {
+      const p = untanglePuzzle(new Rng(seed));
+      expect(untanglePuzzle(new Rng(seed))).toEqual(p);
+      expect(canPairStories(p.stories[0], p.stories[1])).toBe(true);
+      p.stories.forEach((s) => seen.add(s));
+      expect(p.choices).toHaveLength(6);
+      expect(new Set(p.choices.map((c) => `${c.story}:${c.stage}`)).size).toBe(6);
+      const placed = [new Set<number>(), new Set<number>()];
+      const choices = p.choices.map((card) => ({ card, placed: false }));
+      for (let r = 1; r >= 0; r--) for (let i = 0; i < 3; i++) {
+        expect(p.rows[r].map((c) => c.stage)).toEqual([0, 1, 3]);
+        const card = p.rows[r][i];
+        expect(choices.some((c) => sameCard(c.card, card))).toBe(true);
+        expect(untangleTarget(p.rows, placed, r, card)).toBe(i);
+        expect(untangleTarget(p.rows, placed, 1-r, card)).toBe(-1);
+        for (const later of p.rows[r].slice(i+1)) expect(untangleTarget(p.rows, placed, r, later)).toBe(-1);
+        placed[r].add(i);
+      }
+      const botPlaced = [new Set<number>(), new Set<number>()];
+      let moves = 0;
+      for (let move = nextUntangle(p.rows, botPlaced, choices); move; move = nextUntangle(p.rows, botPlaced, choices)) {
+        expect(untangleTarget(p.rows, botPlaced, move.row, move.choice.card)).toBe(move.slot);
+        botPlaced[move.row].add(move.slot); move.choice.placed = true; moves++;
+      }
+      expect(moves).toBe(6); expect(botPlaced.map((s) => s.size)).toEqual([3, 3]);
+    }
+    expect(seen.size).toBe(10);
   });
 });

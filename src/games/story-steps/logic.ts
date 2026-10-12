@@ -114,3 +114,29 @@ export function repairMove(sequence: readonly StoryCard[], strip: readonly Story
   const partner = strip.findIndex((card) => sameCard(card, sequence[first]));
   return partner < 0 ? null : [first, partner];
 }
+
+export const UNTANGLE_PLAN = { kind: 'untangle', name: 'Untangle two three-picture stories into their own rows' } as const;
+/** Stage 1 adds a lookalike not covered by the endpoint families: two soap baths. */
+export function canPairStories(a: StoryId, b: StoryId): boolean {
+  return STORY_FAMILY[a] !== STORY_FAMILY[b] && !([a, b].includes('dog') && [a, b].includes('bedtime'));
+}
+export function untanglePuzzle(rng: Rng) {
+  const first = rng.pick(STORY_IDS);
+  const second = rng.pick(STORY_IDS.filter((id) => canPairStories(first, id)));
+  const stories = [first, second];
+  const rows = stories.map((story) => [0, 1, 3].map((stage) => ({ story, stage } as StoryCard)));
+  return { stories, rows, choices: rng.shuffle(rows.flat()) };
+}
+/** Each row advances independently, so either story can be told first. */
+export function untangleTarget(rows: readonly (readonly StoryCard[])[], placed: readonly ReadonlySet<number>[], row: number, card: StoryCard): number {
+  if (!rows[row] || !placed[row]) return -1;
+  const slot = nextSlot(rows[row], placed[row]);
+  return slot >= 0 && sameCard(card, rows[row][slot]) ? slot : -1;
+}
+export function nextUntangle<C extends { card: StoryCard; placed: boolean }>(rows: readonly (readonly StoryCard[])[], placed: readonly ReadonlySet<number>[], choices: readonly C[]) {
+  for (let row = 0; row < rows.length; row++) {
+    const next = nextPicture(rows[row], placed[row], choices);
+    if (next) return { ...next, row };
+  }
+  return undefined;
+}
