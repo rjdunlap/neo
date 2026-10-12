@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-12 — Bounce Back deep dive (docs only)
+
+- Searched genre references (Pong, Breakout/Arkanoid, Kaboom!, Bluey Keepy Uppy, Young Athletes); inspected the five plans, hint and miss rules, bots, how-to, voice and couch entry. Added [the write-up](deep-dives/bounce-back.md), tracker row, roadmap slices and decisions; no gameplay changed.
+- Source base `f2f3489`. `git diff --check` and local links checked.
+- Ready: truthful words and rule guards. Open: miss/hint rules, school window, level 6, below-level-1 entries.
+- Not run: typecheck, tests, build, browser checks (docs-only tier). Source audit only; no playtest.
+
 ## 2026-10-12 — Block Tower deep dive (docs only)
 
 - Researched eight primary genre references; inspected existing 1–6 plans, pools, tests, how-to, voice and couch absence. Added [the write-up](deep-dives/block-tower.md), tracker/IDEAS pointers, roadmap slices and explicit developer decisions; no gameplay changed. [PR #209](https://github.com/rjdunlap/neo/pull/209).
