@@ -1,6 +1,6 @@
 # Bubble Pop deep dive
 
-*ID `bubble-pop` · bands lap, toddler, preschool, pre-K, school · levels 1–11 on 2026-10-10 · session `claude/adoring-albattani-euqsnp` ([PR 93](https://github.com/rjdunlap/neo/pull/93))*
+*ID `bubble-pop` · bands lap, toddler, preschool, pre-K, school · levels 1–14 on 2026-10-12 (1–11 when written on 2026-10-10) · session `claude/adoring-albattani-euqsnp` ([PR 93](https://github.com/rjdunlap/neo/pull/93))*
 
 ## The game today
 
@@ -152,7 +152,7 @@ The level-order decisions already have a row in [Waiting on the developer](../RO
 
 ## Build slices, in order
 
-> **Claimed 2026-10-12** (branch `claude/bubble-pop-sign-and-counting`): a target sign on the bonds levels 10–11 (the developer asked for the number needed to be shown), then levels 12–14 (start at a number, count back, count by tens and fives) with the leans from "Decisions for the developer" (pre-K 6–12, school 10–14, count back here). Files: `src/games/bubble-pop/*`, `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, docs.
+> **Built 2026-10-12** ([PR #203](https://github.com/rjdunlap/neo/pull/203)), the developer having asked for the number needed on the bonds levels to be shown and for more levels "if there are some on the roadmap": a **target sign** at the top of levels 10–11 (two small bubbles, an equals bar and the total, with dice dots on 10), then levels 12 start at a number, 13 count back and 14 count by tens and fives, taking the leans from "Decisions for the developer": pre-K 6–12, school 10–14, count back here rather than in Bumper Garden 6. The sign also names the start (12, 13) or the step (14). Level 13 always runs down to 1 from a start of 5 to 10 (up to ten bubbles, a clump that level 9 already plays); level 14's runs are two-digit multiples (10 to 70, 5 to 35). A level above 14 still has no inherited how-to step. Still open: number words for tens and fives on a device (a person check), and the backgrounds, pictures in bubbles and below-level-1 play.
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken.
 
@@ -160,8 +160,8 @@ Each is sized for one session. Slices that add a level are built in level order 
 2. **Dots on the number bubbles** — built 2026-10-11 ([PR 159](https://github.com/rjdunlap/neo/pull/159)): levels 7, 8 and 10 show radius-relative dice dots through six, then five and some more; 9 and 11 fade the support. The numeral stays the same size, moved above the dots, and the lower decorative glint is omitted so it cannot be counted. [Build note](../archive/COMPLETED-2026-10-09.md#bubble-pop-countable-dots-2026-10-11).
 3. **Backgrounds: bath and night, then sea** (ready; each a sub-slice). Tier: rule tests, one screenshot of each scene (plain and colored bubbles on each).
 4. **Pictures in bubbles beyond friends** (ready after 3 for the scene-linked pool).
-5. **Level 12, Start at a number** (needs decisions 1–2; school-only window first if pre-K is undecided). Tier: new level on an existing interaction: rule tests, one browser play of level 12 and `fingerdemo` at it.
-6. **Level 13, Count back** (needs decision 3), then **level 14, Count by tens and fives** (needs the word check).
+5. **Level 12, Start at a number** — built 2026-10-12 (PR #203; decisions 1–2 taken as leaned). Tier: new level on an existing interaction: rule tests, one browser play of level 12 and `fingerdemo` at it.
+6. **Level 13, Count back** and **level 14, Count by tens and fives** — built 2026-10-12 (PR #203); the word check is still a person check.
 7. **Below level 1 and between levels: pop anywhere, big and little, which one has the dots** (wait on the level-order decisions); **blow, then pop** after a person check.
 8. **Sketches:** evens and odds, make 20, a journal row per picture.
 
