@@ -26,6 +26,8 @@ class StampStudio implements Game {
   readonly undo: RoundButton;
   readonly turn: RoundButton;
   readonly grow: RoundButton;
+  readonly bin: RoundButton;
+  private nudgeTime = 0;
   private selected: Mark | null = null;
   private readonly named = new Set<StampKind>();
   private fullSaid = false;
@@ -60,26 +62,36 @@ class StampStudio implements Game {
         void ctx.say('color.' + color as 'color.blue'); this.drawSelection(); });
       ctx.stage.addChild(b); this.colors.push(b);
     }
-    this.finish = new RoundButton(arrowIcon(1), swatch.green, 48, () => {
-      if (this.done || !this.stamps.length) return;
-      this.done = true;
-      // Freeze at the arrow press, before the celebration: a second finger may still hold a stamp.
-      this.stamps.forEach(s => {
-        if (s.drag) { s.drag.enabled = false; s.drag.destroy(); }
-        this.ctx.tw.kill(s.node.scale); s.node.scale.set(1); this.layoutStamp(s);
-      });
-      const creation = { kind: 'picture' as const, stamps: this.stamps.map(s => ({ ...s.data })) };
-      void ctx.say('stamp.done'); sfx.sparkle();
-      void ctx.tw.wait(0.9).then(() => ctx.finish({ misses: 0, hints: 0, creation }));
-    });
-    this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () => {
-      if (this.done) return;
-      const s = this.stamps.pop(); if (!s) return;
-      s.drag?.destroy(); s.node.destroy({ children: true }); this.selected = this.stamps.at(-1) ?? null; this.drawSelection();
-    });
+    this.finish = new RoundButton(arrowIcon(1), swatch.green, 48, () => this.complete());
+    this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () => this.remove(this.stamps.at(-1) ?? null));
+    const binArt = new Graphics().roundRect(-19, -15, 38, 42, 5).stroke({ width: 6, color: swatch.brown.line })
+      .moveTo(-26, -22).lineTo(26, -22).moveTo(-9, -29).lineTo(9, -29)
+      .moveTo(-7, -5).lineTo(-7, 16).moveTo(7, -5).lineTo(7, 16).stroke({ width: 6, color: swatch.brown.line });
+    this.bin = new RoundButton(binArt, swatch.white, 48, () => { if (this.plan.move) this.remove(this.selected); });
     this.turn = new RoundButton(againIcon(), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.turns = (this.selected.data.turns + 1) % 4; this.layoutStamp(this.selected); this.drawSelection(); } });
     this.grow = new RoundButton(new Graphics().circle(-13, 4, 12).circle(14, -4, 23).fill(swatch.purple.fill), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.size = this.selected.data.size === 1 ? 1.3 : 1; this.layoutStamp(this.selected); this.drawSelection(); } });
-    ctx.stage.addChild(this.finish, this.undo, this.turn, this.grow);
+    ctx.stage.addChild(this.finish, this.undo, this.turn, this.grow, this.bin);
+  }
+  private complete() {
+    if (this.done || !this.stamps.length) return;
+    this.done = true; this.finish.rotation = 0;
+    // Freeze before the wake-up, including a stamp held by another finger.
+    this.stamps.forEach(s => {
+      if (s.drag) { s.drag.enabled = false; s.drag.destroy(); }
+      this.ctx.tw.kill(s.node.scale); s.node.scale.set(1); this.layoutStamp(s);
+    });
+    const creation = { kind: 'picture' as const, stamps: this.stamps.map(s => ({ ...s.data })) };
+    void this.ctx.say('stamp.done'); sfx.sparkle();
+    void this.ctx.tw.wait(0.9).then(() => this.ctx.finish({ misses: 0, hints: 0, creation }));
+  }
+  private remove(mark: Mark | null) {
+    if (this.done || !mark) return;
+    const index = this.stamps.indexOf(mark); if (index < 0) return;
+    this.stamps.splice(index, 1);
+    mark.drag?.destroy(); this.ctx.tw.kill(mark.node); this.ctx.tw.kill(mark.node.scale);
+    mark.node.destroy({ children: true });
+    if (this.selected === mark) this.selected = this.stamps.at(-1) ?? null;
+    this.drawSelection();
   }
   private redrawChoices() {
     this.choices.forEach((button, i) => {
@@ -101,6 +113,7 @@ class StampStudio implements Game {
     });
     else node.eventMode = 'none';
     this.stamps.push(mark); this.selected = mark; this.layoutStamp(mark); this.drawSelection(); sfx.pop(5 + this.stamps.length % 5);
+    if (this.ctx.level <= 2 && this.stamps.length === LIMIT) this.complete();
   }
   private layoutStamp(s: Mark) {
     const p = pixel(s.data, this.width, this.height);
@@ -113,6 +126,8 @@ class StampStudio implements Game {
     this.selection.clear();
     if (this.selected && this.plan.move) this.selection.circle(this.selected.node.x, this.selected.node.y, 70).stroke({ width: 5, color: swatch.yellow.line });
     this.finish.visible = this.stamps.length > 0; this.undo.visible = this.stamps.length > 0;
+    this.bin.visible = this.plan.move && !!this.selected;
+    if (this.stamps.length < 5) { this.nudgeTime = 0; this.finish.rotation = 0; }
     this.turn.visible = this.grow.visible = this.plan.transform && !!this.selected;
     this.choices.forEach((b, i) => b.alpha = this.plan.kinds[i] === this.kind ? 1 : 0.68);
     this.colors.forEach((b, i) => b.alpha = STAMP_COLORS[i] === this.color ? 1 : 0.65);
@@ -128,11 +143,17 @@ class StampStudio implements Game {
     this.choices.forEach((b,i) => b.position.set(xs[i], v.h - 77));
     this.colors.forEach((b,i) => b.position.set(220 + i * 125, 65));
     this.finish.position.set(v.w - 77, 65); this.undo.position.set(v.w - 77, v.h - 77);
-    this.turn.position.set(v.w - 77, v.h / 2 - 65); this.grow.position.set(v.w - 77, v.h / 2 + 65);
+    this.bin.position.set(v.w - 77, v.h / 2 - (this.plan.transform ? 130 : 0));
+    this.turn.position.set(v.w - 77, v.h / 2); this.grow.position.set(v.w - 77, v.h / 2 + 130);
     for (const s of this.stamps) this.layoutStamp(s);
     this.drawSelection();
   }
-  update() {}
+  update(dt: number) {
+    if (!this.done && this.ctx.level <= 2 && this.stamps.length >= 5) {
+      this.nudgeTime += dt;
+      this.finish.rotation = Math.sin(this.nudgeTime * 4) * 0.12;
+    }
+  }
   /** The ghost finger: make a small picture with what this level offers (stamps, colors, a turn, a bigger stamp, a carried stamp), then press the green arrow. */
   autotouch(): TouchIntent | null {
     if (this.done) return null;

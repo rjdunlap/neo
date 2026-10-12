@@ -21,22 +21,22 @@ Inspect and resume the recorded worker's unfinished slice first. Otherwise reval
 
 | Order | Candidate | Scope source | State |
 | --- | --- | --- | --- |
-| 1 | Stamp Studio slice 1c remainder: bin and lap nudge/limit completion (1a–b/1c1 built) | [Build slices](deep-dives/stamp-studio.md#build-slices-in-order); explicitly ready with no decision | Candidate; recheck claims and size before admitting |
-| 2 | Story Steps level 10: untangle two stories | [Build slices](deep-dives/story-steps.md#build-slices-in-order); level 9 is built | Candidate; define the two-row interaction and exclude ambiguous story pairings before claiming |
-| 3 | Next ready slice in roadmap order | [Next up](ROADMAP.md#next-up), then the relevant game's build slices | Select only after rechecking current scope and dependencies |
+| 1 | Story Steps level 10: untangle two stories | [Build slices](deep-dives/story-steps.md#build-slices-in-order); level 9 is built | Candidate; define the two-row interaction and exclude ambiguous story pairings before claiming |
+| 2 | Next ready slice in roadmap order | [Next up](ROADMAP.md#next-up), then the relevant game's build slices | Select only after rechecking current scope and dependencies |
 
 Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or other decision-dependent scope merely because a write-up describes a lean.
 
 ## Current checkpoint
 
 - Coordinator: chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; active automation `neo-roadmap-coordinator` returns here hourly to dispatch fresh worker chats.
-- State: one outstanding fresh worker for **Stamp Studio slice 1c remainder: bin/removal and lap nudge/limit completion**. Previous #179/#180 workers are complete/merged; no historical daily cap applies.
-- Dispatch: `stamp-studio-bin-lap-20261012T113831Z`; thread `01a12fe8-fbe1-75b1-8d93-163af291d64d`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`). Requested title: "Stamp Studio: bin and lap finishing". New project/local chat; no model override or conversation history.
-- Scope/source: [Stamp Studio build slices](deep-dives/stamp-studio.md#build-slices-in-order), remaining slice 1c. Exclude new sets/colors/sizes/backdrops, levels/bands and save schema. Worker makes its own claim branch/PR; not known at dispatch.
-- Admission reading: 2026-10-12 11:38:31 UTC, five-hour used **5%** (reset `1791819581`), weekly used **58%** (reset `1792295992`), ordinary usage allowed. Estimate **15 five-hour / 2.5 weekly percentage points**, fits actual remaining 95% / 42%. No reserve or daily quota. Worker must recheck fresh actual allowance.
-- Checks: implementation/verification **not run by coordinator**; worker follows the source's proportionate tier. No other active implementation, open PR/unmerged claim or overlapping dirty work found. Unrelated dirty deployment-repair checkout preserved.
-- Next action: retrieve this worker/PR at the next wake-up, confirm completion and record aggregate usage once before another dispatch; resume this same worker if unfinished. Do not implement here.
-- Coordinator servers: none. Worker server/cleanup/proof to be reported by worker.
+- State: **Stamp Studio slice 1c remainder complete and verified**; publication follows in [PR #184](https://github.com/rjdunlap/neo/pull/184). No remaining implementation/check blocker. Previous #179/#180 workers remain complete/merged; no daily cap.
+- Dispatch: `stamp-studio-bin-lap-20261012T113831Z`; worker `01a12fe8-fbe1-75b1-8d93-163af291d64d`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939`; branch `codex/stamp-studio-bin-lap`, claim `c5aab52`, integrated/tested base `fa66fce` (includes coordinator dispatch merge `5ce45e9`) plus final implementation diff. Publication head is the final commit on #184; retrieve it there. Only this slice was built.
+- Scope: selected-stamp removal at existing levels 3+, arrow nudge after five and auto-finish at existing 24-stamp limit at 1–2; frozen creation, zero misses/hints. No new sets/colors/sizes/backdrops, levels/bands or save schema. Changed game/test/how-to/browser regression and corresponding inventory/roadmap/deep-dive/archive/verification/queue docs.
+- Proof: typecheck, 67 focused Stamp Studio/save/how-to tests, build; creative 1/2 then 3/4/6 (one occupied-paper harness point probed and corrected); howto filtered to Stamp Studio 6 landscape/portrait; fingerdemo 1/4 (9.7s/31.8s). Exact filters/tested base and probe recorded in VERIFICATION. Portrait screenshot reviewed. New local link/anchor and diff check passed. No page errors in passing plays; browser budget under ten minutes.
+- Not run: full unit suite, world, couch, picnic, offline and device/person checks. No shared shell/navigation/persistence/assets change; prior coverage retained. No required automated check remains.
+- Usage: coordinator admission 2026-10-12 11:38:31 UTC **5% / 58%**, resets `1791819581` / `1792295992`, estimate **15 five-hour / 2.5 weekly points**. Worker first fresh sample 7% / 58% with same identities; scope/pre-implementation 9% / 59%; pre-browser 11% / 59% (weekly identity briefly `1792295993`); closeout 2026-10-12 11:48:47 UTC **16% / 60%**, original reset identities restored, ordinary usage allowed. Endpoint aggregate delta 11 / 2 points, not exact task cost; intermediate identity drift noted. Record this dispatch once, with no daily quota.
+- Servers: `http://localhost:5204` stopped; browser/probe processes ended. Ignored screenshots and probe retained in `test-results/`; unrelated dirty deployment-repair checkout preserved.
+- Next action: complete publication of #184, confirm its merge/head and release this finished worker; worker final response supplies exact publication revision and later usage. Then coordinator rechecks fresh allowance/claims for the next ready candidate (Story Steps 10). This worker stops and dispatches/messages no one.
 
 For an admitted slice replace this checkpoint with: exact game/levels and expected files; owner branch/PR; latest commit and any uncommitted files; implementation done/remaining; checks run with tested revision, filters and server URL; checks not run; owned servers stopped; next action and blockers; before/after usage with timestamps and both window reset identities; slice estimate and worker/dispatch ID.
 
@@ -53,6 +53,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-12 | Stamp Studio 1c1 / [#179](https://github.com/rjdunlap/neo/pull/179), dispatch `stamp-studio-1c1-20261012T043600Z` | Gameplay seeded choices | 82% → 91% / `1791782505` | 54% → 55% / `1792295992` | 7.142857 / 6.5 | Debit 2.5 once; implementation/proof complete; aggregate final closeout 04:44:17 UTC; merged #179, worker complete |
 
 | 2026-10-12 | Shape Buddies definition / [#180](https://github.com/rjdunlap/neo/pull/180), dispatch `shape-buddies-definition-20261012T053600Z` | Docs only | 0% → 7% / `1791801370` | 56% → 57% / `1792295992` → `1792295993` | 7.142857 / 7.5 | Weekly identity drift: formally unknown; conservative debit 1 once (apparent aggregate 1, estimate 0.5). Before 05:36:00, closeout 05:40:58 UTC; definition/proof complete, publication follows |
+
+| 2026-10-12 | Stamp Studio bin/lap / [#184](https://github.com/rjdunlap/neo/pull/184), dispatch `stamp-studio-bin-lap-20261012T113831Z` | Gameplay interaction | 5% → 16% / `1791819581` | 58% → 60% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate endpoints 11 / 2, closeout 11:48:47 UTC; no daily quota |
 
 ## Fresh-worker dispatch and handoff
 

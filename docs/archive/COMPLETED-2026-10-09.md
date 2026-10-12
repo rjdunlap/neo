@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Stamp Studio bin and early finishing (2026-10-12)
+
+Built the last part of deep-dive slice 1 ([PR #184](https://github.com/rjdunlap/neo/pull/184)): selected-stamp removal at levels 3+, with drag/tween cleanup and a surviving selection; levels 1–2 wiggle the arrow after five stamps and finish automatically at the existing 24-stamp limit. Undo and bin cannot edit a finished picture. Creative accounting remains zero misses/hints; levels, bands, seeds, stamp content and save format are preserved. Later full papers stay editable. Next is seven colors and three sizes, outside this slice.
+
+Proof and device gaps are recorded in [VERIFICATION](../VERIFICATION.md).
+
+
 ### Stamp Studio choice colors and words (2026-10-12)
 
 Built bounded deep-dive slice 1b ([PR #176](https://github.com/rjdunlap/neo/pull/176)). The stamp buttons show the color they place and follow color changes; kind names and paper-full speech occur once per round. Allowed kinds share the save's source, historical sticker seeds are pinned, and how-to lines are bounded. Existing levels, creative completion, accounting and saved sticker art remain. Early seeding, bin and lap finishing/nudge remain slice 1c.
