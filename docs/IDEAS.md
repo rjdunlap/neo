@@ -1131,7 +1131,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Ramp Race** (4 · 1–4) | Predict where the car stops, then roll | The finish rule and its half-marks (such as 1.5 × 3) are worked out before building; a recorded-trials table is a new screen ([E2](ROADMAP.md#e2-middle-elementary)) |
 | **Bug Builder** (7 · 6–7) | *Fold a Friend:* predict where each spot lands when the wing folds over; later, which crease makes the bug match | Pairs with Mirror Brush (above); the crease-choice step belongs near age 9 |
 | **Peekaround Island** (5 · 4–5) | *View from above:* which picture shows the island from the sky | A new top-down view to draw |
-| **Block Tower** (6 · 5–6) | Unclear. The top level is already the optimization (reach the star with only N blocks), and a farther star with more blocks is a bigger number. A counterweight block behind the table edge, which lets the stack reach out, would be a different decision | Needs design first. `finish()` already searches every slot, so solvability and the fewest blocks would be cheap to test once a decision is chosen |
+| **Block Tower** (6 · 5–6) ([deep dive](deep-dives/block-tower.md)) | Unclear. The top level is already the optimization (reach the star with only N blocks), and a farther star with more blocks is a bigger number. A counterweight block behind the table edge, which lets the stack reach out, would be a different decision | Needs design first. `finish()` already searches every slot, so solvability and the fewest blocks would be cheap to test once a decision is chosen |
 | **Puzzle Pals** (7 · 6–7) | Pieces that arrive turned, so she turns them to fit. **Planned in its [deep dive](deep-dives/puzzle-pals.md)** as levels 8–11 (half turns, two pictures, mend, quarter turns), after a fairness guard | A tap-to-turn interaction with its own hint; more pieces is not a next decision |
 | **Quick Tricks** (6 · 5–6) | A third show, the remix | The new gestures (crank, pour, loop) and a visible condition; shares its gesture test with Fill and Dump |
 | **Song Maker** (7 · 6–7) | *Answer the phrase:* end a given four-note start so it comes home | A rule for "comes home" that a test can check, and a mode that fits the loop grid |
@@ -1344,7 +1344,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Bouncy Launch (L–S · 5) | Cloud skies | R1: 6 *predict the cloud* | — |
 | Seesaw Balance (T–S · 9) | Friends and presents | R2: 10 *two steps* | — |
 | Ramp Race (K–S · 4) | Floors and cars | R1-later: predict the stop | Preschool, at level 1 (higher goes farther) |
-| Block Tower (L–S · 6) | Block shapes | R1-later: a counterweight | — |
+| Block Tower (L–S · 6) ([deep dive](deep-dives/block-tower.md)) | Equal-block height variety first; different shapes need a new contact/mass model | Proposed 7 repair, 8 scaffolded counterweight, 9 remove a spare; order/windows and experiments need decisions | Already L–S; optional toddler 1–3 and easier named entries wait on decisions |
 | Chain Reaction (K–S · 6) | Machine parts and themes | — | Preschool, at level 1 (one ramp) |
 | Habitat Helpers (P–S · 6) | **A third visitor**, Bird (seeds, a birdbath, a tree), as a next board on the same three needs. The quantity direction now welcomes what round two left alone | **7, Three visitors:** one garden in four spaces for Bunny, Duck and Bird | Toddler, at level 1 (Bunny's three obvious pieces) |
 | Lemonade Stand (S · 4) | — (owned by the economy pilot) | — | — |
