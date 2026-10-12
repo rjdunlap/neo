@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-11 — First fresh-context worker dispatch
+
+- Dispatched Stamp Studio 1c1 (seeded existing-kind/color choices at levels 1–3) through `create_thread`, project/local, thread `01a12e67-572a-7a72-b67c-0fd214722b60`; no fork, conversation transcript or model override.
+- Admission: five-hour 18% and weekly 46% remaining; fixed daily weekly budget 3.142857 points remaining, estimate 15 five-hour / 2.5 weekly points. No other implementation or overlapping PR/branch found; unrelated dirty checkout preserved.
+- Published the outstanding-worker ID, bounded scope, budget and next retrieval action in the queue. Gameplay implementation/checks are delegated to that fresh chat and remain **not run by the coordinator**.
+- Coordinator validation: changed local Markdown links and `git diff --check`. No code/build/browser suites or servers started here. Actual worker completion is not yet established.
+
 ## 2026-10-11 — Coordinator: fresh chat per roadmap slice
 
 - At the developer's request, changed the hourly coordinator into a dispatcher: each new admitted slice gets a fresh project chat and concise handoff; only an unfinished slice resumes its existing worker. The coordinator retains the shared budget and outstanding-worker checkpoint.
