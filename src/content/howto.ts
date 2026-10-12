@@ -899,6 +899,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 3, text: 'The grid has four steps: drum on top, clap below. Tap a square to turn its sound on or off; the playhead loops.' },
       { from: 1, to: 1, text: 'To reveal the green check, leave at least three squares on and wait for the playhead to return to the start twice after your last edit.' },
       { from: 1, to: 1, text: 'Tap the green check when you want to finish your beat.' },
+      { from: 1, to: 1, text: 'For two-year-olds, one sound is enough: the green check appears once a single square has sounded all the way round, and a beat with just one sound is a fine beat. If every square is turned off, the green check goes away until a sound comes back.' },
       { from: 2, to: 2, text: 'Fill the faint dots to copy the visible beat. Squares outside the beat stay off when tapped.' },
       { from: 2, to: 2, text: 'Each exact match advances automatically; there is no green check.' },
       { from: 3, to: 3, text: 'Listen to the target beat and build it by ear. Tap the note button to hear the target again.' },

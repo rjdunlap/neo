@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beatMove, differences, firstMismatch, mendCopy, isReturning, returnGate, returnHint, returnMove, returnStarter, clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, givenCell, reviseStart, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
+import { beatMove, differences, firstMismatch, mendCopy, oneHit, isReturning, returnGate, returnHint, returnMove, returnStarter, clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, givenCell, reviseStart, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
 
 describe('Beat Builder', () => {
   it('makes beats that start on the drum, give every row a hit, and are never all sounds at once', () => {
@@ -288,5 +288,16 @@ describe('Beat Builder', () => {
     }
     expect(seen.size).toBe(5);
     expect(previewOrder(4, ['a', 'b', 'a']).map((p) => p.section).join('')).toBe('aaaabbbbaaaa');
+  });
+
+  it('toddler free play: a single hit is a whole beat the bot makes before checking', () => {
+    const plan = PLANS[0];
+    const goal = oneHit(plan);
+    expect(hits(goal)).toBe(1);
+    const beat = empty(plan.rows, plan.steps);
+    expect(beatMove(plan, goal, beat, true)).toEqual({ row: 0, step: 0 });
+    beat[0][0] = true;
+    expect(beatMove(plan, goal, beat, false)).toBeNull();
+    expect(beatMove(plan, goal, beat, true)).toBe('check');
   });
 });

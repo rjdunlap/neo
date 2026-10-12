@@ -666,6 +666,8 @@ export const SCRIPT = {
   'beat.ret': ['Make the song come back! Put the circle part again at the end, after the square part. Tap a card to turn it over.'],
   'beat.ret-order': ['Not yet. A song that comes back plays circle, then square, then circle again.'],
   'beat.ret-hint': ['Look at the glowing card. Turn it over so the song ends where it began.'],
+  'beat.free-toddler': ['Tap a square to make a sound! Listen for it as it goes round.'],
+  'beat.toddler-empty': ['All quiet! Tap a square to bring a sound back.'],
   'beat.mendno': ['Not quite. Look at the {instrument} row, {place} square.'],
   'beat.yay': ['That is the beat!', 'Groovy!', 'You got the rhythm!'],
   'beat.done': ['What a band! Thank you for the music!'],

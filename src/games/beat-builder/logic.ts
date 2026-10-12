@@ -168,6 +168,13 @@ export function freeBeat(plan: BeatPlan): Beat {
   return beat;
 }
 
+/** The toddler bot's whole beat: one drum hit, which is enough to finish. */
+export function oneHit(plan: BeatPlan): Beat {
+  const beat = empty(plan.rows, plan.steps);
+  beat[0][0] = true;
+  return beat;
+}
+
 /** What a capable child does next: tap a square (`row`, `step`), press the green check, or null to wait. */
 export type BeatMove = { row: number; step: number } | 'check';
 

@@ -14,9 +14,11 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { returnGate, returnHint, returnMove, returnStarter, type SectionOrder } from './logic';
 import { clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, type Piece, type SectionId } from './logic';
+import { oneHit } from './logic';
 import { beatMove, firstMismatch, mendCopy, repairs, replayTick, empty, freeBeat, givenCell, givenStep, hits, reviseStart, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
 
 const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 6 },
   school: { min: 3, max: 9 },
@@ -78,6 +80,8 @@ class BeatBuilder implements Game {
   /** Revise levels: hear only the target's claps. */
   readonly solo: RoundButton;
   private soloing = false;
+  /** Toddler play: the free beat can finish after a single sound has been heard. */
+  private readonly gentle: boolean;
   /** Level 8: the piece's two sections, the one on the grid, and what undo can step back to. */
   piece: Piece;
   current: SectionId = 'a';
@@ -116,6 +120,7 @@ class BeatBuilder implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.gentle = ctx.band === 'toddler' && this.plan.mode === 'free';
     this.phrases = roundPhrases(this.plan, ctx.rng);
     this.piece = newPiece(this.plan);
     this.target = empty(this.plan.rows, this.plan.steps);
@@ -216,9 +221,16 @@ class BeatBuilder implements Game {
       this.sound(r, this.step);
     });
     // Free play: once the beat has gone round a couple of times, the green check can finish.
-    if (this.plan.mode === 'free' && !this.check.visible && hits(this.beat) >= 3 && this.loops >= 2) {
-      this.check.visible = true;
-      void this.ctx.say('beat.done-when');
+    // Two-year-olds finish after one sound has gone round once; every creation is welcome, even a single hit.
+    if (this.plan.mode === 'free') {
+      const ready = this.gentle ? hits(this.beat) >= 1 && this.loops >= 1 : hits(this.beat) >= 3 && this.loops >= 2;
+      if (!this.check.visible && ready) {
+        this.check.visible = true;
+        void this.ctx.say('beat.done-when');
+      } else if (this.gentle && this.check.visible && hits(this.beat) === 0) {
+        this.check.visible = false;
+        void this.ctx.say('beat.toddler-empty');
+      }
     }
     this.draw();
   }
@@ -241,7 +253,7 @@ class BeatBuilder implements Game {
       if (move === 'check') return { tap: { on: this.check } };
       return { tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 }, pause: 0.15 };
     }
-    const goal = this.plan.mode === 'free' ? freeBeat(this.plan) : this.target;
+    const goal = this.plan.mode === 'free' ? (this.gentle ? oneHit(this.plan) : freeBeat(this.plan)) : this.target;
     const move = beatMove(this.plan, goal, this.beat, this.check.visible);
     if (!move) return null;
     if (move === 'check') return { tap: { on: this.check } };
@@ -368,7 +380,7 @@ class BeatBuilder implements Game {
     const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat', mend: 'beat.mend', revise: 'beat.revise', sections: 'beat.ab', return: 'beat.ret' } as const;
     if (this.plan.mode === 'free') {
       this.busy = false;
-      return this.ctx.instruct(line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
+      return this.ctx.instruct(this.gentle ? 'beat.free-toddler' : line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
     }
     if (this.plan.mode === 'return') {
       const start = returnStarter(this.plan, this.ctx.rng);
@@ -504,7 +516,7 @@ class BeatBuilder implements Game {
 
   private async checkBeat() {
     if (this.busy || this.finished || this.playingTarget > 0 || this.previewIdx >= 0) return;
-    if (this.plan.mode === 'free') return void this.finale();
+    if (this.plan.mode === 'free') return this.gentle && hits(this.beat) === 0 ? undefined : void this.finale();
     if (this.plan.mode === 'sections' || this.plan.mode === 'return') return void this.checkPiece();
     if (same(this.target, this.beat)) return void this.win();
     this.busy = true;
@@ -576,7 +588,7 @@ export const beatBuilder: GameModule = {
   titleLine: 'game.beat-builder',
   region: 'music-mountain',
   skills: ['rhythm', 'patterns', 'listening', 'music'],
-  bands: ['preschool', 'prek', 'school'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
