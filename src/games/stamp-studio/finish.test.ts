@@ -2,7 +2,8 @@ import { Container, Point, type FederatedPointerEvent } from 'pixi.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { GameContext, RoundResult } from '../types';
 import { stampStudio } from './index';
-import { LIMIT, type Stamp } from './logic';
+import { Rng } from '../../engine/random';
+import { LIMIT, STAMP_NAMES, type StampPlan, type Stamp } from './logic';
 import * as artwork from './art';
 
 const { press } = vi.hoisted(() => ({ press: new WeakMap<object, (event?: FederatedPointerEvent) => void>() }));
@@ -25,14 +26,14 @@ function round(level: number) {
   const stage = new Container();
   const say = vi.fn();
   const ctx = {
-    level, stage, say,
+    level, stage, say, rng: new Rng(42),
     tw: { wait: () => new Promise<void>(resolve => { wake = resolve; }), kill: vi.fn() },
     finish,
   } as unknown as GameContext;
   const game = stampStudio.create(ctx) as ReturnType<typeof stampStudio.create> & {
     paper: Container; finish: Container; undo: Container; turn: Container; grow: Container;
     stamps: { data: Stamp; node: Container; drag?: { enabled: boolean } }[];
-    done: boolean; choices: Container[]; colors: Container[];
+    done: boolean; plan: StampPlan; color: Stamp["color"]; choices: Container[]; colors: Container[];
   };
   game.resize({ w: 1024, h: 768 } as Parameters<typeof game.resize>[0]);
   const stamp = () => press.get(game.paper.children[0])!({ global: new Point(400, 300) } as FederatedPointerEvent);
@@ -78,11 +79,11 @@ describe('Stamp Studio choices and speech', () => {
   it('draws the choice in the color it places, and redraws choices when the color changes', () => {
     const draw = vi.spyOn(artwork, 'stampArt');
     const r = round(3);
-    expect(draw.mock.calls.filter(([, , radius]) => radius === 33).map(([, color]) => color)).toEqual(['purple', 'purple', 'purple']);
+    expect(draw.mock.calls.filter(([, , radius]) => radius === 33).map(([, color]) => color)).toEqual(Array(3).fill(r.game.color));
     draw.mockClear();
-    press.get(r.game.colors[1])!();
-    expect(draw.mock.calls.filter(([, , radius]) => radius === 33).map(([, color]) => color)).toEqual(['blue', 'blue', 'blue']);
-    r.stamp(); expect(r.game.stamps[0].data.color).toBe('blue');
+    press.get(r.game.colors[r.game.color === 'blue' ? 2 : 1])!();
+    expect(draw.mock.calls.filter(([, , radius]) => radius === 33).map(([, color]) => color)).toEqual(Array(3).fill(r.game.color));
+    r.stamp(); expect(r.game.stamps[0].data.color).toBe(r.game.color);
     r.cleanup(); draw.mockRestore();
   });
 
@@ -90,7 +91,7 @@ describe('Stamp Studio choices and speech', () => {
     const r = round(2);
     press.get(r.game.choices[0])!(); press.get(r.game.choices[0])!();
     press.get(r.game.choices[1])!(); press.get(r.game.choices[0])!();
-    expect(r.say.mock.calls.filter(([line]) => line === 'stamp.kind')).toEqual([['stamp.kind', { kind: 'A cat' }], ['stamp.kind', { kind: 'A fish' }]]);
+    expect(r.say.mock.calls.filter(([line]) => line === 'stamp.kind')).toEqual(r.game.plan.kinds.map(kind => ['stamp.kind', { kind: STAMP_NAMES[kind] }]));
     r.cleanup();
   });
 

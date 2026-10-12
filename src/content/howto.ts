@@ -621,7 +621,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'stamp-studio': {
     goal: 'Make a picture with stamps.',
     steps: [
-      { to: 2, text: 'Choose a stamp, then tap the paper to press it.' },
+      { to: 1, text: 'Tap the paper to press the stamp shown.' },
+      { from: 2, to: 2, text: 'Choose either stamp, then tap the paper to press it.' },
       { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
       { from: 4, to: 6, text: 'Turn a stamp, or make it big or small.' },
       'The back arrow undoes a stamp.',
