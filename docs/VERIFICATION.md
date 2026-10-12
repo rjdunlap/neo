@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-12 — Coordinator: actual account limits only
+
+- Removed the artificial daily pacing cap at the developer's request. The old allocation/debits are historical records, never admission limits; fresh actual five-hour and weekly allowance now governs admission alongside slice estimates and concurrency checks.
+- Updated the existing hourly automation, queue, AGENTS and development workflow. Handoffs now contain only the slice, source and essential exclusions, with standing rules read from the repo. Fresh chat per slice, sequential work and no percentage reserve remain.
+- Recorded the prior workers as complete/merged (#179/#180), with no outstanding worker. No new gameplay task started during this configuration change.
+- Validation: saved automation prompt/cadence, changed Markdown links/anchors and `git diff --check`. Docs/config only; no code/build/browser suites run.
+
 
 ## 2026-10-11 — Shape Buddies first solo round definition
 
