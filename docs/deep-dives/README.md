@@ -51,7 +51,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Game | ID | Bands | Top level | Wave | Status | Branch / PR | Deep dive |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Animal Snack | `animal-snack` | LTP | 5 | 2 | building (slice 1 built: words, count sign, how-to, nudge, nearest taps) | `codex/animal-snack-counted-words` ([PR 160](https://github.com/rjdunlap/neo/pull/160)); `claude/roadmap-item-14-game-content-fno5j7` ([PR 99](https://github.com/rjdunlap/neo/pull/99)) | [animal-snack.md](animal-snack.md) |
-| Beat Builder | `beat-builder` | PKS | 5 | 4 | in progress (docs-only ladder research; levels 1–5, content and younger openings) | `codex/beat-builder-deep-dive` | — |
+| Beat Builder | `beat-builder` | PKS | 5 | 4 | designed (docs-only; support/content ready, proposed 6–9 and younger openings need decisions) | `codex/beat-builder-deep-dive` ([PR #190](https://github.com/rjdunlap/neo/pull/190)) | [beat-builder.md](beat-builder.md) |
 | Block Tower | `block-tower` | LTPKS | 6 | 4 | not started | — | — |
 | Bounce Back | `bounce-back` | LTPK | 5 | 4 | not started | — | — |
 | Bouncy Launch | `bouncy-launch` | LTPKS | 6 | 4 | not started | — | — |

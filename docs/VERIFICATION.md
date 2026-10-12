@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder deep dive
+
+- Docs-only [PR #190](https://github.com/rjdunlap/neo/pull/190): reviewed the five current plans, source/tests/card/speech, sound and band contracts; seven primary-source genre references plus NAEYC family music guidance.
+- Wrote the current ladder/pools, source-derived replay/card/hint gaps, content library, proposed 6–9, younger/below-1 openings, decisions and ten ordered later slices. Updated tracker, idea audit, chunk 14, developer decisions and execution checkpoint.
+- Verified new research URLs via web reading (Chrome Music Lab/Groove Pizza interactive detail limits stated), changed local Markdown links/anchors and `git diff --check`; integrated origin/main `8c773d3` plus docs diff. No gameplay evidence claimed.
+- Tests/typecheck/build/browser suites not run, as required for a deep dive; no src/scripts/public edits or servers. iPad sound/speech, touch and child fit remain open; no required docs check remains.
+
 ## 2026-10-12 — Coordinator: Beat Builder deep-dive dispatch
 
 - Confirmed #187 merged (`564ba41`) and level-11 worker complete; existing proof retained without reruns. Kept-story work remains decision-dependent.
@@ -744,6 +751,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Beat Builder deep dive | 2026-10-12: primary research URLs, changed local links/anchors and diff check | Beat Builder deep dive entry | Docs only; no gameplay checks, source-derived gaps await implementation, device/child fit open |
 | Story Steps clue endings (`expansion`, `fingerdemo`) | 2026-10-12: typecheck, 1,015 tests/build; filtered level 11 free preview/repeated miss/clue hint/replay/reward, portrait and eight-story art sheet; demo clean in 3.4s | Story Steps clue endings entry | iPad touch, speech and child interpretation untested |
 | Story Steps two stories (`expansion`, `fingerdemo`) | 2026-10-12: typecheck, 1,011 tests/build; filtered level 10 wrong row/hint/replay/bottom-first/reward and portrait; demo clean in 23.2s | Story Steps two stories entry | iPad touch, speech and child understanding untested |
 | Puzzle Pals spatial support (`fourth`, `fingerdemo`) | 2026-10-11: 29 targeted tests, typecheck/build; filtered levels 5/7, two misses/one hint, reward and portrait; level-7 demo clean in 32.9 s | Puzzle Pals spatial hints and outer rims entry | Fairness and box lid open; iPad, device speech and child play untested |
