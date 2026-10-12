@@ -152,6 +152,8 @@ The level-order decisions already have a row in [Waiting on the developer](../RO
 
 ## Build slices, in order
 
+> **Claimed 2026-10-12** (branch `claude/bubble-pop-sign-and-counting`): a target sign on the bonds levels 10–11 (the developer asked for the number needed to be shown), then levels 12–14 (start at a number, count back, count by tens and fives) with the leans from "Decisions for the developer" (pre-K 6–12, school 10–14, count back here). Files: `src/games/bubble-pop/*`, `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, docs.
+
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken.
 
 1. **Guards and friends who say who they are** (ready; no decision). Bound the how-to's last step (`to: 11`) and correct its goal; pin `sticker(seed)`'s list with a test; extract the "this mode drifts in place" rule into `logic.ts` and assert that every mode that needs a particular bubble uses it; give a released friend its name and sound. Tier: typecheck, the game's rule tests and the how-to test, then one filtered browser play of level 1 (`ORIGINALS_ONLY=bubbles`) since release changed. Update the GAMES.md entry and the README row.
