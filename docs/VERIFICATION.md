@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder level 9, a returning song
+
+- School 3–9. `returnStarter`, `returnGate`, `returnHint`, `returnMove`, card strip and preview in `index.ts`. Ran typecheck, content and games unit tests (810: starters never returning, five orders seen, hint/bot reach circle-square-circle, gates) and one portrait scripted play (unheard check = guide only, two wrong orders = 2 misses and 1 hint, bot finished). A screenshot caught the old repair glow showing on the grid at this level; fixed. Not run: `fingerdemo`, build, suites, offline; iPad and child open.
+
 ## 2026-10-12 — Shape Buddies solo seed journey
 
 - Added `shape-buddies` level 1 for pre-K/school: two interchangeable paper friends, flat/sloped bridges, scoop catching, a seed carry and sprout. Finite rules, free experiments, role hints, occupied-dock rejection, Undo/Replay, spoken support and touch demonstration; Tinker Lab, how-to and inventories updated. [PR #204](https://github.com/rjdunlap/neo/pull/204).
