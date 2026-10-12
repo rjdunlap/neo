@@ -281,10 +281,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'Choose the four pictures that make one story, and drag them into place in order.' },
       { from: 8, to: 8, text: 'Look at the picture already shown. Drag the picture that made it happen into the glowing space before it.' },
       { to: 8, text: 'Tap the music button to hear the pictures placed so far.' },
+      { from: 9, to: 9, text: 'Tap one picture, then another, to swap them; tap the selected picture again to leave it where it is.' },
+      { from: 9, to: 9, text: 'Tap the music button to hear the current order. The curved arrow puts the last swapped pair back.' },
     ],
     finish: [
       { to: 7, text: 'The round ends when the story pictures are in a sensible order.' },
       { from: 8, to: 8, text: 'The round ends when the cause is before its effect, and the pet explains what happened.' },
+      { from: 9, to: 9, text: 'The round ends when all four pictures tell the story in order. Swaps are experiments; after eight swaps, a glow helps with an out-of-place picture.' },
     ],
   },
   'feelings-faces': {

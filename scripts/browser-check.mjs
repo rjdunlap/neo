@@ -867,8 +867,55 @@ async function expansion() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bug Builder ${level}: drag, copy/symmetry, mistakes, hint, saved round and sticker passed`);
   }
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 8) && (!only || only === 'story'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 9) && (!only || only === 'story'); level++) {
     await launch('story-steps', level);
+    if (level === 9) {
+      const opening = await page.evaluate(() => neo.scene.game.strip.map((c) => c.stage));
+      // Read the actual mixed order, then make a harmless experiment and undo it.
+      await tap('neo.scene.game.replay');
+      await page.waitForFunction(() => !neo.scene.game.playing, null, { timeout: 30000 });
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.strip.map((c) => c.stage)), opening);
+      const move = await page.evaluate(async () => {
+        const { repairMove } = await import('/src/games/story-steps/logic.ts');
+        return repairMove(neo.scene.game.puzzle.sequence, neo.scene.game.strip);
+      });
+      const experiment = [0, 1, 2, 3].filter((i) => !move.includes(i));
+      await tap(`neo.scene.game.slots[${experiment[0]}]`);
+      assert.equal(await page.evaluate(() => neo.scene.game.selected), experiment[0]);
+      await tap(`neo.scene.game.slots[${experiment[0]}]`);
+      assert.equal(await page.evaluate(() => neo.scene.game.selected), null, 'second tap cancels selection');
+      await tap(`neo.scene.game.slots[${experiment[0]}]`);
+      await tap(`neo.scene.game.slots[${experiment[1]}]`);
+      await tap('neo.scene.game.undo');
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.strip.map((c) => c.stage)), opening, 'undo restores the mixed strip');
+      for (let i = 0; i < 7; i++) {
+        await tap(`neo.scene.game.slots[${experiment[0]}]`);
+        await tap(`neo.scene.game.slots[${experiment[1]}]`);
+      }
+      assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'eight experiments offer one hint');
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      await screenshot('story-steps-9-portrait');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        for (const slot of g.slots) {
+          if (slot.hitArea.width < 100 || slot.hitArea.height < 100) throw new Error('Small story card');
+          if (slot.x < 82 || slot.x > neo.view.w - 82) throw new Error('Story card outside view');
+        }
+      });
+      for (let i = 0; i < 6 && !(await page.evaluate(() => neo.scene.game.done)); i++) {
+        const index = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return g.slots.indexOf(g.autotouch()?.tap.on);
+        });
+        assert.ok(index >= 0, 'bot proposes a real card tap');
+        await tap(`neo.scene.game.slots[${index}]`);
+      }
+      await finished('story-steps');
+      assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('story-steps').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Story Steps 9: tap swaps, cancellation, undo, current-order replay, hint, portrait and supported finish passed');
+      continue;
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game, target = g.puzzle.sequence[g.next()];
       const wrong = g.choices.find((c) => c.card.story !== target.story || c.card.stage !== target.stage);

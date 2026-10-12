@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-11 — Story Steps repair a mixed-up story
+
+- Built deep-dive slice 3 ([PR #168](https://github.com/rjdunlap/neo/pull/168)): school level 9, seeded adjacent-pair disruption, real tap swaps, cancellation, undo, current-order narration and one hint after eight experiments; swaps count no misses.
+- Tested claim `a93d159` (base `95885af`) plus implementation diff at `http://localhost:5198`, with worktree-local dependencies/cache. Typecheck, all 971 tests (127 files), build (existing bundle warning), changed local Markdown links and `git diff --check` passed.
+- Rules cover 300 seeded openings, all ten stories and all 24 permutations per story: useful hint, reversible swaps and a bot solution within three swaps.
+- `BROWSER_SUITE=expansion EXPANSION_ONLY=story FROM_LEVEL=9 TO_LEVEL=9` passed replay, cancellation, undo, eight experiments/one hint, portrait bounds, supported completion and saved `[0,1]`; the same filter at level 1 passed two misses/one hint, drag, replay and reward. `BROWSER_SUITE=fingerdemo FINGER_ONLY=story-steps FINGER_LEVELS=9` passed cleanly in 8.1 seconds; no page errors.
+- Reviewed `test-results/browser/story-steps-9-portrait.png`: four large cards, hint, replay, undo and pet clear. Chromium required escalation after macOS sandbox blocked startup. Session server stopped after checks.
+- Not run: broad browser/world/couch/offline suites (no routes, save schema, imported assets or couch changes). iPad touch, device speech and child understanding remain open; three-picture disruptions are future content.
+
 ## 2026-10-11 — Tangram Town tent and barn
 
 - Added a two-piece tent at levels 1–3 and a three-piece barn at levels 4/6 ([PR 167](https://github.com/rjdunlap/neo/pull/167)); sixteen pictures, 3–8 per level. Existing piece counts, controls, levels, how-to wording and sticker art remain valid.
@@ -578,6 +587,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Story Steps repair (`expansion`, `fingerdemo`) | 2026-10-11: typecheck, 971 tests/build; filtered levels 1 and 9, cancellation, undo, replay, experimental swaps, one hint, reward and portrait; level-9 demo clean in 8.1 s | Story Steps repair entry | iPad touch, speech and child understanding untested |
 | Goodnight Room color groups (`woods`, `fingerdemo`) | 2026-10-11: 38 focused tests, typecheck/build; level 8 wrong colors, glow, reverse answers and saved reward; demo clean in 5.7 s; portrait reviewed | Goodnight Room color groups entry | Broad suites not rerun; iPad, device speech and child color interpretation open |
 | Animal Snack words and guards (`woods`, `fingerdemo`) | 2026-10-11: 34 focused tests, typecheck/build; levels 1–5, retries/hints, exact count and saved rewards; demos 1/5 clean; portraits 3/5 and nearest-body regression | Animal Snack words and guards entry | Full suites/offline not rerun; iPad, speech and child play open |
 | Clock Tower support | 2026-10-11: typecheck, 24 focused tests, build, Clock Tower 1–7, ghost finger at 7 (24.0 s), four layouts/cancellation/portrait | Clock Tower words and control support entry | iPad and device speech open; broad suites not run |

@@ -480,3 +480,7 @@ Typecheck and all eight game rule tests passed, including geometry, seeded varia
 Continued the ready picture-content slice ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a triangular tent canopy on a rectangular groundsheet at levels 1–3, and a barn with a trapezoid roof and a wall made from two triangles at levels 4/6. Sixteen pictures now populate pools of 3–8 per level. Saved levels, piece counts, controls and sticker art retain their behavior.
 
 Typecheck, all eight game rule tests and focused pointer play passed; new art and portrait clearance were reviewed. Details and remaining device/child checks are in [VERIFICATION](../VERIFICATION.md).
+
+## Story Steps level 9: Fix the mixed-up story (2026-10-11)
+
+Built deep-dive slice 3 ([PR #168](https://github.com/rjdunlap/neo/pull/168)): four pictures from any of the ten stories, one neighboring pair reversed, tap-to-swap repair, free cancellation and undo, narration of the current order, and one hint after eight swaps. Experiments count no misses. School grows from 6–8 to 6–9 without changing younger levels or saved pins. Rule tests exhaust all four-picture permutations: the first misplaced-position hint always moves toward a solution, and the ghost finger finishes in at most three swaps. Checks and remaining device gaps are recorded in [VERIFICATION](../VERIFICATION.md).
