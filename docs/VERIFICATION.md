@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder woodland stage
+
+- Woodland portion of slice 9 only ([PR #197](https://github.com/rjdunlap/neo/pull/197)): palette-drawn clearing and stage, existing bear/drum, bunny/clap and cat/bell with sound-triggered responses; picnic/rules/modes/levels/bands/storage excluded.
+- Tested integrated base `b4e9d19` (claim `861c467`, upstream `a1c609f`) plus final implementation diff: typecheck, ten Beat Builder rules and build passed. Existing bundle-size warning remains; initial how-to note shape corrected before passing build.
+- One level-5 portrait screenshot at `http://localhost:5213`, `test-results/beat-woodland-portrait.png`, reviewed: eight-column/three-row grid, friends, pet and controls clear. Isolated `test-results/beat-woodland-probe.mjs` confirms clap pulses only bunny, decorative `eventMode=none`, and no page errors. Fresh-profile setup corrected; initial sandbox Chromium launch failed, elevated launch passed. No full play-through claimed.
+- Stage adds no random draws, hit areas, listeners, timers or textures. Existing game frame updates friends; scene owns their display tree. Grid and button coordinates/hit bounds unchanged. README/GAMES/how-to, tracker, roadmap, archive and queue updated; local links and diff check passed.
+- No unchanged browser suite/full unit/world/couch/picnic/offline run at source content/art tier. Build added for shared how-to text. Owned server/browser stopped; screenshot/probe kept in ignored test-results. Actual iPad/Bluetooth sound/speech, touch comfort and child fit remain open.
+
+
 ## 2026-10-12 — Beat Builder authored phrases
 
 - Slice 3 only ([PR #196](https://github.com/rjdunlap/neo/pull/196)): twelve short/eight long named authored scores, seeded without-replacement rounds at 2–5, shared instrument identities and spoken nicknames. No new drawings/modes/levels/bands/storage.
@@ -779,6 +788,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Beat Builder woodland stage | 2026-10-12: typecheck, ten rules, build; level-5 portrait and row-response probe | Woodland stage entry / [PR #197](https://github.com/rjdunlap/neo/pull/197) | Content/art only; no unchanged suite; device/child fit open |
 | Beat Builder authored phrases | 2026-10-12: typecheck and ten focused rules; seeded 2–5 pools, uniqueness, shapes and every authored hint/bot repair | Beat Builder authored phrases entry | No new drawings; browser/build not run at generation tier; device listening/speech and child fit open |
 | Beat Builder deep dive | 2026-10-12: primary research URLs, changed local links/anchors and diff check | Beat Builder deep dive entry | Docs only; no gameplay checks, source-derived gaps await implementation, device/child fit open |
 | Story Steps clue endings (`expansion`, `fingerdemo`) | 2026-10-12: typecheck, 1,015 tests/build; filtered level 11 free preview/repeated miss/clue hint/replay/reward, portrait and eight-story art sheet; demo clean in 3.4s | Story Steps clue endings entry | iPad touch, speech and child interpretation untested |

@@ -1,7 +1,8 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { ink, swatch, wood } from '../../art/palette';
+import { grass, ink, swatch, wood } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
 import { Backdrop } from '../../art/scenery';
+import { WoodlandStage } from './stage';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
@@ -61,6 +62,7 @@ class BeatBuilder implements Game {
 
   private readonly phrases: ReturnType<typeof roundPhrases>;
   private readonly backdrop: Backdrop;
+  private readonly woodland: WoodlandStage;
   private readonly cells = new Graphics();
   private readonly icons = new Container();
   private view: View;
@@ -79,7 +81,8 @@ class BeatBuilder implements Game {
     this.phrases = roundPhrases(this.plan, ctx.rng);
     this.target = empty(this.plan.rows, this.plan.steps);
     this.beat = empty(this.plan.rows, this.plan.steps);
-    this.backdrop = new Backdrop({ sky: [0xc9b8f0, 0xf3ecff], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.78, clouds: 2, seed: 88 }, ctx.view);
+    this.backdrop = new Backdrop({ sky: [swatch.blue.light, swatch.green.light], hills: [grass, swatch.green.light], horizon: 0.78, clouds: 2, seed: 88 }, ctx.view);
+    this.woodland = new WoodlandStage(this.plan.rows, rowIcon);
     this.grid.addChild(this.cells);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => this.tapGrid(e), { cooldown: 90 });
@@ -93,7 +96,7 @@ class BeatBuilder implements Game {
     this.listen.visible = this.plan.mode === 'hear';
     this.check = new RoundButton(checkArt(), swatch.green, 56, () => void this.checkBeat());
     this.check.visible = this.plan.mode === 'hear';
-    ctx.stage.addChild(this.backdrop, this.grid, this.listen, this.check);
+    ctx.stage.addChild(this.backdrop, this.woodland, this.grid, this.listen, this.check);
   }
 
   start() {
@@ -106,6 +109,7 @@ class BeatBuilder implements Game {
     const w = this.plan.steps * CELL;
     const x = Math.max(200, (v.w - w) / 2 + 40);
     this.grid.position.set(x, Math.max(130, v.h * 0.26));
+    this.woodland.resize(v, this.grid.y);
     this.grid.hitArea = new Rectangle(0, 0, w, this.plan.rows * CELL);
     const y = this.grid.y + this.plan.rows * CELL + 95;
     this.listen.position.set(v.w / 2 - 90, y);
@@ -115,6 +119,7 @@ class BeatBuilder implements Game {
 
   update(dt: number) {
     if (this.finished) return;
+    this.woodland.update(dt);
     this.timer += dt;
     if (this.timer < STEP_SECONDS) return;
     this.timer -= STEP_SECONDS;
@@ -153,6 +158,7 @@ class BeatBuilder implements Game {
   destroy() { this.finished = true; this.playingTarget = 0; }
 
   private sound(row: number, step: number) {
+    this.woodland.pulse(row);
     if (INSTRUMENTS[row].id === 'drum') sfx.drum();
     else if (INSTRUMENTS[row].id === 'clap') sfx.knock();
     else sfx.bell(7 + (step % 3), 0.22);

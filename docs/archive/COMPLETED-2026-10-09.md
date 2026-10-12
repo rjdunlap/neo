@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Beat Builder woodland stage (2026-10-12)
+
+Built the woodland portion of deep-dive slice 9 ([PR #197](https://github.com/rjdunlap/neo/pull/197)): palette-drawn trees, a wooden stage and mushrooms around the existing grid. Bear/drum, bunny/clap and cat/bell respond only when their existing sounds play, during square previews and target/player loops. Decorative art ignores touches and uses the game's frame update and scene-owned display cleanup; no new RNG draws, timers, textures or listeners. Levels 1–5, input bounds, rules, adaptive accounting and sticker seeds are unchanged. Typecheck, ten focused rules, build and one portrait screenshot with a row-response probe passed; [verification](../VERIFICATION.md). Picnic remains ready for a separate session. Device sound/speech, touch and child fit remain open.
+
+
 ### Beat Builder replay and repair help (2026-10-12)
 
 Built deep-dive slice 2 ([PR #194](https://github.com/rjdunlap/neo/pull/194)): ear targets traverse both full loops before editing/checking resumes; free replay restarts from the beginning. Two wrong checks show live plus/minus repairs, repeat mode shows missing-sound marks after two misses, and help counts once per target. The bot removes extra hits, and bell preview/playback shares the column pitch. Existing levels/bands, gates, phrase generation and storage are preserved. Typecheck, 23 focused rule/how-to tests, build, filtered level-5 play and ghost finger passed; restoring the old replay rule fails the new trace. Device sound/timing, touch and child fit remain open. Next is authored phrase library; see [verification](../VERIFICATION.md).
