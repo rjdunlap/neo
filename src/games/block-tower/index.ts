@@ -85,7 +85,7 @@ class BlockTower implements Game {
   finished = false;
   /** The child's tower, bottom first. */
   stack: Container[] = [];
-  /** Bear's tower on the compare level. */
+  /** Duck's reference tower on the compare level (historical field name). */
   bearStack: Container[] = [];
   /** Tumble and friend levels: the tower is full and waiting to be knocked down. */
   full = false;
@@ -301,10 +301,13 @@ class BlockTower implements Game {
       const x = this.towerX + 130;
       const y = this.floor - r.target * BH;
       g.rect(x - 4, y - 10, 8, this.floor - y + 10).fill(wood.line);
-      g.poly([x, y - 10, x + 92, y + 22, x, y + 54]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+      g.poly([x, y + 22, x + 46, y - 10, x + 92, y + 22, x + 46, y + 54]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
       dashed(g, this.towerX - 70, y, x, y, swatch.red.line);
       const n = label(String(r.target), 30, 0xffffff);
-      n.position.set(x + 30, y + 22);
+      n.position.set(x + 46, y + 22);
+      // One pip per equal-height block; art never draws from the puzzle RNG.
+      for (let i = 0; i < r.target; i++) g.circle(x + 12 + i * 14, y + 73, 5).fill(swatch.red.line);
+      g.moveTo(x + 46, y + 54).lineTo(x + 96, y + 65).lineTo(x + 102, y + 91).lineTo(x + 88, y + 107).stroke(line(swatch.red.line, 3));
       g.addChild(n);
     }
     if (mode === 'stand' && this.stand && this.guess === null) {
@@ -349,7 +352,7 @@ class BlockTower implements Game {
         break;
       case 'match': {
         if (!this.bear) {
-          this.bear = this.ctx.track(new Critter(CRITTERS.bear));
+          this.bear = this.ctx.track(new Critter(CRITTERS.duck));
           this.bear.scale.set(0.42);
           this.layer.addChild(this.bear);
         }
@@ -364,7 +367,7 @@ class BlockTower implements Game {
           await this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.18, ease: ease.outBack });
         }
         this.bear.cheer();
-        await this.ctx.instruct(r.ask === 'same' ? 'tower.match-same' : r.ask === 'taller' ? 'tower.match-taller' : 'tower.match-shorter');
+        await this.ctx.instruct(r.ask === 'same' ? 'tower.match-same' : r.ask === 'taller' ? 'tower.match-taller' : 'tower.match-shorter', { friend: 'Duck' });
         break;
       }
       case 'stand':
@@ -485,7 +488,7 @@ class BlockTower implements Game {
     }
   }
 
-  /** The bell: is the tower up to the flag, or the right height next to Bear's? */
+  /** The bell: is the tower up to the flag, or the requested comparison height? */
   private async check() {
     if (this.busy || this.finished) return;
     this.busy = true;
@@ -496,7 +499,7 @@ class BlockTower implements Game {
       sfx.bell(10, 0.35);
       if (this.plan.mode === 'match') {
         this.bear?.cheer();
-        await this.ctx.say('tower.match-right', { have, bear: r.bear! });
+        await this.ctx.say('tower.match-right', { have, bear: r.bear!, friend: 'Duck' });
       } else await this.ctx.say('tower.right', { n: have });
       await this.ctx.tw.wait(0.3);
       this.tumble(this.bearStack, this.bearX, -1);
@@ -506,7 +509,7 @@ class BlockTower implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'match') await this.ctx.say('tower.match-wrong', { bear: r.bear!, have, want: r.target });
+    if (this.plan.mode === 'match') await this.ctx.say('tower.match-wrong', { bear: r.bear!, have, want: r.target, friend: 'Duck' });
     else await this.ctx.say(result === 'short' ? 'tower.short' : 'tower.tall');
     if (result === 'tall') this.glowTop = true;
     if (this.wrongs >= 2) {

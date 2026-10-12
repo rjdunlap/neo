@@ -4428,10 +4428,14 @@ async function shortlistBatch() {
   // A canvas point for logical (x, y).
   const at = (x, y) => page.evaluate(({ x, y }) => { const s = neo.view.scale; const r = document.querySelector('canvas').getBoundingClientRect(); return [r.left + x * s, r.top + y * s]; }, { x, y });
 
-  if (!only || only === 'tower') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'tower') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
     await launch('block-tower', level);
     if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
     const { rounds, mode } = await page.evaluate(() => ({ rounds: neo.scene.game.rounds.length, mode: neo.scene.game.plan.mode }));
+    if (mode === 'flag' || mode === 'match') {
+      const heights = await page.evaluate(() => neo.scene.game.rounds.map(r => r.bear ?? r.target));
+      assert.equal(new Set(heights).size, 3, 'three different seeded reference heights');
+    }
     for (let n = 0; n < rounds; n++) {
       await idle(n);
       if (mode === 'tumble' || mode === 'friend') {
@@ -4529,7 +4533,7 @@ async function shortlistBatch() {
     await finished('block-tower');
     assert.deepEqual(await score('block-tower'), mode === 'flag' || mode === 'match' || mode === 'reach' ? [2, 1] : [0, 0]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Bear's tower, explained misses, counted hint", stand: 'guess, ropes let go, why it fell shown', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`);
+    log(`Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'guess, ropes let go, why it fell shown', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`);
   }
 
   if (!only || only === 'lasso') {

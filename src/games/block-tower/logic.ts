@@ -23,7 +23,7 @@ export const PLANS: TowerPlan[] = [
   { mode: 'tumble', rounds: 2, name: 'Tap to stack blocks, then knock the tower down' },
   { mode: 'friend', rounds: 3, name: 'Stack until the tower is as tall as a friend, then knock it down' },
   { mode: 'flag', rounds: 3, name: 'Build up to the flag (3 to 6 blocks), then ring the bell' },
-  { mode: 'match', rounds: 3, name: "Compare with Bear's tower: just as tall, one block taller, or one shorter" },
+  { mode: 'match', rounds: 3, name: "Compare with Duck's tower: just as tall, one block taller, or one shorter" },
   { mode: 'stand', rounds: 3, name: 'Which tower will stand? Guess, then let go and see (a guess is never wrong)' },
   { mode: 'reach', rounds: 2, name: 'Stack blocks out past the table edge to touch the star without tipping' },
 ];
@@ -64,7 +64,7 @@ export interface TowerRound {
   /** Blocks to stack (tumble, friend, flag), or what the child's tower should be (match). */
   target: number;
   friend?: TowerFriend;
-  /** Match: Bear's tower and what to make. */
+  /** Match: the visitor's reference tower and what to make. */
   bear?: number;
   ask?: Ask;
 }
@@ -73,20 +73,25 @@ export const targetFor = (bear: number, ask: Ask) => bear + (ask === 'taller' ? 
 
 export function makeRounds(plan: TowerPlan, rng: Rng): TowerRound[] {
   const out: TowerRound[] = [];
-  let last = 0;
-  const fresh = (min: number, max: number) => {
-    let n = rng.int(min, max);
-    for (let t = 0; n === last && t < 10; t++) n = rng.int(min, max);
-    return (last = n);
+  // Shuffle without replacement; refill in bounded work for longer caller-supplied plans.
+  // If a new deck starts at the previous height, swap its first two cards, never reroll.
+  let heights: number[] = [];
+  let last: number | undefined;
+  const fresh = () => {
+    if (!heights.length) {
+      heights = rng.shuffle([3, 4, 5, 6]);
+      if (heights[0] === last) [heights[0], heights[1]] = [heights[1], heights[0]];
+    }
+    return (last = heights.shift()!);
   };
   const friends = rng.shuffle(Object.keys(FRIEND_HEIGHT) as TowerFriend[]);
   const asks = rng.shuffle<Ask>(['same', 'taller', 'shorter']);
   for (let r = 0; r < plan.rounds; r++) {
     if (plan.mode === 'tumble') out.push({ target: 6 });
     else if (plan.mode === 'friend') out.push({ target: FRIEND_HEIGHT[friends[r]], friend: friends[r] });
-    else if (plan.mode === 'flag') out.push({ target: fresh(3, 6) });
+    else if (plan.mode === 'flag') out.push({ target: fresh() });
     else if (plan.mode === 'match') {
-      const bear = fresh(3, 6);
+      const bear = fresh();
       out.push({ target: targetFor(bear, asks[r % 3]), bear, ask: asks[r % 3] });
     } else out.push({ target: 0 });
   }

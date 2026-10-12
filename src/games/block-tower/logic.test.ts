@@ -1,8 +1,28 @@
+import { blockTower } from './index';
+import type { Container, Graphics } from 'pixi.js';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, reachSlot, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
 
 describe('Block Tower', () => {
+  it('preserves saved sticker drawings for seeds 0–99 before puzzle RNG changes', () => {
+    const fingerprint = (node: Container): unknown => ({
+      x: node.x, y: node.y, scale: [node.scale.x, node.scale.y],
+      drawing: 'context' in node ? (node as Graphics).context.instructions.map(i => {
+        if (i.action === 'texture') throw new Error('Tower stickers stay code-drawn');
+        return { action: i.action, path: i.data.path.instructions,
+        style: { color: i.data.style.color, width: 'width' in i.data.style ? i.data.style.width : undefined },
+      }; }) : [],
+      children: node.children.map(fingerprint),
+    });
+    expect(Array.from({ length: 100 }, (_, seed) => {
+      const art = blockTower.sticker(seed);
+      const result = JSON.stringify(fingerprint(art));
+      art.destroy({ children: true });
+      return [...result].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+    })).toMatchSnapshot();
+  });
+
   it('keeps a block up only while the middle of it and everything above is over the block below', () => {
     expect(topples([0, 0, 0], null)).toBe(-1);
     // The top block hangs half off: its middle is on the edge, so it falls.
@@ -35,6 +55,35 @@ describe('Block Tower', () => {
       if (plan.mode === 'flag' || plan.mode === 'match') rounds.slice(1).forEach((r, i) => expect(r.bear ?? r.target).not.toBe(rounds[i].bear ?? rounds[i].target));
     }
     expect([compare(3, 4), compare(4, 4), compare(5, 4)]).toEqual(['short', 'right', 'tall']);
+  });
+
+  it('uses a bounded height deck even when random draws always pick the same card', () => {
+    const rng = new Rng(1);
+    let draws = 0;
+    rng.next = () => { draws++; return 0; };
+    for (const mode of ['flag', 'match'] as const) {
+      draws = 0;
+      const rounds = makeRounds({ mode, name: '', rounds: 12 }, rng);
+      const heights = rounds.map(r => r.bear ?? r.target);
+      for (let i = 0; i < heights.length; i += 4) expect(new Set(heights.slice(i, i + 4)).size).toBe(4);
+      heights.slice(1).forEach((h, i) => expect(h).not.toBe(heights[i]));
+      expect(draws).toBe(14); // friends (3), relations (2), three four-card decks (9)
+    }
+  });
+
+  it('covers every reference height with distinct three-task decks and all comparison relations', () => {
+    for (const level of [3, 4]) {
+      const seen = new Set<number>();
+      for (let seed = 0; seed < 200; seed++) {
+        const rounds = makeRounds(PLANS[level - 1], new Rng(seed));
+        expect(rounds).toEqual(makeRounds(PLANS[level - 1], new Rng(seed)));
+        const heights = rounds.map(r => r.bear ?? r.target);
+        expect(new Set(heights).size).toBe(3);
+        heights.forEach(h => { expect([3, 4, 5, 6]).toContain(h); seen.add(h); });
+        if (level === 4) expect(rounds.map(r => r.ask).sort()).toEqual(['same', 'shorter', 'taller']);
+      }
+      expect([...seen].sort()).toEqual([3, 4, 5, 6]);
+    }
   });
 
   it('shows two leaning towers where exactly one stands', () => {
