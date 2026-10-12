@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder picnic stage
+
+- Picnic portion of slice 9 ([PR #199](https://github.com/rjdunlap/neo/pull/199)): `PicnicStage` (checkered blanket, basket, flowers; pig/drum, duck/clap, dog/bell) on levels 3 and 5, woodland unchanged on 1, 2, 4; the stage shares a `FriendsStage` base. How-to note rewritten per level.
+- Ran: typecheck; content and Beat Builder unit tests (88 passed); one level-3 portrait screenshot (`test-results/beat-picnic-portrait.png`) reviewed and a probe that a clap pulses only the duck, the stage is `eventMode=none` and no page errors. Level 5's three-row layout reuses the woodland geometry and was not separately screenshotted.
+- Not run: browser suites, build, offline. iPad touch, sound and child fit remain open.
+
 ## 2026-10-12 — Beat Builder woodland stage
 
 - Woodland portion of slice 9 only ([PR #197](https://github.com/rjdunlap/neo/pull/197)): palette-drawn clearing and stage, existing bear/drum, bunny/clap and cat/bell with sound-triggered responses; picnic/rules/modes/levels/bands/storage excluded.

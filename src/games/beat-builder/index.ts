@@ -2,7 +2,7 @@ import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi
 import { grass, ink, swatch, wood } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
 import { Backdrop } from '../../art/scenery';
-import { WoodlandStage } from './stage';
+import { PicnicStage, WoodlandStage, type BeatStage } from './stage';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
@@ -62,7 +62,7 @@ class BeatBuilder implements Game {
 
   private readonly phrases: ReturnType<typeof roundPhrases>;
   private readonly backdrop: Backdrop;
-  private readonly woodland: WoodlandStage;
+  private readonly woodland: BeatStage;
   private readonly cells = new Graphics();
   private readonly icons = new Container();
   private view: View;
@@ -82,7 +82,7 @@ class BeatBuilder implements Game {
     this.target = empty(this.plan.rows, this.plan.steps);
     this.beat = empty(this.plan.rows, this.plan.steps);
     this.backdrop = new Backdrop({ sky: [swatch.blue.light, swatch.green.light], hills: [grass, swatch.green.light], horizon: 0.78, clouds: 2, seed: 88 }, ctx.view);
-    this.woodland = new WoodlandStage(this.plan.rows, rowIcon);
+    this.woodland = ctx.level === 3 || ctx.level === 5 ? new PicnicStage(this.plan.rows, rowIcon) : new WoodlandStage(this.plan.rows, rowIcon);
     this.grid.addChild(this.cells);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => this.tapGrid(e), { cooldown: 90 });

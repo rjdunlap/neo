@@ -902,7 +902,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'The round ends after two repeating patterns are matched automatically.' },
       { from: 5, to: 5, text: 'The round ends after two heard beats are matched and confirmed with the green check.' },
     ],
-    note: [{ from: 1, to: 5, text: 'On the woodland stage, the bear moves with the drum, the bunny with the clap and the cat with the bell. They respond to the sounds in your beat and in target replay.' }],
+    note: [
+      { from: 1, to: 2, text: 'On the woodland stage, the bear moves with the drum and the bunny with the clap. They respond to the sounds in your beat.' },
+      { from: 3, to: 3, text: 'On the picnic blanket, the pig moves with the drum and the duck with the clap. They respond to the sounds in your beat and in target replay.' },
+      { from: 4, to: 4, text: 'On the woodland stage, the bear moves with the drum and the bunny with the clap. They respond to the sounds in your beat.' },
+      { from: 5, to: 5, text: 'On the picnic blanket, the pig moves with the drum, the duck with the clap and the dog with the bell. They respond to the sounds in your beat and in target replay.' },
+    ],
   },
   'clap-syllables': {
     goal: 'Hear that words are made of beats.',
