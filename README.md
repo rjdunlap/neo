@@ -65,7 +65,7 @@ There are seventy-eight games, listed below. "Ages" lists the bands each game ha
 | Splish Splash | lap–pre-K | scrub mud off the pet | named body parts in a shuffled order, two at once, then "first … then …" |
 | Feelings Faces | lap–pre-K | tap bubbles to see the pet feel happy, sad, sleepy or surprised | match and name faces, choose what helps, say why a feeling happened, find a friend's feeling, help after an event |
 | Weather Wardrobe | lap–pre-K | tap the sky to change the weather | dress the pet for sun, rain or snow, pack for two kinds of weather, then change outfits when the weather changes (pre-K) |
-| Duck Pond | lap–school | count along as ducks hop in | put N in, how many?, adding and taking away, how many more make ten, then find the ducks hiding under the bridge |
+| Duck Pond | lap–school | count along as ducks hop in | put N in, how many?, adding and taking away, how many more make ten, then find the ducks hiding under the bridge; hidden ducks paddle into view and answered stories show a spoken number sentence |
 | Monster Munch | lap–school | tap cookies into a hungry monster | count along, one cookie each, feed exactly N then ring the bell, cookies and apples, fair sharing, sharing with leftovers |
 | Puzzle Pals | lap–school | finish a two-piece picture | three to twelve pieces, first over a faint picture, then an empty frame with marked outer edges and spoken spatial hints |
 | Sink or Float | lap–school | drop things in the water and watch | guess and test, sort into baskets, surprises like a floating apple |

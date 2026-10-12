@@ -2259,12 +2259,17 @@ async function originals() {
   }
 
   // Duck Pond: tapping ducks in, stopping at a number, and answering on lily pads.
-  const duckLevels = process.env.DUCK_LEVELS?.split(',').map(Number) ?? Array.from({ length: 11 }, (_, i) => i + 1);
-  for (const level of duckLevels.filter((n) => n >= 1 && n <= 11 && (!only || only === 'ducks'))) {
-    if (level === 9) await portrait(true);
+  const duckTop = await page.evaluate(async () => (await import('/src/games/duck-pond/logic.ts')).PLANS.length);
+  const duckLevels = process.env.DUCK_LEVELS?.split(',').map(Number) ?? Array.from({ length: duckTop }, (_, i) => i + 1);
+  for (const level of duckLevels.filter((n) => n >= 1 && n <= duckTop && (!only || only === 'ducks'))) {
+    if (level === 9 || level === duckTop) await portrait(true);
     await launch('duck-pond', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    const revealShot = mode === 'hide' ? (async () => {
+      await page.waitForFunction(() => neo.scene.game.round === 0 && neo.scene.game.signText.text.includes('=') && neo.scene.game.swimmers.every((d) => d.critter.visible), null, { timeout: 60000 });
+      await screenshot(`duck-pond-${level}-reveal-portrait`);
+    })() : null;
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const ready = () => kit.until(() => !g.busy || g.finished, 20000);
@@ -2286,14 +2291,22 @@ async function originals() {
           for (let k = 0; k < 2; k++) { kit.tapOn(wrong); await kit.sleep(500); await ready(); }
           if (g.misses !== 2 || g.hints !== 1 || !g.pads.find((p) => p.value === g.answer).glowing) throw new Error(`Duck hint: ${g.misses} ${g.hints}`);
         }
+        if (g.plan.mode === 'hide' && g.swimmers.filter((d) => !d.critter.visible).length !== g.answer) throw new Error('Hidden count differs from answer');
         kit.tapOn(g.pads.find((p) => p.value === g.answer));
+        if (g.plan.mode === 'hide') {
+          await kit.until(() => g.swimmers.every((d) => d.critter.visible) && g.signText.text.includes('='), 20000);
+          const { HIDING_SLOTS, numberSentence } = await import('/src/games/duck-pond/logic.ts');
+          if (g.signText.text !== numberSentence(g.want - g.answer, g.answer)) throw new Error('Wrong whole-part sentence');
+          if (g.swimmers.some((d, i) => d.pondOffset[0] !== HIDING_SLOTS[i][0] || d.pondOffset[1] !== HIDING_SLOTS[i][1])) throw new Error('Reveal left a duck under the bridge');
+        }
         await kit.until(() => g.round > r || g.finished, 20000);
       }
     });
+    if (revealShot) await revealShot;
     await screenshot(`duck-pond-${level}`);
     await finished('duck-pond');
     assert.deepEqual(await score('duck-pond'), mode === 'along' || mode === 'make' ? [0, 0] : [2, 1], `ducks ${level} score`);
-    if (level === 9) await portrait(false);
+    if (level === 9 || level === duckTop) await portrait(false);
     log(`Duck Pond ${level} (${mode}): counting along, stopping at a number, answers, mistakes, hint, saved score and sticker passed`);
   }
 

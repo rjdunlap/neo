@@ -493,3 +493,7 @@ Built the support portion of deep-dive slice 1 ([PR #169](https://github.com/rjd
 ## Memory Match spoken cards and stable hints (2026-10-11)
 
 Deep-dive support slice 1 ([PR #170](https://github.com/rjdunlap/neo/pull/170)): every picture, dot, numeral, letter, number word and fraction card names its contents. Tapping the first open card replays its name without another choice, miss or hint. An unseen mismatch gives a neutral description; known mismatches retain the gentle boing. One seen partner glows after two misses, and stays there until a match clears it. The how-to lines for number words and fractions are scoped to levels 10 and 11. Plans and identities are inspectable in `logic.ts`; all existing deck sizes, band windows, saved levels, sticker drawings and couch turns remain. Fresh picture decks/dot arrangements are next; level 10 quantity and toddler/clocks remain decisions. Checks are in [verification](../VERIFICATION.md).
+
+## Duck Pond reveal and rule guards (2026-10-11)
+
+Deep-dive slice 1 ([PR #171](https://github.com/rjdunlap/neo/pull/171)): a correct hidden-part answer brings the ducks into view one by one, counted aloud. At levels 8–11 the sign shows the answered addition or subtraction sentence and the pet reads it. Separate seats keep every revealed duck countable. Bounded how-to lines, exhaustive mode descriptions, a historical sticker-count snapshot for seeds 0–99 and a plan-sized browser loop guard future additions. No levels, bands, saved IDs or miss/hint rules changed; the hint and stopping slices remain open.

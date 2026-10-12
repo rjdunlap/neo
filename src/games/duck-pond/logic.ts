@@ -112,3 +112,15 @@ export function duckMove(plan: DuckPlan, bank: number, swimming: number, want: n
   const pad = pads.indexOf(answer);
   return pad >= 0 ? { pad } : null;
 }
+
+/** Two separated rows: visible and revealed parts never occupy the same seat. */
+export const HIDING_SLOTS: [number, number][] = [
+  [-260, -80], [-130, -80], [0, -80], [130, -80], [260, -80],
+  [-240, 90], [-120, 90], [0, 90], [120, 90], [240, 90],
+];
+export const hidingRevealSlots = (puzzle: HidingPuzzle) => HIDING_SLOTS.slice(puzzle.visible, puzzle.total);
+
+export const numberSentence = (a: number, b: number, away = false) => `${a} ${away ? '−' : '+'} ${b} = ${away ? a - b : a + b}`;
+
+/** Historical sticker draw, kept apart from round content. */
+export const stickerDucks = (rng: Rng) => rng.int(1, 3);
