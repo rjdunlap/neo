@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beatMove, differences, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
+import { beatMove, differences, firstMismatch, mendCopy, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
 
 describe('Beat Builder', () => {
   it('makes beats that start on the drum, give every row a hit, and are never all sounds at once', () => {
@@ -90,7 +90,7 @@ describe('Beat Builder', () => {
           expect(repairs(plan, target, have)).toHaveLength(remaining - 1);
         }
         expect(same(target, have)).toBe(true);
-        expect(beatMove(plan, target, have, true)).toBe(plan.mode === 'hear' ? 'check' : null);
+        expect(beatMove(plan, target, have, true)).toBe(plan.mode === 'hear' || plan.mode === 'mend' ? 'check' : null);
       }
     }
   });
@@ -119,7 +119,7 @@ describe('Beat Builder', () => {
   });
 
   it('names add/remove repairs, drops fixed cells after edits and never repairs the given half', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend')) {
       const goal = makeBeat(plan, new Rng(42));
       const have = goal.map((row) => row.map((on) => !on));
       goal.forEach((row, r) => row.forEach((on, step) => { if (givenStep(plan, step)) have[r][step] = on; }));
@@ -141,7 +141,7 @@ describe('Beat Builder', () => {
 
   describe("the ghost finger's bot", () => {
     it('builds the beat to copy with only right squares, leaving the given half alone, and checks only where a check is asked for', () => {
-      for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+      for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'mend')) {
         for (let seed = 1; seed <= 100; seed++) {
           const target = makeBeat(plan, new Rng(seed));
           const beat = empty(plan.rows, plan.steps);
@@ -159,7 +159,7 @@ describe('Beat Builder', () => {
           expect(same(target, beat), plan.name).toBe(true);
           expect(taps).toBeGreaterThan(0);
           // Levels that see their beat finish when it matches; the ear levels press the check.
-          expect(move).toBe(plan.mode === 'hear' ? 'check' : null);
+          expect(move).toBe(plan.mode === 'hear' || plan.mode === 'mend' ? 'check' : null);
           if (plan.mode === 'hear') expect(beatMove(plan, target, beat, false)).toBeNull();
         }
       }
@@ -176,5 +176,27 @@ describe('Beat Builder', () => {
       expect(beatMove(plan, goal, beat, false)).toBeNull();
       expect(beatMove(plan, goal, beat, true)).toBe('check');
     });
+  });
+
+  it('mends: the copy differs from the model in exactly one square, both repairs come up, and the bot repairs it', () => {
+    const plan = PLANS[5];
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      for (const [i, phrase] of SHORT_PHRASES.entries()) {
+        const model = phrase.score.map((row) => [...row]);
+        const copy = mendCopy(model, i, rng);
+        const diff = differences(model, copy);
+        expect(diff).toHaveLength(1);
+        expect(repairs(plan, model, copy)).toHaveLength(1);
+        expect(repairs(plan, model, copy)[0].add).toBe(i % 3 === 0 ? true : i % 3 === 1 ? false : repairs(plan, model, copy)[0].add);
+        expect(hits(copy)).toBeGreaterThan(0);
+        expect(firstMismatch(model, copy)).not.toBeNull();
+        const have = copy.map((row) => [...row]);
+        for (let move = beatMove(plan, model, have, false); move && move !== 'check'; move = beatMove(plan, model, have, false)) have[move.row][move.step] = !have[move.row][move.step];
+        expect(same(model, have)).toBe(true);
+        expect(beatMove(plan, model, have, true)).toBe('check');
+        expect(same(model, copy)).toBe(false);
+      }
+    }
   });
 });

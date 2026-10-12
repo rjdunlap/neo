@@ -12,12 +12,12 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beatMove, repairs, replayTick, empty, freeBeat, givenStep, hits, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
+import { beatMove, firstMismatch, mendCopy, repairs, replayTick, empty, freeBeat, givenStep, hits, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 4 },
-  school: { min: 3, max: 5 },
+  prek: { min: 1, max: 6 },
+  school: { min: 3, max: 6 },
 };
 
 const CELL = 100;
@@ -64,6 +64,8 @@ class BeatBuilder implements Game {
   private readonly backdrop: Backdrop;
   private readonly woodland: BeatStage;
   private readonly cells = new Graphics();
+  /** Mend levels: the model to match, drawn small under the controls. */
+  private readonly model = new Graphics();
   private readonly icons = new Container();
   private view: View;
   private timer = 0;
@@ -93,10 +95,11 @@ class BeatBuilder implements Game {
     }
     this.grid.addChild(this.icons);
     this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 56, () => this.playTarget());
-    this.listen.visible = this.plan.mode === 'hear';
+    this.listen.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend';
     this.check = new RoundButton(checkArt(), swatch.green, 56, () => void this.checkBeat());
-    this.check.visible = this.plan.mode === 'hear';
-    ctx.stage.addChild(this.backdrop, this.woodland, this.grid, this.listen, this.check);
+    this.check.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend';
+    ctx.stage.addChild(this.backdrop, this.woodland, this.grid, this.listen, this.check, this.model);
+    this.model.eventMode = 'none';
   }
 
   start() {
@@ -114,6 +117,7 @@ class BeatBuilder implements Game {
     const y = this.grid.y + this.plan.rows * CELL + 95;
     this.listen.position.set(v.w / 2 - 90, y);
     this.check.position.set(v.w / 2 + 90, y);
+    this.model.position.set(v.w / 2, y + 95);
     this.draw();
   }
 
@@ -175,9 +179,10 @@ class BeatBuilder implements Game {
     this.target = phrase?.beat ?? empty(this.plan.rows, this.plan.steps);
     this.beat = empty(this.plan.rows, this.plan.steps);
     // Repeat levels: the first half is already there.
+    if (this.plan.mode === 'mend') this.beat = mendCopy(this.target, this.index, this.ctx.rng);
     if (this.plan.mode === 'repeat') this.target.forEach((row, r) => row.forEach((on, s) => (this.beat[r][s] = givenStep(this.plan, s) && on)));
     this.resize(this.view);
-    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat' } as const;
+    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat', mend: 'beat.mend' } as const;
     if (this.plan.mode === 'free') {
       this.busy = false;
       return this.ctx.instruct(line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
@@ -197,7 +202,21 @@ class BeatBuilder implements Game {
     this.draw();
   }
 
+  private drawModel() {
+    const m = this.model.clear();
+    if (this.plan.mode !== 'mend') return;
+    const { rows, steps } = this.plan, c = 44;
+    const x0 = -(steps * c) / 2;
+    m.roundRect(x0 - 10, -8, steps * c + 20, rows * c + 16, 14).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 4, color: wood.line });
+    for (let r = 0; r < rows; r++) for (let s = 0; s < steps; s++) {
+      const on = this.target[r][s];
+      m.roundRect(x0 + s * c + 3, r * c + 3, c - 6, c - 6, 8).fill(on ? ROW_COLORS[r].fill : 0xf2f2f6).stroke({ width: 3, color: on ? ROW_COLORS[r].line : 0xd8d8e2 });
+    }
+    if (this.playingTarget > 0) m.roundRect(x0 + this.step * c, -4, c, rows * c + 8, 10).stroke({ width: 4, color: swatch.yellow.line });
+  }
+
   private draw() {
+    this.drawModel();
     const g = this.cells.clear();
     const { rows, steps } = this.plan;
     g.roundRect(-14, -14, steps * CELL + 28, rows * CELL + 28, 24).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 5, color: wood.line });
@@ -263,14 +282,17 @@ class BeatBuilder implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    await this.ctx.say('beat.nothear');
+    if (this.plan.mode === 'mend') {
+      const m = firstMismatch(this.target, this.beat);
+      await this.ctx.say('beat.mendno', { instrument: INSTRUMENTS[m?.row ?? 0].name, place: ['first', 'second', 'third', 'fourth'][m?.step ?? 0] });
+    } else await this.ctx.say('beat.nothear');
     if (this.wrongs >= 2 && !this.helped) {
       this.hints++;
       this.helped = true;
       void this.ctx.say('beat.hint');
     }
     this.busy = false;
-    this.playTarget();
+    if (this.plan.mode !== 'mend') this.playTarget();
     this.draw();
   }
 

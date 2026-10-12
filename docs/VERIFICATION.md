@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder level 6, mend the beat
+
+- New level 6 (pre-K 1–6, school 3–6), decisions 1–3 adopted by the developer. `mendCopy` flips exactly one square (missing, extra, free alternating), `firstMismatch` names the row and square, repairs glow after two wrong checks. Rules/unit tests, how-to card and bot extended.
+- Ran: typecheck, content and games unit tests (800 passed), one scripted portrait play at level 6 (wrong check twice -> miss, hint glow, bot repair advanced the round, no page errors). Not run: browser suites, `fingerdemo`, build, offline; iPad touch and child fit open.
+
 ## 2026-10-12 — Beat Builder picnic stage
 
 - Picnic portion of slice 9 ([PR #199](https://github.com/rjdunlap/neo/pull/199)): `PicnicStage` (checkered blanket, basket, flowers; pig/drum, duck/clap, dog/bell) on levels 3 and 5, woodland unchanged on 1, 2, 4; the stage shares a `FriendsStage` base. How-to note rewritten per level.
