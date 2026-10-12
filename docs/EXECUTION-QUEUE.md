@@ -33,6 +33,9 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 - Admission: worker 10% / 67%, resets `1791838034` / `1792295992`, ordinary usage allowed; conservative estimate 15 / 2.5 points fits. No competing active implementation/open PR/unmerged branch; unrelated dirty verification/tracker/registry work in another checkout preserved.
 - State: claim, implementation and checks pending. Next action: publish docs claim/draft PR, implement only this slice, run targeted tier, publish or checkpoint; do not dispatch/message coordinator.
 
+- Coordinator admission 2026-10-12 16:49:02 UTC: 9% / 66%, resets `1791838034` / `1792295992`, estimate 15 / 2.5 points. Previous #192 merged at `1cf3085`; final prior worker 8% / 66% at 15:53:50 UTC. Own draft [PR #194](https://github.com/rjdunlap/neo/pull/194), claim `4fe7794`.
+
+
 ## Usage observations
 
 Record one row per admitted run and retain the latest ten. Percentage-point differences are comparable only when the window reset identity is unchanged. A reset-crossing sample is unknown, not zero. Other account work may contribute to a difference; label it as aggregate usage, never exact per-task cost. Unknown samples do not lower estimates. Record each worker/dispatch once; the ledger improves slice estimates and does not impose a daily quota. Store a closeout reading obtained after the final commit in the worker/coordinator chat and carry it into the next checkpoint; do not make another commit solely to log publication overhead.
@@ -55,9 +58,11 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-12 | Beat Builder deep dive / [#190](https://github.com/rjdunlap/neo/pull/190), dispatch `beat-builder-dive-20261012T144502Z` | Docs only | 40% → 49% / `1791819581` | 63% → 65% / `1792295992` (intermediate 1s drift) | Estimate 10 / 1.25 points | Merged #190; final 14:55:16 UTC 49% / 65%, resets `1791819581` / `1792295993`. Aggregate five-hour 9 points; weekly formally unknown due identity drift, apparent 2. Reconciled once; future conservative estimate accounts for apparent overrun; no daily quota |
 
-| 2026-10-12 | Beat Builder how-to 1–5, dispatch `beat-builder-howto-20261012T154702Z` | How-to content | 1% → pending / `1791838034` | 65% → pending / `1792295993` | Estimate 15 / 2.5 points | Fresh worker `01a130ce-079c-7a30-97ac-5c1a016bc107` admitted; implementation/proof pending |
 
-| 2026-10-12 | Beat Builder how-to / [#192](https://github.com/rjdunlap/neo/pull/192), dispatch `beat-builder-howto-20261012T154702Z` | Content wording | 1% → 8% / `1791838034` | 65% → 66% / `1792295993` → `1792295992` | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate five-hour 7 points, weekly formally unknown due 1s drift (apparent 1). Pre-publication 15:52:58 UTC; final after-commit reading in worker response |
+
+| 2026-10-12 | Beat Builder how-to / [#192](https://github.com/rjdunlap/neo/pull/192), dispatch `beat-builder-howto-20261012T154702Z` | Content wording | 1% → 8% / `1791838034` | 65% → 66% / `1792295993` → `1792295992` | Estimate 15 / 2.5 points | Merged #192; final 15:53:50 UTC. Aggregate five-hour 7 points; weekly formally unknown due 1s identity drift (apparent 1). Worker complete; reconciled once |
+
+| 2026-10-12 | Beat Builder replay/help, dispatch `beat-builder-replay-20261012T164902Z` | Gameplay fix | 9% → pending / `1791838034` | 66% → pending / `1792295992` | Estimate 15 / 2.5 points | Fresh worker `01a13105-31ef-7d00-a221-dc5e3c556986` admitted; implementation/proof pending |
 
 ## Fresh-worker dispatch and handoff
 
