@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beatMove, differences, empty, freeBeat, givenStep, hits, makeBeat, PLANS, repairs, replayTick, same } from './logic';
+import { beatMove, differences, empty, freeBeat, givenStep, hits, INSTRUMENTS, LONG_PHRASES, SHORT_PHRASES, roundPhrases, makeBeat, PLANS, repairs, replayTick, same } from './logic';
 
 describe('Beat Builder', () => {
   it('makes beats that start on the drum, give every row a hit, and are never all sounds at once', () => {
@@ -12,6 +12,85 @@ describe('Beat Builder', () => {
         expect(b[0][0]).toBe(true);
         if (plan.rows === 3) for (let s = 0; s < plan.steps; s++) expect(b.every((row) => row[s])).toBe(false);
         if (plan.mode === 'repeat') for (const row of b) expect(row.slice(4)).toEqual(row.slice(0, 4));
+      }
+    }
+  });
+
+  it('has twelve distinct short and eight distinct long named original scores with playable rests', () => {
+    expect(INSTRUMENTS.map((i) => i.id)).toEqual(['drum', 'clap', 'bell']);
+    const all = [...SHORT_PHRASES, ...LONG_PHRASES];
+    expect(new Set(all.map((p) => p.id)).size).toBe(20);
+    expect(new Set(all.map((p) => p.name)).size).toBe(20);
+    for (const [pool, rows, steps, count] of [[SHORT_PHRASES, 2, 4, 12], [LONG_PHRASES, 3, 8, 8]] as const) {
+      expect(pool).toHaveLength(count);
+      expect(new Set(pool.map((p) => JSON.stringify(p.score))).size).toBe(count);
+      for (const p of pool) {
+        expect(p.name).toMatch(/^[A-Za-z ]+$/);
+        expect(p.score).toHaveLength(rows);
+        expect(p.score[0][0]).toBe(true);
+        for (const row of p.score) {
+          expect(row).toHaveLength(steps);
+          expect(row.every((on) => typeof on === 'boolean')).toBe(true);
+          expect(row.some(Boolean)).toBe(true);
+          expect(row.filter(Boolean).length).toBeLessThanOrEqual(3);
+          expect(row.some((on) => !on)).toBe(true);
+        }
+        if (rows === 3) for (let step = 0; step < steps; step++) expect(p.score.every((row) => row[step])).toBe(false);
+      }
+    }
+  });
+
+  it('draws deterministic, distinct round targets, reaches every phrase and doubles only the repeat unit', () => {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+      const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const round = roundPhrases(plan, new Rng(seed));
+        expect(round).toEqual(roundPhrases(plan, new Rng(seed)));
+        expect(round).toHaveLength(plan.beats);
+        expect(new Set(round.map((p) => JSON.stringify(p.beat))).size).toBe(plan.beats);
+        for (const p of round) {
+          seen.add(p.id);
+          const source = pool.find((entry) => entry.id === p.id)!;
+          expect(p.name).toBe(source.name);
+          expect(p.beat).toEqual(source.score.map((row) => plan.mode === 'repeat' ? [...row, ...row] : [...row]));
+        }
+      }
+      expect([...seen].sort()).toEqual(pool.map((p) => p.id).sort());
+    }
+  });
+
+  it('owns each editable score and leaves free-play randomness alone', () => {
+    const rng = new Rng(77);
+    const untouched = rng.clone();
+    expect(roundPhrases(PLANS[0], rng)).toEqual([]);
+    expect(rng.next()).toBe(untouched.next());
+    const plan = PLANS[1];
+    const original = roundPhrases(plan, new Rng(77));
+    const changed = roundPhrases(plan, new Rng(77));
+    changed[0].beat[0][0] = false;
+    expect(original[0].beat[0][0]).toBe(true);
+    expect(roundPhrases(plan, new Rng(77))).toEqual(original);
+  });
+
+  it('can repair missing and excess sounds in every authored target with the existing bot and hint', () => {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+      const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
+      for (const p of pool) {
+        const target = p.score.map((row) => plan.mode === 'repeat' ? [...row, ...row] : [...row]);
+        const have = target.map((row) => row.map((on, step) => givenStep(plan, step) ? on : !on));
+        expect(repairs(plan, target, have).some((c) => c.add)).toBe(true);
+        expect(repairs(plan, target, have).some((c) => !c.add)).toBe(true);
+        for (let remaining = repairs(plan, target, have).length; remaining > 0; remaining--) {
+          const move = beatMove(plan, target, have, true);
+          expect(move && move !== 'check').toBe(true);
+          if (!move || move === 'check') break;
+          expect(givenStep(plan, move.step)).toBe(false);
+          have[move.row][move.step] = !have[move.row][move.step];
+          expect(repairs(plan, target, have)).toHaveLength(remaining - 1);
+        }
+        expect(same(target, have)).toBe(true);
+        expect(beatMove(plan, target, have, true)).toBe(plan.mode === 'hear' ? 'check' : null);
       }
     }
   });

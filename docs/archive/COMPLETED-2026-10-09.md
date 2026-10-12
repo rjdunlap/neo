@@ -547,3 +547,10 @@ Deep-dive slice 1 ([PR #171](https://github.com/rjdunlap/neo/pull/171)): a corre
 ## Stamp Studio slice 1c1: seeded early choices (2026-10-12)
 
 [PR #179](https://github.com/rjdunlap/neo/pull/179), branch `codex/stamp-studio-1c1-seeded-choices`: `roundPlan` selects one/two/three distinct existing kinds and an existing starting color with the round RNG at levels 1–3. Choices match the placed color; generic early speech/descriptions and scoped how-to stay true for every selection. Creative harness reads the selected color when no color row is shown. Existing levels/bands, zero misses/hints, arrow completion, snapshot/speech guards and seeds 0–99 sticker fixture remain intact. No removal, lap stopping change, new content or save field. Typecheck, 60 focused Stamp Studio/how-to/save tests and build passed; browser evidence is recorded in [VERIFICATION](../VERIFICATION.md).
+
+
+## Beat Builder authored phrases (2026-10-12)
+
+Build slice 3 ([PR #196](https://github.com/rjdunlap/neo/pull/196)): twelve original four-step drum/clap scores and eight eight-step drum/clap/bell scores, each with a speakable nickname. Levels 2–3 select three distinct short phrases, 4 selects two short units and repeats each, 5 selects two distinct long phrases. Seeded shuffling owns editable copies; free play has no target draw. Shared instrument identities drive existing pictures, playback and free-play speech; phrase speech precedes target replay. No new drawings, modes, levels, bands or storage. Procedural generation remains available separately; sticker code/seeds unchanged.
+
+Typecheck and ten focused Beat Builder rules passed, covering all library shapes/unique names, opening drum, row presence/rests, long collision rule, seed determinism, all-phrase reachability, distinct rounds, copy ownership and add/remove hint/bot completion for every phrase at every applicable plan. Browser/build/offline suites not run at the source generation tier; actual device listening/speech and child fit remain open.

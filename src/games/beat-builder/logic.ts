@@ -32,7 +32,66 @@ export type Beat = boolean[][];
 
 export const empty = (rows: number, steps: number): Beat => Array.from({ length: rows }, () => Array<boolean>(steps).fill(false));
 
+/** Row identity is shared by pictures, playback and spoken support. */
+export const INSTRUMENTS = [
+  { id: 'drum', name: 'drum' },
+  { id: 'clap', name: 'clap' },
+  { id: 'bell', name: 'bell' },
+] as const;
+
+export interface BeatPhrase {
+  readonly id: string;
+  /** A short, speakable nickname, not a reading requirement. */
+  readonly name: string;
+  readonly score: readonly (readonly boolean[])[];
+}
+
+/** Authored on/off matrices: 1 sounds, 0 rests. */
+const phrase = (id: string, name: string, rows: readonly string[]): BeatPhrase => ({
+  id, name, score: rows.map((row) => [...row].map((cell) => cell === '1')),
+});
+
+export const SHORT_PHRASES: readonly BeatPhrase[] = [
+  phrase('taking-turns', 'Taking turns', ['1010', '0101']),
+  phrase('little-pause', 'Little pause', ['1001', '0010']),
+  phrase('hello-clap', 'Hello clap', ['1000', '0100']),
+  phrase('double-knock', 'Double knock', ['1100', '0001']),
+  phrase('clap-answer', 'Clap answer', ['1000', '0011']),
+  phrase('stepping-stones', 'Stepping stones', ['1010', '0001']),
+  phrase('together-first', 'Together first', ['1001', '1100']),
+  phrase('middle-meeting', 'Middle meeting', ['1010', '0110']),
+  phrase('quiet-ending', 'Quiet ending', ['1100', '0010']),
+  phrase('clap-sandwich', 'Clap sandwich', ['1000', '0110']),
+  phrase('last-wave', 'Last wave', ['1001', '0101']),
+  phrase('drum-walk', 'Drum walk', ['1110', '0001']),
+];
+
+export const LONG_PHRASES: readonly BeatPhrase[] = [
+  phrase('bell-answer', 'Bell answer', ['10100010', '01000100', '00010001']),
+  phrase('quiet-path', 'Quiet path', ['10001000', '00100010', '00000001']),
+  phrase('two-hellos', 'Two hellos', ['11001000', '00010010', '00100001']),
+  phrase('bell-in-between', 'Bell in between', ['10010010', '01000100', '00101000']),
+  phrase('clap-gathering', 'Clap gathering', ['10001000', '01100001', '00010010']),
+  phrase('drum-and-bell', 'Drum and bell', ['10100001', '00010100', '10001000']),
+  phrase('soft-landing', 'Soft landing', ['10010000', '01001000', '00100010']),
+  phrase('picnic-walk', 'Picnic walk', ['10001010', '00100100', '01000001']),
+];
+
+/** Each round draws distinct phrases once. Copies keep edits out of the library and other rounds.
+ * This uses only the game's supplied target RNG; sticker art keeps its own seed/Rng.
+ * Free play has no authored target and consumes no target randomness.
+ */
+export function roundPhrases(plan: BeatPlan, rng: Rng): { id: string; name: string; beat: Beat }[] {
+  if (plan.mode === 'free') return [];
+  const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
+  return rng.shuffle([...pool]).slice(0, plan.beats).map((p) => ({
+    id: p.id, name: p.name,
+    beat: p.score.map((row) => plan.mode === 'repeat' ? [...row, ...row] : [...row]),
+  }));
+}
+
 /**
+ * Procedural source retained for future content; current copy rounds use roundPhrases.
  * A beat to copy: the drum always starts the bar, each row has one to three hits, and no step is
  * crowded with every instrument at once. On repeat levels the second half copies the first.
  */

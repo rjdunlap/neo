@@ -11,7 +11,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beatMove, repairs, replayTick, empty, freeBeat, givenStep, hits, makeBeat, planFor, same, type Beat, type BeatPlan } from './logic';
+import { beatMove, repairs, replayTick, empty, freeBeat, givenStep, hits, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -26,11 +26,11 @@ const ROW_COLORS = [swatch.orange, swatch.teal, swatch.purple];
 /** Little pictures for each row: a drum, two clapping hands, a bell. */
 function rowIcon(row: number): Graphics {
   const g = new Graphics();
-  if (row === 0) {
+  if (INSTRUMENTS[row].id === 'drum') {
     g.ellipse(0, -14, 30, 10).fill(swatch.white.fill).stroke({ width: 4, color: swatch.orange.line });
     g.rect(-30, -14, 60, 34).fill(swatch.orange.fill).ellipse(0, 20, 30, 10).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
     g.moveTo(-30, -14).lineTo(-30, 20).moveTo(30, -14).lineTo(30, 20).stroke({ width: 4, color: swatch.orange.line });
-  } else if (row === 1) {
+  } else if (INSTRUMENTS[row].id === 'clap') {
     for (const s of [-1, 1]) g.ellipse(s * 12, 0, 14, 24).fill(swatch.teal.fill).stroke({ width: 4, color: swatch.teal.line });
     g.moveTo(-30, -26).lineTo(-22, -18).moveTo(30, -26).lineTo(22, -18).stroke({ width: 4, color: swatch.teal.line, cap: 'round' });
   } else {
@@ -59,6 +59,7 @@ class BeatBuilder implements Game {
   readonly listen: RoundButton;
   readonly check: RoundButton;
 
+  private readonly phrases: ReturnType<typeof roundPhrases>;
   private readonly backdrop: Backdrop;
   private readonly cells = new Graphics();
   private readonly icons = new Container();
@@ -75,6 +76,7 @@ class BeatBuilder implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.phrases = roundPhrases(this.plan, ctx.rng);
     this.target = empty(this.plan.rows, this.plan.steps);
     this.beat = empty(this.plan.rows, this.plan.steps);
     this.backdrop = new Backdrop({ sky: [0xc9b8f0, 0xf3ecff], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.78, clouds: 2, seed: 88 }, ctx.view);
@@ -151,8 +153,8 @@ class BeatBuilder implements Game {
   destroy() { this.finished = true; this.playingTarget = 0; }
 
   private sound(row: number, step: number) {
-    if (row === 0) sfx.drum();
-    else if (row === 1) sfx.knock();
+    if (INSTRUMENTS[row].id === 'drum') sfx.drum();
+    else if (INSTRUMENTS[row].id === 'clap') sfx.knock();
     else sfx.bell(7 + (step % 3), 0.22);
   }
 
@@ -163,16 +165,21 @@ class BeatBuilder implements Game {
     this.playingTarget = 0;
     this.helped = false;
     if (this.index >= this.plan.beats) return void this.finale();
-    this.target = makeBeat(this.plan, this.ctx.rng);
+    const phrase = this.phrases[this.index];
+    this.target = phrase?.beat ?? empty(this.plan.rows, this.plan.steps);
     this.beat = empty(this.plan.rows, this.plan.steps);
     // Repeat levels: the first half is already there.
     if (this.plan.mode === 'repeat') this.target.forEach((row, r) => row.forEach((on, s) => (this.beat[r][s] = givenStep(this.plan, s) && on)));
     this.resize(this.view);
+    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat' } as const;
+    if (this.plan.mode === 'free') {
+      this.busy = false;
+      return this.ctx.instruct(line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
+    }
+    if (this.index === 0) await this.ctx.instruct(line[this.plan.mode], { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
+    if (phrase) await this.ctx.say('beat.phrase', { phrase: phrase.name });
     this.busy = false;
     if (this.plan.mode === 'hear') this.playTarget();
-    if (this.index > 0) return;
-    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat' } as const;
-    return this.ctx.instruct(line[this.plan.mode]);
   }
 
   /** The beat to copy plays twice, with the playhead in its own color. */

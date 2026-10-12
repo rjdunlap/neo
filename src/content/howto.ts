@@ -880,6 +880,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'beat-builder': {
     goal: 'Arrange percussion sounds in a repeating beat.',
     steps: [
+      { from: 2, to: 5, text: 'Each target has a spoken nickname. The round uses different beats; the nickname is not an answer you need to read.' },
       { from: 1, to: 3, text: 'The grid has four steps: drum on top, clap below. Tap a square to turn its sound on or off; the playhead loops.' },
       { from: 1, to: 1, text: 'To reveal the green check, leave at least three squares on and wait for the playhead to return to the start twice after your last edit.' },
       { from: 1, to: 1, text: 'Tap the green check when you want to finish your beat.' },
