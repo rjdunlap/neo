@@ -855,6 +855,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Beat Builder authored-phrase worker dispatch (2026-10-12)
+
+Coordinator confirmed replay/help #194 merged at `382b907`, its worker complete and focused proof recorded. Actual allowance admits one fresh worker for build slice 3 (authored phrases at 2–5); no concurrent implementation or overlapping claim/dirty work found. Queue records worker `01a1313d-6c0f-7881-940c-2515740466b9`, scope, admission and pending rule-tier checks; previous aggregate usage reconciled once. Coordinator changed only dispatch documentation: source link/anchor and `git diff --check` passed. Implementation/typecheck/rule tests remain the worker’s responsibility; no coordinator servers or code checks.
+
 ### Beat Builder replay/help worker dispatch (2026-10-12)
 
 Coordinator confirmed how-to #192 merged at `1cf3085` and its worker complete with typecheck/17 focused tests. Fresh actual allowance admits one new worker for build slice 2 (audible replay and repair help); no concurrent implementation or overlapping claim/dirty work found. Queue records worker `01a13105-31ef-7d00-a221-dc5e3c556986`, scope, admission and pending checks; duplicate prior dispatch ledger row consolidated. Coordinator edits only documentation: source link/anchor and `git diff --check` passed. Implementation/typecheck/rules/filtered regression/ghost finger and conditional build remain the worker’s responsibility. No coordinator servers or code checks.
