@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-12 — Coordinator: Story Steps level-11 dispatch
+
+- Confirmed #186 merged (`56da529`) and level-10 worker complete; recorded its final 27% five-hour / 62% weekly reading, with weekly identity drift. Existing automated proof retained, not rerun.
+- Dispatched one fresh project/local worker for Story Steps level 11 (eight clue stories), thread `01a1305a-7e94-7f91-8ad2-cbd7f0dbd56f`. Minimal handoff; actual remaining 72% / 38% fits estimate 15 / 2.5 points. No other active implementation or overlapping claim; unrelated dirty checkout preserved.
+- Queue records outstanding worker/source and next retrieval. Source link/anchor and diff check only here; implementation/tests/browser proof pending in worker. No coordinator server started.
+
 ## 2026-10-12 — Story Steps two stories
 
 - Level 10 only ([PR #186](https://github.com/rjdunlap/neo/pull/186)): independent three-card rows, six-card tray, visible/spoken row identities, placed-only replay, two-miss hint; same-family and dog/bedtime pairings excluded. School 6–10; older levels/pins unchanged.
