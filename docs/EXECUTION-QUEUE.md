@@ -27,17 +27,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator: chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; active automation `neo-roadmap-coordinator` returns here hourly to dispatch fresh worker chats.
-- State: Beat Builder how-to worker complete; [#192](https://github.com/rjdunlap/neo/pull/192) merged at `1cf308558afe3dd398a1ffe0fe566fdb0387b133`; previous slot released. Newly admitted slice: **Beat Builder audible replay and repair help**, build slice 2.
-- Dispatch: `beat-builder-replay-20261012T164902Z`; worker `01a13105-31ef-7d00-a221-dc5e3c556986`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`). Requested title: "Beat Builder: audible replay and repair help". Fresh project/local chat, minimal handoff, no history/model override. Worker branch/claim PR pending.
-- Scope/source: [Beat Builder build slices](deep-dives/beat-builder.md#build-slices-in-order), slice 2: full two-loop replay, replay/edit/check boundary, consistent bell touch/playback, add/remove help at 3/5, repeat hint at 4 and repair-capable bot; preserve replay freedom and one automatic hint per target. Expected files: Beat Builder implementation/rules/tests, focused browser regression, necessary how-to/voice/audio and documentation. Exclude authored phrase library, new levels/bands, storage and other games.
-- Admission: 2026-10-12 16:49:02 UTC **9% five-hour / 66% weekly used**, resets `1791838034` / `1792295992`; ordinary usage allowed. Conservative gameplay estimate **15 / 2.5 points**, fits actual remaining **91% / 34%**. No daily cap or reserve; worker rechecks actual allowance.
-- Previous proof confirmed: #192 typecheck and 17 focused how-to tests, changed Markdown links/anchors and diff check passed. Final usage 15:53:50 UTC **8% / 66%**, resets `1791838034` / `1792295992`; admission 1% / 65%, resets `1791838034` / `1792295993`. Aggregate five-hour 7 points; weekly formally unknown due 1s identity drift (apparent 1). Ledger reconciled once; duplicate pending row removed. No previous servers started; no unchanged proof rerun.
-- Current implementation/checks **not run by coordinator**. Worker owes source tier: typecheck/targeted rules, one filtered `woods WOODS_ONLY=beat` level-5 regression with missing/excess hits/help, level-5 ghost finger; build if shared content/audio changed. No full island suites. Device sound/speech and child fit remain open.
-- Overlap at admission: no other active implementation/open PR/unmerged branch or overlapping dirty work; unrelated dirty repair checkout preserved.
-- Next action: retrieve this worker/PR next wake-up, confirm completion/publication and reconcile usage once before dispatching another. Resume same worker if unfinished. Do not implement here. Coordinator servers: none.
-
-For an admitted slice replace this checkpoint with: exact game/levels and expected files; owner branch/PR; latest commit and any uncommitted files; implementation done/remaining; checks run with tested revision, filters and server URL; checks not run; owned servers stopped; next action and blockers; before/after usage with timestamps and both window reset identities; slice estimate and worker/dispatch ID.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; worker `01a13105-31ef-7d00-a221-dc5e3c556986`, branch `codex/beat-builder-replay`, [PR #194](https://github.com/rjdunlap/neo/pull/194), dispatch `beat-builder-replay-20261012T164902Z`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`.
+- State: **slice 2 complete and verified; publication through #194 follows**. Claim `4fe7794`, integrated base `0bed7cf` / upstream `0f01556` plus final implementation/docs diff. No required implementation/check remains.
+- Scope: existing Beat Builder 3/5 full two-loop replay, edit/check boundary, consistent bell, live add/remove help and repair bot; repeat help at 4. Phrase library, new levels/bands, storage and other games excluded.
+- Proof: typecheck, 23 focused Beat Builder/how-to tests and build passed. `woods WOODS_ONLY=beat FROM_LEVEL=5` and `fingerdemo FINGER_ONLY=beat-builder FINGER_LEVELS=5`, `GAME_URL=http://localhost:5211`, passed; demo clean in 32.9s. Old replay rule restored briefly fails the sound trace; fixed source restored. Small probe proves three misses/one hint at 3/4/5 and bell preview/playback parity. Landscape repair screenshot reviewed. Changed local links/anchors and diff check passed. Owned dev server stopped; no preview/snapshot server.
+- Not run: full unit/world/couch/picnic/offline/portrait/card suites, per existing interaction tier. Actual iPad/Bluetooth sound/speech, touch and child fit open.
+- Usage: coordinator admission 16:49:02 UTC **9% / 66%**, resets `1791838034` / `1792295992`, estimate **15 / 2.5 points**. Worker first **10% / 67%**; pre-implementation **13% / 67%** same identities; pre-verification **13% / 67%**, weekly `1792295993`; pre-publication 16:57:56 UTC **17% / 68%**, resets `1791838034` / `1792295992`, ordinary usage allowed. Aggregate dispatch endpoints 8 / 2 points; intermediate weekly 1s identity drift. Final after-commit reading in worker response, carry once with no overhead-only commit.
+- Overlap: no competing active implementation/open PR/unmerged branch; coordinator exempt. Upstream coordinator dispatch integrated; unrelated dirty repair checkout preserved.
+- Next action: confirm #194 merged/published and final usage from worker response, release this complete worker; separately admit slice 3 authored phrase library if eligible. This worker stops, without dispatch or coordinator messages.
 
 ## Usage observations
 
@@ -65,7 +62,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-12 | Beat Builder how-to / [#192](https://github.com/rjdunlap/neo/pull/192), dispatch `beat-builder-howto-20261012T154702Z` | Content wording | 1% → 8% / `1791838034` | 65% → 66% / `1792295993` → `1792295992` | Estimate 15 / 2.5 points | Merged #192; final 15:53:50 UTC. Aggregate five-hour 7 points; weekly formally unknown due 1s identity drift (apparent 1). Worker complete; reconciled once |
 
-| 2026-10-12 | Beat Builder replay/help, dispatch `beat-builder-replay-20261012T164902Z` | Gameplay fix | 9% → pending / `1791838034` | 66% → pending / `1792295992` | Estimate 15 / 2.5 points | Fresh worker `01a13105-31ef-7d00-a221-dc5e3c556986` admitted; implementation/proof pending |
+
+| 2026-10-12 | Beat Builder replay/repair / [#194](https://github.com/rjdunlap/neo/pull/194), dispatch `beat-builder-replay-20261012T164902Z` | Existing interaction fix | 9% → 17% / `1791838034` | 66% → 68% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate endpoints 8 / 2 at 16:57:56 UTC. Final after-commit reading in worker response |
 
 ## Fresh-worker dispatch and handoff
 

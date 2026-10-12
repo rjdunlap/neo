@@ -3670,11 +3670,33 @@ async function woodsBatch() {
       await page.evaluate(({ r, s }) => { const g = neo.scene.game; const p = g.grid.toGlobal({ x: s * 100 + 50, y: r * 100 + 50 }); kit.tap(p.x, p.y); }, { r, s });
       await page.waitForTimeout(140);
     };
-    const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); };
+    const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || (!neo.scene.game.busy && neo.scene.game.playingTarget === 0), null, { timeout: 20000 }); };
     const fill = async () => {
       const todo = await page.evaluate(() => { const g = neo.scene.game; return g.target.flatMap((row, r) => row.map((on, s) => ({ r, s, on, have: g.beat[r][s] }))).filter((c) => c.on !== c.have); });
       for (const c of todo) await cell(c.r, c.s);
     };
+    if (level === 5) {
+      await settle();
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        g.replaySounds = [];
+        const sound = g.sound.bind(g);
+        g.sound = (row, step) => { if (g.playingTarget > 0) g.replaySounds.push([row, step]); sound(row, step); };
+      });
+      await tap('neo.scene.game.listen');
+      const before = await page.evaluate(() => JSON.stringify(neo.scene.game.beat));
+      await cell(0, 0);
+      await tap('neo.scene.game.check');
+      assert.equal(await page.evaluate(() => JSON.stringify(neo.scene.game.beat)), before, 'editing waits for replay');
+      assert.deepEqual(await counts(), [0, 0], 'checking during replay is free and ignored');
+      await settle();
+      const replay = await page.evaluate(() => {
+        const g = neo.scene.game;
+        const loop = Array.from({ length: g.plan.steps }, (_, step) => g.target.flatMap((row, r) => row[step] ? [[r, step]] : [])).flat();
+        return { actual: g.replaySounds, expected: [...loop, ...loop] };
+      });
+      assert.deepEqual(replay.actual, replay.expected, 'every target hit sounds in each of two complete loops');
+    }
     if (plan.mode === 'free') {
       await idle(0);
       await cell(0, 0); await cell(1, 1); await cell(0, 2);
@@ -3683,7 +3705,22 @@ async function woodsBatch() {
     } else for (let n = 0; n < plan.beats; n++) {
       await idle(n);
       if (n === 0) {
-        if (plan.mode === 'hear') { for (let k = 0; k < 2; k++) { await tap('neo.scene.game.check'); await settle(); } }
+        if (plan.mode === 'hear') {
+          await settle();
+          await tap('neo.scene.game.check'); await settle(); // Missing sounds.
+          if (level === 5) {
+            await fill();
+            const extra = await page.evaluate(() => { const g = neo.scene.game; return g.target.flatMap((row, r) => row.map((on, s) => ({ r, s, on }))).find((c) => !c.on); });
+            await cell(extra.r, extra.s);
+          }
+          await tap('neo.scene.game.check'); await settle(); // Extra sound at 5.
+          if (level === 5) {
+            assert.equal(await page.evaluate(() => neo.scene.game.helped), true);
+            const hasMove = await page.evaluate(() => !!neo.scene.game.autotouch());
+            assert.ok(hasMove, 'bot proposes a repair of the extra hit');
+            await screenshot('beat-builder-5-repair');
+          }
+        }
         else {
           // Squares that aren't in the beat: gentle misses that leave the square off.
           const off = await page.evaluate(() => { const g = neo.scene.game; return g.target.flatMap((row, r) => row.map((on, s) => ({ r, s, on }))).filter((c) => !c.on && !(g.plan.mode === 'repeat' && c.s < g.plan.steps / 2)).slice(0, 2); });
