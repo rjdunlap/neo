@@ -27,15 +27,11 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator: chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; active automation `neo-roadmap-coordinator` returns here hourly to dispatch fresh worker chats.
-- State: **Beat Builder how-to slice 1 complete and verified**, publication through [PR #192](https://github.com/rjdunlap/neo/pull/192) follows. Worker `01a130ce-079c-7a30-97ac-5c1a016bc107`, branch `codex/beat-builder-howto`, claim `7505cd1`, integrated base `4bec5ab` / upstream `90fd8a8` plus final content/docs diff. No required implementation/check remains.
-- Dispatch: `beat-builder-howto-20261012T154702Z`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939`. Owns only [build slice 1](deep-dives/beat-builder.md#build-slices-in-order): truthful controls, gates/counts and bounded ear wording at 1–5. Files: how-to/assertions, README/GAMES, roadmap/write-up/tracker/archive, VERIFICATION and queue. Excluded behavior/content/levels/bands/other games remain excluded.
-- Proof: typecheck and `npm test -- src/content/howto.test.ts` passed (17 tests) on integrated base plus content diff; changed Markdown links/anchors and diff check passed. Build/browser/game/offline suites not run per explicit wording tier. No servers started. iPad sound/speech, touch and child fit open.
-- Admission: coordinator 15:47:02 UTC **1% / 65%**, resets `1791838034` / `1792295993`, estimate **15 / 2.5 points**. Worker first **4% / 66%**, resets `1791838034` / `1792295992`; scope reading **5% / 66%**, pre-implementation **7% / 66%**, weekly `1792295993`; pre-verification **7% / 66%**, weekly `1792295992`. Pre-publication 15:52:58 UTC **8% / 66%**, resets `1791838034` / `1792295992`, ordinary usage allowed. Aggregate dispatch endpoints 7 five-hour points; weekly formally unknown due 1s drift (apparent 1 point). Final after-commit reading follows in worker response; record once, no extra overhead commit.
-- Overlap: no other active implementation (coordinator exempt); only own open PR. Unrelated dirty registry/deep-dive repair preserved. Coordinator's docs dispatch integrated before verification.
-- Next action: confirm #192 merged/published and final usage from worker response, release complete worker; separately admit slice 2 (audible replay/repair help) if eligible. This worker stops; no dispatch or messages to coordinator.
-
-For an admitted slice replace this checkpoint with: exact game/levels and expected files; owner branch/PR; latest commit and any uncommitted files; implementation done/remaining; checks run with tested revision, filters and server URL; checks not run; owned servers stopped; next action and blockers; before/after usage with timestamps and both window reset identities; slice estimate and worker/dispatch ID.
+- Owner: worker `01a13105-31ef-7d00-a221-dc5e3c556986`, branch `codex/beat-builder-replay`, dispatch `beat-builder-replay-20261012T164902Z`. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt.
+- Scope: Beat Builder build slice 2 only: complete two-loop target replay at 3/5, replay/edit/check boundary, consistent bell, add/remove help and repair bot (repeat help at 4). No phrase library, new levels/bands/storage/other games.
+- Expected files: Beat Builder source/rules/tests, voice/how-to, browser Beat Builder regression, README/GAMES, deep-dive/tracker/roadmap/archive, VERIFICATION and queue.
+- Admission: worker 10% / 67%, resets `1791838034` / `1792295992`, ordinary usage allowed; conservative estimate 15 / 2.5 points fits. No competing active implementation/open PR/unmerged branch; unrelated dirty verification/tracker/registry work in another checkout preserved.
+- State: claim, implementation and checks pending. Next action: publish docs claim/draft PR, implement only this slice, run targeted tier, publish or checkpoint; do not dispatch/message coordinator.
 
 ## Usage observations
 
