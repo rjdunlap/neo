@@ -22,13 +22,13 @@ Each step is 0.32 seconds (1.28/2.56-second loops). Drum is `sfx.drum`, clap is 
 
 **Known gaps for later slices, from source inspection, not browser reproduction:**
 
-- The how-to always asks for a green check, including 2/4 where no check is shown and matching advances automatically. Its finish also misses the three-/two-target counts and level-1 gate; the `from: 5` wording would incorrectly leak into appended modes. Bound all mode-specific lines.
+- The how-to control/count/gate gap is repaired in slice 1 ([PR #192](https://github.com/rjdunlap/neo/pull/192)); all steps and finish lines are bounded to current modes. Replay/hint gaps below remain open.
 - `playTarget` starts at the last step with `playingTarget = 2`; `update` decrements on entering step 0, before selecting audio. That gives one full target traversal before returning to her beat, despite the “twice” comment. Plan a step/loop trace proof and preserve two complete audible loops.
 - Ear hints draw faint dots only for missing on-cells. If her beat has extra hits and no missing ones, “faint squares” explains no repair. Show an explicit remove marker on excess cells as well as add markers, and name the instrument/step; never silently overwrite her arrangement.
 - Grid edits/checks remain available while the target plays. A successful check can stop playback early; do not count listening during demonstrations until a complete target traversal has occurred. Define the replay/edit boundary before repair modes reuse it.
 - Eight 100-unit cells start at x=200 in a 1024-unit view, ending at 1000 (frame 1014); there is little spare width. Keep cell hit areas at least 100, no sixteen-column grid or second full grid alongside it. Buttons, top corners and pet clearance need later four-view review. Visible cells are 80 units but each input tile is 100.
 - The frame-driven audio subtracts one step per update; a long frame can stretch the sequence. Actual iPad/Bluetooth listening and rhythm clarity remain unjudged. Do not redesign the shared audio engine in a docs-only dive or claim synchronization accuracy.
-- Existing tests cover seeded beat shape, opening drum, nonempty rows, three-row collision avoidance, repeated halves, differences and a bot that adds target hits from an empty/given board. They do not cover audio traversal, truthful cards, excess-hit hint repairs, duplicate round targets or a bot removing a wrong existing cell. `beatMove` cannot repair an extra hit. Extract such rules only when a slice implements them.
+- Existing tests cover seeded beat shape, opening drum, nonempty rows, three-row collision avoidance, repeated halves, differences and a bot that adds target hits from an empty/given board. Focused how-to assertions now cover the card controls, gate/counts and future-level bounds. Existing rule tests do not cover audio traversal, excess-hit hint repairs, duplicate round targets or a bot removing a wrong existing cell. `beatMove` cannot repair an extra hit. Extract such rules only when a slice implements them.
 
 [Verification](../VERIFICATION.md) records prior first-to-last demonstrations and cards on 2026-10-08; that proof does not establish wrong-answer recovery, two complete audible target loops or device sound. No prior suite is invalidated by this write-up.
 
@@ -107,9 +107,9 @@ Added to [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer). Bel
 
 ## Build slices, in order
 
-Each is a later session; nothing implemented here.
+Each is a separate session. Slice 1 is built; the remaining slices retain their readiness/decision status.
 
-1. **Claimed: truthful how-to at 1–5.** Worker `01a130ce-079c-7a30-97ac-5c1a016bc107`, branch `codex/beat-builder-howto`, dispatch `beat-builder-howto-20261012T154702Z`. Expected files: `src/content/howto.ts`, `src/content/howto.test.ts`, README, GAMES, roadmap, this write-up/tracker, completed-work archive, VERIFICATION and execution queue. Excludes replay/hint behavior, phrase content, input/progress, new levels/bands and other games.  Exact mode controls, gates, target counts and bounded ear lines. Tier: docs/content wording with shared how-to data, typecheck and focused how-to assertions; no unchanged game suites. No change to input or progress.
+1. **Built: truthful how-to at 1–5** ([PR #192](https://github.com/rjdunlap/neo/pull/192)); [build note](../archive/COMPLETED-2026-10-09.md#beat-builder-truthful-how-to-2026-10-12). Next is slice 2; no input/progress changes.
 2. **Ready: audible replay and repair help at 3/5 (repeat hint at 4).** Prove complete two-loop traversal, define replay/edit/check boundary, unify bell touch/playback, add/remove help and repair-capable bot. Preserve replay freedom and one automatic hint per target. Tier: existing interaction fix, typecheck/targeted rule tests, one filtered `woods WOODS_ONLY=beat` regression at 5 with missing/excess hits and help, `fingerdemo` at 5; build if shared how-to/voice/audio files change. No full island suites.
 3. **Ready: authored phrase library at 2–5.** Twelve short/eight long beats, without-replacement round selection and shared names. Tier: rule/generation change, typecheck and Beat Builder rules only; if drawings added, one screenshot of them. Distinguish target generation from sticker RNG.
 4. **Decision: level 6, mend.** One-bit repairs, model diagram, undo/check and bot. Tier: new interaction, typecheck/unit tests, one filtered first/top new-mode play with wrong check/hint and one portrait screenshot; build if shared content changes. Limit browser work to this game.
