@@ -1,9 +1,43 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bankSize, duckMove, hidingPuzzle, padValues, PLANS, SLOTS, story } from './logic';
+import { HIDING_SLOTS, hidingRevealSlots, numberSentence, stickerDucks, bankSize, duckMove, hidingPuzzle, padValues, PLANS, SLOTS, story } from './logic';
 import { tenStarts } from './logic';
 
 describe('Duck Pond', () => {
+  it('preserves the historical duck count for sticker seeds 0–99', () => {
+    expect(Array.from({ length: 100 }, (_, seed) => stickerDucks(new Rng(seed)))).toMatchSnapshot();
+  });
+
+  it('reveals exactly the hidden part into distinct seats inside the pond, clear of visible ducks', () => {
+    for (let total = 5; total <= 10; total++) {
+      for (let hidden = 1; hidden <= Math.min(5, total - 1); hidden++) {
+        const visible = total - hidden;
+        const slots = hidingRevealSlots({ total, visible, hidden });
+        expect(slots).toHaveLength(hidden);
+        const all = [...HIDING_SLOTS.slice(0, visible), ...slots];
+        expect(new Set(all.map(([x, y]) => `${x},${y}`)).size).toBe(total);
+        for (const [i, [x, y]] of all.entries()) {
+          expect((x / 390) ** 2 + (y / 128) ** 2).toBeLessThan(1);
+          for (const [xx, yy] of all.slice(i + 1)) expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(100);
+        }
+      }
+    }
+  });
+
+  it('writes the right operation and answer for every story and whole-part question', () => {
+    for (const plan of PLANS.filter((p) => p.mode === 'add')) {
+      for (let seed = 1; seed <= 400; seed++) {
+        const { a, b, away, answer } = story(new Rng(seed), plan);
+        expect(numberSentence(a, b, away)).toBe(`${a} ${away ? '−' : '+'} ${b} = ${answer}`);
+      }
+    }
+    for (let a = 3; a <= 9; a++) expect(numberSentence(a, 10 - a)).toBe(`${a} + ${10 - a} = 10`);
+    for (let seed = 1; seed <= 400; seed++) {
+      const { visible, hidden, total } = hidingPuzzle(new Rng(seed), PLANS[10]);
+      expect(numberSentence(visible, hidden)).toBe(`${visible} + ${hidden} = ${total}`);
+    }
+  });
+
   it('offers three different nearby numbers including the answer', () => {
     for (let answer = 1; answer <= 10; answer++) {
       for (let seed = 1; seed <= 50; seed++) {
