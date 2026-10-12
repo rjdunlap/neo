@@ -93,3 +93,24 @@ export function nextPicture<C extends { card: StoryCard; placed: boolean }>(sequ
   const choice = slot < 0 ? undefined : choices.find((c) => !c.placed && sameCard(c.card, sequence[slot]));
   return choice ? { choice, slot } : undefined;
 }
+
+export const REPAIR_PLAN = { kind: 'repair', count: 4, name: 'Fix a four-picture story by swapping pictures' } as const;
+/** Every opening has exactly one neighboring pair reversed; the story's identity stays the same. */
+export function repairPuzzle(rng: Rng) {
+  const story = rng.pick(STORY_IDS);
+  const sequence = [0, 1, 2, 3].map((stage) => ({ story, stage } as StoryCard));
+  const left = rng.int(0, 2);
+  return { story, sequence, strip: swapPictures(sequence, left, left + 1) };
+}
+export function swapPictures(strip: readonly StoryCard[], a: number, b: number): StoryCard[] {
+  const result = [...strip];
+  if (a >= 0 && b >= 0 && a < result.length && b < result.length) [result[a], result[b]] = [result[b], result[a]];
+  return result;
+}
+/** A useful hint and the bot's next swap: fix the first wrong position with its own picture. */
+export function repairMove(sequence: readonly StoryCard[], strip: readonly StoryCard[]): [number, number] | null {
+  const first = sequence.findIndex((card, i) => !sameCard(card, strip[i]));
+  if (first < 0) return null;
+  const partner = strip.findIndex((card) => sameCard(card, sequence[first]));
+  return partner < 0 ? null : [first, partner];
+}

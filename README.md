@@ -91,7 +91,7 @@ There are seventy-eight games, listed below. "Ages" lists the bands each game ha
 | Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers |
 | Size Parade | toddler–school | tap the bigger or smaller friend | order three, then five friends in either direction |
 | Bug Builder | toddler–school | decorate matching shape outlines | copy a model, then mirror six spots using shape and color |
-| Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; ten stories |
+| Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; repair a mixed-up story with swaps and undo; ten stories |
 | Pattern Train | preschool–school | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps, a tunnel of hidden cars, color and shape on their own cycles, counting by 2, 5 or 10, the car that does not belong, fixing a swapped car, the same pattern in new pieces (pick the row, build it) |
 | Memory Match | preschool–school | four picture cards | sixteen cards, number↔dots, shape + color, A↔a, number words↔numerals, fraction pictures↔names |
 | Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals, short words, the child's name |
@@ -259,7 +259,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `batch` | The follow-on ten (Photo Safari 6 too). `pegs` is flaky on the development Mac | `BATCH_ONLY=monsters\|pegs\|salon\|garden\|helpers\|eggs\|mail\|safari\|bounce\|dots` |
 | `arcade` | Duckling Parade (levels 1–10), Scoop Shop, Roundup, Bouncy Launch | `ARCADE_ONLY=parade\|scoop\|roundup\|launch`; `ARCADE_LEVELS=10` runs only Duckling Parade 10 |
 | `early` | Rainbow Fingers and Splish Splash | `EARLY_ONLY=paint\|bath` |
-| `third`, `fourth`, `expansion` | Feelings Faces (levels 1–7) and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps (through level 8) | `EXPANSION_ONLY=size\|bug\|story`, `FROM_LEVEL=8 TO_LEVEL=8` for Story Steps 8 |
+| `third`, `fourth`, `expansion` | Feelings Faces (levels 1–7) and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps (through level 9) | `EXPANSION_ONLY=size\|bug\|story`, `FROM_LEVEL=9 TO_LEVEL=9` for Story Steps repair (8 for causes) |
 | `week` | Day by Day: free card naming, day confirmation, weather records, tomorrow/yesterday, sunny-day tally, retries, hint, reward, portrait and interrupted speech | `WEEK_LEVELS=1,3` (default; `2` for the middle level) |
 | `orchard` | Orchard Rows: plant and count rows, count by columns, missing row, replay, wrong answers, hint, saved reward, portrait and interrupted speech | `ORCHARD_LEVELS=1,3` (default; use `2` for the middle level) |
 | `readdo` | Read & Do levels 1–3: word and whole-sign replay, wrong pictures, hint, saved reward, portrait and leaving during an action | `READ_LEVELS=1,3` for first and last only |

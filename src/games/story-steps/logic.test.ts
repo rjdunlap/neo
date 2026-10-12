@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CAUSES, CAUSE_IDS, causePuzzle, LEVEL_PLANS, isCause, pictureText, nextPicture, nextSlot, sameCard, STORIES, STORY_FAMILY, STORY_IDS, STORY_PLANS, storyPuzzle, type StoryCard } from './logic';
+import { repairPuzzle, repairMove, swapPictures, CAUSES, CAUSE_IDS, causePuzzle, LEVEL_PLANS, isCause, pictureText, nextPicture, nextSlot, sameCard, STORIES, STORY_FAMILY, STORY_IDS, STORY_PLANS, storyPuzzle, type StoryCard } from './logic';
 
 describe('Story Steps', () => {
   it('lays out a story in order, with every picture it needs among the choices and any extras from another story', () => {
@@ -114,6 +114,49 @@ describe('Story Steps', () => {
       }
       // Over many seeds a level shows every story in its pool (not just one or two).
       expect(seen.size, plan.name).toBe(plan.stories.length);
+    }
+  });
+});
+
+describe('Story Steps repair', () => {
+  it('opens with exactly one reversed neighboring pair, draws every story, and is seeded', () => {
+    const seen = new Set<string>();
+    const pairs = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const puzzle = repairPuzzle(new Rng(seed));
+      expect(repairPuzzle(new Rng(seed))).toEqual(puzzle);
+      seen.add(puzzle.story);
+      expect(puzzle.sequence.map((c) => c.stage)).toEqual([0, 1, 2, 3]);
+      expect(puzzle.strip.every((c) => c.story === puzzle.story)).toBe(true);
+      const move = repairMove(puzzle.sequence, puzzle.strip)!;
+      expect(move).not.toBeNull();
+      expect(move[1]).toBe(move[0] + 1);
+      pairs.add(move[0]);
+      expect(swapPictures(puzzle.strip, ...move)).toEqual(puzzle.sequence);
+      expect(puzzle.strip.filter((c, i) => !sameCard(c, puzzle.sequence[i]))).toHaveLength(2);
+    }
+    expect([...seen].sort()).toEqual([...STORY_IDS].sort());
+    expect([...pairs].sort()).toEqual([0, 1, 2]);
+  });
+  it('gives useful hints and a bot solution within three swaps from every possible four-picture order', () => {
+    const permutations = (values: number[]): number[][] => values.length === 0 ? [[]] : values.flatMap((v) => permutations(values.filter((x) => x !== v)).map((tail) => [v, ...tail]));
+    for (const story of STORY_IDS) {
+      const sequence = [0, 1, 2, 3].map((stage) => ({ story, stage }));
+      for (const order of permutations([0, 1, 2, 3])) {
+        let strip: StoryCard[] = order.map((i) => sequence[i]);
+        let swaps = 0;
+        for (let move = repairMove(sequence, strip); move; move = repairMove(sequence, strip)) {
+          expect(sameCard(strip[move[0]], sequence[move[0]])).toBe(false);
+          expect(sameCard(strip[move[1]], sequence[move[0]])).toBe(true);
+          const wrongBefore = strip.filter((c, i) => !sameCard(c, sequence[i])).length;
+          const previous = [...strip];
+          strip = swapPictures(strip, ...move);
+          expect(swapPictures(strip, ...move)).toEqual(previous); // undo restores the exact experiment
+          expect(strip.filter((c, i) => !sameCard(c, sequence[i])).length).toBeLessThan(wrongBefore);
+          expect(++swaps).toBeLessThanOrEqual(3);
+        }
+        expect(strip).toEqual(sequence);
+      }
     }
   });
 });
