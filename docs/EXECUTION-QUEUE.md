@@ -27,15 +27,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation `neo-roadmap-coordinator` remains active hourly.
-- State: replay/help worker complete and [#194](https://github.com/rjdunlap/neo/pull/194) merged at `382b907fcd5077ebfc6085a36e77544f103076a5`; previous slot released. Newly admitted slice: **Beat Builder authored phrase library at 2–5**, build slice 3.
-- Dispatch `beat-builder-phrases-20261012T175018Z`; worker `01a1313d-6c0f-7881-940c-2515740466b9`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`). Requested title "Beat Builder: authored phrases 2–5". Fresh project/local chat, minimal handoff, no history/model override. Worker branch/claim PR pending; source base `382b907`.
-- Scope/source: [Beat Builder build slices](deep-dives/beat-builder.md#build-slices-in-order), slice 3: twelve short/eight long beats, without-replacement round selection and shared names; distinguish target generation from sticker RNG. Expected files: Beat Builder rules/generation/tests, necessary shared names/content and related documentation. Exclude new modes/levels/bands, visual stages, storage and other games.
-- Admission 2026-10-12 17:50:18 UTC: **19% five-hour / 68% weekly used**, resets `1791838034` / `1792295992`; ordinary usage allowed. Conservative gameplay estimate **15 / 2.5 points**, fits actual remaining **81% / 32%**. No daily cap or reserve; worker rechecks actual allowance.
-- Previous proof confirmed: typecheck, 23 focused tests, build, filtered level-5 woods regression and ghost finger (32.9s), replay mutation and targeted help/bell probe passed; server stopped and clean publication. Final aggregate usage 16:59:12 UTC **18% / 68%**, resets `1791838034` / `1792295992`; admission 9% / 66% with same identities. Aggregate endpoints 9 / 2 points (intermediate weekly 1s drift), reconciled once below; no unchanged checks rerun.
-- Current implementation/checks **not run by coordinator**. Worker owes source tier: typecheck and Beat Builder rule tests, one screenshot only if drawings added. Browser/build/shared checks only for affected scope under AGENTS; no unchanged game suites. Actual device sound/speech and child fit remain open.
-- Admission overlap: no other active implementation/open PR/unmerged branch or overlapping dirty work; unrelated dirty repair checkout preserved. Coordinator servers: none.
-- Next action: retrieve this worker/PR next wake-up; confirm completion/publication and reconcile final usage once before another dispatch. Resume same worker if unfinished. Do not implement here.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; worker `01a1313d-6c0f-7881-940c-2515740466b9`, branch `codex/beat-builder-phrases`, [PR #196](https://github.com/rjdunlap/neo/pull/196), dispatch `beat-builder-phrases-20261012T175018Z`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`.
+- State: **slice 3 complete and verified; publication/merge through #196 follows**. Claim `a2914a1`, integrated base `47513d4` / upstream `fd6ea8b` plus final implementation/docs diff. No required implementation/check remains.
+- Scope: twelve short/eight long authored scores, seeded distinct rounds at 2–5, shared instrument identities and spoken phrase nicknames. Level 4 doubles the short unit; free play and sticker seeds unchanged. New drawings/modes/levels/bands/storage/other games excluded.
+- Proof: typecheck and ten focused Beat Builder rules passed. All phrase shapes/names/unique matrices, row presence/rests/opening drum/long collision rule, deterministic reachable pools, distinct rounds, repeat duplication, editable copy ownership and add/remove help/bot completion for every applicable phrase. Changed local links/anchors and diff check passed. No servers started.
+- Not run: build/full unit/browser/portrait/world/couch/picnic/offline, per assigned generation tier. Actual iPad/Bluetooth sound/speech and child fit open.
+- Usage: coordinator admission 17:50:18 UTC **19% / 68%**, resets `1791838034` / `1792295992`, estimate **15 / 2.5 points**. Worker first **20% / 68%**, pre-implementation **22% / 68%**, resets `1791838034` / `1792295993`; pre-verification **23% / 69%**, weekly `1792295992`; pre-publication 17:53:56 UTC **24% / 69%**, weekly `1792295993`, ordinary usage allowed. Aggregate five-hour 5 points; weekly formally unknown due one-second reset-identity drift (apparent 1). Final after-commit reading in worker response, carry once without overhead-only commit.
+- Overlap: no competing active implementation/open PR/unmerged branch; coordinator exempt. Published coordinator dispatch integrated; unrelated dirty repair checkout preserved.
+- Next action: confirm #196 merged/published and carry final usage from worker response, then release this complete worker. Slice 4 requires a developer decision; a visual stage is independently ready but needs separate admission. This worker stops without dispatch or coordinator messages.
 
 ## Usage observations
 
@@ -44,28 +43,16 @@ Record one row per admitted run and retain the latest ten. Percentage-point diff
 The allocation/debit column in old rows is historical only (retired 2026-10-12). New rows use that column for the admitted estimate instead.
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Slice estimate / retired daily allocation-debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2026-10-12 | Stamp Studio choice colors/words / [#176](https://github.com/rjdunlap/neo/pull/176) | Gameplay bug fix | 65% → 77% / `1791782505` | 51% → 53% / `1792295992` | 7.142857 / 4 | Merged #176; aggregate closeout 03:46:15 UTC |
-
 | 2026-10-12 | Stamp Studio 1c1 / [#179](https://github.com/rjdunlap/neo/pull/179), dispatch `stamp-studio-1c1-20261012T043600Z` | Gameplay seeded choices | 82% → 91% / `1791782505` | 54% → 55% / `1792295992` | 7.142857 / 6.5 | Debit 2.5 once; implementation/proof complete; aggregate final closeout 04:44:17 UTC; merged #179, worker complete |
-
 | 2026-10-12 | Shape Buddies definition / [#180](https://github.com/rjdunlap/neo/pull/180), dispatch `shape-buddies-definition-20261012T053600Z` | Docs only | 0% → 7% / `1791801370` | 56% → 57% / `1792295992` → `1792295993` | 7.142857 / 7.5 | Weekly identity drift: formally unknown; conservative debit 1 once (apparent aggregate 1, estimate 0.5). Before 05:36:00, closeout 05:40:58 UTC; definition/proof complete, publication follows |
-
 | 2026-10-12 | Stamp Studio bin/lap / [#184](https://github.com/rjdunlap/neo/pull/184), dispatch `stamp-studio-bin-lap-20261012T113831Z` | Gameplay interaction | 5% → 17% / `1791819581` | 58% → 60% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate endpoints 11 / 2, closeout 11:48:47 UTC; no daily quota |
-
 | 2026-10-12 | Story Steps two rows / [#186](https://github.com/rjdunlap/neo/pull/186), dispatch `story-steps-10-20261012T124102Z` | Gameplay interaction | 18% → 26% / `1791819581` | 60% → 61% / `1792295992` → `1792295993` | Estimate 15 / 2.5 points | Complete/proven, publication follows; pre-publication 12:47:39 UTC. Aggregate five-hour 8 points; weekly formally unknown due 1s identity drift. Final after-commit reading in worker chat |
-
 | 2026-10-12 | Story Steps clue endings / [#187](https://github.com/rjdunlap/neo/pull/187), dispatch `story-steps-11-20261012T134132Z` | Gameplay prediction | 28% → 37% / `1791819581` | 62% → 63% / `1792295993` (intermediate 1s drift) | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate endpoints 9 / 1 points at 13:55:45 UTC. Final after-commit reading in worker chat |
-
 | 2026-10-12 | Beat Builder deep dive / [#190](https://github.com/rjdunlap/neo/pull/190), dispatch `beat-builder-dive-20261012T144502Z` | Docs only | 40% → 49% / `1791819581` | 63% → 65% / `1792295992` (intermediate 1s drift) | Estimate 10 / 1.25 points | Merged #190; final 14:55:16 UTC 49% / 65%, resets `1791819581` / `1792295993`. Aggregate five-hour 9 points; weekly formally unknown due identity drift, apparent 2. Reconciled once; future conservative estimate accounts for apparent overrun; no daily quota |
-
-
-
 | 2026-10-12 | Beat Builder how-to / [#192](https://github.com/rjdunlap/neo/pull/192), dispatch `beat-builder-howto-20261012T154702Z` | Content wording | 1% → 8% / `1791838034` | 65% → 66% / `1792295993` → `1792295992` | Estimate 15 / 2.5 points | Merged #192; final 15:53:50 UTC. Aggregate five-hour 7 points; weekly formally unknown due 1s identity drift (apparent 1). Worker complete; reconciled once |
-
-
 | 2026-10-12 | Beat Builder replay/repair / [#194](https://github.com/rjdunlap/neo/pull/194), dispatch `beat-builder-replay-20261012T164902Z` | Existing interaction fix | 9% → 18% / `1791838034` | 66% → 68% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #194; final 16:59:12 UTC. Aggregate endpoints 9 / 2 points; worker complete, reconciled once |
-
 | 2026-10-12 | Beat Builder phrases 2–5, dispatch `beat-builder-phrases-20261012T175018Z` | Rule/generation | 19% → pending / `1791838034` | 68% → pending / `1792295992` | Estimate 15 / 2.5 points | Fresh worker `01a1313d-6c0f-7881-940c-2515740466b9` admitted; implementation/proof pending |
+| 2026-10-12 | Beat Builder authored phrases / [#196](https://github.com/rjdunlap/neo/pull/196), dispatch `beat-builder-phrases-20261012T175018Z` | Gameplay generation | 19% → 24% / `1791838034` | 68% → 69% / `1792295992` → `1792295993` | Estimate 15 / 2.5 points | Complete/proven, publication follows; pre-publication 17:53:56 UTC. Aggregate five-hour 5; weekly formally unknown due 1s identity drift (apparent 1). Final after-commit reading in worker response |
 
 ## Fresh-worker dispatch and handoff
 

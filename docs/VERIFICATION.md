@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-12 — Beat Builder authored phrases
+
+- Slice 3 only ([PR #196](https://github.com/rjdunlap/neo/pull/196)): twelve short/eight long named authored scores, seeded without-replacement rounds at 2–5, shared instrument identities and spoken nicknames. No new drawings/modes/levels/bands/storage.
+- Tested integrated base `47513d4` (claim `a2914a1`, upstream `fd6ea8b`) plus final implementation diff: `npm run typecheck` and `npm test -- src/games/beat-builder/logic.test.ts` passed, ten focused rules.
+- Properties cover exact library sizes, unique names/matrices, row presence/rests, opening drum, long collision rule, seeded determinism/reachability, distinct round scores, doubled repeat units, independent editable copies and every phrase's add/remove hint/bot completion. Procedural rules remain tested separately.
+- Target draws use supplied game RNG; unchanged sticker art creates its own `Rng(seed)`. Free play consumes no target randomness and keeps its existing finish gate. Nicknames precede ear replay, with scene-owned speech waits.
+- Changed local links/anchors and `git diff --check` passed. No servers started. Browser/portrait/build/full-unit/world/couch/picnic/offline checks not run at the assigned generation tier; no drawings added.
+- Actual iPad/Bluetooth sound/speech and child fit remain open. No required automated check remains; appended modes/younger bands need decisions, visual stages are separate slices.
+
 ## 2026-10-12 — Beat Builder replay and repair help
 
 - Slice 2 only ([PR #194](https://github.com/rjdunlap/neo/pull/194)): two complete target loops, edit/check boundary, live add/remove markers, one hint per target, repair bot and consistent bell. No new phrases/levels/bands/storage.
@@ -770,6 +779,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Beat Builder authored phrases | 2026-10-12: typecheck and ten focused rules; seeded 2–5 pools, uniqueness, shapes and every authored hint/bot repair | Beat Builder authored phrases entry | No new drawings; browser/build not run at generation tier; device listening/speech and child fit open |
 | Beat Builder deep dive | 2026-10-12: primary research URLs, changed local links/anchors and diff check | Beat Builder deep dive entry | Docs only; no gameplay checks, source-derived gaps await implementation, device/child fit open |
 | Story Steps clue endings (`expansion`, `fingerdemo`) | 2026-10-12: typecheck, 1,015 tests/build; filtered level 11 free preview/repeated miss/clue hint/replay/reward, portrait and eight-story art sheet; demo clean in 3.4s | Story Steps clue endings entry | iPad touch, speech and child interpretation untested |
 | Story Steps two stories (`expansion`, `fingerdemo`) | 2026-10-12: typecheck, 1,011 tests/build; filtered level 10 wrong row/hint/replay/bottom-first/reward and portrait; demo clean in 23.2s | Story Steps two stories entry | iPad touch, speech and child understanding untested |
