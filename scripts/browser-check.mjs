@@ -893,8 +893,43 @@ async function expansion() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bug Builder ${level}: drag, copy/symmetry, mistakes, hint, saved round and sticker passed`);
   }
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 10) && (!only || only === 'story'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 11) && (!only || only === 'story'); level++) {
     await launch('story-steps', level);
+    if (level === 11) {
+      await page.evaluate(async () => {
+        const g = neo.scene.game, wrong = g.choices.find((c) => c.ending === 1);
+        const p = g.slots[3].getGlobalPosition();
+        await kit.dragTo(wrong.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+        if (!g.playing || g.slots[3].children.length !== 1) throw new Error('Prediction did not play');
+        if (g.misses !== 0 || g.hints !== 0 || g.done) throw new Error('First prediction penalized');
+        await kit.until(() => !g.playing, 20000);
+      });
+      await page.evaluate(async () => {
+        const g = neo.scene.game, wrong = g.choices.find((c) => c.ending === 1);
+        const p = g.slots[3].getGlobalPosition();
+        await kit.dragTo(wrong.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+        await kit.until(() => !g.playing, 20000);
+        if (g.misses !== 1 || g.hints !== 1 || g.unsupported !== 2) throw new Error('Repeated prediction accounting');
+      });
+      await screenshot('story-steps-11');
+      await tap('neo.scene.game.slots[2]');
+      await tap('neo.scene.game.replay');
+      await page.waitForFunction(() => !neo.scene.game.playing, null, { timeout: 30000 });
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      await screenshot('story-steps-11-portrait');
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (const s of g.slots) if (s.x - 82 < 0 || s.x + 82 > neo.view.w || s.y - 82 < 120) throw new Error('Story strip fit');
+        for (const c of g.choices) if (c.node.hitArea.width < 100 || c.node.x - 82 < 150 || c.node.y + 82 > neo.view.h) throw new Error('Ending tray fit');
+        const right = g.choices.find((c) => c.ending === 0), p = g.slots[3].getGlobalPosition();
+        await kit.dragTo(right.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+      });
+      await finished('story-steps');
+      assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('story-steps').history.at(-1); return [r.misses, r.hints]; }), [1, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Story Steps 11: free prediction preview, repeated miss/clue hint, picture speech/replay, portrait and supported reward passed');
+      continue;
+    }
     if (level === 10) {
       await page.evaluate(async () => {
         const g = neo.scene.game;

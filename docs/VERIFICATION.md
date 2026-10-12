@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-12 — Story Steps clue endings
+
+- Level 11 only ([PR #187](https://github.com/rjdunlap/neo/pull/187)): eight authored clue stories/two endings, free first unsupported preview, counted repeats, one clue hint, picture speech/replay and evidence explanation. School 6–11; saved levels/pins and younger ranges preserved.
+- Tested integrated base `6d0bf47` (claim `6357083`, upstream `f94de1e`) plus implementation diff: typecheck, all 1,015 tests (130 files; 30 focused Story Steps/how-to) and build passed. Final art-only bucket/cloud clarity changes also typechecked and built; no rule/input change invalidated play evidence. Existing bundle warning remains.
+- `BROWSER_SUITE=expansion EXPANSION_ONLY=story FROM_LEVEL=11 TO_LEVEL=11 GAME_URL=http://localhost:5207` passed first free preview, second 1 miss/1 hint, picture speech, replay, portrait fit, supported ending and one sticker; no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=story-steps FINGER_LEVELS=11` at the same URL passed clean in 3.4s.
+- Reviewed landscape/portrait `test-results/browser/story-steps-11*.png`; strip and 164-unit ending cards fit with pet clear. Single authored-art contact sheet `story-steps-11-art.png` inspected all eight stories and 16 endings after the bucket/cloud clarity edits; probe in `test-results/story-prediction-art.mjs`. Browser budget under ten minutes; art-probe sandbox launch failed before play, elevated launch succeeded.
+- Changed local links and `git diff --check` passed; owned dev server/browser processes stopped. World/couch/picnic/offline and separate how-to suite not run (no shared navigation/persistence/imported assets). No required automated check remains; iPad touch, actual device speech and child interpretation remain unestablished.
+
 ## 2026-10-12 — Coordinator: Story Steps level-11 dispatch
 
 - Confirmed #186 merged (`56da529`) and level-10 worker complete; recorded its final 27% five-hour / 62% weekly reading, with weekly identity drift. Existing automated proof retained, not rerun.
@@ -730,6 +738,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Story Steps clue endings (`expansion`, `fingerdemo`) | 2026-10-12: typecheck, 1,015 tests/build; filtered level 11 free preview/repeated miss/clue hint/replay/reward, portrait and eight-story art sheet; demo clean in 3.4s | Story Steps clue endings entry | iPad touch, speech and child interpretation untested |
 | Story Steps two stories (`expansion`, `fingerdemo`) | 2026-10-12: typecheck, 1,011 tests/build; filtered level 10 wrong row/hint/replay/bottom-first/reward and portrait; demo clean in 23.2s | Story Steps two stories entry | iPad touch, speech and child understanding untested |
 | Puzzle Pals spatial support (`fourth`, `fingerdemo`) | 2026-10-11: 29 targeted tests, typecheck/build; filtered levels 5/7, two misses/one hint, reward and portrait; level-7 demo clean in 32.9 s | Puzzle Pals spatial hints and outer rims entry | Fairness and box lid open; iPad, device speech and child play untested |
 | Story Steps repair (`expansion`, `fingerdemo`) | 2026-10-11: typecheck, 971 tests/build; filtered levels 1 and 9, cancellation, undo, replay, experimental swaps, one hint, reward and portrait; level-9 demo clean in 8.1 s | Story Steps repair entry | iPad touch, speech and child understanding untested |

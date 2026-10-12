@@ -10,13 +10,15 @@ import { replayArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { RepairStory } from './repair';
 import { UntangleStory } from './untangle';
+import { PredictStory } from './predict';
+import { PREDICTION_PLAN } from './predictions';
 import { UNTANGLE_PLAN, REPAIR_PLAN } from './logic';
 import { storyCard, storySticker } from './art';
 import { nextPicture, nextSlot, CAUSES, pictureText, STORIES, LEVEL_PLANS, sameCard, storyPuzzle, type StoryCard } from './logic';
 
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 },
-  prek: { min: 4, max: 8 }, school: { min: 6, max: 10 },
+  prek: { min: 4, max: 8 }, school: { min: 6, max: 11 },
 };
 
 class StorySteps implements Game {
@@ -143,10 +145,10 @@ class StorySteps implements Game {
 }
 export const storySteps: GameModule = {
   id: 'story-steps', name: 'Story Steps', titleLine: 'game.story-steps', region: 'story-grove',
-  skills: ['sequencing', 'cause-and-effect', 'storytelling'], bands: ['toddler', 'preschool', 'prek', 'school'],
+  skills: ['sequencing', 'cause-and-effect', 'storytelling', 'prediction'], bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
-  describeLevel: (l) => l >= 10 ? UNTANGLE_PLAN.name : l === 9 ? REPAIR_PLAN.name : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
+  describeLevel: (l) => l >= 11 ? PREDICTION_PLAN.name : l === 10 ? UNTANGLE_PLAN.name : l === 9 ? REPAIR_PLAN.name : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, touchDemo: true, coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
   offScreen: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',
-  hubIcon: () => new WigglyIcon(storySticker()), sticker: () => storySticker(), create: (ctx) => ctx.level >= 10 ? new UntangleStory(ctx) : ctx.level === 9 ? new RepairStory(ctx) : new StorySteps(ctx),
+  hubIcon: () => new WigglyIcon(storySticker()), sticker: () => storySticker(), create: (ctx) => ctx.level >= 11 ? new PredictStory(ctx) : ctx.level === 10 ? new UntangleStory(ctx) : ctx.level === 9 ? new RepairStory(ctx) : new StorySteps(ctx),
 };
