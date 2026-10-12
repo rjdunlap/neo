@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Shape Buddies solo seed journey (2026-10-12)
+
+Built `shape-buddies` solo level 1 for pre-K and school ([PR #204](https://github.com/rjdunlap/neo/pull/204)), following the [solo definition](../definitions/shape-buddies.md). Two interchangeable paper friends become flat/sloped bridges or scoop catchers. A finite trace drives a seed from the chute across the gap; the player carries the caught seed to a pot and grows a sprout. Experiments have zero misses, role hints deduplicate, occupied docks preserve the other friend, and Undo/Replay reset the seed safely. Seeded palette art, spoken instructions, a touch bot, how-to card and Tinker Lab/home integration included. Further arrangements and second seats remain proposals. Verification and device/child gaps are in [the log](../VERIFICATION.md).
+
+
 ### Beat Builder woodland stage (2026-10-12)
 
 Built the woodland portion of deep-dive slice 9 ([PR #197](https://github.com/rjdunlap/neo/pull/197)): palette-drawn trees, a wooden stage and mushrooms around the existing grid. Bear/drum, bunny/clap and cat/bell respond only when their existing sounds play, during square previews and target/player loops. Decorative art ignores touches and uses the game's frame update and scene-owned display cleanup; no new RNG draws, timers, textures or listeners. Levels 1–5, input bounds, rules, adaptive accounting and sticker seeds are unchanged. Typecheck, ten focused rules, build and one portrait screenshot with a row-response probe passed; [verification](../VERIFICATION.md). Picnic remains ready for a separate session. Device sound/speech, touch and child fit remain open.

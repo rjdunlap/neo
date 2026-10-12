@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-12 — Shape Buddies solo seed journey
+
+- Added `shape-buddies` level 1 for pre-K/school: two interchangeable paper friends, flat/sloped bridges, scoop catching, a seed carry and sprout. Finite rules, free experiments, role hints, occupied-dock rejection, Undo/Replay, spoken support and touch demonstration; Tinker Lab, how-to and inventories updated. [PR #204](https://github.com/rjdunlap/neo/pull/204).
+- Tested base `502ac48` plus implementation diff: typecheck, 1,031 unit tests (six new rules; all legal arrangements, alternate solutions, constructive guidance, Undo/Replay, hint deduplication, one completion, four-view control clearance), and build passed. Integrated upstream Bubble Pop `a08df7f` before publication; post-integration typecheck, all 1,038 unit tests and build passed (existing bundle-size warning). Browser evidence reused: upstream changed Bubble Pop, not Shape Buddies or its shared input/shell.
+- `GAME_URL=http://localhost:5214 BROWSER_SUITE=buddies`: level 1 (first = last), both bands/friend identities/bridge shapes, failed trials, deduplicated hints, occupied dock, caught-seed Undo/Replay, planting, one saved sticker and leaving during a run passed with no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-buddies`: clean in 14.4s (0 misses/hints).
+- Reviewed `test-results/browser/shape-buddies-1-portrait.png`: docks, tools, controls and pet clear. All land/band layouts pass unit tests without reducing targets. Initial sandbox Chromium launch failed; elevated isolated launch passed. One preliminary run was stopped before final play verification.
+- Not run: unchanged world/couch/picnic/offline suites (no routing/save/asset changes). Actual iPad touch, device speech and child understanding remain open in the roadmap. Session server stopped after verification; screenshot retained locally.
+
+
 ## 2026-10-12 — Bubble Pop target sign and levels 12–14
 
 - A sign at the top of levels 10–11 shows the total to make; levels 12 (start at a number), 13 (count back to 1) and 14 (tens and fives) are count mode with `start`/`steps` plan fields (`countRun`, `signFor`). Pre-K 6–12, school 10–14.
@@ -813,6 +822,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `buddies`, `fingerdemo` (`shape-buddies`) | 2026-10-12: solo level 1, both bands and all solutions; free experiments, hints, occupied dock, undo/replay, portrait, reward and interruption; demo clean in 14.4s | Shape Buddies solo seed journey entry / [PR #204](https://github.com/rjdunlap/neo/pull/204) | iPad touch, device speech and child understanding open |
 | Beat Builder woodland stage | 2026-10-12: typecheck, ten rules, build; level-5 portrait and row-response probe | Woodland stage entry / [PR #197](https://github.com/rjdunlap/neo/pull/197) | Content/art only; no unchanged suite; device/child fit open |
 | Beat Builder authored phrases | 2026-10-12: typecheck and ten focused rules; seeded 2–5 pools, uniqueness, shapes and every authored hint/bot repair | Beat Builder authored phrases entry | No new drawings; browser/build not run at generation tier; device listening/speech and child fit open |
 | Beat Builder deep dive | 2026-10-12: primary research URLs, changed local links/anchors and diff check | Beat Builder deep dive entry | Docs only; no gameplay checks, source-derived gaps await implementation, device/child fit open |

@@ -14,6 +14,17 @@ import type { GameHowTo, GameModule, LevelLine } from '../games/types';
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'shape-buddies': {
+    goal: 'Change two paper friends into useful shapes to bring a seed to a pot.',
+    steps: [
+      'Tap a friend to select it, then tap Flat, Cup or Slope to replace its shape.',
+      'Drag one friend to the bridge dock and the other to the catching dock. A flat or sloped bridge works; a cup catches the seed.',
+      'Tap Try to release the seed. After it is caught, tap the pot to carry and plant it.',
+      'Use Replay to return a caught seed to the chute. Undo restores the last shape or placement edit. Drag a friend to its own parking spot to free a dock.',
+    ],
+    finish: 'Plant the caught seed to grow a sprout and finish the round.',
+    note: 'Experiments never count as mistakes. Help and two unsuccessful runs glow the useful friend, shape tool and dock. Each unresolved role counts at most one hint. Either friend can do either job.',
+  },
   'day-by-day': {
     goal: 'Make and read a pretend week of days and weather.',
     steps: [
