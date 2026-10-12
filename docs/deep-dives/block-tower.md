@@ -129,3 +129,7 @@ No fast stacking, survival clock, lives, tallest-ever streak or losing possessio
 ## What was built in this session
 
 Nothing: research and planning only. Documentation links/anchors and `git diff --check` checked; no source, tests, build or browser play changed or ran. Developer decisions and device/child checks remain open.
+
+## Support slice claim (2026-10-12)
+
+Worker `01a1321a-2868-77b2-90c1-0a151df9bdd4`, dispatch `block-tower-support-20261012T215149Z`, branch `codex/block-tower-support`: slice 1 only, truthful support for existing levels 1–6. Expected files: how-to, voice, module support strings, focused content checks, README/GAMES/roadmap/tracker/verification/archive and execution queue. No rules, gameplay, miss/hint accounting, reach/settling, art, levels, bands or other games.
