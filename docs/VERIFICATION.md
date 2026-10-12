@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-12 — Block Tower deep dive (docs only)
+
+- Researched eight primary genre references; inspected existing 1–6 plans, pools, tests, how-to, voice and couch absence. Added [the write-up](deep-dives/block-tower.md), tracker/IDEAS pointers, roadmap slices and explicit developer decisions; no gameplay changed. [PR #209](https://github.com/rjdunlap/neo/pull/209).
+- Source base `b0014e2`, coordinator dispatch `efb120b` integrated, claim `15e4d56` plus docs diff. Local file links/anchors, opened external source links and `git diff --check` passed.
+- Ready later slices: truthful support, shared reach slots/settling audit and height variety. Proposed repair/counterweight/removal, scaffold, experiment accounting and band/order choices remain unimplemented.
+- Not run: typecheck, unit tests, build, browser/demo/offline checks (docs-only tier). Witness arithmetic is design reasoning, not executed rules. Existing iPad dragging/speech, child fit and pre-K subtle predictions remain person checks; no server started.
+- Dispatch `block-tower-dive-20261012T204519Z`; queue records worker, claim/publication and reset-crossing usage. No worker or coordinator message dispatched.
+
 ## 2026-10-12 — Beat Builder toddler 1–1
 
 - Added the toddler band at level 1 only: free play's Done after one sound has gone round (`gentle` in `index.ts`), hides when empty, `oneHit` bot. Ran typecheck, the full unit suite (1040, including registry, lands and how-to) and one scripted toddler play at level 1 (no check at first, appears after one hit, hides when emptied, empty check does nothing, finished 0 misses 0 hints). No portrait screenshot of the toddler band (layout identical to level 1). Not run: `fingerdemo`, build, suites, offline; real toddler, iPad and sound open.
@@ -836,6 +844,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Block Tower deep dive (docs only) | 2026-10-12: documentation links/anchors and diff check | [Deep dive](deep-dives/block-tower.md) / [PR #209](https://github.com/rjdunlap/neo/pull/209) | No gameplay/test/browser evidence added; proposals and device checks open |
 | `buddies`, `fingerdemo` (`shape-buddies`) | 2026-10-12: solo level 1, both bands and all solutions; free experiments, hints, occupied dock, undo/replay, portrait, reward and interruption; demo clean in 14.4s | Shape Buddies solo seed journey entry / [PR #204](https://github.com/rjdunlap/neo/pull/204) | iPad touch, device speech and child understanding open |
 | Beat Builder woodland stage | 2026-10-12: typecheck, ten rules, build; level-5 portrait and row-response probe | Woodland stage entry / [PR #197](https://github.com/rjdunlap/neo/pull/197) | Content/art only; no unchanged suite; device/child fit open |
 | Beat Builder authored phrases | 2026-10-12: typecheck and ten focused rules; seeded 2–5 pools, uniqueness, shapes and every authored hint/bot repair | Beat Builder authored phrases entry | No new drawings; browser/build not run at generation tier; device listening/speech and child fit open |
