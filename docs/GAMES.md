@@ -226,7 +226,7 @@ Level 1 explicitly names the next day and finishes after seven weather records. 
 
 ### Memory Match
 
-*preschool–school.* Grows from four to sixteen cards, then teaches number/dot, two-attribute, upper/lowercase, and number-word/numeral matches (one through ten). Level 11 matches a shaded half, quarter or three-quarter picture to its spoken name. Exploring unseen cards does not count as a miss: an incorrect pair counts only if the matching card was already known.
+*preschool–school.* Grows from four to sixteen cards, then teaches number/dot, two-attribute, upper/lowercase, and number-word/numeral matches (one through ten). Level 11 matches a shaded half, quarter or three-quarter picture to its spoken name. Every revealed card names its contents; tap the first open card again for free replay without making another choice. Exploring unseen cards gets a neutral description and does not count as a miss: an incorrect pair counts only if the first card’s matching partner was already known. After two such misses, one known partner glows, charging one hint until a match clears it. Speech supports listening-assisted matching; completion does not establish independent reading.
 
 ### Size Parade
 

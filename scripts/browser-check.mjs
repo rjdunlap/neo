@@ -584,19 +584,44 @@ async function patterns() {
 }
 
 async function memory() {
-  const levels = process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 10 }, (_, i) => i + 1);
+  const levels = process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 11 }, (_, i) => i + 1);
   for (const level of levels) {
+    await launch('memory-match', level);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const lines = [];
+      const say = g.ctx.say.bind(g.ctx);
+      g.ctx.say = (id, vars) => { lines.push({ id, vars }); return say(id, vars); };
+      kit.tapOn(g.views[0].node); await kit.sleep(200);
+      const before = [g.first, g.seen.size, g.misses, g.hints, g.remaining];
+      kit.tapOn(g.views[0].node); await kit.sleep(200);
+      if (JSON.stringify(before) !== JSON.stringify([g.first, g.seen.size, g.misses, g.hints, g.remaining])) throw new Error('Replay changed memory state');
+      if (lines.length !== 2 || lines.some(l => l.id !== 'memory.card') || !lines[0].vars.card || lines[0].vars.card !== lines[1].vars.card) throw new Error('Card reveal/replay did not name its contents');
+      const partner = g.cards.findIndex((c, i) => i !== 0 && c.pair === g.cards[0].pair);
+      kit.tapOn(g.views[partner].node); await kit.until(() => !g.locked);
+      g.ctx.say = say;
+    });
     await launch('memory-match', level);
     if (level === 1 || level === 8) {
       await page.evaluate(async () => {
         const g = neo.scene.game;
-        const first = 0, partner = g.cards.findIndex((c, i) => i !== first && c.pair === g.cards[first].pair);
-        const wrong = g.cards.findIndex((c) => c.pair !== g.cards[first].pair);
+        const first = g.views.findIndex(v => !v.matched), partner = g.cards.findIndex((c, i) => i !== first && c.pair === g.cards[first].pair);
+        const wrong = g.cards.findIndex((c, i) => !g.views[i].matched && c.pair !== g.cards[first].pair);
         const pair = async (a, b) => { kit.tapOn(g.views[a].node); await kit.sleep(180); kit.tapOn(g.views[b].node); await kit.until(() => !g.locked); };
         await pair(first, wrong);
         if (g.misses !== 0) throw new Error('Unseen memory partner counted as a miss');
         await pair(partner, wrong);
         await pair(first, wrong); await pair(first, wrong);
+        if (g.hints !== 1 || g.hintAt !== partner || !g.seen.has(g.hintAt)) throw new Error('Hint lacks seen-partner evidence');
+        const glow = g.hintAt;
+        await pair(wrong, first);
+        if (g.hintAt !== glow || g.hints !== 1) throw new Error('Hint moved or charged again');
+        const unseen = g.cards.findIndex((c, i) => !g.views[i].matched && !g.seen.has(g.cards.findIndex((other, j) => j !== i && other.pair === c.pair)));
+        if (unseen >= 0) {
+          const misses = g.misses;
+          await pair(unseen, first);
+          if (g.misses !== misses || g.hintAt !== glow || g.hints !== 1) throw new Error('Exploration moved the known-partner hint');
+        }
       });
       assert.ok(await page.evaluate(() => neo.scene.game.hints >= 1));
     }
@@ -605,6 +630,7 @@ async function memory() {
       const g = neo.scene.game;
       for (let pair = 0; pair < g.plan.pairs; pair++) {
         const ids = g.cards.map((c, i) => c.pair === pair ? i : -1).filter((i) => i >= 0);
+        if (g.views[ids[0]].matched) continue;
         kit.tapOn(g.views[ids[0]].node); await kit.sleep(180); kit.tapOn(g.views[ids[1]].node);
         if (!await kit.until(() => !g.locked)) throw new Error('Memory pair stayed locked');
       }

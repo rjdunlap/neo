@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { cream, swatch, type ColorName } from '../../art/palette';
-import { shapePath, starPoints, type ShapeKind } from '../../art/shapes';
+import { cream, swatch } from '../../art/palette';
+import { shapePath, starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
@@ -10,25 +10,8 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fraction, knownMismatch, makeDeck, nextCard, numberWord, type MemoryCard } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const PLANS = [
-  { pairs: 2, mode: 'pictures', name: 'Four cards: two picture pairs' },
-  { pairs: 3, mode: 'pictures', name: 'Six cards: three picture pairs' },
-  { pairs: 4, mode: 'pictures', name: 'Eight cards: four picture pairs' },
-  { pairs: 6, mode: 'pictures', name: 'Twelve cards: six picture pairs' },
-  { pairs: 8, mode: 'pictures', name: 'Sixteen cards: eight picture pairs' },
-  { pairs: 4, mode: 'numbers', name: 'Match numbers 1–4 to dots' },
-  { pairs: 8, mode: 'numbers', name: 'Match numbers 1–8 to dots' },
-  { pairs: 8, mode: 'attributes', name: 'Match both shape and color' },
-  { pairs: 8, mode: 'letters', name: 'Match uppercase and lowercase letters' },
-  { pairs: 10, mode: 'number-words', name: 'Match number words one–ten to numerals' },
-  { pairs: 3, mode: 'fractions', name: 'Match fraction pictures to names' },
-] as const;
-const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 11 } };
-const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
-const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
+import { cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
 class MemoryMatch implements Game {
@@ -61,7 +44,7 @@ class MemoryMatch implements Game {
   private botWait = 1;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = PLANS[Math.max(0, Math.min(PLANS.length - 1, ctx.level - 1))];
+    this.plan = planFor(ctx.level);
     this.versus = !!ctx.couch?.versus;
     this.cards = makeDeck(this.plan.pairs, ctx.rng);
     this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
@@ -107,8 +90,7 @@ class MemoryMatch implements Game {
       for (let i = 0; i < n; i++) g.circle((i % 2) * 34 - (n === 1 ? 0 : 17), Math.floor(i / 2) * 25 - (Math.ceil(n / 2) - 1) * 12.5, 9).fill(swatch.teal.fill);
       return g;
     }
-    const color = this.plan.mode === 'attributes' ? COLORS[card.pair % 2] : COLORS[card.pair];
-    const shape = this.plan.mode === 'attributes' ? SHAPES[Math.floor(card.pair / 2)] : SHAPES[card.pair];
+    const { color, shape } = pictureIdentity(this.plan.mode, card.pair);
     return shapePath(new Graphics(), shape, 43).fill(swatch[color].fill).stroke({ width: 4, color: swatch[color].line });
   }
 
@@ -118,11 +100,16 @@ class MemoryMatch implements Game {
 
   private async choose(i: number) {
     const view = this.views[i];
-    if (this.locked || view.matched || this.first === i || this.remaining === 0) return;
+    if (this.locked || view.matched || this.remaining === 0) return;
+    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters);
+    if (this.first === i) {
+      void this.ctx.say('memory.card', { card: contents });
+      return;
+    }
     view.front.visible = true; view.back.visible = false;
     sfx.pop(5 + this.cards[i].pair % 5);
-    if (this.plan.mode === 'fractions') void this.ctx.say('memory.fraction-card', { amount: fraction(this.cards[i].pair)!.name });
     if (this.first === null) {
+      void this.ctx.say('memory.card', { card: contents });
       this.first = i;
       this.seen.add(i);
       return;
@@ -136,21 +123,26 @@ class MemoryMatch implements Game {
       this.remaining--; this.wrong = 0; this.hintAt = null; this.hint.clear();
       // A match earns the same player another turn.
       if (this.versus) { this.won[this.turn]++; this.drawBoard(); }
-      sfx.sparkle(); void this.ctx.say('memory.pair');
+      sfx.sparkle(); void this.ctx.say('memory.pair-card', { card: contents });
       await this.ctx.tw.wait(0.35);
     } else {
-      if (knownMismatch(this.cards, first, i, this.seen)) { this.misses++; this.wrong++; }
-      sfx.boing(); void this.ctx.say('memory.wrong');
+      const known = knownMismatch(this.cards, first, i, this.seen);
+      if (known) { this.misses++; this.wrong++; sfx.boing(); }
+      void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
+        first: cardLabel(this.plan.mode, this.cards[first], this.letters), second: contents,
+      });
       await this.ctx.tw.wait(1.2);
       a.front.visible = view.front.visible = false;
       a.back.visible = view.back.visible = true;
       // A face-off gives no glowing help: it would favor whoever asked.
       if (this.versus) { this.turn = this.turn === 0 ? 1 : 0; this.drawBoard(); }
-      else if (this.wrong >= 2) {
-        if (this.hintAt === null) this.hints++;
-        this.hintAt = this.cards.findIndex((card, k) => k !== first && card.pair === this.cards[first].pair);
-        void this.ctx.say('memory.hint');
-        this.drawHint();
+      else if (known && this.hintAt === null) {
+        const partner = hintPartner(this.cards, first, this.seen, this.wrong);
+        if (partner !== null) {
+          this.hints++; this.hintAt = partner;
+          void this.ctx.say('memory.hint');
+          this.drawHint();
+        }
       }
     }
     this.seen.add(i);
@@ -263,7 +255,7 @@ function memoryArt(): Container {
 export const memoryMatch: GameModule = {
   id: 'memory-match', name: 'Memory Match', titleLine: 'game.memory-match', region: 'puzzle-peaks',
   skills: ['memory', 'matching', 'number-sense', 'letters'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
-  describeLevel: (l) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))].name,
+  describeLevel: (l) => planFor(l).name,
   music: STYLES.paint, offScreen: 'Hide two pairs of familiar objects under cups and take turns finding their partners.',
   hubIcon: () => new WigglyIcon(memoryArt()), touchDemo: true, sticker: () => memoryArt(), create: (ctx) => new MemoryMatch(ctx),
 };
