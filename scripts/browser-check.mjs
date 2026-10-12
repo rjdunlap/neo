@@ -893,8 +893,50 @@ async function expansion() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bug Builder ${level}: drag, copy/symmetry, mistakes, hint, saved round and sticker passed`);
   }
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 9) && (!only || only === 'story'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 10) && (!only || only === 'story'); level++) {
     await launch('story-steps', level);
+    if (level === 10) {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const wrong = g.choices.find((c) => c.card.story === g.puzzle.stories[1] && c.card.stage === 0);
+        for (let i = 0; i < 2; i++) {
+          const p = g.slots[0][0].getGlobalPosition();
+          await kit.dragTo(wrong.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(550);
+        }
+      });
+      assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+      await screenshot('story-steps-10');
+      await tap('neo.scene.game.anchors[1]');
+      await tap('neo.scene.game.replay');
+      await page.waitForFunction(() => !neo.scene.game.playing, null, { timeout: 30000 });
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      await screenshot('story-steps-10-portrait');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        for (const c of g.choices) {
+          if (c.node.hitArea.width < 100 || c.node.x < 210 || c.node.x + 55 > neo.view.w || c.node.y + 55 > neo.view.h) throw new Error('Tray fit');
+        }
+        for (const row of g.slots) for (const s of row) {
+          if (s.x - 82 < 250 || s.x + 82 > neo.view.w || s.y - 82 < 100 || s.y + 82 > g.choices[0].node.y - 60) throw new Error('Row fit');
+        }
+      });
+      // Finish the bottom story first: the rows must advance independently.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (let r = 1; r >= 0; r--) for (let i = 0; i < 3; i++) {
+          const card = g.puzzle.rows[r][i];
+          const c = g.choices.find((c) => c.card.story === card.story && c.card.stage === card.stage);
+          const p = g.slots[r][i].getGlobalPosition();
+          await kit.dragTo(c.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(250);
+          if (!g.placed[r].has(i)) throw new Error('Row did not accept its next card');
+        }
+      });
+      await finished('story-steps');
+      assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('story-steps').history.at(-1); return [r.misses, r.hints]; }), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Story Steps 10: wrong row, hint, row label, replay, portrait, independent row order and supported finish passed');
+      continue;
+    }
     if (level === 9) {
       const opening = await page.evaluate(() => neo.scene.game.strip.map((c) => c.stage));
       // Read the actual mixed order, then make a harmless experiment and undo it.

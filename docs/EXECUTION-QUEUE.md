@@ -21,7 +21,7 @@ Inspect and resume the recorded worker's unfinished slice first. Otherwise reval
 
 | Order | Candidate | Scope source | State |
 | --- | --- | --- | --- |
-| 1 | Story Steps level 10: untangle two stories | [Build slices](deep-dives/story-steps.md#build-slices-in-order); level 9 is built | Candidate; define the two-row interaction and exclude ambiguous story pairings before claiming |
+| 1 | Story Steps level 11: what will happen | [Build slices](deep-dives/story-steps.md#build-slices-in-order); level 10 built in #186 | Candidate after #186 publication; eight authored clue stories, separately admitted |
 | 2 | Next ready slice in roadmap order | [Next up](ROADMAP.md#next-up), then the relevant game's build slices | Select only after rechecking current scope and dependencies |
 
 Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or other decision-dependent scope merely because a write-up describes a lean.
@@ -29,14 +29,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Coordinator: chat `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; active automation `neo-roadmap-coordinator` returns here hourly to dispatch fresh worker chats.
-- State: Stamp Studio bin/lap worker complete and [#184](https://github.com/rjdunlap/neo/pull/184) merged (`be179b3`); slot released. One new outstanding fresh worker: **Story Steps level 10, Untangle two stories**.
-- Dispatch: `story-steps-10-20261012T124102Z`; thread `01a13022-4090-77d0-a0c2-3c3c582669ba`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`). Requested title: "Story Steps 10: untangle two stories". New project/local chat, minimal handoff, no model override/history.
-- Scope/source: [Story Steps build slices](deep-dives/story-steps.md#build-slices-in-order), slice 4/level 10; two-row interaction with ambiguous/lookalike pairings excluded. Preserve saved levels/pins; exclude level 11, journal/keepsakes, new bands and unrelated modes. Worker claim branch/PR pending.
-- Admission: 2026-10-12 12:41:02 UTC, five-hour used **18%** (reset `1791819581`), weekly used **60%** (reset `1792295992`), ordinary usage allowed. Estimate **15 five-hour / 2.5 weekly points**, fits actual remaining 82% / 40%; no daily quota/reserve. Worker rechecks fresh allowance.
-- Previous worker confirmed complete: #184 typecheck, 67 focused tests, build, filtered play/how-to and demos 1/4 passed; portrait reviewed, server stopped, clean publication. Final aggregate reading 17% / 60%, same reset identities as dispatch 5% / 58%; record once (12 / 2 points). No required checks left; device checks open. No proof rerun here.
-- Current worker implementation/verification **not run by coordinator**. No other active implementation/open PR/unmerged claim or overlapping dirty work found; unrelated dirty repair checkout preserved.
-- Next action: retrieve this worker/PR at next wake-up, confirm completion and reconcile usage once before another dispatch. Resume this worker if unfinished; do not implement here.
-- Coordinator servers: none; previous worker server stopped. New worker cleanup/proof pending.
+- State: **Story Steps level 10 complete and verified**; publication follows in [PR #186](https://github.com/rjdunlap/neo/pull/186). No implementation/check blocker. Stamp Studio #184 merged (`be179b3`), previous worker complete.
+- Dispatch: `story-steps-10-20261012T124102Z`; worker `01a13022-4090-77d0-a0c2-3c3c582669ba`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939`; branch `codex/story-steps-untangle-ten`, docs claim `4cb3265`, integrated base `a221938` (coordinator dispatch `e71c66f`) plus final implementation diff. Retrieve publication head from #186 and final worker response.
+- Scope: [slice 4](deep-dives/story-steps.md#build-slices-in-order), level 10 only. Two three-picture rows (0/1/3), shared six 110-unit cards, spoken end-picture row markers, independent ordering, replay and two-miss hints. Same-family and dog/bedtime pairs excluded; school 6–10. Saved levels/pins, younger ranges and save format preserved. No level 11, journal/keepsakes/new bands. Changed Story Steps logic/tests/index/new untangle game, voice/how-to/browser regression and corresponding README/GAMES/tracker/roadmap/archive/verification/queue docs.
+- Proof: typecheck, all 1,011 tests (129 files; 26 focused story/how-to), build passed. `expansion EXPANSION_ONLY=story FROM_LEVEL=10 TO_LEVEL=10` at `http://localhost:5206` passed wrong row/two misses/hint/replay/bottom-first/reward; portrait and landscape reviewed. `fingerdemo FINGER_ONLY=story-steps FINGER_LEVELS=10` clean in 23.2s. Tested code is unchanged by coordinator docs integration. Local links/diff check passed; browser budget under ten minutes.
+- Not run: world, couch, picnic, offline, separate how-to suite and device/person checks. No shared shell/navigation/persistence/imported assets change. No required automated check remains.
+- Usage: coordinator admission 2026-10-12 12:41:02 UTC **18% / 60%**, resets `1791819581` / `1792295992`, estimate **15 / 2.5 points**. Worker first fresh 19% / 60%; scope/pre-code 21% / 61%, pre-browser 24% / 61%; pre-publication 12:47:39 UTC **26% / 61%**, ordinary usage allowed. Five-hour identity unchanged; weekly identity drifted by 1s to `1792295993`, so weekly delta formally unknown. Aggregate usage includes other work. Final after-commit reading belongs in worker response; record dispatch once, no daily quota.
+- Servers: owned `http://localhost:5206` stopped; browsers ended. Ignored screenshots retained in `test-results/browser/`; unrelated worktrees untouched.
+- Next action: complete publication of #186 and confirm merge/head in worker final response, then release this finished worker. Coordinator may recheck fresh allowance/claims for another slice. This worker stops without dispatching or messaging anyone.
 
 For an admitted slice replace this checkpoint with: exact game/levels and expected files; owner branch/PR; latest commit and any uncommitted files; implementation done/remaining; checks run with tested revision, filters and server URL; checks not run; owned servers stopped; next action and blockers; before/after usage with timestamps and both window reset identities; slice estimate and worker/dispatch ID.
 
@@ -55,6 +55,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-12 | Shape Buddies definition / [#180](https://github.com/rjdunlap/neo/pull/180), dispatch `shape-buddies-definition-20261012T053600Z` | Docs only | 0% → 7% / `1791801370` | 56% → 57% / `1792295992` → `1792295993` | 7.142857 / 7.5 | Weekly identity drift: formally unknown; conservative debit 1 once (apparent aggregate 1, estimate 0.5). Before 05:36:00, closeout 05:40:58 UTC; definition/proof complete, publication follows |
 
 | 2026-10-12 | Stamp Studio bin/lap / [#184](https://github.com/rjdunlap/neo/pull/184), dispatch `stamp-studio-bin-lap-20261012T113831Z` | Gameplay interaction | 5% → 17% / `1791819581` | 58% → 60% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Complete/proven, publication follows; aggregate endpoints 11 / 2, closeout 11:48:47 UTC; no daily quota |
+
+| 2026-10-12 | Story Steps two rows / [#186](https://github.com/rjdunlap/neo/pull/186), dispatch `story-steps-10-20261012T124102Z` | Gameplay interaction | 18% → 26% / `1791819581` | 60% → 61% / `1792295992` → `1792295993` | Estimate 15 / 2.5 points | Complete/proven, publication follows; pre-publication 12:47:39 UTC. Aggregate five-hour 8 points; weekly formally unknown due 1s identity drift. Final after-commit reading in worker chat |
 
 ## Fresh-worker dispatch and handoff
 

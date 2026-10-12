@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Story Steps two rows (2026-10-12)
+
+Built deep-dive slice 4 / level 10 ([PR #186](https://github.com/rjdunlap/neo/pull/186)): two three-picture stories share six 110-unit tray cards, with spoken picture markers beside each row. Either row advances first; wrong row/order drops teach gently, two misses glow a useful card, and placed-only replay narrates both rows before one sticker. Same-family and dog/bedtime pairings are excluded. School is 6–10; existing levels, pins, younger bands and save format remain. Level 11 and kept stories remain separate slices. Proof and device gaps are in [VERIFICATION](../VERIFICATION.md).
+
+
 ### Stamp Studio bin and early finishing (2026-10-12)
 
 Built the last part of deep-dive slice 1 ([PR #184](https://github.com/rjdunlap/neo/pull/184)): selected-stamp removal at levels 3+, with drag/tween cleanup and a surviving selection; levels 1–2 wiggle the arrow after five stamps and finish automatically at the existing 24-stamp limit. Undo and bin cannot edit a finished picture. Creative accounting remains zero misses/hints; levels, bands, seeds, stamp content and save format are preserved. Later full papers stay editable. Next is seven colors and three sizes, outside this slice.
