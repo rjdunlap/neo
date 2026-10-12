@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DEMO_SPOTS, LIMIT, pixel, place, PLANS, STAMP_COLORS, stampDemo, type StampKind, type StampState } from './logic';
 import type { ColorName } from '../../art/palette';
+import { STAMP_KINDS, STAMP_NAMES, stickerStamp } from './logic';
+import { cleanPicture } from '../../content/creations';
 describe('Stamp Studio', () => {
   it('keeps stamps on paper through resize, including edge drops', () => {
     for (const [w,h] of [[674,478],[674,1075],[1200,478]]) for (const x of [-300,0,300,2000]) for(const y of [-500,0,250,2000]) {
@@ -49,6 +51,50 @@ describe('Stamp Studio', () => {
       // Every stamp the level offers is used, up to the five presses.
       expect(kinds.size).toBe(Math.min(plan.kinds.length, DEMO_SPOTS.length));
       if (plan.transform) expect(st.stamps.some((s) => s.turns === 1) && st.stamps.some((s) => s.size === 1.3)).toBe(true);
+    }
+  });
+});
+
+describe('Stamp Studio saved choices', () => {
+  it('gives every offered stamp a spoken name and a kind that survives save repair', () => {
+    for (const plan of PLANS) for (const kind of plan.kinds) {
+      expect(STAMP_KINDS).toContain(kind);
+      expect(STAMP_NAMES[kind]).toMatch(/^A /);
+      const original = { kind: 'picture', stamps: [{ kind, color: 'purple', x: 0.5, y: 0.5, size: 1, turns: 0 }] };
+      expect(cleanPicture(original)).toEqual(original);
+    }
+  });
+  it('pins the original sticker kind and color for seeds 0–99', () => {
+    const original = [
+      "fish/blue", "fish/green", "fish/blue", "fish/blue",
+      "cat/purple", "fish/purple", "fish/purple", "star/blue",
+      "star/blue", "star/pink", "fish/blue", "fish/pink",
+      "flower/purple", "fish/blue", "flower/blue", "star/pink",
+      "fish/purple", "fish/green", "flower/pink", "star/blue",
+      "cat/purple", "flower/pink", "fish/blue", "star/blue",
+      "flower/pink", "fish/pink", "fish/purple", "flower/green",
+      "flower/blue", "star/pink", "cat/blue", "fish/blue",
+      "flower/purple", "fish/green", "fish/blue", "star/blue",
+      "cat/purple", "fish/blue", "fish/green", "star/blue",
+      "fish/green", "cat/green", "fish/purple", "cat/purple",
+      "cat/blue", "star/green", "star/pink", "fish/blue",
+      "cat/purple", "flower/purple", "fish/purple", "star/pink",
+      "star/pink", "star/purple", "flower/blue", "flower/pink",
+      "star/pink", "fish/pink", "flower/blue", "flower/blue",
+      "flower/purple", "fish/green", "fish/purple", "star/purple",
+      "cat/green", "star/pink", "star/green", "cat/green",
+      "flower/green", "cat/purple", "cat/blue", "cat/purple",
+      "star/purple", "fish/pink", "star/pink", "star/blue",
+      "flower/purple", "flower/green", "fish/green", "star/green",
+      "cat/blue", "cat/pink", "cat/pink", "fish/purple",
+      "flower/purple", "flower/green", "star/green", "star/purple",
+      "cat/blue", "cat/pink", "star/pink", "fish/purple",
+      "flower/blue", "flower/purple", "star/blue", "fish/blue",
+      "star/pink", "fish/purple", "fish/purple", "flower/blue",
+    ];
+    for (let seed = 0; seed < original.length; seed++) {
+      const sticker = stickerStamp(seed);
+      expect(`${sticker.kind}/${sticker.color}`).toBe(original[seed]);
     }
   });
 });

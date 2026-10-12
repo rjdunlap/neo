@@ -282,7 +282,7 @@ export const SCRIPT = {
   'stamp.garden': ['What grows in your imaginary garden? Make any picture you like! Tell me about it, then tap the green arrow.'],
   'stamp.story': ['Make a picture of two friends on an adventure. Your story can be anything! Finish with the green arrow.'],
   'stamp.kind': ['{kind}! Tap the paper to stamp it.'],
-  'stamp.full': ['Your paper has lots of stamps! Move one, undo a stamp with the back arrow, or finish with the green arrow.'],
+  'stamp.full': ['Your paper has lots of stamps! Undo a stamp with the back arrow, or finish with the green arrow.'],
   'stamp.done': ['You made your own picture!'],
   'game.pet-kitchen': ['Pet kitchen!'],
   'kitchen.cut': ['Cut our sandwiches into equal pieces for {n} friends. Tap a cutting picture.'],
