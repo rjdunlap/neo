@@ -187,7 +187,6 @@ These wait on [how levels are ordered and whether a band's range may skip](../RO
 
 Each is sized for one session. A slice that adds a level is built in level order so saved IDs stay unbroken, raises `LEVELS.school.max`, and updates `describeLevel`, the how-to `LevelLine`s, the README row and [GAMES.md](../GAMES.md).
 
-1. **Capitals start at the top, and a `logic.ts`** (ready, no decision beyond the lean in 1). Fresh 1 and 2: re-draw A, M and N from the top; move the plan, letter choice, word pool, name rule and tolerance into `logic.ts`; make the level cap follow the plan; bound the how-to lines; add a pinned sticker test (seeds 0–99); use `trails.word`. Tier: typecheck and the Letter Trails rule tests, with the first-point test shown failing on the old data; `fingerdemo` at level 3 (the bot traces A, M and N) and level 8; no other browser run.
 2. **Words with their own picture, a name cap and per-letter counting** (ready; decisions 3 and 4 lean). Fresh 3 and 4. Tier: rule tests, one portrait screenshot of the word picture, `fingerdemo` at 7 and 8. Coupling: reuse Word Monsters' `wordPicture`; do not start while its slice 2 is in flight on the same table.
 3. **A hint that shows the way, start arrows, a rising tune and trail looks** (ready). Fresh 5 and 6. Tier: rule tests, `fingerdemo` at 1 and 4.
 4. **Journal entries** (ready). Fresh 7. Tier: typecheck, journal and save tests, no browser.
@@ -204,3 +203,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 ## What was built in this session
 
 Nothing: a deep dive session is research and ideation only. `git diff --check` and a relative-link check ran on the changed docs. Nothing was run in a browser or as a test, and this session had no installed dependencies: every gap above is read from `index.ts`, `strokes.ts`, `pictures.ts`, `strokes.test.ts`, `howto.ts`, `voice-script.ts`, `journal.ts`, `save.ts` and the docs, plus one scan of the strokes file for first points, and each should be confirmed by the slice that fixes it.
+
+## Slice 1 built (2026-10-11)
+
+Capitals start at the top, plans and selection are in `logic.ts`, historical sticker choices are pinned, the how-to is bounded, and the word/name introduction is spoken. See [PR #172](https://github.com/rjdunlap/neo/pull/172) and the [build note](../archive/COMPLETED-2026-10-09.md#letter-trails-capital-starts-and-rule-guards-2026-10-11). Name length, per-letter accounting and word pictures remain slice 2.

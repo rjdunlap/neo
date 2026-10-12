@@ -279,7 +279,7 @@ Level 1 explicitly names the next day and finishes after seven weather records. 
 
 ### Letter Trails
 
-*preschool–school.* Defines all 26 capitals as ordered strokes. A firefly and moving beacon guide the finger; successive checkpoints enforce the trail while tolerating imprecise motion. Each finished letter becomes a code-drawn illustration with a spoken association. Top levels spell short words and the child's name. Accented Latin names normalize to A–Z; names with no supported letters fall back to PIP. Additional scripts would need their own stroke data.
+*preschool–school.* Defines all 26 capitals as ordered strokes starting in the top quarter of the writing box. A has two downward legs and a separate bar; M and N keep a continuous path, retracing the first upright before the diagonal. Checkpoints on the return path wait for the finger to turn; an on-trail reversal stays within the forgiving corridor. A firefly and moving beacon guide the finger; successive checkpoints enforce the trail while tolerating imprecise motion. Each finished letter becomes a code-drawn illustration with a spoken association. Levels 7–8 introduce the short word or child's name aloud before its first letter; the pet repeats the current letter instruction. Plans, seeded selection, tolerance and name normalization live in `logic.ts`; sticker seeds retain the original A–Z pictures. Accented Latin names normalize to A–Z; names with no supported letters fall back to PIP. Additional scripts would need their own stroke data.
 
 ### Story Steps
 
