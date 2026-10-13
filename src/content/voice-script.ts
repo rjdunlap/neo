@@ -526,6 +526,7 @@ export const SCRIPT = {
   'bounce.order': ['{a}, then {b}, then {c}!'],
   'bounce.color': ['{color}!', 'To the {color}!'],
   'bounce.wrongzone': ['That was {color}. Try again!', 'Oh, {color}! Try again!'],
+  'bounce.skip': ['Let us count by {step}s as we bounce! {n} bounces.'],
   'bounce.sequence': ['Bounce the ball to the colors in order!'],
   'bounce.goal': ['Score {n} goals! {pet} guards the other side.'],
   'bounce.versus': ['First to {n} goals! The ball gets faster as we bounce.'],

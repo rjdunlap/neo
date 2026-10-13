@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from 'pixi.js';
 import { Critter } from '../../art/critter';
 import { ink, swatch } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
@@ -10,7 +10,8 @@ import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { isZoneMode, makeSequence, serveAngleFor, petLob, afterHit, afterMiss, courtFor, farWall, isGoalMode, keeperSpeed, paddleBounce, paddleForLanding, paddleTarget, planFor, predictY, reachableZones, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, type BallKind, type BouncePlan, type Court } from './logic';
+import { countFor, isZoneMode, makeSequence, serveAngleFor, petLob, afterHit, afterMiss, courtFor, farWall, isGoalMode, keeperSpeed, paddleBounce, paddleForLanding, paddleTarget, planFor, predictY, reachableZones, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, type BallKind, type BouncePlan, type Court } from './logic';
+import { FONT } from '../../ui/text';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -18,7 +19,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
-  school: { min: 6, max: 9 },
+  school: { min: 6, max: 11 },
 };
 
 const BALL_R = 26;
@@ -115,6 +116,8 @@ class BounceBack implements Game {
   private volley = 0;
   private flash = { zone: -1, t: 0 };
   private readonly zones = new Graphics();
+  /** The spoken number, big on the table, on the skip-count levels. */
+  private readonly numeral = new Text({ text: '', style: { fontFamily: FONT, fontSize: 120, fontWeight: '700', fill: ink, align: 'center' } });
 
   /** The "watch me" demo: slide the right paddle to where the ball will arrive, and rest in the middle otherwise. */
   autoplay(dt: number): CouchControls {
@@ -178,8 +181,12 @@ class BounceBack implements Game {
     this.star.poly(starPoints(34, 15, 5)).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
     this.star.visible = this.plan.mode === 'stars';
     this.leftNode.visible = !isZoneMode(this.plan.mode);
+    this.numeral.anchor.set(0.5);
+    this.numeral.alpha = 0.22;
+    this.numeral.eventMode = 'none';
+    this.numeral.visible = this.plan.mode === 'skip';
     for (const n of [this.table, this.zones, this.marker, this.star, this.ballNode, this.leftNode, this.rightNode]) n.eventMode = 'none';
-    ctx.stage.addChild(this.table, this.zones, this.marker, this.star, this.leftNode, this.rightNode, this.ballNode, this.touch);
+    ctx.stage.addChild(this.table, this.numeral, this.zones, this.marker, this.star, this.leftNode, this.rightNode, this.ballNode, this.touch);
 
     this.touch.eventMode = 'static';
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
@@ -202,8 +209,8 @@ class BounceBack implements Game {
   }
 
   start() {
-    const line = { solo: 'bounce.solo', rally: 'bounce.rally', together: 'bounce.together', stars: 'bounce.stars', count: 'bounce.count', color: 'bounce.colors', goal: 'bounce.goal', versus: 'bounce.versus', sequence: 'bounce.sequence' } as const;
-    void this.ctx.instruct(line[this.plan.mode], { n: this.plan.goal });
+    const line = { solo: 'bounce.solo', rally: 'bounce.rally', together: 'bounce.together', stars: 'bounce.stars', count: 'bounce.count', color: 'bounce.colors', goal: 'bounce.goal', versus: 'bounce.versus', sequence: 'bounce.sequence', skip: 'bounce.skip' } as const;
+    void this.ctx.instruct(line[this.plan.mode], { n: this.plan.goal, step: this.plan.step ?? 1 });
     this.serve();
   }
 
@@ -220,6 +227,7 @@ class BounceBack implements Game {
     const mid = (b.x0 + b.x1) / 2;
     for (let y = b.y0 + 10; y < b.y1; y += 34) t.roundRect(mid - 4, y, 8, 18, 4).fill({ color: 0xffffff, alpha: 0.8 });
     t.circle(mid, (b.y0 + b.y1) / 2, 70).stroke({ width: 6, color: 0xffffff, alpha: 0.8 });
+    this.numeral.position.set((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2);
     this.touch.hitArea = new Rectangle(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
     for (const n of [this.leftNode, this.rightNode]) n.draw(this.paddleLength());
     const f = this.faces();
@@ -356,7 +364,8 @@ class BounceBack implements Game {
     this.volley++;
     if (side === 'right') this.lob = petLob(this.ctx.rng.next(), this.plan.mode);
     if (this.plan.mode === 'stars' || isZoneMode(this.plan.mode) || isGoalMode(this.plan.mode)) return;
-    void this.ctx.say('count', { n: this.rally });
+    void this.ctx.say('count', { n: countFor(this.plan, this.rally) });
+    this.numeral.text = String(countFor(this.plan, this.rally));
     if (this.rally >= this.plan.goal) void this.finale();
   }
 
