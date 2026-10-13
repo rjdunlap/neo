@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import { LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -174,5 +174,19 @@ describe('Bounce Back', () => {
     expect(versusMisses(true, 6)).toBe(3);
     expect(versusMisses(false, 5)).toBe(5);
     expect(landingY(300, 0, aim(1024, 768, PLANS[5]))).toBeCloseTo(300);
+  });
+
+  it('lobs only on the play-together and count rallies, gently, and the child can always meet the return', () => {
+    for (const p of PLANS) {
+      for (const pick of [0, 0.25, 0.5, 0.99]) {
+        const lob = petLob(pick, p.mode);
+        if (p.mode === 'together' || p.mode === 'count') expect(Math.abs(lob)).toBeLessThanOrEqual(LOB);
+        else expect(lob).toBe(0);
+      }
+    }
+    // The pet's paddle held at the largest lob sends the ball at most about 0.26 rad off straight, a slow drift her paddle follows easily.
+    const speed = PLANS[4].speed;
+    const r = paddleBounce(200 + LOB * (PLANS[4].paddle / 2), 200, PLANS[4].paddle, speed, true);
+    expect(Math.abs(r.vy) / Math.abs(r.vx)).toBeLessThan(0.3);
   });
 });

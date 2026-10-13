@@ -223,3 +223,15 @@ export function reachableZones(arrive: number, g: AimGeometry, speed = g.speed):
     return zoneOf(landing, g.top, g.bottom) === z ? [z] : [];
   });
 }
+
+/** The most the pet's paddle is held off the ball, as a fraction of half its length: a gentle angle, never a trick shot. */
+export const LOB = 0.3;
+
+/**
+ * How far off the ball's line the pet holds its paddle for its next return, as a fraction of half the paddle (-LOB to LOB), from a
+ * number in [0, 1). Only the play-together and count rallies lob, so the ball does not always come back straight; every other level
+ * returns it straight.
+ */
+export function petLob(pick: number, mode: BounceMode): number {
+  return mode === 'together' || mode === 'count' ? (pick * 2 - 1) * LOB : 0;
+}
