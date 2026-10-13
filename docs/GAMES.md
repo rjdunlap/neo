@@ -18,7 +18,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Bounce Back
 
-*lap–pre-K · after Pong and air hockey.* A slow, giggly ball between two big paddles, with no score: bounces are counted together toward a goal. A grown-up takes the left paddle on the play-together level, and the pet steps in when no second finger is there. Later levels aim through stars and count a rally of ten.
+*lap–school · after Pong and air hockey.* A slow, giggly ball between two big paddles: bounces are counted together toward a goal. A grown-up takes the left paddle on the play-together level, and the pet steps in when no second finger is there. A miss keeps the rally, and a hint (a slower ball and a ring) ends on her next bounce. Later levels aim through stars, count a rally of ten, and (level 6, pre-K and school) bounce the ball to the color the pet calls: the pet only calls a zone her paddle can reach, another color is a free try with its name said, and two tries without success show where to hold the paddle. School levels 7 and 8 score goals past the pet: a slow keeper (it can cover only part of the table while the ball crosses, so a good shot always gets by) and pips for each side; first to 5, then first to 7 with the ball speeding up through a rally. A win and a loss both finish with a sticker; a win counts a miss for every two goals against and a loss counts them all, so adaptation reads the margin. Each round is on a pond, beach or snow court with its own ball.
 
 ### Bumper Garden
 

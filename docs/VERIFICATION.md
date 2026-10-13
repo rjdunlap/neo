@@ -31,6 +31,12 @@
 - Not run: build, browser, ghost-finger and offline checks at the specified plain-word content tier. Actual iPad touch, speech and child fit remain person checks; reach/settling and height variety remain separate slices.
 - Dispatch `block-tower-support-20261012T215149Z`; queue records scope, worker, usage and next action.
 
+## 2026-10-12 — Bounce Back levels 6–8
+
+- Added a school window and levels 6 (bounce to a color), 7 (goal) and 8 (first to 7). Rules in `logic.ts` (reachable zones, keeper reach, margin scoring) with unit tests over four view sizes.
+- `npm run typecheck`, `npm test` (1066) passed; `BATCH_ONLY=bounce` extended to levels 1–8 (two deliberate misses, hint, saved score; goal levels expect one miss) passed; `FINGER_ONLY=bounce-back FINGER_LEVELS=5,6,7,8` clean.
+- Not run: build, portrait view, couch (unchanged level 3), an iPad, a child; whether the keeper feels like a game for older players.
+
 ## 2026-10-12 — Bounce Back deep dive (docs only)
 
 - Searched genre references (Pong, Breakout/Arkanoid, Kaboom!, Bluey Keepy Uppy, Young Athletes); inspected the five plans, hint and miss rules, bots, how-to, voice and couch entry. Added [the write-up](deep-dives/bounce-back.md), tracker row, roadmap slices and decisions; no gameplay changed.

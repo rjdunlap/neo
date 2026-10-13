@@ -2213,13 +2213,13 @@ async function batch() {
   }
 
   // Bounce Back: a child finger tracks the ball (after two misses on purpose); a grown-up finger on the left.
-  for (let level = 1; level <= 5 && (!only || only === 'bounce'); level++) {
+  for (let level = 1; level <= 8 && (!only || only === 'bounce'); level++) {
     await launch('bounce-back', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      const { predictY } = await import('/src/games/bounce-back/logic.ts');
+      const { predictY, paddleForLanding, farWall, ZONES } = await import('/src/games/bounce-back/logic.ts');
       const canvas = document.querySelector('canvas');
       const touch = (type, id, x, y) => canvas.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: y, pointerId: id, pointerType: 'touch', isPrimary: id === 21, bubbles: true, cancelable: true, buttons: type === 'pointerup' ? 0 : 1 }));
       const at = (x, y) => g.touch.parent.toGlobal({ x, y });
@@ -2243,6 +2243,14 @@ async function batch() {
           const angle = Math.max(-0.85, Math.min(0.85, Math.atan2(g.starAt.y - y, face - g.starAt.x)));
           y -= (angle / 0.85) * (g.plan.paddle / 2) * 0.9;
         }
+        // Color and goal levels: aim at the called zone, or at the end of the wall away from the pet.
+        if (ball.vx > 0 && g.plan.mode === 'color' && g.wantZone >= 0) {
+          const geo = g.aim(g.speed());
+          y = paddleForLanding(y, geo.top + ((g.wantZone + 0.5) / ZONES.length) * (geo.bottom - geo.top), geo).y;
+        } else if (ball.vx > 0 && (g.plan.mode === 'goal' || g.plan.mode === 'versus')) {
+          const geo = g.aim(g.speed());
+          y = paddleForLanding(y, farWall(g.paddles.left, geo), geo).y;
+        }
         // Miss the first two on purpose: hold the paddle at the far end.
         if (g.misses < 2 && g.hints === 0 && ball.vx > 0) y = y < (b.y0 + b.y1) / 2 ? b.y1 - 20 : b.y0 + 20;
         const p = at(b.x1 - 120, y);
@@ -2255,7 +2263,8 @@ async function batch() {
     await screenshot(`bounce-back-${level}`);
     await finished('bounce-back');
     const r = await page.evaluate(() => { const r = kit.store.stats('bounce-back').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, [2, 1], `bounce ${level} score`);
+    // The goal levels score a win by margin: two goals against is one miss.
+    assert.deepEqual(r, level >= 7 ? [1, 1] : [2, 1], `bounce ${level} score`);
     log(`Bounce Back ${level} (${mode}): rally, pet and grown-up paddles, misses, hint, saved score and sticker passed`);
   }
 
