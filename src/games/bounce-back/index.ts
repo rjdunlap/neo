@@ -10,7 +10,7 @@ import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { afterHit, afterMiss, courtFor, farWall, isGoalMode, keeperSpeed, paddleBounce, paddleForLanding, paddleTarget, planFor, predictY, reachableZones, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, type BallKind, type BouncePlan, type Court } from './logic';
+import { petLob, afterHit, afterMiss, courtFor, farWall, isGoalMode, keeperSpeed, paddleBounce, paddleForLanding, paddleTarget, planFor, predictY, reachableZones, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, type BallKind, type BouncePlan, type Court } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -105,6 +105,8 @@ class BounceBack implements Game {
   private starAt = { x: 0, y: 0 };
   private controllerRight = false;
   /** The color zone the pet called (-1 before the ball is served), and goals scored, by her, in a color or goal round. */
+  /** How far off the ball's line the pet holds its paddle for its next return, so the ball comes back at a gentle angle. */
+  private lob = 0;
   private wantZone = -1;
   private done = 0;
   private volley = 0;
@@ -285,7 +287,7 @@ class BounceBack implements Game {
     const f = this.faces();
     // The pet watches the ball and always gets there.
     if (this.petPlays()) {
-      this.targets.left = this.ball.vx < 0 ? predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, f.left, b.y0 + BALL_R, b.y1 - BALL_R) : (b.y0 + b.y1) / 2;
+      this.targets.left = this.ball.vx < 0 ? this.lob * half + predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, f.left, b.y0 + BALL_R, b.y1 - BALL_R) : (b.y0 + b.y1) / 2;
     }
     // At lap, the child's paddle drifts to help when nobody is touching it.
     if (this.plan.mode === 'solo' && !this.childTouch && this.ball.vx > 0) {
@@ -343,6 +345,7 @@ class BounceBack implements Game {
     else sfx.bell(side === 'right' ? 7 : 5, 0.3);
     if (side === 'right' && this.plan.mode !== 'color') ({ wrongs: this.wrongs, hinting: this.hinting } = afterHit());
     this.volley++;
+    if (side === 'right') this.lob = petLob(this.ctx.rng.next(), this.plan.mode);
     if (this.plan.mode === 'stars' || this.plan.mode === 'color' || isGoalMode(this.plan.mode)) return;
     void this.ctx.say('count', { n: this.rally });
     if (this.rally >= this.plan.goal) void this.finale();
