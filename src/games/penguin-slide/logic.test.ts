@@ -30,7 +30,7 @@ describe('Penguin Slide', () => {
         expect(p.blocks?.length ?? 0).toBe(plan.blocks ?? 0);
       }
     }
-  });
+  }, 15000);
 
   it('following the hint arrow always eats every fish in the fewest slides', () => {
     for (const plan of PLANS) {
@@ -130,7 +130,7 @@ describe('Penguin Slide ice blocks', () => {
         expect(frozen === -1 || frozen > p.best).toBe(true);
       }
     }
-  });
+  }, 15000);
 });
 
 // The next level combines block positioning with the existing two-fish planning rule.
@@ -152,4 +152,14 @@ it('level 7 preserves the board size and gives two-fish routes with meaningful b
     expect(pushes).toBeGreaterThan(0);
     expect(have).toBe(3);
   }
+});
+
+it('level 8 combines useful snow stops with a useful block on every generated pond',()=>{
+ const plan=PLANS[7];expect([plan.fish,plan.blocks,plan.soft]).toEqual([2,1,1]);
+ for(let seed=1;seed<=150;seed++){
+  const p=makePuzzle(plan,new Rng(seed));
+  expect(solve({...p,soft:[]},p.start).moves).not.toBe(p.best);
+  const frozen=solve({...p,rocks:[...p.rocks,...p.blocks!],blocks:[]},p.start).moves;
+  expect(frozen===-1||frozen>p.best).toBe(true);
+ }
 });

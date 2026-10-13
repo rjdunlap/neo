@@ -34,7 +34,7 @@ export type PictureId = keyof typeof PICTURES;
 export const PICTURE_IDS = Object.keys(PICTURES) as PictureId[];
 /** The room a picture may take, around the board's centre: clear of the turn and help buttons and of the tray. */
 export const PICTURE_BOX = { x: 210, top: -220, bottom: 200 };
-export interface Plan { rotate: boolean; outlines: boolean; name: string; pool: readonly PictureId[] }
+export interface Plan { rotate: boolean; outlines: boolean; name: string; pool: readonly PictureId[]; alternatives?: boolean }
 export const PLANS: readonly Plan[] = [
   { pool:['house','tree','lamp','tent'], rotate:false, outlines:true, name:'Two big shapes, already the right way up, make a house, tree, lamp or tent' },
   { pool:['boat','sailboat','flag','lamp','tent'], rotate:false, outlines:true, name:'Fit a hull and a sail, a pole and a flag, a lamp or a tent' },
@@ -42,11 +42,12 @@ export const PLANS: readonly Plan[] = [
   { pool:['cottage','truck','tower','ferry','bus','barn'], rotate:true, outlines:true, name:'Two triangles make a square; three shapes fill a picture' },
   { pool:['rocket','houseboat','castle','robot'], rotate:true, outlines:true, name:'Build a rocket, houseboat, castle or robot from four shapes' },
   { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn','robot'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
+  { pool:['house'], rotate:true, outlines:false, alternatives:true, name:'Build a house two ways: a square or two triangles can make its wall' },
 ];
 export const planFor=(l:number)=>PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
 /** The level's rules with the picture this round draws from its pool. */
-export interface Build extends Plan { picture: PictureId; targets: readonly Target[] }
-export function buildFor(level:number,rng:Rng):Build{const plan=planFor(level),picture=rng.pick(plan.pool);return {...plan,picture,targets:PICTURES[picture]};}
+export interface Build extends Plan { picture: PictureId; targets: readonly Target[]; covers?: readonly (readonly number[])[] }
+export function buildFor(level:number,rng:Rng):Build{const plan=planFor(level),picture=rng.pick(plan.pool);return plan.alternatives ? {...plan,picture,targets:[PICTURES.house[1],PICTURES.house[0],PICTURES.cottage[0],PICTURES.cottage[1]],covers:[[0,1],[0,2,3]]} : {...plan,picture,targets:PICTURES[picture]};}
 export function sameOrientation(shape:Shape,a:number,b:number){const period=shape==='square'?1:shape==='rectangle'?2:4;return ((a-b)%period+period)%period===0;}
 export function makePieces(build:Pick<Build,'targets'|'rotate'>,rng:Rng):Piece[]{return rng.shuffle(build.targets.map(t=>({shape:t.shape,turns:build.rotate?(t.turns+rng.int(1,3))%4:t.turns})));}
 /** Any identical piece can fill a slot, including symmetric turns and the two complementary wall triangles. */
@@ -72,4 +73,25 @@ export function bestTarget(piece: Piece, targets: readonly Target[], filled: rea
     if (!best || turns < best.turns) best = { index, turns };
   });
   return best;
+}
+
+/** A surviving cover contains every placed slot, so accepting a slot can never strand the build. */
+export function viableCovers(build: Pick<Build, 'targets' | 'covers'>, filled: readonly boolean[]): readonly (readonly number[])[] {
+  const covers = build.covers ?? [build.targets.map((_, i) => i)];
+  return covers.filter(cover => filled.every((done, i) => !done || cover.includes(i)));
+}
+/** Existing fixed-slot drop/turn rules consume this mask; incompatible alternative slots act occupied. */
+export function unavailableSlots(build: Pick<Build, 'targets' | 'covers'>, filled: readonly boolean[]): boolean[] {
+  const covers = viableCovers(build, filled);
+  return build.targets.map((_, i) => filled[i] || !covers.some(cover => cover.includes(i)));
+}
+export function completedCover(build: Pick<Build, 'targets' | 'covers'>, filled: readonly boolean[]): readonly number[] | undefined {
+  return viableCovers(build, filled).find(cover => cover.every(i => filled[i]));
+}
+/** Shortest compatible cover first, then a missing slot. A triangle choice keeps the triangle cover. */
+export function coverHint(build: Pick<Build, 'targets' | 'covers'>, filled: readonly boolean[]): number {
+  const cover = [...viableCovers(build, filled)].sort((a,b) => a.length - b.length)[0];
+  // Before a wall is chosen, show the larger wall piece first.
+  if (build.covers && cover?.includes(1) && !filled[1]) return 1;
+  return cover?.find(i => !filled[i]) ?? -1;
 }

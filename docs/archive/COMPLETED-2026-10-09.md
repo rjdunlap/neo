@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Penguin Slide 8 and Tangram Town 7 (2026-10-13)
+
+Built [PR #262](https://github.com/rjdunlap/neo/pull/262). Penguin Slide 8 combines one block, one soft-snow stop, two fish and four rocks on two 6×5 ponds. Shortest solutions take 4–6 slides; generation requires a useful block push and snow that changes the best route. School is now 2–8. Existing taps, undo and constructive hints handle the new combination.
+
+Tangram Town 7 offers a house's roof, square and two triangles. The wall can be either one square or both triangles; either cover finishes with one sticker while spares remain in the tray. Every accepted partial cover has a completion; overlapping unused alternatives return freely. Help prefers the square before a wall choice, then follows any placed triangle; the ghost finger uses the same cover rules. Completion names the two or three pieces used. School is now 5–7. Younger ranges, saved IDs/pins and courses are unchanged. The cover-set packet is in [the deep dive](../deep-dives/tangram-town.md#level-7-implementation-packet-built-2026-10-13); repair and flip modes remain future work. Proof is in [verification](../VERIFICATION.md).
+
+
 ### Penguin Slide level 7: two fish and a block (2026-10-13)
 
 Built [PR #261](https://github.com/rjdunlap/neo/pull/261): two 6×5 ponds with two fish, one movable ice block, four rocks and no soft snow. Each shortest route takes 4–6 slides; freezing the block makes it longer or impossible. The next decision is where to park the block while planning for both fish. Existing tap steering, undo, solver-backed hints, unscored experiments and one sticker after both ponds are preserved. School extends from 2–6 to 2–7 without renumbering levels/pins; younger bands stay unchanged. Spoken instruction and how-to describe both fish; the woods browser case now includes 7. A frozen block course remains a later slice; existing couch courses are unchanged. Proof is in [the verification log](../VERIFICATION.md).

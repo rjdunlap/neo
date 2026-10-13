@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-13 — Penguin Slide 8 and Tangram Town 7
+
+- [PR #262](https://github.com/rjdunlap/neo/pull/262), base `e2f04ff`, claim `ec3a2f5` plus implementation diff: useful block/snow stops with two fish at Penguin 8; alternative square/two-triangle house-wall covers at Tangram 7. School maxima 8/7; younger bands, saved IDs/pins and courses preserved.
+- Typecheck and 38 focused Penguin/Tangram/how-to tests passed; production build passed on final source. Rules cover seeded solvability, useful block/snow choices, equal wall geometry, every compatible partial cover, either completion and helpful non-overlapping choices. Initial five-second Penguin batch timeout followed adding the richer generator; a 20-seed probe passed under one second and the two 150-seed aggregate tests now allow 15 seconds. The first five-step Penguin card was shortened to four and passed.
+- `GAME_URL=http://localhost:5198 BROWSER_SUITE=creative CREATIVE_ONLY=tangram FROM_LEVEL=6 TO_LEVEL=7` passed fixed-slot regression plus both level-7 covers, wrong-shape misses, automatic and requested help, free unused-square drop, compatible triangle hint, portrait and saved results/stickers. `BROWSER_SUITE=woods WOODS_ONLY=penguin FROM_LEVEL=8 TO_LEVEL=8` passed pushes/snow, undo, one hint, both ponds and saved result/sticker. No page errors.
+- Same URL: `fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=8` and `FINGER_ONLY=tangram-town FINGER_LEVELS=7` passed cleanly in 18.1/13.8 demo seconds. Both portrait screenshots reviewed: clear board/tray, spare pieces, pet and controls. No unchanged suites repeated.
+- Local Markdown file/anchor checks and `git diff --check` passed; session server stopped. Not run: full local units, world, couch/courses or offline (no navigation/save/asset changes). Actual iPad input/speech and child understanding of alternative covers and combined stops remain open.
+
+
 ## 2026-10-13 — Penguin Slide level 7: two fish and a block
 
 - [PR #261](https://github.com/rjdunlap/neo/pull/261), base `9d3eb4b`, claim `e2ec5d7` plus implementation diff: two 6×5 ponds, two fish, one movable block, four rocks, no soft snow and 4–6 shortest slides. School maximum 7; younger windows and saved IDs/pins unchanged.
@@ -1116,6 +1125,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Penguin Slide 8 and Tangram Town 7 (`woods`, `creative`, `fingerdemo`) | 2026-10-13: new top-level play, both Tangram covers/free spare/compatible help, fixed-slot regression, clean 18.1/13.8 s demos and portrait reviews | [Verification entry](#2026-10-13--penguin-slide-8-and-tangram-town-7) / [PR #262](https://github.com/rjdunlap/neo/pull/262) | iPad input/speech and child understanding open |
 | Penguin Slide 7 (`woods`, `fingerdemo`) | 2026-10-13: two-fish block planning, undo/hint, complete round/sticker, clean 19.8 s demo and portrait | [Verification entry](#2026-10-13--penguin-slide-level-7-two-fish-and-a-block) / [PR #261](https://github.com/rjdunlap/neo/pull/261) | Actual iPad taps, speech and child planning open |
 | Tangram Town robot content | 2026-10-13: typecheck, 8 Tangram rules, isolated pointer completion at levels 5–6 and completed-art screenshot | [Verification entry](#2026-10-13--tangram-town-robot-picture) / [PR #260](https://github.com/rjdunlap/neo/pull/260) | Content only; device/child fit open |
 | Block Tower mirrored reach definition (docs only) | 2026-10-13: local Markdown files/anchors and diff formatting | [Slice 5 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #254](https://github.com/rjdunlap/neo/pull/254) | No gameplay evidence added; mirror implementation and device/child checks remain open |

@@ -36,6 +36,7 @@ export const PLANS: SlidePlan[] = [
   { cols: 7, rows: 5, fish: 2, soft: 2, rocks: 5, moves: [4, 6], puzzles: 2, name: 'Soft snow stops the penguin: use it to plan a longer route' },
   { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 4, blocks: 1, moves: [3, 5], puzzles: 2, name: 'Push an ice block: it skates until it bumps into something, so park it to make a stop' },
   { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park an ice block to collect two fish: plan how each new stopping place helps the route' },
+  { cols: 6, rows: 5, fish: 2, soft: 1, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park a block and use soft snow to stop on a route to both fish' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];

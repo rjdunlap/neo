@@ -826,9 +826,11 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'tangram-town': {
     goal: 'Fit shapes together to build a picture.',
     steps: [
-      'Drag each shape onto its shadow.',
+      { to: 6, text: 'Drag each shape onto its shadow.' },
+      { from: 7, to: 7, text: 'Make the house wall with one square or two triangles; add its roof. Either way finishes.' },
+      { from: 7, to: 7, text: 'Leave spare shapes in the tray.' },
       { from: 3, text: 'To turn a shape, choose it and tap the round arrow; the yellow button helps.' },
-      { from: 6, text: 'Fill the whole silhouette; the yellow button shows outlines and the next turn.' },
+      { from: 6, to: 7, text: 'Fill the whole silhouette; the yellow button shows outlines and the next turn.' },
     ],
     finish: 'The round ends when the shapes fill the picture.',
     note: 'For toddler, preschool and pre-K play, each piece says its shape name the first time you pick it up.',
@@ -877,7 +879,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 4, text: 'It only stops when it bumps into something.' },
       { from: 5, to: 5, text: 'It stops when it bumps into something, or in soft snow.' },
       { from: 6, to: 7, text: 'Slide into an ice block to push it; it skates until it bumps into something.' },
-      { from: 7, to: 7, text: 'Collect both fish; plan where to park the block so the penguin can reach them.' },
+      { from: 8, to: 8, text: 'Push the block to make a stop. Soft snow stops both the penguin and the block.' },
+      { from: 7, to: 8, text: 'Collect both fish; plan where to park the block so the penguin can reach them.' },
       'If it gets stuck, tap the round arrow to go back.',
     ],
     finish: 'The round ends when the penguin has eaten every fish.',

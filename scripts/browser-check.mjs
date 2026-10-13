@@ -3884,8 +3884,44 @@ async function creativeBatch() {
     await finished('rhythm-neighbors');assert.deepEqual(await score('rhythm-neighbors'),level<=2?[0,0]:[2,1]);
     await page.setViewportSize({width:1024,height:768});log(`Rhythm Neighbors ${level}: calls, replies, retries, guided timing, saved round and sticker passed`);
   }
-  if (!only || only === 'tangram') for(let level=fromLevel;level<=6;level++) {
+  if (!only || only === 'tangram') for(let level=fromLevel;level<=Number(process.env.TO_LEVEL||7);level++) {
     await launch('tangram-town',level);
+    if(level===7){
+      await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
+      await page.evaluate(async()=>{
+        const g=neo.scene.game,c=g.pieces.find(p=>p.piece.shape==='roof'),t=g.plan.targets[1];
+        for(let i=0;i<2;i++){await kit.dragTo(c.node,g.board.toGlobal({x:t.x,y:t.y+40}),18);await kit.sleep(600);}
+        if(g.misses!==2||g.hints!==1)throw new Error('Alternative cover wrong-turn/shape help');
+      });
+      await screenshot('tangram-town-7-portrait');
+      // First build with triangles, try the overlapping spare square freely, and ask for compatible help.
+      const place=async indices=>page.evaluate(async indices=>{
+        const g=neo.scene.game,L=await import('/src/games/tangram-town/logic.ts');
+        for(const i of indices){
+          const t=g.plan.targets[i],c=g.pieces.find(p=>!p.placed&&p.piece.shape===t.shape);
+          kit.tapOn(c.node);await kit.sleep(200);
+          for(let k=0;k<L.turnsToFit(c.piece,t);){kit.tapOn(g.turn);await kit.sleep(300);}
+          await kit.dragTo(c.node,g.board.toGlobal({x:t.x,y:t.y+40}),18);await kit.sleep(600);
+          if(!g.filled[i])throw new Error(`Cover slot ${i} not placed`);
+        }
+      },indices);
+      await place([2]);
+      await page.evaluate(async()=>{
+        const g=neo.scene.game,c=g.pieces.find(p=>p.piece.shape==='square'),t=g.plan.targets[1];
+        const before=[g.misses,g.hints];
+        await kit.dragTo(c.node,g.board.toGlobal({x:t.x,y:t.y+40}),18);await kit.sleep(600);
+        if(c.placed||g.misses!==before[0]||g.hints!==before[1])throw new Error('Spare wall must return freely');
+        kit.tapOn(g.help);await kit.sleep(300);
+        if(g.selected.piece.shape==='square')throw new Error('Help contradicts triangle cover');
+      });
+      await place([3,0]);await finished('tangram-town');assert.deepEqual(await score('tangram-town'),[2,2]);
+      await page.setViewportSize({width:1024,height:768});
+      await launch('tangram-town',7);await page.waitForTimeout(350);
+      await place([1,0]);await finished('tangram-town');assert.deepEqual(await score('tangram-town'),[0,0]);
+      assert.equal(await page.evaluate(()=>neo.scene.game.pieces.filter(p=>!p.placed).length),2,'Unused triangles remain in tray');
+      log('Tangram Town 7: both covers, free spare, compatible help, portrait and one sticker per build passed');
+      continue;
+    }
     if(level===5){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await page.evaluate(async()=>{
       const g=neo.scene.game;
@@ -3968,7 +4004,7 @@ async function woodsBatch() {
     log(`Light Lab ${level}: mirrors turned like a finger, ${play}saved score and sticker passed`);
   }
 
-  if (!only || only === 'penguin') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
+  if (!only || only === 'penguin') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
     await launch('penguin-slide', level);
     if (level === 3 || level >= 6) await page.setViewportSize({ width: 768, height: 1024 });
     const puzzles = await page.evaluate(() => neo.scene.game.plan.puzzles);
