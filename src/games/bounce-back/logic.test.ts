@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import { farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -23,7 +23,7 @@ describe('Bounce Back', () => {
   });
 
   it('starts slow with a huge paddle and speeds up gently', () => {
-    PLANS.slice(1).forEach((p, i) => {
+    PLANS.slice(1, 5).forEach((p, i) => {
       expect(p.speed).toBeGreaterThanOrEqual(PLANS[i].speed);
       expect(p.paddle).toBeLessThanOrEqual(PLANS[i].paddle);
     });
@@ -109,5 +109,70 @@ describe('Bounce Back', () => {
     expect(courtFor(0.9999)).toBe(COURTS[COURTS.length - 1]);
     // The ball and the court's table must differ in color so the ball reads, and the game is the same on every court.
     for (const c of COURTS) expect(c.table).not.toBe(c.ground);
+  });
+
+  // The table as the game lays it out in each view: box x 180 to w - 40 and y 90 to h - 40, faces 46 in, the ball's radius 26.
+  const aim = (w: number, h: number, plan: (typeof PLANS)[number]): AimGeometry => {
+    const R = 26;
+    const half = plan.paddle / 2;
+    const x0 = 180;
+    const x1 = w - 40;
+    const y0 = 90;
+    const y1 = h - 40;
+    return { faceX: x1 - 46 - R, leftX: x0 + 46 + R, top: y0 + R, bottom: y1 - R, low: y0 + half, high: y1 - half, paddle: plan.paddle, speed: plan.speed, starReach: R + 52 };
+  };
+  const VIEWS: [number, number][] = [[1024, 768], [768, 1024], [1366, 768], [1194, 834]];
+
+  it('only calls a color zone the paddle can send the ball to, and always has two to choose from', () => {
+    const plan = PLANS[5];
+    expect(plan.mode).toBe('color');
+    for (const [w, h] of VIEWS) {
+      const g = aim(w, h, plan);
+      for (let i = 0; i <= 80; i++) {
+        const arrive = g.top + ((g.bottom - g.top) * i) / 80;
+        const zones = reachableZones(arrive, g);
+        expect(zones.length, `${w}x${h} arrive ${Math.round(arrive)}`).toBeGreaterThanOrEqual(2);
+        for (const z of zones) {
+          const want = g.top + ((z + 0.5) / ZONES.length) * (g.bottom - g.top);
+          const { y, landing } = paddleForLanding(arrive, want, g);
+          expect(Math.abs(arrive - y)).toBeLessThanOrEqual(plan.paddle / 2);
+          expect(y).toBeGreaterThanOrEqual(g.low);
+          expect(y).toBeLessThanOrEqual(g.high);
+          expect(zoneOf(landing, g.top, g.bottom)).toBe(z);
+        }
+      }
+    }
+  });
+
+  it('keeps the goal levels beatable: the keeper never covers the whole table, and a good shot lands out of its reach', () => {
+    const rng = new Rng(5);
+    for (const plan of PLANS.filter((p) => isGoalMode(p.mode))) {
+      for (const [w, h] of VIEWS) {
+        const g = aim(w, h, plan);
+        const half = (g.bottom - g.top) / 2;
+        expect(keeperReach(plan.keeper!, g, 26), `${plan.mode} ${w}x${h}`).toBeLessThanOrEqual(half * 0.9);
+        expect(keeperSpeed(plan.keeper!, g)).toBeGreaterThan(0);
+        let beaten = 0;
+        for (let i = 0; i < 300; i++) {
+          const keeperY = rng.range(g.top, g.bottom);
+          const arrive = rng.range(g.top, g.bottom);
+          const { landing } = paddleForLanding(arrive, farWall(keeperY, g), g);
+          if (Math.abs(landing - keeperY) > keeperReach(plan.keeper!, g, 26)) beaten++;
+        }
+        expect(beaten / 300, `${plan.mode} ${w}x${h}`).toBeGreaterThan(0.75);
+      }
+    }
+  });
+
+  it('speeds the volley gently with a cap, and scores a round by margin without punishing a loss', () => {
+    expect(volleySpeed(480, 0)).toBe(480);
+    expect(volleySpeed(480, 3)).toBeGreaterThan(480);
+    expect(volleySpeed(480, 99)).toBeCloseTo(480 * 1.4);
+    // A hard-fought win stays smooth (at most one miss); a clear win is free; a loss counts every goal against.
+    expect(versusMisses(true, 0)).toBe(0);
+    expect(versusMisses(true, 3)).toBe(1);
+    expect(versusMisses(true, 6)).toBe(3);
+    expect(versusMisses(false, 5)).toBe(5);
+    expect(landingY(300, 0, aim(1024, 768, PLANS[5]))).toBeCloseTo(300);
   });
 });
