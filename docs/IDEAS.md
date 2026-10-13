@@ -1331,7 +1331,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Tangram Town (T–S · 6) | **Built 2026-10-10:** each level draws from a pool of 2–5 pictures (11 in all). More pictures, spoken shape names and the rest are in the [deep dive](deep-dives/tangram-town.md) | R1-later: flip a piece (the deep dive's level 9; it needs a parallelogram) | — |
 | Garden Grow (L–P · 5) | Flower kinds | **Built 2026-10-10:** levels 6, *One more than the sign*, and 7, *Two rows of three*, open a pre-K window ([build note](archive/COMPLETED-2026-10-09.md#garden-grow-levels-67-one-more-and-two-rows-of-three-2026-10-10)) | — |
 | Treasure Map (K–S · 5) | Maps of new places | **6, Give directions:** the pet asks the way and she chooses the arrows, turning reading directions into writing them | Preschool, at level 1 (a picture row meets a color column) |
-| Owl Walk Home (T–K · 4) | Paths and seasons | — | — |
+| Owl Walk Home (T–K · 4) ([deep dive](deep-dives/owl-walk.md)) | Paths and seasons; stones that carry color and shape independently | **Planned in the deep dive**: tap the stone rather than the owl (levels 1–4 reworked in place), then 6 Color or shape, 7 Our two cards, 8 Check the helper | **Planned as level 5, Stepping stones** (a free toy for lap and toddler; decision 6) |
 | Pattern Train (P–S · 12) ([deep dive](deep-dives/pattern-train.md), which supersedes this row) | A pool of car kinds (fruit, flowers, boats, sizes, turns, acting) so a level never looks the same twice | **Planned as 18, Stairs** (growing patterns), 19 Up and down and 20 Start anywhere; also 13–17 (odd car out, fix the train, same pattern in new pieces, build the same, make your own). Lap and toddler entries in the code are dead; the deep dive proposes a toddler window on level 1 with two choices | Color Train (lap) still waits on the lap-level decision |
 | Memory Match (P–S · 11) | **Picture decks** (vehicles, fruit, the island's friends) at the same sizes; [researched plan](deep-dives/memory-match.md) | **Built 2026-10-10:** 10 number words, 11 fraction pictures; proposed 12 clocks, 13 same total, 14 same share ([deep dive](deep-dives/memory-match.md#new-levels-on-top)) | Proposed toddler 1–1 (four cards); level 2 has six ([deep dive](deep-dives/memory-match.md#younger-band-openings)) |
 | Size Parade (T–S · 8) | More friends | — (audit: leave) | — |
@@ -1521,7 +1521,7 @@ These references span preschool through elementary school. Preserve exploration 
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Island Race | Candy Land, Chutes and Ladders | A grown-up and child take turns: tap the spinner, and hop that color or number of steps along a path | Count the hops yourself; slides are fun, not setbacks | Playing together; turn-taking |
+| Island Race | Candy Land, Chutes and Ladders | A grown-up and child take turns: tap the spinner, and hop that color or number of steps along a path | Count the hops yourself; slides are fun, not setbacks | Playing together; turn-taking. **Covered by Owl Walk Home (its levels 1–2 are a cooperative Candy Land; see its [deep dive](deep-dives/owl-walk.md#what-makes-sense-here)); build no second path game for the same age** |
 | Who Is It? | Guess Who? | Tap the friend with a hat | Narrow down with yes/no clues | Pre-K reasoning; the twenty-questions ladder is [Mystery Friend](#how-the-research-lands-on-rows-already-here) |
 
 ### Reference shelves added in the gap review (2026-10-06)
