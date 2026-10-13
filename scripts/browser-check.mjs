@@ -2566,6 +2566,11 @@ async function arcade() {
       if (g.plan.mode === 'predict') {
         while (!g.finished) {
           await kit.until(() => !g.flying, 10000);
+          if (g.shot > 0) {
+            const numerals = [...new Set(g.targets.slice(0, g.shot))].map((n) => String(n + 1));
+            if (g.flagNumbers.children.map((n) => n.text).join() !== numerals.join()) throw new Error('Watched flights need retained numbered flags');
+            if (!g.lastArc.context.instructions.length || g.lastFlight !== padAt(g.targets[g.shot - 1])) throw new Error('Previous flight trace missing');
+          }
           if (g.finished) break;
           const n = g.targets[g.shot];
           if (g.pads.some((p, i) => !p.children.some((c) => c.text === String(i + 1)))) throw new Error('Prediction clouds need visible numerals');
@@ -2602,6 +2607,17 @@ async function arcade() {
           const want = g.ask === 'farther' ? Math.min(1, g.last + 0.3) : Math.max(0, g.last - 0.3);
           // One wrong-way flight on the first ask.
           await fling(first ? (g.ask === 'farther' ? Math.max(0, g.last - 0.2) : Math.min(1, g.last + 0.2)) : want);
+          if (first) {
+            if (!g.compareRing.context.instructions.length || !g.lastArc.context.instructions.length || Math.abs(g.last - 0.5) > 0.001) throw new Error(`Compare evidence: ring=${g.compareRing.context.instructions.length} arc=${g.lastArc.context.instructions.length} last=${g.last}`);
+            const age = g.arcAge, alpha = g.lastArc.alpha;
+            g.update(1);
+            if (!(g.lastArc.alpha < alpha && g.arcAge > age)) throw new Error('Flight trace must fade');
+            const v = neo.view;
+            g.resize(v);
+            if (!g.compareRing.context.instructions.length || !g.flag.context.instructions.length) throw new Error('Resize lost comparison evidence');
+            await fling(g.ask === 'farther' ? g.last - 0.2 : g.last + 0.2);
+            if (g.misses !== 2 || g.hints !== 1 || !g.hinting) throw new Error('Compare preview hint accounting changed');
+          }
           first = false;
         }
         return;
@@ -2616,7 +2632,7 @@ async function arcade() {
     await screenshot(`bouncy-launch-${level}`);
     await finished('bouncy-launch');
     const r = await page.evaluate(() => { const r = kit.store.stats('bouncy-launch').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, { tap: [0, 0], free: [0, 0], star: [2, 1], number: [2, 1], compare: [1, 0], predict: [0, 0] }[mode], `launch ${level} score`);
+    assert.deepEqual(r, { tap: [0, 0], free: [0, 0], star: [2, 1], number: [2, 1], compare: [2, 1], predict: [0, 0] }[mode], `launch ${level} score`);
     log(`Bouncy Launch ${level} (${mode}): pulls, flights, landings, saved score and sticker passed`);
   }
 }
