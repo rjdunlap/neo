@@ -35,7 +35,7 @@ The taller glow appears on the first wrong check at 3–4, while counted assista
 
 Slice 2 reproduced a pickup during landing, cancellation committing a table placement, and stale help during pickup. The fixes lock pickup through settlement/result, order committed blocks by depth rather than animated y, return cancellation to the tray, clear help on pickup and share the solver slot domain. Resize during a fall and leaving it produced no errors in the isolated probe; no extra fall/lifecycle changes were made. The focused regression covers a resize during landing and subsequent top-lift recovery. Actual device cancellation and dragging remain open.
 
-Existing [person checks](../ROADMAP.md#needs-a-person-or-a-device) remain: whether a one-year-old enjoys tumbling, device speech and counting, top-block undo discoverability, subtle predictions for pre-K, and eighth-width dragging on iPad. The current off-screen suggestion includes cups/books and a table edge; prefer large lightweight blocks on the floor in a future wording slice. Do not infer developmental readiness from an automated solver.
+Existing [person checks](../DEVICE-CHECKS.md#needs-a-person-or-a-device) remain: whether a one-year-old enjoys tumbling, device speech and counting, top-block undo discoverability, subtle predictions for pre-K, and eighth-width dragging on iPad. The current off-screen suggestion includes cups/books and a table edge; prefer large lightweight blocks on the floor in a future wording slice. Do not infer developmental readiness from an automated solver.
 
 ## Similar games
 
@@ -94,7 +94,7 @@ Every current band is already supported. A cheap possible toddler opening is unc
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-No negative/zero saved ID is assigned here. These are named candidate entries under the [level-order decisions](../ROADMAP.md#waiting-on-the-developer), not authorizations to alter adaptation.
+No negative/zero saved ID is assigned here. These are named candidate entries under the [level-order decisions](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer), not authorizations to alter adaptation.
 
 | Entry | Band / first round | Choice, finish and help | Test and cost |
 | --- | --- | --- | --- |

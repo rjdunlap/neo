@@ -37,7 +37,7 @@ Windows are in `index.ts`: lap 1–2, toddler 2–4, preschool 4–6, pre-K 5–
 3. **The how-to step for levels 5+ is open-ended** (`{ from: 5, … }`). It would still show on a level 8, which is the trap Opposites' write-up found. Bound it with `to: 7` before any new level.
 4. **The hint is the first piece in the tray's shuffled order,** not a useful piece, and the spoken hint says "the glowing spot" with no spatial word.
 5. **Nothing for a one-year-old who cannot drag yet.** Lap starts at a drag.
-6. Person checks still open: lap level 1 with a real child, the iPad ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)).
+6. Person checks still open: lap level 1 with a real child, the iPad ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 **Target sizes.** At 1024×768, tray pieces are drawn at `min(board scale, 100/ph, 130/pw)`, which is 91 tall at 3×3, 95 wide at 3×2 and 107×100 at 4×3. The 100-unit target rule is met by the hit area, which pads each piece by 10 local units on every side (121×114 at 4×3, 143×104 at 3×3). Any new cut has to keep both numbers; see "Left out on purpose".
 
@@ -152,7 +152,7 @@ Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built): an easie
 5. **A tap-to-hop first step for lap.** Waits on the level-order decisions already on the roadmap. It also raises a small shell question: should every drag game offer tap-and-tap for under-fives? Not in scope here; recorded.
 6. **Her own picture as a puzzle** (a kept picture cut into pieces) and **{pet} in a picture** are sketches; each needs its own call (what a kept picture may be used for; whether a scene may differ per player).
 
-The level-order decision already has a row in [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer); the others are added there as one row.
+The level-order decision already has a row in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); the others are added there as one row.
 
 ## Build slices, in order
 

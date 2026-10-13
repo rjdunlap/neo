@@ -35,7 +35,7 @@ The ranges are lap 1–2, toddler 1–3, preschool 2–5, pre-K 3–6 and school
 7. **Speech.** `{thing}` is the picture's raw id in every `paint.*` line, so a new picture needs a spoken name (and "orange" the fruit would read "Paint the orange orange!"). `paint.remix` repeats `paint.what`. Free painting never names a color; `paint.start` and `paint.done` are the only lines in levels 1–2, each a single wording.
 8. **A tap in a coloring level blooms a random flower**, baked into the paint layer under the outline, so a pink flower can appear inside the apple. Cosmetic; it needs a look.
 9. **Colors are the only cue.** Pots have no mark besides their paint, so a color-blind child can't tell the red pot from the green one in a recall level; the spoken name is the only other cue. Common figures put red-green color blindness at about one boy in twelve (not checked here).
-10. **Person checks open:** lap level 1 with a real child ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)): pat, slap or drag, and a palm-sized brush; whether a four-year-old recalls a pumpkin's color and how many misses it costs; whether the spoken "orange", "purple" and "green" mix lines read right on a device.
+10. **Person checks open:** lap level 1 with a real child ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)): pat, slap or drag, and a palm-sized brush; whether a four-year-old recalls a pumpkin's color and how many misses it costs; whether the spoken "orange", "purple" and "green" mix lines read right on a device.
 
 ## Similar games
 

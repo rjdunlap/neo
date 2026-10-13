@@ -38,7 +38,7 @@ The ranges are lap 1–2, toddler 1–4, preschool 3–7 and pre-K 5–8 (`LEVEL
 7. **Body parts are limited by the art.** `CritterSpec` has no arms or hands, the feet sit behind `tubFront` (drawn above the pet), and the eyes and mouth carry the pet's reactions. The five parts in use are the whole set that Pip's blob can wear mud on without art changes.
 8. **Speech uses the raw part id.** `{part}` is the part's id and `notThatPart` composes "`a` and my `b`", so a new part must read naturally in "Wash my {part}", "That's my {touched}" and "Wash my {a} and my {b}".
 9. **Recorded flake and open question** ([VERIFICATION](../VERIFICATION.md)): `EARLY_ONLY=bath` failed at level 5 (`[2, 0]`) in one of three runs after the forgiveness rule was narrowed, and whether a later touch on a clean neighbour should be forgiven (it is not) is still open.
-10. **Person checks open:** lap level 1 with a real child ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)); and whether a one-year-old scrubs, pats or slaps (gap 5).
+10. **Person checks open:** lap level 1 with a real child ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)); and whether a one-year-old scrubs, pats or slaps (gap 5).
 
 ## Similar games
 

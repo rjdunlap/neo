@@ -39,7 +39,7 @@ The windows are lap 1–3, toddler 1–3, preschool 4–7, pre-K 5–9 and schoo
 7. **One sound.** Every note is the same marimba, on every level.
 8. **The how-to card's last lines are unbounded.** `{ from: 4 }` on the step, the finish line and the note would carry the tune text into a level 10 (the same trap as Splish Splash, Peekaboo Barn and Animal Snack). `howto.test.ts` checks that every step is bounded for Bubble Pop only.
 9. **Fragile couplings.** The plan test asserts the last echo level has length 5, `jellyToTap` knows only `free` and `echo`, and `browser-check.mjs` expects nine levels and a `[2, 1]` score. Each new level must update all three (see "Couplings every level slice must update").
-10. **Person checks open:** lap level 1 with a real child ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)); and the roadmap's open question of whether the bare, loop-free room feels empty to a small child or her own sound carries it.
+10. **Person checks open:** lap level 1 with a real child ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)); and the roadmap's open question of whether the bare, loop-free room feels empty to a small child or her own sound carries it.
 
 ## Similar games
 
@@ -69,7 +69,7 @@ Jelly Drums' genre is the child's first instrument: a few big, forgiving notes w
 
 **Jelly Drums is the instrument, not the studio.** Song Maker, Beat Builder and Sound Garden own building, looping and rhythm. The jellies' own lane is five big, always-musical notes that she plays one at a time, with the size, color and pitch of each tied together. The ladder today climbs one axis only: how many notes she must remember. The audit's verdict ([IDEAS](../IDEAS.md#short-ladder-audit-2026-10-09), line "Jelly Drums") is to leave the ceiling, because more notes is load, not a decision, and the verdict is right about length. So every proposal below keeps tunes at five notes or fewer and grows **what she listens for**: a rule applied to a heard tune (backwards), a comparison of two tunes (same or different), and an ordering by ear alone (lowest to highest). Below the existing ladder the jellies **answer** a toddler, and the ear is introduced one note at a time before tunes.
 
-**The pentatonic set is a gift.** C, D, E, G and A are Kodály's do, re, mi, so and la, which are the notes children sing first, and the Simon designer made the same choice for the same reason (any order sounds pleasant). It limits the repertoire, but a real one exists: *Hot Cross Buns*, *Mary Had a Little Lamb*, the chorus of *Jingle Bells*, *Oh! Susanna*, *Camptown Races* and the start of *Old MacDonald* fit these five notes. *Twinkle*, *Ode to Joy*, *Row, Row, Row Your Boat* and *Happy Birthday* need F and B and are out (the [pentatonic exception](../ROADMAP.md#waiting-on-the-developer) row would admit them; decision 3).
+**The pentatonic set is a gift.** C, D, E, G and A are Kodály's do, re, mi, so and la, which are the notes children sing first, and the Simon designer made the same choice for the same reason (any order sounds pleasant). It limits the repertoire, but a real one exists: *Hot Cross Buns*, *Mary Had a Little Lamb*, the chorus of *Jingle Bells*, *Oh! Susanna*, *Camptown Races* and the start of *Old MacDonald* fit these five notes. *Twinkle*, *Ode to Joy*, *Row, Row, Row Your Boat* and *Happy Birthday* need F and B and are out (the [pentatonic exception](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer) row would admit them; decision 3).
 
 **Overlap with the neighbours, settled.** Most obvious modes already have an owner.
 
@@ -138,7 +138,7 @@ Cost (L): entries in `COUCH_IDS` and `UNLOCK_TIERS` (`src/couch/party.ts`), a ca
 
 ### Levels below level 1 and between levels (waiting on the level-order decisions)
 
-These are easier than existing levels or fall between them, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built) and on **[whether a band's range may skip levels](../ROADMAP.md#waiting-on-the-developer)** (two separate rows). IDs are assigned when built, after the top levels and outside the couch's plans.
+These are easier than existing levels or fall between them, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built) and on **[whether a band's range may skip levels](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer)** (two separate rows). IDs are assigned when built, after the top levels and outside the couch's plans.
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -154,7 +154,7 @@ These are easier than existing levels or fall between them, so they are placed b
 - **Longer tunes for children.** Six notes and more are the memory load the audit rules out. They live in the couch entry above.
 - **A timing judge and rhythm.** Sound Garden and Rhythm Neighbors own it, and nothing here ends a round on a clock. A "held note" is a sketch, not a promise.
 - **A game over, a lives count or a streak of tunes.** One sticker per completed round, as everywhere.
-- **Songs that need F or B** (*Twinkle*, *Ode to Joy*, *Row, Row, Row Your Boat*, *Happy Birthday*): they sound wrong on five notes, and the [pentatonic exception](../ROADMAP.md#waiting-on-the-developer) is not decided.
+- **Songs that need F or B** (*Twinkle*, *Ode to Joy*, *Row, Row, Row Your Boat*, *Happy Birthday*): they sound wrong on five notes, and the [pentatonic exception](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer) is not decided.
 - **Reading a score, or a card of colored boxes.** Copying from a card is Song Maker 5; the jellies' colors are note names, not a notation.
 - **Composing and keeping a tune.** Song Maker, Beat Builder and the treehouse tune plaque. Free play is not recorded.
 - **Perfect-pitch drills and interval names.** The ear-training apps' later steps are theory; here the ear levels end at lowest-to-highest.

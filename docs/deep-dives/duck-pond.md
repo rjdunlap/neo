@@ -38,7 +38,7 @@ Ranges (`LEVELS` in `index.ts`): lap 1–2, toddler 1–5, preschool 3–7, pre-
 8. **Numerals only on the pads.** From level 6 the answers are bare numerals (62-point font, 74-unit hit circles at 190 spacing); a child who counts to five and does not yet read "5" can only guess, and the wrong-pad counting teaches by missing. The dots that sit beside the sign at levels 3–4 are gone by level 5.
 9. **Taps on ducks overlap.** Bank ducks sit 104 apart with 72-unit hit circles; harmless today because any duck counts, but not for a game that makes ducks individually tappable.
 10. **A long demonstration.** Level 10's full ten-place fill-ups and level 11's counting are 66 s and 69 s of the 75 s allowed, so any new level with more ducks needs a shorter path for the ghost finger.
-11. **Person checks open** ([roadmap](../ROADMAP.md#needs-a-person-or-a-device): "Duck Pond 11 on an iPad", the bridge hides its ducks clearly and the pads are comfortable in both orientations). Also unchecked: whether a toddler can use level 5 (numeral only, three to six ducks), and device speech for the new lines.
+11. **Person checks open** ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device): "Duck Pond 11 on an iPad", the bridge hides its ducks clearly and the pads are comfortable in both orientations). Also unchecked: whether a toddler can use level 5 (numeral only, three to six ducks), and device speech for the new lines.
 
 ## Similar games
 

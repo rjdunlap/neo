@@ -26,7 +26,7 @@ Levels 1–2 are **tap everyone** (no wrong answer, so no misses and no hints). 
 - **No sound of its own for each friend.** Every goodnight is a rising bell note; the kitten does not yawn.
 - **Two names in order at level 4 sits in the toddler window.** Sources disagree about whether two-year-olds follow two-step requests (see Similar games). It has a supported miss path and a glow, so it is a person check rather than a change.
 - **Ambiguous friends.** The teddy is the `bear` critter. A real bear cannot join its room, and a request for "the animals" would be unfair to a teddy (see level 5 below).
-- Person checks still open: whether a one-year-old holds a 160-unit tap target, and the real iPad ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)).
+- Person checks still open: whether a one-year-old holds a 160-unit tap target, and the real iPad ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 ## Similar games
 
@@ -119,7 +119,7 @@ Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built).
 2. **The teddy is not "an animal".** Lean: keep ambiguous friends out of kind rounds (a test asserts it) rather than counting a teddy as a free tap.
 3. **Levels with no way to be wrong (7 and 10) climb at once.** Two smooth rounds step her up, so she reaches 10 quickly. Lean: accept it, since they are the reward levels, or add a "how many are asleep now?" question before the finale.
 4. **The toddler window includes level 4 (two names in order).** Lean: keep it; it has a glow and no penalty. A person check on a two-year-old decides.
-5. **Levels below level 1 and tuck-in** wait on the existing level-order and range-skip rows in [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer); no new row.
+5. **Levels below level 1 and tuck-in** wait on the existing level-order and range-skip rows in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); no new row.
 
 ## Build slices, in order
 

@@ -52,13 +52,16 @@ What the transcripts showed, and what was done:
 - **Doc edits through Python heredocs** (1,423 Bash calls; 328 aimed at `ROADMAP.md`, 256 at `VERIFICATION.md`), with about seven documents touched per slice. *Partly done:* closeout can go to `docs-keeper`; the three custom agents had not been used once in these transcripts, because nothing named them.
 - **A stray `docs/VERIFICATION.md-e`** (a macOS `sed -i -e` artifact, 276 lines out of date) was committed in d0f9ce6. *Done:* removed, with a pitfall line.
 
-Proposed, not done (each moves text other sessions are editing, so do them as pure moves in their own pull request, with the anchor check below):
+Done in the follow-up (2026-10-13), as pure moves with every link repointed by `scripts/check-links.mjs`:
 
-- Rotate `VERIFICATION.md` (423 KB, 238 entries) so only the newest dozen entries and the coverage summary stay live, as was done for 2026-10-05/06; collapse the per-slice coverage rows into one row per suite. Links of the form `VERIFICATION.md#2026-10-…` from the roadmap, README and coverage rows must be repointed.
-- Split `ROADMAP.md` (172 KB): "Waiting on the developer" (35 KB) and "Needs a person or a device" (23 KB) into their own files, keeping the `#next-up` anchor that `EXECUTION-QUEUE.md` links.
-- Cut `EXECUTION-QUEUE.md`'s "Current checkpoint" (very long lines read by every hourly run) to the current state, moving history out.
-- `IDEAS.md` (396 KB) and `GAMES.md` (131 KB) are only read by section, so they cost nothing until opened; leave them.
-- About 40 registered worktrees (roughly 30 under `~/.codex/worktrees`) are mostly merged branches; this is disk and clutter, not tokens, but the cleanup procedure below applies.
+- `VERIFICATION.md` went from 429 KB to about 65 KB: the newest fifteen dated entries and the coverage summary stay; the rest is in [the archived log](archive/VERIFICATION-2026-10-07-13.md). The summary lost 25 rows (docs-only slices and older rows for a game that has a newer one).
+- `ROADMAP.md` went from 175 KB to 115 KB: [Waiting on the developer](WAITING-ON-DEVELOPER.md) and [Needs a person or a device](DEVICE-CHECKS.md) are their own files, and AGENTS.md routes to them.
+
+Left as is, on purpose:
+
+- `EXECUTION-QUEUE.md` (18 KB) is the live state of the Codex coordinator, which rewrites its "Current checkpoint" every hour; trimming it from another session risks a conflict with the owner. The coordinator can shorten it when it next edits.
+- `IDEAS.md` (396 KB) and `GAMES.md` (131 KB) are only read by section, so they cost nothing until opened.
+- About 40 registered worktrees (roughly 30 under `~/.codex/worktrees`) are mostly merged branches. That is disk and clutter, not tokens; the cleanup procedure below applies.
 
 ## Cleanup performed
 

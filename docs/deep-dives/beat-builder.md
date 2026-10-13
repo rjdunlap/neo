@@ -97,7 +97,7 @@ Speed rounds, tight timing windows, lives, streaks, long hidden phrases, forced 
 2. **Toddler/lap opening and stopping?** Lean toddler 1–1 with a heard single-hit finish; lap only with its distinct pat-to-score interaction, or leave lap with Jelly Drums. Band-specific gates need deliberate approval, not an incidental change to everyone’s free-play threshold.
 3. **Keep percussion creations?** Lean leave storage out of initial slices. If wanted, define a bounded beat/section creation shape and repair, migration, backup, plaque playback and optional saving before building. No decision blocks current support or phrase-library work.
 
-Added to [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer). Below-level-1 ordering already has a shared decision there. Devices/person: actual sound separation and speech, Bluetooth delay, comfortable eight-column tapping, the difference between copying and making, and response to a visible repair remain open.
+Added to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer). Below-level-1 ordering already has a shared decision there. Devices/person: actual sound separation and speech, Bluetooth delay, comfortable eight-column tapping, the difference between copying and making, and response to a visible repair remain open.
 
 ## Build slices, in order
 

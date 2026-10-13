@@ -39,7 +39,7 @@ Ranges (`LEVELS` in `index.ts`): preschool 1–6, pre-K 3–9, school 8–12. `l
 8. **A distractor is never a near miss.** Under AB the third choice (a piece that is nowhere on the train) is easy to rule out. The informative wrong answers, such as the other piece in an AAB train (an AB alternation), are 1 in 3 at best and are not chosen on purpose.
 9. **Dead and drifting entries.** `LEVELS.lap` and `LEVELS.toddler` are unreachable (above); `LEVELS.school.max` is hard-coded at 12 and does not follow `PATTERN_PLANS.length`; the how-to's last step is `{ from: 12 }` and would describe level 13 and above wrongly; `browser-check.mjs` hard-codes `length: 12` and `level === 12`.
 10. **The hint says "this one"**, not why. It points at a choice (`pattern.hint`) and never replays the train, which is what the research says helps most (say the pattern aloud, below).
-11. **Person checks open** ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)): none are recorded for this game. Whether she can use level 1 at three, whether the bell levels (confirm arrow) read on an iPad and whether the numbered cars (31-point text on level 12's tens) are legible have not been looked at on a device.
+11. **Person checks open** ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)): none are recorded for this game. Whether she can use level 1 at three, whether the bell levels (confirm arrow) read on an iPad and whether the numbered cars (31-point text on level 12's tens) are legible have not been looked at on a device.
 
 ## Similar games
 
@@ -107,7 +107,7 @@ Appended after 12, never renumbered. A "car count" is the number of tiles includ
 - **Pre-K 3–9, with later additions.** Levels 13, 15, 17 and 18 are suitable for pre-K, but a pre-K range must be contiguous (3–9 then 13 would skip 10–12). They use `order`, which may skip IDs (built). Until then they sit in school.
 - **Preschool 1–6 stays.** The phase change in fresh content makes levels 1–6 harder in a good way; confirm with a person that a three-year-old can use level 1 with the gap in the second slot.
 - **Toddler (opening from level 1).** `ctx.band` exists, so a toddler opening can be level 1 itself: three repeats of AB shown, **two** choices (no stray third piece), the glow after the first miss, and each pick sung as it falls in. No new level and no ordering decision. It is a first look at "pick the one that goes next", for a child of two or three; check with a person. Whether `toddler` joins `bands` with a 1–1 window is the only change; the lap and toddler entries in `LEVELS` today are dead and should be removed or used.
-- **Lap.** Nothing in this game is a lap game. The idea in IDEAS, **Color Train** (a color-matching train from JumpStart Baby: any tap sends the next object to the car of its color), is a different game shape; it waits on the decision about lap levels outside a ladder's order ([Waiting on the developer](../ROADMAP.md#waiting-on-the-developer)).
+- **Lap.** Nothing in this game is a lap game. The idea in IDEAS, **Color Train** (a color-matching train from JumpStart Baby: any tap sends the next object to the car of its color), is a different game shape; it waits on the decision about lap levels outside a ladder's order ([Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer)).
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
@@ -120,7 +120,7 @@ Appended after 12, never renumbered. A "car count" is the number of tiles includ
 - A **repeat the whole tune from memory** level: Jelly Drums owns copy-by-ear, and a bell train more than 7 cars long is memory load.
 - **Letters for the pattern** (AABB on screen): not reading; the pet says the pieces.
 - **A random hidden rule** ("find the rule from the first three cars"): a guess, not a decision (Moofy's trap), unless the rule is stated in the instruction.
-- **Counting by hundreds**, negative numbers and a "what do you notice" odd-or-even level (4.OA.5's second half): it waits on [whether Wonder Woods grows](../ROADMAP.md#waiting-on-the-developer) before a band above it; the school ladder stops at 21.
+- **Counting by hundreds**, negative numbers and a "what do you notice" odd-or-even level (4.OA.5's second half): it waits on [whether Wonder Woods grows](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer) before a band above it; the school ladder stops at 21.
 - **Two trains side by side to compare** as a race: level 15 asks the same without a race.
 
 ## Decisions for the developer
