@@ -1,19 +1,20 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { HeldDirection, idle, type CouchControls } from '../../engine/controller';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { FONT, label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBeds, courseMinimum, isBedCourse } from './course';
 import {
-  conflicts, deadEnds, geometry, hintFor, houseName, isSolved, makeBeds, placements, planFor, remaining, type Hint, type Puzzle, type SudokuPlan,
+  conflicts, deadEnds, geometry, hintFor, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, type Hint, type Puzzle, type SudokuPlan,
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
@@ -27,6 +28,12 @@ const COLS = 3;
 const NOTE_POSITIONS = (d: number) => ({ x: 0.2 + 0.3 * ((d - 1) % 3), y: 0.2 + 0.3 * Math.floor((d - 1) / 3) });
 
 type Mode = 'board' | 'tray';
+
+/** The smallest touch target in a grown-up game, in logical units. */
+const MIN_TOUCH = 64;
+/** Touch play: the number tiles, then Marks, Erase, Hint and Start over, each a target of its own. */
+type SlotKind = 'digit' | 'marks' | 'erase' | 'hint' | 'again';
+interface Slot { kind: SlotKind; d: number; x: number; y: number; w: number; h: number }
 
 class SudokuGarden implements Game {
   readonly plan: SudokuPlan;
@@ -50,7 +57,16 @@ class SudokuGarden implements Game {
   /** Numbers placed on this bed, taken back or not: every placement counts, erasing and pencil marks do not. */
   entries = 0;
 
-  private readonly beds: Puzzle[];
+  /** Touch play (every play outside the couch): tap a square, then a number. Couch play drives the same board with a controller. */
+  touch: boolean;
+  readonly tapLayer = new Graphics();
+  readonly touchLayer = new Container();
+  /** The touch tray's targets, in stage units, and the hit area standing over each. */
+  slots: Slot[] = [];
+  slotNodes: Container[] = [];
+  private pressed: { slot: number; until: number } | null = null;
+
+  private beds: Puzzle[];
   private readonly board = new Container();
   private readonly cellsG = new Graphics();
   private readonly digits = new Container();
@@ -100,6 +116,7 @@ class SudokuGarden implements Game {
       this.assisted = run.resume.assisted;
     } else {
       this.beds = makeBeds(this.plan, ctx.rng);
+      if (ctx.demo) this.beds = this.beds.map((b) => shortBed(b));
       this.course = null;
     }
     for (const part of [this.board, this.cellsG, this.digits, this.notesLayer, this.glow, this.tray, this.trayG, this.trayText, this.trayRing]) part.eventMode = 'none';
@@ -115,6 +132,13 @@ class SudokuGarden implements Game {
     this.tally = label('', 26, ink, '500');
     this.tally.eventMode = 'none';
     ctx.stage.addChild(this.board, this.tray, this.bannerBox, this.tally);
+    this.touch = !ctx.couch;
+    if (this.touch) {
+      // A layer over the bed works out which square a finger touched, so a tap never depends on a drawing's own hit area.
+      onTap(this.tapLayer, (e) => this.tapBed(e.global.x, e.global.y), { cooldown: 60 });
+      this.tapLayer.cursor = 'pointer';
+      ctx.stage.addChild(this.tapLayer, this.touchLayer);
+    }
   }
 
   get n() { return this.puzzle.size; }
@@ -129,6 +153,7 @@ class SudokuGarden implements Game {
     this.view = v;
     if (!this.puzzle) return;
     const n = this.n;
+    if (this.touch) return this.resizeTouch(v);
     // The controller reminder covers the bottom of the screen for the first ten seconds, so the bed stays above it.
     this.cell = Math.max(52, Math.min(96, Math.floor((v.h - 262) / n)));
     this.trayTile = Math.min(76, Math.max(54, Math.floor(this.cell * 0.78)));
@@ -145,6 +170,69 @@ class SudokuGarden implements Game {
     (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(230, v.w - this.tray.x - 44);
     this.showBanner(this.banner.text);
     this.tally.position.set(this.tray.x + trayW / 2, y + w - 4);
+    this.dirty = true;
+    this.paintTray();
+  }
+
+  /**
+   * Touch layout. Beside the bed when it fits (the tray in a column), else under it (a row of numbers, then a row of buttons),
+   * so every square and every button is at least 64 across at 6 by 6 and 9 by 9, upright or sideways.
+   */
+  private resizeTouch(v: View) {
+    const n = this.n, LEFT = 172;
+    const trayAt = (tile: number) => COLS * tile + (COLS - 1) * 10;
+    const tile = n > 6 ? MIN_TOUCH : 72;
+    const side = Math.min(96, Math.floor((v.h - 150) / n), Math.floor((v.w - LEFT - 20 - 44 - trayAt(tile)) / n));
+    // The view is never smaller than 1024 by 768, so the bed always fits beside the tray; under it wins only on a tall view, where it is bigger.
+    const rowLeft = 140, margin = 12, top = 128;
+    const tw = Math.max(MIN_TOUCH, Math.min(88, Math.floor((v.w - margin - rowLeft - (n - 1) * 5) / n)));
+    // The bed keeps clear of the home and help buttons at the left, so it is no wider than the view less that margin on both sides.
+    const stack = Math.min(96, Math.floor((v.w - 2 * rowLeft) / n), Math.floor((v.h - top - 16 - 20 - tw - 10 - 72 - 20) / n));
+    this.tray.position.set(0, 0);
+    this.tray.alpha = 1;
+    this.slots = [];
+    if (side >= MIN_TOUCH && side + 8 > stack) {
+      this.cell = side;
+      this.trayTile = tile;
+      const w = n * side, trayW = trayAt(tile), x = Math.max(LEFT, (v.w - (w + 44 + trayW)) / 2), y = Math.max(100, Math.floor((v.h - w) / 2)), tx = x + w + 44, ty = y + 6;
+      this.board.position.set(x, y);
+      for (let d = 1; d <= n; d++) this.slots.push({ kind: 'digit', d, x: tx + ((d - 1) % COLS) * (tile + 10), y: ty + Math.floor((d - 1) / COLS) * (tile + 10), w: tile, h: tile });
+      const half = (trayW - 10) / 2, rows = Math.ceil(n / COLS) * (tile + 10);
+      const pair = (a: SlotKind, b: SlotKind, py: number) => { [a, b].forEach((kind, k) => this.slots.push({ kind, d: 0, x: tx + k * (half + 10), y: py, w: half, h: tile })); };
+      pair('marks', 'erase', ty + rows);
+      pair('hint', 'again', ty + rows + tile + 10);
+      const bottom = ty + rows + 2 * (tile + 10);
+      this.bannerBox.position.set(tx, bottom + 8);
+      (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(180, v.w - tx - 36);
+    } else {
+      // A tall view: the bed centred, the numbers in a row under it and four buttons under them, clear of the pet in the corner.
+      this.cell = Math.max(MIN_TOUCH, stack);
+      this.trayTile = tw;
+      const w = n * this.cell, rowW = n * tw + (n - 1) * 5;
+      this.board.position.set((v.w - w) / 2, top);
+      const dx = Math.max(rowLeft, (v.w - rowW) / 2), dy = top + w + 16 + 20;
+      for (let d = 1; d <= n; d++) this.slots.push({ kind: 'digit', d, x: dx + (d - 1) * (tw + 5), y: dy, w: tw, h: tw });
+      const kinds: SlotKind[] = ['marks', 'erase', 'hint', 'again'], bx = 150, bw = Math.floor((v.w - margin - bx - 30) / 4);
+      kinds.forEach((kind, k) => this.slots.push({ kind, d: 0, x: bx + k * (bw + 10), y: dy + tw + 10, w: bw, h: 72 }));
+      // The hint's words sit above the bed, beside the home button.
+      this.bannerBox.position.set(140, 8);
+      (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(230, v.w - 140 - 36);
+    }
+    this.showBanner(this.banner.text);
+    this.tally.visible = false;
+    const w = n * this.cell;
+    this.tapLayer.clear().rect(0, 0, w, w).fill({ color: 0xffffff, alpha: 0.001 });
+    this.tapLayer.hitArea = new Rectangle(0, 0, w, w);
+    this.tapLayer.position.copyFrom(this.board.position);
+    for (const node of this.touchLayer.removeChildren()) node.destroy();
+    this.slotNodes = this.slots.map((slot, k) => {
+      const node = new Container();
+      node.position.set(slot.x, slot.y);
+      node.hitArea = new Rectangle(0, 0, slot.w, slot.h);
+      onTap(node, () => this.tapSlot(k), { cooldown: 60 });
+      this.touchLayer.addChild(node);
+      return node;
+    });
     this.dirty = true;
     this.paintTray();
   }
@@ -222,6 +310,7 @@ class SudokuGarden implements Game {
   /** The tray at the right of the bed: one tile for each number, and a pencil for marks. */
   private paintTray() {
     if (!this.puzzle) return;
+    if (this.touch) return this.paintTouchTray();
     const n = this.n, tile = this.trayTile, g = this.trayG.clear(), left = remaining(this.grid, n);
     this.trayText.removeChildren().forEach((c) => c.destroy());
     const open = this.mode === 'tray';
@@ -250,6 +339,36 @@ class SudokuGarden implements Game {
     this.tray.alpha = open ? 1 : 0.8;
   }
 
+  /** The touch tray: a tile for each number (with how many are still to place), and Marks, Erase, Hint and Start over. A tile sinks while it is pressed. */
+  private paintTouchTray() {
+    const g = this.trayG.clear(), left = remaining(this.grid, this.n);
+    this.trayText.removeChildren().forEach((c) => c.destroy());
+    this.slots.forEach((s, k) => {
+      const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
+      let sw = swatch.purple, face = swatch.purple.light, text = '', sub = '', ink2 = ink, size = 22;
+      if (s.kind === 'digit') {
+        const done = left[s.d - 1] <= 0;
+        sw = this.color(s.d); face = done ? swatch.white.light : sw.light; text = String(s.d); size = Math.round(s.h * 0.5);
+        sub = done ? '✓' : String(left[s.d - 1]); ink2 = done ? swatch.white.line : ink;
+      } else if (s.kind === 'marks') { sw = swatch.yellow; face = this.noting ? sw.fill : sw.light; text = this.noting ? 'Marks: on' : 'Marks'; }
+      else if (s.kind === 'erase') { sw = swatch.pink; face = sw.light; text = 'Erase'; }
+      else if (s.kind === 'hint') { sw = swatch.blue; face = sw.light; text = 'Hint ◇'; }
+      else { sw = swatch.teal; face = sw.light; text = 'Start over ↺'; }
+      g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
+      g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(face).stroke({ width: 3, color: sw.line });
+      const t = label(text, size, ink2);
+      if (t.width > s.w - 14) t.scale.set((s.w - 14) / t.width);
+      t.position.set(s.x + s.w / 2, s.y + s.h / 2 - (sub ? 3 : 0) + down);
+      this.trayText.addChild(t);
+      if (sub) {
+        const rest = label(sub, 15, s.kind === 'digit' && left[s.d - 1] <= 0 ? swatch.green.line : swatch.white.line, '500');
+        rest.position.set(s.x + s.w - 13, s.y + s.h - 12 + down);
+        this.trayText.addChild(rest);
+      }
+    });
+    this.tray.alpha = 1;
+  }
+
   private trayCell(at: number) {
     const tile = this.trayTile, n = this.n;
     if (at >= n) return { x: 0, y: Math.ceil(n / COLS) * (tile + 10), w: COLS * tile + (COLS - 1) * 10, h: tile * 0.8 };
@@ -260,6 +379,7 @@ class SudokuGarden implements Game {
     this.clock += dt;
     if (!this.puzzle) return;
     if (this.dirty) this.paint();
+    if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintTray(); }
     const g = this.glow.clear(), ring = this.trayRing.clear();
     if (this.finished || this.busy) return;
     const cell = this.cell;
@@ -321,7 +441,7 @@ class SudokuGarden implements Game {
     this.report();
     if (this.spoken) return;
     this.spoken = true;
-    return this.ctx.instruct('sudoku.go');
+    return this.ctx.instruct(this.touch ? 'sudoku.go-touch' : 'sudoku.go');
   }
 
   /** Hand a course's numbers to the shell. `finished` means the bed just ended, so none of its entries are "in progress". */
@@ -390,6 +510,8 @@ class SudokuGarden implements Game {
     this.finished = true;
     this.tray.visible = false;
     this.tally.visible = false;
+    this.touchLayer.visible = false;
+    this.tapLayer.visible = false;
     sfx.tada();
     await this.ctx.say('sudoku.done');
     await this.ctx.tw.wait(0.5);
@@ -400,7 +522,43 @@ class SudokuGarden implements Game {
   /* Controls                                                                                      */
   /* -------------------------------------------------------------------------------------------- */
 
+  /** A finger on the bed: the square under it is chosen (a number given at the start can be chosen too, to look at its row, column and box). */
+  private tapBed(gx: number, gy: number) {
+    if (this.busy || this.finished || !this.puzzle) return;
+    const p = this.board.toLocal({ x: gx, y: gy });
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
+    const c = Math.floor(p.x / this.cell), r = Math.floor(p.y / this.cell);
+    if (c < 0 || r < 0 || c >= this.n || r >= this.n) return;
+    const to = r * this.n + c;
+    if (to !== this.cursor) { this.cursor = to; this.dirty = true; }
+    sfx.tick();
+  }
+
+  /** A finger on a tile of the tray. The tile sinks at once; the number goes into the chosen square, or is pencilled in while Marks is on. */
+  private tapSlot(k: number) {
+    if (this.busy || this.finished || !this.puzzle) return;
+    const s = this.slots[k];
+    this.pressed = { slot: k, until: this.clock + 0.15 };
+    if (s.kind === 'marks') { this.noting = !this.noting; sfx.pop(this.noting ? 8 : 4); }
+    else if (s.kind === 'erase') this.back();
+    else if (s.kind === 'hint') this.askForHint();
+    else if (s.kind === 'again') this.restart();
+    else if (this.given[this.cursor]) sfx.squeak();
+    else { this.lastDigit = s.d; if (this.noting) this.mark(s.d); else this.enter(s.d); }
+    this.paintTray();
+  }
+
+  /** Only a controller (the couch, or the couch's own demonstration) calls `control`: from then on the bed is laid out for it. */
+  private useController() {
+    this.touch = false;
+    this.touchLayer.visible = false;
+    this.tapLayer.visible = false;
+    this.tally.visible = true;
+    this.resize(this.view);
+  }
+
   control(input: CouchControls, dt: number) {
+    if (this.touch) this.useController();
     if (this.busy || this.finished || !this.puzzle) return;
     for (const dir of this.held.poll(input, dt)) this.move(dir);
     if (input.players.some((p) => p.action)) this.press();
@@ -589,6 +747,22 @@ class SudokuGarden implements Game {
   /* The "watch me" demo                                                                           */
   /* -------------------------------------------------------------------------------------------- */
 
+  /** The ghost finger on the how-to card: tap the square the easy steps can fill, then its number in the tray. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.puzzle || !this.touch) return null;
+    if (!this.botPick || this.grid[this.botPick.cell]) this.botPick = this.pickNext();
+    const pick = this.botPick;
+    if (!pick) return null;
+    if (this.cursor !== pick.cell) {
+      const at = this.center(pick.cell);
+      return { tap: { on: this.board, x: at.x, y: at.y }, receiver: this.tapLayer, pause: 0.3 };
+    }
+    const k = this.slots.findIndex((s) => s.kind === 'digit' && s.d === pick.digit);
+    if (k < 0) return null;
+    const s = this.slots[k];
+    return { tap: { on: this.touchLayer, x: s.x + s.w / 2, y: s.y + s.h / 2 }, receiver: this.slotNodes[k], pause: 0.3 };
+  }
+
   /** A bot that solves the way the techniques do: the nearest number the easy steps can place, walked to and chosen from the tray. */
   autoplay(dt: number): CouchControls {
     const out = idle();
@@ -679,7 +853,10 @@ export const sudokuGarden: GameModule = {
   region: 'puzzle-peaks',
   skills: ['logic', 'deduction', 'planning'],
   bands: ['grownup'],
-  inputs: ['controller'],
+  inputs: ['touch', 'controller'],
+  touchDemo: true,
+  coplayHint: 'Tap a square, then a number. Ask which number can only go in one place in a row, a column or a box.',
+  offScreen: 'Draw a small grid on paper and fill it so no row or column repeats a shape or a number.',
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

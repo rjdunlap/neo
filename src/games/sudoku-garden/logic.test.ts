@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   candidates, conflicts, countSolutions, deadEnds, formatGrid, geometry, gradeOf, hintFor, isSolved, makePuzzle, parseGrid, parsePuzzle, PLANS,
-  placements, planFor, randomBed, remaining, solve, techniqueSolve, type Grid, type Hint, type Puzzle, type Size,
+  placements, planFor, randomBed, remaining, shortBed, solve, techniqueSolve, type Grid, type Hint, type Puzzle, type Size,
 } from './logic';
 
 /** A well-known 9 by 9 with one solution, for checks that should not depend on the generator. */
@@ -150,6 +150,18 @@ describe('sudoku beds', () => {
         expect(gradeOf(p.start, p.size), label).toBe(plan.tier);
       }
     });
+  });
+
+  it('shows a short bed for the demonstration: a few blanks left, the same one answer', () => {
+    for (const plan of PLANS) {
+      const p = makePuzzle(plan, new Rng(31)), s = shortBed(p, 10);
+      expect(s.start.filter((d) => !d), plan.name).toHaveLength(Math.min(10, plan.blanks));
+      expect(s.blanks, plan.name).toBe(Math.min(10, plan.blanks));
+      expect(s.solution, plan.name).toEqual(p.solution);
+      p.start.forEach((d, c) => { if (d) expect(s.start[c], plan.name).toBe(d); });
+      s.start.forEach((d, c) => { if (d) expect(d, plan.name).toBe(p.solution[c]); });
+      expect(countSolutions(s.start, s.size), plan.name).toBe(1);
+    }
   });
 
   it('is fair: the same seed gives the same bed, a different seed another', () => {

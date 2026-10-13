@@ -812,6 +812,7 @@ export const SCRIPT = {
   'lantern.lit': ['Every lantern is glowing!', 'The whole pond is aglow!'],
   'lantern.done': ['A pond full of light.'],
   'sudoku.go': ['Every row, column and box needs each number once. Press the bottom button on a square to choose one.'],
+  'sudoku.go-touch': ['Every row, column and box needs each number once. Tap a square, then tap a number.'],
   'sudoku.clash': ['That number is already in the same {house}.'],
   'sudoku.stuck': ['Some square has no number left that fits, so one of the numbers you placed has to come out.'],
   'sudoku.hint-lone': ['Look at the ringed square. Only the {n} fits there.'],

@@ -319,6 +319,18 @@ export const PLANS: SudokuPlan[] = [
 
 export const planFor = (level: number): SudokuPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
+/**
+ * The same bed with only `keep` empty squares left, spread over the bed: the how-to card's demonstration shows the taps, not
+ * every blank of a 9 by 9. Squares filled in come from the solution, so the one answer is unchanged.
+ */
+export function shortBed(p: Puzzle, keep = 10): Puzzle {
+  const blanks = p.start.map((d, i) => (d ? -1 : i)).filter((i) => i >= 0);
+  if (blanks.length <= keep) return p;
+  const left = new Set(Array.from({ length: keep }, (_, k) => blanks[Math.floor((k * blanks.length) / keep)]));
+  const start = p.start.map((d, i) => (d || left.has(i) ? d : p.solution[i]));
+  return { ...p, start, blanks: left.size };
+}
+
 export interface Puzzle {
   /** What the bed shows to start: numbers given, and 0 for empty squares. */
   start: number[];

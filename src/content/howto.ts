@@ -127,13 +127,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'sudoku-garden': {
     goal: 'Fill the bed so every row, column and box holds each number once.',
     steps: [
-      'Move around the bed with the arrow keys or the stick.',
-      'Press Enter on a square to open the number tray, then choose a number and press Enter again to place it.',
-      'Backspace closes the tray or takes a number back. Esc opens the pause menu, with a hint and start-over.',
+      'Tap a square, then tap a number to put it there. A clash lights up red.',
+      'Tap Marks to pencil small notes; Erase takes a number or its notes out.',
+      'Tap Hint to see which square to try next; Start over begins the bed again.',
     ],
     finish: 'The bed is done when every square holds the right number.',
-    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+    note: 'A number that does not belong counts as a miss, and a hint counts as help. Taking a number out is free.',
   },
+
+
   'picture-logic': {
     goal: 'Fill the squares the numbers allow, and a picture appears.',
     steps: [

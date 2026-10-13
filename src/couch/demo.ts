@@ -220,6 +220,7 @@ export class Demo {
       level: this.opts.level,
       band: this.opts.band,
       couch,
+      demo: true,
       rng: new Rng(this.opts.seed ?? 7),
       tw: this.tw,
       particles: fx,
