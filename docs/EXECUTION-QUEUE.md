@@ -27,11 +27,15 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` is exempt from concurrency. Assigned worker `01a13677-fdf4-77b1-a4c9-a71de0b584f6`, host `local`, branch `codex/bouncy-launch-support`, base `feeb1bb`; dispatch `bouncy-launch-support-20261013T181223Z`.
-- State: claiming only [Bouncy Launch slice 1](deep-dives/bouncy-launch.md#build-slices-in-order): truthful words, wrong-way/short-pull replies and level-6 open checks. No new levels/bands, sky/flight history, physics/course changes or unresolved decisions. Draft PR follows claim commit.
-- Worker scope/admission reading: 40% five-hour / 29% weekly used; resets `1791925955` / `1792472658`; ordinary usage allowed. Estimate 15 / 2.5 points fits remaining 60% / 71%. No other active implementation chat; overlap script found no competing claim.
-- Required proof: typecheck, Bouncy Launch rule tests, `BROWSER_SUITE=arcade ARCADE_ONLY=launch`, `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=6`; shared-content build if required. Not run yet. Device speech/child fit remain open.
-- Next action: publish claim, implement scoped feedback/content, run source-tier checks and complete or checkpoint this same worker. No further workers or coordinator messages.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation active hourly. Owned mirror-definition worker complete, #254 merged at `957a34bc22285075dfb52f1f045a6290fcd1254d`; independent mirror implementation #259 also merged. Previous owned slot released; Block Tower remaining modes/ordering/accounting decisions stay open.
+- Newly admitted: **Bouncy Launch slice 1: truthful words, wrong-way feedback and level-6 open checks**, [source](deep-dives/bouncy-launch.md#build-slices-in-order). Cloud numerals, pull-back chevron/wobble and non-miss reply, stale comment/GAMES wording, couch/course journal exclusion proof and overdue filtered checks. Exclude new levels/bands, sky/flight-history content, physics/course changes and unresolved decisions.
+- Dispatch `bouncy-launch-support-20261013T181223Z`; worker `01a13677-fdf4-77b1-a4c9-a71de0b584f6`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Bouncy Launch: feedback and level-6 checks". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/bouncy-launch-support`, claim `48f22cf`, [PR #269](https://github.com/rjdunlap/neo/pull/269); source base `feeb1bb`, integrated docs-only dispatch `7b94c03`.
+- Worker slice complete and verified; publication/merge follows. Typecheck, 23 focused rules/how-to tests and final build pass. `http://localhost:5193`: filtered arcade launch 1–5 pass; level 6 terminal-test probe/fix then `FROM_LEVEL=6 TO_LEVEL=6` pass (numerals, different guess, zero misses/hints, portrait shown-pull preservation, reward). Level-6 ghost finger clean in 15.2 seconds. Old release handler reproduced silent wrong-way tries. Changed Markdown links/diff check pass; one existing IDEAS anchor failure recorded. Server stopped; full suites/device speech/child fit not established. Details in [verification](VERIFICATION.md#2026-10-13--bouncy-launch-support-slice-1).
+- Admission 2026-10-13 18:12:23 UTC **38% five-hour / 28% weekly used**, resets `1791925955` / `1792472658`; ordinary usage allowed. Estimate **15 / 2.5 points**, fits actual remaining **62% / 72%**. No daily cap/reserve; worker rechecks usage.
+- Prior owned worker proof: #254 docs only, 85 local references and diff check passed; no code/build/browser checks or servers. Final **10% / 17%**, resets `1791907560` / `1792472658`, versus admission 0% / 15% with same identities; aggregate **10 / 2 points**, reconciled once below. No unchanged proof rerun. Independent #259 completion is not attributed to this owned definition worker.
+- Overlap: recent implementation completed; no active Neo implementation/open PR or overlapping dirty work. Old Beat Builder branches correspond to merged PRs; unrelated dirty registry/deep-dive repair preserved. Coordinator servers none.
+- Worker readings: scope 40% / 29%, pre-implementation 43% / 29%, pre-browser 44% / 29%, pre-publication 50% / 30%, resets unchanged `1791925955` / `1792472658`; ordinary usage allowed. Final after-commit reading belongs in this worker response and is carried once next coordinator checkpoint, without an overhead-only commit.
+- Next action: confirm #269 merged/deployed and carry final usage once before releasing this slot. Slice 1 is complete; next slice remains separately admitted from source readiness, with notes/device and other unresolved decisions preserved. Worker stops without dispatching or messaging.
 
 ## Usage observations
 
@@ -40,7 +44,6 @@ Record one row per admitted run and retain the latest ten. Percentage-point diff
 The allocation/debit column in old rows is historical only (retired 2026-10-12). New rows use that column for the admitted estimate instead.
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Slice estimate / retired daily allocation-debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2026-10-12 | Beat Builder replay/repair / [#194](https://github.com/rjdunlap/neo/pull/194), dispatch `beat-builder-replay-20261012T164902Z` | Existing interaction fix | 9% → 18% / `1791838034` | 66% → 68% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #194; final 16:59:12 UTC. Aggregate endpoints 9 / 2 points; worker complete, reconciled once |
 
 | 2026-10-12 | Beat Builder authored phrases / [#196](https://github.com/rjdunlap/neo/pull/196), dispatch `beat-builder-phrases-20261012T175018Z` | Gameplay generation | 19% → 25% / `1791838034` | 68% → 69% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #196; final 17:55:07 UTC. Aggregate endpoints 6 / 1 points; worker complete, reconciled once |
 
@@ -67,7 +70,10 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-13 | Block Tower prediction / [#244](https://github.com/rjdunlap/neo/pull/244), dispatch `block-tower-prediction-20261013T045450Z` | New interaction | 56% → 19% / `1791874139` → `1791885858` | 88% → 3% / `1792295993` → `1792472658` | Estimate 15 / 2.5 points | Merged/deployed #244; final 05:15:31 UTC. Both windows reset; aggregate unknown. Worker complete, reconciled once |
 
-| 2026-10-13 | Block Tower mirror definition / [#254](https://github.com/rjdunlap/neo/pull/254), dispatch `block-tower-mirror-definition-20261013T110552Z` | Docs only | 0% → 7% pre-publication / `1791907560` | 15% → 16% pre-publication / `1792472658` | Estimate 12 / 2.5 points | Worker `01a134f1-36e0-7d63-9e78-3c390d8cb02d`: definition/docs proof complete, publication follows. Aggregate preliminary 7 / 1 points; final after-commit reading in worker response, reconcile once |
+
+| 2026-10-13 | Block Tower mirror definition / [#254](https://github.com/rjdunlap/neo/pull/254), dispatch `block-tower-mirror-definition-20261013T110552Z` | Docs only | 0% → 10% / `1791907560` | 15% → 17% / `1792472658` | Estimate 12 / 2.5 points | Merged #254; final worker response. Aggregate 10 / 2 points; definition complete, reconciled once. Independent implementation #259 not charged to owned worker |
+
+| 2026-10-13 | Bouncy Launch support, dispatch `bouncy-launch-support-20261013T181223Z` | Existing-game feedback | 38% → 50% pre-publication / `1791925955` | 28% → 30% pre-publication / `1792472658` | Estimate 15 / 2.5 points | Worker `01a13677-fdf4-77b1-a4c9-a71de0b584f6`, [#269](https://github.com/rjdunlap/neo/pull/269): implemented/verified; publication follows. Aggregate preliminary 12 / 2 points, other account work may contribute; final reading in worker response, reconcile once |
 
 ## Fresh-worker dispatch and handoff
 
