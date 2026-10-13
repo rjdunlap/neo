@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-12 — Discovery and session-flow research (docs only)
+
+- Wrote [DISCOVERY.md](DISCOVERY.md) for the developer-selected study: Explore/Play entrances, recent/favorite selection, filter-aware suggestions, finite pictured mixes, Just Dance precedents, current routing/intro/result friction and bounded future slices. Primary sources are linked with edition and evidence limits; no product effectiveness or ideal session duration is claimed.
+- Source baseline `cb3d24f`; integrated Fruit Sums merge `61f7d8c` before publication, preserving its roadmap/notebook/archive changes. The audited app/progress/couch/shelf runtime did not change in that integration. Three read-only agent reviews covered reference games, usability/research and lifecycle/progress contracts.
+- Updated roadmap chunk 19, family-review status, notebook and completed-research archive. Independent review separated round/item settlement, preserved played state after an unfinished replay skip, recorded the existing Next-level intro exception, kept optional Keep behavior and split transient editing from saved-itinerary work.
+- Local Markdown files/anchors, `git diff --check` and staged diff formatting passed. Repaired two old archive-relative links encountered in the touched file. The study’s future implementation checks are specified, not run.
+- A separate conversation flow explainer was checked in an isolated headless browser: Explore return, suggestion reroll, mix/replay, replay-skip preserving completion, ordinary skip, ending and return to Explore; no page errors or overflow at 320px. Light/dark screenshots reviewed. This is navigation-concept QA, not a Puddle gameplay or device check; the browser was closed and no game servers started.
+- Not run: game typecheck/unit/build/browser/demo/offline suites (docs-only runtime diff). No routes, game levels, save data, introduction/celebration policy or session implementation changed. Open: actual shelf/layout definitions, optional support/automatic-handoff decisions and iPad/child/controller observations.
+
 ## 2026-10-12 — Family experience and roadmap design review (docs only)
 
 - Reviewed the roadmap, idea notebook, inventory, deep-dive procedure, relevant navigation/art/input code and retained screenshots against `origin/main` `f7ef80f` plus this documentation diff. Three parallel read-only design audits covered catalog range, navigation/levels and visual/game feel.
@@ -1016,6 +1025,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Discovery/session research (docs only) | 2026-10-12: changed/new local links/anchors and diff check; separate flow-explainer interactions and light/dark narrow layout checked | [Discovery study](DISCOVERY.md) / discovery research entry | No Puddle gameplay/device evidence added; session modes and support-policy alternatives remain proposed |
 | Family experience / roadmap review (docs only) | 2026-10-12: changed/new local Markdown links/anchors, registry-to-document count check and diff check | [Design review](FAMILY-EXPERIENCE.md) / family experience verification entry | No fresh gameplay or device evidence; research sessions and product proposals remain open |
 | `fruitsums`, `fingerdemo` (`fruit-sums`) | 2026-10-13: levels 1 and 3 (two wrong totals give two misses and one hint, the same sum the other way round, two ways to finish, a take away by leaf), portrait, one sticker per round; demo clean in 10.5 s and 12.8 s; typecheck, build, unit tests | Fruit Sums entry | No iPad, device speech or child play |
 | `numbertrails`, `fingerdemo` (`number-trails`) | 2026-10-13: levels 1 and 3 (wandering drags give two misses and one hint, the count, waking from a bigger group), portrait, one sticker per round; demo clean in 5.1 s and 8.7 s; typecheck, build, unit tests | Number Trails entry / [PR #241](https://github.com/rjdunlap/neo/pull/241) | Interim numeral forms unchecked against a publisher's chart; no iPad, device speech or child play |

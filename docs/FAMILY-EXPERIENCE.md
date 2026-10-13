@@ -49,6 +49,8 @@ These are design intentions, not developmental assessments. Keep the existing `s
 
 ## Navigation, discovery and levels
 
+The developer-selected discovery study is now written in [DISCOVERY.md](DISCOVERY.md): Explore and Play entrances, direct next-game selection, finite mixes, Just Dance references and an explicit introduction/automatic-handoff boundary. Its first flow slices supplement the home/library proposals below; they do not approve land overflow, saved queues or changed support policies.
+
 ### N1: a useful home without a longer search
 
 **Define first.** Sketch a small, predictable home shelf containing **Favorites**, **Played recently**, **Something to try**, and **Things I made**. Use stable illustrated cards and replayable spoken names. Start with existing favorites, history and creation records; do not add a recommendation service or persistent recommendation score. A suggestion can use the existing unplayed/long-unplayed rule, and remains optional.
@@ -116,11 +118,11 @@ The existing seat-credit, competition, storage and table-layout decisions remain
 
 ## Research sessions worth doing
 
-These sessions are **unclaimed and not started**. They are a ranked recommendation, not a silent change to the existing wave order or a claim that any complete deep dive was done in this review. A user-selected session can take priority; otherwise the game tracker remains authoritative. System studies are separate docs-only definitions; game studies follow [one session, one game](deep-dives/README.md#one-session-one-game), researching five to ten relevant references and producing bounded build slices.
+The first session’s research is written in [DISCOVERY.md](DISCOVERY.md); its implementation remains open. The other sessions below are **unclaimed and not started**. They are a ranked recommendation, not a silent change to the existing wave order or a claim that any complete deep dive was done in this review. A user-selected session can take priority; otherwise the game tracker remains authoritative. System studies are separate docs-only definitions; game studies follow [one session, one game](deep-dives/README.md#one-session-one-game), researching five to ten relevant references and producing bounded build slices.
 
 | Suggested priority | Session | Question to resolve | Concrete output |
 | --- | --- | --- | --- |
-| 1 | **Discovery and catalog scale** (system) | Can a returning person find a favorite, choose something unfamiliar and understand its input without browsing the whole catalog? | A current-route audit, home/library sketches, one dense-land fit analysis, explicit overflow decision and one implementation slice |
+| 1 | **Discovery and catalog scale** (system) | Can a returning person find a favorite, choose something unfamiliar and understand its input without browsing the whole catalog? | Discovery flow research written; D1/D2 are the next sketch slices. A dense-land capacity audit and full home/library layout remain separate definitions |
 | 2 | **Art, feedback and comfort** (system) | What makes a place recognizable and an action satisfying while keeping the board readable? | V1–V4 art/feedback sheet for Animal Snack and Fill and Dump; proposed comfort defaults; separated game-specific/shared slices |
 | 3 | **Peg Garden** (game) | Can lap play finish reliably, and can older players understand what a shot will do? | Guaranteed completion design, aim/landing feedback, repeatable trials and useful hints; separate the existing suite flake from game rules |
 | 4 | **Fill and Dump** (game) | How does the built pouring mode grow into comparing capacity and choosing an amount? | Existing level/pool audit; same controls with meaningful comparisons, a transparent limited model and unscored prediction |
