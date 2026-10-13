@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-12 — Discovery concepts converted to roadmap actions (docs only)
+
+- On base `1932eda`, integrated the docs-only Owl Walk merge `82843f9` and preserved its decisions/tracker/verification before the final checks; converted chunk 19 into [ordered discovery actions](ROADMAP.md#discovery-actions), with one-session scope, prerequisites, exit evidence, check tiers and a next-action pointer.
+- D1a freezes one pictured next-game suggestion and the reviewed lap/toddler touch pool; D1b implements the complete feature. D2a/D2b define/build Little surprises, then D3 defines a combined full introduction. Further actions cover personal mixes/storage, scoped pick/shuffle, profile entry and favorites/library.
+- Split compact result, exact-mode brief support and finite automatic handoff into independent decision entries. Preserved existing intro/result policies, ordinary per-game progress/rewards, runtime contracts and the scheduler/owned-worker checkpoint; no implementation or new worker was claimed/dispatched.
+- DISCOVERY now maps research concepts to the roadmap’s authoritative action/status table; family-review and notebook pointers agree. Read-only review checked dependencies and complete playable scopes rather than unused selector/session infrastructure.
+- Changed local Markdown links/anchors and `git diff --check` passed. No typecheck, unit, build, game/browser/demo/offline or visual checks run (documentation-only change); the prior conversation explainer was unchanged and its proof was reused.
+- Open: D1a’s actual screen/pool/route build packet, dependent implementation slices, optional product decisions and device/person observations. Roadmap entries are actions, not completed features.
+
 ## 2026-10-12 — Owl Walk Home deep dive (docs only)
 
 - Wrote [the Owl Walk Home deep dive](deep-dives/owl-walk.md) after a developer play-through of level 2: the tap goes to the owl, the game does the color match, and the owls do not take turns. It records the ladder, ten gaps read from the code, eight reference games with their sources marked opened or search summary, a recommended goal ("choose the move that helps all of us") set against what the catalog already teaches, a reworked level 1–4 and new levels 5–8, nine decisions and eight build slices.
@@ -1033,6 +1042,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Discovery roadmap actions (docs only) | 2026-10-12: changed local links/anchors and diff formatting | [Action table](ROADMAP.md#discovery-actions) / roadmap-actions verification entry | No runtime changes or new gameplay evidence; action prerequisites and optional policy choices stay open |
 | Discovery/session research (docs only) | 2026-10-12: changed/new local links/anchors and diff check; separate flow-explainer interactions and light/dark narrow layout checked | [Discovery study](DISCOVERY.md) / discovery research entry | No Puddle gameplay/device evidence added; session modes and support-policy alternatives remain proposed |
 | Family experience / roadmap review (docs only) | 2026-10-12: changed/new local Markdown links/anchors, registry-to-document count check and diff check | [Design review](FAMILY-EXPERIENCE.md) / family experience verification entry | No fresh gameplay or device evidence; research sessions and product proposals remain open |
 | `fruitsums`, `fingerdemo` (`fruit-sums`) | 2026-10-13: levels 1 and 3 (two wrong totals give two misses and one hint, the same sum the other way round, two ways to finish, a take away by leaf), portrait, one sticker per round; demo clean in 10.5 s and 12.8 s; typecheck, build, unit tests | Fruit Sums entry | No iPad, device speech or child play |
