@@ -50,7 +50,8 @@ class GemSwap implements Game {
   private dead = false;
   private sinceMatch = 0;
   private botWait = 0.4;
-  private readonly touch: boolean;
+  /** Touch layout (buttons, tappable gems) until a key or pad is used; couch play never has it. */
+  private touch: boolean;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -64,21 +65,20 @@ class GemSwap implements Game {
       const node = new Container(), background = new Graphics(), picture = new Graphics(), outline = new Graphics();
       node.addChild(background, picture, outline);
       background.eventMode = picture.eventMode = outline.eventMode = 'none';
-      if (this.touch) onTap(node, () => this.choose(i), { cooldown: 80 });
-      else node.eventMode = 'none';
+      onTap(node, () => { if (this.touch) this.choose(i); }, { cooldown: 80 });
+      if (!this.touch) node.eventMode = 'none';
       this.nodes.push(node); this.pictures.push(picture); this.outlines.push(outline);
       this.tray.addChild(node);
     });
-    if (this.touch) {
-      for (const [node, text, act] of [
-        [this.undoButton, 'Undo ↶', () => this.undo()],
-        [this.hintButton, 'Hint ◇', () => this.askForHint()],
-        [this.restartButton, 'Restart ↺', () => this.restart()],
-      ] as const) {
-        node.addChild(tile(150, 88, 'purple'), label(text, 23));
-        node.hitArea = new Rectangle(-75, -44, 150, 88);
-        onTap(node, act); ctx.stage.addChild(node);
-      }
+    for (const [node, text, act] of [
+      [this.undoButton, 'Undo ↶', () => this.undo()],
+      [this.hintButton, 'Hint ◇', () => this.askForHint()],
+      [this.restartButton, 'Restart ↺', () => this.restart()],
+    ] as const) {
+      node.addChild(tile(150, 88, 'purple'), label(text, 23));
+      node.hitArea = new Rectangle(-75, -44, 150, 88);
+      node.visible = this.touch;
+      onTap(node, act); ctx.stage.addChild(node);
     }
     this.resize(this.view);
   }
@@ -181,7 +181,26 @@ class GemSwap implements Game {
     const to = botTarget(this.route, this.selected);
     return { tap: { on: to === null ? this.restartButton : this.nodes[to] }, pause: 0.25 };
   }
+  /** The first key or pad press on the island: the buttons go and the cursor ring shows. Couch play is already here. */
+  private useController() {
+    if (!this.touch) return;
+    this.touch = false;
+    for (const b of [this.undoButton, this.hintButton, this.restartButton]) b.visible = false;
+    for (const n of this.nodes) n.eventMode = 'none';
+    this.draw();
+  }
+
+  /** A finger came back after keys: the buttons and tappable gems return. */
+  touchReturned() {
+    if (this.touch || this.finished || this.dead) return;
+    this.touch = true;
+    for (const b of [this.undoButton, this.hintButton, this.restartButton]) b.visible = true;
+    for (const n of this.nodes) n.eventMode = 'static';
+    this.draw();
+  }
+
   control(input: CouchControls, dt: number) {
+    this.useController();
     if (this.busy || this.finished || this.dead) return;
     const size = this.puzzle.size;
     for (const d of this.held.poll(input, dt)) {
@@ -215,7 +234,7 @@ function sticker(seed: number) {
   return c;
 }
 export const gemSwap: GameModule = {
-  id: 'gem-swap', name: 'Gem Swap', titleLine: 'game.gem-swap', region: 'puzzle-peaks',
+  id: 'gem-swap', liveController: true, name: 'Gem Swap', titleLine: 'game.gem-swap', region: 'puzzle-peaks',
   skills: ['spatial-planning', 'cause-and-effect'], bands: ['grownup'], inputs: ['touch', 'controller'], touchDemo: true,
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name, music: STYLES.lullaby,
   coplayHint: 'Predict which gems will fall after a line disappears. Compare two possible swaps before choosing.',

@@ -9892,7 +9892,7 @@ async function landKeys() {
 
 /** Lands stage C1b: five touch puzzles lay themselves out for keys at the first press and come back to touch at the next finger. */
 async function liveSwitchPlay() {
-  const ids = ['sudoku-garden', 'word-search', 'island-bridges', 'picture-logic', 'pond-conga'];
+  const ids = ['sudoku-garden', 'word-search', 'island-bridges', 'picture-logic', 'pond-conga', 'tile-pairs', 'gem-swap', 'lantern-lights'];
   for (const id of ids) {
     const level = await page.evaluate(async (id) => (await import('/src/app/input-in-use.ts')).controllerLevels(id).values().next().value, id);
     await launch(id, level);
@@ -9905,7 +9905,11 @@ async function liveSwitchPlay() {
     assert.equal(await touch(), false, `${id} lays itself out for the controller at the first key`);
     await tapAway();
     assert.equal(await touch(), true, `${id} comes back to touch at a finger`);
-    assert.equal(await page.evaluate(() => neo.scene.game.touchLayer.visible), true, `${id} shows its touch layer again`);
+    const layer = () => page.evaluate(() => { const g = neo.scene.game; return (g.touchLayer ?? g.tapLayer ?? g.undoButton).visible; });
+    assert.equal(await layer(), true, `${id} shows its touch layer again`);
+    await press('ArrowDown');
+    assert.equal(await layer(), false, `${id} hides its touch layer for the controller`);
+    await tapAway();
     await press('ArrowDown');
     assert.equal(await touch(), false, `${id} goes to the controller again at the next key`);
     await tapAway();

@@ -50,7 +50,8 @@ class TilePairs implements Game {
   private readonly tally = label('', 30);
   private readonly help = label('Clear the top · open a left or right side', 23, ink, '500');
   private readonly held = new HeldDirection();
-  private readonly touch: boolean;
+  /** Touch layout (buttons, tappable tiles) until a key or pad is used; couch play never has it. */
+  private touch: boolean;
   private view: View;
   private botWait = 0.6;
   private dead = false;
@@ -64,17 +65,16 @@ class TilePairs implements Game {
     this.mask = fullMask(this.tiles);
     this.ring.eventMode = this.tally.eventMode = this.help.eventMode = 'none';
     ctx.stage.addChild(this.board, this.ring, this.tally, this.help);
-    if (this.touch) {
-      for (const [node, text, act] of [
-        [this.undoButton, 'Undo ↶', () => this.undo()],
-        [this.hintButton, 'Hint ◇', () => this.askForHint()],
-        [this.shuffleButton, 'Shuffle ↺', () => this.restart()],
-      ] as const) {
-        node.addChild(tile(160, 100, 'purple'), label(text, 24));
-        node.hitArea = new Rectangle(-80, -50, 160, 100);
-        onTap(node, act);
-        ctx.stage.addChild(node);
-      }
+    for (const [node, text, act] of [
+      [this.undoButton, 'Undo ↶', () => this.undo()],
+      [this.hintButton, 'Hint ◇', () => this.askForHint()],
+      [this.shuffleButton, 'Shuffle ↺', () => this.restart()],
+    ] as const) {
+      node.addChild(tile(160, 100, 'purple'), label(text, 24));
+      node.hitArea = new Rectangle(-80, -50, 160, 100);
+      node.visible = this.touch;
+      onTap(node, act);
+      ctx.stage.addChild(node);
     }
     this.rebuild();
   }
@@ -86,8 +86,8 @@ class TilePairs implements Game {
     this.nodes = this.tiles.map((t, i) => {
       const c = tileArt(t.kind);
       c.hitArea = new Rectangle(-54, -54, 108, 108);
-      if (this.touch) onTap(c, () => this.choose(i), { cooldown: 80 });
-      else c.eventMode = 'none';
+      onTap(c, () => { if (this.touch) this.choose(i); }, { cooldown: 80 });
+      if (!this.touch) c.eventMode = 'none';
       this.board.addChild(c);
       return c;
     });
@@ -207,7 +207,26 @@ class TilePairs implements Game {
   update(_dt: number) {}
   destroy() { this.dead = true; }
 
+  /** The first key or pad press on the island: the buttons go and the cursor ring shows. Couch play is already here. */
+  private useController() {
+    if (!this.touch) return;
+    this.touch = false;
+    for (const b of [this.undoButton, this.hintButton, this.shuffleButton]) b.visible = false;
+    for (const n of this.nodes) n.eventMode = 'none';
+    this.draw();
+  }
+
+  /** A finger came back after keys: the buttons and tappable tiles return. */
+  touchReturned() {
+    if (this.touch || this.finished || this.dead) return;
+    this.touch = true;
+    for (const b of [this.undoButton, this.hintButton, this.shuffleButton]) b.visible = true;
+    for (const n of this.nodes) n.eventMode = 'static';
+    this.draw();
+  }
+
   control(input: CouchControls, dt: number) {
+    this.useController();
     if (this.busy || this.finished || this.dead) return;
     const open = freeTiles(this.tiles, this.mask), spots = open.map(i => this.nodes[i].position);
     for (const dir of this.held.poll(input, dt)) {
@@ -254,7 +273,7 @@ function sticker(seed: number) {
   return c;
 }
 export const tilePairs: GameModule = {
-  id: 'tile-pairs', name: 'Tile Pairs', titleLine: 'game.tile-pairs', region: 'puzzle-peaks',
+  id: 'tile-pairs', liveController: true, name: 'Tile Pairs', titleLine: 'game.tile-pairs', region: 'puzzle-peaks',
   skills: ['spatial-planning', 'matching'], bands: ['grownup'], inputs: ['touch', 'controller'], touchDemo: true,
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.lullaby,
