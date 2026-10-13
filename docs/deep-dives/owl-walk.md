@@ -1,6 +1,6 @@
 # Owl Walk Home deep dive
 
-*ID `owl-walk` · bands toddler, preschool, pre-K · levels 1–4 on 2026-10-12 · session `claude/owl-walk-gameplay-review-a26902` ([PR #248](https://github.com/rjdunlap/neo/pull/248))*
+*ID `owl-walk` · bands toddler, preschool, pre-K · levels 1–4 on 2026-10-12 · session `claude/owl-walk-gameplay-review-a26902` ([PR #248](https://github.com/rjdunlap/neo/pull/248)) · **slices 1–4 built 2026-10-13** ([PR #251](https://github.com/rjdunlap/neo/pull/251); [what was built](#what-was-built-slices-14-2026-10-13))*
 
 This dive started from a play-through by the developer: at level 2 the owls did not seem to take turns, and the player was tapping the owl rather than choosing a stone, so the colors and shapes taught nothing. Both observations are correct and come from how the rules are built (see the gaps below). The dive therefore spends most of its space on one question first: what is this game for, given what the catalog already teaches?
 
@@ -156,21 +156,21 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 ## Decisions for the developer
 
 1. **The goal. Decided (the developer, 2026-10-12: "I'll follow your lead on the goal"):** Owl Walk Home's goal is "choose the move that helps all of us"; matching a card to a stone is the entry action, not the point, because color and shape matching is the most-covered skill on the island. Decisions 2–9 are still leans.
-2. **Rework levels 1–3 in place, or leave them and append a stone-tap track?** *Lean: in place.* The plan names stay true, levels 1–3 cannot miss today, and nobody has a saved round that depends on the owl tap. The cost is that a child saved at level 2 sees a different action after the update.
-3. **Level 2's owls.** Each owl has its own player (purple hers, brown the pet's, both helping the last owl), or the owls stay shared from level 2? *Lean: assigned at 2, shared from 3.* It makes "taking turns" visible to a toddler; a child who can follow it can then have a free choice of owl.
+2. **Rework levels 1–3 in place, or leave them and append a stone-tap track?** **Done (the developer, 2026-10-13: "make your recommendation changes").** *Lean: in place.* The plan names stay true, levels 1–3 cannot miss today, and nobody has a saved round that depends on the owl tap. The cost is that a child saved at level 2 sees a different action after the update.
+3. **Level 2's owls. Done (2026-10-13, as 2).** Each owl has its own player (purple hers, brown the pet's, both helping the last owl), or the owls stay shared from level 2? *Lean: assigned at 2, shared from 3.* It makes "taking turns" visible to a toddler; a child who can follow it can then have a free choice of owl.
 4. **Stakes without a clock.** Add an unscored "can we get home in fewer turns?" later? *Lean: no for now.* The sun is the ending; revisit after a child plays level 4.
 5. **A grown-up in the second seat.** Tapping the pet hands its turn to a person; credit and adaptation stay with the first seat, per the seat contract. *Lean: yes, small, after the stone taps.*
 6. **A lap opening (level 5).** It puts Owl Walk on her own home spot now. *Lean: yes if level 5 stays a free toy with no cards.*
 7. **Shape independent of color (level 6).** It needs spoken shape names checked on the iPad. *Lean: build after the speech check; until then levels 1–4 keep their one-to-one shapes.*
 8. **A school window (levels 7–8).** *Lean: a sketch only; define after pre-K play of level 4.*
-9. **The fly-home rule.** Teach it at level 3 and make the nest tap the answer. *Lean: yes.*
+9. **The fly-home rule. Done (2026-10-13, as 2).** Teach it at level 3 and make the nest tap the answer. *Lean: yes.* (Level 1–2 cards avoid it until an owl is on the last stone; the nest is also the answer there.)
 
 ## Build slices, in order
 
-1. **Truthful words and counted hops** (voice, how-to, `describeLevel`). The words stop claiming a choice at level 3 that the rules do not have; the fly-home rule is said when it happens; the hops are counted aloud on the way (reuse Frog Hop's counted-hop lines); the pet says what it looked for. No rule changes. *Tier: typecheck, the owl rule tests, the how-to tests; one filtered `shortlist` play of level 3 and `fingerdemo` at 3.* Ready.
-2. **Level 1: tap the stone.** `judgeStone` and the deck policy in `logic.ts` with tests; the stone hit areas and nearest-stone routing; the twinkle; the third-miss pet hop; a new `autotouch()`; the how-to and voice lines. *Tier: new interaction: typecheck, unit tests, one scripted play of level 1 (a wrong color, a wrong "far" stone, a hint), one portrait screenshot, `fingerdemo` at level 1.* Ready after decision 2.
-3. **Level 2: each owl has a player.** Assigned owls and the turn order with the finish rule; the pet's narrated paw touch; the spotlight. *Tier: the same filtered play at 2 and `fingerdemo` at 2.* Needs decision 3.
-4. **Levels 3 and 4: choose an owl, fly home, and the ring answer.** The selection step; the no-match card and the nest tap; level 4's counted hops and answer. *Tier: filtered play at 3 and 4 (the scores `[0, 0]` and `[2, 1]` change, so the existing assertions are updated) and `fingerdemo` at 3 and 4.* Needs decision 9.
+1. **Built 2026-10-13.** **Truthful words and counted hops** (voice, how-to, `describeLevel`). The words stop claiming a choice at level 3 that the rules do not have; the fly-home rule is said when it happens; the hops are counted aloud on the way (reuse Frog Hop's counted-hop lines); the pet says what it looked for. No rule changes. *Tier: typecheck, the owl rule tests, the how-to tests; one filtered `shortlist` play of level 3 and `fingerdemo` at 3.* Ready.
+2. **Built 2026-10-13.** **Level 1: tap the stone.** `judgeStone` and the deck policy in `logic.ts` with tests; the stone hit areas and nearest-stone routing; the twinkle; the third-miss pet hop; a new `autotouch()`; the how-to and voice lines. *Tier: new interaction: typecheck, unit tests, one scripted play of level 1 (a wrong color, a wrong "far" stone, a hint), one portrait screenshot, `fingerdemo` at level 1.* Ready after decision 2.
+3. **Built 2026-10-13.** **Level 2: each owl has a player.** Assigned owls and the turn order with the finish rule; the pet's narrated paw touch; the spotlight. *Tier: the same filtered play at 2 and `fingerdemo` at 2.* Needs decision 3.
+4. **Built 2026-10-13 (the numbered ring is tappable for its owl rather than a separate answer).** **Levels 3 and 4: choose an owl, fly home, and the ring answer.** The selection step; the no-match card and the nest tap; level 4's counted hops and answer. *Tier: filtered play at 3 and 4 (the scores `[0, 0]` and `[2, 1]` change, so the existing assertions are updated) and `fingerdemo` at 3 and 4.* Needs decision 9.
 5. **Level 5, Stepping stones, and the lap band.** Needs decision 6. *Tier: new level on an existing interaction: typecheck, unit tests, one browser play of the new level, `fingerdemo` at it.*
 6. **Level 6, Color or shape.** Needs decision 7 and the iPad speech check. *Tier: new interaction: as slice 2.*
 7. **A grown-up in the second seat.** Needs decision 5.
@@ -180,4 +180,20 @@ Every slice also updates the README row, the `GAMES.md` entry, the how-to card a
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Checked: the docs-only tier (local links and `git diff --check`). The one number table above came from a read-only throwaway script outside the repo (`logic.ts` imported, nothing under `src/` changed).
+Nothing: the dive session (2026-10-12) was research and ideation only. It checked the docs-only tier (local links and `git diff --check`). The one number table above came from a read-only throwaway script outside the repo (`logic.ts` imported, nothing under `src/` changed).
+
+## What was built: slices 1–4 (2026-10-13)
+
+*Branch `claude/owl-walk-stone-taps`, [PR #251](https://github.com/rjdunlap/neo/pull/251). Decisions 2, 3 and 9 applied; 5, 6, 7 and 8 untouched.*
+
+- **Stone taps (levels 1–4).** The tap goes to the stone, resolved to the nearest of stones, owls and the nest (reaches 56, 62 and 95 units; a stone with an owl on it belongs to the owl). `judgeStone` in `logic.ts` returns `next`, `far`, `behind`, `occupied`, `wrong-color`, `nest` or `early-nest`; a rule test checks it against `hop()` on random boards, so the one right tap is exactly where the owl lands. Touch-down rings and squashes the stone before the judgment. Misses name what she touched, two glow the right stone (one hint a turn), a third has the pet hop it with her.
+- **Fireflies (levels 1–2):** matching stones ahead twinkle when a card turns; they fade at level 3.
+- **Level 1–2 cards** always have a stone ahead for the owl whose turn it is (`drawCardFor`, tested), until an owl is on the last stone.
+- **Level 2, each owl its own player** (`owlOf`, tested for the turn order never stalling or giving a turn to an owl at home). Spotlight ring, the pet says what it looked for and touches the same place; the last owl is shared.
+- **Level 3, choose an owl then its stone** (a free owl choice, changeable); the fly-home card says so aloud and the nest is the answer. Level 4 keeps the judged owl step and then taps the stone.
+- **Counted hops:** each stone passed is counted aloud (`count`) on a landing short of the nest.
+- **Words:** the `owl.*` lines, the how-to steps, `describeLevel`; level 3 no longer claims a choice the rules lacked.
+- **Found by checking:** a stone under a standing owl won the nearest-touch race, so tapping an owl's feet at level 3 selected nothing (stones with an owl on them now belong to the owl); and mapping an owl tap on levels 1–2 to its stone made her own owl a miss once it had hopped (an owl tap there is now a reminder, never a miss, proved by a new assertion that failed before the fix).
+- **Known gaps:** a stone with an owl on it can no longer be tapped as "a friend is sitting there" (`judgeStone` still returns `occupied`, but no tap reaches it); the pet's longer turn and the second tap per turn lengthen the level 3–4 demonstrations to 61 and 67 s of 75.
+- **Not built:** Stepping stones and the lap band (decision 6), Color or shape (7), the grown-up seat (5), levels 7–8, and the ring-as-answer option for level 4.
+- **Checks:** the how-to card at each level fits in landscape and portrait (tallest: level 4 in landscape, 25 to 747 of 768). Typecheck, the full unit suite (139 files, 1,163 tests) and `npm run build` passed. `BROWSER_SUITE=shortlist SHORTLIST_ONLY=owls` (levels 1–4; the script's owl block was rewritten for the new taps) passed, level 2 in portrait. `fingerdemo` for `owl-walk` levels 1–4 finished clean in 32, 43, 61 and 67 s of the 75 allowed (the longest demonstration now; the second tap per turn and the pet's narrated turn add time). Not established: a child, an iPad, device speech for the new lines, whether the fireflies read as "these match", whether the pet's turn is too long.

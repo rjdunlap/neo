@@ -1,11 +1,11 @@
-import { Circle, Container, Graphics, type FederatedPointerEvent } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, type CritterSpec } from '../../art/critter';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop, Sun } from '../../art/scenery';
 import { puffs, shapePath, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
-import { onTap } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -13,7 +13,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { allHome, drawCard, farthest, hop, hops, makePath, owlToHop, planFor, type OwlPlan, type Spot } from './logic';
+import { allHome, drawCardFor, farthest, hop, hops, judgeStone, makePath, owlOf, owlToHop, planFor, type OwlPlan, type Spot } from './logic';
 
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
@@ -70,7 +70,21 @@ interface Owl {
   critter: Critter;
   spot: Spot;
   glow: Graphics;
+  /** A halo under the owl whose turn it is, or the one she has picked. */
+  ring: Graphics;
 }
+
+/** Where a tap landed: the nearest thing it could mean. */
+type Hit = { kind: 'stone'; i: number } | { kind: 'owl'; i: number } | { kind: 'nest' };
+
+/** How far from a stone's, an owl's or the nest's middle a touch still means it: stones are 78 units apart at the most crowded level, so the nearest wins. */
+const STONE_REACH = 56;
+const OWL_REACH = 62;
+const NEST_REACH = 95;
+const RING_REACH = 44;
+
+/** "red heart": the color and the shape a stone carries, so a spoken miss can name what was touched. */
+const stoneName = (color: ColorName) => (MARK[color] ? `${color} ${MARK[color]}` : color);
 
 class OwlWalk implements Game {
   readonly plan: OwlPlan;
@@ -78,10 +92,14 @@ class OwlWalk implements Game {
   readonly owls: Owl[] = [];
   readonly stones: Graphics[] = [];
   readonly deck = new Container();
+  /** Takes every touch on the path: the nearest stone, owl or the nest is what was meant. */
+  readonly touch = new Container();
   /** The card turned up this turn, or null. */
   card: ColorName | null = null;
   /** Whose turn it is: the child's, or the pet's (from level 2). */
   turn: 'child' | 'pet' = 'child';
+  /** The owl she has picked to hop on the levels that ask which one (3 and 4). */
+  selected: number | null = null;
   /** Turns taken so far, by both players. */
   index = 0;
   misses = 0;
@@ -98,10 +116,17 @@ class OwlWalk implements Game {
   private readonly shown = new Container();
   private readonly previews = new Container();
   private readonly layer = new Container();
+  private readonly flies = new Container();
+  private readonly fx = new Container();
+  private readonly hintGlow = new Graphics();
   private view: View;
   private wrongs = 0;
   private hinted = false;
   private told = false;
+  private lastTap = -Infinity;
+  private clock = 0;
+  private fireflies: { g: Graphics; stone: number; phase: number; reach: number }[] = [];
+  private hintAt: number | 'nest' | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -123,21 +148,25 @@ class OwlWalk implements Game {
     this.deck.addChildAt(back2, 0);
     this.deck.hitArea = new Circle(0, 0, 90);
     onTap(this.deck, () => void this.flip('child'), { cooldown: 400 });
-    this.previews.eventMode = 'none';
-    this.trail.eventMode = 'none';
-    this.dawn.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.moon, this.sun, this.dawn, this.nest, this.trail, ...this.stones, this.previews, this.layer, this.deck, this.shown);
+    this.hintGlow.circle(0, 0, 66).fill({ color: 0xfff3a0, alpha: 0.85 });
+    this.hintGlow.visible = false;
+    for (const quiet of [this.previews, this.trail, this.dawn, this.hintGlow, this.flies, this.fx]) quiet.eventMode = 'none';
+    this.touch.eventMode = 'static';
+    this.touch.cursor = 'pointer';
+    this.touch.on('pointerdown', (e: FederatedPointerEvent) => this.tapAt(e));
+    ctx.stage.addChild(this.backdrop, this.moon, this.sun, this.dawn, this.nest, this.trail, this.hintGlow, ...this.stones, this.flies, this.previews, this.layer, this.touch, this.deck, this.shown, this.fx);
     for (let i = 0; i < this.plan.owls; i++) {
       const critter = ctx.track(makeOwl(OWL_COLORS[i]));
       critter.scale.set(OWL_SCALE);
       const glow = new Graphics().circle(0, -130, 170).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
+      const ring = new Graphics().circle(0, -130, 185).stroke({ width: 22, color: swatch[OWL_COLORS[i]].light, alpha: 0.95 });
+      ring.visible = false;
+      critter.addChildAt(ring, 0);
       critter.addChildAt(glow, 0);
-      critter.hitArea = new Circle(0, -125, 190);
-      critter.on('pointerdown', (e: FederatedPointerEvent) => this.tapOwl(e));
-      critter.eventMode = 'static';
-      critter.cursor = 'pointer';
-      this.owls.push({ critter, spot: -1, glow });
+      // Touches go through `touch`, which finds the nearest owl, stone or nest.
+      critter.eventMode = 'none';
+      this.owls.push({ critter, spot: -1, glow, ring });
       this.layer.addChild(critter);
     }
   }
@@ -164,6 +193,16 @@ class OwlWalk implements Game {
     return { x: s.x, y: s.y + 4 };
   }
 
+  /** The middle of the nest basket, which is what she taps when no stone of the color is left. */
+  private nestPoint() {
+    return { x: this.nest.x, y: this.nest.y - 120 };
+  }
+
+  /** A stone's middle, or the nest's. */
+  private targetPoint(at: number | 'nest') {
+    return at === 'nest' ? this.nestPoint() : this.stoneAt(at);
+  }
+
   start() {
     void this.intro();
   }
@@ -187,35 +226,79 @@ class OwlWalk implements Game {
     });
     this.deck.position.set(v.w * 0.36, 125);
     this.shown.position.set(v.w * 0.36 + 150, 125);
+    this.touch.hitArea = new Rectangle(0, 0, v.w, v.h);
+    if (this.hintAt !== null) this.hintGlow.position.copyFrom(this.targetPoint(this.hintAt));
     this.drawPreviews();
   }
 
-  update() {}
+  update(dt: number) {
+    if (!this.fireflies.length) return;
+    this.clock += dt;
+    for (const f of this.fireflies) {
+      const p = this.stoneAt(f.stone);
+      const a = this.clock * 1.4 + f.phase;
+      f.g.position.set(p.x + Math.cos(a) * f.reach, p.y - 34 + Math.sin(a * 1.3) * f.reach * 0.7);
+      f.g.alpha = 0.55 + 0.45 * Math.sin(this.clock * 3 + f.phase);
+    }
+  }
 
-  /** The ghost finger: flip a card, then hop the owl it carries the farthest. The pet's turns play themselves. */
+  /** The ghost finger: flip a card, pick the owl (on the levels that ask), then tap the stone it hops to, or the nest. The pet's turns play themselves. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.turn !== 'child') return null;
     if (!this.card) return { tap: { on: this.deck } };
-    const i = owlToHop(this.path, this.owls.map((o) => o.spot), this.card);
-    // The owl's tap area is centered a little above its feet.
-    return i === null ? null : { tap: { on: this.owls[i].critter, x: 0, y: -125 } };
+    const spots = this.owls.map((o) => o.spot);
+    const asks = this.plan.mode === 'choose' || this.plan.mode === 'farthest';
+    if (asks && this.selected === null && this.moving().length > 1) {
+      const i = owlToHop(this.path, spots, this.card);
+      // The owl's tap area is centered a little above its feet.
+      return i === null ? null : { tap: { on: this.owls[i].critter, x: 0, y: -125 }, receiver: this.touch, pause: 0.2 };
+    }
+    const i = this.actorOwl();
+    if (i === null) return null;
+    const to = hop(this.path, spots, i, this.card);
+    return to >= this.path.length ? { tap: { on: this.nest, x: 0, y: -120 }, receiver: this.touch } : { tap: { on: this.stones[to] }, receiver: this.touch };
   }
 
   destroy() {}
 
   private async intro() {
-    const lines = { one: 'owl.one', turns: 'owl.turns', choose: 'owl.turns', farthest: 'owl.farthest' } as const;
+    const lines = { one: 'owl.one', turns: 'owl.turns', choose: 'owl.choose', farthest: 'owl.farthest' } as const;
     await this.ctx.instruct(lines[this.plan.mode]);
     this.busy = false;
   }
 
-  // A turn: flip a card, then hop an owl ------------------------------------------------------------
+  private moving() {
+    return this.owls.map((o, i) => (o.spot < this.path.length ? i : -1)).filter((i) => i >= 0);
+  }
+
+  /** The owl the child's stone tap is for: her own on the first levels, the one she picked on the others. */
+  private actorOwl(): number | null {
+    const spots = this.owls.map((o) => o.spot);
+    if (this.plan.mode === 'one') return 0;
+    if (this.plan.mode === 'turns') return owlOf(this.path, spots, 0);
+    return this.selected;
+  }
+
+  /** A halo on the owl whose turn it is (one each) or the one picked (the levels that ask). */
+  private setRing(only: number | null) {
+    this.owls.forEach((o, i) => (o.ring.visible = i === only));
+  }
+
+  // A turn: flip a card, pick the owl, tap its stone --------------------------------------------
 
   private async flip(who: 'child' | 'pet') {
     if (this.finished || this.card || this.turn !== who || (who === 'child' && this.busy)) return;
     this.busy = true;
-    const color = drawCard(this.plan, this.ctx.rng);
+    this.wrongs = 0;
+    this.hinted = false;
+    this.selected = null;
+    this.clearHint();
+    const spots = this.owls.map((o) => o.spot);
+    const assigned = this.plan.mode === 'turns' ? owlOf(this.path, spots, who === 'child' ? 0 : 1) : null;
+    const movers = this.plan.mode === 'one' ? [0] : assigned !== null ? [assigned] : this.moving();
+    const color = drawCardFor(this.plan, this.ctx.rng, this.path, spots, movers);
     this.card = color;
+    if (assigned !== null) this.setRing(assigned);
     sfx.whoosh();
     const face = cardFace(color);
     face.scale.set(0, 1);
@@ -224,76 +307,250 @@ class OwlWalk implements Game {
     sfx.pop(7);
     await this.ctx.say('owl.color', { color });
     this.drawPreviews();
+    if (this.plan.twinkle) this.twinkle(movers[0]);
     if (who === 'pet') return;
     this.busy = false;
-    this.wrongs = 0;
-    const moving = this.owls.filter((o) => o.spot < this.path.length);
-    if (!this.told || moving.length === 1) {
-      this.told = true;
-      await this.ctx.instruct('owl.tap-owl', { color });
-    }
-  }
-
-  /** Owls stand close together, so a touch goes to the nearest owl that can still move. */
-  private tapOwl(e: FederatedPointerEvent) {
-    if (this.busy || this.finished || this.turn !== 'child') return;
-    const p = this.layer.toLocal(e.global);
-    const near = this.owls
-      .filter((o) => o.spot < this.path.length)
-      .sort((a, b) => Math.hypot(a.critter.x - p.x, a.critter.y - 40 - p.y) - Math.hypot(b.critter.x - p.x, b.critter.y - 40 - p.y))[0];
-    if (!near) return;
-    if (!this.card) {
-      near.critter.poke();
-      void this.ctx.say('owl.flip-first');
-      return;
-    }
-    void this.choose(this.owls.indexOf(near));
-  }
-
-  async choose(i: number) {
-    const color = this.card;
-    if (!color || this.busy) return;
-    const spots = this.owls.map((o) => o.spot);
-    if (this.plan.mode === 'farthest' && !farthest(this.path, spots, color).includes(i)) {
-      // Comparing hops is the decision here: a shorter hop is a gentle miss with the numbers said aloud.
-      this.misses++;
-      this.wrongs++;
-      sfx.boing();
-      const h = hops(this.path, spots, color);
-      const best = farthest(this.path, spots, color);
-      this.owls[i].critter.poke();
-      await this.ctx.say('owl.not-farthest', { a: h[i], b: h[best[0]] });
-      if (this.wrongs >= 2) {
-        if (!this.hinted) {
-          this.hinted = true;
-          this.hints++;
-        }
-        for (const b of best) this.owls[b].glow.visible = true;
+    // One owl left walking: there is nothing to pick.
+    if ((this.plan.mode === 'choose' || this.plan.mode === 'farthest') && movers.length === 1) this.select(movers[0], false);
+    const i = this.actorOwl();
+    if (i === null) {
+      if (!this.told) {
+        this.told = true;
+        void this.ctx.instruct('owl.pick-owl', { color });
       }
       return;
     }
-    await this.move(i);
-    await this.endTurn();
+    await this.announce(i);
   }
 
-  /** Hop by hop along the stones to the landing spot (or all the way home). */
+  /** What to do with this card: the stone to find, or, when none is left ahead, the nest. */
+  private async announce(i: number) {
+    const color = this.card!;
+    const spots = this.owls.map((o) => o.spot);
+    if (hop(this.path, spots, i, color) >= this.path.length) {
+      await this.ctx.instruct('owl.no-match', { color });
+      return;
+    }
+    if (!this.told || this.moving().length === 1) {
+      this.told = true;
+      await this.ctx.instruct('owl.tap-stone', { color });
+    }
+  }
+
+  /** The nearest stone, owl or nest to a touch, if any is close enough to mean it. */
+  private nearest(p: { x: number; y: number }): Hit | null {
+    let best: Hit | null = null;
+    let bestRatio = 1;
+    const consider = (hit: Hit, at: { x: number; y: number }, reach: number) => {
+      const r = Math.hypot(at.x - p.x, at.y - p.y) / reach;
+      if (r <= bestRatio) {
+        bestRatio = r;
+        best = hit;
+      }
+    };
+    // A stone with an owl on it belongs to the owl: touching either one means the owl.
+    this.stones.forEach((_, i) => {
+      if (!this.owls.some((o) => o.spot === i)) consider({ kind: 'stone', i }, this.stoneAt(i), STONE_REACH);
+    });
+    consider({ kind: 'nest' }, this.nestPoint(), NEST_REACH);
+    this.owls.forEach((o, i) => {
+      if (o.spot < this.path.length) consider({ kind: 'owl', i }, { x: o.critter.x, y: o.critter.y - 38 }, OWL_REACH);
+    });
+    // On the farthest level the numbered rings are the most eye-catching thing on the path: touching one means its owl.
+    if (this.plan.mode === 'farthest' && this.card) {
+      const spots = this.owls.map((o) => o.spot);
+      this.owls.forEach((o, i) => {
+        if (o.spot >= this.path.length) return;
+        const at = this.spotAt(hop(this.path, spots, i, this.card!), i);
+        consider({ kind: 'owl', i }, { x: at.x, y: at.y - 98 }, RING_REACH);
+      });
+    }
+    return best;
+  }
+
+  private tapAt(e: FederatedPointerEvent) {
+    const now = performance.now();
+    if (now - this.lastTap < 150 || palmOnGlass()) return;
+    this.lastTap = now;
+    if (this.busy || this.finished || this.turn !== 'child') return;
+    const hit = this.nearest(this.touch.toLocal(e.global));
+    if (!hit) return;
+    // Touch-down answers at once, before the judgment: the stone squashes and a ring spreads.
+    const at = hit.kind === 'owl' ? { x: this.owls[hit.i].critter.x, y: this.owls[hit.i].critter.y - 38 } : this.targetPoint(hit.kind === 'stone' ? hit.i : 'nest');
+    this.ripple(at.x, at.y);
+    if (hit.kind === 'stone') this.squash(this.stones[hit.i]);
+    if (!this.card) {
+      if (hit.kind === 'owl') this.owls[hit.i].critter.poke();
+      void this.ctx.say('owl.flip-first');
+      void this.ctx.tw.to(this.deck.scale, { x: 1.12, y: 1.12 }, { duration: 0.12 }).then(() => this.ctx.tw.to(this.deck.scale, { x: 1, y: 1 }, { duration: 0.12 }));
+      return;
+    }
+    if (hit.kind === 'owl') void this.pickOwl(hit.i);
+    else void this.tapStone(hit.kind === 'stone' ? hit.i : 'nest');
+  }
+
+  /** The owl step of levels 3 and 4: a free choice on 3, and on 4 it must be one that hops the farthest. */
+  private async pickOwl(i: number) {
+    const color = this.card;
+    if (!color || this.busy) return;
+    const mode = this.plan.mode;
+    if (mode === 'one' || mode === 'turns') {
+      // These levels choose the stone, not the owl: tapping an owl (what the old game taught) is never a miss; it answers and the voice says what to tap.
+      this.owls[i].critter.poke();
+      void this.ctx.say('owl.tap-stone', { color });
+      return;
+    }
+    const spots = this.owls.map((o) => o.spot);
+    if (mode === 'farthest' && !farthest(this.path, spots, color).includes(i)) {
+      // Comparing hops is the decision here: a shorter hop is a gentle miss with the numbers said aloud.
+      const h = hops(this.path, spots, color);
+      const best = farthest(this.path, spots, color);
+      this.owls[i].critter.poke();
+      await this.miss(() => this.ctx.say('owl.not-farthest', { a: h[i], b: h[best[0]] }), () => {
+        for (const b of best) this.owls[b].glow.visible = true;
+      }, async () => {
+        await this.ctx.say('owl.together');
+        this.busy = false;
+        this.select(best[0], true);
+      });
+      return;
+    }
+    this.select(i, true);
+  }
+
+  private select(i: number, announce: boolean) {
+    this.selected = i;
+    this.wrongs = 0;
+    this.setRing(i);
+    for (const o of this.owls) o.glow.visible = false;
+    sfx.pop(6);
+    if (announce) {
+      this.owls[i].critter.hop(0.5);
+      void this.announce(i);
+    }
+  }
+
+  /** The stone step: the next stone of the card's color, or the nest when none is left. */
+  private async tapStone(tapped: number | 'nest') {
+    const color = this.card;
+    if (!color || this.busy) return;
+    const i = this.actorOwl();
+    if (i === null) {
+      void this.ctx.say('owl.pick-owl', { color });
+      return;
+    }
+    const spots = this.owls.map((o) => o.spot);
+    const verdict = judgeStone(this.path, spots, i, color, tapped);
+    if (verdict === 'next' || verdict === 'nest') {
+      await this.move(i);
+      await this.endTurn();
+      return;
+    }
+    const need = stoneName(color);
+    const have = tapped === 'nest' ? 'the nest' : `a ${stoneName(this.path[tapped])}`;
+    const lines = {
+      'wrong-color': () => this.ctx.say('owl.wrong-color', { have, need }),
+      far: () => this.ctx.say('owl.far', { need }),
+      behind: () => this.ctx.say('owl.behind', { color }),
+      occupied: () => this.ctx.say('owl.occupied', { color }),
+      'early-nest': () => this.ctx.say('owl.early-nest', { color }),
+    } as const;
+    const to = hop(this.path, spots, i, color);
+    await this.miss(lines[verdict], () => this.showHint(to >= this.path.length ? 'nest' : to), async () => {
+      await this.ctx.say('owl.together');
+      await this.move(i);
+      await this.endTurn();
+    });
+  }
+
+  /** A gentle miss: a boing and a spoken reason; after two, the answer glows (one hint a turn); a third has the pet hop it. */
+  private async miss(say: () => Promise<void>, hint: () => void, together: () => void | Promise<void>) {
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    this.busy = true;
+    await say();
+    this.busy = false;
+    if (this.wrongs >= 2 && !this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
+    if (this.wrongs === 2) hint();
+    else if (this.wrongs >= 3) {
+      this.busy = true;
+      await together();
+    }
+  }
+
+  private showHint(at: number | 'nest') {
+    this.hintAt = at;
+    this.hintGlow.position.copyFrom(this.targetPoint(at));
+    this.hintGlow.visible = true;
+  }
+
+  private clearHint() {
+    this.hintAt = null;
+    this.hintGlow.visible = false;
+    for (const o of this.owls) o.glow.visible = false;
+  }
+
+  /** Matching stones ahead of the owl twinkle with fireflies when a card turns: the set to look through, never the answer. */
+  private twinkle(i: number) {
+    this.clearTwinkle();
+    const spots = this.owls.map((o) => o.spot);
+    const light = swatch[this.card!].light;
+    for (let s = spots[i] + 1; s < this.path.length; s++) {
+      if (this.path[s] !== this.card || spots.includes(s)) continue;
+      for (let k = 0; k < 5; k++) {
+        const g = new Graphics().circle(0, 0, 15).fill({ color: light, alpha: 0.35 }).circle(0, 0, 8).fill(light).circle(0, 0, 4).fill(0xffffff);
+        this.flies.addChild(g);
+        this.fireflies.push({ g, stone: s, phase: k * 1.3 + s, reach: 26 + k * 6 });
+      }
+    }
+  }
+
+  private clearTwinkle() {
+    this.fireflies = [];
+    this.flies.removeChildren().forEach((c) => c.destroy());
+  }
+
+  private ripple(x: number, y: number) {
+    const g = new Graphics().circle(0, 0, 30).stroke({ width: 8, color: 0xffffff, alpha: 0.9 });
+    g.position.set(x, y);
+    this.fx.addChild(g);
+    void this.ctx.tw.to(g.scale, { x: 2.2, y: 2.2 }, { duration: 0.4, ease: ease.outQuad });
+    void this.ctx.tw.to(g, { alpha: 0 }, { duration: 0.4 }).then(() => g.destroy());
+  }
+
+  private squash(stone: Graphics) {
+    void this.ctx.tw.to(stone.scale, { x: 1.15, y: 0.8 }, { duration: 0.07 }).then(() => this.ctx.tw.to(stone.scale, { x: 1, y: 1 }, { duration: 0.12, ease: ease.outBack }));
+  }
+
+  /** Hop by hop along the stones to the landing spot (or all the way home), counting the stones aloud. */
   private async move(i: number) {
     this.busy = true;
     const owl = this.owls[i];
-    const to = hop(this.path, this.owls.map((o) => o.spot), i, this.card!);
-    for (const o of this.owls) o.glow.visible = false;
+    const spots = this.owls.map((o) => o.spot);
+    const to = hop(this.path, spots, i, this.card!);
+    this.clearHint();
+    this.clearTwinkle();
+    this.setRing(null);
     this.previews.removeChildren().forEach((c) => c.destroy({ children: true }));
     const stops: Spot[] = [];
     for (let s = Math.max(0, owl.spot + 1); s < Math.min(to, this.path.length); s++) stops.push(s);
     stops.push(to);
+    const counted = to < this.path.length;
     for (const s of stops) {
       const p = this.spotAt(s, i);
+      const k = stops.indexOf(s);
       owl.critter.hop(0.5);
-      sfx.marimba(4 + Math.min(9, stops.indexOf(s)), 0.3);
-      await this.ctx.tw.to(owl.critter, { x: p.x, y: p.y }, { duration: s === to && to >= this.path.length ? 0.6 : 0.24, ease: ease.inOutSine });
+      sfx.marimba(4 + Math.min(9, k), 0.3);
+      if (counted) void this.ctx.say('count', { n: k + 1 });
+      await this.ctx.tw.to(owl.critter, { x: p.x, y: p.y }, { duration: s === to && to >= this.path.length ? 0.6 : counted ? 0.28 : 0.24, ease: ease.inOutSine });
     }
     owl.spot = to;
     this.index++;
+    this.selected = null;
     if (to >= this.path.length) {
       owl.critter.cheer();
       sfx.sparkle();
@@ -316,14 +573,22 @@ class OwlWalk implements Game {
     }
   }
 
-  /** The pet plays fair and shows good thinking: it hops the owl that goes the farthest. */
+  /** The pet plays fair and says what it looked for: its own owl on level 2, the owl that goes the farthest after that. */
   private async petTurn() {
     this.ctx.pet.cheer();
     await this.ctx.say('owl.my-turn');
     await this.flip('pet');
-    const best = owlToHop(this.path, this.owls.map((o) => o.spot), this.card!)!;
+    const spots = this.owls.map((o) => o.spot);
+    const color = this.card!;
+    const best = this.plan.mode === 'turns' ? owlOf(this.path, spots, 1) : owlToHop(this.path, spots, color)!;
+    const to = hop(this.path, spots, best, color);
     this.owls[best].glow.visible = true;
-    await this.ctx.say('owl.pet-move', { color: this.card! });
+    if (to >= this.path.length) await this.ctx.say('owl.pet-nest', { color });
+    else if (this.plan.mode === 'turns') await this.ctx.say('owl.pet-look', { need: stoneName(color) });
+    else await this.ctx.say('owl.pet-move', { color, n: to - spots[best] });
+    // The pet touches the same place she would, so she sees the action she is learning.
+    const at = this.targetPoint(to >= this.path.length ? 'nest' : to);
+    this.ripple(at.x, at.y);
     await this.move(best);
     if (allHome(this.path, this.owls.map((o) => o.spot))) return this.finale();
     this.turn = 'child';
@@ -354,6 +619,7 @@ class OwlWalk implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
+    this.setRing(null);
     // The sun comes up only now, when everyone is home: a happy ending, never a race.
     this.sun.visible = true;
     void this.ctx.tw.to(this.dawn, { alpha: 0.55 }, { duration: 1.2 });
