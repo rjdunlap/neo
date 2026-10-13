@@ -6,6 +6,8 @@
 
 A deep dive turns the ladder rounds in [IDEAS.md](../IDEAS.md#short-ladder-audit-2026-10-09) (the audit, round two and round three) into one researched plan per game. Those rows are its starting point, not its limit. The [rules for every activity](../../AGENTS.md#rules-for-every-activity) still hold: more quantity is welcome (the developer's direction of 2026-10-10), while speed, timers, clutter, extra memory load and anything that punishes stay out.
 
+The [family experience review](../FAMILY-EXPERIENCE.md) adds a design lens: what makes the action pleasurable, what varies on replay, how presentation explains the consequence, and whether making, exploring or shared roles deserve more depth. Its suggested game sessions are unclaimed alternatives when the grown-up selects one; they do not silently reorder the waves or change a designed/building row. Cross-game discovery, art and family-role studies are separate system definitions, not completed game deep dives.
+
 ## One session, one game
 
 1. **Claim it.** Fetch `origin`, then check this table, open pull requests and unmerged branches for the same game ID. Pick the first **not started** game in the lowest wave unless the grown-up names one. Make the first commit on a feature branch set its row to **in progress** with the branch name, and publish a draft pull request straight away so other sessions see the claim. One game per session; a game whose code another branch is changing waits.
@@ -15,7 +17,7 @@ A deep dive turns the ladder rounds in [IDEAS.md](../IDEAS.md#short-ladder-audit
    - **Fresh content** inside existing levels.
    - **New levels appended on top**, never renumbered.
    - **Openings to a younger band** from level 1.
-   - **Levels below level 1**, marked as waiting on the [level-order decisions](../ROADMAP.md#waiting-on-the-developer).
+   - **Easier entries or levels between existing ones**, appended with stable IDs and placed using the built band's `order`; declare `entryLevels` for appended easy entry IDs so birthdays land safely. Remaining content, band and accounting decisions stay under [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer).
 
    For each level write:
    - its first round;
@@ -25,6 +27,7 @@ A deep dive turns the ladder rounds in [IDEAS.md](../IDEAS.md#short-ladder-audit
    - its cost and couplings (art, voice, the ghost-finger bot, couch, journal, the picnic).
 
    Say which band window each level falls in. Mark anything that needs a decision from the developer, and add that decision to the roadmap's "Waiting on the developer".
+   Also write a small **experience and presentation** section: the first unsupported action; touch acknowledgment and the visible consequence; the content/arrangement variety; cognitive challenge versus motor precision; a supported ending and replay path; solo/co-play roles where meaningful; and what a person or device still needs to judge. Creative choice and prediction stay distinct from wrong answers. Include one concrete art/feel example using the existing code-drawn tools, not a request for a global rendering rewrite.
 5. **Write it up** as `docs/deep-dives/<game-id>.md` from the [template](TEMPLATE.md), ending with an ordered list of build slices, each sized for one session.
 6. **Do not build.** The write-up alone is a complete deep dive. Order the build slices so the first is cheap and ready, and say which checks it would need, so the next session can start it at once.
 7. **Update the docs and close the row.**
@@ -40,7 +43,7 @@ A deep dive turns the ladder rounds in [IDEAS.md](../IDEAS.md#short-ladder-audit
 The waves are a suggestion; the grown-up can name any game.
 
 - **Wave 1: one round repeats today.** Tangram Town, Story Steps, Robot Path, Goodnight Room, Opposites and Puzzle Pals. These also deliver [chunk 13](../ROADMAP.md#more-to-play-in-every-band)'s first content slices.
-- **Wave 2: her own band soon.** Lap and toddler favorites for a child about to turn one: Bubble Pop, Peekaboo Barn, Animal Snack, Splish Splash, Jelly Drums, Rainbow Fingers, Stamp Studio and Pet Says. Their levels below level 1 wait on the level-order decisions, so settle those early.
+- **Wave 2: her own band soon.** Lap and toddler favorites for a child about to turn one: Bubble Pop, Peekaboo Barn, Animal Snack, Splish Splash, Jelly Drums, Rainbow Fingers, Stamp Studio and Pet Says. Easier appended entries can now use `order` and `entryLevels`; follow each write-up's remaining content and band decisions.
 - **Wave 3: the school core.** Counting, number and letter ladders that carry her longest: Duck Pond, Frog Hop, Market Stall, Word Monsters, Letter Trails, Pattern Train, Memory Match and Clock Tower.
 - **Wave 4: everything else**, in any order.
 
@@ -76,7 +79,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Frog Hop | `frog-hop` | PKS | 7 | 3 | designed | `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116)) | [frog-hop.md](frog-hop.md) |
 | Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
 | Garden Rows | `garden-rows` | KS | 6 | 4 | not started | — | — |
-| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (levels 1–8 built); next level 9, everyone but the one | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)); deployment fix: `codex/fix-goodnight-deployment` ([PR 152](https://github.com/rjdunlap/neo/pull/152)); counted goodnights: `codex/goodnight-count` ([PR 155](https://github.com/rjdunlap/neo/pull/155)); color groups: `codex/goodnight-color` ([PR 164](https://github.com/rjdunlap/neo/pull/164)) | [goodnight-room.md](goodnight-room.md) |
+| Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (levels 1–9 built); next tent/boat content and level 10 as defined in its dive | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)); level 9 ([PR #239](https://github.com/rjdunlap/neo/pull/239)); earlier build history in the write-up | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
 | Inchworm Measure | `inchworm` | KS | 6 | 4 | not started | — | — |
 | Island Bridges | `island-bridges` | G | 4 | 4 | not started (controller-only on the island: touch not built) | — | — |
