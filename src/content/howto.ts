@@ -270,7 +270,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Zero has no things: the round ends with “zero” said aloud. Wandering off the trail is a gentle miss; counting things can never be wrong.',
   },
-  'number-tree': {
+  'fruit-sums': {
     goal: 'Make the number on the sign from two numbered fruit, and then find a different way to make it.',
     steps: [
       { to: 2, text: 'Tap two fruit; they hop into the boxes. Tap a fruit in a box to put it back.' },

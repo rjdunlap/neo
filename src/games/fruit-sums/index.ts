@@ -38,7 +38,7 @@ function fruit(value: number, color: ColorName): Container {
   return c;
 }
 
-class NumberTree implements Game {
+class FruitSums implements Game {
   readonly plan;
   readonly signs: boolean;
   readonly target: number;
@@ -129,7 +129,7 @@ class NumberTree implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.signs ? 'ntree.start3' : 'ntree.start', { n: this.target });
+    void this.ctx.instruct(this.signs ? 'fsums.start3' : 'fsums.start', { n: this.target });
   }
 
   destroy() { this.finished = true; }
@@ -143,7 +143,7 @@ class NumberTree implements Game {
     else if (this.slotA === null) this.slotA = i;
     else this.slotB = i; // both full: the newest one is swapped for this fruit, which is free
     sfx.marimba(this.tray[i] % 8, 0.4);
-    void this.ctx.say('ntree.num', { n: this.tray[i] });
+    void this.ctx.say('fsums.num', { n: this.tray[i] });
     this.afterChange();
   }
 
@@ -151,7 +151,7 @@ class NumberTree implements Game {
     if (this.busy || this.finished) return;
     this.op = this.op === op ? null : op;
     sfx.bell(this.op === 'plus' ? 5 : 3, 0.3);
-    if (this.op) void this.ctx.say(this.op === 'plus' ? 'ntree.plus' : 'ntree.minus');
+    if (this.op) void this.ctx.say(this.op === 'plus' ? 'fsums.plus' : 'fsums.minus');
     this.afterChange();
   }
 
@@ -182,7 +182,7 @@ class NumberTree implements Game {
     if (this.busy || this.finished) return;
     if (this.slotA === null || this.slotB === null || this.op === null) {
       sfx.pop(3);
-      void this.ctx.say(this.signs ? 'ntree.fillsign' : 'ntree.fill');
+      void this.ctx.say(this.signs ? 'fsums.fillsign' : 'fsums.fill');
       return;
     }
     const av = this.tray[this.slotA], bv = this.tray[this.slotB], op = this.op;
@@ -190,12 +190,12 @@ class NumberTree implements Game {
     const words = { a: av, b: bv, op: opWord(op), n: this.target, m: verdict.made };
     if (verdict.kind === 'below') {
       sfx.pop(2);
-      void this.ctx.say('ntree.below', words);
+      void this.ctx.say('fsums.below', words);
       return;
     }
     if (verdict.kind === 'same') {
       sfx.pop(4);
-      void this.ctx.say('ntree.same');
+      void this.ctx.say('fsums.same');
       this.clearSlots();
       return;
     }
@@ -221,8 +221,8 @@ class NumberTree implements Game {
   }
 
   private async hearWrong(words: { a: number; b: number; op: string; n: number; m: number }, hint: boolean) {
-    await this.ctx.say('ntree.wrong', words);
-    if (hint && !this.finished) await this.ctx.say('ntree.hint');
+    await this.ctx.say('fsums.wrong', words);
+    if (hint && !this.finished) await this.ctx.say('fsums.hint');
   }
 
   private async celebrate(words: { a: number; b: number; op: string; n: number }, key: string) {
@@ -233,10 +233,10 @@ class NumberTree implements Game {
     this.hintTile = null;
     sfx.sparkle();
     this.ctx.particles.burst(this.layout.check.x, this.layout.check.y, { kind: 'star', colors: [swatch.yellow.fill, swatch.green.fill, swatch.pink.fill], count: 18, speed: [120, 260], gravity: 300, life: [0.5, 0.9] });
-    await this.ctx.say('ntree.right', words);
+    await this.ctx.say('fsums.right', words);
     if (this.found.length >= WAYS_PER_ROUND) {
       this.finished = true;
-      await this.ctx.say('ntree.done', { n: this.target });
+      await this.ctx.say('fsums.done', { n: this.target });
       await this.ctx.tw.wait(0.6);
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
@@ -244,7 +244,7 @@ class NumberTree implements Game {
     await this.ctx.tw.wait(0.5);
     this.clearSlots();
     this.sumMisses = 0;
-    await this.ctx.instruct('ntree.again', { n: this.target });
+    await this.ctx.instruct('fsums.again', { n: this.target });
     this.busy = false;
   }
 
@@ -330,13 +330,13 @@ function sticker(seed: number): Container {
   return c;
 }
 
-export const numberTree: GameModule = {
-  id: 'number-tree', name: 'Number Tree', titleLine: 'game.number-tree', region: 'counting-cove',
+export const fruitSums: GameModule = {
+  id: 'fruit-sums', name: 'Fruit Sums', titleLine: 'game.fruit-sums', region: 'counting-cove',
   skills: ['adding', 'taking-away', 'number-sense', 'operations'], bands: ['school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.stickers,
   coplayHint: 'Ask {name} for a different way to make the same number, then take turns: one of you picks the first fruit and the other finds its partner.',
   offScreen: 'Pick a number, then make it with two handfuls of pebbles or buttons in as many different ways as you can find.',
-  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => new NumberTree(ctx),
+  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => new FruitSums(ctx),
   touchDemo: true,
 };

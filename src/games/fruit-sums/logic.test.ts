@@ -7,7 +7,7 @@ import {
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
 
-describe('Number Tree rounds', () => {
+describe('Fruit Sums rounds', () => {
   for (let level = 1; level <= PLANS.length; level++) {
     const plan = planFor(level);
     it(`level ${level}: every tray can be finished in two different ways, inside the level's numbers`, () => {
@@ -50,7 +50,7 @@ describe('Number Tree rounds', () => {
   });
 });
 
-describe('Number Tree answers', () => {
+describe('Fruit Sums answers', () => {
   it('accepts any sum that reaches the number, the other way round counting as the same way', () => {
     expect(judge(7, 'plus', 5, 12, [])).toMatchObject({ kind: 'right', made: 12 });
     expect(judge(5, 'plus', 7, 12, [wayKey(7, 'plus', 5)])).toMatchObject({ kind: 'same' });
@@ -95,7 +95,7 @@ describe('Number Tree answers', () => {
   });
 });
 
-describe('Number Tree layout', () => {
+describe('Fruit Sums layout', () => {
   const views: [number, number][] = [[1024, 768], [768, 1024], [1366, 1024], [1180, 820], [1024, 1366]];
   for (const [w, h] of views) {
     for (const level of [1, 2, 3]) {
@@ -131,7 +131,7 @@ describe('Number Tree layout', () => {
   }
 });
 
-describe('Number Tree sticker', () => {
+describe('Fruit Sums sticker', () => {
   it('shows a numeral from 2 to 9', () => {
     for (const seed of SEEDS) { const n = stickerNumber(seed); expect(n).toBeGreaterThanOrEqual(2); expect(n).toBeLessThanOrEqual(9); }
   });

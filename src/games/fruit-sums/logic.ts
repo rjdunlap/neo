@@ -2,7 +2,7 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
- * Number Tree (the notebook's "Make Twelve"): a sign names a number, the tree drops a few numbered fruit, and she makes that
+ * Fruit Sums (the notebook's "Make Twelve"): a sign names a number, the tree drops a few numbered fruit, and she makes that
  * number from two of them and a sign. Every way that works is accepted; a round asks for two different ways. The rules a test
  * can hold the screen to live here: which trays a level builds, which ways count, what a try makes, and where things sit.
  */
@@ -116,7 +116,7 @@ export function makeRound(level: number, rng: Rng): TreeRound {
     if (solutions(tray, plan.ops, target).length < WAYS_PER_ROUND) continue;
     return { target, tray: rng.shuffle(tray) };
   }
-  throw new Error(`Number Tree: no tray for level ${level}`);
+  throw new Error(`Fruit Sums: no tray for level ${level}`);
 }
 
 // ---- layout (design units; the pet keeps the bottom-left corner clear) ----
