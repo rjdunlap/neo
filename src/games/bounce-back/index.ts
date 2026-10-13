@@ -10,7 +10,7 @@ import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { afterHit, afterMiss, paddleBounce, paddleTarget, planFor, predictY, type BouncePlan } from './logic';
+import { afterHit, afterMiss, courtFor, type BallKind, type Court, paddleBounce, paddleTarget, planFor, predictY, type BouncePlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -26,7 +26,24 @@ const PET_SPEED = 560;
 /** Seconds without a grown-up's finger before the pet takes the other paddle. */
 const PET_STEPS_IN = 5;
 
-function ballArt(): Graphics {
+function ballArt(kind: BallKind = 'smile'): Graphics {
+  if (kind === 'beach') {
+    const g = new Graphics().circle(0, 0, BALL_R).fill(0xffffff);
+    const cols = [swatch.red.fill, swatch.yellow.fill, swatch.blue.fill];
+    cols.forEach((c, i) => g.moveTo(0, 0).arc(0, 0, BALL_R, (i * 2 * Math.PI) / 3, ((i * 2 + 1) * Math.PI) / 3).lineTo(0, 0).fill(c));
+    return g.circle(0, 0, BALL_R).stroke({ width: 5, color: swatch.blue.line }).circle(-7, -4, 3.5).circle(7, -4, 3.5).fill(ink);
+  }
+  if (kind === 'duck') {
+    return new Graphics()
+      .circle(0, 0, BALL_R)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 5, color: swatch.yellow.line })
+      .ellipse(0, 8, 11, 6)
+      .fill(swatch.orange.fill)
+      .circle(-8, -6, 4)
+      .circle(8, -6, 4)
+      .fill(ink);
+  }
   return new Graphics()
     .circle(0, 0, BALL_R)
     .fill(swatch.yellow.fill)
@@ -69,7 +86,8 @@ class BounceBack implements Game {
   childTouch = false;
 
   private readonly table = new Graphics();
-  private readonly ballNode = ballArt();
+  private readonly court: Court;
+  private readonly ballNode: Graphics;
   private readonly leftNode = new Paddle(swatch.pink);
   private readonly rightNode = new Paddle(swatch.blue);
   private readonly petFace: Critter;
@@ -126,6 +144,8 @@ class BounceBack implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.court = courtFor(ctx.rng.next());
+    this.ballNode = ballArt(this.court.ball);
     this.petFace = new Critter(ctx.petSpec);
     this.petFace.scale.set(0.28);
     this.petFace.position.set(-56, 34);
@@ -170,8 +190,8 @@ class BounceBack implements Game {
     this.box = { x0: 180, x1: v.w - 40, y0: 90, y1: v.h - 40 };
     const b = this.box;
     const t = this.table.clear();
-    t.rect(0, 0, v.w, v.h).fill(0xd6eefa);
-    t.roundRect(b.x0 - 14, b.y0 - 14, b.x1 - b.x0 + 28, b.y1 - b.y0 + 28, 40).fill(swatch.teal.light).stroke({ width: 10, color: swatch.teal.line });
+    t.rect(0, 0, v.w, v.h).fill(this.court.ground);
+    t.roundRect(b.x0 - 14, b.y0 - 14, b.x1 - b.x0 + 28, b.y1 - b.y0 + 28, 40).fill(this.court.table).stroke({ width: 10, color: this.court.edge });
     const mid = (b.x0 + b.x1) / 2;
     for (let y = b.y0 + 10; y < b.y1; y += 34) t.roundRect(mid - 4, y, 8, 18, 4).fill({ color: 0xffffff, alpha: 0.8 });
     t.circle(mid, (b.y0 + b.y1) / 2, 70).stroke({ width: 6, color: 0xffffff, alpha: 0.8 });
@@ -295,7 +315,8 @@ class BounceBack implements Game {
   private hit(side: 'left' | 'right') {
     this.squish = 1;
     this.rally++;
-    sfx.bell(side === 'right' ? 7 : 5, 0.3);
+    if (side === 'right' && this.court.ball === 'duck') sfx.animal('quack');
+    else sfx.bell(side === 'right' ? 7 : 5, 0.3);
     if (side === 'right') ({ wrongs: this.wrongs, hinting: this.hinting } = afterHit());
     if (this.plan.mode === 'stars') return;
     void this.ctx.say('count', { n: this.rally });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import { COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -100,5 +100,14 @@ describe('Bounce Back', () => {
     st = afterHit();
     miss();
     expect(st.hinting).toBe(false);
+  });
+
+  it('gives every seeded pick a court, and each court is only a look', () => {
+    const seen = new Set<string>();
+    for (let i = 0; i < 100; i++) seen.add(courtFor(i / 100).id);
+    expect(seen.size).toBe(COURTS.length);
+    expect(courtFor(0.9999)).toBe(COURTS[COURTS.length - 1]);
+    // The ball and the court's table must differ in color so the ball reads, and the game is the same on every court.
+    for (const c of COURTS) expect(c.table).not.toBe(c.ground);
   });
 });
