@@ -1123,6 +1123,8 @@ export const SCRIPT = {
   'sound.z': ['zzz'],
   'launch.tap': ['Tap {pet} to bounce!'],
   'launch.pull': ['Pull {pet} back, and let go!'],
+  'launch.too-short': ['A bit more!'],
+  'launch.wrong-way': ['Pull {pet} back, this way!'],
   'launch.star': ['Land on the star cloud!'],
   'launch.number': ['Land on {n}!'],
   'launch.farther': ['Now go farther!', 'Farther this time!'],

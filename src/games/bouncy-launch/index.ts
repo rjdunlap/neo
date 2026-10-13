@@ -71,13 +71,33 @@ class BouncyLaunch implements Game {
   private readonly flag = new Graphics();
   /** A ring around the cloud the child predicted; it stays there while the flight proves the answer. */
   private readonly predictionRing = new Graphics();
+  private readonly pullArrow = new Graphics();
+  private emptyPulls = 0;
+  private wobble = 0;
+  private rawPull = 0;
   /** The finger pulling the spring, and where it first touched. */
   private grab: { id: number; from: { x: number; y: number } } | null = null;
   private readonly release = (e: { pointerId: number }) => {
     if (!this.grab || e.pointerId !== this.grab.id) return;
     this.grab = null;
-    if (!this.letGo()) void this.ctx.tw.to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.3, ease: ease.outBack }).then(() => this.drawSpring());
+    if (!this.letGo()) {
+      this.emptyPulls++;
+      void this.ctx.say(this.rawPull >= MIN_PULL ? 'launch.wrong-way' : 'launch.too-short');
+      this.returnToSeat();
+    } else {
+      this.emptyPulls = 0;
+      this.pullArrow.clear();
+    }
   };
+  private readonly cancel = (e: { pointerId: number }) => {
+    if (!this.grab || e.pointerId !== this.grab.id) return;
+    this.grab = null;
+    this.preview.clear();
+    this.returnToSeat();
+  };
+  private returnToSeat() {
+    void this.ctx.tw.to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.3, ease: ease.outBack }).then(() => this.drawSpring());
+  }
   private wrongs = 0;
   private clock = 0;
   private seat = { x: 0, y: 0 };
@@ -186,12 +206,13 @@ class BouncyLaunch implements Game {
       this.course = null;
     }
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.78, clouds: 4, sun: true, seed: 88 }, ctx.view);
-    ctx.stage.addChild(this.backdrop, this.flag, this.predictionRing);
+    ctx.stage.addChild(this.backdrop, this.flag, this.predictionRing, this.pullArrow);
+    this.pullArrow.eventMode = 'none';
     const padW = this.course?.padWidth ?? 0.85;
     for (let i = 0; i < PADS; i++) {
       const pad = new Container();
       pad.addChild(padArt(120 * padW));
-      if (this.plan.mode === 'number') {
+      if (this.plan.mode === 'number' || this.plan.mode === 'predict') {
         const n = label(String(i + 1), 46, ink);
         n.anchor.set(0.5);
         n.y = -22;
@@ -214,13 +235,16 @@ class BouncyLaunch implements Game {
     ctx.stage.addChild(this.star, this.spring, this.preview, this.replay, this.pet);
     if (this.plan.mode === 'tap') {
       onTap(this.pet, () => void this.launch(this.ctx.rng.range(0.15, 0.95)), { cooldown: 500 });
-    } else {
+    } else if (this.plan.mode !== 'predict') {
       // A slingshot pull, not a drag-and-drop: the pet moves by however far the finger moves,
       // wherever on the pet it was grabbed (drag.ts would snap the pet onto the fingertip).
       this.pet.eventMode = 'static';
       this.pet.on('pointerdown', (e: FederatedPointerEvent) => {
         if (this.flying || this.finished || this.grab || palmOnGlass()) return;
         this.grab = { id: e.pointerId, from: this.ctx.stage.toLocal(e.global) };
+        this.rawPull = 0;
+        this.wobble = 0.35;
+        this.pet.rotation = 0.07;
         sfx.squeak(6);
       });
       this.pet.on('globalpointermove', (e: FederatedPointerEvent) => {
@@ -229,7 +253,8 @@ class BouncyLaunch implements Game {
         this.pull(this.seat.x + p.x - this.grab.from.x, this.seat.y + p.y - this.grab.from.y);
       });
       window.addEventListener('pointerup', this.release);
-      window.addEventListener('pointercancel', this.release);
+      window.addEventListener('pointercancel', this.cancel);
+      this.pet.on('pointercancel', this.cancel);
       // The ghost finger on the how-to card lets go on the pet itself (it sends no window events); a real release reaches both, and the second finds the pull already gone.
       this.pet.on('pointerup', this.release);
       this.pet.on('pointerupoutside', this.release);
@@ -249,7 +274,10 @@ class BouncyLaunch implements Game {
     this.strip = { x0: 380, x1: v.w - 80, y: ground + 10 };
     this.replay.position.set(this.seat.x, this.strip.y - 8);
     this.pads.forEach((pad, i) => pad.position.set(this.landX(padAt(i)), this.strip.y));
-    if (!this.flying && !this.grab) this.pet.position.set(this.seat.x, this.restingY());
+    if (!this.flying && !this.grab) {
+      if (this.plan.mode === 'predict') this.showPredictionPull();
+      else this.pet.position.set(this.seat.x, this.restingY());
+    }
     if (this.stick && !this.flying) this.squash();
     else this.drawSpring();
     this.placeStar();
@@ -261,6 +289,17 @@ class BouncyLaunch implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    if (!this.flying && this.wobble > 0) {
+      this.wobble = Math.max(0, this.wobble - dt);
+      this.pet.rotation = 0.09 * Math.sin(this.clock * 35) * this.wobble / 0.35;
+    }
+    const arrow = this.pullArrow.clear();
+    if (this.emptyPulls >= 2 && !this.flying) {
+      const x = this.seat.x - 65, y = this.seat.y + 55;
+      arrow.moveTo(x + 30, y - 30).lineTo(x, y).lineTo(x + 28, y + 3)
+        .moveTo(x, y).lineTo(x + 3, y - 28)
+        .stroke({ width: 9, color: swatch.yellow.fill, alpha: 0.65 + 0.3 * Math.sin(this.clock * 4), cap: 'round', join: 'round' });
+    }
     this.star.rotation = 0.2 * Math.sin(this.clock * 2);
     this.star.scale.set(1 + 0.08 * Math.sin(this.clock * 5));
     if (this.grab) this.drawSpring();
@@ -281,7 +320,8 @@ class BouncyLaunch implements Game {
 
   destroy() {
     window.removeEventListener('pointerup', this.release);
-    window.removeEventListener('pointercancel', this.release);
+    window.removeEventListener('pointercancel', this.cancel);
+    this.grab = null;
   }
 
   private placeStar() {
@@ -338,6 +378,7 @@ class BouncyLaunch implements Game {
 
   /** Keep the pull on a short leash behind and below the seat. */
   private pull(x: number, y: number) {
+    this.rawPull = Math.hypot(x - this.seat.x, y - this.seat.y);
     let dx = Math.min(0, x - this.seat.x);
     let dy = Math.max(0, y - this.seat.y);
     const d = Math.hypot(dx, dy);
@@ -530,7 +571,7 @@ class BouncyLaunch implements Game {
       misses: this.misses,
       hints: this.hints,
       score: Math.round(this.off * 100),
-      discoveries: revealsPullRule(this.observedPulls) ? [entryId('bouncy-launch', 'bigger-pull')] : [],
+      discoveries: revealsPullRule(this.observedPulls, 0.15, !!this.ctx.couch, !!this.course) ? [entryId('bouncy-launch', 'bigger-pull')] : [],
     });
   }
 }

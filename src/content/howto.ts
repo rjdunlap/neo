@@ -574,17 +574,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'bouncy-launch': {
     goal: 'Launch the pet and see where it lands.',
     steps: [
-      { to: 1, text: 'Tap the spring and watch the pet bounce.' },
-      { from: 2, text: 'Pull the pet back and let go. A bigger pull goes farther.' },
+      { to: 1, text: 'Tap the pet and watch the pet bounce.' },
+      { from: 2, to: 5, text: 'Pull the pet back and let go. A bigger pull goes farther.' },
       { from: 3, to: 3, text: 'Aim for the cloud with the star.' },
       { from: 4, to: 4, text: 'Aim for the numbered cloud that was asked for.' },
       { from: 5, to: 5, text: 'Pull back more, or less, than last time, as asked.' },
       { from: 6, text: 'Look at the shown pull, tap the cloud you think the pet will reach, then watch.' },
     ],
-    finish: [{ to: 5, text: 'The round ends when the pet lands where it was asked to.' }, { from: 6, text: 'The round ends after each shown pull has flown.' }],
+    finish: [{ to: 2, text: 'The round ends after its launches.' }, { from: 3, to: 5, text: 'The round ends when the pet lands where it was asked to.' }, { from: 6, text: 'The round ends after each shown pull has flown.' }],
     note: [
-      { from: 2, text: 'After two clearly different pulls, the bigger-pull observation is added to her discovery journal in the treehouse.' },
-      { from: 3, text: 'Landing short or long is just a try again.' },
+      { from: 2, to: 5, text: 'After two clearly different pulls, the bigger-pull observation is added to her discovery journal in the treehouse.' },
+      { from: 2, to: 5, text: 'A short or wrong-way pull gets a spoken nudge; after two, an arrow shows back and down. Neither counts as a miss or hint.' },
+      { from: 3, to: 5, text: 'Landing short or long is just a try again.' },
       { from: 6, text: 'Predictions are for noticing what happens; a different guess is not a miss.' },
     ],
   },
