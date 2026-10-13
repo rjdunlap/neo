@@ -13,6 +13,8 @@ import { howToFor, shouldExplain } from '../../content/howto';
 import { islandDemo } from '../../content/demos';
 import { Demo } from '../../couch/demo';
 import type { LineId } from '../../content/voice-script';
+import { CouchInput, type CouchControls } from '../../engine/controller';
+import { nextSpot } from '../../couch/focus';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -27,7 +29,9 @@ import { discoveryPill } from '../../ui/journal-art';
 import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
 import type { App, Origin, StoryRound } from '../App';
+import { controllerPlays, InputInUse, pressed } from '../input-in-use';
 import { goToOrigin } from '../origin';
+import { isParentPanelOpen } from '../../parent/panel';
 import { Scene } from '../Scene';
 
 /**
@@ -55,6 +59,21 @@ export class GameScene extends Scene {
   private seconds = 0;
   private finished = false;
   private gone = false;
+  /** Keys and pads: sampled from the start so a press that opened the round is not read again as the round's first move. */
+  private keys!: CouchInput;
+  private readonly inputInUse = new InputInUse();
+  /** A key or button has been pressed since the round began (or since the last touch): the Enter that pressed Play does not count. */
+  private keyed = false;
+  private readonly touchDown = () => {
+    this.inputInUse.touched();
+    this.keyed = false;
+    this.ring.visible = false;
+  };
+  /** The ring round the celebration's focused button, shown once a key or pad has been used. */
+  private readonly ring = new Graphics();
+  private focus = 0;
+  /** Seconds since the celebration offered its buttons: a key mashed during the confetti must not press one the moment it appears. */
+  private offeredFor = 0;
 
   constructor(
     app: App,
@@ -91,6 +110,13 @@ export class GameScene extends Scene {
     this.help.alpha = 0.6;
     this.track(this.help);
     this.ui.addChild(this.pet, this.home, this.help);
+    this.ring.visible = false;
+    window.addEventListener('pointerdown', this.touchDown, true);
+    this.keys = new CouchInput(
+      () => { audio.unlock(); voice.unlock(); },
+      () => undefined,
+      { listening: () => !this.app.paused && !isParentPanelOpen() },
+    );
 
     // Every time a game is opened it explains itself on a card (with a demonstration where there is a bot), and the round waits for Play.
     const card = shouldExplain({ enabled: store.data.settings.howToCards, id: this.mod.id, story: !!this.story, again: this.again }) ? howToFor(this.mod, this.level) : null;
@@ -149,6 +175,10 @@ export class GameScene extends Scene {
   }
 
   update(dt: number) {
+    const keys = this.keys.poll();
+    const wasController = this.inputInUse.kind === 'controller';
+    this.inputInUse.sample(keys);
+    this.drive(keys, dt, wasController);
     // The how-to card holds the round still: nothing moves or counts while a grown-up reads (its demonstration, if any, plays on).
     if (this.helpCard) {
       this.helpCard.update(dt);
@@ -160,8 +190,56 @@ export class GameScene extends Scene {
     this.game?.update(dt);
   }
 
+  /**
+   * Keys and a pad on the island. The intro: Enter plays, Backspace goes back, left and right step the level. A round: `control()`
+   * for a game that takes a controller at this level, once someone has pressed a key or button. The celebration: a ring over its
+   * buttons. Esc and Start belong to the app's pause sheet.
+   */
+  private drive(keys: CouchControls, dt: number, wasController: boolean) {
+    const lead = keys.players[0];
+    if (this.finished) {
+      this.driveCelebration(keys, dt, wasController);
+      return;
+    }
+    if (this.helpCard) {
+      const intro = !this.game;
+      if (!keys.players.some((p) => p.action || p.back || p.undo || p.direction >= 0)) return;
+      if (intro && keys.players.some((p) => p.action)) this.playFromIntro();
+      else if (intro && keys.players.some((p) => p.back || p.undo)) this.leave();
+      else if (intro && (lead.direction === 0 || lead.direction === 2)) this.stepIntroLevel(lead.direction === 0 ? 1 : -1);
+      else if (!intro && keys.players.some((p) => p.action || p.back || p.undo)) this.closeHelp();
+      return;
+    }
+    if (pressed(keys)) this.keyed = true;
+    if (this.keyed && this.game?.control && controllerPlays(this.mod, this.level)) this.game.control(keys, dt);
+  }
+
+  /** The buttons after a round: arrows move the ring, the bottom button presses. The first press only shows where the ring is. */
+  private driveCelebration(keys: CouchControls, dt: number, wasController: boolean) {
+    const after = this.after;
+    if (!after) return;
+    this.offeredFor += dt;
+    const buttons = [after.again, ...(after.next ? [after.next] : []), after.home, after.heart, ...(after.keep ? [after.keep] : [])];
+    const at = Math.min(this.focus, buttons.length - 1);
+    const focused = buttons[at];
+    this.ring.visible = this.inputInUse.kind === 'controller';
+    this.ring.clear().circle(0, 0, focused.radius + 12).stroke({ width: 14, color: 0xffffff }).circle(0, 0, focused.radius + 12).stroke({ width: 5, color: ink });
+    this.ring.position.copyFrom(focused.position);
+    if (this.offeredFor < 0.35 || !wasController) return;
+    for (const p of keys.players) {
+      if (p.direction >= 0) {
+        this.focus = nextSpot(buttons, at, p.direction);
+        sfx.tick();
+      } else if (p.action) {
+        focused.press();
+      }
+    }
+  }
+
   destroy() {
     this.gone = true;
+    window.removeEventListener('pointerdown', this.touchDown, true);
+    this.keys?.destroy();
     this.closeHelp();
     this.game?.destroy();
     super.destroy();
@@ -397,6 +475,7 @@ export class GameScene extends Scene {
       layer.addChild(b);
       void this.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
     }
+    layer.addChild(this.ring);
     void voice.say(keep ? 'keep.offer' : 'again');
   }
 

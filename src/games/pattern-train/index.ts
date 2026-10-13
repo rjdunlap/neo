@@ -383,7 +383,7 @@ class PatternTrain implements Game {
 }
 
 export const patternTrain: GameModule = {
-  id: 'pattern-train', name: 'Pattern Train', titleLine: 'game.pattern-train', region: 'puzzle-peaks',
+  id: 'pattern-train', liveController: true, name: 'Pattern Train', titleLine: 'game.pattern-train', region: 'puzzle-peaks',
   skills: ['patterns', 'sequencing', 'listening'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly, offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',

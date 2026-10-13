@@ -21,3 +21,22 @@ export function escapeAction({ panelOpen, paused, canPause, busy }: EscapeState)
   if (paused) return 'resume';
   return canPause && !busy ? 'pause' : 'ignore';
 }
+
+/** Start (the standard mapping's button 9) on any connected pad, as one press: true on the frame it goes down. */
+export class PadStart {
+  private down = false;
+
+  /** `pads` defaults to the browser's; a test passes its own. */
+  poll(pads?: readonly ({ connected: boolean; buttons: readonly { pressed: boolean }[] } | null)[]): boolean {
+    let list = pads;
+    if (!list) {
+      try { list = [...(navigator.getGamepads?.() ?? [])]; } catch { list = []; }
+    }
+    const now = list.some((p) => !!p?.connected && !!p.buttons[9]?.pressed);
+    const edge = now && !this.down;
+    this.down = now;
+    return edge;
+  }
+}
+
+export const padStart = new PadStart();

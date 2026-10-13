@@ -418,6 +418,7 @@ class RobotPath implements Game {
 
 export const robotPath: GameModule = {
   id: 'robot-path',
+  liveController: true,
   name: 'Robot Path',
   titleLine: 'game.robot-path',
   region: 'tinker-lab',

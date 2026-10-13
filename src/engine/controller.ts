@@ -115,9 +115,10 @@ const typing = (e: KeyboardEvent) => {
 export class CouchInput {
   private keys = new Set<string>();
   private sampler = new ControllerSampler();
-  private readonly codes = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Space', 'Backspace', 'Escape', 'KeyW', 'KeyS']);
+  private readonly listening: () => boolean;
+  private readonly codes: ReadonlySet<string>;
   private readonly down = (e: KeyboardEvent) => {
-    if (!this.codes.has(e.code) || e.metaKey || e.ctrlKey || e.altKey || typing(e)) return;
+    if (!this.codes.has(e.code) || e.metaKey || e.ctrlKey || e.altKey || typing(e) || !this.listening()) return;
     e.preventDefault();
     this.keys.add(e.code);
     this.unlock();
@@ -125,7 +126,13 @@ export class CouchInput {
   private readonly up = (e: KeyboardEvent) => { this.keys.delete(e.code); };
   private readonly blur = () => { this.keys.clear(); this.onBlur(); };
   private readonly hidden = () => { if (document.hidden) this.blur(); };
-  constructor(private readonly unlock: () => void, private readonly onBlur: () => void) {
+  /**
+   * `island`: keys for a round on the island. Esc stays with the app's pause sheet, W and S (the second player) are left alone, and
+   * `listening` says when a key belongs to something else (the pause sheet, the grown-ups' page), so Enter still presses its buttons.
+   */
+  constructor(private readonly unlock: () => void, private readonly onBlur: () => void, island?: { listening: () => boolean }) {
+    this.codes = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Space', 'Backspace', ...(island ? [] : ['Escape', 'KeyW', 'KeyS'])]);
+    this.listening = island?.listening ?? (() => true);
     window.addEventListener('keydown', this.down);
     window.addEventListener('keyup', this.up);
     window.addEventListener('blur', this.blur);
