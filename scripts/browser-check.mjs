@@ -3053,7 +3053,7 @@ async function next() {
 
   // Teddy Doctor: boo-boos tapped, then tools dragged onto the body part that needs them.
   for (let level = Number(process.env.FROM_LEVEL || 1); level <= 6 && (!only || only === 'doctor'); level++) {
-    if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('teddy-doctor', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -3101,7 +3101,7 @@ async function next() {
     await screenshot(`teddy-doctor-${level}`);
     await finished('teddy-doctor');
     assert.deepEqual(await score('teddy-doctor'), mode === 'play' ? [0, 0] : [2, 1], `doctor ${level} score`);
-    if (level === 4) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 4 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Teddy Doctor ${level} (${mode}): boo-boos, body parts, tools, check-ups, mistakes, hint, saved score and sticker passed`);
   }
 
@@ -4719,7 +4719,7 @@ async function woodsBatch() {
   // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.
   if (!only || only === 'lemon') for (let level = fromLevel; level <= 4; level++) {
     await launch('lemonade-stand', level);
-    if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
     const plan = await page.evaluate(() => ({ days: neo.scene.game.plan.days, price: neo.scene.game.plan.prices.length > 1, purse: neo.scene.game.plan.purse }));
     // What the purse should show after the rows so far (the host's top-up has been added on the morning after).
     const purseNow = () => page.evaluate(async () => { const L = await import('/src/games/lemonade-stand/logic.ts'); let p = L.START_PURSE; for (const r of neo.scene.game.rows) p = L.settle(p, r).purse; return [p, neo.scene.game.purse]; });
@@ -4775,7 +4775,7 @@ async function shortlistBatch() {
 
   if (!only || only === 'tower') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
     await launch('block-tower', level);
-    if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
     const { rounds, mode } = await page.evaluate(() => ({ rounds: neo.scene.game.rounds.length, mode: neo.scene.game.plan.mode }));
     if (mode === 'flag' || mode === 'match') {
       const heights = await page.evaluate(() => neo.scene.game.rounds.map(r => r.bear ?? r.target));
@@ -4808,11 +4808,27 @@ async function shortlistBatch() {
         assert.equal(await page.evaluate(() => neo.scene.game.stack.length), want);
         await tap('neo.scene.game.bell');
       } else if (mode === 'stand') {
-        // Guessing the tower that falls is fine: a guess is never a miss.
-        if (n === 0) await screenshot(`block-tower-${level}`);
+        const frozen = await page.evaluate(() => JSON.stringify(neo.scene.game.stand));
+        const saved = await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]);
         await tap(`neo.scene.game.standTowers[${n === 1 ? 'neo.scene.game.stand.stands' : '1 - neo.scene.game.stand.stands'}][1]`);
-        await page.waitForFunction(() => neo.scene.game.flying.length > 0, null, { timeout: 5000 });
-        if (n === 0) { await page.waitForTimeout(900); await screenshot(`block-tower-${level}-fell`); }
+        await page.waitForFunction(() => neo.scene.game.observation.phase === 'result', null, { timeout: 30000 });
+        assert.deepEqual(await counts(), [0, 0]);
+        if (n === 0 || n === 2) {
+          if (n === 0) await screenshot('block-tower-5-result-portrait');
+          await tap('neo.scene.game.watchAgain');
+          // Resize while replay releases; the retained evidence follows the logical view.
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForFunction(() => neo.scene.game.observation.phase === 'result', null, { timeout: 30000 });
+          assert.equal(await page.evaluate(() => JSON.stringify(neo.scene.game.stand)), frozen);
+          assert.equal(await page.evaluate(() => neo.scene.game.index), n);
+          assert.deepEqual(await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]), saved);
+          await page.setViewportSize({ width: 768, height: 1024 });
+        }
+        await tap('neo.scene.game.continueStand');
+        if (n === 2) {
+          await finished('block-tower');
+          assert.deepEqual(await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]), saved.map(v => v + 1));
+        }
       } else {
         // Reach: two topples past the table edge (explained misses), a glowing hint place, then a way that works.
         const drop = async (slot) => {
@@ -4878,7 +4894,7 @@ async function shortlistBatch() {
     await finished('block-tower');
     assert.deepEqual(await score('block-tower'), mode === 'flag' || mode === 'match' || mode === 'reach' ? [2, 1] : [0, 0]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'guess, ropes let go, why it fell shown', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`);
+    log(`Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`);
   }
 
   if (!only || only === 'lasso') {
@@ -4912,7 +4928,7 @@ async function shortlistBatch() {
     });
     for (let level = fromLevel; level <= 5; level++) {
       await launch('lasso-loops', level);
-      if (level === 4) await page.setViewportSize({ width: 768, height: 1024 });
+      if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
       const jars = await page.evaluate(() => neo.scene.game.jars.length);
       for (let j = 0; j < jars; j++) {
