@@ -35,7 +35,8 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 - Previous proof: #269 typecheck, 23 focused tests/build, filtered launch 1–6, portrait and clean level-6 ghost finger passed; server stopped/clean checkouts/deployment succeeded. Final **53% / 31%**, resets `1791925955` / `1792472658`, versus dispatch 38% / 28% with same identities: aggregate **15 / 3 points**, reconciled once below. Existing IDEAS link failure remains recorded. No unchanged checks rerun.
 - Overlap: input/navigation claim cleared; no active implementation/open PR or overlap. Old Beat Builder branches correspond to merged PRs; unrelated dirty registry/deep-dive repair preserved. Coordinator servers none.
 - Worker scope/pre-implementation/pre-browser usage: 57/31, 59/32, 60/32%, resets unchanged; ordinary usage allowed. Typecheck/24 focused tests/build, filtered level-5/6 arcade and ghost-finger (18.9/15.1 s), landscape/portrait visual proof pass; see [verification](VERIFICATION.md#2026-10-13--bouncy-launch-last-flight-slice-3). Pre-publication 63/32%, same resets; ordinary usage allowed.
-- Next action: publish/merge #275, obtain final usage reading in worker response; coordinator retrieve worker/PR next wake-up, confirm completion/publication and reconcile usage once before another dispatch. Resume same worker if unfinished; do not implement here.
+- Publication checkpoint: implementation `406568d` pushed; #275 ready for review. Automatic approval review rejected `gh pr merge 275 --merge`: it requires explicit authorization for this exact main-branch merge despite repo standing authorization. No merge/deployment occurred. No workaround attempted.
+- Next action: developer approve merge of #275; then resume this worker for merge/deploy and final usage reading. Coordinator retrieve worker/PR next wake-up, confirm completion/publication and reconcile usage once before another dispatch. Resume same worker if unfinished; do not implement here.
 
 ## Usage observations
 
@@ -77,7 +78,7 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-13 | Bouncy Launch last flight, dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing-game feedback | 55% → pending / `1791925955` | 31% → pending / `1792472658` | Estimate 18.75 / 3.75 points | Fresh worker `01a136e9-ad64-7972-b23a-6a94841e4324` admitted; implementation/proof pending |
 
-| 2026-10-13 | Bouncy Launch last flight / [#275](https://github.com/rjdunlap/neo/pull/275), dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing interaction support | 55% → 63% pre-publication / `1791925955` | 31% → 32% pre-publication / `1792472658` | Estimate 18.75 / 3.75 points | Worker `01a136e9-ad64-7972-b23a-6a94841e4324`, implemented/verified; aggregate preliminary 8 / 1 points; final after-commit reading in worker response, reconcile once |
+| 2026-10-13 | Bouncy Launch last flight / [#275](https://github.com/rjdunlap/neo/pull/275), dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing interaction support | 55% → 63% pre-publication / `1791925955` | 31% → 32% pre-publication / `1792472658` | Estimate 18.75 / 3.75 points | Worker `01a136e9-ad64-7972-b23a-6a94841e4324`, implemented/verified/published at `406568d`, merge blocked by automatic approval review; aggregate preliminary 8 / 1 points; final after-commit reading in worker response, reconcile once |
 
 ## Fresh-worker dispatch and handoff
 
