@@ -4,13 +4,14 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineId } from '../../content/voice-script';
 import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon } from '../../ui/icons';
+import { againIcon, checkIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game,GameContext,GameModule,TouchIntent } from '../types';
-import { bestTarget, buildFor, completedCover, coverHint, unavailableSlots, viableCovers, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
+import { makeRepair, repairAction, repairMismatches, bestTarget, buildFor, completedCover, coverHint, unavailableSlots, viableCovers, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
 
 function shape(shape:Shape,color:ColorName,outline=true){return new Graphics().poly(VERTICES[shape]).fill(swatch[color].fill).stroke({width:outline?5:0,color:swatch[color].line,join:'round'});}
 /** Name the geometry, even when the picture uses a triangle as a roof or a trapezoid as a hull. */
@@ -112,10 +113,51 @@ class TangramTown implements Game {
  }
  destroy(){this.pieces.forEach(p=>p.drag.destroy());}
 }
+/** A completed picture can be revised by turning pieces freely, then checking against its outline. */
+class TangramRepair implements Game {
+ readonly plan; readonly pieces:Piece[]; readonly nodes:Container[]=[]; readonly arts:Graphics[]=[];
+ readonly board=new Container(); readonly turn:RoundButton; readonly help:RoundButton; readonly check:RoundButton;
+ private readonly bg=new Graphics();private readonly glow=new Graphics();private readonly ring=new Graphics();
+ selected:number|null=null;misses=0;hints=0;done=false;private wrong=0;private assisted=false;private clock=0;
+ constructor(private readonly ctx:GameContext){
+  this.plan=buildFor(ctx.level,ctx.rng);this.pieces=makeRepair(this.plan,ctx.rng);
+  ctx.stage.addChild(this.bg,this.board);this.glow.eventMode=this.ring.eventMode='none';
+  const colors:ColorName[]=['pink','teal','yellow','purple'];
+  this.plan.targets.forEach((t,i)=>{
+   const outline=shape(t.shape,'blue');outline.alpha=0.28;outline.rotation=t.turns*Math.PI/2;outline.position.set(t.x,t.y);outline.eventMode='none';this.board.addChild(outline);
+   const n=new Container(),a=shape(t.shape,colors[i]);a.rotation=this.pieces[i].turns*Math.PI/2;n.position.set(t.x,t.y);n.addChild(a);this.board.addChild(n);this.nodes.push(n);this.arts.push(a);
+   onTap(n,()=>{if(this.done)return;this.selected=i;sfx.tick();this.draw();},{radius:75});
+  });
+  this.board.addChild(this.glow,this.ring);
+  this.turn=new RoundButton(againIcon(),swatch.blue,50,()=>{
+   if(this.done||this.selected===null)return;
+   const i=this.selected;this.pieces[i].turns=(this.pieces[i].turns+1)%4;this.arts[i].rotation=this.pieces[i].turns*Math.PI/2;sfx.tick();this.draw();
+  });
+  const hand=new Graphics().circle(0,0,20).fill(swatch.yellow.fill).moveTo(0,-35).lineTo(0,35).stroke({width:5,color:swatch.orange.line});
+  this.help=new RoundButton(hand,swatch.yellow,50,()=>{if(this.done)return;const i=repairMismatches(this.plan.targets,this.pieces)[0];if(i===undefined){void ctx.say('tangram.repair-check');return;}this.support();this.selected=i;void ctx.say('tangram.repair-hint');this.draw();});
+  this.check=new RoundButton(checkIcon(),swatch.green,50,()=>{
+   if(this.done)return;
+   if(repairMismatches(this.plan.targets,this.pieces).length){this.misses++;this.wrong++;sfx.boing();void ctx.say('tangram.repair-try');if(this.wrong>=2)this.support();this.draw();return;}
+   this.done=true;sfx.bell(7,0.4);void ctx.say('tangram.repaired',{picture:this.plan.picture});void ctx.tw.wait(1.2).then(()=>ctx.finish({misses:this.misses,hints:this.hints}));
+  });ctx.stage.addChild(this.turn,this.help,this.check);
+ }
+ private support(){if(!this.assisted){this.assisted=true;this.hints++;}}
+ private draw(){
+  this.ring.clear();this.glow.clear();
+  if(this.selected!==null){const t=this.plan.targets[this.selected];this.ring.circle(t.x,t.y,85).stroke({width:5,color:swatch.blue.line});}
+  const i=repairMismatches(this.plan.targets,this.pieces)[0];
+  if(this.assisted&&i!==undefined){const t=this.plan.targets[i];this.glow.circle(t.x,t.y,88).stroke({width:7,color:swatch.yellow.line});}
+ }
+ start(){void this.ctx.instruct('tangram.repair');}
+ resize(v:View){this.bg.clear().rect(0,0,v.w,v.h).fill(swatch.blue.light);this.board.position.set(v.w/2,Math.max(340,v.h*0.4));this.turn.position.set(v.w-85,250);this.help.position.set(v.w-85,390);this.check.position.set(v.w-85,530);this.draw();}
+ update(dt:number){this.clock+=dt;this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);}
+ autotouch():TouchIntent|null{if(this.done)return null;const a=repairAction(this.plan.targets,this.pieces,this.selected);return 'pick'in a?{tap:{on:this.nodes[a.pick]}}:'turn'in a?{tap:{on:this.turn}}:{tap:{on:this.check}};}
+ destroy(){}
+}
 export const tangramTown:GameModule={
  id:'tangram-town',name:'Tangram Town',titleLine:'game.tangram-town',region:'rainbow-meadow',skills:['shape-composition','rotation','spatial-reasoning'],bands:['toddler','preschool','prek','school'],
- levels:b=>b==='school'?{min:5,max:7}:b==='toddler'?{min:1,max:2}:b==='preschool'?{min:2,max:4}:{min:3,max:6},describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
+ levels:b=>b==='school'?{min:5,max:8}:b==='toddler'?{min:1,max:2}:b==='preschool'?{min:2,max:4}:{min:3,max:6},describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
  coplayHint:'Move the big shapes together. Let {name} try turning a roof before helping.',offScreen:'Cut a paper square diagonally. Turn the two triangles into different pictures.',
  hubIcon:()=>{const c=new Container(),a=shape('square','teal'),b=shape('roof','pink');a.scale.set(0.6);a.y=-42;b.scale.set(0.6);b.y=-120;c.addChild(a,b);return new WigglyIcon(c);},
- sticker:seed=>{const g=shape(new Rng(seed).pick(['square','roof','triangle'] as const),'purple');g.scale.set(0.8);return g;},create:ctx=>new TangramTown(ctx),
+ sticker:seed=>{const g=shape(new Rng(seed).pick(['square','roof','triangle'] as const),'purple');g.scale.set(0.8);return g;},create:ctx=>planFor(ctx.level).repair?new TangramRepair(ctx):new TangramTown(ctx),
 };

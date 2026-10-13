@@ -34,7 +34,8 @@ export default defineConfig({
       },
       // The first worker still takes control at once, so the very first visit already works offline;
       // an update waits (no skipWaiting) until every open copy of the app has closed.
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'], clientsClaim: true },
+      // The code-drawn game catalog's main bundle is just over 2 MiB; cache it offline with an explicit 3 MiB per-file bound.
+      workbox: { maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'], clientsClaim: true },
     }),
   ],
   test: { include: ['src/**/*.test.ts'] },

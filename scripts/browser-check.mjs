@@ -3884,8 +3884,34 @@ async function creativeBatch() {
     await finished('rhythm-neighbors');assert.deepEqual(await score('rhythm-neighbors'),level<=2?[0,0]:[2,1]);
     await page.setViewportSize({width:1024,height:768});log(`Rhythm Neighbors ${level}: calls, replies, retries, guided timing, saved round and sticker passed`);
   }
-  if (!only || only === 'tangram') for(let level=fromLevel;level<=Number(process.env.TO_LEVEL||7);level++) {
+  if (!only || only === 'tangram') for(let level=fromLevel;level<=Number(process.env.TO_LEVEL||8);level++) {
     await launch('tangram-town',level);
+    if(level===8){
+      await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
+      const mismatch=await page.evaluate(async()=>{const g=neo.scene.game,L=await import('/src/games/tangram-town/logic.ts');return L.repairMismatches(g.plan.targets,g.pieces);});
+      assert.equal(mismatch.length,1,'Exactly one shape starts wrong');
+      await tap('neo.scene.game.check');await page.waitForTimeout(500);await tap('neo.scene.game.check');
+      assert.deepEqual(await page.evaluate(()=>[neo.scene.game.misses,neo.scene.game.hints]),[2,1]);
+      await screenshot('tangram-town-8-portrait');
+      await page.evaluate(async()=>{
+        const g=neo.scene.game,L=await import('/src/games/tangram-town/logic.ts');
+        const i=L.repairMismatches(g.plan.targets,g.pieces)[0],other=g.pieces.findIndex((_,j)=>j!==i);
+        const turns=g.pieces[other].turns;kit.tapOn(g.nodes[other]);await kit.sleep(180);
+        for(let k=0;k<4;k++){kit.tapOn(g.turn);await kit.sleep(450);}
+        if(g.pieces[other].turns!==turns||g.misses!==2||g.hints!==1)throw new Error('Free turn revision');
+        kit.tapOn(g.help);await kit.sleep(200);
+        if(g.selected!==i||g.hints!==1)throw new Error('Truthful hint without recount');
+        for(let k=0;k<12&&!g.done;k++){
+          const a=L.repairAction(g.plan.targets,g.pieces,g.selected);
+          kit.tapOn('pick'in a?g.nodes[a.pick]:'turn'in a?g.turn:g.check);await kit.sleep(450);
+        }
+        if(!g.done)throw new Error('Repair check did not finish');
+      });
+      await finished('tangram-town');assert.deepEqual(await score('tangram-town'),[2,1]);
+      await page.setViewportSize({width:1024,height:768});
+      log('Tangram Town 8: one mismatch, free turns/restore, truthful hint, check, saved round/sticker and portrait passed');
+      continue;
+    }
     if(level===7){
       await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
       await page.evaluate(async()=>{
@@ -4004,7 +4030,7 @@ async function woodsBatch() {
     log(`Light Lab ${level}: mirrors turned like a finger, ${play}saved score and sticker passed`);
   }
 
-  if (!only || only === 'penguin') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
+  if (!only || only === 'penguin') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
     await launch('penguin-slide', level);
     if (level === 3 || level >= 6) await page.setViewportSize({ width: 768, height: 1024 });
     const puzzles = await page.evaluate(() => neo.scene.game.plan.puzzles);
