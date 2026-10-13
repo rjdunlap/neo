@@ -252,11 +252,22 @@ describe('face-off trips', () => {
     completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, score: 4 });
     completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, score: 4 });
     expect(save.party!.rounds[0].winner).toBe('tie');
-    save.party!.selected = 'bounce-back';
+    save.party!.selected = 'bumper-garden';
     expect(completeRound(save, roundToken(save.party!), { misses: 0, hints: 0 })).toBe('stop');
-    expect(save.party!.rounds[1]).toMatchObject({ id: 'bounce-back', winner: 'team' });
+    expect(save.party!.rounds[1]).toMatchObject({ id: 'bumper-garden', winner: 'team' });
     expect(save.party!.rounds[1].scores).toBeUndefined();
     expect(tally(save.party!)).toEqual([2, 2]);
+  });
+
+  it('settles a Bounce Back face-off on one shared board, most goals winning', () => {
+    const save = start('bounce-back');
+    // The first stop is Player 1's choice: the right paddle's player scored 5, the left's 3.
+    expect(completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, scores: [5, 3] })).toBe('stop');
+    expect(save.party!.rounds[0]).toMatchObject({ id: 'bounce-back', scores: [5, 3], winner: 0 });
+    save.party!.selected = 'bounce-back';
+    completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, scores: [2, 5] });
+    expect(save.party!.rounds[1].winner).toBe(1);
+    expect(tally(save.party!)).toEqual([1, 1]);
   });
 
   it('says which way is better per game', () => {

@@ -4,6 +4,14 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'game.gem-swap': ['Gem Swap!'],
+  'gem-swap.go': ['Tap a gem, then its neighbour. Make a line of three matching shapes. The gems above fall into the gaps. Clear the tray!'],
+  'gem-swap.miss': ['That swap makes no line. Look for three matching shapes in a row or column.'],
+  'gem-swap.hint': ['Swap the two outlined gems. This starts a way to clear the tray.'],
+  'gem-swap.stuck': ['These gems have no clearing route. Undo a swap, or restart this tray to try another plan.'],
+  'gem-swap.restart': ['The starting gems are back. Try a different plan.'],
+  'gem-swap.done': ['The tray is clear!'],
+  'couch.how.gem-swap': ['Move to a gem and choose it, then choose its neighbour. Make a line of three matching shapes. The gems above fall into the gaps. Clear the tray. The left button takes a swap back.'],
   'game.tile-pairs': ['Tile Pairs!'],
   'tile-pairs.go': ['Tap two tiles with the same picture. Their tops must be clear, and a left or right side must be open. Clear the stack!'],
   'tile-pairs.blocked': ['That tile needs a clear top and an open left or right side. Try a bright tile.'],
@@ -65,7 +73,7 @@ export const SCRIPT = {
   'couch.how.secret-code': ['Pick stones with left and right and press the bottom button to place them. When every slot is full, press again to turn the key. Use the clues to crack the code!'],
   'couch.how.peg-garden': ['Hold left or right to swing the launcher, and press the bottom button to drop a pearl. Hit the numbered flowers!'],
   'couch.how.bumper-garden': ['Flip the ladybug back up! With two controllers, the first player flips the left flipper and the second flips the right. Bloom the flowers together!'],
-  'couch.how.bounce-back': ['Move your paddle up and down with the stick. Keep the ball bouncing together!'],
+  'couch.how.bounce-back': ['Move your paddle up and down with the stick. Keep the ball bouncing together, or in a face-off send it past the other paddle for a goal!'],
   'couch.how.pattern-train': ['Look at the train. Move the highlight with left and right, and press the bottom button to choose what comes in the glowing space!'],
   'couch.how.egg-catch': ['Slide the basket left and right with the stick or arrow keys, and catch the falling eggs! With two controllers, you both steer the same basket.'],
   'couch.how.robot-path': ['Move the stick to add steps for the robot, then press the bottom button to play them. The left button takes the last step back out. Reach the star!'],
@@ -545,6 +553,9 @@ export const SCRIPT = {
   'bounce.versus': ['First to {n} goals! The ball gets faster as we bounce.'],
   'bounce.point': ['Goal!', 'You scored!'],
   'bounce.theirpoint': ['{pet} scored! Next one!', 'Goal for {pet}! Next one!'],
+  'bounce.faceoff': ['Send the ball past the other paddle! First to {n} goals.'],
+  'bounce.duel.right': ['Blue scores!'],
+  'bounce.duel.left': ['Pink scores!'],
   'bounce.won': ['You won! Good game!'],
   'bounce.lost': ['{pet} won this time. Good game!'],
   'bounce.together': ['Play together! One paddle each. Keep it bouncing!'],

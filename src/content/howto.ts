@@ -92,6 +92,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: [{ to: 2, text: 'Any color is welcome in free painting.' }],
   },
+  'gem-swap': {
+    goal: 'Clear the tray by swapping gems into matching lines.',
+    steps: [
+      'Tap a gem, then an occupied neighbour to swap them; tap the selected gem again to cancel.',
+      'Make a horizontal or vertical line of three matching shapes. Gems above fall into the gaps; no new gems arrive.',
+      'Tap Undo to revise a swap, or Restart to bring back the starting tray.',
+      'Tap Hint to outline a swap that starts a clearing route.',
+    ],
+    finish: 'The round ends when every gem is cleared; there is no turn limit.',
+    note: 'A swap that makes no line stays put and counts as a miss. Undo keeps your swap count; Restart counts as help. If no clearing route remains, revise with Undo or Restart.',
+  },
   'tile-pairs': {
     goal: 'Clear the stack by removing matching pairs.',
     steps: [

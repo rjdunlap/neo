@@ -76,6 +76,7 @@ import { ferryJam } from './ferry-jam';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
+import { gemSwap } from './gem-swap';
 import { tilePairs } from './tile-pairs';
 import { lanternLights } from './lantern-lights';
 import { pictureLogic } from './picture-logic';
@@ -171,6 +172,7 @@ export const GAMES: GameModule[] = [
   habitatHelpers,
   fillDump,
   readDo,
+  gemSwap,
   tilePairs,
   lanternLights,
   sudokuGarden,

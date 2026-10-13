@@ -15,6 +15,15 @@
 - Review found a band-change hole, fixed with `GameModule.entryLevels` and `landing` (a saved level or pin of 15 or 13 reaching toddler or preschool had been clamped to that band's hardest level; a failing test showed 6, then 1) and a registry guard. The browser harness's `launch` and its smoke and phone enumerations read `min..max`; they now read the band's listed levels (`levelsInOrder`).
 - Shell tier on `http://localhost:5393`: `smoke SMOKE_ONLY=bubble-pop,pet-says` (levels 1, 8 and 15; 1, 4 and 13, with portrait and the stranded-touch check), `phone PHONE_ONLY=bubble-pop,pet-says`, `originals ORIGINALS_ONLY=bubbles`, `shortlist SHORTLIST_ONLY=says` and `howtolevel` passed; `npm run build` passed. The full `npm test` showed Ferry Jam, Peg Garden, Bumper Garden, Fluffy Salon and Secret Code timing out under load (the same files passed alone). Not run: `world`, `grownups`, the offline check. Open: whether she pops by swatting at all, an iPad touch and the sentence's speech (person checks in the roadmap).
 
+## 2026-10-12 — Gem Swap in Lantern Lake
+
+- Added `gem-swap` grown-up levels 1–4: finite 6/12/15/18-gem trays, three seeded templates each, visible falling clears, touch/controller play, Undo/Restart, shortest-route Hint, both demonstrations and one shell sticker ([PR #235](https://github.com/rjdunlap/neo/pull/235)). Couch compares accepted swaps over exact par; no turn limit or refill.
+- Tested claim `43c73d6` plus source diff on base `origin/main` `1e97ce7`; final integration uses `origin/main` `18d6a40` (Bounce Back only), isolated in `/private/tmp/neo-gem-swap`: typecheck and build passed (existing bundle-size warning). `npm test -- --maxWorkers=4`: 1,091 passed, one timeout in unchanged Peg Garden physics; the one-worker focused probe also timed out, so it remains an existing load-sensitive check limitation. All six Gem Swap rules and catalog/registry/land/how-to tests passed; after upstream integration, typecheck, 76 focused tests and build passed. The three game/browser passes are reused because integration changed only Bounce Back and its documentation. Rules cover exact pars against breadth-first search, 240 seeded hint/bot routes, no refill, valid swaps, long/intersecting lines, dead ends and alternative routes.
+- `GAME_URL=http://localhost:5183 BROWSER_SUITE=gemswap`: first/last, two rejected swaps with one automatic hint, repeated hint not recounted, cancellation, Undo/Restart accounting, portrait target bounds, one sticker per round, Lantern Lake launch and leaving mid-clear passed. Portrait inspected; no page errors.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=gem-swap` finished levels 1/4 clean in 3.3/10.4s; `BROWSER_SUITE=couchgames COUCH_ONLY=gem-swap` passed intro fit, controller lighting, bot round, couch save and child-save isolation.
+- New local documentation links/anchors and `git diff --check` passed (pre-existing stale links outside this slice remain). Source and checks were isolated after another session began Bounce Back edits in the shared checkout; those edits were preserved. Screenshots are retained in ignored `test-results/`.
+- Not run: unchanged full world/picnic/couch/course/offline suites (new-game/catalog tier, no engine, route or persistence behavior change). Real iPad speech/touch, real controllers and whether a person wants another tray stay open in the roadmap. Zen refill and a frozen course remain proposals.
+
 ## 2026-10-12 — A band's `order` may skip level IDs
 
 - `order` is now any distinct list with `min`/`max` its ends (`difficulty.ts` clamp: a saved level or pin left out lands on the nearest listed ID); the registry test checks distinct, ends at min/max, and describes every listed level.
@@ -89,6 +98,12 @@ Ran: typecheck and 128 focused tests (difficulty, registry with a permutation ch
 - Changed local documentation links/anchors and `git diff --check` passed. No server started or URL used.
 - Not run: build, browser, ghost-finger and offline checks at the specified plain-word content tier. Actual iPad touch, speech and child fit remain person checks; reach/settling and height variety remain separate slices.
 - Dispatch `block-tower-support-20261012T215149Z`; queue records scope, worker, usage and next action.
+
+## 2026-10-12 — Bounce Back couch face-off
+
+- Bounce Back's couch entry is now a shared-board face-off (first to five goals, no pet, no hints); together trips are unchanged. Rule tests (`duelWinner`, `duelServeDir`), a settlement test in `party.test.ts`; finale examples moved to Bumper Garden (a team stop).
+- `typecheck`, `npm test` (1088), `COUCH_ONLY=bounce-back` and the full `BROWSER_SUITE=couch` on a snapshot passed (a duel round with Player 1 aiming away from an idle Player 2: 5 goals to fewer, winner Player 1, tally 2 to 1).
+- Not run: two real controllers and two people, the length of the match, the demo (still a rally), `couchcourse` (no course changed).
 
 ## 2026-10-12 — Bounce Back levels 10–11, skip counting
 
@@ -957,6 +972,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | --- | --- | --- | --- |
 | `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |
 | `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |
+| `gemswap`, `fingerdemo`/`couchgames` (`gem-swap`) | 2026-10-12: first/last touch rounds, help/revision/reward, portrait; clean demos in 3.3/10.4s, controller bot and isolated save; typecheck/build, all affected unit tests | Gem Swap entry / [PR #235](https://github.com/rjdunlap/neo/pull/235) | One unchanged Peg Garden timeout; full unchanged suites skipped; real devices/person play open |
 | `tilepairs`/`fingerdemo` (`tile-pairs` level 6) | 2026-10-12: top-level touch regression/reward/portrait; demo clean in 32.8s; typecheck and 36 focused tests | Tile Pairs levels 4–6 / [PR #232](https://github.com/rjdunlap/neo/pull/232) | Levels 4/5 proved by rules; new-level check tier, no broader suites; real devices/person play untested |
 | `tilepairs`, `fingerdemo`/`couchgames` (`tile-pairs`), `lands` (`lantern-lake`) | 2026-10-12: first/last touch rounds with revision/help, portrait, clean finger demos, controller bot/save, seven-game land fit; build and production offline check | Tile Pairs entry / [PR #229](https://github.com/rjdunlap/neo/pull/229) | Real device/controller/speech and person replay value untested; no course |
 | `lanterntouch`, `lands`, `world`, `couchgames` (six puzzles), `fingerdemo` (`lantern-lights`) | 2026-10-13: Lantern Lights by touch, eleven lands at six bands, hatching and map, couch catalog for the six, demo clean in 12.0 s and 33.5 s; build and offline check | Lands stage B entry / [PR #226](https://github.com/rjdunlap/neo/pull/226) | iPad touch, device speech, Sudoku and the other four have no touch yet |

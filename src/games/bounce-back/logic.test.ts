@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { countFor, isZoneMode, makeSequence, serveAngleFor, LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import { DUEL_PLAN, duelServeDir, duelWinner, countFor, isZoneMode, makeSequence, serveAngleFor, LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -218,5 +218,18 @@ describe('Bounce Back', () => {
     }
     expect(countFor(PLANS[4], 7)).toBe(7);
     expect(PLANS.filter((x) => x.mode === 'skip').map((x) => x.step)).toEqual([2, 5]);
+  });
+
+  it('ends a face-off at the goal exactly once, serves to whoever let the ball by, and is beatable in both directions', () => {
+    expect(duelWinner([4, 4])).toBeNull();
+    expect(duelWinner([5, 4])).toBe(0);
+    expect(duelWinner([2, 5])).toBe(1);
+    // The right paddle's player scored (the ball passed the left paddle): serve left, toward the one who let it by.
+    expect(duelServeDir(0)).toBe(-1);
+    expect(duelServeDir(1)).toBe(1);
+    // The face-off has no level and is not on the island's ladder, and its paddle is long enough to be fair to both players.
+    expect(PLANS).not.toContain(DUEL_PLAN);
+    expect(DUEL_PLAN.paddle).toBeGreaterThanOrEqual(190);
+    expect(DUEL_PLAN.goal).toBe(5);
   });
 });

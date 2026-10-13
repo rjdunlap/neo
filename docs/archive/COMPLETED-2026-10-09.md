@@ -609,3 +609,8 @@ Typecheck, 40 focused Block Tower/how-to/registry tests and build passed (existi
 Level order for a new band: a band's range may carry `order` (IDs easiest first) so an easier level appended above hard ones steps correctly; IDs, pins and stats unchanged (see DESIGN.md, Level tables).
 
 A band's `order` may skip level IDs (2026-10-12): `order` is any distinct list with `min` and `max` its ends, so a band can keep 3–9 then 13 without the IDs between; a saved level or pin left out lands on the nearest listed ID. Unblocks below-level-1 entries and appended lap levels.
+
+
+## Gem Swap (2026-10-12)
+
+Roadmap step 8b, [PR #235](https://github.com/rjdunlap/neo/pull/235): `gem-swap` joins Lantern Lake and the couch catalog. Four finite no-refill trays introduce one-swap lines, falling cascades and multi-step planning (6/12/15/18 gems, exact pars 1/2/3/4). Three frozen templates per step, seeded reflection and shape/color permutation preserve the route. A finite solver proves shortest clears, hints from the actual board and alternative routes. Touch and controller input, both bots, spoken instruction/feedback, Undo and counted Restart, and one shell reward are built. Misses count only neighbouring swaps that fail to make a line; two reveal one clearing hint. Couch scores accepted swaps over par on equal seeded boards. No turn limit, loss screen, refill Zen mode, frozen course or saved unfinished tray. Device speech, real touch/controllers and enjoyment need a person.

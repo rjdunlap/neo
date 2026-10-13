@@ -61,6 +61,69 @@ async function finished(id) {
   assert.equal(errors.length, 0, errors.join('\n'));
 }
 
+/** Gem Swap: real taps, gentle rejected swaps, solver help, revision, both ends and one reward. */
+async function gemSwapPlay() {
+  const state = () => page.evaluate(() => {
+    const g = neo.scene.game;
+    return { board: g.board, selected: g.selected, hinted: g.hinted, misses: g.misses, hints: g.hints, presses: g.presses, busy: g.busy, par: g.puzzle.par };
+  });
+  const tapCell = async i => { await page.evaluate(i => kit.tapOn(neo.scene.game.nodes[i]), i); await page.waitForTimeout(130); };
+  const idle = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished);
+  const next = () => page.evaluate(async () => {
+    const g = neo.scene.game, L = await import('/src/games/gem-swap/logic.ts');
+    return L.hintFor(g.board, g.puzzle.size);
+  });
+  for (const level of [1, 4]) {
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    await launch('gem-swap', level); await page.waitForTimeout(400);
+    const initial = await state();
+    const invalid = await page.evaluate(async () => {
+      const g = neo.scene.game, L = await import('/src/games/gem-swap/logic.ts'), n = g.puzzle.size;
+      for (let a = 0; a < g.board.length; a++) for (const b of [a + 1, a + n]) {
+        if (L.neighbors(a, b, n) && g.board[a] >= 0 && g.board[b] >= 0 && !L.swap(g.board, n, [a, b])) return [a, b];
+      }
+      throw new Error('no rejected swap to exercise');
+    });
+    for (let attempt = 0; attempt < 2; attempt++) { await tapCell(invalid[0]); await tapCell(invalid[1]); }
+    let s = await state();
+    assert.deepEqual(s.board, initial.board); assert.equal(s.misses, 2); assert.equal(s.hints, 1); assert.ok(s.hinted);
+    await tap('neo.scene.game.hintButton'); assert.equal((await state()).hints, 1, 'same hint is not counted twice');
+    await tapCell(s.hinted[0]); assert.equal((await state()).selected, s.hinted[0]);
+    await tapCell(s.hinted[0]); assert.equal((await state()).selected, null, 'tap again cancels');
+    if (level === 4) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(250);
+      const geometry = await page.evaluate(() => neo.scene.game.nodes.map(n => {
+        const p = n.toGlobal({ x: n.hitArea.x, y: n.hitArea.y });
+        return { x: p.x / neo.view.scale, y: p.y / neo.view.scale, w: n.hitArea.width, h: n.hitArea.height };
+      }));
+      const view = await page.evaluate(() => ({ w: neo.view.w, h: neo.view.h }));
+      for (const r of geometry) { assert.ok(r.w >= 64 && r.h >= 64); assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w + 1 && r.y + r.h <= view.h + 1); }
+      await screenshot('gem-swap-4-portrait');
+      const pair = await next(); await tapCell(pair[0]); await tapCell(pair[1]); await idle();
+      assert.equal((await state()).presses, 1);
+      await tap('neo.scene.game.undoButton');
+      assert.deepEqual((await state()).board, initial.board); assert.equal((await state()).presses, 1, 'Undo never reduces the score');
+      await tap('neo.scene.game.restartButton');
+      assert.deepEqual((await state()).board, initial.board); assert.equal((await state()).hints, 2);
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(250);
+    }
+    for (let i = 0; i < 10 && !(await page.evaluate(() => neo.scene.game.finished)); i++) {
+      const pair = await next(); assert.ok(pair); await tapCell(pair[0]); await tapCell(pair[1]); await idle();
+    }
+    await finished('gem-swap');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('gem-swap').history.at(-1); return [r.misses, r.hints]; }), [2, level === 4 ? 2 : 1]);
+  }
+  await page.evaluate(() => { kit.store.data.profile.band = 'grownup'; neo.go.land('lantern-lake'); }); await scene('LandScene');
+  await tap("neo.scene.showing.find(m => m.mod.id === 'gem-swap').node"); await scene('GameScene');
+  await page.waitForTimeout(400);
+  // Leaving in the middle of a clear discards scene-owned animation safely.
+  const pair = await next(); await tapCell(pair[0]); await tapCell(pair[1]);
+  await page.evaluate(() => neo.go.land('lantern-lake')); await scene('LandScene'); await page.waitForTimeout(600);
+  assert.deepEqual(errors, []);
+  log('Gem Swap: first/last, two rejected swaps, hint once, cancel, Undo/Restart accounting, portrait targets, shell sticker, Lantern Lake and leave mid-clear passed');
+}
+
 /** Tile Pairs: real taps through first/last stacks, revision, support, resize, reward and return route. */
 async function tilePairsPlay() {
   const tapTile = async i => {
@@ -5110,6 +5173,26 @@ async function couchPlay() {
       if (!g.finished) throw new Error('two-paddle rally did not finish');
     });
   };
+  // A face-off stop at Bounce Back: Player 1 aims away from the other paddle while Player 2 holds still, so the first to five goals is Player 1's.
+  const duelRound = async () => {
+    await makePads(); await page.waitForTimeout(150);
+    await page.evaluate(async () => {
+      const g = neo.scene.game, b = g.box;
+      if (!g.versus) throw new Error('a face-off stop is not a versus round');
+      const { predictY, paddleForLanding, farWall } = await import('/src/games/bounce-back/logic.ts');
+      const start = performance.now();
+      while (!g.finished && neo.scene.game === g && performance.now() - start < 120000) {
+        const geo = g.aim(g.speed());
+        const arrive = predictY(g.ball.x, g.ball.y, g.ball.vx, g.ball.vy, geo.faceX, geo.top, geo.bottom);
+        const want = g.ball.vx > 0 ? paddleForLanding(arrive, farWall(g.paddles.left, geo), geo).y : (b.y0 + b.y1) / 2;
+        const delta = want - g.targets.right;
+        couchPads[0].axes[1] = Math.abs(delta) < 10 ? 0 : Math.sign(delta);
+        await kit.sleep(16);
+      }
+      couchPads[0].axes[1] = couchPads[1].axes[1] = 0;
+      if (!g.finished) throw new Error('the face-off did not finish');
+    });
+  };
   await screenshot('couch-chooser');
   const order = await page.locator('[data-game]').evaluateAll(nodes => nodes.map(n => n.dataset.game));
   // Offers survive a reload and the existing child save remains unchanged.
@@ -5353,12 +5436,13 @@ async function couchPlay() {
 
   await offer('bounce-back');
   await choose('bounce-back');
-  await twoPaddleRound();
+  await duelRound();
   await menu();
   save = await stored();
-  assert.equal(save.party.rounds[1].winner, 'team');
-  assert.equal(save.party.rounds[1].scores, undefined);
-  assert.match(await page.locator('.couch-tally').innerText(), /Player 1: 2 · Player 2: 2/);
+  assert.equal(save.party.rounds[1].winner, 0);
+  assert.equal(save.party.rounds[1].scores[0], 5);
+  assert.ok(save.party.rounds[1].scores[1] < 5);
+  assert.match(await page.locator('.couch-tally').innerText(), /Player 1: 2 · Player 2: 1/);
   assert.equal(await stickers(), stickersBefore + 2);
 
   // A face-off on one shared board: the players alternate, a match earns another turn, and both see the same cards.
@@ -5389,7 +5473,7 @@ async function couchPlay() {
   assert.equal(await page.locator('.couch-new').count(), 0, 'nothing is new once both have been explained');
   assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data)), childBefore, 'face-off play leaves all child state unchanged');
   // A finished face-off trip: a scoreboard, lanterns in the colors of whoever took each stop, and nobody named a loser.
-  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bounce-back', 'team'], ['penguin-slide', 'tie'], ['bouncy-launch', 0], ['bounce-back', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: id === 'penguin-slide' ? 4 : 3, misses: 0, hints: 0, winner, ...(id === 'bounce-back' ? {} : { scores: winner === 'tie' ? [1, 1] : winner === 0 ? [0, 2] : [2, 0] }) }));
+  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bumper-garden', 'team'], ['penguin-slide', 'tie'], ['bouncy-launch', 0], ['bumper-garden', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: id === 'penguin-slide' ? 4 : 3, misses: 0, hints: 0, winner, ...(id === 'bumper-garden' ? {} : { scores: winner === 'tie' ? [1, 1] : winner === 0 ? [0, 2] : [2, 0] }) }));
   await page.evaluate((rounds) => localStorage.setItem('neo.couch.v1', JSON.stringify({ version: 3, trips: 2, stickers: { 'penguin-slide': { count: 3, seed: 5 } }, seen: ['memory-match', 'rhythm-neighbors'], keepsake: { at: 1760000000000 }, party: { seed: 31, mode: 'faceoff', reroll: 0, turn: null, selected: null, rounds } })), rounds);
   await page.reload(); await ready(); await chooserEnter(); await menu();
   await page.waitForFunction(() => neo.scene.finaleStage?.lanterns.every(l => l.lit), null, { timeout: 20000 });
@@ -7005,7 +7089,7 @@ async function couchNames() {
   await page.waitForFunction(() => neo.scene.screen === 'course'); await page.waitForTimeout(450);
   assert.equal(await page.getByRole('button', { name: 'Rowan plays', exact: true }).count(), 1);
   assert.equal(await page.getByRole('button', { name: 'Sam plays', exact: true }).count(), 1);
-  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bounce-back', 'team'], ['penguin-slide', 0], ['bouncy-launch', 0], ['bounce-back', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: 3, misses: 0, hints: 0, winner, ...(id === 'bounce-back' ? {} : { scores: winner === 0 ? [0, 2] : [2, 0] }) }));
+  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bumper-garden', 'team'], ['penguin-slide', 0], ['bouncy-launch', 0], ['bumper-garden', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: 3, misses: 0, hints: 0, winner, ...(id === 'bumper-garden' ? {} : { scores: winner === 0 ? [0, 2] : [2, 0] }) }));
   await page.evaluate((rounds) => { const save = JSON.parse(localStorage.getItem('neo.couch.v1')); save.trips = 1; save.party = { seed: 31, mode: 'faceoff', reroll: 0, turn: null, selected: null, rounds }; localStorage.setItem('neo.couch.v1', JSON.stringify(save)); }, rounds);
   await page.reload(); await ready(); await enter();
   await page.waitForFunction(() => neo.scene.finaleStage?.lanterns.every(l => l.lit), null, { timeout: 20000 });
@@ -8914,6 +8998,7 @@ try {
   }
   if (suite === 'all' || suite === 'buddies') await buddiesPlay();
   if (suite === 'all' || suite === 'singalong') await singBarnPlay();
+  if (suite === 'all' || suite === 'gemswap') await gemSwapPlay();
   if (suite === 'all' || suite === 'tilepairs') await tilePairsPlay();
   if (suite === 'all' || suite === 'lanterntouch') await lanternTouchPlay();
   if (suite === 'all' || suite === 'week') await weekPlay();

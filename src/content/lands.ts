@@ -131,7 +131,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat', color: 'purple' },
     backdrop: { sky: [0xd9c8f2, 0xffe9c4], hills: [0xb9c8f2, 0x9ed6d8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: false, seed: 151 },
     music: tune(127, 'bell', 72),
-    games: ['tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'],
+    games: ['gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'],
   },
 ];
 

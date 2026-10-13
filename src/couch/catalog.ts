@@ -43,6 +43,18 @@ const STICK: PadPart[] = ['stick', 'dpad'];
 
 /** Everything the couch screens need to explain a game. Games themselves stay unaware of it. */
 export const COUCH_INFO: Record<CouchId, CouchInfo> = {
+  'gem-swap': {
+    goal: 'couch.how.gem-swap', tagline: 'Swap neighbours, clear matching lines, and plan the falling gems.',
+    controls: [
+      { parts: STICK, text: 'Move across the tray.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Choose a gem, then an occupied neighbour to swap. Choose it again to cancel.', keys: 'Enter' },
+      { parts: ['left'], text: 'Undo a swap. Swaps already made still count.', keys: 'Backspace' },
+      { parts: ['start'], text: 'Pause menu: show a clearing swap or restart this tray. Restart counts as help.', keys: 'Esc' },
+    ],
+    restart: 'Restart this tray', hint: 'Show a clearing swap',
+    play: 'turns', faceoff: 'twin', score: { better: 'lower', unit: 'swaps over the best route' },
+    band: 'grownup', demoLevel: 2, level: stop => stop < 2 ? 2 : stop < 4 ? 3 : 4,
+  },
   'tile-pairs': {
     goal: 'couch.how.tile-pairs', tagline: 'Remove matching free tiles from a layered stack.',
     controls: [
@@ -89,13 +101,14 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
   },
   'bounce-back': {
     goal: 'couch.how.bounce-back',
-    tagline: 'Keep the ball going together. Reach a rally of eight.',
+    tagline: 'Keep the ball going together, or race to five goals.',
     controls: [
       { parts: STICK, text: 'Move your paddle up and down. Player 2 uses the second controller.', keys: '↑ ↓ (Player 2: W / S)' },
     ],
     play: 'together',
-    faceoff: 'team',
-    // Preschool's range (2–4) holds both the demo's five-bounce rally and the trip's level 3.
+    faceoff: 'shared',
+    score: { better: 'higher', unit: 'goals' },
+    // Preschool's range (2–4) holds both the demo's five-bounce rally and the trip's level 3. A face-off stop plays its own first-to-5 goals instead of a level.
     band: 'preschool',
     demoLevel: 2,
     level: () => 3,
