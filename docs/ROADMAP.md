@@ -314,6 +314,8 @@ Couch play began as an evening for two grown-ups taking turns. This section turn
 
 **Built** (step by step as written in [the archive](archive/COMPLETED-2026-10-09.md#grown-up-play-the-built-steps); the games are in [GAMES.md](GAMES.md) and the player guide is [COUCH-PLAY.md](COUCH-PLAY.md)): step 1 couch settings (2026-10-07), step 2 "Just me" and the puzzle shelf (2026-10-07), step 3a Lantern Lights (2026-10-07), step 3b Harbor Rush, Ferry Jam on the couch (2026-10-08), step 4 Sudoku Garden (2026-10-07), step 5 Picture Logic (2026-10-08), step 7 Island Bridges (2026-10-08), step 8 Pond Conga, the first relaxing arcade game (2026-10-08), step 3's Ice Blocks as Penguin Slide level 6 (2026-10-10), and from step 10 Word Search (2026-10-08). The step numbers are kept because other documents cite them.
 
+**Tile Pairs levels 4–6 · in progress (2026-10-12):** `codex/tile-pairs-more-levels` claims the long bridge, twin terraces and crown layouts for `tile-pairs`, at 24 tiles with more repeated pictures. Existing levels/seeds/controls stay intact. Expected files: game logic/tests and level range, filtered browser check, README/GAMES/COUCH-PLAY/ROADMAP/archive/VERIFICATION. Check tier: typecheck, focused rules, one top-level play and ghost-finger demo.
+
 **Tile Pairs built** (2026-10-12): the first tile game, in Lantern Lake on the map and in the couch catalog; [build note](archive/COMPLETED-2026-10-09.md#tile-pairs-2026-10-12).
 
 **Open steps.**
