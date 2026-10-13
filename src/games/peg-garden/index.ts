@@ -448,6 +448,7 @@ function sticker(seed: number): Container {
 
 export const pegGarden: GameModule = {
   id: 'peg-garden',
+  liveController: true,
   name: 'Peg Garden',
   titleLine: 'game.peg-garden',
   region: 'bubble-beach',

@@ -513,6 +513,7 @@ function tableArt(seed = 1): Container {
 
 export const bumperGarden: GameModule = {
   id: 'bumper-garden',
+  liveController: true,
   name: 'Bumper Garden',
   titleLine: 'game.bumper-garden',
   region: 'bubble-beach',

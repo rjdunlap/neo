@@ -390,6 +390,7 @@ function sticker(seed: number): Container {
 
 export const secretCode: GameModule = {
   id: 'secret-code',
+  liveController: true,
   name: 'Secret Code',
   titleLine: 'game.secret-code',
   region: 'puzzle-peaks',

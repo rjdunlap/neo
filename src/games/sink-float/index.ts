@@ -417,6 +417,7 @@ function tankArt(seed = 1): Container {
 
 export const sinkFloat: GameModule = {
   id: 'sink-float',
+  liveController: true,
   name: 'Sink or Float',
   titleLine: 'game.sink-float',
   region: 'tinker-lab',
