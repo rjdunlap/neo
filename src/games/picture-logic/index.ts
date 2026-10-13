@@ -626,7 +626,13 @@ class PictureLogic implements Game {
 
   /** A finger went down. On a square it starts painting at once; on the clue strips, or with Slide on, it slides the picture. */
   private onDown = (e: FederatedPointerEvent) => {
-    if (this.drag || this.busy || this.finished || !this.puzzle || !this.frame || palmOnGlass()) return;
+    if (this.busy || this.finished || !this.puzzle || !this.frame || palmOnGlass()) return;
+    // A release that never arrived (a system gesture can swallow it) must not freeze the picture: a new first finger starts afresh.
+    if (this.drag) {
+      if (!e.isPrimary) return;
+      this.drag = null;
+      this.stroke = null;
+    }
     const p = this.touchLayer.toLocal(e.global);
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
     const base = { id: e.pointerId, x: p.x, y: p.y, sx: p.x, sy: p.y, ox: this.scrollX, oy: this.scrollY, axis: null };

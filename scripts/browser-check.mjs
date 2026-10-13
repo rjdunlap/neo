@@ -259,8 +259,8 @@ async function lanternTouchPlay() {
   await page.evaluate(() => neo.go.game('lantern-lights', 'grownup', undefined, false, 'lantern-lake')); await scene('GameScene'); await idle();
   await tapNext(); await page.evaluate(() => neo.go.land('lantern-lake')); await scene('LandScene'); await page.waitForTimeout(700);
   // A puzzle that takes only a controller opens its couch puzzle-shelf course from the island.
-  await page.evaluate(() => neo.go.game('picture-logic', 'grownup', undefined, false, 'lantern-lake')); await scene('CouchScene'); await page.waitForTimeout(800);
-  assert.ok(await page.evaluate(() => document.body.innerText.includes('Pond Pictures')), 'the couch course home shows the puzzle shelf course');
+  await page.evaluate(() => neo.go.game('pond-conga', 'grownup', undefined, false, 'lantern-lake')); await scene('CouchScene'); await page.waitForTimeout(800);
+  assert.ok(await page.evaluate(() => document.body.innerText.includes('Crumb Trail')), 'the couch course home shows the puzzle shelf course');
   await page.evaluate(() => neo.go.hub()); await scene('MapScene');
   assert.deepEqual(errors, []);
   log('Lantern Lights touch: first and last level, a free tap and undo, one hint, start over, one sticker each, portrait and leaving mid-round passed');
