@@ -2213,7 +2213,7 @@ async function batch() {
   }
 
   // Bounce Back: a child finger tracks the ball (after two misses on purpose); a grown-up finger on the left.
-  for (let level = 1; level <= 9 && (!only || only === 'bounce'); level++) {
+  for (let level = Number(process.env.BOUNCE_FROM || 1); level <= 11 && (!only || only === 'bounce'); level++) {
     await launch('bounce-back', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);

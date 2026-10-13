@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { isZoneMode, makeSequence, serveAngleFor, LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import { countFor, isZoneMode, makeSequence, serveAngleFor, LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -208,5 +208,15 @@ describe('Bounce Back', () => {
         expect(serveAngleFor(z, angles, (180 + w - 40) / 2, (90 + h - 40) / 2, g), `${w}x${h} zone ${z}`).not.toBeNull();
       }
     }
+  });
+
+  it('counts a skip rally in whole steps up to the goal times the step, and leaves other levels counting by ones', () => {
+    for (const p of PLANS.filter((x) => x.mode === 'skip')) {
+      expect(countFor(p, 1)).toBe(p.step);
+      expect(countFor(p, p.goal)).toBe(p.goal * p.step!);
+      expect(countFor(p, p.goal) % p.step!).toBe(0);
+    }
+    expect(countFor(PLANS[4], 7)).toBe(7);
+    expect(PLANS.filter((x) => x.mode === 'skip').map((x) => x.step)).toEqual([2, 5]);
   });
 });

@@ -3,7 +3,7 @@
  * A grown-up plays one side and the child the other (the pet steps in when nobody is there).
  * There's no score: bounces are counted together toward a goal.
  */
-export type BounceMode = 'solo' | 'rally' | 'together' | 'stars' | 'count' | 'color' | 'goal' | 'versus' | 'sequence';
+export type BounceMode = 'solo' | 'rally' | 'together' | 'stars' | 'count' | 'color' | 'goal' | 'versus' | 'sequence' | 'skip';
 
 export interface BouncePlan {
   mode: BounceMode;
@@ -15,6 +15,8 @@ export interface BouncePlan {
   paddle: number;
   /** On the goal levels, how much of half the table the pet's paddle can cover while the ball crosses (so a good shot always beats it). */
   keeper?: number;
+  /** On the skip-count levels, what each bounce adds to the spoken count. */
+  step?: number;
   name: string;
 }
 
@@ -28,7 +30,12 @@ export const PLANS: BouncePlan[] = [
   { mode: 'goal', goal: 5, speed: 400, paddle: 210, keeper: 0.35, name: 'Score 5 goals past a sleepy keeper' },
   { mode: 'versus', goal: 7, speed: 480, paddle: 190, keeper: 0.5, name: 'First to 7 goals: the ball gets faster with every bounce' },
   { mode: 'sequence', goal: 2, speed: 300, paddle: 190, name: 'Bounce the ball to three colors in the order the pet calls (2 times)' },
+  { mode: 'skip', goal: 10, step: 2, speed: 340, paddle: 200, name: 'Count a rally by twos to 20' },
+  { mode: 'skip', goal: 10, step: 5, speed: 340, paddle: 200, name: 'Count a rally by fives to 50' },
 ];
+
+/** The number the pet says for the `bounce`th bounce of a rally: the bounce count times the level's step (1 when it has none). */
+export const countFor = (plan: BouncePlan, bounce: number) => bounce * (plan.step ?? 1);
 
 /** Both color levels aim at the zones behind the pet's wall. */
 export const isZoneMode = (m: BounceMode) => m === 'color' || m === 'sequence';
