@@ -1170,6 +1170,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Block Tower mirror-definition worker dispatch (2026-10-13)
+
+Coordinator confirmed prediction #244 merged/deployed and worker complete; final usage reconciled once with both reset-crossing samples unknown. Fresh allowance admits docs-only definition worker `01a134f1-36e0-7d63-9e78-3c390d8cb02d`, preserving level-6 accounting/tasks. No active implementation/open PR or overlap found; unrelated dirty repair preserved. Queue records scope/admission/pending docs checks. Coordinator source link/anchor and `git diff --check` passed; no code checks or servers.
+
 ### Block Tower prediction-build worker dispatch (2026-10-13)
 
 Coordinator confirmed definition #242 merged and worker complete with docs proof; final usage reconciled once. Actual allowance admits fresh worker `01a1339d-a681-7f50-b731-e116f733870d` for defined level-5 slice only; no active implementation/open PR or overlap found. Queue records scope/admission/pending source-tier checks; unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Implementation/rules/filtered play/portrait/demo and conditional build remain the worker's responsibility; no coordinator code checks or servers.
