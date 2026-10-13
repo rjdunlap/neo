@@ -3,7 +3,7 @@
  * A grown-up plays one side and the child the other (the pet steps in when nobody is there).
  * There's no score: bounces are counted together toward a goal.
  */
-export type BounceMode = 'solo' | 'rally' | 'together' | 'stars' | 'count' | 'color' | 'goal' | 'versus';
+export type BounceMode = 'solo' | 'rally' | 'together' | 'stars' | 'count' | 'color' | 'goal' | 'versus' | 'sequence';
 
 export interface BouncePlan {
   mode: BounceMode;
@@ -27,7 +27,22 @@ export const PLANS: BouncePlan[] = [
   { mode: 'color', goal: 4, speed: 300, paddle: 200, name: 'Bounce the ball to the color the pet calls (4 times)' },
   { mode: 'goal', goal: 5, speed: 400, paddle: 210, keeper: 0.35, name: 'Score 5 goals past a sleepy keeper' },
   { mode: 'versus', goal: 7, speed: 480, paddle: 190, keeper: 0.5, name: 'First to 7 goals: the ball gets faster with every bounce' },
+  { mode: 'sequence', goal: 2, speed: 300, paddle: 190, name: 'Bounce the ball to three colors in the order the pet calls (2 times)' },
 ];
+
+/** Both color levels aim at the zones behind the pet's wall. */
+export const isZoneMode = (m: BounceMode) => m === 'color' || m === 'sequence';
+
+/** A call of the three colors in some order, each once; a second call is never the same as the first (`avoid`). `next` gives numbers in [0, 1). */
+export function makeSequence(next: () => number, avoid?: readonly number[]): number[] {
+  const order = [0, 1, 2];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(next() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  if (avoid && order.every((z, i) => z === avoid[i])) order.push(order.shift()!);
+  return order;
+}
 
 /** The three color zones down the pet's wall, top to bottom. */
 export const ZONES = ['red', 'yellow', 'blue'] as const;
@@ -234,4 +249,16 @@ export const LOB = 0.3;
  */
 export function petLob(pick: number, mode: BounceMode): number {
   return mode === 'together' || mode === 'count' ? (pick * 2 - 1) * LOB : 0;
+}
+
+/**
+ * A serve angle (from `angles`) whose ball arrives where the paddle can send it to `zone`, or null. The sequence level serves the ball
+ * so the next color in the call is always one she can make, whatever order the pet called.
+ */
+export function serveAngleFor(zone: number, angles: readonly number[], startX: number, startY: number, g: AimGeometry): number | null {
+  for (const a of angles) {
+    const arrive = fold(startY + Math.tan(a) * (g.faceX - startX), g.top, g.bottom);
+    if (reachableZones(arrive, g).includes(zone)) return a;
+  }
+  return null;
 }

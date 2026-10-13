@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import { isZoneMode, makeSequence, serveAngleFor, LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -188,5 +188,25 @@ describe('Bounce Back', () => {
     const speed = PLANS[4].speed;
     const r = paddleBounce(200 + LOB * (PLANS[4].paddle / 2), 200, PLANS[4].paddle, speed, true);
     expect(Math.abs(r.vy) / Math.abs(r.vx)).toBeLessThan(0.3);
+  });
+
+  it('calls the three colors once each, never the same call twice, and can always serve the next one', () => {
+    const rng = new Rng(3);
+    let prev: number[] | undefined;
+    for (let i = 0; i < 50; i++) {
+      const seq = makeSequence(() => rng.next(), prev);
+      expect([...seq].sort()).toEqual([0, 1, 2]);
+      if (prev) expect(seq).not.toEqual(prev);
+      prev = seq;
+    }
+    const plan = PLANS[8];
+    expect(isZoneMode(plan.mode)).toBe(true);
+    const angles = Array.from({ length: 12 }, (_, i) => -0.4 + (0.8 * i) / 11);
+    for (const [w, h] of VIEWS) {
+      const g = aim(w, h, plan);
+      for (let z = 0; z < ZONES.length; z++) {
+        expect(serveAngleFor(z, angles, (180 + w - 40) / 2, (90 + h - 40) / 2, g), `${w}x${h} zone ${z}`).not.toBeNull();
+      }
+    }
   });
 });
