@@ -1,5 +1,15 @@
 # Puddle Island verification
 
+## 2026-10-12 — Tile Pairs levels 4–6
+
+- Added 24-tile long bridge, twin terraces and crown layouts ([PR #232](https://github.com/rjdunlap/neo/pull/232)), deepening access paths and repeated-picture choices; range is now 1–6. Targets, rules, accounting, controls and couch trip levels are unchanged. The how-to's existing wording is true for the new levels.
+- Tested claim `44491f9` plus source diff, on `origin/main` `9786570`: typecheck and 36 focused Tile Pairs/registry/how-to tests passed. Rules cover 600 seeded clearing routes, 320 arbitrary-remainder recovery runs, stable levels 1–3 hashes captured before edits, supported raised tiles, layout bounds and picture counts.
+- `GAME_URL=http://localhost:5193 BROWSER_SUITE=tilepairs TILE_LEVELS=6` passed two misses, one automatic hint (repeat not recounted), pair/Shuffle undo, preserved remaining pictures, cancellation/resize, one sticker with exact 2 misses/2 help counts, and held Home returning to Lantern Lake. Level-6 portrait inspected; no page errors.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=tile-pairs FINGER_LEVELS=6` finished cleanly in 32.8s. The suite now accepts `TILE_LEVELS`, defaults to first/current-last (1/6), and checks each layout's tile count.
+- Changed local links/anchors and `git diff --check` passed. The portrait and existing isolated probes remain in ignored `test-results/`.
+- Not run: levels 4/5 in the browser, full unit/browser/couch suites, build or offline check (new levels on unchanged input; no shared runtime/assets/persistence/navigation change). Real iPad speech/touch, controllers and a person's interest in the deeper pair choices remain open.
+
+
 ## 2026-10-12 — Tile Pairs in Lantern Lake
 
 - Added `tile-pairs` grown-up levels 1–3: seeded solvable stacks of 12/20/24 tiles, touch/controller selection, counted Undo, solver-backed Hint, solvable remaining-picture Shuffle, both demonstrations, spoken support and one shell sticker ([PR #229](https://github.com/rjdunlap/neo/pull/229)). Shuffle counts as help; no timer, loss state or frozen course.
@@ -924,6 +934,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `tilepairs`/`fingerdemo` (`tile-pairs` level 6) | 2026-10-12: top-level touch regression/reward/portrait; demo clean in 32.8s; typecheck and 36 focused tests | Tile Pairs levels 4–6 / [PR #232](https://github.com/rjdunlap/neo/pull/232) | Levels 4/5 proved by rules; new-level check tier, no broader suites; real devices/person play untested |
 | `tilepairs`, `fingerdemo`/`couchgames` (`tile-pairs`), `lands` (`lantern-lake`) | 2026-10-12: first/last touch rounds with revision/help, portrait, clean finger demos, controller bot/save, seven-game land fit; build and production offline check | Tile Pairs entry / [PR #229](https://github.com/rjdunlap/neo/pull/229) | Real device/controller/speech and person replay value untested; no course |
 | `lanterntouch`, `lands`, `world`, `couchgames` (six puzzles), `fingerdemo` (`lantern-lights`) | 2026-10-13: Lantern Lights by touch, eleven lands at six bands, hatching and map, couch catalog for the six, demo clean in 12.0 s and 33.5 s; build and offline check | Lands stage B entry / [PR #226](https://github.com/rjdunlap/neo/pull/226) | iPad touch, device speech, Sudoku and the other four have no touch yet |
 | `singalong`, `fingerdemo` (`sing-along-barn`) | 2026-10-12: levels 1 and 3, one sticker with no misses or hints, song order, chosen friends, portrait, interrupted scene; demo clean in 32.2 s and 52.3 s | Sing-Along Barn first slice entry / [PR #219](https://github.com/rjdunlap/neo/pull/219) | iPad touch, device speech, a child's tapping and the tune against a printed source open |

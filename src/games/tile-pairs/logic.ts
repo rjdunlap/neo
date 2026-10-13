@@ -3,11 +3,14 @@ import type { Rng } from '../../engine/random';
 export interface Tile { x: number; y: number; z: number; kind: number }
 export type Pair = [number, number];
 export const PLANS = [
-  { name: 'Open rows · 12 tiles', rows: 3, layers: 1 },
-  { name: 'A raised square · 20 tiles', rows: 4, layers: 2 },
-  { name: 'Three layers · 24 tiles', rows: 4, layers: 3 },
+  { name: 'Open rows · 12 tiles', cols: 4, rows: 3, layers: 1, layout: 'square', kinds: 6 },
+  { name: 'A raised square · 20 tiles', cols: 4, rows: 4, layers: 2, layout: 'square', kinds: 6 },
+  { name: 'Three layers · 24 tiles', cols: 4, rows: 4, layers: 3, layout: 'square', kinds: 6 },
+  { name: 'Long bridge · 24 tiles', cols: 6, rows: 3, layers: 3, layout: 'bridge', kinds: 6 },
+  { name: 'Twin terraces · 24 tiles', cols: 6, rows: 2, layers: 3, layout: 'twins', kinds: 5 },
+  { name: 'Crown · 24 tiles, six of each picture', cols: 6, rows: 3, layers: 3, layout: 'crown', kinds: 4 },
 ] as const;
-export const planFor = (level: number) => PLANS[Math.max(0, Math.min(2, Math.floor(level) - 1))];
+export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));
 
@@ -61,10 +64,26 @@ function assign(tiles: Tile[], symbols: number[], rng: Rng): Tile[] {
 }
 export function makeBoard(level: number, rng: Rng): Tile[] {
   const plan = planFor(level), tiles: Tile[] = [];
-  for (let y = 0; y < plan.rows; y++) for (let x = 0; x < 4; x++) tiles.push({ x, y, z: 0, kind: 0 });
-  for (let z = 1; z < plan.layers; z++) for (let y = 1; y <= 2; y++) for (let x = 1; x <= 2; x++) tiles.push({ x, y, z, kind: 0 });
-  // Four copies of each picture on deeper stacks allow different matching choices.
-  const symbols = Array.from({ length: tiles.length / 2 }, (_, i) => i % 6);
+  const add = (x: number, y: number, z: number) => tiles.push({ x, y, z, kind: 0 });
+  for (let y = 0; y < plan.rows; y++) for (let x = 0; x < plan.cols; x++) {
+    // The crown's missing corners open different paths into its two raised rows.
+    if (plan.layout === 'crown' && y !== 1 && (x === 0 || x === 5)) continue;
+    add(x, y, 0);
+  }
+  if (plan.layout === 'square') {
+    for (let z = 1; z < plan.layers; z++) for (let y = 1; y <= 2; y++) for (let x = 1; x <= 2; x++) add(x, y, z);
+  } else if (plan.layout === 'bridge') {
+    for (let x = 1; x <= 4; x++) add(x, 1, 1);
+    for (const x of [2, 3]) add(x, 1, 2);
+  } else if (plan.layout === 'twins') {
+    for (let y = 0; y < 2; y++) for (const x of [0, 1, 4, 5]) add(x, y, 1);
+    for (let y = 0; y < 2; y++) for (const x of [1, 4]) add(x, y, 2);
+  } else {
+    for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
+    for (const x of [2, 3]) add(x, 1, 2);
+  }
+  // More repeated pictures deepen the choice of which matching pair to remove, without adding tiles.
+  const symbols = Array.from({ length: tiles.length / 2 }, (_, i) => i % plan.kinds);
   return assign(tiles, symbols, rng);
 }
 

@@ -69,13 +69,14 @@ async function tilePairsPlay() {
     const g = neo.scene.game;
     return { mask: g.mask, tiles: g.tiles, selected: g.selected, hinted: g.hinted, misses: g.misses, hints: g.hints, undos: g.undos, shuffles: g.shuffles };
   });
-  for (const level of [1, 3]) {
+  const levels = process.env.TILE_LEVELS?.split(',').map(Number) ?? [1, 6];
+  for (const level of levels) {
     const before = await page.evaluate(() => kit.store.data.stickers.length);
     await launch('tile-pairs', level);
     await page.waitForTimeout(500);
     const initial = await state();
-    assert.equal(initial.tiles.length, level === 1 ? 12 : 24);
-    if (level === 3) {
+    assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24][level - 1]);
+    if (level >= 3) {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(300);
       const geometry = await page.evaluate(async () => {
@@ -86,7 +87,7 @@ async function tilePairsPlay() {
         });
       });
       for (const r of geometry) { assert.ok(r.w >= 100 && r.h >= 100); assert.ok(r.x >= 0 && r.y >= 0); }
-      await screenshot('tile-pairs-portrait');
+      await screenshot(`tile-pairs-${level}-portrait`);
       await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(200);
     }
     const mismatch = await page.evaluate(async () => {

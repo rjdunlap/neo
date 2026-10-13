@@ -14,7 +14,7 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { free, freeTiles, fullMask, makeBoard, planFor, present, removePair, reshuffle, solve, type Pair, type Tile } from './logic';
 
-const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 
 /** Pictures differ by shape as well as color. The raised edge makes a covered tile read as a stack. */
 function tileArt(kind: number): Container {
