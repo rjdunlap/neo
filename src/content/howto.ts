@@ -160,12 +160,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'island-bridges': {
     goal: 'Join the islands with bridges: each island needs as many planks as its number.',
     steps: [
-      'Move between islands with the arrow keys or the stick.',
-      'Press Enter to arm an island, then push toward a neighbor to lay a plank. One or two planks may join the same pair.',
-      'Backspace arms an island to take planks off instead. Esc opens the pause menu, with a hint and a way to clear the sea.',
+      'Tap the water between two islands to lay a plank; tap again for a second. Bridges cannot cross.',
+      'Tap Take off, then a bridge, to lift a plank.',
+      'Hint shows a bridge to try; Start over clears the sea.',
     ],
     finish: 'The puzzle is done when every island has its planks and all the islands are joined.',
-    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+    note: 'A plank that is not in the answer counts as a miss, and a hint counts as help. Taking a plank off is free.',
   },
   'pond-conga': {
     goal: 'Steer a line of ducklings to each crumb of bread, in order.',
