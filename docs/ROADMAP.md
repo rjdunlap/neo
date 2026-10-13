@@ -95,6 +95,8 @@ Most sessions should build from this list; checks that need a person or a device
 
 The [first](IDEAS.md#short-ladder-audit-2026-10-09) and [second](IDEAS.md#round-two-the-longer-ladders-2026-10-10) audits identified a useful principle: deepen a game through a real next decision, rather than a bigger number, faster pace or more to remember. Many of their next levels are now built; the former list and verbose chunk-14 handoff are [archived](archive/ROADMAP-LADDER-HANDOFF-2026-10-12.md). Current rules and levels are in [GAMES](GAMES.md), and remaining slice readiness lives in each [deep dive](deep-dives/README.md).
 
+**Claim:** `codex/penguin9-tangram8`: Penguin Slide 9, two useful movable blocks in two small seeded ponds; Tangram Town 8, find/turn/check one misoriented piece. Expected game logic/index/rules, scoped how-to/voice/browser cases and README/game/roadmap/deep-dive/archive/verification docs. School maxima extend to 9/8; no band, save, course or flip changes.
+
 Choose an unclaimed, explicitly defined extension from those write-ups. Preserve stable IDs/pins, use `order` for easier appended modes, and update scoped how-to text and the ghost finger. These are the most promising remaining directions; a title alone does not make one ready to implement.
 
 | Direction | Status / next useful work | Detail |
