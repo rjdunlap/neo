@@ -28,13 +28,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation `neo-roadmap-coordinator` active hourly.
-- State: **Block Tower slice 4 definition claimed; docs only, not a gameplay build**.
-- Dispatch `block-tower-prediction-definition-20261013T035820Z`; worker `01a13369-cb51-7223-9d30-bed506a3d160`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`, title “Block Tower: prediction replay definition”. Branch `codex/block-tower-prediction-definition`, base `150dfc8`; draft PR follows.
-- Scope: [Block Tower build slices](deep-dives/block-tower.md#build-slices-in-order), item 4 only: level-5 replay/continue/completion and authored pair coverage/pre-K fit as a bounded later build. Retain developer decisions; exclude implementation, mirror reach, new levels/bands and accounting changes.
-- Fresh worker admission/scope: 50% / 87%, then 53% / 87% five-hour/weekly used, resets `1791874139` / `1792295993`; ordinary usage allowed. Conservative docs estimate 12 / 2.5 points fits actual remaining 47% / 13%; no reserve or daily cap.
-- Overlap: coordinator exempt; no other active Neo implementation chat or Block Tower branch/PR claim. Open #241 claims Number Trails, different scope. Older dirty detached repair (`94d10308`) in tracker/verification/registry tests remains untouched; inspect same-game edits again before publication. All other listed worktrees clean.
-- Proof: pending docs links/anchors and `git diff --check`; no code checks authorized or required.
-- Next action: finish this definition, verify docs, publish/merge this same PR, record closeout usage here/in worker response, then stop without dispatch or messaging.
+- State: **Block Tower slice 4 definition complete; docs-only verification passed; #242 publication/merge follows**. No gameplay implemented.
+- Dispatch `block-tower-prediction-definition-20261013T035820Z`; worker `01a13369-cb51-7223-9d30-bed506a3d160`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`, title “Block Tower: prediction replay definition”. Branch `codex/block-tower-prediction-definition`, [PR #242](https://github.com/rjdunlap/neo/pull/242), claim `c1f869e`, current source base `4df8622` (coordinator dispatch #240 integrated).
+- Scope/proof: [Block Tower build slices](deep-dives/block-tower.md#build-slices-in-order), item 4 defines held/release/result, frozen Watch again, explicit Continue and one completion after three observations; seven authored candidate pairs/28 variants, clear-only pre-K and matched-reach school third task, coverage/fairness rules and later-build acceptance. Developer decisions and actual child/device fit remain open. Expected docs-only files: deep dive, tracker, queue and verification; no mirror reach/new levels/bands/accounting changes.
+- Admission by coordinator at 2026-10-13 03:58:20 UTC: **49% / 86%** used, resets `1791874139` / `1792295992`; estimate **12 / 2.5 points**. Worker first **50% / 87%**, scope/pre-edit **53% / 87%**, before docs verification/publication **54% / 87%**. Five-hour reset unchanged; weekly `1792295993` then `1792295992` (1s drift). Ordinary usage allowed throughout. Aggregate admission→pre-publication +5 five-hour / +1 weekly points; not exact task cost. Final after-commit reading in worker response, carry once without overhead-only commit.
+- Docs proof: checked new local links/anchors and `git diff --check` on claim `c1f869e` plus definition diff; reviewed canonical pair arithmetic against existing `topples`, not an automated gameplay proof. No source/scripts/public/tests changed. Typecheck/unit/build/browser/demo/offline **not run** (docs-only tier); later build owes those proportionate checks. Browser coverage evidence unchanged.
+- Overlap: no other active Neo implementation chat; coordinator exempt. Open #241 is Number Trails, different slice. Older detached dirty tracker/verification/registry repair remains untouched. Refreshed origin and PRs before publication; dispatch docs are in source base. No session servers started.
+- Previous height slice #218 merged/deployed; aggregate closeout 35% / 79%, reset `1791856034` / `1792295993`, already reconciled by coordinator. No unchanged gameplay proof rerun.
+- Next action: confirm #242 merge/publication and carry final usage once, then release this definition worker. A separately admitted later build may implement defined slice 4; mirror 6 remains define, 7–9/accounting/bands remain decisions. Worker stops without dispatching or messaging.
 
 ## Usage observations
 
@@ -66,7 +67,7 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-12 | Block Tower heights / [#218](https://github.com/rjdunlap/neo/pull/218), dispatch `block-tower-heights-20261012T235249Z` | Existing interaction | 24% → 35% / `1791856034` | 77% → 79% / `1792295992` → `1792295993` | Estimate 15 / 2.5 points | Merged #218; final worker closeout around 00:00:25 UTC Oct 13. Aggregate five-hour 11; weekly unknown due identity drift, apparent 2; reconciled once |
 
-| 2026-10-13 | Block Tower prediction definition, dispatch `block-tower-prediction-definition-20261013T035820Z` | Docs only | 49% → pending / `1791874139` | 86% → pending / `1792295992` | Estimate 12 / 2.5 points | Fresh worker `01a13369-cb51-7223-9d30-bed506a3d160` admitted; definition/proof pending |
+| 2026-10-13 | Block Tower prediction definition / [#242](https://github.com/rjdunlap/neo/pull/242), dispatch `block-tower-prediction-definition-20261013T035820Z` | Docs only | 49% → 54% / `1791874139` | 86% → 87% / `1792295992` (intermediate 1s drift) | Estimate 12 / 2.5 points | Definition complete/docs verified; publication follows. Aggregate endpoints +5 / +1; final after-commit reading in worker response |
 
 ## Fresh-worker dispatch and handoff
 
