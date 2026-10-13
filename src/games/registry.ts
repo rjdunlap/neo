@@ -170,22 +170,18 @@ export const GAMES: GameModule[] = [
   habitatHelpers,
   fillDump,
   readDo,
-];
-
-export const gameById = (id: string) => GAMES.find((g) => g.id === id);
-
-/**
- * Games made for one or two grown-ups on the couch route and nowhere else: they are not in `GAMES`, so no place, shelf,
- * favorite, parent-panel level picker or sticker book on the child's island ever lists them, and `go.game` cannot open them.
- * Couch play looks games up with `couchGameById`, which knows both lists.
- */
-export const GROWNUP_GAMES: GameModule[] = [
-  sudokuGarden,
   lanternLights,
+  sudokuGarden,
   pictureLogic,
   wordSearch,
   islandBridges,
   pondConga,
 ];
 
-export const couchGameById = (id: string) => gameById(id) ?? GROWNUP_GAMES.find((g) => g.id === id);
+export const gameById = (id: string) => GAMES.find((g) => g.id === id);
+
+/** Whether the island's own scene can play a game: it takes touch unless the module says it takes only a controller. */
+export const playsByTouch = (mod: Pick<GameModule, 'inputs'>) => !mod.inputs || mod.inputs.includes('touch');
+
+/** Couch play looks games up here too. The six grown-up puzzles are island games now (band `grownup`), so there is one list. */
+export const couchGameById = gameById;

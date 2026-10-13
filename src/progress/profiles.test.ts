@@ -98,8 +98,9 @@ describe('age to band', () => {
     expect(band(3)).toBe('preschool');
     expect([4, 5].map(band)).toEqual(['prek', 'prek']);
     expect([6, 7, 8].map(band)).toEqual(['school', 'school', 'school']);
-    // 9 to 12 stay at the top of Wonder Woods; 13 and over have no band of their own until stage 3.
-    expect([9, 12, 13, 40, 90].map(band)).toEqual(['school', 'school', 'school', 'school', 'school']);
+    // 9 to 12 stay at the top of Wonder Woods; 13 and over are grown-ups.
+    expect([9, 12].map(band)).toEqual(['school', 'school']);
+    expect([13, 40, 90].map(band)).toEqual(['grownup', 'grownup', 'grownup']);
     expect(band(NaN)).toBe('lap');
   });
 

@@ -17,7 +17,7 @@ import {
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 
 /** One soft color for each number, so a bed can be read at a glance as well as by its digits. */
 const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white'];
@@ -678,7 +678,8 @@ export const sudokuGarden: GameModule = {
   titleLine: 'game.sudoku-garden',
   region: 'puzzle-peaks',
   skills: ['logic', 'deduction', 'planning'],
-  bands: ['school'],
+  bands: ['grownup'],
+  inputs: ['controller'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

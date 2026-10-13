@@ -19,7 +19,7 @@ import {
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 
 const PAPER = 0xfffdf6;
 const GRID_LINE = 0xb9b0a0;
@@ -565,7 +565,8 @@ export const pictureLogic: GameModule = {
   titleLine: 'game.picture-logic',
   region: 'puzzle-peaks',
   skills: ['logic', 'deduction', 'patterns'],
-  bands: ['school'],
+  bands: ['grownup'],
+  inputs: ['controller'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

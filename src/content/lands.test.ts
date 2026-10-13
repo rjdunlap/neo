@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CRITTERS } from '../art/critter';
 import { computeView } from '../engine/view';
-import { GAMES, GROWNUP_GAMES } from '../games/registry';
+import { GAMES } from '../games/registry';
 import { BANDS, bandRank, lowestBand, playBand, type Band } from '../progress/bands';
 import {
   forAgeOrYounger,
@@ -50,15 +50,16 @@ describe('lands', () => {
     expect(new Set(listed).size).toBe(listed.length);
     expect([...listed].sort()).toEqual(GAMES.map((g) => g.id).sort());
     for (const g of GAMES) expect(landOf(g.id), g.id).toBeDefined();
-    for (const g of GROWNUP_GAMES) expect(landOf(g.id), g.id).toBeUndefined();
   });
 
-  it('each have an id, a spoken line, a host and a game for the youngest', () => {
+  it('each have an id, a spoken line, a host and a game for the youngest (Lantern Lake: for the grown-up)', () => {
     expect(LANDS.map((l) => l.id)).toEqual([...LAND_IDS]);
     for (const land of LANDS) {
       expect(SCRIPT[land.line], land.id).toBeDefined();
       expect(['juniper', 'hazel', ...Object.keys(CRITTERS)], land.id).toContain(land.host.kind);
-      expect(visibleIn(land, 'lap', GAMES).length, land.id).toBeGreaterThan(0);
+      // Lantern Lake holds only grown-up games: for a child its signpost is the way in.
+      if (land.id === 'lantern-lake') expect(olderIn(land, 'lap', GAMES).length, land.id).toBeGreaterThan(0);
+      else expect(visibleIn(land, 'lap', GAMES).length, land.id).toBeGreaterThan(0);
     }
   });
 

@@ -1,4 +1,4 @@
-export type Band = 'lap' | 'toddler' | 'preschool' | 'prek' | 'school';
+export type Band = 'lap' | 'toddler' | 'preschool' | 'prek' | 'school' | 'grownup';
 
 export interface BandInfo {
   id: Band;
@@ -11,12 +11,13 @@ export const BANDS: BandInfo[] = [
   { id: 'toddler', label: 'Toddler', ages: '2 years' },
   { id: 'preschool', label: 'Preschool', ages: '3 years' },
   { id: 'prek', label: 'Pre-K', ages: '4–5 years' },
-  { id: 'school', label: 'Early school', ages: '6 years and up' },
+  { id: 'school', label: 'Early school', ages: '6–12 years' },
+  { id: 'grownup', label: 'Grown-up', ages: '13 years and up' },
 ];
 
 export const bandInfo = (id: Band): BandInfo => BANDS.find((b) => b.id === id) ?? BANDS[0];
 
-/** Where a band sits on the ladder from lap (0) to early school. */
+/** Where a band sits on the ladder from lap (0) to grown-up. */
 export const bandRank = (band: Band) => BANDS.findIndex((b) => b.id === band);
 
 /**

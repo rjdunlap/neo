@@ -96,6 +96,12 @@ export interface GameModule {
   /** A real-world activity that carries the same skill off the screen, for the parent zone. */
   offScreen?: string;
   hubIcon(): HubIcon;
+  /**
+   * What can play it on the island: `touch` (a finger or a mouse; the default) and/or `controller` (keys and gamepad, through
+   * `control()`). A game that lists only `controller` cannot be played in the island's `GameScene`, so the island opens its couch
+   * puzzle-shelf course instead (see `go.game`). Touch for such a game is its own slice; it adds `touch` here when it has it.
+   */
+  inputs?: readonly ('touch' | 'controller')[];
   /** The game's `create()` returns a game with `autotouch()`, so its how-to card shows the ghost finger at her level. */
   touchDemo?: true;
   /** The sticker for finishing a round, rebuilt from its seed. */

@@ -12,7 +12,7 @@ import type { LineId } from './voice-script';
  * to the land's games for bigger kids. Nothing here gates anything. A land has its own id apart from a game's
  * subject (`region`), so a later land can hold games from several subjects.
  */
-export const LAND_IDS = ['bubble-beach', 'music-mountain', 'treehouse', 'barnyard', 'counting-cove', 'cozy-village', 'rainbow-meadow', 'puzzle-peaks', 'story-grove', 'tinker-lab'] as const;
+export const LAND_IDS = ['bubble-beach', 'music-mountain', 'treehouse', 'barnyard', 'counting-cove', 'cozy-village', 'rainbow-meadow', 'puzzle-peaks', 'story-grove', 'tinker-lab', 'lantern-lake'] as const;
 export type LandId = (typeof LAND_IDS)[number];
 
 /** Who greets her in a land: a critter in a color, or one of the island's named friends. */
@@ -122,6 +122,16 @@ export const LANDS: readonly Land[] = [
     backdrop: { sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 149 },
     music: tune(113, 'pluck', 100),
     games: ['robot-path', 'bug-builder', 'sink-float', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'habitat-helpers', 'shape-buddies'],
+  },
+  {
+    // The grown-up puzzles. Every game here is for the `grownup` band, so everyone younger sees them behind the signpost.
+    id: 'lantern-lake',
+    name: 'Lantern Lake',
+    line: 'land.lantern-lake',
+    host: { kind: 'cat', color: 'purple' },
+    backdrop: { sky: [0xd9c8f2, 0xffe9c4], hills: [0xb9c8f2, 0x9ed6d8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: false, seed: 151 },
+    music: tune(127, 'bell', 72),
+    games: ['lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'],
   },
 ];
 
@@ -268,7 +278,7 @@ export function landLayout(games: number, sign: boolean, view: { w: number; h: n
   return null;
 }
 
-/** Everything on the map: the ten lands, the person's home spot and the Windy Picnic. */
+/** Everything on the map: the eleven lands, the person's home spot and the Windy Picnic. */
 export type MapSpotId = LandId | 'home' | 'picnic';
 
 /** A map spot's touch circle. Two of them never overlap, and none reaches a corner button. */
@@ -276,14 +286,14 @@ export const MAP_RADIUS = 80;
 
 /** Where each spot stands, as fractions of the map's usable rectangle, for a wide screen and an upright one. */
 const MAP_WIDE: Record<MapSpotId, [number, number]> = {
-  'music-mountain': [0.07, 0], 'puzzle-peaks': [0.37, 0], 'story-grove': [0.66, 0], 'tinker-lab': [0.95, 0],
+  'music-mountain': [0.07, 0], 'puzzle-peaks': [0.29, 0], 'story-grove': [0.51, 0], 'tinker-lab': [0.73, 0], 'lantern-lake': [0.95, 0],
   treehouse: [0, 0.5], 'cozy-village': [0.31, 0.5], home: [0.63, 0.5], barnyard: [1, 0.5],
   'bubble-beach': [0.17, 1], 'counting-cove': [0.4, 1], 'rainbow-meadow': [0.63, 1], picnic: [0.86, 1],
 };
 const MAP_TALL: Record<MapSpotId, [number, number]> = {
   'music-mountain': [0.08, 0], 'puzzle-peaks': [0.5, 0], 'story-grove': [0.92, 0],
   treehouse: [0.02, 1 / 3], home: [0.5, 1 / 3], 'tinker-lab': [0.98, 1 / 3],
-  'cozy-village': [0, 2 / 3], barnyard: [0.5, 2 / 3], 'rainbow-meadow': [1, 2 / 3],
+  'cozy-village': [0, 2 / 3], barnyard: [1 / 3, 2 / 3], 'lantern-lake': [2 / 3, 2 / 3], 'rainbow-meadow': [1, 2 / 3],
   'bubble-beach': [0.18, 1], 'counting-cove': [0.5, 1], picnic: [0.82, 1],
 };
 

@@ -13,7 +13,7 @@ import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
 import { hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, type Cell, type Conga, type Dir, type Pond } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 
 const WATER = 0xa9e0f2;
 const WATER_LINE = 0x4f9fbf;
@@ -574,7 +574,8 @@ export const pondConga: GameModule = {
   titleLine: 'game.pond-conga',
   region: 'puzzle-peaks',
   skills: ['planning', 'steering', 'sequencing'],
-  bands: ['school'],
+  bands: ['grownup'],
+  inputs: ['controller'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,

@@ -14,7 +14,7 @@ import { courseMinimum, coursePonds, isLanternCourse } from './course';
 import { allLit, footprint, hintFor, litCount, makePonds, planFor, press, type LanternPlan, type Pond } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 
 const WATER = 0x25315f;
 const WATER_LINE = 0x151d3d;
@@ -437,7 +437,8 @@ export const lanternLights: GameModule = {
   titleLine: 'game.lantern-lights',
   region: 'puzzle-peaks',
   skills: ['logic', 'planning', 'pattern-finding'],
-  bands: ['school'],
+  bands: ['grownup'],
+  inputs: ['controller'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,

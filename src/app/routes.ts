@@ -1,4 +1,5 @@
-import { gameById } from '../games/registry';
+import { FIRST_COURSE } from '../couch/courses';
+import { gameById, playsByTouch } from '../games/registry';
 import { playBand } from '../progress/bands';
 import { store } from '../progress/store';
 import type { App, Routes } from './App';
@@ -24,9 +25,15 @@ export function createRoutes(app: App): Routes {
     hatch: (quick) => void app.show(new HatchScene(app, quick)),
     land: (id) => void app.show(new LandScene(app, id)),
     game: (id, band = store.data.profile.band, story, again = false, origin, level) => {
-      // Couch-only games are not island games, so they never open here.
       const mod = gameById(id);
-      if (mod) void app.show(new GameScene(app, mod, playBand(mod.bands, band), story, again, origin, level));
+      if (!mod) return;
+      // A game that takes only a controller opens its couch puzzle-shelf course; the island's scene has no controller input yet.
+      if (!playsByTouch(mod)) {
+        const course = FIRST_COURSE[id];
+        if (course) void app.show(new CouchScene(app, course));
+        return;
+      }
+      void app.show(new GameScene(app, mod, playBand(mod.bands, band), story, again, origin, level));
     },
     picnic: (from) => void app.show(new PicnicScene(app, from)),
     stickers: () => void app.show(new StickerBookScene(app)),

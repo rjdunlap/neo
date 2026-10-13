@@ -85,6 +85,66 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: [{ to: 2, text: 'Any color is welcome in free painting.' }],
   },
+  'lantern-lights': {
+    goal: 'Light every lantern on the pond.',
+    steps: [
+      'Move from lantern to lantern with the arrow keys or the stick. The glow shows what a press would flip.',
+      'Press Enter (or the bottom button) to flip that lantern and the four beside it.',
+      'Backspace takes the last press back; it still counts. Esc opens the pause menu, with a hint and start-over.',
+    ],
+    finish: 'The pond is done when every lantern glows.',
+    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+  },
+  'sudoku-garden': {
+    goal: 'Fill the bed so every row, column and box holds each number once.',
+    steps: [
+      'Move around the bed with the arrow keys or the stick.',
+      'Press Enter on a square to open the number tray, then choose a number and press Enter again to place it.',
+      'Backspace closes the tray or takes a number back. Esc opens the pause menu, with a hint and start-over.',
+    ],
+    finish: 'The bed is done when every square holds the right number.',
+    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+  },
+  'picture-logic': {
+    goal: 'Fill the squares the numbers allow, and a picture appears.',
+    steps: [
+      'Move around the grid with the arrow keys or the stick. The numbers beside each row and column say how many squares in a row to fill.',
+      'Hold Enter and move to paint a run of filled squares; hold Backspace to cross out a run.',
+      'Esc opens the pause menu, with a hint and a way to empty the picture.',
+    ],
+    finish: 'The picture is done when every filled square matches its numbers.',
+    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+  },
+  'word-search': {
+    goal: 'Find the hidden words in a grid of letters.',
+    steps: [
+      'Move around the grid with the arrow keys or the stick.',
+      'Press Enter on a word\'s first letter, move to its last letter and press Enter again to check it.',
+      'Backspace lets go of the line you are marking. Esc opens the pause menu, with a hint and a new search.',
+    ],
+    finish: 'The search is done when every word in the list is found.',
+    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+  },
+  'island-bridges': {
+    goal: 'Join the islands with bridges: each island needs as many planks as its number.',
+    steps: [
+      'Move between islands with the arrow keys or the stick.',
+      'Press Enter to arm an island, then push toward a neighbor to lay a plank. One or two planks may join the same pair.',
+      'Backspace arms an island to take planks off instead. Esc opens the pause menu, with a hint and a way to clear the sea.',
+    ],
+    finish: 'The puzzle is done when every island has its planks and all the islands are joined.',
+    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+  },
+  'pond-conga': {
+    goal: 'Steer a line of ducklings to each crumb of bread, in order.',
+    steps: [
+      'Turn the line with the arrow keys or the stick. It paddles on by itself.',
+      'Press Enter to set off straight ahead. A bump turns the whole line about.',
+      'Esc opens the pause menu, with a hint and a way to put the line back at the start.',
+    ],
+    finish: 'The pond is done when the ducklings have gobbled every crumb.',
+    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+  },
   'sing-along-barn': {
     goal: 'Sing a short Old MacDonald by tapping: every tap is the next note, and a friend joins each verse.',
     steps: [

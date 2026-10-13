@@ -190,6 +190,11 @@ export function courseInfo(id: CourseId): CourseInfo {
   return info;
 }
 
+/** The couch course the island opens for a game that only takes a controller: its first one. A test checks each names its own game. */
+export const FIRST_COURSE: Readonly<Record<string, CourseId>> = {
+  'lantern-lights': 'lanterns', 'sudoku-garden': 'beds', 'picture-logic': 'pictures', 'word-search': 'words', 'island-bridges': 'bridges', 'pond-conga': 'conga',
+};
+
 /** "slides", "launches", "entries". */
 export const unitsOf = (info: CourseInfo) => /[^aeiou]y$/.test(info.unit) ? `${info.unit.slice(0, -1)}ies` : info.unit + (/(s|x|ch|sh)$/.test(info.unit) ? 'es' : 's');
 /** "1 slide", "3 launches". */
