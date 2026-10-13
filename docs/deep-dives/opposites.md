@@ -108,7 +108,7 @@ Windows after this ladder: lap 1–1 and toddler 1–2 and preschool 2–3 **unc
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-Both wait on [how levels are ordered for a band and whether a band's range may skip](../ROADMAP.md#waiting-on-the-developer); an easier level appended above level 4 would make "step up" run backwards for lap.
+Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built); an easier level appended above level 4 would make "step up" run backwards for lap.
 
 - **One pair, again and again.** Four flips of only big and small (or only hot and cold), the same bear each time, so a one-year-old hears "big… small… big… small". Rule test: the plan names one concept, the sides alternate, and the round has no wrong answer. Cost: a plan row and a `concept` field; no art.
 - **Any tap flips.** A whole-screen picture; a tap anywhere flips it. Rule test: every tap advances. Cost: a mode and a bot.

@@ -115,7 +115,7 @@ IDs are appended, never inserted, and a new level is easier or harder than the o
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-These are easier than level 1 or fall between levels, so they wait on [how levels are ordered and whether a range may skip](../ROADMAP.md#waiting-on-the-developer). IDs are assigned when built (13 and up).
+These are easier than level 1 or fall between levels, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (13 and up).
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |

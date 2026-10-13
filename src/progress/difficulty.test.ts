@@ -82,3 +82,28 @@ describe('an explicit order apart from the level IDs', () => {
     expect(nextLevel(0, [], ordered)).toBe(4);
   });
 });
+
+describe('an order that skips level IDs', () => {
+  // A pre-K band that keeps 3-9, then a new easy entry 13, leaving 10-12 to the school band.
+  const skipping = { min: 3, max: 13, order: [13, 3, 4, 5, 6, 7, 8, 9] };
+
+  it('steps over the left-out IDs', () => {
+    expect(stepLevel(13, 1, skipping)).toBe(3);
+    expect(stepLevel(9, 1, skipping)).toBe(9);
+    expect(stepLevel(3, -1, skipping)).toBe(13);
+    expect(nextLevelOffer(9, skipping)).toBeNull();
+    expect(levelsInOrder(skipping)).toEqual([13, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it('puts a saved or pinned level that was left out on the nearest listed ID', () => {
+    expect(nextLevel(10, [], skipping)).toBe(9);
+    expect(nextLevel(12, [], skipping)).toBe(13);
+    expect(nextLevel(11, [], { min: 1, max: 5, order: [1, 2, 4, 5] })).toBe(5);
+    expect(nextLevel(3, [], { min: 1, max: 5, order: [1, 2, 4, 5] })).toBe(2);
+  });
+
+  it('adapts along the list and keeps IDs in the history', () => {
+    expect(nextLevel(13, [round(13, 0), round(13, 0)], skipping)).toBe(3);
+    expect(nextLevel(3, [round(3, 5), round(3, 5)], skipping)).toBe(13);
+  });
+});

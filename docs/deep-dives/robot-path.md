@@ -95,7 +95,7 @@ Levels 11–14 stay at 5 × 5 so the school band's targets are never smaller tha
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-These wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-developer) and on whether a range may skip. If the cheap option is chosen (a younger band gets its own appended slice ordered easy to hard), they are ids above the school top, held by `preschool` only.
+These are placed by [`order`, which may skip IDs](../DESIGN.md) (built). If the cheap option is chosen (a younger band gets its own appended slice ordered easy to hard), they are ids above the school top, held by `preschool` only.
 
 - **Drive the robot.** No program and no play button: each arrow tap moves the robot one cell with a step sound; a star two cells away; a rock that only stops the robot gently ("oops, let us go around"). No misses are possible and the round ends on the star. Rule test: any tap sequence keeps the robot on the board and off the rocks; the star is reachable; completion needs the robot on the star. Cost: a `live` mode that skips the queue and play button, plus a bot that taps the shortest route. Mirrors Light Lab 1–2.
 - **One step, then play.** The first program: one slot, one arrow, play. A 3 × 3 board with the star one step away. Teaches "arrows go in, then press play" before any plan. Rule test: the slot limit is 1 and the shortest route is 1. No misses are likely; a wrong arrow is the normal miss.

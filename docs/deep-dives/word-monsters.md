@@ -150,7 +150,7 @@ IDs are appended, never inserted. They form a **school window of 5–16** (the l
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-All wait on [how levels are ordered and whether a band's range may skip](../ROADMAP.md#waiting-on-the-developer). IDs are assigned when built (18 and up, after the school window and the grown-up levels it does not hold); a cheap order is an appended slice for the younger band, easy to hard. None adds a band, so Story Grove's fit at every band is untouched; each still runs the `lands` test.
+All are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (18 and up, after the school window and the grown-up levels it does not hold); a cheap order is an appended slice for the younger band, easy to hard. None adds a band, so Story Grove's fit at every band is untouched; each still runs the `lands` test.
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -117,7 +117,7 @@ Sketches, not levels: **three bathers in order** ("the pig first, then the duck"
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-These are easier than levels that exist, or fall between them, so they wait on [how levels are ordered and whether a range may skip](../ROADMAP.md#waiting-on-the-developer). IDs are assigned when built (14 and up).
+These are easier than levels that exist, or fall between them, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (14 and up).
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -150,7 +150,7 @@ IDs are appended, never inserted. They form a **school window of 3–13** (the l
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-Both open a younger band, so they wait on [how levels are ordered and whether a band's range may skip](../ROADMAP.md#waiting-on-the-developer). IDs are assigned when built (14 and up). A cheap order is an appended slice for the younger band, easy to hard. Each adds `lap` or `toddler` to `bands`, so Cozy Village's fit at those bands, the README and roadmap counts, and `lands.test.ts` ("every land fits one screen at every band") are part of the slice.
+Both open a younger band, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (14 and up). A cheap order is an appended slice for the younger band, easy to hard. Each adds `lap` or `toddler` to `bands`, so Cozy Village's fit at those bands, the README and roadmap counts, and `lands.test.ts` ("every land fits one screen at every band") are part of the slice.
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |
