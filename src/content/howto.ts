@@ -171,12 +171,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'pond-conga': {
     goal: 'Steer a line of ducklings to each crumb of bread, in order.',
     steps: [
-      'Turn the line with the arrow keys or the stick. It paddles on by itself.',
-      'Press Enter to set off straight ahead. A bump turns the whole line about.',
-      'Esc opens the pause menu, with a hint and a way to put the line back at the start.',
+      'Touch the pond and lift to set the line off. It paddles on by itself.',
+      'Swipe the way you want the line to turn; one stroke can turn it twice. A swipe straight back does nothing.',
+      'A bump turns the whole line about. Hint shows the way to the next crumb; Start over puts the line back at the start.',
     ],
     finish: 'The pond is done when the ducklings have gobbled every crumb.',
-    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+    note: 'A bump counts as a miss, and a hint counts as help. Steps are not timed against you: the pace stays the same.',
   },
   'sing-along-barn': {
     goal: 'Sing a short Old MacDonald by tapping: every tap is the next note, and a friend joins each verse.',

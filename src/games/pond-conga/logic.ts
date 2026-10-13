@@ -318,3 +318,32 @@ function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
   if (!route || route.length !== lowerBound(board)) return null;
   return { ...board, route, par: route.length };
 }
+
+/** How far a finger has to travel, in logical units, before a swipe turns the line. */
+export const SWIPE = 36;
+
+/**
+ * The turn a finger's travel asks for: the way it has gone since it came down or last turned the line. Null until it has gone
+ * `reach` along one axis and clearly more along that one than the other (a slant waits to become a clear stroke).
+ */
+export function swipeDir(dx: number, dy: number, reach = SWIPE): Dir | null {
+  const ax = Math.abs(dx), ay = Math.abs(dy);
+  if (Math.max(ax, ay) < reach || Math.abs(ax - ay) < Math.max(ax, ay) * 0.25) return null;
+  return ax > ay ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3);
+}
+
+/** The cell the leader will be in after `steps` more steps of `route`, a bonk-free way on from the state `s`. */
+export function headAfter(b: Board, s: Conga, route: readonly Dir[], steps: number): Cell {
+  let state = s;
+  for (let i = 0; i < steps && i < route.length; i++) state = step(b, state, route[i]).state;
+  return state.body[0];
+}
+
+/** The same pond with only its first `n` crumbs, and the fewest-steps route for those (a prefix of a bonk-free fewest-steps route is one). */
+export function firstCrumbs(pond: Pond, n: number): Pond {
+  if (n >= pond.crumbs.length) return pond;
+  const board: Board = { cols: pond.cols, rows: pond.rows, pads: pond.pads, start: pond.start, heading: pond.heading, crumbs: pond.crumbs.slice(0, n) };
+  const route = solveRoute(board);
+  if (!route) throw new Error('no bonk-free route');
+  return { ...board, route, par: route.length };
+}

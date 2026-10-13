@@ -96,7 +96,7 @@ describe('game registry', () => {
     for (const id of REGION_IDS) expect(GAMES.some((g) => g.region === id && g.bands.includes('prek')), id).toBe(true);
   });
 
-  it('lists the grown-up games as island games for the grown-up band only, and opens the controller-only ones through the couch', () => {
+  it('lists the grown-up games as island games for the grown-up band only, and opens any controller-only one through the couch', () => {
     const ids = ['gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'];
     for (const id of ids) {
       const g = gameById(id)!;
@@ -114,8 +114,8 @@ describe('game registry', () => {
     expect(new Set(GAMES.map((g) => g.id)).size).toBe(GAMES.length);
     expect(couchGameById('penguin-slide')).toBe(gameById('penguin-slide'));
     expect(couchGameById('nope')).toBeUndefined();
-    // Every other island game takes touch.
-    for (const g of GAMES) if (!ids.includes(g.id)) expect(playsByTouch(g), g.id).toBe(true);
+    // Every island game takes touch (Pond Conga was the last that took only a controller; the route to a couch course stays for the next).
+    for (const g of GAMES) expect(playsByTouch(g), g.id).toBe(true);
   });
 
   it('plays no background music in a game where she makes the music', () => {
