@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-13 — Block Tower mirrored reach definition (docs only)
+
+- Defined [slice 5 at existing level 6](deep-dives/block-tower.md#build-slices-in-order), [PR #254](https://github.com/rjdunlap/neo/pull/254): signed table half-plane, canonical outward coordinates, reflected drop/solver/hint/bot domain and one seeded right/left side order across the original two tasks. Definition ready; implementation unbuilt.
+- Retained `(2 blocks, 4 eighths)` then `(3 blocks, 5 eighths)`, immediate stable prefixes, early reach, strict support edges, current misses/one hint per task, band/level IDs and one shell reward. No open developer decision was resolved.
+- Source audit/definition on base `7c7e17c`, claim `59195ce` plus final docs diff; read current rules, reach interaction/accounting and existing rule tests without executing or changing them. Tracker and queue identify the same definition/dispatch.
+- Checked local Markdown files/anchors and `git diff --check`; future mirror properties and filtered reach/demo/portrait checks are specified as implementation exit evidence, not claimed as passed.
+- Not run: typecheck, unit tests, build, browser, demos or offline (docs-only tier). No source, scripts, assets, tests, storage or runtime changes; no servers started. Existing device speech, iPad dragging and child-fit checks remain open.
+
 ## 2026-10-13 — Sudoku Garden by touch (Lands stage B)
 
 - Built [PR #252](https://github.com/rjdunlap/neo/pull/252): Sudoku Garden plays by touch at all six levels (square tap, number tray, Marks, Erase, Hint, Start over; targets of 64 units or more beside the bed or under it), a ghost finger, a touch how-to card and spoken line, `GameContext.demo` with `shortBed` for the demonstration. The couch layout and rules are unchanged.
@@ -1062,6 +1070,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Block Tower mirrored reach definition (docs only) | 2026-10-13: local Markdown files/anchors and diff formatting | [Slice 5 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #254](https://github.com/rjdunlap/neo/pull/254) | No gameplay evidence added; mirror implementation and device/child checks remain open |
 | `sudokutouch`, `fingerdemo` and `howto` for Sudoku Garden | 2026-10-13: both ends of the ladder by touch, 64-unit targets upright and sideways, the demonstration at 33.5 s and 32.6 s, the card fitting | [Verification entry](#2026-10-13--sudoku-garden-by-touch-lands-stage-b) | A real iPad and finger; wrong-digit miss decision open |
 | `lands`, `world` (Lands stage B follow-ups) | 2026-10-13: `lands` (key caps, the couch course's return to Lantern Lake, grown-ups' page rows) and `world` (subject cards at all six bands including Lantern Lodge) | [Verification entry](#2026-10-13--lands-stage-b-follow-ups-chunk-17) | The home path's controller-only tap and a real keyboard or controller are unchecked |
 | Discovery roadmap actions (docs only) | 2026-10-12: changed local links/anchors and diff formatting | [Action table](ROADMAP.md#discovery-actions) / roadmap-actions verification entry | No runtime changes or new gameplay evidence; action prerequisites and optional policy choices stay open |
