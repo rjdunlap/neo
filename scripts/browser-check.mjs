@@ -5074,34 +5074,68 @@ async function shortlistBatch() {
     // An owl tapped before a card is turned over just says to turn one over.
     await tap('neo.scene.game.owls[0].critter');
     assert.equal(await page.evaluate(() => neo.scene.game.owls[0].spot), -1);
+    const nestTap = '({ getGlobalPosition: () => neo.scene.game.nest.toGlobal({ x: 0, y: -120 }) })';
     let wrong = false;
     for (let t = 0; t < 60 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
       await page.waitForFunction(() => { const g = neo.scene.game; return g.finished || (!g.busy && g.turn === 'child'); }, null, { timeout: 40000 });
       if (await page.evaluate(() => neo.scene.game.finished)) break;
       await tap('neo.scene.game.deck');
       await page.waitForFunction(() => neo.scene.game.card && !neo.scene.game.busy, null, { timeout: 20000 });
-      const [best, worse] = await page.evaluate(async () => {
+      if (level === 1 && t === 1) {
+        // The owl is on a stone now: tapping it (what the old game taught) is not a miss, only a reminder to tap the stone.
+        const before = await counts();
+        await tap('neo.scene.game.owls[0].critter');
+        await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+        assert.deepEqual(await counts(), before, 'her own owl, tapped on its stone, is not a miss');
+      }
+      // Which owl moves, where it lands, a stone of another color, and (on the levels that ask) an owl that hops less.
+      const plan = await page.evaluate(async () => {
         const L = await import('/src/games/owl-walk/logic.ts'); const g = neo.scene.game; const spots = g.owls.map((o) => o.spot);
-        const best = L.farthest(g.path, spots, g.card);
-        return [best[0], g.owls.findIndex((o, i) => !best.includes(i) && o.spot < g.path.length)];
+        const mode = g.plan.mode;
+        const best = mode === 'one' ? [0] : mode === 'turns' ? [L.owlOf(g.path, spots, 0)] : L.farthest(g.path, spots, g.card);
+        const owl = best[0];
+        const worse = g.owls.findIndex((o, i) => !best.includes(i) && o.spot < g.path.length);
+        const to = L.hop(g.path, spots, owl, g.card);
+        const other = g.path.findIndex((c, s) => c !== g.card && s > spots[owl] && s !== to);
+        return { mode, owl, worse, to, home: to >= g.path.length, other, before: spots[owl] };
       });
-      if (level === 4 && !wrong && worse >= 0) {
-        // A shorter hop is a gentle miss with both numbers said; the second brings a glow on the farthest owl.
+      const stone = plan.home ? nestTap : `neo.scene.game.stones[${plan.to}]`;
+      if (plan.mode === 'choose' || plan.mode === 'farthest') {
+        const onlyOne = await page.evaluate(() => neo.scene.game.moving().length === 1);
+        if (!onlyOne) {
+          if (plan.mode === 'farthest' && !wrong && plan.worse >= 0) {
+            // A shorter hop is a gentle miss with both numbers said; the second brings a glow on the farthest owl.
+            wrong = true;
+            for (let k = 0; k < 2; k++) { await tap(`neo.scene.game.owls[${plan.worse}].critter`); await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); }
+            assert.deepEqual(await counts(), [2, 1]);
+            assert.ok(await page.evaluate((b) => neo.scene.game.owls[b].glow.visible, plan.owl));
+            await screenshot(`owl-walk-${level}`);
+          } else if (plan.mode === 'choose' && !wrong && plan.worse >= 0) {
+            // Choosing an owl is free: picking one that hops less, then changing her mind, is never a miss.
+            wrong = true;
+            await tap(`neo.scene.game.owls[${plan.worse}].critter`); await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+            assert.equal(await page.evaluate(() => neo.scene.game.selected !== null), true, JSON.stringify(await page.evaluate((w) => { const g = neo.scene.game; return { w, sel: g.selected, busy: g.busy, turn: g.turn, card: g.card, owls: g.owls.map((o) => [o.critter.x, o.critter.y, o.spot]), lastTap: g.lastTap, now: performance.now() }; }, plan.worse)));
+            assert.deepEqual(await counts(), [0, 0]);
+          }
+          await tap(`neo.scene.game.owls[${plan.owl}].critter`);
+          await page.waitForFunction((o) => neo.scene.game.selected === o, plan.owl, { timeout: 20000 });
+        }
+      } else if (level === 1 && !wrong && plan.other >= 0) {
+        // A stone of another color is a gentle miss naming what was touched; the second brings a glow on the right stone.
         wrong = true;
-        for (let k = 0; k < 2; k++) { await tap(`neo.scene.game.owls[${worse}].critter`); await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); }
+        for (let k = 0; k < 2; k++) { await tap(`neo.scene.game.stones[${plan.other}]`); await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); }
         assert.deepEqual(await counts(), [2, 1]);
-        assert.ok(await page.evaluate((b) => neo.scene.game.owls[b].glow.visible, best));
-        await screenshot(`owl-walk-${level}`);
+        assert.ok(await page.evaluate(() => neo.scene.game.hintGlow.visible));
+        await screenshot(`owl-walk-${level}-hint`);
       } else if (t === 1) await screenshot(`owl-walk-${level}`);
-      const before = await page.evaluate((b) => neo.scene.game.owls[b].spot, best);
-      await tap(`neo.scene.game.owls[${best}].critter`);
-      await page.waitForFunction(({ b, before }) => neo.scene.game.owls[b].spot !== before, { b: best, before }, { timeout: 20000 });
+      await tap(stone);
+      await page.waitForFunction(({ b, before }) => neo.scene.game.owls[b].spot !== before, { b: plan.owl, before: plan.before }, { timeout: 20000 });
     }
     await finished('owl-walk');
     assert.ok(await page.evaluate(() => neo.scene.game.owls.every((o) => o.spot >= neo.scene.game.path.length)), 'every owl is home');
-    assert.deepEqual(await score('owl-walk'), level === 4 ? [2, 1] : [0, 0]);
+    assert.deepEqual(await score('owl-walk'), level === 1 || level === 4 ? [2, 1] : [0, 0]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Owl Walk Home ${level}: cards turned, owls hopped to the next stone of the color${level > 1 ? ', the pet taking turns' : ''}${level === 4 ? ', shorter hops explained with a glow' : ''}, everyone home, saved score and sticker passed`);
+    log(`Owl Walk Home ${level}: cards turned, the stone tapped for the owl to hop to${level > 1 ? ', the pet taking turns' : ''}${level === 1 ? ', a stone of another color explained with a glow' : ''}${level === 4 ? ', shorter hops explained with a glow' : ''}, everyone home, saved score and sticker passed`);
   }
 }
 
