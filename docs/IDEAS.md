@@ -41,6 +41,14 @@ Two additional seeds from this pass, both **proposals**:
 
 Other pilots refine existing candidates: Gear Garden, Circuit Garden, Story Theater, Secret Code maker/breaker, Row Together, Mini Golf, Pixel Flipbook and Sorting Machine. Their [first-round sketches](FAMILY-EXPERIENCE.md#new-game-and-mode-pilots-after-research) do not override existing seat, word-list, science, storage or age-band decisions.
 
+## Discovery sessions and Just Dance (2026-10-12)
+
+The [discovery study](DISCOVERY.md) researches the developer’s request for different play flows, including Just Dance’s playlist/filtered-surprise precedent. The main proposal is **Explore** and **Play** entrances to one catalog, with recent/favorite games, one compatible suggestion, visible short mixes and later personal queues. A person can stay with one game or return to the remembered land. These are routes, not new registered games, an economy or a required story.
+
+**Suggested order:** a direct Next game choice, one finite touch mix, then a combined next-game/full-intro preview. Brief results, exact-mode introduction shortcuts and automatic finite handoff remain separate product choices. No queue editor or durable save is needed to prove a three-game sequence. Current spoken support, levels/pins and ordinary per-game rewards stay intact in the first pilots; skip/reroll/preview change no progress.
+
+Examples use existing games: Little surprises (Bubble Pop, Sing-Along Barn, Fill and Dump), Look/listen/fit (Photo Safari, Sound Garden, Shape Sorter), Plan/test/make (Robot Path, Chain Reaction, Pixel Pictures), and Cozy puzzles (Tile Pairs, Gem Swap, Lantern Lights). The study states their band/input limits, first flows, useful stopping points, source limitations and future checks. The [roadmap](ROADMAP.md#next-up) sets readiness; no session implementation is claimed.
+
 ## Design lessons
 
 ### What to borrow from JumpStart and Neopets
