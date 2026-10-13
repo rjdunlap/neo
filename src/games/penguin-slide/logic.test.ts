@@ -121,13 +121,35 @@ describe('Penguin Slide ice blocks', () => {
     expect(solve(shut, shut.start).moves).toBe(-1);
   });
 
-  it('every level-6 board needs a push: with the blocks frozen like rocks the fish is out of reach or farther', () => {
-    const plan = PLANS[5];
-    expect(plan.blocks).toBeGreaterThan(0);
-    for (let seed = 1; seed <= 150; seed++) {
-      const p = makePuzzle(plan, new Rng(seed));
-      const frozen = solve({ ...p, rocks: [...p.rocks, ...p.blocks!], blocks: [] }, p.start).moves;
-      expect(frozen === -1 || frozen > p.best).toBe(true);
+  it('every block level needs a push: frozen blocks leave the fish out of reach or farther', () => {
+    for (const plan of PLANS.filter(p => p.blocks)) {
+      expect(plan.blocks).toBeGreaterThan(0);
+      for (let seed = 1; seed <= 150; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        const frozen = solve({ ...p, rocks: [...p.rocks, ...p.blocks!], blocks: [] }, p.start).moves;
+        expect(frozen === -1 || frozen > p.best).toBe(true);
+      }
     }
   });
+});
+
+// The next level combines block positioning with the existing two-fish planning rule.
+it('level 7 preserves the board size and gives two-fish routes with meaningful block moves', () => {
+  const p = PLANS[6];
+  expect([p.cols, p.rows, p.fish, p.blocks, p.soft, p.rocks, p.puzzles]).toEqual([6, 5, 2, 1, 0, 4, 2]);
+  expect(p.moves).toEqual([4, 6]);
+  for (let seed = 1; seed <= 60; seed++) {
+    const puzzle = makePuzzle(p, new Rng(seed));
+    let at = puzzle.start, have = 0, blocks = puzzle.blocks!, pushes = 0;
+    for (let step = 0; step < puzzle.best; step++) {
+      const first = solve(puzzle, at, have, blocks).first;
+      expect(first).toBeGreaterThanOrEqual(0);
+      const m = move(puzzle, at, first as Dir, blocks)!;
+      if (m.pushed) pushes++;
+      have |= eaten(puzzle, m.passed); at = m.to; blocks = m.blocks;
+      expect(solve(puzzle, at, have, blocks).moves).toBe(puzzle.best - step - 1);
+    }
+    expect(pushes).toBeGreaterThan(0);
+    expect(have).toBe(3);
+  }
 });

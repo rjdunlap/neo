@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Penguin Slide level 7: two fish and a block (2026-10-13)
+
+Built [PR #261](https://github.com/rjdunlap/neo/pull/261): two 6×5 ponds with two fish, one movable ice block, four rocks and no soft snow. Each shortest route takes 4–6 slides; freezing the block makes it longer or impossible. The next decision is where to park the block while planning for both fish. Existing tap steering, undo, solver-backed hints, unscored experiments and one sticker after both ponds are preserved. School extends from 2–6 to 2–7 without renumbering levels/pins; younger bands stay unchanged. Spoken instruction and how-to describe both fish; the woods browser case now includes 7. A frozen block course remains a later slice; existing couch courses are unchanged. Proof is in [the verification log](../VERIFICATION.md).
+
+
 ### Tangram Town robot picture (2026-10-13)
 
 Built [PR #260](https://github.com/rjdunlap/neo/pull/260): a square head, rectangular body and two triangular feet make a robot at existing levels 5 (outlines) and 6 (silhouette). Seventeen pictures now supply pools of 4–9; seeded picture choice, quarter turns, hints, drops, completion and saved levels are unchanged. Typecheck and all eight Tangram rule tests passed, covering every picture's bounds/non-overlap, level fit, seeded solvability and bot choices; an isolated pointer probe completed the robot at both levels without misses or hints and its completed-art screenshot was reviewed. More picture content remains ready; device/child fit remains open.

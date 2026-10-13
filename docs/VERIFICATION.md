@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-13 — Penguin Slide level 7: two fish and a block
+
+- [PR #261](https://github.com/rjdunlap/neo/pull/261), base `9d3eb4b`, claim `e2ec5d7` plus implementation diff: two 6×5 ponds, two fish, one movable block, four rocks, no soft snow and 4–6 shortest slides. School maximum 7; younger windows and saved IDs/pins unchanged.
+- Typecheck, focused Penguin/how-to tests (26 passed), and production build passed. Rules cover all plans/seeds, disjoint objects, shortest solutions, useful block pushes (frozen blocks worsen or prevent completion), hints and actual ghost-finger tap directions; new top-level test collects both fish with decreasing solution distance and a push.
+- `GAME_URL=http://localhost:5198 BROWSER_SUITE=woods WOODS_ONLY=penguin FROM_LEVEL=7 TO_LEVEL=7` passed: tap steering, bumps, pushes, wandering/one hint, undo, both ponds, saved result and sticker, no page errors.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=7` passed cleanly in 19.8 demo seconds. Portrait `test-results/browser/penguin-slide-7-portrait.png` reviewed: block/fish/rocks and undo clear of pet/corner buttons.
+- Local Markdown file links and `git diff --check` passed; session server stopped after checks. Not run: full local units, world, couchcourses or offline (existing interaction, no navigation/save/asset changes). Real iPad taps, device speech and child planning remain open.
+
+
 ## 2026-10-13 — Tangram Town robot picture
 
 - [PR #260](https://github.com/rjdunlap/neo/pull/260), base `eca0d43`, claim `7adc8b1` plus implementation diff: robot at existing levels 5–6, seventeen pictures across pools of 4–9. Content/level description only; interaction, bands and saves preserved.
@@ -1107,6 +1116,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Penguin Slide 7 (`woods`, `fingerdemo`) | 2026-10-13: two-fish block planning, undo/hint, complete round/sticker, clean 19.8 s demo and portrait | [Verification entry](#2026-10-13--penguin-slide-level-7-two-fish-and-a-block) / [PR #261](https://github.com/rjdunlap/neo/pull/261) | Actual iPad taps, speech and child planning open |
 | Tangram Town robot content | 2026-10-13: typecheck, 8 Tangram rules, isolated pointer completion at levels 5–6 and completed-art screenshot | [Verification entry](#2026-10-13--tangram-town-robot-picture) / [PR #260](https://github.com/rjdunlap/neo/pull/260) | Content only; device/child fit open |
 | Block Tower mirrored reach definition (docs only) | 2026-10-13: local Markdown files/anchors and diff formatting | [Slice 5 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #254](https://github.com/rjdunlap/neo/pull/254) | No gameplay evidence added; mirror implementation and device/child checks remain open |
 | `picturetouch`, `fingerdemo`, `howto`, `couchgames`/`couchpictures` for Picture Logic | 2026-10-13: both ends of the ladder by touch, sliding with pinned clues, 64-unit targets upright and sideways, the demonstration at 13 to 20 s, the card fitting, the couch layout unchanged | [Verification entry](#2026-10-13--picture-logic-by-touch-lands-stage-d) | A real iPad and finger; the edge-slide feel; stray-fill miss decision open |
