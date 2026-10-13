@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-12 — Family experience and roadmap design review (docs only)
+
+- Reviewed the roadmap, idea notebook, inventory, deep-dive procedure, relevant navigation/art/input code and retained screenshots against `origin/main` `f7ef80f` plus this documentation diff. Three parallel read-only design audits covered catalog range, navigation/levels and visual/game feel.
+- Added [the family experience review](FAMILY-EXPERIENCE.md): experience/age matrices, discovery and mode-gallery definitions, six visual/feel pilots, connected-story/shared-role proposals, sixteen unclaimed research sessions and ten candidate/mode sketches. Primary learning, creative-play, accessibility and interface sources are linked with their limits; this is design reasoning, not a learning-outcome claim.
+- Roadmap chunks 19–24 introduce bounded quality/research work without changing scheduler policy, existing claims or developer decisions. Refreshed current gap coverage, README totals and stale architecture statements; expanded the deep-dive template to cover pleasure, feedback, variety and person questions. Preserved the former long ladder/handoff text in [the archive](archive/ROADMAP-LADDER-HANDOFF-2026-10-12.md).
+- Checked local Markdown files/anchors and `git diff --check`; all changed/new-document local references passed. Cross-checked the README totals against the registry and the five explicit controller-only modules. Independent review corrected return-to-origin, band-bounded galleries, target-size wording and input-support claims.
+- Not run: typecheck, unit tests, build, browser, demos or offline checks (docs-only tier). No implementation, assets, saved data, game levels or runtime contracts changed; no servers started. Retained screenshots are style/layout references, not a fresh visual playtest.
+- Open: each proposed slice's definition/implementation, existing product decisions, actual iPad touch/speech, controllers and family enjoyment. No full game deep dive was claimed or marked designed by this review.
+
 ## 2026-10-12 — Block Tower level-5 prediction replay and authored pairs
 
 - [PR #244](https://github.com/rjdunlap/neo/pull/244), dispatch `block-tower-prediction-20261013T045450Z`: seven authored pairs/28 variants, clear-only pre-K and school matched-reach third observation; frozen Watch again, explicit Continue, three unscored observations and exactly one shell reward. IDs/bands/sticker snapshots preserved.
@@ -1000,6 +1009,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Family experience / roadmap review (docs only) | 2026-10-12: changed/new local Markdown links/anchors, registry-to-document count check and diff check | [Design review](FAMILY-EXPERIENCE.md) / family experience verification entry | No fresh gameplay or device evidence; research sessions and product proposals remain open |
 | `numbertrails`, `fingerdemo` (`number-trails`) | 2026-10-13: levels 1 and 3 (wandering drags give two misses and one hint, the count, waking from a bigger group), portrait, one sticker per round; demo clean in 5.1 s and 8.7 s; typecheck, build, unit tests | Number Trails entry / [PR #241](https://github.com/rjdunlap/neo/pull/241) | Interim numeral forms unchecked against a publisher's chart; no iPad, device speech or child play |
 | Block Tower prediction definition (docs only) | 2026-10-12: new local links/anchors and diff check | [Slice 4 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #242](https://github.com/rjdunlap/neo/pull/242) | No gameplay evidence added; implementation and child/device fit remain open |
 | `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |

@@ -17,6 +17,10 @@ Learning or developmental references, if the game teaches a school skill. Links 
 
 Which ideas fit Puddle Island's rules, and why the others do not. The game's long-term arc across the bands.
 
+## Experience and presentation
+
+The first action a player can attempt without an adult supplying the answer; what makes that action pleasurable; touch-down feedback, the consequence and the return to readiness; and a concrete code-drawn art or synthesized sound example. Explain what can vary on replay without changing the rule. Separate reasoning from reading, memory and motor precision. Describe supported completion and a comfortable stopping/replay path. Where useful, give each co-player a meaningful role and retain a solo option. List the questions that need an actual person/device observation rather than a bot. The [family experience review](../FAMILY-EXPERIENCE.md) provides examples, not additional mandatory systems.
+
 ## Proposed ladder
 
 ### Fresh content inside existing levels
@@ -28,7 +32,9 @@ Which ideas fit Puddle Island's rules, and why the others do not. The game's lon
 
 ### Younger-band openings
 
-### Levels below level 1 (waiting on the level-order decisions)
+### Easier entries and levels between existing ones
+
+Append stable IDs and place them with the built `order`/`entryLevels` support. Identify any remaining band, content, accounting or device decisions; do not silently renumber saves or infer that the former level-order blocker still exists.
 
 ### Left out on purpose
 

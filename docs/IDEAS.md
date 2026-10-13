@@ -15,7 +15,7 @@ How to use it:
 
 | Where | What is there |
 | --- | --- |
-| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | (Number Trails, Sing-Along Barn, Read & Do first slice and Fill and Dump are built; its pour slice is on the [roadmap](ROADMAP.md#next-up)) |
+| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | Number Trails, Sing-Along Barn, Read & Do and Fill and Dump have built first slices, including pouring; further depth stays on the [roadmap](ROADMAP.md#next-up) |
 | [Sketch for the next one to build](#sketch-for-the-next-one-to-build) | Memory Match 10–12 |
 | [Fun and arcade review](#fun-and-arcade-review-2026-10-09) | Lander and Drift, a real-time grown-up game; waits on a scoring decision |
 | [Flash portals, cozy and brain games](#flash-portals-cozy-and-brain-games-2026-10-11) | Twenty-four proposals and three seeds for parents and older children (Mix & Make, Sort Four, Islands and Sea, Petal Wheels, Garden Queens, Honey Hive and more), the house-rule screen for Flash-portal genres, and what could not be read |
@@ -25,6 +25,21 @@ How to use it:
 | [Round two: the longer ladders](#round-two-the-longer-ladders-2026-10-10) | Next levels for eleven longer ladders and two pre-K ceilings, with what each test asserts |
 | [Round three: more to play in every band](#round-three-more-to-play-in-every-band-2026-10-10) | Every island game: fresh content inside levels, new levels on top, and openings to a younger band |
 | [Candidates](#candidates), [Gap review proposals](#proposals) and [Extend existing games](#extend-existing-games-before-making-duplicates) | The rest; each needs its definition of ready first |
+
+## Family experience review (2026-10-12)
+
+The [family design review](FAMILY-EXPERIENCE.md) turns this notebook’s breadth into a selection plan: balance toys, making, exploration, investigation, puzzles, comfortable arcade play and meaningful shared roles. Its navigation, mode-gallery, visual/feel and connected-world proposals are on the [roadmap](ROADMAP.md#family-experience-quality-and-range). They are not built, and this pass does not claim any game or mark a full deep dive complete.
+
+Prefer its [research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) when the grown-up selects an experience gap; the existing tracker’s wave order otherwise stands. For a future slice, write down what is pleasurable about the action, what varies on replay, a meaningful choice, supported completion and what an actual person must still judge. Existing developer decisions remain authoritative.
+
+Two additional seeds from this pass, both **proposals**:
+
+| Seed | First complete round | Fit and boundary |
+| --- | --- | --- |
+| **Warm-and-Cool Dig** | Reveal a picture clue in a large patch; use visible/spoken near/far evidence to find a buried toy or friendly fossil, with unlimited reveals and a comic ending | First evaluate as Treasure Map or Peekaround Island content. Feedback works without hearing or color; guesses are exploration, not misses. Real fossil facts would need review |
+| **Cart Workshop** | Choose one wheel or load on a fixed track, run it, change that one part and compare where it stops; finish by delivering a parcel | First evaluate as Ramp Race. The model is finite and explained; do not assume the ball simulator is a vehicle or structural simulator |
+
+Other pilots refine existing candidates: Gear Garden, Circuit Garden, Story Theater, Secret Code maker/breaker, Row Together, Mini Golf, Pixel Flipbook and Sorting Machine. Their [first-round sketches](FAMILY-EXPERIENCE.md#new-game-and-mode-pilots-after-research) do not override existing seat, word-list, science, storage or age-band decisions.
 
 ## Design lessons
 
@@ -894,7 +909,7 @@ On Wii Party (pages 2 to 4):
 
 ## World variety: animals, pets and environments
 
-Today the pet is one creature design (`pip`) in nine colors, which she names (`petSpec()` is `CRITTERS.pip` plus the saved color). Seven more designs already exist as friends in games (cow, duck, pig, cat, bear, dog, bunny, in `src/art/critter.ts`), and the island has five places drawn with `Backdrop` styles. More variety is cheap where it reuses those pieces and costly where it needs new anatomy. Everything here is a proposal; none of it may add care, decay or a currency.
+Today the saved companion is Pip with a chosen color and name (`petSpecFor()` is `CRITTERS.pip` plus the saved color); profiles do not yet select a species. Other critter designs already exist as friends in games (cow, duck, pig, cat, bear, dog and bunny, in `src/art/critter.ts`), and the themed lands use code-drawn backdrops and props. More variety is cheap where it reuses those pieces and costly where it needs new anatomy. Everything here is a proposal; none of it may add care, decay or a currency.
 
 | Idea | What it adds | Smallest useful version | Effort |
 | --- | --- | --- | --- |
@@ -902,7 +917,7 @@ Today the pet is one creature design (`pip`) in nine colors, which she names (`p
 | **More kinds** (needs new anatomy) | Fox, frog, owl, penguin (already drawn in Penguin Slide), turtle, hedgehog, sheep, mouse, otter, deer, panda, raccoon, koala, elephant, lion and monkey as friends first, pets later | `CritterSpec` handles ears, snouts, wings, horns, tuft, whiskers and spots; most new kinds also need a tail, and some a shell, spikes, a trunk or a beak. Draw two kinds with one new feature each before a list | M each |
 | **Patterns and small changes** | Spots, stripes or a scarf on the same creature, free and changeable, so two pets of one kind differ | A `pattern` choice at hatching and in the treehouse; no unlocks | S–M |
 | **A couch companion** | Her own pet in couch play (a kind, a color and the name she already types), beside the child's | Stored in the couch save, bounded; it cheers on the finale and the shelf, takes the second seat in Bounce Back and the second cursor in co-op. Never touches the child's pet | S–M |
-| **Habitat kits** | A new environment is a bundle: a backdrop style, three or four critters, a prop set and music, then a few existing games dressed in its cast | Candidates: **Tide Pools and Reef** (crab, starfish, octopus, fish), **Rainforest Canopy** (monkey, parrot, sloth, frog), **Desert Oasis** (camel, fennec fox, lizard), **Savanna** (giraffe, zebra, elephant), **Bamboo Hill** (panda, red panda, crane) and **Night Garden** (owl, hedgehog, fireflies). Each should attach to a zone already proposed in the roadmap rather than become a seventh place; pick one and prove a cast swap in two games | M per kit |
+| **Habitat kits** | A new environment is a bundle: a backdrop style, three or four critters, a prop set and music, then a few existing games dressed in its cast | Candidates: **Tide Pools and Reef** (crab, starfish, octopus, fish), **Rainforest Canopy** (monkey, parrot, sloth, frog), **Desert Oasis** (camel, fennec fox, lizard), **Savanna** (giraffe, zebra, elephant), **Bamboo Hill** (panda, red panda, crane) and **Night Garden** (owl, hedgehog, fireflies). Each should attach to a zone already proposed in the roadmap rather than add an unplanned map destination; pick one and prove a cast swap in two games | M per kit |
 | **Couch backdrops** | Each course and shelf screen gets a scene instead of plain paper | `Backdrop` styles are code-drawn and cheap: a daylight frozen pond for Pond Practice, an aurora night for the Five Ponds, a sunrise sky for Cloud Hopper, lantern night for the shelf | S |
 | **Favorites on the map** (proposal, after the lands) | Her hearted games one tap from the map, not only on the home spot's shelf | A heart-shaped signboard spot on the map, or the shelf in the map's sky, launching at `playBand` with the map as the origin. Needs room among the twelve spots and a reason (does she use the hearts at all?) | S |
 | **A host who knows her** (proposal, after the lands) | A land's host says her name and remembers what she played there last ("Want to stack the tower again?") | Spoken lines with `{name}` and a game title; the host's suggestion already prefers unplayed and long-unplayed games (`suggest` in `src/content/lands.ts`). No obligation, no "you have not visited" | S |
@@ -970,13 +985,13 @@ A third show could try three new gestures before any becomes a full game: **Wind
 
 ### Gestures the island does not use yet
 
-Current games tap, drag, hold a basket, pull back, draw, draw closed loops, steer and use two hands at once. Sesame Workshop's touch research found tapping and dragging easiest for preschoolers and pinching and flicking hard, so try each new gesture as a small scene before building a game around it.
+Current games tap, drag, hold a basket, pull back, draw, draw closed loops, steer, pour and use two hands at once. Pouring and loops below are built starting points; the other rows are proposed experiments. Sesame Workshop's touch research found tapping and dragging easiest for preschoolers and pinching and flicking hard, so try each new gesture as a small scene before building a game around it.
 
 | Gesture | What it feels like | First scene | Fuller activity | Care points |
 | --- | --- | --- | --- | --- |
 | **Crank** (a circular drag) | Winding a music box | Wind the Music Box | Gear Garden | Measure the angle swept around the crank's center, not speed; any direction counts at first; a handle at least 100 units across; cancel cleanly when the finger leaves |
 | **Press and hold** | Filling a balloon; a slow breath | Balloon Breath | Belly Breaths | No required duration; letting go always does something pleasant; keep palm rejection |
-| **Pour** (drag to tilt) | Tipping a jug | Fill the Cups | Pour and Fill | The jug tilts with its handle, not the device; the flow slows near the line; overfilling spills into a tray that can be poured back |
+| **Pour** (drag to tilt, built) | Tipping a jug | Fill and Dump’s pour mode | Capacity-comparison modes | The jug tilts with its handle, not the device; the flow slows near the line; overfilling spills into a tray that can be poured back |
 | **Loop** (a closed drawing) | Lassoing | Loop the Fireflies | Lasso Loops (built) | Close generously (Lasso Loops always joins the end back to the start); count things whose centers fall inside |
 | **Sliding pitch** | Singing higher and lower | Sing Higher | A Sound Garden mode | Snap to pentatonic steps from `notes.ts` and show the step reached |
 | **Baton** (a rhythmic up-and-down drag) | Conducting | Wake the Band | Little Conductor | Take the tempo from turnarounds with heavy smoothing; never require a precise beat |
@@ -993,45 +1008,45 @@ Grouping by the underlying mechanic shows overlaps and possible reuse. Inspect e
 | Steer a leader or a crowd | Duckling Parade, Roundup, Little Helpers | Munch Maze, Lane Hop, Follow the Leader, Island Taxi | Trail-following and flee steering from Duckling Parade and Roundup |
 | Catch what falls | Egg Catch | Juice Squish | Egg Catch's slow falls, held-finger basket and gates |
 | Aim and bounce (physics) | Bouncy Launch, Peg Garden, Bounce Back, Bumper Garden | Mini Golf, Pin Roll, Roll Ball, Block Topple, Snack Drop, Keepy Uppy | `engine/ball.ts`: ball, peg and wall physics with an optional ceiling and springy bumpers, and `simulate()` to preview or pick a shot |
-| Draw to control | Rainbow Fingers, Letter Trails, Dot Link, Lasso Loops | Cloud Path, Rainbow Road, Water Paths, Draw a Song | Lasso Loops' custom pointer handling; turning a drawn line into something a ball can ride |
+| Draw to control | Rainbow Fingers, Letter Trails, Number Trails, Dot Link, Lasso Loops | Cloud Path, Rainbow Road, Water Paths, Draw a Song | Lasso Loops' custom pointer handling; turning a drawn line into something a ball can ride |
 | Build and place | Bug Builder, Tangram Town, Stamp Studio, Chain Reaction, Shape Buddies (solo) | Block Builder, Shape Drop, Machine Line, Little Town Planner | Chain Reaction's sockets and deterministic replay; a grid and snap-placement helper |
 | Serve an order | Scoop Shop, Monster Munch, Mail Carrier, Pet Kitchen, Market Stall | Juice Bar, Little Farm | An order bubble and customer queue |
 | Match and sort | Color Garden, Shape Sorter, Sink or Float, Critter Sort, Critter Crossing | Trash Sort, Bug Net, Claw Catch, Fripple Orders, Snap Pairs, Shape Rollers, Sorting Machine | `drag.ts` covers most of it |
-| Rhythm and sound | Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Beat Builder, Clap the Syllables | Stomp Steps, Little Conductor, Hat Band, Sing Higher, Draw a Song | Beat-synced spawning from `music.beats()`; Sound Garden's forgiving rhythm-echo judge |
+| Rhythm and sound | Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Beat Builder, Clap the Syllables, Sing-Along Barn | Stomp Steps, Little Conductor, Hat Band, Sing Higher, Draw a Song | Beat-synced spawning from `music.beats()`; Sound Garden's forgiving rhythm-echo judge |
 | Care and pretend | Splish Splash, Weather Wardrobe, Feelings Faces, Fluffy Salon, Teddy Doctor, Pet Says | Puppy Pal, Belly Breaths | Tools attached to a critter (`Critter.attach`) |
-| Grid logic | Robot Path, Penguin Slide, Secret Code, Pixel Pictures, Treasure Map, Garden Rows, Ferry Jam | Color Hop, Ice Push, Swap Match, Mossy Path, Pancake Stack, Number Munch Grid | A tile grid with undo; the solvers in Penguin Slide, Garden Rows and Ferry Jam |
-| Play together | Bounce Back, Owl Walk Home, Pet Says (off screen), couch play | Match the Card, Four in a Row, Island Race, Two Friends, Shape Buddies, Raft Delivery, Snap Pairs; from the [Mario Party pass](#mario-party-and-the-family-table-2026-10-11): Row Together, Two-Knob Doodle, Tilt Together, Same Pick, Make One for Me, Island Party Board, Skip Rope | Bounce Back's grown-up paddle with the pet standing in; Owl Walk Home's turn-taking with the pet; the [seat contract](#the-seat-contract) |
+| Grid logic | Robot Path, Penguin Slide, Secret Code, Pixel Pictures, Treasure Map, Garden Rows, Ferry Jam, the Lantern Lake puzzles | Color Hop, Ice Push, Swap Match, Mossy Path, Pancake Stack, Number Munch Grid | A tile grid with undo; the solvers in Penguin Slide, Garden Rows and Ferry Jam |
+| Play together | Bounce Back, Owl Walk Home, Pet Says (off screen), couch play | Match the Card, Four in a Row, Island Race, Two Friends, Shape Buddies shared roles (solo is built), Raft Delivery, Snap Pairs; from the [Mario Party pass](#mario-party-and-the-family-table-2026-10-11): Row Together, Two-Knob Doodle, Tilt Together, Same Pick, Make One for Me, Island Party Board, Skip Rope | Bounce Back's grown-up paddle with the pet standing in; Owl Walk Home's turn-taking with the pet; the [seat contract](#the-seat-contract) |
 | Short shows and remixes | Quick Tricks (two shows), Rhythm Neighbors | A third Quick Tricks show, complementary jobs, Island Toy Fair | Contained scenes with clear prompts and a shared ending |
 | Investigate and revisit | Story Steps, the Windy Picnic | Lost and Found, Story Theater, Clue Paws, Mother Goose Muddle, Postcard Detective | The picnic's resumable steps and journal; extend game results only as needed |
 | Make and keep | Sticker placement, treehouse creations (Stamp Studio, Rainbow Fingers, Pixel Pictures, Song Maker), the discovery journal | Story Weaver, more journal sources, a saved-project shelf | Bounded records in `src/content/creations.ts` and `journal.ts`, normalized placement, migration and backup |
-| Turn, pour and fill | None yet | Gear Garden, Pour and Fill, the third Quick Tricks show | An angle-swept crank helper and a fill level |
+| Turn, pour and fill | Fill and Dump, including its pour mode | Gear Garden, capacity comparison, the third Quick Tricks show | The built pour interaction first; a new circular-drag crank only when a game needs it |
 | Stack and topple | Block Tower | Wobble Works | An explicit support rule (Block Tower's `topples`), not `engine/ball.ts` |
 
 ## Gaps in the catalog
 
-Areas and interactions no game covers yet, read from each game's skills and levels.
+Current coverage and remaining opportunities, refreshed against the registered games on 2026-10-12. A built first slice does not mean the whole area is covered. Dated audits below preserve their original findings; use [GAMES](GAMES.md) for current level details and the [family experience matrix](FAMILY-EXPERIENCE.md#a-catalog-with-many-reasons-to-play) for variety beyond subjects.
 
-| Area | Covered now | Still missing | Candidates |
+| Area | Covered now | Still missing or worth deepening | Candidates / research |
 | --- | --- | --- | --- |
-| **Lap play** | 39 games at Puddle Lagoon, mostly tapping to see something happen; Block Tower (stacking and knocking down) and Pet Says (copying actions) | Pretend use of everyday things, songs she already knows (Song Maker makes random songs; the CDC lists these kinds of skills around 15–18 months), filling and emptying containers (Fill and Dump, built) | Brown Bear Parade, Keepy Uppy, Color Train, [Sing-Along Barn](#gap-review-2026-10-09) |
-| **Measurement** | Length (Inchworm Measure), weight (Seesaw Balance), time (Clock Tower), money (Market Stall) | Capacity (Fill and Dump's counting levels are built; its pour slice is not), and estimating before measuring | Pour and Fill, Guess the Pumpkin, Count the Peekers |
-| **Number** | Counting, number bonds to ten, a number line to 20, fair shares with leftovers, tens and ones to 39 and equal groups (Lasso Loops) | A number shown as one thing that splits and joins; place value past 39; arrays (rows and columns) | Number Friends, Flip Ten, Number Munch Grid, [Orchard Rows](#gap-review-2026-10-09) |
-| **Shape and space** | Flat shapes, tangrams, symmetry, turning a scene, grid names | 3D shapes, views from above, and words for movement (through, around, over) | Shape Rollers, Skyline View, Bear Hunt Walk, Doghouse Directions |
-| **Science** | Floating, ramps, light, plants, dressing for the weather, balance, a marble machine, and food/water/shelter in a small habitat model | Gears and simple machines, electricity, life cycles, the moon's phases, material properties | Gear Garden, Circuit Garden, Caterpillar Week, Moon Window, Roll-a-Roll |
-| **Logic and planning** | Code-breaking, Venn sorting, a hidden rule, sliding puzzles, Latin squares, sliding blocks, picture logic, routes and loops | Recursive moves, visiting every square, working out a process from its product | Pancake Stack, Mossy Path, Machine Line, Seed Order |
-| **Literacy** | Letters, sounds, word families, rhymes, opposites, syllables, picture stories | Reading a printed word for its meaning (every prompt today is spoken), connected spoken stories, using a clue's meaning, building a sentence, retelling a known rhyme, the pet as a learner | [Read & Do](#gap-review-2026-10-09), Story Theater, Mother Goose Muddle, Story Weaver, Fripple Orders |
-| **Writing** | Capital letters and the child's name traced in stroke order (Letter Trails) | Numerals, lowercase letters | [Number Trails](#gap-review-2026-10-09) |
-| **Time beyond the clock** | O'clock to quarter past and to (Clock Tower); dressing for the weather | Days of the week, yesterday and tomorrow, months, seasons, life cycles | [Day by Day](#gap-review-2026-10-09), Caterpillar Week |
-| **Music** | Drums, step sequencing, echoes, call and response, high and low | Tempo and loudness that the child controls, instrument sounds, layering loops, sliding pitch | Little Conductor, Hat Band, Sing Higher, Draw a Song |
-| **Feelings and self-control** | Naming feelings, choosing what helps, waiting for green, moving only on "Pet says" | A calming strategy to practice | Belly Breaths |
-| **Playing together** | Bounce Back's grown-up paddle, Owl Walk Home's shared goal, couch play for grown-ups; 70 of 75 games carry a grown-up prompt, but only three give a second person a job | Puzzles where each player can do something the other can't; the child joining couch play; the [Mario Party pass](#mario-party-and-the-family-table-2026-10-11) works this gap through | Two Friends, Shape Buddies, Raft Delivery, Snap Pairs with the pet; Row Together, Same Pick, Make One for Me |
-| **Creative work that persists** | A kept picture, painting, pixel design or song in the treehouse | A kept construction, program or story, and returning to a work in progress | Story Weaver, a saved-project shelf, [Pixel Flipbook](#gap-review-2026-10-09) |
-| **Ages 8–11** | Light Lab, Secret Code, Robot Path loops, picture graphs, Chain Reaction | Logic machines, small systems with visible needs, data across several days, evidence across places; the island has no touch form of the solver-checked couch puzzles | Sorting Machine, Little Town Planner, Postcard Detective, [touch forms of the couch puzzles](#gap-review-2026-10-09) |
-| **Touch interactions** | Tap, drag, hold, pull back, draw, loop, steer, two hands | Turning a crank, holding for a while, pouring, sliding a pitch, conducting, scrubbing time | [Gestures the island does not use yet](#gestures-the-island-does-not-use-yet) |
+| **Lap play** | Anywhere bubble popping, pat-the-pet, filling/dumping, hiding, music and pretend-care toys | More distinctive consequences from imprecise touches; a reliable ending on toys such as Peg Garden; recognizable songs beyond the first tune | Existing wave-2 entries, Peg Garden dive, Sing-Along Barn’s next tune |
+| **Measurement** | Length, balance, clock time, money and Fill and Dump’s built capacity/pouring slice | Comparing different-shaped capacities, estimating then measuring, explaining a trial | Fill and Dump dive, Guess the Pumpkin, repeatable trials |
+| **Number** | Counting, number bonds, line to 20, fair sharing, tens/ones and Orchard Rows arrays | Splitting/joining one number object; equivalent representations and applied grouping beyond the first slices | Number Friends, Flip Ten, Pet Kitchen recipes |
+| **Shape and space** | Flat shapes, tangrams, symmetry, rotation, grid names and Shape Buddies solo construction | Solid shapes, overhead views, movement language, varied meaningful constructions | Shape Rollers, Peekaround Island dive, Skyline View, Shape Buddies arrangements |
+| **Science** | Floating, ramps, light, plants, balance, a marble machine and habitat needs | Fair comparisons and evidence displays; gears, circuits, life cycles, material properties | Sink or Float / Photo Safari dives, Gear Garden, Circuit Garden, Caterpillar Week |
+| **Logic and planning** | Code-breaking, sorting, sliding/Latin-square/picture/bridge puzzles, routes and loops | Explicit deduction, informative tests, editable processes and useful replay | Secret Code / Island Bridges dives, Sorting Machine, Critter Crossing informative-test mode |
+| **Literacy** | Letters/sounds, rhyme, syllables, opposites, picture narratives and Read & Do’s printed-meaning slice | Longer meaningful instructions, sentence building, authored story evidence, free storytelling and retelling | Read & Do dive, Story Theater, Mother Goose Muddle, Story Weaver |
+| **Writing** | Capital/name tracing and Number Trails’ numeral slice | Reviewed lowercase conventions, meaningful short messages, further numeral practice after play | Letter Trails’ defined ladder; Number Trails chart/device checks |
+| **Time beyond the clock** | Clock times, weather and Day by Day’s weekdays/relative-day slice | Months, seasons and life cycles with an inspectable model | Day by Day definitions, Caterpillar Week, Moon Window |
+| **Music** | Drums, sequences, call/response, high/low and Sing-Along Barn’s first familiar song | Intentional phrase composition/revision, child-controlled tempo/dynamics, instrument variety | Song Maker dive, Little Conductor, Hat Band, Sing Higher |
+| **Feelings and self-control** | Naming feelings, helpful choices, Stop and Go and Pet Says | Voluntary calming play and different plausible perspectives without one prescribed feeling | Belly Breaths, short community episodes |
+| **Playing together** | Bounce Back two-controller goals, Owl Walk Home shared turns, off-screen prompts, controller trips/face-offs; Shape Buddies is solo | Complementary roles, role swaps and useful solo helpers; co-play prompts alone do not establish multiplayer | Secret Code maker/breaker, Buddy Delivery, Row Together; existing seat decisions apply |
+| **Creative work that persists** | Kept pictures, paintings, pixel designs and songs; the journal | Kept/resumable construction, program, story or animation with bounded storage | Project shelf, Story Weaver, Pixel Flipbook; storage definitions first |
+| **Older children, teens and adults** | Deeper school puzzles, applied models and Lantern Lake; Lantern Lights, Tile Pairs and Gem Swap already support touch | More expressive, cozy, investigative and comfortable arcade experiences; touch for the remaining controller-only puzzles | Mini Golf, Story Theater, Song Maker phrases, grown-up puzzle touch slices, connected episodes |
+| **Touch interactions** | Tap, drag, hold, pull, draw, loop, steer, pour and some deliberate multi-touch | Circular crank, pitch slide, conducting and time scrub only where the action warrants them | [Gesture experiments](#gestures-the-island-does-not-use-yet); new gestures need a small pilot |
 
 ## Gap review (2026-10-09)
 
-A review of each registered game's bands, subject and level table against the [roadmap](ROADMAP.md) and the tables above, followed by web and code research on the gaps it found. Everything here is a **proposal**; the roadmap's [next-up list](ROADMAP.md#next-up) says what is chosen. The rows in [Gaps in the catalog](#gaps-in-the-catalog) were amended to match.
+A review of each registered game's bands, subject and level table against the [roadmap](ROADMAP.md) and the tables above, followed by web and code research on the gaps it found. Everything here is a **proposal**; the roadmap's [next-up list](ROADMAP.md#next-up) says what is chosen. This is a dated audit, not the current inventory. [Gaps in the catalog](#gaps-in-the-catalog) has since been refreshed as slices landed.
 
 ### What the registry shows
 
@@ -1304,9 +1319,9 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | --- | --- | --- | --- |
 | Shape Sorter (T–K · 8) | New shapes (oval, heart, star) | **Built 2026-10-10:** level 8, *The feely bag*: a spoken property clue asks her to find the matching shape ([build note](archive/COMPLETED-2026-10-09.md#shape-sorter-level-8-the-feely-bag-2026-10-10)) | — |
 | Color Garden (T–K · 7) | More things to sort | **Built 2026-10-13:** 7, *Light and dark*, light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
-| Dot Link (L–K · 6) | More dot colors and boards | — (level 6 built; see [completed work](archive/COMPLETED-2026-10-09.md#dot-link-level-6-exactly-five)) | — |
+| Dot Link (L–K · 6) | More dot colors and boards | — (level 6 built; see [completed work](archive/COMPLETED-2026-10-09.md#dot-link-level-6-exactly-five-2026-10-10)) | — |
 | Tangram Town (T–S · 6) | **Built 2026-10-10:** each level draws from a pool of 2–5 pictures (11 in all). More pictures, spoken shape names and the rest are in the [deep dive](deep-dives/tangram-town.md) | R1-later: flip a piece (the deep dive's level 9; it needs a parallelogram) | — |
-| Garden Grow (L–P · 5) | Flower kinds | **Built 2026-10-10:** levels 6, *One more than the sign*, and 7, *Two rows of three*, open a pre-K window ([build note](archive/COMPLETED-2026-10-09.md#garden-grow-levels-6-7-one-more-and-two-rows-of-three-2026-10-10)) | — |
+| Garden Grow (L–P · 5) | Flower kinds | **Built 2026-10-10:** levels 6, *One more than the sign*, and 7, *Two rows of three*, open a pre-K window ([build note](archive/COMPLETED-2026-10-09.md#garden-grow-levels-67-one-more-and-two-rows-of-three-2026-10-10)) | — |
 | Treasure Map (K–S · 5) | Maps of new places | **6, Give directions:** the pet asks the way and she chooses the arrows, turning reading directions into writing them | Preschool, at level 1 (a picture row meets a color column) |
 | Owl Walk Home (T–K · 4) | Paths and seasons | — | — |
 | Pattern Train (P–S · 12) ([deep dive](deep-dives/pattern-train.md), which supersedes this row) | A pool of car kinds (fruit, flowers, boats, sizes, turns, acting) so a level never looks the same twice | **Planned as 18, Stairs** (growing patterns), 19 Up and down and 20 Start anywhere; also 13–17 (odd car out, fix the train, same pattern in new pieces, build the same, make your own). Lap and toddler entries in the code are dead; the deep dive proposes a toddler window on level 1 with two choices | Color Train (lap) still waits on the lap-level decision |
