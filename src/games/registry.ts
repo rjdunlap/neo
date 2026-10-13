@@ -15,6 +15,7 @@ import { bubblePop } from './bubble-pop';
 import { colorGarden } from './color-garden';
 import { duckPond } from './duck-pond';
 import { jellyDrums } from './jelly-drums';
+import { singAlongBarn } from './sing-along-barn';
 import { peekabooBarn } from './peekaboo-barn';
 import { rainbowFingers } from './rainbow-fingers';
 import { shapeSorter } from './shape-sorter';
@@ -92,6 +93,7 @@ export const GAMES: GameModule[] = [
   bubblePop,
   rainbowFingers,
   jellyDrums,
+  singAlongBarn,
   peekabooBarn,
   splishSplash,
   duckPond,

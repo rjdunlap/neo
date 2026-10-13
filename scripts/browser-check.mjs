@@ -59,6 +59,55 @@ async function finished(id) {
   assert.equal(errors.length, 0, errors.join('\n'));
 }
 
+async function singBarnPlay() {
+  const tapNotes = (n) => page.evaluate(async (n) => { for (let i = 0; i < n; i++) { kit.tap(512, 300); await kit.sleep(130); } }, n);
+  const state = () => page.evaluate(() => { const g = neo.scene.game; return { idx: g.idx, total: g.song.length, phase: g.phase, singer: g.singer, order: [...g.order], placed: [...g.placed] }; });
+  // Level 1: the farm picks one animal; every tap is the next note, mashing fast still sings it, and nothing can be wrong.
+  await launch('sing-along-barn', 1);
+  const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+  let st = await state();
+  assert.deepEqual([st.phase, st.total, st.order.length], ['sing', 12 + 13, 1]);
+  await tapNotes(12);
+  st = await state();
+  assert.equal(st.idx, 12);
+  assert.equal(st.singer, st.order[0], 'the first friend comes out for the first verse');
+  await tapNotes(4); await page.waitForTimeout(700);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+  await screenshot('sing-along-barn-1-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  await tapNotes(8);
+  st = await state();
+  assert.deepEqual([st.idx, st.singer, st.placed], [24, st.order[0], []], 'one note is left of the last "O"');
+  await tapNotes(1); await finished('sing-along-barn');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
+  await launch('sing-along-barn', 3);
+  assert.equal((await state()).phase, 'invite');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(700);
+  await screenshot('sing-along-barn-3-invite-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  // A friend is touched at its body, a little above its feet.
+  for (const a of ['cat', 'cat', 'dog']) { await page.evaluate((a) => kit.tapOn(neo.scene.game.friends.get(a), 0, -66), a); await page.waitForTimeout(300); }
+  await page.waitForFunction(() => neo.scene.game.phase === 'sing' && neo.scene.game.placed.length === 2 && neo.scene.game.tapLayer.eventMode === 'static', null, { timeout: 8000 });
+  st = await state();
+  assert.deepEqual(st.order, ['cat', 'dog']);
+  assert.equal(st.total, 12 + 2 * 13);
+  assert.equal(await page.evaluate(() => ['pig', 'duck', 'cow'].some((a) => neo.scene.game.friends.get(a).visible)), false, 'the friends not asked in have left');
+  await screenshot('sing-along-barn-3-invited');
+  await tapNotes(12 + 8);
+  st = await state();
+  assert.equal(st.singer, 'cat');
+  await tapNotes(5);
+  st = await state();
+  assert.deepEqual([st.idx, st.singer], [25, 'dog'], 'the first verse is over: cat goes back to the bottom row and dog comes out');
+  await tapNotes(st.total - st.idx - 3);
+  // Leave on the last notes: the finale must not fire after the scene is gone.
+  await page.evaluate(() => neo.go.land('music-mountain')); await scene('LandScene'); await page.waitForTimeout(900);
+  assert.deepEqual(errors, []);
+  log('Sing-Along Barn: levels 1 and 3, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order, portrait and leaving mid-song passed');
+}
+
 async function buddiesPlay() {
   const wait = () => page.waitForFunction(() => !neo.scene.game.busy);
   const drag = async (friend, target) => {
@@ -8702,6 +8751,7 @@ try {
     await pickFirst(); await scene('MapScene');
   }
   if (suite === 'all' || suite === 'buddies') await buddiesPlay();
+  if (suite === 'all' || suite === 'singalong') await singBarnPlay();
   if (suite === 'all' || suite === 'week') await weekPlay();
   if (suite === 'all' || suite === 'orchard') await orchardPlay();
   if (suite === 'all' || suite === 'readdo') await readDoPlay();
