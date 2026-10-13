@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Tile Pairs levels 4–6 (2026-10-12)
+
+Extended `tile-pairs` to six levels ([PR #232](https://github.com/rjdunlap/neo/pull/232)). Level 4 is a six-column long bridge with a raised middle row; 5 has two separate terraces and five picture kinds; 6 is a crown with missing corners, two raised rows and six copies of each of four pictures. Each new layout has 24 tiles, unchanged target sizes and the same matching/Undo/Hint/Shuffle rules. Levels 1–3 preserve their original seeded boards, with hash fixtures captured before implementation. The island level picker offers 1–6; couch trips retain 1–3. Verification uses the existing-interaction/new-level tier: focused rules/typecheck, one top-level touch regression and its ghost finger. Further person/device checks stay open in the roadmap.
+
 ### Tile Pairs (2026-10-12)
 
 Built the roadmap's first tile game ([PR #229](https://github.com/rjdunlap/neo/pull/229)): `tile-pairs`, grown-up only in Lantern Lake, with twelve open-row tiles, twenty in two layers, and twenty-four in three. Seeded assignments follow a clearing route; matching needs a clear top and one open horizontal side. Touch and controller play, spoken support, both bots, one shell sticker, counted Undo, solver-backed Hint and solvable Shuffle are implemented. Shuffle rescues even a stranded tower by putting exactly the remaining pictures in open rows, and counts as help. No timer, loss screen or frozen course. This calm turn-based slice has no speed/held-button demand; real-time comfort settings remain open for the arcade candidates. Person/device checks remain in the roadmap; verification is in [the log](../VERIFICATION.md).
