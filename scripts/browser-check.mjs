@@ -460,7 +460,12 @@ async function hatchingAndMap() {
   assert.equal(await page.evaluate(() => neo.scene.birthday), true);
   await page.waitForFunction(() => neo.scene.homeBand === 'preschool' && neo.scene.home.scale.x === 1, null, { timeout: 10000 });
   await screenshot('map-preschool');
-  await page.evaluate(() => kit.store.stats('robot-path').history.push({ level: 1, misses: 0, hints: 0, seconds: 90, at: Date.now() }));
+  // A game whose youngest band is above preschool (Robot Path opens to preschool now, so it no longer counts as bigger kids' here).
+  await page.evaluate(async () => {
+    const { GAMES } = await import('/src/games/registry.ts'); const { bandRank, lowestBand } = await import('/src/progress/bands.ts');
+    const older = GAMES.find((g) => bandRank(lowestBand(g.bands)) > bandRank('preschool'));
+    kit.store.stats(older.id).history.push({ level: 1, misses: 0, hints: 0, seconds: 90, at: Date.now() });
+  });
   // The grown-ups' gear on the map: a short press only hints, holding it for two seconds opens the page.
   const gear = page.locator('.gear');
   const gearBox = await gear.boundingBox();
