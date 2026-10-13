@@ -3,7 +3,7 @@
  * A grown-up plays one side and the child the other (the pet steps in when nobody is there).
  * There's no score: bounces are counted together toward a goal.
  */
-export type BounceMode = 'solo' | 'rally' | 'together' | 'stars' | 'count' | 'color' | 'goal' | 'versus' | 'sequence' | 'skip';
+export type BounceMode = 'solo' | 'rally' | 'together' | 'stars' | 'count' | 'color' | 'goal' | 'versus' | 'sequence' | 'skip' | 'duel';
 
 export interface BouncePlan {
   mode: BounceMode;
@@ -37,6 +37,12 @@ export const PLANS: BouncePlan[] = [
 /** The number the pet says for the `bounce`th bounce of a rally: the bounce count times the level's step (1 when it has none). */
 export const countFor = (plan: BouncePlan, bounce: number) => bounce * (plan.step ?? 1);
 
+/**
+ * The couch face-off stop: two players, one paddle each, goals at both ends, first to `goal`. It is not on the island's ladder (it
+ * has no level), so it lives outside `PLANS`. Each player's goals are the stop's score, and the first to `goal` ends it.
+ */
+export const DUEL_PLAN: BouncePlan = { mode: 'duel', goal: 5, speed: 380, paddle: 210, name: 'Face-off: first to 5 goals, one paddle each' };
+
 /** Both color levels aim at the zones behind the pet's wall. */
 export const isZoneMode = (m: BounceMode) => m === 'color' || m === 'sequence';
 
@@ -62,6 +68,12 @@ export const isGoalMode = (m: BounceMode) => m === 'goal' || m === 'versus';
 
 /** The ball's speed on the versus level: a little faster after each bounce of a volley, never more than 1.4 times. */
 export const volleySpeed = (base: number, volley: number) => base * Math.min(1.4, 1 + 0.06 * volley);
+
+/** After a goal in a face-off, the ball is served toward the player who just let it by: `scorer` 0 is the right paddle's player, so it goes left. */
+export const duelServeDir = (scorer: 0 | 1): 1 | -1 => (scorer === 0 ? -1 : 1);
+
+/** The face-off's end: the first player to reach the goal, or null while it goes on. */
+export const duelWinner = (scores: readonly [number, number], goal = DUEL_PLAN.goal): 0 | 1 | null => (scores[0] >= goal ? 0 : scores[1] >= goal ? 1 : null);
 
 /**
  * What a goal round tells the difficulty: a win counts one miss for every two goals against, a loss counts them all. A hard-fought win

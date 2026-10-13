@@ -75,6 +75,12 @@ Ran: typecheck and 128 focused tests (difficulty, registry with a permutation ch
 - Not run: build, browser, ghost-finger and offline checks at the specified plain-word content tier. Actual iPad touch, speech and child fit remain person checks; reach/settling and height variety remain separate slices.
 - Dispatch `block-tower-support-20261012T215149Z`; queue records scope, worker, usage and next action.
 
+## 2026-10-12 — Bounce Back couch face-off
+
+- Bounce Back's couch entry is now a shared-board face-off (first to five goals, no pet, no hints); together trips are unchanged. Rule tests (`duelWinner`, `duelServeDir`), a settlement test in `party.test.ts`; finale examples moved to Bumper Garden (a team stop).
+- `typecheck`, `npm test` (1088), `COUCH_ONLY=bounce-back` and the full `BROWSER_SUITE=couch` on a snapshot passed (a duel round with Player 1 aiming away from an idle Player 2: 5 goals to fewer, winner Player 1, tally 2 to 1).
+- Not run: two real controllers and two people, the length of the match, the demo (still a rally), `couchcourse` (no course changed).
+
 ## 2026-10-12 — Bounce Back levels 10–11, skip counting
 
 - Rallies counted by twos and fives with the number on the table. `typecheck`, `npm test` (1069), `BOUNCE_FROM=10 BATCH_ONLY=bounce` (new filter in the harness) and `FINGER_LEVELS=10,11` passed. Not run: build, portrait, an iPad, a child; the numeral tint after the last edit was not re-seen.

@@ -89,13 +89,14 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
   },
   'bounce-back': {
     goal: 'couch.how.bounce-back',
-    tagline: 'Keep the ball going together. Reach a rally of eight.',
+    tagline: 'Keep the ball going together, or race to five goals.',
     controls: [
       { parts: STICK, text: 'Move your paddle up and down. Player 2 uses the second controller.', keys: '↑ ↓ (Player 2: W / S)' },
     ],
     play: 'together',
-    faceoff: 'team',
-    // Preschool's range (2–4) holds both the demo's five-bounce rally and the trip's level 3.
+    faceoff: 'shared',
+    score: { better: 'higher', unit: 'goals' },
+    // Preschool's range (2–4) holds both the demo's five-bounce rally and the trip's level 3. A face-off stop plays its own first-to-5 goals instead of a level.
     band: 'preschool',
     demoLevel: 2,
     level: () => 3,

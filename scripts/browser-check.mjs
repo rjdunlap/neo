@@ -5108,6 +5108,26 @@ async function couchPlay() {
       if (!g.finished) throw new Error('two-paddle rally did not finish');
     });
   };
+  // A face-off stop at Bounce Back: Player 1 aims away from the other paddle while Player 2 holds still, so the first to five goals is Player 1's.
+  const duelRound = async () => {
+    await makePads(); await page.waitForTimeout(150);
+    await page.evaluate(async () => {
+      const g = neo.scene.game, b = g.box;
+      if (!g.versus) throw new Error('a face-off stop is not a versus round');
+      const { predictY, paddleForLanding, farWall } = await import('/src/games/bounce-back/logic.ts');
+      const start = performance.now();
+      while (!g.finished && neo.scene.game === g && performance.now() - start < 120000) {
+        const geo = g.aim(g.speed());
+        const arrive = predictY(g.ball.x, g.ball.y, g.ball.vx, g.ball.vy, geo.faceX, geo.top, geo.bottom);
+        const want = g.ball.vx > 0 ? paddleForLanding(arrive, farWall(g.paddles.left, geo), geo).y : (b.y0 + b.y1) / 2;
+        const delta = want - g.targets.right;
+        couchPads[0].axes[1] = Math.abs(delta) < 10 ? 0 : Math.sign(delta);
+        await kit.sleep(16);
+      }
+      couchPads[0].axes[1] = couchPads[1].axes[1] = 0;
+      if (!g.finished) throw new Error('the face-off did not finish');
+    });
+  };
   await screenshot('couch-chooser');
   const order = await page.locator('[data-game]').evaluateAll(nodes => nodes.map(n => n.dataset.game));
   // Offers survive a reload and the existing child save remains unchanged.
@@ -5351,12 +5371,13 @@ async function couchPlay() {
 
   await offer('bounce-back');
   await choose('bounce-back');
-  await twoPaddleRound();
+  await duelRound();
   await menu();
   save = await stored();
-  assert.equal(save.party.rounds[1].winner, 'team');
-  assert.equal(save.party.rounds[1].scores, undefined);
-  assert.match(await page.locator('.couch-tally').innerText(), /Player 1: 2 · Player 2: 2/);
+  assert.equal(save.party.rounds[1].winner, 0);
+  assert.equal(save.party.rounds[1].scores[0], 5);
+  assert.ok(save.party.rounds[1].scores[1] < 5);
+  assert.match(await page.locator('.couch-tally').innerText(), /Player 1: 2 · Player 2: 1/);
   assert.equal(await stickers(), stickersBefore + 2);
 
   // A face-off on one shared board: the players alternate, a match earns another turn, and both see the same cards.
@@ -5387,7 +5408,7 @@ async function couchPlay() {
   assert.equal(await page.locator('.couch-new').count(), 0, 'nothing is new once both have been explained');
   assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data)), childBefore, 'face-off play leaves all child state unchanged');
   // A finished face-off trip: a scoreboard, lanterns in the colors of whoever took each stop, and nobody named a loser.
-  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bounce-back', 'team'], ['penguin-slide', 'tie'], ['bouncy-launch', 0], ['bounce-back', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: id === 'penguin-slide' ? 4 : 3, misses: 0, hints: 0, winner, ...(id === 'bounce-back' ? {} : { scores: winner === 'tie' ? [1, 1] : winner === 0 ? [0, 2] : [2, 0] }) }));
+  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bumper-garden', 'team'], ['penguin-slide', 'tie'], ['bouncy-launch', 0], ['bumper-garden', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: id === 'penguin-slide' ? 4 : 3, misses: 0, hints: 0, winner, ...(id === 'bumper-garden' ? {} : { scores: winner === 'tie' ? [1, 1] : winner === 0 ? [0, 2] : [2, 0] }) }));
   await page.evaluate((rounds) => localStorage.setItem('neo.couch.v1', JSON.stringify({ version: 3, trips: 2, stickers: { 'penguin-slide': { count: 3, seed: 5 } }, seen: ['memory-match', 'rhythm-neighbors'], keepsake: { at: 1760000000000 }, party: { seed: 31, mode: 'faceoff', reroll: 0, turn: null, selected: null, rounds } })), rounds);
   await page.reload(); await ready(); await chooserEnter(); await menu();
   await page.waitForFunction(() => neo.scene.finaleStage?.lanterns.every(l => l.lit), null, { timeout: 20000 });
@@ -7003,7 +7024,7 @@ async function couchNames() {
   await page.waitForFunction(() => neo.scene.screen === 'course'); await page.waitForTimeout(450);
   assert.equal(await page.getByRole('button', { name: 'Rowan plays', exact: true }).count(), 1);
   assert.equal(await page.getByRole('button', { name: 'Sam plays', exact: true }).count(), 1);
-  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bounce-back', 'team'], ['penguin-slide', 0], ['bouncy-launch', 0], ['bounce-back', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: 3, misses: 0, hints: 0, winner, ...(id === 'bounce-back' ? {} : { scores: winner === 0 ? [0, 2] : [2, 0] }) }));
+  const rounds = [['penguin-slide', 0], ['bouncy-launch', 1], ['bumper-garden', 'team'], ['penguin-slide', 0], ['bouncy-launch', 0], ['bumper-garden', 'team']].map(([id, winner], i) => ({ id, seed: 10 + i, level: 3, misses: 0, hints: 0, winner, ...(id === 'bumper-garden' ? {} : { scores: winner === 0 ? [0, 2] : [2, 0] }) }));
   await page.evaluate((rounds) => { const save = JSON.parse(localStorage.getItem('neo.couch.v1')); save.trips = 1; save.party = { seed: 31, mode: 'faceoff', reroll: 0, turn: null, selected: null, rounds }; localStorage.setItem('neo.couch.v1', JSON.stringify(save)); }, rounds);
   await page.reload(); await ready(); await enter();
   await page.waitForFunction(() => neo.scene.finaleStage?.lanterns.every(l => l.lit), null, { timeout: 20000 });
