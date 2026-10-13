@@ -16,12 +16,14 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 | 4 | Three pieces; two triangles make a square | preschool, pre-K | that two triangles can be one square |
 | 5 | Four pieces | pre-K, school (5–6) | order and fit across four shadows |
 | 6 | Silhouette, outlines on request | pre-K, school | what the shadow is made of, unaided |
+| 7 | One square or two triangles for a wall | school | choose either valid cover |
+| 8 | Repair a misoriented piece, then Check | school | notice and revise what does not match its outline |
 
-**What a round draws from.** Until this session every level drew one fixed picture (house, boat, house, cottage, rocket, cottage), so six levels held five different pictures and a replayed level was identical. Since slice 1 (below) each level draws from a pool of 3–8 pictures through the seeded round generator: 16 pictures in all after the lamp, bus and castle batch ([PR 166](https://github.com/rjdunlap/neo/pull/166)) and tent/barn batch ([PR 167](https://github.com/rjdunlap/neo/pull/167)).
+**What a round draws from.** Until this session every level drew one fixed picture (house, boat, house, cottage, rocket, cottage), so six levels held five different pictures and a replayed level was identical. Since slice 1 (below) each level draws from a pool of 4–9 pictures through the seeded round generator: 17 pictures in all after the lamp, bus and castle batch ([PR 166](https://github.com/rjdunlap/neo/pull/166)) and tent/barn batch ([PR 167](https://github.com/rjdunlap/neo/pull/167)) and robot at levels 5–6 ([PR #260](https://github.com/rjdunlap/neo/pull/260)).
 
 **Couplings.** A how-to card (steps scoped from level 3 and 6) and a ghost-finger bot (`autotouch`, which turns each piece with the real button, then carries it). No couch entry, journal entry or picnic step. The how-to steps and `describeLevel` read at the level, not the picture, so they were safe to extend. Voice: "Build a {picture}!" is spoken at the start, so a picture name must begin with a consonant ("a owl" would be wrong); a test now asserts it.
 
-**Known gaps.** The tray holds the pieces in one row spread across `v.w - 65`, so portrait with four pieces already puts a 200-wide rectangle and an 180-wide roof closer than their widths. Four is the ceiling. No spoken shape names. The levels end at a flat silhouette; nothing asks her to change what she built. A one-year-old at level 1 is untried (a person check).
+**Known gaps.** The tray holds the pieces in one row spread across `v.w - 65`, so portrait with four pieces already puts a 200-wide rectangle and an 180-wide roof closer than their widths. Four is the ceiling. Shape names are now spoken once per piece at toddler–pre-K; actual device speech remains unchecked. Level 7 adds alternative covers; level 8 repairs a misoriented piece; wrong-shape swaps remain unbuilt. A one-year-old at level 1 is untried (a person check).
 
 ## Similar games
 
@@ -51,7 +53,7 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 
 ### Fresh content inside existing levels
 
-**Built in slice 1.** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat. The 2026-10-11 batches add lamp, bus, castle, tent and barn. Current pools:
+**Built in slice 1.** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat. The 2026-10-11 batches add lamp, bus, castle, tent and barn; the 2026-10-13 batch adds robot. Current pools:
 
 | Level | Pool |
 | --- | --- |
@@ -59,8 +61,8 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 | 2 | boat, sailboat, flag, lamp, tent |
 | 3 | house, tree, flag, sailboat, lamp, tent |
 | 4 | cottage, truck, tower, ferry, bus, barn |
-| 5 | rocket, houseboat, castle |
-| 6 | cottage, truck, tower, ferry, houseboat, bus, castle, barn |
+| 5 | rocket, houseboat, castle, robot |
+| 6 | cottage, truck, tower, ferry, houseboat, bus, castle, barn, robot |
 
 Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is three pieces and always holds a pair of triangles that can only make a square, level 5 is four pieces, level 6 hides the outlines. Tests assert that no picture overlaps itself (a separating-axis check), that it stays within ±210 horizontally and −220…200 vertically (clear of the turn and help buttons at the narrowest portrait width and above the tray), that every slot is reachable in any order, and that every picture starts with a consonant.
 
@@ -73,12 +75,12 @@ Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is th
 
 ### New levels on top
 
-None of these renumber saved levels. The school band's window is `{ min: 5, max: 6 }` today; extending it is part of each slice. These are proposals, not built.
+None of these renumber saved levels. The school band's window is `{ min: 5, max: 8 }` after repair level 8 ([PR #263](https://github.com/rjdunlap/neo/pull/263)). Levels 7–8 are built; levels 9–10 remain decision-dependent proposals.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 7 | **Fewer pieces** | school (pre-K top, if wanted) | The tray holds a square, two triangles and a roof; the silhouette is a house. The wall can be one square or two triangles | the same picture two ways; the round ends when any valid cover fills it, with a spoken "you used two pieces; is there a way with fewer?" | A drop that covers no part is a miss; either cover finishes, neither is wrong; the hint points at the larger piece first | every picture has authored cover sets, each of which exactly covers the silhouette with no overlap; the tray of four holds every piece of every cover; the hint never picks a cover that blocks the other | A **stated model is needed first**: slot sets, not fixed slots. `targetFor`, `hintFor`, `bestTarget`, the autotouch bot and the browser case all work on fixed slots. One slice to write the cover-set type and its tests, one to build |
-| 8 | **Fix the picture** | school | A built picture has one piece the wrong way or wrong shape. She taps it, turns it or swaps it | revision: notice what does not match, with a spoken "what changed?" | An older puzzle may require revision with an explanation; no miss counts for taking a piece back; the glow points at the odd piece after two attempts | in every picture exactly one placed piece differs from its slot; the fix is reachable by turns or one swap | Placed pieces are locked (`drag.enabled=false`) today, so they need to be re-pickable; the bot learns a repair step |
+| 8 | **Fix the picture** (turn-only slice built) | school | An assembled picture has exactly one shape turned away from its faint correct outline; tap, turn freely, then Check | revision: which orientation matches the outline | Only wrong checks count misses; two glow an actual mismatch; requested help identifies one without turning it | exactly one visible initial mismatch, reversible turns, truthful hints, bot recovery and distinct target centers | Separate tap/turn/check interaction; no dragging. Wrong-shape swaps remain unbuilt |
 | 9 | **Flip it** | school | A parallelogram in the tray whose slot is the mirror of the way it comes | the choice between *turn* and *flip* | The flip button is a second control; a wrong side is a miss with the hint "try flipping"; two misses glow | the parallelogram's mirror is a different orientation from every turn; `sameOrientation` accepts it only after a flip; the bot flips at most once | Needs a **chiral piece** (the five shapes are all mirror-symmetric, so a flip with them is a no-op) and a flip button. This is a decision for the developer below |
 | 10 | **Build and keep** | school (and any band that wants a creative finish) | A plain board and the tray; she builds any picture and taps the green arrow | what to make; nothing is wrong | Nothing is wrong; a gentle ending rule is needed | a built picture saves bounded and repaired; pieces snap along edges with exactly stated tolerances | **Sketch only.** New edge-snap model, a creation slot for a picture (`src/content/creations.ts`), a how-to. Costly; see the decisions below |
 
@@ -114,10 +116,10 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 ## Build slices, in order
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
-2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. Second batch built ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a two-piece tent at levels 1–3 and a three-piece barn (two triangles make its wall) at levels 4 and 6, bringing the pool to sixteen pictures and 3–8 per level. More remain ready toward six to eight per level, `logic.ts` data only. Rule tests, one screenshot per new picture.
+2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. Second batch built ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a two-piece tent at levels 1–3 and a three-piece barn (two triangles make its wall) at levels 4 and 6, bringing the pool to sixteen pictures and 3–8 per level. Third batch built 2026-10-13 ([PR #260](https://github.com/rjdunlap/neo/pull/260)): four-piece robot at levels 5–6 (square head, rectangular body and two triangular feet), seventeen pictures and 4–9 per level. More remain ready, `logic.ts` data only. Rule tests, one screenshot per new picture.
 3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
-4. **Level 7, fewer pieces** (needs a stated model): first a cover-set type with tests, then the level. New-level tier: `fingerdemo` at the new top level and a play.
-5. **Level 8, fix the picture** (ready after 4's re-pickable placed pieces).
+4. **Level 7, two ways** — built 2026-10-13 ([PR #262](https://github.com/rjdunlap/neo/pull/262)): cover sets accept the roof plus square or roof plus two triangles; every accepted partial choice finishes. Spare-wall drops are free, help follows the shortest surviving cover and completion names two or three pieces. Both alternatives and the ghost finger checked; school 5–7.
+5. **Level 8, fix the picture** — built 2026-10-13 ([PR #263](https://github.com/rjdunlap/neo/pull/263)): turn-only repair, eight distinct-center picture pools, one visible mismatch, free in-place selection/turns, truthful hint and explicit Check. School 5–8. Wrong-shape swaps remain unbuilt; no dragging needed for this slice.
 6. **Level 9, flip it** (waits on decision 1).
 7. **Level 10, build and keep** (waits on decision 2).
 8. **One piece home / pick the missing piece** (waits on the level-order decisions).
@@ -125,3 +127,19 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 ## What was built in this session
 
 Slice 1: `logic.ts` now holds `PICTURES` (11), `PLANS` as level rules with a picture `pool`, and `buildFor(level, rng)`; `index.ts` draws the round's picture from the pool and builds the tray from it, so every other piece of the game (hints, the ghost finger, voice, saved round) is unchanged. `describeLevel` names no single picture. Checks: `npm run typecheck`, `npx vitest run` on the game, content and registry tests (8 and 80 tests, including a separating-axis overlap check proved to fail when a slot is moved), and one pass of `BROWSER_SUITE=creative CREATIVE_ONLY=tangram` over levels 1 to 6 with a portrait view at level 5. Not run: a screenshot review of every picture, `fingerdemo`, a device, a child.
+
+## Level 7 implementation packet (built 2026-10-13)
+
+Requested with Penguin Slide's next level. `Build` has optional `covers`, a list of slot-index sets: roof plus square `[0,1]`, or roof plus two complementary triangles `[0,2,3]`. All four physical pieces start in the tray, the target is the same house silhouette, and either cover completes one round with one sticker. A partial set is valid only while at least one whole cover contains it. Drops may fill only an unfilled slot in a surviving cover; no overlapping square/triangle wall. A compatible partial build always has a completion. An unused alternative dropped on an already covered wall returns freely with an explanation, not a miss. Ordinary wrong shape/turn near an open slot keeps existing misses/two-miss help. No completion requires using the whole tray.
+
+Help prefers the shortest surviving cover (square first before choosing triangles), then its first missing slot and a matching physical piece; it never contradicts a placed triangle. The ghost finger uses that same surviving cover through real turn taps and drags. The silhouette stays a roof and square, and outlines under help show the surviving cover. Completion names the actual two or three pieces without ranking either as wrong; co-play can compare the two ways on replay. School extends 5–7; other bands, saves and existing levels remain unchanged. This slice does not need repicking locked pieces: every accepted partial cover completes. Level 8 has since built its separate turn/check repair interaction below.
+
+Exit: typecheck, rule tests for exact equal polygon covers, compatible partial builds, rejection of overlaps, alternative completion and useful help/bot, one filtered play accepting both builds with a wrong turn/help, ghost finger at 7, portrait review and build for changed shared content.
+
+## Level 8 repair packet (built 2026-10-13)
+
+Turn-only first repair slice: one seeded picture from house/tree/boat/sailboat/flag/lamp/tent/robot starts assembled, with exactly one visibly non-symmetric piece turned away from its slot. A faint correct outline remains behind every colored piece. Tap a piece to select it; the round arrow turns it a quarter turn in place, and the green check checks all pieces against the outline. Every tap/turn is free revision (four turns undo a turn cycle); wrong checks add one miss and explain that a shape still faces the wrong way. Two wrong checks glow the first actual mismatch and count one hint; requested help uses the same mismatch and counts once while support remains visible. Help identifies, not auto-fixes. Correct checks complete with one sticker and a repair explanation. No memorization, time pressure, wrong-shape swaps or dragging in this slice.
+
+Rules live in logic: seeded exactly-one wrong orientation (exclude rotationally equivalent square/rectangle turns), mismatch indices, next bot action select/turn/check. Correct pieces may be experimented with and restored; a hint always points at an actual remaining mismatch. The bot performs real piece taps, quarter turns and Check. Selectable picture pools avoid coincident triangle slots so every center is a distinct reachable target at least 100 units. Layout keeps turn/help/check, pet and home clear in both views. School extends 5–8; younger bands and existing levels stay fixed. Future wrong-shape swapping and flip/kept-picture decisions remain open.
+
+Exit: typecheck, focused rules for every picture/seed, multiple-mismatch recovery and truthful hints; one filtered play with a wrong check, free revision and supported completion, top-level ghost finger and portrait screenshot, build for changed content.

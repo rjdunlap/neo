@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { pictureFace } from './art';
 import { memoryMatch } from './index';
 import { howToFor } from '../../content/howto';
-import { cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS } from './logic';
+import { PICTURE_POOLS, selectPictures, cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS } from './logic';
 
 describe('memory matching', () => {
   it('pins the original code-drawn icon and stickers independently of deck content', () => {
@@ -26,6 +27,46 @@ describe('memory matching', () => {
     expect(original).toMatchInlineSnapshot(`1652733104`);
     for (let seed = 1; seed <= 100; seed++) expect(fingerprint(memoryMatch.sticker(seed))).toBe(original);
     expect(fingerprint(memoryMatch.hubIcon())).toMatchInlineSnapshot(`4127882431`);
+  });
+
+  it('selects one reproducible picture family with unique partners and accurate speech at every picture level', () => {
+    const reached = new Set<string>();
+    for (let level = 1; level <= 5; level++) {
+      const count = planFor(level).pairs;
+      const families = new Set<string>();
+      for (let seed = 1; seed <= 100; seed++) {
+        const pictures = selectPictures(count, new Rng(seed));
+        expect(pictures).toEqual(selectPictures(count, new Rng(seed)));
+        expect(pictures).toHaveLength(count);
+        expect(new Set(pictures.map(p => p.id)).size).toBe(count);
+        expect(new Set(pictures.map(p => p.name)).size).toBe(count);
+        expect(new Set(pictures.map(p => p.kind)).size).toBe(1);
+        families.add(pictures[0].kind);
+        const deck = makeDeck(count, new Rng(seed));
+        for (const [pair, picture] of pictures.entries()) {
+          reached.add(picture.id);
+          const partners = deck.filter(card => card.pair === pair);
+          expect(partners).toHaveLength(2);
+          expect(partners.map(card => cardLabel('pictures', card, [], pictures))).toEqual([picture.name, picture.name]);
+        }
+      }
+      expect([...families].sort()).toEqual(['friend', 'prop', 'shape']);
+    }
+    expect([...reached].sort()).toEqual(PICTURE_POOLS.flat().map(p => p.id).sort());
+    expect(PICTURE_POOLS.map(pool => pool.length)).toEqual([8, 8, 8]);
+  });
+
+  it('keeps every picture inside its card with a readable thumbnail at the smallest picture board', () => {
+    for (const picture of PICTURE_POOLS.flat()) {
+      const face = pictureFace(picture);
+      const b = face.getLocalBounds();
+      expect(b.x).toBeGreaterThanOrEqual(-54);
+      expect(b.y).toBeGreaterThanOrEqual(-54);
+      expect(b.x + b.width).toBeLessThanOrEqual(54);
+      expect(b.y + b.height).toBeLessThanOrEqual(54);
+      expect(Math.max(b.width, b.height)).toBeGreaterThanOrEqual(picture.kind === 'shape' ? 70 : 105);
+      face.destroy({ children: true });
+    }
   });
 
   it('preserves the eleven plans, deck sizes and band windows with scoped instructions', () => {

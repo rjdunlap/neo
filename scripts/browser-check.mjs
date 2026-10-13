@@ -3882,8 +3882,70 @@ async function creativeBatch() {
     await finished('rhythm-neighbors');assert.deepEqual(await score('rhythm-neighbors'),level<=2?[0,0]:[2,1]);
     await page.setViewportSize({width:1024,height:768});log(`Rhythm Neighbors ${level}: calls, replies, retries, guided timing, saved round and sticker passed`);
   }
-  if (!only || only === 'tangram') for(let level=fromLevel;level<=6;level++) {
+  if (!only || only === 'tangram') for(let level=fromLevel;level<=Number(process.env.TO_LEVEL||8);level++) {
     await launch('tangram-town',level);
+    if(level===8){
+      await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
+      const mismatch=await page.evaluate(async()=>{const g=neo.scene.game,L=await import('/src/games/tangram-town/logic.ts');return L.repairMismatches(g.plan.targets,g.pieces);});
+      assert.equal(mismatch.length,1,'Exactly one shape starts wrong');
+      await tap('neo.scene.game.check');await page.waitForTimeout(500);await tap('neo.scene.game.check');
+      assert.deepEqual(await page.evaluate(()=>[neo.scene.game.misses,neo.scene.game.hints]),[2,1]);
+      await screenshot('tangram-town-8-portrait');
+      await page.evaluate(async()=>{
+        const g=neo.scene.game,L=await import('/src/games/tangram-town/logic.ts');
+        const i=L.repairMismatches(g.plan.targets,g.pieces)[0],other=g.pieces.findIndex((_,j)=>j!==i);
+        const turns=g.pieces[other].turns;kit.tapOn(g.nodes[other]);await kit.sleep(180);
+        for(let k=0;k<4;k++){kit.tapOn(g.turn);await kit.sleep(450);}
+        if(g.pieces[other].turns!==turns||g.misses!==2||g.hints!==1)throw new Error('Free turn revision');
+        kit.tapOn(g.help);await kit.sleep(200);
+        if(g.selected!==i||g.hints!==1)throw new Error('Truthful hint without recount');
+        for(let k=0;k<12&&!g.done;k++){
+          const a=L.repairAction(g.plan.targets,g.pieces,g.selected);
+          kit.tapOn('pick'in a?g.nodes[a.pick]:'turn'in a?g.turn:g.check);await kit.sleep(450);
+        }
+        if(!g.done)throw new Error('Repair check did not finish');
+      });
+      await finished('tangram-town');assert.deepEqual(await score('tangram-town'),[2,1]);
+      await page.setViewportSize({width:1024,height:768});
+      log('Tangram Town 8: one mismatch, free turns/restore, truthful hint, check, saved round/sticker and portrait passed');
+      continue;
+    }
+    if(level===7){
+      await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
+      await page.evaluate(async()=>{
+        const g=neo.scene.game,c=g.pieces.find(p=>p.piece.shape==='roof'),t=g.plan.targets[1];
+        for(let i=0;i<2;i++){await kit.dragTo(c.node,g.board.toGlobal({x:t.x,y:t.y+40}),18);await kit.sleep(600);}
+        if(g.misses!==2||g.hints!==1)throw new Error('Alternative cover wrong-turn/shape help');
+      });
+      await screenshot('tangram-town-7-portrait');
+      // First build with triangles, try the overlapping spare square freely, and ask for compatible help.
+      const place=async indices=>page.evaluate(async indices=>{
+        const g=neo.scene.game,L=await import('/src/games/tangram-town/logic.ts');
+        for(const i of indices){
+          const t=g.plan.targets[i],c=g.pieces.find(p=>!p.placed&&p.piece.shape===t.shape);
+          kit.tapOn(c.node);await kit.sleep(200);
+          for(let k=0;k<L.turnsToFit(c.piece,t);){kit.tapOn(g.turn);await kit.sleep(300);}
+          await kit.dragTo(c.node,g.board.toGlobal({x:t.x,y:t.y+40}),18);await kit.sleep(600);
+          if(!g.filled[i])throw new Error(`Cover slot ${i} not placed`);
+        }
+      },indices);
+      await place([2]);
+      await page.evaluate(async()=>{
+        const g=neo.scene.game,c=g.pieces.find(p=>p.piece.shape==='square'),t=g.plan.targets[1];
+        const before=[g.misses,g.hints];
+        await kit.dragTo(c.node,g.board.toGlobal({x:t.x,y:t.y+40}),18);await kit.sleep(600);
+        if(c.placed||g.misses!==before[0]||g.hints!==before[1])throw new Error('Spare wall must return freely');
+        kit.tapOn(g.help);await kit.sleep(300);
+        if(g.selected.piece.shape==='square')throw new Error('Help contradicts triangle cover');
+      });
+      await place([3,0]);await finished('tangram-town');assert.deepEqual(await score('tangram-town'),[2,2]);
+      await page.setViewportSize({width:1024,height:768});
+      await launch('tangram-town',7);await page.waitForTimeout(350);
+      await place([1,0]);await finished('tangram-town');assert.deepEqual(await score('tangram-town'),[0,0]);
+      assert.equal(await page.evaluate(()=>neo.scene.game.pieces.filter(p=>!p.placed).length),2,'Unused triangles remain in tray');
+      log('Tangram Town 7: both covers, free spare, compatible help, portrait and one sticker per build passed');
+      continue;
+    }
     if(level===5){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await page.evaluate(async()=>{
       const g=neo.scene.game;
@@ -3966,9 +4028,9 @@ async function woodsBatch() {
     log(`Light Lab ${level}: mirrors turned like a finger, ${play}saved score and sticker passed`);
   }
 
-  if (!only || only === 'penguin') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'penguin') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
     await launch('penguin-slide', level);
-    if (level === 3 || level === 6) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 3 || level >= 6) await page.setViewportSize({ width: 768, height: 1024 });
     const puzzles = await page.evaluate(() => neo.scene.game.plan.puzzles);
     // Tap the ice a little way from the penguin, in the direction to slide.
     const slideTo = async (dir) => {
@@ -3997,7 +4059,7 @@ async function woodsBatch() {
         const before = await page.evaluate(() => neo.scene.game.history.length);
         await tap('neo.scene.game.undo'); await page.waitForTimeout(300);
         assert.equal(await page.evaluate(() => neo.scene.game.history.length), before - 1, 'undo steps back');
-        if (level === 3 || level === 6) await screenshot(`penguin-slide-${level}-portrait`);
+        if (level === 3 || level >= 6) await screenshot(`penguin-slide-${level}-portrait`);
       }
       for (let k = 0; k < 30; k++) {
         const dir = await page.evaluate(async (n) => {
@@ -4012,7 +4074,7 @@ async function woodsBatch() {
     await finished('penguin-slide');
     assert.deepEqual(await score('penguin-slide'), [0, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Penguin Slide ${level}: taps on the ice, bumps, ${level === 6 ? 'pushed blocks, ' : ''}undo, hint arrow, saved score and sticker passed`);
+    log(`Penguin Slide ${level}: taps on the ice, bumps, ${level >= 6 ? 'pushed blocks, ' : ''}undo, hint arrow, saved score and sticker passed`);
   }
 
   if (!only || only === 'peek') for (let level = fromLevel; level <= 5; level++) {
@@ -5264,7 +5326,15 @@ async function shortlistBatch() {
   const at = (x, y) => page.evaluate(({ x, y }) => { const s = neo.view.scale; const r = document.querySelector('canvas').getBoundingClientRect(); return [r.left + x * s, r.top + y * s]; }, { x, y });
 
   if (!only || only === 'tower') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
+    if (level === 6 && process.env.TOWER_SEED) await page.evaluate(seed => { window.towerRandom = Math.random; Math.random = () => seed / 2 ** 31; }, Number(process.env.TOWER_SEED));
     await launch('block-tower', level);
+    if (level === 6 && process.env.TOWER_SEED) await page.evaluate(() => { Math.random = window.towerRandom; delete window.towerRandom; });
+    const savedTower = await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]);
+    if (level === 6) {
+      const directions = await page.evaluate(() => neo.scene.game.reachRounds.map(r => r.direction));
+      assert.deepEqual([...directions].sort(), [-1, 1]);
+      log(`Block Tower reach order: ${directions.join(',')}`);
+    }
     if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
     const { rounds, mode } = await page.evaluate(() => ({ rounds: neo.scene.game.rounds.length, mode: neo.scene.game.plan.mode }));
     if (mode === 'flag' || mode === 'match') {
@@ -5320,11 +5390,11 @@ async function shortlistBatch() {
           assert.deepEqual(await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]), saved.map(v => v + 1));
         }
       } else {
-        // Reach: two topples past the table edge (explained misses), a glowing hint place, then a way that works.
+        // Reach: a topple and a full short stack, top revision, then symmetric solutions on both edges.
         const drop = async (slot) => {
           await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
-          const [k, edge, top] = await page.evaluate(() => { const g = neo.scene.game; return [g.placed.length, g.edge, g.tableTop]; });
-          const target = await at(edge + (slot * 104) / 8, top - k * 62 + 40);
+          const [k, edge, top, direction] = await page.evaluate(() => { const g = neo.scene.game; return [g.placed.length, g.edge, g.tableTop, g.reachRound.direction]; });
+          const target = await at(edge + direction * (slot * 104) / 8, top - k * 62 + 40);
           await page.evaluate(async (target) => { const t = neo.scene.game.tray.find((t) => t.x === null); await kit.dragTo(t.node, { x: target[0], y: target[1] }, 12); }, target);
           await page.waitForTimeout(500);
         };
@@ -5332,19 +5402,19 @@ async function shortlistBatch() {
           // Audit the landing window, cancelled releases, resize and top-only lifting before scored trials.
           assert.deepEqual(await page.evaluate(() => {
             const g = neo.scene.game;
-            return [-12, 8, 9, 10].map((x) => g.slot(g.edge + x * 13, g.tableTop));
+            return [-12, 8, 9, 10].map((x) => g.slot(g.reachScreen(x), g.tableTop));
           }), [-12, 8, 8, 8], 'live drop and ghost share the solver domain');
           assert.deepEqual(await page.evaluate(() => {
             const g = neo.scene.game, t = g.tray[0];
             t.node.emit('pointerdown', { pointerId: 81, global: t.node.getGlobalPosition() });
-            t.node.position.set(g.edge - 39, g.tableTop);
+            t.node.position.set(g.reachScreen(-3), g.tableTop);
             window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 81 }));
             return [t.x, t.drag.dragging, g.misses, g.hints];
           }), [null, false, 0, 0], 'cancel over table returns to tray without committing or scoring');
           await page.waitForTimeout(500);
           assert.deepEqual(await page.evaluate(async () => {
             const g = neo.scene.game;
-            await kit.dragTo(g.tray[0].node, { x: g.edge - 39, y: g.tableTop + 40 }, 12);
+            await kit.dragTo(g.tray[0].node, { x: g.reachScreen(-3), y: g.tableTop + 40 }, 12);
             neo.paused = true; // Freeze the real landing tween to inspect the brief input window.
             const first = g.tray[0], second = g.tray[1];
             second.node.emit('pointerdown', { pointerId: 82, global: second.node.getGlobalPosition() });
@@ -5356,7 +5426,7 @@ async function shortlistBatch() {
           await idle(n);
           assert.ok(await page.evaluate(() => {
             const g = neo.scene.game, t = g.placed[0];
-            return t.node.x === g.edge - 39 && t.node.y === g.tableTop && t.drag.enabled;
+            return t.node.x === g.reachScreen(-3) && t.node.y === g.tableTop && t.drag.enabled;
           }), 'landing relayouts against the resized table before controls reopen');
           // Simulate an existing next-placement hint; lifting invalidates it and returns only the top.
           assert.deepEqual(await page.evaluate(async () => {
@@ -5372,16 +5442,32 @@ async function shortlistBatch() {
           }), [true, 0, 0, 0], 'top lift clears stale help and returns the block without a miss');
           await page.setViewportSize({ width: 1024, height: 768 });
           await page.waitForTimeout(200);
-          for (let k = 0; k < 2; k++) { await drop(3); await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.placed.length === 0, null, { timeout: 20000 }); }
+          await drop(3);
+          await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.placed.length === 0);
+          await drop(-3); await drop(-3); // Stable, full, short stack: a different explained miss.
+          await idle(n); // Its spoken explanation finishes before constructive help appears.
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.glowTop), 'impossible prefix highlights the actual top block');
+          await page.evaluate(async () => { const g = neo.scene.game; await kit.dragTo(g.placed.at(-1).node, { x: g.view.w - 200, y: g.floor + 70 }, 12); });
+          await page.waitForTimeout(500);
+          // Repeating help after revision keeps the task's hint counted once.
+          await page.evaluate(() => neo.scene.game.reachHint());
           assert.deepEqual(await counts(), [2, 1]);
           assert.ok(await page.evaluate(() => neo.scene.game.hintGhost.visible), 'a glowing place for the next block');
           await screenshot(`block-tower-${level}`);
         }
-        const way = await page.evaluate(async () => (await import('/src/games/block-tower/logic.ts')).finish([], neo.scene.game.reachRound));
+        if (await page.evaluate(() => neo.scene.game.reachRound.direction === -1)) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(200);
+          assert.ok(await page.evaluate(() => { const g = neo.scene.game; return !g.hintGhost.visible || (g.hintGhost.x === g.reachScreen(g.hintSlot) && g.hintGhost.y === g.tableTop - g.placed.length * 62); }), 'hint follows the resized table');
+          await screenshot('block-tower-6-left-portrait');
+        }
+        const way = await page.evaluate(async () => { const g = neo.scene.game; return (await import('/src/games/block-tower/logic.ts')).finish(g.placed.map(t => t.x), g.reachRound); });
         for (const slot of way) await drop(slot);
       }
     }
     await finished('block-tower');
+    assert.deepEqual(await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]), savedTower.map(v => v + 1));
     assert.deepEqual(await score('block-tower'), mode === 'flag' || mode === 'match' || mode === 'reach' ? [2, 1] : [0, 0]);
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`);
@@ -8564,6 +8650,9 @@ async function fingerDemos() {
     for (const { band, level } of g.plays) {
       await page.evaluate(({ id, band, level }) => { kit.store.data.profile.band = band; kit.store.stats(id).pinned = level; neo.go.game(id, band); }, { id: g.id, band, level });
       await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !!neo.scene.helpCard?.intro?.demo, { id: g.id, level });
+      if (g.id === 'block-tower' && level === 6 && process.env.TOWER_SEED) {
+        await page.evaluate(seed => { const d = neo.scene.helpCard.intro.demo; d.opts.seed = seed; d.restart(); }, Number(process.env.TOWER_SEED));
+      }
       assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
       const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
       // The demonstration's own clock decides, not the wall: on a busy Mac it runs at a fraction of real time (a quarter, once), so the

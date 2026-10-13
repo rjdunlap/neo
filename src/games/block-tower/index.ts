@@ -13,7 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { compare, finish, makeRounds, makeStandRounds, StandObservation, middleFrom, nextReach, planFor, REACH, reached, reachSlot, stackMove, standingTower, topples, W, type ReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
+import { compare, finish, makeRounds, makeStandRounds, StandObservation, middleFrom, nextReach, planFor, makeReachRounds, reachX, reachDrop, reached, stackMove, standingTower, topples, W, type DirectedReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -67,7 +67,7 @@ interface Flying {
 interface TrayBlock {
   node: Container;
   drag: DragHandle;
-  /** Eighths from the table edge, once on the stack. */
+  /** Canonical outward eighths from the active table edge, once on the stack. */
   x: number | null;
   /** Committed height, independent of animated screen coordinates. */
   depth: number;
@@ -108,10 +108,13 @@ class BlockTower implements Game {
   private readonly prediction = new Graphics();
   private dead = false;
   // Reach the star.
-  reachRound: ReachRound | null = null;
+  reachRound: DirectedReachRound | null = null;
+  readonly reachRounds: readonly DirectedReachRound[];
   tray: TrayBlock[] = [];
   readonly ghost = new Graphics();
   readonly hintGhost = new Graphics();
+  private aimSlot: number | null = null;
+  private hintSlot: number | null = null;
 
   private readonly room = new Graphics();
   private readonly marks = new Graphics();
@@ -136,7 +139,8 @@ class BlockTower implements Game {
     this.view = ctx.view;
     window.addEventListener('pointercancel', this.cancelReach, true);
     this.plan = planFor(ctx.level);
-    this.rounds = this.plan.mode === 'reach' ? REACH.map(() => ({ target: 0 })) : makeRounds(this.plan, ctx.rng);
+    this.reachRounds = this.plan.mode === 'reach' ? makeReachRounds(ctx.rng) : [];
+    this.rounds = this.plan.mode === 'reach' ? this.reachRounds.map(() => ({ target: 0 })) : makeRounds(this.plan, ctx.rng);
     this.standRounds = this.plan.mode === 'stand' ? makeStandRounds(ctx.rng, ctx.band === 'school') : [];
     const replayIcon = new Graphics().arc(0, 0, 24, 0.5, 5.7).stroke(line(ink, 6)).poly([20, -22, 32, -15, 17, -8]).fill(ink);
     const nextIcon = new Graphics().poly([-16, -25, 20, 0, -16, 25]).stroke(line(ink, 7));
@@ -200,7 +204,11 @@ class BlockTower implements Game {
   }
 
   private get edge() {
-    return this.view.w * 0.42;
+    return this.view.w * (this.reachRound?.direction === -1 ? 0.58 : 0.42);
+  }
+
+  private reachScreen(u: number) {
+    return reachX(u, this.edge, BW, this.reachRound!.direction);
   }
 
   private get tableTop() {
@@ -277,7 +285,7 @@ class BlockTower implements Game {
         const next = round ? nextReach(placed.map((t) => t.x!), round) : undefined;
         const block = this.tray.find((t) => t.x === null && !t.drag.dragging);
         if (next === undefined || !block) return null;
-        return { drag: { on: block.node }, to: { on: this.ctx.stage, x: this.edge + px(next), y: this.tableTop - placed.length * BH } };
+        return { drag: { on: block.node }, to: { on: this.ctx.stage, x: this.reachScreen(next), y: this.tableTop - placed.length * BH } };
       }
     }
   }
@@ -665,7 +673,7 @@ class BlockTower implements Game {
   // Reach the star ----------------------------------------------------------------------------------
 
   private buildReach() {
-    this.reachRound = REACH[this.index];
+    this.reachRound = this.reachRounds[this.index];
     for (let i = 0; i < this.reachRound.blocks; i++) {
       const node = blockArt(colorFor(i + 2));
       node.hitArea = new Rectangle(-BW / 2 - 10, -BH - 30, BW + 20, BH + 40);
@@ -702,9 +710,11 @@ class BlockTower implements Game {
     const e = this.edge;
     const top = this.tableTop;
     const g = this.table.clear();
-    g.rect(-20, top, e + 20, 26).fill(wood.fill).stroke(line(wood.line, 5));
-    g.rect(40, top + 26, 22, this.floor - top - 26).rect(e - 70, top + 26, 22, this.floor - top - 26).fill(wood.line);
-    const sx = e + px(round.star);
+    const left = round.direction === 1 ? -20 : e;
+    const right = round.direction === 1 ? e : v.w + 20;
+    g.rect(left, top, right - left, 26).fill(wood.fill).stroke(line(wood.line, 5));
+    g.rect(round.direction === 1 ? 40 : v.w - 62, top + 26, 22, this.floor - top - 26).rect(e - round.direction * 59 - 11, top + 26, 22, this.floor - top - 26).fill(wood.line);
+    const sx = this.reachScreen(round.star);
     const highest = top - (round.blocks + 0.6) * BH;
     dashed(g, sx, top + 20, sx, highest, swatch.yellow.line, 5);
     g.poly([0, -30, 9, -10, 30, -9, 13, 5, 19, 27, 0, 15, -19, 27, -13, 5, -30, -9, -9, -10].map((n, i) => n + (i % 2 ? highest - 10 : sx))).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
@@ -716,17 +726,18 @@ class BlockTower implements Game {
     });
     const placed = this.placed;
     placed.forEach((t, k) => {
-      if (!t.drag.dragging && !this.ctx.tw.busy(t.node)) t.node.position.set(e + px(t.x!), top - k * BH);
+      if (!t.drag.dragging && !this.ctx.tw.busy(t.node)) t.node.position.set(this.reachScreen(t.x!), top - k * BH);
     });
+    if (this.ghost.visible && this.aimSlot !== null) this.ghost.position.set(this.reachScreen(this.aimSlot), top - placed.length * BH);
+    if (this.hintGhost.visible && this.hintSlot !== null) this.hintGhost.position.set(this.reachScreen(this.hintSlot), top - placed.length * BH);
     // Blocks in the tray move freely; on the stack only the top one lifts off again.
     for (const t of this.tray) if (!t.drag.dragging) t.drag.enabled = !this.busy && !this.finished && (t.x === null || t === placed[placed.length - 1]);
   }
 
   /** The slot a block over (x, y) would drop into: the next level up, snapped to eighths. */
   private slot(x: number, y: number): number | null {
-    const e = this.edge;
-    if (x < e - 2 * BW || x > e + 1.6 * BW || y > this.tableTop + 40) return null;
-    return reachSlot(((x - e) / BW) * W);
+    if (y > this.tableTop + 40) return null;
+    return reachDrop(x, this.edge, BW, this.reachRound!.direction);
   }
 
   private pick(t: TrayBlock) {
@@ -741,11 +752,12 @@ class BlockTower implements Game {
 
   private aim(x: number, y: number) {
     const s = this.slot(x, y);
+    this.aimSlot = s;
     this.ghost.visible = s !== null;
     if (s === null) return;
     const k = this.placed.length;
     this.ghost.clear().roundRect(-BW / 2, -BH, BW, BH, 10).stroke({ width: 4, color: ink, alpha: 0.5 });
-    this.ghost.position.set(this.edge + px(s), this.tableTop - k * BH);
+    this.ghost.position.set(this.reachScreen(s), this.tableTop - k * BH);
   }
 
   private place(t: TrayBlock, x: number, y: number): boolean {
@@ -765,7 +777,7 @@ class BlockTower implements Game {
     t.depth = k;
     this.busy = true;
     for (const block of this.tray) block.drag.enabled = false;
-    void this.ctx.tw.to(t.node, { x: this.edge + px(s), y: this.tableTop - k * BH }, { duration: 0.15, ease: ease.outQuad }).then(() => void this.settled());
+    void this.ctx.tw.to(t.node, { x: this.reachScreen(s), y: this.tableTop - k * BH }, { duration: 0.15, ease: ease.outQuad }).then(() => void this.settled());
     sfx.clunk();
     return true;
   }
@@ -783,9 +795,9 @@ class BlockTower implements Game {
       this.wrongs++;
       // The ghosts of the falling blocks stay a moment with the line through their middle.
       const g = this.explain.clear();
-      const mid = this.edge + px(middleFrom(xs, falls));
-      const under = falls === 0 ? this.edge : this.edge + px(xs[falls - 1]) + BW / 2;
-      for (let j = falls; j < xs.length; j++) g.roundRect(this.edge + px(xs[j]) - BW / 2, this.tableTop - (j + 1) * BH, BW, BH, 10).stroke({ width: 3, color: ink, alpha: 0.35 });
+      const mid = this.reachScreen(middleFrom(xs, falls));
+      const under = falls === 0 ? this.edge : this.reachScreen(xs[falls - 1]) + round.direction * BW / 2;
+      for (let j = falls; j < xs.length; j++) g.roundRect(this.reachScreen(xs[j]) - BW / 2, this.tableTop - (j + 1) * BH, BW, BH, 10).stroke({ width: 3, color: ink, alpha: 0.35 });
       dashed(g, mid, this.tableTop - (xs.length + 0.3) * BH, mid, this.tableTop - falls * BH + 30, swatch.red.fill, 5);
       g.moveTo(under, this.tableTop - falls * BH - 8).lineTo(under, this.tableTop - falls * BH + 20).stroke(line(swatch.red.line, 6));
       sfx.rumble();
@@ -802,7 +814,7 @@ class BlockTower implements Game {
         this.layer.addChild(c);
         return c;
       });
-      this.tumble(copies, this.edge - 200, 1);
+      this.tumble(copies, this.edge - round.direction * 200, round.direction);
       await this.ctx.say(falls === 0 ? 'tower.fell-table' : 'tower.fell-block');
       this.explain.clear();
       // Back in the tray, fading in.
@@ -822,7 +834,7 @@ class BlockTower implements Game {
       this.busy = true;
       sfx.sparkle();
       sfx.tada();
-      const sx = this.edge + px(round.star);
+      const sx = this.reachScreen(round.star);
       this.ctx.particles.burst(sx, this.tableTop - (round.blocks + 0.6) * BH - 10, { kind: 'star', colors: [0xffd54a, 0xffffff], count: 18, speed: [150, 320], gravity: 0, life: [0.6, 1] });
       for (const t of this.tray) t.drag.enabled = false;
       await this.ctx.say('tower.star');
@@ -850,8 +862,9 @@ class BlockTower implements Game {
     const xs = this.placed.map((t) => t.x!);
     const way = finish(xs, round);
     if (way && way.length) {
+      this.hintSlot = way[0];
       this.hintGhost.clear().roundRect(-BW / 2, -BH, BW, BH, 10).fill({ color: 0xfff3a0, alpha: 0.7 }).stroke({ width: 4, color: swatch.yellow.line });
-      this.hintGhost.position.set(this.edge + px(way[0]), this.tableTop - xs.length * BH);
+      this.hintGhost.position.set(this.reachScreen(way[0]), this.tableTop - xs.length * BH);
       this.hintGhost.visible = true;
       void this.ctx.say('tower.reach-hint');
     } else {

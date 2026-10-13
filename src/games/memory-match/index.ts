@@ -10,7 +10,8 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
+import { pictureFace } from './art';
+import { selectPictures, type MemoryPicture, cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
@@ -20,6 +21,7 @@ class MemoryMatch implements Game {
   readonly seen = new Set<number>();
   private readonly plan;
   private readonly letters: string[];
+  readonly pictures: readonly MemoryPicture[];
   private readonly background = new Graphics();
   private readonly hint = new Graphics();
   private first: number | null = null;
@@ -48,6 +50,7 @@ class MemoryMatch implements Game {
     this.versus = !!ctx.couch?.versus;
     this.cards = makeDeck(this.plan.pairs, ctx.rng);
     this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
+    this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
     this.remaining = this.plan.pairs;
     ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
     this.ring.eventMode = 'none';
@@ -68,6 +71,7 @@ class MemoryMatch implements Game {
   }
 
   private face(card: MemoryCard): Container {
+    if (this.plan.mode === 'pictures') return pictureFace(this.pictures[card.pair]);
     if (this.plan.mode === 'fractions') {
       const amount = fraction(card.pair)!;
       if (card.side) return label(card.pair === 2 ? 'three\nquarters' : amount.name, card.pair === 2 ? 26 : 30, swatch.orange.line);
@@ -101,7 +105,7 @@ class MemoryMatch implements Game {
   private async choose(i: number) {
     const view = this.views[i];
     if (this.locked || view.matched || this.remaining === 0) return;
-    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters);
+    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures);
     if (this.first === i) {
       void this.ctx.say('memory.card', { card: contents });
       return;
@@ -129,7 +133,7 @@ class MemoryMatch implements Game {
       const known = knownMismatch(this.cards, first, i, this.seen);
       if (known) { this.misses++; this.wrong++; sfx.boing(); }
       void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
-        first: cardLabel(this.plan.mode, this.cards[first], this.letters), second: contents,
+        first: cardLabel(this.plan.mode, this.cards[first], this.letters, this.pictures), second: contents,
       });
       await this.ctx.tw.wait(1.2);
       a.front.visible = view.front.visible = false;

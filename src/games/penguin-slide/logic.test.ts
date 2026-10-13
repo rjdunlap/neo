@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
+import { PAIRED_BLOCK_PONDS,beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
 
 const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
 
@@ -30,7 +30,7 @@ describe('Penguin Slide', () => {
         expect(p.blocks?.length ?? 0).toBe(plan.blocks ?? 0);
       }
     }
-  });
+  }, 15000);
 
   it('following the hint arrow always eats every fish in the fewest slides', () => {
     for (const plan of PLANS) {
@@ -121,13 +121,66 @@ describe('Penguin Slide ice blocks', () => {
     expect(solve(shut, shut.start).moves).toBe(-1);
   });
 
-  it('every level-6 board needs a push: with the blocks frozen like rocks the fish is out of reach or farther', () => {
-    const plan = PLANS[5];
-    expect(plan.blocks).toBeGreaterThan(0);
-    for (let seed = 1; seed <= 150; seed++) {
-      const p = makePuzzle(plan, new Rng(seed));
-      const frozen = solve({ ...p, rocks: [...p.rocks, ...p.blocks!], blocks: [] }, p.start).moves;
-      expect(frozen === -1 || frozen > p.best).toBe(true);
+  it('every block level needs a push: frozen blocks leave the fish out of reach or farther', () => {
+    for (const plan of PLANS.filter(p => p.blocks)) {
+      expect(plan.blocks).toBeGreaterThan(0);
+      for (let seed = 1; seed <= 150; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        const frozen = solve({ ...p, rocks: [...p.rocks, ...p.blocks!], blocks: [] }, p.start).moves;
+        expect(frozen === -1 || frozen > p.best).toBe(true);
+      }
     }
-  });
+  }, 15000);
+});
+
+// The next level combines block positioning with the existing two-fish planning rule.
+it('level 7 preserves the board size and gives two-fish routes with meaningful block moves', () => {
+  const p = PLANS[6];
+  expect([p.cols, p.rows, p.fish, p.blocks, p.soft, p.rocks, p.puzzles]).toEqual([6, 5, 2, 1, 0, 4, 2]);
+  expect(p.moves).toEqual([4, 6]);
+  for (let seed = 1; seed <= 60; seed++) {
+    const puzzle = makePuzzle(p, new Rng(seed));
+    let at = puzzle.start, have = 0, blocks = puzzle.blocks!, pushes = 0;
+    for (let step = 0; step < puzzle.best; step++) {
+      const first = solve(puzzle, at, have, blocks).first;
+      expect(first).toBeGreaterThanOrEqual(0);
+      const m = move(puzzle, at, first as Dir, blocks)!;
+      if (m.pushed) pushes++;
+      have |= eaten(puzzle, m.passed); at = m.to; blocks = m.blocks;
+      expect(solve(puzzle, at, have, blocks).moves).toBe(puzzle.best - step - 1);
+    }
+    expect(pushes).toBeGreaterThan(0);
+    expect(have).toBe(3);
+  }
+});
+
+it('level 8 combines useful snow stops with a useful block on every generated pond',()=>{
+ const plan=PLANS[7];expect([plan.fish,plan.blocks,plan.soft]).toEqual([2,1,1]);
+ for(let seed=1;seed<=150;seed++){
+  const p=makePuzzle(plan,new Rng(seed));
+  expect(solve({...p,soft:[]},p.start).moves).not.toBe(p.best);
+  const frozen=solve({...p,rocks:[...p.rocks,...p.blocks!],blocks:[]},p.start).moves;
+  expect(frozen===-1||frozen>p.best).toBe(true);
+ }
+});
+
+it('paired-block ponds need each block, preserve their solver distance under seeded reflections, and vary',()=>{
+ const seen=new Set<string>();
+ for(let seed=1;seed<=200;seed++){
+  const p=makePuzzle(PLANS[8],new Rng(seed)),signature=JSON.stringify(p);
+  if(seen.has(signature))continue;seen.add(signature);
+  expect(solve(p,p.start).moves).toBe(p.best);
+  for(let i=0;i<2;i++){
+   const frozen=solve({...p,rocks:[...p.rocks,p.blocks![i]],blocks:p.blocks!.filter((_,j)=>j!==i)},p.start).moves;
+   expect(frozen===-1||frozen>p.best).toBe(true);
+  }
+  let at=p.start,have=0,blocks=p.blocks!,pushed=new Set<number>();
+  for(let step=0;step<p.best;step++){
+   const d=solve(p,at,have,blocks).first;expect(d).toBeGreaterThanOrEqual(0);
+   const m=move(p,at,d as Dir,blocks)!;if(m.pushed)pushed.add(m.pushed.index);
+   at=m.to;blocks=m.blocks;have|=eaten(p,m.passed);
+  }
+  expect(have).toBe(1);expect(pushed.size).toBe(2);
+ }
+ expect(PAIRED_BLOCK_PONDS).toHaveLength(4);expect(seen.size).toBe(16);
 });

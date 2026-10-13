@@ -35,15 +35,15 @@ export const W = 8;
 
 /**
  * Where a stack falls. `xs` are block middles from the bottom up, in eighths. The bottom block stands on the
- * ground (`edge` null: anything goes) or on a table whose right edge is at `edge`. Returns the lowest block
+ * ground (`edge` null: anything goes) or on a table at `edge`, extending inward from `direction` (default right). Returns the lowest block
  * that falls, taking everything above it along, or -1 if the whole stack stands.
  */
-export function topples(xs: readonly number[], edge: number | null): number {
+export function topples(xs: readonly number[], edge: number | null, direction: ReachDirection = 1): number {
   for (let k = 0; k < xs.length; k++) {
     const above = xs.slice(k);
     const middle = above.reduce((s, x) => s + x, 0) / above.length;
     if (k === 0) {
-      if (edge !== null && middle >= edge) return 0;
+      if (edge !== null && direction * (middle - edge) >= 0) return 0;
     } else if (Math.abs(middle - xs[k - 1]) >= W / 2) return k;
   }
   return -1;
@@ -185,9 +185,25 @@ export class StandObservation {
 
 // Reach the star -----------------------------------------------------------------------------------
 
+export type ReachDirection = 1 | -1;
+export type DirectedReachRound = ReachRound & { direction: ReachDirection };
+
+/** Deal one outward reach on each side, keeping the original distances and budgets. */
+export function makeReachRounds(rng: Rng): readonly DirectedReachRound[] {
+  const directions = rng.shuffle<ReachDirection>([1, -1]);
+  return Object.freeze(REACH.map((round, i) => Object.freeze({ ...round, direction: directions[i] })));
+}
+
+/** Project canonical outward eighths to screen units, and normalize before snapping. */
+export const reachX = (u: number, edge: number, width: number, direction: ReachDirection) => edge + direction * u * width / W;
+export const reachDrop = (x: number, edge: number, width: number, direction: ReachDirection): number | null => {
+  const u = direction * (x - edge) * W / width;
+  return u < -2 * W || u > 1.6 * W ? null : reachSlot(u);
+};
+
 export interface ReachRound {
   blocks: number;
-  /** How far past the table edge the star stands, in eighths. A block touches it with its right side. */
+  /** How far past the table edge the star stands, in eighths. A block touches it with its outward side in canonical coordinates. */
   star: number;
 }
 
@@ -201,7 +217,7 @@ export const REACH: ReachRound[] = [
 export const SLOTS = Array.from({ length: 2 * W + W / 2 + 1 }, (_, i) => i - W - W / 2);
 
 /** Snap a horizontal drag (in eighths) to the same domain searched by hints and the finger bot. */
-export const reachSlot = (x: number) => Math.max(SLOTS[0], Math.min(SLOTS[SLOTS.length - 1], Math.round(x)));
+export const reachSlot = (x: number) => Math.max(SLOTS[0], Math.min(SLOTS[SLOTS.length - 1], Math.round(x))) || 0;
 
 export const rightSide = (x: number) => x + W / 2;
 export const reached = (xs: readonly number[], star: number) => xs.some((x) => rightSide(x) >= star);
