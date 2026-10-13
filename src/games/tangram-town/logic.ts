@@ -26,6 +26,7 @@ export const PICTURES = {
   lamp: [{shape:'hull',x:0,y:-65,turns:2},{shape:'rectangle',x:0,y:80,turns:1}],
   bus: [{shape:'rectangle',x:60,y:90,turns:0},{shape:'triangle',x:-110,y:70,turns:0},{shape:'triangle',x:-110,y:70,turns:2}],
   castle: [{shape:'triangle',x:0,y:30,turns:0},{shape:'triangle',x:0,y:30,turns:2},{shape:'roof',x:0,y:-100,turns:0},{shape:'rectangle',x:0,y:150,turns:0}],
+  robot: [{shape:'square',x:0,y:-145,turns:0},{shape:'rectangle',x:0,y:-25,turns:0},{shape:'triangle',x:-70,y:95,turns:0},{shape:'triangle',x:70,y:95,turns:1}],
   houseboat: [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:0},{shape:'triangle',x:0,y:-15,turns:2},{shape:'roof',x:0,y:-145,turns:0}],
 } as const satisfies Record<string, readonly Target[]>;
 export type PictureId = keyof typeof PICTURES;
@@ -39,8 +40,8 @@ export const PLANS: readonly Plan[] = [
   { pool:['boat','sailboat','flag','lamp','tent'], rotate:false, outlines:true, name:'Fit a hull and a sail, a pole and a flag, a lamp or a tent' },
   { pool:['house','tree','flag','sailboat','lamp','tent'], rotate:true, outlines:true, name:'Turn the shapes with quarter-turn snaps' },
   { pool:['cottage','truck','tower','ferry','bus','barn'], rotate:true, outlines:true, name:'Two triangles make a square; three shapes fill a picture' },
-  { pool:['rocket','houseboat','castle'], rotate:true, outlines:true, name:'Build a rocket, houseboat or castle from four shapes' },
-  { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
+  { pool:['rocket','houseboat','castle','robot'], rotate:true, outlines:true, name:'Build a rocket, houseboat, castle or robot from four shapes' },
+  { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn','robot'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
 ];
 export const planFor=(l:number)=>PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
 /** The level's rules with the picture this round draws from its pool. */
