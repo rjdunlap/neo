@@ -53,7 +53,7 @@ So the owl she taps really does matter most of the time, but nothing tells her s
 | *First Orchard* (HABA, ages 2+; [listing](https://flyingpigtoys.com/collections/haba/products/my-very-first-games-first-orchard), **search summary only**) | cooperative first game | Roll a color die, pick fruit of that color from the trees into one shared basket; a raven walks a short path | **The match is the action**: a two-year-old picks the fruit herself. One big thing to hold, one basket to share | The raven race and the loss |
 | *Candy Land* (Hasbro; Koster's [post](https://www.raphkoster.com/?p=2454) on the "no decisions" critique, **search summary only**) | race game | Turn a card, move to the next square of that color. Critics (Steven Johnson, as Koster quotes him) say the game never asks a decision; defenders say that is the point at three, because it isolates turn-taking and color matching. A 2025 edition lists a cooperative mode (retailer text only) | **The rule: the next square of the card's color** is a perfect first rule. The level-1 and level-2 game is a cooperative Candy Land | The winner and loser; and the lack of any decision, which is this dive's main finding |
 | *Count Your Chickens* (Peaceable Kingdom, ages 3+; [review](https://www.gamesforyoungminds.com/blog/2019/5/16/count-your-chickens), **search summary only**) | cooperative counting game | Spin, walk Mother Hen that many spaces, counting aloud together, and take that many chicks to the coop; a fox returns a chick | **Counting the hop aloud, together** | The fox and the race against the hen |
-| Siegler and Ramani's number board games ([Siegler 2009](https://www.cmu.edu/dietrich/psychology/cs/research-teaching/docs/SieglerBoardGamesCDPerp2009.pdf), **opened** in [Frog Hop's dive](frog-hop.md#similar-games)) | research board games, Head Start 4–5-year-olds | Numbered squares, a spinner, and *saying the numbers of the squares you pass*; a linear track helped numeracy, a circular one did not. As I recall (not opened here) their control group played a color-only board game and gained no number knowledge | **A reminder of what color games do not teach**: the number gain came from the numbers on the squares, said aloud | The spinner; the numbers-on-squares, which Frog Hop owns |
+| Siegler and Ramani's number board games ([Siegler 2009](https://www.cmu.edu/dietrich/psychology/cs/research-teaching/docs/SieglerBoardGamesCDPerp2009.pdf), **opened** in [Frog Hop's dive](frog-hop.md#similar-games)) | research board games, Head Start 4–5-year-olds | Numbered squares, a spinner, and *saying the numbers of the squares you pass*; a linear track helped numeracy, a circular one did not. As I recall from Ramani and Siegler's 2008 study (not opened here, so unverified) their control group played a color-only board game and gained no number knowledge | **A reminder of what color games do not teach**: the number gain came from the numbers on the squares, said aloud | The spinner; the numbers-on-squares, which Frog Hop owns |
 | Stanford Preschool Math, [Follow the Path](https://preschoolmath.stanford.edu/resource/following-the-path/) (**search summary only**) | classroom activity | Each child *predicts* the square the piece will land on before counting the move, then checks | **Predict, then count to check**, for the level 4 numerals (an unscored prediction) | The die; the number cards |
 | Frog Hop, Color Garden, Shape Sorter, Pattern Train (this catalog) | the same island | Counted hops on numerals; sorting by color and shade; matching by shape; sequence by color and shape | They already teach the single skills (see below) | Nothing to import; the point is not to repeat them |
 
@@ -68,14 +68,14 @@ So the owl she taps really does matter most of the time, but nothing tells her s
 
 **What the catalog already teaches, by skill.**
 
-| Skill | Where it lives | So Owl Walk should not be justified by it |
-| --- | --- | --- |
-| Naming and matching a color | Color Garden (sorting, light and dark), Rainbow Fingers, Dot Link, Goodnight Room level 8, Memory Match | Yes: color matching alone is the most-covered skill on the island |
-| Matching a shape | Shape Sorter, Tangram Town, Pattern Train | Yes |
-| Counted hops on a line | Frog Hop (numbers on the pads), Duck Pond | Yes: it owns counted hops on numerals |
-| Following an ordered route | Robot Path, Treasure Map | Partly |
-| A second person with a job | Bounce Back's paddle, Pet Says' green arrow; Owl Walk's turns (the [notebook](../IDEAS.md#the-seat-contract) counts it as one of three) | **Here Owl Walk is nearly alone** |
-| A choice that helps *us* | Nothing else | **Here it is alone** |
+| Skill | Built | Planned (notebook and roadmap) | So Owl Walk should not be justified by it |
+| --- | --- | --- | --- |
+| Naming and matching a color | Color Garden (sorting, light and dark), Rainbow Fingers, Dot Link, Goodnight Room level 8, Memory Match | Same Pick (two people pick the same picture) | Yes: color matching alone is the most-covered skill on the island |
+| Matching a shape | Shape Sorter, Tangram Town, Pattern Train | Shape Buddies' shared roles | Yes |
+| Counted hops on a line | Frog Hop (numbers on the pads), Duck Pond | The Island Party Board's dice sum (school) | Yes: Frog Hop owns counted hops on numerals |
+| Following an ordered route | Robot Path, Treasure Map | Row Together's river and forks | Partly |
+| A second person with a job | Bounce Back's paddle, Pet Says' green arrow, Owl Walk's turns (the [Mario Party pass](../IDEAS.md#mario-party-and-the-family-table-2026-10-11) finds only these three give a second person a job) | Buddy Delivery, Row Together, Make One for Me (maker and breaker), Skip Rope, Tilt Together | Owl Walk is the only built **turn-taking** game; the planned ones are mostly roles in a single shared action, for school or for two grown-ups |
+| A choice that helps *us* | Nothing built outside Bounce Back's goals | Row Together's fork, the party board's captain at a fork | **Owl Walk is the only one for the youngest bands** |
 
 **The goal I recommend: choose the move that helps all of us, together with a partner who thinks aloud.** Matching a card to a stone is the entry action (it is the Candy Land rule, a good first rule for a toddler), not the point. The things only this game can teach are the three Hoot Owl Hoot is built on: *the next one ahead* (an ordered path and a rule about "next"), *which of several things should move* (comparing options by what they would do), and *a partner whose turn comes after yours* (turn-taking with someone who shows her their reasoning). Everyone wins together, with no loss, which is the cooperative frame the notebook already values.
 
@@ -88,6 +88,13 @@ The arc across the bands, by what she decides:
 | **Preschool** | Which stone, then (level 3) which owl, with a free choice; color or shape (level 6) | 3, 6 |
 | **Pre-K** | Which owl carries us farthest; two cards for the team | 4, 7 |
 | **School** (a sketch, not a commitment) | Is the helper's move the best one, and why | 8 |
+
+**How it sits beside the planned shared-play rows.** Two planned rows are close to this game and the answer for each is to keep Owl Walk distinct:
+
+- **Island Race** ([IDEAS](../IDEAS.md), "a grown-up and child take turns: tap the spinner, and hop that color or number of steps along a path", after Candy Land and Chutes and Ladders) is level 1–2 of Owl Walk Home already. That candidate is **covered by Owl Walk Home**; this dive's levels are what would make it more than Candy Land, so the notebook should not build a second path game for the same age.
+- **The Island Party Board** (school; two people share a boat, both roll a die, the pet hops the **sum**, spaces open minigames and forks) shares a path and a partner but not the action. Its learning is adding to 12 and picking at a fork; its audience is school and Game night. Owl Walk stays the toddler-to-pre-K card game with a partner, and the party board stays the dice game for school. If the board is built, Owl Walk's levels 7–8 (two cards, check the helper) are the younger rehearsal for its fork decisions, not a duplicate of them.
+
+The rest (Same Pick, Make One for Me, Row Together, Skip Rope, Mystery Friend) are different actions: a secret pick, a puzzle built for someone, rowing, a shared count, a question game. The family review's "Play with someone" row names Owl Walk Home as the existing starting point; this dive gives it a ladder.
 
 What I would not do, and why: add the sun deadline (the clock the notebook's rule says to drop); deal each player a hand of three cards before there is a reason (hands are for level 7); make it a race between owls; make the owls "score". Hoot Owl Hoot's lesson is the talk about the move, so the pet should talk.
 
@@ -148,7 +155,7 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 
 ## Decisions for the developer
 
-1. **The goal.** Lead with "choose the move that helps all of us": matching a card to a stone is the entry action, not the point, because color and shape matching is the most-covered skill on the island. *Lean: yes.* (Everything below follows from this.)
+1. **The goal. Decided (the developer, 2026-10-12: "I'll follow your lead on the goal"):** Owl Walk Home's goal is "choose the move that helps all of us"; matching a card to a stone is the entry action, not the point, because color and shape matching is the most-covered skill on the island. Decisions 2–9 are still leans.
 2. **Rework levels 1–3 in place, or leave them and append a stone-tap track?** *Lean: in place.* The plan names stay true, levels 1–3 cannot miss today, and nobody has a saved round that depends on the owl tap. The cost is that a child saved at level 2 sees a different action after the update.
 3. **Level 2's owls.** Each owl has its own player (purple hers, brown the pet's, both helping the last owl), or the owls stay shared from level 2? *Lean: assigned at 2, shared from 3.* It makes "taking turns" visible to a toddler; a child who can follow it can then have a free choice of owl.
 4. **Stakes without a clock.** Add an unscored "can we get home in fewer turns?" later? *Lean: no for now.* The sun is the ending; revisit after a child plays level 4.

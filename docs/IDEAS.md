@@ -1521,7 +1521,7 @@ These references span preschool through elementary school. Preserve exploration 
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Island Race | Candy Land, Chutes and Ladders | A grown-up and child take turns: tap the spinner, and hop that color or number of steps along a path | Count the hops yourself; slides are fun, not setbacks | Playing together; turn-taking |
+| Island Race | Candy Land, Chutes and Ladders | A grown-up and child take turns: tap the spinner, and hop that color or number of steps along a path | Count the hops yourself; slides are fun, not setbacks | Playing together; turn-taking. **Covered by Owl Walk Home (its levels 1–2 are a cooperative Candy Land; see its [deep dive](deep-dives/owl-walk.md#what-makes-sense-here)); build no second path game for the same age** |
 | Who Is It? | Guess Who? | Tap the friend with a hat | Narrow down with yes/no clues | Pre-K reasoning; the twenty-questions ladder is [Mystery Friend](#how-the-research-lands-on-rows-already-here) |
 
 ### Reference shelves added in the gap review (2026-10-06)
