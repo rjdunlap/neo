@@ -1,5 +1,20 @@
 # Puddle Island verification
 
+## 2026-10-12 — Block Tower level-5 prediction definition (docs only)
+
+- Defined slice 4 in [the deep dive](deep-dives/block-tower.md#build-slices-in-order), [PR #242](https://github.com/rjdunlap/neo/pull/242): frozen-pair Watch again, explicit Continue, three observations and exactly-once completion; seven candidate pairs, 28 mirrored/side variants and conservative pre-K coverage.
+- Reviewed pair arithmetic against the existing strict equal-block support rule; this is authored planning, not automated rule proof or play evidence. Developer decisions and child/device fit stay open.
+- Checked new local links/anchors and `git diff --check` on claim `c1f869e` plus docs diff, based on `origin/main` `4df8622`. Updated the tracker and queue with dispatch/claim/PR, scope, usage and next action.
+- Not run: typecheck, unit tests, build, browser, demo or offline (docs-only tier). No implementation, levels/bands, mirror reach or accounting changed. Existing gameplay coverage remains unchanged; later-build checks are specified, not performed.
+
+## 2026-10-12 — Goodnight Room level 9, everyone but the one
+
+- Appended pre-K level 9 ([PR #239](https://github.com/rjdunlap/neo/pull/239)): every friend except the bedroom/barn night-light sleeps in any order; the light stays awake through the finale. Voice, scoped how-to and ghost finger agree; one shell sticker, existing misses/hints.
+- Tested claim `2bd575c` plus implementation diff on `origin/main` `11f1fbe`: `npm run typecheck`, 41 focused Goodnight Room/registry/how-to tests and `npm run build` passed (existing bundle-size warning). Rules cover both seeded rooms, alternative orders, excluded-light rejection, repeated sleepers and useful hints.
+- `GAME_URL=http://localhost:5197 BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=9 TO_LEVEL=9 npm run test:browser` passed two wrong light taps/one hint, reverse answer order, the light alone awake with a glow at the closing speech, exact saved score and sticker. Portrait `test-results/browser/goodnight-room-9-night-light-portrait.png` reviewed; no page errors.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=9` passed cleanly in 10.7 seconds. New local doc links and `git diff --check` passed; session Vite stopped at closeout.
+- Not run: earlier-level browser replays, full unit/browser/couch suites or offline check (new level on existing touch input; no persistence/navigation/assets change). Actual device speech, iPad touch and child understanding of the exception remain open.
+
 ## 2026-10-13 — Pet Says level 13, Pat the pet (lap, below level 1)
 
 - Added level 13 (`ENTRY_PLANS`; lap `order: [13, 1, 2]`): the pet waits, each pat on it starts one move, a pat during a move squishes and is not queued, five different moves end the round by themselves, no arrow ([PR #236](https://github.com/rjdunlap/neo/pull/236)). The numbered ladder 1–5 and the other bands are unchanged.
@@ -970,6 +985,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Block Tower prediction definition (docs only) | 2026-10-12: new local links/anchors and diff check | [Slice 4 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #242](https://github.com/rjdunlap/neo/pull/242) | No gameplay evidence added; implementation and child/device fit remain open |
 | `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |
 | `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |
 | `gemswap`, `fingerdemo`/`couchgames` (`gem-swap`) | 2026-10-12: first/last touch rounds, help/revision/reward, portrait; clean demos in 3.3/10.4s, controller bot and isolated save; typecheck/build, all affected unit tests | Gem Swap entry / [PR #235](https://github.com/rjdunlap/neo/pull/235) | One unchanged Peg Garden timeout; full unchanged suites skipped; real devices/person play open |
@@ -1006,6 +1022,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Fill and Dump release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations; story resume/rewards; Together and Face-off trips; integrated production build and offline reload/saves | Fill and Dump preschool pouring entry | Chrome automation; iPad and child judgment remain open |
 | Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
+| Goodnight Room exception (`woods`, `fingerdemo`) | 2026-10-12: level 9 two misses/one hint, reverse answers, night-light awake through finale and saved reward; 41 focused tests, typecheck/build; portrait reviewed; demo clean in 10.7 s | Goodnight Room level 9 entry | iPad, device speech and child understanding open |
 | Goodnight Room counted goodnights (`woods`, `fingerdemo`) | 2026-10-11: level 7, spoken counts, repeated sleepers, remaining friends awake at the target and saved reward; portrait reviewed; demo clean in 8.5 s | Goodnight Room counted-goodnights entry | iPad, device speech and child play open |
 | Goodnight Room light last (`woods`, `fingerdemo`) | 2026-10-11: level 6, early light taps, two misses/one hint, reverse-order friends, saved reward; portrait reviewed; demo clean in 12.6 s | Goodnight Room light-last entry | iPad, device speech and child play open |
 | Goodnight Room barn and animals (`woods`, `fingerdemo`) | 2026-10-10: levels 1–5, wrong objects and ordered friends, hint, reverse-order animals, saved score/sticker; seeded barn in portrait; demos 1/5 clean in 8.8/7.1 s | Goodnight Room barn and animals entry | Portrait screenshots reviewed; iPad touch, device speech and child play open |
@@ -1068,6 +1085,10 @@ The last recorded pass of each browser suite (suite names and filters are in the
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
 
 ## Entries, newest first
+
+### Block Tower prediction-definition worker dispatch (2026-10-13)
+
+Coordinator confirmed height #218 merged/worker complete and reconciled its final usage once. Other implementation completed; no active Neo implementation/open PR or Block Tower overlap found. Fresh allowance admits docs-only definition worker `01a13369-cb51-7223-9d30-bed506a3d160`; queue records exact scope/admission/pending checks. Unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Worker owes docs validation only; no coordinator servers/code checks.
 
 ### Block Tower height-variety worker dispatch (2026-10-12)
 

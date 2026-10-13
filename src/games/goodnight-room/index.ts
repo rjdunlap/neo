@@ -11,13 +11,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, planFor, SLOTS, thingToTap, type NightPlan, type NightRoom, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, planFor, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 8 },
+  prek: { min: 5, max: 9 },
 };
 
 const WALL = 0x9fb8e8;
@@ -255,11 +255,12 @@ class GoodnightRoom implements Game {
     }
     const r = this.requests[this.index];
     if (!r) {
-      // Everyone left says goodnight together.
-      for (const s of this.sleepers.filter((x) => !x.asleep)) await this.goodnight(s, false);
+      // Friends left settle together; an exception round keeps its night-light awake.
+      for (const s of this.sleepers.filter((x) => !x.asleep && (this.plan.mode !== 'except' || !isLight(x.thing)))) await this.goodnight(s, false);
       return void this.finale();
     }
     this.busy = false;
+    if (this.plan.mode === 'except') return this.ctx.instruct('night.except', { light: NAMES[this.friends.find(isLight)!] });
     if (this.plan.mode === 'named') return this.ctx.instruct('night.named', { who: NAMES[r[0]] });
     if (this.plan.mode === 'color') return this.ctx.instruct('night.color', { color: this.color! });
     if (this.plan.mode === 'animals') return this.ctx.instruct('night.animals');
@@ -330,7 +331,8 @@ class GoodnightRoom implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'color') await this.ctx.say('night.notcolor', { what: NAMES[s.thing], actual: COLORS[s.thing].main, color: this.color! });
+    if (this.plan.mode === 'except') await this.ctx.say('night.keepAwake', { light: NAMES[s.thing] });
+    else if (this.plan.mode === 'color') await this.ctx.say('night.notcolor', { what: NAMES[s.thing], actual: COLORS[s.thing].main, color: this.color! });
     else if (this.plan.mode === 'lightLast') await this.ctx.say('night.lightEarly', { light: NAMES[s.thing] });
     else if (this.plan.mode === 'animals') await this.ctx.say('night.notanimal', { what: NAMES[s.thing] });
     else if (r.includes(s.thing)) await this.ctx.say('night.order', { a: NAMES[r[0]], b: NAMES[r[1]] });
@@ -353,7 +355,8 @@ class GoodnightRoom implements Game {
       await this.ctx.tw.wait(0.35);
     }
     this.ctx.pet.setMood('sleepy', 4);
-    await this.ctx.say('night.done');
+    if (this.plan.mode === 'except') await this.ctx.say('night.exceptDone', { light: NAMES[this.friends.find(isLight)!] });
+    else await this.ctx.say('night.done');
     await this.ctx.tw.wait(0.6);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
