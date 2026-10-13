@@ -3,6 +3,7 @@ import { applySettings } from '../app/settings';
 import { voice } from '../audio/voice';
 import { GAMES } from '../games/registry';
 import { BANDS, playBand, type Band } from '../progress/bands';
+import { levelsInOrder } from '../progress/difficulty';
 import { bandForYears, cardName, checkBirthInput, completedYears, isBlankProfile } from '../progress/profiles';
 import { store } from '../progress/store';
 import { visibleGames } from '../content/lands';
@@ -342,7 +343,7 @@ function weekSummary(): string {
     const range = g.levels(playBand(g.bands, band));
     const now = store.levelFor(g.id, range);
     const options = [`<option value="">Automatic</option>`];
-    for (let l = range.min; l <= range.max; l++) {
+    for (const l of levelsInOrder(range)) {
       options.push(`<option value="${l}" ${stats.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`);
     }
     const picker =

@@ -21,6 +21,8 @@ describe('game registry', () => {
         const { min, max } = g.levels(band);
         expect(min, `${g.id} ${band}`).toBeGreaterThanOrEqual(1);
         expect(max, `${g.id} ${band}`).toBeGreaterThanOrEqual(min);
+        const order = g.levels(band).order;
+        if (order) expect([...order].sort((a, b) => a - b), `${g.id} ${band} order`).toEqual(Array.from({ length: max - min + 1 }, (_, i) => min + i));
         for (let l = min; l <= max; l++) expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
       }
     }

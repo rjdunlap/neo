@@ -4,6 +4,7 @@ import { onTap } from '../engine/input';
 import type { View } from '../engine/view';
 import type { Demo } from '../couch/demo';
 import type { HowToCard } from '../content/howto';
+import { stepLevel } from '../progress/difficulty';
 import type { LevelRange } from '../progress/difficulty';
 import { HoldButton, RoundButton } from './buttons';
 import { arrowIcon, checkIcon, houseIcon, playIcon } from './icons';
@@ -226,7 +227,7 @@ export class HowToPanel extends Container {
   /** The two level arrows, side by side. An arrow at the end of the levels is dimmed and does nothing. */
   private arrows(range: LevelRange, x: number, y: number): HoldButton[] {
     const make = (dir: 1 | -1, at: number) => {
-      const atEnd = dir === 1 ? this.info.levelNumber >= range.max : this.info.levelNumber <= range.min;
+      const atEnd = stepLevel(this.info.levelNumber, dir, range) === this.info.levelNumber;
       const button = new HoldButton(arrowIcon(dir), swatch.white, STEP_RADIUS, STEP_HOLD, () => (this.pending = dir), swatch.blue.fill);
       button.position.set(at, y);
       if (atEnd) {
