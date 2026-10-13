@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DX, DY, PLANS, distances, hintDir, hintPath, lowerBound, makePond, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, turnsIn,
+  DX, DY, PLANS, SWIPE, distances, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
   type Board, type Cell, type Conga, type Dir,
 } from './logic';
 
@@ -270,5 +270,65 @@ describe('help and getting stuck', () => {
   it('every direction is on the grid the way the game steers: right, down, left, up', () => {
     expect(DX).toEqual([1, 0, -1, 0]);
     expect(DY).toEqual([0, 1, 0, -1]);
+  });
+});
+
+describe('swiping to steer by touch', () => {
+  it('turns the line toward the way a finger has gone, once it has gone far enough', () => {
+    expect(swipeDir(SWIPE, 0)).toBe(0);
+    expect(swipeDir(0, SWIPE)).toBe(1);
+    expect(swipeDir(-SWIPE - 10, 4)).toBe(2);
+    expect(swipeDir(6, -SWIPE - 10)).toBe(3);
+  });
+
+  it('waits for a clear stroke: a short move, a tap and a slant ask for nothing', () => {
+    expect(swipeDir(0, 0)).toBeNull();
+    expect(swipeDir(SWIPE - 1, 0)).toBeNull();
+    expect(swipeDir(0, -(SWIPE - 1))).toBeNull();
+    expect(swipeDir(50, 48)).toBeNull();
+    expect(swipeDir(50, -49)).toBeNull();
+    // ...and the slant becomes a stroke once one way clearly wins.
+    expect(swipeDir(80, 48)).toBe(0);
+    expect(swipeDir(-48, -80)).toBe(3);
+  });
+
+  it('lets one stroke make several turns when the finger starts over after each', () => {
+    // Right, then down, then right again: each recognised turn re-anchors, so the leftover travel counts toward the next.
+    const path = [[SWIPE + 4, 3], [2, SWIPE + 5], [SWIPE + 1, -2]];
+    expect(path.map(([dx, dy]) => swipeDir(dx, dy))).toEqual([0, 1, 0]);
+  });
+
+  it('finds where the leader will be, so a hand can wait over the turn that is coming', () => {
+    for (let level = 1; level <= PLANS.length; level++) {
+      const pond = makePond(planFor(level), new Rng(900 + level));
+      const state = startState(pond);
+      expect(headAfter(pond, state, pond.route, 0)).toEqual(state.body[0]);
+      // Walking the route by hand lands on the same cell for every prefix.
+      let walk = state;
+      for (let i = 0; i < pond.route.length; i++) {
+        walk = step(pond, walk, pond.route[i]).state;
+        expect(headAfter(pond, state, pond.route, i + 1), `level ${level} step ${i + 1}`).toEqual(walk.body[0]);
+      }
+      expect(walk.eaten).toBe(pond.crumbs.length);
+    }
+  });
+
+  it('shows a short pond for the how-to demonstration: its first crumbs, still a fewest-steps bonk-free route', () => {
+    for (let level = 1; level <= PLANS.length; level++) {
+      const pond = makePond(planFor(level), new Rng(300 + level));
+      const short = firstCrumbs(pond, 4);
+      expect(short.crumbs).toEqual(pond.crumbs.slice(0, 4));
+      expect(short.par).toBe(lowerBound(short));
+      expect(short.route).toHaveLength(short.par);
+      let walk = startState(short);
+      for (const d of short.route) {
+        const r = step(short, walk, d);
+        expect(r.event, `level ${level}`).not.toBe('bonk');
+        walk = r.state;
+      }
+      expect(walk.eaten).toBe(4);
+    }
+    const pond = makePond(planFor(1), new Rng(1));
+    expect(firstCrumbs(pond, 9)).toBe(pond);
   });
 });

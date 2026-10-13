@@ -809,6 +809,7 @@ export const SCRIPT = {
   'bridges.joined': ['Every island is joined!', 'A bridge to every island!'],
   'bridges.done': ['A whole archipelago, joined.'],
   'conga.go': ['Steer the ducklings to the bread. If they bump something, the whole line turns about, and a bump counts as a step.'],
+  'conga.go-touch': ['Steer the ducklings to the bread. Touch the pond to set off, then swipe to turn. If they bump something, the whole line turns about.'],
   'conga.crumb': ['Yum!', 'A tasty crumb!'],
   'conga.bonk': ['Bonk! The conga turns about.'],
   'conga.hint': ['Follow the yellow dots to the next crumb.'],
