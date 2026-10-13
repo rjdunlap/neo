@@ -97,7 +97,7 @@ The **cost on level 5**, which a build must not forget: the how-to card's level-
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-Both wait on [how levels are ordered for a band](../ROADMAP.md#waiting-on-the-developer) and on whether a band's range may skip.
+Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built).
 
 - **One friend.** A single large sleepy friend in an almost empty room: one tap, the whole settle, the sticker. Rule test: exactly one thing, no requests, no misses. Cost: a plan row and a bigger hit area.
 - **Any tap puts the next friend to sleep.** For a child who cannot yet aim, a tap anywhere sends the next friend off. Rule test: every tap on the room advances; the round ends after the last friend. Cost: a mode and a bot.

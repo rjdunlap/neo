@@ -5,8 +5,9 @@ export interface LevelRange {
   min: number;
   max: number;
   /**
-   * The band's levels from easiest to hardest, when that is not simply min..max: a permutation of every ID in min..max.
-   * Saved levels, pins and stats keep their IDs; only stepping up or down follows this order.
+   * The band's levels from easiest to hardest, when that is not simply min..max. It may leave IDs out (another band's
+   * levels); min and max are then its lowest and highest ID. Saved levels, pins and stats keep their IDs; only
+   * stepping up or down follows this order, and a saved level left out lands on the nearest listed ID.
    */
   order?: number[];
 }
@@ -35,7 +36,11 @@ const clamp = (level: number, range: LevelRange) => {
   if (!range.order) return Math.min(range.max, Math.max(range.min, level));
   if (level < range.min) return range.order[0];
   if (level > range.max) return range.order[range.order.length - 1];
-  return range.order.includes(level) ? level : range.order[0];
+  if (range.order.includes(level)) return level;
+  return range.order.reduce((best, id) => {
+    const d = Math.abs(id - level) - Math.abs(best - level);
+    return d < 0 || (d === 0 && id < best) ? id : best;
+  });
 };
 
 /** Move `delta` places along the range's order from an already-clamped level, stopping at either end. */

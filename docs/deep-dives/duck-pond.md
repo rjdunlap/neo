@@ -119,7 +119,7 @@ IDs are appended, never inserted; levels 12–14 belong to a **school window of 
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-Two of the three are easier than a nearby level and one fits between existing levels, so all wait on [how levels are ordered and whether a range may skip](../ROADMAP.md#waiting-on-the-developer) (and on "May a band's range skip levels?"). IDs are assigned when built (15 and up).
+Two of the three are easier than a nearby level and one fits between existing levels, so all are placed by [`order`, which may skip IDs](../DESIGN.md) (built) (and on "May a band's range skip levels?"). IDs are assigned when built (15 and up).
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -125,7 +125,7 @@ Windows after this ladder: lap 1–2, toddler 2–4, preschool 4–6 **unchanged
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-Both wait on [how levels are ordered for a band and whether a band's range may skip](../ROADMAP.md#waiting-on-the-developer): an easier level appended above level 7 would make "step up" run backwards for lap.
+Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built): an easier level appended above level 7 would make "step up" run backwards for lap.
 
 - **Tap to hop in** (lap). One piece, the rest of the picture already placed and a whole-screen tap target; any tap sends the piece hopping into place and starts the picture. The reason is that tapping is the first gesture a toddler has and dragging comes later (Aziz et al., secondhand above). Rule test: any tap anywhere completes the round with zero misses; the bot taps. Cost: a mode and a piece that is a tap target, no art. A person check: whether a one-year-old finds the drag at level 1 hard enough to need it.
 - **Which piece fits?** (toddler and preschool). The picture is finished except one hole, and three pieces wait: the real one and two cut from other scenes (a different colour sky or ground). Drag the one that fits. Mistakes get the boing and a spoken hint; the real piece glows after two. A harder version with same-scene decoys (the bird, the fence, the hill) is a pre-K sketch: it needs edge continuity to answer, and the twin guard to be fair. Rule test: exactly one candidate matches the hole; decoys from other scenes differ in sky or ground; same-scene decoys come from other cells of the same picture and are not look-alikes of the target. Cost: a mode and a hole; the pieces and the cutting are already there.

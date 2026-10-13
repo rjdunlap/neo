@@ -149,7 +149,7 @@ IDs are appended, never inserted. They form a **school window of 3–13** (the l
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-All four are easier than level 1 or fit between existing levels, so they wait on [how levels are ordered and whether a band's range may skip](../ROADMAP.md#waiting-on-the-developer). IDs are assigned when built (14 and up). A cheap order is an appended slice for the younger band, easy to hard.
+All four are easier than level 1 or fit between existing levels, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (14 and up). A cheap order is an appended slice for the younger band, easy to hard.
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |

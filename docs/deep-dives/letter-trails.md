@@ -151,7 +151,7 @@ Either way the couplings are the same: Story Grove and Daisy Meadow (toddler's h
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-These wait on [how levels are ordered and whether a band's range may skip](../ROADMAP.md#waiting-on-the-developer). IDs are assigned when built (19 and up); a cheap order is an appended slice for the younger band, easy to hard, with its own range per band.
+These are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (19 and up); a cheap order is an appended slice for the younger band, easy to hard, with its own range per band.
 
 | Entry | Band | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |

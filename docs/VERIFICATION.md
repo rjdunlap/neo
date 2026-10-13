@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-12 — A band's `order` may skip level IDs
+
+- `order` is now any distinct list with `min`/`max` its ends (`difficulty.ts` clamp: a saved level or pin left out lands on the nearest listed ID); the registry test checks distinct, ends at min/max, and describes every listed level.
+- `npm run typecheck` and `vitest run src/progress src/games/registry.test.ts` passed (114 tests, including a skipping band 13,3..9). No game uses a skipping `order` yet.
+- Not run: browser suites, build (no game or UI behavior changed; the how-to arrows and grown-ups' picker already read `levelsInOrder`/`stepLevel`).
+
 ## 2026-10-12 — Tile Pairs levels 4–6
 
 - Added 24-tile long bridge, twin terraces and crown layouts ([PR #232](https://github.com/rjdunlap/neo/pull/232)), deepening access paths and repeated-picture choices; range is now 1–6. Targets, rules, accounting, controls and couch trip levels are unchanged. The how-to's existing wording is true for the new levels.

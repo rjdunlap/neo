@@ -138,7 +138,7 @@ Cost (L): entries in `COUCH_IDS` and `UNLOCK_TIERS` (`src/couch/party.ts`), a ca
 
 ### Levels below level 1 and between levels (waiting on the level-order decisions)
 
-These are easier than existing levels or fall between them, so they wait on [how levels are ordered](../ROADMAP.md#waiting-on-the-developer) and on **[whether a band's range may skip levels](../ROADMAP.md#waiting-on-the-developer)** (two separate rows). IDs are assigned when built, after the top levels and outside the couch's plans.
+These are easier than existing levels or fall between them, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built) and on **[whether a band's range may skip levels](../ROADMAP.md#waiting-on-the-developer)** (two separate rows). IDs are assigned when built, after the top levels and outside the couch's plans.
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |

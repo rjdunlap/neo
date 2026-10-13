@@ -113,7 +113,7 @@ Sketches, not levels: **the diet sort** (plant eaters, meat eaters, both) needs 
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-These are easier than levels that exist, or fall between them, so they wait on [how levels are ordered and whether a range may skip](../ROADMAP.md#waiting-on-the-developer). IDs are assigned when built (11 and up).
+These are easier than levels that exist, or fall between them, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (11 and up).
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -135,7 +135,7 @@ These are easier than levels that exist, or fall between them, so they wait on [
 
 1. **Replace round three's planned levels 6–7 with 6–8, and add a school window with 9–10?** The plan of record is *Snacks for two* and *Who is still hungry?* plus a pre-K window (the roadmap counts them among its 37 new levels on top). Lean: replace them. They repeat what Monster Munch, Garden Grow and Duck Pond already hold, while 6–8 each add a decision unique to this game (a sound chain, two animals' own snacks, a set of answers) and 9–10 add reading a board. The new total is five levels, not two. If no, keep the planned two and the fresh content, the new animals and the three below-1 entries carry the rest.
 2. **Windows and order.** Lean: pre-K 5–8, school 8–10, with the three younger windows unchanged. The step-up rule assumes each level is not easier than the one below it, and **level 8 (tap the set) is easier than level 7** (two foods, two counts). Two struggling rounds at 8 would drop her to 7. Either say that is fine, or swap the order so the set-of-answers level is 7 and the two counts are 8. A school child starting at 8 is placed by age, not by play.
-3. **Level order for the three below-1 entries** (Open wide, Taste test, What does the cow eat?). They wait on the skip decision (the general order fix is built as `order`). Lean: use it before building more than one.
+3. **Level order for the three below-1 entries** (Open wide, Taste test, What does the cow eat?). They use `order`, which may skip IDs (built). Lean: use it before building more than one.
 4. **New animals, shared with Peekaboo Barn.** Sheep (grass), horse (oats), hen (corn) and mouse (cheese), built once in `critter.ts` and `sfx` by whichever deep dive's slice lands first; the journal grows to twenty-nine entries. Lean: yes. Cheese for a mouse is a cartoon fact; say if seeds or grain would be better.
 5. **The `EATS` table and the diet sort.** Level 8 needs a curated table of foods each animal truly eats (hay: cow, bunny, sheep, horse; apple: pig, bear, horse; seeds: duck, hen, mouse; corn: hen, pig). Lean: build level 8 from a short table the grown-up reads and approves before it ships; **leave the plant-eater / meat-eater sort as a sketch**, since the dog, pig, duck and bear eat both and the kindergarten standard does not describe a cartoon's favorite.
 6. **Printed food words on levels 9–10.** Optional reading-lite, with the voice always available and a free replay. Lean: yes, with no phonics claim until device speech has been checked. The words are hay, bone, fish, seeds, apple, honey, carrot, corn, oats, cheese and grass.

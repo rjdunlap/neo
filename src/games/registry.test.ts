@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { levelsInOrder } from '../progress/difficulty';
 import { nextLevel, stepLevel } from '../progress/difficulty';
 import { BANDS, playBand } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
@@ -22,8 +23,12 @@ describe('game registry', () => {
         expect(min, `${g.id} ${band}`).toBeGreaterThanOrEqual(1);
         expect(max, `${g.id} ${band}`).toBeGreaterThanOrEqual(min);
         const order = g.levels(band).order;
-        if (order) expect([...order].sort((a, b) => a - b), `${g.id} ${band} order`).toEqual(Array.from({ length: max - min + 1 }, (_, i) => min + i));
-        for (let l = min; l <= max; l++) expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
+        if (order) {
+          expect(new Set(order).size, `${g.id} ${band} order has no repeats`).toBe(order.length);
+          expect(Math.min(...order), `${g.id} ${band} order starts at min`).toBe(min);
+          expect(Math.max(...order), `${g.id} ${band} order ends at max`).toBe(max);
+        }
+        for (const l of levelsInOrder(g.levels(band))) expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
       }
     }
   });
