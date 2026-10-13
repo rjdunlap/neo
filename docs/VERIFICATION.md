@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-13 — Lands stage B: the grownup band, Lantern Lake and Lantern Lights by touch
+
+- Added the `grownup` band (13 and up) and its home spot Lantern Lodge, the Lantern Lake land (the eleventh map spot), the six former couch-only puzzles in `GAMES` with `bands: ['grownup']` (`GROWNUP_GAMES` retired; `couchGameById` is an alias), `GameModule.inputs` with `go.game` opening the couch course for the five controller-only ones, and touch for Lantern Lights (PR #226). Existing adult profiles get one birthday into Lantern Lodge.
+- Tested the branch merged with `origin/main` at `5ac874c` (Bounce Back only): typecheck, 1,067 unit tests (new: save keeps `grownup`, registry and lands rules for the six, the age-13 boundary) and build passed. Browser runs at `GAME_URL=http://localhost:5192`: `lands` (all eleven lands at all six bands, both ways up, one screen); `lanterntouch` (Lantern Lights levels 1 and 6 by touch: a free tap and undo, one hint, start over, one sticker each with 0 misses, portrait, leaving mid-round, and Sudoku Garden from the island reaching its couch course); `fingerdemo` for Lantern Lights (12.0 s and 33.5 s); `couchgames` for the six puzzles (all passed); `world` after merging `main` (it passed; its land count is now 11, and its "bigger kids" row now picks a game that is really above preschool, since Robot Path opened to preschool on `main` and had made that check stale). `npm run build` plus the production offline check on the served current build passed. Screenshots checked: wide and tall maps, Lantern Lake, Lantern Lights portrait and landscape.
+- Not run: `couch`/`couchcourse` full suites (no trip, face-off or course change; catalog bands changed only). Open: real iPad touch at the 5 by 5 size, device speech, the grown-up's one-time pet birthday, and leaving a couch course returns to the chooser rather than Lantern Lake (a known gap until stage E). Sudoku Garden and the other four puzzles still need touch.
+
 ## 2026-10-12 — Sing-Along Barn first slice
 
 - Added `sing-along-barn` levels 1–3 (lap to pre-K, Music Mountain): tap-per-note Old MacDonald, friends out of the barn for each verse, and at level 3 two chosen friends in her order ([PR #219](https://github.com/rjdunlap/neo/pull/219)). No misses or hints are possible.
@@ -896,6 +902,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `lanterntouch`, `lands`, `world`, `couchgames` (six puzzles), `fingerdemo` (`lantern-lights`) | 2026-10-13: Lantern Lights by touch, eleven lands at six bands, hatching and map, couch catalog for the six, demo clean in 12.0 s and 33.5 s; build and offline check | Lands stage B entry / [PR #226](https://github.com/rjdunlap/neo/pull/226) | iPad touch, device speech, Sudoku and the other four have no touch yet |
 | `singalong`, `fingerdemo` (`sing-along-barn`) | 2026-10-12: levels 1 and 3, one sticker with no misses or hints, song order, chosen friends, portrait, interrupted scene; demo clean in 32.2 s and 52.3 s | Sing-Along Barn first slice entry / [PR #219](https://github.com/rjdunlap/neo/pull/219) | iPad touch, device speech, a child's tapping and the tune against a printed source open |
 | Block Tower support words | 2026-10-12: typecheck, 29 focused how-to/registry tests, local links/anchors and diff check | Support 1–6 entry / [PR #213](https://github.com/rjdunlap/neo/pull/213) | Plain-word tier; browser/build not run; device speech/touch and child fit open |
 | Block Tower deep dive (docs only) | 2026-10-12: documentation links/anchors and diff check | [Deep dive](deep-dives/block-tower.md) / [PR #209](https://github.com/rjdunlap/neo/pull/209) | No gameplay/test/browser evidence added; proposals and device checks open |
