@@ -1,20 +1,21 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Rectangle } from 'pixi.js';
 import { ink, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { HeldDirection, idle, type CouchControls } from '../../engine/controller';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
-import { WigglyIcon } from '../shared';
-import type { Game, GameContext, GameModule } from '../types';
+import { tile, WigglyIcon } from '../shared';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePonds, isLanternCourse } from './course';
 import { allLit, footprint, hintFor, litCount, makePonds, planFor, press, type LanternPlan, type Pond } from './logic';
 
-/** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
+/** Lantern Lake's grown-up band. The island plays it by touch; couch play drives the same board with a controller. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 
 const WATER = 0x25315f;
 const WATER_LINE = 0x151d3d;
@@ -65,6 +66,12 @@ class LanternLights implements Game {
   private readonly glow = new Graphics();
   private readonly score = label('', 34, ink);
   private readonly sub = label('', 24, ink, '500');
+  /** Touch play (every play outside the couch): a tap on a lantern presses it, and three buttons undo, hint and start over. */
+  private readonly touch: boolean;
+  readonly tapLayer = new Graphics();
+  readonly undoButton = new Container();
+  readonly hintButton = new Container();
+  readonly againButton = new Container();
   private nodes: Container[] = [];
   private onArt: Container[] = [];
   private offArt: Container[] = [];
@@ -99,14 +106,41 @@ class LanternLights implements Game {
       this.ponds = makePonds(this.plan, ctx.rng);
       this.course = null;
     }
+    this.touch = !ctx.couch;
     for (const part of [this.board, this.water, this.halos, this.lanterns, this.glow, this.score, this.sub]) part.eventMode = 'none';
     this.board.addChild(this.water, this.halos, this.lanterns, this.glow);
     ctx.stage.addChild(this.board, this.score, this.sub);
+    if (this.touch) {
+      // A layer over the pond works out which lantern a finger touched, so a press never depends on a drawing's own hit area.
+      onTap(this.tapLayer, (e) => this.tapPond(e.global.x, e.global.y), { cooldown: 60 });
+      this.tapLayer.cursor = 'pointer';
+      const buttons: [Container, string, () => void][] = [
+        [this.undoButton, 'Undo ↶', () => this.back()],
+        [this.hintButton, 'Hint ◇', () => this.askForHint()],
+        [this.againButton, 'Start over ↺', () => this.restart()],
+      ];
+      for (const [node, text, act] of buttons) {
+        node.addChild(tile(160, 100, 'purple'), label(text, 24, ink));
+        onTap(node, act, { cooldown: 200 });
+      }
+      ctx.stage.addChild(this.tapLayer, this.undoButton, this.hintButton, this.againButton);
+    }
   }
 
   get n() { return this.pond.size; }
 
   start() { void this.next(); }
+
+  /** A finger on the pond: the lantern under it takes the press. */
+  private tapPond(gx: number, gy: number) {
+    if (this.busy || this.finished || !this.pond) return;
+    const p = this.board.toLocal({ x: gx, y: gy });
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
+    const c = Math.floor(p.x / this.cell), r = Math.floor(p.y / this.cell);
+    if (c < 0 || r < 0 || c >= this.n || r >= this.n) return;
+    this.cursor = r * this.n + c;
+    this.press();
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Layout and drawing                                                                            */
@@ -122,6 +156,14 @@ class LanternLights implements Game {
     const x = Math.min((v.w + bw) / 2 + 150, v.w - 120);
     this.score.position.set(x, 190);
     this.sub.position.set(x, 236);
+    if (this.touch) {
+      this.tapLayer.clear().rect(0, 0, bw, bw).fill({ color: 0xffffff, alpha: 0.001 });
+      this.tapLayer.hitArea = new Rectangle(0, 0, bw, bw);
+      this.tapLayer.position.copyFrom(this.board.position);
+      // The buttons sit in a row under the pond, clear of the pet's corner.
+      const y = this.board.y + bw + 78;
+      [this.undoButton, this.hintButton, this.againButton].forEach((b, i) => b.position.set(v.w / 2 + (i - 1) * 180, y));
+    }
     this.layout();
   }
 
@@ -178,6 +220,8 @@ class LanternLights implements Game {
     if (!this.pond) return;
     const g = this.glow.clear(), cell = this.cell;
     if (this.finished || this.busy) return;
+    // A finger needs no cursor: the lantern pressed turns at once, and a hint rings the lantern to try.
+    if (this.touch) return void this.drawHint(g);
     const at = this.center(this.cursor);
     // The cursor shows what a press would flip: the lantern and the four beside it.
     for (const c of footprint(this.n, this.cursor)) {
@@ -185,10 +229,13 @@ class LanternLights implements Game {
       g.roundRect(m.x - cell / 2 + 5, m.y - cell / 2 + 5, cell - 10, cell - 10, 14).fill({ color: 0xffffff, alpha: c === this.cursor ? 0.2 : 0.1 });
     }
     g.roundRect(at.x - cell / 2 + 3, at.y - cell / 2 + 3, cell - 6, cell - 6, 16).stroke({ width: 6, color: 0xffffff });
-    if (this.hinted !== null) {
-      const m = this.center(this.hinted);
-      g.roundRect(m.x - cell / 2 - 2, m.y - cell / 2 - 2, cell + 4, cell + 4, 18).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
-    }
+    this.drawHint(g);
+  }
+
+  private drawHint(g: Graphics) {
+    if (this.hinted === null) return;
+    const m = this.center(this.hinted), cell = this.cell;
+    g.roundRect(m.x - cell / 2 - 2, m.y - cell / 2 - 2, cell + 4, cell + 4, 18).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
   }
 
   destroy() {}
@@ -232,7 +279,7 @@ class LanternLights implements Game {
     this.report();
     if (this.told) return;
     this.told = true;
-    return this.ctx.instruct('lantern.go');
+    return this.ctx.instruct(this.touch ? 'lantern.go-touch' : 'lantern.go');
   }
 
   private tally() {
@@ -386,6 +433,15 @@ class LanternLights implements Game {
   /* The "watch me" demo                                                                           */
   /* -------------------------------------------------------------------------------------------- */
 
+  /** The ghost finger on the how-to card: tap the lantern of a fewest-press way to light the pond from here. */
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || !this.pond) return null;
+    const next = hintFor(this.lit, this.n, this.cursor);
+    if (next === null) return null;
+    const at = this.center(next);
+    return { tap: { on: this.board, x: at.x, y: at.y }, receiver: this.tapLayer, pause: 0.5 };
+  }
+
   /** A bot that plays a fewest-press way: the nearest lantern in one of them, walked to and pressed. */
   autoplay(dt: number): CouchControls {
     const out = idle();
@@ -437,7 +493,11 @@ export const lanternLights: GameModule = {
   titleLine: 'game.lantern-lights',
   region: 'puzzle-peaks',
   skills: ['logic', 'planning', 'pattern-finding'],
-  bands: ['school'],
+  bands: ['grownup'],
+  inputs: ['touch', 'controller'],
+  touchDemo: true,
+  coplayHint: 'Tap a lantern to flip it and the four beside it. Talk about which press would light the most.',
+  offScreen: 'Lay out coins or buttons in a grid, all heads up, and flip a coin with its four neighbors to turn them all over.',
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,

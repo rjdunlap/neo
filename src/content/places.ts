@@ -80,6 +80,19 @@ function woods(): Graphics {
   return g;
 }
 
+/** A lodge on the lake shore with a glowing paper lantern at the door: the grown-up's home spot. */
+function lodge(): Graphics {
+  const g = new Graphics().ellipse(0, 30, 96, 26).fill(swatch.blue.light).ellipse(0, 28, 78, 18).fill(swatch.blue.fill);
+  g.roundRect(-52, -36, 104, 62, 8).fill(wood.fill).stroke(line(wood.line));
+  g.poly([-66, -34, 0, -86, 66, -34]).fill(swatch.red.fill).stroke(line(swatch.red.line));
+  g.roundRect(-14, -8, 28, 34, 6).fill(wood.line);
+  g.roundRect(26, -22, 20, 20, 4).fill(swatch.yellow.light).stroke(line(wood.line, 3));
+  g.moveTo(-66, 26).lineTo(-66, -14).stroke(line(wood.line, 4));
+  g.ellipse(-66, -4, 12, 15).fill(swatch.yellow.fill).stroke(line(swatch.orange.line, 3));
+  g.circle(-66, -4, 22).fill({ color: swatch.yellow.fill, alpha: 0.25 });
+  return g;
+}
+
 export const PLACES: Place[] = [
   {
     band: 'lap',
@@ -115,6 +128,13 @@ export const PLACES: Place[] = [
     line: 'place.school',
     landmark: woods,
     backdrop: { sky: [swatch.green.light, cream], hills: [swatch.teal.light, swatch.green.light, grass], horizon: 0.5, clouds: 2, sun: true, seed: 83 },
+  },
+  {
+    band: 'grownup',
+    name: 'Lantern Lodge',
+    line: 'place.grownup',
+    landmark: lodge,
+    backdrop: { sky: [swatch.purple.light, swatch.yellow.light], hills: [swatch.blue.light, swatch.teal.light, swatch.green.light], horizon: 0.5, clouds: 2, sun: false, seed: 97 },
   },
 ];
 

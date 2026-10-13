@@ -46,7 +46,7 @@ The waves are a suggestion; the grown-up can name any game.
 
 ## Tracker
 
-Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the highest level in the game's plan on 2026-10-10 (the six games built after that, Day by Day, Fill and Dump, Orchard Rows, Read & Do, Shape Buddies and Sing-Along Barn, were added on 2026-10-13 with their level at that date). It changes as slices land, so the deep dive records the current one.
+Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level" is the highest level in the game's plan on 2026-10-10 (the six games built after that, Day by Day, Fill and Dump, Orchard Rows, Read & Do, Shape Buddies and Sing-Along Barn, were added on 2026-10-13 with their level at that date). It changes as slices land, so the deep dive records the current one.
 
 | Game | ID | Bands | Top level | Wave | Status | Branch / PR | Deep dive |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -79,7 +79,9 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (levels 1–8 built); next level 9, everyone but the one | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)); deployment fix: `codex/fix-goodnight-deployment` ([PR 152](https://github.com/rjdunlap/neo/pull/152)); counted goodnights: `codex/goodnight-count` ([PR 155](https://github.com/rjdunlap/neo/pull/155)); color groups: `codex/goodnight-color` ([PR 164](https://github.com/rjdunlap/neo/pull/164)) | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
 | Inchworm Measure | `inchworm` | KS | 6 | 4 | not started | — | — |
+| Island Bridges | `island-bridges` | G | 4 | 4 | not started (controller-only on the island: touch not built) | — | — |
 | Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | designed | `claude/fervent-keller-f86ol8` ([PR 104](https://github.com/rjdunlap/neo/pull/104)) | [jelly-drums.md](jelly-drums.md) |
+| Lantern Lights | `lantern-lights` | G | 6 | 4 | not started (island touch built 2026-10-13) | — | — |
 | Lasso Loops | `lasso-loops` | PKS | 5 | 4 | not started | — | — |
 | Lemonade Stand | `lemonade-stand` | S | 4 | 4 | not started | — | — |
 | Letter Trails | `letter-trails` | PKS | 8 | 3 | building (slice 1 built) | `claude/tender-faraday-xt9q70` ([PR 122](https://github.com/rjdunlap/neo/pull/122)); slice 1: `codex/letter-trails-capital-start` ([PR #172](https://github.com/rjdunlap/neo/pull/172)) | [letter-trails.md](letter-trails.md) |
@@ -101,7 +103,9 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Pet Says | `pet-says` | LTPK | 5 | 2 | building (slice 1 built) | `codex/pet-says-guards` ([PR 161](https://github.com/rjdunlap/neo/pull/161)); `claude/roadmap-item-14-game-content-ghbpi1` ([PR 112](https://github.com/rjdunlap/neo/pull/112)) | [pet-says.md](pet-says.md) |
 | Photo Safari | `photo-safari` | LTPKS | 6 | 4 | not started | — | — |
 | Picture Graph | `picture-graph` | KS | 6 | 4 | not started | — | — |
+| Picture Logic | `picture-logic` | G | 4 | 4 | not started (controller-only on the island: touch not built) | — | — |
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |
+| Pond Conga | `pond-conga` | G | 6 | 4 | not started (controller-only on the island: touch not built) | — | — |
 | Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed; slice 2 (scene data, pinned stickers, six new scenes) built | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |
 | Rainbow Fingers | `rainbow-fingers` | LTPKS | 7 | 2 | designed | `claude/roadmap-item-14-game-content-0zaz9u` ([PR 107](https://github.com/rjdunlap/neo/pull/107)) | [rainbow-fingers.md](rainbow-fingers.md) |
@@ -125,9 +129,11 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Stamp Studio | `stamp-studio` | LTPKS | 6 | 2 | designed (slice 1 built; colors/sizes next) | `claude/roadmap-item-14-game-content-unyq86` ([PR 110](https://github.com/rjdunlap/neo/pull/110)) ; slice 1a: [PR #175](https://github.com/rjdunlap/neo/pull/175); slice 1b: [PR #176](https://github.com/rjdunlap/neo/pull/176); slice 1c1: [PR #179](https://github.com/rjdunlap/neo/pull/179); remainder: [PR #184](https://github.com/rjdunlap/neo/pull/184) | [stamp-studio.md](stamp-studio.md) |
 | Stop and Go | `stop-and-go` | LTP | 4 | 4 | not started | — | — |
 | Story Steps | `story-steps` | TPKS | 11 | 1 | building (slices 1–5 built) | `claude/charming-mayer-27wh8m` ([PR 81](https://github.com/rjdunlap/neo/pull/81)); slice 1: `claude/story-steps-ten-stories`; slice 2: `codex/story-steps-choose-cause` ([PR 138](https://github.com/rjdunlap/neo/pull/138)); slice 3: `codex/story-steps-repair` ([PR #168](https://github.com/rjdunlap/neo/pull/168)); slice 4: `codex/story-steps-untangle-ten` ([PR #186](https://github.com/rjdunlap/neo/pull/186)); slice 5: `codex/story-steps-predict-eleven` ([PR #187](https://github.com/rjdunlap/neo/pull/187)) | [story-steps.md](story-steps.md) |
+| Sudoku Garden | `sudoku-garden` | G | 6 | 4 | not started (controller-only on the island: touch not built) | — | — |
 | Tangram Town | `tangram-town` | TPKS | 6 | 1 | building (slices 1 and 3 built; lamp/bus/castle batch built; more pictures next) | `claude/eager-babbage-wexkzg` ([PR 79](https://github.com/rjdunlap/neo/pull/79)); slice 3: `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)); picture batch: `codex/tangram-more-pictures` ([PR 166](https://github.com/rjdunlap/neo/pull/166)) | [tangram-town.md](tangram-town.md) |
 | Teddy Doctor | `teddy-doctor` | LTPKS | 6 | 4 | not started | — | — |
 | Treasure Map | `treasure-map` | KS | 5 | 4 | not started | — | — |
 | Weather Wardrobe | `weather-wardrobe` | LTPK | 6 | 4 | not started | — | — |
 | Word Monsters | `word-monsters` | LTPKS | 8 | 3 | designed | `claude/roadmap-item-14-game-content-msedsy` ([PR 120](https://github.com/rjdunlap/neo/pull/120)) | [word-monsters.md](word-monsters.md) |
-The six couch-only grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, Word Search, Pond Conga and Island Bridges) are not on the island, so they are not in this table. A deep dive for one follows the same steps once Profiles stage 3 brings it onto the map.
+| Word Search | `word-search` | G | 4 | 4 | not started (controller-only on the island: touch not built) | — | — |
+The six grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, Word Search, Pond Conga and Island Bridges) are island games for the `grownup` band (G) in Lantern Lake as of 2026-10-13, so they are in this table. Only Lantern Lights has touch; a deep dive for one of the others should plan its touch slice with the rest of its ladder.

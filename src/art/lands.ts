@@ -168,6 +168,21 @@ function lab(): Graphics {
   return g;
 }
 
+/** Lantern Lake: a still pond with paper lanterns floating on it and a little boat, lit for the evening. */
+function lake(): Graphics {
+  const g = new Graphics().ellipse(0, 28, 94, 24).fill(grass);
+  g.ellipse(0, 12, 84, 32).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+  g.ellipse(-20, 8, 36, 9).fill({ color: swatch.blue.light, alpha: 0.6 });
+  const lanterns: [number, number, 'yellow' | 'orange' | 'pink'][] = [[-48, -8, 'orange'], [4, -30, 'yellow'], [52, -4, 'pink']];
+  for (const [x, y, c] of lanterns) {
+    g.moveTo(x, y - 34).lineTo(x, y - 16).stroke(line(wood.line, 3));
+    g.circle(x, y, 30).fill({ color: swatch[c].fill, alpha: 0.22 });
+    g.roundRect(x - 13, y - 17, 26, 34, 12).fill(swatch[c].fill).stroke(line(swatch[c].line, 4));
+    g.moveTo(x - 8, y).lineTo(x + 8, y).stroke(line(swatch[c].line, 2));
+  }
+  return g;
+}
+
 const DRAW: Record<LandId, () => Container> = {
   'bubble-beach': beach,
   'music-mountain': mountain,
@@ -179,6 +194,7 @@ const DRAW: Record<LandId, () => Container> = {
   'puzzle-peaks': peaks,
   'story-grove': grove,
   'tinker-lab': lab,
+  'lantern-lake': lake,
 };
 
 export const landmarkFor = (id: LandId): Container => DRAW[id]();

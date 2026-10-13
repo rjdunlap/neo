@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { nextLevel, stepLevel } from '../progress/difficulty';
 import { BANDS, playBand } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
-import { couchGameById, GAMES, GROWNUP_GAMES, gameById } from './registry';
+import { courseInfo } from '../couch/courses';
+import { couchGameById, GAMES, gameById, playsByTouch } from './registry';
+import { FIRST_COURSE } from '../couch/courses';
 import { isSilent, silenced, STYLES } from '../audio/music';
 import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
@@ -67,24 +69,26 @@ describe('game registry', () => {
     for (const id of REGION_IDS) expect(GAMES.some((g) => g.region === id && g.bands.includes('prek')), id).toBe(true);
   });
 
-  it('keeps grown-up couch games off the child\'s island', () => {
-    expect(GROWNUP_GAMES.length).toBeGreaterThan(0);
-    const ids = new Set(GAMES.map((g) => g.id));
-    for (const g of GROWNUP_GAMES) {
-      expect(ids.has(g.id), g.id).toBe(false);
-      expect(gameById(g.id), g.id).toBeUndefined();
-      expect(couchGameById(g.id), g.id).toBe(g);
-      expect(SCRIPT[g.titleLine], g.id).toBeDefined();
+  it('lists the six grown-up puzzles as island games for the grown-up band only, and opens the controller-only ones through the couch', () => {
+    const ids = ['lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'];
+    for (const id of ids) {
+      const g = gameById(id)!;
+      expect(g, id).toBeDefined();
+      expect(g.bands, id).toEqual(['grownup']);
+      expect(SCRIPT[g.titleLine], id).toBeDefined();
       expect(REGION_IDS).toContain(g.region);
-      for (const band of g.bands) {
-        const { min, max } = g.levels(band);
-        for (let l = min; l <= max; l++) expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
-      }
+      const { min, max } = g.levels('grownup');
+      for (let l = min; l <= max; l++) expect(g.describeLevel(l).length, `${id} level ${l}`).toBeGreaterThan(3);
+      // Couch play finds them in the same list.
+      expect(couchGameById(id), id).toBe(g);
+      // A game that takes only a controller has a couch course for the island to open; one that takes touch plays in the island's scene.
+      if (!playsByTouch(g)) expect(courseInfo(FIRST_COURSE[id]).game, id).toBe(id);
     }
-    expect(new Set([...GAMES, ...GROWNUP_GAMES].map((g) => g.id)).size).toBe(GAMES.length + GROWNUP_GAMES.length);
-    // Every island game is still a couch lookup too.
+    expect(new Set(GAMES.map((g) => g.id)).size).toBe(GAMES.length);
     expect(couchGameById('penguin-slide')).toBe(gameById('penguin-slide'));
     expect(couchGameById('nope')).toBeUndefined();
+    // Every other island game takes touch.
+    for (const g of GAMES) if (!ids.includes(g.id)) expect(playsByTouch(g), g.id).toBe(true);
   });
 
   it('plays no background music in a game where she makes the music', () => {

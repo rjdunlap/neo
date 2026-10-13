@@ -24,9 +24,9 @@ export interface GameStep {
 
 export const GAME_STEPS: GameStep[] = [
   // Pet Kitchen 1: halves for two friends; 3: two halves each; 4: two sandwiches for four, halves or quarters.
-  { id: 'sandwiches', game: 'pet-kitchen', level: { lap: 1, toddler: 1, preschool: 1, prek: 3, school: 4 } },
+  { id: 'sandwiches', game: 'pet-kitchen', level: { lap: 1, toddler: 1, preschool: 1, prek: 3, school: 4, grownup: 4 } },
   // Jelly Drums 1: free play; 4: copy two-note tunes; 5: three notes; 7: four notes.
-  { id: 'invitation', game: 'jelly-drums', level: { lap: 1, toddler: 1, preschool: 4, prek: 5, school: 7 } },
+  { id: 'invitation', game: 'jelly-drums', level: { lap: 1, toddler: 1, preschool: 4, prek: 5, school: 7, grownup: 7 } },
 ];
 
 export const stepLine: Record<PicnicStep, { ask: LineId; done: LineId; recap: LineId }> = {
@@ -67,7 +67,7 @@ export interface BlanketPuzzle {
  * striped blankets in different places, so the pattern and the place are both needed.
  */
 export function blanketPuzzle(band: Band, rng: Rng): BlanketPuzzle {
-  if (band === 'school') {
+  if (band === 'school' || band === 'grownup') {
     const [home, away] = rng.shuffle([...HANGS]);
     const slot = rng.int(0, 1) as 0 | 1;
     const blankets: Blanket[] = rng.shuffle([

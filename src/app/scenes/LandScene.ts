@@ -103,7 +103,8 @@ export class LandScene extends Scene {
     };
     build(visibleIn(this.land, this.band, GAMES), this.mine);
     build(olderIn(this.land, this.band, GAMES), this.older);
-    this.showingOlder = !!this.sign && olderOpen.has(this.id);
+    // A land with nothing yet for her age (Lantern Lake, for a child) opens with its signpost turned, rather than an empty field.
+    this.showingOlder = !!this.sign && (olderOpen.has(this.id) || this.mine.length === 0);
 
     // The host greets her and suggests a game; its touch area is round its body, not its feet.
     this.track(this.hostCritter);

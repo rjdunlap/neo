@@ -16,7 +16,7 @@ import {
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 
 const SEA = 0xcfe8f7;
 const SEA_LINE = 0x7aa7c7;
@@ -468,7 +468,8 @@ export const islandBridges: GameModule = {
   titleLine: 'game.island-bridges',
   region: 'puzzle-peaks',
   skills: ['logic', 'planning', 'deduction'],
-  bands: ['school'],
+  bands: ['grownup'],
+  inputs: ['controller'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

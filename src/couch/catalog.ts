@@ -263,7 +263,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'entries over the empty squares' },
-    band: 'school',
+    band: 'grownup',
     demoLevel: 1,
     // Trips stay on the small beds; the 9 by 9 beds are the Three Big Beds course on the puzzle shelf.
     level: (stop) => [1, 1, 2, 2, 3, 3][stop] ?? 3,
@@ -282,7 +282,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'presses over the fewest' },
-    band: 'school',
+    band: 'grownup',
     demoLevel: 2,
     // Trips climb from the small ponds to a 5 by 5 that takes a short way to light; the hardest ponds are on the puzzle shelf.
     level: (stop) => [1, 2, 3, 3, 4, 5][stop] ?? 5,
@@ -301,7 +301,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'guesses over the words' },
-    band: 'school',
+    band: 'grownup',
     demoLevel: 1,
     // Trips stay on the 8 by 8 to 12 by 12 grids; the 14 by 14 grids are The Big Hunt course on the puzzle shelf.
     level: (stop) => [1, 2, 2, 3, 3, 3][stop] ?? 3,
@@ -320,7 +320,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'planks over the answer' },
-    band: 'school',
+    band: 'grownup',
     demoLevel: 1,
     // Trips stay on the 7 by 7 to busier 9 by 9 seas; the 11 by 11 seas are on the puzzle shelf.
     level: (stop) => [1, 2, 2, 3, 3, 3][stop] ?? 3,
@@ -338,7 +338,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'steps over the fewest' },
-    band: 'school',
+    band: 'grownup',
     demoLevel: 1,
     // Trips climb from a small open pond to a crowded one with twelve crumbs; the pace barely changes.
     level: (stop) => [1, 2, 3, 3, 4, 5][stop] ?? 5,
@@ -377,7 +377,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'fills over the picture' },
-    band: 'school',
+    band: 'grownup',
     demoLevel: 1,
     // Trips stay on the 6 by 6 and 10 by 10 pictures; the 15 by 15 pictures are The Big Pictures course on the puzzle shelf.
     level: (stop) => [1, 2, 2, 3, 3, 3][stop] ?? 3,

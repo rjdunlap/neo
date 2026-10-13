@@ -14,7 +14,7 @@ import { cellsOfWord, hintFor, lineBetween, makeGrids, planFor, wordAt, type Wor
 import { themeById } from './words';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];
@@ -458,7 +458,8 @@ export const wordSearch: GameModule = {
   titleLine: 'game.word-search',
   region: 'story-grove',
   skills: ['vocabulary', 'visual-scanning', 'spelling'],
-  bands: ['school'],
+  bands: ['grownup'],
+  inputs: ['controller'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,

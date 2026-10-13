@@ -85,10 +85,9 @@ export function completedYears(birth: Birth, now: Date): number {
 }
 
 /**
- * Where age starts someone on the trail: under 2 lap, 2 toddler, 3 preschool, 4 and 5 pre-K, 6 and over school. There is no
- * `grownup` band yet (stage 3), so everyone from 6 up, 13 and over included, starts at the top band that exists.
+ * Where age starts someone: under 2 lap, 2 toddler, 3 preschool, 4 and 5 pre-K, 6 to 12 early school, 13 and over grown-up.
  */
-const AGE_STARTS: readonly (readonly [number, Band])[] = [[0, 'lap'], [2, 'toddler'], [3, 'preschool'], [4, 'prek'], [6, 'school']];
+const AGE_STARTS: readonly (readonly [number, Band])[] = [[0, 'lap'], [2, 'toddler'], [3, 'preschool'], [4, 'prek'], [6, 'school'], [13, 'grownup']];
 
 export function bandForYears(years: number): Band {
   let band: Band = 'lap';
