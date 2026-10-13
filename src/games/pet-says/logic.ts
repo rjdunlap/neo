@@ -8,7 +8,7 @@ import type { Rng } from '../../engine/random';
  * (move only when you hear "Pet says", which practices waiting), and a freeze dance.
  */
 export type Move = 'clap' | 'stomp' | 'wave' | 'jump' | 'spin' | 'wiggle' | 'up' | 'down' | 'nose' | 'tummy' | 'ears' | 'head' | 'toes';
-export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze';
+export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'pat';
 
 export const MOVES: Move[] = ['clap', 'stomp', 'wave', 'jump', 'spin', 'wiggle', 'up', 'down'];
 export const BODY: Move[] = ['nose', 'tummy', 'ears', 'head', 'toes'];
@@ -63,7 +63,18 @@ export const PLANS: SaysPlan[] = [
   { mode: 'freeze', turns: 4, name: 'Freeze dance: dance to the music, freeze when it stops' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/**
+ * Levels that sit apart from the numbered ladder (its IDs 6–12 are kept for the planned levels), placed by a band's `order`.
+ * 13, Pat the pet, is lap's first: her touch on the pet is the cue, so there is no arrow and nothing to copy.
+ */
+export const ENTRY_PLANS: Record<number, SaysPlan> = {
+  13: { mode: 'pat', turns: 5, name: 'Pat the pet: every touch on the pet makes it do the next move (no arrow)' },
+};
+
+/** The moves a pat brings out, easiest to watch first in the draw; pat-a-cake and peekaboo wait for the tiered moves. */
+export const PAT_MOVES: Move[] = ['wave', 'clap', 'jump', 'wiggle', 'spin'];
+
+export const planFor = (level: number) => ENTRY_PLANS[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Turn {
   moves: Move[];
@@ -97,6 +108,8 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         return deck([...MOVES, ...BODY]).slice(0, plan.turns).map((m, i) => ({ moves: [m], says: !tricks.has(i) }));
       }
     }
+    case 'pat':
+      return rng.shuffle([...PAT_MOVES]).slice(0, plan.turns).map((m) => ({ moves: [m] }));
     case 'freeze':
       return Array.from({ length: plan.turns }, () => ({ moves: ['wiggle'] }));
   }

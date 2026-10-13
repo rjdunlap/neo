@@ -206,6 +206,8 @@ export const SCRIPT = {
   'says.tricked': ["Did you stay still? I didn't say {pet} says! Hee hee!"],
   'says.dance': ['Dance, dance, dance!'],
   'says.freeze-now': ['Freeze!'],
+  'says.pat': ['Pat {pet}! Give {pet} a pat, and see what {pet} does.'],
+  'says.pat-again': ['Pat {pet}!'],
   'says.next': ['A grown-up can tap the green arrow for the next one.'],
   'says.done': ['Great moving!'],
 

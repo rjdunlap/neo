@@ -1220,9 +1220,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Do the two moves in order, away from the screen: "clap, then stomp".' },
       { from: 4, to: 4, text: "Move only when you hear the pet's name first, away from the screen." },
       { from: 5, to: 5, text: 'Dance away from the screen while the music plays, and freeze when it stops.' },
-      'A grown-up taps the arrow to go on.',
+      { from: 13, to: 13, text: 'Pat the pet. Each pat makes it do its next move: wave, clap, jump, wiggle, turn around. Do the move together if you like.' },
+      { to: 12, text: 'A grown-up taps the arrow to go on.' },
     ],
-    finish: 'The round ends after the last move.',
+    finish: [
+      { to: 12, text: 'The round ends after the last move.' },
+      { from: 13, text: 'The round ends after the fifth move; the pet cheers by itself.' },
+    ],
     note: 'This is a body game; the screen is the guide.',
   },
   'owl-walk': {

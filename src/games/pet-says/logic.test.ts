@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import stickerSeeds from './sticker-seeds.json';
 import { SCRIPT } from '../../content/voice-script';
-import { BODY_TARGETS, MOVE_CUES, shouldNudge, stickerRecipe, BODY, danceSeconds, makeTurns, MOVE_WORDS, MOVES, PLANS } from './logic';
+import { BODY_TARGETS, MOVE_CUES, shouldNudge, stickerRecipe, BODY, danceSeconds, ENTRY_PLANS, makeTurns, MOVE_WORDS, MOVES, PAT_MOVES, planFor, PLANS } from './logic';
 
 describe('Pet Says', () => {
   it('pins the original sticker color and pose draw for seeds 0–99', () => {
@@ -76,6 +76,34 @@ describe('Pet Says', () => {
       expect(s >= 3 && s <= 7).toBe(true);
       expect(s).not.toBe(last);
       last = s;
+    }
+  });
+});
+
+describe('Pat the pet (level 13, lap\'s first level)', () => {
+  const plan = planFor(13);
+
+  it('is its own level beside the numbered ladder, which does not change', () => {
+    expect(plan.mode).toBe('pat');
+    expect(ENTRY_PLANS[13]).toBe(plan);
+    expect(PLANS.map((p) => p.mode)).toEqual(['copy', 'body', 'pairs', 'says', 'freeze']);
+    for (let level = 1; level <= 5; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+  });
+
+  it('brings out five different, spoken moves, from the ones the pet already shows', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(turns).toHaveLength(5);
+      const moves = turns.map((t) => t.moves);
+      expect(moves.every((m) => m.length === 1)).toBe(true);
+      const names = moves.map(([m]) => m);
+      expect(new Set(names).size).toBe(5);
+      for (const m of names) {
+        expect(PAT_MOVES).toContain(m);
+        expect(MOVE_CUES[m].line).toMatch(/^says\.move\./);
+        expect(MOVE_CUES[m].word.length).toBeGreaterThan(0);
+      }
+      expect(turns.every((t) => t.says === undefined)).toBe(true);
     }
   });
 });
