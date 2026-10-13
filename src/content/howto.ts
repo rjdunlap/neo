@@ -179,12 +179,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'A bump counts as a miss, and a hint counts as help. Steps are not timed against you: the pace stays the same.',
   },
   'sing-along-barn': {
-    goal: 'Sing a short Old MacDonald by tapping: every tap is the next note, and a friend joins each verse.',
+    goal: 'Sing a short song by tapping, Old MacDonald or Hot Cross Buns: every tap is the next note, and a friend joins each verse.',
     steps: [
-      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note: "Old MacDonald had a farm, E-I-E-I-O", then "And on that farm he had a cow, E-I-E-I-O" for each friend. The moo-moo lines are left out.' },
+      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm, E-I-E-I-O", then "And on that farm he had a cow, E-I-E-I-O" for each friend. Hot Cross Buns: "Hot cross buns" twice, then "One a penny, two a penny, hot cross buns" for each friend.' },
       { from: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
     ],
-    finish: 'The round ends after the last "E-I-E-I-O" of the last friend\'s verse.',
+    finish: 'The round ends after the last verse of the last friend. Each round sings one of the two songs.',
     note: 'There is no wrong tap. Tapping fast or slowly only changes how the song is sung, and the animals answer on their own.',
   },
   'jelly-drums': {
