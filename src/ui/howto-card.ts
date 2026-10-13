@@ -18,6 +18,8 @@ const ICON_BOX = 100;
 /** The demonstration's window, beside the text on a wide screen (a quarter-turn narrower at small text) or above it on a tall one. */
 const DEMO_WIDE = 400;
 const DEMO_TALL = 520;
+/** Beside the text, the window shrinks with the text down to this share of its size, which widens the text column (still over 240 units across). */
+const DEMO_MIN_SCALE = 0.7;
 const NOTE_CONTROLLER = 'A demonstration: a controller moves the highlight. You tap or drag.';
 const NOTE_FINGER = 'A demonstration of this level: a pretend finger taps and drags. You do the same.';
 const NOTE_MOUSE = 'A demonstration of this level: a pointer clicks and drags. You do the same.';
@@ -140,7 +142,7 @@ export class HowToPanel extends Container {
     // Beside the text when the screen is wider than tall; above it when it is tall. The window shrinks a little with the text.
     const wide = !!demo && view.w >= view.h * 1.1;
     const width = Math.min(view.w - 60, wide ? 1000 : 760);
-    const dw = !demo ? 0 : wide ? Math.round(DEMO_WIDE * Math.max(scale, 0.8)) : Math.min(width - 64, DEMO_TALL);
+    const dw = !demo ? 0 : wide ? Math.round(DEMO_WIDE * Math.max(scale, DEMO_MIN_SCALE)) : Math.min(width - 64, DEMO_TALL);
     const dh = Math.round(dw * 0.75);
     const noteH = demo ? 40 : 0;
     const inner = wide ? width - 64 - dw - 28 : width - 64;
@@ -176,9 +178,12 @@ export class HowToPanel extends Container {
     if (demo && !wide) y += dh + noteH + 8;
     const placed: Array<[Text, number]> = [];
     let stepY = 0;
+    // Beside the window the text column is narrow; below it, where the column is empty, the text runs the full width.
+    const below = wide && demo ? 22 + dh + noteH + 8 : Infinity;
     for (const r of rows) {
       const small = r.style.fontSize === 13;
       if (small && placed.length) y += 14;
+      if (!small && r !== levelText && y >= below) r.style.wordWrapWidth = width - 64;
       const h = range && r === levelText ? Math.max(r.height, STEP_RADIUS * 2) : r.height;
       placed.push([r, y + (h - r.height) / 2]);
       if (range && r === levelText) stepY = y + h / 2;
