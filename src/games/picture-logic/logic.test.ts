@@ -4,6 +4,7 @@ import { BIG_15, EASY_10, HARD_10, SAILBOAT } from './pictures';
 import {
   allLines, brushFor, cellsOf, clueOf, clueText, deductions, EMPTY, FILLED, fillCount, fromDrawn, hintFor, isSolved, knowledge, lineStatus, makePuzzles,
   paint, parsePicture, passesNeeded, planFor, PLANS, poolFor, solvableByLines, statuses, CROSSED, type Mark, type PicturePuzzle,
+  axisOf, clueDepths, headStart, HOME_H, HOME_W, MIN_TOUCH, strokeCells, toolForHint, touchFrame, type Rect,
 } from './logic';
 
 const ALL = [...EASY_10, ...HARD_10, ...BIG_15];
@@ -205,5 +206,110 @@ describe('levels', () => {
       expect(seen.size, `level ${level}`).toBeGreaterThanOrEqual(3);
       expect(makePuzzles(level, new Rng(1))).toHaveLength(planFor(level).pictures);
     }
+  });
+});
+
+describe('touch', () => {
+  /** A tablet sideways, a wide screen, a tablet upright and a roomier upright one, in logical units. */
+  const VIEWS = [[1024, 768], [1366, 768], [1024, 1365], [1024, 1100]] as const;
+  const inside = (r: Rect, w: number, h: number) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w + 0.5 && r.y + r.h <= h + 0.5;
+  const apart = (a: Rect, b: Rect) => a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y;
+
+  it('keeps every square and button at least 64 across, on screen, apart and clear of the home button, in every view', () => {
+    for (const d of ALL) {
+      const p = fromDrawn(d), { rowDepth, colDepth } = clueDepths(p);
+      for (const [w, h] of VIEWS) {
+        const f = touchFrame(w, h, p.size, rowDepth, colDepth), tag = `${d.name} ${w}x${h}`;
+        expect(f.cell, tag).toBeGreaterThanOrEqual(MIN_TOUCH);
+        expect(inside(f.paper, w, h), tag).toBe(true);
+        expect(f.paper.x >= HOME_W || f.paper.y >= HOME_H, `${tag} clear of home`).toBe(true);
+        // The pet sits in the bottom left corner (150 by 150): no button or tally goes there.
+        for (const r of [...f.slots, f.info]) expect(r.x >= HOME_W || r.y + r.h <= h - 150, `${tag} clear of the pet`).toBe(true);
+        for (const s of f.slots) {
+          expect(s.w, `${tag} ${s.kind}`).toBeGreaterThanOrEqual(MIN_TOUCH);
+          expect(s.h, `${tag} ${s.kind}`).toBeGreaterThanOrEqual(MIN_TOUCH);
+          expect(inside(s, w, h), `${tag} ${s.kind}`).toBe(true);
+          expect(apart(s, f.paper), `${tag} ${s.kind} clear of the paper`).toBe(true);
+        }
+        f.slots.forEach((a, i) => f.slots.slice(i + 1).forEach((b) => expect(apart(a, b), `${tag} ${a.kind}/${b.kind}`).toBe(true)));
+        expect(apart(f.info, f.paper), tag).toBe(true);
+        f.slots.forEach((s) => expect(apart(f.info, s), `${tag} tally clear of ${s.kind}`).toBe(true));
+      }
+    }
+  });
+
+  it('shows a 6 by 6 picture whole in every view, and slides one that does not fit, offering Slide only then', () => {
+    for (const p of poolFor(1)) {
+      const { rowDepth, colDepth } = clueDepths(p);
+      for (const [w, h] of VIEWS) {
+        const f = touchFrame(w, h, 6, rowDepth, colDepth);
+        expect([f.maxX, f.maxY], `${p.name} ${w}x${h}`).toEqual([0, 0]);
+        expect(f.slots.map((s) => s.kind)).toEqual(['fill', 'cross', 'hint', 'again']);
+      }
+    }
+    for (const d of [...EASY_10, ...BIG_15]) {
+      const p = fromDrawn(d), { rowDepth, colDepth } = clueDepths(p);
+      const f = touchFrame(1024, 768, p.size, rowDepth, colDepth);
+      expect(f.maxX > 0 || f.maxY > 0, d.name).toBe(true);
+      expect(f.slots.map((s) => s.kind), d.name).toContain('slide');
+      // What slides can be brought wholly into view: the extents cover the picture.
+      expect(f.maxX + f.grid.w, d.name).toBeGreaterThanOrEqual(p.size * f.cell);
+      expect(f.maxY + f.grid.h, d.name).toBeGreaterThanOrEqual(p.size * f.cell);
+    }
+  });
+
+  it('puts the whole picture in view where there is room for it', () => {
+    const p = fromDrawn(SAILBOAT), { rowDepth, colDepth } = clueDepths(p);
+    const f = touchFrame(1024, 1365, 10, rowDepth, colDepth);
+    expect([f.maxX, f.maxY]).toEqual([0, 0]);
+    expect(f.cell).toBeGreaterThanOrEqual(MIN_TOUCH);
+  });
+
+  it('runs a stroke along the row or column of its first movement, and paints every square between, even when the finger jumps', () => {
+    const n = 10, start = 3 * n + 2;
+    expect(axisOf(n, start, start)).toBeNull();
+    expect(strokeCells(n, start, null, start)).toEqual([start]);
+    expect(axisOf(n, start, 3 * n + 6)).toBe('row');
+    expect(axisOf(n, start, 6 * n + 3)).toBe('column');
+    // A diagonal-ish move picks the longer way.
+    expect(axisOf(n, start, 4 * n + 6)).toBe('row');
+    expect(axisOf(n, start, 7 * n + 3)).toBe('column');
+    // A jump of four squares paints the four, in order, and stays on the start's row.
+    expect(strokeCells(n, start, 'row', 4 * n + 6)).toEqual([3 * n + 2, 3 * n + 3, 3 * n + 4, 3 * n + 5, 3 * n + 6]);
+    expect(strokeCells(n, start, 'row', 3 * n + 0)).toEqual([3 * n + 2, 3 * n + 1, 3 * n + 0]);
+    expect(strokeCells(n, start, 'column', 6 * n + 2)).toEqual([3 * n + 2, 4 * n + 2, 5 * n + 2, 6 * n + 2]);
+    expect(strokeCells(n, start, 'column', 0 * n + 5)).toEqual([3 * n + 2, 2 * n + 2, 1 * n + 2, 0 * n + 2]);
+  });
+
+  it('counts a fill once however often a stroke passes over it', () => {
+    const p = fromDrawn(SAILBOAT), marks = empty(p);
+    let counted = 0;
+    const brush = brushFor('fill', marks[0]);
+    for (const at of [3, 5, 7, 9, 9, 6]) {
+      for (const i of strokeCells(p.size, 0, 'row', at)) {
+        const out = paint(marks[i], brush);
+        if (out.changed) marks[i] = out.mark;
+        if (out.counted) counted++;
+      }
+    }
+    expect(counted).toBe(10);
+    expect(fillCount(marks)).toBe(10);
+  });
+
+  it('switches to the tool a hint needs', () => {
+    expect(toolForHint({ kind: 'fill', cell: 0, line: { kind: 'row', index: 0 }, clue: [1] })).toBe('fill');
+    expect(toolForHint({ kind: 'cross', cell: 0, line: { kind: 'row', index: 0 }, clue: [1] })).toBe('cross');
+    expect(toolForHint({ kind: 'fix', cell: 0, mark: FILLED })).toBe('fill');
+    expect(toolForHint({ kind: 'fix', cell: 0, mark: CROSSED })).toBe('cross');
+  });
+
+  it('leaves the last rows of the picture to fill for the demonstration, never solving it or filling a wrong square', () => {
+    for (const d of ALL) {
+      const p = fromDrawn(d), start = headStart(p);
+      expect(isSolved(start, p), d.name).toBe(false);
+      expect(start.every((m, i) => m === EMPTY || p.solution[i]), d.name).toBe(true);
+      expect(p.par - fillCount(start), d.name).toBeGreaterThan(0);
+    }
+    for (const p of poolFor(1)) expect(isSolved(headStart(p), p), p.name).toBe(false);
   });
 });

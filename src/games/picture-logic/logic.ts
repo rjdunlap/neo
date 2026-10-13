@@ -216,3 +216,122 @@ export function makePuzzles(level: number, rng: Rng): PicturePuzzle[] {
   const pool = poolFor(level), plan = planFor(level);
   return rng.shuffle([...pool]).slice(0, plan.pictures);
 }
+
+/* ------------------------------------------------------------------------------------------------ */
+/* Touch                                                                                              */
+/* ------------------------------------------------------------------------------------------------ */
+
+/** The smallest touch target in a grown-up game, in logical units: a square or a button is never smaller. */
+export const MIN_TOUCH = 64;
+/** The paper kept around the squares, and half of it at each edge of the window when the picture slides. */
+export const PAD = 16;
+/** How much room one clue number takes along its line (a two-digit number across; a row of them down a column). */
+export const CLUE_STEP_X = 26;
+export const CLUE_STEP_Y = 24;
+
+export type Tool = 'fill' | 'cross' | 'slide';
+export type SlotKind = Tool | 'hint' | 'again';
+export interface Rect { x: number; y: number; w: number; h: number }
+export interface Slot extends Rect { kind: SlotKind }
+
+/**
+ * Where everything sits for touch. The squares are at least 64 across; when the picture (with its clue numbers) does not fit
+ * the window, it slides under a finger: `maxX` and `maxY` are how far, and the clue numbers stay pinned along its top and left.
+ */
+export interface TouchFrame {
+  /** A wide view puts the buttons in a column beside the picture; a tall one, in a row under it. */
+  side: boolean;
+  /** The paper behind the clues and the squares. */
+  paper: Rect;
+  /** The window on the squares (the paper without the clue numbers' strips). */
+  grid: Rect;
+  cell: number;
+  /** The depth of the strips of clue numbers. */
+  gutterX: number;
+  gutterY: number;
+  maxX: number;
+  maxY: number;
+  slots: Slot[];
+  /** Where the fills tally and the picture's size go. */
+  info: Rect;
+}
+
+/** The home and help buttons own the top left of the screen, and the pet the bottom left: the picture and buttons start clear of them. */
+export const HOME_W = 150;
+export const HOME_H = 210;
+
+/**
+ * The touch layout for a `size` by `size` picture whose clue strips are `rowDepth` and `colDepth` numbers deep, in a view of
+ * `vw` by `vh` logical units. A Slide button is offered only when the picture is bigger than its window.
+ */
+export function touchFrame(vw: number, vh: number, size: number, rowDepth: number, colDepth: number): TouchFrame {
+  const side = vw >= vh, btn = 72, gap = 10;
+  const gutterX = rowDepth * CLUE_STEP_X + 14, gutterY = colDepth * CLUE_STEP_Y + 14;
+  const panelW = 124, margin = 16;
+  // The strip for the buttons: a column on the right, or a row at the bottom with the tally above it.
+  const area: Rect = side
+    ? { x: HOME_W, y: 100, w: vw - HOME_W - margin - panelW - margin, h: vh - 100 - 24 }
+    : { x: 24, y: HOME_H, w: vw - 48, h: vh - HOME_H - 24 - btn - 12 - 44 - 12 };
+  const fit = Math.floor(Math.min(area.w - gutterX - PAD, area.h - gutterY - PAD) / size);
+  const cell = Math.max(MIN_TOUCH, Math.min(96, fit));
+  const content = size * cell;
+  const maxX = Math.max(0, content + PAD - (area.w - gutterX)), maxY = Math.max(0, content + PAD - (area.h - gutterY));
+  // The paper hugs a picture that is all in view, and fills the window when it slides.
+  const pw = maxX > 0 ? area.w : gutterX + content + PAD, ph = maxY > 0 ? area.h : gutterY + content + PAD;
+  const paper: Rect = { x: area.x + (area.w - pw) / 2, y: area.y + (area.h - ph) / 2, w: pw, h: ph };
+  const grid: Rect = { x: paper.x + gutterX, y: paper.y + gutterY, w: paper.w - gutterX, h: paper.h - gutterY };
+  const kinds: SlotKind[] = ['fill', 'cross', ...(maxX > 0 || maxY > 0 ? ['slide' as const] : []), 'hint', 'again'];
+  const slots: Slot[] = [];
+  let info: Rect;
+  if (side) {
+    const x = vw - margin - panelW;
+    info = { x, y: 100, w: panelW, h: 76 };
+    kinds.forEach((kind, k) => slots.push({ kind, x, y: 100 + 92 + k * (btn + gap), w: panelW, h: btn }));
+  } else {
+    // The row starts right of the pet in the bottom left corner.
+    const by = vh - 24 - btn, room = vw - HOME_W - 24, bw = Math.min(190, Math.floor((room - gap * (kinds.length - 1)) / kinds.length));
+    const x0 = HOME_W + (room - (bw * kinds.length + gap * (kinds.length - 1))) / 2;
+    info = { x: HOME_W, y: by - 12 - 44, w: room, h: 44 };
+    kinds.forEach((kind, k) => slots.push({ kind, x: x0 + k * (bw + gap), y: by, w: bw, h: btn }));
+  }
+  return { side, paper, grid, cell, gutterX, gutterY, maxX, maxY, slots, info };
+}
+
+/** How deep the clue strips are: the most numbers in one row's clue, and in one column's. */
+export const clueDepths = (p: PicturePuzzle) => ({ rowDepth: Math.max(...p.rowClues.map((c) => c.length)), colDepth: Math.max(...p.colClues.map((c) => c.length)) });
+
+export type Axis = 'row' | 'column';
+
+/** Which way a stroke begun on `start` runs once the finger is on `at`: the longer of its two movements. Null while it is on the start. */
+export function axisOf(n: number, start: number, at: number): Axis | null {
+  const dr = Math.abs(Math.floor(at / n) - Math.floor(start / n)), dc = Math.abs((at % n) - (start % n));
+  return dr === 0 && dc === 0 ? null : dc >= dr ? 'row' : 'column';
+}
+
+/**
+ * The squares a stroke covers: from where it began to the square under the finger, projected on to the row or column it chose. A
+ * quick swipe that jumps squares between two frames still paints every square in between.
+ */
+export function strokeCells(n: number, start: number, axis: Axis | null, at: number): number[] {
+  if (axis === null) return [start];
+  const r = Math.floor(start / n), c = start % n;
+  const to = axis === 'row' ? at % n : Math.floor(at / n), from = axis === 'row' ? c : r;
+  const step = to >= from ? 1 : -1, out: number[] = [];
+  for (let k = from; k !== to + step; k += step) out.push(axis === 'row' ? r * n + k : k * n + c);
+  return out;
+}
+
+/** The tool a hint wants: a cross, or the lifting of one, uses Cross; a fill, or taking one out, uses Fill. */
+export const toolForHint = (h: Hint): Tool => (h.kind === 'cross' || (h.kind === 'fix' && h.mark === CROSSED) ? 'cross' : 'fill');
+
+/**
+ * The demonstration starts with most of the picture filled in, so a ten- or fifteen-square picture shows a few strokes, not
+ * a hundred: every row of the picture but the last few that have squares is filled. The picture is never already solved.
+ */
+export function headStart(p: PicturePuzzle, rowsLeft = 3): Mark[] {
+  const marks: Mark[] = p.solution.map((): Mark => EMPTY);
+  const withSquares = Array.from({ length: p.size }, (_, r) => r).filter((r) => p.solution.slice(r * p.size, (r + 1) * p.size).some(Boolean));
+  const keep = new Set(withSquares.slice(-rowsLeft));
+  for (let i = 0; i < marks.length; i++) if (p.solution[i] && !keep.has(Math.floor(i / p.size))) marks[i] = FILLED;
+  return marks;
+}

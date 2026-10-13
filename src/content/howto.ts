@@ -139,12 +139,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'picture-logic': {
     goal: 'Fill the squares the numbers allow, and a picture appears.',
     steps: [
-      'Move around the grid with the arrow keys or the stick. The numbers beside each row and column say how many squares in a row to fill.',
-      'Hold Enter and move to paint a run of filled squares; hold Backspace to cross out a run.',
-      'Esc opens the pause menu, with a hint and a way to empty the picture.',
+      'The numbers beside each row and column say how many squares in a row to fill. Touch a square to fill it, or drag along a row or column.',
+      'Cross marks an empty square. Fill on a filled square empties it.',
+      { from: 2, to: 4, text: 'A big picture slides: choose Slide, or drag the numbers.' },
+      'Hint rings a square; Start over empties the picture.',
     ],
     finish: 'The picture is done when every filled square matches its numbers.',
-    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+    note: 'A fill outside the picture is a miss, and a hint is help. Crossing and emptying are free.',
   },
   'word-search': {
     goal: 'Find the hidden words in a grid of letters.',
