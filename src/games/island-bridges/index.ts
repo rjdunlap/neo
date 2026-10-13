@@ -247,7 +247,8 @@ class IslandBridges implements Game {
       const p = this.at(i), have = planksAt(this.layout, this.planks, i), done = have === il.n;
       g.circle(p.x, p.y, rad).fill(done ? DONE_FILL : SAND).stroke({ width: 4, color: bad.has(i) ? 0xc23a40 : done ? DONE_LINE : SAND_LINE });
     });
-    this.tally.text = `${this.entries} ${this.entries === 1 ? 'plank' : 'planks'} laid`;
+    this.tally.text = this.touch ? `Planks: ${this.entries}` : `${this.entries} ${this.entries === 1 ? 'plank' : 'planks'} laid`;
+    if (this.touch) this.tally.style.fontSize = 20;
   }
 
   /** A row of small dots along a stretch of water between two islands. */
@@ -478,7 +479,11 @@ class IslandBridges implements Game {
   private lift(edge: number) {
     if (!this.planks[edge]) return void sfx.squeak();
     this.planks[edge]--;
-    if (this.hinted?.kind === 'fix' && this.hinted.edge === edge) this.hinted = null;
+    if (this.hinted?.kind === 'fix' && this.hinted.edge === edge) {
+      this.hinted = null;
+      // By touch, the hint switched Take off on for her; once its bridge is lifted, laying is what comes next.
+      if (this.touch && this.taking) { this.taking = false; this.paintButtons(); }
+    }
     sfx.pop(2);
     this.dirty = true;
   }
