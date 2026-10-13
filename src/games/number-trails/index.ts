@@ -13,7 +13,7 @@ import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { DIGITS } from './digits';
 import {
-  LEVELS, THING_HIT, groupSize, numeralFor, planFor, stickerDigit, tapOutcome, thingFor, thingSpots, trailTolerance,
+  LEVELS, THING_HIT, groupSize, numeralFor, planFor, stickerDigit, thingFor, thingSpots, thingWord, trailTolerance,
 } from './logic';
 
 type Phase = 'trace' | 'show' | 'wake' | 'done';
@@ -181,7 +181,7 @@ class NumberTrails implements Game {
         onTap(t, () => this.wake(t), { cooldown: 200 });
       });
       this.phase = 'wake'; this.busy = false;
-      await this.ctx.instruct('nt.wake', { n: this.n, things: this.thing.plural });
+      await this.ctx.instruct('nt.wake', { n: this.n, things: thingWord(this.thing, this.n) });
       return;
     }
     this.things.forEach((t) => t.scale.set(0));
@@ -193,7 +193,7 @@ class NumberTrails implements Game {
       await this.ctx.say('nt.count', { n: i + 1 });
       await this.ctx.tw.wait(0.2);
     }
-    await this.ctx.say('nt.made', { n: this.n, things: this.thing.plural });
+    await this.ctx.say('nt.made', { n: this.n, things: thingWord(this.thing, this.n) });
     await this.ctx.tw.wait(1);
     this.phase = 'done'; this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
@@ -201,7 +201,6 @@ class NumberTrails implements Game {
   private async wake(t: Container) {
     if (this.phase !== 'wake' || this.busy) return;
     if (this.awake.has(t)) return;
-    if (tapOutcome(this.woken, this.n) === 'enough') { void this.ctx.say('nt.enough', { n: this.n }); return; }
     this.awake.add(t);
     this.woken++;
     const count = this.woken;
@@ -209,7 +208,7 @@ class NumberTrails implements Game {
     void this.ctx.tw.to(t.scale, { x: 1.15, y: 1.15 }, { duration: 0.18, ease: ease.outBack }).then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.15 }));
     if (count < this.n) { void this.ctx.say('nt.count', { n: count }); return; }
     this.busy = true;
-    await this.ctx.say('nt.made', { n: this.n, things: this.thing.plural });
+    await this.ctx.say('nt.made', { n: this.n, things: thingWord(this.thing, this.n) });
     // The ones left over go back to sleep for good: nothing more to tap.
     this.things.forEach((x) => { if (!this.awake.has(x)) x.eventMode = 'none'; });
     await this.ctx.tw.wait(1);

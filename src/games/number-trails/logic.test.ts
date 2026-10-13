@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { rangeFor } from '../../progress/difficulty';
 import {
-  LEVELS, MAX_THINGS, PLANS, SPARE, THINGS, THING_GAP, THING_HIT, groupSize, numeralFor, planFor, stickerDigit, tapOutcome, thingFor, thingSpots,
+  LEVELS, MAX_THINGS, PLANS, SPARE, THINGS, THING_GAP, THING_HIT, groupSize, numeralFor, planFor, stickerDigit, thingFor, thingSpots, thingWord,
 } from './logic';
 
 describe('number trails levels', () => {
@@ -43,16 +43,14 @@ describe('how many things wait', () => {
     expect(groupSize(0, true)).toBe(0);
     expect(groupSize(4, true)).toBe(4 + SPARE);
   });
-  it('wakes things until the count is right and then only says that it is enough', () => {
-    expect(tapOutcome(0, 3)).toBe('wake');
-    expect(tapOutcome(2, 3)).toBe('wake');
-    expect(tapOutcome(3, 3)).toBe('enough');
+  it('lets a waking round reach exactly the numeral from every group, with sleepers left over', () => {
+    for (let n = 1; n <= 9; n++) expect(groupSize(n, true) - n).toBeGreaterThanOrEqual(1);
   });
-  it('lets a waking round reach exactly the numeral from every group', () => {
-    for (let n = 1; n <= 9; n++) {
-      let woken = 0;
-      for (let i = 0; i < groupSize(n, true); i++) if (tapOutcome(woken, n) === 'wake') woken++;
-      expect(woken).toBe(n);
+  it('says one thing in the singular and every other count in the plural', () => {
+    for (const thing of THINGS) {
+      expect(thingWord(thing, 1)).toBe(thing.one);
+      for (const n of [0, 2, 3, 9]) expect(thingWord(thing, n)).toBe(thing.plural);
+      expect(thing.plural).toBe(`${thing.one}s`);
     }
   });
 });

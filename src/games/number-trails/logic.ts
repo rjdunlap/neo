@@ -29,20 +29,23 @@ export const planFor = (level: number): TrailPlan => PLANS[Math.min(PLANS.length
 /** The numeral this round draws. */
 export const numeralFor = (level: number, rng: Rng): number => rng.pick(planFor(level).digits);
 
-/** The things that wait for her: each has a spoken plural. */
+/** The things that wait for her, each with the word for one and for more. */
 export const THINGS = [
-  { id: 'duck', plural: 'ducks' },
-  { id: 'apple', plural: 'apples' },
-  { id: 'star', plural: 'stars' },
+  { id: 'duck', one: 'duck', plural: 'ducks' },
+  { id: 'apple', one: 'apple', plural: 'apples' },
+  { id: 'star', one: 'star', plural: 'stars' },
 ] as const;
 export type ThingId = (typeof THINGS)[number]['id'];
 
 export const thingFor = (rng: Rng) => rng.pick(THINGS);
 
+/** What the voice calls `n` of a thing: "1 duck", "2 ducks", "0 ducks". */
+export const thingWord = (thing: (typeof THINGS)[number], n: number): string => (n === 1 ? thing.one : thing.plural);
+
 /** Most things on the screen at once. */
 export const MAX_THINGS = 12;
 
-/** In a waking round the group is the numeral and three more, so stopping at the numeral is a real choice. */
+/** In a waking round the group is the numeral and three more, so she counts the numeral out of a bigger group. The round ends by itself at the numeral, so no tap can overshoot. */
 export const SPARE = 3;
 export const groupSize = (n: number, wakeThem: boolean): number => (n === 0 ? 0 : wakeThem ? Math.min(MAX_THINGS, n + SPARE) : n);
 
@@ -77,10 +80,6 @@ export function thingSpots(count: number, rect: Rect, gap = THING_GAP): { x: num
   }
   return out;
 }
-
-/** What a tap on a waiting thing does: wake it, or say that the count is already right. */
-export type TapOutcome = 'wake' | 'enough';
-export const tapOutcome = (woken: number, n: number): TapOutcome => (woken < n ? 'wake' : 'enough');
 
 /** Misses and hints for a trail: one miss per drag that leaves the corridor; a hint at the second in a row on one stroke. */
 export function trailTolerance(level: number): number {

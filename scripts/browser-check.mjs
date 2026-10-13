@@ -343,7 +343,7 @@ async function numberTrailsPlay() {
   assert.equal(await page.evaluate(() => neo.scene.game.n >= 1 && neo.scene.game.n <= 5), true);
   await page.waitForFunction(() => neo.scene.game.phase === 'done' || neo.scene.finished, null, { timeout: 30000 });
   await finished('number-trails');
-  // Level 3: she wakes things from a bigger group; taps past the numeral only say "enough"; portrait layout holds.
+  // Level 3: she wakes things from a bigger group (n of n + 3), one count per tap, and the round ends at n; portrait layout holds.
   await launch('number-trails', 3);
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
   await traceAll();
