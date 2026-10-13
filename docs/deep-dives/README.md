@@ -46,7 +46,7 @@ The waves are a suggestion; the grown-up can name any game.
 
 ## Tracker
 
-Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the highest level in the game's plan on 2026-10-10. It changes as slices land, so the deep dive records the current one.
+Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the highest level in the game's plan on 2026-10-10 (the six games built after that, Day by Day, Fill and Dump, Orchard Rows, Read & Do, Shape Buddies and Sing-Along Barn, were added on 2026-10-13 with their level at that date). It changes as slices land, so the deep dive records the current one.
 
 | Game | ID | Bands | Top level | Wave | Status | Branch / PR | Deep dive |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -64,12 +64,14 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Color Garden | `color-garden` | TPK | 6 | 4 | not started | — | — |
 | Critter Crossing | `critter-crossing` | KS | 5 | 4 | not started | — | — |
 | Critter Sort | `critter-sort` | KS | 5 | 4 | not started | — | — |
+| Day by Day | `day-by-day` | KS | 3 | 4 | not started (first slice built; [definition](../day-by-day.md)) | — | — |
 | Dot Link | `dot-link` | LTPK | 5 | 4 | not started | — | — |
 | Duck Pond | `duck-pond` | LTPKS | 11 | 3 | designed | `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114)) | [duck-pond.md](duck-pond.md) |
 | Duckling Parade | `duckling-parade` | LTPK | 8 | 4 | not started | — | — |
 | Egg Catch | `egg-catch` | LTPKS | 6 | 4 | not started | — | — |
 | Feelings Faces | `feelings-faces` | LTPK | 7 | 4 | not started | — | — |
 | Ferry Jam | `ferry-jam` | KS | 6 | 4 | not started | — | — |
+| Fill and Dump | `fill-dump` | LTP | 5 | 4 | not started (built after the gap review; pour mode built) | — | — |
 | Fluffy Salon | `fluffy-salon` | LTPK | 5 | 4 | not started | — | — |
 | Frog Hop | `frog-hop` | PKS | 7 | 3 | designed | `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116)) | [frog-hop.md](frog-hop.md) |
 | Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
@@ -89,6 +91,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Monster Munch | `monster-munch` | LTPKS | 8 | 4 | not started | — | — |
 | Opposites | `opposites` | LTPK | 4 | 1 | slice 1 built (twelve pairs, fairness) | `claude/zealous-cerf-vmw320` ([PR 87](https://github.com/rjdunlap/neo/pull/87)) | [opposites.md](opposites.md) |
 | Owl Walk Home | `owl-walk` | TPK | 4 | 4 | not started | — | — |
+| Orchard Rows | `orchard-rows` | S | 3 | 4 | not started (levels 1–3 built) | — | — |
 | Pattern Train | `pattern-train` | PKS | 12 | 3 | building (slice 1 built) | `claude/pattern-train-deep-dive` ([PR 139](https://github.com/rjdunlap/neo/pull/139)); slice 1: `claude/pattern-train-slice-1` ([PR 141](https://github.com/rjdunlap/neo/pull/141)); slice 2: `claude/pattern-train-level-11`; slice 3: `claude/pattern-train-tunnel`; slice 4 pool: `claude/pattern-train-families`; slice 5: `claude/pattern-train-odd-car`; slice 6: `claude/pattern-train-same-pattern` | [pattern-train.md](pattern-train.md) |
 | Peekaboo Barn | `peekaboo-barn` | LTPK | 8 | 2 | designed | `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96)) | [peekaboo-barn.md](peekaboo-barn.md) |
 | Peekaround Island | `peekaround-island` | TPKS | 5 | 4 | not started | — | — |
@@ -103,6 +106,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |
 | Rainbow Fingers | `rainbow-fingers` | LTPKS | 7 | 2 | designed | `claude/roadmap-item-14-game-content-0zaz9u` ([PR 107](https://github.com/rjdunlap/neo/pull/107)) | [rainbow-fingers.md](rainbow-fingers.md) |
 | Ramp Race | `ramp-race` | KS | 4 | 4 | not started | — | — |
+| Read & Do | `read-do` | KS | 3 | 4 | not started (levels 1–3 built) | — | — |
 | Rhyme Time | `rhyme-time` | KS | 4 | 4 | not started | — | — |
 | Rhythm Neighbors | `rhythm-neighbors` | LTPKS | 6 | 4 | not started | — | — |
 | Robot Path | `robot-path` | PKS | 12 | 1 | building (boards slice 2 and levels 11–12 built; preschool slice 3 built; next waypoint slice 6) | `codex/robot-path-level-12-fix-program` (level 11: `codex/robot-path-where-will-it-stop`, [PR 100](https://github.com/rjdunlap/neo/pull/100)); slice 2: `codex/robot-path-board-pool` ([PR #149](https://github.com/rjdunlap/neo/pull/149)); slice 3: `codex/robot-path-preschool` ([PR #154](https://github.com/rjdunlap/neo/pull/154)) | [robot-path.md](robot-path.md) |
@@ -110,8 +114,10 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school. "Top level" is the high
 | Scoop Shop | `scoop-shop` | LTPKS | 6 | 4 | not started | — | — |
 | Secret Code | `secret-code` | KS | 6 | 4 | not started | — | — |
 | Seesaw Balance | `seesaw-balance` | TPKS | 9 | 4 | not started | — | — |
+| Shape Buddies | `shape-buddies` | KS | 1 | 4 | not started (solo level 1 built; [definition](../definitions/shape-buddies.md)) | — | — |
 | Shape Sorter | `shape-sorter` | TPK | 7 | 4 | not started | — | — |
 | Sink or Float | `sink-float` | LTPKS | 6 | 4 | not started | — | — |
+| Sing-Along Barn | `sing-along-barn` | LTPK | 3 | 4 | not started (first slice built 2026-10-12: Old MacDonald, levels 1–3) | — | — |
 | Size Parade | `size-parade` | TPKS | 8 | 4 | not started | — | — |
 | Song Maker | `song-maker` | LTPKS | 7 | 4 | not started | — | — |
 | Sound Garden | `sound-garden` | LTPK | 6 | 4 | not started | — | — |
