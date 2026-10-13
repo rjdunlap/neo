@@ -118,7 +118,9 @@ Sketches, not levels yet: **15, Evens and odds** (pop the numbers that pair up: 
 
 **None to add.** The game already starts at lap from level 1. What would help a one-year-old sits below level 1.
 
-### Levels below level 1 (waiting on the level-order decisions)
+### Levels below level 1
+
+> **Pop anywhere built 2026-10-13** ([PR #236](https://github.com/rjdunlap/neo/pull/236)) as level 15, the first use of a band's `order` (lap `[15, 1, 2, 3]`): plan `anywhere` (big bubbles of radius 96–118, four at a time, speed 42, eight pops), a whole-screen layer last in the stage that pops `nearestShown` and takes the rainbow bubble too, a voice line, a scoped how-to step, and the ghost finger sending its touch to that layer (`receiver`). `store.levelFor` now starts a never-finished game at the first level of the band's order, since level 1 produces no struggling rounds that would step her down to an entry placed before it. Big and little, which one has the dots and blow-then-pop are still to build.
 
 These are placed by [`order`, which may skip IDs](../DESIGN.md) (built): each is easier than a level that already exists, so appending it makes "step up" run backwards unless levels get an explicit order apart from their IDs. IDs are assigned when built.
 

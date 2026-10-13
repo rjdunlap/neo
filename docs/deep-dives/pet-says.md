@@ -113,7 +113,9 @@ IDs are appended, never inserted, and a new level is easier or harder than the o
 
 **None to add.** Pet Says already opens at lap level 1. What a lap child needs is not an easier cue; it is a toy she acts on (below), a different move each round (fresh content 1) and an arrow that nudges (fresh content 8).
 
-### Levels below level 1 (waiting on the level-order decisions)
+### Levels below level 1
+
+> **Pat the pet built 2026-10-13** as level 13 (`ENTRY_PLANS`, lap `order: [13, 1, 2]`; [PR #236](https://github.com/rjdunlap/neo/pull/236)): five different moves from the existing set (wave, clap, jump, wiggle, turn around; pat-a-cake and peekaboo wait for the tiered moves), a pat starts exactly one move and a pat during one only squishes the pet, no arrow, a poke and a spoken nudge after ten quiet seconds. *Your turn!* is still to build.
 
 These are easier than level 1 or fall between levels, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (13 and up).
 

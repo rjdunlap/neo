@@ -341,7 +341,7 @@ function weekSummary(): string {
     const seconds = recent.reduce((t, r) => t + r.seconds, 0);
     const minutes = seconds > 0 ? Math.max(1, Math.round(seconds / 60)) : 0;
     const range = g.levels(playBand(g.bands, band));
-    const now = store.levelFor(g.id, range);
+    const now = store.levelFor(g.id, range, g.entryLevels);
     const options = [`<option value="">Automatic</option>`];
     for (const l of levelsInOrder(range)) {
       options.push(`<option value="${l}" ${stats.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`);

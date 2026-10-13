@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, showsDots, bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
+import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, showsDots, bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
 
 describe('Bubble Pop', () => {
   it('keeps every bubble a big target, and number rounds within what fits on screen', () => {
@@ -259,5 +259,45 @@ describe('the sign at the top', () => {
 
   it('is not shown for free play, colors or counting from 1', () => {
     for (const level of [1, 2, 3, 4, 5, 6]) expect(signFor(planFor(level), level, [])).toBeNull();
+  });
+});
+
+describe('pop anywhere (level 15, lap\'s first level)', () => {
+  const plan = planFor(15);
+  const at = (x: number, y: number, extra: Partial<DemoBubble> = {}): DemoBubble => ({ x, y, r: 100, color: null, ...extra });
+
+  it('is a free-popping round that takes a touch anywhere, with only big, slow, few bubbles', () => {
+    expect(plan.mode).toBe('free');
+    expect(plan.anywhere).toBe(true);
+    expect(PLANS.filter((p) => p.anywhere)).toHaveLength(1);
+    expect(plan.radius[0] * 2).toBeGreaterThanOrEqual(173);
+    expect(plan.most).toBeLessThan(planFor(1).most);
+    expect(plan.speed).toBeLessThan(planFor(1).speed);
+    expect(plan.goal).toBeLessThan(planFor(1).goal);
+  });
+
+  it('pops the nearest bubble for every point of the screen while one is showing, and never none', () => {
+    const shown = [at(200, 300), at(700, 250), at(500, 600)];
+    for (let x = 0; x <= 1024; x += 32) {
+      for (let y = 0; y <= 768; y += 32) {
+        const pick = nearestShown(shown, { x, y })!;
+        expect(pick).toBeTruthy();
+        const d = (b: DemoBubble) => Math.hypot(b.x - x, b.y - y);
+        for (const other of shown) expect(d(pick)).toBeLessThanOrEqual(d(other));
+      }
+    }
+  });
+
+  it('does nothing when no bubble is showing', () => {
+    expect(nearestShown([], { x: 500, y: 400 })).toBeNull();
+  });
+
+  it('counts every touch as right: free play has no wrong bubble, so no misses', () => {
+    expect(isRight('free', { color: null }, null, 1)).toBe(true);
+  });
+
+  it('is found through the ghost finger like level 1: the bot always has a bubble to pop', () => {
+    const shown = Array.from({ length: plan.goal }, (_, i) => at(150 + i * 110, 300 + i * 8));
+    expect(bubbleToPop(plan.mode, shown, null, 1, undefined, null)).not.toBeNull();
   });
 });

@@ -511,3 +511,57 @@ describe('backing up every profile', () => {
     expect(store.undoAt).toBeNull();
   });
 });
+
+describe('the level a game starts at', () => {
+  const lap = { min: 1, max: 15, order: [15, 1, 2, 3] };
+
+  it('is the easiest level of the band when the game has never been finished, which an order can put above level 1', async () => {
+    const store = make();
+    await store.load();
+    expect(store.levelFor('bubble-pop', lap)).toBe(15);
+    expect(store.levelFor('bubble-pop', { min: 4, max: 9 })).toBe(4);
+    expect(store.levelFor('bubble-pop', { min: 1, max: 3 })).toBe(1);
+  });
+
+  it('steps up the order from there and then keeps the level she reached', async () => {
+    const store = make();
+    await store.load();
+    const smooth = { misses: 0, hints: 0, seconds: 20, at: 1 };
+    store.recordRound('bubble-pop', { level: 15, ...smooth }, lap);
+    expect(store.levelFor('bubble-pop', lap)).toBe(15);
+    store.recordRound('bubble-pop', { level: 15, ...smooth }, lap);
+    expect(store.levelFor('bubble-pop', lap)).toBe(1);
+    store.recordRound('bubble-pop', { level: 1, ...smooth }, lap);
+    expect(store.levelFor('bubble-pop', lap)).toBe(1);
+  });
+
+  it('leaves a saved level and a pin where they are', async () => {
+    const store = make();
+    await store.load();
+    store.stats('bubble-pop').level = 2;
+    expect(store.levelFor('bubble-pop', lap)).toBe(2);
+    store.stats('bubble-pop').level = 1;
+    store.stats('bubble-pop').plays = 4;
+    expect(store.levelFor('bubble-pop', lap)).toBe(1);
+    store.pin('bubble-pop', 3);
+    expect(store.levelFor('bubble-pop', lap)).toBe(3);
+  });
+});
+
+describe('an entry level carried into a band that does not list it', () => {
+  const toddler = { min: 1, max: 6 };
+
+  it('starts at that band\'s easiest level, not at its hardest (a level above the top is not always the harder one)', async () => {
+    const store = make();
+    await store.load();
+    store.stats('bubble-pop').level = 15;
+    store.stats('bubble-pop').plays = 3;
+    expect(store.levelFor('bubble-pop', toddler, [15])).toBe(1);
+    store.pin('bubble-pop', 15);
+    expect(store.levelFor('bubble-pop', toddler, [15])).toBe(1);
+    // without being told 15 is an entry, a level above the top is the top (a retired or unknown level)
+    expect(store.levelFor('bubble-pop', toddler)).toBe(6);
+    // still honoured where the band lists it
+    expect(store.levelFor('bubble-pop', { min: 1, max: 15, order: [15, 1, 2, 3] }, [15])).toBe(15);
+  });
+});

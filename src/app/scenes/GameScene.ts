@@ -75,7 +75,7 @@ export class GameScene extends Scene {
   init() {
     const band = this.band;
     const range = this.mod.levels(band);
-    this.level = this.story?.level ?? (this.startLevel === undefined ? store.levelFor(this.mod.id, range) : stepLevel(this.startLevel, 0, range));
+    this.level = this.story?.level ?? (this.startLevel === undefined ? store.levelFor(this.mod.id, range, this.mod.entryLevels) : stepLevel(this.startLevel, 0, range));
     this.content.addChild(this.stage);
 
     this.pet.scale.set(0.42);

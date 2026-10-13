@@ -1,5 +1,20 @@
 # Puddle Island verification
 
+## 2026-10-13 — Pet Says level 13, Pat the pet (lap, below level 1)
+
+- Added level 13 (`ENTRY_PLANS`; lap `order: [13, 1, 2]`): the pet waits, each pat on it starts one move, a pat during a move squishes and is not queued, five different moves end the round by themselves, no arrow ([PR #236](https://github.com/rjdunlap/neo/pull/236)). The numbered ladder 1–5 and the other bands are unchanged.
+- `npm run typecheck`; vitest `pet-says`, registry and content (99 tests) passed, with rules for five distinct spoken moves from the pet's existing set and the ladder unchanged.
+- Browser on `http://localhost:5392`: `fingerdemo FINGER_ONLY=pet-says FINGER_LEVELS=13,1` finished cleanly (10.1 s, 12.3 s); a probe (`test-results/probe-pat.mjs`, new lap profile, no pin) started at 13 and, twice, checked that each pat starts exactly one move, a mid-move pat does not queue, no arrow shows, the fifth move ends the round, one sticker and 0 misses/0 hints.
+- Not run: the offline check. Open: whether she pats the pet, and the move names on a device.
+
+## 2026-10-13 — Bubble Pop level 15, Pop anywhere (lap, below level 1)
+
+- Added level 15 (a touch anywhere pops the nearest showing bubble; lap order `[15, 1, 2, 3]`) and `store.levelFor` starting a never-finished game at the first level of its band's order ([PR #236](https://github.com/rjdunlap/neo/pull/236)). Other bands' ranges and every existing game's start are unchanged (none had an `order`).
+- `npm run typecheck` passed; focused vitest (`bubble-pop`, `progress`, how-to, registry; 163 tests) passed, including every-point-resolves, nothing-showing-does-nothing, plan size/speed, the how-to's level 15 step, and the store's start/step/pin rules. The full `npm test` had six timeouts in Bumper Garden, Ferry Jam, Fluffy Salon, Peg Garden and Secret Code while a dev server ran; the same files passed alone (37 tests).
+- Browser on `http://localhost:5391`: `BROWSER_SUITE=fingerdemo FINGER_ONLY=bubble-pop FINGER_LEVELS=15,1` finished cleanly (22.4 s and 15.7 s). A probe (`test-results/probe-bubble15.mjs`, new lap profile, no pin) started at level 15, popped eight bubbles with touches placed as far as possible from any bubble (no miss), popped the rainbow by a touch away from it and earned one sticker; a portrait probe resized the touch layer and popped by a far touch.
+- Review found a band-change hole, fixed with `GameModule.entryLevels` and `landing` (a saved level or pin of 15 or 13 reaching toddler or preschool had been clamped to that band's hardest level; a failing test showed 6, then 1) and a registry guard. The browser harness's `launch` and its smoke and phone enumerations read `min..max`; they now read the band's listed levels (`levelsInOrder`).
+- Shell tier on `http://localhost:5393`: `smoke SMOKE_ONLY=bubble-pop,pet-says` (levels 1, 8 and 15; 1, 4 and 13, with portrait and the stranded-touch check), `phone PHONE_ONLY=bubble-pop,pet-says`, `originals ORIGINALS_ONLY=bubbles`, `shortlist SHORTLIST_ONLY=says` and `howtolevel` passed; `npm run build` passed. The full `npm test` showed Ferry Jam, Peg Garden, Bumper Garden, Fluffy Salon and Secret Code timing out under load (the same files passed alone). Not run: `world`, `grownups`, the offline check. Open: whether she pops by swatting at all, an iPad touch and the sentence's speech (person checks in the roadmap).
+
 ## 2026-10-12 — Gem Swap in Lantern Lake
 
 - Added `gem-swap` grown-up levels 1–4: finite 6/12/15/18-gem trays, three seeded templates each, visible falling clears, touch/controller play, Undo/Restart, shortest-route Hint, both demonstrations and one shell sticker ([PR #235](https://github.com/rjdunlap/neo/pull/235)). Couch compares accepted swaps over exact par; no turn limit or refill.
@@ -955,6 +970,8 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |
+| `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |
 | `gemswap`, `fingerdemo`/`couchgames` (`gem-swap`) | 2026-10-12: first/last touch rounds, help/revision/reward, portrait; clean demos in 3.3/10.4s, controller bot and isolated save; typecheck/build, all affected unit tests | Gem Swap entry / [PR #235](https://github.com/rjdunlap/neo/pull/235) | One unchanged Peg Garden timeout; full unchanged suites skipped; real devices/person play open |
 | `tilepairs`/`fingerdemo` (`tile-pairs` level 6) | 2026-10-12: top-level touch regression/reward/portrait; demo clean in 32.8s; typecheck and 36 focused tests | Tile Pairs levels 4–6 / [PR #232](https://github.com/rjdunlap/neo/pull/232) | Levels 4/5 proved by rules; new-level check tier, no broader suites; real devices/person play untested |
 | `tilepairs`, `fingerdemo`/`couchgames` (`tile-pairs`), `lands` (`lantern-lake`) | 2026-10-12: first/last touch rounds with revision/help, portrait, clean finger demos, controller bot/save, seven-game land fit; build and production offline check | Tile Pairs entry / [PR #229](https://github.com/rjdunlap/neo/pull/229) | Real device/controller/speech and person replay value untested; no course |

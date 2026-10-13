@@ -55,6 +55,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Pop the bubbles.',
     steps: [
       { to: 3, text: 'Tap a bubble to pop it.' },
+      { from: 15, to: 15, text: 'Tap or pat anywhere on the screen. The bubble nearest the touch pops, so there is nothing to aim at.' },
       { from: 4, to: 6, text: 'Listen for the color, then tap only the bubbles of that color.' },
       { from: 7, to: 9, text: 'Tap the numbered bubbles in order, starting at 1.' },
       { from: 12, to: 12, text: 'Tap the numbered bubbles in order, starting at the number on the sign at the top, then counting up.' },
@@ -66,8 +67,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 10, to: 10, text: 'Tap a bubble to hold it, then tap the bubble that makes 5 with it. Tap the held bubble again to let it go.' },
       { from: 11, to: 11, text: 'Tap a bubble to hold it, then tap the bubble that makes 10 with it. Tap the held bubble again to let it go.' },
     ],
-    finish: 'The round ends when the last bubble that was asked for is popped.',
-    note: 'A wrong bubble only wobbles and gets a spoken hint; nothing is lost.',
+    finish: [
+      { to: 14, text: 'The round ends when the last bubble that was asked for is popped.' },
+      { from: 15, text: 'After a few pops a rainbow bubble floats up; a touch anywhere pops it and the round ends.' },
+    ],
+    note: [
+      { to: 14, text: 'A wrong bubble only wobbles and gets a spoken hint; nothing is lost.' },
+      { from: 15, text: 'No touch is wrong: a touch with no bubble on the screen does nothing.' },
+    ],
   },
   'rainbow-fingers': {
     goal: 'Paint with colors.',
@@ -1224,9 +1231,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Do the two moves in order, away from the screen: "clap, then stomp".' },
       { from: 4, to: 4, text: "Move only when you hear the pet's name first, away from the screen." },
       { from: 5, to: 5, text: 'Dance away from the screen while the music plays, and freeze when it stops.' },
-      'A grown-up taps the arrow to go on.',
+      { from: 13, to: 13, text: 'Pat the pet. Each pat makes it do its next move: wave, clap, jump, wiggle, turn around. Do the move together if you like.' },
+      { to: 12, text: 'A grown-up taps the arrow to go on.' },
     ],
-    finish: 'The round ends after the last move.',
+    finish: [
+      { to: 12, text: 'The round ends after the last move.' },
+      { from: 13, text: 'The round ends after the fifth move; the pet cheers by itself.' },
+    ],
     note: 'This is a body game; the screen is the guide.',
   },
   'owl-walk': {

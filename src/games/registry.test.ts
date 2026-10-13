@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { levelsInOrder } from '../progress/difficulty';
+import { landing, levelsInOrder } from '../progress/difficulty';
 import { nextLevel, stepLevel } from '../progress/difficulty';
 import { BANDS, playBand } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
@@ -29,6 +29,26 @@ describe('game registry', () => {
           expect(Math.max(...order), `${g.id} ${band} order ends at max`).toBe(max);
         }
         for (const l of levelsInOrder(g.levels(band))) expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
+      }
+    }
+  });
+
+  it('names every entry level (an easy level a band places before its level IDs) so a band without it starts at its own easiest', () => {
+    for (const g of GAMES) {
+      const entries = g.entryLevels ?? [];
+      for (const band of g.bands) {
+        const range = g.levels(band);
+        const first = levelsInOrder(range)[0];
+        if (first !== range.min) expect(entries, `${g.id} ${band}: ${first} is placed first but is not an entry level`).toContain(first);
+      }
+      for (const entry of entries) {
+        expect(g.bands.some((band) => levelsInOrder(g.levels(band))[0] === entry), `${g.id}: some band starts at entry ${entry}`).toBe(true);
+        for (const band of g.bands) {
+          const range = g.levels(band);
+          const lands = landing(entry, range, entries);
+          expect(levelsInOrder(range), `${g.id} ${band}`).toContain(lands);
+          if (!levelsInOrder(range).includes(entry)) expect(lands, `${g.id} ${band} starts at its easiest`).toBe(levelsInOrder(range)[0]);
+        }
       }
     }
   });

@@ -214,6 +214,8 @@ export const SCRIPT = {
   'says.tricked': ["Did you stay still? I didn't say {pet} says! Hee hee!"],
   'says.dance': ['Dance, dance, dance!'],
   'says.freeze-now': ['Freeze!'],
+  'says.pat': ['Pat {pet}! Give {pet} a pat, and see what {pet} does.'],
+  'says.pat-again': ['Pat {pet}!'],
   'says.next': ['A grown-up can tap the green arrow for the next one.'],
   'says.done': ['Great moving!'],
 
@@ -1230,6 +1232,7 @@ export const SCRIPT = {
   'place.favorites': ['Your favorites! Tap one to play.'],
 
   'bubble.free': ['Pop the bubbles!', 'Bubbles! Pop pop pop!'],
+  'bubble.anywhere': ['Tap anywhere to pop the bubbles!', 'Pop pop pop! Tap anywhere!'],
   'bubble.color': ['Pop the {color} bubbles!'],
   'bubble.wrong': ["That one's {wrong}. Find {color}!"],
   'bubble.count': ['Pop the numbers in order. Find one!'],

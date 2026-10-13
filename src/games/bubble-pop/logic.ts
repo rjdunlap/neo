@@ -51,6 +51,8 @@ export interface BubblePlan {
   start?: [number, number];
   /** Count mode: the steps a round may count by (one drawn each round). Left out it counts up by 1; -1 counts back to 1. */
   steps?: number[];
+  /** Free mode: a tap anywhere on the screen pops the nearest bubble that is showing (`nearestShown`); no bubble is aimed at. */
+  anywhere?: boolean;
 }
 
 /** One entry per level. Lap levels are pure popping; then colors; then numbers in order. */
@@ -71,6 +73,8 @@ export const PLANS: BubblePlan[] = [
   { mode: 'count', goal: 6, speed: 38, most: 6, colors: 0, radius: [58, 70], start: [2, 7] },
   { mode: 'count', goal: 10, speed: 40, most: 10, colors: 0, radius: [52, 62], start: [5, 10], steps: [-1] },
   { mode: 'count', goal: 5, speed: 40, most: 5, colors: 0, radius: [58, 70], start: [1, 3], steps: [10, 5] },
+  // Below level 1, for lap: a swat or a flat palm anywhere pops the nearest bubble. Big, slow and few, so what pops is plain.
+  { mode: 'free', goal: 8, speed: 42, most: 4, colors: 0, radius: [96, 118], anywhere: true },
 ];
 
 /** Bonds mode: numbers for `pairs` pairs that each make `sum`, so every bubble has a partner. */
@@ -168,6 +172,14 @@ export function bubbleToPop<T extends DemoBubble>(
   if (mode === 'count') return live.find((b) => b.number === next) ?? null;
   if (held) return live.find((b) => b !== held && held.number! + b.number! === sum) ?? null;
   return live.find((a) => live.some((b) => b !== a && a.number! + b.number! === sum)) ?? null;
+}
+
+/**
+ * Pop anywhere: the bubble a touch at `at` pops, the nearest middle of those showing, however far; null when none is showing
+ * (the touch then does nothing). Nothing here is a miss.
+ */
+export function nearestShown<T extends Reachable>(shown: readonly T[], at: { x: number; y: number }): T | null {
+  return shown.reduce<T | null>((best, b) => (!best || Math.hypot(b.x - at.x, b.y - at.y) < Math.hypot(best.x - at.x, best.y - at.y) ? b : best), null);
 }
 
 /** Quantity support fades once the numerals or bonds to ten are being practised. */

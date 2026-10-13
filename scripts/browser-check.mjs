@@ -43,8 +43,10 @@ async function launch(id, level, childName = 'Mia') {
   await ready();
   await page.evaluate(async ({ id, level, childName }) => {
     const { gameById } = await import('/src/games/registry.ts');
+    const { levelsInOrder } = await import('/src/progress/difficulty.ts');
     const mod = gameById(id);
-    const band = mod.bands.find((candidate) => { const r = mod.levels(candidate); return level >= r.min && level <= r.max; });
+    // A band's levels are the ones in its order (which may skip IDs), not everything from min to max.
+    const band = mod.bands.find((candidate) => levelsInOrder(mod.levels(candidate)).includes(level));
     kit.store.entry.birth = null; kit.store.entry.startBand = band;
     kit.store.data.profile.band = band;
     kit.store.data.profile.name = childName;
@@ -7367,8 +7369,9 @@ async function smoke() {
   const only = process.env.SMOKE_ONLY?.split(',');
   const games = await page.evaluate(async () => {
     const { GAMES } = await import('/src/games/registry.ts');
+    const { levelsInOrder } = await import('/src/progress/difficulty.ts');
     return GAMES.map((g) => {
-      const levels = [...new Set(g.bands.flatMap((b) => { const r = g.levels(b); return Array.from({ length: r.max - r.min + 1 }, (_, i) => r.min + i); }))].sort((a, b) => a - b);
+      const levels = [...new Set(g.bands.flatMap((b) => levelsInOrder(g.levels(b))))].sort((a, b) => a - b);
       return { id: g.id, levels: [...new Set([levels[0], levels[Math.floor(levels.length / 2)], levels.at(-1)])] };
     });
   });
@@ -7547,8 +7550,9 @@ async function phoneGames() {
   await mkdir(`${output}/phone`, { recursive: true });
   const games = await page.evaluate(async () => {
     const { GAMES } = await import('/src/games/registry.ts');
+    const { levelsInOrder } = await import('/src/progress/difficulty.ts');
     return GAMES.map((g) => {
-      const levels = [...new Set(g.bands.flatMap((b) => { const r = g.levels(b); return Array.from({ length: r.max - r.min + 1 }, (_, i) => r.min + i); }))].sort((a, b) => a - b);
+      const levels = [...new Set(g.bands.flatMap((b) => levelsInOrder(g.levels(b))))].sort((a, b) => a - b);
       return { id: g.id, level: levels[Math.floor(levels.length / 2)] };
     });
   });

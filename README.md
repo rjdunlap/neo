@@ -57,7 +57,7 @@ There are eighty-eight games; the child games are listed below and the grown-up 
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
-| Bubble Pop | lap–school | pop anything | pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10 |
+| Bubble Pop | lap–school | pop anything (or tap anywhere to pop the nearest) | pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10 |
 | Rainbow Fingers | lap–school | rainbow or color-pot finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering a pumpkin’s orange, pouring red and yellow into the bowl and painting it |
 | Jelly Drums | lap–school | free play on five notes | copy a tune of 2 to 5 notes |
 | Sing-Along Barn | lap–pre-K | tap anywhere to sing the next note of Old MacDonald; a friend comes out for the verse and answers | two friends, then choose which two friends come to the farm |
@@ -134,7 +134,7 @@ There are eighty-eight games; the child games are listed below and the grown-up 
 | Lasso Loops | preschool–school | draw a loop around fireflies: they fly into a jar | loop exactly 2 or 3, jars of five and ten with the ones left over (34 is three tens and four), equal groups ("3 groups of 4") |
 | Read & Do | pre-K–school | read a color word and choose a hat; tap words or the speaker for free spoken support | big/small duck phrases, then four sentences whose animal and action both matter; wrong choices act out their meaning |
 | Fill and Dump | lap–preschool | tap the basket and the fruit tumbles out with a chime each; tap it back in | tip it out twice, count fruit, then tip a jug to fill three cups to their lines; spills can be reused |
-| Pet Says | lap–pre-K | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow | body words with visible part targets, two moves in order, "Pet says" (move only when you hear it), freeze dance; a gentle arrow reminder |
+| Pet Says | lap–pre-K | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move) | body words with visible part targets, two moves in order, "Pet says" (move only when you hear it), freeze dance; a gentle arrow reminder |
 | Owl Walk Home | toddler–pre-K | turn over a color card and hop the owl to the next stone of that color | take turns with the pet to bring two, then three owls home together, then choose the owl a card carries farthest |
 | Clap the Syllables | preschool–school | the pet claps the beats in a word ("but-ter-fly") with beads lighting up, and you clap along on big hands | clap a word yourself (a wrong count brings the pet's demonstration), sort pictures into 1-, 2- and 3-clap bins, hear some claps and find the picture with that many beats, then sort long words into four clap counts |
 

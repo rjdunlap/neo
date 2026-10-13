@@ -18,7 +18,8 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BODY_TARGETS, danceSeconds, makeTurns, MOVE_CUES, MOVE_WORDS, shouldNudge, stickerRecipe, planFor, type Move, type SaysPlan, type Turn } from './logic';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  // Level 13, Pat the pet, is the easiest, so lap plays it first, then 1 and 2 (see `order`).
+  lap: { min: 1, max: 13, order: [13, 1, 2] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
@@ -66,6 +67,8 @@ class PetSays implements Game {
   private readonly notes = new Container();
   private idle = 0;
   private nudged = false;
+  /** Pat the pet: moves she has brought out so far. */
+  patted = 0;
   private lastDance = 0;
   private beat = 0;
   private beatIn = 0;
@@ -81,7 +84,8 @@ class PetSays implements Game {
     this.mover.pet.attach(new Graphics().ellipse(0, -106, 12, 9).fill(ink));
     ctx.track(this.mover.pet);
     this.mover.pet.hitArea = new Circle(0, -130, 170);
-    onTap(this.mover.pet, () => void this.again(), { cooldown: 500 });
+    // A pat brings the next move, so a pat just after a move ends must not be swallowed.
+    onTap(this.mover.pet, () => void this.again(), { cooldown: this.plan.mode === 'pat' ? 250 : 500 });
     this.next.visible = false;
     this.notes.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.notes, this.mover, this.next);
@@ -109,6 +113,12 @@ class PetSays implements Game {
     if (!this.busy && !this.finished) this.idle += dt;
     if (!this.nudged && shouldNudge(this.idle, this.busy, this.finished)) {
       this.nudged = true;
+      if (this.plan.mode === 'pat') {
+        // No arrow here: the pet itself asks for a pat.
+        this.mover.pet.poke();
+        void this.ctx.say('says.pat-again');
+        return;
+      }
       void this.ctx.say('says.next');
       void this.ctx.tw.to(this.next, { rotation: 0.12 }, { duration: 0.3 }).then(() =>
         this.ctx.tw.to(this.next, { rotation: 0 }, { duration: 0.3 }));
@@ -130,6 +140,7 @@ class PetSays implements Game {
 
   /** The ghost finger on the how-to card: the grown-up's green arrow, tapped once the pet has finished its move (or its dance and freeze). */
   autotouch(): TouchIntent | null {
+    if (this.plan.mode === 'pat') return this.busy || this.finished ? null : { tap: { on: this.mover.pet, y: -130 } };
     return this.busy || this.finished || this.dancing || !this.next.visible ? null : { tap: { on: this.next } };
   }
 
@@ -139,7 +150,14 @@ class PetSays implements Game {
   }
 
   private async intro() {
-    const lines: Record<SaysPlan['mode'], LineId> = { copy: 'says.copy', body: 'says.body', pairs: 'says.pairs', says: 'says.rule', freeze: 'says.freeze' };
+    const lines: Record<SaysPlan['mode'], LineId> = { copy: 'says.copy', body: 'says.body', pairs: 'says.pairs', says: 'says.rule', freeze: 'says.freeze', pat: 'says.pat' };
+    if (this.plan.mode === 'pat') {
+      // The pet waits to be patted; the first move comes with her first touch.
+      this.busy = false;
+      this.idle = 0;
+      await this.ctx.instruct(lines.pat);
+      return;
+    }
     await this.ctx.say(lines[this.plan.mode]);
     await this.advance(true);
   }
@@ -159,6 +177,12 @@ class PetSays implements Game {
 
   /** Tapping the pet shows the move again (not during the freeze dance, where the arrow restarts the music). */
   private async again() {
+    if (this.plan.mode === 'pat') {
+      // A pat brings the next move; a pat during a move only squishes the pet, and is not saved up for later.
+      if (this.busy || this.finished) this.mover.pet.poke();
+      else await this.advance();
+      return;
+    }
     if (this.busy || this.finished || !this.turn || this.plan.mode === 'freeze') {
       this.mover.pet.poke();
       return;
@@ -195,6 +219,11 @@ class PetSays implements Game {
           await this.ctx.say('says.tricked');
         }
         break;
+      case 'pat':
+        void this.ctx.say(MOVE_CUES[first].line);
+        await this.perform(first);
+        this.patted++;
+        break;
       case 'freeze':
         this.mover.pet.alive = true;
         void this.ctx.instruct('says.dance');
@@ -211,6 +240,11 @@ class PetSays implements Game {
     this.busy = false;
     this.idle = 0;
     this.nudged = false;
+    if (this.plan.mode === 'pat') {
+      // Five moves and the pet cheers by itself; otherwise it waits for the next pat, with no arrow.
+      if (this.patted >= this.plan.turns) void this.finale();
+      return;
+    }
     this.next.visible = true;
     this.next.scale.set(0);
     void this.ctx.tw.to(this.next.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
@@ -401,6 +435,7 @@ export const petSays: GameModule = {
   skills: ['copying actions', 'body words', 'following directions', 'self-control'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [13],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
   coplayHint: 'Stand up and copy the pet with {name}, then tap the green arrow for the next move.',

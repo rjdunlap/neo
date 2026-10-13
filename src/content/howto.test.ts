@@ -155,7 +155,10 @@ describe('touch how-to cards', () => {
     const bubble = [1, 4, 7, 10, 12, 13, 14].map((level) => howToFor(pop, level)!.steps[0]);
     expect(new Set(bubble).size).toBe(7);
     // Every step is bounded, so a level added above the ladder starts with no inherited step (it must write its own).
-    expect(howToFor(pop, 15)!.steps).toEqual([]);
+    expect(howToFor(pop, 15)!.steps).toEqual([expect.stringContaining('anywhere on the screen')]);
+    expect(howToFor(pop, 16)!.steps).toEqual([]);
+    expect(howToFor(pop, 15)!.note).toContain('No touch is wrong');
+    expect(howToFor(pop, 14)!.note).toContain('wrong bubble');
     // The sign is mentioned only where there is one, and the new levels do not inherit the dots or the pairs.
     for (const level of [10, 11, 12, 13, 14]) expect(howToFor(pop, level)!.steps.join(' ')).toContain('sign at the top');
     for (const level of [12, 13, 14]) expect(howToFor(pop, level)!.steps.join(' ')).not.toMatch(/dots|hold|partner|make 5|make 10/);
