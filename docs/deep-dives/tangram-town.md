@@ -21,7 +21,7 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 
 **Couplings.** A how-to card (steps scoped from level 3 and 6) and a ghost-finger bot (`autotouch`, which turns each piece with the real button, then carries it). No couch entry, journal entry or picnic step. The how-to steps and `describeLevel` read at the level, not the picture, so they were safe to extend. Voice: "Build a {picture}!" is spoken at the start, so a picture name must begin with a consonant ("a owl" would be wrong); a test now asserts it.
 
-**Known gaps.** The tray holds the pieces in one row spread across `v.w - 65`, so portrait with four pieces already puts a 200-wide rectangle and an 180-wide roof closer than their widths. Four is the ceiling. No spoken shape names. The levels end at a flat silhouette; nothing asks her to change what she built. A one-year-old at level 1 is untried (a person check).
+**Known gaps.** The tray holds the pieces in one row spread across `v.w - 65`, so portrait with four pieces already puts a 200-wide rectangle and an 180-wide roof closer than their widths. Four is the ceiling. Shape names are now spoken once per piece at toddler–pre-K; actual device speech remains unchecked. Level 7 adds alternative covers; repairing a built picture remains unbuilt. A one-year-old at level 1 is untried (a person check).
 
 ## Similar games
 
@@ -73,7 +73,7 @@ Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is th
 
 ### New levels on top
 
-None of these renumber saved levels. The school band's window is `{ min: 5, max: 6 }` today; extending it is part of each slice. These are proposals, not built.
+None of these renumber saved levels. The school band's window is `{ min: 5, max: 7 }` after level 7 ([PR #262](https://github.com/rjdunlap/neo/pull/262)). Level 7 is built; the following rows remain proposals.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -116,8 +116,8 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
 2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. Second batch built ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a two-piece tent at levels 1–3 and a three-piece barn (two triangles make its wall) at levels 4 and 6, bringing the pool to sixteen pictures and 3–8 per level. Third batch built 2026-10-13 ([PR #260](https://github.com/rjdunlap/neo/pull/260)): four-piece robot at levels 5–6 (square head, rectangular body and two triangular feet), seventeen pictures and 4–9 per level. More remain ready, `logic.ts` data only. Rule tests, one screenshot per new picture.
 3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
-4. **Level 7, fewer pieces** (needs a stated model): first a cover-set type with tests, then the level. New-level tier: `fingerdemo` at the new top level and a play.
-5. **Level 8, fix the picture** (ready after 4's re-pickable placed pieces).
+4. **Level 7, two ways** — built 2026-10-13 ([PR #262](https://github.com/rjdunlap/neo/pull/262)): cover sets accept the roof plus square or roof plus two triangles; every accepted partial choice finishes. Spare-wall drops are free, help follows the shortest surviving cover and completion names two or three pieces. Both alternatives and the ghost finger checked; school 5–7.
+5. **Level 8, fix the picture** (define the repair interaction next). Level 7 needs no repicking because every accepted partial cover finishes; level 8 still needs re-pickable placed pieces and its repair/check model.
 6. **Level 9, flip it** (waits on decision 1).
 7. **Level 10, build and keep** (waits on decision 2).
 8. **One piece home / pick the missing piece** (waits on the level-order decisions).
@@ -125,3 +125,11 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 ## What was built in this session
 
 Slice 1: `logic.ts` now holds `PICTURES` (11), `PLANS` as level rules with a picture `pool`, and `buildFor(level, rng)`; `index.ts` draws the round's picture from the pool and builds the tray from it, so every other piece of the game (hints, the ghost finger, voice, saved round) is unchanged. `describeLevel` names no single picture. Checks: `npm run typecheck`, `npx vitest run` on the game, content and registry tests (8 and 80 tests, including a separating-axis overlap check proved to fail when a slot is moved), and one pass of `BROWSER_SUITE=creative CREATIVE_ONLY=tangram` over levels 1 to 6 with a portrait view at level 5. Not run: a screenshot review of every picture, `fingerdemo`, a device, a child.
+
+## Level 7 implementation packet (built 2026-10-13)
+
+Requested with Penguin Slide's next level. `Build` has optional `covers`, a list of slot-index sets: roof plus square `[0,1]`, or roof plus two complementary triangles `[0,2,3]`. All four physical pieces start in the tray, the target is the same house silhouette, and either cover completes one round with one sticker. A partial set is valid only while at least one whole cover contains it. Drops may fill only an unfilled slot in a surviving cover; no overlapping square/triangle wall. A compatible partial build always has a completion. An unused alternative dropped on an already covered wall returns freely with an explanation, not a miss. Ordinary wrong shape/turn near an open slot keeps existing misses/two-miss help. No completion requires using the whole tray.
+
+Help prefers the shortest surviving cover (square first before choosing triangles), then its first missing slot and a matching physical piece; it never contradicts a placed triangle. The ghost finger uses that same surviving cover through real turn taps and drags. The silhouette stays a roof and square, and outlines under help show the surviving cover. Completion names the actual two or three pieces without ranking either as wrong; co-play can compare the two ways on replay. School extends 5–7; other bands, saves and existing levels remain unchanged. This slice does not need repicking locked pieces: every accepted partial cover completes. Level 8 still needs a separate repair interaction.
+
+Exit: typecheck, rule tests for exact equal polygon covers, compatible partial builds, rejection of overlaps, alternative completion and useful help/bot, one filtered play accepting both builds with a wrong turn/help, ghost finger at 7, portrait review and build for changed shared content.

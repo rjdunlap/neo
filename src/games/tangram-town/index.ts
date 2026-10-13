@@ -10,7 +10,7 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game,GameContext,GameModule,TouchIntent } from '../types';
-import { bestTarget, buildFor, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
+import { bestTarget, buildFor, completedCover, coverHint, unavailableSlots, viableCovers, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
 
 function shape(shape:Shape,color:ColorName,outline=true){return new Graphics().poly(VERTICES[shape]).fill(swatch[color].fill).stroke({width:outline?5:0,color:swatch[color].line,join:'round'});}
 /** Name the geometry, even when the picture uses a triangle as a roof or a trapezoid as a hull. */
@@ -32,8 +32,9 @@ class TangramTown implements Game {
   const hand=new Graphics().circle(0,0,20).fill(swatch.yellow.fill).moveTo(0,-35).lineTo(0,35).stroke({width:5,color:swatch.orange.line});
   this.help=new RoundButton(hand,swatch.yellow,50,()=>{
     if(this.done)return; if(!this.assisted){this.assisted=true;this.hints++;}
-    if(!this.selected||this.selected.placed)this.selected=this.pieces.find(p=>!p.placed)??null;
-    if(this.selected){const i=hintFor(this.selected.piece,this.plan.targets,this.filled);if(i>=0){this.selected.piece.turns=this.plan.targets[i].turns;this.selected.art.rotation=this.selected.piece.turns*Math.PI/2;}}
+    if(this.plan.covers){const i=coverHint(this.plan,this.filled);this.selected=this.pieces.find(p=>!p.placed&&p.piece.shape===this.plan.targets[i]?.shape)??null;}
+    else if(!this.selected||this.selected.placed)this.selected=this.pieces.find(p=>!p.placed)??null;
+    if(this.selected){const i=hintFor(this.selected.piece,this.plan.targets,unavailableSlots(this.plan,this.filled));if(i>=0){this.selected.piece.turns=this.plan.targets[i].turns;this.selected.art.rotation=this.selected.piece.turns*Math.PI/2;}}
     void ctx.say('tangram.help');this.drawHint();
   });ctx.stage.addChild(this.turn,this.help);
   const colors:ColorName[]=['pink','teal','yellow','purple'];
@@ -50,15 +51,17 @@ class TangramTown implements Game {
       onDrop:(x,y)=>{
         if(this.done)return false;
         const local={x:x-this.board.x,y:y-this.board.y};
-        const target=targetFor(piece,local.x,local.y,this.plan.targets,this.filled);
+        const target=targetFor(piece,local.x,local.y,this.plan.targets,unavailableSlots(this.plan,this.filled));
         if(target>=0){
           this.filled[target]=true;c.placed=true;c.drag.enabled=false;
           const t=this.plan.targets[target];c.drag.home={x:this.board.x+t.x,y:this.board.y+t.y};node.position.set(c.drag.home.x,c.drag.home.y);sfx.bell(5+target,0.3);
           this.wrong=0;this.assisted=false;this.selected=this.pieces.find(p=>!p.placed)??null;
-          if(this.filled.every(Boolean)){this.done=true;void ctx.say('tangram.done',{picture:this.plan.picture});void ctx.tw.wait(1.2).then(()=>ctx.finish({misses:this.misses,hints:this.hints}));}
+          const cover=completedCover(this.plan,this.filled);
+          if(cover){this.done=true;void ctx.say(this.plan.covers?'tangram.cover-done':'tangram.done',{picture:this.plan.picture,count:cover.length});void ctx.tw.wait(1.2).then(()=>ctx.finish({misses:this.misses,hints:this.hints}));}
           this.drawHint();return true;
         }
-        if(this.plan.targets.some((t,i)=>!this.filled[i]&&Math.hypot(t.x-local.x,t.y-local.y)<105)){
+        if(this.plan.covers&&!this.plan.targets.some((t,i)=>!unavailableSlots(this.plan,this.filled)[i]&&t.shape===piece.shape)){void ctx.say('tangram.covered');return false;}
+        if(this.plan.targets.some((t,i)=>!unavailableSlots(this.plan,this.filled)[i]&&Math.hypot(t.x-local.x,t.y-local.y)<105)){
           this.misses++;this.wrong++;sfx.boing();void ctx.say('tangram.try');
           if(this.wrong===2){this.assisted=true;this.hints++;}
         }this.drawHint();return false;
@@ -69,14 +72,15 @@ class TangramTown implements Game {
  }
  private drawHint(){
   for(const c of this.outlines.removeChildren())c.destroy();
-  this.plan.targets.forEach(t=>{const g=shape(t.shape,'white',this.plan.outlines||this.assisted);g.tint=swatch.blue.line;g.alpha=0.22;g.position.set(t.x,t.y);g.rotation=t.turns*Math.PI/2;this.outlines.addChild(g);});
+  const cover=this.plan.covers?(this.assisted?[...viableCovers(this.plan,this.filled)].sort((a,b)=>a.length-b.length)[0]:[0,1]):null;
+  this.plan.targets.forEach((t,i)=>{if(cover&&!cover.includes(i))return;const g=shape(t.shape,'white',this.plan.outlines||this.assisted);g.tint=swatch.blue.line;g.alpha=0.22;g.position.set(t.x,t.y);g.rotation=t.turns*Math.PI/2;this.outlines.addChild(g);});
   this.glow.clear();this.paletteGlow.clear();
   if(this.selected&&!this.selected.placed){
     const c=this.selected;this.paletteGlow.circle(c.drag.home.x,c.drag.home.y,88).stroke({width:5,color:swatch.blue.line});
-    if(this.assisted){const i=hintFor(c.piece,this.plan.targets,this.filled);if(i>=0){const t=this.plan.targets[i];this.glow.circle(t.x,t.y,86).stroke({width:7,color:swatch.yellow.line});}}
+    if(this.assisted){const i=hintFor(c.piece,this.plan.targets,unavailableSlots(this.plan,this.filled));if(i>=0){const t=this.plan.targets[i];this.glow.circle(t.x,t.y,86).stroke({width:7,color:swatch.yellow.line});}}
   }
  }
- start(){void this.ctx.instruct(this.plan.rotate?'tangram.turn':'tangram.fit',{picture:this.plan.picture});}
+ start(){void this.ctx.instruct(this.plan.covers?'tangram.covers':this.plan.rotate?'tangram.turn':'tangram.fit',{picture:this.plan.picture});}
  resize(v:View){
   this.bg.clear().rect(0,0,v.w,v.h).fill(swatch.blue.light).roundRect(175,v.h-190,v.w-205,170,25).fill(cream);
   this.board.position.set(v.w/2,Math.max(340,v.h*0.40));
@@ -95,9 +99,10 @@ class TangramTown implements Game {
  /** The ghost finger on the how-to card: turn the piece in hand until it fits its place (the turn button, never the help hand), then carry it there. */
  autotouch():TouchIntent|null{
   if(this.done)return null;
-  const c=this.pieces.find(p=>!p.placed);
+  const hint=this.plan.covers?coverHint(this.plan,this.filled):-1;
+  const c=this.pieces.find(p=>!p.placed&&(!this.plan.covers||p.piece.shape===this.plan.targets[hint]?.shape));
   if(!c||c.drag.dragging)return null;
-  const goal=bestTarget(c.piece,this.plan.targets,this.filled);
+  const goal=bestTarget(c.piece,this.plan.targets,unavailableSlots(this.plan,this.filled));
   if(!goal)return null;
   // The turn button turns the piece picked up last; the first in the tray is already in hand, so this only takes a touch if it is not.
   if(this.selected!==c)return {tap:{on:c.node}};
@@ -109,7 +114,7 @@ class TangramTown implements Game {
 }
 export const tangramTown:GameModule={
  id:'tangram-town',name:'Tangram Town',titleLine:'game.tangram-town',region:'rainbow-meadow',skills:['shape-composition','rotation','spatial-reasoning'],bands:['toddler','preschool','prek','school'],
- levels:b=>b==='school'?{min:5,max:6}:b==='toddler'?{min:1,max:2}:b==='preschool'?{min:2,max:4}:{min:3,max:6},describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
+ levels:b=>b==='school'?{min:5,max:7}:b==='toddler'?{min:1,max:2}:b==='preschool'?{min:2,max:4}:{min:3,max:6},describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
  coplayHint:'Move the big shapes together. Let {name} try turning a roof before helping.',offScreen:'Cut a paper square diagonally. Turn the two triangles into different pictures.',
  hubIcon:()=>{const c=new Container(),a=shape('square','teal'),b=shape('roof','pink');a.scale.set(0.6);a.y=-42;b.scale.set(0.6);b.y=-120;c.addChild(a,b);return new WigglyIcon(c);},
  sticker:seed=>{const g=shape(new Rng(seed).pick(['square','roof','triangle'] as const),'purple');g.scale.set(0.8);return g;},create:ctx=>new TangramTown(ctx),

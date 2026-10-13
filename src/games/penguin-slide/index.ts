@@ -20,7 +20,7 @@ import { beside, eaten, HINT_AFTER, makePuzzle, move, planFor, solve, tapDirecti
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 7 },
+  school: { min: 2, max: 8 },
 };
 
 const CELL = 100;
@@ -225,7 +225,7 @@ class PenguinSlide implements Game {
       return this.ctx.instruct('slide.go');
     }
     if (this.index > 0) return;
-    if (this.plan.blocks) return this.ctx.instruct(this.plan.fish === 2 ? 'slide.ice-two' : 'slide.ice');
+    if (this.plan.blocks) return this.ctx.instruct(this.plan.soft ? 'slide.ice-snow' : this.plan.fish === 2 ? 'slide.ice-two' : 'slide.ice');
     if (this.plan.soft) return this.ctx.instruct('slide.soft');
     if (this.plan.fish === 2) return this.ctx.instruct('slide.two');
     return this.ctx.instruct('slide.go');
