@@ -1,5 +1,15 @@
 # Puddle Island verification
 
+## 2026-10-13 — Penguin Slide 9 and Tangram Town 8
+
+- [PR #263](https://github.com/rjdunlap/neo/pull/263), base `463f16f`, claim `a972c05` plus implementation diff: four two-block ponds reflected into sixteen seeded arrangements at Penguin 9; turn-only picture repair at Tangram 8. School maxima 9/8; younger ranges, IDs/pins and courses preserved.
+- Typecheck, 41 focused Penguin/Tangram/how-to tests, full unit suite (139 files / 1,186 tests) and production build passed. Rules prove each block useful, reflection/optimal bot routes, exactly one visible repair mismatch, distinct target centers, multiple-mismatch recovery and free turn cycles. Initial build crossed Workbox's 2 MiB per-file default; explicit 3 MiB bound now precaches the bundle (31 entries, 2,437.95 KiB total).
+- `GAME_URL=http://localhost:5198 BROWSER_SUITE=creative CREATIVE_ONLY=tangram FROM_LEVEL=8 TO_LEVEL=8` passed wrong checks, two-miss hint, free four-turn restore, truthful requested help without recount, correct Check, portrait and saved result/sticker. Initial probe pressed within RoundButton's existing 400 ms cooldown; 450–500 ms waits corrected the test. `woods WOODS_ONLY=penguin FROM_LEVEL=9 TO_LEVEL=9` passed pushes, stuck/undo/help, both ponds, portrait and saved result/sticker. No page errors.
+- Same URL: `fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=9` / `FINGER_ONLY=tangram-town FINGER_LEVELS=8` clean in 27.0 / 5.1 demo seconds. Both portrait screenshots reviewed for piece/outline readability and control/pet clearance.
+- Production preview `http://localhost:4198` confirmed serving tested `assets/index-Chds4j2L.js`; offline proof reused after a level-description wording edit (no cache/runtime change); `GAME_URL=http://localhost:4198 npm run test:offline` passed cached assets/font, offline reload, game/card/result and persisted progress/picnic/treehouse/journal. Local Markdown files/anchors and `git diff --check` passed; both session servers stopped.
+- Not run: world, couch/course suites (routes and courses unchanged). Actual iPad taps/speech, repair recognition and child planning with both blocks remain open.
+
+
 ## 2026-10-13 — Penguin Slide 8 and Tangram Town 7
 
 - [PR #262](https://github.com/rjdunlap/neo/pull/262), base `e2f04ff`, claim `ec3a2f5` plus implementation diff: useful block/snow stops with two fish at Penguin 8; alternative square/two-triangle house-wall covers at Tangram 7. School maxima 8/7; younger bands, saved IDs/pins and courses preserved.
@@ -1125,6 +1135,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Penguin Slide 9 / Tangram Town 8 (`woods`, `creative`, `fingerdemo`), production offline | 2026-10-13: paired useful blocks, free revision/check/help, clean 27.0/5.1 s demos, portraits, full units/build and current-bundle offline pass | [Verification entry](#2026-10-13--penguin-slide-9-and-tangram-town-8) / [PR #263](https://github.com/rjdunlap/neo/pull/263) | Real iPad input/speech and child understanding open |
 | Penguin Slide 8 and Tangram Town 7 (`woods`, `creative`, `fingerdemo`) | 2026-10-13: new top-level play, both Tangram covers/free spare/compatible help, fixed-slot regression, clean 18.1/13.8 s demos and portrait reviews | [Verification entry](#2026-10-13--penguin-slide-8-and-tangram-town-7) / [PR #262](https://github.com/rjdunlap/neo/pull/262) | iPad input/speech and child understanding open |
 | Penguin Slide 7 (`woods`, `fingerdemo`) | 2026-10-13: two-fish block planning, undo/hint, complete round/sticker, clean 19.8 s demo and portrait | [Verification entry](#2026-10-13--penguin-slide-level-7-two-fish-and-a-block) / [PR #261](https://github.com/rjdunlap/neo/pull/261) | Actual iPad taps, speech and child planning open |
 | Tangram Town robot content | 2026-10-13: typecheck, 8 Tangram rules, isolated pointer completion at levels 5–6 and completed-art screenshot | [Verification entry](#2026-10-13--tangram-town-robot-picture) / [PR #260](https://github.com/rjdunlap/neo/pull/260) | Content only; device/child fit open |

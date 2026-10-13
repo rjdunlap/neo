@@ -34,7 +34,7 @@ export type PictureId = keyof typeof PICTURES;
 export const PICTURE_IDS = Object.keys(PICTURES) as PictureId[];
 /** The room a picture may take, around the board's centre: clear of the turn and help buttons and of the tray. */
 export const PICTURE_BOX = { x: 210, top: -220, bottom: 200 };
-export interface Plan { rotate: boolean; outlines: boolean; name: string; pool: readonly PictureId[]; alternatives?: boolean }
+export interface Plan { rotate: boolean; outlines: boolean; name: string; pool: readonly PictureId[]; alternatives?: boolean; repair?: boolean }
 export const PLANS: readonly Plan[] = [
   { pool:['house','tree','lamp','tent'], rotate:false, outlines:true, name:'Two big shapes, already the right way up, make a house, tree, lamp or tent' },
   { pool:['boat','sailboat','flag','lamp','tent'], rotate:false, outlines:true, name:'Fit a hull and a sail, a pole and a flag, a lamp or a tent' },
@@ -43,6 +43,7 @@ export const PLANS: readonly Plan[] = [
   { pool:['rocket','houseboat','castle','robot'], rotate:true, outlines:true, name:'Build a rocket, houseboat, castle or robot from four shapes' },
   { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn','robot'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
   { pool:['house'], rotate:true, outlines:false, alternatives:true, name:'Build a house two ways: a square or two triangles can make its wall' },
+  { pool:['house','tree','boat','sailboat','flag','lamp','tent','robot'], rotate:true, outlines:true, repair:true, name:'Find a shape facing the wrong way, turn it, then check the repaired picture' },
 ];
 export const planFor=(l:number)=>PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
 /** The level's rules with the picture this round draws from its pool. */
@@ -94,4 +95,21 @@ export function coverHint(build: Pick<Build, 'targets' | 'covers'>, filled: read
   // Before a wall is chosen, show the larger wall piece first.
   if (build.covers && cover?.includes(1) && !filled[1]) return 1;
   return cover?.find(i => !filled[i]) ?? -1;
+}
+
+/** Exactly one visible orientation error; rotationally equivalent turns never count as broken. */
+export function makeRepair(build: Pick<Build,'targets'>, rng: Rng): Piece[] {
+  const pieces = build.targets.map(t => ({shape:t.shape,turns:t.turns}));
+  const candidates = pieces.map((p,i)=>({p,i})).filter(({p})=>!sameOrientation(p.shape,p.turns,p.turns+1));
+  const {p,i} = rng.pick(candidates);
+  const turn = rng.pick([1,2,3].filter(k=>!sameOrientation(p.shape,p.turns,p.turns+k)));
+  pieces[i] = {...p,turns:(p.turns+turn)%4};
+  return pieces;
+}
+export function repairMismatches(targets: readonly Target[], pieces: readonly Piece[]): number[] {
+  return targets.flatMap((t,i)=>!pieces[i]||t.shape!==pieces[i].shape||!sameOrientation(t.shape,t.turns,pieces[i].turns)?[i]:[]);
+}
+export function repairAction(targets: readonly Target[], pieces: readonly Piece[], selected: number | null): {pick:number}|{turn:true}|{check:true} {
+  const i=repairMismatches(targets,pieces)[0];
+  return i===undefined?{check:true}:selected!==i?{pick:i}:{turn:true};
 }

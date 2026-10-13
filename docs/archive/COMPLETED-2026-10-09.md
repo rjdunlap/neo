@@ -1,5 +1,14 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Penguin Slide 9 and Tangram Town 8 (2026-10-13)
+
+Built [PR #263](https://github.com/rjdunlap/neo/pull/263). Penguin Slide 9 offers two 6×5 ponds with one fish, three rocks and two movable blocks. Four authored solver-checked ponds become sixteen seeded reflected arrangements; best routes take 6–9 slides. Freezing either block makes the route worse or impossible, so both stopping places matter. Existing steering, undo and constructive hints remain; school is 2–9, with no course changes.
+
+Tangram Town 8 is turn-only repair: one misoriented piece in an assembled picture, faint correct outlines, piece selection, free quarter turns and an explicit green Check. Wrong checks count misses; two wrong checks or requested help identify a real mismatch and count support once while visible. Help does not turn the piece. Eight picture kinds avoid coincident selectable centers. A correct Check finishes with one sticker and an explanation; school is 5–8. Wrong-shape swaps and flip/kept-picture decisions remain open. Younger ranges and saved IDs/pins are unchanged.
+
+The catalog bundle crossed Workbox's default 2 MiB limit. Its per-file precache budget is now explicitly 3 MiB, retaining the bundle in the offline cache; production offline verification is recorded separately in [the log](../VERIFICATION.md).
+
+
 ### Penguin Slide 8 and Tangram Town 7 (2026-10-13)
 
 Built [PR #262](https://github.com/rjdunlap/neo/pull/262). Penguin Slide 8 combines one block, one soft-snow stop, two fish and four rocks on two 6×5 ponds. Shortest solutions take 4–6 slides; generation requires a useful block push and snow that changes the best route. School is now 2–8. Existing taps, undo and constructive hints handle the new combination.

@@ -1,6 +1,6 @@
 import {expect,it} from 'vitest';
 import {Rng} from '../../engine/random';
-import {completedCover,coverHint,unavailableSlots,viableCovers,bestTarget,buildFor,hintFor,makePieces,PICTURE_BOX,PICTURE_IDS,PICTURES,PLANS,sameOrientation,targetFor,turnsToFit,VERTICES,type Target} from './logic';
+import {makeRepair,repairAction,repairMismatches,completedCover,coverHint,unavailableSlots,viableCovers,bestTarget,buildFor,hintFor,makePieces,PICTURE_BOX,PICTURE_IDS,PICTURES,PLANS,sameOrientation,targetFor,turnsToFit,VERTICES,type Target} from './logic';
 const builds=(l:number)=>PLANS[l-1].pool.map(id=>({...PLANS[l-1],picture:id,targets:PICTURES[id] as readonly Target[]}));
 it('every seeded tray fills its picture by following hints, accepting interchangeable triangles',()=>{
  for(let l=1;l<=PLANS.length;l++)for(const b of builds(l))for(let seed=1;seed<=50;seed++){
@@ -73,7 +73,7 @@ it('level pools match the level: fewer pieces low down, a complementary pair at 
  for(const b of builds(4)){expect(b.targets.length).toBe(3);expect(b.targets.filter(t=>t.shape==='triangle').length).toBe(2);}
  for(const b of builds(5))expect(b.targets.length).toBe(4);
  for(const b of builds(6))expect(b.targets.length).toBeGreaterThanOrEqual(3);
- expect(PLANS.map(p=>p.outlines)).toEqual([true,true,true,true,true,false,false]);
+ expect(PLANS.map(p=>p.outlines)).toEqual([true,true,true,true,true,false,false,true]);
 });
 it('a piece dropped on any slot goes to a slot of its own shape and turn, so every slot can be filled in any order',()=>{
  for(const id of PICTURE_IDS){
@@ -139,4 +139,32 @@ it('seeded trays and the ghost finger can finish either cover in any placement o
   expect(completedCover(b,filled)).toEqual(cover);
   expect(tray.length).toBe(4-cover.length);
  }
+});
+
+it('repair rounds have one visible mismatch, distinct selectable centers and free-turn recovery at every seed/picture',()=>{
+ for(const id of PLANS[7].pool)for(let seed=1;seed<=60;seed++){
+  const b={targets:PICTURES[id]},pieces=makeRepair(b,new Rng(seed));
+  expect(repairMismatches(b.targets,pieces)).toHaveLength(1);
+  b.targets.forEach((a,i)=>b.targets.forEach((c,j)=>{if(i!==j)expect(Math.hypot(a.x-c.x,a.y-c.y)).toBeGreaterThanOrEqual(100);}));
+  const first=repairMismatches(b.targets,pieces)[0];expect(repairAction(b.targets,pieces,null)).toEqual({pick:first});
+  let selected:number|null=null;
+  for(let k=0;k<20;k++){
+   const a=repairAction(b.targets,pieces,selected);
+   if('check'in a)break;
+   if('pick'in a)selected=a.pick;
+   else pieces[selected!].turns=(pieces[selected!].turns+1)%4;
+  }
+  expect(repairMismatches(b.targets,pieces)).toEqual([]);
+  expect(repairAction(b.targets,pieces,selected)).toEqual({check:true});
+  // A player may change a correct piece and restore it; four turns undo a cycle.
+  const original=pieces[0].turns;for(let k=0;k<4;k++)pieces[0].turns=(pieces[0].turns+1)%4;
+  expect(pieces[0].turns).toBe(original);
+ }
+});
+it('repair help follows actual mismatches even after changing more than one piece',()=>{
+ const targets=PICTURES.sailboat,pieces=targets.map(t=>({shape:t.shape,turns:(t.turns+1)%4}));
+ expect(repairMismatches(targets,pieces)).toEqual([0,1]);
+ pieces[0].turns=targets[0].turns;
+ expect(repairAction(targets,pieces,0)).toEqual({pick:1});
+ expect(repairMismatches(targets,pieces)).toEqual([1]);
 });

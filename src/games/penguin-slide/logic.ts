@@ -22,6 +22,8 @@ export interface SlidePlan {
   rocks: number;
   /** Ice blocks to push; 0 on the levels before level 6. */
   blocks?: number;
+  /** Authored paired-block boards, reflected by the round seed. */
+  pairedBlocks?: boolean;
   /** Shortest solution, in slides (a push is one). */
   moves: [number, number];
   puzzles: number;
@@ -37,6 +39,7 @@ export const PLANS: SlidePlan[] = [
   { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 4, blocks: 1, moves: [3, 5], puzzles: 2, name: 'Push an ice block: it skates until it bumps into something, so park it to make a stop' },
   { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park an ice block to collect two fish: plan how each new stopping place helps the route' },
   { cols: 6, rows: 5, fish: 2, soft: 1, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park a block and use soft snow to stop on a route to both fish' },
+  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 3, blocks: 2, pairedBlocks: true, moves: [6, 9], puzzles: 2, name: 'Use two blocks to plan stopping places on the way to a fish' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -58,6 +61,9 @@ export interface SlidePuzzle {
   /** The fewest slides that eat every fish. */
   best: number;
 }
+
+/** Small authored ponds: freezing either block makes the best route worse or impossible. */
+export const PAIRED_BLOCK_PONDS: readonly SlidePuzzle[] = [{"cols":6,"rows":5,"rocks":[{"x":5,"y":3},{"x":3,"y":3},{"x":4,"y":1}],"soft":[],"blocks":[{"x":1,"y":3},{"x":3,"y":2}],"start":{"x":0,"y":3},"fish":[{"x":2,"y":3}],"best":9},{"cols":6,"rows":5,"rocks":[{"x":5,"y":3},{"x":5,"y":4},{"x":4,"y":3}],"soft":[],"blocks":[{"x":0,"y":3},{"x":5,"y":1}],"start":{"x":4,"y":4},"fish":[{"x":0,"y":0}],"best":9},{"cols":6,"rows":5,"rocks":[{"x":4,"y":2},{"x":3,"y":0},{"x":0,"y":0}],"soft":[],"blocks":[{"x":2,"y":2},{"x":1,"y":2}],"start":{"x":1,"y":4},"fish":[{"x":1,"y":0}],"best":7},{"cols":6,"rows":5,"rocks":[{"x":0,"y":0},{"x":5,"y":1},{"x":0,"y":2}],"soft":[],"blocks":[{"x":4,"y":3},{"x":4,"y":4}],"start":{"x":3,"y":2},"fish":[{"x":0,"y":1}],"best":6}];
 
 /** 0 right, 1 down, 2 left, 3 up. */
 export type Dir = 0 | 1 | 2 | 3;
@@ -171,6 +177,11 @@ export function solve(p: SlidePuzzle, from: Cell, have = 0, blocks: Cell[] = p.b
 }
 
 export function makePuzzle(plan: SlidePlan, rng: Rng): SlidePuzzle {
+  if (plan.pairedBlocks) {
+    const p = rng.pick(PAIRED_BLOCK_PONDS), flipX = rng.chance(0.5), flipY = rng.chance(0.5);
+    const cell = (c: Cell): Cell => ({x: flipX ? p.cols - 1 - c.x : c.x, y: flipY ? p.rows - 1 - c.y : c.y});
+    return {...p, start: cell(p.start), rocks: p.rocks.map(cell), soft: p.soft.map(cell), fish: p.fish.map(cell), blocks: p.blocks!.map(cell)};
+  }
   for (let attempt = 0; attempt < 2000; attempt++) {
     const cells: Cell[] = [];
     for (let x = 0; x < plan.cols; x++) for (let y = 0; y < plan.rows; y++) cells.push({ x, y });
