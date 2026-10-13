@@ -8,7 +8,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 What's in it:
 
-- **86 small games** in eleven themed lands on one island map, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
+- **87 small games** in eleven themed lands on one island map, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
 - **A pet** she hatches and names, a **sticker book**, and the pet's **treehouse**, where things she made hang on the wall and a discovery journal fills up.
 - **The Windy Picnic**, a short story that connects three activities.
 - **Couch play** for two grown-ups with controllers or a keyboard on a computer: trips, face-offs and challenge courses, with its own save.
@@ -162,14 +162,15 @@ Press and hold the **gear** for two seconds: it is in the top-right corner of th
 
 ## Couch play
 
-A separate route for grown-ups (two taking turns, or **Just me** with a puzzle shelf), from **Who's playing?** (Enter or a controller button on a person's card, or the controller button on the card; any age can play it), with its own save (`neo.couch.v1`) that never touches the child's profile, levels, stickers or story. Trips of six stops in **Together** or **Face-off** mode, a how-to screen with a bot demo before each game, games that open as trips are finished, a finale with a keepsake, thirteen **challenge courses** with personal bests (for one player, a **puzzle shelf** showing each best against par, and a replay of the best route), and a **Settings** page. Twenty-one games play on the couch: fifteen from the island (Ferry Jam is the newest, as **Harbor Rush**), and **Sudoku Garden**, **Lantern Lights**, **Picture Logic**, **Word Search**, **Island Bridges** and **Pond Conga**, made for grown-ups and not on the island at all (below). Pairing controllers, the rules, the controls and the order games open in are in the [couch play guide](docs/COUCH-PLAY.md).
+A separate route for grown-ups (two taking turns, or **Just me** with a puzzle shelf), from **Who's playing?** (Enter or a controller button on a person's card, or the controller button on the card; any age can play it), with its own save (`neo.couch.v1`) that never touches the child's profile, levels, stickers or story. Trips of six stops in **Together** or **Face-off** mode, a how-to screen with a bot demo before each game, games that open as trips are finished, a finale with a keepsake, thirteen **challenge courses** with personal bests (for one player, a **puzzle shelf** showing each best against par, and a replay of the best route), and a **Settings** page. Twenty-two games play on the couch: fifteen from the island (Ferry Jam is the newest, as **Harbor Rush**), and **Sudoku Garden**, **Lantern Lights**, **Picture Logic**, **Word Search**, **Island Bridges**, **Pond Conga** and **Tile Pairs**, made for grown-ups in Lantern Lake (below). Pairing controllers, the rules, the controls and the order games open in are in the [couch play guide](docs/COUCH-PLAY.md).
 
 ### Grown-up puzzles (Lantern Lake)
 
-These six are island games for the grown-up band, in the Lantern Lake land. **Lantern Lights** plays by touch on the island (and with a controller on the couch); the other five take a controller or the keyboard, so tapping one on the island opens its couch puzzle-shelf course. They are not in the table above. What each one does is in [GAMES.md](docs/GAMES.md#grown-up-puzzles-couch-only).
+These seven are island games for the grown-up band, in the Lantern Lake land. **Tile Pairs** and **Lantern Lights** play by touch on the island (and with a controller on the couch); the other five take a controller or the keyboard, so tapping one on the island opens its couch puzzle-shelf course. They are not in the table above. What each one does is in [GAMES.md](docs/GAMES.md#grown-up-puzzles-couch-only).
 
 | Game | Starts as | Grows into |
 | --- | --- | --- |
+| Tile Pairs | remove matching tiles with a clear top and an open left or right side | three seeded, solvable stacks of 12, 20 and 24 tiles; Undo, a clearing-route Hint, and Shuffle into open rows; touch and controller demos; no clock or loss screen |
 | Pond Conga | a line of ducklings paddles on at a steady pace and is steered to each crumb of bread in turn, round lily pads | six levels from a small open pond with five crumbs to a crowded one with twelve; a bump turns the whole line about and counts a step, so nothing can be lost or stuck; an exact fewest steps for every pond; one puzzle-shelf course scored in steps against par (Crumb Trail) |
 | Island Bridges | a 7 by 7 sea of numbered islands joined by plank bridges, laid by arming an island and pushing toward a neighbor | 9 by 9 and 11 by 11 seas with a proved single answer; hints that name the plank or the island that decides it; one puzzle-shelf course scored in planks against par (Island Hopping) |
 | Word Search | an 8 by 8 grid hiding five words from a themed list, marked first letter to last | 10 by 10, 12 by 12 and 14 by 14 grids with slants and backwards words; a hint that names a word; the found word is spoken; two puzzle-shelf courses scored in guesses against par (Pond Words, The Big Hunt) |
@@ -262,6 +263,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `arcade` | Duckling Parade (levels 1–10), Scoop Shop, Roundup, Bouncy Launch | `ARCADE_ONLY=parade\|scoop\|roundup\|launch`; `ARCADE_LEVELS=10` runs only Duckling Parade 10 |
 | `early` | Rainbow Fingers and Splish Splash | `EARLY_ONLY=paint\|bath` |
 | `third`, `fourth`, `expansion` | Feelings Faces (levels 1–7) and Monster Munch (with level 8); Song Maker, Puzzle Pals, Weather Wardrobe, Sink or Float; Size Parade, Bug Builder, Story Steps (through level 11) | `FOURTH_ONLY=song\|puzzle\|weather\|sink`, `PUZZLE_LEVELS=5,7`; `EXPANSION_ONLY=size\|bug\|story`, `FROM_LEVEL=11 TO_LEVEL=11` for Story Steps predictions (10 for two rows, 9 for repair, 8 for causes) |
+| `tilepairs` | Tile Pairs levels 1 and 3: two mismatches and a hint, pair/Shuffle undo, remaining-picture preservation, resizing, one sticker, portrait and return to Lantern Lake | `BROWSER_SUITE=tilepairs`; demos: `FINGER_ONLY=tile-pairs`, `COUCH_ONLY=tile-pairs` |
 | `lanterntouch` | Lantern Lights by touch, levels 1 and 6: a free tap and undo, one hint, start over, one sticker each, portrait, leaving mid-round; opening a controller-only puzzle (Sudoku Garden) from the island reaches its couch course | One level pair; no filter needed |
 | `singalong` | Sing-Along Barn levels 1 and 3: one tap per note, song order, chosen friends in her order, one sticker with no misses or hints, portrait and leaving mid-song | One level pair; no filter needed |
 | `buddies` | Shape Buddies solo level 1: both bands/identities/bridge shapes, failed experiments, hints, occupied dock, undo/replay, planting reward, portrait and interruption | One level; no filter needed |
