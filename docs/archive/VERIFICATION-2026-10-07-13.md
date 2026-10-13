@@ -2,6 +2,12 @@
 
 History, not instructions: dated entries rotated out of [VERIFICATION.md](../VERIFICATION.md) on 2026-10-13, newest first, followed by the older entries section as it stood. The live file keeps the newest entries and the coverage summary.
 
+## 2026-10-13 — Word Search by touch (Lands stage D, first puzzle)
+
+- Built [PR #255](https://github.com/rjdunlap/neo/pull/255): Word Search plays by touch at all four levels (tap a first letter then a last, a drag along a word when the grid is all in view, a grid bigger than its window slides under a drag, a hint slides its letter into view, Hint and Start over buttons, squares and buttons of 64 units or more), a ghost finger, a touch how-to card and two spoken lines. The couch layout and rules are unchanged.
+- Typecheck; full vitest passed (139 files, 1,164 tests); `npm run build` passed. Browser runs at `GAME_URL=http://localhost:5191`: new `BROWSER_SUITE=wordsearchtouch` (level 1: a wrong line is one miss, a crooked mark is free and moves the first letter, the same letter lets go, one hint, a drag along a word finds it, start over, one sticker; level 4: the grid slides, a hint brings its letter into view, every corner reachable, no misses; every square and button at least 64 units and apart, sideways and upright); `fingerdemo FINGER_ONLY=word-search` (11.1 s and 16.0 s, no misses); `couchgames COUCH_ONLY=word-search` and `couchwords` (the couch layout); `lands` (three controller-only puzzles now). Screenshots checked: level 4 sideways and upright, level 1 upright.
+- Not run: `howto` for this card (text is plain; the card's own unit test passed), `world`, offline. Open: a real iPad and finger on the 64-unit squares and the slide-versus-tap threshold (14 units), device speech for the new lines.
+
 ## 2026-10-13 — Island Bridges by touch (Lands stage D)
 
 - Built [PR #256](https://github.com/rjdunlap/neo/pull/256): Island Bridges plays by touch at all four levels (tap the water between two islands, Take off switch, Hint, Start over; targets of 64 units or more, beside the sea or under it), a ghost finger, a touch how-to card and spoken lines, `edgeAt`/`waterOf`/`headStart` in `logic.ts`. The couch layout and rules are unchanged.
