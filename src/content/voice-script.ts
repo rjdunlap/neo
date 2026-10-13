@@ -792,6 +792,8 @@ export const SCRIPT = {
   'cross.right': ['The rule is {rule}! Now we know.'],
   'cross.done': ['Everyone is across! What a clever detective!'],
   'wordsearch.go': ['Find the words in the list. Press the bottom button on a word\'s first letter, move to its last letter, and press again.'],
+  'wordsearch.go-touch': ['Find the words in the list. Tap a word\'s first letter, then its last letter.'],
+  'wordsearch.go-slide': ['Find the words in the list. Tap a word\'s first letter, then its last letter. Drag the grid to see the rest of it.'],
   'wordsearch.found': ['{word}!', 'You found {word}!'],
   'wordsearch.miss': ['That line is not one of the words. Try another.'],
   'wordsearch.hint': ['Look at the ringed letter. The word {word} starts there.'],
