@@ -2,6 +2,22 @@
 
 History, not instructions: dated entries rotated out of [VERIFICATION.md](../VERIFICATION.md) on 2026-10-13, newest first, followed by the older entries section as it stood. The live file keeps the newest entries and the coverage summary.
 
+## 2026-10-13 — Bouncy Launch deep dive (docs only)
+
+- Wrote [the Bouncy Launch deep dive](../deep-dives/bouncy-launch.md): the six-level ladder with the exact pull-to-cloud arithmetic, eleven gaps read from the code (levels 1, 2 and 6 can never record a miss; a wrong-way pull gets no reply; the star window is about ±12 pull units; the level 6 voice says "cloud {n}" while the clouds are unnumbered; the Cloud Hopper course shares `PADS`, `padHit` and `reach`), twelve reference rows with sources marked opened or search summary only, proposed levels 7–11 with an easy entry placed by `order` and `entryLevels`, seven decisions and nine build slices.
+- Set the tracker row to designed, pointed the IDEAS ladder rows at the dive, added a roadmap chunk 14 row and a Waiting-on-the-developer row, and moved the chunk 14 pointer on to Bug Builder.
+- Numbers in the dive were worked out by hand from `logic.ts` and `index.ts`; no script ran. Nothing under `src/`, `scripts/` or `public/` changed.
+- Checked local Markdown links and anchors on the changed docs and `git diff --check`. Not run: typecheck, unit tests, build, browser, demos or offline (docs-only tier).
+- Open: every proposed rule is untested; level 6's `arcade` and `fingerdemo` runs from 2026-10-10 are still not passed; a toddler's reaction to a silent spring-back, an iPad's speech and the rising notes are not established.
+
+## 2026-10-13 — Owl Walk Home slices 1–4: tap the stone, owls with players, choose an owl, fly home
+
+- [PR #251](https://github.com/rjdunlap/neo/pull/251), from the [deep dive](../deep-dives/owl-walk.md#what-was-built-slices-14-2026-10-13): taps go to the nearest stone, owl or nest (`judgeStone`), fireflies on levels 1–2, safe cards on levels 1–2, an owl each at level 2 (`owlOf`), choose an owl then its stone at levels 3–4, the nest as the fly-home answer, hops counted aloud, new `owl.*` lines, how-to and level names.
+- `npm run typecheck`, the full unit suite (139 files, 1,163 tests after merging `origin/main`, new `judgeStone`/`drawCardFor`/`owlOf` properties) and `npm run build` passed. `BROWSER_SUITE=shortlist SHORTLIST_ONLY=owls` passed levels 1–4 on the final code (the script's owl block was rewritten: two wrong stones and a glow at 1, a free owl change at 3, two wrong owls and a glow at 4, level 2 in portrait); `FINGER_ONLY=owl-walk FINGER_LEVELS=1,2,3,4` finished clean in 32, 43, 61 and 67 s (the longest demonstration; limit 75). Looked at landscape level 1 with the hint glow and portrait level 2 with the spotlight.
+- Found by playing and review: a stone under a standing owl won the nearest-touch race, so tapping the owl's feet selected nothing at level 3 (stones with an owl on them now belong to the owl); then mapping an owl tap at levels 1–2 to its stone made tapping her own owl a miss once it had hopped. The new assertion (level 1, second turn: tap the owl, counts unchanged) failed on that code and passes after the fix (an owl tap there is a reminder). Numbered rings at level 4 now mean their owl.
+- The how-to card at each level fits (a probe, `test-results/owl-card-probe.mjs`, not a suite): landscape 25–62 to 710–747 of 768, portrait 102–112 to 915–925 of 1024. `BROWSER_SUITE=howto` could not be used filtered: its fifteen-couch-games assertion already reads 23 on `origin/main`, before any owl code runs.
+- Not run: `world`, `howto`, offline, couch. Not established: a child, an iPad, device speech for the new lines, whether the fireflies read as "these match", whether the pet's longer turn is too long. Open: Stepping stones, Color or shape, the grown-up seat and levels 7–8.
+
 ## 2026-10-13 — Lands stage B follow-ups (chunk 17)
 
 - Built [PR #250](https://github.com/rjdunlap/neo/pull/250): a controller-only puzzle's couch course returns to its island origin (`go.couch(play, origin)`, `goToOrigin`), a key cap and a spoken line on those icons, no level picker on the grown-ups' page for them, and Lantern Lodge in `world` and `lands`.

@@ -178,6 +178,11 @@ html.turning .pet-name-form {
   background: var(--teal);
   font-weight: 600;
 }
+.pause button:focus-visible {
+  outline: 4px solid var(--ink);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px #fff;
+}
 .pause__grownups {
   display: flex;
   align-items: center;
