@@ -214,3 +214,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
+
+### Bouncy Launch support worker dispatch (2026-10-13)
+
+Coordinator confirmed prior owned mirror definition #254 complete/merged and reconciled its final usage once; independently merged implementation #259 and other claims cleared. Fresh allowance admits worker `01a13677-fdf4-77b1-a4c9-a71de0b584f6` for Bouncy Launch slice 1 only. Queue records scope/admission/pending checks; unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Worker owes implementation/rules/filtered launch play/level-6 demo and affected shared-content checks; no coordinator code checks or servers.
