@@ -773,6 +773,7 @@ export const SCRIPT = {
   'picture.hint-fix': ['A square you filled does not belong in the picture. Take out the ringed one.'],
   'picture.hint-fix-cross': ['A square you crossed out is part of the picture. Lift the ringed cross.'],
   'lantern.go': ['Pressing a lantern flips it and the four lanterns beside it. Light every lantern on the pond.'],
+  'lantern.go-touch': ['Tap a lantern to flip it and the four lanterns beside it. Light every lantern on the pond.'],
   'lantern.hint': ['Try the glowing lantern.'],
   'lantern.lit': ['Every lantern is glowing!', 'The whole pond is aglow!'],
   'lantern.done': ['A pond full of light.'],

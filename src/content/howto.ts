@@ -88,12 +88,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'lantern-lights': {
     goal: 'Light every lantern on the pond.',
     steps: [
-      'Move from lantern to lantern with the arrow keys or the stick. The glow shows what a press would flip.',
-      'Press Enter (or the bottom button) to flip that lantern and the four beside it.',
-      'Backspace takes the last press back; it still counts. Esc opens the pause menu, with a hint and start-over.',
+      'Tap a lantern to flip it and the four lanterns beside it.',
+      'Tap Undo to take the last tap back; Start over puts the pond back as it began.',
+      'Tap Hint to see which lantern to try next.',
     ],
-    finish: 'The pond is done when every lantern glows.',
-    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+    finish: 'Every pond is done when all its lanterns glow; the round ends after the last pond.',
+    note: 'There is no wrong tap, and taking one back is free. Each hint counts as help.',
   },
   'sudoku-garden': {
     goal: 'Fill the bed so every row, column and box holds each number once.',

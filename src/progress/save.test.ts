@@ -36,6 +36,17 @@ describe('migrate', () => {
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
+  it('keeps the grown-up band in the profile and the world, and still repairs a band that does not exist', () => {
+    const save = migrate({ profile: { name: 'Sam', band: 'grownup' }, world: { band: 'grownup' } });
+    expect(save.profile.band).toBe('grownup');
+    expect(save.world.band).toBe('grownup');
+    expect(migrate({ profile: { name: 'Sam', band: 'adult' }, world: { band: 'adult' } })).toMatchObject({ profile: { band: 'lap' }, world: { band: null } });
+    // Levels for a grown-up puzzle are saved under its own id like any game's, and survive a round trip.
+    const played = defaults();
+    played.games['lantern-lights'] = { plays: 2, level: 4, pinned: 5, history: [] };
+    expect(migrate(JSON.parse(JSON.stringify(played))).games['lantern-lights']).toEqual(played.games['lantern-lights']);
+  });
+
   it('keeps a pinned level', () => {
     expect(migrate({ games: { g: { level: 3, pinned: 5.7 } } }).games.g.pinned).toBe(5);
   });
