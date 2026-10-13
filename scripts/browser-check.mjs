@@ -2213,7 +2213,7 @@ async function batch() {
   }
 
   // Bounce Back: a child finger tracks the ball (after two misses on purpose); a grown-up finger on the left.
-  for (let level = 1; level <= 8 && (!only || only === 'bounce'); level++) {
+  for (let level = 1; level <= 9 && (!only || only === 'bounce'); level++) {
     await launch('bounce-back', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -2244,7 +2244,7 @@ async function batch() {
           y -= (angle / 0.85) * (g.plan.paddle / 2) * 0.9;
         }
         // Color and goal levels: aim at the called zone, or at the end of the wall away from the pet.
-        if (ball.vx > 0 && g.plan.mode === 'color' && g.wantZone >= 0) {
+        if (ball.vx > 0 && (g.plan.mode === 'color' || g.plan.mode === 'sequence') && g.wantZone >= 0) {
           const geo = g.aim(g.speed());
           y = paddleForLanding(y, geo.top + ((g.wantZone + 0.5) / ZONES.length) * (geo.bottom - geo.top), geo).y;
         } else if (ball.vx > 0 && (g.plan.mode === 'goal' || g.plan.mode === 'versus')) {
@@ -2264,7 +2264,7 @@ async function batch() {
     await finished('bounce-back');
     const r = await page.evaluate(() => { const r = kit.store.stats('bounce-back').history.at(-1); return [r.misses, r.hints]; });
     // The goal levels score a win by margin: two goals against is one miss.
-    assert.deepEqual(r, level >= 7 ? [1, 1] : [2, 1], `bounce ${level} score`);
+    assert.deepEqual(r, level === 7 || level === 8 ? [1, 1] : [2, 1], `bounce ${level} score`);
     log(`Bounce Back ${level} (${mode}): rally, pet and grown-up paddles, misses, hint, saved score and sticker passed`);
   }
 
