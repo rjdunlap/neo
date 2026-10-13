@@ -15,6 +15,13 @@
 - Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=9` passed cleanly in 10.7 seconds. New local doc links and `git diff --check` passed; session Vite stopped at closeout.
 - Not run: earlier-level browser replays, full unit/browser/couch suites or offline check (new level on existing touch input; no persistence/navigation/assets change). Actual device speech, iPad touch and child understanding of the exception remain open.
 
+## 2026-10-13 — Number Trails, levels 1–3 (preschool, pre-K)
+
+- New game `number-trails` ([PR #241](https://github.com/rjdunlap/neo/pull/241)): trace a numeral with the firefly (green ring and arrow at each stroke's start), then count that many ducks, apples or stars; level 3 wakes exactly that many from a bigger group. Digit forms are an interim convention, unchecked against a publisher's chart.
+- `npm run typecheck`; full vitest passed except two 5-second timeouts under load (Ferry Jam, Peg Garden) that pass alone; new rule tests cover every digit's strokes (in the box, starting at the top, accepted in order including the self-crossing 8, no shortcut across a loop), level pools, group sizes, waking reaching exactly the numeral and spot layout at five views.
+- `npm run build` passed. Browser on `http://localhost:5191`: `BROWSER_SUITE=numbertrails` (levels 1 and 3; two wandering drags give two misses and one hint; the count; waking from a bigger group; portrait; one sticker each) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails` (5.1 s and 8.7 s, clean) passed; screenshots of the start cue, the counted things and the sleepers looked right (a probe also played numeral 0).
+- Not run: `world` (the land fit is covered by `lands.test.ts`), the offline check, and a real iPad, speech and a child's finger. Open: the stroke chart check, how the spoken numerals sound on a device.
+
 ## 2026-10-13 — Pet Says level 13, Pat the pet (lap, below level 1)
 
 - Added level 13 (`ENTRY_PLANS`; lap `order: [13, 1, 2]`): the pet waits, each pat on it starts one move, a pat during a move squishes and is not queued, five different moves end the round by themselves, no arrow ([PR #236](https://github.com/rjdunlap/neo/pull/236)). The numbered ladder 1–5 and the other bands are unchanged.
@@ -985,6 +992,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `numbertrails`, `fingerdemo` (`number-trails`) | 2026-10-13: levels 1 and 3 (wandering drags give two misses and one hint, the count, waking from a bigger group), portrait, one sticker per round; demo clean in 5.1 s and 8.7 s; typecheck, build, unit tests | Number Trails entry / [PR #241](https://github.com/rjdunlap/neo/pull/241) | Interim numeral forms unchecked against a publisher's chart; no iPad, device speech or child play |
 | Block Tower prediction definition (docs only) | 2026-10-12: new local links/anchors and diff check | [Slice 4 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #242](https://github.com/rjdunlap/neo/pull/242) | No gameplay evidence added; implementation and child/device fit remain open |
 | `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |
 | `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |

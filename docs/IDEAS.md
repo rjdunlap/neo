@@ -15,7 +15,7 @@ How to use it:
 
 | Where | What is there |
 | --- | --- |
-| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | Number Trails (Sing-Along Barn, Read & Do first slice and Fill and Dump are built; its pour slice is on the [roadmap](ROADMAP.md#next-up)) |
+| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | (Number Trails, Sing-Along Barn, Read & Do first slice and Fill and Dump are built; its pour slice is on the [roadmap](ROADMAP.md#next-up)) |
 | [Sketch for the next one to build](#sketch-for-the-next-one-to-build) | Memory Match 10–12 |
 | [Fun and arcade review](#fun-and-arcade-review-2026-10-09) | Lander and Drift, a real-time grown-up game; waits on a scoring decision |
 | [Flash portals, cozy and brain games](#flash-portals-cozy-and-brain-games-2026-10-11) | Twenty-four proposals and three seeds for parents and older children (Mix & Make, Sort Four, Islands and Sea, Petal Wheels, Garden Queens, Honey Hive and more), the house-rule screen for Flash-portal genres, and what could not be read |
@@ -1043,7 +1043,7 @@ The review's findings as of 2026-10-09; the full read of the registry is in [the
 
 | Idea / likely range | Play and learning | Smallest useful version | Effort · tag |
 | --- | --- | --- | --- |
-| **Number Trails / preschool–pre-K** | Trace a numeral with the firefly, then see that many things | A `DIGITS` table beside `LETTERS` for Letter Trails; 1 to 5, then 0 to 9, then "make this many ducks". Lowercase letters later | S (digits), M (lowercase) · new |
+| **Number Trails / preschool–pre-K** (built 2026-10-13) | Trace a numeral with the firefly, then see that many things | Built as its own game: 1 to 5, 0 to 9, then wake that many. Lowercase letters later | M (lowercase) · built (digits) |
 | **Day by Day: proposed next modes** | First slice built: weekday order, recorded weather, yesterday/tomorrow and a sunny-day tally ([GAMES](GAMES.md#day-by-day)) | Months, seasons and Caterpillar Week still need their own definitions | S–M · extension |
 | **Mirror Brush / toddler–school** | Paint on one side of a fold and the other side paints itself | A mode of Rainbow Fingers: a fold line and mirrored marks. The mirror does the work, so it needs no prediction and comes first; [Fold a Friend](#extend-existing-games-before-making-duplicates) (predict the unfolded half) follows at about 6 | S · promoted (a live-mirror form of Fold a Friend). The [Rainbow Fingers deep dive](deep-dives/rainbow-fingers.md#fresh-content-inside-existing-levels) plans the live mirror as fold-down-the-middle pages at levels 1–2; a fold button and the prediction stay here |
 | **Stomp Steps / pre-K–school** | Tap big footprints along with the music | A wide timing window and a visible pulse; nothing is ever missed. Read simple rhythm patterns at school | M · promoted |
@@ -1055,10 +1055,10 @@ Already in this notebook and still the right small lap picks: Brown Bear Parade,
 
 ### Sketches (first drafts of the definition of ready)
 
-These two are the nearest to buildable (Fill and Dump's sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#fill-and-dump-2026-10-10) when it was built). The other rows need the same treatment before they move to the roadmap.
+These were the nearest to buildable (Fill and Dump's sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#fill-and-dump-2026-10-10) when it was built). The other rows need the same treatment before they move to the roadmap.
 
 
-**Number Trails.** *Deep dive stance (2026-10-11, [Letter Trails](deep-dives/letter-trails.md#decisions-for-the-developer) decision 5):* lean toward its own game that shares Letter Trails' stroke module; the letter ladder builds no digit levels. *Fun action:* follow the firefly along a numeral. *Skill:* forming 0 to 9 in stroke order, with the quantity beside it. *Smallest round:* trace 1 to 5 and see that many things. *Support:* a start dot and an arrow at the beginning of each stroke, because the reversed numerals are usually 2, 3, 5 and 7 and children confuse 6 and 9; the existing ordered checkpoints already teach the movement rather than the shape. *Deeper play:* 0 to 9, a numeral in order, "make the number of ducks". *Host:* a mode of Letter Trails; its `LETTERS` table is a map of strokes in a 0 to 1 box and `advanceTrace` is shape-agnostic, so digits are a sibling table plus pictures. Lowercase is larger: it needs a four-line frame (ascender, x-height, descender). Pick one stroke convention (Handwriting Without Tears, D'Nealian and Zaner-Bloser differ) and check it against the publisher's chart before encoding.
+Number Trails' sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#number-trails-first-slice-2026-10-13) when it was built.
 
 
 ### Research notes
