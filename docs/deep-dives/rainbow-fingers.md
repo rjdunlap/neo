@@ -148,7 +148,7 @@ These are easier than levels that exist, or fall between them, so they wait on [
 ## Decisions for the developer
 
 1. **Level 7 is unfinishable.** Not a decision, a fix; the first slice. Say if a child has been stuck there (it is a school-band top level). The write-up changes nothing live.
-2. **Level order for the between-levels entries.** *Two pots* and *Copy the picture* join the existing level-order row. Lean: do the general fix (an explicit order apart from the saved ids) before building them.
+2. **Level order for the between-levels entries.** *Two pots* and *Copy the picture* wait on the skip decision (the general order fix is built as `order`). Lean: use it before building them.
 3. **Levels 8–12 in school 5–12, and the order.** Lean: build 8, 9, 10, 11 and define 12. Level 8 is easier to do than recalling the pumpkin but is a new kind of thinking; 9 and 10 give a told recipe, which is easier than 8, so accept the inversion or swap them ahead of 8. And whether to grow level 7 to three pages (fresh content 6) or leave it one page and let level 11 carry the three-recipe recall (lean: leave it, so 7 and 11 stay different decisions; the one-page level is the shortest in the game).
 4. **Accepted alternatives.** Lean: yes for apple (red, green) and grapes (purple, green).
 5. **Hint accounting.** Lean: same as Splish Splash's decision 5: a glow counts as a hint only after two misses, and an idle glow after twelve seconds is free.

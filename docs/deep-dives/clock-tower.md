@@ -76,7 +76,7 @@ Memory Match's proposed clock cards recognize equivalent representations; Clock 
 
 ### New levels on top
 
-Proposals after 7, never renumbered. Keep pre-K 1–4 and school minimum 2; grow the school maximum only as accepted levels are built. Level 8 is simpler than 7 in minute precision: accept that inversion or wait on explicit level ordering. Levels 9–11 keep half-hour quantities so reasoning grows without finer fingers. None is a countdown.
+Proposals after 7, never renumbered. Keep pre-K 1–4 and school minimum 2; grow the school maximum only as accepted levels are built. Level 8 is simpler than 7 in minute precision: place it with `order`. Levels 9–11 keep half-hour quantities so reasoning grows without finer fingers. None is a countdown.
 
 | Level | Name | Band window | First round and decision | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -87,7 +87,7 @@ Proposals after 7, never renumbered. Keep pre-K 1–4 and school minimum 2; grow
 
 ### Later horizons to define
 
-**12, Morning or evening?** Two contextual appointment cards can share 7:00, one explicitly “morning” and the other “evening”; choose the requested visit. Say the period, display a.m./p.m. with replay and show both contexts. A clock face alone cannot decide. Before building, define noon/midnight wording and exactly how it changes the skill from level 5; it is easier than 11, so it also waits on the level-order decision. A future test must distinguish absolute day minutes (0–1439) from face minutes (0–719), including 12 noon versus 12 midnight.
+**12, Morning or evening?** Two contextual appointment cards can share 7:00, one explicitly “morning” and the other “evening”; choose the requested visit. Say the period, display a.m./p.m. with replay and show both contexts. A clock face alone cannot decide. Before building, define noon/midnight wording and exactly how it changes the skill from level 5; it is easier than 11, so `order` places it. A future test must distinguish absolute day minutes (0–1439) from face minutes (0–719), including 12 noon versus 12 midnight.
 
 **13, To the minute**, and **14, A longer timetable** remain sketches for later elementary play. Sixty angular stops on the present face are about 17 units apart at the tip. If individual minutes are useful, keep a broad coarse drag and add large ±1-minute controls; never make sixty tiny targets. A timetable must state its day/period, permit replay and make more than one valid plan acceptable. Define after someone plays the interval and visit slices, with a band/order review rather than a silent school-window expansion. Twenty-four-hour conversion and travel across dates wait there too.
 

@@ -103,7 +103,7 @@ More than twenty cards, faster flip-back, a preview countdown, moving cards, man
 ## Decisions for the developer
 
 1. **Level 10 board:** lean five pairs sampled from all ten number words, retaining saved ID 10 and vocabulary; alternative retain ten pairs with legible words and proven large targets. This changes an implemented level's quantity and needs an explicit choice.
-2. **School extensions 12–14:** lean yes, as optional bridges to Clock Tower/Pet Kitchen and quantity composition, with three pairs each. Accept the easier clock round after the reading mode, or wait for explicit level order. The existing roadmap question about representation bridges still applies.
+2. **School extensions 12–14:** lean yes, as optional bridges to Clock Tower/Pet Kitchen and quantity composition, with three pairs each. Place the easier clock round with `order`. The existing roadmap question about representation bridges still applies.
 3. **Toddler window:** lean hidden level 1 only (1–1), naming familiar pictures; six-card level 2 remains preschool. Face-up play and lap sketches wait on level-order/mode decisions.
 4. **Optional family split-seat play:** follows the roadmap's placement/seat decisions. Keep the existing couch turn-taking unchanged; do not add co-play seats or progress attribution in these slices.
 

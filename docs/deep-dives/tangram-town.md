@@ -91,7 +91,7 @@ The "fewer pieces" level and the "fix the picture" level can both stay at the sc
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-These wait on [how levels are ordered for a new band](../ROADMAP.md#waiting-on-the-developer): appended easier levels would make "step up" run backwards.
+Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 
 - **One piece home.** The house's roof is already placed; the square waits. One shadow, one piece, a snap radius of about 110, no wrong place to drop it. Rule test: with one slot, any drop within 110 of it places the piece; there is no miss. For a child under about two. A tap-to-place variant (tap the piece and it flies home) needs no drag at all and is the lap candidate.
 - **Pick the missing piece.** The picture is built but one slot is empty; the tray has the right piece and one wrong one. Rule test: the wrong piece never fits that slot.

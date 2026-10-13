@@ -76,7 +76,7 @@ Each row is a proposal; only the support wording/guard slices below are immediat
 
 ### New levels on top
 
-**Decision-dependent.** Proposed school window 5–9, all other windows unchanged. Levels 7 and 9 may be easier than open-ended 6/8; adopt them only after accepting those inversions or applying the existing level-order decision. Do not shift saved school levels or pins. No new band proposed.
+**Decision-dependent.** Proposed school window 5–9, all other windows unchanged. Levels 7 and 9 may be easier than open-ended 6/8; place them with `order`. Do not shift saved school levels or pins. No new band proposed.
 
 All new modes have two small tasks per game, replay/undo, visible goals, and a deliberate release button. Empty release repeats the instruction without a miss. Failed trials are proposed as unscored experiments; after two unsuccessful releases show one constructive hint and count it once per task, so assistance remains visible. Supported completion remains available. This accounting is subject to decision 2 below.
 
@@ -109,7 +109,7 @@ No fast stacking, survival clock, lives, tallest-ever streak or losing possessio
 
 ## Decisions for the developer
 
-1. **Appended ladder and ordering:** adopt school 5–9 with repair → scaffolded counterweight → removal, accepting possible easier-mode inversions, or wait for explicit level ordering? Lean: first do support and existing-level variety; define 7–9 as complete modes before widening the window. All existing lower bounds/IDs/pins stay.
+1. **Appended ladder and ordering:** adopt school 5–9 with repair → scaffolded counterweight → removal, placing easier modes with `order`? Lean: first do support and existing-level variety; define 7–9 as complete modes before widening the window. All existing lower bounds/IDs/pins stay.
 2. **Experiments and adaptation:** leave current 6 accounting alone or make failed releases/topples unscored experiments (with one counted constructive hint after two unsuccessful trials)? Lean: experiment rule for 6–9, keep wrong height bell checks on 3–4 as misses; this needs explicit approval because saved difficulty evidence changes. Decide whether the first tall correction glow on 3–4 stays a cue or moves to the two-miss help rule.
 3. **Temporary supports:** adopt ropes plus deliberate release at 7–9, with final-state search and multiple valid solutions? Lean: yes, equal blocks only; current immediate-settle `finish` stays for 6. Otherwise defer counterweights rather than a farther-star substitute.
 4. **Younger entries and co-play:** optionally toddler 1–3; below-level-1 entries wait on order. Two-seat shared tower (unscored prediction, rebuilding together, pet partner) needs a separate definition/session; no couch range change yet. Kept towers/journal stay deferred, not prerequisites for these slices.
