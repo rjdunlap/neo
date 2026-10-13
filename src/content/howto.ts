@@ -149,12 +149,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'word-search': {
     goal: 'Find the hidden words in a grid of letters.',
     steps: [
-      'Move around the grid with the arrow keys or the stick.',
-      'Press Enter on a word\'s first letter, move to its last letter and press Enter again to check it.',
-      'Backspace lets go of the line you are marking. Esc opens the pause menu, with a hint and a new search.',
+      'Tap a word\'s first letter, then tap its last letter to check the line. Tapping the same letter again lets go.',
+      { from: 1, to: 1, text: 'You can also drag a finger along the word, from its first letter to its last.' },
+      { from: 2, to: 4, text: 'If part of the grid is out of sight, drag it to slide it. A quick tap marks a letter; a drag only slides.' },
+      'Tap Hint to see where a word starts and hear which word it is; Start over clears the words found.',
     ],
     finish: 'The search is done when every word in the list is found.',
-    note: 'This puzzle takes keys or a controller, so the island opens it in couch play, which keeps its own bests and gives no sticker.',
+    note: 'A line that is not one of the words counts as a miss, and a hint counts as help. A mark that is not straight costs nothing.',
   },
   'island-bridges': {
     goal: 'Join the islands with bridges: each island needs as many planks as its number.',
