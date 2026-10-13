@@ -77,7 +77,7 @@ describe('game registry', () => {
   });
 
   it('lists the grown-up games as island games for the grown-up band only, and opens the controller-only ones through the couch', () => {
-    const ids = ['tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'];
+    const ids = ['gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'];
     for (const id of ids) {
       const g = gameById(id)!;
       expect(g, id).toBeDefined();

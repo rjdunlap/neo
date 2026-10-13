@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-12 — Gem Swap in Lantern Lake
+
+- Added `gem-swap` grown-up levels 1–4: finite 6/12/15/18-gem trays, three seeded templates each, visible falling clears, touch/controller play, Undo/Restart, shortest-route Hint, both demonstrations and one shell sticker ([PR #235](https://github.com/rjdunlap/neo/pull/235)). Couch compares accepted swaps over exact par; no turn limit or refill.
+- Tested claim `43c73d6` plus source diff on base `origin/main` `1e97ce7`; final integration uses `origin/main` `18d6a40` (Bounce Back only), isolated in `/private/tmp/neo-gem-swap`: typecheck and build passed (existing bundle-size warning). `npm test -- --maxWorkers=4`: 1,091 passed, one timeout in unchanged Peg Garden physics; the one-worker focused probe also timed out, so it remains an existing load-sensitive check limitation. All six Gem Swap rules and catalog/registry/land/how-to tests passed; after upstream integration, typecheck, 76 focused tests and build passed. The three game/browser passes are reused because integration changed only Bounce Back and its documentation. Rules cover exact pars against breadth-first search, 240 seeded hint/bot routes, no refill, valid swaps, long/intersecting lines, dead ends and alternative routes.
+- `GAME_URL=http://localhost:5183 BROWSER_SUITE=gemswap`: first/last, two rejected swaps with one automatic hint, repeated hint not recounted, cancellation, Undo/Restart accounting, portrait target bounds, one sticker per round, Lantern Lake launch and leaving mid-clear passed. Portrait inspected; no page errors.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=gem-swap` finished levels 1/4 clean in 3.3/10.4s; `BROWSER_SUITE=couchgames COUCH_ONLY=gem-swap` passed intro fit, controller lighting, bot round, couch save and child-save isolation.
+- New local documentation links/anchors and `git diff --check` passed (pre-existing stale links outside this slice remain). Source and checks were isolated after another session began Bounce Back edits in the shared checkout; those edits were preserved. Screenshots are retained in ignored `test-results/`.
+- Not run: unchanged full world/picnic/couch/course/offline suites (new-game/catalog tier, no engine, route or persistence behavior change). Real iPad speech/touch, real controllers and whether a person wants another tray stay open in the roadmap. Zen refill and a frozen course remain proposals.
+
 ## 2026-10-12 — A band's `order` may skip level IDs
 
 - `order` is now any distinct list with `min`/`max` its ends (`difficulty.ts` clamp: a saved level or pin left out lands on the nearest listed ID); the registry test checks distinct, ends at min/max, and describes every listed level.
@@ -946,6 +955,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `gemswap`, `fingerdemo`/`couchgames` (`gem-swap`) | 2026-10-12: first/last touch rounds, help/revision/reward, portrait; clean demos in 3.3/10.4s, controller bot and isolated save; typecheck/build, all affected unit tests | Gem Swap entry / [PR #235](https://github.com/rjdunlap/neo/pull/235) | One unchanged Peg Garden timeout; full unchanged suites skipped; real devices/person play open |
 | `tilepairs`/`fingerdemo` (`tile-pairs` level 6) | 2026-10-12: top-level touch regression/reward/portrait; demo clean in 32.8s; typecheck and 36 focused tests | Tile Pairs levels 4–6 / [PR #232](https://github.com/rjdunlap/neo/pull/232) | Levels 4/5 proved by rules; new-level check tier, no broader suites; real devices/person play untested |
 | `tilepairs`, `fingerdemo`/`couchgames` (`tile-pairs`), `lands` (`lantern-lake`) | 2026-10-12: first/last touch rounds with revision/help, portrait, clean finger demos, controller bot/save, seven-game land fit; build and production offline check | Tile Pairs entry / [PR #229](https://github.com/rjdunlap/neo/pull/229) | Real device/controller/speech and person replay value untested; no course |
 | `lanterntouch`, `lands`, `world`, `couchgames` (six puzzles), `fingerdemo` (`lantern-lights`) | 2026-10-13: Lantern Lights by touch, eleven lands at six bands, hatching and map, couch catalog for the six, demo clean in 12.0 s and 33.5 s; build and offline check | Lands stage B entry / [PR #226](https://github.com/rjdunlap/neo/pull/226) | iPad touch, device speech, Sudoku and the other four have no touch yet |
