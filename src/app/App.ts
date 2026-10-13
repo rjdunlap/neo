@@ -30,9 +30,10 @@ export type Origin = { land: LandId } | { place: Band } | { journal: true };
 export interface Routes {
   /**
    * Adult couch play, with its own save and controller-supported games. `true` resumes the trip's chosen
-   * game; a course id opens that challenge's page.
+   * game; a course id opens that challenge's page. An `origin` means the island sent the player here (a controller-only
+   * puzzle), so leaving goes back there, not to "Who's playing?".
    */
-  couch(play?: boolean | CourseId): void;
+  couch(play?: boolean | CourseId, origin?: Origin): void;
   /** "Who's playing?": the front door, and the way back to it from the map. */
   start(): void;
   /** The island map: the themed lands, her home spot and the picnic. */

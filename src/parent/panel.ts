@@ -1,7 +1,7 @@
 import { playerChanged, selectPlayer } from '../app/players';
 import { applySettings } from '../app/settings';
 import { voice } from '../audio/voice';
-import { GAMES } from '../games/registry';
+import { GAMES, playsByTouch } from '../games/registry';
 import { BANDS, playBand, type Band } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
 import { bandForYears, cardName, checkBirthInput, completedYears, isBlankProfile } from '../progress/profiles';
@@ -346,12 +346,16 @@ function weekSummary(): string {
     for (const l of levelsInOrder(range)) {
       options.push(`<option value="${l}" ${stats.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`);
     }
+    // A game that takes only a controller opens its couch puzzle-shelf course, which sets its own level: a pin would never apply.
+    const byTouch = playsByTouch(g);
     const picker =
-      range.max > range.min
+      byTouch && range.max > range.min
         ? `<select data-pin="${g.id}" aria-label="Level for ${esc(g.name)}">${options.join('')}</select>`
         : '';
     return `<tr>
-        <td><strong>${esc(g.name)}</strong><br><span class="muted">Level ${now}: ${esc(g.describeLevel(now))}</span>${picker ? `<br>${picker}` : ''}</td>
+        <td><strong>${esc(g.name)}</strong><br>${byTouch
+          ? `<span class="muted">Level ${now}: ${esc(g.describeLevel(now))}</span>${picker ? `<br>${picker}` : ''}`
+          : `<span class="muted">Needs a keyboard or controller: it opens on the couch puzzle shelf, which sets its own levels.</span>`}</td>
         <td>${recent.length}</td><td>${minutes}</td>
       </tr>`;
   });
