@@ -9890,6 +9890,32 @@ async function landKeys() {
   log('Land keys: the ring shows at the first key and moves at the next, Enter presses, a held Enter stays in the scene it began in, Backspace leaves a land and does nothing on the map, a tap works with the ring showing');
 }
 
+/** Lands stage C1b: five touch puzzles lay themselves out for keys at the first press and come back to touch at the next finger. */
+async function liveSwitchPlay() {
+  const ids = ['sudoku-garden', 'word-search', 'island-bridges', 'picture-logic', 'pond-conga'];
+  for (const id of ids) {
+    const level = await page.evaluate(async (id) => (await import('/src/app/input-in-use.ts')).controllerLevels(id).values().next().value, id);
+    await launch(id, level);
+    await page.waitForTimeout(900);
+    const touch = () => page.evaluate(() => neo.scene.game.touch);
+    const press = async (key) => { await page.keyboard.press(key, { delay: 140 }); await page.waitForTimeout(250); };
+    const tapAway = async () => { await page.evaluate(() => kit.tap(neo.view.w - 40, neo.view.h / 2)); await page.waitForTimeout(250); };
+    assert.equal(await touch(), true, `${id} starts as touch`);
+    await press('ArrowRight');
+    assert.equal(await touch(), false, `${id} lays itself out for the controller at the first key`);
+    await tapAway();
+    assert.equal(await touch(), true, `${id} comes back to touch at a finger`);
+    assert.equal(await page.evaluate(() => neo.scene.game.touchLayer.visible), true, `${id} shows its touch layer again`);
+    await press('ArrowDown');
+    assert.equal(await touch(), false, `${id} goes to the controller again at the next key`);
+    await tapAway();
+    assert.equal(await touch(), true, `${id} comes back again`);
+    if (id === 'sudoku-garden') await screenshot('c1b-sudoku-back-to-touch');
+    log(`Live keys: ${id} (level ${level}) touch → keys → touch → keys → touch`);
+  }
+  assert.deepEqual(errors, []);
+}
+
 try {
   await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
@@ -9909,6 +9935,7 @@ try {
   if (suite === 'all' || suite === 'lanterntouch') await lanternTouchPlay();
   if (suite === 'all' || suite === 'sudokutouch') await sudokuTouchPlay();
   if (suite === 'all' || suite === 'landkeys') await landKeys();
+  if (suite === 'all' || suite === 'livekeys') await liveSwitchPlay();
   if (suite === 'all' || suite === 'wordsearchtouch') await wordSearchTouchPlay();
   if (suite === 'all' || suite === 'bridgestouch') await bridgesTouchPlay();
   if (suite === 'all' || suite === 'picturetouch') await pictureTouchPlay();

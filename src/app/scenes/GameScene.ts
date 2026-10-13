@@ -66,6 +66,7 @@ export class GameScene extends Scene {
   private keyed = false;
   private readonly touchDown = () => {
     this.inputInUse.touched();
+    if (this.keyed && !this.finished) this.game?.touchReturned?.();
     this.keyed = false;
     this.ring.visible = false;
   };

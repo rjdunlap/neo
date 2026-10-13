@@ -621,6 +621,18 @@ class PondConga implements Game {
     this.resize(this.view);
   }
 
+  /** A finger came back after keys: the pond goes back to its touch layout. */
+  touchReturned() {
+    if (this.touch || this.finished || !this.pond) return;
+    this.touch = true;
+    this.touchLayer.visible = true;
+    this.tapLayer.visible = true;
+    this.buttons.visible = true;
+    this.buttonText.visible = true;
+    this.tally();
+    this.resize(this.view);
+  }
+
   control(input: CouchControls) {
     if (this.touch) this.useController();
     if (this.busy || this.finished || !this.pond) return;
@@ -782,6 +794,7 @@ function sticker(seed: number): Container {
 
 export const pondConga: GameModule = {
   id: 'pond-conga',
+  liveController: true,
   name: 'Pond Conga',
   titleLine: 'game.pond-conga',
   region: 'puzzle-peaks',

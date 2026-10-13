@@ -728,6 +728,16 @@ class PictureLogic implements Game {
     this.resize(this.view);
   }
 
+  /** A finger came back after keys: the picture goes back to its touch layout, the paper and clue numbers sliding again. */
+  touchReturned() {
+    if (this.touch || this.finished || !this.puzzle) return;
+    this.touch = true;
+    this.drag = null;
+    this.stroke = null;
+    for (const part of [this.touchLayer, this.buttonLayer, this.buttonsG, this.buttonText, this.edges, this.paper]) part.visible = true;
+    this.resize(this.view);
+  }
+
   control(input: CouchControls, dt: number) {
     if (this.touch) this.useController();
     if (this.busy || this.finished || !this.puzzle) return;
@@ -993,6 +1003,7 @@ function sticker(seed: number): Container {
 
 export const pictureLogic: GameModule = {
   id: 'picture-logic',
+  liveController: true,
   name: 'Picture Logic',
   titleLine: 'game.picture-logic',
   region: 'puzzle-peaks',
