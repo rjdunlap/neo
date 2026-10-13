@@ -21,7 +21,8 @@ import { randomSeed, Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { couchGameById as gameById } from '../../games/registry';
 import type { CourseProgress, Game, GameModule, RoundResult } from '../../games/types';
-import type { App } from '../App';
+import type { App, Origin } from '../App';
+import { goToOrigin } from '../origin';
 import { Scene } from '../Scene';
 import { applySettings } from '../settings';
 import '../../couch/style.css';
@@ -95,7 +96,8 @@ export class CouchScene extends Scene {
   private routeCourse: CourseId | null = null;
   private readonly stats = node('small', '', 'couch-hud-stats');
 
-  constructor(app: App, private readonly play: boolean | CourseId = false) { super(app); }
+  /** `origin` is set when the island sent her here (a controller-only puzzle): leaving goes back there, not to "Who's playing?". */
+  constructor(app: App, private readonly play: boolean | CourseId = false, private readonly origin?: Origin) { super(app); }
 
   /** Any key or click wakes the browser's audio; a controller button may not. */
   private readonly wake = () => this.unlock();
@@ -111,13 +113,17 @@ export class CouchScene extends Scene {
     this.ui.addChild(this.introLayer);
     this.input = new CouchInput(() => this.unlock(), () => this.pause('Window left — ready when you are.'));
     const selected = this.couch.data.party?.selected;
+    // The island opened a controller-only puzzle here: say what it needs, in case the tap came from a finger.
+    if (this.origin && typeof this.play === 'string' && handoff?.id !== this.play) void voice.say('couch.island');
     if (typeof this.play === 'string') { const result = handoff?.id === this.play ? handoff.outcome : null; handoff = null; this.courseHome(this.play, result); }
     else if (this.play && selected) this.begin(selected);
     else this.menu();
   }
 
-  private go(play: boolean | CourseId = false) { this.leaving = true; this.app.go.couch(play); }
-  private leave() { this.leaving = true; this.app.go.start(); }
+  private go(play: boolean | CourseId = false) { this.leaving = true; this.app.go.couch(play, this.origin); }
+  private leave() { this.leaving = true; goToOrigin(this.app.go, this.origin, () => this.app.go.start()); }
+  /** What the button that leaves couch play says: the island when it sent her here, else the start. */
+  private get leaveLabel() { return this.origin ? 'Back to the island' : 'Back to start'; }
 
   /** Where she is playing right now: her choice, or what is connected and how big the window is. */
   private place(): Place { return resolvePlace(this.couch.data.settings.place, this.surroundings()); }
@@ -184,7 +190,7 @@ export class CouchScene extends Scene {
     extra?.(actions);
     this.button(actions, 'Controller setup', () => this.setup());
     this.button(actions, 'Settings', () => this.settingsPage());
-    this.button(actions, 'Back to start', () => this.leave());
+    this.button(actions, this.leaveLabel, () => this.leave());
     this.button(actions, 'How to play', () => this.guide());
     this.focusButtons();
   }
@@ -506,6 +512,7 @@ export class CouchScene extends Scene {
     }
     if (canWatchRoute(this.couch.data, id, !!outcome)) this.button(actions, 'Watch the best routes', () => this.watchRoute(id, 0), 'couch-route');
     this.button(actions, alone ? 'Puzzle shelf' : 'All challenges', () => this.courseMenu());
+    if (this.origin) this.button(actions, this.leaveLabel, () => this.leave());
     this.focusButtons();
     if (outcome) {
       sfx.tada();
@@ -808,7 +815,7 @@ export class CouchScene extends Scene {
     this.quickSettings(sheet);
     if (this.course) { const id = this.course.spec.id; this.button(sheet, 'Back to the course page', () => this.go(id)); }
     else this.button(sheet, 'Choose a different game', () => { this.couch.data.party!.selected = null; this.couch.save(); this.go(); });
-    this.button(sheet, 'Save and return to start', () => this.leave());
+    this.button(sheet, this.origin ? 'Save and back to the island' : 'Save and return to start', () => this.leave());
     sheet.append(node('p', this.course ? this.course.info.leaving : 'Leaving or refreshing restarts this unfinished round from the same seed. Completed lanterns and stickers stay saved.', 'couch-keys'));
     this.overlay.append(this.modal); this.focusButtons(this.modal);
   }
@@ -968,6 +975,7 @@ export class CouchScene extends Scene {
       else if (this.screen === 'intro') this.backFromIntro();
       else if (this.screen === 'howto') this.closeHowTo();
       else if (this.screen === 'route') this.leaveRoute();
+      else if (this.origin && this.screen === 'course') this.leave();
       else if (this.screen !== 'menu') this.menu();
       return;
     }

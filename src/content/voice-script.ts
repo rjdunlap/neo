@@ -47,6 +47,7 @@ export const SCRIPT = {
   'orchard.turn': ['Tap the turning arrow. We will look at the same orchard from the side and count by columns.'],
   'orchard.same': ['Still {total} trees! Rows or columns, no trees were added or taken away.'],
   'orchard.done': ['Two orchards planted and counted! Equal groups help us count.'],
+  'couch.island': ['This puzzle plays with a keyboard or a controller.'],
   'couch.next': ['Another lantern is lit! What shall we play next?'],
   'couch.done': ['Six lanterns! We made a whole trip together.'],
   'couch.turn': ['{who}, it is your turn!'],

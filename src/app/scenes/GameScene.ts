@@ -27,6 +27,7 @@ import { discoveryPill } from '../../ui/journal-art';
 import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
 import type { App, Origin, StoryRound } from '../App';
+import { goToOrigin } from '../origin';
 import { Scene } from '../Scene';
 
 /**
@@ -248,12 +249,8 @@ export class GameScene extends Scene {
 
   /** Back to where she came from (a land, a place, the journal), to the picnic for a story round, or else to her home spot. */
   private goHome() {
-    const from = this.origin;
     if (this.story) this.app.go.picnic(this.story.step);
-    else if (from && 'land' in from) this.app.go.land(from.land);
-    else if (from && 'place' in from) this.app.go.place(from.place);
-    else if (from && 'journal' in from) this.app.go.journal();
-    else this.app.go.place(store.data.profile.band);
+    else goToOrigin(this.app.go, this.origin, () => this.app.go.place(store.data.profile.band));
   }
 
   private finish(result: RoundResult) {

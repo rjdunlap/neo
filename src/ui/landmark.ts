@@ -2,6 +2,8 @@ import { Container, Graphics, Rectangle } from 'pixi.js';
 import { swatch } from '../art/palette';
 import type { Box, Rect } from '../content/lands';
 import type { GameModule, HubIcon } from '../games/types';
+import { playsByTouch } from '../games/registry';
+import { keycap } from './keycap';
 import { Sparkle } from './sparkle';
 
 /** One game standing in a place or a land: its own drawing on a soft shadow, and a twinkle if she has not played it yet. */
@@ -32,6 +34,12 @@ export function makeLandmark(mod: GameModule, box: Box, fresh: boolean, hit?: Re
     sparkle = new Sparkle();
     sparkle.position.set(Math.min(box.w / 2, (b.width * s) / 2 - 4), -b.height * s + 6);
     node.addChild(sparkle);
+  }
+  // A game that takes only a keyboard or a controller says so with a key cap; tapping it still opens its couch course.
+  if (!playsByTouch(mod)) {
+    const cap = keycap();
+    cap.position.set(Math.min(box.w / 2 - 22, (b.width * s) / 2), -26);
+    node.addChild(cap);
   }
   node.eventMode = 'static';
   node.cursor = 'pointer';
