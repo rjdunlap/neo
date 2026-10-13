@@ -5266,7 +5266,15 @@ async function shortlistBatch() {
   const at = (x, y) => page.evaluate(({ x, y }) => { const s = neo.view.scale; const r = document.querySelector('canvas').getBoundingClientRect(); return [r.left + x * s, r.top + y * s]; }, { x, y });
 
   if (!only || only === 'tower') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
+    if (level === 6 && process.env.TOWER_SEED) await page.evaluate(seed => { window.towerRandom = Math.random; Math.random = () => seed / 2 ** 31; }, Number(process.env.TOWER_SEED));
     await launch('block-tower', level);
+    if (level === 6 && process.env.TOWER_SEED) await page.evaluate(() => { Math.random = window.towerRandom; delete window.towerRandom; });
+    const savedTower = await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]);
+    if (level === 6) {
+      const directions = await page.evaluate(() => neo.scene.game.reachRounds.map(r => r.direction));
+      assert.deepEqual([...directions].sort(), [-1, 1]);
+      log(`Block Tower reach order: ${directions.join(',')}`);
+    }
     if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
     const { rounds, mode } = await page.evaluate(() => ({ rounds: neo.scene.game.rounds.length, mode: neo.scene.game.plan.mode }));
     if (mode === 'flag' || mode === 'match') {
@@ -5322,11 +5330,11 @@ async function shortlistBatch() {
           assert.deepEqual(await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]), saved.map(v => v + 1));
         }
       } else {
-        // Reach: two topples past the table edge (explained misses), a glowing hint place, then a way that works.
+        // Reach: a topple and a full short stack, top revision, then symmetric solutions on both edges.
         const drop = async (slot) => {
           await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
-          const [k, edge, top] = await page.evaluate(() => { const g = neo.scene.game; return [g.placed.length, g.edge, g.tableTop]; });
-          const target = await at(edge + (slot * 104) / 8, top - k * 62 + 40);
+          const [k, edge, top, direction] = await page.evaluate(() => { const g = neo.scene.game; return [g.placed.length, g.edge, g.tableTop, g.reachRound.direction]; });
+          const target = await at(edge + direction * (slot * 104) / 8, top - k * 62 + 40);
           await page.evaluate(async (target) => { const t = neo.scene.game.tray.find((t) => t.x === null); await kit.dragTo(t.node, { x: target[0], y: target[1] }, 12); }, target);
           await page.waitForTimeout(500);
         };
@@ -5334,19 +5342,19 @@ async function shortlistBatch() {
           // Audit the landing window, cancelled releases, resize and top-only lifting before scored trials.
           assert.deepEqual(await page.evaluate(() => {
             const g = neo.scene.game;
-            return [-12, 8, 9, 10].map((x) => g.slot(g.edge + x * 13, g.tableTop));
+            return [-12, 8, 9, 10].map((x) => g.slot(g.reachScreen(x), g.tableTop));
           }), [-12, 8, 8, 8], 'live drop and ghost share the solver domain');
           assert.deepEqual(await page.evaluate(() => {
             const g = neo.scene.game, t = g.tray[0];
             t.node.emit('pointerdown', { pointerId: 81, global: t.node.getGlobalPosition() });
-            t.node.position.set(g.edge - 39, g.tableTop);
+            t.node.position.set(g.reachScreen(-3), g.tableTop);
             window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 81 }));
             return [t.x, t.drag.dragging, g.misses, g.hints];
           }), [null, false, 0, 0], 'cancel over table returns to tray without committing or scoring');
           await page.waitForTimeout(500);
           assert.deepEqual(await page.evaluate(async () => {
             const g = neo.scene.game;
-            await kit.dragTo(g.tray[0].node, { x: g.edge - 39, y: g.tableTop + 40 }, 12);
+            await kit.dragTo(g.tray[0].node, { x: g.reachScreen(-3), y: g.tableTop + 40 }, 12);
             neo.paused = true; // Freeze the real landing tween to inspect the brief input window.
             const first = g.tray[0], second = g.tray[1];
             second.node.emit('pointerdown', { pointerId: 82, global: second.node.getGlobalPosition() });
@@ -5358,7 +5366,7 @@ async function shortlistBatch() {
           await idle(n);
           assert.ok(await page.evaluate(() => {
             const g = neo.scene.game, t = g.placed[0];
-            return t.node.x === g.edge - 39 && t.node.y === g.tableTop && t.drag.enabled;
+            return t.node.x === g.reachScreen(-3) && t.node.y === g.tableTop && t.drag.enabled;
           }), 'landing relayouts against the resized table before controls reopen');
           // Simulate an existing next-placement hint; lifting invalidates it and returns only the top.
           assert.deepEqual(await page.evaluate(async () => {
@@ -5374,16 +5382,32 @@ async function shortlistBatch() {
           }), [true, 0, 0, 0], 'top lift clears stale help and returns the block without a miss');
           await page.setViewportSize({ width: 1024, height: 768 });
           await page.waitForTimeout(200);
-          for (let k = 0; k < 2; k++) { await drop(3); await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.placed.length === 0, null, { timeout: 20000 }); }
+          await drop(3);
+          await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.placed.length === 0);
+          await drop(-3); await drop(-3); // Stable, full, short stack: a different explained miss.
+          await idle(n); // Its spoken explanation finishes before constructive help appears.
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.glowTop), 'impossible prefix highlights the actual top block');
+          await page.evaluate(async () => { const g = neo.scene.game; await kit.dragTo(g.placed.at(-1).node, { x: g.view.w - 200, y: g.floor + 70 }, 12); });
+          await page.waitForTimeout(500);
+          // Repeating help after revision keeps the task's hint counted once.
+          await page.evaluate(() => neo.scene.game.reachHint());
           assert.deepEqual(await counts(), [2, 1]);
           assert.ok(await page.evaluate(() => neo.scene.game.hintGhost.visible), 'a glowing place for the next block');
           await screenshot(`block-tower-${level}`);
         }
-        const way = await page.evaluate(async () => (await import('/src/games/block-tower/logic.ts')).finish([], neo.scene.game.reachRound));
+        if (await page.evaluate(() => neo.scene.game.reachRound.direction === -1)) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(200);
+          assert.ok(await page.evaluate(() => { const g = neo.scene.game; return !g.hintGhost.visible || (g.hintGhost.x === g.reachScreen(g.hintSlot) && g.hintGhost.y === g.tableTop - g.placed.length * 62); }), 'hint follows the resized table');
+          await screenshot('block-tower-6-left-portrait');
+        }
+        const way = await page.evaluate(async () => { const g = neo.scene.game; return (await import('/src/games/block-tower/logic.ts')).finish(g.placed.map(t => t.x), g.reachRound); });
         for (const slot of way) await drop(slot);
       }
     }
     await finished('block-tower');
+    assert.deepEqual(await page.evaluate(() => [kit.store.data.stickers.length, kit.store.stats('block-tower').history.length]), savedTower.map(v => v + 1));
     assert.deepEqual(await score('block-tower'), mode === 'flag' || mode === 'match' || mode === 'reach' ? [2, 1] : [0, 0]);
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'topples explained, glowing hint place, star reached' }[mode]}, saved score and sticker passed`);
@@ -8566,6 +8590,9 @@ async function fingerDemos() {
     for (const { band, level } of g.plays) {
       await page.evaluate(({ id, band, level }) => { kit.store.data.profile.band = band; kit.store.stats(id).pinned = level; neo.go.game(id, band); }, { id: g.id, band, level });
       await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !!neo.scene.helpCard?.intro?.demo, { id: g.id, level });
+      if (g.id === 'block-tower' && level === 6 && process.env.TOWER_SEED) {
+        await page.evaluate(seed => { const d = neo.scene.helpCard.intro.demo; d.opts.seed = seed; d.restart(); }, Number(process.env.TOWER_SEED));
+      }
       assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
       const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
       // The demonstration's own clock decides, not the wall: on a busy Mac it runs at a fraction of real time (a quarter, once), so the
