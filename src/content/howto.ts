@@ -257,6 +257,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.',
   },
+  'number-trails': {
+    goal: 'Draw a numeral by following the firefly, then meet that many things and count them.',
+    steps: [
+      'Put your finger on the firefly and follow its path from the glowing dot, along the arrow. A numeral with two parts takes two touches.',
+      { to: 2, text: 'When the numeral is done, the things pop up one at a time. Count them aloud together.' },
+      { from: 3, text: 'When the numeral is done, tap the sleeping things to wake exactly that many. Count as you tap.' },
+    ],
+    finish: [
+      { to: 2, text: 'The round ends after the last thing has been counted.' },
+      { from: 3, text: 'The round ends when exactly the right number are awake.' },
+    ],
+    note: 'Zero has no things: the round ends with “zero” said aloud. Wandering off the trail is a gentle miss; counting things can never be wrong.',
+  },
   'fill-dump': {
     goal: 'Fill, empty and refill: count fruit or pour water to a line.',
     steps: [
