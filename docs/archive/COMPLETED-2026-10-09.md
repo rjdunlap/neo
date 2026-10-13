@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Tangram Town robot picture (2026-10-13)
+
+Built [PR #260](https://github.com/rjdunlap/neo/pull/260): a square head, rectangular body and two triangular feet make a robot at existing levels 5 (outlines) and 6 (silhouette). Seventeen pictures now supply pools of 4–9; seeded picture choice, quarter turns, hints, drops, completion and saved levels are unchanged. Typecheck and all eight Tangram rule tests passed, covering every picture's bounds/non-overlap, level fit, seeded solvability and bot choices; an isolated pointer probe completed the robot at both levels without misses or hints and its completed-art screenshot was reviewed. More picture content remains ready; device/child fit remains open.
+
+
 ### Tile Pairs levels 4–6 (2026-10-12)
 
 Extended `tile-pairs` to six levels ([PR #232](https://github.com/rjdunlap/neo/pull/232)). Level 4 is a six-column long bridge with a raised middle row; 5 has two separate terraces and five picture kinds; 6 is a crown with missing corners, two raised rows and six copies of each of four pictures. Each new layout has 24 tiles, unchanged target sizes and the same matching/Undo/Hint/Shuffle rules. Levels 1–3 preserve their original seeded boards, with hash fixtures captured before implementation. The island level picker offers 1–6; couch trips retain 1–3. Verification uses the existing-interaction/new-level tier: focused rules/typecheck, one top-level touch regression and its ghost finger. Further person/device checks stay open in the roadmap.

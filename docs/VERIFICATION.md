@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-13 — Tangram Town robot picture
+
+- [PR #260](https://github.com/rjdunlap/neo/pull/260), base `eca0d43`, claim `7adc8b1` plus implementation diff: robot at existing levels 5–6, seventeen pictures across pools of 4–9. Content/level description only; interaction, bands and saves preserved.
+- `npm run typecheck` and `npm test -- src/games/tangram-town/logic.test.ts` passed (8 tests across every authored picture: non-overlap, bounds, pool contracts, seeded trays, hints and ghost-finger solutions).
+- `node test-results/tangram-robot.mjs` at `GAME_URL=http://localhost:5198` forced the robot in an isolated context, then used real quarter-turn taps/drags at 5 and 6: both completed with zero misses/hints and no page errors. Initial probe timed out; a per-piece logging probe with 600 ms settlement waits completed every slot. Chromium required sandbox escalation.
+- `test-results/tangram-robot.png` reviewed: square head, body and separate feet read clearly, with the completed picture clear of controls/tray. Local Markdown links and `git diff --check` passed; session server stopped after checks.
+- Not run: full units/build/browser suites, standalone fingerdemo, world/offline (game data only; existing geometry/bot rule tests cover the new content). Real iPad/child recognition and speech remain open.
+
+
 ## 2026-10-13 — Block Tower mirrored reach at level 6
 
 - [PR #259](https://github.com/rjdunlap/neo/pull/259), base `4ead39a`, claim `1fa37ca` plus implementation diff: seeded opposite table edges at existing level 6, canonical snapping and reflected table/star/drag/help/bot/fall. Original tasks, accounting, saved IDs/bands and one reward preserved.
@@ -1098,6 +1107,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Tangram Town robot content | 2026-10-13: typecheck, 8 Tangram rules, isolated pointer completion at levels 5–6 and completed-art screenshot | [Verification entry](#2026-10-13--tangram-town-robot-picture) / [PR #260](https://github.com/rjdunlap/neo/pull/260) | Content only; device/child fit open |
 | Block Tower mirrored reach definition (docs only) | 2026-10-13: local Markdown files/anchors and diff formatting | [Slice 5 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #254](https://github.com/rjdunlap/neo/pull/254) | No gameplay evidence added; mirror implementation and device/child checks remain open |
 | `picturetouch`, `fingerdemo`, `howto`, `couchgames`/`couchpictures` for Picture Logic | 2026-10-13: both ends of the ladder by touch, sliding with pinned clues, 64-unit targets upright and sideways, the demonstration at 13 to 20 s, the card fitting, the couch layout unchanged | [Verification entry](#2026-10-13--picture-logic-by-touch-lands-stage-d) | A real iPad and finger; the edge-slide feel; stray-fill miss decision open |
 | `bridgestouch`, `fingerdemo` and `howto` for Island Bridges | 2026-10-13: both ends of the ladder by touch, 64-unit targets upright and sideways, the demonstration at 9.4 s and 10.5 s, the card fitting | [Verification entry](#2026-10-13--island-bridges-by-touch-lands-stage-d) | A real iPad and finger; stray-plank miss decision open |
