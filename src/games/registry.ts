@@ -86,6 +86,7 @@ import { lemonadeStand } from './lemonade-stand';
 import { habitatHelpers } from './habitat-helpers';
 import { fillDump } from './fill-dump';
 import { numberTrails } from './number-trails';
+import { numberTree } from './number-tree';
 import { readDo } from './read-do';
 import type { GameModule } from './types';
 
@@ -173,6 +174,7 @@ export const GAMES: GameModule[] = [
   habitatHelpers,
   fillDump,
   numberTrails,
+  numberTree,
   readDo,
   gemSwap,
   tilePairs,
