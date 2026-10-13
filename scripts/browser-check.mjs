@@ -2703,29 +2703,29 @@ async function originals() {
   }
 
   // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
-  for (let level = 1; level <= 6 && (!only || only === 'garden'); level++) {
+  for (let level = 1; level <= 7 && (!only || only === 'garden'); level++) {
     if (level === 6) await portrait(true);
     await launch('color-garden', level);
     await page.waitForTimeout(400);
     const baskets = await page.evaluate(async () => {
       const g = neo.scene.game;
       const into = async (item, basket, dx = 0) => { await kit.dragTo(item.view, basket.parent.toGlobal({ x: basket.x + dx, y: basket.y - 20 }), 12); await kit.sleep(450); };
-      const basketFor = (color) => g.baskets.find((b) => b.color === color);
+      const basketFor = (color) => g.baskets.find((b) => b.key === color);
       if (g.baskets.length > 1) {
         const item = g.items[0];
-        const wrong = g.baskets.find((b) => b.color !== item.color);
+        const wrong = g.baskets.find((b) => b.key !== item.key);
         await into(item, wrong); await into(item, wrong);
-        if (g.misses !== 2 || g.hints !== 1 || !basketFor(item.color).glowing) throw new Error(`Garden hint: ${g.misses} ${g.hints}`);
+        if (g.misses !== 2 || g.hints !== 1 || !basketFor(item.key).glowing) throw new Error(`Garden hint: ${g.misses} ${g.hints}`);
       }
       if (g.baskets.length === 6) {
         // Right at the edge of a basket, leaning toward its neighbour: it still lands in that basket.
-        const item = g.items.find((i) => { const k = g.baskets.indexOf(basketFor(i.color)); return k > 0; });
-        const basket = basketFor(item.color);
+        const item = g.items.find((i) => { const k = g.baskets.indexOf(basketFor(i.key)); return k > 0; });
+        const basket = basketFor(item.key);
         const before = g.sorted;
         await into(item, basket, -(basket.w / 2 - 6));
         if (g.sorted !== before + 1 || g.misses !== 2) throw new Error(`Garden edge drop: ${g.sorted} ${g.misses}`);
       }
-      for (let guard = 0; guard < 20 && g.items.length; guard++) { const i = g.items[0]; await into(i, basketFor(i.color)); }
+      for (let guard = 0; guard < 20 && g.items.length; guard++) { const i = g.items[0]; await into(i, basketFor(i.key)); }
       return g.baskets.length;
     });
     await screenshot(`color-garden-${level}`);
@@ -2738,7 +2738,7 @@ async function originals() {
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 12, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 6 };
+  const want = { 'bubble-pop': 12, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }

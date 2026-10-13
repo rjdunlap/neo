@@ -6,7 +6,15 @@ export interface GardenPlan {
   items: number;
   /** Fruit whose kind gives the color away (an apple is red); otherwise balloons and flowers. */
   fruit: boolean;
+  /** Both baskets are blue, one light and one dark: she sorts by shade, not by color. */
+  shades?: boolean;
 }
+
+export type Shade = 'light' | 'dark';
+export const SHADES: Shade[] = ['light', 'dark'];
+
+/** What an item or basket is sorted by: its color, or its shade of blue. */
+export type SortKey = ColorName | `${Shade}-blue`;
 
 export const PLANS: GardenPlan[] = [
   { colors: 1, items: 4, fruit: true },
@@ -15,6 +23,7 @@ export const PLANS: GardenPlan[] = [
   { colors: 4, items: 8, fruit: true },
   { colors: 5, items: 10, fruit: true },
   { colors: 6, items: 12, fruit: false },
+  { colors: 2, items: 8, fruit: false, shades: true },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -27,7 +36,14 @@ export const REACH_X = 30;
 export const REACH_UP = 230;
 
 /** The baskets' colors, then one thing per color and the rest at random, shuffled. */
-export function deal(rng: Rng, plan: GardenPlan): { colors: ColorName[]; items: ColorName[] } {
+export function deal(rng: Rng, plan: GardenPlan): { colors: SortKey[]; items: SortKey[] } {
+  if (plan.shades) {
+    const keys: SortKey[] = rng.shuffle(SHADES.map((s): SortKey => `${s}-blue`));
+    const items = [...keys];
+    while (items.length < plan.items) items.push(rng.pick(keys));
+    rng.shuffle(items);
+    return { colors: keys, items };
+  }
   const colors = rng.shuffle([...RAINBOW]).slice(0, plan.colors);
   const items = [...colors];
   while (items.length < plan.items) items.push(rng.pick(colors));
@@ -56,9 +72,9 @@ export const DROP_ABOVE = 60;
  * What a capable child does next: take the first piece of fruit still on the tree to the basket of its own color.
  * The ghost finger follows this, so a test can check that it sorts everything and never picks the wrong basket.
  */
-export function nextToSort<I extends { color: ColorName }, B extends { color: ColorName }>(items: readonly I[], baskets: readonly B[]): { item: I; basket: B } | undefined {
+export function nextToSort<I extends { key: SortKey }, B extends { key: SortKey }>(items: readonly I[], baskets: readonly B[]): { item: I; basket: B } | undefined {
   for (const item of items) {
-    const basket = baskets.find((b) => b.color === item.color);
+    const basket = baskets.find((b) => b.key === item.key);
     if (basket) return { item, basket };
   }
   return undefined;

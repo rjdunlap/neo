@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextLevel, nextLevelOffer, stepLevel } from './difficulty';
+import { levelsInOrder, nextLevel, nextLevelOffer, stepLevel } from './difficulty';
 import type { RoundRecord } from './save';
 
 const round = (level: number, misses: number, hints = 0): RoundRecord => ({ level, misses, hints, seconds: 60, at: 0 });
@@ -46,5 +46,39 @@ describe('nextLevelOffer', () => {
     expect(nextLevelOffer(2, range)).toBe(3);
     expect(nextLevelOffer(4, range)).toBe(5);
     expect(nextLevelOffer(5, range)).toBeNull();
+  });
+});
+
+describe('an explicit order apart from the level IDs', () => {
+  // IDs 1-3 are hard; 4 is an easier level appended later, so the ladder runs 4, 1, 2, 3.
+  const ordered = { min: 1, max: 4, order: [4, 1, 2, 3] };
+
+  it('steps along the order, not the numbers', () => {
+    expect(stepLevel(4, 1, ordered)).toBe(1);
+    expect(stepLevel(1, -1, ordered)).toBe(4);
+    expect(stepLevel(3, 1, ordered)).toBe(3);
+    expect(stepLevel(4, -1, ordered)).toBe(4);
+  });
+
+  it('adapts along the order and keeps IDs in the history', () => {
+    expect(nextLevel(4, [round(4, 0), round(4, 0)], ordered)).toBe(1);
+    expect(nextLevel(1, [round(1, 5), round(1, 5)], ordered)).toBe(4);
+    expect(nextLevel(3, [round(3, 0), round(3, 0)], ordered)).toBe(3);
+  });
+
+  it('offers the next harder level, and none at the hardest', () => {
+    expect(nextLevelOffer(4, ordered)).toBe(1);
+    expect(nextLevelOffer(2, ordered)).toBe(3);
+    expect(nextLevelOffer(3, ordered)).toBeNull();
+  });
+
+  it('lists every level easiest first', () => {
+    expect(levelsInOrder(ordered)).toEqual([4, 1, 2, 3]);
+    expect(levelsInOrder({ min: 2, max: 4 })).toEqual([2, 3, 4]);
+  });
+
+  it('places a level outside the range at the nearest end', () => {
+    expect(nextLevel(9, [], ordered)).toBe(3);
+    expect(nextLevel(0, [], ordered)).toBe(4);
   });
 });
