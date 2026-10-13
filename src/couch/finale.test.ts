@@ -10,7 +10,7 @@ const trip = (mode: 'together' | 'faceoff', rounds: CouchRound[], trips = 1): Co
   save.party.rounds = rounds;
   return save;
 };
-const SIX: CouchId[] = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'penguin-slide', 'bouncy-launch', 'bounce-back'];
+const SIX: CouchId[] = ['penguin-slide', 'bouncy-launch', 'bumper-garden', 'penguin-slide', 'bouncy-launch', 'bumper-garden'];
 
 describe('the trip finale', () => {
   it('waits for the sixth stop', () => {
@@ -28,7 +28,7 @@ describe('the trip finale', () => {
   });
 
   it('names a face-off winner without ever naming a loser, and ties score for both', () => {
-    const f = finaleOf(trip('faceoff',[round('penguin-slide', 0), round('bouncy-launch', 0), round('bounce-back', 'team'), round('penguin-slide', 1), round('bouncy-launch', 'tie'), round('bounce-back', 'team')]))!;
+    const f = finaleOf(trip('faceoff',[round('penguin-slide', 0), round('bouncy-launch', 0), round('bumper-garden', 'team'), round('penguin-slide', 1), round('bouncy-launch', 'tie'), round('bumper-garden', 'team')]))!;
     expect(f.score).toEqual([5, 4]);
     expect(f.lead).toBe(0);
     expect(f.verdict).toBe('Player 1 wins 5 to 4, and you both lit all six lanterns!');
@@ -38,7 +38,7 @@ describe('the trip finale', () => {
   });
 
   it('uses the players’ own names when they have them, and falls back to Player 1 and Player 2', () => {
-    const rounds = [round('penguin-slide', 0), round('bouncy-launch', 0), round('bounce-back', 'team'), round('penguin-slide', 1), round('bouncy-launch', 0), round('bounce-back', 'team')];
+    const rounds = [round('penguin-slide', 0), round('bouncy-launch', 0), round('bumper-garden', 'team'), round('penguin-slide', 1), round('bouncy-launch', 0), round('bumper-garden', 'team')];
     const save = trip('faceoff', rounds);
     save.names = ['Rob', ''];
     const f = finaleOf(save)!;
