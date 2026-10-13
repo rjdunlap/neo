@@ -3849,7 +3849,7 @@ async function woodsBatch() {
     log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
   }
 
-  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
+  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
     if (level === 1) await page.evaluate(async () => {
       const { goodnightRoom } = await import('/src/games/goodnight-room/index.ts');
       const { Rng } = await import('/src/engine/random.ts');
@@ -3858,15 +3858,28 @@ async function woodsBatch() {
     });
     await launch('goodnight-room', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (mode === 'except') await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      g.exceptionSpeech = [];
+      g.ctx.say = (id, params) => {
+        if (id === 'night.keepAwake' || id === 'night.exceptDone') g.exceptionSpeech.push({ id, light: params.light, awake: g.sleepers.filter(s => !s.asleep).map(s => s.thing) });
+        if (id === 'night.exceptDone') {
+          g.exceptionFinal = true;
+          return new Promise(resolve => { g.releaseExceptionFinal = resolve; }).then(() => say(id, params));
+        }
+        return say(id, params);
+      };
+    });
     // Tap the middle of a thing, the way a finger would.
     const touch = async (thing) => {
       await page.evaluate((thing) => { const s = neo.scene.game.sleepers.find((x) => x.thing === thing); const b = s.getBounds(); kit.tap(b.x + b.width / 2, b.y + b.height / 2); }, thing);
       await page.waitForTimeout(250);
-      await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+      await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.exceptionFinal || neo.scene.finished, null, { timeout: 20000 });
       await page.waitForTimeout(420);
     };
     await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); await page.waitForTimeout(150);
-    if (level === 5 || level === 6 || level === 7 || level === 8) {
+    if (level === 5 || level === 6 || level === 7 || level === 8 || level === 9) {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
       await screenshot(`goodnight-room-${level}-portrait`);
@@ -3913,15 +3926,28 @@ async function woodsBatch() {
           await touch(wrong); await touch(wrong);
           assert.deepEqual(await counts(), [2, 1]);
         }
-        const order = mode === 'lightLast' ? [...r.slice(0, -1).reverse(), r[r.length - 1]] : (mode === 'animals' || mode === 'color') ? [...r].reverse() : r;
+        const order = mode === 'lightLast' ? [...r.slice(0, -1).reverse(), r[r.length - 1]] : (mode === 'animals' || mode === 'color' || mode === 'except') ? [...r].reverse() : r;
         if (mode === 'lightLast') assert.equal(await page.evaluate((light) => neo.scene.game.sleepers.find(s => s.thing === light).asleep, r[r.length - 1]), false);
         for (const t of order) await touch(t);
       }
     }
+    if (mode === 'except') {
+      const state = await page.evaluate(() => {
+        const g = neo.scene.game;
+        const light = g.sleepers.find(s => s.thing === 'lamp' || s.thing === 'lantern');
+        return { light: light.thing, awake: g.sleepers.filter(s => !s.asleep).map(s => s.thing), speech: g.exceptionSpeech, glowing: !light.glow.destroyed && light.glow.getLocalBounds().width > 0 };
+      });
+      assert.deepEqual(state.awake, [state.light]);
+      assert.equal(state.glowing, true, 'The night-light keeps its warm glow');
+      assert.deepEqual(state.speech.map(s => s.id), ['night.keepAwake', 'night.keepAwake', 'night.exceptDone']);
+      assert.deepEqual(state.speech.at(-1).awake, [state.light]);
+      await screenshot('goodnight-room-9-night-light-portrait');
+      await page.evaluate(() => neo.scene.game.releaseExceptionFinal());
+    }
     if (level === 2) await page.waitForTimeout(400), await screenshot('goodnight-room-asleep');
     await finished('goodnight-room');
     assert.deepEqual(await score('goodnight-room'), mode === 'all' || mode === 'count' ? [0, 0] : [2, 1]);
-    if (level === 1 || level === 5 || level === 6 || level === 7 || level === 8) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 1 || level === 5 || level === 6 || level === 7 || level === 8 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Goodnight Room ${level} (${mode}): goodnights by tapping, ${mode === 'count' ? 'free choices counted aloud with the others left awake briefly' : mode === 'all' ? 'the room going dark' : 'wrong friends and order as misses, glow hint'}, saved score and sticker passed`);
   }
 
