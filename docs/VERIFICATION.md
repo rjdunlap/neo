@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-12 — Block Tower level-5 prediction definition (docs only)
+
+- Defined slice 4 in [the deep dive](deep-dives/block-tower.md#build-slices-in-order), [PR #242](https://github.com/rjdunlap/neo/pull/242): frozen-pair Watch again, explicit Continue, three observations and exactly-once completion; seven candidate pairs, 28 mirrored/side variants and conservative pre-K coverage.
+- Reviewed pair arithmetic against the existing strict equal-block support rule; this is authored planning, not automated rule proof or play evidence. Developer decisions and child/device fit stay open.
+- Checked new local links/anchors and `git diff --check` on claim `c1f869e` plus docs diff, based on `origin/main` `4df8622`. Updated the tracker and queue with dispatch/claim/PR, scope, usage and next action.
+- Not run: typecheck, unit tests, build, browser, demo or offline (docs-only tier). No implementation, levels/bands, mirror reach or accounting changed. Existing gameplay coverage remains unchanged; later-build checks are specified, not performed.
+
 ## 2026-10-12 — Goodnight Room level 9, everyone but the one
 
 - Appended pre-K level 9 ([PR #239](https://github.com/rjdunlap/neo/pull/239)): every friend except the bedroom/barn night-light sleeps in any order; the light stays awake through the finale. Voice, scoped how-to and ghost finger agree; one shell sticker, existing misses/hints.
@@ -978,6 +985,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Block Tower prediction definition (docs only) | 2026-10-12: new local links/anchors and diff check | [Slice 4 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #242](https://github.com/rjdunlap/neo/pull/242) | No gameplay evidence added; implementation and child/device fit remain open |
 | `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |
 | `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |
 | `gemswap`, `fingerdemo`/`couchgames` (`gem-swap`) | 2026-10-12: first/last touch rounds, help/revision/reward, portrait; clean demos in 3.3/10.4s, controller bot and isolated save; typecheck/build, all affected unit tests | Gem Swap entry / [PR #235](https://github.com/rjdunlap/neo/pull/235) | One unchanged Peg Garden timeout; full unchanged suites skipped; real devices/person play open |
