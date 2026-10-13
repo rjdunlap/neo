@@ -76,6 +76,16 @@ Keep the paddle, the ball and the pet. The game grows through what the ball does
 
 These are proposals. Level 6 is the strongest: it builds directly on stars and `paddleBounce`. 7 and 8 stretch the age and need decisions.
 
+### Versus play for older kids and grown-ups (proposed, the developer's direction of 2026-10-12)
+
+Scoring a goal against an opponent is welcome here. Keep the rest of the rules: no lives, no game-over screen, no round-ending timer, a sticker for finishing, and a loss is a finished round, not a failure.
+
+- **Level 7, Goal** (school window): a goal gap behind the pet's paddle; she scores by sending the ball through it. The pet is a keeper with a set reaction speed (its skill is a plan field, so a test can pin it), and the pet can also score on her goal. First to 5 ends the round; a win and a loss both finish and give a sticker, and the speech is "good game" either way. Misses on her side are goals against, not adaptation misses; adaptation reads the pet's skill and the margin instead (decision below).
+- **Level 8, Rally to win** (school): a point is won when the other side fails to return; the ball speeds a little after each return up to a cap, then resets after a point. First to 7.
+- **Couch face-off (grown-ups):** a `GROWNUP_GAMES` or couch-only versus mode, two paddles on two controllers, goals on both ends, first to 7, seeded serves so it is fair. The pet is only a fallback seat. This replaces the current team stop for Bounce Back in a face-off trip once built, and needs a new course version.
+- **Handicaps, not shame:** paddle length and the pet's skill are set per side so a child and a grown-up can play evenly (the Kaboom! basket-width idea).
+- **Rule tests:** a goal is reachable from any arrival height, the pet's reaction speed always leaves a gap a sensible shot can use, serves are seeded and alternate, and the first to N finishes exactly once.
+
 ### Younger-band openings
 
 - **Lap and toddler, level 1**: a slower serve (about 180 units/s) and a paddle of 340, so the ball almost always touches; the drift help already exists.
@@ -89,13 +99,13 @@ These are proposals. Level 6 is the strongest: it builds directly on stars and `
 
 ### Left out on purpose
 
-Speeding up, shrinking paddles, lives, tokens, opponent scoring, power-ups that punish, a boss, and a hidden physics beyond the contact angle already taught. Competitive face-off stays a team stop in couch play.
+Speeding up until someone fails, shrinking paddles, lives, tokens, power-ups that punish, a boss, and a hidden physics beyond the contact angle already taught. Opponent scoring is **not** left out for older players (the developer, 2026-10-12): the rules forbid lives, game-over screens and round-ending timers, not a score against an opponent. See the versus ladder.
 
 ## Decisions for the developer
 
 1. **Should a miss reset the rally** on levels 2, 3 and 5? Lean: no; keep the best run so far, or only reset at level 5 as a restart. Needs your call because adaptation uses misses.
 2. **Should the hint wear off** after the next bounce, and should it slow the ball? Lean: slow only until the next hit, and let a second hint come after another two misses.
-3. **Should the game get a school window** with levels 6–8, or stay at pre-K? Lean: add level 6 only, and keep the school window for later.
+3. **School window:** decided that older play may be competitive. Open: whether levels 6 (bounce to a color), 7 (goal) and 8 (rally to win) all go in the island, and whether a versus loss counts as a miss for adaptation (lean: no; adapt on the pet's skill and the margin).
 4. **Is the pet's straight return a fixed rule or a lever?** Lean: lob a little on levels 3 and 5.
 5. **Younger entries:** add a level 0 for follow-the-ball? Waiting on the level-order decisions.
 
@@ -105,7 +115,7 @@ Speeding up, shrinking paddles, lives, tokens, opponent scoring, power-ups that 
 2. **A gentler miss (after decision 1 and 2).** Rally best-so-far, hint that wears off, and a second hint. Rule tests for the hint lifetime; one `fingerdemo` play at level 5.
 3. **Courts and ball voices (ready; art only).** Three courts and balls; screenshot each at portrait; sticker pins.
 4. **Pet variety.** Lob returns on 3 and 5 with a test that every return is reachable by the child's paddle.
-5. **Level 6 Bounce to a color** (after decision 3). Zones, bot, how-to, voice, rule tests; `fingerdemo` at level 6.
+5. **Level 6 Bounce to a color**, then **level 7 Goal** (zones and the goal gap share one reachability test). Zones, bot, how-to, voice, rule tests; `fingerdemo` at level 6.
 6. **Below-level-1 follow-the-ball** (after the level-order decisions).
 
 ## What was built in this session
