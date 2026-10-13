@@ -27,10 +27,15 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Assigned slice: Bouncy Launch slice 3, Remember the last flight. Dispatch `bouncy-launch-last-flight-20261013T201653Z`; worker `01a136e9-ad64-7972-b23a-6a94841e4324`, branch `codex/bouncy-launch-last-flight`, draft PR follows. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks.
-- Source: [build slices](deep-dives/bouncy-launch.md#build-slices-in-order). Only fading last arc, numbered prediction flags and compare reference ring; exclude notes/skies, new levels/bands, physics/course changes and unresolved decisions.
-- Admission/scope usage: 57% five-hour / 31% weekly used, resets `1791925955` / `1792472658`; ordinary usage allowed. Estimate 15 / 2.5 points fits remaining 43 / 69. Fresh origin/main, clean checkout, no overlapping PR or active implementation chat.
-- Proof: claim only; implementation/checks not run. Next action: publish claim, implement and run source-tier filtered play/fingerdemo at 5 and 6, then publication and final usage reading.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation hourly. Owned Bouncy Launch support worker complete; #269 merged at `ace7c3ed37eb38a5d2341ef1865458e2ea257d61` and deployed; slot released. Slice 2 remains blocked on decision 7's listen.
+- Newly admitted: **Bouncy Launch slice 3, Remember the last flight**, [source](deep-dives/bouncy-launch.md#build-slices-in-order): faint dotted prior-flight arc, numbered flags at 6 and third compare hint ring after a miss. Exclude slice-2 notes/skies, new levels/bands, physics/course changes and decisions.
+- Dispatch `bouncy-launch-last-flight-20261013T201653Z`; worker `01a136e9-ad64-7972-b23a-6a94841e4324`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Bouncy Launch: remember the last flight". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/bouncy-launch-last-flight`, claim `604bd31`, [PR #275](https://github.com/rjdunlap/neo/pull/275); source `b51710a`.
+- Expected Bouncy Launch rendering/help and focused rules/browser checks, necessary voice/how-to and related docs. Implementation/proof **not run by coordinator**. Source requires filtered play and ghost finger at 5/6; AGENTS adds typecheck/meaningful rules and affected shared-content build. No unchanged full suites. Device speech/child fit remains open.
+- Admission 2026-10-13 20:16:53 UTC **55% five-hour / 31% weekly used**, resets `1791925955` / `1792472658`; ordinary usage allowed. Recalibrated gameplay estimate **18.75 / 3.75 points** (1.25 × prior comparable aggregate 15 / 3, exceeding defaults), fits actual remaining **45% / 69%**. No daily cap/reserve; worker rechecks usage.
+- Previous proof: #269 typecheck, 23 focused tests/build, filtered launch 1–6, portrait and clean level-6 ghost finger passed; server stopped/clean checkouts/deployment succeeded. Final **53% / 31%**, resets `1791925955` / `1792472658`, versus dispatch 38% / 28% with same identities: aggregate **15 / 3 points**, reconciled once below. Existing IDEAS link failure remains recorded. No unchanged checks rerun.
+- Overlap: input/navigation claim cleared; no active implementation/open PR or overlap. Old Beat Builder branches correspond to merged PRs; unrelated dirty registry/deep-dive repair preserved. Coordinator servers none.
+- Worker scope/pre-implementation/pre-browser usage: 57/31, 59/32, 60/32%, resets unchanged; ordinary usage allowed. Typecheck/24 focused tests and filtered level-5/6 play pass; demo/build/visual closeout pending.
+- Next action: retrieve worker/PR next wake-up, confirm completion/publication and reconcile usage once before another dispatch. Resume same worker if unfinished; do not implement here.
 
 ## Usage observations
 
@@ -40,7 +45,6 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Slice estimate / retired daily allocation-debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
 
-| 2026-10-12 | Beat Builder authored phrases / [#196](https://github.com/rjdunlap/neo/pull/196), dispatch `beat-builder-phrases-20261012T175018Z` | Gameplay generation | 19% → 25% / `1791838034` | 68% → 69% / `1792295992` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #196; final 17:55:07 UTC. Aggregate endpoints 6 / 1 points; worker complete, reconciled once |
 
 
 | 2026-10-12 | Beat Builder woodland / [#197](https://github.com/rjdunlap/neo/pull/197), dispatch `beat-builder-woodland-20261012T184648Z` | Content/art | 25% → 34% / `1791838034` | 69% → 70% / `1792295993` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #197; final 18:54:41 UTC. Aggregate endpoints 9 / 1 points; worker complete, reconciled once |
@@ -68,7 +72,10 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-13 | Block Tower mirror definition / [#254](https://github.com/rjdunlap/neo/pull/254), dispatch `block-tower-mirror-definition-20261013T110552Z` | Docs only | 0% → 10% / `1791907560` | 15% → 17% / `1792472658` | Estimate 12 / 2.5 points | Merged #254; final worker response. Aggregate 10 / 2 points; definition complete, reconciled once. Independent implementation #259 not charged to owned worker |
 
-| 2026-10-13 | Bouncy Launch support, dispatch `bouncy-launch-support-20261013T181223Z` | Existing-game feedback | 38% → 50% pre-publication / `1791925955` | 28% → 30% pre-publication / `1792472658` | Estimate 15 / 2.5 points | Worker `01a13677-fdf4-77b1-a4c9-a71de0b584f6`, [#269](https://github.com/rjdunlap/neo/pull/269): implemented/verified; publication follows. Aggregate preliminary 12 / 2 points, other account work may contribute; final reading in worker response, reconcile once |
+
+| 2026-10-13 | Bouncy Launch support / [#269](https://github.com/rjdunlap/neo/pull/269), dispatch `bouncy-launch-support-20261013T181223Z` | Existing-game feedback | 38% → 53% / `1791925955` | 28% → 31% / `1792472658` | Estimate 15 / 2.5 points | Merged/deployed; final worker response, aggregate 15 / 3 points. Reconciled once; recalibrate next comparable estimate upward |
+
+| 2026-10-13 | Bouncy Launch last flight, dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing-game feedback | 55% → pending / `1791925955` | 31% → pending / `1792472658` | Estimate 18.75 / 3.75 points | Fresh worker `01a136e9-ad64-7972-b23a-6a94841e4324` admitted; implementation/proof pending |
 
 ## Fresh-worker dispatch and handoff
 
