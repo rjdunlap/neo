@@ -55,6 +55,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Pop the bubbles.',
     steps: [
       { to: 3, text: 'Tap a bubble to pop it.' },
+      { from: 15, to: 15, text: 'Tap or pat anywhere on the screen. The bubble nearest the touch pops, so there is nothing to aim at.' },
       { from: 4, to: 6, text: 'Listen for the color, then tap only the bubbles of that color.' },
       { from: 7, to: 9, text: 'Tap the numbered bubbles in order, starting at 1.' },
       { from: 12, to: 12, text: 'Tap the numbered bubbles in order, starting at the number on the sign at the top, then counting up.' },
@@ -66,8 +67,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 10, to: 10, text: 'Tap a bubble to hold it, then tap the bubble that makes 5 with it. Tap the held bubble again to let it go.' },
       { from: 11, to: 11, text: 'Tap a bubble to hold it, then tap the bubble that makes 10 with it. Tap the held bubble again to let it go.' },
     ],
-    finish: 'The round ends when the last bubble that was asked for is popped.',
-    note: 'A wrong bubble only wobbles and gets a spoken hint; nothing is lost.',
+    finish: [
+      { to: 14, text: 'The round ends when the last bubble that was asked for is popped.' },
+      { from: 15, text: 'After a few pops a rainbow bubble floats up; a touch anywhere pops it and the round ends.' },
+    ],
+    note: [
+      { to: 14, text: 'A wrong bubble only wobbles and gets a spoken hint; nothing is lost.' },
+      { from: 15, text: 'No touch is wrong: a touch with no bubble on the screen does nothing.' },
+    ],
   },
   'rainbow-fingers': {
     goal: 'Paint with colors.',

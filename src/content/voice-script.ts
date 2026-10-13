@@ -1219,6 +1219,7 @@ export const SCRIPT = {
   'place.favorites': ['Your favorites! Tap one to play.'],
 
   'bubble.free': ['Pop the bubbles!', 'Bubbles! Pop pop pop!'],
+  'bubble.anywhere': ['Tap anywhere to pop the bubbles!', 'Pop pop pop! Tap anywhere!'],
   'bubble.color': ['Pop the {color} bubbles!'],
   'bubble.wrong': ["That one's {wrong}. Find {color}!"],
   'bubble.count': ['Pop the numbers in order. Find one!'],

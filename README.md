@@ -57,7 +57,7 @@ There are eighty-six games, listed below. "Ages" lists the bands each game has l
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |
-| Bubble Pop | lap–school | pop anything | pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10 |
+| Bubble Pop | lap–school | pop anything (or tap anywhere to pop the nearest) | pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10 |
 | Rainbow Fingers | lap–school | rainbow or color-pot finger painting | paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering a pumpkin’s orange, pouring red and yellow into the bowl and painting it |
 | Jelly Drums | lap–school | free play on five notes | copy a tune of 2 to 5 notes |
 | Sing-Along Barn | lap–pre-K | tap anywhere to sing the next note of Old MacDonald; a friend comes out for the verse and answers | two friends, then choose which two friends come to the farm |

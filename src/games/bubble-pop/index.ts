@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -13,11 +13,12 @@ import { Bubble, drawBubble } from './bubble';
 import { BubbleBackdrop } from './backdrop';
 import { LOOKS, sceneFor } from './scenes';
 import { TargetSignView } from './sign';
-import { bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
+import { bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 3 },
+  // Level 15 is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
+  lap: { min: 1, max: 15, order: [15, 1, 2, 3] },
   toddler: { min: 1, max: 6 },
   preschool: { min: 4, max: 9 },
   prek: { min: 6, max: 12 },
@@ -28,6 +29,8 @@ class BubblePop implements Game {
   private readonly plan: BubblePlan;
   private readonly backdrop: BubbleBackdrop;
   private readonly layer = new Container();
+  /** Pop anywhere: a whole-screen layer, last in the stage, that takes the touch instead of the bubbles. */
+  private readonly catcher: Container | null = null;
   private bubbles: Bubble[] = [];
   private view: View;
   private phase: 'play' | 'finale' | 'done' = 'play';
@@ -66,6 +69,12 @@ class BubblePop implements Game {
     }
     // The sign sits under the bubbles, so the rainbow bubble floats over it.
     ctx.stage.addChild(this.backdrop, ...(this.sign ? [this.sign] : []), this.layer);
+    if (this.plan.anywhere) {
+      this.catcher = new Container();
+      this.catcher.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
+      onTap(this.catcher, (e) => this.tappedAnywhere(this.layer.toLocal(e.global)), { cooldown: 150 });
+      ctx.stage.addChild(this.catcher);
+    }
     if (this.plan.mode === 'color') {
       this.palette = choosePalette(ctx.rng, this.plan.colors);
       this.target = this.palette[0];
@@ -74,7 +83,7 @@ class BubblePop implements Game {
 
   start() {
     const p = this.plan;
-    if (p.mode === 'free') void this.ctx.instruct('bubble.free');
+    if (p.mode === 'free') void this.ctx.instruct(p.anywhere ? 'bubble.anywhere' : 'bubble.free');
     if (p.mode === 'color') void this.ctx.instruct('bubble.color', { color: this.target! });
     if (p.mode === 'count') {
       const step = this.run.length > 1 ? this.run[1] - this.run[0] : 1;
@@ -95,6 +104,7 @@ class BubblePop implements Game {
     this.view = view;
     this.backdrop.resize(view);
     this.sign?.resize(view);
+    if (this.catcher) this.catcher.hitArea = new Rectangle(0, 0, view.w, view.h);
   }
 
   /** Count mode: the number to find next. */
@@ -143,13 +153,14 @@ class BubblePop implements Game {
     const shown = this.bubbles.filter((b) => !b.popped && !b.destroyed && inReach(b, this.view.w, this.view.h));
     if (this.phase === 'finale') {
       const rainbow = shown.find((b) => b.rainbow);
-      return rainbow ? { tap: { on: rainbow } } : null;
+      return rainbow ? { tap: { on: rainbow }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
     }
     const pick = bubbleToPop(this.plan.mode, shown, this.target, this.nextNumber, this.plan.sum, this.held);
-    return pick ? { tap: { on: pick } } : null;
+    return pick ? { tap: { on: pick }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
   }
 
   destroy() {
+    this.catcher?.removeAllListeners();
     this.bubbles = [];
   }
 
@@ -176,7 +187,8 @@ class BubblePop implements Game {
       b.position.set(rng.range(130 + r, v.w - 40 - r), v.h + r + 10);
       b.vy = -p.speed * rng.range(0.8, 1.25);
     }
-    onTap(b, (e) => this.tapped(b, this.layer.toLocal(e.global)), { radius: r * TAP_REACH, cooldown: 300 });
+    if (p.anywhere) b.eventMode = 'none';
+    else onTap(b, (e) => this.tapped(b, this.layer.toLocal(e.global)), { radius: r * TAP_REACH, cooldown: 300 });
     this.layer.addChild(b);
     this.bubbles.push(b);
     this.spawned++;
@@ -194,6 +206,18 @@ class BubblePop implements Game {
 
   private right(b: Bubble) {
     return isRight(this.plan.mode, b, this.target, this.nextNumber);
+  }
+
+  /** Pop anywhere: any touch pops the bubble nearest it among those on the screen, the rainbow bubble last; with none showing it does nothing. */
+  private tappedAnywhere(at: { x: number; y: number }) {
+    const shown = this.bubbles.filter((b) => !b.popped && !b.destroyed && inReach(b, this.view.w, this.view.h));
+    if (this.phase === 'finale') {
+      const rainbow = shown.find((b) => b.rainbow);
+      if (rainbow) this.tapped(rainbow);
+      return;
+    }
+    const near = nearestShown(shown.filter((b) => !b.rainbow), at);
+    if (near) this.tapped(near);
   }
 
   private tapped(tapped: Bubble, at?: { x: number; y: number }) {
@@ -352,7 +376,8 @@ class BubblePop implements Game {
     rainbow.position.set(v.w / 2, v.h + 140);
     this.layer.addChild(rainbow);
     this.bubbles.push(rainbow);
-    onTap(rainbow, () => this.tapped(rainbow), { radius: 150, cooldown: 300 });
+    if (this.catcher) rainbow.eventMode = 'none';
+    else onTap(rainbow, () => this.tapped(rainbow), { radius: 150, cooldown: 300 });
     void this.ctx.instruct('bubble.rainbow');
     sfx.sparkle();
     rainbow.vy = -260;
@@ -480,6 +505,7 @@ export const bubblePop: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
+    if (p.anywhere) return `Tap anywhere on the screen to pop the nearest bubble, ${p.goal} pops (lap's first level)`;
     if (p.mode === 'free') return `Pop anything, ${p.goal} pops`;
     if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
     if (p.mode === 'bonds') return `Pop two bubbles that make ${p.sum} together (${p.goal} pairs)`;

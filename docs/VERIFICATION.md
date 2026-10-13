@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-13 — Bubble Pop level 15, Pop anywhere (lap, below level 1)
+
+- Added level 15 (a touch anywhere pops the nearest showing bubble; lap order `[15, 1, 2, 3]`) and `store.levelFor` starting a never-finished game at the first level of its band's order ([PR #236](https://github.com/rjdunlap/neo/pull/236)). Other bands' ranges and every existing game's start are unchanged (none had an `order`).
+- `npm run typecheck` passed; focused vitest (`bubble-pop`, `progress`, how-to, registry; 163 tests) passed, including every-point-resolves, nothing-showing-does-nothing, plan size/speed, the how-to's level 15 step, and the store's start/step/pin rules. The full `npm test` had six timeouts in Bumper Garden, Ferry Jam, Fluffy Salon, Peg Garden and Secret Code while a dev server ran; the same files passed alone (37 tests).
+- Browser on `http://localhost:5391`: `BROWSER_SUITE=fingerdemo FINGER_ONLY=bubble-pop FINGER_LEVELS=15,1` finished cleanly (22.4 s and 15.7 s). A probe (`test-results/probe-bubble15.mjs`, new lap profile, no pin) started at level 15, popped eight bubbles with touches placed as far as possible from any bubble (no miss), popped the rainbow by a touch away from it and earned one sticker; a portrait probe resized the touch layer and popped by a far touch.
+- Not run: build, offline check, the other suites (no shared asset, navigation or persistence format changed). Open: whether she pops by swatting at all, an iPad touch, and the sentence's speech (person checks in the roadmap).
+
 ## 2026-10-12 — A band's `order` may skip level IDs
 
 - `order` is now any distinct list with `min`/`max` its ends (`difficulty.ts` clamp: a saved level or pin left out lands on the nearest listed ID); the registry test checks distinct, ends at min/max, and describes every listed level.
@@ -940,6 +947,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |
 | `tilepairs`/`fingerdemo` (`tile-pairs` level 6) | 2026-10-12: top-level touch regression/reward/portrait; demo clean in 32.8s; typecheck and 36 focused tests | Tile Pairs levels 4–6 / [PR #232](https://github.com/rjdunlap/neo/pull/232) | Levels 4/5 proved by rules; new-level check tier, no broader suites; real devices/person play untested |
 | `tilepairs`, `fingerdemo`/`couchgames` (`tile-pairs`), `lands` (`lantern-lake`) | 2026-10-12: first/last touch rounds with revision/help, portrait, clean finger demos, controller bot/save, seven-game land fit; build and production offline check | Tile Pairs entry / [PR #229](https://github.com/rjdunlap/neo/pull/229) | Real device/controller/speech and person replay value untested; no course |
 | `lanterntouch`, `lands`, `world`, `couchgames` (six puzzles), `fingerdemo` (`lantern-lights`) | 2026-10-13: Lantern Lights by touch, eleven lands at six bands, hatching and map, couch catalog for the six, demo clean in 12.0 s and 33.5 s; build and offline check | Lands stage B entry / [PR #226](https://github.com/rjdunlap/neo/pull/226) | iPad touch, device speech, Sudoku and the other four have no touch yet |
