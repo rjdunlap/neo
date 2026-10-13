@@ -88,6 +88,11 @@ export interface GameModule {
   skills: string[];
   bands: Band[];
   levels(band: Band): LevelRange;
+  /**
+   * Easy levels with high IDs, appended above the ladder and placed first by a younger band's `order` (Bubble Pop 15, Pet Says 13).
+   * A band that does not list one starts at its own easiest level when a saved level or pin is an entry (`landing`).
+   */
+  entryLevels?: readonly number[];
   /** What a level plays like, in a few words for grown-ups ("Pop one color, 3 colors"). */
   describeLevel(level: number): string;
   music: MusicStyle;

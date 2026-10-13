@@ -547,3 +547,21 @@ describe('the level a game starts at', () => {
     expect(store.levelFor('bubble-pop', lap)).toBe(3);
   });
 });
+
+describe('an entry level carried into a band that does not list it', () => {
+  const toddler = { min: 1, max: 6 };
+
+  it('starts at that band\'s easiest level, not at its hardest (a level above the top is not always the harder one)', async () => {
+    const store = make();
+    await store.load();
+    store.stats('bubble-pop').level = 15;
+    store.stats('bubble-pop').plays = 3;
+    expect(store.levelFor('bubble-pop', toddler, [15])).toBe(1);
+    store.pin('bubble-pop', 15);
+    expect(store.levelFor('bubble-pop', toddler, [15])).toBe(1);
+    // without being told 15 is an entry, a level above the top is the top (a retired or unknown level)
+    expect(store.levelFor('bubble-pop', toddler)).toBe(6);
+    // still honoured where the band lists it
+    expect(store.levelFor('bubble-pop', { min: 1, max: 15, order: [15, 1, 2, 3] }, [15])).toBe(15);
+  });
+});

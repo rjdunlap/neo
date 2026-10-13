@@ -1,6 +1,6 @@
 import { del, get, set } from 'idb-keyval';
 import type { Band } from './bands';
-import { levelsInOrder, nextLevel, type LevelRange } from './difficulty';
+import { landing, levelsInOrder, nextLevel, type LevelRange } from './difficulty';
 import {
   addEntry,
   buildBackup,
@@ -154,11 +154,11 @@ export class Store {
   }
 
   /** The level to play now (a grown-up's pin wins), clamped to what the current band allows. */
-  levelFor(gameId: string, range: LevelRange): number {
+  levelFor(gameId: string, range: LevelRange, entries: readonly number[] = []): number {
     const s = this.stats(gameId);
     // A game she has never finished starts at the band's easiest level, which is not level 1 when the range has an `order`.
     const start = s.plays === 0 && s.history.length === 0 && s.level === 1 ? levelsInOrder(range)[0] : s.level;
-    return nextLevel(s.pinned ?? start, [], range);
+    return nextLevel(landing(s.pinned ?? start, range, entries), [], range);
   }
 
   /** Stay on one level, or pass null to go back to automatic. */

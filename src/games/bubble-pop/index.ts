@@ -503,6 +503,7 @@ export const bubblePop: GameModule = {
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [15],
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.anywhere) return `Tap anywhere on the screen to pop the nearest bubble, ${p.goal} pops (lap's first level)`;

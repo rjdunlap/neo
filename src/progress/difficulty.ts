@@ -31,6 +31,14 @@ export const isSmooth = (r: RoundRecord) => r.misses <= 1 && r.hints === 0;
 /** Lots of mistakes or leaning on hints. */
 export const isStruggle = (r: RoundRecord) => r.misses >= 4 || r.hints >= 2;
 
+/**
+ * A saved level or pin as a band starts from it. An entry level is easy but has a high ID, appended above the ladder for a
+ * younger band's `order`; carried into a band that does not list it (a birthday, a pin), it must not read as "above the top,
+ * so the hardest", and starts that band at its easiest level instead.
+ */
+export const landing = (level: number, range: LevelRange, entries: readonly number[] = []): number =>
+  entries.includes(level) && !levelsInOrder(range).includes(level) ? levelsInOrder(range)[0] : level;
+
 /** A level inside the range; one outside it lands on the nearest end of the order. */
 const clamp = (level: number, range: LevelRange) => {
   if (!range.order) return Math.min(range.max, Math.max(range.min, level));

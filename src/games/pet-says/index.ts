@@ -435,6 +435,7 @@ export const petSays: GameModule = {
   skills: ['copying actions', 'body words', 'following directions', 'self-control'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [13],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
   coplayHint: 'Stand up and copy the pet with {name}, then tap the green arrow for the next move.',
