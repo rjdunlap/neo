@@ -1094,6 +1094,10 @@ Never established by any of these: physical iPad or phone touch, device speech, 
 
 ## Entries, newest first
 
+### Block Tower prediction-build worker dispatch (2026-10-13)
+
+Coordinator confirmed definition #242 merged and worker complete with docs proof; final usage reconciled once. Actual allowance admits fresh worker `01a1339d-a681-7f50-b731-e116f733870d` for defined level-5 slice only; no active implementation/open PR or overlap found. Queue records scope/admission/pending source-tier checks; unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Implementation/rules/filtered play/portrait/demo and conditional build remain the worker's responsibility; no coordinator code checks or servers.
+
 ### Block Tower prediction-definition worker dispatch (2026-10-13)
 
 Coordinator confirmed height #218 merged/worker complete and reconciled its final usage once. Other implementation completed; no active Neo implementation/open PR or Block Tower overlap found. Fresh allowance admits docs-only definition worker `01a13369-cb51-7223-9d30-bed506a3d160`; queue records exact scope/admission/pending checks. Unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Worker owes docs validation only; no coordinator servers/code checks.
