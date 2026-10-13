@@ -150,3 +150,7 @@ No fast stacking, survival clock, lives, tallest-ever streak or losing possessio
 ## What was built in this session
 
 Nothing: research and planning only. Documentation links/anchors and `git diff --check` checked; no source, tests, build or browser play changed or ran. Developer decisions and device/child checks remain open.
+
+## Mirrored reach implementation claim (2026-10-13)
+
+`codex/block-tower-mirrored-reach` owns slice 5 at existing level 6: seeded left/right tasks, canonical drag/solver/help projection, reflected table and fall explanation. Expected files: Block Tower source and rule tests, its browser case, how-to card, README/GAMES inventory, dive/tracker, roadmap/archive and verification. No new levels, bands, saves, couch or ropes. Use the slice-5 exit evidence above.
