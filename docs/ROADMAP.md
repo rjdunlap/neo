@@ -495,7 +495,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 
 **Later, at six to eight**
 
-- [ ] The Wonder Woods games: Light Lab's mirrors as turning the beam, Penguin Slide's tap-the-ice direction, Secret Code's marks, Frog Hop's number line, Market Stall's coin sizes, Clock Tower's hand dragging, Inchworm Measure's worms and ruler, Block Tower's eighth-of-a-block dragging, Mail Carrier's map key, Chain Reaction (moving one piece at a time, predicting before running, discovering several designs), and whether Seesaw Balance 8–9 explains "do the same to both sides".
+- [ ] The Wonder Woods games: Light Lab's mirrors as turning the beam, Penguin Slide's tap-the-ice direction, Secret Code's marks, Frog Hop's number line, Market Stall's coin sizes, Clock Tower's hand dragging, Inchworm Measure's worms and ruler, Block Tower's eighth-of-a-block dragging and whether its mirrored level-6 table edges make sense, Mail Carrier's map key, Chain Reaction (moving one piece at a time, predicting before running, discovering several designs), and whether Seesaw Balance 8–9 explains "do the same to both sides".
 - [ ] The newer ladder steps with an older child: Robot Path loops, word families, make ten, leftovers, and Pixel Pictures' logic puzzles.
 - [ ] **Day by Day with a child and on an iPad.** Are spoken day-card naming and the placing arrow understood, does the Sunday/Monday wrap make sense, and can she use the weather records to count sunny days? Check device speech; completion with hints is supported practice.
 

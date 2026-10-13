@@ -1231,7 +1231,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: "Build a tower as tall as Duck's, one block taller or one shorter, as asked, then ring the bell." },
       { from: 5, to: 5, text: 'Tap the tower you think will stand. The ropes let go automatically; watch what happens.' },
       { from: 5, to: 5, text: 'The round arrow watches the same release again. The forward arrow continues to the next observation.' },
-      { from: 6, to: 6, text: 'Drag blocks from the tray onto the table so one touches the star line without tipping.' },
+      { from: 6, to: 6, text: 'Drag blocks from the tray out past this table edge so one touches the star line without tipping. One task reaches left and one right.' },
       { from: 6, to: 6, text: 'Drag the top block to move it, or drag it back to the tray to take it off.' },
     ],
     finish: [

@@ -2,7 +2,7 @@ import { blockTower } from './index';
 import type { Container, Graphics } from 'pixi.js';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { STAND_PAIRS, standVariant, makeStandRounds, StandObservation, compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, reachSlot, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
+import { makeReachRounds, reachX, reachDrop, STAND_PAIRS, standVariant, makeStandRounds, StandObservation, compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, reachSlot, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
 
 describe('Block Tower', () => {
   it('preserves saved sticker drawings for seeds 0–99 before puzzle RNG changes', () => {
@@ -161,6 +161,72 @@ describe('Block Tower', () => {
     expect(state.replay()).toBe(false);
     expect(state.release(0)).toBe(false);
     expect(rng.next()).toBe(after.next());
+  });
+
+  it('deals both frozen side orders with unchanged task budgets and targets', () => {
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 100; seed++) {
+      const rounds = makeReachRounds(new Rng(seed));
+      expect(rounds).toEqual(makeReachRounds(new Rng(seed)));
+      expect(rounds.map(({ blocks, star }) => ({ blocks, star }))).toEqual(REACH);
+      expect(rounds.map(r => r.direction).sort()).toEqual([-1, 1]);
+      expect(Object.isFrozen(rounds) && rounds.every(Object.isFrozen)).toBe(true);
+      seen.add(rounds.map(r => r.direction).join(','));
+    }
+    expect(seen.size).toBe(2);
+  });
+
+  it('reflects the entire offered drop domain before half-slot rounding and clamping', () => {
+    for (const direction of [1, -1] as const) {
+      for (let u = -16; u <= 12.875; u += 0.125) {
+        const screen = reachX(u, 500, 104, direction);
+        expect(reachDrop(screen, 500, 104, direction)).toBe(u > 12.8 ? null : reachSlot(u));
+      }
+      expect(reachDrop(reachX(-16.125, 500, 104, direction), 500, 104, direction)).toBeNull();
+      expect(reachDrop(reachX(-2.5, 500, 104, direction), 500, 104, direction)).toBe(-2);
+      expect(topples([0], 0, direction)).toBe(0);
+      expect(topples([-direction], 0, direction)).toBe(-1);
+      expect(topples([0, 4 * direction], null, direction)).toBe(1);
+      expect(topples([-2, 0, 1].map(x => x * direction), 0, direction)).toBe(-1);
+    }
+  });
+
+  it('preserves mirror failure indices, reach, solver and reachable help for every offered prefix', () => {
+    for (const round of REACH) {
+      const visit = (xs: number[]) => {
+        const fall = topples(xs, 0);
+        expect(topples(xs.map(x => -x), 0, -1)).toBe(fall);
+        const way = finish(xs, round);
+        // The game stores canonical middles on either side, bottom first.
+        const leftPhysical = xs.map(x => -x);
+        const leftCanonical = leftPhysical.map(x => -x);
+        expect(finish(leftCanonical, round)).toEqual(way);
+        expect(nextReach(leftCanonical, round)).toBe(way?.[0]);
+        if (fall !== -1) expect(way).toBeNull();
+        else if (reached(xs, round.star)) expect(way).toEqual([]);
+        if (way) {
+          const prefix = [...xs];
+          for (const x of way) {
+            expect(SLOTS).toContain(x);
+            prefix.push(x);
+            expect(topples(prefix, 0)).toBe(-1);
+            expect(topples(prefix.map(x => -x), 0, -1)).toBe(-1);
+            for (const direction of [1, -1] as const) {
+              expect(reachDrop(reachX(x, 500, 104, direction), 500, 104, direction)).toBe(x);
+            }
+          }
+          expect(reached(prefix, round.star)).toBe(true);
+          expect(prefix.some(x => -x - W / 2 <= -round.star)).toBe(true);
+        } else if (fall === -1) {
+          const recovery = [...xs];
+          while (!finish(recovery, round) && recovery.length) recovery.pop();
+          expect(finish(recovery, round)).not.toBeNull();
+        }
+        if (xs.length < round.blocks) for (const x of SLOTS) visit([...xs, x]);
+      };
+      visit([]);
+    }
+    expect(finish([-2, 1], REACH[1])).toEqual([]); // Early success remains accepted.
   });
 
   it('snaps every offered drop to the solver domain, including the formerly extra right slots', () => {
