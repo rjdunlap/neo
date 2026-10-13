@@ -86,12 +86,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: [{ to: 2, text: 'Any color is welcome in free painting.' }],
   },
   'sing-along-barn': {
-    goal: 'Sing Old MacDonald by tapping: every tap is the next note, and a new animal joins each verse.',
+    goal: 'Sing a short Old MacDonald by tapping: every tap is the next note, and a friend joins each verse.',
     steps: [
-      { to: 2, text: 'Tap anywhere to play the next note of the song. Sing along with the beads: one note for each.' },
+      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note: "Old MacDonald had a farm, E-I-E-I-O", then "And on that farm he had a cow, E-I-E-I-O" for each friend. The moo-moo lines are left out.' },
       { from: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
     ],
-    finish: 'The round ends after the last "E-I-E-I-O".',
+    finish: 'The round ends after the last "E-I-E-I-O" of the last friend\'s verse.',
     note: 'There is no wrong tap. Tapping fast or slowly only changes how the song is sung, and the animals answer on their own.',
   },
   'jelly-drums': {

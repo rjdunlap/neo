@@ -426,10 +426,11 @@ export const singAlongBarn: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
-    return p.invite ? `Old MacDonald; choose ${p.verses} animals to join the song` : `Old MacDonald; tap to sing, ${p.verses} animals visit`;
+    const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
+    return p.invite ? `Old MacDonald; choose ${friends} to join the song` : `Old MacDonald; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
-  coplayHint: 'Sing "Old MacDonald" while {name} taps the next note, and make each animal sound together.',
+  coplayHint: 'Sing the short "Old MacDonald" while {name} taps the next note: the first two lines, then "And on that farm he had a …, E-I-E-I-O" for each friend. Make each animal sound together.',
   offScreen: 'Sing Old MacDonald with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,

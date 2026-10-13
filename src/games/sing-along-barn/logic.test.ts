@@ -24,7 +24,7 @@ describe('the tune', () => {
 });
 
 describe('the song', () => {
-  it('is the opening then a verse for each animal, one note each', () => {
+  it('is the short song: the opening, then one "And on that farm he had a ..." verse for each animal, one note each', () => {
     for (const verses of [1, 2, 3]) {
       const song = makeSong(ANIMALS.slice(0, verses));
       expect(song.length).toBe(HAD_A_FARM.steps.length + E_I_E_I_O.steps.length + verses * (HAD_A.steps.length + E_I_E_I_O.steps.length));

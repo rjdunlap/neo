@@ -3,7 +3,7 @@
 ## 2026-10-12 — Sing-Along Barn first slice
 
 - Added `sing-along-barn` levels 1–3 (lap to pre-K, Music Mountain): tap-per-note Old MacDonald, friends out of the barn for each verse, and at level 3 two chosen friends in her order ([PR #219](https://github.com/rjdunlap/neo/pull/219)). No misses or hints are possible.
-- Tested `claude/sing-along-barn` merged with `origin/main` `03592f0`: typecheck, 1,063 unit tests (12 new rules: one note per syllable, pentatonic only, answer order, plans, seeded draws) and build passed.
+- Tested: browser runs below on `97f7604` (before merging `origin/main` `03592f0`, which touched only Bounce Back rules); typecheck, 1,063 unit tests (12 new rules: one note per syllable, pentatonic only, answer order, plans, seeded draws) and build on merge `d026060`; after the wording changes only typecheck and the how-to/registry tests were rerun.
 - `GAME_URL=http://localhost:5191 BROWSER_SUITE=singalong`: levels 1 and 3 (first and last), one saved sticker with 0 misses and 0 hints, song order and verse hand-over, a repeated tap on one friend ignored, chosen order, uninvited friends leaving, leaving the scene on the last notes, portrait of both the song and the choice screens inspected, no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn`: both levels finished cleanly in 32.2 s and 52.3 s of the demo clock (limit 75 s). Music Mountain's land screenshot checked.
 - Not run: world, couch, picnic and offline suites (no routing, save or asset changes). The game has no wrong-answer path, so no miss was exercised (N/A). Actual iPad touch, device speech, whether a one-year-old taps along, and the melody against a printed source remain open (the roadmap lists them).
 

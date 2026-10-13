@@ -22,7 +22,9 @@ export interface Phrase {
 /**
  * "Old MacDonald Had a Farm" is traditional. The tune is written by scale degree (do do do sol la la sol, mi mi re re do) in
  * C, which is C D E G A, so every note is already in the island's pentatonic set; no exception to that rule is needed.
- * One note for each sung syllable, so her taps line up with a grown-up singing.
+ * One note for each sung syllable, so her taps line up with a grown-up singing. The song is the short form: the opening
+ * ("Old MacDonald had a farm, E-I-E-I-O") once, then "And on that farm he had a ..., E-I-E-I-O" for each friend. The
+ * moo-moo lines and the repeated first line of a full verse are left out, so a round stays short for a small child.
  */
 export const HAD_A_FARM: Phrase = { syllables: ['Old', 'Mac', 'Don', 'ald', 'had', 'a', 'farm'], steps: [0, 0, 0, 3, 4, 4, 3] };
 export const E_I_E_I_O: Phrase = { syllables: ['E', 'I', 'E', 'I', 'O'], steps: [2, 2, 1, 1, 0] };
