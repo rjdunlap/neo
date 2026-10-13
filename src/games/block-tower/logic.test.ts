@@ -2,7 +2,7 @@ import { blockTower } from './index';
 import type { Container, Graphics } from 'pixi.js';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, reachSlot, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
+import { STAND_PAIRS, standVariant, makeStandRounds, StandObservation, compare, finish, makeRounds, makeStand, middleFrom, nextReach, PLANS, REACH, reached, reachSlot, SLOTS, stackMove, standingTower, targetFor, topples, W } from './logic';
 
 describe('Block Tower', () => {
   it('preserves saved sticker drawings for seeds 0–99 before puzzle RNG changes', () => {
@@ -99,6 +99,68 @@ describe('Block Tower', () => {
         if (subtle) expect(Math.abs(Math.abs(t[2]) - Math.abs(r.towers[1 - i][2]))).toBeLessThanOrEqual(1);
       });
     }
+  });
+
+  it('proves every authored variant and its unsupported group witness', () => {
+    let sides = 0, left = 0;
+    for (const pair of STAND_PAIRS) for (const direction of [-1, 1]) for (const side of [0, 1]) {
+      const r = standVariant(pair, direction, side);
+      sides += side; left += direction === -1 ? 1 : 0;
+      expect(standingTower(r)).toBe(side);
+      const down = r.towers[1 - side];
+      expect(topples(down, null)).toBe(pair.fall);
+      expect(Math.abs(middleFrom(down, pair.fall) - down[pair.fall - 1])).toBeGreaterThanOrEqual(W / 2);
+      expect(r.towers.every(t => Math.sign(t[2]) === direction)).toBe(true);
+      if (pair.id.startsWith('M')) expect(r.towers[0][2]).toBe(r.towers[1][2]);
+    }
+    expect([sides, left]).toEqual([14, 14]);
+    expect(topples(STAND_PAIRS[5].down, null)).toBe(2);
+    expect(middleFrom(STAND_PAIRS[6].down, 1)).toBe(W / 2);
+  });
+
+  it('deals bounded, reproducible band-appropriate pairs and independent balanced presentation', () => {
+    for (const school of [false, true]) for (let seed = 0; seed < 300; seed++) {
+      const rounds = makeStandRounds(new Rng(seed), school);
+      expect(rounds).toEqual(makeStandRounds(new Rng(seed), school));
+      expect(new Set(rounds.map(r => r.id)).size).toBe(3);
+      expect(rounds.slice(0, 2).every(r => r.id.startsWith('C'))).toBe(true);
+      expect(rounds[2].id.startsWith(school ? 'M' : 'C')).toBe(true);
+      for (const values of [rounds.map(r => r.stands), rounds.map(r => r.direction)]) expect(new Set(values).size).toBe(2);
+      expect(rounds.every(r => r.color >= 0 && r.color <= 6)).toBe(true);
+    }
+    const rng = new Rng(1); let draws = 0;
+    rng.next = () => { draws++; return 0; };
+    expect(makeStandRounds(rng, true)).toHaveLength(3);
+    expect(draws).toBe(12);
+  });
+
+  it('keeps replay frozen, records only completed observations and completes once', () => {
+    const rng = new Rng(81), rounds = makeStandRounds(rng, true), after = rng.clone();
+    const state = new StandObservation();
+    expect(state.continue()).toBe(false);
+    for (const pair of rounds) {
+      const frozen = JSON.stringify(pair);
+      expect(state.release(1 - pair.stands)).toBe(true);
+      expect(state.release(pair.stands)).toBe(false);
+      expect(state.continue()).toBe(false);
+      state.settle();
+      for (let repeat = 0; repeat < 5; repeat++) {
+        const guess = state.guess;
+        expect(state.replay()).toBe(true);
+        expect(state.replay()).toBe(false);
+        expect(state.continue()).toBe(false);
+        state.settle();
+        expect(state.guess).toBe(guess);
+        expect(JSON.stringify(pair)).toBe(frozen);
+      }
+      expect(state.continue()).toBe(true);
+      expect(state.continue()).toBe(false);
+    }
+    expect(state.observed).toBe(3);
+    expect(state.phase).toBe('complete');
+    expect(state.replay()).toBe(false);
+    expect(state.release(0)).toBe(false);
+    expect(rng.next()).toBe(after.next());
   });
 
   it('snaps every offered drop to the solver domain, including the formerly extra right slots', () => {

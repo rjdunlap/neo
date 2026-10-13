@@ -105,7 +105,7 @@ export const compare = (have: number, want: number): 'short' | 'tall' | 'right' 
 
 export interface StandRound {
   /** Block middles for each tower, bottom up, in eighths from the tower's own base. */
-  towers: number[][];
+  towers: readonly (readonly number[])[];
   /** The one tower that stands. */
   stands: number;
 }
@@ -129,6 +129,58 @@ export function makeStand(rng: Rng, subtle: boolean): StandRound {
   const stands = rng.int(0, 1);
   const towers = stands === 0 ? [tower(up), tower(down)] : [tower(down), tower(up)];
   return { towers: towers.map((t) => t.map((x) => x * dir)), stands };
+}
+
+/** Canonical authored contrasts: equal blocks on the floor, positive lean. */
+export const STAND_PAIRS = [
+  { id: 'C1', up: [0, 1, 2], down: [0, 3, 6], fall: 1 },
+  { id: 'C2', up: [0, 2, 3], down: [0, 2, 6], fall: 1 },
+  { id: 'C3', up: [0, 1, 3], down: [0, 1, 6], fall: 2 },
+  { id: 'M1', up: [0, 2, 5], down: [0, 1, 5], fall: 2 },
+  { id: 'M2', up: [0, 2, 5], down: [0, 3, 5], fall: 1 },
+  { id: 'M3', up: [0, 2, 4], down: [0, 0, 4], fall: 2 },
+  { id: 'M4', up: [0, 3, 4], down: [0, 4, 4], fall: 1 },
+] as const;
+export type AuthoredStand = StandRound & { id: string; direction: number; color: number };
+export function standVariant(pair: typeof STAND_PAIRS[number], direction: number, stands: number, color = 0): AuthoredStand {
+  const towers = [pair.up, pair.down].map(t => Object.freeze(t.map(x => x * direction)));
+  if (stands === 1) towers.reverse();
+  return Object.freeze({ id: pair.id, direction, stands, color, towers: Object.freeze(towers) });
+}
+
+/** Finite shuffled pools, with one/two of each side and direction in every run. */
+export function makeStandRounds(rng: Rng, school: boolean): AuthoredStand[] {
+  const clear = rng.shuffle(STAND_PAIRS.slice(0, 3));
+  const pairs = school ? [...clear.slice(0, 2), rng.pick(STAND_PAIRS.slice(3))] : clear;
+  const sides = rng.shuffle([0, 1, rng.int(0, 1)]);
+  const directions = rng.shuffle([-1, 1, rng.chance(0.5) ? 1 : -1]);
+  return pairs.map((pair, i) => standVariant(pair, directions[i], sides[i], rng.int(0, 6)));
+}
+
+/** A release/replay records nothing; only Continue from a complete result records an observation. */
+export class StandObservation {
+  phase: 'held' | 'releasing' | 'result' | 'complete' = 'held';
+  guess: number | null = null;
+  observed = 0;
+  release(guess: number): boolean {
+    if (this.phase !== 'held' || (guess !== 0 && guess !== 1)) return false;
+    this.guess = guess;
+    this.phase = 'releasing';
+    return true;
+  }
+  replay(): boolean {
+    if (this.phase !== 'result') return false;
+    this.phase = 'releasing';
+    return true;
+  }
+  settle(): void { if (this.phase === 'releasing') this.phase = 'result'; }
+  continue(): boolean {
+    if (this.phase !== 'result') return false;
+    this.observed++;
+    this.phase = this.observed === 3 ? 'complete' : 'held';
+    this.guess = null;
+    return true;
+  }
 }
 
 // Reach the star -----------------------------------------------------------------------------------
