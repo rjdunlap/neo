@@ -637,6 +637,15 @@ class WordSearch implements Game {
     this.resize(this.view);
   }
 
+  /** A finger came back after keys: the grid goes back to its touch layout, sliding again when it is bigger than the window. */
+  touchReturned() {
+    if (this.touch || this.finished || !this.grid) return;
+    this.touch = true;
+    this.drag = null;
+    for (const part of [this.touchLayer, this.buttonLayer, this.buttonsG, this.buttonText, this.edges, this.frame, this.slideNote]) part.visible = true;
+    this.resize(this.view);
+  }
+
   control(input: CouchControls, dt: number) {
     if (this.touch) this.useController();
     if (this.busy || this.finished || !this.grid) return;
@@ -821,6 +830,7 @@ function sticker(seed: number): Container {
 
 export const wordSearch: GameModule = {
   id: 'word-search',
+  liveController: true,
   name: 'Word Search',
   titleLine: 'game.word-search',
   region: 'story-grove',

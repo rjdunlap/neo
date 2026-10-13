@@ -557,6 +557,15 @@ class SudokuGarden implements Game {
     this.resize(this.view);
   }
 
+  /** A finger came back after keys: the bed goes back to its touch layout. */
+  touchReturned() {
+    if (this.touch || this.finished || !this.puzzle) return;
+    this.touch = true;
+    this.touchLayer.visible = true;
+    this.tapLayer.visible = true;
+    this.resize(this.view);
+  }
+
   control(input: CouchControls, dt: number) {
     if (this.touch) this.useController();
     if (this.busy || this.finished || !this.puzzle) return;
@@ -848,6 +857,7 @@ function sticker(seed: number): Container {
 
 export const sudokuGarden: GameModule = {
   id: 'sudoku-garden',
+  liveController: true,
   name: 'Sudoku Garden',
   titleLine: 'game.sudoku-garden',
   region: 'puzzle-peaks',

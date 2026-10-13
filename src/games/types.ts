@@ -110,7 +110,9 @@ export interface GameModule {
   /**
    * The game takes a controller while it runs: it calls nothing on `ctx.couch` when it is built, and turns its focus ring on at the
    * first `control()` call. The island then hands it `control()` once a key or button is used, at the levels couch play has played.
-   * A game that chooses touch or controller when it is built (`ctx.couch`) leaves this off.
+   * A game that chooses touch or controller when it is built (`ctx.couch`) leaves this off. Building the touch version whenever
+   * `ctx.couch` is unset is what counts: a game may read `ctx.couch?.course` or `?.versus`. A game that re-lays itself out for
+   * the controller implements `touchReturned()` to come back.
    */
   liveController?: true;
   /** The game's `create()` returns a game with `autotouch()`, so its how-to card shows the ghost finger at her level. */
@@ -206,6 +208,12 @@ export interface GameContext {
 export interface Game {
   /** Optional semantic input for explicitly supported couch games; ordinary touch play is unchanged. */
   control?(input: CouchControls, dt: number): void;
+  /**
+   * A finger, pen or mouse went down on the island after keys or a pad had been used: a game that re-laid itself out for the
+   * controller on its first `control()` puts its touch layout back (and drops a drag or pull in progress). Not called in couch
+   * play or while the game is hidden behind a card; the touch that triggered it may be lost.
+   */
+  touchReturned?(): void;
   /**
    * What a capable player would press this frame, for the couch intro's "watch me" demo. The demo
    * hands it straight to `control()`, so it can only do what a real controller can.
