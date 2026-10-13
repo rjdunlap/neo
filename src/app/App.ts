@@ -10,6 +10,7 @@ import { isParentPanelOpen, openParentPanel } from '../parent/panel';
 import { store } from '../progress/store';
 import { openPauseSheet, type PauseSheet } from '../ui/pause-sheet';
 import { TurnPrompt } from '../ui/TurnPrompt';
+import { InputInUse } from './input-in-use';
 import { escapeAction, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
@@ -83,6 +84,8 @@ export class App {
   /** Esc was pressed: the scene holds still behind the pause sheet (or the grown-ups' page opened from it). */
   paused = false;
   private sheet: PauseSheet | null = null;
+  /** What the person is using across the plain island screens (the map, the lands): a finger until a key or button, a finger again on a touch. A game round keeps its own. */
+  readonly input = new InputInUse();
 
   get renderer(): Renderer {
     return this.pixi.renderer;
@@ -111,6 +114,7 @@ export class App {
     // iOS settles the safe area a moment after a turn; the probe's box changes when it does.
     if (typeof ResizeObserver === 'function') new ResizeObserver(() => this.applyView()).observe(this.probe);
     document.addEventListener('visibilitychange', () => this.syncSleep());
+    window.addEventListener('pointerdown', () => this.input.touched(), true);
     window.addEventListener('keydown', (e) => this.onKey(e));
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
   }

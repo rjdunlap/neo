@@ -19,6 +19,7 @@ import { bookIcon, islandIcon } from '../../ui/icons';
 import { makeLandmark, type Landmark } from '../../ui/landmark';
 import { label } from '../../ui/text';
 import type { App } from '../App';
+import { ScreenKeys, type FocusSpot } from '../screen-keys';
 import { Scene } from '../Scene';
 
 /** Landmarks are drawn at the largest size a land uses and scaled down when a crowded land needs smaller ones. */
@@ -71,6 +72,12 @@ export class LandScene extends Scene {
   private readonly heading = label('', 36);
   private leaving = false;
   private scale0 = 1;
+  /** Keys and a pad: a ring over the games standing here, the host, the signpost and the two buttons. Backspace or B goes back to the map. */
+  private readonly keys = new ScreenKeys(this.app, {
+    spots: () => this.focusSpots(),
+    back: () => this.leave(() => this.app.go.hub()),
+    active: () => !this.leaving,
+  });
 
   constructor(
     app: App,
@@ -121,7 +128,7 @@ export class LandScene extends Scene {
     this.pip.scale.set(0.55);
     this.pip.hitArea = new Circle(0, -120, 155);
     onTap(this.pip, () => { this.pip.poke(); void voice.say('hub.pick'); });
-    this.ui.addChild(this.track(this.pip), this.home, this.book, this.heading);
+    this.ui.addChild(this.track(this.pip), this.home, this.book, this.heading, this.keys.ring);
     if (this.backdrop.sun) onTap(this.backdrop.sun, () => { this.backdrop.sun!.poke(); sfx.sparkle(); }, { radius: 100 });
     this.backdrop.clouds.forEach((c) => onTap(c, () => { c.poke(); sfx.whoosh(); }, { radius: 90 }));
   }
@@ -163,6 +170,25 @@ export class LandScene extends Scene {
     void voice.say(first ? this.land.line : 'hub.pick').then(() => {
       if (first && !this.leaving) return voice.say('hub.pick');
     });
+  }
+
+  /** What a key can press. Games and the host stand with their feet at their position, so each ring sits on the body above them. */
+  private focusSpots(): FocusSpot[] {
+    const layout = this.layout;
+    if (!layout) return [];
+    const s = this.scale0;
+    const spots: FocusSpot[] = this.showing.map((m) => ({ id: m.mod.id, x: m.node.x, y: m.node.y - 55 * s, r: 85 * s, press: () => this.launch(m) }));
+    const hs = this.host.scale.x;
+    spots.push({ id: 'host', x: this.host.x, y: this.host.y - 125 * hs, r: 115 * hs, press: () => this.suggestGame() });
+    if (this.sign && layout.sign) {
+      const ss = this.sign.scale.x;
+      spots.push({ id: 'sign', x: this.sign.x, y: this.sign.y - 70 * ss, r: 85 * ss, press: () => this.turnSign() });
+    }
+    spots.push(
+      { id: 'home', x: this.home.x, y: this.home.y, r: this.home.radius, press: () => this.home.press() },
+      { id: 'book', x: this.book.x, y: this.book.y, r: this.book.radius, press: () => this.book.press() },
+    );
+    return spots;
   }
 
   /** Turns the signpost: the bigger kids' games, or back to hers. */
@@ -222,6 +248,7 @@ export class LandScene extends Scene {
 
   update(dt: number) {
     super.update(dt);
+    this.keys.update(dt);
     // A soft glow under the suggested game for a moment.
     this.glowLeft = Math.max(0, this.glowLeft - dt);
     const mark = this.suggested ? this.showing.find((m) => m.mod.id === this.suggested) : undefined;
@@ -234,5 +261,10 @@ export class LandScene extends Scene {
 
   exit() {
     voice.stop();
+  }
+
+  destroy() {
+    this.keys.destroy();
+    super.destroy();
   }
 }

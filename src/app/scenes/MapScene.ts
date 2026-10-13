@@ -23,6 +23,7 @@ import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 import { lastLand } from './LandScene';
+import { ScreenKeys, type FocusSpot } from '../screen-keys';
 
 /** Land drawings are a little smaller on the map than the age places were, so twelve spots fit. */
 const LANDMARK_SCALE = 0.85;
@@ -68,6 +69,8 @@ export class MapScene extends Scene {
   /** Where the pet waits: the last land she was in this session, or home. */
   petAt: MapSpotId;
   private clock = 0;
+  /** Keys and a pad: a ring over the lands, home, the picnic and the three buttons. No Back here: the map is the middle of the island. */
+  private readonly keys = new ScreenKeys(this.app, { spots: () => this.focusSpots(), active: () => !this.leaving && !this.walking });
 
   constructor(app: App) {
     super(app);
@@ -121,6 +124,8 @@ export class MapScene extends Scene {
     this.pip.eventMode = 'none';
     this.map.addChild(this.track(this.pip));
     this.ui.addChild(this.title, this.book, this.treehouse, this.players);
+    this.ui.addChild(this.keys.ring);
+    this.keys.focus.focusOn(this.petAt);
     document.body.appendChild(this.gear.el);
   }
 
@@ -136,6 +141,23 @@ export class MapScene extends Scene {
     note.y = 90;
     this.home.addChild(new Graphics().ellipse(0, 34, 84, 28).fill(cream), art, name, note);
     this.homeBand = band;
+  }
+
+  /** What a key can press, with the ring's centre and size: a drawing's ring is round its picture, not its name. */
+  private focusSpots(): FocusSpot[] {
+    const at = (id: MapSpotId, press: () => void): FocusSpot => {
+      const n = this.spot(id);
+      return { id, x: n.x, y: n.y + 20, r: MAP_RADIUS, press };
+    };
+    const button = (id: string, b: RoundButton): FocusSpot => ({ id, x: b.x, y: b.y, r: b.radius, press: () => b.press() });
+    return [
+      ...this.lands.map(({ def }) => at(def.id, () => void this.visit(def))),
+      at('home', () => void this.visitHome()),
+      at('picnic', () => void this.visitPicnic()),
+      button('players', this.players),
+      button('book', this.book),
+      button('treehouse', this.treehouse),
+    ];
   }
 
   private spot(id: MapSpotId): Container {
@@ -235,6 +257,7 @@ export class MapScene extends Scene {
 
   update(dt: number) {
     super.update(dt);
+    this.keys.update(dt);
     this.clock += dt;
     // A soft glow around her home spot.
     this.glow.clear().circle(this.home.x, this.home.y + 10, 96 + 6 * Math.sin(this.clock * 2.5)).fill({ color: swatch.yellow.light, alpha: 0.75 });
@@ -245,6 +268,7 @@ export class MapScene extends Scene {
   }
 
   destroy() {
+    this.keys.destroy();
     this.gear.destroy();
     super.destroy();
   }
