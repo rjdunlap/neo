@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-13 — Sudoku Garden by touch (Lands stage B)
+
+- Built [PR #252](https://github.com/rjdunlap/neo/pull/252): Sudoku Garden plays by touch at all six levels (square tap, number tray, Marks, Erase, Hint, Start over; targets of 64 units or more beside the bed or under it), a ghost finger, a touch how-to card and spoken line, `GameContext.demo` with `shortBed` for the demonstration. The couch layout and rules are unchanged.
+- Typecheck; full vitest passed (139 files, 1,160 tests, one new: `shortBed`); `npm run build` passed. Browser runs at `GAME_URL=http://localhost:5192`: new `BROWSER_SUITE=sudokutouch` (levels 1 and 6: a wrong number is one miss, Erase takes it out, Marks, one hint, start over, one sticker each; every cell and tray target at least 64 units and apart, sideways and upright); `fingerdemo FINGER_ONLY=sudoku-garden` (33.5 s and 32.6 s; before `shortBed`, level 1 took 45 s and level 6 could not finish inside 75); `howto HOWTO_ONLY=sudoku-garden` (the first text overflowed the card by 4 units with the demonstration window, so it was shortened); `couchgames COUCH_ONLY=sudoku-garden`; `lanterntouch` and `lands` (Lantern Lake) after changing their controller-only example to Picture Logic and four controller-only puzzles. Screenshots checked: the 9 by 9 bed sideways and upright.
+- The `howto` suite was stale on `main` (fifteen couch games became twenty-three; its demonstration block picked controller-only games that open couch play) and was repaired here. Not run: `couchbeds` (couch code path unchanged), `world`, offline. Open: a real iPad and finger on the 64-unit squares, device speech for the new line, and the wrong-digit miss decision.
+
 ## 2026-10-13 — Owl Walk Home slices 1–4: tap the stone, owls with players, choose an owl, fly home
 
 - [PR #251](https://github.com/rjdunlap/neo/pull/251), from the [deep dive](deep-dives/owl-walk.md#what-was-built-slices-14-2026-10-13): taps go to the nearest stone, owl or nest (`judgeStone`), fireflies on levels 1–2, safe cards on levels 1–2, an owl each at level 2 (`owlOf`), choose an owl then its stone at levels 3–4, the nest as the fly-home answer, hops counted aloud, new `owl.*` lines, how-to and level names.
@@ -1056,6 +1062,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `sudokutouch`, `fingerdemo` and `howto` for Sudoku Garden | 2026-10-13: both ends of the ladder by touch, 64-unit targets upright and sideways, the demonstration at 33.5 s and 32.6 s, the card fitting | [Verification entry](#2026-10-13--sudoku-garden-by-touch-lands-stage-b) | A real iPad and finger; wrong-digit miss decision open |
 | `lands`, `world` (Lands stage B follow-ups) | 2026-10-13: `lands` (key caps, the couch course's return to Lantern Lake, grown-ups' page rows) and `world` (subject cards at all six bands including Lantern Lodge) | [Verification entry](#2026-10-13--lands-stage-b-follow-ups-chunk-17) | The home path's controller-only tap and a real keyboard or controller are unchecked |
 | Discovery roadmap actions (docs only) | 2026-10-12: changed local links/anchors and diff formatting | [Action table](ROADMAP.md#discovery-actions) / roadmap-actions verification entry | No runtime changes or new gameplay evidence; action prerequisites and optional policy choices stay open |
 | Discovery/session research (docs only) | 2026-10-12: changed/new local links/anchors and diff check; separate flow-explainer interactions and light/dark narrow layout checked | [Discovery study](DISCOVERY.md) / discovery research entry | No Puddle gameplay/device evidence added; session modes and support-policy alternatives remain proposed |

@@ -191,6 +191,8 @@ export interface GameContext {
    * `course`: a challenge run on fixed boards, played in a row as one round.
    */
   couch?: { versus: boolean; course?: CouchCourse };
+  /** Set while the how-to card's demonstration plays the game, so a long round can show a short one (a bed with most squares already filled). */
+  demo?: true;
   /** End the round. The shell celebrates, saves the result and offers "again". */
   finish(result: RoundResult): void;
 }
