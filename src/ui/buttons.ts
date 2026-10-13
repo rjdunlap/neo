@@ -16,20 +16,23 @@ function disc(radius: number, sw: Swatch): Graphics {
 
 /** A big round button that squishes when pressed. */
 export class RoundButton extends Container {
-  constructor(icon: Container, sw: Swatch, radius: number, onPress: () => void) {
+  constructor(icon: Container, sw: Swatch, radius: number, private readonly onPress: () => void) {
     super();
+    this.radius = radius;
     this.addChild(disc(radius, sw), icon);
-    onTap(
-      this,
-      () => {
-        sfx.tick();
-        this.scale.set(0.88);
-        // A press can close whatever holds the button (a journal, a scene); don't touch it once it's gone.
-        window.setTimeout(() => !this.destroyed && this.scale.set(1), 110);
-        onPress();
-      },
-      { radius: radius + 14, cooldown: 400 },
-    );
+    onTap(this, () => this.press(), { radius: radius + 14, cooldown: 400 });
+  }
+
+  /** The button's size, for a focus ring around it. */
+  readonly radius: number;
+
+  /** What a tap does: the squish, the tick and the action. A key or button on a controller presses it the same way. */
+  press() {
+    sfx.tick();
+    this.scale.set(0.88);
+    // A press can close whatever holds the button (a journal, a scene); don't touch it once it's gone.
+    window.setTimeout(() => !this.destroyed && this.scale.set(1), 110);
+    this.onPress();
   }
 }
 

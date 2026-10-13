@@ -659,6 +659,7 @@ function sticker(seed: number): Container {
 
 export const eggCatch: GameModule = {
   id: 'egg-catch',
+  liveController: true,
   name: 'Egg Catch',
   titleLine: 'game.egg-catch',
   region: 'barnyard',

@@ -418,6 +418,7 @@ function sticker(seed: number): Container {
 
 export const frogHop: GameModule = {
   id: 'frog-hop',
+  liveController: true,
   name: 'Frog Hop',
   titleLine: 'game.frog-hop',
   region: 'counting-cove',

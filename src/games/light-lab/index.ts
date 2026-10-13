@@ -475,6 +475,7 @@ function sticker(seed: number): Container {
 
 export const lightLab: GameModule = {
   id: 'light-lab',
+  liveController: true,
   name: 'Light Lab',
   titleLine: 'game.light-lab',
   region: 'tinker-lab',

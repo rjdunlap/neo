@@ -610,6 +610,7 @@ function sticker(seed: number): Container {
 
 export const bounceBack: GameModule = {
   id: 'bounce-back',
+  liveController: true,
   name: 'Bounce Back',
   titleLine: 'game.bounce-back',
   region: 'bubble-beach',

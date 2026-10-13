@@ -10,7 +10,7 @@ import { isParentPanelOpen, openParentPanel } from '../parent/panel';
 import { store } from '../progress/store';
 import { openPauseSheet, type PauseSheet } from '../ui/pause-sheet';
 import { TurnPrompt } from '../ui/TurnPrompt';
-import { escapeAction } from './pause';
+import { escapeAction, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
@@ -197,6 +197,11 @@ export class App {
   /** Esc: hold the scene still behind the pause sheet, or let it go again. */
   private onKey(e: KeyboardEvent) {
     if (e.key !== 'Escape' || e.repeat) return;
+    this.escape();
+  }
+
+  /** Esc, or Start on a pad: the one owner of the pause sheet, so a scene's own key sampling never takes it. */
+  escape() {
     const action = escapeAction({
       panelOpen: isParentPanelOpen(),
       paused: this.paused,
@@ -241,6 +246,8 @@ export class App {
       this.turn.update(dt);
       return;
     }
+    // Start on a pad pauses and resumes like Esc, also while the scene is held still.
+    if (padStart.poll() && this.scene && !this.turning) this.escape();
     if (!this.scene || this.paused) return;
     this.scene.update(dt);
   }

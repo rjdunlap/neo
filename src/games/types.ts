@@ -107,6 +107,12 @@ export interface GameModule {
    * puzzle-shelf course instead (see `go.game`). Touch for such a game is its own slice; it adds `touch` here when it has it.
    */
   inputs?: readonly ('touch' | 'controller')[];
+  /**
+   * The game takes a controller while it runs: it calls nothing on `ctx.couch` when it is built, and turns its focus ring on at the
+   * first `control()` call. The island then hands it `control()` once a key or button is used, at the levels couch play has played.
+   * A game that chooses touch or controller when it is built (`ctx.couch`) leaves this off.
+   */
+  liveController?: true;
   /** The game's `create()` returns a game with `autotouch()`, so its how-to card shows the ghost finger at her level. */
   touchDemo?: true;
   /** The sticker for finishing a round, rebuilt from its seed. */
