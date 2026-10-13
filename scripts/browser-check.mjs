@@ -2543,10 +2543,19 @@ async function arcade() {
       await kit.until(() => !g.flying, 10000);
     };
   });
-  for (let level = 1; level <= 6 && (!only || only === 'launch'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 6) && (!only || only === 'launch'); level++) {
     await launch('bouncy-launch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level === 6) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      assert.ok(await page.evaluate(async () => {
+        const g = neo.scene.game, { pullFor, padAt } = await import('/src/games/bouncy-launch/logic.ts');
+        return Math.abs(g.pullNow() - pullFor(padAt(g.targets[g.shot]))) < 0.01;
+      }), 'portrait keeps the shown prediction pull');
+      await screenshot('bouncy-launch-6-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const { padAt } = await import('/src/games/bouncy-launch/logic.ts');
@@ -2557,12 +2566,35 @@ async function arcade() {
       if (g.plan.mode === 'predict') {
         while (!g.finished) {
           await kit.until(() => !g.flying, 10000);
-          kit.tapOn(g.pads[g.targets[g.shot]]);
+          if (g.finished) break;
+          const n = g.targets[g.shot];
+          if (g.pads.some((p, i) => !p.children.some((c) => c.text === String(i + 1)))) throw new Error('Prediction clouds need visible numerals');
+          // First prediction deliberately differs; it still completes without a miss.
+          kit.tapOn(g.pads[g.shot === 0 ? (n + 1) % 5 : n]);
           await kit.until(() => g.flying, 4000);
         }
         return;
       }
-      if (g.plan.mode === 'free') { for (const f of [0.2, 0.9, 0.5, 0.7]) await fling(f); return; }
+      if (g.plan.mode === 'free') {
+        // Wrong-way and short pulls reply without grading an unfinished gesture.
+        for (const [dx, dy] of [[60, -60], [5, 5]]) {
+          const p = g.pet.getGlobalPosition();
+          await kit.drag(kit.line([p.x, p.y - 80], [p.x + dx, p.y - 80 + dy], 8), 1, 16);
+          await kit.sleep(500);
+        }
+        if (g.flying || g.shot !== 0 || g.misses || g.hints || g.emptyPulls !== 2 || !g.pullArrow.context.instructions.length) throw new Error('Empty pulls need an unscored arrow');
+        // Cancellation returns the pet without launching or counting a try.
+        const p = g.pet.getGlobalPosition();
+        const c = document.querySelector('canvas'), rect = c.getBoundingClientRect();
+        const pos = (x, y) => ({ clientX: rect.left + x, clientY: rect.top + y, pointerId: 73, pointerType: 'touch', bubbles: true });
+        c.dispatchEvent(new PointerEvent('pointerdown', pos(p.x, p.y - 80)));
+        c.dispatchEvent(new PointerEvent('pointermove', pos(p.x - 70, p.y - 10)));
+        c.dispatchEvent(new PointerEvent('pointercancel', pos(p.x - 70, p.y - 10)));
+        await kit.sleep(500);
+        if (g.flying || g.shot || g.emptyPulls !== 2 || g.grab) throw new Error('Cancelled pull launched or counted');
+        for (const f of [0.2, 0.9, 0.5, 0.7]) await fling(f);
+        return;
+      }
       if (g.plan.mode === 'compare') {
         await fling(0.5);
         let first = true;

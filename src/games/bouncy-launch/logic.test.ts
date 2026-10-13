@@ -16,6 +16,12 @@ describe('Bouncy Launch', () => {
     expect(revealsPullRule([0.9, 0.2])).toBe(true);
   });
 
+  it('never files the pull observation for couch or course rounds', () => {
+    expect(revealsPullRule([0.1, 0.9], 0.15, true)).toBe(false);
+    expect(revealsPullRule([0.1, 0.9], 0.15, false, true)).toBe(false);
+    expect(revealsPullRule([0.1, 0.9])).toBe(true);
+  });
+
   it('uses one deterministic pull-to-cloud mapping for shown-pull predictions', () => {
     for (let i = 0; i < PADS; i++) {
       const shownPull = pullFor(padAt(i));

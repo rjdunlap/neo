@@ -34,7 +34,7 @@ export const MAX_PULL = 170;
 /** How far a pull sends the pet, as a fraction 0..1 of the way from the nearest landing to the farthest. */
 export function reach(pull: number): number {
   const t = (Math.min(MAX_PULL, Math.max(MIN_PULL, pull)) - MIN_PULL) / (MAX_PULL - MIN_PULL);
-  // Gentle at first, so small pulls are easy to control.
+  // Linear distance: equal extra pulls travel equal extra distances.
   return t;
 }
 
@@ -44,8 +44,8 @@ export function pullFor(f: number): number {
 }
 
 /** Two plainly different pulls reveal the game's stated rule: the bigger pull lands farther away. */
-export function revealsPullRule(landings: readonly number[], gap = 0.15): boolean {
-  return landings.length >= 2 && Math.max(...landings) - Math.min(...landings) >= gap;
+export function revealsPullRule(landings: readonly number[], gap = 0.15, couch = false, course = false): boolean {
+  return !couch && !course && landings.length >= 2 && Math.max(...landings) - Math.min(...landings) >= gap;
 }
 
 /** Where pad `i` (0-based) sits, as a fraction along the landing strip. */
