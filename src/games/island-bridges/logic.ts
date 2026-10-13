@@ -389,3 +389,55 @@ export function directionOf(layout: Layout, island: number, edge: number): numbe
   const other = layout.islands[otherEnd(layout, edge, island)], me = layout.islands[island];
   return other.c > me.c ? 0 : other.c < me.c ? 2 : other.r > me.r ? 1 : 3;
 }
+
+/* ------------------------------------------------------------------------------------------------ */
+/* Touch                                                                                              */
+/* ------------------------------------------------------------------------------------------------ */
+
+/**
+ * Touch play: the edge whose stretch of water holds a point. Islands sit at the middle of their cells (`cell` units across, the
+ * sea's top left at 0, 0); an edge's stretch is the cells between its islands, one cell wide, so each is at least as wide as
+ * `cell`. Two stretches share a cell only where their bridges would cross: the nearer line wins, then the one with planks on it
+ * (so a tap there can take one off). A point on an island, or on open sea, is nothing.
+ */
+export function edgeAt(layout: Layout, cell: number, x: number, y: number, planks?: Planks): number | null {
+  let best: number | null = null, bestAcross = Infinity, bestLaid = false;
+  layout.edges.forEach((e, k) => {
+    const a = layout.islands[e.a], b = layout.islands[e.b], h = e.dir === 'h';
+    const lo = (h ? a.c : a.r) * cell + cell, hi = (h ? b.c : b.r) * cell;
+    const along = h ? x : y, line = (h ? a.r : a.c) * cell + cell / 2, across = Math.abs((h ? y : x) - line);
+    if (along < lo || along >= hi || across >= cell / 2) return;
+    const laid = (planks?.[k] ?? 0) > 0;
+    if (across < bestAcross - 1e-6 || (Math.abs(across - bestAcross) <= 1e-6 && laid && !bestLaid)) { best = k; bestAcross = across; bestLaid = laid; }
+  });
+  return best;
+}
+
+/** The planks of a finished sea but for the last few: the how-to card's demonstration shows the taps, not every bridge. */
+export function headStart(solution: Planks, leave = 6): number[] {
+  const planks = [...solution];
+  let left = leave;
+  for (let k = planks.length - 1; k >= 0 && left > 0; k--) {
+    const take = Math.min(planks[k], left);
+    planks[k] -= take;
+    left -= take;
+  }
+  return planks;
+}
+
+/** A point in the water of an edge that `edgeAt` gives to that edge, for a bot's finger (off the middle of a cell it shares with a crossing bridge). */
+export function waterOf(layout: Layout, cell: number, edge: number): { x: number; y: number } {
+  const e = layout.edges[edge], a = layout.islands[e.a], b = layout.islands[e.b], h = e.dir === 'h';
+  const count = (h ? b.c - a.c : b.r - a.r) - 1;
+  const at = (i: number) => ({ x: (h ? a.c + 1 + i : a.c) * cell + cell / 2, y: (h ? a.r : a.r + 1 + i) * cell + cell / 2 });
+  const mid = Math.floor((count - 1) / 2);
+  const order = Array.from({ length: count }, (_, i) => i).sort((p, q) => Math.abs(p - mid) - Math.abs(q - mid));
+  for (const i of order) {
+    // The middle of a cell shared with a crossing bridge is a tie; a little along the bridge is nearer to its own line.
+    for (const off of [0, 0.3, -0.3]) {
+      const c = at(i), p = { x: c.x + (h ? off * cell : 0), y: c.y + (h ? 0 : off * cell) };
+      if (edgeAt(layout, cell, p.x, p.y) === edge) return p;
+    }
+  }
+  return at(mid);
+}

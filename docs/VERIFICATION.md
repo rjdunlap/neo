@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-13 — Island Bridges by touch (Lands stage D)
+
+- Built [PR #256](https://github.com/rjdunlap/neo/pull/256): Island Bridges plays by touch at all four levels (tap the water between two islands, Take off switch, Hint, Start over; targets of 64 units or more, beside the sea or under it), a ghost finger, a touch how-to card and spoken lines, `edgeAt`/`waterOf`/`headStart` in `logic.ts`. The couch layout and rules are unchanged.
+- Typecheck; full vitest passed (139 files, 1,168 tests, four new `touch` rule tests: every cell of water belongs to its bridge, a shared cell gives the bridge with planks, the bot's point is its own, the demonstration's head start). Browser runs at `GAME_URL=http://localhost:5197`: new `BROWSER_SUITE=bridgestouch` (levels 1 and 4: a stray plank is one miss, Take off lifts it free, one hint, start over, one sticker each, targets of 64 or more sideways and upright, from Lantern Lake and leaving mid-round); `fingerdemo FINGER_ONLY=island-bridges` (9.4 s and 10.5 s); `howto HOWTO_ONLY=island-bridges` (the first text overflowed the card by under 4 units and was shortened); `couchgames COUCH_ONLY=island-bridges`; `lands` (its controller-only count now comes from the registry instead of a literal 4, which each puzzle's touch slice would have had to edit). Screenshots checked: the 11 by 11 sea sideways and a 7 by 7 sea upright.
+- Not run: `couchbridges` (couch code path unchanged), `world`, offline, build. Open: a real iPad and finger on the 64-unit water, device speech for the two new lines, and whether a stray plank should count as a miss at all (the couch rule, carried over).
+
 ## 2026-10-13 — Block Tower mirrored reach definition (docs only)
 
 - Defined [slice 5 at existing level 6](deep-dives/block-tower.md#build-slices-in-order), [PR #254](https://github.com/rjdunlap/neo/pull/254): signed table half-plane, canonical outward coordinates, reflected drop/solver/hint/bot domain and one seeded right/left side order across the original two tasks. Definition ready; implementation unbuilt.
@@ -1071,6 +1077,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Block Tower mirrored reach definition (docs only) | 2026-10-13: local Markdown files/anchors and diff formatting | [Slice 5 definition](deep-dives/block-tower.md#build-slices-in-order) / [PR #254](https://github.com/rjdunlap/neo/pull/254) | No gameplay evidence added; mirror implementation and device/child checks remain open |
+| `bridgestouch`, `fingerdemo` and `howto` for Island Bridges | 2026-10-13: both ends of the ladder by touch, 64-unit targets upright and sideways, the demonstration at 9.4 s and 10.5 s, the card fitting | [Verification entry](#2026-10-13--island-bridges-by-touch-lands-stage-d) | A real iPad and finger; stray-plank miss decision open |
 | `sudokutouch`, `fingerdemo` and `howto` for Sudoku Garden | 2026-10-13: both ends of the ladder by touch, 64-unit targets upright and sideways, the demonstration at 33.5 s and 32.6 s, the card fitting | [Verification entry](#2026-10-13--sudoku-garden-by-touch-lands-stage-b) | A real iPad and finger; wrong-digit miss decision open |
 | `lands`, `world` (Lands stage B follow-ups) | 2026-10-13: `lands` (key caps, the couch course's return to Lantern Lake, grown-ups' page rows) and `world` (subject cards at all six bands including Lantern Lodge) | [Verification entry](#2026-10-13--lands-stage-b-follow-ups-chunk-17) | The home path's controller-only tap and a real keyboard or controller are unchecked |
 | Discovery roadmap actions (docs only) | 2026-10-12: changed local links/anchors and diff formatting | [Action table](ROADMAP.md#discovery-actions) / roadmap-actions verification entry | No runtime changes or new gameplay evidence; action prerequisites and optional policy choices stay open |

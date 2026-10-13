@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  bycounting, canAdd, connected, edgeToward, hintFor, isSolved, islandToward, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, solve,
-  trouble, type Island, type Layout,
+  bycounting, canAdd, connected, edgeAt, edgeToward, headStart, hintFor, isSolved, islandToward, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, solve,
+  trouble, waterOf, type Island, type Layout,
 } from './logic';
 
 const layoutFrom = (size: number, rows: readonly string[]): Layout => {
@@ -202,5 +202,57 @@ describe('hints', () => {
     const wrong = p.solution.map((x, k) => (k === 0 ? x + 1 : x));
     expect(hintFor(p.layout, wrong, p.solution)).toEqual({ kind: 'fix', edge: 0 });
     expect(hintFor(p.layout, p.solution, p.solution)).toBeNull();
+  });
+});
+
+describe('touch', () => {
+  const CELL = 64;
+  it('gives every cell of water between two facing islands to that bridge, and an island or open sea to none', () => {
+    for (const plan of PLANS) for (let s = 1; s <= 4; s++) {
+      const p = makePuzzle(plan, new Rng(s * 29)), l = p.layout;
+      l.edges.forEach((e, k) => {
+        const a = l.islands[e.a], b = l.islands[e.b], h = e.dir === 'h';
+        for (let i = 1; i < (h ? b.c - a.c : b.r - a.r); i++) {
+          const r = h ? a.r : a.r + i, c = h ? a.c + i : a.c, x = c * CELL + CELL / 2, y = r * CELL + CELL / 2;
+          const got = edgeAt(l, CELL, x, y);
+          // A cell where bridges would cross belongs to one of them; every other cell to this one.
+          if (l.crossing[k].some((f) => edgeAt(l, CELL, x, y) === f)) continue;
+          expect(got, plan.name).toBe(k);
+        }
+      });
+      for (const il of l.islands) expect(edgeAt(l, CELL, il.c * CELL + CELL / 2, il.r * CELL + CELL / 2), plan.name).toBeNull();
+    }
+  });
+
+  it('lets a tap in a shared cell take a plank off the bridge that has one', () => {
+    // A horizontal bridge from (2,0) to (2,4) and a vertical one from (0,2) to (4,2) cross at (2,2).
+    const l = layoutFrom(5, ['..1..', '.....', '2...2', '.....', '..1..']);
+    const h = l.edges.findIndex((e) => e.dir === 'h'), v = l.edges.findIndex((e) => e.dir === 'v');
+    const x = 2 * CELL + CELL / 2;
+    for (const [laid, other] of [[h, v], [v, h]]) {
+      const planks = l.edges.map((_, k) => (k === laid ? 1 : 0));
+      expect(edgeAt(l, CELL, x, x, planks)).toBe(laid);
+      expect(edgeAt(l, CELL, x, x, planks)).not.toBe(other);
+    }
+  });
+
+  it('gives a bot a point in the water that is its own, for every bridge of every level', () => {
+    for (const plan of PLANS) for (let s = 1; s <= 4; s++) {
+      const p = makePuzzle(plan, new Rng(s * 41));
+      p.layout.edges.forEach((_, k) => {
+        const at = waterOf(p.layout, CELL, k);
+        const got = edgeAt(p.layout, CELL, at.x, at.y);
+        expect(got, plan.name).toBe(k);
+      });
+    }
+  });
+
+  it('leaves the last few planks of the answer off for the demonstration, never solving or over-filling the sea', () => {
+    for (const plan of PLANS) {
+      const p = makePuzzle(plan, new Rng(5)), start = headStart(p.solution);
+      expect(isSolved(p.layout, start), plan.name).toBe(false);
+      expect(start.every((n, k) => n <= p.solution[k])).toBe(true);
+      expect(p.solution.reduce((a, n) => a + n, 0) - start.reduce((a, n) => a + n, 0), plan.name).toBe(Math.min(6, p.par));
+    }
   });
 });
