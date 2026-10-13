@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-13 — Explicit level order for a band
+
+Changed: `LevelRange` gained an optional `order` (level IDs easiest first); `stepLevel`, `nextLevel`, `nextLevelOffer`, the how-to arrows' end dimming and the grown-up picker follow it. No game sets it yet, so every existing ladder behaves as before; saved levels, pins and history keep their IDs.
+Ran: typecheck and 128 focused tests (difficulty, registry with a permutation check, how-to). Not run: build, browser suites (no game uses `order` yet, so no visible change).
+
 ## 2026-10-13 — Lands stage B: the grownup band, Lantern Lake and Lantern Lights by touch
 
 - Added the `grownup` band (13 and up) and its home spot Lantern Lodge, the Lantern Lake land (the eleventh map spot), the six former couch-only puzzles in `GAMES` with `bands: ['grownup']` (`GROWNUP_GAMES` retired; `couchGameById` is an alias), `GameModule.inputs` with `go.game` opening the couch course for the five controller-only ones, and touch for Lantern Lights (PR #226). Existing adult profiles get one birthday into Lantern Lodge.
