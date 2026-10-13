@@ -118,3 +118,25 @@ export function afterMiss(wrongs: number, hinting: boolean): { wrongs: number; h
 }
 
 export const afterHit = () => ({ wrongs: 0, hinting: false });
+
+export type BallKind = 'smile' | 'beach' | 'duck';
+
+/** A court is only a look: its colors, the ball it likes and what the hit sounds like. Nothing about the rules changes. */
+export interface Court {
+  id: 'pond' | 'beach' | 'snow';
+  name: string;
+  /** Ground, table and table edge colors. */
+  ground: number;
+  table: number;
+  edge: number;
+  ball: BallKind;
+}
+
+export const COURTS: readonly Court[] = [
+  { id: 'pond', name: 'the pond', ground: 0xd6eefa, table: 0xbff0ec, edge: 0x3a9a9b, ball: 'smile' },
+  { id: 'beach', name: 'the beach', ground: 0xfff0b3, table: 0xffe9b8, edge: 0xd9a520, ball: 'beach' },
+  { id: 'snow', name: 'the snow', ground: 0xe8f1ff, table: 0xf6faff, edge: 0x8aa8d8, ball: 'duck' },
+];
+
+/** The court for a round; `pick` is a number in [0, 1) from the round's seeded generator. */
+export const courtFor = (pick: number): Court => COURTS[Math.min(COURTS.length - 1, Math.floor(pick * COURTS.length))];
