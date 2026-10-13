@@ -4,9 +4,11 @@
 
 ## The game today
 
+Research snapshot below; since then spoken support (slice 1) and three seeded picture families at levels 1–5 (slice 2, [PR #264](https://github.com/rjdunlap/neo/pull/264)) are built. Dot arrangements and vehicles remain open.
+
 Tap two hidden cards; matching pairs stay face up until the whole board is finished. The fun is finding a remembered friend. The skill starts as visual matching and remembering locations, then becomes recognizing two representations of the same thing. One shell-awarded sticker finishes the board, including with help. Nothing is timed.
 
-The source read for this session was `src/games/memory-match/index.ts`, `logic.ts` and `logic.test.ts`, the how-to, voice script, couch catalog, and the game's GAMES, IDEAS and roadmap entries. These are code-reading findings, not newly played rounds.
+The source read for the original research session was `src/games/memory-match/index.ts`, `logic.ts` and `logic.test.ts`, the how-to, voice script, couch catalog, and the game's GAMES, IDEAS and roadmap entries. These are code-reading findings, not newly played rounds.
 
 | Level | Plan | Current band windows | What she decides |
 | --- | --- | --- | --- |
@@ -63,7 +65,7 @@ The arc is visible picture matching for toddlers, small hidden familiar decks fo
 
 ### Fresh content inside existing levels
 
-- **Picture decks, levels 1–5:** shapes (the current set), eight familiar animals from existing `CRITTERS`, eight distinct fruit/prop drawings, then eight vehicles. Select N distinct identities before creating pairs. The two faces of a pair share identity, not a renderer index; code-drawn art only. Name each picture on reveal and replay. At level 8 keep the shape/color cross-product rule separate: a themed picture must not obscure either attribute.
+- **Picture decks, levels 1–5:** shapes, eight island friends (including Pip) and six fruits plus balloon/flower are built ([PR #264](https://github.com/rjdunlap/neo/pull/264)); eight vehicles remain a proposal. Select N distinct identities before creating pairs. The two faces of a pair share identity, not a renderer index; code-drawn art only. Name each picture on reveal and replay. At level 8 keep the shape/color cross-product rule separate: a themed picture must not obscure either attribute.
 - **Dots, levels 6–7:** scatter, rows and five-frame arrangements; paired numeral and dots must not have an answer-specific common color. Rotate among curated arrangements with adequate spacing. Quantities stay 1–4 and 1–8. Test actual count and positions within card bounds.
 - **Letters, level 9:** keep the 26-letter pool and seeded eight-letter selection. First speak the letter name, including on lowercase; do not infer a sound from its appearance. Review letterform distinctions with a person; no new font or alphabet in this slice.
 - **Number words, level 10:** show five pairs selected from 1–10 per board, instead of always twenty cards. This is a proposed change to quantity at an existing saved level, not a new ID. It needs the developer's choice below. Selection must reach all ten words across seeds; never use board position or color as the match. If ten pairs are retained, use a layout and text treatment that prove target and word-fit minima without scrolling.
@@ -109,10 +111,12 @@ More than twenty cards, faster flip-back, a preview countdown, moving cards, man
 
 ## Build slices, in order
 
-Slice 1 is built ([PR #170](https://github.com/rjdunlap/neo/pull/170)); the remaining slices are future sessions. The audit above records the source as it stood before the support slice.
+Slice 1 and the familiar-picture part of slice 2 are built ([PR #170](https://github.com/rjdunlap/neo/pull/170), [PR #264](https://github.com/rjdunlap/neo/pull/264)); remaining content and levels are future sessions. The audit above records the source as it stood before the support slice.
 
 1. **Built: words and guards at existing levels** ([PR #170](https://github.com/rjdunlap/neo/pull/170)). Plans, picture identities and labels live in `logic.ts`; the number-word/fraction how-to lines are bounded. Every reveal speaks its contents, and the first open card replays freely without changing the choice or counters. Unseen exploration names both cards neutrally. After two known mismatches, a seen partner gets one stable glow until a match clears it; unrelated exploration cannot move that hint. Deck sizes, bands, icon/sticker art and couch scoring/turns are preserved. Rule tests cover plans, labels, equal parts and hint evidence. Actual device pronunciation and legibility remain open.
-2. **Ready: more picture decks and dot arrangements.** First eight animals and eight fruit/props using existing art, then vehicles in another session if art needs it. Seeded selection and unique-identity tests; spoken names; stable sticker. Tier: content, typecheck/rule tests and one screenshot of new art; a deck-selection regression only if interaction changes.
+2. **Built: familiar picture decks** (`codex/memory-familiar-decks`, [PR #264](https://github.com/rjdunlap/neo/pull/264)). Scope: levels 1–5 select the original shapes, eight island friends (including Pip), or six fruits plus balloon/flower, with seeded distinct identities and matching spoken labels. No level/band, deck-size, matching/accounting, couch/course, sticker/icon or save changes. Dot arrangements and vehicles remain separate.
+
+   **Ready afterward: dot arrangements and vehicles.** Dot layouts and vehicle drawings each need their own bounded content session. Seeded selection and unique-identity tests; spoken names; stable sticker. Tier: content, typecheck/rule tests and one screenshot of new art; a deck-selection regression only if interaction changes.
 3. **Decision: level 10 quantity and fit.** Implement chosen policy, prove 100-unit card minima and word fit in supported views; test selection coverage if sampling. Tier: existing interaction fix, filtered regression at 10 and its ghost finger; portrait look. Broaden to couchgames only if changing shared grid movement/layout affects the couch's 12/16-card boards.
 4. **Ready after support slice: varied fraction square pictures at 11.** Rotations and equal-area shading masks, preserving exactly three values and pairs. Tier: content, typecheck/rule tests and one screenshot; circle sectors are a separate optional slice.
 5. **Decision: level 12 clocks.** Define and implement the small clock face, three-pair selection, spoken contents and scoped how-to. Tier: new level, typecheck/rule tests, one top-level browser play and `fingerdemo`, portrait legibility; build only if shared rendering changes. Freeze couch levels.

@@ -1,3 +1,5 @@
+import type { CritterName } from '../../art/critter';
+import type { PropKind } from '../../art/props';
 import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
 import type { BandLevels } from '../../progress/difficulty';
@@ -20,13 +22,34 @@ export const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
 
+export type MemoryPicture =
+  | { kind: 'shape'; id: string; name: string; color: ColorName; shape: ShapeKind }
+  | { kind: 'friend'; id: string; name: string; animal: CritterName }
+  | { kind: 'prop'; id: string; name: string; prop: PropKind; color: ColorName };
+
+/** Each family has eight visually distinct identities; never mix families on one board. */
+export const PICTURE_POOLS: readonly (readonly MemoryPicture[])[] = [
+  COLORS.map((color, i) => ({ kind: 'shape' as const, id: `shape-${color}-${SHAPES[i]}`, name: `${color} ${SHAPES[i]}`, color, shape: SHAPES[i] })),
+  (['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny', 'pip'] as const).map(animal =>
+    ({ kind: 'friend' as const, id: `friend-${animal}`, name: animal === 'pip' ? 'Pip' : animal, animal })),
+  ([['apple', 'red'], ['orange', 'orange'], ['lemon', 'yellow'], ['pear', 'green'],
+    ['blueberries', 'blue'], ['grapes', 'purple'], ['balloon', 'pink'], ['flower', 'teal']] as const).map(([prop, color]) =>
+    ({ kind: 'prop' as const, id: `prop-${prop}`, name: prop, prop, color })),
+];
+
+/** Pair IDs index this seeded content selection, rather than a fixed renderer index. */
+export function selectPictures(pairs: number, rng: Rng): MemoryPicture[] {
+  return rng.shuffle([...rng.pick(PICTURE_POOLS)]).slice(0, pairs);
+}
+
 export type MemoryMode = typeof PLANS[number]['mode'];
 export function planFor(level: number) { return PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))]; }
 export function pictureIdentity(mode: MemoryMode, pair: number) {
   return { color: mode === 'attributes' ? COLORS[pair % 2] : COLORS[pair],
     shape: mode === 'attributes' ? SHAPES[Math.floor(pair / 2)] : SHAPES[pair] };
 }
-export function cardLabel(mode: MemoryMode, card: MemoryCard, letters: readonly string[]): string {
+export function cardLabel(mode: MemoryMode, card: MemoryCard, letters: readonly string[], pictures?: readonly MemoryPicture[]): string {
+  if (mode === 'pictures' && pictures) return pictures[card.pair].name;
   if (mode === 'fractions') return fraction(card.pair).name;
   if (mode === 'letters') return letters[card.pair];
   if (mode === 'numbers' || mode === 'number-words') return numberWord(card.pair);
