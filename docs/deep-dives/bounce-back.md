@@ -113,3 +113,5 @@ Speeding up, shrinking paddles, lives, tokens, opponent scoring, power-ups that 
 The deep dive itself built nothing (links and `git diff --check` only). Slice 1's words then followed on `codex/bounce-back-words`: per-level how-to steps and finish lines, and a `bounce.rally` line that says the number at level 2. Typecheck and the content and game unit tests passed; no browser play was run (words only).
 
 Slice 2 followed on `codex/bounce-back-gentle-miss` (decisions 1 and 2, taken as the lean): a miss no longer resets the rally, and a hint ends on her next bounce so a later run of two misses can earn another (`afterMiss`/`afterHit` in `logic.ts`, with a rule test). Typecheck, the game's unit tests and `BATCH_ONLY=bounce` (levels 1–5) passed.
+
+Slice 3 followed on `codex/bounce-back-courts`: three courts (pond, beach, snow) picked from the round's seeded generator, each with its own ball (smiling ball, beach ball, duckling that quacks on her bounces). Look and sound only; the sticker still draws the original ball. Typecheck, the game's unit tests and `BATCH_ONLY=bounce` passed; the pond and snow courts were seen in screenshots, the beach court was not.
