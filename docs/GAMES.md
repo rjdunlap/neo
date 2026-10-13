@@ -196,7 +196,7 @@ Level 1 explicitly names the next day and finishes after seven weather records. 
 
 ### Color Garden
 
-*toddler–pre-K.* Sort fruit, balloons and flowers into baskets by color; level 1 is dragging practice with one basket, growing to six colors.
+*toddler–pre-K.* Sort fruit, balloons and flowers into baskets by color; level 1 is dragging practice with one basket, growing to six colors. Level 7 (preschool and pre-K) has two blue baskets, a light one and a dark one, and eight balloons and flowers to sort by shade; a wrong basket gets the usual boing and a spoken hint naming the shade, with a glow after two misses.
 
 ### Dot Link
 

@@ -1305,7 +1305,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
 | Shape Sorter (T–K · 8) | New shapes (oval, heart, star) | **Built 2026-10-10:** level 8, *The feely bag*: a spoken property clue asks her to find the matching shape ([build note](archive/COMPLETED-2026-10-09.md#shape-sorter-level-8-the-feely-bag-2026-10-10)) | — |
-| Color Garden (T–K · 6) | More things to sort | **7, Light and dark:** light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
+| Color Garden (T–K · 7) | More things to sort | **Built 2026-10-13:** 7, *Light and dark*, light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
 | Dot Link (L–K · 6) | More dot colors and boards | — (level 6 built; see [completed work](archive/COMPLETED-2026-10-09.md#dot-link-level-6-exactly-five)) | — |
 | Tangram Town (T–S · 6) | **Built 2026-10-10:** each level draws from a pool of 2–5 pictures (11 in all). More pictures, spoken shape names and the rest are in the [deep dive](deep-dives/tangram-town.md) | R1-later: flip a piece (the deep dive's level 9; it needs a parallelogram) | — |
 | Garden Grow (L–P · 5) | Flower kinds | **Built 2026-10-10:** levels 6, *One more than the sign*, and 7, *Two rows of three*, open a pre-K window ([build note](archive/COMPLETED-2026-10-09.md#garden-grow-levels-6-7-one-more-and-two-rows-of-three-2026-10-10)) | — |

@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-13 — Color Garden level 7, light and dark
+
+- Added level 7 (preschool 3–7, pre-K 4–7; toddler unchanged): two blue baskets, light and dark, eight balloons and flowers tinted to match. Items and baskets now carry a `SortKey`; new voice lines, a how-to step scoped to level 7 and `describeLevel`.
+- Typecheck, unit tests (new: level 7 deals both shades, each with something to catch; the bot's drops land in the matching basket) and the how-to/registry tests passed.
+- `GAME_URL=http://localhost:5191 BROWSER_SUITE=originals ORIGINALS_ONLY=garden`: levels 1–7 including level 7's two misses, glow hint, score and saved sticker; `BROWSER_SUITE=fingerdemo FINGER_ONLY=color-garden FINGER_LEVELS=7` finished clean in 28.5 s. One screenshot checked (shades clearly distinct).
+- Not run: build, world, couch suites (no shared files changed). Open: whether the two blues read as light and dark on an iPad, and the spoken "light blue" and "dark blue" on device. Level 8 (*Color and kind*) is still proposed.
+
 ## 2026-10-13 — Explicit level order for a band
 
 Changed: `LevelRange` gained an optional `order` (level IDs easiest first); `stepLevel`, `nextLevel`, `nextLevelOffer`, the how-to arrows' end dimming and the grown-up picker follow it. No game sets it yet, so every existing ladder behaves as before; saved levels, pins and history keep their IDs.
