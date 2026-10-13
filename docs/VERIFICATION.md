@@ -31,6 +31,14 @@
 - Not run: build, browser, ghost-finger and offline checks at the specified plain-word content tier. Actual iPad touch, speech and child fit remain person checks; reach/settling and height variety remain separate slices.
 - Dispatch `block-tower-support-20261012T215149Z`; queue records scope, worker, usage and next action.
 
+## 2026-10-12 — Bounce Back levels 10–11, skip counting
+
+- Rallies counted by twos and fives with the number on the table. `typecheck`, `npm test` (1069), `BOUNCE_FROM=10 BATCH_ONLY=bounce` (new filter in the harness) and `FINGER_LEVELS=10,11` passed. Not run: build, portrait, an iPad, a child; the numeral tint after the last edit was not re-seen.
+
+## 2026-10-12 — Bounce Back level 9, colors in order
+
+- Level 9 (school): three colors called in order, serve angles chosen so each is reachable. `typecheck`, `npm test` (1068), `BATCH_ONLY=bounce` (1–9) and `FINGER_ONLY=bounce-back FINGER_LEVELS=9` passed. Not run: build, portrait view, an iPad, a child.
+
 ## 2026-10-12 — Bounce Back levels 6–8
 
 - Added a school window and levels 6 (bounce to a color), 7 (goal) and 8 (first to 7). Rules in `logic.ts` (reachable zones, keeper reach, margin scoring) with unit tests over four view sizes.
