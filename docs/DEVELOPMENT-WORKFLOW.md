@@ -37,7 +37,28 @@ These are proposals, not implemented helpers. Targeted verification before publi
 
 - **One game check command.** A small manifest could map stable game IDs to existing suite filters and level selectors. A command accepting a game and level could print its rule test, play-through and finger-demo commands, with a dry-run default. Fail on unknown IDs or unsupported selectors instead of silently running the entire suite. Keep the README suite table authoritative until that helper exists.
 - **Safer snapshot serving.** The current snapshot script uses one default directory and port 5180. Two sessions can overwrite that shared copy. Give each snapshot its own directory, port and cache, include the source revision in the startup output, and freeze the test script along with the source. This requires a scripts change and a focused startup/isolation check.
-- **Keep coverage summaries short.** The unit/build coverage row currently carries a long history. Retain its latest pass and relevant limitations there, with older details in the dated entries/archive. This would reduce conflicts and make the most recent evidence easier to find.
+- **Keep coverage summaries short.** *Rule adopted 2026-10-13* (AGENTS.md, "Documentation and Git"): one row per suite or area, overwritten with the latest pass. The existing per-slice rows have not been collapsed yet (see the token review below).
+
+## Token review (2026-10-13)
+
+Measured from the 70 Claude Code session transcripts for this project (Codex sessions on `codex/` branches were not measured, so the share of work they carry is unknown): 18,297 assistant turns, about 5.8 billion cache-read tokens, about 319K tokens of context per turn. A session starts near 68K tokens and peaks at a median of 458K (p90 950K); none was ever compacted. So most of the cost is **context that accumulates inside a session**, multiplied by its turn count (median about 260). A 20K-token read at turn 50 of 260 costs about 4M cache-read tokens. Always-loaded text matters less: `AGENTS.md` is about 9K tokens, roughly 3% of the total.
+
+What the transcripts showed, and what was done:
+
+- **Long chained sessions.** Several sessions ran 500 to 900 turns across more than one slice. *Done:* AGENTS.md now says one slice per session and to push verbose work to a subagent.
+- **Whole-file reads of `ROADMAP.md`** (27 of 49 reads, each cut off near 70 KB, about 17K tokens apiece) and large reads of `DESIGN.md`, `README.md` and `CouchScene.ts`. *Done:* a read-by-section rule in AGENTS.md and in `docs-keeper`.
+- **Bash output** was three times the size of all file reads (13.6 MB against 4.4 MB). *Done:* a rule to pipe test and suite output through `tail` or `grep`.
+- **Repeated overlap checks** (about 85 `git fetch origin` runs, 47 merges, plus `gh pr list` and `git worktree list`, three or more times per slice). *Done:* `scripts/overlap.sh`.
+- **Doc edits through Python heredocs** (1,423 Bash calls; 328 aimed at `ROADMAP.md`, 256 at `VERIFICATION.md`), with about seven documents touched per slice. *Partly done:* closeout can go to `docs-keeper`; the three custom agents had not been used once in these transcripts, because nothing named them.
+- **A stray `docs/VERIFICATION.md-e`** (a macOS `sed -i -e` artifact, 276 lines out of date) was committed in d0f9ce6. *Done:* removed, with a pitfall line.
+
+Proposed, not done (each moves text other sessions are editing, so do them as pure moves in their own pull request, with the anchor check below):
+
+- Rotate `VERIFICATION.md` (423 KB, 238 entries) so only the newest dozen entries and the coverage summary stay live, as was done for 2026-10-05/06; collapse the per-slice coverage rows into one row per suite. Links of the form `VERIFICATION.md#2026-10-…` from the roadmap, README and coverage rows must be repointed.
+- Split `ROADMAP.md` (172 KB): "Waiting on the developer" (35 KB) and "Needs a person or a device" (23 KB) into their own files, keeping the `#next-up` anchor that `EXECUTION-QUEUE.md` links.
+- Cut `EXECUTION-QUEUE.md`'s "Current checkpoint" (very long lines read by every hourly run) to the current state, moving history out.
+- `IDEAS.md` (396 KB) and `GAMES.md` (131 KB) are only read by section, so they cost nothing until opened; leave them.
+- About 40 registered worktrees (roughly 30 under `~/.codex/worktrees`) are mostly merged branches; this is disk and clutter, not tokens, but the cleanup procedure below applies.
 
 ## Cleanup performed
 
