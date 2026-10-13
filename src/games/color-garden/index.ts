@@ -10,14 +10,22 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, planFor, type GardenPlan } from './logic';
+import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, planFor, type GardenPlan, type SortKey } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+
+/** The two blues of level 7: multiplied tints over white and blue props, and the basket cloth to match. */
+const SHADE_LOOK = {
+  'light-blue': { base: 'white' as ColorName, tint: 0xa9d3ff, cloth: { fill: 0xa9d3ff, line: 0x6f9fd6 } },
+  'dark-blue': { base: 'blue' as ColorName, tint: 0x5a7fb5, cloth: { fill: 0x1c51b2, line: 0x143a80 } },
+};
+const shadeLook = (key: SortKey) => SHADE_LOOK[key as keyof typeof SHADE_LOOK] as (typeof SHADE_LOOK)[keyof typeof SHADE_LOOK] | undefined;
+const shadeOf = (key: SortKey) => (key === 'light-blue' ? 'light' : 'dark');
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 5 },
-  preschool: { min: 3, max: 6 },
-  prek: { min: 4, max: 6 },
+  preschool: { min: 3, max: 7 },
+  prek: { min: 4, max: 7 },
 };
 
 const ITEM_SCALE = 0.78;
@@ -25,14 +33,14 @@ const BASKET = { fill: 0xd9a066, line: 0x9c6b3c, weave: 0xb9844f };
 
 interface Item {
   view: Container;
-  color: ColorName;
+  key: SortKey;
   drag: DragHandle;
   wrongs: number;
 }
 
 /** A woven basket lined with cloth of its color. Things dropped in stay in. */
 class Basket extends Container {
-  readonly color: ColorName;
+  readonly key: SortKey;
   readonly inside = new Container();
   private readonly glow = new Graphics();
   private readonly body = new Container();
@@ -42,12 +50,12 @@ class Basket extends Container {
   glowing = false;
 
   constructor(
-    color: ColorName,
+    key: SortKey,
     readonly w: number,
   ) {
     super();
-    this.color = color;
-    const sw = swatch[color];
+    this.key = key;
+    const sw = shadeLook(key)?.cloth ?? swatch[key as ColorName];
     const h = 96;
     const top = -h;
     const back = new Graphics().ellipse(0, top, w / 2, 20).fill(sw.fill).stroke({ width: 5, color: sw.line });
@@ -114,14 +122,16 @@ class ColorGarden implements Game {
     ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, this.layer);
 
     this.items = items.map((color, i) => {
-      const kind: PropKind = this.plan.fruit ? FRUIT_FOR[color]! : i % 2 ? 'balloon' : 'flower';
-      const view = prop(kind, color);
+      const shade = shadeLook(color);
+      const kind: PropKind = this.plan.fruit ? FRUIT_FOR[color as ColorName]! : i % 2 ? 'balloon' : 'flower';
+      const view = prop(kind, shade ? shade.base : (color as ColorName));
+      if (shade) view.tint = shade.tint;
       view.scale.set(ITEM_SCALE);
-      const item: Item = { view, color, wrongs: 0, drag: null! };
+      const item: Item = { view, key: color, wrongs: 0, drag: null! };
       item.drag = draggable(view, ctx.tw, {
         onPick: () => {
           sfx.tick();
-          void ctx.say(`color.${color}`);
+          void ctx.say(shadeLook(color) ? (color === 'light-blue' ? 'tone.light' : 'tone.dark') : `color.${color as ColorName}`);
         },
         onDrop: (x, y) => this.drop(item, x, y),
       });
@@ -131,7 +141,7 @@ class ColorGarden implements Game {
   }
 
   start() {
-    void this.ctx.instruct('garden.start');
+    void this.ctx.instruct(this.plan.shades ? 'garden.shades' : 'garden.start');
   }
 
   resize(v: View) {
@@ -186,7 +196,7 @@ class ColorGarden implements Game {
     // Anywhere over a basket (or just above it) counts.
     const basket = basketAt(this.baskets, x, y);
     if (!basket) return false;
-    if (basket.color === item.color) {
+    if (basket.key === item.key) {
       void this.place(item, basket);
       return true;
     }
@@ -196,11 +206,11 @@ class ColorGarden implements Game {
     basket.nope();
     if (this.clock - this.lastNag > 3) {
       this.lastNag = this.clock;
-      void this.ctx.say('garden.wrong', { color: item.color });
+      void this.ctx.say(shadeLook(item.key) ? 'garden.shade.wrong' : 'garden.wrong', shadeLook(item.key) ? { shade: shadeOf(item.key) } : { color: item.key });
     }
     if (item.wrongs === 2) {
       this.hints++;
-      const right = this.baskets.find((b) => b.color === item.color);
+      const right = this.baskets.find((b) => b.key === item.key);
       if (right) {
         right.glowing = true;
         void this.ctx.tw.wait(4).then(() => (right.glowing = false));
@@ -223,7 +233,7 @@ class ColorGarden implements Game {
     await this.ctx.tw.to(v, { x: ((slot % 3) - 1) * 28, y: -30 - Math.floor(slot / 3) * 12 }, { duration: 0.25, ease: ease.outQuad });
     basket.happy();
     sfx.bell(4 + this.baskets.indexOf(basket), 0.25);
-    this.ctx.particles.burst(basket.x, basket.y - 100, { kind: 'star', colors: [swatch[item.color].fill, 0xffffff], count: 8, speed: [100, 220], gravity: 0, life: [0.4, 0.7] });
+    this.ctx.particles.burst(basket.x, basket.y - 100, { kind: 'star', colors: [(shadeLook(item.key)?.cloth ?? swatch[item.key as ColorName]).fill, 0xffffff], count: 8, speed: [100, 220], gravity: 0, life: [0.4, 0.7] });
     this.sorted++;
     if (this.sorted % 3 === 0) {
       this.ctx.pet.cheer();
@@ -305,6 +315,7 @@ export const colorGarden: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.colors === 1) return 'One basket: practice dragging';
+    if (p.shades) return `Sort ${p.items} balloons and flowers into light blue and dark blue`;
     return `Sort ${p.items} ${p.fruit ? 'fruits' : 'balloons and flowers'} into ${p.colors} colors`;
   },
   music: STYLES.paint,

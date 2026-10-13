@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-13 — Color Garden level 7, light and dark
+
+- Added level 7 (preschool 3–7, pre-K 4–7; toddler unchanged): two blue baskets, light and dark, eight balloons and flowers tinted to match. Items and baskets now carry a `SortKey`; new voice lines, a how-to step scoped to level 7 and `describeLevel`.
+- Typecheck, unit tests (new: level 7 deals both shades, each with something to catch; the bot's drops land in the matching basket) and the how-to/registry tests passed.
+- `GAME_URL=http://localhost:5191 BROWSER_SUITE=originals ORIGINALS_ONLY=garden`: levels 1–7 including level 7's two misses, glow hint, score and saved sticker; `BROWSER_SUITE=fingerdemo FINGER_ONLY=color-garden FINGER_LEVELS=7` finished clean in 28.5 s. One screenshot checked (shades clearly distinct).
+- Not run: build, world, couch suites (no shared files changed). Open: whether the two blues read as light and dark on an iPad, and the spoken "light blue" and "dark blue" on device. Level 8 (*Color and kind*) is still proposed.
+
 ## 2026-10-13 — Lands stage B: the grownup band, Lantern Lake and Lantern Lights by touch
 
 - Added the `grownup` band (13 and up) and its home spot Lantern Lodge, the Lantern Lake land (the eleventh map spot), the six former couch-only puzzles in `GAMES` with `bands: ['grownup']` (`GROWNUP_GAMES` retired; `couchGameById` is an alias), `GameModule.inputs` with `go.game` opening the couch course for the five controller-only ones, and touch for Lantern Lights (PR #226). Existing adult profiles get one birthday into Lantern Lodge.

@@ -1306,6 +1306,10 @@ export const SCRIPT = {
 
   'garden.start': ['Put each one in the basket that matches!'],
   'garden.wrong': ['That one is {color}. Find the {color} basket!'],
+  'garden.shades': ['Light blue or dark blue? Put each one in the basket that matches!'],
+  'garden.shade.wrong': ['That one is {shade} blue. Find the {shade} blue basket!'],
+  'tone.light': ['Light blue!'],
+  'tone.dark': ['Dark blue!'],
   'garden.done': ['All sorted! What a garden!'],
 
   'bath.free': ['{pet} is muddy! Scrub scrub!'],

@@ -20,6 +20,17 @@ describe('Color Garden', () => {
     for (const c of RAINBOW) expect(FRUIT_FOR[c]).toBeDefined();
   });
 
+  it('level 7 sorts one light and one dark blue basket, each with something to catch', () => {
+    const plan = PLANS[6];
+    expect(plan.shades).toBe(true);
+    for (let seed = 1; seed <= 100; seed++) {
+      const { colors, items } = deal(new Rng(seed), plan);
+      expect([...colors].sort()).toEqual(['dark-blue', 'light-blue']);
+      expect(items).toHaveLength(plan.items);
+      for (const k of colors) expect(items).toContain(k);
+    }
+  });
+
   it('drops into the basket under the finger, even where six baskets crowd together', () => {
     for (const plan of PLANS) {
       for (const viewW of [1024, 1366]) {
@@ -46,13 +57,13 @@ describe('Color Garden', () => {
           const { colors, items } = deal(new Rng(seed), plan);
           const w = basketWidth(plan);
           const xs = spread(plan.colors, 150, viewW - 40, w + 30);
-          const baskets = colors.map((color, i) => ({ color, x: xs[i], y: 768 - 26, w }));
-          let waiting = items.map((color) => ({ color }));
+          const baskets = colors.map((key, i) => ({ key, x: xs[i], y: 768 - 26, w }));
+          let waiting = items.map((key) => ({ key }));
           let moves = 0;
           for (let next = nextToSort(waiting, baskets); next; next = nextToSort(waiting, baskets)) {
             // The drop lands in the basket of the fruit's color, so it is taken and nothing is a miss.
             const at = basketAt(baskets, next.basket.x, next.basket.y - DROP_ABOVE);
-            expect(at?.color, `${plan.colors} colors, seed ${seed}`).toBe(next.item.color);
+            expect(at?.key, `${plan.colors} colors, seed ${seed}`).toBe(next.item.key);
             waiting = waiting.filter((i) => i !== next.item);
             moves++;
           }
