@@ -18,6 +18,9 @@ function levelsOf(g: (typeof GAMES)[number]): number[] {
 /** Words that point at some other level: the card for a level says only what is true at that level. */
 const OTHER_LEVELS = /\b(levels?|later|earlier|higher)\b/i;
 
+/** The most text a level's card may hold: the longest cards that fit a landscape iPad with a demonstration window. */
+const MAX_CARD_CHARS = 840;
+
 describe('touch how-to cards', () => {
   it('has an entry for every game and no entry for a game that is gone', () => {
     const ids = GAMES.map((g) => g.id).sort();
@@ -37,6 +40,19 @@ describe('touch how-to cards', () => {
         if (card.note !== undefined) expect(card.note.trim().length, `${where} note`).toBeGreaterThan(8);
       }
     }
+  });
+
+  it('keeps each card short enough to fit a 1024 by 768 screen beside its demonstration', () => {
+    // The intro card steps its text down and then runs out of room (Beat Builder at three, 920 characters, ended at 871 of 768 units).
+    const long: string[] = [];
+    for (const g of GAMES) {
+      for (const level of levelsOf(g)) {
+        const card = howToFor(g, level)!;
+        const chars = [card.level, card.goal, ...card.steps, card.finish, card.note ?? ''].join('').length;
+        if (chars > MAX_CARD_CHARS) long.push(`${g.id} level ${level}: ${chars}`);
+      }
+    }
+    expect(long).toEqual([]);
   });
 
   it('adds the current level line from the game itself, for every supported level', () => {

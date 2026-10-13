@@ -7,6 +7,11 @@
 - New `BROWSER_SUITE=landkeys` passed: the ring is hidden for a finger, the first key only shows it, arrows move it, Backspace does nothing on the map, a held Enter (with auto-repeat) through map-to-land does not act in the land, Enter on the host suggests a game, a tap works with the ring showing and hides it, Backspace returns to the map; one landscape and one portrait screenshot of each ring inspected.
 - Not run: production offline check (no persistence, asset or route change), `couch`/`couchcourse`. Open: a real keyboard or pad on an iPad or TV ([DEVICE-CHECKS](DEVICE-CHECKS.md)); Chrome automation only synthesises keys.
 
+## 2026-10-13 — How-to intro card fits at Beat Builder's long levels
+
+- Beat Builder's level 3 card ended at 871 of 768 units (`howto` failure on `origin/main`): its four steps, finish and note ran 920 characters in a 588-unit column beside the demonstration window, with empty space under the window. Changed: Beat Builder's step and note text trimmed (levels 1, 3, 5, 8, 9), rows below the demonstration now run the full card width, and the window may shrink to 0.7 of its size (280 units, over the 240 floor); a new unit test caps a card at 840 characters across every game and level.
+- Ran: typecheck; `src/content` vitest (79 passed); `BROWSER_SUITE=howto` with `HOWTO_ONLY=beat-builder HOWTO_LEVEL=1,5,8,9` and then the full `howto` suite (90 games, landscape and portrait) at `GAME_URL=http://localhost:5291`, all passed. Not run: the other suites (no shared logic besides the intro card's layout).
+
 ## 2026-10-13 — Bouncy Launch support slice 1
 
 - [PR #269](https://github.com/rjdunlap/neo/pull/269), claim `48f22cf` on `feeb1bb` plus final source diff; integrated `7b94c03` (coordinator docs only). Short/wrong-way replies and two-try arrow are unscored; cancellation cannot launch. Prediction clouds have numerals, use cloud taps and keep their shown pull on resize. How-to/reference words corrected; linear mapping, bands and courses preserved. Couch/course discovery exclusion is rule-tested; watched-pull accounting decision unchanged.
