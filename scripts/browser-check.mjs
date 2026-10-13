@@ -885,7 +885,7 @@ async function subjectPlaces() {
   await page.evaluate(async () => (await import('/src/parent/panel.ts')).openParentPanel(() => {}));
   await page.locator('#p-layout').selectOption('subjects');
   await page.locator('[data-done]').click();
-  for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school']) {
+  for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup']) {
     for (const portrait of [false, true]) {
       await page.setViewportSize(portrait ? { width: 768, height: 1024 } : { width: 1024, height: 768 });
       await page.evaluate(band => neo.go.place(band), band); await scene('SubjectPlaceScene');
@@ -916,7 +916,18 @@ async function subjectPlaces() {
         if (!portrait) {
           const saved = await page.evaluate(() => ({ ...neo.scene.state }));
           const game = await page.evaluate(() => neo.scene.cards.filter(c => c.node.visible).at(-1).id);
-          await tap('neo.scene.cards.filter(c => c.node.visible).at(-1).node'); await scene('GameScene');
+          // Lantern Lodge holds games that take only a keyboard or a controller: a tap opens their couch course, and "Back to the island" returns to this card.
+          const touch = await page.evaluate(async (game) => { const { gameById, playsByTouch } = await import('/src/games/registry.ts'); return playsByTouch(gameById(game)); }, game);
+          assert.equal(await page.evaluate(() => { const c = neo.scene.cards.filter(c => c.node.visible).at(-1); return c.node.children.length; }), 3 + (await page.evaluate(() => neo.scene.cards.filter(c => c.node.visible).at(-1).sparkle ? 1 : 0)) + (touch ? 0 : 1), `${band} ${game}: a key cap only on a controller-only game`);
+          await tap('neo.scene.cards.filter(c => c.node.visible).at(-1).node');
+          if (!touch) {
+            await scene('CouchScene');
+            await page.getByRole('button', { name: 'Back to the island', exact: true }).first().click(); await scene('SubjectPlaceScene');
+            assert.deepEqual(await page.evaluate(() => ({ ...neo.scene.state })), saved, 'the couch course returns to the card it came from');
+            { await tap('neo.scene.back'); await page.waitForTimeout(450); }
+            continue;
+          }
+          await scene('GameScene');
           assert.equal(await page.evaluate(() => neo.scene.mod.id), game);
           // At the band nearest hers that the game has: a younger game plays its top band.
           const expectBand = await page.evaluate(async ({ game, band }) => { const { playBand } = await import('/src/progress/bands.ts'); const { gameById } = await import('/src/games/registry.ts'); return playBand(gameById(game).bands, band); }, { game, band });
@@ -8583,6 +8594,28 @@ async function landsTour() {
   await page.evaluate(() => neo.go.hub()); await scene('MapScene'); await page.waitForTimeout(800);
   await screenshot('map-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
+
+  // Lantern Lake at the grown-up band: a key cap on each controller-only puzzle, and leaving its couch course comes back to the lake.
+  await fresh();
+  await page.evaluate(() => { kit.store.data.profile.band = 'grownup'; neo.go.land('lantern-lake'); }); await scene('LandScene'); await page.waitForTimeout(300);
+  const lake = await page.evaluate(async () => {
+    const { playsByTouch } = await import('/src/games/registry.ts');
+    return neo.scene.showing.map((m) => ({ id: m.mod.id, ctrl: !playsByTouch(m.mod), kids: m.node.children.length - 2 - (m.sparkle ? 1 : 0) }));
+  });
+  assert.equal(lake.filter((m) => m.ctrl).length, 5, 'five controller-only puzzles');
+  for (const m of lake) assert.equal(m.kids, m.ctrl ? 1 : 0, `${m.id}: a key cap only on a controller-only game`);
+  await screenshot('land-lantern-lake-keycaps');
+  const ctrl = lake.findIndex((m) => m.ctrl);
+  await page.evaluate((i) => kit.tapOn(neo.scene.showing[i].node, 0, -60), ctrl); await scene('CouchScene'); await page.waitForTimeout(500);
+  await page.getByRole('button', { name: 'Back to the island', exact: true }).first().click(); await scene('LandScene');
+  assert.equal(await page.evaluate(() => neo.scene.id), 'lantern-lake', 'the couch course returns to the land it came from');
+  // The grown-ups' page offers no level pin for a game the island cannot play by touch.
+  await page.evaluate(async () => (await import('/src/parent/panel.ts')).openParentPanel(() => {}));
+  await page.locator('.parent').waitFor();
+  assert.equal(await page.locator(`[data-pin="${lake[ctrl].id}"]`).count(), 0, 'no pin picker for a controller-only puzzle');
+  assert.ok(await page.locator('.parent', { hasText: 'Needs a keyboard or controller' }).count(), 'the page says why');
+  assert.equal(await page.locator('[data-pin="lantern-lights"]').count(), 1, 'a touch puzzle keeps its picker');
+  await page.locator('[data-done]').click(); await scene('LandScene');
 
   // At lap, Puzzle Peaks has one game; its signpost shows the rest, and one plays at its easiest band.
   await fresh();

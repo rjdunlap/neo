@@ -13,10 +13,11 @@ import type { View } from '../../engine/view';
 import { shapePath } from '../../art/shapes';
 import type { GameModule, HubIcon } from '../../games/types';
 import { playBand, type Band } from '../../progress/bands';
-import { gameById, GAMES } from '../../games/registry';
+import { gameById, GAMES, playsByTouch } from '../../games/registry';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, bookIcon, islandIcon } from '../../ui/icons';
+import { keycap } from '../../ui/keycap';
 import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
@@ -180,6 +181,8 @@ export class SubjectPlaceScene extends Scene {
       const name = label(item.name, 25);
       name.position.set(0, 87);
       node.addChild(bg, icon, name);
+      // A game that takes only a keyboard or a controller says so with a key cap; tapping it still opens its couch course.
+      if (item.mod && !playsByTouch(item.mod)) { const cap = keycap(); cap.position.set(-116, -84); node.addChild(cap); }
       let sparkle: Sparkle | undefined;
       if (item.fresh) {
         sparkle = this.track(new Sparkle(24));

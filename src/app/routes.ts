@@ -18,7 +18,7 @@ import { CouchScene } from './scenes/CouchScene';
 
 export function createRoutes(app: App): Routes {
   return {
-    couch: (play) => void app.show(new CouchScene(app, play)),
+    couch: (play, origin) => void app.show(new CouchScene(app, play, origin)),
     start: () => void app.show(new ChooserScene(app)),
     hub: () => void app.show(new MapScene(app)),
     place: (band) => void app.show(store.data.settings.placeLayout === 'subjects' ? new SubjectPlaceScene(app, band) : new PlaceScene(app, band)),
@@ -30,7 +30,7 @@ export function createRoutes(app: App): Routes {
       // A game that takes only a controller opens its couch puzzle-shelf course; the island's scene has no controller input yet.
       if (!playsByTouch(mod)) {
         const course = FIRST_COURSE[id];
-        if (course) void app.show(new CouchScene(app, course));
+        if (course) void app.show(new CouchScene(app, course, origin ?? { land: 'lantern-lake' }));
         return;
       }
       void app.show(new GameScene(app, mod, playBand(mod.bands, band), story, again, origin, level));

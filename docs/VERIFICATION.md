@@ -7,6 +7,12 @@
 - Found by playing: a stone under a standing owl won the nearest-touch race against the owl, so tapping the owl's feet selected nothing at level 3; stones with an owl on them now belong to the owl.
 - Not run: `world`, `howto`, offline, couch. Not established: a child, an iPad, device speech for the new lines, whether the fireflies read as "these match", whether the pet's longer turn is too long. Open: Stepping stones, Color or shape, the grown-up seat and levels 7–8.
 
+## 2026-10-13 — Lands stage B follow-ups (chunk 17)
+
+- Built [PR #250](https://github.com/rjdunlap/neo/pull/250): a controller-only puzzle's couch course returns to its island origin (`go.couch(play, origin)`, `goToOrigin`), a key cap and a spoken line on those icons, no level picker on the grown-ups' page for them, and Lantern Lodge in `world` and `lands`.
+- Typecheck; full vitest passed (139 files, 1,159 tests, including the new `goToOrigin` test); `npm run build` passed. Browser runs at `GAME_URL=http://localhost:5191`: `BROWSER_SUITE=lands` (every land at every band; the key caps, the tap on a controller-only puzzle from Lantern Lake, "Back to the island" returning to the lake, and the grown-ups' page rows) and `BROWSER_SUITE=world` (subject cards now at all six bands, with a controller-only card's key cap and its return). Briefly restoring the old leave rule made the `lands` check fail; the fix passes. One screenshot checked: Lantern Lake with its key caps.
+- Not run: `couch`/`couchcourse` (the chooser route has no origin and its labels are unchanged), the offline check (no persistence or asset change). Not seen in a browser: the home path's landmark tap for a controller-only game, and a subject card's return, since the card checked depends on which game comes last in a subject. Open: device speech for the new line, and a real keyboard or controller.
+
 ## 2026-10-12 — Discovery concepts converted to roadmap actions (docs only)
 
 - On base `1932eda`, integrated the docs-only Owl Walk merge `82843f9` and preserved its decisions/tracker/verification before the final checks; converted chunk 19 into [ordered discovery actions](ROADMAP.md#discovery-actions), with one-session scope, prerequisites, exit evidence, check tiers and a next-action pointer.
@@ -1049,6 +1055,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `lands`, `world` (Lands stage B follow-ups) | 2026-10-13: `lands` (key caps, the couch course's return to Lantern Lake, grown-ups' page rows) and `world` (subject cards at all six bands including Lantern Lodge) | [Verification entry](#2026-10-13--lands-stage-b-follow-ups-chunk-17) | The home path's controller-only tap and a real keyboard or controller are unchecked |
 | Discovery roadmap actions (docs only) | 2026-10-12: changed local links/anchors and diff formatting | [Action table](ROADMAP.md#discovery-actions) / roadmap-actions verification entry | No runtime changes or new gameplay evidence; action prerequisites and optional policy choices stay open |
 | Discovery/session research (docs only) | 2026-10-12: changed/new local links/anchors and diff check; separate flow-explainer interactions and light/dark narrow layout checked | [Discovery study](DISCOVERY.md) / discovery research entry | No Puddle gameplay/device evidence added; session modes and support-policy alternatives remain proposed |
 | Family experience / roadmap review (docs only) | 2026-10-12: changed/new local Markdown links/anchors, registry-to-document count check and diff check | [Design review](FAMILY-EXPERIENCE.md) / family experience verification entry | No fresh gameplay or device evidence; research sessions and product proposals remain open |
