@@ -15,7 +15,7 @@ How to use it:
 
 | Where | What is there |
 | --- | --- |
-| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | Sing-Along Barn, Number Trails (Read & Do first slice and Fill and Dump are built; its pour slice is on the [roadmap](ROADMAP.md#next-up)) |
+| [Sketches (first drafts of the definition of ready)](#sketches-first-drafts-of-the-definition-of-ready) | Number Trails (Sing-Along Barn, Read & Do first slice and Fill and Dump are built; its pour slice is on the [roadmap](ROADMAP.md#next-up)) |
 | [Sketch for the next one to build](#sketch-for-the-next-one-to-build) | Memory Match 10–12 |
 | [Fun and arcade review](#fun-and-arcade-review-2026-10-09) | Lander and Drift, a real-time grown-up game; waits on a scoring decision |
 | [Flash portals, cozy and brain games](#flash-portals-cozy-and-brain-games-2026-10-11) | Twenty-four proposals and three seeds for parents and older children (Mix & Make, Sort Four, Islands and Sea, Petal Wheels, Garden Queens, Honey Hive and more), the house-rule screen for Flash-portal genres, and what could not be read |
@@ -1015,7 +1015,7 @@ Areas and interactions no game covers yet, read from each game's skills and leve
 
 | Area | Covered now | Still missing | Candidates |
 | --- | --- | --- | --- |
-| **Lap play** | 38 games at Puddle Lagoon, mostly tapping to see something happen; Block Tower (stacking and knocking down) and Pet Says (copying actions) | Pretend use of everyday things, songs she already knows (Song Maker makes random songs; the CDC lists these kinds of skills around 15–18 months), filling and emptying containers (Fill and Dump, built) | Brown Bear Parade, Keepy Uppy, Color Train, [Sing-Along Barn](#gap-review-2026-10-09) |
+| **Lap play** | 39 games at Puddle Lagoon, mostly tapping to see something happen; Block Tower (stacking and knocking down) and Pet Says (copying actions) | Pretend use of everyday things, songs she already knows (Song Maker makes random songs; the CDC lists these kinds of skills around 15–18 months), filling and emptying containers (Fill and Dump, built) | Brown Bear Parade, Keepy Uppy, Color Train, [Sing-Along Barn](#gap-review-2026-10-09) |
 | **Measurement** | Length (Inchworm Measure), weight (Seesaw Balance), time (Clock Tower), money (Market Stall) | Capacity (Fill and Dump's counting levels are built; its pour slice is not), and estimating before measuring | Pour and Fill, Guess the Pumpkin, Count the Peekers |
 | **Number** | Counting, number bonds to ten, a number line to 20, fair shares with leftovers, tens and ones to 39 and equal groups (Lasso Loops) | A number shown as one thing that splits and joins; place value past 39; arrays (rows and columns) | Number Friends, Flip Ten, Number Munch Grid, [Orchard Rows](#gap-review-2026-10-09) |
 | **Shape and space** | Flat shapes, tangrams, symmetry, turning a scene, grid names | 3D shapes, views from above, and words for movement (through, around, over) | Shape Rollers, Skyline View, Bear Hunt Walk, Doghouse Directions |
@@ -1045,7 +1045,6 @@ The review's findings as of 2026-10-09; the full read of the registry is in [the
 
 | Idea / likely range | Play and learning | Smallest useful version | Effort · tag |
 | --- | --- | --- | --- |
-| **Sing-Along Barn / lap–toddler** | Tap and the next note of a song the grown-up sings plays; animals join each verse | Old MacDonald with three animals; each tap plays the animal's sound and the next phrase. Song order, animal words, anticipation | M · new |
 | **Number Trails / preschool–pre-K** | Trace a numeral with the firefly, then see that many things | A `DIGITS` table beside `LETTERS` for Letter Trails; 1 to 5, then 0 to 9, then "make this many ducks". Lowercase letters later | S (digits), M (lowercase) · new |
 | **Day by Day: proposed next modes** | First slice built: weekday order, recorded weather, yesterday/tomorrow and a sunny-day tally ([GAMES](GAMES.md#day-by-day)) | Months, seasons and Caterpillar Week still need their own definitions | S–M · extension |
 | **Mirror Brush / toddler–school** | Paint on one side of a fold and the other side paints itself | A mode of Rainbow Fingers: a fold line and mirrored marks. The mirror does the work, so it needs no prediction and comes first; [Fold a Friend](#extend-existing-games-before-making-duplicates) (predict the unfolded half) follows at about 6 | S · promoted (a live-mirror form of Fold a Friend). The [Rainbow Fingers deep dive](deep-dives/rainbow-fingers.md#fresh-content-inside-existing-levels) plans the live mirror as fold-down-the-middle pages at levels 1–2; a fold button and the prediction stay here |
@@ -1058,10 +1057,8 @@ Already in this notebook and still the right small lap picks: Brown Bear Parade,
 
 ### Sketches (first drafts of the definition of ready)
 
-These three are the nearest to buildable (Fill and Dump's sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#fill-and-dump-2026-10-10) when it was built). The other rows need the same treatment before they move to the roadmap.
+These two are the nearest to buildable (Fill and Dump's sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#fill-and-dump-2026-10-10) when it was built). The other rows need the same treatment before they move to the roadmap.
 
-
-**Sing-Along Barn.** *Fun action:* tap the scene and the tune moves one note on; each verse brings an animal. *Skill:* song order and animal words for the youngest; memory for the tune. *Smallest round:* Old MacDonald, three animals. *Support:* any tap advances the tune; the verse line is spoken ("and on that farm he had a cow"); the animal answers. *Deeper play:* choose who is on the farm, then pick which animal comes next, then repeat a phrase. *Host alternative:* a mode of Song Maker or Peekaboo Barn would hide a game whose point is a known song. *Co-play:* the grown-up sings and she taps, which suits the American Academy of Pediatrics advice in [Design and learning references](#design-and-learning-references). *Constraints:* see the pentatonic note below. A song she plays by copying a card is not hers, so nothing is offered to the tune plaque.
 
 **Number Trails.** *Deep dive stance (2026-10-11, [Letter Trails](deep-dives/letter-trails.md#decisions-for-the-developer) decision 5):* lean toward its own game that shares Letter Trails' stroke module; the letter ladder builds no digit levels. *Fun action:* follow the firefly along a numeral. *Skill:* forming 0 to 9 in stroke order, with the quantity beside it. *Smallest round:* trace 1 to 5 and see that many things. *Support:* a start dot and an arrow at the beginning of each stroke, because the reversed numerals are usually 2, 3, 5 and 7 and children confuse 6 and 9; the existing ordered checkpoints already teach the movement rather than the shape. *Deeper play:* 0 to 9, a numeral in order, "make the number of ducks". *Host:* a mode of Letter Trails; its `LETTERS` table is a map of strokes in a 0 to 1 box and `advanceTrace` is shape-agnostic, so digits are a sibling table plus pictures. Lowercase is larger: it needs a four-line frame (ascender, x-height, descender). Pick one stroke convention (Handwriting Without Tears, D'Nealian and Zaner-Bloser differ) and check it against the publisher's chart before encoding.
 
@@ -1094,7 +1091,7 @@ What was found, and what it means for the sketches. These are starting points, n
 
 ### Suggested order (non-binding)
 
-Weighted to the next few years, because the youngest play comes first: **Sing-Along Barn** for lap and toddler (Fill and Dump is built); **Number Trails** as the cheapest build; **Day by Day is built** (pre-K/school levels 1–3); then, for 6 to 8, **Orchard Rows is built** (school levels 1–3: equal rows, columns and a missing row; [build note](archive/COMPLETED-2026-10-09.md#orchard-rows-first-slice-2026-10-11)); the **touch puzzles** and **Rule Parade** for about 8 and 9; **Mirror Brush** and **Pixel Flipbook** as creative modes whenever convenient. Read & Do now opens printed-word meaning play; its remaining sentence and story modes are proposals.
+Weighted to the next few years, because the youngest play comes first: **Sing-Along Barn is built** for lap and toddler (first slice: Old MacDonald; [build note](archive/COMPLETED-2026-10-09.md#sing-along-barn-first-slice-2026-10-12); Fill and Dump is built too); **Number Trails** as the cheapest build; **Day by Day is built** (pre-K/school levels 1–3); then, for 6 to 8, **Orchard Rows is built** (school levels 1–3: equal rows, columns and a missing row; [build note](archive/COMPLETED-2026-10-09.md#orchard-rows-first-slice-2026-10-11)); the **touch puzzles** and **Rule Parade** for about 8 and 9; **Mirror Brush** and **Pixel Flipbook** as creative modes whenever convenient. Read & Do now opens printed-word meaning play; its remaining sentence and story modes are proposals.
 
 ## Short-ladder audit (2026-10-09)
 
@@ -1547,7 +1544,7 @@ JumpStart Baby (1998, ages 9–24 months) is the closest relative of her current
 | Connect-the-Stars (Baby†) | Connect stars to draw a sky picture | **Not on the island**: Dot Link is a color-chain game. See **Star Dots** below |
 | Picture Fun (Baby†, SuperKids "coloring") | Color part of an amusing picture | Built: Rainbow Fingers |
 | Down on the Farm (Baby 1998†) | Find Teddy's farm friends and hear them | Built: Peekaboo Barn, Animal Snack |
-| Let's Make Music / Sing-a-Long (Baby) | Join a song with a friendly band | Built: Sound Garden, Jelly Drums; sketch Sing-Along Barn |
+| Let's Make Music / Sing-a-Long (Baby) | Join a song with a friendly band | Built: Sound Garden, Jelly Drums, Sing-Along Barn (Old MacDonald) |
 | Music Box (Baby 2000†) | A key press switches which animal sings | The Wind the Music Box trick in a third Quick Tricks show |
 | Dancing Baby (Baby 2000†) | A baby dances to action songs ("Where is Thumbkin?") | Built: Pet Says |
 | Turtle Hop (Baby 2000†) | Frogs and turtles introduce colors | A Color Garden or Frog Hop lap mode; nothing new |
