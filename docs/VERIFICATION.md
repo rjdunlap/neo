@@ -1,5 +1,15 @@
 # Puddle Island verification
 
+## 2026-10-12 — Tile Pairs in Lantern Lake
+
+- Added `tile-pairs` grown-up levels 1–3: seeded solvable stacks of 12/20/24 tiles, touch/controller selection, counted Undo, solver-backed Hint, solvable remaining-picture Shuffle, both demonstrations, spoken support and one shell sticker ([PR #229](https://github.com/rjdunlap/neo/pull/229)). Shuffle counts as help; no timer, loss state or frozen course.
+- Tested `3ee719d` plus final source diff after integrating `origin/main` `644388e`: typecheck/build passed (existing bundle warning). Post-integration unit run: 1,075 passed and six timeouts in five unchanged rule files under concurrent load; one focused `--maxWorkers=2` probe passed all 30 tests in those files. Combined evidence covers all 1,081 tests. Tile rules cover 300 seeded boards, actual legal clearing routes, a tempting pair with no clearing route, and picture-preserving recovery from arbitrary remainders/stranded towers.
+- `GAME_URL=http://localhost:5193 BROWSER_SUITE=tilepairs`: first/last levels, two mismatches/one automatic hint, repeated hint not recounted, pair and shuffle undo, picture preservation, cancellation/resize, one sticker with exact miss/help counts, portrait and held Home returning to Lantern Lake passed. The first route check used a click on the hold button; the isolated hold probe passed and the corrected suite passed. Portrait stack and Lantern Lake icon screenshots inspected.
+- On that URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=tile-pairs` passed levels 1/3 clean in 15.8/31.8s; `BROWSER_SUITE=couchgames COUCH_ONLY=tile-pairs` passed intro, controller lighting, bot round, couch save and child-save isolation; `BROWSER_SUITE=lands LANDS_ONLY=lantern-lake` passed all bands/both orientations and signpost paths. The filtered couch run now skips its unrelated full-guide tail (the initial narrowed guide assertion failed; the corrected filtered run passed). No page errors.
+- Current production preview at `http://localhost:4193` matched `dist/index.html` (`index-CRHZH2Xt.js`); `GAME_URL=http://localhost:4193 npm run test:offline` passed cached assets, reload/progress/reward, map/home, story, treehouse and journal. Added local links/anchors and `git diff --check` passed. Screenshots and route probe retained in ignored `test-results/`.
+- Not run: unchanged full `world`, `picnic`, `couch`/`couchcourse` suites. Real iPad speech/touch, real controllers and whether a person wants another board remain open in the roadmap. The game/bot browser passes before upstream integration are reused: that integration adds optional explicit level ordering, and Tile Pairs keeps a plain 1–3 range.
+
+
 ## 2026-10-13 — Color Garden level 7, light and dark
 
 - Added level 7 (preschool 3–7, pre-K 4–7; toddler unchanged): two blue baskets, light and dark, eight balloons and flowers tinted to match. Items and baskets now carry a `SortKey`; new voice lines, a how-to step scoped to level 7 and `describeLevel`.
@@ -914,6 +924,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `tilepairs`, `fingerdemo`/`couchgames` (`tile-pairs`), `lands` (`lantern-lake`) | 2026-10-12: first/last touch rounds with revision/help, portrait, clean finger demos, controller bot/save, seven-game land fit; build and production offline check | Tile Pairs entry / [PR #229](https://github.com/rjdunlap/neo/pull/229) | Real device/controller/speech and person replay value untested; no course |
 | `lanterntouch`, `lands`, `world`, `couchgames` (six puzzles), `fingerdemo` (`lantern-lights`) | 2026-10-13: Lantern Lights by touch, eleven lands at six bands, hatching and map, couch catalog for the six, demo clean in 12.0 s and 33.5 s; build and offline check | Lands stage B entry / [PR #226](https://github.com/rjdunlap/neo/pull/226) | iPad touch, device speech, Sudoku and the other four have no touch yet |
 | `singalong`, `fingerdemo` (`sing-along-barn`) | 2026-10-12: levels 1 and 3, one sticker with no misses or hints, song order, chosen friends, portrait, interrupted scene; demo clean in 32.2 s and 52.3 s | Sing-Along Barn first slice entry / [PR #219](https://github.com/rjdunlap/neo/pull/219) | iPad touch, device speech, a child's tapping and the tune against a printed source open |
 | Block Tower support words | 2026-10-12: typecheck, 29 focused how-to/registry tests, local links/anchors and diff check | Support 1–6 entry / [PR #213](https://github.com/rjdunlap/neo/pull/213) | Plain-word tier; browser/build not run; device speech/touch and child fit open |

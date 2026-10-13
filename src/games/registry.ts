@@ -76,6 +76,7 @@ import { ferryJam } from './ferry-jam';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
+import { tilePairs } from './tile-pairs';
 import { lanternLights } from './lantern-lights';
 import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
@@ -170,6 +171,7 @@ export const GAMES: GameModule[] = [
   habitatHelpers,
   fillDump,
   readDo,
+  tilePairs,
   lanternLights,
   sudokuGarden,
   pictureLogic,
@@ -183,5 +185,5 @@ export const gameById = (id: string) => GAMES.find((g) => g.id === id);
 /** Whether the island's own scene can play a game: it takes touch unless the module says it takes only a controller. */
 export const playsByTouch = (mod: Pick<GameModule, 'inputs'>) => !mod.inputs || mod.inputs.includes('touch');
 
-/** Couch play looks games up here too. The six grown-up puzzles are island games now (band `grownup`), so there is one list. */
+/** Couch play looks games up here too. The grown-up games are island games now (band `grownup`), so there is one list. */
 export const couchGameById = gameById;

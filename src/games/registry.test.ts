@@ -71,8 +71,8 @@ describe('game registry', () => {
     for (const id of REGION_IDS) expect(GAMES.some((g) => g.region === id && g.bands.includes('prek')), id).toBe(true);
   });
 
-  it('lists the six grown-up puzzles as island games for the grown-up band only, and opens the controller-only ones through the couch', () => {
-    const ids = ['lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'];
+  it('lists the grown-up games as island games for the grown-up band only, and opens the controller-only ones through the couch', () => {
+    const ids = ['tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'];
     for (const id of ids) {
       const g = gameById(id)!;
       expect(g, id).toBeDefined();

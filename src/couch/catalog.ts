@@ -43,6 +43,18 @@ const STICK: PadPart[] = ['stick', 'dpad'];
 
 /** Everything the couch screens need to explain a game. Games themselves stay unaware of it. */
 export const COUCH_INFO: Record<CouchId, CouchInfo> = {
+  'tile-pairs': {
+    goal: 'couch.how.tile-pairs', tagline: 'Remove matching free tiles from a layered stack.',
+    controls: [
+      { parts: STICK, text: 'Move between free tiles.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Choose a tile, then its match. Choose it again to cancel.', keys: 'Enter' },
+      { parts: ['left'], text: 'Undo the last pair or shuffle. Each undo counts.', keys: 'Backspace' },
+      { parts: ['start'], text: 'Pause menu: show a hint or shuffle the remaining pictures into open rows. Shuffle counts as help.', keys: 'Esc' },
+    ],
+    restart: 'Shuffle remaining tiles', hint: 'Show a clearing pair',
+    play: 'turns', faceoff: 'twin', score: { better: 'lower', unit: 'undos and shuffles' },
+    band: 'grownup', demoLevel: 2, level: stop => stop < 2 ? 1 : stop < 4 ? 2 : 3,
+  },
   'penguin-slide': {
     goal: 'couch.how.penguin-slide',
     tagline: 'Plan your slides. Collect both fish on each of two ice puzzles.',

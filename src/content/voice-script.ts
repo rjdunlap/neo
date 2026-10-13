@@ -4,6 +4,15 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'game.tile-pairs': ['Tile Pairs!'],
+  'tile-pairs.go': ['Tap two tiles with the same picture. Their tops must be clear, and a left or right side must be open. Clear the stack!'],
+  'tile-pairs.blocked': ['That tile needs a clear top and an open left or right side. Try a bright tile.'],
+  'tile-pairs.mismatch': ['Those pictures are different. Look for two that are the same.'],
+  'tile-pairs.stuck': ['That choice left no clearing route. Undo can bring it back, or Shuffle lays the remaining tiles in open rows.'],
+  'tile-pairs.hint': ['The outlined pair can start a way to clear the rest.'],
+  'tile-pairs.shuffle': ['The remaining pictures are now in open rows. They can all be paired.'],
+  'tile-pairs.done': ['The stack is clear!'],
+  'couch.how.tile-pairs': ['Move between the free tiles. Choose two with the same picture to remove them. A tile needs a clear top and an open left or right side. Clear the stack.'],
   'game.shape-buddies': ['Shape Buddies!'],
   'buddies.start': ['Make a bridge and a cup for the seed. Choose a friend, change its shape, and drag it to a dock.'],
   'buddies.flatten': ['Flat can make a bridge.'],
