@@ -89,7 +89,7 @@ describe('game registry', () => {
 
   it('plays no background music in a game where she makes the music', () => {
     // Her own sounds are the music; the island's loop would compete with them.
-    const makingMusic = ['beat-builder', 'clap-syllables', 'jelly-drums', 'pet-says', 'rhythm-neighbors', 'song-maker', 'sound-garden'];
+    const makingMusic = ['beat-builder', 'clap-syllables', 'jelly-drums', 'pet-says', 'rhythm-neighbors', 'sing-along-barn', 'song-maker', 'sound-garden'];
     for (const id of makingMusic) {
       const game = gameById(id)!;
       expect(game, id).toBeDefined();

@@ -341,6 +341,7 @@ export const SCRIPT = {
   'tricks.encore-yes': ['Ta-da! Tap the green arrow when you are ready.'],
   'game.bubble-pop': ['Bubbles!'],
   'game.jelly-drums': ['Jelly drums!'],
+  'game.sing-along-barn': ['Sing along!'],
   'game.rainbow-fingers': ["Let's paint!"],
   'game.stickers': ['Your stickers!'],
   'game.peekaboo-barn': ['Peekaboo!'],
@@ -1207,6 +1208,10 @@ export const SCRIPT = {
   'bubble.made': ['{a} and {b} make {n}!'],
   'bubble.notmade': ['{a} and {b} make {total}. We need {n}.'],
 
+  'barn.sing': ['Tap, tap, tap to sing Old MacDonald!'],
+  'barn.invite': ['Who will come to the farm? Tap {count} friends!'],
+  'barn.invited': ['{animal}!', 'Hello, {animal}!'],
+  'barn.done': ['Old MacDonald had a farm! E I E I O!'],
   'jelly.free': ['Tap the jellies to make music!'],
   'jelly.listen': ['Listen!', 'Listen to the jellies!'],
   'jelly.turn': ['Your turn!'],
