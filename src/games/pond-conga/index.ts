@@ -207,12 +207,17 @@ class PondConga implements Game {
 
   /**
    * Touch layout: the pond under the tally with Hint and Start over beneath it, and a line of help under those. The pond is one
-   * target for a swipe, so its cells may be under 64 units; the two buttons are always at least 64 across and tall.
+   * target for a swipe, so its cells may be under 64 units; the two buttons are always at least 64 across and tall. The home and
+   * help buttons sit in the top-left corner, so the pond keeps to the right of them (a crumb must never hide behind one), or on a
+   * tall view goes below them.
    */
   private resizeTouch(v: View) {
-    const p = this.pond, top = 132, btn = 76;
-    this.cell = Math.max(24, Math.min(80, Math.floor((v.w - 60) / p.cols), Math.floor((v.h - top - 16 - btn - 44 - 12) / p.rows)));
-    const w = p.cols * this.cell, h = p.rows * this.cell, x = (v.w - w) / 2;
+    const p = this.pond, btn = 76, rest = 16 + btn + 44 + 12;
+    const beside = Math.min(80, Math.floor((v.w - 124 - 24) / p.cols), Math.floor((v.h - 132 - rest) / p.rows));
+    const below = Math.min(80, Math.floor((v.w - 60) / p.cols), Math.floor((v.h - 212 - rest) / p.rows));
+    const top = beside >= below ? 132 : 212;
+    this.cell = Math.max(24, Math.max(beside, below));
+    const w = p.cols * this.cell, h = p.rows * this.cell, x = top === 132 ? Math.max(124, (v.w - w) / 2) : (v.w - w) / 2;
     this.board.position.set(x, top);
     this.top.position.set(v.w / 2, 96);
     const by = top + h + 16, bw = Math.max(MIN_TOUCH, Math.min(210, Math.floor((v.w - 2 * 170) / 2)));
