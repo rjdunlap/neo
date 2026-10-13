@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-12 — Owl Walk Home deep dive (docs only)
+
+- Wrote [the Owl Walk Home deep dive](deep-dives/owl-walk.md) after a developer play-through of level 2: the tap goes to the owl, the game does the color match, and the owls do not take turns. It records the ladder, ten gaps read from the code, eight reference games with their sources marked opened or search summary, a recommended goal ("choose the move that helps all of us") set against what the catalog already teaches, a reworked level 1–4 and new levels 5–8, nine decisions and eight build slices.
+- Set the tracker row to designed, pointed the IDEAS ladder row at the dive, and added a Waiting-on-the-developer row, a short-ladders row and a person-check item to the roadmap.
+- A read-only throwaway script outside the repo imported `logic.ts` and played greedy turns on 2,000 seeded boards per level for the turn and choice figures in the dive. Nothing under `src/`, `scripts/` or `public/` changed.
+- Checked local Markdown links and `git diff --check`. Not run: typecheck, unit tests, build, browser, demos or offline (docs-only tier).
+- Open: every proposed rule is untested; the goal and the rework wait on the developer's decisions; a child's and an iPad's reaction to stone taps, fireflies, the pet's narrated turn and shape names are not established.
+
 ## 2026-10-12 — Discovery and session-flow research (docs only)
 
 - Wrote [DISCOVERY.md](DISCOVERY.md) for the developer-selected study: Explore/Play entrances, recent/favorite selection, filter-aware suggestions, finite pictured mixes, Just Dance precedents, current routing/intro/result friction and bounded future slices. Primary sources are linked with edition and evidence limits; no product effectiveness or ideal session duration is claimed.
