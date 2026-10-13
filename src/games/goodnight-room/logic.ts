@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * goodnight and it falls asleep; when everyone is asleep the lights go down and the stars come
  * out. Later the voice names who to say goodnight to, then two in order.
  */
-export type NightMode = 'all' | 'named' | 'two' | 'animals' | 'lightLast' | 'count' | 'color';
+export type NightMode = 'all' | 'named' | 'two' | 'animals' | 'lightLast' | 'count' | 'color' | 'except';
 
 export interface NightPlan {
   mode: NightMode;
@@ -27,6 +27,7 @@ export const PLANS: NightPlan[] = [
   { mode: 'lightLast', things: 6, requests: 1, asleep: 0, name: 'Say goodnight to everyone, keeping the light on until last' },
   { mode: 'count', things: 6, requests: 0, asleep: 0, name: 'Count out goodnights for 2–4 friends, choosing any awake friends' },
   { mode: 'color', things: 4, requests: 1, asleep: 0, name: 'Say goodnight to the orange or brown friends, in any order' },
+  { mode: 'except', things: 6, requests: 1, asleep: 0, name: 'Say goodnight to everyone except the lamp or lantern: keep a night-light awake' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -99,6 +100,7 @@ export function makeNight(plan: NightPlan, rng: Rng): Night {
 export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[], color: string | null = null): Thing[][] {
   if (plan.mode === 'all' || plan.mode === 'count') return [];
   if (plan.mode === 'color') return [room.filter(t => COLORS[t].main === color)];
+  if (plan.mode === 'except') return [room.filter(t => !isLight(t))];
   if (plan.mode === 'animals') return [room.filter(isAnimal)];
   if (plan.mode === 'lightLast') return [[...room.filter(t => !isLight(t)), ...room.filter(isLight)]];
   const order = rng.shuffle([...room]);
@@ -115,7 +117,7 @@ export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefine
   if (plan.mode === 'count') return asleep.size < targetCount ? room.find(t => !asleep.has(t)) ?? null : null;
   if (plan.mode === 'all') return room.find((t) => !asleep.has(t)) ?? null;
   if (plan.mode === 'lightLast') return request?.find(t => !asleep.has(t) && (!isLight(t) || request.every(other => isLight(other) || asleep.has(other)))) ?? null;
-  if (plan.mode === 'animals' || plan.mode === 'color') return request?.find(t => !asleep.has(t)) ?? null;
+  if (plan.mode === 'animals' || plan.mode === 'color' || plan.mode === 'except') return request?.find(t => !asleep.has(t)) ?? null;
   return request?.[step] ?? null;
 }
 
@@ -124,5 +126,5 @@ export function acceptsTap(plan: NightPlan, request: readonly Thing[], step: num
   if (asleep.has(thing)) return false;
   if (plan.mode === 'count') return asleep.size < targetCount;
   if (plan.mode === 'lightLast') return request.includes(thing) && (!isLight(thing) || request.every(t => isLight(t) || asleep.has(t)));
-  return plan.mode === 'all' || ((plan.mode === 'animals' || plan.mode === 'color') ? request.includes(thing) : request[step] === thing);
+  return plan.mode === 'all' || ((plan.mode === 'animals' || plan.mode === 'color' || plan.mode === 'except') ? request.includes(thing) : request[step] === thing);
 }

@@ -56,7 +56,7 @@ describe('Goodnight Room', () => {
         const asked = rs.flat();
         expect(new Set(asked).size).toBe(asked.length);
         for (const t of asked) expect(room).toContain(t);
-        for (const r of rs) expect(r).toHaveLength(plan.mode === 'two' ? 2 : plan.mode === 'animals' ? 3 : plan.mode === 'lightLast' ? 6 : plan.mode === 'color' ? 2 : 1);
+        for (const r of rs) expect(r).toHaveLength(plan.mode === 'two' ? 2 : plan.mode === 'animals' ? 3 : plan.mode === 'lightLast' ? 6 : plan.mode === 'color' ? 2 : plan.mode === 'except' ? 5 : 1);
       }
     }
   });
@@ -195,6 +195,39 @@ describe('Goodnight Room', () => {
       }
     }
     expect([...colors].sort()).toEqual(['brown', 'orange']);
+  });
+
+  it('leaves exactly the night-light awake in both rooms, in any answer order, with useful hints', () => {
+    const plan = PLANS[8];
+    expect(plan.mode).toBe('except');
+    const rooms = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const night = makeNight(plan, rng);
+      expect(night).toEqual(makeNight(plan, new Rng(seed)));
+      rooms.add(night.setting.id);
+      const [request] = makeRequests(plan, rng, night.room);
+      const light = night.room.find(isLight)!;
+      expect(night.room.filter(isLight)).toEqual([light]);
+      expect(night.asleep).toEqual([]);
+      expect(request).toEqual(night.room.filter(t => t !== light));
+      expect(request.length).toBeGreaterThanOrEqual(3);
+      for (const order of [request, [...request].reverse(), rng.shuffle([...request])]) {
+        const asleep = new Set<Thing>();
+        for (const friend of order) {
+          expect(acceptsTap(plan, request, asleep.size, asleep, light)).toBe(false);
+          const hint = thingToTap(plan, request, asleep.size, asleep, night.room)!;
+          expect(acceptsTap(plan, request, asleep.size, asleep, hint)).toBe(true);
+          expect(acceptsTap(plan, request, asleep.size, asleep, friend)).toBe(true);
+          asleep.add(friend);
+          expect(acceptsTap(plan, request, asleep.size, asleep, friend)).toBe(false);
+        }
+        expect(thingToTap(plan, request, asleep.size, asleep, night.room)).toBeNull();
+        expect(night.room.filter(t => !asleep.has(t))).toEqual([light]);
+        expect(acceptsTap(plan, request, asleep.size, asleep, light)).toBe(false);
+      }
+    }
+    expect([...rooms].sort()).toEqual(['barn', 'bedroom']);
   });
 
   it("gives the ghost finger's bot only right taps, until the room is asleep: everyone awake once, or each thing named in order", () => {
