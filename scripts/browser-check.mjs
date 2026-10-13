@@ -685,8 +685,16 @@ async function pictureTouchPlay() {
 async function singBarnPlay() {
   const tapNotes = (n) => page.evaluate(async (n) => { for (let i = 0; i < n; i++) { kit.tap(512, 300); await kit.sleep(130); } }, n);
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { idx: g.idx, total: g.song.length, phase: g.phase, singer: g.singer, order: [...g.order], placed: [...g.placed] }; });
+  // Each round draws one of two songs from its seed; relaunch until the round sings the one under test.
+  const launchTune = async (level, id) => {
+    for (let k = 0; k < 20; k++) {
+      await launch('sing-along-barn', level);
+      if (await page.evaluate(() => neo.scene.game.tune.id) === id) return;
+    }
+    assert.fail(`no ${id} round in 20 launches`);
+  };
   // Level 1: the farm picks one animal; every tap is the next note, mashing fast still sings it, and nothing can be wrong.
-  await launch('sing-along-barn', 1);
+  await launchTune(1, 'macdonald');
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
   let st = await state();
   assert.deepEqual([st.phase, st.total, st.order.length], ['sing', 12 + 13, 1]);
@@ -704,8 +712,26 @@ async function singBarnPlay() {
   await tapNotes(1); await finished('sing-along-barn');
   assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1);
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Hot Cross Buns, level 2: two friends, a six-note opening, then "One a penny, two a penny, hot cross buns" for each; a friend answers on "buns" and has its moment at the door before the next comes out.
+  await launchTune(2, 'buns');
+  st = await state();
+  assert.deepEqual([st.phase, st.total, st.order.length], ['sing', 6 + 2 * 11, 2]);
+  await tapNotes(6);
+  st = await state();
+  assert.equal(st.singer, st.order[0], 'the first friend comes out after the opening');
+  await tapNotes(3); await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  await screenshot('sing-along-barn-2-buns-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  await tapNotes(7); st = await state();
+  assert.deepEqual([st.idx, st.singer], [16, st.order[0]], 'the last "buns" of the first verse is still to come');
+  await tapNotes(1); await page.waitForTimeout(150);
+  assert.equal((await state()).singer, st.order[0], 'the friend answers at the door first');
+  await page.waitForTimeout(900);
+  assert.equal((await state()).singer, st.order[1], 'then the second friend comes out');
+  await tapNotes(11); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
-  await launch('sing-along-barn', 3);
+  await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(700);
   await screenshot('sing-along-barn-3-invite-portrait');
@@ -728,7 +754,7 @@ async function singBarnPlay() {
   // Leave on the last notes: the finale must not fire after the scene is gone.
   await page.evaluate(() => neo.go.land('music-mountain')); await scene('LandScene'); await page.waitForTimeout(900);
   assert.deepEqual(errors, []);
-  log('Sing-Along Barn: levels 1 and 3, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order, portrait and leaving mid-song passed');
+  log('Sing-Along Barn: levels 1 and 3 (Old MacDonald) and a Hot Cross Buns round, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order, portrait and leaving mid-song passed');
 }
 
 async function numberTrailsPlay() {

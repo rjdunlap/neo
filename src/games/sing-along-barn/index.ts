@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, planFor, type Animal, type Note, type SingPlan } from './logic';
+import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, pickTune, planFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -34,6 +34,8 @@ type Phase = 'invite' | 'sing' | 'done';
 
 class SingAlongBarn implements Game {
   private readonly plan: SingPlan;
+  /** The song this round sings, drawn from the seed before the friends are. */
+  private readonly tune: Tune;
   private readonly backdrop: Backdrop;
   private readonly barn = new Graphics();
   private readonly barnWrap = new Container();
@@ -55,6 +57,7 @@ class SingAlongBarn implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.tune = pickTune(ctx.rng);
     this.view = ctx.view;
     this.phase = this.plan.invite ? 'invite' : 'sing';
     this.order = this.plan.invite ? [] : farmAnimals(this.plan, ctx.rng);
@@ -82,7 +85,7 @@ class SingAlongBarn implements Game {
         c.hitArea = new Circle(0, BODY_Y, 100);
       });
     } else {
-      this.song = makeSong(this.order);
+      this.song = makeSong(this.order, this.tune);
     }
   }
 
@@ -192,7 +195,7 @@ class SingAlongBarn implements Game {
   private async gather() {
     await this.ctx.tw.wait(1.1);
     this.order = [...this.invited];
-    this.song = makeSong(this.order);
+    this.song = makeSong(this.order, this.tune);
     for (const a of ANIMALS) {
       const c = this.friends.get(a)!;
       const i = this.order.indexOf(a);
@@ -215,7 +218,7 @@ class SingAlongBarn implements Game {
     this.phase = 'sing';
     this.tapLayer.eventMode = 'static';
     this.drawBeads();
-    void this.ctx.instruct('barn.sing');
+    void this.ctx.instruct(this.tune.id === 'buns' ? 'barn.sing.buns' : 'barn.sing');
   }
 
   /** Any touch anywhere moves the tune on one note. Always music, never a mistake. */
@@ -255,8 +258,13 @@ class SingAlongBarn implements Game {
     }
     const next = this.song[this.idx];
     if (note.verseEnd) {
-      if (note.animal) this.sendHome(note.animal);
-      if (next.animal) this.bringOut(next.animal);
+      const change = () => {
+        if (note.animal) this.sendHome(note.animal);
+        if (next.animal) this.bringOut(next.animal);
+      };
+      // When the friend answers on the verse's very last note (Hot Cross Buns), it gets its moment at the door first.
+      if (note.answers) void this.ctx.tw.wait(0.7).then(change);
+      else change();
     }
     this.drawBeads();
   }
@@ -307,7 +315,7 @@ class SingAlongBarn implements Game {
     const colors = RAINBOW.map((c) => swatch[c].fill);
     this.ctx.particles.burst(this.view.w / 2, 140, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
     sfx.tada();
-    void this.ctx.say('barn.done');
+    void this.ctx.say(this.tune.id === 'buns' ? 'barn.done.buns' : 'barn.done');
     await this.ctx.tw.wait(1.8);
     // Nobody made a mistake and nobody asked for help: singing is always right.
     this.ctx.finish({ misses: 0, hints: 0 });
@@ -427,11 +435,11 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
-    return p.invite ? `Old MacDonald; choose ${friends} to join the song` : `Old MacDonald; tap to sing, ${friends} visit`;
+    return p.invite ? `Old MacDonald or Hot Cross Buns; choose ${friends} to join the song` : `Old MacDonald or Hot Cross Buns; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
-  coplayHint: 'Sing the short "Old MacDonald" while {name} taps the next note: the first two lines, then "And on that farm he had a …, E-I-E-I-O" for each friend. Make each animal sound together.',
-  offScreen: 'Sing Old MacDonald with stuffed animals: bring out one for each verse and make its sound together.',
+  coplayHint: 'Sing the short song while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse.',
+  offScreen: 'Sing Old MacDonald or Hot Cross Buns with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,
