@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Memory Match familiar picture decks (2026-10-13)
+
+[PR #264](https://github.com/rjdunlap/neo/pull/264) adds three seeded picture families at existing levels 1–5: the original eight color/shape identities, eight island friends including Pip, and six fruits plus balloon/flower. One family per board, sampled without duplicate identities; each pair shares the same code-drawn picture and spoken name. Static thumbnails fit the existing cards. Levels, bands, board sizes, matching/help/replay, couch scoring and courses, sticker/icon drawings and save schema remain unchanged. Dot arrangements and vehicles are separate future slices; child recognition and actual device speech remain unchecked.
+
+
 ### Penguin Slide 9 and Tangram Town 8 (2026-10-13)
 
 Built [PR #263](https://github.com/rjdunlap/neo/pull/263). Penguin Slide 9 offers two 6×5 ponds with one fish, three rocks and two movable blocks. Four authored solver-checked ponds become sixteen seeded reflected arrangements; best routes take 6–9 slides. Freezing either block makes the route worse or impossible, so both stopping places matter. Existing steering, undo and constructive hints remain; school is 2–9, with no course changes.

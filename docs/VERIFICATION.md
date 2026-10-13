@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-13 — Memory Match familiar picture decks
+
+- [PR #264](https://github.com/rjdunlap/neo/pull/264), base `5a13c3b`, claim `b2441be` plus final working diff: seeded shape/friend/fruit-and-prop families at levels 1–5; same pair identities drive rendering and spoken names.
+- `npm run typecheck`, 28 focused Memory Match/how-to tests, and `npm run build` passed. Tests cover every family at every picture level across 100 seeds, unique partners/labels, reproducibility, all 24 identities reached, thumbnail bounds and original sticker/icon fingerprints, plus existing matching/hint/bot properties.
+- Art montage at `http://localhost:5197` rendered all 24 faces at 112-unit card width with no page errors; reviewed `test-results/memory-familiar-pictures.png`. Friends are static and centered; fruit/props fit with margins. Local probe `test-results/memory-art.mjs` uses an isolated browser context; no real saves touched.
+- Markdown local links/anchors and `git diff --check` passed. Initial Chrome launch needed sandbox escalation; an initial preview import created a duplicate Pixi extension registration, resolved by importing through Vite's normal module resolver. These were probe setup failures.
+- Not run: gameplay/ghost-finger, couch/world/offline or full local units (content only; input, layout, pairs/accounting, navigation and persistence unchanged). Actual device speech and child recognition remain open. Session server stopped after review.
+
+
 ## 2026-10-13 — Penguin Slide 9 and Tangram Town 8
 
 - [PR #263](https://github.com/rjdunlap/neo/pull/263), base `463f16f`, claim `a972c05` plus implementation diff: four two-block ponds reflected into sixteen seeded arrangements at Penguin 9; turn-only picture repair at Tangram 8. School maxima 9/8; younger ranges, IDs/pins and courses preserved.
@@ -1135,6 +1144,7 @@ The last recorded pass of each browser suite (suite names and filters are in the
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Memory Match picture content | 2026-10-13: 28 focused tests, typecheck/build, 24-face art montage at 112-unit cards | [Verification entry](#2026-10-13--memory-match-familiar-picture-decks) / [PR #264](https://github.com/rjdunlap/neo/pull/264) | Device speech and child recognition open; interaction evidence unchanged |
 | Penguin Slide 9 / Tangram Town 8 (`woods`, `creative`, `fingerdemo`), production offline | 2026-10-13: paired useful blocks, free revision/check/help, clean 27.0/5.1 s demos, portraits, full units/build and current-bundle offline pass | [Verification entry](#2026-10-13--penguin-slide-9-and-tangram-town-8) / [PR #263](https://github.com/rjdunlap/neo/pull/263) | Real iPad input/speech and child understanding open |
 | Penguin Slide 8 and Tangram Town 7 (`woods`, `creative`, `fingerdemo`) | 2026-10-13: new top-level play, both Tangram covers/free spare/compatible help, fixed-slot regression, clean 18.1/13.8 s demos and portrait reviews | [Verification entry](#2026-10-13--penguin-slide-8-and-tangram-town-7) / [PR #262](https://github.com/rjdunlap/neo/pull/262) | iPad input/speech and child understanding open |
 | Penguin Slide 7 (`woods`, `fingerdemo`) | 2026-10-13: two-fish block planning, undo/hint, complete round/sticker, clean 19.8 s demo and portrait | [Verification entry](#2026-10-13--penguin-slide-level-7-two-fish-and-a-block) / [PR #261](https://github.com/rjdunlap/neo/pull/261) | Actual iPad taps, speech and child planning open |
