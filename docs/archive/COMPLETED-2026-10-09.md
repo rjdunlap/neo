@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Number Nook first slice (2026-10-13)
+
+A new touch-only `number-nook` puzzle for `grownup` in Lantern Lake, separate from the eight controller-ready grown-up games. Tap beside the gap to restore row order; the target miniature and green placed tiles explain the goal. Three seeded boards start exactly 4/8/14 slides away (2×2, 2×3, 3×3). Exhaustive reverse search gives useful shortest-route help after any legal exploration. Undo and Start over preserve accounting; unsupported tile taps teach adjacency and every second miss supplies help. Spoken support, a level-scoped how-to card and ghost-finger bot are built. Implemented and verified. [Checks](../VERIFICATION.md#2026-10-13--number-nook-first-slice); iPad comfort, device speech and person play remain open.
+
 ### Memory Match familiar picture decks (2026-10-13)
 
 [PR #264](https://github.com/rjdunlap/neo/pull/264) adds three seeded picture families at existing levels 1–5: the original eight color/shape identities, eight island friends including Pip, and six fruits plus balloon/flower. One family per board, sampled without duplicate identities; each pair shares the same code-drawn picture and spoken name. Static thumbnails fit the existing cards. Levels, bands, board sizes, matching/help/replay, couch scoring and courses, sticker/icon drawings and save schema remain unchanged. Dot arrangements and vehicles are separate future slices; child recognition and actual device speech remain unchecked.
