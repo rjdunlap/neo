@@ -32,7 +32,7 @@ Ranges (`LEVELS` in `index.ts`): lap 1–2, toddler 1–3, preschool 2–4, pre-
 8. **The sticker pool** (four colors, three poses) has no pinned test; any new pose would redraw stickers she owns.
 9. **`wave` always raises the mitten on the right of the screen.** There are no left or right words anywhere, which is right, but the game states no convention: the pet faces her, so its screen-right hand is her left if she treats it as a person and her right if she treats it as a mirror.
 10. **The "Pet says" tricks are always "no name".** A trick is only the move said without "{pet} says"; real Simon Says also tempts with the wrong name or with "do this / do that".
-11. **Person checks open:** whether a one-year-old copies at all or just taps the pet; whether the mittens read as hands; whether the tune and freeze feel like a game or a wait; whether grown-ups find the arrow ([roadmap](../ROADMAP.md#needs-a-person-or-a-device): "Pet Says as co-play").
+11. **Person checks open:** whether a one-year-old copies at all or just taps the pet; whether the mittens read as hands; whether the tune and freeze feel like a game or a wait; whether grown-ups find the arrow ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device): "Pet Says as co-play").
 
 ## Similar games
 

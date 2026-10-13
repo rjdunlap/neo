@@ -1,6 +1,6 @@
 # Couch play
 
-How to set up and play the grown-ups' couch route on a Mac with a TV, controllers or a keyboard. It runs in a desktop browser on the computer; the game does not run on the Switch console. How it works inside is in [DESIGN](DESIGN.md#couch-play); open questions for real play are in the [roadmap](ROADMAP.md#needs-a-person-or-a-device). Controller code can be exercised with simulated devices, but physical Switch controllers, Joy-Con pairing and TV latency still need your hands-on check.
+How to set up and play the grown-ups' couch route on a Mac with a TV, controllers or a keyboard. It runs in a desktop browser on the computer; the game does not run on the Switch console. How it works inside is in [DESIGN](DESIGN.md#couch-play); open questions for real play are in the [roadmap](DEVICE-CHECKS.md#needs-a-person-or-a-device). Controller code can be exercised with simulated devices, but physical Switch controllers, Joy-Con pairing and TV latency still need your hands-on check.
 
 ## Pair your original Switch controllers
 

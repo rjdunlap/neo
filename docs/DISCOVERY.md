@@ -154,7 +154,7 @@ Before implementation, every authored mix needs its explicit game IDs, resolved-
 
 Young co-play can favor an adult-prepared short picture sequence. A preschooler may enjoy knowing what is next; a school-age player may want to replace or arrange stops; an adult may want literal search, favorites, a thoughtful puzzle mix or shuffle. These are hypotheses, not age rules. Offer the same open routes with suitable presentation and let people choose.
 
-The first pilot credits one active profile, with the ordinary co-play prompts. “Family mix” must not imply that every stop has multiplayer roles. Genuine shared-role filters and multi-profile turns wait on the existing [seat/credit decisions](ROADMAP.md#waiting-on-the-developer). Changing the active person clears the transient itinerary and rejects stale result/navigation callbacks.
+The first pilot credits one active profile, with the ordinary co-play prompts. “Family mix” must not imply that every stop has multiplayer roles. Genuine shared-role filters and multi-profile turns wait on the existing [seat/credit decisions](WAITING-ON-DEVELOPER.md#waiting-on-the-developer). Changing the active person clears the transient itinerary and rejects stale result/navigation callbacks.
 
 Later, a per-profile **Start with Explore / Start with Play** preference could suit returning players. Default to the present map; do not silently infer a preferred launcher or restore a different person’s queue. Saving preferences, custom mixes or incomplete itinerary receipts is a separate bounded save/migration/backup slice. Completed game progress already survives leaving; unfinished-round state generally does not.
 

@@ -880,7 +880,7 @@ Ran: typecheck and 128 focused tests (difficulty, registry with a permutation ch
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=weather-wardrobe FINGER_LEVELS=7` completed cleanly in 20.7 seconds.
 - No build or full unit suite was run. iPad target feel, device speech and child play remain open.
 
-What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](../ROADMAP.md#needs-a-person-or-a-device), not here.
+What has actually been checked, so nobody re-runs a check that already counts. How much to run for which change is the [verification budget in AGENTS.md](../../AGENTS.md#verification-budget): rule tests first, one filtered browser pass for what is new, the long suites only before a release. A suite recorded as passing for code that has not changed since does not need running again. "Not run" is an honest entry. Open checks that need a person, an iPad, a TV or real controllers are kept in one list in the [roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device), not here.
 
 ## 2026-10-11 — Market Stall deep dive
 

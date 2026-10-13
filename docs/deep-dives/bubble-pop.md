@@ -38,7 +38,7 @@ The ranges are lap 1–3, toddler 1–6, preschool 4–9, pre-K 6–10 and schoo
 6. **Count and bonds bubbles show numerals only,** so the quantity is never seen. Duck Pond already uses a convention that dots beside a number are there to count.
 7. **The sum-5 level draws only two different facts** (1+4 and 2+3, each twice across four pairs); the sum-10 level has each of five facts once, so every bubble has exactly one partner. Both are fair (a test pairs greedily from any order) but the first is repetitive.
 8. **One background.** Every round is the same shore, which the audit's round three also named (scenes and pictures in bubbles).
-9. Person checks still open: lap level 1 with a real child, and the iPad ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)).
+9. Person checks still open: lap level 1 with a real child, and the iPad ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 **Target sizes.** Every plan's smallest radius times `TAP_REACH` (1.2) is a diameter of at least 100 (a test asserts it); level 9's smallest bubble is 50, so 120 units.
 
@@ -150,7 +150,7 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built): each is
 6. **The below-level-1 and between-level entries** wait on the two level-order decisions already on the roadmap; "blow, then pop" additionally needs the person check above.
 7. **Skip-counting words** (tens and fives) are unverified on a device, the same open question as Opposites' un- words.
 
-The level-order decisions already have a row in [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer); the others are added there as one row.
+The level-order decisions already have a row in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); the others are added there as one row.
 
 ## Build slices, in order
 

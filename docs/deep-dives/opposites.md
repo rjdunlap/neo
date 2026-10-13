@@ -28,7 +28,7 @@ Level windows are `LEVELS` in `index.ts`: lap 1–1, toddler 1–2, preschool 2�
 - **The flip is silent apart from the word.** The bear does not stomp and the snail does not creep.
 - **Level 2 is a coin flip** (two cards) and level 1 is a spoken word with no check that she took it in. Both are fine for the bands, since they carry no penalty, but they offer little to grow into.
 - **School is not served.** Every pair is an adjective, preposition or noun shown by a picture. The curriculum asks for more (see Similar games).
-- Person checks still open: whether a one-year-old holds a flip, and the real iPad ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)).
+- Person checks still open: whether a one-year-old holds a flip, and the real iPad ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 ## Similar games
 
@@ -132,7 +132,7 @@ Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built); an easie
 2. **Level order and windows.** Lean: 5 Which two?, 6 In between, 7 Line them up, 8 Only the word, 9 Un- words, 10 Two answers; pre-K 3–7 and school 7–10. Lap, toddler and preschool stay as they are.
 3. **Is reading-lite acceptable on levels 8–9?** The spoken word is always there and the pictures carry the answer; the printed word is an extra, never required. The "un" bubble is the only part that is about the letters. Device speech for the un- words is unchecked either way.
 4. **Families.** Lean: enforce the family rule for every level-3+ round and fix it in a test, so a reasonable answer is never marked wrong.
-5. **Levels below level 1** wait on the existing level-order and range-skip rows in [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer); no new row.
+5. **Levels below level 1** wait on the existing level-order and range-skip rows in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); no new row.
 
 ## Build slices, in order
 

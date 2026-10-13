@@ -17,7 +17,7 @@ The [family experience review](../FAMILY-EXPERIENCE.md) adds a design lens: what
    - **Fresh content** inside existing levels.
    - **New levels appended on top**, never renumbered.
    - **Openings to a younger band** from level 1.
-   - **Easier entries or levels between existing ones**, appended with stable IDs and placed using the built band's `order`; declare `entryLevels` for appended easy entry IDs so birthdays land safely. Remaining content, band and accounting decisions stay under [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer).
+   - **Easier entries or levels between existing ones**, appended with stable IDs and placed using the built band's `order`; declare `entryLevels` for appended easy entry IDs so birthdays land safely. Remaining content, band and accounting decisions stay under [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer).
 
    For each level write:
    - its first round;

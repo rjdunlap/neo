@@ -45,7 +45,7 @@ To get it there:
 - **A branch not yet merged:** with the phone on the same Wi-Fi, run `npm run dev:lan` and open the "Network" address it prints. That page is plain HTTP, so there is no install and no offline mode; it is for looking and playing.
 - **On the computer:** Chrome's device toolbar (⌥⌘I, then ⇧⌘M) with an iPhone preset, rotated sideways, shows the layout. It does not fake a notch: to see the safe-area handling, set `--safe-left`, `--safe-right` and `--safe-bottom` on `<html>` in the console (for example `document.documentElement.style.setProperty('--safe-left', '47px')`).
 
-Couch play is for a computer or TV with a keyboard or controller and is not a phone feature. Sound should play through an iPhone's silent switch (iOS 16.4 and later, as on the iPad) and speech uses the phone's own voices; neither has been heard on a phone yet (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
+Couch play is for a computer or TV with a keyboard or controller and is not a phone feature. Sound should play through an iPhone's silent switch (iOS 16.4 and later, as on the iPad) and speech uses the phone's own voices; neither has been heard on a phone yet (see the [roadmap](docs/DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 ## The island and its games
 
@@ -53,7 +53,7 @@ The island is a world of **eleven themed lands**: **Bubble Beach** (4 games), **
 
 **Who's playing?** is the front door: a card for each person on the device (a friend's face and a name) and **Add a player** (a name, a birth month and year, and a friend). A **tap or click** opens the island as that person; **Enter or a controller button** opens couch play with that person as Player 1, and so does the small controller button on each card. Their birth month and year set their home spot and where levels start, and move them up by themselves; every land stays open. The map's top-left button comes back here for someone else's turn.
 
-There are ninety games; the child games are listed below and the grown-up games in the Lantern Lake table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), where 57 games play their most demanding levels, and "grownup" (13 and up) holds the eight puzzles of Lantern Lake. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/ROADMAP.md#needs-a-person-or-a-device)).
+There are ninety games; the child games are listed below and the grown-up games in the Lantern Lake table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), where 57 games play their most demanding levels, and "grownup" (13 and up) holds the eight puzzles of Lantern Lake. The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 | Game | Ages | Starts as | Grows into |
 | --- | --- | --- | --- |

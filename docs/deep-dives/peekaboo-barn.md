@@ -34,7 +34,7 @@ The ranges are lap 1–2, toddler 1–5, preschool 4–8 and pre-K 6–8 (`LEVEL
 5. **Free play never nudges.** Only a missed question sets `Spot.hint`, so a child who does nothing on level 1 sees nothing change after the first instruction.
 6. **Levels 1 and 2 differ by quantity only** (3 places and 8 reveals; 4 places and 12). The only depth a lap child has is more of the same.
 7. **One scene, four covers, seven animals, no cover motion** (only the wiggle).
-8. **Person checks open:** lap level 1 with a real child ([roadmap](../ROADMAP.md#needs-a-person-or-a-device)), and whether the bear's growl is kind to a one-year-old (not asked anywhere yet).
+8. **Person checks open:** lap level 1 with a real child ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)), and whether the bear's growl is kind to a one-year-old (not asked anywhere yet).
 
 The abandon-cards page error that the 2026-10-09 ghost-finger entry in [VERIFICATION.md](../VERIFICATION.md) lists as unfixed was fixed by the scene-teardown change recorded above it in the same file (40 cards, 0 errors), so it is not a gap.
 

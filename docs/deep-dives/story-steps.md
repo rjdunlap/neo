@@ -103,7 +103,7 @@ Ranges after these: toddler 1–2, preschool 2–5, pre-K 4–8, school 6–11 (
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-These would be appended, not renumbered, and a band's range would have to skip levels ("May a band's range skip levels?" in [Waiting on the developer](../ROADMAP.md#waiting-on-the-developer)).
+These would be appended, not renumbered, and a band's range would have to skip levels ("May a band's range skip levels?" in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer)).
 
 - **Level 0a, one picture grows:** two cards, no distractor, no wrong answer possible; the other card is the only one on the tray. Dropping it plays a one-second animation (the block lands, the sprout grows). Lap and toddler. Rule test: no choices but the right card; a card dropped anywhere near the space is accepted.
 - **Level 0b, press the picture to watch:** three cards that play in order when tapped. A story *told*, not asked. Lap.
