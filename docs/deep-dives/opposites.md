@@ -154,7 +154,7 @@ Each is sized for one session. The slices that add a level are built in level or
 
 Twelve pairs now: tall/short flowers, an on/off lamp, an awake/asleep cat, and a ball in/out of a basket enter at level 2. The eight-pair lap pool, four levels and band windows stay unchanged. Each concept has a lowest level and a family; size/stature, mood/wake, lid/cup and height/basket cannot compete on an opposite-choice or pair board. Words are unique and the eight-entry sticker pool is explicitly pinned. The how-to finish describes each mode's real completion count and the pair step is bounded to level 4.
 
-Typecheck and 30 focused rule/how-to/registry tests passed. The filtered `woods` play passed levels 2–4 with misses, hints, saved scores and stickers; both sides of the four new pairs were reviewed at card size. [Verification](../VERIFICATION.md#2026-10-10--opposites-content-and-fairness) records the tested tree. Device speech, iPad touch and child understanding remain open. Next: slice 2, same-subject variation and an acting flip.
+Typecheck and 30 focused rule/how-to/registry tests passed. The filtered `woods` play passed levels 2–4 with misses, hints, saved scores and stickers; both sides of the four new pairs were reviewed at card size. [Verification](../archive/VERIFICATION-2026-10-07-13.md#2026-10-10--opposites-content-and-fairness) records the tested tree. Device speech, iPad touch and child understanding remain open. Next: slice 2, same-subject variation and an acting flip.
 
 ### Slice 2 built (2026-10-11)
 
