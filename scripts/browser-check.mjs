@@ -5081,6 +5081,13 @@ async function shortlistBatch() {
       if (await page.evaluate(() => neo.scene.game.finished)) break;
       await tap('neo.scene.game.deck');
       await page.waitForFunction(() => neo.scene.game.card && !neo.scene.game.busy, null, { timeout: 20000 });
+      if (level === 1 && t === 1) {
+        // The owl is on a stone now: tapping it (what the old game taught) is not a miss, only a reminder to tap the stone.
+        const before = await counts();
+        await tap('neo.scene.game.owls[0].critter');
+        await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+        assert.deepEqual(await counts(), before, 'her own owl, tapped on its stone, is not a miss');
+      }
       // Which owl moves, where it lands, a stone of another color, and (on the levels that ask) an owl that hops less.
       const plan = await page.evaluate(async () => {
         const L = await import('/src/games/owl-walk/logic.ts'); const g = neo.scene.game; const spots = g.owls.map((o) => o.spot);

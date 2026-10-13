@@ -81,6 +81,7 @@ type Hit = { kind: 'stone'; i: number } | { kind: 'owl'; i: number } | { kind: '
 const STONE_REACH = 56;
 const OWL_REACH = 62;
 const NEST_REACH = 95;
+const RING_REACH = 44;
 
 /** "red heart": the color and the shape a stone carries, so a spoken miss can name what was touched. */
 const stoneName = (color: ColorName) => (MARK[color] ? `${color} ${MARK[color]}` : color);
@@ -355,6 +356,15 @@ class OwlWalk implements Game {
     this.owls.forEach((o, i) => {
       if (o.spot < this.path.length) consider({ kind: 'owl', i }, { x: o.critter.x, y: o.critter.y - 38 }, OWL_REACH);
     });
+    // On the farthest level the numbered rings are the most eye-catching thing on the path: touching one means its owl.
+    if (this.plan.mode === 'farthest' && this.card) {
+      const spots = this.owls.map((o) => o.spot);
+      this.owls.forEach((o, i) => {
+        if (o.spot >= this.path.length) return;
+        const at = this.spotAt(hop(this.path, spots, i, this.card!), i);
+        consider({ kind: 'owl', i }, { x: at.x, y: at.y - 98 }, RING_REACH);
+      });
+    }
     return best;
   }
 
@@ -385,9 +395,7 @@ class OwlWalk implements Game {
     if (!color || this.busy) return;
     const mode = this.plan.mode;
     if (mode === 'one' || mode === 'turns') {
-      // These levels choose the stone, not the owl: an owl on a stone is that stone (a friend sitting there or the one she is on), else it answers and the voice says what to tap.
-      const spot = this.owls[i].spot;
-      if (spot >= 0 && spot < this.path.length) return this.tapStone(spot);
+      // These levels choose the stone, not the owl: tapping an owl (what the old game taught) is never a miss; it answers and the voice says what to tap.
       this.owls[i].critter.poke();
       void this.ctx.say('owl.tap-stone', { color });
       return;
@@ -439,7 +447,7 @@ class OwlWalk implements Game {
       return;
     }
     const need = stoneName(color);
-    const have = tapped === 'nest' ? 'the nest' : stoneName(this.path[tapped]);
+    const have = tapped === 'nest' ? 'the nest' : `a ${stoneName(this.path[tapped])}`;
     const lines = {
       'wrong-color': () => this.ctx.say('owl.wrong-color', { have, need }),
       far: () => this.ctx.say('owl.far', { need }),
