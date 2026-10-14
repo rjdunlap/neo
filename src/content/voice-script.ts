@@ -1610,6 +1610,13 @@ export const SCRIPT = {
   'week.total': ['{n} sunny days! We counted the weather records.'],
   'week.done': ['A whole pretend week! We placed the days and recorded their weather.'],
 
+  'game.brain-break': ['Brain Break!'],
+  'brain.start': ['Find the stones in number order, from one to {n}. Start with one. Take your time.'],
+  'brain.try': ['Look for {n} next. The other stones can wait.'],
+  'brain.next': ['Now find {n}.'],
+  'brain.hint': ['Find {n}. Its stone has a golden outline.'],
+  'brain.done': ['All {n} stones are lit! You found them in order.'],
+
   count: ['{n}!'],
 } satisfies Record<string, string[]>;
 

@@ -1,3 +1,4 @@
+import { brainBreak } from './brain-break';
 import { pyramidSolitaire } from './pyramid-solitaire';
 import { numberNook } from './number-nook';
 import { patternTrain } from './pattern-train';
@@ -188,6 +189,7 @@ export const GAMES: GameModule[] = [
   pondConga,
   numberNook,
   pyramidSolitaire,
+  brainBreak,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);
