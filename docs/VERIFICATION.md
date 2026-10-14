@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-14 — Clap the Syllables slice 1 (more words)
+
+- Branch `claude/clap-syllables-more-words`: nine new words with code-drawn pictures (38 in all) and a dialect-exclusion test.
+- Passed `npm run typecheck` and vitest for `src/games/clap-syllables` and `src/content` (93 tests). One screenshot of the new pictures from a probe (not a game play).
+- Not run: a browser play of the game (`clap` suite), a portrait screenshot, `fingerdemo`, a device speech check of the new words.
+
 ## 2026-10-14 — Critter Crossing level 6 (Either one)
 
 - Branch `claude/critter-crossing-either-one`, commit `a839732`: new `or` gate kind (school now levels 2–6), 6 critters, 4 pictures, an "or" card drawn with the word "or", a how-to line; no new voice lines.
