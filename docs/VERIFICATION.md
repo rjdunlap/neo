@@ -7,6 +7,14 @@
 - `BROWSER_SUITE=singalong` passed at `GAME_URL=http://localhost:5192` on this tree, with a new level-4 play (opening, pick, stray tap, hello on a sung friend, three verses, sticker, 0 misses, 0 hints); one portrait screenshot of the pick screen looked right. `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn` passed at level 1 (33.0 s) and level 4 (72.3 s, too close to the 75 s limit); the how-to demonstration now sings two verses and `FINGER_LEVELS=4` passed again at 53.2 s.
 - Not run: `npm run build`, the offline check, iPad, a child. Open: whether a one-year-old (or a pre-K child) can find and tap a friend at the end of each verse, on a real iPad ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
+## 2026-10-13 — Number Nook first slice
+
+- Tested base `3c30ab5` plus working diff: new touch-only `number-nook` in Lantern Lake, three exact-distance seeded boards, shortest-route help, revision, spoken/how-to support and a ghost finger.
+- Own dependencies installed with `npm ci`; typecheck, full unit tests (142 files, 1,221 tests) and build passed. The existing large-chunk build warning remains. After adding the explicit registry ID expectation, the focused registry suite passed (13 tests); other code was unchanged.
+- `GAME_URL=http://localhost:5191 BROWSER_SUITE=numbernook`: first and last levels passed through actual taps, one miss, one hint, Undo, Start over and one reward per round; portrait screenshot inspected for clear controls and targets at least 64 logical units.
+- At the same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-nook` passed the first/last levels cleanly in 5.6/20.7 demo seconds.
+- Not run: offline, world or full couch suites. No real iPad, hardware or device speech check; person understanding and replay value remain open in [device checks](DEVICE-CHECKS.md).
+
 ## 2026-10-13 — Sing-Along Barn second tune (Hot Cross Buns)
 
 - Built [PR #277](https://github.com/rjdunlap/neo/pull/277): each round sings Old MacDonald (notes unchanged) or *Hot Cross Buns*, drawn from the round's seed (`pickTune` in `logic.ts`; the song is now a `Tune`). Hot Cross Buns is E D C twice, then "One a penny, two a penny, hot cross buns" for each friend, who answers on the last "buns" and stays at the door about 0.7 s (6 + 11 notes per friend). No new level; no saved level or pin moved; she does not pick the tune yet.
@@ -126,6 +134,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `numbernook`, `fingerdemo` (`number-nook`) | 2026-10-13: first/last actual-tap rounds, miss/help/revision/reward, portrait; clean 5.6/20.7 s demos; typecheck, 1,221 unit tests and build | [Verification entry](#2026-10-13--number-nook-first-slice) | No iPad, hardware or device speech; offline/world/full couch not run |
 | Island round on keys or a pad (`woods` filtered to `secret`, scripted Memory Match play) | 2026-10-13: typecheck, 1,202 unit tests, build; a synthetic-gamepad play of Memory Match level 4 (intro, ring, Esc and Start, celebration ring, "again"); `woods` secret-code passed | [Verification entry](#2026-10-13--the-island-round-on-keys-or-a-pad-lands-stage-c1) / [PR #270](https://github.com/rjdunlap/neo/pull/270) | No real controller or iPad; `world`, offline, couch suites not run; the eleven build-time puzzles (C1b) not covered |
 | Memory Match picture content | 2026-10-13: 28 focused tests, typecheck/build, 24-face art montage at 112-unit cards | [Verification entry](#2026-10-13--memory-match-familiar-picture-decks) / [PR #264](https://github.com/rjdunlap/neo/pull/264) | Device speech and child recognition open; interaction evidence unchanged |
 | Penguin Slide 9 / Tangram Town 8 (`woods`, `creative`, `fingerdemo`), production offline | 2026-10-13: paired useful blocks, free revision/check/help, clean 27.0/5.1 s demos, portraits, full units/build and current-bundle offline pass | [Verification entry](#2026-10-13--penguin-slide-9-and-tangram-town-8) / [PR #263](https://github.com/rjdunlap/neo/pull/263) | Real iPad input/speech and child understanding open |

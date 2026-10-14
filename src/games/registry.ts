@@ -1,3 +1,4 @@
+import { numberNook } from './number-nook';
 import { patternTrain } from './pattern-train';
 import { memoryMatch } from './memory-match';
 import { letterTrails } from './letter-trails';
@@ -184,6 +185,7 @@ export const GAMES: GameModule[] = [
   wordSearch,
   islandBridges,
   pondConga,
+  numberNook,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);
