@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-14 — Bug Builder deep dive
+
+- Docs only, `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296)): added [bug-builder.md](deep-dives/bug-builder.md) (current ladder, known gaps, genre research, levels 8–13 proposed, nine build slices) and updated the tracker, roadmap chunk 14 and IDEAS rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Standards wording beyond section names is unverified; token-pool and hint findings come from reading the source, not from play.
+
 
 ## 2026-10-14 — Peekaboo Barn cover support
 
