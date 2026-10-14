@@ -69,6 +69,12 @@ class BouncyLaunch implements Game {
   private readonly replay = new Container();
   private readonly star = starArt(30);
   private readonly flag = new Graphics();
+  private readonly flagNumbers = new Container();
+  private readonly lastArc = new Graphics();
+  private readonly compareRing = new Graphics();
+  private lastFlight: number | undefined;
+  private arcAge = 0;
+  private readonly predictionFlights: number[] = [];
   /** A ring around the cloud the child predicted; it stays there while the flight proves the answer. */
   private readonly predictionRing = new Graphics();
   private readonly pullArrow = new Graphics();
@@ -206,7 +212,8 @@ class BouncyLaunch implements Game {
       this.course = null;
     }
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.78, clouds: 4, sun: true, seed: 88 }, ctx.view);
-    ctx.stage.addChild(this.backdrop, this.flag, this.predictionRing, this.pullArrow);
+    this.flag.eventMode = this.flagNumbers.eventMode = this.lastArc.eventMode = this.compareRing.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.lastArc, this.flag, this.flagNumbers, this.compareRing, this.predictionRing, this.pullArrow);
     this.pullArrow.eventMode = 'none';
     const padW = this.course?.padWidth ?? 0.85;
     for (let i = 0; i < PADS; i++) {
@@ -281,6 +288,8 @@ class BouncyLaunch implements Game {
     if (this.stick && !this.flying) this.squash();
     else this.drawSpring();
     this.placeStar();
+    this.drawHistory();
+    this.drawFlag();
   }
 
   private landX(f: number) {
@@ -289,6 +298,8 @@ class BouncyLaunch implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    this.arcAge += dt;
+    this.lastArc.alpha = Math.max(0, 1 - this.arcAge / 16);
     if (!this.flying && this.wobble > 0) {
       this.wobble = Math.max(0, this.wobble - dt);
       this.pet.rotation = 0.09 * Math.sin(this.clock * 35) * this.wobble / 0.35;
@@ -322,6 +333,7 @@ class BouncyLaunch implements Game {
     window.removeEventListener('pointerup', this.release);
     window.removeEventListener('pointercancel', this.cancel);
     this.grab = null;
+    this.flight = null;
   }
 
   private placeStar() {
@@ -344,6 +356,7 @@ class BouncyLaunch implements Game {
 
   private async askShot() {
     this.wrongs = 0;
+    this.drawHistory();
     this.hinting = this.plan.mode === 'free';
     this.placeStar();
     if (this.plan.mode === 'predict') this.showPredictionPull();
@@ -488,6 +501,10 @@ class BouncyLaunch implements Game {
     pts[0] = { x: this.pet.x, y: this.pet.y };
     this.drawSpring();
     await new Promise<void>((done) => (this.flight = { pts, t: 0, duration: 0.7 + 0.6 * f, done }));
+    this.lastFlight = f;
+    this.arcAge = 0;
+    this.lastArc.alpha = 1;
+    this.drawHistory();
     this.pet.rotation = 0;
     this.pet.y = this.strip.y - 20;
     sfx.pop(4);
@@ -514,6 +531,7 @@ class BouncyLaunch implements Game {
         this.pet.cheer();
       }
       this.last = f;
+      if (this.plan.mode === 'predict') this.predictionFlights.push(this.targets[this.shot]);
       this.drawFlag();
       this.shot++;
       this.prediction = undefined;
@@ -534,6 +552,7 @@ class BouncyLaunch implements Game {
         this.report();
       }
     }
+    this.drawHistory();
     // Hop back onto the spring (still squashed to the last power on a stick, so a retry is a nudge away).
     await tw.to(this.pet, { x: this.seat.x, y: this.restingY() }, { duration: 0.7, ease: ease.outBack });
     this.flying = false;
@@ -551,14 +570,35 @@ class BouncyLaunch implements Game {
     run.progress({ board: this.shot, boards: this.targets.length, done: this.done.slice(), attempts: finished ? 0 : this.tries, par: 1, minimum: this.targets.length, assisted: this.assisted });
   }
 
-  /** Compare levels: a little flag where the last landing was. */
+  /** Previous flight in normalized strip coordinates, so a resize preserves the evidence. */
+  private drawHistory() {
+    const g = this.lastArc.clear();
+    if (this.lastFlight !== undefined && this.plan.mode !== 'tap' && !this.ctx.couch) {
+      const pts = this.arc(this.lastFlight);
+      for (let i = 2; i < pts.length; i += 3) g.circle(pts[i].x, pts[i].y, 4).fill({ color: ink, alpha: 0.25 });
+    }
+    const ring = this.compareRing.clear();
+    if (this.plan.mode === 'compare' && this.wrongs > 0 && this.last !== undefined && !this.ctx.couch) {
+      ring.circle(this.seat.x, this.seat.y, pullFor(this.last)).stroke({ width: 4, color: swatch.red.fill, alpha: 0.5 });
+    }
+  }
+
+  /** Compare keeps its reference flag; predictions keep a numbered flag for every watched cloud. */
   private drawFlag() {
     const g = this.flag.clear();
-    if (this.plan.mode !== 'compare' || this.last === undefined) return;
-    const x = this.landX(this.last);
-    const y = this.strip.y + 10;
-    g.moveTo(x, y).lineTo(x, y - 90).stroke({ width: 6, color: wood.line, cap: 'round' });
-    g.poly([x, y - 90, x + 50, y - 74, x, y - 58]).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' });
+    this.flagNumbers.removeChildren().forEach((child) => child.destroy());
+    const flights = this.plan.mode === 'compare' && this.last !== undefined ? [this.last]
+      : this.plan.mode === 'predict' ? [...new Set(this.predictionFlights)].map(padAt) : [];
+    for (const f of flights) {
+      const x = this.landX(f), y = this.strip.y + 10;
+      g.moveTo(x, y).lineTo(x, y - 90).stroke({ width: 6, color: wood.line, cap: 'round' });
+      g.poly([x, y - 90, x + 50, y - 74, x, y - 58]).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' });
+      if (this.plan.mode === 'predict') {
+        const n = label(String(Math.round(f * PADS + 0.5)), 24, 0xffffff);
+        n.position.set(x + 17, y - 75);
+        this.flagNumbers.addChild(n);
+      }
+    }
   }
 
   private async finale() {

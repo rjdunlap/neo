@@ -16,3 +16,5 @@ These files are **history, not instructions**. They record proposals, research a
 The original design brief also exists as a [historical design artifact](https://claude.ai/code/artifact/a7666bb8-0fdf-429b-b5df-2ab53a112913) outside the repository. Nothing in the project depends on it.
 
 `MICROGAME-IDEAS.md` and `ARCADE-IDEAS.md` were merged into [IDEAS.md](../IDEAS.md), and `CONTROLLER-SETUP.md` became [COUCH-PLAY.md](../COUCH-PLAY.md); git history has their earlier versions.
+
+- [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch and mirrored-reach definition checks.

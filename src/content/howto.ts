@@ -587,8 +587,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 5, text: 'Pull the pet back and let go. A bigger pull goes farther.' },
       { from: 3, to: 3, text: 'Aim for the cloud with the star.' },
       { from: 4, to: 4, text: 'Aim for the numbered cloud that was asked for.' },
-      { from: 5, to: 5, text: 'Pull back more, or less, than last time, as asked.' },
-      { from: 6, text: 'Look at the shown pull, tap the cloud you think the pet will reach, then watch.' },
+      { from: 5, to: 5, text: 'Pull more or less than the red flag, as asked. After a miss, the red ring marks the previous pull.' },
+      { from: 6, text: 'Look at the shown pull, tap a cloud, then watch. Numbered flags mark the flights you watched.' },
     ],
     finish: [{ to: 2, text: 'The round ends after its launches.' }, { from: 3, to: 5, text: 'The round ends when the pet lands where it was asked to.' }, { from: 6, text: 'The round ends after each shown pull has flown.' }],
     note: [

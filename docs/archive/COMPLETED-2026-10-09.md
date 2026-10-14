@@ -750,6 +750,9 @@ The archived slice-5 build packet follows; its future-tense verification text de
 Proof and remaining person/device checks: [verification](../VERIFICATION.md#2026-10-13--bouncy-launch-support-slice-1). Next work remains in the [deep dive](../deep-dives/bouncy-launch.md#build-slices-in-order).
 
 
+## Bouncy Launch last flight slice 3
+
+Built 2026-10-13, [PR #275](https://github.com/rjdunlap/neo/pull/275): a faint dotted previous flight fades over sixteen seconds; level 6 keeps numbered flags for the clouds already watched (one flag per cloud); after a compare miss, a red ring marks the last successful pull's radius. The latest flight and successful reference remain separate. Normalized landings preserve evidence on resize. The ring is a reference, without a new hint debit; two misses still count the existing preview hint. Couch/course rules, physics, bands and levels unchanged. Existing ghost-finger bot completes both levels without modification. Source tier: filtered play and `fingerdemo` at 5/6; [proof](../VERIFICATION.md#2026-10-13--bouncy-launch-last-flight-slice-3). Notches/notes/skies and developer decisions remain open.
 ## Jelly Drums level 10, One big jelly
 
 2026-10-13: the deep dive's below-level-1 lap entry, placed first for lap with `order: [10,1,2,3]` and `entryLevels: [10]` (lap only). One enormous red low jelly (scaled 1.8) stands alone; a touch anywhere on the stage (a stage-wide layer) sings the nearest awake jelly. The little high blue jelly wakes after 6 touches, then jellies 2, 1 and 3 at 10, 14 and 18; 24 touches finish. No miss, no hint. Logic in `src/games/jelly-drums/logic.ts`: `PLANS[9]` mode `wake`, `WAKE_ORDER`, `WAKE_AT`, `awakeJellies`, `nearestAwake`, `jellyToTap('wake')`.
