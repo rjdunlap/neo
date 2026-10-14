@@ -2,6 +2,24 @@
 
 History, not instructions: dated entries rotated out of [VERIFICATION.md](../VERIFICATION.md) on 2026-10-13, newest first, followed by the older entries section as it stood. The live file keeps the newest entries and the coverage summary.
 
+
+## 2026-10-13 — Bouncy Launch support slice 1
+
+- [PR #269](https://github.com/rjdunlap/neo/pull/269), claim `48f22cf` on `feeb1bb` plus final source diff; integrated `7b94c03` (coordinator docs only). Short/wrong-way replies and two-try arrow are unscored; cancellation cannot launch. Prediction clouds have numerals, use cloud taps and keep their shown pull on resize. How-to/reference words corrected; linear mapping, bands and courses preserved. Couch/course discovery exclusion is rule-tested; watched-pull accounting decision unchanged.
+- Typecheck, 23 focused Bouncy Launch/how-to tests, final production build passed. `GAME_URL=http://localhost:5193 BROWSER_SUITE=arcade ARCADE_ONLY=launch`: levels 1–5 passed, including real short/wrong-way drags, cancellation, two target misses/one hint and compare retry. Level 6 exposed a test tapping an absent target after the final flight; logging confirmed `shot: 4, finished: true`. Fixed terminal check; `FROM_LEVEL=6 TO_LEVEL=6` passed numbered clouds, different prediction, portrait shown-pull preservation and saved zero misses/hints/sticker. No page errors.
+- Focused `test-results/bouncy-support-probe.mjs` confirmed spoken wrong-way feedback and reproduced silent tries by restoring the original release handler through the same pointer routes. Initial probe lacked the harness's hatched-profile setup; corrected. Portrait screenshot reviewed for numeral/pet/control clearance; it caught the shown-pull resize bug before the passing filtered regression.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=6` at the same URL passed cleanly in 15.2 demo seconds, with no page errors. Session server stopped after checks.
+- Markdown check has one pre-existing IDEAS anchor failure (`#for-gemini-arcade-and-animal-crossing-pass`); changed links and `git diff --check` pass. Not run: full units, world/picnic/couch/course/offline (no relevant shared behavior changed). Real iPad speech, gesture comfort and child understanding remain open; no new levels/bands, sky/flight history, physics/course or decision scope built.
+
+
+
+## 2026-10-13 — Three more puzzles take keys and a finger in one round (Lands stage C1b, group 2)
+
+- Built [PR #276](https://github.com/rjdunlap/neo/pull/276): tile-pairs, gem-swap and lantern-lights are `liveController`; their `touch` flag is now set at run time (buttons and tap layer built always, hidden in couch play and at the first `control()`), and `touchReturned()` brings them back. Couch play is unchanged.
+- `npx tsc --noEmit` clean; `input-in-use.test.ts` (now twenty live games), the three games' rule tests and the registry test pass.
+- Headless Chromium on a worktree dev server: `livekeys` (all eight, touch → key → touch layer hidden → touch → key → touch), `gemswap`, `tilepairs`, `lanterntouch`, and `couchgames` with `COUCH_ONLY` for each of the three all pass, no page errors.
+- Not run: full `npm test`, build, `world`, offline (no shared files changed beyond a test list). Open: a real keyboard or pad on a device; group 3 (ferry-jam, penguin-slide, bouncy-launch).
+
 ## 2026-10-13 — The island round on keys or a pad (Lands stage C1)
 
 - Built [PR #270](https://github.com/rjdunlap/neo/pull/270): `GameScene` samples keys and a pad (`src/app/input-in-use.ts`, `InputInUse`, `controllerPlays`) and calls `control()` only after a real press inside the round, for the twelve `liveController` games; a ring on the celebration's buttons; one owner for Esc (`App.escape()`, with Start on a pad). The eleven puzzles that choose touch or controller when built are not done (C1b).

@@ -34,8 +34,8 @@ describe('Story Steps clue endings', () => {
     expect(predictionFeedback(1, 2)).toEqual({ complete: false, miss: true, hint: false });
     for (let attempts = 0; attempts < 10; attempts++) expect(predictionFeedback(0, attempts)).toEqual({ complete: true, miss: false, hint: false });
   });
-  it('appends level 11 without changing younger ranges or existing level meanings', () => {
-    expect(storySteps.levels('school')).toEqual({ min: 6, max: 11 });
+  it('preserves level 11 and younger ranges when theater is appended', () => {
+    expect(storySteps.levels('school')).toEqual({ min: 6, max: 13 });
     expect(storySteps.levels('toddler')).toEqual({ min: 1, max: 2 });
     expect(storySteps.levels('preschool')).toEqual({ min: 2, max: 5 });
     expect(storySteps.levels('prek')).toEqual({ min: 4, max: 8 });

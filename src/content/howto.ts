@@ -452,8 +452,11 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the bug matches what was asked for.',
   },
   'story-steps': {
-    goal: 'Tell a story in pictures, notice what makes things happen, and use clues to predict an ending.',
+    goal: 'Tell stories in pictures, explore what makes things happen, and predict or create an ending.',
     steps: [
+      { from: 12, to: 13, text: 'Tap one picture in each pair: a character, weather, and a picnic prop. Tap the stage with the triangle to watch your narrated show.' },
+      { from: 13, to: 13, text: 'After watching, change the weather or prop and watch again. The first show stays beside the stage so you can compare the endings; the cast stays the same.' },
+      { from: 12, to: 13, text: 'The curved arrow undoes one edit. Watch replays your current story; the lightbulb speaks help and glows a useful control.' },
       { to: 2, text: 'Drag the picture that comes next into the glowing space.' },
       { from: 3, to: 5, text: 'Drag the pictures into the spaces in the order the story happens.' },
       { from: 6, to: 6, text: 'Drag the picture that belongs in the missing middle into the glowing space; some pictures are from another story.' },
@@ -467,6 +470,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Tap the music button to hear the current order. The curved arrow puts the last swapped pair back.' },
     ],
     finish: [
+      { from: 12, to: 12, text: 'After watching your show, tap the green check to take a bow and finish. Every story is accepted; you can edit and watch again first.' },
+      { from: 13, to: 13, text: 'After watching the first show and a version with one changed event, tap the green check to take a bow. Creative choices cost no misses; each lightbulb request counts one hint.' },
       { to: 7, text: 'The round ends when the story pictures are in a sensible order.' },
       { from: 8, to: 8, text: 'The round ends when the cause is before its effect, and the pet explains what happened.' },
       { from: 11, to: 11, text: 'The round ends with the ending supported by the clue and a spoken explanation. The first other prediction plays without a miss; repeating it counts a miss and glows the clue, with one hint per round.' },

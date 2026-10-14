@@ -2,6 +2,8 @@
 
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 
+- [ ] **Story Theater (Story Steps 12–13):** check iPad picture/control taps and device narration in both orientations; can a child interpret each picnic ending and explain the consequence of changing one weather/prop choice? Browser checks do not establish these.
+
 - [ ] **Mossy Path with a school-age child on an iPad (2026-10-13):** check tile taps, turtle/flower/pond clarity, pet clearance and Undo/Hint/Start over in both orientations; listen to device speech for route rules and dead-end recovery. Does the child understand visiting every tile once and reaching the pond last, and enjoy revising a route? Browser play and screenshots do not establish these.
 
 - [ ] **Brain Break with a grown-up on an iPad (2026-10-13):** check number legibility and comfortable stone taps on the 5×5 board, device speech for each next number, whether the checked stones and hint outline stay clear, and whether the untimed search feels satisfying. Browser play and a portrait screenshot do not establish these.
