@@ -67,7 +67,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Clap the Syllables | `clap-syllables` | PKS | 5 | 4 | designed (slices 1–4 ready: more words, a visible solo wait cue, level 6 Beat train, levels 8–9; names, a toddler window and level 7 need decisions) | `claude/clap-syllables-deep-dive` ([PR #301](https://github.com/rjdunlap/neo/pull/301)) | [clap-syllables.md](clap-syllables.md) |
 | Clock Tower | `clock-tower` | KS | 7 | 3 | building (slice 1 built: truthful words and control support) | `codex/clock-tower-support` ([PR #165](https://github.com/rjdunlap/neo/pull/165)); `codex/clock-tower-deep-dive` ([PR 156](https://github.com/rjdunlap/neo/pull/156)) | [clock-tower.md](clock-tower.md) |
 | Color Garden | `color-garden` | TPK | 6 | 4 | designed (slices 1–5 ready; level 8–10 and tap entry need no decision) | `claude/color-garden-deep-dive` ([PR #302](https://github.com/rjdunlap/neo/pull/302)) | [color-garden.md](color-garden.md) |
-| Critter Crossing | `critter-crossing` | KS | 5 | 4 | not started | — | — |
+| Critter Crossing | `critter-crossing` | KS | 5 | 4 | in progress | `claude/critter-crossing-deep-dive` | — |
 | Critter Sort | `critter-sort` | KS | 5 | 4 | not started | — | — |
 | Day by Day | `day-by-day` | KS | 3 | 4 | not started (first slice built; [definition](../day-by-day.md)) | — | — |
 | Dot Link | `dot-link` | LTPK | 5 | 4 | not started | — | — |
