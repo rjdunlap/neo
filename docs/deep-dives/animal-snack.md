@@ -147,7 +147,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 
 1. **Words and guards** (built 2026-10-11, [PR 160](https://github.com/rjdunlap/neo/pull/160)). Counted units and plurals; the number sign at level 5; the how-to bounds and finish lines per level; the free-play nudge; the portrait check of five snacks and of the animals' tap areas (nearest animal wins). Tier: game rules, so typecheck, the game's rule tests and the how-to test; then `WOODS_ONLY=snack` at level 5 and one portrait screenshot (it changes the picture).
 2. **Food eaten its own way and scenes** (ready). Tier: rule tests, one screenshot per scene.
-3. **Two ways to ask in level 3** (ready). Tier: rule tests, `WOODS_ONLY=snack` at level 3.
+3. **Two ways to ask in level 3** (ready; claimed 2026-10-14 by `claude/animal-snack-two-ways`, files: animal-snack logic/index/tests, voice-script, howto). Tier: rule tests, `WOODS_ONLY=snack` at level 3.
 4. **More animals** (ready after decision 4; coordinates with Peekaboo Barn's animals slice). Tier: rule tests, `critter.test.ts`, `journal.test.ts`, a screenshot of all eleven and of the look-alike foods, `fingerdemo` at level 1.
 5. **Level 6, Who says moo?** (needs decisions 1–2). It also opens the pre-K window, so it adds `prek` to `bands` and updates the README inventory's band label, the per-band counts in the README and roadmap, and the registry and lands tests. Tier: new level on an existing interaction: rule tests, one browser play of level 6 and `fingerdemo` at it.
 6. **Level 7, Their own snacks** (the two-row blanket needs its portrait screenshot first). Same tier.
