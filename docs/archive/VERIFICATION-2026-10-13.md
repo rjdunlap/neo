@@ -56,3 +56,9 @@
 - Same URL: `fingerdemo FINGER_ONLY=block-tower FINGER_LEVELS=6 TOWER_SEED=1` / `7` clean in 15.5 / 15.6 demo seconds. Left-edge portrait reviewed: table extends inward, blocks/star/help clear of pet and controls. `test-results/tower-hint-resize.mjs` first failed on stale hint position, then passed after projection during resize. Initial short-stack browser assertion ran before speech/help finished; waiting for idle corrected it.
 - Markdown file/anchor checks and `git diff --check` passed. Session server stopped after checks. Not run: world, couch or offline (no route/save/asset contract changes). Device speech, iPad dragging and child understanding of the mirrored edge remain open.
 
+## 2026-10-13 — Five puzzles take keys and a finger in one round (Lands stage C1b, group 1)
+
+- Built [PR #273](https://github.com/rjdunlap/neo/pull/273): picture-logic, island-bridges, pond-conga, sudoku-garden and word-search are `liveController`; an optional `Game.touchReturned()` (called by `GameScene` at the first pointerdown after keys) puts their touch layout back, so keys and a finger alternate in one round.
+- `npx tsc --noEmit` clean; `npm test` 1,205 of 1,211 passed on the first run (ferry-jam, fluffy-salon, peg-garden and penguin-slide timed out under load while a browser suite ran; those four files pass alone, 44 tests); `input-in-use.test.ts` now lists seventeen live games.
+- New `BROWSER_SUITE=livekeys` (port 5291, headless Chromium): each of the five at its first couch-played level goes touch → key → touch → key → touch with the touch layer visible again, no page errors; `congatouch` passed after the change.
+- Not run: the other four touch suites, `world`, build, offline (no shared assets or navigation changed). Open: a real keyboard or pad on a device; groups 2 and 3 of C1b (tile-pairs, gem-swap, lantern-lights; ferry-jam, penguin-slide, bouncy-launch); the cursor ring stays drawn after a finger returns.
