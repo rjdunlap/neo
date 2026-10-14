@@ -102,3 +102,11 @@
 - Typecheck and the full unit suite (142 files, 1230 tests) passed, including new rule tests: spots seeded, in range and apart; every spot reachable inside the leash; a correction from a miss lands; the bot's pull feeds every friend.
 - `GAME_URL=http://localhost:5291 BROWSER_SUITE=arcade ARCADE_ONLY=launch FROM_LEVEL=7 TO_LEVEL=7` passed four times (two misses, one hint, then every friend fed); portrait screenshot checked. `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch` passed (level 1 in 12.7 s, level 7 in 12.3 s).
 - Not run: build, offline, world, couch. Open: a real iPad pull, device speech for the new lines, a child's reaction.
+
+## 2026-10-13 — Pyramid Solitaire first slice and local-build audit
+
+- [PR #282](https://github.com/rjdunlap/neo/pull/282), claim `0db5c75`, base `56132bc` plus working diff: touch-only Lantern Lake practice pyramids, three seeded face-up steps, exact clearing/recovery hints, free revision, spoken/how-to support and ghost finger.
+- Own-worktree `npm ci` completed; `npm test` passed 143 files / 1,234 tests; 49 focused rules/registry/lands/how-to tests passed again after the registry assertion; final `npm run build` passed including typecheck (existing bundle-size warning).
+- `GAME_URL=http://localhost:5188 BROWSER_SUITE=pyramid` passed first/last actual taps, required mismatched pair, hint/repeated hint, Undo/Start over, legal dead-end recovery, portrait targets/screenshots, one sticker each, land launch and held-home interruption. An earlier harness call treated the home button as a function; corrected before the authoritative final pass.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=pyramid-solitaire` passed levels 1/3 clean in 7.4/19.3 demo seconds. Portrait screenshots inspected. No world/offline/couch/full release or device checks run; iPad comfort, speech and enjoyment remain open.
+- Docs audit records source evidence for local Snowball Merge, original six-level and duplicate three-level Marble Jump, and Log Roll in [LOCAL-GAME-BUILDS.md](../LOCAL-GAME-BUILDS.md). These await integration and are excluded from catalog counts; Number Nook is integrated. Their game checks were not rerun here. Markdown links/anchors and `git diff --check` passed; oldest dated entry rotated into the existing archive and moved links repaired.
