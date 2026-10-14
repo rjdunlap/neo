@@ -124,12 +124,15 @@ export interface SingPlan {
   verses: number;
   /** She chooses who comes (a free choice, never a mistake); otherwise the farm picks. */
   invite: boolean;
+  /** With `invite`: she chooses one friend at a time, at the end of each line, instead of all of them before the song. */
+  each: boolean;
 }
 
 export const PLANS: readonly SingPlan[] = [
-  { verses: 1, invite: false },
-  { verses: 2, invite: false },
-  { verses: 2, invite: true },
+  { verses: 1, invite: false, each: false },
+  { verses: 2, invite: false, each: false },
+  { verses: 2, invite: true, each: false },
+  { verses: 3, invite: true, each: true },
 ];
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
