@@ -1,6 +1,6 @@
 # Mossy Path: first playable slice
 
-Claimed 2026-10-13 on `codex/mossy-path`; PR pending. Expected files: `src/games/mossy-path/`, registry, lands, voice script, how-to cards, browser harness and inventory/verification docs.
+Built 2026-10-13 on `codex/mossy-path`; [PR #285](https://github.com/rjdunlap/neo/pull/285). Source: `src/games/mossy-path/`, with registry, land, voice, how-to and browser integration. [Build notes](../archive/COMPLETED-2026-10-09.md#mossy-path-first-slice-2026-10-13); [verification](../VERIFICATION.md#2026-10-13--mossy-path-first-slice).
 
 **Fun action and purpose:** each step of a turtle blooms a moss tile. Plan a route that visits every tile exactly once and ends at the pictured pond. This is path coverage, distinct from Penguin Slide's sliding and Robot Path's programming.
 

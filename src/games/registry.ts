@@ -1,3 +1,4 @@
+import { mossyPath } from './mossy-path';
 import { brainBreak } from './brain-break';
 import { pyramidSolitaire } from './pyramid-solitaire';
 import { numberNook } from './number-nook';
@@ -107,6 +108,7 @@ export const GAMES: GameModule[] = [
   shapeSorter,
   colorGarden,
   patternTrain,
+  mossyPath,
   memoryMatch,
   letterTrails,
   robotPath,
