@@ -380,7 +380,13 @@ The green gate tests a garden. An incomplete test and an unmatched prediction ar
 
 ## Grown-up puzzles
 
-Seven games made for grown-ups, in the island's Lantern Lake land for the `grownup` band (13 and up; they list no other band, so younger players find them behind the land's signpost and play their easiest levels). They are in `GAMES` like any game. Tile Pairs and Lantern Lights take touch on the island; the other five list `inputs: ['controller']`, so `go.game` opens their couch puzzle-shelf course (`FIRST_COURSE` in `src/couch/courses.ts`) instead of the island's scene. Couch rounds keep their own records and give a couch sticker; island rounds give the ordinary island sticker. A score is a personal best in its own unit, never a timer, and help (the pause menu's **Show a hint**, or the island's Hint button) is replayable. Tile Pairs also outlines a useful pair after two mismatches.
+Nine games made for grown-ups, in the island's Lantern Lake land for the `grownup` band (13 and up; younger players find them behind the land's signpost and play their easiest levels). They are in `GAMES` like any game. All nine play by touch on the island; eight also take controllers on the couch. Number Nook is touch-only. Couch rounds keep their own records and give a couch sticker; island rounds give the ordinary island sticker. Help remains replayable, with no clock or loss screen.
+
+### Number Nook
+
+*grownup · touch only · spatial planning and numerical order, after sliding-tile puzzles.* Tap a numbered tile beside the empty square to slide it into the gap. Arrange the numbers in row order with the gap at bottom-right; the miniature shows the goal, and correctly placed tiles turn green. One solved board finishes through the shell with one sticker, including with help.
+
+Three steps use 2×2, 2×3 and 3×3 boards, drawn from the supplied seed at exactly 4, 8 and 14 slides from the goal. Exhaustive reverse search supplies a shortest route from every reachable position, including after exploration; Hint outlines the next tile on that route. Legal slides are free exploration. Tapping a tile that is not beside the gap gives a gentle boing and a spoken explanation, counts one miss, and after each second miss shows a counted hint. A requested Hint also counts support. Undo and Start over preserve moves, misses and hints while restoring a previous or initial board; they do not themselves add a miss or hint. The how-to card's ghost finger plays through the real taps using the same shortest-route rule. No controller or couch course is built for this slice.
 
 ### Gem Swap
 

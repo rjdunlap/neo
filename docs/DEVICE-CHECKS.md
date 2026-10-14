@@ -26,6 +26,8 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 
 **Grown-ups at the computer or TV**
 
+- [ ] **Number Nook:** on an iPad, try all three boards: are the gap, goal miniature and green placed tiles clear, are taps comfortable, and do Undo, Start over and shortest-route hints support planning? Check device speech and whether a person wants another board. Browser play does not establish these.
+
 - [ ] **Gem Swap:** try the four trays with a person: do selection outlines and falling clears make the next choice readable, and does the player want another board? Real iPad targets/speech and real controller play remain unverified.
 - [ ] **Tile Pairs:** try the six layouts with a person, and check whether the visible stack, free-tile tint and clearing hint make pair choices understandable; judge whether the person wants another board. Real iPad touch, device speech and controller use remain unverified.
 
