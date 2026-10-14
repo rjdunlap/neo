@@ -4,7 +4,7 @@
 
 ## The game today
 
-This section records the research snapshot. Since then, twelve scenes and pinned sticker pictures were built in slice 2; the flat outer sides and corner-first spoken spatial hints were built on 2026-10-11 ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-spatial-hints-and-outer-rims-2026-10-11)). All-scene visible-cue fairness is built locally 2026-10-14, awaiting publication ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14)); the box lid remains open pending a person check.
+This section records the research snapshot. Since then, twelve scenes and pinned sticker pictures were built in slice 2; the flat outer sides and corner-first spoken spatial hints were built on 2026-10-11 ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-spatial-hints-and-outer-rims-2026-10-11)). All-scene visible-cue fairness is built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292)) ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14)); the box lid remains open pending a person check.
 
 She drags pieces of a code-drawn picture into a frame. When the last one is in, the picture comes alive: the friend hops, makes its sound, and the voice says "You made a cow on the farm!". The learning purpose is part–whole and spatial reasoning (which part goes where), with fine motor control in the drag.
 
@@ -156,13 +156,13 @@ The level-order decision already has a row in [Waiting on the developer](../WAIT
 
 ## Build slices, in order
 
-**Built locally 2026-10-14, awaiting publication:** `codex/puzzle-pals-visible-cues` completes slice 1's visible-detail fairness guard and scenery repair across all twelve scenes ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14); [checks](../VERIFICATION.md#2026-10-14--puzzle-pals-visible-cues-and-fairness)). Saved sticker/map drawings retain their original art. The local claim is `3808201`; automatic approval review rejected uploading the docs claim, so no draft PR was created. The box lid stays a separate, person-check-dependent slice.
+**Built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292)):** `codex/puzzle-pals-visible-cues` completes slice 1's visible-detail fairness guard and scenery repair across all twelve scenes ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14); [checks](../VERIFICATION.md#2026-10-14--puzzle-pals-visible-cues-and-fairness)). Saved sticker/map drawings retain their original art. The local claim is `3808201`; publication was explicitly approved by the developer on 2026-10-14. The box lid stays a separate, person-check-dependent slice.
 
 Each is sized for one session. The slices that add a level are built in level order so saved IDs stay unbroken.
 
-**Built 2026-10-11:** the flat sides, corner-first adjacent-piece hint, spoken position, bounded how-to and co-play part of slice 1 ([PR #169](https://github.com/rjdunlap/neo/pull/169); [build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-spatial-hints-and-outer-rims-2026-10-11)). Fairness/art is now built locally as noted above; the box lid remains open.
+**Built 2026-10-11:** the flat sides, corner-first adjacent-piece hint, spoken position, bounded how-to and co-play part of slice 1 ([PR #169](https://github.com/rjdunlap/neo/pull/169); [build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-spatial-hints-and-outer-rims-2026-10-11)). Fairness/art is now built as noted above; the box lid remains open.
 
-1. **Fairness guard and the lid.** Fairness is **built locally 2026-10-14, awaiting publication** across all twelve scenes ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14)). **Remaining: person/decision** — play levels 5–7 without a lid, then decide whether the box lid in decision 1 is needed. The lid is unbuilt; its future tier is typecheck, game/how-to tests, filtered levels 5 and 7, portrait and phone layout review.
+1. **Fairness guard and the lid.** Fairness is **built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292))** across all twelve scenes ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14)). **Remaining: person/decision** — play levels 5–7 without a lid, then decide whether the box lid in decision 1 is needed. The lid is unbuilt; its future tier is typecheck, game/how-to tests, filtered levels 5 and 7, portrait and phone layout review.
 2. **Scene data, pinned stickers and six new scenes** (**built 2026-10-11**; [build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-scene-data-and-six-new-scenes-2026-10-11)). Tier: rule tests including the seed pin, then a screenshot of the new pictures. Update the "six scenes" counts in GAMES.md and the README row, and chunk 13 item 1.
 3. **Level 8, Turn it round** (ready after 1; band row becomes pre-K 5–8). Tier: new level on an existing interaction, plus `fingerdemo` at level 8.
 4. **Level 9, Two pictures, one tray** (ready after 2 and 3).
