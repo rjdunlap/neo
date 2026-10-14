@@ -1249,7 +1249,7 @@ These games stop at pre-K, so appending a level only widens the pre-K range.
 | --- | --- |
 | **Monster Munch** (8 · 6–8) | Fair shares with leftovers is the right end. An average (Share Fairly) is for ages 8–10 |
 | **Habitat Helpers** (6 · 4–6) | The model is deliberately small. A third visitor would be more of the same, and real ecology needs a stated model first |
-| **Chain Reaction** (6 · 3–6) | Its top level already accepts several valid designs. Bigger machines would be a size step |
+| **Chain Reaction** (6 · 3–6) ([deep dive](deep-dives/chain-reaction.md)) | Bigger machines are only a size step; the deep dive adds prediction, tap-to-turn, two-marble, spring and gate levels (7–11) instead |
 | **Ferry Jam** (6 · 3–6) | The ladder is already a size ladder, and the couch course owns the hardest harbors |
 | **Pet Kitchen, Inchworm Measure, Picture Graph** | Raised from the first audit in the last two days. Play them before going higher |
 | **Lemonade Stand** | Owned by the economy pilot |
@@ -1376,7 +1376,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Seesaw Balance (T–S · 9) | Friends and presents | R2: 10 *two steps* | — |
 | Ramp Race (K–S · 4) | Floors and cars | R1-later: predict the stop | Preschool, at level 1 (higher goes farther) |
 | Block Tower (L–S · 6) ([deep dive](deep-dives/block-tower.md)) | Equal-block height variety first; different shapes need a new contact/mass model | Proposed 7 repair, 8 scaffolded counterweight, 9 remove a spare; order/windows and experiments need decisions | Already L–S; optional toddler 1–3 and easier named entries wait on decisions |
-| Chain Reaction (K–S · 6) | Machine parts and themes | — | Preschool, at level 1 (one ramp) |
+| Chain Reaction (K–S · 6) ([deep dive](deep-dives/chain-reaction.md)) | Cargo and goal skins, a note per ramp | Proposed 7 tap to turn, 8 which bell, 9 two marbles, 10 springboard, 11 gate | Preschool/toddler at the appended easy entries 7–8 (decision) |
 | Habitat Helpers (P–S · 6) | **A third visitor**, Bird (seeds, a birdbath, a tree), as a next board on the same three needs. The quantity direction now welcomes what round two left alone | **7, Three visitors:** one garden in four spaces for Bunny, Duck and Bird | Toddler, at level 1 (Bunny's three obvious pieces) |
 | Lemonade Stand (S · 4) | — (owned by the economy pilot) | — | — |
 
