@@ -17,4 +17,4 @@ The original design brief also exists as a [historical design artifact](https://
 
 `MICROGAME-IDEAS.md` and `ARCADE-IDEAS.md` were merged into [IDEAS.md](../IDEAS.md), and `CONTROLLER-SETUP.md` became [COUCH-PLAY.md](../COUCH-PLAY.md); git history has their earlier versions.
 
-- [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch, mirrored-reach, Penguin Slide/Tangram Town level checks and the Beat Builder how-to layout check, the Bouncy Launch level 7 entry, and the Mossy Path first-slice entry.
+- [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch, mirrored-reach, Penguin Slide/Tangram Town level checks and the Beat Builder how-to layout check, the Bouncy Launch level 7 entry, the Mossy Path first-slice entry, and the Sing-Along Barn level 6 entry.
