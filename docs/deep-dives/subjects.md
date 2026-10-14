@@ -1,92 +1,146 @@
-# Subject deep-research sessions: other sciences, history and technology
+# Subject deep-research sessions: sciences, history, technology and life skills
 
-**Requested by the developer, 2026-10-14:** add research sessions for the sciences beyond physics, for a range of history subjects, and for technology (could it expand beyond coding?). These sit beside the per-game [deep dives](README.md): a game deep dive researches one built game; a **subject session** researches one subject and returns candidates, modes for existing games, and a ladder for one first game. Physics already has [its own plan](../PHYSICS-GAMES.md).
+**Requested by the developer, 2026-10-14:** add research sessions for the sciences beyond physics, for a range of history subjects, for technology (could it expand beyond coding?), and (same day, after the question "other subjects, life skills, recipes, exercise?") for life skills. **The goal, stated the same day: games for toddlers, preschoolers, elementary children, middle schoolers *and* the parents.** So every session must answer for every audience, not only the school years. A game deep dive researches one built game; a **subject session** researches one subject and returns candidates, modes for existing games, and a ladder for one first game. Physics already has [its own plan](../PHYSICS-GAMES.md).
 
-**A subject session is research and ideation only: documents, no code**, with the same rule as a game deep dive (nothing under `src/`, `scripts/` or `public/`; no tests; do not build a slice, however small). The roadmap's chunk 28 points here. Nothing below is built, scheduled or promised; the shelf is for deciding what is worth building and in what order. The long-term direction reaches about age eleven ([Later horizons](../ROADMAP.md#later-horizons-elementary)); she is about one, so these are long-horizon plans and must not delay the nearer waves.
+**A subject session is research and ideation only: documents, no code**, with the same rule as a game deep dive (nothing under `src/`, `scripts/` or `public/`; no tests; do not build a slice, however small). The roadmap's chunk 28 points here. Nothing below is built, scheduled or promised. The long-term direction reaches about age eleven ([Later horizons](../ROADMAP.md#later-horizons-elementary)); she is about one, so the nearer rungs matter first (see the order below).
+
+## The audiences
+
+| Code | Who | Runtime band | Notes |
+| --- | --- | --- | --- |
+| **L** | Lap, under 2 | `lap` | Touch causes a pleasing event, a grown-up shares the action |
+| **T** | Toddler, 2 | `toddler` | One goal, one tool |
+| **P / K** | Preschool (3), pre-K (4–5) | `preschool`, `prek` | A character's request, sorting, sequencing, short plans |
+| **S** | School, about 6–8 | `school` | Evidence, debugging, equivalent solutions |
+| **U** | **Upper school, about 9–12** | `school` (its top levels) | A *planning* split, not a runtime band. Today the island has almost nothing designed for it |
+| **M** | **Middle school and early teens, about 11–14** | none yet | The decision below: `school` stops at 12 and `grownup` starts at 13 |
+| **G** | Grown-ups: parents, grandparents and teens 13+ | `grownup` | The island's Lantern Lake puzzles, couch play and the family table |
+
+**Where the catalog stands (2026-10-14, counted from `bands:` in each game's `index.ts`):** of 94 games, 39 reach lap, 51 toddler, 63 preschool, 76 pre-K, 61 school and 11 grown-up. Four are school-only and eleven grown-up-only. "School" is a wide band (6–12) designed mostly for 6–8, so 9–12 and the early teens are the thinnest, and the grown-up shelf is 11 puzzles. Sessions should help fill those gaps, not add yet more 3–6 content.
+
+## What every session must answer
+
+For **each audience above** (leave a cell *none, and why* rather than blank):
+
+- **A first action** she or they can try without an adult supplying the answer.
+- **A deeper rung** that adds a decision (not speed).
+- For **G (grown-ups)**, give an answer in all three forms where sensible: a game *for a parent to play for themselves* (a cozy puzzle in Lantern Lake), a game *a parent plays with the child* (a co-play role; see the [family table](../ROADMAP.md#next-up)), and a *tool for the grown-ups' page* (plain HTML: an off-screen activity card, a conversation prompt, a recipe card). The page stays plain HTML (`src/parent/panel.ts`).
+- For **M**, say what a 12- or 13-year-old would choose to play, using the tween evidence in the next section, and whether it belongs to `school`'s top levels or to a future band.
+
+### What the search found about the older range (2026-10-14)
+
+- A study of 56 tweens (Self-Determination Theory) found they wanted a range of play with real challenge (autonomy and competence) and places to step back and be with friends (relatedness), and another study found tweens spend much of their play time on physical or talkative play ([PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC9255119/)). That is play-ground evidence, not game design.
+- A preference study of children 6 to 12 (average age 9) recommended curiosity through variation and discovery, with achievement, learning and social contact ([SciTePress](https://www.scitepress.org/PublishedPapers/2018/65848/65848.pdf)); the sample skews younger than 11–14.
+- I found **no study of educational-game engagement in middle school**, so treat all M-band design as untested.
+- Middle-school science, from district scope-and-sequence documents, is energy, chemical change and structure of matter, plate tectonics and rock cycling, genetics, ecosystems, forces, waves and astronomy ([New Jersey map](https://www.nj.gov/education/standards/science/Docs/Accessible_version_Middle_School_Scope_and_Sequence_Map.pdf), [NGSS Appendix L](https://nap.nationalacademies.org/read/18290/chapter/18)). The Common Core ratio and statistics standards did not load; open [corestandards.org](https://www.corestandards.org/) before using them.
 
 ## The procedure (one session, one subject)
 
 1. **Claim it.** Fetch `origin`, run `scripts/overlap.sh <subject-id> docs/deep-dives/subjects/<subject-id>.md`, check this table and open pull requests. Make the first commit a docs-only claim (set the row to **in progress**) and publish a draft pull request straight away.
 2. **Read what is there.** The subject's rows in [IDEAS.md](../IDEAS.md) (grep the game names below), [GAMES.md](../GAMES.md) for the built games it touches, the [gap table](../IDEAS.md#gaps-in-the-catalog), the [roadmap's zone concepts](../ROADMAP.md#zone-concepts) and the [rules for every activity](../../AGENTS.md#rules-for-every-activity).
-3. **Find the curriculum anchors.** The official standards by grade band (NGSS for science, the C3 Framework and national or state history standards for history, CSTA and ISTE for technology), opened at their source. Record which codes you actually opened. A standard is a guide, never a gate.
-4. **Find what children can do and understand at each age.** Developmental research or teacher guidance, with the caveat when it is thin. Record a gap as a gap.
-5. **Research five to ten similar games or apps**, plus a physical or unplugged equivalent. For each note how its progression grows, what to borrow, and what Puddle Island must leave out (timers, lives, streaks, ads, purchases, shame, scarcity). Open the source; mark anything recalled.
-6. **Check fit with the island.** Which ideas fit the rules; which belong to an existing game as a mode (prefer that when the action is the same); what needs new infrastructure; which land or zone would hold it. Run the same test on every idea: *a fun action with a clear learning purpose*.
-7. **Write it up** as `docs/deep-dives/subjects/<subject-id>.md` from the template below, ending with an ordered list of build slices, each sized for one session. Then update the tracker row, the idea notebook's candidate table and the roadmap, and add a short VERIFICATION entry (docs only).
+3. **Find the curriculum anchors.** The official standards by grade band (NGSS for science, the C3 Framework and national or state standards for history, CSTA and ISTE for technology, CASEL for social-emotional learning, WHO and AAP for movement and screens), opened at their source. Record which codes you actually opened. A standard is a guide, never a gate.
+4. **Find what people can do and understand at each age,** from toddler to teen. Developmental research or teacher guidance, with the caveat when it is thin. Record a gap as a gap.
+5. **Research five to ten similar games or apps,** plus a physical or unplugged equivalent. For each note how its progression grows, what to borrow, and what Puddle Island must leave out (timers, lives, streaks, ads, purchases, shame, scarcity). Open the source; mark anything recalled.
+6. **Check fit with the island.** Which ideas fit the rules; which belong to an existing game as a mode (prefer that when the action is the same); what needs new infrastructure; which land or zone would hold it. Test every idea: *a fun action with a clear learning purpose*.
+7. **Write it up** as `docs/deep-dives/subjects/<subject-id>.md` from the template below, ending with an ordered list of build slices, each sized for one session. Then update the tracker row, the notebook's candidate table and the roadmap, and add a short VERIFICATION entry (docs only).
 
 ### Template
 
-*Subject, ID, bands, date, session.* **Anchors** (standards opened, with codes) · **What children can do** (by age, with caveats) · **On the island today** (built games, notebook rows, gaps) · **Similar games and apps** (table: game, kind, how progression grows, borrow, leave out) · **What fits** (and what does not, and why) · **Candidates** (table: name, fun action, learning goal, bands, effort, new infrastructure) · **A first game's ladder** (levels, first rounds, what she decides, mistakes and hints, a rule test, cost) · **Experience and presentation** (the first unsupported action, touch-down feedback, replay variety) · **Decisions for the developer** · **Build slices, in order** · **What was built**: nothing; say what ran.
+*Subject, ID, audiences, date, session.* **Anchors** (standards opened, with codes) · **What people can do** (by age, toddler to teen, with caveats) · **On the island today** (built games, notebook rows, gaps, and which audiences already have something) · **Similar games and apps** (table: game, kind, how progression grows, borrow, leave out) · **What fits** (and what does not, and why) · **An answer for every audience** (table: audience, first action, deeper rung, or *none, and why*; for G the three forms) · **Candidates** (table: name, fun action, learning goal, audiences, effort, new infrastructure) · **A first game's ladder** (levels, first rounds, what she decides, mistakes and hints, a rule test, cost) · **Experience and presentation** (the first unsupported action, touch-down feedback, replay variety, an off-screen activity) · **Decisions for the developer** · **Build slices, in order** · **What was built**: nothing; say what ran.
 
-### Ground rules for the history sessions
-
-History is the subject most likely to need care. Every session must write down, before proposing anything:
+### Ground rules
 
 - **No violence as the fun.** No conquering, battles, weapons play or points for winning wars. When a history involves war, enslavement, displacement or genocide, say how it is acknowledged for the age (often by not depicting it at all in a young band) and put the depth question under *Decisions for the developer*.
-- **No pretending to authority.** Indigenous and living cultures, religion and contested events need sources written by the people concerned or by recognized museums and educators, and may need review by someone from that community before anything ships. Mark an idea *needs review* rather than drafting a stereotype.
-- **Everyday life before dates.** The early bands learn *then and now*, before and after, long ago, changes in homes, food, tools and toys. Dates, centuries and named leaders are for school-age bands, and the island never needs a child to read.
+- **No pretending to authority.** Indigenous and living cultures, religion, contested events, body safety and medical or food-safety advice need sources written by the people concerned or by recognized experts, and may need a named reviewer before anything ships. Mark an idea *needs review* rather than drafting it.
+- **Everyday life before dates.** The early bands learn *then and now*, before and after, long ago. Dates, centuries and named leaders are for school-age bands, and the island never needs a child to read.
 - **Evidence over trivia.** Prefer sorting, ordering, comparing two sources and asking what changed over quizzes of facts. A rule test can check ordering and consistency; it cannot check historical truth, so a human review is a named step.
+- **The body and food stay neutral.** No fitness tracking, calories, weight talk, "good food and bad food", streaks, or shame. The island has no camera, microphone or body tracking, so movement is shown by the pet and done off-screen by the family.
+- **Real-world instructions need a reviewer.** A cooking card for a one-year-old, a stretch, a road-safety rule: each is advice. Cite a recognized source and have a person review it before it is spoken or printed.
 
 ## Tracker
 
-Status values as in the [game tracker](README.md#tracker): **not started**, **in progress**, **designed**, **building**, **done**. Bands: L lap, T toddler, P preschool, K pre-K, S school (about 6–8, up to 12), G grown-up. Zones are the [roadmap's working proposals](../ROADMAP.md#zone-concepts).
+Status values as in the [game tracker](README.md#tracker): **not started**, **in progress**, **designed**, **building**, **done**. Audience codes are in the table above. Zones are the [roadmap's working proposals](../ROADMAP.md#zone-concepts). **G** is the form a grown-up gets (play, play-with, page card).
 
 ### Sciences
 
-| ID | Subject | Anchors to open | Island games it touches | Likely zone | Bands | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| `life-science` | Animals and plants: needs, parts, life cycles, habitats and food chains | NGSS K-LS1, 1-LS1/3, 2-LS2, 3-LS (check codes) | Habitat Helpers, Garden Grow, Photo Safari, Animal Snack; Caterpillar Week (proposed), Fossil Dig (proposed) | Discovery Marsh | P–S | not started |
-| `ecosystems` | Ecosystems, food webs, adaptation, populations (grades 3–5) | NGSS 3-LS, 5-LS2 | Habitat Helpers (a later mode), Critter Sort | Discovery Marsh | S | not started |
-| `earth-materials` | Rocks, soil, minerals, fossils, landforms, erosion | NGSS 2-ESS, 4-ESS1/2 | Fossil Dig (proposed), Sand Table (proposed), Mole Mine | Discovery Marsh | K–S | not started |
-| `weather-water` | Weather, the water cycle, seasons and climate | NGSS K-ESS2/3, 3-ESS2 | Weather Wardrobe, Day by Day, Lemonade Stand, Garden Grow | Discovery Marsh | T–S | not started |
-| `space` | Sun, moon, stars, planets, seasons and day length | NGSS 1-ESS1, 5-ESS1 | Light Lab, Moon Window (proposed), Skywatch Isles | Skywatch Isles | K–S | not started |
-| `matter` | States of matter, mixing, materials and changes (solid, liquid, gas; dissolving) | NGSS 2-PS1, 5-PS1; PhET States of Matter | Fill and Dump, Pet Kitchen, Water Paths and Sand Table (proposed) | Tinker Lab | P–S | not started |
-| `energy-waves` | Electricity, magnets, light and sound (circuits, vibration) | NGSS 1-PS4, 3-PS2, 4-PS3, 4-PS4 | Light Lab, Sound Garden, Magnet Fishing and Circuit Garden (proposed) | Tinker Lab | P–S | not started |
-| `body-health` | The senses, the body, food, sleep, hygiene and feelings | NGSS K-LS1, health frameworks | Teddy Doctor, Feelings Faces, Pet Kitchen, Goodnight Room | Cozy Village | T–S | not started |
-| `inquiry` | Fair tests, evidence and data: predict, test, compare, record | NGSS science practices | Sink or Float, Photo Safari, Picture Graph | Discovery Marsh | K–S | not started |
+| ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `life-science` | Animals and plants: needs, parts, life cycles, habitats | NGSS K-LS1, 1-LS1/3, 2-LS2, 3-LS (check codes) | Habitat Helpers, Garden Grow, Photo Safari, Animal Snack; Caterpillar Week and Fossil Dig (proposed) | Discovery Marsh | P–U | species-ID puzzle; nature-walk card | not started |
+| `ecosystems` | Ecosystems, food webs, adaptation, populations | NGSS 3-LS, 5-LS2, MS-LS2 | Habitat Helpers (a later mode), Critter Sort | Discovery Marsh | S–M | balance-an-ecosystem puzzle | not started |
+| `earth-materials` | Rocks, soil, minerals, fossils, landforms, plate tectonics, erosion | NGSS 2-ESS, 4-ESS1/2, MS-ESS2 | Fossil Dig and Sand Table (proposed), Mole Mine | Discovery Marsh | K–M | strata and fossil deduction puzzle | not started |
+| `weather-water` | Weather, the water cycle, seasons and climate | NGSS K-ESS2/3, 3-ESS2, MS-ESS2 | Weather Wardrobe, Day by Day, Lemonade Stand, Garden Grow | Discovery Marsh | T–M | watershed routing puzzle | not started |
+| `space` | Sun, moon, stars, planets, seasons, day length | NGSS 1-ESS1, 5-ESS1, MS-ESS1 | Light Lab, Moon Window (proposed), Skywatch Isles | Skywatch Isles | K–M | orbit and star-chart puzzles | not started |
+| `matter` | States of matter, mixing, materials, chemical change | NGSS 2-PS1, 5-PS1, MS-PS1; PhET States of Matter | Fill and Dump, Pet Kitchen, Water Paths and Sand Table (proposed) | Tinker Lab | P–M | mixing and phase puzzles | not started |
+| `energy-waves` | Electricity, magnets, light, sound and energy | NGSS 1-PS4, 3-PS2, 4-PS3, 4-PS4, MS-PS3/4 | Light Lab, Sound Garden, Magnet Fishing and Circuit Garden (proposed) | Tinker Lab | P–M | circuit-logic puzzles | not started |
+| `body-health` | The senses, the body, food, sleep, hygiene and feelings | NGSS K-LS1, MS-LS1; health frameworks | Teddy Doctor, Feelings Faces, Pet Kitchen, Goodnight Room | Cozy Village | L–U | a family card; no tracking | not started |
+| `inquiry` | Fair tests, evidence and data: predict, test, compare | NGSS science practices | Sink or Float, Photo Safari, Picture Graph | Discovery Marsh | K–M | experiment-deduction puzzle | not started |
+| `genetics` | Traits, inheritance and variation | NGSS 1-LS3, 3-LS3, MS-LS3 | Critter Sort, Bug Builder | Discovery Marsh | K–M | Punnett-style cozy puzzle; needs care | not started |
 
 ### History
 
-| ID | Subject | Anchors to open | Island games it touches | Likely zone | Bands | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| `time-change` | Past, present and future; then and now; family and personal timelines; building a timeline | C3 Framework D2.His (change and continuity); a national early-years history guide | Day by Day, Story Steps, Day-by-Day's weekday model | Storybook Square | T–S | not started |
-| `daily-life-long-ago` | Everyday life in the past: homes, food, tools, clothes and toys, across cultures | C3 and UK Key Stage 1 history | Weather Wardrobe, Pet Kitchen, Market Stall | Storybook Square | P–S | not started |
-| `deep-time` | Dinosaurs, early life and prehistory; how fossils tell us | NGSS 3-LS4, 4-ESS1; museum education | Fossil Dig (proposed) | Discovery Marsh | K–S | not started |
-| `ancient-river-civilizations` | Egypt and Mesopotamia: farming along rivers, writing, cities | C3; museum guides | Letter Trails (writing), Secret Code (signs) | Storybook Square | S | not started |
-| `ancient-mediterranean` | Greece and Rome: voting, building, trade and sport | C3; museum guides | Market Stall, Island Bridges | Storybook Square | S | not started |
-| `china-india-silk-road` | Early China and India, trade routes and the inventions that travelled (paper, compass, silk) | C3; museum guides | Mail Carrier, Treasure Map, Market Stall | Storybook Square | S | not started |
-| `americas-africa` | The Maya, the Andes, West Africa and Indigenous peoples | C3; sources by the peoples concerned | None yet | undecided | S | not started; **needs review** by a knowledgeable community before drafting |
-| `medieval-life` | Castles, guilds, markets and monasteries (no battles) | C3; museum guides | Block Tower, Market Stall | Storybook Square | S | not started |
-| `exploration-maps` | Navigation, maps, ships and trade (acknowledging, not depicting, colonization) | C3; museum guides | Mail Carrier, Treasure Map, Peekaround Island | Skywatch Isles | S | not started; **needs review** |
-| `inventions` | Inventors and the wheel, the printing press, the bulb and flight; how an idea spreads | C3; science and technology museums | Wobble Works, Gear Garden and Chain Reaction | Maker Harbor | P–S | not started |
-| `community-civics` | Rules, voting, jobs and how a community runs; local history | C3 civics strand | Market Stall, Lemonade Stand, Little Helpers | Storybook Square | P–S | not started |
+| ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `time-change` | Past, present and future; then and now; timelines | C3 D2.His (change and continuity) | Day by Day, Story Steps | Storybook Square | T–M | timeline-ordering puzzle | not started |
+| `daily-life-long-ago` | Everyday life in the past: homes, food, tools, clothes, toys, across cultures | C3; UK Key Stage 1 history | Weather Wardrobe, Pet Kitchen, Market Stall | Storybook Square | P–U | spot-the-anachronism puzzle | not started |
+| `deep-time` | Dinosaurs, early life, prehistory, how fossils tell us | NGSS 3-LS4, 4-ESS1; museum education | Fossil Dig (proposed) | Discovery Marsh | K–U | fossil strata puzzle | not started |
+| `ancient-river-civilizations` | Egypt and Mesopotamia: farming along rivers, writing, cities | C3; museum guides | Letter Trails, Secret Code | Storybook Square | S–M | sign-decoding puzzle | not started |
+| `ancient-mediterranean` | Greece and Rome: voting, building, trade, sport | C3; museum guides | Market Stall, Island Bridges | Storybook Square | S–M | mosaic and numeral puzzles | not started |
+| `china-india-silk-road` | Early China and India, trade routes and inventions that travelled | C3; museum guides | Mail Carrier, Treasure Map, Market Stall | Storybook Square | S–M | trade-route puzzle | not started |
+| `americas-africa` | The Maya, the Andes, West Africa, Indigenous peoples | C3; sources by the peoples concerned | None yet | undecided | S–M | **needs review** | not started; **needs review** |
+| `medieval-life` | Castles, guilds, markets, monasteries (no battles) | C3; museum guides | Block Tower, Market Stall | Storybook Square | S–M | guild-market logic | not started |
+| `exploration-maps` | Navigation, maps, ships and trade (acknowledging, not depicting, colonization) | C3; museum guides | Mail Carrier, Treasure Map, Peekaround Island | Skywatch Isles | S–M | navigation puzzle | not started; **needs review** |
+| `inventions` | Inventors and the wheel, printing press, bulb, flight; how an idea spreads | C3; science and technology museums | Wobble Works, Gear Garden, Chain Reaction | Maker Harbor | P–M | build-the-invention puzzle | not started |
+| `community-civics` | Community helpers, jobs, rules, voting, how a community runs, local history | C3 civics strand | Market Stall, Lemonade Stand, Little Helpers | Storybook Square | P–M | village-council cozy puzzle | not started |
 
 ### Technology
 
-The island's technology today is one thread: Robot Path (sequences, loops, conditions) with Secret Code and Chain Reaction nearby. These sessions ask what *else* belongs under technology, and whether it earns its place.
+The island's technology today is one thread: Robot Path (sequences, loops, conditions) with Secret Code and Chain Reaction nearby. These sessions ask what *else* belongs under technology.
 
-| ID | Subject | Anchors to open | Island games it touches | Likely zone | Bands | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| `programming` | Beyond the first routine: sequences, loops, conditions, events, functions, variables and debugging | CSTA K-2 and 3-5 (the search did not return the benchmarks; open them at source); ScratchJr, Lightbot (20 puzzles across basics, procedures and loops by the app's own count), Kodable | Robot Path, Secret Code | Skywatch Isles | K–S | not started |
-| `how-computers-work` | Input, output, memory, codes and binary, logic gates | CSTA; ISTE 1.1.d (understand how technology works); Rocky's Boots and Robot Odyssey as precedents | Sorting Machine and Circuit Garden (proposed), Secret Code, Number Nook | Tinker Lab | P–S | not started |
-| `networks-citizenship` | Networks, the internet and being kind and safe online, taught with stories and unplugged games (nothing connects to a real network) | ISTE Digital Citizen; district K–5 curricula | Windy Picnic style stories, Story Theater | Storybook Square | K–S | not started |
-| `data-ai-literacy` | Sorting, patterns and classification; "teaching" a sorter with examples and seeing where it errs | CSTA data and analysis; AI4K12 (open at source) | Critter Sort, Picture Graph, Pattern Train | Skywatch Isles | S | not started |
-| `engineering-design` | The design loop: ask, imagine, plan, make, test, improve; materials and constraints | NGSS K-2-ETS1, 3-5-ETS1 | Bug Builder, Block Tower, Chain Reaction, Ferry Jam | Maker Harbor | P–S | not started |
-| `machines-tools` | Everyday tools, simple machines and how things work (a vehicle, a clock, a lock) | NGSS K-2-ETS1; Tinybop Simple Machines | Seesaw Balance, Ramp Race; Lift It (proposed) | Maker Harbor | P–S | not started |
-| `making-media` | Making pictures, sound, animation and stories with technology: a flipbook, a stop-motion, a recorded song | ISTE Creative Communicator | Pixel Pictures, Song Maker, Stamp Studio, Rainbow Fingers | Paint Pier | P–S | not started |
-| `robots-automation` | Sensors, actions and automation in the real world: thermostat, door, traffic light | CSTA; ISTE | Robot Path, Stop and Go | Skywatch Isles | K–S | not started |
+| ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `programming` | Sequences, loops, conditions, events, functions, variables, debugging | CSTA K-2 and 3-5 (open at source); ScratchJr, Lightbot (20 puzzles: basics, procedures, loops), Kodable | Robot Path, Secret Code | Skywatch Isles | K–M | Human Resource Machine-style logic puzzles | not started |
+| `how-computers-work` | Input, output, memory, codes and binary, logic gates | CSTA; ISTE 1.1.d; Rocky's Boots and Robot Odyssey as precedents | Secret Code, Number Nook; Sorting Machine and Circuit Garden (proposed) | Tinker Lab | P–M | logic-gate and binary puzzles | not started |
+| `networks-citizenship` | Networks, the internet and being kind and safe online, taught with stories and unplugged games (nothing connects to a real network) | ISTE Digital Citizen; district K–5 curricula | Windy Picnic-style stories, Story Theater | Storybook Square | K–M | a conversation-prompt card | not started |
+| `data-ai-literacy` | Sorting, patterns, classification, "teaching" a sorter with examples | CSTA data and analysis; AI4K12 (open at source) | Critter Sort, Picture Graph, Pattern Train | Skywatch Isles | S–M | train-a-classifier puzzle | not started |
+| `engineering-design` | The design loop: ask, plan, make, test, improve; constraints | NGSS K-2-ETS1, 3-5-ETS1, MS-ETS1 | Bug Builder, Block Tower, Chain Reaction, Ferry Jam | Maker Harbor | P–M | build-and-optimize puzzle | not started |
+| `machines-tools` | Everyday tools, simple machines, how things work | NGSS K-2-ETS1; Tinybop Simple Machines | Seesaw Balance, Ramp Race; Lift It (proposed) | Maker Harbor | T–M | mechanism puzzles | not started |
+| `making-media` | Pictures, sound, animation, stories with technology: a flipbook, stop-motion, a recorded song | ISTE Creative Communicator | Pixel Pictures, Song Maker, Stamp Studio, Rainbow Fingers | Paint Pier | T–M | a shared family project | not started |
+| `robots-automation` | Sensors, actions and automation in the real world: thermostat, door, traffic light | CSTA; ISTE | Robot Path, Stop and Go | Skywatch Isles | K–M | automation puzzles | not started |
+
+### Life skills
+
+Added after the developer asked about recipes and exercise. This group is the nearest to the youngest players: most rows start at lap or toddler.
+
+| ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `cooking-recipes` | Recipes and kitchen jobs: wash, stir, pour (toddler); picture recipes as sequences (pre-K); measuring and fractions (school); halving, doubling, meal planning (upper school) | Age-by-age kitchen guides ([example](https://www.ahealthiermichigan.org/2017/11/21/age-guide-teaching-kids-healthy-cooking-skills)); food-safety authorities for a one-year-old (open at source) | Pet Kitchen, Scoop Shop, Monster Munch, Fill and Dump | Cozy Village | L–M | meal-planning puzzle; a cook-together recipe card | not started; **needs a food-safety reviewer** |
+| `movement-exercise` | Movement, dance, stretching and yoga, led by the pet and done off-screen (no camera, microphone or tracking) | WHO under-5 activity guidance (open at who.int; news coverage says about 180 minutes a day for ages 1–4); a pediatric PT or physiotherapist | Pet Says (freeze dance), Brain Break, Jelly Drums; Stomp Steps and Belly Breaths (proposed) | Music Mountain | L–M | a family movement card; a stretch break | not started; **needs a pediatric reviewer** |
+| `routines-self-care` | Handwashing, teeth, dressing, setting the table, tidying up, sleep, getting ready in order | Practical-life and routine guidance (open at source; none found in the first search) | Weather Wardrobe, Splish Splash, Goodnight Room, Day by Day; Toy Drawer and Unpack the Room (proposed) | Cozy Village | L–U | a routine-chart card | not started |
+| `social-emotional` | Feelings, turn-taking, sharing, empathy, friendship and repairing a quarrel; no moralizing or shame | CASEL's five competencies ([CASEL](https://casel.org/casel-gateway-preschool-thru-high-school-sel)) | Feelings Faces, Story Theater, Owl Walk Home; Belly Breaths (proposed) | Story Grove | T–M | conversation cards; co-op games | not started |
+| `executive-function` | Working memory, impulse control, flexible rules (evidence that these transfer to other skills is mixed, so say so) | Developmental research (open at source) | Pet Says, Stop and Go, Brain Break, Memory Match; Rule Parade (proposed) | Puzzle Peaks | P–M | rule-switching puzzles | not started |
+| `nature-sustainability` | Gardening, recycling and sorting, caring for animals, seasons outdoors | NGSS K-ESS3, 3-5; environmental education guides | Garden Grow, Critter Sort, Habitat Helpers | Discovery Marsh | T–M | nature-walk bingo card; compost cozy puzzle | not started |
+| `visual-art` | Color, line, shape, famous painters' styles, drawing and crafts | Early-years art guidance; museum education (open at source) | Rainbow Fingers, Color Garden, Stamp Studio, Pixel Pictures; Draw a Song (proposed) | Paint Pier | L–M | art-history puzzles; a shared painting | not started |
+| `music-instruments` | Instrument families, the orchestra, rhythm patterns, composers | Music education standards (open at source) | Jelly Drums, Song Maker, Beat Builder, Sing-Along Barn, Sound Garden | Music Mountain | L–M | compose-with-the-child tools | not started |
+| `geography-cultures` | Maps of home and the world, continents, habitats, foods, clothing, festivals | C3 geography strand; sources by the peoples concerned | Mail Carrier, Treasure Map, Peekaround Island | Skywatch Isles | P–M | map puzzles; recipes from the world | not started; **needs review** |
+| `safety` | Road, water and fire safety first; body safety later and only with an expert | Safety organizations; a pediatric or child-protection reviewer | Crossing Guard (proposed), Stop and Go | Cozy Village | K–S | a family safety card | not started; **needs an expert reviewer** |
+| `money-economy` | Needs and wants, saving, trade, fairness (a check of what Lemonade Stand and Maker Harbor already cover) | Financial-education frameworks (open at source) | Market Stall, Lemonade Stand, Maker Harbor (proposed) | Maker Harbor | P–M | household-budget cozy puzzle | not started |
+| `off-screen-companions` | The off-screen activity for each game, for the grown-ups' page: what a parent and child do with a real jar, a wooden spoon or a song | WHO on caregiver time; early-years play guidance | Every game's `offScreen` field | the grown-ups' page | L–U | the whole point; plain HTML | not started |
 
 ## Suggested order (non-binding)
 
-- **A. Closest to what is built:** `weather-water`, `matter`, `life-science`, `programming`.
-- **B. New ideas with a clear first game:** `time-change`, `space`, `how-computers-work`, `energy-waves`, `inventions`.
-- **C. Everything else** in any order. `americas-africa` and `exploration-maps` wait for a decision on review (see *Decisions* below).
+The long horizon is real, but the nearest rungs serve a one-year-old, so the order starts there.
+
+- **A. The youngest and the family:** `movement-exercise`, `routines-self-care`, `cooking-recipes`, `social-emotional`, `off-screen-companions`.
+- **B. Closest to what is built:** `weather-water`, `matter`, `life-science`, `programming`, `music-instruments`.
+- **C. A gap in the catalog is wide here:** upper school and early-teen content (`space`, `energy-waves`, `how-computers-work`, `inventions`, `data-ai-literacy`, `time-change`) and parent puzzles.
+- **D. Everything else** in any order. `americas-africa`, `exploration-maps`, `geography-cultures` and `safety` wait for a reviewer decision.
 
 ## Decisions for the developer
 
-- **Who reviews the sensitive history subjects?** Indigenous cultures, living religions and colonization should not be drafted without a reviewer; until there is one, those sessions record questions rather than game ideas.
-- **Is there a history zone?** The roadmap's zones (Storybook Square, Discovery Marsh, Skywatch Isles, Maker Harbor) already host most of these, but a dedicated time-travel place is possible. Decide after the first two history sessions.
-- **How much of this is wanted before she is old enough to use it?** The sessions are research, so cheap, but each adds candidates that compete with nearer waves; the roadmap's order governs.
+- **Is there a middle band?** The `school` band is 6 to 12 and `grownup` starts at 13, and [the family review](../FAMILY-EXPERIENCE.md) already says a tween band is a separate decision with a migration audit. This plan answers it for *content* (the M audience) but not for *routing*. Options: stretch `school`'s top levels to 14; add a band around 10 to 14; or let 13+ play grown-up puzzles earlier. Lean: write the M answers in the sessions first, then decide with real candidates in hand.
+- **Who reviews what?** Sensitive history, food safety for toddlers, pediatric movement and child safety each need a named reviewer before any card is printed or any line is spoken. Until then those sessions record questions only.
+- **Is there a history zone?** The roadmap's zones already host most of these; a dedicated time-travel place is possible. Decide after the first two history sessions.
+- **How much grown-up content?** The island's grown-up shelf is 11 puzzles; every session now proposes more. A parent's play, play-with and page tool may each want a different home (Lantern Lake, the family table, the grown-ups' page).
 
 ## What was built
 
