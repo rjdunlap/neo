@@ -979,6 +979,11 @@ async function singBarnPlay() {
   assert.equal((await state()).singer, st.order[1], 'then the second friend comes out');
   await tapNotes(11); await finished('sing-along-barn');
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Mary Had a Little Lamb, level 1: a thirteen-note opening, then "little lamb, little lamb, its fleece was white as snow"; the friend answers on the last "lamb".
+  await launchTune(1, 'mary');
+  assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 13 + 12]);
+  await tapNotes(24); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
   await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');
@@ -1033,7 +1038,7 @@ async function singBarnPlay() {
   assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers4 + 1);
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   assert.deepEqual(errors, []);
-  log('Sing-Along Barn: levels 1, 3 and 4 (Old MacDonald) and a Hot Cross Buns round, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order (all at once, then one verse at a time), portrait and leaving mid-song passed');
+  log('Sing-Along Barn: levels 1, 3 and 4 (Old MacDonald) and Hot Cross Buns and Mary Had a Little Lamb rounds, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order (all at once, then one verse at a time), portrait and leaving mid-song passed');
 }
 
 async function numberTrailsPlay() {
