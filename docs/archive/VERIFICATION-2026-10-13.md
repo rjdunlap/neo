@@ -95,3 +95,10 @@
 - Tested on base `e96fca8` plus the working diff at `GAME_URL=http://localhost:5191`: typecheck; `npm test` 141 files, 1,210 tests (new `screen-keys.test.ts`, 7 cases); `npm run build`; `BROWSER_SUITE=world` passed (about 9.5 minutes).
 - New `BROWSER_SUITE=landkeys` passed: the ring is hidden for a finger, the first key only shows it, arrows move it, Backspace does nothing on the map, a held Enter (with auto-repeat) through map-to-land does not act in the land, Enter on the host suggests a game, a tap works with the ring showing and hides it, Backspace returns to the map; one landscape and one portrait screenshot of each ring inspected.
 - Not run: production offline check (no persistence, asset or route change), `couch`/`couchcourse`. Open: a real keyboard or pad on an iPad or TV ([DEVICE-CHECKS](../DEVICE-CHECKS.md)); Chrome automation only synthesises keys.
+
+## 2026-10-13 — Bouncy Launch level 7 (Feed the friend)
+
+- Uncommitted tree on `main` at `e671bf3`; pre-K and school only (prek order 3,4,7,5; school 4,5,7,6). A seeded bunny or duck stands on the grass (three shots, spots in 0.12-0.92 of the strip, at least 0.2 apart); landing within +-0.09 feeds it; a miss says short or long, the arc and a puff ring stay, and two misses count one hint with the preview and a pull ring. Numbered 7 (next free ID); the deep dive's number 8 is now free for Near or far.
+- Typecheck and the full unit suite (142 files, 1230 tests) passed, including new rule tests: spots seeded, in range and apart; every spot reachable inside the leash; a correction from a miss lands; the bot's pull feeds every friend.
+- `GAME_URL=http://localhost:5291 BROWSER_SUITE=arcade ARCADE_ONLY=launch FROM_LEVEL=7 TO_LEVEL=7` passed four times (two misses, one hint, then every friend fed); portrait screenshot checked. `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch` passed (level 1 in 12.7 s, level 7 in 12.3 s).
+- Not run: build, offline, world, couch. Open: a real iPad pull, device speech for the new lines, a child's reaction.
