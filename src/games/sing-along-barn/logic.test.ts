@@ -75,11 +75,12 @@ describe('the song', () => {
 
 describe('the plans', () => {
   it('grow from one animal to three, with her choosing all at once and then one verse at a time', () => {
-    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3]);
-    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true]);
-    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true]);
+    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3, 3]);
+    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true, true]);
+    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true, true]);
+    expect(PLANS.map((p) => p.chooseTune)).toEqual([false, false, false, false, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[3]);
+    expect(planFor(99)).toBe(PLANS[4]);
   });
 
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {

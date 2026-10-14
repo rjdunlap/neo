@@ -1309,6 +1309,7 @@ export const SCRIPT = {
 
   'barn.sing': ['Tap, tap, tap to sing Old MacDonald!'],
   'barn.sing.buns': ['Tap, tap, tap to sing Hot Cross Buns!'],
+  'barn.tune': ['Which song shall we sing? Tap one!'],
   'barn.invite': ['Who will come to the farm? Tap {count} friends!'],
   'barn.next': ['Who will sing next? Tap a friend!'],
   'barn.invited': ['{animal}!', 'Hello, {animal}!'],
