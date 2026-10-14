@@ -1874,3 +1874,25 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 - Same URL: `fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=9` / `FINGER_ONLY=tangram-town FINGER_LEVELS=8` clean in 27.0 / 5.1 demo seconds. Both portrait screenshots reviewed for piece/outline readability and control/pet clearance.
 - Production preview `http://localhost:4198` confirmed serving tested `assets/index-Chds4j2L.js`; offline proof reused after a level-description wording edit (no cache/runtime change); `GAME_URL=http://localhost:4198 npm run test:offline` passed cached assets/font, offline reload, game/card/result and persisted progress/picnic/treehouse/journal. Local Markdown files/anchors and `git diff --check` passed; both session servers stopped.
 - Not run: world, couch/course suites (routes and courses unchanged). Actual iPad taps/speech, repair recognition and child planning with both blocks remain open.
+
+## 2026-10-13 — Sing-Along Barn level 5 (she chooses the song)
+
+- Built level 5 (pre-K now 3–5): plan `chooseTune`, two big cards (a cow, a hot cross bun), any pick right, then the level-4 flow with three verses; voice line `barn.tune`, how-to step.
+- Typecheck; vitest for `sing-along-barn`, registry and content passed (111 tests).
+- One scripted portrait play of level 5 (picked Hot Cross Buns, three verses, sticker, no page errors); the screenshot looked right. `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=5` passed at 56.3 s (limit 75 s).
+- Not run: `npm run build`, the `singalong` suite (not extended for level 5), the offline check, device speech, iPad, a child. Open: whether she can find and tap a card, on a real iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-13 — Sing-Along Barn level 4 (pick who sings each verse)
+
+- Built [PR #278](https://github.com/rjdunlap/neo/pull/278): level 4 (pre-K now 3–4; lap, toddler and preschool unchanged), plan `{ verses: 3, invite: true, each: true }`. She taps anywhere to sing the opening; after it and after each verse the five friends come out and she picks who sings next (a free choice, never a miss); friends who have sung wait in their own slot and only say hello; a stray tap while choosing does nothing; the round ends after the third verse with one sticker, misses 0 and hints 0. New voice line `barn.next`.
+- Typecheck; `npm test` passed (141 files, 1,218 tests), including the new rule tests (plans, the prefix property of `makeSong` per tune, the note cap raised to 51 for three Old MacDonald verses and kept at 40 for two).
+- `BROWSER_SUITE=singalong` passed at `GAME_URL=http://localhost:5192` on this tree, with a new level-4 play (opening, pick, stray tap, hello on a sung friend, three verses, sticker, 0 misses, 0 hints); one portrait screenshot of the pick screen looked right. `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn` passed at level 1 (33.0 s) and level 4 (72.3 s, too close to the 75 s limit); the how-to demonstration now sings two verses and `FINGER_LEVELS=4` passed again at 53.2 s.
+- Not run: `npm run build`, the offline check, iPad, a child. Open: whether a one-year-old (or a pre-K child) can find and tap a friend at the end of each verse, on a real iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-13 — Number Nook first slice
+
+- Tested base `3c30ab5` plus working diff: new touch-only `number-nook` in Lantern Lake, three exact-distance seeded boards, shortest-route help, revision, spoken/how-to support and a ghost finger.
+- Own dependencies installed with `npm ci`; typecheck, full unit tests (142 files, 1,221 tests) and build passed. The existing large-chunk build warning remains. After adding the explicit registry ID expectation, the focused registry suite passed (13 tests); other code was unchanged.
+- `GAME_URL=http://localhost:5191 BROWSER_SUITE=numbernook`: first and last levels passed through actual taps, one miss, one hint, Undo, Start over and one reward per round; portrait screenshot inspected for clear controls and targets at least 64 logical units.
+- At the same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-nook` passed the first/last levels cleanly in 5.6/20.7 demo seconds.
+- Not run: offline, world or full couch suites. No real iPad, hardware or device speech check; person understanding and replay value remain open in [device checks](../DEVICE-CHECKS.md).

@@ -1,16 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
-import { ANIMALS, STICKER_ANIMALS, COVER_NAMES, nearestSpot, shouldNudge, deal, newcomer, pickTarget, PLANS, spotToTap, type Animal } from './logic';
+import { ANIMALS, STICKER_ANIMALS, SCENES, roundScene, COVER_NAMES, nearestSpot, shouldNudge, deal, newcomer, pickTarget, PLANS, spotToTap, type Animal } from './logic';
 
 describe('Peekaboo Barn', () => {
   it('preserves old sticker choices and supplies a distinct spoken name for each cover', () => {
     expect(STICKER_ANIMALS).toEqual(['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear']);
-    expect(COVER_NAMES).toEqual({ hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate' });
-    expect(new Set(Object.values(COVER_NAMES)).size).toBe(4);
+    expect(Object.fromEntries(Object.entries(COVER_NAMES).slice(0, 4))).toEqual({ hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate' });
+    expect(new Set(Object.values(COVER_NAMES)).size).toBe(8);
     for (const id of ['peek.found', 'peek.yes'] as const) {
       for (const line of SCRIPT[id]) expect(line).toContain('{cover}');
     }
+  });
+
+  it('deals named distinct covers in either seeded setting at every level', () => {
+    const seen = new Set<string>();
+    for (const plan of PLANS) for (let seed = 1; seed <= 200; seed++) {
+      const scene = roundScene(new Rng(seed), plan.spots);
+      expect(scene).toEqual(roundScene(new Rng(seed), plan.spots));
+      expect(scene.covers).toHaveLength(plan.spots);
+      expect(new Set(scene.covers).size).toBe(plan.spots);
+      expect(SCENES[scene.id].length).toBeGreaterThanOrEqual(4);
+      for (const cover of scene.covers) expect(COVER_NAMES[cover]).toBeTruthy();
+      seen.add(scene.id);
+    }
+    expect([...seen].sort()).toEqual(['barnyard', 'garden']);
   });
 
   it('resolves neighboring hit areas to the nearer cover and rejects points outside', () => {
