@@ -13,6 +13,7 @@ A bridge gate lets some critters across by a rule. She sends critters to the gat
 | 3 | Secret one-picture rule, 5 critters, 4 pictures, 2 tests | pre-K, school | The same with more choices |
 | 4 | Secret two-part rule ("both"), 6 critters, 4 pictures, 3 tests | school | A critter must fit both parts |
 | 5 | Secret "one", "not" or "both", 6 critters, 4 pictures, 3 tests | school | Use all the evidence to tell kinds of rule apart |
+| 6 | Secret "or" gate (built 2026-10-14), 6 critters, 4 pictures | school | A critter crosses if it fits either part; tell "or" from its "and" twin |
 
 Each level plays two rounds (`rounds: 2`). Pools: six rules, seven animals (`cow duck pig cat bear dog bunny`) and a hat on or off, so a critter is one of 14 pictures; a round draws 4–6 distinct ones, never all crossing or all waiting. The "not" and "both" wrong pictures are lookalikes that share a half of the truth or are its opposite, and every round is built so trying everyone leaves exactly one picture standing.
 
@@ -104,4 +105,6 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Only documents changed; links and `git diff --check` were run. The genre sources were read through search summaries, not opened in full.
+The deep dive itself changed only documents; links and `git diff --check` were run. The genre sources were read through search summaries, not opened in full.
+
+**Slice 2, level 6 Either one (2026-10-14, `claude/critter-crossing-either-one`).** New `or` gate kind (hat or whiskers, and so on): a critter crosses if it fits either part, and a round needs at least half the critters to cross. Six critters, four pictures: the true rule, its "and" twin, a lone part, and "or" lookalikes sharing a part. The "or" card is drawn with the word "or"; the how-to line is added, no new voice lines (the `cross.*` lines are reused and `gateWords` says "X or Y"). School is now levels 2–6. Three new rule tests ("level 6, \"or\" gates"). Not yet watched: `fingerdemo` at level 6, a portrait screenshot, the how-to demonstration.

@@ -132,3 +132,10 @@
 - Built level 6 (pre-K now 3–6): like level 5 with two friends, and Old MacDonald is the whole verse (the moo-moo lines, then the first line again; the friend sounds on every moo); 47 notes per friend, 59 for one, 106 for two. Hot Cross Buns unchanged. The how-to demonstration sings the short form with one friend (the full verse at the card's finger pace overran 75 s on the first attempt), so it does not show the moo-moo lines.
 - Typecheck; vitest for `sing-along-barn`, registry and content passed. One scripted portrait play of level 6 (full Old MacDonald, two friends, 106 taps, sticker, no page errors). `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=6` passed at 36.1 s (limit 75 s).
 - Not run: `npm run build`, the offline check, the `singalong` suite (not extended for level 6), a screenshot of level 6, device speech, iPad, a child. Open: the moo-moo melody was written from memory of the tune's shape, not a printed score ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-13 — Sing-Along Barn third tune (Mary Had a Little Lamb)
+
+- Added *Mary Had a Little Lamb* (`mary`) to the tune table: a seeded draw at levels 1–4, a third card at levels 5–6; opening 13 notes, 12 per friend, the friend answers on the last "lamb". No new level. Branch `claude/barn-mary-lamb`, commit 6d6b3e5.
+- Typecheck; vitest for `sing-along-barn` and `src/content` passed. `BROWSER_SUITE=singalong` (now includes a Mary round) passed on a dev server; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=1,6` passed (32.1 s and 36.5 s, limit 75 s).
+- Not run: `npm run build`, the offline check, a screenshot of the new card, device speech, iPad, a child.
+- Open: the Mary melody was written from the tune's standard form, not a printed score ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
