@@ -61,7 +61,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Bounce Back | `bounce-back` | LTPK | 5 | 4 | designed; truthful words and rule guards ready; a gentler miss, courts and level 6 need decisions | `codex/bounce-back-deep-dive` | [bounce-back.md](bounce-back.md) |
 | Bouncy Launch | `bouncy-launch` | LTPKS | 6 | 4 | slices 1, 3 and 5 (Feed the friend, built as level 7) built; notches/notes remain (device listen decision); near-or-far entry (8), lap pull, a second spring variable and magnet support need decisions | `codex/bouncy-launch-last-flight` ([PR #275](https://github.com/rjdunlap/neo/pull/275)) | [bouncy-launch.md](bouncy-launch.md) |
 | Bubble Pop | `bubble-pop` | LTPKS | 14 | 2 | building (slices 1–3, the target sign and levels 12–14 built) | `codex/bubble-pop-number-dots` ([PR 159](https://github.com/rjdunlap/neo/pull/159)); `claude/bubble-pop-sign-and-counting` ([PR #203](https://github.com/rjdunlap/neo/pull/203)); [PR #206](https://github.com/rjdunlap/neo/pull/206) | [bubble-pop.md](bubble-pop.md) |
-| Bug Builder | `bug-builder` | TPKS | 7 | 4 | in progress | `claude/bug-builder-deep-dive` | [bug-builder.md](bug-builder.md) |
+| Bug Builder | `bug-builder` | TPKS | 7 | 4 | designed (slices 1–2 ready: bigger token pool and a hint that points; count, fold and mend levels follow; creative bug, lap and crease decisions open) | `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296)) | [bug-builder.md](bug-builder.md) |
 | Bumper Garden | `bumper-garden` | LTPK | 5 | 4 | not started | — | — |
 | Chain Reaction | `chain-reaction` | KS | 6 | 4 | not started | — | — |
 | Clap the Syllables | `clap-syllables` | PK | 4 | 4 | not started | — | — |
