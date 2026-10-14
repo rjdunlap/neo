@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { FREE_SONG, freeNote, JELLIES, jellyToTap, makeTune, PLANS } from './logic';
+import { awakeJellies, nearestAwake, WAKE_AT, WAKE_ORDER, FREE_SONG, freeNote, JELLIES, jellyToTap, makeTune, PLANS } from './logic';
 
 describe('Jelly Drums', () => {
   it('grows from free play to longer tunes', () => {
@@ -27,6 +27,35 @@ describe('Jelly Drums', () => {
       }
     }
     expect(used.size).toBe(JELLIES);
+  });
+
+  describe('one big jelly (level 10)', () => {
+    const wake = PLANS[9];
+
+    it('starts with one jelly, the big low one, and wakes all five one at a time, the little high one next', () => {
+      expect(wake.mode).toBe('wake');
+      expect(awakeJellies(0)).toEqual([0]);
+      expect(awakeJellies(WAKE_AT[1] - 1)).toEqual([0]);
+      expect(awakeJellies(WAKE_AT[1])).toEqual([0, 4]);
+      expect(awakeJellies(wake.goal).sort()).toEqual([0, 1, 2, 3, 4]);
+      for (let n = 1; n <= wake.goal; n++) expect(awakeJellies(n).length - awakeJellies(n - 1).length).toBeLessThanOrEqual(1);
+      expect(WAKE_AT.every((at, k) => k === 0 || at > WAKE_AT[k - 1])).toBe(true);
+      expect(WAKE_AT.at(-1)!).toBeLessThan(wake.goal);
+      expect([...WAKE_ORDER].sort()).toEqual([0, 1, 2, 3, 4]);
+    });
+
+    it('sings the nearest awake jelly for a touch anywhere', () => {
+      const xs = [-356, -178, 0, 178, 356];
+      expect(nearestAwake(xs, [0], 300)).toBe(0);
+      expect(nearestAwake(xs, [0, 4], 100)).toBe(4);
+      expect(nearestAwake(xs, [0, 4], -10)).toBe(0);
+      expect(nearestAwake(xs, [0, 1, 2, 3, 4], 170)).toBe(3);
+    });
+
+    it("has a bot that taps only awake jellies and ends at the goal", () => {
+      for (let n = 0; n < wake.goal; n++) expect(awakeJellies(n)).toContain(jellyToTap('wake', 'play', [], 0, n)!);
+      expect(jellyToTap('wake', 'done', [], 0, wake.goal)).toBeNull();
+    });
   });
 
   describe("the ghost finger's bot", () => {

@@ -28,7 +28,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Jelly Drums
 
-*lap–school.* Free play on five notes, then copying tunes of two to five notes. Replaying the tune is always available. The island's background loop is silenced here (the jellies still bob to its quiet clock), so nothing competes with the notes she plays.
+*lap–school.* Free play on five notes, then copying tunes of two to five notes. Replaying the tune is always available. Level 10, *One big jelly* (lap only, placed first with `order`), is the easiest way in: one enormous red low jelly stands alone and a touch anywhere on the stage sings the nearest awake one; the little blue high jelly wakes after 6 touches, then the others at 10, 14 and 18, and 24 touches finish, with no miss and no hint. The island's background loop is silenced here (the jellies still bob to its quiet clock), so nothing competes with the notes she plays.
 
 ### Song Maker
 

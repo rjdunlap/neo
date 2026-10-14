@@ -3297,7 +3297,7 @@ async function originals() {
   }
 
   // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
-  for (let level = 1; level <= 9 && (!only || only === 'jelly'); level++) {
+  for (let level = 1; level <= 10 && (!only || only === 'jelly'); level++) {
     await launch('jelly-drums', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -3305,6 +3305,7 @@ async function originals() {
       const g = neo.scene.game;
       const hit = async (i) => { kit.tapOn(g.jellies[i], 0, -50); await kit.sleep(140); };
       if (g.plan.mode === 'free') { for (let n = 0; n < g.plan.goal; n++) await hit(n % 5); return; }
+      if (g.plan.mode === 'wake') { for (let n = 0; n < g.plan.goal; n++) { kit.tap(300 + (n * 97) % 400, 300); await kit.sleep(140); } return; }
       const turn = () => kit.until(() => g.phase === 'turn' || g.phase === 'done', 20000);
       for (let t = 0; t < g.plan.goal; t++) {
         await turn();
@@ -3320,7 +3321,7 @@ async function originals() {
     });
     await screenshot(`jelly-drums-${level}`);
     await finished('jelly-drums');
-    assert.deepEqual(await score('jelly-drums'), mode === 'free' ? [0, 0] : [2, 1], `jelly ${level} score`);
+    assert.deepEqual(await score('jelly-drums'), mode !== 'echo' ? [0, 0] : [2, 1], `jelly ${level} score`);
     log(`Jelly Drums ${level} (${mode}): notes, tunes, mistakes, slow replay, hint, saved score and sticker passed`);
   }
 
@@ -3568,7 +3569,7 @@ async function originals() {
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 12, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
+  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }
