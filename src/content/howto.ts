@@ -829,7 +829,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'stamp-studio': {
     goal: 'Make a picture with stamps.',
     steps: [
-      { to: 1, text: 'Tap the paper to press the stamp shown.' },
+      { from: 7, to: 7, text: 'Pat the paper to press a big soft stamp. Pat as often as you like.' },
+      { from: 1, to: 1, text: 'Tap the paper to press the stamp shown.' },
       { from: 2, to: 2, text: 'Choose either stamp, then tap the paper to press it.' },
       { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
       { from: 4, to: 6, text: 'Turn a stamp, or make it big or small.' },
@@ -838,7 +839,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 6, text: 'Make the picture you are asked for (a garden, or two friends on an adventure) and tell its story.' },
     ],
     finish: [
-      { to: 2, text: 'Tap the green arrow to finish; it wiggles after five stamps. A full paper finishes itself.' },
+      { from: 7, to: 7, text: 'The eighth pat finishes the picture by itself.' },
+      { from: 1, to: 2, text: 'Tap the green arrow to finish; it wiggles after five stamps. A full paper finishes itself.' },
       { from: 3, to: 6, text: 'Tap the green arrow when your picture is done.' },
     ],
     note: "Every picture is welcome. After the round, the tree house button hangs it up.",

@@ -50,7 +50,7 @@ class StampStudio implements Game {
         return;
       }
       this.add(p.x, p.y);
-    });
+    }, { cooldown: this.plan.pat ? 0 : undefined }); // pats close together are all kept
     this.plan.kinds.forEach(kind => {
       const b = new RoundButton(stampArt(kind, this.color, 33), swatch.white, 48, () => { if (this.done) return; this.kind = kind;
         if (!this.named.has(kind)) { this.named.add(kind); void ctx.say('stamp.kind', { kind: STAMP_NAMES[kind] }); }
@@ -100,7 +100,7 @@ class StampStudio implements Game {
     });
   }
   private add(x: number, y: number) {
-    const data: Stamp = { kind: this.kind, color: this.color, ...place(x, y, this.width, this.height), size: 1, turns: 0 };
+    const data: Stamp = { kind: this.kind, color: this.color, ...place(x, y, this.width, this.height), size: this.plan.pat?.size ?? 1, turns: 0 };
     const node = new Container(); node.addChild(stampArt(data.kind, data.color)); node.hitArea = new Circle(0, 0, 55);
     this.paper.addChild(node);
     const mark: Mark = { data, node };
@@ -113,7 +113,7 @@ class StampStudio implements Game {
     });
     else node.eventMode = 'none';
     this.stamps.push(mark); this.selected = mark; this.layoutStamp(mark); this.drawSelection(); sfx.pop(5 + this.stamps.length % 5);
-    if (this.ctx.level <= 2 && this.stamps.length === LIMIT) this.complete();
+    if (this.ctx.level <= 2 && this.stamps.length === LIMIT || this.plan.pat && this.stamps.length >= this.plan.pat.count) this.complete();
   }
   private layoutStamp(s: Mark) {
     const p = pixel(s.data, this.width, this.height);
@@ -173,8 +173,8 @@ class StampStudio implements Game {
 export const stampStudio: GameModule = {
   id: 'stamp-studio', name: 'Stamp Studio', titleLine: 'game.stamp-studio', region: 'treehouse',
   skills: ['composition', 'creative-expression', 'spatial-reasoning'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 2 } : b === 'toddler' ? { min: 2, max: 3 } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
-  describeLevel: l => planFor(l).name, music: STYLES.paint, touchDemo: true,
+  levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 7, order: [7, 1, 2] } : b === 'toddler' ? { min: 2, max: 3 } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
+  entryLevels: [7], describeLevel: l => planFor(l).name, music: STYLES.paint, touchDemo: true,
   coplayHint: 'Let {name} choose where the picture goes. The green arrow finishes any creation.',
   offScreen: 'Stamp with a sponge or potato on scrap paper, then tell a story about the picture.',
   hubIcon: () => { const c = new Container(); c.addChild(new Graphics().roundRect(-90,-140,180,140,15).fill(cream).stroke({width:7,color:swatch.brown.line})); const a=stampArt('flower','pink');a.y=-70;c.addChild(a);return new WigglyIcon(c); },
