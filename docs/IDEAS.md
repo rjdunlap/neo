@@ -964,7 +964,7 @@ Proposed modes, by the game they would extend. Steps already built are in [GAMES
 | Critter Sort / Critter Crossing | **Fripple Orders** (a customer asks for "the one with stripes"; then two attributes and "but not") | 8–11: Sorting Machine |
 | Story Steps | **Sound Detective** (arrange scene cards to match a heard sequence); broader Story Theater | Additional authored clues and alternative viewpoints beyond the built clue endings and school picnic theater |
 | Duck Pond | **Count the Peekers** (counting in a busy scene, untimed); planned as an entry between levels 6 and 7 in its [deep dive](deep-dives/duck-pond.md#levels-below-level-1-waiting-on-the-level-order-decisions) | Estimate "a few or lots?" first, then count |
-| Color Garden / Pattern Train | **Color Train**, a lap entry (needs the decision about lap levels outside a ladder's order) | Two things for each car |
+| Color Garden / Pattern Train | **Color Train**, a lap entry (needs the decision about lap levels outside a ladder's order; Color Garden's [deep dive](deep-dives/color-garden.md) plans a tap-and-it-hops entry) | Two things for each car |
 | Market Stall | Keep its exact-payment ladder coherent. **Lemonade Stand** is built as a neighboring game (see [GAMES](GAMES.md#lemonade-stand)): weather, cups made and a picture table across days; extra cups go to friends, while its market-week level counts the lemons' cost | Price, unit cost, profit and a bounded recoverable operating loss are Lemonade Stand's later levels |
 | Bounce Back | **Keepy Uppy**, a floatier one-player mode (after Bluey) | A grown-up's second finger joins |
 | Feelings Faces | **Belly Breaths**, a calming strategy (hold the pet's tummy to breathe in) | Name a feeling, breathe, choose a plan |
