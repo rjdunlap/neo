@@ -10,6 +10,7 @@ import {
   HOT_CROSS_BUNS,
   ONE_A_PENNY,
   OLD_MACDONALD,
+  OLD_MACDONALD_FULL,
   PLANS,
   TUNES,
   VOICES,
@@ -18,6 +19,7 @@ import {
   nextInvite,
   pickTune,
   planFor,
+  tunesFor,
 } from './logic';
 
 describe('the tune', () => {
@@ -75,12 +77,13 @@ describe('the song', () => {
 
 describe('the plans', () => {
   it('grow from one animal to three, with her choosing all at once and then one verse at a time', () => {
-    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3, 3]);
-    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true, true]);
-    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true, true]);
-    expect(PLANS.map((p) => p.chooseTune)).toEqual([false, false, false, false, true]);
+    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3, 3, 2]);
+    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true, true, true]);
+    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true, true, true]);
+    expect(PLANS.map((p) => p.chooseTune)).toEqual([false, false, false, false, true, true]);
+    expect(PLANS.map((p) => p.full)).toEqual([false, false, false, false, false, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[4]);
+    expect(planFor(99)).toBe(PLANS[5]);
   });
 
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {
@@ -179,5 +182,38 @@ describe('which tune a round sings', () => {
     const seen = new Set<string>();
     for (let seed = 1; seed <= 40; seed++) seen.add(pickTune(new Rng(seed)).id);
     expect([...seen].sort()).toEqual(['buns', 'macdonald']);
+  });
+});
+
+describe('the whole Old MacDonald verse', () => {
+  const all = [OLD_MACDONALD_FULL.opening, OLD_MACDONALD_FULL.verse].flat();
+  it('stays inside the pentatonic set, one note per syllable', () => {
+    for (const p of all) {
+      expect(p.syllables.length).toBe(p.steps.length);
+      for (const step of p.steps) expect(PENTATONIC, `step ${step}`).toContain(stepToMidi(step) % 12);
+    }
+  });
+
+  it('is the short verse plus the moo-moo lines and the first line again, 47 notes for each friend', () => {
+    expect(makeSong(['cow'], OLD_MACDONALD_FULL).length).toBe(12 + 47);
+    expect(makeSong(['cow', 'pig'], OLD_MACDONALD_FULL).length).toBe(12 + 94);
+    // the notes before the moo-moo lines are exactly the short song's
+    const short = makeSong(['cow'], OLD_MACDONALD);
+    expect(makeSong(['cow'], OLD_MACDONALD_FULL).slice(0, short.length).map((n) => n.step)).toEqual(short.map((n) => n.step));
+  });
+
+  it('sings the friend\'s own sound on every moo, sounds on each, and still ends a verse exactly once', () => {
+    const song = makeSong(['pig'], OLD_MACDONALD_FULL);
+    const oinks = song.filter((n) => n.syllable === VOICES.pig.sound);
+    expect(oinks).toHaveLength(2 + 2 + 1 + 1 + 2);
+    expect(oinks.every((n) => n.answers)).toBe(true);
+    expect(song.filter((n) => n.answers)).toHaveLength(oinks.length + 1);
+    expect(song.filter((n) => n.verseEnd)).toHaveLength(2);
+    expect(song.at(-1)!.verseEnd).toBe(true);
+  });
+
+  it('is offered only at the level that has it, beside Hot Cross Buns', () => {
+    expect(tunesFor(PLANS[4])).toBe(TUNES);
+    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS]);
   });
 });
