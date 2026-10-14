@@ -152,7 +152,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 
 Slice 1, guards, cover motions and cover names, is [built 2026-10-14](../archive/COMPLETED-2026-10-09.md#peekaboo-barn-cover-support-2026-10-14) ([PR #294](https://github.com/rjdunlap/neo/pull/294)); levels and band windows are unchanged. The next ready slice is **garden scenes**, followed by beach and bedroom:
 
-2. **Scenes** (ready; each a sub-slice: garden, beach, bedroom). Tier: rule tests and one screenshot per scene.
+2. **Scenes** (garden claimed on `codex/peekaboo-garden`, 2026-10-14; beach and bedroom remain ready). Garden slice: seeded barnyard/garden round selection, four named garden covers and garden scenery in `src/games/peekaboo-barn/{logic,index}.ts`, rule tests and one portrait screenshot; no level or sticker changes. Tier: rule tests and one screenshot per scene.
 3. **Animals who name how they feel,** then **more animals** with their voices (ready; decision 4 for the last). Tier: rule tests, `critter.test.ts`, a screenshot of all eleven and `fingerdemo` at level 1.
 4. **{pet} hides too** and **the written name** (ready after reading `pet.ts`).
 5. **Level 9, Who has…?** (needs decisions 1–2). It also opens the school window, so it adds `school` to `bands` and updates the README inventory's band label, the per-band game counts in the README and roadmap, and the registry and lands tests. Tier: new level on an existing interaction: rule tests, one browser play of level 9 and `fingerdemo` at it.
