@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
+import { FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
 
 describe('Bouncy Launch', () => {
   it('turns a bigger pull into a farther flight, and every pad has a pull that lands on it', () => {
@@ -86,5 +86,60 @@ describe('Bouncy Launch', () => {
         if (plan.mode === 'free') expect(new Set(pulls.map(Math.round)).size).toBeGreaterThan(2);
       }
     }
+  });
+
+  describe('level 7, Feed the friend', () => {
+    it('is reached from level 7 only, and the other levels are untouched', () => {
+      expect(planFor(FRIEND_LEVEL)).toBe(FRIEND_PLAN);
+      expect(planFor(6).mode).toBe('predict');
+      expect(planFor(1).mode).toBe('tap');
+    });
+
+    it('stands the friend anywhere on the grass, each shot well away from every other, the same for one seed', () => {
+      for (let seed = 1; seed <= 300; seed++) {
+        const spots = friendSpots(FRIEND_PLAN, new Rng(seed));
+        expect(spots).toHaveLength(FRIEND_PLAN.shots);
+        spots.forEach((s, i) => {
+          expect(s).toBeGreaterThanOrEqual(FRIEND_RANGE.min);
+          expect(s).toBeLessThanOrEqual(FRIEND_RANGE.max);
+          spots.slice(i + 1).forEach(o => expect(Math.abs(s - o)).toBeGreaterThanOrEqual(FRIEND_GAP));
+        });
+        expect(friendSpots(FRIEND_PLAN, new Rng(seed))).toEqual(spots);
+      }
+    });
+
+    it('can be reached by some pull inside the leash, and the window is as wide as a cloud', () => {
+      expect(FRIEND_WINDOW).toBeGreaterThanOrEqual(0.085);
+      for (let seed = 1; seed <= 100; seed++) {
+        for (const spot of friendSpots(FRIEND_PLAN, new Rng(seed))) {
+          const pull = pullFor(spot);
+          expect(pull).toBeGreaterThanOrEqual(MIN_PULL);
+          expect(pull).toBeLessThanOrEqual(MAX_PULL);
+          expect(judgeFriend(reach(pull), spot)).toBe('yes');
+        }
+      }
+    });
+
+    it('says which way a miss went, and one correction from the last miss lands on the friend', () => {
+      for (let seed = 1; seed <= 100; seed++) {
+        for (const spot of friendSpots(FRIEND_PLAN, new Rng(seed))) {
+          for (const miss of [spot - 0.3, spot - 0.12, spot + 0.12, spot + 0.3].map(m => Math.min(1, Math.max(0, m)))) {
+            const verdict = judgeFriend(miss, spot);
+            if (verdict === 'yes') continue;
+            expect(verdict).toBe(miss < spot ? 'short' : 'long');
+            // The linear map: the missed distance, added to (or taken from) the last pull, is the right pull.
+            const next = reach(pullFor(miss) + (spot - miss) * (MAX_PULL - MIN_PULL));
+            expect(judgeFriend(next, spot)).toBe('yes');
+          }
+        }
+      }
+    });
+
+    it("gives the ghost finger's bot a pull that feeds every friend", () => {
+      for (let seed = 1; seed <= 100; seed++) {
+        const spots = friendSpots(FRIEND_PLAN, new Rng(seed));
+        spots.forEach((spot, shot) => expect(judgeFriend(reach(pullToTake(FRIEND_PLAN, shot, [], undefined, spots)), spot)).toBe('yes'));
+      }
+    });
   });
 });

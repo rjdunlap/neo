@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Bouncy Launch Feed the friend, level 7 (2026-10-13)
+
+Pre-K and school only (pre-K order 3, 4, 7, 5; school 4, 5, 7, 6; lap, toddler and preschool unchanged). A seeded bunny or duck stands on the grass with an apple at its feet and the clouds hidden; three shots, spots in 0.12-0.92 of the strip and at least 0.2 apart. Landing within ±0.09 of the strip feeds it (cheer, sparkle, `launch.fed`); a miss says short or long with the dotted arc and a puff ring kept at the last landing, and two misses count one hint with the preview and a pull ring. Built as 7, the next free ID (the how-to test needs a card for every level in a band's range), so the deep dive's Near or far becomes 8. Rule tests: spots seeded, in range and apart; every spot reachable inside the leash; a correction from a miss lands; the bot's pull feeds every friend. Proof: [verification entry](../VERIFICATION.md#2026-10-13--bouncy-launch-level-7-feed-the-friend).
+
 ### Number Nook first slice (2026-10-13)
 
 A new touch-only `number-nook` puzzle for `grownup` in Lantern Lake, separate from the eight controller-ready grown-up games. Tap beside the gap to restore row order; the target miniature and green placed tiles explain the goal. Three seeded boards start exactly 4/8/14 slides away (2×2, 2×3, 3×3). Exhaustive reverse search gives useful shortest-route help after any legal exploration. Undo and Start over preserve accounting; unsupported tile taps teach adjacency and every second miss supplies help. Spoken support, a level-scoped how-to card and ghost-finger bot are built. Implemented and verified. [Checks](../VERIFICATION.md#2026-10-13--number-nook-first-slice); iPad comfort, device speech and person play remain open.

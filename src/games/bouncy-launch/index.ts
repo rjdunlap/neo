@@ -1,7 +1,8 @@
 import { Circle, Container, Graphics, type FederatedPointerEvent } from 'pixi.js';
-import { Critter } from '../../art/critter';
+import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
+import { prop } from '../../art/props';
 import { puffs, starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -17,18 +18,21 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CLOUDS } from './course';
-import { judge, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
+import { friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
-  school: { min: 4, max: 6 },
+  // Level 7, Feed the friend, comes after the numbered clouds and before comparing.
+  prek: { min: 3, max: 7, order: [3, 4, 7, 5] },
+  school: { min: 4, max: 7, order: [4, 5, 7, 6] },
 };
 
 const PET_SCALE = 0.5;
+/** The friend is smaller than the pet, so it reads as someone to feed rather than something to land on. */
+const FRIEND_SCALE = 0.42;
 /** Couch play: how far the spring squashes straight down at full power, in logical units. */
 const SQUASH = 90;
 const SPRING = { fill: 0xc9d3dc, line: 0x8c9aa8 };
@@ -46,6 +50,8 @@ function starArt(r: number): Graphics {
 class BouncyLaunch implements Game {
   readonly plan: LaunchPlan;
   readonly targets: number[];
+  /** Feed the friend: where the friend stands for each shot, as a fraction along the strip. */
+  readonly spots: number[] = [];
   readonly pet: Critter;
   readonly pads: Container[] = [];
   shot = 0;
@@ -78,6 +84,9 @@ class BouncyLaunch implements Game {
   /** A ring around the cloud the child predicted; it stays there while the flight proves the answer. */
   private readonly predictionRing = new Graphics();
   private readonly pullArrow = new Graphics();
+  private friend: Critter | null = null;
+  private friendName = '';
+  private snack: Container | null = null;
   private emptyPulls = 0;
   private wobble = 0;
   private rawPull = 0;
@@ -152,7 +161,7 @@ class BouncyLaunch implements Game {
       const target = this.targets[this.shot];
       return target === undefined ? null : { tap: { on: this.pads[target] } };
     }
-    const pull = pullToTake(this.plan, this.shot, this.targets, this.last);
+    const pull = pullToTake(this.plan, this.shot, this.targets, this.last, this.spots);
     // Back and down, the way the leash allows; the finger travels as far as the pet is to be pulled.
     const from = { x: this.seat.x, y: this.seat.y - 125 * PET_SCALE };
     const d = { x: -0.35, y: 0.94 };
@@ -208,8 +217,11 @@ class BouncyLaunch implements Game {
       this.assisted = run.resume.assisted;
     } else {
       this.plan = planFor(ctx.level);
-      this.targets = targets(this.plan, ctx.rng);
       this.course = null;
+      if (this.plan.mode === 'friend') {
+        this.targets = [];
+        this.spots = friendSpots(this.plan, ctx.rng);
+      } else this.targets = targets(this.plan, ctx.rng);
     }
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.78, clouds: 4, sun: true, seed: 88 }, ctx.view);
     this.flag.eventMode = this.flagNumbers.eventMode = this.lastArc.eventMode = this.compareRing.eventMode = 'none';
@@ -226,6 +238,7 @@ class BouncyLaunch implements Game {
         pad.addChild(n);
       }
       this.pads.push(pad);
+      pad.visible = this.plan.mode !== 'friend';
       ctx.stage.addChild(pad);
       if (this.plan.mode === 'predict') onTap(pad, () => void this.predict(i), { cooldown: 500 });
     }
@@ -239,6 +252,19 @@ class BouncyLaunch implements Game {
     this.replay.hitArea = new Circle(0, 0, 68);
     onTap(this.replay, () => this.repeatInstruction(), { cooldown: 500 });
     ctx.track(this.pet);
+    if (this.plan.mode === 'friend') {
+      // A friend waits on the grass, not on a cloud, with a snack at its feet.
+      const kind: CritterName = ctx.rng.pick(['bunny', 'duck'] as const);
+      this.friendName = kind === 'bunny' ? 'Bunny' : 'Duck';
+      this.friend = new Critter(CRITTERS[kind]);
+      this.friend.scale.set(FRIEND_SCALE);
+      this.friend.eventMode = 'none';
+      this.snack = prop('apple', 'red');
+      this.snack.scale.set(0.45);
+      this.snack.eventMode = 'none';
+      ctx.track(this.friend);
+      ctx.stage.addChild(this.friend, this.snack);
+    }
     ctx.stage.addChild(this.star, this.spring, this.preview, this.replay, this.pet);
     if (this.plan.mode === 'tap') {
       onTap(this.pet, () => void this.launch(this.ctx.rng.range(0.15, 0.95)), { cooldown: 500 });
@@ -288,8 +314,41 @@ class BouncyLaunch implements Game {
     if (this.stick && !this.flying) this.squash();
     else this.drawSpring();
     this.placeStar();
+    this.placeFriend();
     this.drawHistory();
     this.drawFlag();
+  }
+
+  private placeFriend() {
+    const spot = this.spots[this.shot];
+    if (!this.friend || !this.snack || spot === undefined) return;
+    this.ctx.tw.kill(this.friend);
+    this.friend.position.set(this.landX(spot), this.strip.y);
+    this.snack.position.set(this.landX(spot) + 52, this.strip.y - 22);
+  }
+
+  /** The next friend hops over to its spot, with the snack, once the last one has been fed. */
+  private moveFriend() {
+    const spot = this.spots[this.shot];
+    if (!this.friend || !this.snack || spot === undefined) return;
+    const x = this.landX(spot);
+    this.snack.scale.set(0.45);
+    this.snack.visible = true;
+    this.snack.position.set(x + 52, this.strip.y - 22);
+    this.friend.position.set(x, this.strip.y);
+    this.friend.poke();
+  }
+
+  /** The friend eats the snack the pet brought: a cheer, a few sparkles and a thank you. */
+  private async feed() {
+    this.pet.cheer();
+    this.friend?.cheer();
+    sfx.sparkle();
+    if (this.friend) this.ctx.particles.burst(this.friend.x, this.friend.y - 100, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 18, speed: [120, 300], gravity: 0, life: [0.6, 1] });
+    if (this.snack) void this.ctx.tw.to(this.snack.scale, { x: 0, y: 0 }, { duration: 0.4, ease: ease.outBack });
+    await this.ctx.say('launch.fed', { friend: this.friendName });
+    this.lastFlight = undefined;
+    this.drawHistory();
   }
 
   private landX(f: number) {
@@ -359,6 +418,7 @@ class BouncyLaunch implements Game {
     this.drawHistory();
     this.hinting = this.plan.mode === 'free';
     this.placeStar();
+    if (this.plan.mode === 'friend' && this.shot > 0) this.moveFriend();
     if (this.plan.mode === 'predict') this.showPredictionPull();
     if (this.course) {
       // The misses already made at this cloud (after a reload) count towards the hint.
@@ -386,6 +446,8 @@ class BouncyLaunch implements Game {
         return this.instruct(this.ask === 'farther' ? 'launch.farther' : 'launch.nearer');
       case 'predict':
         return this.instruct('launch.predict');
+      case 'friend':
+        return this.instruct('launch.feed', { friend: this.friendName });
     }
   }
 
@@ -449,6 +511,8 @@ class BouncyLaunch implements Game {
     // A ring shows how far the right pull is: a circle around the seat for a pulled pet, and for a squashed
     // spring an outline where the red plate should be pushed down to.
     const t = this.targets[this.shot];
+    const spot = this.spots[this.shot];
+    if (spot !== undefined && !this.stick) g.circle(this.seat.x, this.seat.y, pullFor(spot)).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
     if (t !== undefined && (this.plan.mode === 'star' || this.plan.mode === 'number')) {
       if (this.stick) g.roundRect(this.seat.x - 68, this.seat.y + padAt(t) * SQUASH - 8, 136, 36, 14).stroke({ width: 5, color: swatch.yellow.fill, alpha: 0.85 });
       else g.circle(this.seat.x, this.seat.y, pullFor(padAt(t))).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
@@ -515,12 +579,14 @@ class BouncyLaunch implements Game {
 
   private async landed(f: number) {
     const tw = this.ctx.tw;
-    const verdict = judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
+    const verdict = this.plan.mode === 'friend' ? judgeFriend(f, this.spots[this.shot]) : judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
     if (this.plan.mode === 'star' || this.plan.mode === 'number') this.off += Math.abs(f - padAt(this.targets[this.shot]));
     const firstCompare = this.plan.mode === 'compare' && this.last === undefined;
     const predicted = this.plan.mode === 'predict' ? this.prediction === this.targets[this.shot] : undefined;
     if (verdict === 'yes') {
-      if (this.plan.mode === 'predict') {
+      if (this.plan.mode === 'friend') {
+        await this.feed();
+      } else if (this.plan.mode === 'predict') {
         await this.ctx.say(predicted ? 'launch.predicted' : 'launch.revealed', { n: (this.targets[this.shot] ?? 0) + 1 });
       } else if (!firstCompare && this.plan.mode !== 'tap' && this.plan.mode !== 'free') {
         this.pet.cheer();
@@ -576,6 +642,8 @@ class BouncyLaunch implements Game {
     if (this.lastFlight !== undefined && this.plan.mode !== 'tap' && !this.ctx.couch) {
       const pts = this.arc(this.lastFlight);
       for (let i = 2; i < pts.length; i += 3) g.circle(pts[i].x, pts[i].y, 4).fill({ color: ink, alpha: 0.25 });
+      // Feed the friend: a puff where the pet came down, so the next pull can be judged against it.
+      if (this.plan.mode === 'friend') g.ellipse(this.landX(this.lastFlight), this.strip.y - 4, 40, 12).stroke({ width: 5, color: ink, alpha: 0.3 });
     }
     const ring = this.compareRing.clear();
     if (this.plan.mode === 'compare' && this.wrongs > 0 && this.last !== undefined && !this.ctx.couch) {

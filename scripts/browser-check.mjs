@@ -2650,7 +2650,7 @@ async function arcade() {
       await kit.until(() => !g.flying, 10000);
     };
   });
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 6) && (!only || only === 'launch'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 7) && (!only || only === 'launch'); level++) {
     await launch('bouncy-launch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -2661,6 +2661,12 @@ async function arcade() {
         return Math.abs(g.pullNow() - pullFor(padAt(g.targets[g.shot]))) < 0.01;
       }), 'portrait keeps the shown prediction pull');
       await screenshot('bouncy-launch-6-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    }
+    if (level === 7) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      assert.ok(await page.evaluate(() => { const g = neo.scene.game, p = g.friend.getGlobalPosition(); return g.friend.visible && p.x > 0 && p.x < neo.view.w && !g.pads.some((pad) => pad.visible); }), 'portrait keeps the friend on the grass and the clouds hidden');
+      await screenshot('bouncy-launch-7-portrait');
       await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
     }
     await page.evaluate(async () => {
@@ -2729,6 +2735,16 @@ async function arcade() {
         }
         return;
       }
+      if (g.plan.mode === 'friend') {
+        // Two misses light the pull ring; each next flight is corrected from the last, then every friend is fed.
+        const spot = g.spots[0];
+        // Miss toward the roomy side so a clamped flight at the strip's end cannot land inside the window.
+        const side = spot > 0.5 ? -1 : 1;
+        await fling(spot + side * 0.3); await fling(spot + side * 0.25);
+        if (g.misses !== 2 || g.hints !== 1 || !g.hinting || g.shot !== 0) throw new Error(`Friend hint: ${g.misses} ${g.hints} ${g.shot}`);
+        while (!g.finished && g.shot < g.spots.length) await fling(g.spots[g.shot]);
+        return;
+      }
       // Star and number levels: two misses light the pull ring, then hit every cloud.
       const t0 = g.targets[0];
       const off = t0 === 0 ? 0.95 : 0.03;
@@ -2739,7 +2755,7 @@ async function arcade() {
     await screenshot(`bouncy-launch-${level}`);
     await finished('bouncy-launch');
     const r = await page.evaluate(() => { const r = kit.store.stats('bouncy-launch').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, { tap: [0, 0], free: [0, 0], star: [2, 1], number: [2, 1], compare: [2, 1], predict: [0, 0] }[mode], `launch ${level} score`);
+    assert.deepEqual(r, { tap: [0, 0], free: [0, 0], star: [2, 1], number: [2, 1], compare: [2, 1], predict: [0, 0], friend: [2, 1] }[mode], `launch ${level} score`);
     log(`Bouncy Launch ${level} (${mode}): pulls, flights, landings, saved score and sticker passed`);
   }
 }

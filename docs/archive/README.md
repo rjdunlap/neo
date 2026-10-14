@@ -17,4 +17,4 @@ The original design brief also exists as a [historical design artifact](https://
 
 `MICROGAME-IDEAS.md` and `ARCADE-IDEAS.md` were merged into [IDEAS.md](../IDEAS.md), and `CONTROLLER-SETUP.md` became [COUCH-PLAY.md](../COUCH-PLAY.md); git history has their earlier versions.
 
-- [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch and mirrored-reach definition checks.
+- [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch, mirrored-reach and Penguin Slide/Tangram Town level checks.
