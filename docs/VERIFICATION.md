@@ -3,7 +3,7 @@
 
 ## 2026-10-13 — Sing-Along Barn third tune (Mary Had a Little Lamb)
 
-- Added *Mary Had a Little Lamb* (`mary`) to the tune table: a seeded draw at levels 1–4, a third card at levels 5–6; opening 13 notes, 12 per friend, the friend answers on the last "lamb". No new level. Branch `claude/barn-mary-lamb`, uncommitted working diff.
+- Added *Mary Had a Little Lamb* (`mary`) to the tune table: a seeded draw at levels 1–4, a third card at levels 5–6; opening 13 notes, 12 per friend, the friend answers on the last "lamb". No new level. Branch `claude/barn-mary-lamb`, commit 6d6b3e5.
 - Typecheck; vitest for `sing-along-barn` and `src/content` passed. `BROWSER_SUITE=singalong` (now includes a Mary round) passed on a dev server; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=1,6` passed (32.1 s and 36.5 s, limit 75 s).
 - Not run: `npm run build`, the offline check, a screenshot of the new card, device speech, iPad, a child.
 - Open: the Mary melody was written from the tune's standard form, not a printed score ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
