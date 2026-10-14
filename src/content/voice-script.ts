@@ -1136,6 +1136,8 @@ export const SCRIPT = {
   'launch.farther': ['Now go farther!', 'Farther this time!'],
   'launch.nearer': ['Now not so far!', 'This time, not as far!'],
   'launch.predict': ['Look at the pull. Which cloud will {pet} reach? Tap a cloud, then watch!'],
+  'launch.feed': ['Bring {friend} a snack!'],
+  'launch.fed': ['Yum! Thank you!', '{friend} loves it!'],
   'launch.lets-see': ['Let\'s see!'],
   'launch.predicted': ['You predicted cloud {n}!'],
   'launch.revealed': ['The pull reached cloud {n}!'],

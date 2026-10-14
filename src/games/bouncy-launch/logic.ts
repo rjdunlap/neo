@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * pet back on a big spring and let go. Farther pull, farther flight. Every landing is soft;
  * the ladder asks for a particular landing spot.
  */
-export type LaunchMode = 'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict';
+export type LaunchMode = 'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict' | 'friend';
 
 export interface LaunchPlan {
   mode: LaunchMode;
@@ -23,7 +23,11 @@ export const PLANS: LaunchPlan[] = [
   { mode: 'predict', shots: 4, name: 'Watch a shown pull and predict which cloud the pet will reach' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** Level 7, Feed the friend: the next free ID (the deep dive's Near or far will take the next one when it is built). */
+export const FRIEND_LEVEL = 7;
+export const FRIEND_PLAN: LaunchPlan = { mode: 'friend', shots: 3, name: 'Bring a friend a snack, learning from the last flight' };
+
+export const planFor = (level: number) => level >= FRIEND_LEVEL ? FRIEND_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Landing clouds, numbered 1 to 5 from nearest to farthest. */
 export const PADS = 5;
@@ -69,6 +73,28 @@ export function targets(plan: LaunchPlan, rng: Rng): number[] {
   return out;
 }
 
+/** Where a friend can stand along the strip, and how close a landing must be to feed it (as wide as a cloud). */
+export const FRIEND_RANGE = { min: 0.12, max: 0.92 } as const;
+export const FRIEND_WINDOW = 0.09;
+/** Friends in one round stand at least this far apart, so each shot needs a different pull. */
+export const FRIEND_GAP = 0.2;
+
+/** Where the friend stands for each shot: seeded, anywhere on the grass, never close to the last spot or any earlier one. */
+export function friendSpots(plan: LaunchPlan, rng: Rng): number[] {
+  const out: number[] = [];
+  while (out.length < plan.shots) {
+    const f = Math.round(rng.range(FRIEND_RANGE.min, FRIEND_RANGE.max) * 100) / 100;
+    if (out.every(o => Math.abs(o - f) >= FRIEND_GAP)) out.push(f);
+  }
+  return out;
+}
+
+/** Did the pet land close enough to the friend to share the snack? A miss says which way to go. */
+export function judgeFriend(f: number, spot: number): Verdict {
+  if (Math.abs(f - spot) <= FRIEND_WINDOW) return 'yes';
+  return f < spot ? 'short' : 'long';
+}
+
 export type Verdict = 'yes' | 'short' | 'long';
 
 /** Did a landing meet the ask? `last` is the previous landing for compare levels; `width` is how forgiving the clouds are. */
@@ -91,7 +117,7 @@ export function nextAsk(last: number): 'farther' | 'nearer' {
 }
 
 /** How far back a capable child pulls the spring for launch number `shot` (from 0): the pull that lands on the target cloud, a different one each time on free levels, and a clear step farther or nearer than last time when asked. */
-export function pullToTake(plan: LaunchPlan, shot: number, targets: readonly number[], last?: number): number {
+export function pullToTake(plan: LaunchPlan, shot: number, targets: readonly number[], last?: number, spots: readonly number[] = []): number {
   switch (plan.mode) {
     case 'tap':
       return 0;
@@ -105,6 +131,8 @@ export function pullToTake(plan: LaunchPlan, shot: number, targets: readonly num
       if (last === undefined) return pullFor(0.5);
       return pullFor(nextAsk(last) === 'farther' ? last + 0.3 : last - 0.3);
     }
+    case 'friend':
+      return pullFor(spots[shot]);
     case 'predict':
       // The child does not pull at this level; this is the fixed pull shown on screen.
       return pullFor(padAt(targets[shot]));
