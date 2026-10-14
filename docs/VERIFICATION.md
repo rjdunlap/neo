@@ -1,6 +1,12 @@
 # Puddle Island verification
 
 
+## 2026-10-14 — Dexterity, popular-mobile and physics research; subject-session tracker
+
+- Docs only, across PRs #289, #290 and #291 and this branch: roadmap chunks 25–28, [Vine Snip](vine-snip.md), [Block Topple](block-topple.md), [PHYSICS-GAMES.md](PHYSICS-GAMES.md), the [subject sessions](deep-dives/subjects.md) and candidate rows in IDEAS.
+- Ran: `git diff --check` and `node scripts/check-links.mjs` (links ok). No code, tests, browser or device.
+- Open: research came from web searches and a few fetches; the Physics Playground paper and NGSS grade 2–5 text did not load; several figures are search-summary level; the physics-engine choice is a decision for the developer.
+
 ## 2026-10-14 — Puzzle Pals visible cues and fairness
 
 - Built locally on `codex/puzzle-pals-visible-cues`, base/claim `3808201` plus working source diff: substantial distinct filled cues in all twelve scenes at existing levels 1–7; saved sticker/map art preserved. Verified source commit `434ad4a`; publication approved by the developer, [PR #292](https://github.com/rjdunlap/neo/pull/292).
