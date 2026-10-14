@@ -126,13 +126,16 @@ export interface SingPlan {
   invite: boolean;
   /** With `invite`: she chooses one friend at a time, at the end of each line, instead of all of them before the song. */
   each: boolean;
+  /** She chooses the song too (a free choice, never a mistake); otherwise the seed draws it. */
+  chooseTune: boolean;
 }
 
 export const PLANS: readonly SingPlan[] = [
-  { verses: 1, invite: false, each: false },
-  { verses: 2, invite: false, each: false },
-  { verses: 2, invite: true, each: false },
-  { verses: 3, invite: true, each: true },
+  { verses: 1, invite: false, each: false, chooseTune: false },
+  { verses: 2, invite: false, each: false, chooseTune: false },
+  { verses: 2, invite: true, each: false, chooseTune: false },
+  { verses: 3, invite: true, each: true, chooseTune: false },
+  { verses: 3, invite: true, each: true, chooseTune: true },
 ];
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];

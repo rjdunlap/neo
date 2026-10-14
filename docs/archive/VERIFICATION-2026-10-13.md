@@ -1,5 +1,15 @@
 # Verification history — 2026-10-13
 
+## 2026-10-13 — Penguin Slide 9 and Tangram Town 8
+
+- [PR #263](https://github.com/rjdunlap/neo/pull/263), base `463f16f`, claim `a972c05` plus implementation diff: four two-block ponds reflected into sixteen seeded arrangements at Penguin 9; turn-only picture repair at Tangram 8. School maxima 9/8; younger ranges, IDs/pins and courses preserved.
+- Typecheck, 41 focused Penguin/Tangram/how-to tests, full unit suite (139 files / 1,186 tests) and production build passed. Rules prove each block useful, reflection/optimal bot routes, exactly one visible repair mismatch, distinct target centers, multiple-mismatch recovery and free turn cycles. Initial build crossed Workbox's 2 MiB per-file default; explicit 3 MiB bound now precaches the bundle (31 entries, 2,437.95 KiB total).
+- `GAME_URL=http://localhost:5198 BROWSER_SUITE=creative CREATIVE_ONLY=tangram FROM_LEVEL=8 TO_LEVEL=8` passed wrong checks, two-miss hint, free four-turn restore, truthful requested help without recount, correct Check, portrait and saved result/sticker. Initial probe pressed within RoundButton's existing 400 ms cooldown; 450–500 ms waits corrected the test. `woods WOODS_ONLY=penguin FROM_LEVEL=9 TO_LEVEL=9` passed pushes, stuck/undo/help, both ponds, portrait and saved result/sticker. No page errors.
+- Same URL: `fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=9` / `FINGER_ONLY=tangram-town FINGER_LEVELS=8` clean in 27.0 / 5.1 demo seconds. Both portrait screenshots reviewed for piece/outline readability and control/pet clearance.
+- Production preview `http://localhost:4198` confirmed serving tested `assets/index-Chds4j2L.js`; offline proof reused after a level-description wording edit (no cache/runtime change); `GAME_URL=http://localhost:4198 npm run test:offline` passed cached assets/font, offline reload, game/card/result and persisted progress/picnic/treehouse/journal. Local Markdown files/anchors and `git diff --check` passed; both session servers stopped.
+- Not run: world, couch/course suites (routes and courses unchanged). Actual iPad taps/speech, repair recognition and child planning with both blocks remain open.
+
+
 ## 2026-10-13 — Island Bridges by touch (Lands stage D)
 
 - Built [PR #256](https://github.com/rjdunlap/neo/pull/256): Island Bridges plays by touch at all four levels (tap the water between two islands, Take off switch, Hint, Start over; targets of 64 units or more, beside the sea or under it), a ghost finger, a touch how-to card and spoken lines, `edgeAt`/`waterOf`/`headStart` in `logic.ts`. The couch layout and rules are unchanged.

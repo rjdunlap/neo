@@ -11,13 +11,13 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, pickTune, planFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
+import { ANIMALS, OLD_MACDONALD, TUNES, VOICES, farmAnimals, makeSong, nextInvite, pickTune, planFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 4 },
+  prek: { min: 3, max: 5 },
 };
 
 const GRASS = 0x9edb86;
@@ -31,12 +31,12 @@ const SCALE = { rest: 0.45, door: 0.78, choice: 0.55 };
 const BODY_Y = -120;
 
 /** `wait`: a verse has just ended and the next friend is not yet offered; nothing takes a touch. */
-type Phase = 'invite' | 'sing' | 'wait' | 'done';
+type Phase = 'tune' | 'invite' | 'sing' | 'wait' | 'done';
 
 class SingAlongBarn implements Game {
   private readonly plan: SingPlan;
   /** The song this round sings, drawn from the seed before the friends are. */
-  private readonly tune: Tune;
+  private tune: Tune;
   private readonly backdrop: Backdrop;
   private readonly barn = new Graphics();
   private readonly barnWrap = new Container();
@@ -44,6 +44,8 @@ class SingAlongBarn implements Game {
   private readonly windows = new Graphics();
   private readonly friends = new Map<Animal, Critter>();
   private readonly tapLayer = new Graphics();
+  /** With `chooseTune`: one big card for each song, in `TUNES` order. */
+  private readonly tuneCards: Container[] = [];
   private order: Animal[];
   private song: Note[] = [];
   private view: View;
@@ -61,9 +63,9 @@ class SingAlongBarn implements Game {
     // would not finish inside its 75 seconds at the hand's pace.
     const plan = planFor(ctx.level);
     this.plan = ctx.demo && plan.each ? { ...plan, verses: 2 } : plan;
-    this.tune = pickTune(ctx.rng);
+    this.tune = this.plan.chooseTune ? OLD_MACDONALD : pickTune(ctx.rng);
     this.view = ctx.view;
-    this.phase = this.plan.invite && !this.plan.each ? 'invite' : 'sing';
+    this.phase = this.plan.chooseTune ? 'tune' : this.plan.invite && !this.plan.each ? 'invite' : 'sing';
     this.order = this.plan.invite ? [] : farmAnimals(this.plan, ctx.rng);
     this.backdrop = ctx.track(
       new Backdrop({ sky: [0xa9dcff, 0xfff4d6], hills: [0xcdeeb6, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 33 }, ctx.view),
@@ -81,6 +83,18 @@ class SingAlongBarn implements Game {
     onTap(this.tapLayer, (e) => this.tapScene(e.global.x, e.global.y), { cooldown: 90 });
     this.tapLayer.eventMode = this.phase === 'sing' ? 'static' : 'none';
     this.tapLayer.cursor = 'pointer';
+    if (this.plan.chooseTune) {
+      TUNES.forEach((t) => {
+        const card = new Container();
+        card.visible = false;
+        card.addChild(drawTuneCard(t));
+        onTap(card, () => this.chooseTune(t), { cooldown: 250 });
+        // A card is 220 across by 200 tall: far over the smallest target, and two never touch.
+        card.hitArea = new Rectangle(-110, -100, 220, 200);
+        this.tuneCards.push(card);
+      });
+      ctx.stage.addChild(...this.tuneCards);
+    }
     if (this.plan.invite) {
       ANIMALS.forEach((a) => {
         const c = this.friends.get(a)!;
@@ -95,7 +109,15 @@ class SingAlongBarn implements Game {
   }
 
   start() {
-    if (this.plan.invite && !this.plan.each) {
+    if (this.phase === 'tune') {
+      this.tuneCards.forEach((card, k) => {
+        card.visible = true;
+        card.scale.set(0);
+        void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.4, delay: k * 0.1, ease: ease.outBack });
+      });
+      this.layoutCards();
+      void this.ctx.instruct('barn.tune');
+    } else if (this.plan.invite && !this.plan.each) {
       ANIMALS.forEach((a, k) => {
         const c = this.friends.get(a)!;
         c.visible = true;
@@ -119,6 +141,7 @@ class SingAlongBarn implements Game {
     this.drawBarn();
     this.drawWindows();
     this.drawBeads();
+    this.layoutCards();
     // Re-seat friends that are standing still.
     ANIMALS.forEach((a, k) => {
       const c = this.friends.get(a);
@@ -153,6 +176,7 @@ class SingAlongBarn implements Game {
       const c = a && this.friends.get(a);
       return c ? { tap: { on: c, y: BODY_Y }, pause: 0.7 } : null;
     }
+    if (this.phase === 'tune') return { tap: { on: this.tuneCards[0] }, pause: 0.7 };
     if (this.phase !== 'sing') return null;
     return { tap: { on: this.tapLayer, x: this.view.w / 2, y: this.view.h * 0.4 }, pause: 0.25 };
   }
@@ -178,6 +202,39 @@ class SingAlongBarn implements Game {
   private choiceSpot(k: number) {
     const xs = spread(ANIMALS.length, 150, this.view.w - 40, 190);
     return { x: xs[k], y: this.view.h - 36 };
+  }
+
+  // ----- Choosing the song -----
+
+  private layoutCards() {
+    // 250 apart: 30 clear between two 220-wide cards, and both fit a 768-wide upright view.
+    const y = this.view.h * 0.42;
+    this.tuneCards.forEach((card, k) => card.position.set(this.view.w / 2 + (k - (this.tuneCards.length - 1) / 2) * 250, y));
+  }
+
+  /** She picks the song: any song is a good one. It sounds its first notes, the cards go, and the song's opening begins. */
+  private chooseTune(t: Tune) {
+    if (this.phase !== 'tune') return;
+    this.phase = 'wait';
+    this.tune = t;
+    TUNES.forEach((x, k) => {
+      const card = this.tuneCards[k];
+      this.ctx.tw.kill(card.scale);
+      if (x === t) {
+        void this.ctx.tw.to(card.scale, { x: 1.15, y: 1.15 }, { duration: 0.2, ease: ease.outBack });
+        this.ctx.particles.burst(card.x, card.y, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 10, speed: [120, 260], gravity: 200, life: [0.6, 1] });
+      }
+    });
+    sfx.sparkle();
+    t.opening[0].steps.forEach((s, i) => void this.ctx.tw.wait(i * 0.28).then(() => sfx.marimba(s, 0.4)));
+    void this.ctx.tw.wait(1.2).then(() => {
+      for (const card of this.tuneCards) {
+        card.eventMode = 'none';
+        void this.ctx.tw.to(card.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }).then(() => (card.visible = false));
+      }
+      this.song = makeSong(this.order, this.tune);
+      this.beginSong();
+    });
   }
 
   // ----- Choosing who comes -----
@@ -435,6 +492,34 @@ class SingAlongBarn implements Game {
   }
 }
 
+/** A song's card: a barn-red tab with its picture (a cow, or a hot cross bun) and the first beads of its tune. */
+function drawTuneCard(t: Tune): Container {
+  const c = new Container();
+  const g = new Graphics().roundRect(-110, -100, 220, 200, 28).fill(0xfff4d6).stroke(line(BARN_DARK, 8));
+  c.addChild(g);
+  if (t.id === 'macdonald') {
+    const cow = new Critter(CRITTERS.cow);
+    cow.alive = false;
+    cow.scale.set(0.36);
+    cow.position.set(0, 80);
+    c.addChild(cow);
+  } else {
+    const bun = new Graphics()
+      .ellipse(0, 10, 84, 52)
+      .fill(0xe0a458)
+      .stroke(line(0xa86a2a))
+      .moveTo(-40, 10)
+      .lineTo(40, 10)
+      .moveTo(0, -22)
+      .lineTo(0, 42)
+      .stroke(line(0xfff4d6, 10));
+    c.addChild(bun);
+  }
+  const notes = t.opening[0].steps.slice(0, 4);
+  notes.forEach((_, i) => c.addChild(new Graphics().circle(-(notes.length - 1) * 18 + i * 36, -66, 12).fill(swatch[RAINBOW[i % RAINBOW.length]].fill)));
+  return c;
+}
+
 class BarnIcon extends Container {
   private readonly note = new Graphics();
   private readonly critter: Critter;
@@ -503,6 +588,7 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
+    if (p.chooseTune) return `Choose Old MacDonald or Hot Cross Buns, then choose who sings next after each verse (${friends})`;
     if (p.each) return `Old MacDonald or Hot Cross Buns; after each verse, choose who sings next (${friends})`;
     return p.invite ? `Old MacDonald or Hot Cross Buns; choose ${friends} to join the song` : `Old MacDonald or Hot Cross Buns; tap to sing, ${friends} visit`;
   },
