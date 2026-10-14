@@ -2,6 +2,7 @@
 
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 
+- [ ] **Brain Break with a grown-up on an iPad (2026-10-13):** check number legibility and comfortable stone taps on the 5×5 board, device speech for each next number, whether the checked stones and hint outline stay clear, and whether the untimed search feels satisfying. Browser play and a portrait screenshot do not establish these.
 - [ ] **Pyramid Solitaire with a grown-up on an iPad (2026-10-13):** are the five-row cards comfortable to tap, do the exposed outlines and both covering cards read clearly, does the rank guide and device speech explain A/J/Q/K, and does returning to a clearing route feel like useful help? Observe whether the finite practice pyramids are satisfying before adding a stock or conventional deck. Chrome automation does not establish these.
 - [ ] **Family quality pilots, when built:** find a remembered game, choose an unfamiliar one with the available input, inspect a different mode, leave and return, then switch profiles. Compare a landscape/portrait view with sound off and observe whether both people contribute in a shared-role round. Record understandable actions and voluntary replay/revision, not time spent or stickers earned; see [the review protocol](FAMILY-EXPERIENCE.md#what-a-quality-review-records). These observations do not establish other games' readiness.
 

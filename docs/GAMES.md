@@ -380,7 +380,15 @@ The green gate tests a garden. An incomplete test and an unmatched prediction ar
 
 ## Grown-up puzzles
 
-Ten games made for grown-ups, in the island's Lantern Lake land for the `grownup` band (13 and up; younger players find them behind the land's signpost and play their easiest levels). They are in `GAMES` like any game. All ten play by touch on the island; eight also take controllers on the couch. Number Nook and Pyramid Solitaire are touch-only. Couch rounds keep their own records and give a couch sticker; island rounds give the ordinary island sticker. Help remains replayable, with no clock or loss screen.
+Eleven games made for grown-ups, in the island's Lantern Lake land for the `grownup` band (13 and up; younger players find them behind the land's signpost and play their easiest levels). They are in `GAMES` like any game. All eleven play by touch on the island; eight also take controllers on the couch. Brain Break, Number Nook and Pyramid Solitaire are touch-only. Couch rounds keep their own records and give a couch sticker; island rounds give the ordinary island sticker. Help remains replayable, with no clock or loss screen.
+
+### Brain Break
+
+*grownup · touch/mouse only · visual search and number order.* Light the pond stones in numerical order on a shuffled board. All numbers stay visible; the sign names the next one, and spoken support gives the target at the start and after a correct selection. Completed stones stay in place with a check. The final number finishes one round through the shell for one sticker, including with help.
+
+Three levels use seeded permutations on 3×3 (1–9), 4×4 (1–16) and 5×5 (1–25) boards. Each stone is a 100-unit target. Tapping another unfinished number gives a gentle boing, repeats the target and counts one miss. Two consecutive misses outline the next stone and count one hint; each requested Hint counts help too. A correct choice clears the outline and consecutive-miss count. Tapping a checked stone is free. The how-to ghost finger finds every number through the same taps. Co-play takes turns, or one person calls while the other finds; off-screen play shuffles numbered paper squares.
+
+This slice practices the search task without claims about general cognition. There is no timer, speed goal or saved personal best. Color-word and quick-sum modes remain proposals; no controller or couch course is built.
 
 ### Pyramid Solitaire
 

@@ -2,6 +2,14 @@
 
 History, not instructions: dated entries rotated out of [VERIFICATION.md](../VERIFICATION.md) on 2026-10-13, newest first, followed by the older entries section as it stood. The live file keeps the newest entries and the coverage summary.
 
+## 2026-10-13 — Memory Match familiar picture decks
+
+- [PR #264](https://github.com/rjdunlap/neo/pull/264), base `5a13c3b`, claim `b2441be` plus final working diff: seeded shape/friend/fruit-and-prop families at levels 1–5; same pair identities drive rendering and spoken names.
+- `npm run typecheck`, 28 focused Memory Match/how-to tests, and `npm run build` passed. Tests cover every family at every picture level across 100 seeds, unique partners/labels, reproducibility, all 24 identities reached, thumbnail bounds and original sticker/icon fingerprints, plus existing matching/hint/bot properties.
+- Art montage at `http://localhost:5197` rendered all 24 faces at 112-unit card width with no page errors; reviewed `test-results/memory-familiar-pictures.png`. Friends are static and centered; fruit/props fit with margins. Local probe `test-results/memory-art.mjs` uses an isolated browser context; no real saves touched.
+- Markdown local links/anchors and `git diff --check` passed. Initial Chrome launch needed sandbox escalation; an initial preview import created a duplicate Pixi extension registration, resolved by importing through Vite's normal module resolver. These were probe setup failures.
+- Not run: gameplay/ghost-finger, couch/world/offline or full local units (content only; input, layout, pairs/accounting, navigation and persistence unchanged). Actual device speech and child recognition remain open. Session server stopped after review.
+
 ## 2026-10-13 — Picture Logic by touch (Lands stage D)
 
 - Built [PR #257](https://github.com/rjdunlap/neo/pull/257): Picture Logic plays by touch at all four levels (touch or drag along a row or column to fill; Fill, Cross and Slide tools; Hint and Start over; squares and buttons of 64 units or more, beside the picture or under it; clue numbers pinned while a bigger picture slides), a ghost finger, a touch how-to card and spoken lines. `touchFrame`, `axisOf`, `strokeCells`, `toolForHint` and `headStart` are in `logic.ts`; couch rules and layout are unchanged.

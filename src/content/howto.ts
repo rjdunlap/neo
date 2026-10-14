@@ -14,6 +14,12 @@ import type { GameHowTo, GameModule, LevelLine } from '../games/types';
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'brain-break': {
+    goal: 'Light every numbered stone by finding the numbers in order.',
+    steps: ['Tap the stone with the number shown above the pond.', 'Find the next number on the same shuffled board. Checked stones stay where they are.', 'Hint outlines the next stone; there is no time limit.'],
+    finish: 'Finding the final number finishes the round, including with help.',
+    note: 'A different unfinished number counts a miss. Two consecutive misses reveal a hint. Checked stones can be touched freely. This is number-search practice, without claims about general brain training.',
+  },
   'pyramid-solitaire': {
     goal: 'Clear the pyramid by lifting exposed pairs that add to thirteen, or a king alone.',
     steps: ['Tap two exposed cards that add to 13. A = 1, J = 11, Q = 12; tap a K = 13 by itself.', 'A card is exposed when both cards directly below it have gone. Every rank is visible; no new cards arrive.', 'Tap the selected card again to cancel. Undo restores a removal; Start over restores this same deal.', 'Hint outlines a clearing move. On a blocked route it restores the nearest solvable position first.'],
