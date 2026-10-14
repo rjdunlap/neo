@@ -1187,7 +1187,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Little Helpers** (6 · 5–6) | Equal groups is the right end; remainders are in Monster Munch and Lasso Loops, and rows and columns are Orchard Rows |
 | **Lasso Loops** (5 · 3–5) | Place value past 39 would mean forty or more fireflies, which is clutter; it needs a different representation, not a longer ladder |
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
-| **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade |
+| **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade ([deep dive](deep-dives/critter-crossing.md): Either one, Settle it, a visible "not" entry first) |
 | **Lemonade Stand** (4 · 1–4) | Owned by the economy pilot |
 | The 13 younger ladders (Animal Snack, Bounce Back, Bumper Garden, Clap the Syllables, Dot Link, Fluffy Salon, Garden Grow, Goodnight Room, Opposites, Owl Walk Home, Peg Garden, Pet Says, Stop and Go) | End at pre-K by design; the roadmap already says to wait for a reason to grow them. The quantity direction gives Garden Grow a pre-K window (levels 6–7 built), Goodnight Room more levels ([deep dive](deep-dives/goodnight-room.md)), and Opposites the same reason plus a school gap ([deep dive](deep-dives/opposites.md)); Animal Snack's [deep dive](deep-dives/animal-snack.md) proposes pre-K and school windows; Pet Says' [deep dive](deep-dives/pet-says.md) proposes levels 6–10 for pre-K and a school window 6–12 |
 
@@ -1355,7 +1355,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Secret Code (K–S · 6) | Stone sets | R2: 7 *detective door* | Preschool, at level 1 (two slots) |
 | Garden Rows (K–S · 6) | Flower sets | **7, A 5 by 5 bed with fewer flowers to start**, a next board. Boxes wait (round two) | — |
 | Ferry Jam (K–S · 6) | **More harbors** in the frozen, solver-checked list for each level | — | — |
-| Critter Crossing (K–S · 5) | More critter features | — (audit: leave, then Rule Parade) | — |
+| Critter Crossing (K–S · 5) | More critter features | — (audit: leave, then Rule Parade; ladder in its [deep dive](deep-dives/critter-crossing.md)) | — |
 
 **Stories, words and science**
 
