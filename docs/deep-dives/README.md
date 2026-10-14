@@ -109,7 +109,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Picture Logic | `picture-logic` | G | 4 | 4 | not started (controller-only on the island: touch not built) | — | — |
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |
 | Pond Conga | `pond-conga` | G | 6 | 4 | not started (controller-only on the island: touch not built) | — | — |
-| Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed; slice 2 (scene data, pinned stickers, six new scenes) built | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
+| Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed; slice 2 built; slice 1 fairness built locally 2026-10-14 on `codex/puzzle-pals-visible-cues`, awaiting publication; lid person-dependent | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |
 | Rainbow Fingers | `rainbow-fingers` | LTPKS | 7 | 2 | designed | `claude/roadmap-item-14-game-content-0zaz9u` ([PR 107](https://github.com/rjdunlap/neo/pull/107)) | [rainbow-fingers.md](rainbow-fingers.md) |
 | Ramp Race | `ramp-race` | KS | 4 | 4 | not started | — | — |

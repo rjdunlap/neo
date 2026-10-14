@@ -15,15 +15,16 @@ const line = (color: number, width = 5) => ({ width, color, join: 'round' as con
  * so a test can see what each piece of a puzzle holds.
  *
  * The random draws happen in a fixed order (the sun's side, then anything a place needs, then the flowers) and the
- * first six scenes draw exactly as they always did: a saved sticker is this picture drawn again from its seed.
+ * `playDetails: false` preserves the original drawing for saved stickers and the map icon.
  */
-export function pictureScene(scene: SceneDef, seed: number): { root: Container; friend: Critter; features: Feature[] } {
+export function pictureScene(scene: SceneDef, seed: number, playDetails = true): { root: Container; friend: Critter; features: Feature[] } {
   const rng = new Rng(seed);
   const W = PICTURE_W;
   const H = PICTURE_H;
   const root = new Container();
   const features: Feature[] = [];
   const note = (name: string, x: number, y: number, w: number, h: number) => void features.push({ name, x, y, w, h });
+  const solid = (name: string, x: number, y: number, w: number, h: number) => void features.push({ name, x, y, w, h, solid: true });
   const noteBounds = (name: string, node: Container) => {
     const r = node.getBounds().rectangle;
     note(name, r.x, r.y, r.width, r.height);
@@ -37,12 +38,14 @@ export function pictureScene(scene: SceneDef, seed: number): { root: Container; 
   if (scene.light === 'sun') {
     g.circle(sunX, 80, 46).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
     note('sun', sunX - 46, 34, 92, 92);
+    solid('sun-core', sunX - 30, 50, 60, 60);
   } else if (scene.light === 'moon') {
     g.circle(sunX, 80, 40).fill(0xfff3c4).circle(sunX + toward * 20, 68, 34).fill(scene.sky);
     note('moon', sunX - 40, 40, 80, 80);
   }
   puffs(g, [[-40, 6, 26], [0, -10, 34], [38, 6, 24]].map(([x, y, r]) => [W - sunX + x, 70 + y, r] as [number, number, number]), scene.cloud, scene.cloud, 0);
   note('cloud', W - sunX - 66, 26, 128, 76);
+  solid('cloud-core', W - sunX - 22, 38, 44, 44);
   g.ellipse(W * 0.3, horizon + 30, W * 0.5, 90).fill(scene.hills).ellipse(W * 0.8, horizon + 40, W * 0.4, 80).fill(scene.hills);
   g.rect(0, horizon, W, H - horizon).fill(scene.ground);
   root.addChild(g);
@@ -244,10 +247,71 @@ export function pictureScene(scene: SceneDef, seed: number): { root: Container; 
   friend.position.set(friendX, scene.animal === 'duck' ? H * 0.84 : H - 40);
   friend.alive = false;
   root.addChild(friend);
-  // The friend fills several pieces, and each shows a different part of it, so it counts as nine parts.
   const fb = friend.getBounds().rectangle;
   note('friend', fb.x, fb.y, fb.width, fb.height);
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) note(`friend-${r}${c}`, fb.x + (fb.width / 3) * c, fb.y + (fb.height / 3) * r, fb.width / 3, fb.height / 3);
+  // These flank interiors lie inside bodyPath at every animal's scale. Unlike its
+  // bounding box, they contain drawn body, not an empty corner near an ear.
+  const fs = friend.scale.x;
+  solid('friend-left', friend.x - 95 * fs, friend.y - 145 * fs, 55 * fs, 40 * fs);
+  solid('friend-right', friend.x + 40 * fs, friend.y - 145 * fs, 55 * fs, 40 * fs);
+
+  if (playDetails) {
+    // A small garden in front of the friend, and two kites above it. These use a
+    // separate seeded stream so the original scene and sticker random draws stay put.
+    const detailRng = new Rng(seed ^ 0x50414c53);
+    const detail = new Graphics();
+    root.addChild(detail);
+    for (const [x, color, name] of [[225, swatch.red, 'red-kite'], [375, swatch.blue, 'blue-kite']] as const) {
+      const y = 64 + detailRng.range(-8, 8);
+      detail.poly([x, y - 42, x + 38, y, x, y + 42, x - 38, y]).fill(color.fill).stroke(line(color.line, 4));
+      detail.moveTo(x, y + 42).quadraticCurveTo(x - 16, y + 58, x + 12, y + 68).stroke(line(wood.line, 3));
+      // An inscribed rectangle; the empty corners of the kite's bounds do not count.
+      solid(name, x - 16, y - 16, 32, 32);
+    }
+    const bloom = (x: number, y: number, name: string, color: typeof swatch.pink) => {
+      detail.moveTo(x, y + 30).lineTo(x, y + 72).stroke(line(swatch.green.line, 5));
+      const f = flower(new Graphics(), 40, color.fill, color.line);
+      f.position.set(x, y);
+      root.addChild(f);
+      // Within the top petal's filled circle (radius 19.2), rather than its empty bounding corners.
+      solid(name, x - 13, y - 24.8 - 13, 26, 26);
+    };
+    bloom(75, 210, 'tall-pink-flower', swatch.pink);
+    // The pinwheel is visibly different from the flower on the other side.
+    const px = 525;
+    const py = 210;
+    detail.moveTo(px, py + 20).lineTo(px, py + 74).stroke(line(wood.line, 5));
+    for (let k = 0; k < 4; k++) {
+      const blade = new Graphics().poly([0, 0, 0, -44, 40, -36]).fill((k % 2 ? swatch.yellow : swatch.purple).fill).stroke(line(swatch.purple.line, 3));
+      blade.position.set(px, py);
+      blade.rotation = k * Math.PI / 2;
+      root.addChild(blade);
+    }
+    root.addChild(new Graphics().circle(px, py, 22).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 3)));
+    solid('pinwheel-hub', px - 14, py - 14, 28, 28);
+
+    // Different silhouettes as well as colors make the ground pieces readable.
+    bloom(75, 378, 'low-purple-flower', swatch.purple);
+    detail.ellipse(225, 375, 34, 32).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+    detail.moveTo(225, 343).lineTo(229, 333).stroke(line(wood.line, 5));
+    detail.ellipse(241, 340, 13, 6).fill(swatch.green.fill);
+    solid('apple-core', 205, 355, 40, 40);
+    detail.roundRect(366, 374, 18, 28, 4).fill(cream).stroke(line(wood.line, 3));
+    detail.ellipse(375, 366, 42, 26).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+    detail.circle(355, 361, 4).circle(384, 355, 5).fill(cream);
+    solid('mushroom-cap', 353, 354, 44, 24);
+    detail.moveTo(525, 396).lineTo(525, 351).stroke(line(swatch.green.line, 5));
+    detail.ellipse(509, 373, 28, 18).ellipse(541, 353, 28, 18).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+    solid('leaf-pair', 491, 361, 36, 24);
+    // A rainy scene has no sun, and a crescent's empty disk is not a filled cue.
+    if (scene.light !== 'sun') {
+      const b = new Graphics().ellipse(sunX, 72, 36, 25).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+      b.poly([sunX - 30, 72, sunX - 54, 52, sunX - 54, 87]).fill(swatch.orange.fill);
+      b.circle(sunX + 16, 67, 4).fill(ink);
+      root.addChild(b);
+      solid('sky-bird', sunX - 20, 57, 40, 30);
+    }
+  }
   // Keep hills and balloons inside the picture, both in the pieces and when it comes alive.
   const mask = new Graphics().rect(0, 0, W, H).fill(0xffffff);
   root.addChild(mask);
@@ -257,7 +321,7 @@ export function pictureScene(scene: SceneDef, seed: number): { root: Container; 
 
 /** A small framed copy of a picture, for the sticker and the map. */
 export function pictureThumb(seed: number, width: number): Container {
-  const { root } = pictureScene(stickerScene(seed), seed);
+  const { root } = pictureScene(stickerScene(seed), seed, false);
   const s = width / PICTURE_W;
   root.scale.set(s);
   root.position.set((-PICTURE_W * s) / 2, (-PICTURE_H * s) / 2);
