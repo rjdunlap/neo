@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Story Theater first slice (2026-10-13)
+
+Built in [PR #287](https://github.com/rjdunlap/neo/pull/287) as Story Steps school levels 12–13, with no new game ID or inventory count. Choose Bunny/Bear, Sun/Rain and Blanket/Umbrella; all eight combinations have a narrated four-scene picnic and an explicit Take a bow finish. Level 13 keeps the first show and its cast, changes exactly one weather/prop choice and compares consequences; switching the revised field restores the other baseline choice. One-edit undo, replay and requested spoken/glowing help support every story; each help request counts one hint, creative choices cost no misses and one shell sticker follows the bow. School is 6–13; younger ranges and levels 1–11 are preserved. No timers or story persistence. This completes the notebook’s first creative theater/revision slice; broader stories, arranged events, younger placement, alternative viewpoints and Story Weaver’s kept books remain proposals. [Definition](../definitions/story-theater.md), [verification](../VERIFICATION.md#2026-10-13--story-theater-first-slice).
+
 ### Bouncy Launch Feed the friend, level 7 (2026-10-13)
 
 Pre-K and school only (pre-K order 3, 4, 7, 5; school 4, 5, 7, 6; lap, toddler and preschool unchanged). A seeded bunny or duck stands on the grass with an apple at its feet and the clouds hidden; three shots, spots in 0.12-0.92 of the strip and at least 0.2 apart. Landing within ±0.09 of the strip feeds it (cheer, sparkle, `launch.fed`); a miss says short or long with the dotted arc and a puff ring kept at the last landing, and two misses count one hint with the preview and a pull ring. Built as 7, the next free ID (the how-to test needs a card for every level in a band's range), so the deep dive's Near or far becomes 8. Rule tests: spots seeded, in range and apart; every spot reachable inside the leash; a correction from a miss lands; the bot's pull feeds every friend. Proof: [verification entry](../VERIFICATION.md#2026-10-13--bouncy-launch-level-7-feed-the-friend).
@@ -763,7 +767,7 @@ The archived slice-5 build packet follows; its future-tense verification text de
 
 2026-10-13, [PR #269](https://github.com/rjdunlap/neo/pull/269): levels 2–5 squeak/wobble on touch, explain short or wrong-way pulls, and show a pulsing back-and-down chevron after two unfinished gestures. Those gestures count neither misses nor hints; cancellation returns without launching. Level 6 displays cloud numerals, uses only cloud taps, and keeps its shown pull on resize. The how-to scopes pulling, completion and journal wording to the levels they describe; GAMES distinguishes Kass Basher's timed swing from this pull launcher. The reach comment describes its unchanged linear mapping. Couch/course discovery results explicitly exclude the child's journal; the watched-pull decision remains open. No level/band, course, physics, sky or flight-history change.
 
-Proof and remaining person/device checks: [verification](../VERIFICATION.md#2026-10-13--bouncy-launch-support-slice-1). Next work remains in the [deep dive](../deep-dives/bouncy-launch.md#build-slices-in-order).
+Proof and remaining person/device checks: [verification](VERIFICATION-2026-10-07-13.md#2026-10-13--bouncy-launch-support-slice-1). Next work remains in the [deep dive](../deep-dives/bouncy-launch.md#build-slices-in-order).
 
 
 ## Bouncy Launch last flight slice 3
