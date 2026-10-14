@@ -11,13 +11,13 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, OLD_MACDONALD, TUNES, VOICES, farmAnimals, makeSong, nextInvite, pickTune, planFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
+import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, pickTune, planFor, tunesFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 5 },
+  prek: { min: 3, max: 6 },
 };
 
 const GRASS = 0x9edb86;
@@ -60,10 +60,11 @@ class SingAlongBarn implements Game {
 
   constructor(private readonly ctx: GameContext) {
     // The card's demonstration of choosing a friend for each verse sings two of them: three Old MacDonald verses
-    // would not finish inside its 75 seconds at the hand's pace.
+    // would not finish inside its 75 seconds at the hand's pace; nor would the whole Old MacDonald verse (59 notes for
+    // one friend), so the demonstration sings the short form with one friend.
     const plan = planFor(ctx.level);
-    this.plan = ctx.demo && plan.each ? { ...plan, verses: 2 } : plan;
-    this.tune = this.plan.chooseTune ? OLD_MACDONALD : pickTune(ctx.rng);
+    this.plan = ctx.demo && plan.each ? { ...plan, verses: plan.full ? 1 : 2, full: false } : plan;
+    this.tune = this.plan.chooseTune ? tunesFor(this.plan)[0] : pickTune(ctx.rng);
     this.view = ctx.view;
     this.phase = this.plan.chooseTune ? 'tune' : this.plan.invite && !this.plan.each ? 'invite' : 'sing';
     this.order = this.plan.invite ? [] : farmAnimals(this.plan, ctx.rng);
@@ -84,7 +85,7 @@ class SingAlongBarn implements Game {
     this.tapLayer.eventMode = this.phase === 'sing' ? 'static' : 'none';
     this.tapLayer.cursor = 'pointer';
     if (this.plan.chooseTune) {
-      TUNES.forEach((t) => {
+      tunesFor(this.plan).forEach((t) => {
         const card = new Container();
         card.visible = false;
         card.addChild(drawTuneCard(t));
@@ -217,7 +218,7 @@ class SingAlongBarn implements Game {
     if (this.phase !== 'tune') return;
     this.phase = 'wait';
     this.tune = t;
-    TUNES.forEach((x, k) => {
+    tunesFor(this.plan).forEach((x, k) => {
       const card = this.tuneCards[k];
       this.ctx.tw.kill(card.scale);
       if (x === t) {
@@ -588,12 +589,13 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
+    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines) or Hot Cross Buns, then choose who sings next after each verse (${friends})`;
     if (p.chooseTune) return `Choose Old MacDonald or Hot Cross Buns, then choose who sings next after each verse (${friends})`;
     if (p.each) return `Old MacDonald or Hot Cross Buns; after each verse, choose who sings next (${friends})`;
     return p.invite ? `Old MacDonald or Hot Cross Buns; choose ${friends} to join the song` : `Old MacDonald or Hot Cross Buns; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
-  coplayHint: 'Sing the short song while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse.',
+  coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines.',
   offScreen: 'Sing Old MacDonald or Hot Cross Buns with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,

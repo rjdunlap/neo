@@ -41,6 +41,18 @@ export const HAD_A: Phrase = { syllables: ['And', 'on', 'that', 'farm', 'he', 'h
 export const HOT_CROSS_BUNS: Phrase = { syllables: ['Hot', 'cross', 'buns'], steps: [2, 1, 0] };
 export const ONE_A_PENNY: Phrase = { syllables: ['One', 'a', 'pen', 'ny', 'two', 'a', 'pen', 'ny'], steps: [0, 0, 0, 0, 1, 1, 1, 1] };
 
+/**
+ * The rest of a full Old MacDonald verse: "With a moo-moo here and a moo-moo there, here a moo, there a moo, everywhere a
+ * moo-moo", then the first line again. `~` is the friend's own sound ("moo", "oink", ...), sung where the verse says moo.
+ * Every step is C D E G A. These were written from the standard shape of the tune (a held do, then sol-sol-do), not a
+ * printed score: a grown-up singing it is the final check (DEVICE-CHECKS).
+ */
+export const WITH_A: Phrase = { syllables: ['With', 'a', '~', '~', 'here'], steps: [3, 3, 0, 0, 0] };
+export const AND_A: Phrase = { syllables: ['and', 'a', '~', '~', 'there'], steps: [3, 3, 0, 0, 0] };
+export const HERE_A: Phrase = { syllables: ['Here', 'a', '~'], steps: [3, 3, 0] };
+export const THERE_A: Phrase = { syllables: ['there', 'a', '~'], steps: [3, 3, 0] };
+export const EVERYWHERE: Phrase = { syllables: ['ev', 'ry', 'where', 'a', '~', '~'], steps: [0, 0, 0, 3, 4, 3] };
+
 export type TuneId = 'macdonald' | 'buns';
 
 /**
@@ -54,6 +66,8 @@ export interface Tune {
   verse: readonly Phrase[];
   answers: Phrase;
   namesAnimal: boolean;
+  /** Phrases whose `~` syllables are the friend's own sound; the friend sounds on each one. */
+  sounds?: readonly Phrase[];
 }
 
 export const OLD_MACDONALD: Tune = {
@@ -62,6 +76,12 @@ export const OLD_MACDONALD: Tune = {
   verse: [HAD_A, E_I_E_I_O],
   answers: HAD_A,
   namesAnimal: true,
+};
+/** The whole verse, moo-moo lines and the first line again: 47 notes for each friend. */
+export const OLD_MACDONALD_FULL: Tune = {
+  ...OLD_MACDONALD,
+  verse: [HAD_A, E_I_E_I_O, WITH_A, AND_A, HERE_A, THERE_A, EVERYWHERE, HAD_A_FARM, E_I_E_I_O],
+  sounds: [WITH_A, AND_A, HERE_A, THERE_A, EVERYWHERE],
 };
 /** "Hot cross buns, hot cross buns" opens it; each friend's verse is "One a penny, two a penny, hot cross buns". */
 export const BUNS: Tune = {
@@ -97,10 +117,12 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD)
   const add = (p: Phrase, animal: Animal | null, closes: boolean) => {
     p.steps.forEach((step, at) => {
       const last = at === p.steps.length - 1;
-      const answers = animal !== null && p === tune.answers && last;
+      const sound = animal !== null && p.syllables[at] === '~' && tune.sounds?.includes(p) === true;
+      const names = animal !== null && p === tune.answers && last;
+      const answers = names || sound;
       notes.push({
         step,
-        syllable: answers && tune.namesAnimal ? VOICES[animal!].word : p.syllables[at],
+        syllable: sound ? VOICES[animal!].sound : names && tune.namesAnimal ? VOICES[animal!].word : p.syllables[at],
         phrase,
         at,
         of: p.steps.length,
@@ -128,15 +150,21 @@ export interface SingPlan {
   each: boolean;
   /** She chooses the song too (a free choice, never a mistake); otherwise the seed draws it. */
   chooseTune: boolean;
+  /** Old MacDonald is the whole verse, moo-moo lines included, instead of the short form. */
+  full: boolean;
 }
 
 export const PLANS: readonly SingPlan[] = [
-  { verses: 1, invite: false, each: false, chooseTune: false },
-  { verses: 2, invite: false, each: false, chooseTune: false },
-  { verses: 2, invite: true, each: false, chooseTune: false },
-  { verses: 3, invite: true, each: true, chooseTune: false },
-  { verses: 3, invite: true, each: true, chooseTune: true },
+  { verses: 1, invite: false, each: false, chooseTune: false, full: false },
+  { verses: 2, invite: false, each: false, chooseTune: false, full: false },
+  { verses: 2, invite: true, each: false, chooseTune: false, full: false },
+  { verses: 3, invite: true, each: true, chooseTune: false, full: false },
+  { verses: 3, invite: true, each: true, chooseTune: true, full: false },
+  { verses: 2, invite: true, each: true, chooseTune: true, full: true },
 ];
+
+/** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
