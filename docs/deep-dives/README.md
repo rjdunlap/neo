@@ -100,7 +100,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Owl Walk Home | `owl-walk` | TPK | 4 | 4 | building (slices 1–4 built 2026-10-13: tap the stone, owls with their own players, choose an owl, fly home, counted hops); lap entry, color or shape, the grown-up seat and levels 7–8 next | `claude/owl-walk-stone-taps` (dive: [PR #248](https://github.com/rjdunlap/neo/pull/248)) | [owl-walk.md](owl-walk.md) |
 | Orchard Rows | `orchard-rows` | S | 3 | 4 | not started (levels 1–3 built) | — | — |
 | Pattern Train | `pattern-train` | PKS | 12 | 3 | building (slice 1 built) | `claude/pattern-train-deep-dive` ([PR 139](https://github.com/rjdunlap/neo/pull/139)); slice 1: `claude/pattern-train-slice-1` ([PR 141](https://github.com/rjdunlap/neo/pull/141)); slice 2: `claude/pattern-train-level-11`; slice 3: `claude/pattern-train-tunnel`; slice 4 pool: `claude/pattern-train-families`; slice 5: `claude/pattern-train-odd-car`; slice 6: `claude/pattern-train-same-pattern` | [pattern-train.md](pattern-train.md) |
-| Peekaboo Barn | `peekaboo-barn` | LTPK | 8 | 2 | designed | `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96)) | [peekaboo-barn.md](peekaboo-barn.md) |
+| Peekaboo Barn | `peekaboo-barn` | LTPK | 8 | 2 | designed; cover support built 2026-10-14 ([PR #294](https://github.com/rjdunlap/neo/pull/294)); scenes next | `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96)) | [peekaboo-barn.md](peekaboo-barn.md) |
 | Peekaround Island | `peekaround-island` | TPKS | 5 | 4 | not started | — | — |
 | Peg Garden | `peg-garden` | LTPK | 5 | 4 | not started | — | — |
 | Penguin Slide | `penguin-slide` | PKS | 5 | 4 | not started | — | — |

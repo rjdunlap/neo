@@ -233,11 +233,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 2, text: 'Tap a hiding place to see who is behind it.' },
       { from: 3, to: 5, text: 'Listen for the animal asked about, then tap where it is peeking.' },
-      { from: 6, text: 'Watch who hides where, then tap the hiding place of the animal asked about.' },
+      { from: 6, to: 8, text: 'Watch who hides where, then tap the hiding place of the animal asked about.' },
     ],
     finish: [
-      { to: 2, text: 'The round ends when every hiding animal has been found.' },
-      { from: 3, text: 'The round ends when every animal asked about has been found.' },
+      { to: 1, text: 'The round ends after eight reveals.' },
+      { from: 2, to: 2, text: 'The round ends after twelve reveals.' },
+      { from: 3, to: 8, text: 'The round ends when every animal asked about has been found.' },
     ],
   },
   'splish-splash': {

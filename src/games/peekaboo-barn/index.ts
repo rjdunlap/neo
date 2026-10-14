@@ -10,7 +10,7 @@ import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan } from './logic';
+import { STICKER_ANIMALS, COVER_NAMES, nearestSpot, shouldNudge, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan, type CoverKind } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
@@ -23,7 +23,6 @@ const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
   bear: { sound: 'growl', word: 'Grrr' },
 };
 
-type CoverKind = 'hay' | 'bush' | 'crate' | 'door';
 const COVERS: CoverKind[] = ['hay', 'bush', 'door', 'crate'];
 
 const LEVELS: BandLevels = {
@@ -78,40 +77,79 @@ class Spot extends Container {
   hint = false;
   private critter: Critter | null = null;
   private readonly holder = new Container();
-  private readonly cover: Graphics;
+  private readonly cover = new Container();
+  private readonly panels: Graphics[] = [];
+  private readonly leaf = new Graphics().ellipse(0, 0, 11, 5).fill(swatch.green.fill);
+  private readonly opening = { amount: 0 };
   private shake = 0;
   private clock = Math.random() * 3;
 
   constructor(
-    kind: CoverKind,
+    readonly kind: CoverKind,
     private readonly tw: Tweener,
   ) {
     super();
-    this.cover = drawCover(kind);
-    this.addChild(this.holder, this.cover);
+    // The foreground grass stays still so a closed place never exposes its tucked-away friend.
+    if (kind === 'door' || kind === 'hay') {
+      for (const side of [-1, 1]) {
+        const panel = new Graphics();
+        if (kind === 'door') {
+          panel.roundRect(side < 0 ? 0 : -110, -150, 110, 150, 5).fill(0xd9534f).stroke(line(0x9e2f2c));
+          panel.moveTo(side < 0 ? 8 : -102, -140).lineTo(side < 0 ? 102 : -8, -10).stroke(line(0xffffff, 5));
+          panel.moveTo(side < 0 ? 102 : -8, -140).lineTo(side < 0 ? 8 : -102, -10).stroke(line(0xffffff, 5));
+        } else {
+          panel.moveTo(0, 0).lineTo(0, -150).bezierCurveTo(side * 80, -150, side * 118, -100, side * 118, 0).closePath().fill(0xf2c94c).stroke(line(0xc99a2e));
+          for (const y of [-35, -75, -115]) panel.moveTo(side * 20, y).lineTo(side * 65, y - 10).stroke(line(0xc99a2e, 4));
+        }
+        if (kind === 'door') panel.x = side * 110;
+        this.panels.push(panel);
+        this.cover.addChild(panel);
+      }
+    } else {
+      this.cover.addChild(drawCover(kind, false));
+      if (kind === 'crate') {
+        const lid = new Graphics().roundRect(-116, -160, 232, 20, 5).fill(wood.fill).stroke(line(wood.line));
+        this.panels.push(lid);
+        this.cover.addChild(lid);
+      }
+    }
+    this.leaf.visible = false;
+    this.addChild(this.holder, this.cover, this.leaf, new Graphics().roundRect(-130, -6, 260, 120, 20).fill(GRASS));
+    this.eventMode = 'none';
     this.hitArea = new Rectangle(-130, -340, 260, 350);
   }
 
   /** Puts a new animal behind the cover (it starts hidden). */
   setAnimal(animal: Animal) {
+    if (this.critter) this.tw.kill(this.critter);
     this.critter?.destroy({ children: true });
     this.animal = animal;
     this.critter = new Critter(CRITTERS[animal]);
     this.critter.scale.set(CRITTER_SCALE);
     this.critter.y = POSE.hidden;
     this.pose = 'hidden';
+    this.tw.kill(this.opening);
+    this.opening.amount = 0;
     this.holder.addChild(this.critter);
   }
 
   async go(pose: Pose) {
     const c = this.critter;
     if (!c) return;
+    const opens = pose === 'out' && this.pose !== 'out';
     this.pose = pose;
+    this.tw.kill(this.opening);
+    void this.tw.to(this.opening, { amount: pose === 'out' ? 1 : 0 }, { duration: 0.35, ease: ease.outCubic });
+    if (opens) {
+      if (this.kind === 'door') sfx.marimba(0, 0.08);
+      else if (this.kind === 'crate') sfx.marimba(2, 0.08);
+      else sfx.whoosh();
+    }
     this.tw.kill(c);
     if (pose === 'out') {
       c.poke();
       await this.tw.to(c, { y: POSE.out }, { duration: 0.35, ease: ease.outBack });
-      c.cheer();
+      if (!c.destroyed && this.critter === c) c.cheer();
     } else {
       await this.tw.to(c, { y: POSE[pose] }, { duration: pose === 'hidden' ? 0.3 : 0.45, ease: pose === 'hidden' ? ease.inQuad : ease.outCubic });
     }
@@ -126,7 +164,18 @@ class Spot extends Container {
     this.critter?.update(dt);
     if (this.hint && this.shake <= 0 && Math.sin(this.clock * 2.5) > 0.98) this.shake = 1;
     this.shake = Math.max(0, this.shake - dt * 2);
+    const open = this.opening.amount;
     this.cover.rotation = 0.06 * Math.sin(this.shake * 25) * this.shake;
+    if (this.kind === 'door') this.panels.forEach((p) => p.scale.x = 1 - open * 0.88);
+    if (this.kind === 'hay') this.panels.forEach((p, i) => { p.x = (i ? 1 : -1) * open * 34; p.rotation = (i ? 1 : -1) * open * 0.16; });
+    if (this.kind === 'crate') { this.panels[0].y = -open * 38; this.panels[0].rotation = open * -0.12; }
+    if (this.kind === 'bush') {
+      this.cover.rotation += Math.sin(open * Math.PI * 5) * open * 0.08;
+      this.leaf.visible = open > 0;
+      this.leaf.position.set(85 + open * 30, -90 + open * 60);
+      this.leaf.rotation = open * 2;
+      this.leaf.alpha = Math.sin(open * Math.PI);
+    }
   }
 }
 
@@ -145,6 +194,9 @@ class PeekabooBarn implements Game {
   private finished = false;
   /** The place the ghost finger tapped last, so free play visits them all. */
   private lastTouched = -1;
+  private idle = 0;
+  private nudgeCount = 0;
+  private readonly input = new Container();
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -155,10 +207,15 @@ class PeekabooBarn implements Game {
     const covers = ctx.rng.shuffle([...COVERS]).slice(0, this.plan.spots);
     this.spots = covers.map((kind) => {
       const s = ctx.track(new Spot(kind, ctx.tw));
-      onTap(s, () => void this.tapped(s), { cooldown: 250 });
       return s;
     });
-    ctx.stage.addChild(this.backdrop, this.barn, ...this.spots);
+    this.backdrop.eventMode = this.barn.eventMode = 'none';
+    onTap(this.input, (e) => {
+      const p = ctx.stage.toLocal(e.global);
+      const i = nearestSpot(p.x, p.y, this.spots.map((s) => ({ x: s.x, y: s.y, scale: s.scale.x })));
+      if (i !== null) void this.tapped(this.spots[i]);
+    }, { cooldown: 250 });
+    ctx.stage.addChild(this.backdrop, this.barn, ...this.spots, this.input);
   }
 
   start() {
@@ -175,12 +232,26 @@ class PeekabooBarn implements Game {
     this.view = v;
     this.backdrop.resize(v);
     const cx = v.w / 2;
-    const gap = this.plan.spots === 4 ? 232 : 260;
-    this.spots.forEach((s, i) => s.position.set(cx + (i - (this.plan.spots - 1) / 2) * gap, v.h - 40));
+    const scale = this.plan.spots === 4 ? 0.82 : 1;
+    const left = 150 + 130 * scale;
+    const right = v.w - 30 - 130 * scale;
+    this.spots.forEach((s, i) => {
+      s.scale.set(scale);
+      s.position.set(left + i * (right - left) / (this.spots.length - 1), v.h - 40);
+    });
+    this.input.hitArea = new Rectangle(150, v.h - 40 - 340 * scale, v.w - 180, 350 * scale);
     this.drawBarn(cx, this.backdrop.groundY + 30);
   }
 
-  update() {}
+  update(dt: number) {
+    if (this.finished) return;
+    this.idle += dt;
+    if (shouldNudge(this.plan.mode, this.idle, this.spots.map((s) => s.pose), this.busy)) {
+      this.spots[this.nudgeCount++ % this.spots.length].wiggle();
+      sfx.marimba(0, 0.08);
+      this.idle = 0;
+    }
+  }
 
   /** The ghost finger on the how-to card: tap the place that hides who was asked for, or in free play each place in turn. */
   autotouch(): TouchIntent | null {
@@ -189,10 +260,14 @@ class PeekabooBarn implements Game {
     if (i === null) return null;
     this.lastTouched = i;
     // The cover is what a child touches; the animal's head peeks over it.
-    return { tap: { on: this.spots[i], y: -110 } };
+    const spot = this.spots[i];
+    return { tap: { on: this.input, x: spot.x, y: spot.y - 110 * spot.scale.x } };
   }
 
-  destroy() {}
+  destroy() {
+    this.finished = true;
+    this.input.removeAllListeners();
+  }
 
   /** Different animals in each spot. */
   private dealAnimals() {
@@ -206,6 +281,8 @@ class PeekabooBarn implements Game {
 
   private async tapped(spot: Spot) {
     if (this.busy || this.finished) return;
+    this.idle = 0;
+    spot.wiggle();
     if (this.plan.mode === 'free') return this.freeTap(spot);
     if (spot.pose === 'out') return;
 
@@ -216,7 +293,7 @@ class PeekabooBarn implements Game {
       this.say(spot.animal);
       this.ctx.pet.cheer();
       this.done++;
-      await this.ctx.say('peek.yes', { animal: spot.animal });
+      await this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] });
       await this.ctx.tw.wait(0.6);
       await Promise.all(this.spots.map((s) => s.go('hidden')));
       await this.ctx.tw.wait(0.3);
@@ -227,6 +304,7 @@ class PeekabooBarn implements Game {
 
     // Not that one: it says hello anyway, then hides again.
     this.busy = true;
+    sfx.boing();
     this.misses++;
     this.missesThisQuestion++;
     const back: Pose = this.plan.mode === 'find' ? 'peek' : 'hidden';
@@ -253,7 +331,7 @@ class PeekabooBarn implements Game {
     const animal = spot.animal;
     void spot.go('out');
     this.say(animal);
-    void this.ctx.say('peek.found', { word: VOICES[animal].word, animal });
+    void this.ctx.say('peek.found', { word: VOICES[animal].word, animal, cover: COVER_NAMES[spot.kind] });
     this.done++;
     if (this.done % 4 === 0) this.ctx.pet.cheer();
     if (this.done >= this.plan.goal) {
@@ -379,7 +457,7 @@ class BarnIcon extends Container {
     if (this.next <= 0) {
       this.next = 3;
       this.turn++;
-      const who = ANIMALS[this.turn % ANIMALS.length];
+      const who = STICKER_ANIMALS[this.turn % STICKER_ANIMALS.length];
       this.critter.destroy({ children: true });
       this.critter = new Critter(CRITTERS[who]);
       this.critter.scale.set(0.34);
@@ -396,7 +474,7 @@ class BarnIcon extends Container {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const who = new Critter(CRITTERS[rng.pick(ANIMALS)]);
+  const who = new Critter(CRITTERS[rng.pick(STICKER_ANIMALS)]);
   who.alive = false;
   who.scale.set(CRITTER_SCALE);
   who.y = POSE.peek;
