@@ -18,7 +18,7 @@ import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, 
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 5 },
+  school: { min: 2, max: 6 },
 };
 
 const SCALE = 0.32;
@@ -26,15 +26,15 @@ const SCALE = 0.32;
 /** A picture of a rule, as it appears on the gate and on the guessing cards. */
 export function gateIcon(g: Gate, size = 1): Container {
   const c = new Container();
-  const rules: Rule[] = g.kind === 'and' ? g.rules : [g.rule];
+  const rules: Rule[] = g.kind === 'and' || g.kind === 'or' ? g.rules : [g.rule];
   rules.forEach((r, i) => {
     const icon = ruleIcon(r);
     icon.scale.set((rules.length === 2 ? 0.72 : 1.1) * size);
     icon.x = rules.length === 2 ? (i ? 50 : -50) * size : 0;
     c.addChild(icon);
   });
-  if (g.kind === 'and') {
-    const plus = label('+', 36 * size, ink);
+  if (g.kind === 'and' || g.kind === 'or') {
+    const plus = label(g.kind === 'or' ? 'or' : '+', (g.kind === 'or' ? 30 : 36) * size, ink);
     c.addChild(plus);
   }
   if (g.kind === 'not') {
@@ -43,7 +43,7 @@ export function gateIcon(g: Gate, size = 1): Container {
   return c;
 }
 
-const cardWidth = (g: Gate) => (g.kind === 'and' ? 200 : 150);
+const cardWidth = (g: Gate) => (g.kind === 'and' || g.kind === 'or' ? 200 : 150);
 
 function bulbIcon(): Graphics {
   return new Graphics()
