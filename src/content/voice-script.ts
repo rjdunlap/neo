@@ -4,6 +4,12 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'game.number-nook': ['Number Nook!'],
+  'nook.go': ['Put the numbers in order, across each row. Tap a tile beside the empty space to slide it. Leave the empty space at the bottom right.'],
+  'nook.miss': ['That tile cannot reach the gap. Slide a tile directly beside the empty space.'],
+  'nook.hint': ['Slide the glowing tile. It starts a shortest way to put the numbers in order.'],
+  'nook.restart': ['The starting tiles are back. Try another route.'],
+  'nook.done': ['All the numbers are in order! You planned a path through the empty space.'],
   'game.gem-swap': ['Gem Swap!'],
   'gem-swap.go': ['Tap a gem, then its neighbour. Make a line of three matching shapes. The gems above fall into the gaps. Clear the tray!'],
   'gem-swap.miss': ['That swap makes no line. Look for three matching shapes in a row or column.'],
@@ -1290,9 +1296,12 @@ export const SCRIPT = {
   'bubble.notmade': ['{a} and {b} make {total}. We need {n}.'],
 
   'barn.sing': ['Tap, tap, tap to sing Old MacDonald!'],
+  'barn.sing.buns': ['Tap, tap, tap to sing Hot Cross Buns!'],
   'barn.invite': ['Who will come to the farm? Tap {count} friends!'],
+  'barn.next': ['Who will sing next? Tap a friend!'],
   'barn.invited': ['{animal}!', 'Hello, {animal}!'],
   'barn.done': ['Old MacDonald had a farm! E I E I O!'],
+  'barn.done.buns': ['Hot cross buns! One a penny, two a penny!'],
   'jelly.free': ['Tap the jellies to make music!'],
   'jelly.listen': ['Listen!', 'Listen to the jellies!'],
   'jelly.turn': ['Your turn!'],

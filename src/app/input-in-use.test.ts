@@ -43,9 +43,10 @@ describe('controllerPlays', () => {
 
   it('is on for the games that switch to a controller while they run', () => {
     expect(live.map((g) => g.id).sort()).toEqual([
-      'bounce-back', 'bumper-garden', 'egg-catch', 'frog-hop', 'island-bridges', 'light-lab', 'memory-match', 'pattern-train',
+      'bounce-back', 'bumper-garden', 'egg-catch', 'frog-hop', 'gem-swap', 'island-bridges', 'lantern-lights', 'light-lab', 'memory-match',
+      'pattern-train',
       'peg-garden', 'picture-logic', 'pond-conga', 'rhythm-neighbors', 'robot-path', 'secret-code', 'sink-float',
-      'sudoku-garden', 'word-search',
+      'sudoku-garden', 'tile-pairs', 'word-search',
     ]);
   });
 

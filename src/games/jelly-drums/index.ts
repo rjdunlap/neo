@@ -10,7 +10,7 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
-import { jellyToTap, makeTune, planFor, type JellyPhase, type JellyPlan } from './logic';
+import { awakeJellies, jellyToTap, makeTune, nearestAwake, planFor, type JellyPhase, type JellyPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Big jelly, low note: C D E G A from left to right. */
@@ -19,7 +19,8 @@ const STEPS = [0, 1, 2, 3, 4];
 const BULBS = 8;
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 3 },
+  // Level 10 (one big jelly) is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
+  lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 4, max: 7 },
   prek: { min: 5, max: 9 },
@@ -36,6 +37,8 @@ class JellyDrums implements Game {
   private readonly garland = new Graphics();
   private readonly jellies: Jelly[];
   private readonly fans: Critter[];
+  /** Wake level only: a stage-wide layer last in the stage, so a touch anywhere sings the nearest awake jelly. */
+  private readonly anywhere = new Graphics();
   private view: View;
   private phase: JellyPhase = 'play';
   private lit = 0;
@@ -64,6 +67,14 @@ class JellyDrums implements Game {
       return c;
     });
     ctx.stage.addChild(this.sky, this.mountains, this.garland, this.stageG, ...this.jellies, ...this.fans);
+    if (this.plan.mode === 'wake') {
+      this.jellies.forEach((j) => (j.eventMode = 'none'));
+      onTap(this.anywhere, (e) => {
+        const x = ctx.stage.toLocal(e.global).x;
+        this.tapJelly(nearestAwake(this.jellies.map((j) => j.x), awakeJellies(this.notes), x));
+      }, { cooldown: 90 });
+      ctx.stage.addChild(this.anywhere);
+    }
   }
 
   start() {
@@ -105,6 +116,10 @@ class JellyDrums implements Game {
     for (let i = 0; i < 8; i++) this.stageG.rect(cx - 452 + i * 113 + 54, top + 26, 5, v.h * 0.12).fill({ color: 0x000000, alpha: 0.12 });
 
     this.jellies.forEach((j, i) => j.position.set(cx + (i - 2) * 178, top + 10));
+    if (this.plan.mode === 'wake') {
+      this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
+      this.wakeLayout();
+    }
     this.fans.forEach((f, i) => f.position.set(cx + (i - 1.5) * 150, v.h - 6));
     this.drawGarland();
   }
@@ -119,7 +134,9 @@ class JellyDrums implements Game {
   autotouch(): TouchIntent | null {
     const i = jellyToTap(this.plan.mode, this.phase, this.tune, this.at, this.notes);
     // A short rest: the next note belongs with this one, and a long tune round has to fit the window.
-    return i === null ? null : { tap: { on: this.jellies[i], y: this.jellies[i].belly }, pause: 0.15 };
+    if (i === null) return null;
+    const tap = { on: this.jellies[i], y: this.jellies[i].belly };
+    return this.plan.mode === 'wake' ? { tap, receiver: this.anywhere, pause: 0.15 } : { tap, pause: 0.15 };
   }
 
   destroy() {}
@@ -127,9 +144,11 @@ class JellyDrums implements Game {
   private tapJelly(i: number) {
     if (this.phase === 'done') return;
     this.sing(i);
-    if (this.plan.mode === 'free') {
+    if (this.plan.mode !== 'echo') {
+      const woke = this.plan.mode === 'wake' ? awakeJellies(this.notes + 1).length - awakeJellies(this.notes).length : 0;
       this.notes++;
       this.setLit(Math.floor((this.notes / this.plan.goal) * BULBS));
+      if (woke) this.wakeUp();
       if (this.notes >= this.plan.goal) void this.finale();
       return;
     }
@@ -141,6 +160,26 @@ class JellyDrums implements Game {
     } else {
       void this.oops();
     }
+  }
+
+  /** Wake level: only the awake jellies show; a lone jelly stands big in the middle, then takes its place as friends join. */
+  private wakeLayout() {
+    const awake = awakeJellies(this.notes);
+    const alone = awake.length === 1;
+    const cx = this.view.w / 2;
+    this.jellies.forEach((j, i) => {
+      j.visible = awake.includes(i);
+      j.scale.set(alone ? 1.8 : 1);
+      if (alone) j.x = cx;
+      else j.x = cx + (i - 2) * 178;
+    });
+  }
+
+  private wakeUp() {
+    this.wakeLayout();
+    const newest = awakeJellies(this.notes).at(-1)!;
+    this.jellies[newest].glow(1);
+    sfx.sparkle();
   }
 
   private sing(i: number, power = 1) {
@@ -311,8 +350,10 @@ export const jellyDrums: GameModule = {
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [10],
   describeLevel: (level) => {
     const p = planFor(level);
+    if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },
   music: silenced(STYLES.jelly),

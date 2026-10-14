@@ -67,7 +67,7 @@ class LanternLights implements Game {
   private readonly score = label('', 34, ink);
   private readonly sub = label('', 24, ink, '500');
   /** Touch play (every play outside the couch): a tap on a lantern presses it, and three buttons undo, hint and start over. */
-  private readonly touch: boolean;
+  private touch: boolean;
   readonly tapLayer = new Graphics();
   readonly undoButton = new Container();
   readonly hintButton = new Container();
@@ -110,21 +110,20 @@ class LanternLights implements Game {
     for (const part of [this.board, this.water, this.halos, this.lanterns, this.glow, this.score, this.sub]) part.eventMode = 'none';
     this.board.addChild(this.water, this.halos, this.lanterns, this.glow);
     ctx.stage.addChild(this.board, this.score, this.sub);
-    if (this.touch) {
-      // A layer over the pond works out which lantern a finger touched, so a press never depends on a drawing's own hit area.
-      onTap(this.tapLayer, (e) => this.tapPond(e.global.x, e.global.y), { cooldown: 60 });
-      this.tapLayer.cursor = 'pointer';
-      const buttons: [Container, string, () => void][] = [
-        [this.undoButton, 'Undo ↶', () => this.back()],
-        [this.hintButton, 'Hint ◇', () => this.askForHint()],
-        [this.againButton, 'Start over ↺', () => this.restart()],
-      ];
-      for (const [node, text, act] of buttons) {
-        node.addChild(tile(160, 100, 'purple'), label(text, 24, ink));
-        onTap(node, act, { cooldown: 200 });
-      }
-      ctx.stage.addChild(this.tapLayer, this.undoButton, this.hintButton, this.againButton);
+    // A layer over the pond works out which lantern a finger touched, so a press never depends on a drawing's own hit area.
+    onTap(this.tapLayer, (e) => this.tapPond(e.global.x, e.global.y), { cooldown: 60 });
+    this.tapLayer.cursor = 'pointer';
+    const buttons: [Container, string, () => void][] = [
+      [this.undoButton, 'Undo ↶', () => this.back()],
+      [this.hintButton, 'Hint ◇', () => this.askForHint()],
+      [this.againButton, 'Start over ↺', () => this.restart()],
+    ];
+    for (const [node, text, act] of buttons) {
+      node.addChild(tile(160, 100, 'purple'), label(text, 24, ink));
+      onTap(node, act, { cooldown: 200 });
     }
+    ctx.stage.addChild(this.tapLayer, this.undoButton, this.hintButton, this.againButton);
+    this.showTouchParts(this.touch);
   }
 
   get n() { return this.pond.size; }
@@ -156,14 +155,12 @@ class LanternLights implements Game {
     const x = Math.min((v.w + bw) / 2 + 150, v.w - 120);
     this.score.position.set(x, 190);
     this.sub.position.set(x, 236);
-    if (this.touch) {
-      this.tapLayer.clear().rect(0, 0, bw, bw).fill({ color: 0xffffff, alpha: 0.001 });
-      this.tapLayer.hitArea = new Rectangle(0, 0, bw, bw);
-      this.tapLayer.position.copyFrom(this.board.position);
-      // The buttons sit in a row under the pond, clear of the pet's corner.
-      const y = this.board.y + bw + 78;
-      [this.undoButton, this.hintButton, this.againButton].forEach((b, i) => b.position.set(v.w / 2 + (i - 1) * 180, y));
-    }
+    this.tapLayer.clear().rect(0, 0, bw, bw).fill({ color: 0xffffff, alpha: 0.001 });
+    this.tapLayer.hitArea = new Rectangle(0, 0, bw, bw);
+    this.tapLayer.position.copyFrom(this.board.position);
+    // The buttons sit in a row under the pond, clear of the pet's corner.
+    const y = this.board.y + bw + 78;
+    [this.undoButton, this.hintButton, this.againButton].forEach((b, i) => b.position.set(v.w / 2 + (i - 1) * 180, y));
     this.layout();
   }
 
@@ -360,7 +357,26 @@ class LanternLights implements Game {
   /* Controls                                                                                      */
   /* -------------------------------------------------------------------------------------------- */
 
+  private showTouchParts(on: boolean) {
+    for (const part of [this.tapLayer, this.undoButton, this.hintButton, this.againButton]) part.visible = on;
+  }
+
+  /** The first key or pad press on the island: the pond's tap layer and buttons go and the cursor shows. Couch play is already here. */
+  private useController() {
+    if (!this.touch) return;
+    this.touch = false;
+    this.showTouchParts(false);
+  }
+
+  /** A finger came back after keys: the tap layer and buttons return and the cursor goes. */
+  touchReturned() {
+    if (this.touch || this.finished) return;
+    this.touch = true;
+    this.showTouchParts(true);
+  }
+
   control(input: CouchControls, dt: number) {
+    this.useController();
     if (this.busy || this.finished || !this.pond) return;
     for (const dir of this.held.poll(input, dt)) this.move(dir);
     if (input.players.some((p) => p.action)) this.press();
@@ -489,6 +505,7 @@ function sticker(seed: number): Container {
 
 export const lanternLights: GameModule = {
   id: 'lantern-lights',
+  liveController: true,
   name: 'Lantern Lights',
   titleLine: 'game.lantern-lights',
   region: 'puzzle-peaks',

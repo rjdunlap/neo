@@ -1,7 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { PENTATONIC, stepToMidi } from '../../audio/notes';
 import { Rng } from '../../engine/random';
-import { ANIMALS, E_I_E_I_O, HAD_A, HAD_A_FARM, PLANS, VOICES, farmAnimals, makeSong, nextInvite, planFor } from './logic';
+import {
+  ANIMALS,
+  BUNS,
+  E_I_E_I_O,
+  HAD_A,
+  HAD_A_FARM,
+  HOT_CROSS_BUNS,
+  ONE_A_PENNY,
+  OLD_MACDONALD,
+  PLANS,
+  TUNES,
+  VOICES,
+  farmAnimals,
+  makeSong,
+  nextInvite,
+  pickTune,
+  planFor,
+} from './logic';
 
 describe('the tune', () => {
   it('has one note for every sung syllable, so taps line up with a grown-up singing', () => {
@@ -57,15 +74,31 @@ describe('the song', () => {
 });
 
 describe('the plans', () => {
-  it('grow from one animal to two, and only the last has her choose', () => {
-    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2]);
-    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true]);
+  it('grow from one animal to three, with her choosing all at once and then one verse at a time', () => {
+    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3]);
+    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true]);
+    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[2]);
+    expect(planFor(99)).toBe(PLANS[3]);
   });
 
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {
-    for (const plan of PLANS) expect(makeSong(ANIMALS.slice(0, plan.verses)).length).toBeLessThanOrEqual(40);
+    // Three Old MacDonald verses are 51 notes; the demonstration's 75 seconds are checked by `fingerdemo` at level 4.
+    for (const plan of PLANS) for (const tune of TUNES) expect(makeSong(ANIMALS.slice(0, plan.verses), tune).length).toBeLessThanOrEqual(51);
+    expect(makeSong(ANIMALS.slice(0, 2), OLD_MACDONALD).length).toBeLessThanOrEqual(40);
+  });
+
+  it('grows the song one verse at a time when she chooses each friend: every shorter song is the start of the longer', () => {
+    for (const tune of TUNES) {
+      const all = makeSong(ANIMALS.slice(0, 3), tune);
+      for (let k = 0; k < 3; k++) {
+        const part = makeSong(ANIMALS.slice(0, k), tune);
+        expect(part).toEqual(all.slice(0, part.length));
+        // The notes so far end on a verse's close (the opening's, or a friend's), where she is asked who is next.
+        expect(part.at(-1)!.verseEnd).toBe(true);
+        expect(part.filter((n) => n.verseEnd).length).toBe(k + 1);
+      }
+    }
   });
 
   it('draws different animals for every verse, the same for the same seed', () => {
@@ -96,5 +129,54 @@ describe('the plans', () => {
     }
     expect(invited.length).toBe(plan.verses);
     expect(nextInvite(invited, plan)).toBeNull();
+  });
+});
+
+describe('Old MacDonald, after the song became a tune', () => {
+  it('sings exactly the notes it sang before: the opening, then "And on that farm he had a cow, E-I-E-I-O"', () => {
+    const song = makeSong(['cow']);
+    expect(song.map((n) => n.step)).toEqual([...HAD_A_FARM.steps, ...E_I_E_I_O.steps, ...HAD_A.steps, ...E_I_E_I_O.steps]);
+    expect(song.map((n) => n.syllable).join(' ')).toBe('Old Mac Don ald had a farm E I E I O And on that farm he had a cow E I E I O');
+    expect(makeSong(['cow'], OLD_MACDONALD)).toEqual(song);
+  });
+});
+
+describe('Hot Cross Buns', () => {
+  it('has one note for every sung syllable, with the words in order', () => {
+    for (const p of [HOT_CROSS_BUNS, ONE_A_PENNY]) expect(p.steps.length, p.syllables.join(' ')).toBe(p.syllables.length);
+    const song = makeSong(['pig'], BUNS);
+    expect(song.map((n) => n.syllable).join(' ')).toBe('Hot cross buns Hot cross buns One a pen ny two a pen ny Hot cross buns');
+  });
+
+  it('is E D C, then C C C C, D D D D, inside the pentatonic set with no exception', () => {
+    expect(HOT_CROSS_BUNS.steps.map((s) => stepToMidi(s) % 12)).toEqual([4, 2, 0]);
+    for (const p of [HOT_CROSS_BUNS, ONE_A_PENNY]) for (const step of p.steps) expect(PENTATONIC, `step ${step}`).toContain(stepToMidi(step) % 12);
+  });
+
+  it('answers once per verse, on the last "buns", keeping the lyric; the friends come in order', () => {
+    const order = ['dog', 'cat', 'duck'] as const;
+    const song = makeSong(order, BUNS);
+    const answers = song.filter((n) => n.answers);
+    expect(answers.map((n) => n.animal)).toEqual([...order]);
+    expect(answers.every((n) => n.syllable === 'buns')).toBe(true);
+    // The opening has no friend and no answer, and a verse ends exactly where a friend answers.
+    expect(song.slice(0, 6).every((n) => n.animal === null && !n.answers)).toBe(true);
+    expect(song.filter((n) => n.verseEnd).length).toBe(order.length + 1);
+    expect(song.filter((n) => n.verseEnd).map((n) => n.answers)).toEqual([false, true, true, true]);
+    expect(song.at(-1)!.verseEnd).toBe(true);
+  });
+
+  it('is a short song with each friend\'s verse of eleven notes, and beads that fit the row', () => {
+    for (const verses of [1, 2]) expect(makeSong(ANIMALS.slice(0, verses), BUNS).length).toBe(6 + verses * 11);
+    for (const t of TUNES) for (const n of makeSong(ANIMALS.slice(0, 2), t)) expect(n.of).toBeLessThanOrEqual(8);
+  });
+});
+
+describe('which tune a round sings', () => {
+  it('is a seeded draw: the same seed sings the same tune, and both tunes turn up', () => {
+    expect(pickTune(new Rng(7)).id).toBe(pickTune(new Rng(7)).id);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) seen.add(pickTune(new Rng(seed)).id);
+    expect([...seen].sort()).toEqual(['buns', 'macdonald']);
   });
 });

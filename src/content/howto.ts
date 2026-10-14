@@ -14,6 +14,12 @@ import type { GameHowTo, GameModule, LevelLine } from '../games/types';
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'number-nook': {
+    goal: 'Slide the numbered tiles into row order, with the empty space at the bottom right.',
+    steps: ['Tap a tile directly above, below, left or right of the empty space to slide it into the gap.', 'Compare the board with the small goal beside it. Green tiles are in their goal position, but may still need to move.', 'Undo takes back a slide. Hint outlines a tile on a shortest route from the current board. Start over restores the starting board.'],
+    finish: 'The round ends when every numbered tile and the empty space match the goal.',
+    note: 'Legal exploratory slides are free choices. A tile away from the gap gets a gentle hint; two rejected taps outline a useful slide. Undo and Start over preserve the slide count, misses and hints.',
+  },
   'shape-buddies': {
     goal: 'Change two paper friends into useful shapes to bring a seed to a pot.',
     steps: [
@@ -179,25 +185,28 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'A bump counts as a miss, and a hint counts as help. Steps are not timed against you: the pace stays the same.',
   },
   'sing-along-barn': {
-    goal: 'Sing a short Old MacDonald by tapping: every tap is the next note, and a friend joins each verse.',
+    goal: 'Sing a short song by tapping, Old MacDonald or Hot Cross Buns: every tap is the next note, and a friend joins each verse.',
     steps: [
-      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note: "Old MacDonald had a farm, E-I-E-I-O", then "And on that farm he had a cow, E-I-E-I-O" for each friend. The moo-moo lines are left out.' },
-      { from: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
+      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm, E-I-E-I-O", then "And on that farm he had a cow, E-I-E-I-O" for each friend. Hot Cross Buns: "Hot cross buns" twice, then "One a penny, two a penny, hot cross buns" for each friend.' },
+      { from: 3, to: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
+      { from: 4, text: 'Tap anywhere to sing the opening. Then, at the end of each verse, tap the friend you want to sing next; the friends who have sung wait in the row and only say hello. Tap anywhere to sing that friend\'s verse.' },
     ],
-    finish: 'The round ends after the last "E-I-E-I-O" of the last friend\'s verse.',
+    finish: 'The round ends after the last verse of the last friend. Each round sings one of the two songs.',
     note: 'There is no wrong tap. Tapping fast or slowly only changes how the song is sung, and the animals answer on their own.',
   },
   'jelly-drums': {
     goal: 'Tap the jelly drums to make music, then copy tunes.',
     steps: [
-      { to: 3, text: 'Tap a jelly to hear its note.' },
-      { from: 4, text: 'Listen to the tune, then tap the same jellies in the same order.' },
+      { from: 10, to: 10, text: 'Touch anywhere on the stage and the big jelly sings. Every few touches another jelly wakes up and joins in.' },
+      { from: 1, to: 3, text: 'Tap a jelly to hear its note.' },
+      { from: 4, to: 9, text: 'Listen to the tune, then tap the same jellies in the same order.' },
     ],
     finish: [
-      { to: 3, text: 'The round ends after a number of notes.' },
-      { from: 4, text: 'The round ends when every tune has been copied.' },
+      { from: 1, to: 3, text: 'The round ends after a number of notes.' },
+      { from: 4, to: 9, text: 'The round ends when every tune has been copied.' },
+      { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
     ],
-    note: [{ from: 4, text: 'Replaying the tune is always available.' }],
+    note: [{ from: 4, to: 9, text: 'Replaying the tune is always available.' }],
   },
   'peekaboo-barn': {
     goal: 'Find the animals hiding in the barn.',

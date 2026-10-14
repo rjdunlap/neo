@@ -61,6 +61,57 @@ async function finished(id) {
   assert.equal(errors.length, 0, errors.join('\n'));
 }
 
+/** Number Nook: both ends, rejected tap, help, revision, portrait, shortest route and one sticker. */
+async function numberNookPlay() {
+  for (const level of [1, 3]) {
+    await launch('number-nook', level);
+    await page.waitForTimeout(400);
+    const original = await page.evaluate(() => neo.scene.game.board.slice());
+    const wrong = await page.evaluate(async () => {
+      const { neighbours } = await import('/src/games/number-nook/logic.ts');
+      const g = neo.scene.game, legal = neighbours(g.board, g.plan.cols);
+      return g.board.findIndex((v, i) => v && !legal.includes(i));
+    });
+    await tap(`neo.scene.game.nodes[${wrong}]`);
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1);
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.board), original);
+    await tap('neo.scene.game.hintButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+    await page.evaluate(() => kit.tapOn(neo.scene.game.nodes[neo.scene.game.hinted]));
+    await page.waitForTimeout(180);
+    await tap('neo.scene.game.undoButton');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.board), original);
+    await page.evaluate(async () => {
+      const { solutionStep } = await import('/src/games/number-nook/logic.ts');
+      const g = neo.scene.game;
+      kit.tapOn(g.nodes[solutionStep(g.board, g.plan.cols).next]);
+    });
+    await page.waitForTimeout(180);
+    await tap('neo.scene.game.againButton');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.board), original);
+    assert.equal(await page.evaluate(() => neo.scene.game.moves), 2);
+    if (level === 3) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      assert.ok(await page.evaluate(() => neo.scene.game.cell >= 64));
+      await screenshot('number-nook-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    }
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    await page.evaluate(async () => {
+      const { solutionStep } = await import('/src/games/number-nook/logic.ts');
+      const g = neo.scene.game;
+      for (let guard = 0; guard < 40 && !g.finished; guard++) {
+        const step = solutionStep(g.board, g.plan.cols);
+        if (!step || step.next < 0) throw new Error('Missing sliding route');
+        kit.tapOn(g.nodes[step.next]); await kit.sleep(160);
+      }
+    });
+    await finished('number-nook');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    log(`Number Nook level ${level}: touch, revision and reward passed`);
+  }
+}
+
 /** Gem Swap: real taps, gentle rejected swaps, solver help, revision, both ends and one reward. */
 async function gemSwapPlay() {
   const state = () => page.evaluate(() => {
@@ -685,8 +736,16 @@ async function pictureTouchPlay() {
 async function singBarnPlay() {
   const tapNotes = (n) => page.evaluate(async (n) => { for (let i = 0; i < n; i++) { kit.tap(512, 300); await kit.sleep(130); } }, n);
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { idx: g.idx, total: g.song.length, phase: g.phase, singer: g.singer, order: [...g.order], placed: [...g.placed] }; });
+  // Each round draws one of two songs from its seed; relaunch until the round sings the one under test.
+  const launchTune = async (level, id) => {
+    for (let k = 0; k < 20; k++) {
+      await launch('sing-along-barn', level);
+      if (await page.evaluate(() => neo.scene.game.tune.id) === id) return;
+    }
+    assert.fail(`no ${id} round in 20 launches`);
+  };
   // Level 1: the farm picks one animal; every tap is the next note, mashing fast still sings it, and nothing can be wrong.
-  await launch('sing-along-barn', 1);
+  await launchTune(1, 'macdonald');
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
   let st = await state();
   assert.deepEqual([st.phase, st.total, st.order.length], ['sing', 12 + 13, 1]);
@@ -704,8 +763,26 @@ async function singBarnPlay() {
   await tapNotes(1); await finished('sing-along-barn');
   assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1);
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Hot Cross Buns, level 2: two friends, a six-note opening, then "One a penny, two a penny, hot cross buns" for each; a friend answers on "buns" and has its moment at the door before the next comes out.
+  await launchTune(2, 'buns');
+  st = await state();
+  assert.deepEqual([st.phase, st.total, st.order.length], ['sing', 6 + 2 * 11, 2]);
+  await tapNotes(6);
+  st = await state();
+  assert.equal(st.singer, st.order[0], 'the first friend comes out after the opening');
+  await tapNotes(3); await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  await screenshot('sing-along-barn-2-buns-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  await tapNotes(7); st = await state();
+  assert.deepEqual([st.idx, st.singer], [16, st.order[0]], 'the last "buns" of the first verse is still to come');
+  await tapNotes(1); await page.waitForTimeout(150);
+  assert.equal((await state()).singer, st.order[0], 'the friend answers at the door first');
+  await page.waitForTimeout(900);
+  assert.equal((await state()).singer, st.order[1], 'then the second friend comes out');
+  await tapNotes(11); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
-  await launch('sing-along-barn', 3);
+  await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(700);
   await screenshot('sing-along-barn-3-invite-portrait');
@@ -727,8 +804,38 @@ async function singBarnPlay() {
   await tapNotes(st.total - st.idx - 3);
   // Leave on the last notes: the finale must not fire after the scene is gone.
   await page.evaluate(() => neo.go.land('music-mountain')); await scene('LandScene'); await page.waitForTimeout(900);
+  // Level 4: the opening, then she picks who sings each verse; the song only grows by the friend picked, a stray tap while choosing does nothing, and the round ends after the third verse.
+  await launchTune(4, 'macdonald');
+  const stickers4 = await page.evaluate(() => kit.store.data.stickers.length);
+  st = await state();
+  assert.deepEqual([st.phase, st.total, st.order.length], ['sing', 12, 0]);
+  await tapNotes(12);
+  await page.waitForFunction(() => neo.scene.game.phase === 'invite' && neo.scene.game.tapLayer.eventMode === 'none', null, { timeout: 5000 });
+  await page.waitForTimeout(600);
+  assert.equal(await page.evaluate(() => ['cow', 'pig', 'duck', 'cat', 'dog'].every((a) => neo.scene.game.friends.get(a).visible)), true, 'all five friends are offered first');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(700);
+  await screenshot('sing-along-barn-4-pick-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await tapNotes(2); assert.equal((await state()).idx, 12, 'a tap anywhere while choosing does not sing');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('duck'), 0, -66)); await page.waitForTimeout(300);
+  st = await state();
+  assert.deepEqual([st.phase, st.order, st.singer, st.total], ['sing', ['duck'], 'duck', 25]);
+  await tapNotes(13); await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 }); await page.waitForTimeout(700);
+  assert.equal(await page.evaluate(() => ['cow', 'pig', 'cat', 'dog'].every((a) => neo.scene.game.friends.get(a).visible)), true, 'the four friends not yet chosen are offered');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('duck'), 0, -66)); await page.waitForTimeout(300);
+  assert.equal((await state()).phase, 'invite', 'a friend who has sung only says hello');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('cat'), 0, -66)); await page.waitForTimeout(300);
+  st = await state();
+  assert.deepEqual([st.phase, st.order, st.singer, st.total], ['sing', ['duck', 'cat'], 'cat', 38]);
+  await tapNotes(13); await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 }); await page.waitForTimeout(700);
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('pig'), 0, -66)); await page.waitForTimeout(300);
+  st = await state();
+  assert.deepEqual([st.phase, st.order, st.total], ['sing', ['duck', 'cat', 'pig'], 51]);
+  await tapNotes(13); await finished('sing-along-barn');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers4 + 1);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   assert.deepEqual(errors, []);
-  log('Sing-Along Barn: levels 1 and 3, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order, portrait and leaving mid-song passed');
+  log('Sing-Along Barn: levels 1, 3 and 4 (Old MacDonald) and a Hot Cross Buns round, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order (all at once, then one verse at a time), portrait and leaving mid-song passed');
 }
 
 async function numberTrailsPlay() {
@@ -3206,7 +3313,7 @@ async function originals() {
   }
 
   // Jelly Drums: free play notes, then copying tunes with two wrong jellies and the slow replay.
-  for (let level = 1; level <= 9 && (!only || only === 'jelly'); level++) {
+  for (let level = 1; level <= 10 && (!only || only === 'jelly'); level++) {
     await launch('jelly-drums', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -3214,6 +3321,7 @@ async function originals() {
       const g = neo.scene.game;
       const hit = async (i) => { kit.tapOn(g.jellies[i], 0, -50); await kit.sleep(140); };
       if (g.plan.mode === 'free') { for (let n = 0; n < g.plan.goal; n++) await hit(n % 5); return; }
+      if (g.plan.mode === 'wake') { for (let n = 0; n < g.plan.goal; n++) { kit.tap(300 + (n * 97) % 400, 300); await kit.sleep(140); } return; }
       const turn = () => kit.until(() => g.phase === 'turn' || g.phase === 'done', 20000);
       for (let t = 0; t < g.plan.goal; t++) {
         await turn();
@@ -3229,7 +3337,7 @@ async function originals() {
     });
     await screenshot(`jelly-drums-${level}`);
     await finished('jelly-drums');
-    assert.deepEqual(await score('jelly-drums'), mode === 'free' ? [0, 0] : [2, 1], `jelly ${level} score`);
+    assert.deepEqual(await score('jelly-drums'), mode !== 'echo' ? [0, 0] : [2, 1], `jelly ${level} score`);
     log(`Jelly Drums ${level} (${mode}): notes, tunes, mistakes, slow replay, hint, saved score and sticker passed`);
   }
 
@@ -3477,7 +3585,7 @@ async function originals() {
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 12, 'jelly-drums': 9, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
+  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }
@@ -9908,7 +10016,7 @@ async function landKeys() {
 
 /** Lands stage C1b: five touch puzzles lay themselves out for keys at the first press and come back to touch at the next finger. */
 async function liveSwitchPlay() {
-  const ids = ['sudoku-garden', 'word-search', 'island-bridges', 'picture-logic', 'pond-conga'];
+  const ids = ['sudoku-garden', 'word-search', 'island-bridges', 'picture-logic', 'pond-conga', 'tile-pairs', 'gem-swap', 'lantern-lights'];
   for (const id of ids) {
     const level = await page.evaluate(async (id) => (await import('/src/app/input-in-use.ts')).controllerLevels(id).values().next().value, id);
     await launch(id, level);
@@ -9921,7 +10029,11 @@ async function liveSwitchPlay() {
     assert.equal(await touch(), false, `${id} lays itself out for the controller at the first key`);
     await tapAway();
     assert.equal(await touch(), true, `${id} comes back to touch at a finger`);
-    assert.equal(await page.evaluate(() => neo.scene.game.touchLayer.visible), true, `${id} shows its touch layer again`);
+    const layer = () => page.evaluate(() => { const g = neo.scene.game; return (g.touchLayer ?? g.tapLayer ?? g.undoButton).visible; });
+    assert.equal(await layer(), true, `${id} shows its touch layer again`);
+    await press('ArrowDown');
+    assert.equal(await layer(), false, `${id} hides its touch layer for the controller`);
+    await tapAway();
     await press('ArrowDown');
     assert.equal(await touch(), false, `${id} goes to the controller again at the next key`);
     await tapAway();
@@ -9946,6 +10058,7 @@ try {
   if (suite === 'all' || suite === 'singalong') await singBarnPlay();
   if (suite === 'all' || suite === 'numbertrails') await numberTrailsPlay();
   if (suite === 'all' || suite === 'fruitsums') await fruitSumsPlay();
+  if (suite === 'all' || suite === 'numbernook') await numberNookPlay();
   if (suite === 'all' || suite === 'gemswap') await gemSwapPlay();
   if (suite === 'all' || suite === 'tilepairs') await tilePairsPlay();
   if (suite === 'all' || suite === 'lanterntouch') await lanternTouchPlay();

@@ -11,13 +11,13 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, planFor, type Animal, type Note, type SingPlan } from './logic';
+import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, pickTune, planFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 3 },
+  prek: { min: 3, max: 4 },
 };
 
 const GRASS = 0x9edb86;
@@ -30,10 +30,13 @@ const SCALE = { rest: 0.45, door: 0.78, choice: 0.55 };
 /** A friend's body is about this far above its feet, in its own units; taps aim at the body, not the feet. */
 const BODY_Y = -120;
 
-type Phase = 'invite' | 'sing' | 'done';
+/** `wait`: a verse has just ended and the next friend is not yet offered; nothing takes a touch. */
+type Phase = 'invite' | 'sing' | 'wait' | 'done';
 
 class SingAlongBarn implements Game {
   private readonly plan: SingPlan;
+  /** The song this round sings, drawn from the seed before the friends are. */
+  private readonly tune: Tune;
   private readonly backdrop: Backdrop;
   private readonly barn = new Graphics();
   private readonly barnWrap = new Container();
@@ -54,9 +57,13 @@ class SingAlongBarn implements Game {
   private bounce = 0;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = planFor(ctx.level);
+    // The card's demonstration of choosing a friend for each verse sings two of them: three Old MacDonald verses
+    // would not finish inside its 75 seconds at the hand's pace.
+    const plan = planFor(ctx.level);
+    this.plan = ctx.demo && plan.each ? { ...plan, verses: 2 } : plan;
+    this.tune = pickTune(ctx.rng);
     this.view = ctx.view;
-    this.phase = this.plan.invite ? 'invite' : 'sing';
+    this.phase = this.plan.invite && !this.plan.each ? 'invite' : 'sing';
     this.order = this.plan.invite ? [] : farmAnimals(this.plan, ctx.rng);
     this.backdrop = ctx.track(
       new Backdrop({ sky: [0xa9dcff, 0xfff4d6], hills: [0xcdeeb6, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 33 }, ctx.view),
@@ -81,13 +88,14 @@ class SingAlongBarn implements Game {
         // The body, not the feet: about 110 screen units across at the size of a choice, so neighbors never share a touch.
         c.hitArea = new Circle(0, BODY_Y, 100);
       });
-    } else {
-      this.song = makeSong(this.order);
     }
+    // A round that chooses all its friends first builds the song once the barn is full; the others start singing now
+    // (choosing one at a time starts with the opening, which nobody answers).
+    if (!this.plan.invite || this.plan.each) this.song = makeSong(this.order, this.tune);
   }
 
   start() {
-    if (this.plan.invite) {
+    if (this.plan.invite && !this.plan.each) {
       ANIMALS.forEach((a, k) => {
         const c = this.friends.get(a)!;
         c.visible = true;
@@ -121,9 +129,9 @@ class SingAlongBarn implements Game {
       } else if (a === this.singer && this.idx < this.song.length) {
         const p = this.doorSpot();
         c.position.set(p.x, p.y);
-      } else {
-        const i = this.placed.indexOf(a);
-        if (i >= 0) c.position.set(this.restSpot(i).x, this.restSpot(i).y);
+      } else if (this.placed.includes(a)) {
+        const p = this.restSpotOf(a);
+        c.position.set(p.x, p.y);
       }
     });
   }
@@ -162,6 +170,11 @@ class SingAlongBarn implements Game {
     return { x: xs[i], y: this.view.h - 36 };
   }
 
+  /** Where a friend who has sung waits: when she chooses each verse, in its own place in the row, so the ones still to choose never crowd it. */
+  private restSpotOf(a: Animal) {
+    return this.plan.each ? this.choiceSpot(ANIMALS.indexOf(a)) : this.restSpot(this.order.indexOf(a));
+  }
+
   private choiceSpot(k: number) {
     const xs = spread(ANIMALS.length, 150, this.view.w - 40, 190);
     return { x: xs[k], y: this.view.h - 36 };
@@ -171,8 +184,14 @@ class SingAlongBarn implements Game {
 
   /** She picks a friend for the farm. Any friend is a good one; nothing here is a mistake. */
   private invite(a: Animal) {
-    if (this.phase !== 'invite' || this.invited.includes(a)) return;
     const c = this.friends.get(a)!;
+    // A friend who has already sung only says hello again.
+    if (this.plan.each && this.phase === 'invite' && this.invited.includes(a)) {
+      c.hop(0.4);
+      sfx.animal(VOICES[a].sound);
+      return;
+    }
+    if (this.phase !== 'invite' || this.invited.includes(a)) return;
     this.invited.push(a);
     c.cheer();
     sfx.animal(VOICES[a].sound);
@@ -180,6 +199,10 @@ class SingAlongBarn implements Game {
     this.ctx.particles.burst(c.x, c.y - 100, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 8, speed: [120, 260], gravity: 200, life: [0.6, 1] });
     this.drawWindows();
     void this.ctx.say('barn.invited', { animal: VOICES[a].word });
+    if (this.plan.each) {
+      this.singNext(a);
+      return;
+    }
     if (this.invited.length >= this.plan.verses) {
       this.phase = 'sing';
       this.tapLayer.eventMode = 'none';
@@ -192,7 +215,7 @@ class SingAlongBarn implements Game {
   private async gather() {
     await this.ctx.tw.wait(1.1);
     this.order = [...this.invited];
-    this.song = makeSong(this.order);
+    this.song = makeSong(this.order, this.tune);
     for (const a of ANIMALS) {
       const c = this.friends.get(a)!;
       const i = this.order.indexOf(a);
@@ -209,13 +232,52 @@ class SingAlongBarn implements Game {
     this.beginSong();
   }
 
+  /** One friend at a time: the song grows by that friend's verse, the others step back, and the friend trots to the door. */
+  private singNext(a: Animal) {
+    this.order = [...this.invited];
+    this.song = makeSong(this.order, this.tune);
+    this.phase = 'sing';
+    this.tapLayer.eventMode = 'static';
+    for (const x of ANIMALS) {
+      const c = this.friends.get(x)!;
+      if (x === a || this.placed.includes(x)) continue;
+      this.ctx.tw.kill(c.scale);
+      void this.ctx.tw.to(c.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }).then(() => (c.visible = false));
+    }
+    this.bringOut(a);
+    this.drawBeads();
+    void this.ctx.instruct(this.tune.id === 'buns' ? 'barn.sing.buns' : 'barn.sing');
+  }
+
+  /** A line has ended and more friends are still to come: the one who sang settles, and the others come out to be chosen. */
+  private async offerNext(from: Animal | null) {
+    this.phase = 'wait';
+    this.tapLayer.eventMode = 'none';
+    if (from) this.sendHome(from);
+    await this.ctx.tw.wait(0.6);
+    ANIMALS.forEach((a, k) => {
+      if (this.invited.includes(a)) return;
+      const c = this.friends.get(a)!;
+      const p = this.choiceSpot(k);
+      this.ctx.tw.kill(c);
+      this.ctx.tw.kill(c.scale);
+      c.visible = true;
+      c.position.set(p.x, p.y);
+      c.scale.set(0);
+      void this.ctx.tw.to(c.scale, { x: SCALE.choice, y: SCALE.choice }, { duration: 0.4, delay: k * 0.06, ease: ease.outBack });
+    });
+    this.phase = 'invite';
+    this.drawBeads();
+    void this.ctx.instruct('barn.next');
+  }
+
   // ----- Singing -----
 
   private beginSong() {
     this.phase = 'sing';
     this.tapLayer.eventMode = 'static';
     this.drawBeads();
-    void this.ctx.instruct('barn.sing');
+    void this.ctx.instruct(this.tune.id === 'buns' ? 'barn.sing.buns' : 'barn.sing');
   }
 
   /** Any touch anywhere moves the tune on one note. Always music, never a mistake. */
@@ -250,13 +312,27 @@ class SingAlongBarn implements Game {
       });
     }
     if (this.idx >= this.song.length) {
+      // Choosing one at a time, the song is only as long as the verses chosen so far: the end of the opening or of a
+      // verse is a pause to choose, and only the last friend's verse ends the round.
+      if (this.plan.each && this.order.length < this.plan.verses) {
+        // A friend who answers on the very last note (Hot Cross Buns) gets that moment before the others come out.
+        if (note.answers) void this.ctx.tw.wait(0.7).then(() => this.offerNext(note.animal));
+        else void this.offerNext(note.animal);
+        this.drawBeads();
+        return;
+      }
       void this.finale();
       return;
     }
     const next = this.song[this.idx];
     if (note.verseEnd) {
-      if (note.animal) this.sendHome(note.animal);
-      if (next.animal) this.bringOut(next.animal);
+      const change = () => {
+        if (note.animal) this.sendHome(note.animal);
+        if (next.animal) this.bringOut(next.animal);
+      };
+      // When the friend answers on the verse's very last note (Hot Cross Buns), it gets its moment at the door first.
+      if (note.answers) void this.ctx.tw.wait(0.7).then(change);
+      else change();
     }
     this.drawBeads();
   }
@@ -282,7 +358,7 @@ class SingAlongBarn implements Game {
   private sendHome(a: Animal) {
     const c = this.friends.get(a)!;
     if (!this.placed.includes(a)) this.placed.push(a);
-    const p = this.restSpot(this.order.indexOf(a));
+    const p = this.restSpotOf(a);
     this.ctx.tw.kill(c);
     this.ctx.tw.kill(c.scale);
     void this.ctx.tw.to(c, { x: p.x, y: p.y }, { duration: 0.5, ease: ease.outCubic });
@@ -307,7 +383,7 @@ class SingAlongBarn implements Game {
     const colors = RAINBOW.map((c) => swatch[c].fill);
     this.ctx.particles.burst(this.view.w / 2, 140, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
     sfx.tada();
-    void this.ctx.say('barn.done');
+    void this.ctx.say(this.tune.id === 'buns' ? 'barn.done.buns' : 'barn.done');
     await this.ctx.tw.wait(1.8);
     // Nobody made a mistake and nobody asked for help: singing is always right.
     this.ctx.finish({ misses: 0, hints: 0 });
@@ -427,11 +503,12 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
-    return p.invite ? `Old MacDonald; choose ${friends} to join the song` : `Old MacDonald; tap to sing, ${friends} visit`;
+    if (p.each) return `Old MacDonald or Hot Cross Buns; after each verse, choose who sings next (${friends})`;
+    return p.invite ? `Old MacDonald or Hot Cross Buns; choose ${friends} to join the song` : `Old MacDonald or Hot Cross Buns; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
-  coplayHint: 'Sing the short "Old MacDonald" while {name} taps the next note: the first two lines, then "And on that farm he had a …, E-I-E-I-O" for each friend. Make each animal sound together.',
-  offScreen: 'Sing Old MacDonald with stuffed animals: bring out one for each verse and make its sound together.',
+  coplayHint: 'Sing the short song while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse.',
+  offScreen: 'Sing Old MacDonald or Hot Cross Buns with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,
