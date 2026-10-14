@@ -197,14 +197,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'jelly-drums': {
     goal: 'Tap the jelly drums to make music, then copy tunes.',
     steps: [
-      { to: 3, text: 'Tap a jelly to hear its note.' },
-      { from: 4, text: 'Listen to the tune, then tap the same jellies in the same order.' },
+      { from: 10, to: 10, text: 'Touch anywhere on the stage and the big jelly sings. Every few touches another jelly wakes up and joins in.' },
+      { from: 1, to: 3, text: 'Tap a jelly to hear its note.' },
+      { from: 4, to: 9, text: 'Listen to the tune, then tap the same jellies in the same order.' },
     ],
     finish: [
-      { to: 3, text: 'The round ends after a number of notes.' },
-      { from: 4, text: 'The round ends when every tune has been copied.' },
+      { from: 1, to: 3, text: 'The round ends after a number of notes.' },
+      { from: 4, to: 9, text: 'The round ends when every tune has been copied.' },
+      { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
     ],
-    note: [{ from: 4, text: 'Replaying the tune is always available.' }],
+    note: [{ from: 4, to: 9, text: 'Replaying the tune is always available.' }],
   },
   'peekaboo-barn': {
     goal: 'Find the animals hiding in the barn.',

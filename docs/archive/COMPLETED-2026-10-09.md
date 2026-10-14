@@ -748,3 +748,10 @@ The archived slice-5 build packet follows; its future-tense verification text de
 2026-10-13, [PR #269](https://github.com/rjdunlap/neo/pull/269): levels 2–5 squeak/wobble on touch, explain short or wrong-way pulls, and show a pulsing back-and-down chevron after two unfinished gestures. Those gestures count neither misses nor hints; cancellation returns without launching. Level 6 displays cloud numerals, uses only cloud taps, and keeps its shown pull on resize. The how-to scopes pulling, completion and journal wording to the levels they describe; GAMES distinguishes Kass Basher's timed swing from this pull launcher. The reach comment describes its unchanged linear mapping. Couch/course discovery results explicitly exclude the child's journal; the watched-pull decision remains open. No level/band, course, physics, sky or flight-history change.
 
 Proof and remaining person/device checks: [verification](../VERIFICATION.md#2026-10-13--bouncy-launch-support-slice-1). Next work remains in the [deep dive](../deep-dives/bouncy-launch.md#build-slices-in-order).
+
+
+## Jelly Drums level 10, One big jelly
+
+2026-10-13: the deep dive's below-level-1 lap entry, placed first for lap with `order: [10,1,2,3]` and `entryLevels: [10]` (lap only). One enormous red low jelly (scaled 1.8) stands alone; a touch anywhere on the stage (a stage-wide layer) sings the nearest awake jelly. The little high blue jelly wakes after 6 touches, then jellies 2, 1 and 3 at 10, 14 and 18; 24 touches finish. No miss, no hint. Logic in `src/games/jelly-drums/logic.ts`: `PLANS[9]` mode `wake`, `WAKE_ORDER`, `WAKE_AT`, `awakeJellies`, `nearestAwake`, `jellyToTap('wake')`.
+
+Proof and remaining person/device checks: [verification](../VERIFICATION.md#2026-10-13--jelly-drums-level-10-one-big-jelly). Other entries remain in the [deep dive](../deep-dives/jelly-drums.md#levels-below-level-1-and-between-levels-waiting-on-the-level-order-decisions).

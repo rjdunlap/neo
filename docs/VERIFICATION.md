@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-13 — Jelly Drums level 10 (One big jelly)
+
+- Built (on `claude/jelly-drums-one-big-jelly`, base `1c04ffc`): lap-only level 10, placed first (`order: [10,1,2,3]`, `entryLevels: [10]`). One big red low jelly; a touch anywhere sings the nearest awake jelly; jellies wake at 6, 10, 14 and 18 touches; 24 finish; no miss, no hint.
+- Typecheck; full `npm test` passed (1,225 tests), including the new wake-plan rule tests.
+- `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` passed levels 1–10 (loop now to 10, history count 10) at `GAME_URL=http://localhost:5391`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=10` passed in 34.6 demo seconds. Portrait screenshots of the lone jelly and of three awake jellies reviewed.
+- Not run: `npm run build`, the offline check, iPad, device speech, a child. Open: whether a one-year-old swats or looks first, and whether she waits ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
+
 ## 2026-10-13 — Sing-Along Barn level 4 (pick who sings each verse)
 
 - Built [PR #278](https://github.com/rjdunlap/neo/pull/278): level 4 (pre-K now 3–4; lap, toddler and preschool unchanged), plan `{ verses: 3, invite: true, each: true }`. She taps anywhere to sing the opening; after it and after each verse the five friends come out and she picks who sings next (a free choice, never a miss); friends who have sung wait in their own slot and only say hello; a stray tap while choosing does nothing; the round ends after the third verse with one sticker, misses 0 and hints 0. New voice line `barn.next`.
@@ -173,6 +180,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
 | Duckling Parade 10 (`arcade`, `fingerdemo`) | 2026-10-10: level 10 passed with two deliberate misses, hint, completion, saved sticker; ghost finger finished cleanly in 16.8 s | Duckling Parade 9–10 entry | Landscape screenshot reviewed; iPad touch feel, device speech and child play remain open |
+| Jelly Drums 10 (`originals`, `fingerdemo`) | 2026-10-13: levels 1–10 passed; clean 34.6 s level-10 demo; typecheck, 1,225 unit tests; two portraits | [Verification entry](#2026-10-13--jelly-drums-level-10-one-big-jelly) | No build or offline run; iPad, speech and child play open |
 | Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |
 | Dot Link 6 (`batch`, `fingerdemo`) | 2026-10-10: levels 1–6 passed the filtered Dot Link play with two deliberate misses and a hint; level 6 ghost finger clean in 12.6 s | Dot Link level 6 entry | Browser automation; iPad touch feel, device speech and child play remain open |
 | Garden Grow 7 (`woods`, `fingerdemo`) | 2026-10-10: two-by-three array, two wrong rains, hint, saved round and sticker; clean ghost-finger demo in 38.8 s | Garden Grow levels 6–7 entry | Screenshot reviewed; iPad target feel, device speech and child play remain open |
