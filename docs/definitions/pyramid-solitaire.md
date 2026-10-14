@@ -1,0 +1,11 @@
+# Pyramid Solitaire first slice
+
+Fun action: lift exposed pairs of cards to uncover a small pyramid. Learning: complements to thirteen and planning which removals expose the next pair. New game rather than Fruit Sums (several ways to form a sum) or Tile Pairs (matching pictures): covers and number complements jointly constrain removal order.
+
+Grown-up band only, touch/mouse in Lantern Lake. Three levels use 3/4/5 rows (6/10/15 cards). All ranks are visible; ace is 1, jack 11, queen 12, king 13. There is no stock, draw pile, conventional 52-card deck restriction, timer or loss screen in this miniature practice slice. Each exposed king is removed alone; two distinct exposed cards totaling thirteen are removed together. Every cleared pyramid earns one shell sticker, with help or without.
+
+Generation assigns complementary ranks along a seeded legal removal order, guaranteeing a solution. An exact finite mask search validates starts and alternate routes. Hint outlines the next removal on a clearing route; on a blocked route it restores the nearest solvable ancestor first and counts help. Undo and Start over preserve misses/hints and are free revision. A mismatched exposed pair gives a boing and spoken explanation, counts one miss; two consecutive misses show counted help. Covered-card exploration is unpenalized, with a spoken explanation of the two covering cards. Selection/cancellation are free. The ghost finger uses real taps on the same solver route.
+
+First round: six cards, visible rank guide and exposed-card outlines, spoken instruction and replayable how-to card. Deeper play increases the cover relationships and alternative complementary choices, never speed. Co-play predicts the next exposed pair; off-screen play draws a miniature pyramid with numbered paper cards. No controller/couch registration or challenge course in this slice; those, a stock and a conventional deck are separate future definitions.
+
+Check tier: typecheck, unit tests, build (shared catalog/content changed), one filtered first/last browser play with one wrong pair, one hint, Undo/restart, blocked-route recovery, one sticker each, land launch/return and interruption; portrait screenshot and filtered ghost-finger demo. No persistence or navigation-system change.
