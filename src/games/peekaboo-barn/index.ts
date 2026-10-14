@@ -10,7 +10,7 @@ import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { STICKER_ANIMALS, COVER_NAMES, nearestSpot, shouldNudge, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan, type CoverKind } from './logic';
+import { STICKER_ANIMALS, COVER_NAMES, roundScene, type SceneId, nearestSpot, shouldNudge, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan, type CoverKind } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
@@ -22,8 +22,6 @@ const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
   bunny: { sound: 'hop', word: 'Hop hop' },
   bear: { sound: 'growl', word: 'Grrr' },
 };
-
-const COVERS: CoverKind[] = ['hay', 'bush', 'door', 'crate'];
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -59,6 +57,33 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       g.roundRect(-110, -150, 220, 150, 10).fill(wood.fill).stroke(line(wood.line));
       g.moveTo(-100, -100).lineTo(100, -100).moveTo(-100, -50).lineTo(100, -50).stroke(line(wood.line, 4));
       g.moveTo(-96, -140).lineTo(96, -10).stroke(line(wood.line, 5));
+      break;
+    case 'flowerpot':
+      g.poly([-100, -140, 100, -140, 72, 0, -72, 0]).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
+      g.roundRect(-116, -150, 232, 30, 8).fill(swatch.orange.light).stroke(line(swatch.orange.line));
+      g.circle(0, -65, 23).fill(swatch.yellow.fill);
+      break;
+    case 'sunflower':
+      g.roundRect(-105, -150, 210, 150, 16).fill(swatch.green.fill).stroke(line(swatch.green.line));
+      for (const x of [-65, 0, 65]) {
+        g.moveTo(x, -10).lineTo(x, -98).stroke(line(swatch.green.line, 8));
+        for (let i = 0; i < 8; i++) {
+          const a = i * Math.PI / 4;
+          g.circle(x + Math.cos(a) * 22, -110 + Math.sin(a) * 22, 14).fill(swatch.yellow.fill);
+        }
+        g.circle(x, -110, 18).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 3));
+      }
+      break;
+    case 'wheelbarrow':
+      g.circle(-62, -10, 30).fill(swatch.brown.line).stroke(line(wood.line));
+      g.circle(-62, -10, 12).fill(swatch.white.light);
+      g.moveTo(56, -70).lineTo(92, 0).moveTo(65, -115).lineTo(125, -125).stroke(line(wood.line, 12));
+      g.poly([-115, -150, 100, -150, 68, -42, -74, -42]).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
+      break;
+    case 'rock':
+      g.poly([-116, 0, -110, -95, -62, -145, 48, -150, 106, -105, 120, 0]).fill(swatch.white.line).stroke(line(swatch.brown.line));
+      g.poly([-110, -95, -62, -145, 48, -150, 10, -94]).fill(swatch.white.light);
+      g.moveTo(10, -94).lineTo(48, -34).lineTo(106, -105).stroke(line(swatch.brown.line, 4));
       break;
     case 'door':
       g.roundRect(-110, -150, 220, 150, 8).fill(0xd9534f).stroke(line(0x9e2f2c));
@@ -181,6 +206,7 @@ class Spot extends Container {
 
 class PeekabooBarn implements Game {
   private readonly plan: PeekPlan;
+  private readonly setting: SceneId;
   private readonly backdrop: Backdrop;
   private readonly barn = new Graphics();
   private readonly spots: Spot[];
@@ -201,10 +227,14 @@ class PeekabooBarn implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.view = ctx.view;
+    const scene = roundScene(ctx.rng, this.plan.spots);
+    this.setting = scene.id;
     this.backdrop = ctx.track(
-      new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 21 }, ctx.view),
+      new Backdrop(this.setting === 'garden'
+        ? { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.green.light, GRASS], horizon: 0.56, clouds: 2, sun: true, seed: 42 }
+        : { sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 21 }, ctx.view),
     );
-    const covers = ctx.rng.shuffle([...COVERS]).slice(0, this.plan.spots);
+    const covers = scene.covers;
     this.spots = covers.map((kind) => {
       const s = ctx.track(new Spot(kind, ctx.tw));
       return s;
@@ -394,6 +424,22 @@ class PeekabooBarn implements Game {
   }
 
   private drawBarn(cx: number, y: number) {
+    if (this.setting === 'garden') {
+      const g = this.barn.clear();
+      for (let x = cx - 240; x <= cx + 240; x += 48) {
+        g.poly([x - 14, y, x - 14, y - 115, x, y - 135, x + 14, y - 115, x + 14, y]).fill(wood.light).stroke(line(wood.line, 3));
+      }
+      g.rect(cx - 260, y - 88, 520, 16).rect(cx - 260, y - 38, 520, 16).fill(wood.fill);
+      for (const x of [cx - 190, cx + 190]) {
+        g.moveTo(x, y).lineTo(x, y - 150).stroke(line(swatch.green.line, 8));
+        for (let i = 0; i < 6; i++) {
+          const a = i * Math.PI / 3;
+          g.circle(x + Math.cos(a) * 22, y - 155 + Math.sin(a) * 22, 15).fill(swatch.pink.fill);
+        }
+        g.circle(x, y - 155, 15).fill(swatch.yellow.fill);
+      }
+      return;
+    }
     const red = 0xd9534f;
     const dark = 0x9e2f2c;
     this.barn

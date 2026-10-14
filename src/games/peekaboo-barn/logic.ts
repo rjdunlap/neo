@@ -55,7 +55,7 @@ export function spotToTap(plan: PeekPlan, poses: readonly string[], animals: rea
   return null;
 }
 
-export const COVER_NAMES = { hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate' } as const;
+export const COVER_NAMES = { hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate', flowerpot: 'flowerpot', sunflower: 'sunflower', wheelbarrow: 'wheelbarrow', rock: 'rock' } as const;
 export type CoverKind = keyof typeof COVER_NAMES;
 
 /** Among overlapping hit boxes, choose the closest center; equal distances keep the left place. */
@@ -75,3 +75,15 @@ export function nearestSpot(x: number, y: number, spots: readonly { x: number; y
 /** A nudge invites a touch, never awards a reveal or interrupts an animal already showing. */
 export const shouldNudge = (mode: PeekPlan['mode'], idle: number, poses: readonly string[], busy: boolean) =>
   mode === 'free' && idle >= 6 && !busy && poses.every((pose) => pose === 'hidden');
+
+export const SCENES = {
+  barnyard: ['hay', 'bush', 'door', 'crate'],
+  garden: ['flowerpot', 'sunflower', 'wheelbarrow', 'rock'],
+} as const satisfies Record<string, readonly CoverKind[]>;
+export type SceneId = keyof typeof SCENES;
+
+/** One seeded setting per round, with distinct places at every existing level. */
+export function roundScene(rng: Rng, spots: number) {
+  const id = rng.pick(Object.keys(SCENES) as SceneId[]);
+  return { id, covers: rng.shuffle([...SCENES[id]]).slice(0, spots) };
+}

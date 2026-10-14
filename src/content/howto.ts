@@ -229,7 +229,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: [{ from: 4, to: 9, text: 'Replaying the tune is always available.' }],
   },
   'peekaboo-barn': {
-    goal: 'Find the animals hiding in the barn.',
+    goal: 'Find the animals hiding in the barnyard or garden.',
     steps: [
       { to: 2, text: 'Tap a hiding place to see who is behind it.' },
       { from: 3, to: 5, text: 'Listen for the animal asked about, then tap where it is peeking.' },
