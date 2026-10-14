@@ -38,6 +38,8 @@ The [family experience review](../FAMILY-EXPERIENCE.md) adds a design lens: what
 
 **Status values:** **not started**; **in progress** (a branch is on it); **designed** (the write-up is merged and slices are waiting); **building** (slices are being built from the write-up); **done** (every slice the write-up calls ready is built, or deliberately left).
 
+**Subjects, not games:** the other sciences, a range of history subjects and technology each get a research session of the same kind, tracked in [subjects.md](subjects.md). Physics has [its own plan](../PHYSICS-GAMES.md).
+
 ## Suggested order (non-binding)
 
 The waves are a suggestion; the grown-up can name any game.
