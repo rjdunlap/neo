@@ -188,7 +188,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Sing a short song by tapping, Old MacDonald or Hot Cross Buns: every tap is the next note, and a friend joins each verse.',
     steps: [
       { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm, E-I-E-I-O", then "And on that farm he had a cow, E-I-E-I-O" for each friend. Hot Cross Buns: "Hot cross buns" twice, then "One a penny, two a penny, hot cross buns" for each friend.' },
-      { from: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
+      { from: 3, to: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
+      { from: 4, text: 'Tap anywhere to sing the opening. Then, at the end of each verse, tap the friend you want to sing next; the friends who have sung wait in the row and only say hello. Tap anywhere to sing that friend\'s verse.' },
     ],
     finish: 'The round ends after the last verse of the last friend. Each round sings one of the two songs.',
     note: 'There is no wrong tap. Tapping fast or slowly only changes how the song is sung, and the animals answer on their own.',

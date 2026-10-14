@@ -74,15 +74,31 @@ describe('the song', () => {
 });
 
 describe('the plans', () => {
-  it('grow from one animal to two, and only the last has her choose', () => {
-    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2]);
-    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true]);
+  it('grow from one animal to three, with her choosing all at once and then one verse at a time', () => {
+    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3]);
+    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true]);
+    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[2]);
+    expect(planFor(99)).toBe(PLANS[3]);
   });
 
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {
-    for (const plan of PLANS) expect(makeSong(ANIMALS.slice(0, plan.verses)).length).toBeLessThanOrEqual(40);
+    // Three Old MacDonald verses are 51 notes; the demonstration's 75 seconds are checked by `fingerdemo` at level 4.
+    for (const plan of PLANS) for (const tune of TUNES) expect(makeSong(ANIMALS.slice(0, plan.verses), tune).length).toBeLessThanOrEqual(51);
+    expect(makeSong(ANIMALS.slice(0, 2), OLD_MACDONALD).length).toBeLessThanOrEqual(40);
+  });
+
+  it('grows the song one verse at a time when she chooses each friend: every shorter song is the start of the longer', () => {
+    for (const tune of TUNES) {
+      const all = makeSong(ANIMALS.slice(0, 3), tune);
+      for (let k = 0; k < 3; k++) {
+        const part = makeSong(ANIMALS.slice(0, k), tune);
+        expect(part).toEqual(all.slice(0, part.length));
+        // The notes so far end on a verse's close (the opening's, or a friend's), where she is asked who is next.
+        expect(part.at(-1)!.verseEnd).toBe(true);
+        expect(part.filter((n) => n.verseEnd).length).toBe(k + 1);
+      }
+    }
   });
 
   it('draws different animals for every verse, the same for the same seed', () => {

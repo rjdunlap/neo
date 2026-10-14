@@ -804,8 +804,38 @@ async function singBarnPlay() {
   await tapNotes(st.total - st.idx - 3);
   // Leave on the last notes: the finale must not fire after the scene is gone.
   await page.evaluate(() => neo.go.land('music-mountain')); await scene('LandScene'); await page.waitForTimeout(900);
+  // Level 4: the opening, then she picks who sings each verse; the song only grows by the friend picked, a stray tap while choosing does nothing, and the round ends after the third verse.
+  await launchTune(4, 'macdonald');
+  const stickers4 = await page.evaluate(() => kit.store.data.stickers.length);
+  st = await state();
+  assert.deepEqual([st.phase, st.total, st.order.length], ['sing', 12, 0]);
+  await tapNotes(12);
+  await page.waitForFunction(() => neo.scene.game.phase === 'invite' && neo.scene.game.tapLayer.eventMode === 'none', null, { timeout: 5000 });
+  await page.waitForTimeout(600);
+  assert.equal(await page.evaluate(() => ['cow', 'pig', 'duck', 'cat', 'dog'].every((a) => neo.scene.game.friends.get(a).visible)), true, 'all five friends are offered first');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(700);
+  await screenshot('sing-along-barn-4-pick-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await tapNotes(2); assert.equal((await state()).idx, 12, 'a tap anywhere while choosing does not sing');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('duck'), 0, -66)); await page.waitForTimeout(300);
+  st = await state();
+  assert.deepEqual([st.phase, st.order, st.singer, st.total], ['sing', ['duck'], 'duck', 25]);
+  await tapNotes(13); await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 }); await page.waitForTimeout(700);
+  assert.equal(await page.evaluate(() => ['cow', 'pig', 'cat', 'dog'].every((a) => neo.scene.game.friends.get(a).visible)), true, 'the four friends not yet chosen are offered');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('duck'), 0, -66)); await page.waitForTimeout(300);
+  assert.equal((await state()).phase, 'invite', 'a friend who has sung only says hello');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('cat'), 0, -66)); await page.waitForTimeout(300);
+  st = await state();
+  assert.deepEqual([st.phase, st.order, st.singer, st.total], ['sing', ['duck', 'cat'], 'cat', 38]);
+  await tapNotes(13); await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 }); await page.waitForTimeout(700);
+  await page.evaluate(() => kit.tapOn(neo.scene.game.friends.get('pig'), 0, -66)); await page.waitForTimeout(300);
+  st = await state();
+  assert.deepEqual([st.phase, st.order, st.total], ['sing', ['duck', 'cat', 'pig'], 51]);
+  await tapNotes(13); await finished('sing-along-barn');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers4 + 1);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   assert.deepEqual(errors, []);
-  log('Sing-Along Barn: levels 1 and 3 (Old MacDonald) and a Hot Cross Buns round, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order, portrait and leaving mid-song passed');
+  log('Sing-Along Barn: levels 1, 3 and 4 (Old MacDonald) and a Hot Cross Buns round, one sticker with no misses or hints, tap-per-note song order, chosen friends in her order (all at once, then one verse at a time), portrait and leaving mid-song passed');
 }
 
 async function numberTrailsPlay() {
