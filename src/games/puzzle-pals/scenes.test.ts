@@ -6,21 +6,14 @@ import { cellFeatures, SCENES, STICKER_SCENES, stickerScene } from './scenes';
 /** `SCENES` indexes picked by `new Rng(seed).pick` for seeds 1 to 200, recorded before scenes became data. */
 const PINNED = '34454300133132134204230133221542330534035355003523010120422134150052444140122304544220055032113033110415015250534215105504445312111233024021435030232412032310151421345115300330353525004353030044541551';
 
-/**
- * Original scenes with a piece that holds nothing to find it by, even counting a friend's parts and a flower as
- * something (bunny and dog leave a middle piece empty on the biggest grids). Their art stays as it is until slice 1 of
- * the deep dive fixes it, because a saved sticker is drawn again from its seed and must not change. This list says so,
- * and the last test fails when one is fixed so that it comes off. The box test is coarse: it does not see the duck's
- * near-blank sky pieces (plain sky with a speck of the tuft), which slice 1's fairness work still has to catch.
- */
-const KNOWN_UNFAIR = new Set(['bunny', 'dog']);
-
 const SEEDS = Array.from({ length: 25 }, (_, i) => i * 37 + 1);
 
 /** The pieces of a grid that hold the same things as another piece, or hold only a sliver of anything. */
 function unfairCells(sceneId: string, seed: number, cols: number, rows: number): string[] {
   const scene = SCENES.find((s) => s.id === sceneId)!;
-  const cells = cellFeatures(pictureScene(scene, seed).features, cols, rows, PICTURE_W, PICTURE_H);
+  const { root, features } = pictureScene(scene, seed);
+  const cells = cellFeatures(features, cols, rows, PICTURE_W, PICTURE_H);
+  root.destroy({ children: true });
   const out: string[] = [];
   cells.forEach((names, i) => {
     if (names.length === 0) out.push(`cell ${i} holds nothing to find it by`);
@@ -60,8 +53,8 @@ describe('Puzzle Pals scenes', () => {
     expect(new Set(newer.map(key)).size).toBe(newer.length);
   });
 
-  it('gives every piece of every grid something to find it by in the new scenes, and no two pieces the same', () => {
-    for (const scene of SCENES.slice(6)) {
+  it('gives every piece a readable filled cue across all twelve scenes, without twin feature sets', () => {
+    for (const scene of SCENES) {
       for (const plan of PUZZLE_PLANS) {
         for (const seed of SEEDS) {
           expect(unfairCells(scene.id, seed, plan.cols, plan.rows), `${scene.id} ${plan.cols}x${plan.rows} seed ${seed}`).toEqual([]);
@@ -70,11 +63,25 @@ describe('Puzzle Pals scenes', () => {
     }
   });
 
-  it('records the original scenes with an empty piece as the known gap until the fairness slice fixes their art', () => {
-    const largest = PUZZLE_PLANS.reduce((a, b) => (b.cols * b.rows > a.cols * a.rows ? b : a));
-    for (const scene of SCENES.slice(0, 6)) {
-      const bad = SEEDS.some((seed) => unfairCells(scene.id, seed, largest.cols, largest.rows).length > 0);
-      expect(bad, `${scene.id}: ${KNOWN_UNFAIR.has(scene.id) ? 'is fair now; take it off KNOWN_UNFAIR' : 'has an empty piece; add it to KNOWN_UNFAIR or fix it'}`).toBe(KNOWN_UNFAIR.has(scene.id));
+  it('rejects empty bounds, tiny flecks and long thin strips as placement cues', () => {
+    const features = [
+      { name: 'friend-corner', x: 0, y: 0, w: 150, h: 140 },
+      { name: 'fleck', x: 160, y: 0, w: 20, h: 20, solid: true },
+      { name: 'thin', x: 310, y: 0, w: 8, h: 140, solid: true },
+      { name: 'kite', x: 480, y: 30, w: 32, h: 32, solid: true },
+    ];
+    expect(cellFeatures(features, 4, 3, PICTURE_W, PICTURE_H).slice(0, 4)).toEqual([[], [], [], ['kite']]);
+  });
+
+  it('catches the duck\'s original nearly blank top pieces without changing the saved drawing', () => {
+    const duck = SCENES.find(s => s.id === 'duck')!;
+    for (const seed of SEEDS) {
+      const original = pictureScene(duck, seed, false);
+      const cells = cellFeatures(original.features, 4, 3, PICTURE_W, PICTURE_H);
+      expect(cells[1]).toEqual([]);
+      expect(cells[2]).toEqual([]);
+      expect(original.features.some(f => f.name.includes('kite'))).toBe(false);
+      original.root.destroy({ children: true });
     }
   });
 
@@ -91,6 +98,8 @@ describe('Puzzle Pals scenes', () => {
         expect(f.x, `${scene.id} ${f.name}`).toBeLessThan(PICTURE_W);
         expect(f.y, `${scene.id} ${f.name}`).toBeLessThan(PICTURE_H);
       }
+      a.root.destroy({ children: true });
+      b.root.destroy({ children: true });
     }
   });
 });

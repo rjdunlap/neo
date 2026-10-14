@@ -59,6 +59,8 @@ export interface Feature {
   y: number;
   w: number;
   h: number;
+  /** A conservative filled interior, rather than the potentially empty bounds of a drawing. */
+  solid?: boolean;
 }
 
 /** How much of a feature falls inside a box. */
@@ -72,7 +74,7 @@ export function overlapArea(f: Feature, box: { x: number; y: number; w: number; 
 export const SLIVER = 600;
 
 /**
- * What each piece of a grid holds, as the sorted names of the features that fill more than a sliver of it.
+ * What each piece of a grid holds, as the sorted names of visible filled interiors larger than a sliver.
  * Two pieces with the same list could not be told apart by what is on them.
  */
 export function cellFeatures(features: readonly Feature[], cols: number, rows: number, width: number, height: number): string[][] {
@@ -82,7 +84,10 @@ export function cellFeatures(features: readonly Feature[], cols: number, rows: n
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
       const box = { x: col * cw, y: row * ch, w: cw, h: ch };
-      out.push(features.filter((f) => f.name !== 'friend' && overlapArea(f, box) > SLIVER).map((f) => f.name).sort());
+      out.push(features.filter((f) => f.solid && overlapArea(f, box) > SLIVER
+        // A long thin edge is not a readable cue, even if its area clears the threshold.
+        && Math.min(f.x + f.w, box.x + box.w) - Math.max(f.x, box.x) >= 24
+        && Math.min(f.y + f.h, box.y + box.h) - Math.max(f.y, box.y) >= 24).map((f) => f.name).sort());
     }
   }
   return out;

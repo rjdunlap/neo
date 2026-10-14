@@ -62,3 +62,8 @@
 - `npx tsc --noEmit` clean; `npm test` 1,205 of 1,211 passed on the first run (ferry-jam, fluffy-salon, peg-garden and penguin-slide timed out under load while a browser suite ran; those four files pass alone, 44 tests); `input-in-use.test.ts` now lists seventeen live games.
 - New `BROWSER_SUITE=livekeys` (port 5291, headless Chromium): each of the five at its first couch-played level goes touch → key → touch → key → touch with the touch layer visible again, no page errors; `congatouch` passed after the change.
 - Not run: the other four touch suites, `world`, build, offline (no shared assets or navigation changed). Open: a real keyboard or pad on a device; groups 2 and 3 of C1b (tile-pairs, gem-swap, lantern-lights; ferry-jam, penguin-slide, bouncy-launch); the cursor ring stays drawn after a finger returns.
+
+## 2026-10-13 — How-to intro card fits at Beat Builder's long levels
+
+- Beat Builder's level 3 card ended at 871 of 768 units (`howto` failure on `origin/main`): its four steps, finish and note ran 920 characters in a 588-unit column beside the demonstration window, with empty space under the window. Changed: Beat Builder's step and note text trimmed (levels 1, 3, 5, 8, 9), rows below the demonstration now run the full card width, and the window may shrink to 0.7 of its size (280 units, over the 240 floor); a new unit test caps a card at 840 characters across every game and level.
+- Ran: typecheck; `src/content` vitest (79 passed); `BROWSER_SUITE=howto` with `HOWTO_ONLY=beat-builder HOWTO_LEVEL=1,5,8,9` and then the full `howto` suite (90 games, landscape and portrait) at `GAME_URL=http://localhost:5291`, all passed. Not run: the other suites (no shared logic besides the intro card's layout).
