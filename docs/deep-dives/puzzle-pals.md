@@ -156,6 +156,8 @@ The level-order decision already has a row in [Waiting on the developer](../WAIT
 
 ## Build slices, in order
 
+**Claimed 2026-10-14:** `codex/puzzle-pals-visible-cues` owns slice 1's visible-detail fairness guard and scenery repair across all twelve scenes. Expected source files: `src/games/puzzle-pals/{art,scenes,scenes.test}.ts`; documentation closeout in README, GAMES, ROADMAP, this dive and VERIFICATION. Saved sticker/map drawings retain their original art. The box lid stays a separate, person-check-dependent slice. Checks: typecheck, Puzzle Pals rule tests and how-to tests, filtered `fourth` plays at 5 and 7, portrait art review.
+
 Each is sized for one session. The slices that add a level are built in level order so saved IDs stay unbroken.
 
 **Built 2026-10-11:** the flat sides, corner-first adjacent-piece hint, spoken position, bounded how-to and co-play part of slice 1 ([PR #169](https://github.com/rjdunlap/neo/pull/169); [build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-spatial-hints-and-outer-rims-2026-10-11)). Fairness/art and the box lid remain open.
