@@ -3634,8 +3634,38 @@ async function originals() {
   }
 
   // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
-  for (let level = 1; level <= 8 && (!only || only === 'peekaboo'); level++) {
+  const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8];
+  for (const level of peekLevels.filter((n) => n >= 1 && n <= 8 && (!only || only === 'peekaboo'))) {
     await launch('peekaboo-barn', level);
+    if (level === 1) await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.until(() => !g.busy, 10000);
+      await kit.until(() => g.nudgeCount > 0, 7500);
+      if (g.done || g.hints || g.misses) throw new Error('idle nudge changed round accounting');
+      const s = g.spots[0];
+      kit.tapOn(s, 0, -110);
+      await kit.sleep(450);
+      if (s.pose !== 'out' || s.opening.amount < 0.99) throw new Error('cover did not open with the touch');
+    });
+    if (level === 5) {
+      await portrait(true);
+      await screenshot('peekaboo-barn-5-portrait');
+      await portrait(false);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => !g.busy, 10000);
+        const [a, b] = g.spots;
+        const x = (a.x + b.x) / 2;
+        const y = a.y - 110 * a.scale.x;
+        if (a.x - 130 * a.scale.x < 150) throw new Error('cover overlaps pet corner');
+        const point = g.ctx.stage.toGlobal({ x: x - 1, y });
+        kit.tap(point.x, point.y);
+        await kit.sleep(100);
+        if (a.pose !== 'out' || b.pose === 'out') throw new Error('neighbor tap picked the farther cover');
+      });
+      // The tap above may be right or wrong; start a fresh round for the standard accounting proof.
+      await launch('peekaboo-barn', level);
+    }
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {

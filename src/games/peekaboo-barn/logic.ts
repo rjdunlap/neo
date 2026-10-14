@@ -1,6 +1,8 @@
 import type { Rng } from '../../engine/random';
 
-export const ANIMALS = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear'] as const;
+// Saved stickers and the icon keep their original pool, even if play gains new friends.
+export const STICKER_ANIMALS = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear'] as const;
+export const ANIMALS = [...STICKER_ANIMALS] as const;
 export type Animal = (typeof ANIMALS)[number];
 
 export interface PeekPlan {
@@ -52,3 +54,24 @@ export function spotToTap(plan: PeekPlan, poses: readonly string[], animals: rea
   }
   return null;
 }
+
+export const COVER_NAMES = { hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate' } as const;
+export type CoverKind = keyof typeof COVER_NAMES;
+
+/** Among overlapping hit boxes, choose the closest center; equal distances keep the left place. */
+export function nearestSpot(x: number, y: number, spots: readonly { x: number; y: number; scale: number }[]): number | null {
+  let best: number | null = null;
+  let distance = Infinity;
+  spots.forEach((s, i) => {
+    const dx = (x - s.x) / s.scale;
+    const dy = (y - s.y) / s.scale;
+    if (Math.abs(dx) > 130 || dy < -340 || dy > 10) return;
+    const d = Math.abs(x - s.x);
+    if (d < distance) { best = i; distance = d; }
+  });
+  return best;
+}
+
+/** A nudge invites a touch, never awards a reveal or interrupts an animal already showing. */
+export const shouldNudge = (mode: PeekPlan['mode'], idle: number, poses: readonly string[], busy: boolean) =>
+  mode === 'free' && idle >= 6 && !busy && poses.every((pose) => pose === 'hidden');

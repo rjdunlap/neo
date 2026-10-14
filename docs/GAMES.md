@@ -68,7 +68,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Peekaboo Barn
 
-*lap–pre-K.* Tap a hiding place to see who is behind it; later, find a named animal, then remember who hid where.
+*lap–pre-K.* Tap a hiding place to see who is behind it: doors swing, hay parts, a bush shakes and sheds a leaf, and a crate lid lifts, each with a soft synthesized sound. The animal and its cover are named aloud. Levels 1–2 finish after eight or twelve reveals; after six quiet seconds a hidden cover wiggles and sounds, without revealing an animal, counting help or earning a reward. Later, find a named animal, then remember who hid where. A wrong answer reveals its animal with a gentle boing and spoken reminder; two misses wiggle the right cover and count one hint. Overlapping touches choose the nearest cover, and four-cover rounds leave room for the pet. The sticker and map-icon animal pool stays pinned to its original seven.
 
 ### Duckling Parade
 

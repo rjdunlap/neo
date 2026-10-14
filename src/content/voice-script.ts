@@ -1360,10 +1360,10 @@ export const SCRIPT = {
   'paint.done': ["I love it! Let's hang it up!", 'Beautiful painting!'],
 
   'peek.free': ['Who is hiding? Tap to find out!'],
-  'peek.found': ['{word}! A {animal}!', "{word}! It's the {animal}!"],
+  'peek.found': ['{word}! Behind the {cover}, a {animal}!', "{word}! It's the {animal} behind the {cover}!"],
   'peek.look': ['Look who is hiding!', 'Look!'],
   'peek.where': ['Where is the {animal}?', 'Can you find the {animal}?'],
-  'peek.yes': ['You found the {animal}!', "There's the {animal}!"],
+  'peek.yes': ['You found the {animal} behind the {cover}!', "There's the {animal}, behind the {cover}!"],
   'peek.notit': ["That's the {other}! Where is the {animal}?"],
 
   'duck.along': ['Tap a duck to help it swim!'],

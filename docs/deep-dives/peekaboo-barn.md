@@ -23,9 +23,9 @@ The ranges are lap 1–2, toddler 1–5, preschool 4–8 and pre-K 6–8 (`LEVEL
 
 **Misses and hints.** Free play has none. In find and remember a wrong place pops its animal out ("That's the pig! Where is the cow?"), counts one miss, and the animal goes back to peeking (find) or hiding (remember). The second miss on one question wiggles the right cover and counts one hint. The round finishes with everyone out for a bow and confetti; the score is 0 and 0 in free play. Mistakes teach by showing, so a miss in remember mode is also a look.
 
-**Couplings.** How-to card: three `LevelLine` steps and two finish lines. Ghost finger: `touchDemo` with `autotouch()` through `spotToTap` (a rule with a test). Voice: `peek.free`, `.found`, `.look`, `.where`, `.yes`, `.notit`. Land: Barnyard, first in its list. Music: `STYLES.hub`, the island loop. Sticker: a seeded animal peeking over a hay, bush or door cover; map icon: `BarnIcon`. Browser: `ORIGINALS_ONLY=peekaboo` plays levels 1–8 (two wrong taps and the wiggle hint at every question level, saved score 0/0 for free and 2/1 for the rest, a sticker per round), `fingerdemo` plays 1–8, and the `originals` suite expects 8 history entries for this game. No couch entry, journal entry, picnic step or saved creation.
+**Couplings.** How-to card: three scoped `LevelLine` steps and three finish lines (eight reveals at 1, twelve at 2, questions at 3–8). Ghost finger: `touchDemo` with `autotouch()` through `spotToTap` (a rule with a test), tapping the shared nearest-cover input layer. Voice: `peek.free`, `.found`, `.look`, `.where`, `.yes`, `.notit`. Land: Barnyard, first in its list. Music: `STYLES.hub`, the island loop. Sticker: a seeded animal peeking over a hay, bush or door cover; map icon: `BarnIcon`. Browser: `ORIGINALS_ONLY=peekaboo` plays levels 1–8 (two wrong taps and the wiggle hint at every question level, saved score 0/0 for free and 2/1 for the rest, a sticker per round), `fingerdemo` plays 1–8, and the `originals` suite expects 8 history entries for this game. No couch entry, journal entry, picnic step or saved creation.
 
-**Known gaps** (read from the code and docs; none has been seen on a device unless said).
+**Original audit findings** (2026-10-10; retained as the reasoning behind the proposed ladder). Findings 1–3 and 5, and the cover motion part of 7, are addressed by [slice 1](../archive/COMPLETED-2026-10-09.md#peekaboo-barn-cover-support-2026-10-14); the portrait clearance check passed. Remaining content, ladder and person gaps stay open. None has been seen on a device unless said.
 
 1. **Adding an animal moves every saved sticker.** `sticker(seed)` does `rng.pick(ANIMALS)` and `BarnIcon` cycles `ANIMALS`, so any change to that list changes the picture on stickers already earned. The same trap Bubble Pop found with `FRIENDS`. New animals need their own pool and the seven pinned by a test.
 2. **The how-to card has two unbounded lines.** The last step is `{ from: 6 }` and the second finish line is `{ from: 3 }`. `howto.test.ts` checks that a step is bounded only for Bubble Pop, so a level 9 would inherit "Watch who hides where, then tap the hiding place of the animal asked about" and "the round ends when every animal asked about has been found". Bound both and make the test generic.
@@ -81,7 +81,7 @@ Peekaboo is a first game: most of its references are a tap-to-reveal toy with no
 
 ### Fresh content inside existing levels
 
-All ready; none needs a decision. The rule tests are named for each.
+Items 1–3 are [built](../archive/COMPLETED-2026-10-09.md#peekaboo-barn-cover-support-2026-10-14). The remaining content is ready; none needs a decision except the animal-voice choice noted below. The rule tests are named for each.
 
 1. **Guards first.** Pin the seven animals for the sticker and icon and give new animals their own pool (known gap 1); bound the how-to's last step and finish line and make the bounded-step test generic (gap 2); resolve a tap to the nearest place when hit areas overlap (gap 3); and nudge in free play: after six seconds without a touch one cover wiggles and gives a small sound, with no hint counted. Tests: the sticker pool is exactly the seven in order; every how-to line is bounded; a point between two places resolves to the nearer; the nudge never fires while an animal is out.
 2. **Covers that open their own ways** (all levels). The door swings on its two diagonals, the haystack rustles and parts, the bush shakes and sheds a leaf, the crate lid lifts (*Pop-Up Pals*). A soft sound for each. Cost S–M, drawn in code on the existing covers; no rule.
@@ -150,7 +150,8 @@ These are easier than levels that exist, or fall between them, so they are place
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (its Peekaboo loop stops at level 8, and `originals` expects 8 history entries), the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and GAMES.md.
 
-1. **Guards, covers that move and cover names** (claimed 2026-10-14 on `codex/peekaboo-cover-support`, no decision). Scope: `src/games/peekaboo-barn/{index,logic,logic.test}.ts`, scoped how-to/voice lines and tests, filtered browser checks and documentation. Pin the sticker pool; bound the how-to lines and make the test generic; nearest-place taps; the free-play nudge; cover motions; cover names. Tier: typecheck, the game's rule tests, the how-to test, `ORIGINALS_ONLY=peekaboo` filtered to levels 1, 5 and 8, and one portrait screenshot (also the gap-3 clearance check).
+Slice 1, guards, cover motions and cover names, is [built 2026-10-14](../archive/COMPLETED-2026-10-09.md#peekaboo-barn-cover-support-2026-10-14) ([PR #294](https://github.com/rjdunlap/neo/pull/294)); levels and band windows are unchanged. The next ready slice is **garden scenes**, followed by beach and bedroom:
+
 2. **Scenes** (ready; each a sub-slice: garden, beach, bedroom). Tier: rule tests and one screenshot per scene.
 3. **Animals who name how they feel,** then **more animals** with their voices (ready; decision 4 for the last). Tier: rule tests, `critter.test.ts`, a screenshot of all eleven and `fingerdemo` at level 1.
 4. **{pet} hides too** and **the written name** (ready after reading `pet.ts`).
@@ -163,4 +164,4 @@ Each is sized for one session. Slices that add a level are built in level order 
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. `git diff --check` and a relative-link check ran on the changed docs.
+The original deep dive session built nothing: it was research and ideation only. Subsequent implementation is recorded in the [cover-support build notes](../archive/COMPLETED-2026-10-09.md#peekaboo-barn-cover-support-2026-10-14). `git diff --check` and a relative-link check ran on the changed docs.
