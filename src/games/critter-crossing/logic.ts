@@ -9,7 +9,8 @@ import { fits, RULE_WORDS, type Rule, type SortCritter } from '../critter-sort/l
 export type Gate =
   | { kind: 'one'; rule: Rule }
   | { kind: 'not'; rule: Rule }
-  | { kind: 'and'; rules: [Rule, Rule] };
+  | { kind: 'and'; rules: [Rule, Rule] }
+  | { kind: 'or'; rules: [Rule, Rule] };
 
 export const ALL_RULES: Rule[] = ['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'];
 
@@ -21,6 +22,8 @@ export function passes(c: SortCritter, gate: Gate): boolean {
       return !fits(c, gate.rule);
     case 'and':
       return fits(c, gate.rules[0]) && fits(c, gate.rules[1]);
+    case 'or':
+      return fits(c, gate.rules[0]) || fits(c, gate.rules[1]);
   }
 }
 
@@ -33,12 +36,14 @@ export function gateWords(gate: Gate): string {
       return `not ${RULE_WORDS[gate.rule]}`;
     case 'and':
       return `${RULE_WORDS[gate.rules[0]]} and ${RULE_WORDS[gate.rules[1]]}`;
+    case 'or':
+      return `${RULE_WORDS[gate.rules[0]]} or ${RULE_WORDS[gate.rules[1]]}`;
   }
 }
 
-/** A stable name for a gate; an "and" is the same either way round. */
+/** A stable name for a gate; an "and" or an "or" is the same either way round. */
 export function gateKey(gate: Gate): string {
-  return gate.kind === 'and' ? `and:${[...gate.rules].sort().join('+')}` : `${gate.kind}:${gate.rule}`;
+  return gate.kind === 'and' || gate.kind === 'or' ? `${gate.kind}:${[...gate.rules].sort().join('+')}` : `${gate.kind}:${gate.rule}`;
 }
 
 export const sameGate = (a: Gate, b: Gate) => gateKey(a) === gateKey(b);
@@ -49,7 +54,7 @@ export interface CrossPlan {
   name: string;
   mode: CrossMode;
   /** Which kinds of secret rule a round may draw. */
-  gates: 'one' | 'and' | 'mixed';
+  gates: 'one' | 'and' | 'or' | 'mixed';
   critters: number;
   /** Rules offered when it is time to guess, the true one among them. */
   options: number;
@@ -64,6 +69,7 @@ export const PLANS: CrossPlan[] = [
   { name: 'A secret rule with four pictures to choose from and five critters to try', mode: 'hidden', gates: 'one', critters: 5, options: 4, minTests: 2, rounds: 2 },
   { name: 'A secret rule with two parts: a critter must fit both to cross', mode: 'hidden', gates: 'and', critters: 6, options: 4, minTests: 3, rounds: 2 },
   { name: 'A secret rule that may be "not" something or two parts: use all the evidence', mode: 'hidden', gates: 'mixed', critters: 6, options: 4, minTests: 3, rounds: 2 },
+  { name: 'A secret rule with "or": a critter crosses if it fits either part, so most critters cross', mode: 'hidden', gates: 'or', critters: 6, options: 4, minTests: 3, rounds: 2 },
 ];
 
 export const planFor = (level: number): CrossPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -78,8 +84,8 @@ export interface CrossRound {
 const KINDS = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'] as const;
 
 function randomGate(plan: CrossPlan, rng: Rng): Gate {
-  const kind = plan.gates === 'one' ? 'one' : plan.gates === 'and' ? 'and' : rng.pick(['one', 'not', 'and'] as const);
-  if (kind === 'and') {
+  const kind = plan.gates === 'mixed' ? rng.pick(['one', 'not', 'and'] as const) : plan.gates;
+  if (kind === 'and' || kind === 'or') {
     const [a, b] = rng.shuffle([...ALL_RULES]);
     return { kind, rules: [a, b] };
   }
@@ -89,17 +95,22 @@ function randomGate(plan: CrossPlan, rng: Rng): Gate {
 /** Wrong pictures that look like the right one: they share a part of it, or are its opposite. */
 function lookalikes(truth: Gate, plan: CrossPlan, rng: Rng): Gate[] {
   const out: Gate[] = [];
-  const rules = (g: Gate): Rule[] => (g.kind === 'and' ? g.rules : [g.rule]);
+  const rules = (g: Gate): Rule[] => (g.kind === 'and' || g.kind === 'or' ? g.rules : [g.rule]);
   const mine = rules(truth);
   for (const r of rng.shuffle([...ALL_RULES])) {
     if (plan.gates === 'one') out.push({ kind: 'one', rule: r });
     else if (plan.gates === 'and') {
       for (const keep of mine) if (r !== keep) out.push({ kind: 'and', rules: rng.chance(0.5) ? [keep, r] : [r, keep] });
+    } else if (plan.gates === 'or') {
+      // The "and" of the same two parts, a lone part, and an "or" that keeps one part: pictures that nearly say the same.
+      out.push({ kind: 'one', rule: r });
+      for (const keep of mine) if (r !== keep) out.push({ kind: 'or', rules: rng.chance(0.5) ? [keep, r] : [r, keep] });
     } else {
       out.push({ kind: 'one', rule: r }, { kind: 'not', rule: r });
       for (const keep of mine) if (r !== keep) out.push({ kind: 'and', rules: [keep, r] });
     }
   }
+  if (truth.kind === 'or') out.unshift({ kind: 'and', rules: truth.rules });
   const seen = new Set([gateKey(truth)]);
   return out.filter((g) => !seen.has(gateKey(g)) && seen.add(gateKey(g)));
 }
@@ -139,6 +150,8 @@ export function makeRound(plan: CrossPlan, rng: Rng, avoid?: string): CrossRound
     if (new Set(critters.map((c) => `${c.kind}${c.hat}`)).size < critters.length) continue;
     const yes = critters.filter((c) => passes(c, gate)).length;
     if (yes === 0 || yes === critters.length) continue;
+    // An "or" lets most critters across; that is what tells it from an "and".
+    if (plan.gates === 'or' && yes * 2 < critters.length) continue;
     if (plan.mode === 'visible') return { gate, critters, options: [] };
     const wrong = lookalikes(gate, plan, rng).filter((g) => critters.some((c) => passes(c, g) !== passes(c, gate)));
     if (wrong.length < plan.options - 1) continue;

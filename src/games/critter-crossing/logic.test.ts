@@ -113,6 +113,50 @@ describe('Critter Crossing', () => {
     }
   });
 
+  describe('level 6, "or" gates', () => {
+    const plan = PLANS.find((p) => p.gates === 'or')!;
+    const rounds = Array.from({ length: 300 }, (_, i) => makeRound(plan, new Rng(i + 1)));
+
+    it('draws only "or" gates, with some critters crossing and some waiting, most crossing', () => {
+      for (const r of rounds) {
+        expect(r.gate.kind).toBe('or');
+        const yes = r.critters.filter((c) => passes(c, r.gate)).length;
+        expect(yes).toBeGreaterThan(0);
+        expect(yes).toBeLessThan(r.critters.length);
+        expect(yes * 2).toBeGreaterThanOrEqual(r.critters.length);
+      }
+    });
+
+    it('lets a critter across if it fits either part, and says so in words', () => {
+      const gate: Gate = { kind: 'or', rules: ['hat', 'whiskers'] };
+      expect(passes({ kind: 'cat', hat: true }, gate)).toBe(true);
+      expect(passes({ kind: 'duck', hat: true }, gate)).toBe(true);
+      expect(passes({ kind: 'cat', hat: false }, gate)).toBe(true);
+      expect(passes({ kind: 'duck', hat: false }, gate)).toBe(false);
+      expect(gateWords(gate)).toBe('wearing a hat or with whiskers');
+      expect(gateKey(gate)).toBe(gateKey({ kind: 'or', rules: ['whiskers', 'hat'] }));
+      expect(gateKey(gate)).not.toBe(gateKey({ kind: 'and', rules: ['hat', 'whiskers'] }));
+    });
+
+    it('offers the "and" twin of the true rule, and the critters tell the two apart', () => {
+      for (const r of rounds) {
+        const twin = r.options.find((o) => o.kind === 'and');
+        if (!twin) continue;
+        expect(r.critters.some((c) => passes(c, twin) !== passes(c, r.gate))).toBe(true);
+      }
+      expect(rounds.some((r) => r.options.some((o) => o.kind === 'and'))).toBe(true);
+    });
+
+    it('never rules out the true rule with the best test, and one picture is left at the end', () => {
+      for (const r of rounds) {
+        const evidence = r.critters.map((c) => ({ c, passed: passes(c, r.gate) }));
+        expect(consistent(r.options, evidence)).toHaveLength(1);
+        const t = bestTest(r.critters, [], r.options, []);
+        expect(t).not.toBeNull();
+      }
+    });
+  });
+
   describe("the demonstration's finger", () => {
     /** Plays a round the way the game does: a critter sent to the gate crosses if it fits, and the finger goes on from what it saw. */
     const play = (round: CrossRound, plan: CrossPlan) => {
