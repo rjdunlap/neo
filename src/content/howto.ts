@@ -1080,7 +1080,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Tap an animal to hear it munch its snack.' },
       { from: 2, to: 2, text: 'Tap a snack and it floats to the animal who loves it.' },
-      { from: 3, to: 3, text: 'Tap the animal that eats the food asked for.' },
+      { from: 3, to: 3, text: 'Tap the animal that eats the food asked for. Every second question plays an animal sound instead: tap the animal that makes it, or tap the speaker to hear it again.' },
       { from: 4, to: 4, text: 'Drag each snack to the animal who eats it.' },
       { from: 5, to: 5, text: 'Give the animal the number of snacks shown by the dots and numeral, then ring the bell.' },
     ],

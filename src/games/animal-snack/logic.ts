@@ -1,4 +1,5 @@
 import type { CritterName } from '../../art/critter';
+import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -19,7 +20,7 @@ export interface SnackPlan {
 export const PLANS: SnackPlan[] = [
   { mode: 'munch', animals: 3, rounds: 6, name: 'Tap an animal: it says hello and munches its snack' },
   { mode: 'float', animals: 3, rounds: 6, name: 'Tap a snack: it floats to the animal who loves it' },
-  { mode: 'who', animals: 3, rounds: 4, name: 'Who eats the carrot? Tap the animal' },
+  { mode: 'who', animals: 3, rounds: 4, name: 'Who eats the carrot? or Who says moo? Tap the animal' },
   { mode: 'match', animals: 3, rounds: 3, name: 'Drag each snack to the animal who eats it' },
   { mode: 'count', animals: 3, rounds: 3, name: 'Give an animal 2 to 4 of its snack, then ring the bell' },
 ];
@@ -61,8 +62,16 @@ export const FAVORITE: Partial<Record<CritterName, Food>> = { cow: 'hay', bunny:
 export const ANIMALS = Object.keys(FAVORITE) as CritterName[];
 export const eaterOf = (food: Food) => ANIMALS.find((a) => FAVORITE[a] === food)!;
 
+/** Each animal's own voice. Every animal present has a different one, so a sound names exactly one animal. */
+export const VOICE: Partial<Record<CritterName, AnimalSound>> = { cow: 'moo', bunny: 'hop', dog: 'woof', cat: 'meow', duck: 'quack', pig: 'oink', bear: 'growl' };
+/** What the voice is called aloud. The bunny's hop is no sound she could name, so it is never the clue. */
+export const SOUND_WORDS: Partial<Record<CritterName, string>> = { cow: 'moo', dog: 'woof', cat: 'meow', duck: 'quack', pig: 'oink', bear: 'grr' };
+export const SOUNDERS = ANIMALS.filter((a) => SOUND_WORDS[a]);
+
 export interface SnackRound {
   animals: CritterName[];
+  /** 'who': the clue is the food (default) or the animal's sound; every second question uses the sound. */
+  by?: 'food' | 'sound';
   /** The animal asked about ('who', 'count'), or none. */
   ask?: CritterName;
   /** 'count': how many snacks. */
@@ -80,13 +89,16 @@ export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
       out.push({ animals: fixed });
       continue;
     }
+    const by = plan.mode === 'who' ? (i % 2 === 1 ? 'sound' : 'food') : undefined;
     let animals: CritterName[];
     let ask: CritterName;
     do {
       animals = rng.shuffle([...ANIMALS]).slice(0, plan.animals);
-      ask = rng.pick(animals);
+      // A sound question needs an animal that has a sound word; swap one in if the deal has none.
+      if (by === 'sound' && !animals.some((a) => SOUND_WORDS[a])) animals[0] = rng.pick(SOUNDERS);
+      ask = rng.pick(by === 'sound' ? animals.filter((a) => SOUND_WORDS[a]) : animals);
     } while (ask === out.at(-1)?.ask);
-    out.push({ animals, ask, n: plan.mode === 'count' ? rng.int(2, 4) : undefined });
+    out.push({ animals, ask, by, n: plan.mode === 'count' ? rng.int(2, 4) : undefined });
   }
   return out;
 }
