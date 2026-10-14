@@ -164,4 +164,16 @@ describe('Stamp Studio bin and early stopping', () => {
     press.get(r.game.bin)!(); r.stamp(); expect(r.game.stamps).toHaveLength(LIMIT); expect(r.game.done).toBe(false);
     r.cleanup();
   });
+
+  it('level 7 pats: every pat is kept, big, and the eighth finishes once', async () => {
+    const r = round(7);
+    for (let i = 0; i < 12; i++) r.stamp();
+    expect(r.game.stamps).toHaveLength(8);
+    expect(r.game.stamps.every(s => s.data.size * 48 * 2 >= 170)).toBe(true);
+    expect(r.game.done).toBe(true);
+    r.wake(); await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledTimes(1);
+    expect(r.finish.mock.calls[0][0]).toMatchObject({ misses: 0, hints: 0 });
+    r.cleanup();
+  });
 });

@@ -20,12 +20,12 @@ describe('Stamp Studio', () => {
   it('offers simple lap choices and adds manipulation before story invitations', () => {
     expect(PLANS[0].kinds).toHaveLength(1); expect(PLANS[1].kinds).toHaveLength(2);
     expect(PLANS.slice(0,2).every(p=>!p.move && !p.transform)).toBe(true);
-    expect(PLANS.slice(3).every(p=>p.move && p.transform)).toBe(true);
+    expect(PLANS.slice(3, 6).every(p=>p.move && p.transform)).toBe(true);
   });
   it('makes a small picture on every level, using only the buttons that level has, and ends on the green arrow', () => {
     // The smallest sheet the game draws (the 1024 by 768 design: 674 by 478).
     const [w, h] = [674, 478];
-    for (const plan of [...PLANS, ...Array.from({ length: 150 }, (_, i) => roundPlan(i % 3 + 1, new Rng(Math.floor(i / 3))).plan)]) {
+    for (const plan of [...PLANS.slice(0, 6), ...Array.from({ length: 150 }, (_, i) => roundPlan(i % 3 + 1, new Rng(Math.floor(i / 3))).plan)]) {
       const st: StampState = { stamps: [], kind: plan.kinds[0], color: 'purple' };
       const kinds = new Set<StampKind>();
       let move = false;
@@ -137,5 +137,16 @@ describe('seeded early stamp choices', () => {
       expect(roundPlan(level, rng)).toEqual({ plan: PLANS[level - 1], color: 'purple' });
       expect(rng.next()).toBe(copy.next());
     }
+  });
+
+  it('Pat the paper is the easiest lap level and its bot pats eight times then finishes', () => {
+    const plan = PLANS[6];
+    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 7, order: [7, 1, 2] });
+    expect(plan.pat).toEqual({ size: 85 / 48, count: 8 });
+    const st: StampState = { stamps: [], kind: 'star', color: 'purple' };
+    for (let n = 0; n < 8; n++) { expect(stampDemo(plan, st).do).toBe('stamp'); st.stamps.push({ x: 0, y: 0, size: 2, turns: 0 }); }
+    expect(stampDemo(plan, st)).toEqual({ do: 'finish' });
+    expect(SCRIPT['stamp.pats']).toBeTruthy();
+    expect(howToFor(stampStudio, 7)!.steps.length).toBeGreaterThan(0);
   });
 });

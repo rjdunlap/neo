@@ -4214,6 +4214,19 @@ async function creativeBatch() {
   const score = id => page.evaluate(id => { const r=kit.store.stats(id).history.at(-1);return [r.misses,r.hints]; },id);
   const fromLevel = Number(process.env.FROM_LEVEL || 1);
   const stampLevels = process.env.STAMP_LEVELS?.split(',').map(Number) ?? Array.from({ length: Math.max(0, 7 - fromLevel) }, (_, i) => fromLevel + i);
+  if (!only || only === 'stamps') {
+    // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
+    await launch('stamp-studio', 7);
+    await page.evaluate(() => { if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40); });
+    await page.waitForTimeout(500);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      for (let i = 0; i < 8; i++) { const p = g.paper.toGlobal({ x: 80 + (i % 4) * 150, y: 120 + Math.floor(i / 4) * 200 }); kit.tap(p.x, p.y); await kit.sleep(i === 7 ? 150 : 60); if (i === 6) { if (g.done) throw new Error('Finished before the eighth pat'); } }
+      if (g.stamps.length !== 8 || !g.done) throw new Error(`Pat the paper kept ${g.stamps.length} pats, done ${g.done}`);
+    });
+    await screenshot('stamp-studio-7');
+    await page.waitForFunction(() => neo.scene.finished || neo.scene.celebrating || !neo.scene.game, null, { timeout: 8000 }).catch(() => {});
+  }
   if (!only || only === 'stamps') for(const level of stampLevels) {
     await launch('stamp-studio',level);
     // The youngest-band co-play tip temporarily covers the color row; dismiss it before testing choices.

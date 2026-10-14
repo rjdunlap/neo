@@ -338,6 +338,7 @@ export const SCRIPT = {
   'picnic.again': ['Whoosh! Here comes the wind again. Let us help Juniper one more time!'],
 
   'game.stamp-studio': ['Stamp studio!'],
+  'stamp.pats': ['Pat the paper! Pat, pat, pat!'],
   'stamp.stars': ['Tap the paper to press your stamp! The green arrow finishes your picture.'],
   'stamp.friends': ['Choose a stamp, then tap the paper! The green arrow finishes your picture.'],
   'stamp.picture': ['Choose a stamp and a color, then tap the paper. Drag your stamps to arrange them. Finish with the green arrow.'],

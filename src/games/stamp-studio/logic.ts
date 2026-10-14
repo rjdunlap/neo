@@ -18,9 +18,13 @@ export interface StampPlan {
   color: boolean;
   move: boolean;
   transform: boolean;
-  prompt: 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story';
+  prompt: 'pats' | 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story';
   name: string;
+  /** Every stamp is pressed at this size, and this many of them finish the picture (the lap level). */
+  pat?: { size: number; count: number };
 }
+/** Each pat is a stamp of 170 units across (the art's radius is 48 at size 1); the eighth finishes the picture. */
+export const PAT = { size: 85 / 48, count: 8 } as const;
 export const PLANS = [
   { kinds: ['star'], color: false, move: false, transform: false, prompt: 'stars', name: 'Press one kind of stamp onto a picture' },
   { kinds: ['cat', 'fish'], color: false, move: false, transform: false, prompt: 'friends', name: 'Make a picture with two kinds of stamps' },
@@ -28,6 +32,8 @@ export const PLANS = [
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'sizes', name: 'Turn stamps and make them big or small' },
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'garden', name: 'Make an imaginary garden, then tell its story' },
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'story', name: 'Make two friends on an adventure; every story is welcome' },
+  // Easiest of all: placed first for lap by `order`, so it has the highest ID.
+  { kinds: ['star'], color: false, move: false, transform: false, prompt: 'pats', name: 'Pat the paper: eight big soft stamps make a picture', pat: PAT },
 ] as const satisfies readonly StampPlan[];
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 /** Normalized coordinates leave room for the largest stamp, including after resizing. */
@@ -70,6 +76,8 @@ export type StampMove =
  * Where the demonstration presses its five stamps, in the sheet's own 0 to 1 coordinates. At the smallest sheet they are at least
  * 190 units apart, so no stamp lands on another (a stamp's touch circle is 55 units wide).
  */
+/** Where the demonstration pats the paper at the lap level: two rows of four. */
+export const PAT_SPOTS = [0.12, 0.37, 0.63, 0.88].flatMap(x => [{ x, y: 0.25 }, { x, y: 0.8 }]);
 export const DEMO_SPOTS = [{ x: 0.15, y: 0.25 }, { x: 0.5, y: 0.2 }, { x: 0.85, y: 0.25 }, { x: 0.3, y: 0.8 }, { x: 0.7, y: 0.8 }] as const;
 const DEMO_COLORS: ColorName[] = ['purple', 'blue', 'green', 'pink', 'purple'];
 /** On a level where stamps move, the first stamp is carried to the middle. */
@@ -82,6 +90,7 @@ const DEMO_MOVE = { stamp: 0, x: 0.5, y: 0.55 } as const;
  */
 export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   const n = st.stamps.length;
+  if (plan.pat) return n < plan.pat.count ? { do: 'stamp', ...PAT_SPOTS[n] } : { do: 'finish' };
   const last = st.stamps[n - 1];
   if (plan.transform && n === 3 && last.turns === 0) return { do: 'turn' };
   if (plan.transform && n === 4 && last.size === 1) return { do: 'grow' };

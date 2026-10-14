@@ -1,5 +1,19 @@
 # Verification history — 2026-10-13
 
+## 2026-10-13 — Bouncy Launch last flight slice 3
+
+- [PR #275](https://github.com/rjdunlap/neo/pull/275), claim `604bd31`, tested `fa15356` plus game/how-to/browser diff. Integrated coordinator dispatch `f918350` (docs only). Fading prior-flight arc, retained level-6 numbered flags, and compare miss ring at the last successful pull's radius; physics, course, bands and scoring unchanged.
+- Typecheck, 24 focused Bouncy Launch/how-to tests and production build passed. `GAME_URL=http://localhost:5194 BROWSER_SUITE=arcade ARCADE_ONLY=launch FROM_LEVEL=5 TO_LEVEL=6` passed actual pulls, two compare misses/one preview hint, ring/arc/fade/resize assertions, retained flags, different prediction, saved scores/stickers and no page errors. First exact-float assertion corrected to tolerance; the passing run is authoritative.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=5,6` at the same URL passed clean in 18.9/15.1 demo seconds. Bot unchanged. `test-results/last-flight-probe.mjs` inspected landscape compare and portrait prediction evidence; initial probe ran before profile readiness, corrected to harness setup. Both screenshots reviewed: ring/arc/flag clear, numbered flag above its cloud, shown pull preserved on resize.
+- Markdown links retain one existing IDEAS anchor failure; changed links and diff check pass. Session server stopped. Not run: full units/browser suites, couch/course/offline (no changed rules, assets, persistence or navigation). Device speech, gesture comfort and child understanding remain open in DEVICE-CHECKS. Slice-2 notes/skies, new levels/bands and unresolved decisions excluded.
+
+## 2026-10-13 — Jelly Drums level 10 (One big jelly)
+
+- Built (on `claude/jelly-drums-one-big-jelly`, base `1c04ffc`): lap-only level 10, placed first (`order: [10,1,2,3]`, `entryLevels: [10]`). One big red low jelly; a touch anywhere sings the nearest awake jelly; jellies wake at 6, 10, 14 and 18 touches; 24 finish; no miss, no hint.
+- Typecheck; full `npm test` passed (1,225 tests), including the new wake-plan rule tests.
+- `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` passed levels 1–10 (loop now to 10, history count 10) at `GAME_URL=http://localhost:5391`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=10` passed in 34.6 demo seconds. Portrait screenshots of the lone jelly and of three awake jellies reviewed.
+- Not run: `npm run build`, the offline check, iPad, device speech, a child. Open: whether a one-year-old swats or looks first, and whether she waits ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
 ## 2026-10-13 — Island Bridges by touch (Lands stage D)
 
 - Built [PR #256](https://github.com/rjdunlap/neo/pull/256): Island Bridges plays by touch at all four levels (tap the water between two islands, Take off switch, Hint, Start over; targets of 64 units or more, beside the sea or under it), a ghost finger, a touch how-to card and spoken lines, `edgeAt`/`waterOf`/`headStart` in `logic.ts`. The couch layout and rules are unchanged.
