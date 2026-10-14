@@ -5,6 +5,7 @@
 
 - Docs only, across PRs #289, #290 and #291 and this branch: roadmap chunks 25–28, [Vine Snip](vine-snip.md), [Block Topple](block-topple.md), [PHYSICS-GAMES.md](PHYSICS-GAMES.md), the [subject sessions](deep-dives/subjects.md) and candidate rows in IDEAS.
 - Ran: `git diff --check` and `node scripts/check-links.mjs` (links ok). No code, tests, browser or device.
+- Later the same day: the subject tracker gained a life-skills group, an every-audience answer for each subject (toddler to middle school to parents) and a middle-band decision; `git diff --check` and links ok again.
 - Open: research came from web searches and a few fetches; the Physics Playground paper and NGSS grade 2–5 text did not load; several figures are search-summary level; the physics-engine choice is a decision for the developer.
 
 ## 2026-10-14 — Puzzle Pals visible cues and fairness
