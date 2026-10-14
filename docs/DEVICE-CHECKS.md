@@ -2,6 +2,7 @@
 
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 
+- [ ] **Pyramid Solitaire with a grown-up on an iPad (2026-10-13):** are the five-row cards comfortable to tap, do the exposed outlines and both covering cards read clearly, does the rank guide and device speech explain A/J/Q/K, and does returning to a clearing route feel like useful help? Observe whether the finite practice pyramids are satisfying before adding a stock or conventional deck. Chrome automation does not establish these.
 - [ ] **Family quality pilots, when built:** find a remembered game, choose an unfamiliar one with the available input, inspect a different mode, leave and return, then switch profiles. Compare a landscape/portrait view with sound off and observe whether both people contribute in a shared-role round. Record understandable actions and voluntary replay/revision, not time spent or stickers earned; see [the review protocol](FAMILY-EXPERIENCE.md#what-a-quality-review-records). These observations do not establish other games' readiness.
 
 - [ ] **The next-level button and Bubble Pop's scenes with her:** does a small hand tap the orange next-level button by mistake (it sits above home, away from the green again); does a night or sea round still read as bubbles to pop, and do the fish and stars read as scenery and not as something to tap?
