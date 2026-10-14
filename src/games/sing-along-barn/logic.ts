@@ -53,7 +53,16 @@ export const HERE_A: Phrase = { syllables: ['Here', 'a', '~'], steps: [3, 3, 0] 
 export const THERE_A: Phrase = { syllables: ['there', 'a', '~'], steps: [3, 3, 0] };
 export const EVERYWHERE: Phrase = { syllables: ['ev', 'ry', 'where', 'a', '~', '~'], steps: [0, 0, 0, 3, 4, 3] };
 
-export type TuneId = 'macdonald' | 'buns';
+/**
+ * "Mary Had a Little Lamb" is a traditional nursery song. Its tune is mi re do re mi mi mi, re re re, mi sol sol: E D C D E E E,
+ * D D D, E G G in C, all inside the island's pentatonic set (C D E G A), so no exception is needed. Written from the tune's
+ * standard form, not a printed score: a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable.
+ */
+export const MARY_HAD_A: Phrase = { syllables: ['Ma', 'ry', 'had', 'a', 'lit', 'tle', 'lamb'], steps: [2, 1, 0, 1, 2, 2, 2] };
+export const LITTLE_LAMB: Phrase = { syllables: ['lit', 'tle', 'lamb', 'lit', 'tle', 'lamb'], steps: [1, 1, 1, 2, 3, 3] };
+export const FLEECE: Phrase = { syllables: ['its', 'fleece', 'was', 'white', 'as', 'snow'], steps: [2, 1, 1, 2, 1, 0] };
+
+export type TuneId = 'macdonald' | 'buns' | 'mary';
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -91,7 +100,15 @@ export const BUNS: Tune = {
   answers: HOT_CROSS_BUNS,
   namesAnimal: false,
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS];
+/** "Mary had a little lamb, its fleece was white as snow" opens it; each friend's verse is "little lamb, little lamb, its fleece was white as snow", answering on "lamb". */
+export const MARY: Tune = {
+  id: 'mary',
+  opening: [MARY_HAD_A, FLEECE],
+  verse: [LITTLE_LAMB, FLEECE],
+  answers: LITTLE_LAMB,
+  namesAnimal: false,
+};
+export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY];
 
 export interface Note {
   step: number;
@@ -164,7 +181,7 @@ export const PLANS: readonly SingPlan[] = [
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

@@ -304,7 +304,7 @@ class SingAlongBarn implements Game {
     }
     this.bringOut(a);
     this.drawBeads();
-    void this.ctx.instruct(this.tune.id === 'buns' ? 'barn.sing.buns' : 'barn.sing');
+    void this.ctx.instruct(this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const));
   }
 
   /** A line has ended and more friends are still to come: the one who sang settles, and the others come out to be chosen. */
@@ -335,7 +335,7 @@ class SingAlongBarn implements Game {
     this.phase = 'sing';
     this.tapLayer.eventMode = 'static';
     this.drawBeads();
-    void this.ctx.instruct(this.tune.id === 'buns' ? 'barn.sing.buns' : 'barn.sing');
+    void this.ctx.instruct(this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const));
   }
 
   /** Any touch anywhere moves the tune on one note. Always music, never a mistake. */
@@ -441,7 +441,7 @@ class SingAlongBarn implements Game {
     const colors = RAINBOW.map((c) => swatch[c].fill);
     this.ctx.particles.burst(this.view.w / 2, 140, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
     sfx.tada();
-    void this.ctx.say(this.tune.id === 'buns' ? 'barn.done.buns' : 'barn.done');
+    void this.ctx.say(this.tune.id === 'macdonald' ? 'barn.done' : (`barn.done.${this.tune.id}` as const));
     await this.ctx.tw.wait(1.8);
     // Nobody made a mistake and nobody asked for help: singing is always right.
     this.ctx.finish({ misses: 0, hints: 0 });
@@ -504,6 +504,17 @@ function drawTuneCard(t: Tune): Container {
     cow.scale.set(0.36);
     cow.position.set(0, 80);
     c.addChild(cow);
+  } else if (t.id === 'mary') {
+    const lamb = new Graphics()
+      .circle(-40, 30, 26)
+      .circle(0, 14, 34)
+      .circle(40, 30, 26)
+      .circle(0, 46, 30)
+      .fill(0xffffff)
+      .stroke(line(0xb8b0a0, 5))
+      .circle(0, 40, 22)
+      .fill(0x4a3a30);
+    c.addChild(lamb);
   } else {
     const bun = new Graphics()
       .ellipse(0, 10, 84, 52)
@@ -590,13 +601,13 @@ export const singAlongBarn: GameModule = {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
     if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines) or Hot Cross Buns, then choose who sings next after each verse (${friends})`;
-    if (p.chooseTune) return `Choose Old MacDonald or Hot Cross Buns, then choose who sings next after each verse (${friends})`;
-    if (p.each) return `Old MacDonald or Hot Cross Buns; after each verse, choose who sings next (${friends})`;
-    return p.invite ? `Old MacDonald or Hot Cross Buns; choose ${friends} to join the song` : `Old MacDonald or Hot Cross Buns; tap to sing, ${friends} visit`;
+    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb, then choose who sings next after each verse (${friends})`;
+    if (p.each) return `Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb; after each verse, choose who sings next (${friends})`;
+    return p.invite ? `Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
   coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines.',
-  offScreen: 'Sing Old MacDonald or Hot Cross Buns with stuffed animals: bring out one for each verse and make its sound together.',
+  offScreen: 'Sing Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,
