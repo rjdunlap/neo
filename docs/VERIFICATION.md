@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-14 — Bumper Garden deep dive
+
+- Docs only, `claude/bumper-garden-deep-dive` ([PR #297](https://github.com/rjdunlap/neo/pull/297)): added [bumper-garden.md](deep-dives/bumper-garden.md) (current ladder, known gaps including a how-to that is false at levels 2–5, genre and developmental research, levels 6–14 proposed, nine build slices), set the tracker row to designed, pointed the IDEAS ladder row and roadmap chunk 14 at it.
+- Ran: link check and `git diff --check`. No code, tests or browser suites (research only). Not established: whether a one-year-old can follow or flip the ball, which needs a person and a device.
+
 ## 2026-10-14 — Bug Builder deep dive
 
 - Docs only, `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296)): added [bug-builder.md](deep-dives/bug-builder.md) (current ladder, known gaps, genre research, levels 8–13 proposed, nine build slices) and updated the tracker, roadmap chunk 14 and IDEAS rows.
