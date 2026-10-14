@@ -182,6 +182,8 @@ These nine are island games for the grown-up band, in the Lantern Lake land. All
 | Lantern Lights | a 3 by 3 pond of paper lanterns: press one to flip it and its four neighbours, and light them all | 4 by 4 and 5 by 5 ponds that take planning; a hint that always brings the fewest presses down by one; one puzzle-shelf course scored in presses against an exactly worked-out par (Dusk on the Pond) |
 | Sudoku Garden | a 6 by 6 bed with a few numbers to find: tap a square, then a number (or Marks, Erase, Hint, Start over); a controller plays it too | half the bed to find, the only-place-left trick, then 9 by 9 beds up to a pair or pointing line; hints on request that name the reason; two puzzle-shelf courses scored in entries against par (Six Beds, Three Big Beds) |
 
+Finished local builds awaiting integration: **Snowball Merge**, **Marble Jump** and **Log Roll**. They are excluded from the inventory above; [the local-build audit](docs/LOCAL-GAME-BUILDS.md) records their sources, checks and the competing Marble Jump versions.
+
 ## Where it's going
 
 The [roadmap](docs/ROADMAP.md) says what comes next and where the island is heading: deeper modes for familiar games, a few new ones, the next story, and themed zones for elementary school (Wonder Woods first, then Maker Harbor, Storybook Square, Discovery Marsh and Skywatch Isles), with younger favorites always staying available.
