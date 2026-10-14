@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { ANIMALS, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, snackTouch, type Food, type SnackTable } from './logic';
+import { ANIMALS, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
 
 describe('Animal Snack', () => {
   it('names every drawn snack with a grammatical countable unit from one to six', () => {
@@ -114,5 +114,31 @@ describe('Animal Snack', () => {
         if (free && plan.mode !== 'match') expect(eatenCount).toBe(plan.rounds);
       }
     }
+  });
+
+  it('alternates food and sound questions in level 3, each clue naming exactly one animal present', () => {
+    const plan = PLANS[2];
+    for (let seed = 1; seed <= 200; seed++) {
+      const rounds = makeRounds(plan, new Rng(seed));
+      rounds.forEach((r, i) => {
+        expect(r.by).toBe(i % 2 === 1 ? 'sound' : 'food');
+        expect(r.animals).toContain(r.ask);
+        expect(new Set(r.animals).size).toBe(plan.animals);
+        if (i > 0) expect(r.ask).not.toBe(rounds[i - 1].ask);
+        if (r.by === 'sound') {
+          expect(SOUND_WORDS[r.ask!]).toBeTruthy();
+          const same = r.animals.filter((a) => VOICE[a] === VOICE[r.ask!]);
+          expect(same).toEqual([r.ask]);
+        }
+      });
+    }
+    expect(SOUNDERS.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps other modes free of sound questions and gives the bot the sound-asked animal', () => {
+    for (const plan of PLANS.filter((p) => p.mode !== 'who')) expect(makeRounds(plan, new Rng(3)).every((r) => !r.by)).toBe(true);
+    const r = makeRounds(PLANS[2], new Rng(9))[1];
+    const table: SnackTable = { friends: r.animals, snacks: [], ask: r.ask, eatenCount: 0 };
+    expect(snackTouch(PLANS[2], table)).toEqual({ friend: r.animals.indexOf(r.ask!) });
   });
 });

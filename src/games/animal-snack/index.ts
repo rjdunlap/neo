@@ -1,11 +1,11 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { entryId } from '../../content/journal';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
-import { sfx, type AnimalSound } from '../../audio/sfx';
+import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -16,7 +16,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, planFor, shouldNudge, snackTouch, type Food, type SnackPlan, type SnackRound } from './logic';
+import { countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type SnackPlan, type SnackRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -24,7 +24,6 @@ const LEVELS: BandLevels = {
   preschool: { min: 3, max: 5 },
 };
 
-const VOICE: Partial<Record<CritterName, AnimalSound>> = { cow: 'moo', bunny: 'hop', dog: 'woof', cat: 'meow', duck: 'quack', pig: 'oink', bear: 'growl' };
 const ANIMAL_WORDS: Partial<Record<CritterName, string>> = { cow: 'cow', bunny: 'bunny', dog: 'dog', cat: 'cat', duck: 'duck', pig: 'pig', bear: 'bear' };
 
 function foodArt(food: Food): Container {
@@ -111,6 +110,9 @@ class AnimalSnack implements Game {
     this.rounds = makeRounds(this.plan, ctx.rng);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 73 }, ctx.view);
     this.glow.eventMode = 'none';
+    // In a sound question the bubble is a speaker: tapping it plays the clue again (free, never a hint).
+    onTap(this.bubble, () => { if (!this.busy && this.round?.by === 'sound') this.playClue(); }, { cooldown: 400 });
+    this.bubble.hitArea = new Rectangle(-80, -60, 160, 120);
     this.bubble.eventMode = 'none';
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => void this.ring());
     this.bell.visible = this.plan.mode === 'count';
@@ -249,8 +251,13 @@ class AnimalSnack implements Game {
     const food = FAVORITE[r.ask!]!;
     if (mode === 'count') this.setSnacks(Array<Food>(5).fill(food));
     else this.setSnacks([]);
-    this.showBubble(food, mode === 'count' ? r.n : undefined);
+    this.showBubble(food, mode === 'count' ? r.n : undefined, r.by === 'sound');
     this.busy = false;
+    if (mode === 'who' && r.by === 'sound') {
+      const done = this.ctx.instruct('snack.whosound', { sound: SOUND_WORDS[r.ask!]! });
+      this.playClue();
+      return done;
+    }
     if (mode === 'who') return this.ctx.instruct('snack.who', { food: FOOD_WORDS[food] });
     return this.ctx.instruct('snack.count', { animal: ANIMAL_WORDS[r.ask!]!, n: r.n!, food: countedFood(food, r.n!) });
   }
@@ -260,8 +267,22 @@ class AnimalSnack implements Game {
     this.setSnacks(this.ctx.rng.shuffle(this.friends.map((f) => FAVORITE[f.name]!)));
   }
 
-  private showBubble(food: Food, n?: number) {
+  private playClue() {
+    const voice = VOICE[this.round.ask!];
+    if (voice) sfx.animal(voice);
+  }
+
+  private showBubble(food: Food, n?: number, sound = false) {
     this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.bubble.eventMode = sound ? 'static' : 'none';
+    if (sound) {
+      const g = new Graphics().roundRect(-80, -60, 160, 120, 40).fill(0xffffff).stroke({ width: 5, color: swatch.white.line });
+      const horn = new Graphics().poly([-40, -14, -20, -14, 6, -38, 6, 38, -20, 14, -40, 14]).fill(ink);
+      const waves = new Graphics();
+      for (const r of [22, 40]) waves.arc(8, 0, r, -0.9, 0.9).stroke({ width: 7, color: ink, cap: 'round' });
+      this.bubble.addChild(g, horn, waves);
+      return;
+    }
     const counting = n !== undefined;
     const g = new Graphics().roundRect(counting ? -100 : -80, -60, counting ? 200 : 160, counting ? 150 : 120, 40).fill(0xffffff).stroke({ width: 5, color: swatch.white.line });
     const art = foodArt(food);
@@ -329,17 +350,22 @@ class AnimalSnack implements Game {
       await this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[FAVORITE[f.name]!] });
       return void this.next();
     }
-    this.miss(f, FAVORITE[want]!);
+    this.miss(f, FAVORITE[want]!, this.round.by === 'sound' ? want : undefined);
   }
 
   /** A wrong animal shakes its head and says what it eats instead. */
-  private miss(f: Friend, food: Food) {
+  private miss(f: Friend, food: Food, soundOf?: CritterName) {
     this.misses++;
     this.wrongs++;
     sfx.boing();
     f.node.setMood('surprised', 1);
     void this.ctx.tw.to(f.node, { rotation: 0.08 }, { duration: 0.1 }).then(() => this.ctx.tw.to(f.node, { rotation: -0.08 }, { duration: 0.15 })).then(() => this.ctx.tw.to(f.node, { rotation: 0 }, { duration: 0.1 }));
-    void this.ctx.say('snack.nothanks', { animal: ANIMAL_WORDS[f.name]!, mine: FOOD_WORDS[FAVORITE[f.name]!], food: FOOD_WORDS[food] });
+    if (soundOf) {
+      // A wrong animal answers in its own voice, so the mistake is also a second listen.
+      const voice = VOICE[f.name];
+      if (voice) sfx.animal(voice);
+      void this.ctx.say('snack.notme', { animal: ANIMAL_WORDS[f.name]!, sound: SOUND_WORDS[soundOf]! });
+    } else void this.ctx.say('snack.nothanks', { animal: ANIMAL_WORDS[f.name]!, mine: FOOD_WORDS[FAVORITE[f.name]!], food: FOOD_WORDS[food] });
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       this.glowing = this.friends.find((x) => x.name === eaterOf(food))?.node ?? null;
