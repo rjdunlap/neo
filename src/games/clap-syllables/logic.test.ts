@@ -26,6 +26,10 @@ describe('the words', () => {
     expect(byCount(4).length).toBeGreaterThanOrEqual(2);
   });
 
+  it('keeps dialect-dependent counts out (words whose beats people say differently)', () => {
+    for (const x of ['fire', 'hour', 'every', 'chocolate', 'family', 'camera', 'vegetable', 'different']) expect(WORDS.some((y) => y.word === x), x).toBe(false);
+  });
+
   it('every word has a picture: one of Rhyme Time\'s or one drawn here', () => {
     for (const x of WORDS) expect(rhymeWords.has(x.word) || OWN_PICTURES.includes(x.word), x.word).toBe(true);
   });

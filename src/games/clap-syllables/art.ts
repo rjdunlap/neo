@@ -7,7 +7,7 @@ import { picture } from '../rhyme-time/pictures';
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 /** Words drawn here (the rest are Rhyme Time's pictures). Listed so a test can tell every word has a picture. */
-export const OWN_PICTURES = ['apple', 'orange', 'lemon', 'balloon', 'flower', 'bunny', 'blueberries', 'banana', 'butterfly', 'umbrella', 'ladybug', 'watermelon', 'helicopter'];
+export const OWN_PICTURES = ['apple', 'orange', 'lemon', 'balloon', 'flower', 'bunny', 'blueberries', 'banana', 'butterfly', 'umbrella', 'ladybug', 'watermelon', 'helicopter', 'pizza', 'rainbow', 'pencil', 'window', 'spider', 'tomato', 'strawberry', 'pineapple', 'caterpillar'];
 
 /** Scales a drawing to fit a square and centers it on (0, 0). */
 export function fitTo(art: Container, size: number): Container {
@@ -79,6 +79,57 @@ export function wordPicture(word: string): Container {
       g.moveTo(-30, -38).lineTo(8, -38).stroke(line(swatch.brown.line, 4));
       g.moveTo(-30, 40).lineTo(32, 40).moveTo(-18, 34).lineTo(-25, 42).moveTo(18, 34).lineTo(25, 42).stroke(line(swatch.brown.line, 5));
       g.ellipse(-6, 4, 20, 14).fill(swatch.white.fill).stroke(line(swatch.blue.line, 3));
+      break;
+    case 'pizza':
+      g.moveTo(-52, -36).quadraticCurveTo(0, -62, 52, -36).lineTo(0, 54).closePath().fill(swatch.yellow.fill).stroke(line(swatch.orange.line));
+      g.moveTo(-52, -36).quadraticCurveTo(0, -62, 52, -36).stroke(line(swatch.orange.line, 9));
+      for (const [x, y] of [[-20, -26], [18, -22], [0, 8]]) g.circle(x, y, 9).fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
+      break;
+    case 'rainbow':
+      for (const [i, name] of (['red', 'orange', 'yellow', 'green', 'blue'] as ColorName[]).entries()) {
+        g.moveTo(-60 + i * 9, 36).arc(0, 36, 60 - i * 9, Math.PI, Math.PI * 2).stroke(line(swatch[name].fill, 10));
+      }
+      g.ellipse(-62, 44, 18, 10).ellipse(62, 44, 18, 10).fill(0xffffff).stroke(line(0xcfd8e3, 3));
+      break;
+    case 'pencil':
+      g.rect(-14, -58, 28, 90).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
+      g.rect(-14, -58, 28, 14).fill(swatch.pink.fill).stroke(line(swatch.pink.line, 3));
+      g.moveTo(-14, 32).lineTo(0, 62).lineTo(14, 32).closePath().fill(0xf2d3a5).stroke(line(swatch.brown.line, 3));
+      g.moveTo(-5, 52).lineTo(0, 62).lineTo(5, 52).closePath().fill(ink);
+      break;
+    case 'window':
+      g.roundRect(-50, -50, 100, 100, 8).fill(swatch.blue.fill).stroke(line(swatch.brown.line, 8));
+      g.moveTo(0, -50).lineTo(0, 50).moveTo(-50, 0).lineTo(50, 0).stroke(line(swatch.brown.line, 6));
+      g.moveTo(-34, -30).lineTo(-20, -44).stroke(line(0xffffff, 5));
+      break;
+    case 'spider':
+      for (const dir of [-1, 1]) for (const k of [0, 1, 2, 3]) {
+        g.moveTo(dir * 14, -6 + k * 8).quadraticCurveTo(dir * 46, -34 + k * 12, dir * 58, 14 + k * 12).stroke(line(ink, 4));
+      }
+      g.circle(0, 10, 28).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
+      g.circle(0, -22, 18).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
+      g.circle(-7, -25, 4.5).circle(7, -25, 4.5).fill(0xffffff);
+      g.circle(-7, -25, 2).circle(7, -25, 2).fill(ink);
+      break;
+    case 'tomato':
+      g.circle(0, 6, 46).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.moveTo(0, -36).lineTo(-18, -26).lineTo(-8, -40).lineTo(0, -52).lineTo(8, -40).lineTo(18, -26).closePath().fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+      break;
+    case 'strawberry':
+      g.moveTo(-42, -20).quadraticCurveTo(0, -40, 42, -20).quadraticCurveTo(34, 34, 0, 56).quadraticCurveTo(-34, 34, -42, -20).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      for (const [x, y] of [[-20, -4], [0, -8], [20, -4], [-10, 16], [10, 16], [0, 34]]) g.ellipse(x, y, 3, 5).fill(swatch.yellow.fill);
+      g.moveTo(0, -30).lineTo(-22, -34).lineTo(-12, -44).lineTo(0, -40).lineTo(12, -44).lineTo(22, -34).closePath().fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+      break;
+    case 'pineapple':
+      g.ellipse(0, 16, 36, 46).fill(swatch.yellow.fill).stroke(line(swatch.orange.line));
+      for (const x of [-18, 0, 18]) g.moveTo(x - 14, -14).lineTo(x + 14, 46).moveTo(x + 14, -14).lineTo(x - 14, 46).stroke(line(swatch.orange.line, 2.5));
+      for (const dx of [-22, -10, 0, 10, 22]) g.moveTo(dx * 0.3, -26).lineTo(dx, -56).stroke(line(swatch.green.line, 7));
+      break;
+    case 'caterpillar':
+      for (let i = 0; i < 4; i++) g.circle(-54 + i * 34, 10 - (i % 2) * 8, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
+      g.circle(-54, 10, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
+      g.circle(-60, 4, 4).circle(-48, 4, 4).fill(ink);
+      g.moveTo(-60, -10).lineTo(-66, -26).moveTo(-48, -10).lineTo(-42, -26).stroke(line(ink, 3));
       break;
     default:
       return picture(word);

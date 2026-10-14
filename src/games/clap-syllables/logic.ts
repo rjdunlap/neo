@@ -19,11 +19,11 @@ export const WORDS: readonly Word[] = [
   // One clap
   w('cat'), w('dog'), w('duck'), w('frog'), w('bee'), w('tree'), w('star'), w('moon'), w('fish'), w('cake'), w('boat'), w('hat'), w('bell'), w('car'), w('bear'), w('key'),
   // Two claps
-  w('ap', 'ple'), w('or', 'ange'), w('lem', 'on'), w('bal', 'loon'), w('flow', 'er'), w('bun', 'ny'),
+  w('ap', 'ple'), w('or', 'ange'), w('lem', 'on'), w('bal', 'loon'), w('flow', 'er'), w('bun', 'ny'), w('piz', 'za'), w('rain', 'bow'), w('pen', 'cil'), w('win', 'dow'), w('spi', 'der'),
   // Three claps
-  w('ba', 'na', 'na'), w('but', 'ter', 'fly'), w('um', 'brel', 'la'), w('la', 'dy', 'bug'), w('blue', 'ber', 'ries'),
+  w('ba', 'na', 'na'), w('but', 'ter', 'fly'), w('um', 'brel', 'la'), w('la', 'dy', 'bug'), w('blue', 'ber', 'ries'), w('to', 'ma', 'to'), w('straw', 'ber', 'ry'), w('pine', 'ap', 'ple'),
   // Four claps
-  w('wa', 'ter', 'mel', 'on'), w('hel', 'i', 'cop', 'ter'),
+  w('wa', 'ter', 'mel', 'on'), w('hel', 'i', 'cop', 'ter'), w('cat', 'er', 'pil', 'lar'),
 ];
 
 export const byCount = (n: number) => WORDS.filter((x) => syllables(x) === n);
