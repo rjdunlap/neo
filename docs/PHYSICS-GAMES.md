@@ -57,6 +57,21 @@ All names are generic. "Tier" is the list above. Effort is relative (S / M / L).
 
 Existing notebook candidates (Wobble Works, Water Paths, Magnet Fishing, Gear Garden, Circuit Garden, Mini Putt) are not re-argued here. The new evidence changes none of their rankings except Water Paths, whose distinct-fluid idea (water, steam, mud) is the cleanest bridge from physics to the states-of-matter session in [subject sessions](deep-dives/subjects.md).
 
+## Every band
+
+The island's goal (the developer, 2026-10-14) is games for toddlers, preschoolers, elementary and middle-school children and the parents. The candidates above lean to 3–8, so this table says what each physics idea offers the others. Grown-ups' rows are in Lantern Lake or couch play; "page" means a plain-HTML card on the grown-ups' page.
+
+| Idea | Lap and toddler | Preschool and pre-K | School (6–8) | Upper school (9–12) and early teens | Grown-ups (parents) |
+| --- | --- | --- | --- | --- | --- |
+| Planet Hop | Tap to boing the pet on the moon (it floats up higher) | Near or far on two planets | Predict which planet, then compare | Gravity as a number: the same pull flies twice as far where gravity is half | Mini Putt on the moon |
+| Domino Run | Tap a domino and watch the line fall | Fill the gaps to reach a bell | Branches and color patterns | Spacing and height as a rule; a chain reaction with a puzzle limit | A cozy puzzle (a Rube Goldberg builder) |
+| Swing Pals | Tap to push a friend | Swing as high as the star | Short rope or long: which is faster | Period against length (3-PS2-2), predict then measure | A calm, rhythmic cozy toy |
+| Lift It | Push a crate; the ramp does the rest | Pick the ramp or the lever | Which machine is easier; trade-offs | Mechanical advantage by numbers (a pulley takes half the force and twice the rope) | A mechanism puzzle |
+| Draw a Ramp | Scribble and a ball rolls | Draw a slide to the friend | Draw, replay, revise | Several balls, obstacles | Physics Playground-style sandbox |
+| Vine Snip, Block Topple | One vine, one tap | Two vines, a big tower | Order and angle | Angle and power as numbers; torque | Harder authored levels |
+
+Parents: the family table (play together, chunk 16) is the natural home for the shared versions, such as one person pulling the sling and the other choosing the planet.
+
 ## Suggested order
 
 1. **Planet Hop** (a Bouncy Launch mode; cheapest and a good first space idea).
