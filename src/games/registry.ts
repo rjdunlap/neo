@@ -1,3 +1,4 @@
+import { pyramidSolitaire } from './pyramid-solitaire';
 import { numberNook } from './number-nook';
 import { patternTrain } from './pattern-train';
 import { memoryMatch } from './memory-match';
@@ -186,6 +187,7 @@ export const GAMES: GameModule[] = [
   islandBridges,
   pondConga,
   numberNook,
+  pyramidSolitaire,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

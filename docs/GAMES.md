@@ -380,7 +380,15 @@ The green gate tests a garden. An incomplete test and an unmatched prediction ar
 
 ## Grown-up puzzles
 
-Nine games made for grown-ups, in the island's Lantern Lake land for the `grownup` band (13 and up; younger players find them behind the land's signpost and play their easiest levels). They are in `GAMES` like any game. All nine play by touch on the island; eight also take controllers on the couch. Number Nook is touch-only. Couch rounds keep their own records and give a couch sticker; island rounds give the ordinary island sticker. Help remains replayable, with no clock or loss screen.
+Ten games made for grown-ups, in the island's Lantern Lake land for the `grownup` band (13 and up; younger players find them behind the land's signpost and play their easiest levels). They are in `GAMES` like any game. All ten play by touch on the island; eight also take controllers on the couch. Number Nook and Pyramid Solitaire are touch-only. Couch rounds keep their own records and give a couch sticker; island rounds give the ordinary island sticker. Help remains replayable, with no clock or loss screen.
+
+### Pyramid Solitaire
+
+*grownup · touch/mouse only · complements to thirteen, planning and revision.* Lift two exposed cards whose ranks total thirteen, or an exposed king alone, to uncover and clear a small pyramid. A card is exposed only when both cards covering it have gone. All ranks are face-up; the visible guide and spoken support explain A = 1, J = 11, Q = 12 and K = 13. Clear the pyramid to finish through the shell with one sticker, including with help.
+
+Three levels use 3/4/5 rows with 6/10/15 cards. Seeded generation assigns complementary ranks along a legal clearing order; an exact remaining-card mask solver proves a clearing route and accepts alternative solutions. These are finite practice pyramids, with no stock, draw pile or conventional 52-card deck restriction. Deeper rounds add cover relationships and choices, with no timer or loss screen.
+
+Tap one exposed card and its complement; tap the selected card again to cancel. Covered-card taps explain the covers without counting a miss. A mismatched exposed pair removes nothing, gives a gentle boing and spoken reminder, and counts one miss; two consecutive mismatches show a counted hint. Hint outlines a next removal on a clearing route. Repeating it while visible adds no help. A legal removal that leaves a dead end is free exploration; Hint returns to the nearest solvable ancestor and outlines a clearing move, counting support once. Undo and Start over are free revision and preserve misses and hints. The how-to ghost finger plays through real taps using the same solver. Co-play predicts what a pair will uncover; off-screen play uses numbered paper cards. No controller, couch course or saved unfinished deal is built in this slice.
 
 ### Number Nook
 

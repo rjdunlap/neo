@@ -143,7 +143,7 @@ Proposals for the couch route, written after the first grown-up playtest (2026-1
 | **Pond Typing** (Typing Terror, ZType; a keyboard-only extra for the Laptop setting) | Type the word on each bubble to pop it before it drifts off the top | Friendly: bubbles, no robots and no lives; a wrong key only lowers accuracy and never ends anything. Letter, word and sentence levels, then a fixed 25-word boss list; accuracy and words per minute are separate personal bests. Needs letters in the couch input, which today reads only a few keys | M |
 | **Letter Pond** (Spell or Starve, Boggle) | Chain adjacent letters into words in a board; find the longest and the most | The d-pad walks the chain, so it works on a controller; a bundled, reviewed word list as data, with par as the number of words the board holds; no clock; "turn the board" to reshuffle. Word Search is the gentler sibling (themed lists) | M |
 | **Brain Break** (Brain Age; Stroop, Schulte tables, mental arithmetic) | Sixty-second drills: name the ink color of a color word, tap 1 to 25 in order, quick sums, echo a tune, count a flash of critters | Each drill is a fixed seeded course with a personal best; first three only. Honest framing: games with a score | S each |
-| **Pyramid Solitaire** (Neopets' Pyramids; Klondike, FreeCell) | Remove pairs that add to 13 from a pyramid of cards | Code-drawn cards; deals proven solvable by search; d-pad cursor. FreeCell later, since its deals are almost all solvable | M |
+| **Pyramid Solitaire extensions** (finite practice slice [built](archive/COMPLETED-2026-10-09.md#pyramid-solitaire-first-slice-2026-10-13)) | Conventional-deck deals and stock beyond the face-up miniature pyramids | Proposals: define a stock and deck rules, controller cursor and a frozen course. FreeCell remains a separate candidate; do not rebuild the 6/10/15-card first slice | M |
 | **Two boards at once** (Penguin Slide and Garden Rows face-offs) | Face-off on side-by-side boards of the same seed, instead of taking turns | Needs the `twin` games to render two boards in one scene; a proposal in the roadmap's parked list | M |
 | **Shared-cursor co-op** (Sudoku Garden for two) | One partner chooses the square, the other the number | Both controllers on one board; the pet takes the second seat when alone | S |
 | **Endless runs** (Mega Mini Games' Endless) | "How many boards in a row" with no end screen, only a record | Opt-in per game; the couch counterpart of the parked "Keep playing" mode | S |
@@ -427,7 +427,7 @@ The request: another deep dive for game ideas, aimed mainly at parents and older
 | Recalled, not opened | Pengo, Tapper, Joust (a search for all three returned nothing usable), JezzBall's rules, the 24 game, fishing-shadow sizes, Gyroids singing, the player composing a town tune in game, ghost scatter and chase timing | Marked **(recalled)** in the rows; recheck before a design depends on it |
 | Left out on purpose | Dodo Airlines, the island minigames and Nook Miles: those belong to *New Horizons*, not the GameCube game | Nothing |
 
-Nothing was blocked this time. The gaps are in the last two rows, and the [prompts at the end](#for-gemini-arcade-and-animal-crossing-pass) are for them.
+Nothing was blocked this time. The gaps are in the last two rows, and the [prompts at the end](#arcade-classics-and-the-animal-crossing-nes-shelf-2026-10-11) are for them.
 
 **Titles that land on rows already here.**
 

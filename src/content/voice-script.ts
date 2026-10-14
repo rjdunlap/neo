@@ -4,6 +4,16 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'game.pyramid-solitaire': ['Pyramid solitaire!'],
+  'pyramid.go': ['Lift two open cards that add to thirteen. A king is thirteen all by itself. Remove the cards below to uncover the ones above.'],
+  'pyramid.number': ['{n}. Find an open card to make thirteen together.'],
+  'pyramid.covered': ['First lift both cards directly below this one.'],
+  'pyramid.miss': ['Those cards do not make thirteen. This first card needs {n}.'],
+  'pyramid.hint': ['Lift the cards with gold outlines. They start a way to clear the pyramid.'],
+  'pyramid.blocked': ['This route cannot clear every card. Try Undo, or ask for a hint to revise it.'],
+  'pyramid.recover': ['We took back some removals to find a clearing route. Try the gold cards.'],
+  'pyramid.restart': ['The same cards are back. Try a different order.'],
+  'pyramid.done': ['The pyramid is clear!'],
   'game.number-nook': ['Number Nook!'],
   'nook.go': ['Put the numbers in order, across each row. Tap a tile beside the empty space to slide it. Leave the empty space at the bottom right.'],
   'nook.miss': ['That tile cannot reach the gap. Slide a tile directly beside the empty space.'],
