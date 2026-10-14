@@ -31,12 +31,16 @@ const LEVELS: BandLevels = {
 };
 
 const GRASS = 0x9edb86;
+const SAND = 0xf3dba0;
+const BEACH: readonly CoverKind[] = ['umbrella', 'sandcastle', 'bucket', 'towel'];
 const CRITTER_SCALE = 0.55;
 /** Where a critter's feet sit, relative to the bottom of its cover. The cover's top is at -150. */
 const POSE = { hidden: 90, peek: -82, out: -145 };
 type Pose = keyof typeof POSE;
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+
+const ground = (kind: CoverKind) => (BEACH.includes(kind) ? SAND : GRASS);
 
 /** Something to hide behind, about 230 wide and 150 tall, standing on (0, 0). */
 function drawCover(kind: CoverKind, grass = true): Graphics {
@@ -85,6 +89,35 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       g.poly([-110, -95, -62, -145, 48, -150, 10, -94]).fill(swatch.white.light);
       g.moveTo(10, -94).lineTo(48, -34).lineTo(106, -105).stroke(line(swatch.brown.line, 4));
       break;
+    case 'umbrella':
+      g.moveTo(0, 0).lineTo(0, -140).stroke(line(wood.line, 10));
+      g.moveTo(-118, -70).bezierCurveTo(-118, -170, 118, -170, 118, -70).closePath().fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.moveTo(-40, -148).bezierCurveTo(-60, -120, -62, -92, -50, -72).lineTo(-8, -72).bezierCurveTo(-8, -100, -8, -126, -8, -158)
+        .closePath().fill(swatch.white.light);
+      g.moveTo(40, -148).bezierCurveTo(60, -120, 62, -92, 50, -72).lineTo(8, -72).bezierCurveTo(8, -100, 8, -126, 8, -158)
+        .closePath().fill(swatch.white.light);
+      break;
+    case 'sandcastle':
+      g.roundRect(-110, -70, 220, 70, 8).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
+      for (const x of [-80, 80]) {
+        g.roundRect(x - 30, -130, 60, 130, 6).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
+        for (const d of [-20, 0, 20]) g.rect(x + d - 6, -146, 12, 16).fill(swatch.yellow.light).stroke(line(swatch.yellow.line, 3));
+      }
+      g.roundRect(-30, -150, 60, 150, 6).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
+      g.poly([-38, -148, 0, -190, 38, -148]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+      g.roundRect(-14, -50, 28, 50, 14).fill(swatch.yellow.line);
+      break;
+    case 'bucket':
+      g.moveTo(-70, -150).bezierCurveTo(-40, -250, 40, -250, 70, -150).stroke(line(swatch.white.line, 7));
+      g.poly([-100, -140, 100, -140, 72, 0, -72, 0]).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.roundRect(-108, -150, 216, 24, 8).fill(swatch.blue.light).stroke(line(swatch.blue.line));
+      g.circle(0, -66, 20).fill(swatch.yellow.fill);
+      break;
+    case 'towel':
+      g.roundRect(-112, -150, 224, 150, 10).fill(swatch.pink.fill).stroke(line(swatch.pink.line));
+      for (const x of [-72, -24, 24, 72]) g.rect(x - 11, -150, 22, 150).fill(swatch.white.light);
+      for (const x of [-100, -80, 80, 100]) g.moveTo(x, 0).lineTo(x, 12).stroke(line(swatch.pink.line, 4));
+      break;
     case 'door':
       g.roundRect(-110, -150, 220, 150, 8).fill(0xd9534f).stroke(line(0x9e2f2c));
       g.roundRect(-96, -136, 192, 122, 6).stroke(line(0xffffff, 6));
@@ -92,7 +125,7 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       break;
   }
   // A strip of grass in front hides anything tucked down below.
-  return grass ? g.roundRect(-130, -6, 260, 120, 20).fill(GRASS) : g;
+  return grass ? g.roundRect(-130, -6, 260, 120, 20).fill(ground(kind)) : g;
 }
 
 /** A hiding place: an animal tucked behind a cover, which can peek over the top or pop all the way out. */
@@ -139,7 +172,7 @@ class Spot extends Container {
       }
     }
     this.leaf.visible = false;
-    this.addChild(this.holder, this.cover, this.leaf, new Graphics().roundRect(-130, -6, 260, 120, 20).fill(GRASS));
+    this.addChild(this.holder, this.cover, this.leaf, new Graphics().roundRect(-130, -6, 260, 120, 20).fill(ground(kind)));
     this.eventMode = 'none';
     this.hitArea = new Rectangle(-130, -340, 260, 350);
   }
@@ -230,7 +263,9 @@ class PeekabooBarn implements Game {
     const scene = roundScene(ctx.rng, this.plan.spots);
     this.setting = scene.id;
     this.backdrop = ctx.track(
-      new Backdrop(this.setting === 'garden'
+      new Backdrop(this.setting === 'beach'
+        ? { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.blue.fill, SAND], horizon: 0.5, clouds: 2, sun: true, seed: 63 }
+        : this.setting === 'garden'
         ? { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.green.light, GRASS], horizon: 0.56, clouds: 2, sun: true, seed: 42 }
         : { sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 21 }, ctx.view),
     );
@@ -424,6 +459,13 @@ class PeekabooBarn implements Game {
   }
 
   private drawBarn(cx: number, y: number) {
+    if (this.setting === 'beach') {
+      const g = this.barn.clear();
+      g.poly([cx + 40, y - 140, cx + 40, y - 270, cx + 150, y - 140]).fill(swatch.white.light).stroke(line(swatch.white.line, 4));
+      g.poly([cx + 30, y - 140, cx + 30, y - 240, cx - 60, y - 140]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+      g.roundRect(cx - 80, y - 140, 250, 22, 10).fill(wood.fill).stroke(line(wood.line, 4));
+      return;
+    }
     if (this.setting === 'garden') {
       const g = this.barn.clear();
       for (let x = cx - 240; x <= cx + 240; x += 48) {
