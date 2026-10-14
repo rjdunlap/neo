@@ -118,3 +118,11 @@
 - `GAME_URL=http://localhost:5184 BROWSER_SUITE=brainbreak` passed levels 1/3, two wrong taps and automatic hint, manual hint, free checked-stone taps, portrait and one sticker per round, with no page errors. Portrait screenshot reviewed: board, pet and help clear.
 - Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=brain-break` passed levels 1/3 clean in 14.4/43.2 demonstration seconds. Server stopped after checks; origin/main overlap recheck remained `dee1439`, with only this slice's PR claiming Brain Break.
 - Not run: `world`, offline, couch or device checks (existing shell; no persistence, assets or navigation logic changed). iPad target feel, number legibility, device speech and grown-up enjoyment remain open. Markdown links and `git diff --check` checked at closeout; oldest live entry rotated to the existing archive.
+
+## 2026-10-13 — Mossy Path first slice
+
+- [PR #285](https://github.com/rjdunlap/neo/pull/285), base `4af7354`, claim `a2a7757` plus working diff: school levels 1–3 in Puzzle Peaks, path coverage, free revision/dead ends, exact-search recovery, counted help and a real-tap ghost finger.
+- `npm run typecheck`, all 1,241 tests in 145 files, 49 focused rules/catalog tests and `npm run build` passed.
+- `GAME_URL=http://localhost:5187 BROWSER_SUITE=mossypath` passed level 1/3 gameplay assertions: two wrong taps, automatic/requested/repeated help, Undo/Start over preserving support, free dead ends, hint recovery and one sticker each. Its final navigation step timed out because it tapped held Home; isolated probe confirmed a tap stays in the round and a 750 ms hold returns. Corrected `MOSSY_ONLY=navigation` passed land launch/return with no page errors.
+- Same URL: `fingerdemo FINGER_ONLY=mossy-path` passed levels 1/3 clean in 7.8/17.3 s; `lands LANDS_ONLY=puzzle-peaks` passed all six bands landscape and lap/school/grownup portrait, signpost/host/twinkle. Game portrait and landscape screenshots reviewed: targets at least 100 logical units, board/buttons and pet clear.
+- `GAME_URL=http://localhost:4187 npm run test:offline` passed against matched production asset `index-BqWRULCQ.js`: cached reload/assets, map/home, how-to/Play, generic existing-game completion/reward/save, picnic, creations and journal. This does not establish Mossy Path play offline specifically.

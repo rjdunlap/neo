@@ -55,7 +55,7 @@ export function spotToTap(plan: PeekPlan, poses: readonly string[], animals: rea
   return null;
 }
 
-export const COVER_NAMES = { hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate', flowerpot: 'flowerpot', sunflower: 'sunflower', wheelbarrow: 'wheelbarrow', rock: 'rock' } as const;
+export const COVER_NAMES = { hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate', flowerpot: 'flowerpot', sunflower: 'sunflower', wheelbarrow: 'wheelbarrow', rock: 'rock', umbrella: 'umbrella', sandcastle: 'sandcastle', bucket: 'bucket', towel: 'towel' } as const;
 export type CoverKind = keyof typeof COVER_NAMES;
 
 /** Among overlapping hit boxes, choose the closest center; equal distances keep the left place. */
@@ -79,6 +79,7 @@ export const shouldNudge = (mode: PeekPlan['mode'], idle: number, poses: readonl
 export const SCENES = {
   barnyard: ['hay', 'bush', 'door', 'crate'],
   garden: ['flowerpot', 'sunflower', 'wheelbarrow', 'rock'],
+  beach: ['umbrella', 'sandcastle', 'bucket', 'towel'],
 } as const satisfies Record<string, readonly CoverKind[]>;
 export type SceneId = keyof typeof SCENES;
 

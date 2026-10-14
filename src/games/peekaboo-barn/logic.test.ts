@@ -7,13 +7,13 @@ describe('Peekaboo Barn', () => {
   it('preserves old sticker choices and supplies a distinct spoken name for each cover', () => {
     expect(STICKER_ANIMALS).toEqual(['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear']);
     expect(Object.fromEntries(Object.entries(COVER_NAMES).slice(0, 4))).toEqual({ hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate' });
-    expect(new Set(Object.values(COVER_NAMES)).size).toBe(8);
+    expect(new Set(Object.values(COVER_NAMES)).size).toBe(12);
     for (const id of ['peek.found', 'peek.yes'] as const) {
       for (const line of SCRIPT[id]) expect(line).toContain('{cover}');
     }
   });
 
-  it('deals named distinct covers in either seeded setting at every level', () => {
+  it('deals named distinct covers in any seeded setting at every level', () => {
     const seen = new Set<string>();
     for (const plan of PLANS) for (let seed = 1; seed <= 200; seed++) {
       const scene = roundScene(new Rng(seed), plan.spots);
@@ -24,7 +24,7 @@ describe('Peekaboo Barn', () => {
       for (const cover of scene.covers) expect(COVER_NAMES[cover]).toBeTruthy();
       seen.add(scene.id);
     }
-    expect([...seen].sort()).toEqual(['barnyard', 'garden']);
+    expect([...seen].sort()).toEqual(['barnyard', 'beach', 'garden']);
   });
 
   it('resolves neighboring hit areas to the nearer cover and rejects points outside', () => {
