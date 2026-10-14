@@ -14,6 +14,12 @@ import type { GameHowTo, GameModule, LevelLine } from '../games/types';
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'mossy-path': {
+    goal: 'Bloom every moss tile once and guide the turtle to the pond last.',
+    steps: ['Tap a tile beside the turtle to take one step. Each visited tile blooms.', 'Plan around the rocks. Reach the pond only after all other tiles bloom.', 'Undo takes back one step; Start over restores the same patch. Hint outlines a completing next step, or Undo until a route is possible.'],
+    finish: 'Visiting every tile and reaching the pond finishes the round, including with help.',
+    note: 'Legal route experiments and dead ends are free. Non-adjacent, visited and early-pond taps count a miss; two consecutive misses show help. Repeating help on the same path counts once. Undo and Start over preserve misses and hints.',
+  },
   'brain-break': {
     goal: 'Light every numbered stone by finding the numbers in order.',
     steps: ['Tap the stone with the number shown above the pond.', 'Find the next number on the same shuffled board. Checked stones stay where they are.', 'Hint outlines the next stone; there is no time limit.'],
