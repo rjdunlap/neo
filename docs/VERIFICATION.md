@@ -7,6 +7,11 @@
 - Isolated `test-results/peek-garden.mjs` at `http://localhost:5186`: reviewed all seven animals out/peeking over all four covers, portrait `peek-garden-portrait.png` and `peek-garden-peeking.png`; no page errors. Probe/screenshots are ignored local artifacts.
 - Not run: full play, build, offline or fingerdemo; scene-content tier, unchanged interaction evidence from [cover support](#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
+## 2026-10-14 — Chain Reaction deep dive
+
+- Docs only, `claude/chain-reaction-deep-dive` ([PR #299](https://github.com/rjdunlap/neo/pull/299)): added [chain-reaction.md](deep-dives/chain-reaction.md) (current ladder, the finding that run misses are never counted so adaptation sees hints only, genre research, proposed levels 7–11 and nine build slices); updated the tracker, IDEAS rows and roadmap chunk 14.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites. Preschool cause-and-effect development had no source found; younger entries are marked as design judgment.
+
 ## 2026-10-14 — Bumper Garden deep dive
 
 - Docs only, `claude/bumper-garden-deep-dive` ([PR #297](https://github.com/rjdunlap/neo/pull/297)): added [bumper-garden.md](deep-dives/bumper-garden.md) (current ladder, known gaps including a how-to that is false at levels 2–5, genre and developmental research, levels 6–14 proposed, nine build slices), set the tracker row to designed, pointed the IDEAS ladder row and roadmap chunk 14 at it.
