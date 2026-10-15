@@ -27,15 +27,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation hourly. Owned last-flight worker's slice complete, #275 merged at `e671bf3533e92ea92a07ee38a1e478fb64c35c66`; publication blocker cleared externally, previous slot released. Preserve coordinator checkout (recovered and Git-locked).
-- Newly admitted: **Day by Day docs-only game deep dive**, next unstarted tracker entry. Source [procedure](deep-dives/README.md), [template](deep-dives/TEMPLATE.md), existing [definition](day-by-day.md). Audit existing content/ladder, research and plan bounded slices; no implementation/src/scripts/public/tests/build/browser or developer decisions.
-- Dispatch `day-by-day-dive-20261015T074430Z`; worker `01a13e85-b7aa-7ee1-8326-7a3291f02f23`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Day by Day: game deep dive". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/day-by-day-deep-dive`, claim `35f266e`, [PR #349](https://github.com/rjdunlap/neo/pull/349); source `ae77222`, coordinator checkpoint `6f43874` integrated.
-- Worker research complete: [write-up](deep-dives/day-by-day.md), source/definition audit of built 1–3, five primary-source activity references, proposed stable IDs 4–10 and eight slices. Slices 1–5 ready; preschool, months and daylight gated. Tracker/notebook/roadmap/decisions/device/verification updated; no implementation. `node scripts/check-links.mjs` and `git diff --check` pass on `6f43874` plus worker docs diff. No tests/build/browser/server; device speech/child fit remains open.
-- Admission 2026-10-15 07:44:30 UTC **35% five-hour / 6% weekly used**, resets `1792063357` / `1792650157`; ordinary usage allowed. Docs estimate **12.5 / 2.5 points** (1.25 × comparable 10 / 2), fits actual remaining **65% / 94%**; no daily cap/reserve. Worker rechecks actual allowance.
-- Previous proof: #275 typecheck/24 focused tests/build, filtered 5–6 play and ghost-finger checks passed, screenshots reviewed/server stopped. Worker original closeout 66% / 33%, resets `1791925955` / `1792472658`, versus admission 55% / 31% with same identities: aggregate 11 / 2 points. Resumed integration `3a454a3` clean; unchanged dependency proof reused, syntax/diff checks passed; final resumed reading 4% / 33%, resets `1791944433` / `1792472658`. Five-hour crossing makes combined sample unknown; weekly endpoints aggregate +2. Publication later completed externally; no exact task-cost claim. Reconciled once below; no unchanged proof rerun.
-- Overlap: no active implementation/open PR or dirty work; prior game builds integrated/archived and recovery branches preserved. Remaining historical branches checked; none claims Day by Day. Coordinator servers none.
-- Worker usage: admission recheck 38% / 6%; scope/pre-edit 40% / 6%; pre-verification 44% / 7%; pre-publication 45% / 7%, ordinary usage allowed, resets unchanged (`1792063357` / `1792650157`). Estimate 12.5 / 2.5 fits; no expensive verification. Preliminary dispatch-to-prepublication aggregate +10 / +1 points, not exact task cost. Final after-commit reading goes in worker response, not an overhead-only commit.
-- Next action: publish/merge #349, then coordinator confirm merged docs and reconcile final usage once before releasing slot. This worker stops after its assigned dive; do not dispatch implementation from this chat. If publication is blocked, retain this same worker/PR checkpoint.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation hourly; preserve recovered Git-locked checkout. Day by Day research worker complete, #349 merged at `cff331f22ef9415b7e7a8f388af4a5b269677bc3`, deployed; previous slot released. Independent level-4 slice #350 already built; no duplicate.
+- Newly admitted: **Day by Day slice 1, Show the week turning**, [source](deep-dives/day-by-day.md#build-slices-in-order). Noninteractive wrap/evidence art and three seeded garden treatments at existing 1–3. Preserve exact question/generation/accounting rules; exclude new levels/bands, calendar systems and decisions.
+- Dispatch `day-by-day-week-art-20261015T084300Z`; worker `01a13ebb-2cff-7890-9da4-df4baad3ca59`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Day by Day: show the week turning". Fresh project/local chat, minimal handoff, no history/model override; branch/claim PR pending; source `13e13be`.
+- Expected Day by Day drawing/helpers and targeted tests, required shared content and docs. Implementation/proof **not run by coordinator**. Worker owes source tier: typecheck/rules, one filtered `week WEEK_LEVELS=2` regression and one portrait of wrap; demo only if demonstrated action changes, build if shared content/art changed. No broad suites. Actual device/child fit remains open.
+- Admission 2026-10-15 08:43:00 UTC **49% five-hour / 8% weekly used**, resets `1792063357` / `1792650157`; ordinary usage allowed. Conservative gameplay estimate **18.75 / 3.75 points**, fits actual remaining **51% / 92%**; no daily cap/reserve. Worker rechecks actual allowance.
+- Previous docs proof: #349 links/anchors and diff check passed, no local tests/build/browser/server; deployment succeeded. Final **48% / 8%**, resets `1792063357` / `1792650157`, versus dispatch 35% / 6% same identities: aggregate **13 / 2 points**, reconciled once below. Future comparable docs estimate rises to at least 16.25 / 2.5; no unchanged proof rerun.
+- Overlap: no active implementation/open PR/dirty work; historical/recovery branches preserved, no competing Day by Day claim. Coordinator servers none.
+- Next action: retrieve worker/PR next wake-up, confirm completion/publication and reconcile final usage once before another dispatch. Resume same worker if unfinished; do not implement here.
 
 ## Usage observations
 
@@ -49,7 +48,6 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 
 
-| 2026-10-12 | Block Tower dive / [#209](https://github.com/rjdunlap/neo/pull/209), dispatch `block-tower-dive-20261012T204519Z` | Docs only | 48% → 3% / `1791838034` → `1791856047` | 73% → 74% / `1792295993` → `1792295992` | Estimate 12 / 2.5 points | Merged #209; final 20:52:52 UTC. Five-hour reset crossing and weekly identity drift: aggregate unknown; worker complete, reconciled once |
 
 
 
@@ -78,7 +76,10 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-13 | Bouncy Launch last flight / [#275](https://github.com/rjdunlap/neo/pull/275), dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing-game feedback | 55% → 66%, then 4% / `1791925955` → `1791944433` | 31% → 33% / `1792472658` | Estimate 18.75 / 3.75 points | Merged externally; original aggregate 11 / 2; combined five-hour unknown across reset, weekly +2. Resumed final 4% / 33%; publication overhead unknown; reconciled once |
 
-| 2026-10-15 | Day by Day dive / [#349](https://github.com/rjdunlap/neo/pull/349), dispatch `day-by-day-dive-20261015T074430Z` | Docs only | 35% → 45% pre-publication / `1792063357` | 6% → 7% pre-publication / `1792650157` | Estimate 12.5 / 2.5 points | Worker `01a13e85-b7aa-7ee1-8326-7a3291f02f23`; research/docs complete, links/diff pass, publication pending. Preliminary aggregate +10 / +1 points; coordinator reconcile final response once |
+
+| 2026-10-15 | Day by Day dive / [#349](https://github.com/rjdunlap/neo/pull/349), dispatch `day-by-day-dive-20261015T074430Z` | Docs only | 35% → 48% / `1792063357` | 6% → 8% / `1792650157` | Estimate 12.5 / 2.5 points | Merged/deployed; final worker response, aggregate 13 / 2. Reconciled once; next comparable docs estimate at least 16.25 / 2.5 |
+
+| 2026-10-15 | Day by Day week art, dispatch `day-by-day-week-art-20261015T084300Z` | Existing interaction art | 49% → pending / `1792063357` | 8% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Fresh worker `01a13ebb-2cff-7890-9da4-df4baad3ca59` admitted; implementation/proof pending |
 
 ## Fresh-worker dispatch and handoff
 
