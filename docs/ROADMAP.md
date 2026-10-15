@@ -38,32 +38,34 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 1. If you own an unfinished slice, finish it first.
 2. Otherwise take the **first line of [Ready to build now](#ready-to-build-now) that no open PR, branch or worktree claims** (`scripts/overlap.sh <game-id> <path>…`). Read that game's dive section before claiming; the dive is the authority on scope and gates.
-3. If every ready line is claimed or blocked, take the first `define` row of the [chunk table](#chunks) (a docs-only definition), then a research row (14, 28).
+3. The ready list deliberately mixes builds with a few docs-only definitions (marked *docs only*) so the quality track is not starved; take lines in order. If every line is claimed or blocked, take the first `define` row of the [chunk table](#chunks), then a research row (14, 28).
 4. **Closeout keeps this file short.** When a slice lands, delete its line from the ready list, mark the slice built in its dive, and put the build note in the newest `docs/archive/COMPLETED-*.md` file. Do not add "built … PR #…" text to the ready list or the chunk table. When the ready list falls below about five lines, refill it from the dives' `## Build slices, in order` sections, checking each against `git log origin/main` first.
 
 **Status words:** **ready**: defined, nothing blocks it. **sketch**: a draft definition; review it against the [planning rules](#planning-rules), then build. **define**: an idea only; the next slice is its definition of ready (docs only). **decision**: waits on the developer ([Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer)). **person**: waits on someone playing it ([Needs a person or a device](DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 ### Ready to build now
 
-Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; shell work comes last.
+Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; two docs-only definitions keep the quality track moving; shell work comes last.
 
 1. **`duckling-parade`, two cosmetic meadow treatments**: seeded art only, fixed playable geometry. Existing-game tier. [Dive slice 3](deep-dives/duckling-parade.md#build-slices-in-order)
 2. **`color-garden`, Tap and it hops**: the lap and toddler entry (tap path, two baskets, `order`/`entryLevels`, ghost finger). New-interaction tier. [Dive slice 2](deep-dives/color-garden.md#build-slices-in-order)
 3. **`goodnight-room`, tent and boat cabin rooms**: new seeded rooms, lap to pre-K; level 10 *goodnight everywhere* follows as its own slice. Content tier. [Dive slices 8–9](deep-dives/goodnight-room.md#build-slices-in-order)
-4. **`dot-link`, marks in the dots**: new art only. Existing-game tier, `fingerdemo` at 6. [Dive slice 1](deep-dives/dot-link.md#build-slices-in-order)
-5. **`bumper-garden`, flipper-ready ring**, then **Pond and Hive tables** as a second slice. Feel tier, then rules and art. [Dive slices 2–3](deep-dives/bumper-garden.md#build-slices-in-order)
-6. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)
-7. **`critter-crossing`, bank shelf**, then **a visible "not" entry** as a second slice. Existing-game tier, then new-levels tier. [Dive slices 1 and 4](deep-dives/critter-crossing.md#build-slices-in-order)
-8. **`critter-sort`, the worked example at levels 1–3 and 5** (slice 1's remainder); then levels 7, 8, 9 and 11, one per slice. [Dive slices 1, 4–7](deep-dives/critter-sort.md#build-slices-in-order)
-9. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
-10. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)
-11. **`clap-syllables`, level 6 *Beat train***, then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
-12. **`letter-trails`, a hint that shows the way, start arrows, a rising tune and trail looks**. Rule tests, `fingerdemo` at 1 and 4. [Dive slice 3](deep-dives/letter-trails.md#build-slices-in-order) (slice 2 rests on two leaning decisions; leave it)
-13. **`duckling-parade`, ABB at level 11** (school, the existing pattern interaction). New-levels tier. [Dive slice 4](deep-dives/duckling-parade.md#build-slices-in-order)
-14. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
-15. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
-16. **Lands stage C1b group 3**: `bouncy-launch`, `ferry-jam` and `penguin-slide` take keys or a pad live and switch back to touch (`liveController`, `touchReturned()`). Shell tier, `livekeys` filtered. [Lands stage C](#lands-navigation-and-discovery)
-17. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery)
+4. **Discovery D1a, *docs only***: freeze the pictured post-round *Next game* suggestion (placement, the Bubble Pop / Sing-Along Barn / Fill and Dump pool at lap and toddler, selection and return rules) as D1b's build packet. Links and diff check. [Discovery actions](#discovery-actions)
+5. **`dot-link`, marks in the dots**: new art only. Existing-game tier, `fingerdemo` at 6. [Dive slice 1](deep-dives/dot-link.md#build-slices-in-order)
+6. **`bumper-garden`, flipper-ready ring**, then **Pond and Hive tables** as a second slice. Feel tier, then rules and art. [Dive slices 2–3](deep-dives/bumper-garden.md#build-slices-in-order)
+7. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)
+8. **`critter-crossing`, bank shelf**, then **a visible "not" entry** as a second slice. Existing-game tier, then new-levels tier. [Dive slices 1 and 4](deep-dives/critter-crossing.md#build-slices-in-order)
+9. **`critter-sort`, the worked example at levels 1–3 and 5** (slice 1's remainder); then levels 7, 8, 9 and 11, one per slice. [Dive slices 1, 4–7](deep-dives/critter-sort.md#build-slices-in-order)
+10. **Visual identity V1–V2, *docs only***: one Barnyard art and feedback sheet and an Animal Snack responsiveness pilot definition. Links and diff check. [Chunk 21](#chunks)
+11. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
+12. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)
+13. **`clap-syllables`, level 6 *Beat train***, then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
+14. **`letter-trails`, a hint that shows the way, start arrows, a rising tune and trail looks**. Rule tests, `fingerdemo` at 1 and 4. [Dive slice 3](deep-dives/letter-trails.md#build-slices-in-order) (slice 2 rests on two leaning decisions; leave it)
+15. **`duckling-parade`, ABB at level 11** (school, the existing pattern interaction). New-levels tier. [Dive slice 4](deep-dives/duckling-parade.md#build-slices-in-order)
+16. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
+17. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
+18. **Lands stage C1b group 3**: `bouncy-launch`, `ferry-jam` and `penguin-slide` take keys or a pad live and switch back to touch (`liveController`, `touchReturned()`). Shell tier, `livekeys` filtered. [Lands stage C](#lands-navigation-and-discovery)
+19. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery)
 
 ### Chunks
 
@@ -188,7 +190,7 @@ What is already built under this chunk is in [the 2026-10-15 cleanup archive](ar
 
 **Design priorities.** Make discovery and presentation grow alongside the library. A player should be able to find a favorite, choose something unfamiliar, understand its input and mode, enjoy a readable response, and return to where they started. Strong candidates offer different reasons to play: cause-and-effect toys, pretend play, making and performing, exploration, serving and planning, construction, investigation, deduction, movement and genuine shared roles. A theme variant adds worthwhile content; a new identity needs a distinct action or decision.
 
-**Recommended next sequence after owned work:** stage B’s known return/input-label gap; the [discovery action sequence](#discovery-actions) (D1a’s first build packet, direct Next game, then Little surprises); one Barnyard or Animal Snack feel pilot; a mode-gallery definition; then one connected episode and one role-swapped family activity. Interleave those bounded slices with the existing content and ladder work. This is a design recommendation, not a scheduler-policy change or a requirement to stop building until device research happens.
+**Recommended sequence:** the [discovery action sequence](#discovery-actions) (D1a, direct Next game, then Little surprises); one Barnyard or Animal Snack feel pilot; a mode-gallery definition; then one connected episode and one role-swapped family activity. Their next steps are interleaved in the [ready list](#ready-to-build-now) and the [chunk table](#chunks) (19–23); this paragraph does not set a second order. Stage B's input/return gap is closed: a controller-only game's course returns to its island origin with a key-cap cue ([PR #250](https://github.com/rjdunlap/neo/pull/250)), and stage D left no controller-only game. This is a design recommendation, not a scheduler-policy change or a requirement to stop building until device research happens.
 
 **Discovery research is written** in [DISCOVERY.md](DISCOVERY.md); chunk 19 now selects D1a’s precise screen/pool packet, followed by the bounded routing/mix builds, with optional support/automatic choices still open. **Research ready to undertake:** chunks 14 and 24 remain docs-only game studies, with their tracker and one-game claim workflow. Chunks 20–23 begin with separate system definitions; chunk 19’s [action table](#discovery-actions) states the next packet, dependencies and exits. Each study ends with a small complete round or flow, alternatives/mistakes/support, replay variety, a visual/feel example, relevant couplings and proportionate future checks. A functioning bot proves supported input and rules, not whether a person enjoys or understands the game.
 
@@ -277,7 +279,7 @@ For older players, combine **named project cards**, **child-chosen permanent unl
 
 ## Subject study recommendations
 
-Definition packets recommended by the [subject studies](deep-dives/subjects.md), kept here at the developer's request (2026-10-14). They are **proposals and docs-first definitions, not a dispatch queue**: a routine reaches one only through a `define` row in [Next up](#next-up) or when the grown-up selects it. A new subject study adds its section here, at this heading level.
+Definition packets recommended by the [subject studies](deep-dives/subjects.md), kept in the roadmap (the developer asked for the movement study's to stay here, 2026-10-14; the later studies follow the same pattern). They are **proposals and docs-first definitions, not a dispatch queue**: a routine reaches one only through a `define` row in [Next up](#next-up) or when the grown-up selects it. A new subject study adds its section here, at this heading level.
 
 ### Movement and family play recommendations
 
