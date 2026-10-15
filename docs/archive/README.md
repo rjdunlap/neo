@@ -23,3 +23,4 @@ The original design brief also exists as a [historical design artifact](https://
 
 - [Historical local-build audit](LOCAL-GAME-BUILDS-2026-10-13.md): superseded source-worktree evidence for the three recovered games.
 - [Session cleanup 2026-10-14](SESSION-CLEANUP-2026-10-14.md): source reconciliation, integration checks and the completed recovery audit.
+- [Roadmap cleanup 2026-10-15](ROADMAP-CLEANUP-2026-10-15.md): the Next up table, short-ladder and more-to-play lists, Lands, Profiles first and Grown-up play text as they stood before the roadmap was shortened to a ready-to-build list.
