@@ -4136,7 +4136,7 @@ async function originals() {
   }
 
   // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
-  for (let level = 1; level <= 7 && (!only || only === 'garden'); level++) {
+  for (let level = 1; level <= 8 && (!only || only === 'garden'); level++) {
     if (level === 6) await portrait(true);
     await launch('color-garden', level);
     await page.waitForTimeout(400);
@@ -4171,7 +4171,7 @@ async function originals() {
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 9, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
+  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 9, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 8 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }

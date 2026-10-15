@@ -90,3 +90,29 @@ describe('Color Garden', () => {
     }
   });
 });
+
+describe('Color Garden level 8, Color or kind', () => {
+  const plan = PLANS[7];
+  it('deals each color as a fruit and a balloon, and both rules turn up', () => {
+    const rules = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const { colors, items, kinds, looks, rule } = deal(new Rng(seed), plan);
+      rules.add(rule!);
+      expect(items).toHaveLength(plan.items);
+      expect(new Set(looks).size).toBe(2);
+      const combos = new Set(kinds.map((k, i) => `${looks![i]}/${k === 'balloon'}`));
+      expect(combos.size).toBe(4);
+      expect(new Set(colors).size).toBe(2);
+      // Exactly one valid basket for every item under the round's rule.
+      items.forEach((key, i) => {
+        expect(colors.filter((c) => c === key)).toHaveLength(1);
+        expect(key).toBe(rule === 'color' ? looks![i] : kinds[i] === 'balloon' ? 'kind-balloon' : 'kind-fruit');
+        if (kinds[i] !== 'balloon') expect(kinds[i]).toBe(FRUIT_FOR[looks![i]]);
+      });
+    }
+    expect([...rules].sort()).toEqual(['color', 'kind']);
+  });
+  it('is not mixed up with earlier levels', () => {
+    expect(deal(new Rng(1), PLANS[6]).rule).toBeUndefined();
+  });
+});
