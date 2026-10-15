@@ -1927,3 +1927,8 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 - At the same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaboo-barn FINGER_LEVELS=1,5,8` passed clean in 17.2/27.1/52.2 seconds (75-second limit). Gameplay evidence was reused after the final bot-only adjustment to shared-layer taps.
 - First play was interrupted by HMR; the next exposed a destroyed critter's resumed cheer. Ignored `test-results/peekaboo-replace-probe.mjs` failed before the fix and passed after with no page errors. Initial demo failed on old direct listeners; corrected bot passed without weakening the check. Logs: ignored `peekaboo-support.log` and `peekaboo-finger.log` in `test-results/`.
 - Not run: full tests, world, production offline, couch or unrelated suites; no navigation or save changes. Real iPad touch, device speech and child reaction remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-14 — Bug Builder deep dive
+
+- Docs only, `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296)): added [bug-builder.md](../deep-dives/bug-builder.md) (current ladder, known gaps, genre research, levels 8–13 proposed, nine build slices) and updated the tracker, roadmap chunk 14 and IDEAS rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Standards wording beyond section names is unverified; token-pool and hint findings come from reading the source, not from play.

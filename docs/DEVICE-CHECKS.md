@@ -2,6 +2,8 @@
 
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 
+- [ ] **Weather/water proposals, when defined/built:** can a child distinguish stored/outlet water, compare equal showers and explain a revision without treating the toy capacities as real soil facts? Review the science with a knowledgeable educator; observe tween/parent interest in robust-layout/mystery/forecast cases and shared observer/changer roles. Check sound-off traces, iPad speech, target sizes and pet clearance in both orientations, especially six sockets and a comparison bookmark. Automation cannot establish scientific transfer or audience fit ([study](deep-dives/subjects/weather-water.md)).
+
 - [ ] **Movement subject proposals, when defined/built:** observe caregiver control and voluntary imitation in youngest play; can a child compose/revise a visible phrase, and would a tween or parent choose the constraint puzzle? Check sound-off cues, iPad speech, six-card layout and role swaps. Qualified review must precede physical instructions or page cards; automation cannot establish safe movement, exertion or participation ([study](deep-dives/subjects/movement-exercise.md)).
 
 - [ ] **Story Theater (Story Steps 12–13):** check iPad picture/control taps and device narration in both orientations; can a child interpret each picnic ending and explain the consequence of changing one weather/prop choice? Browser checks do not establish these.
