@@ -635,7 +635,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Listen to the word, then tap the monster whose letter makes its first sound.' },
       { from: 5, to: 5, text: 'Put the letters into the slots to build the three-letter word.' },
       { from: 6, to: 6, text: 'Listen to the sounds of the word and build it from the letters; one letter is a spare.' },
-      { from: 7, text: 'Change the first sound to make the next word in the family, like hat, cat, bat.' },
+      { from: 7, to: 7, text: 'Change the first sound to make the next word in the family, like hat, cat, bat.' },
       { from: 8, to: 8, text: 'Keep the first two sounds. Change the last sound to make the pictured word.' },
     ],
     finish: 'The round ends when the asked-for letters or word are found.',

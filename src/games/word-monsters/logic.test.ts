@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { ALPHABET, END_WORDS, fits, FIRST_WORDS, lookalike, makeQuestions, nextMonster, PLANS, sounded, WORDS } from './logic';
+import { ALPHABET, END_WORDS, fits, FIRST_WORDS, lookalike, makeQuestions, soundTwin, WHO_POOL, nextMonster, PLANS, sounded, WORDS } from './logic';
 
 describe('Word Monsters', () => {
   it('has a spoken sound for every letter', () => {
@@ -35,6 +35,19 @@ describe('Word Monsters', () => {
         if (plan.mode === 'family') expect(new Set(qs.map((q) => q.fixed)).size).toBe(2);
       }
     }
+  });
+
+  it('never offers two letters with the same sound, and keeps q and x out of "who says"', () => {
+    expect(soundTwin('c', 'k')).toBe(true);
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 200; seed++) {
+        for (const q of makeQuestions(plan, new Rng(seed))) {
+          for (const a of q.monsters) for (const b of q.monsters) expect(soundTwin(a, b), `${plan.mode} ${a} ${b}`).toBe(false);
+          if (plan.mode === 'who') expect(q.monsters.some((l) => 'qx'.includes(l))).toBe(false);
+        }
+      }
+    }
+    expect(WHO_POOL).not.toContain('q');
   });
 
   it('fills a word left to right, sound by sound', () => {

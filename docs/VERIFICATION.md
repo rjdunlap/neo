@@ -1,11 +1,17 @@
 # Puddle Island verification
 
+## 2026-10-15 — Word Monsters guards (sound twins, bounded how-to)
+
+Changed: `pickLetters` never offers two letters with the same sound (c and k); the "who says" pool drops q and x; the level 7 how-to step stops at 7; `LEVELS.school.max` follows the plan length ([PR #327](https://github.com/rjdunlap/neo/pull/327)).
+Ran: typecheck; Word Monsters, content and registry unit tests (97 pass, new 200-seed twin test).
+Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8 decoys, the stale sun rule, the pinned sticker test.
+
 ## 2026-10-14 — Machines and tools subject research
 
-- Docs only, base `6f4b57a` plus working diff on `codex/machines-tools-subject`: [study](deep-dives/subjects/machines-tools.md), tracker, [roadmap definitions](ROADMAP.md#machines-and-tools-recommendations), notebook, pulley clarification in PHYSICS-GAMES and review/device notes. Gear Garden first, Lift It and Puppet Workshop next; Mobile Maker stays in Seesaw Balance.
+- Docs only, base `6f4b57a`, research `2949bb7`, integrated `2eccd72`, plus docs diff on `codex/machines-tools-subject`: [study](deep-dives/subjects/machines-tools.md), tracker, [roadmap definitions](ROADMAP.md#machines-and-tools-recommendations), notebook, pulley clarification in PHYSICS-GAMES and review/device notes. Gear Garden first, Lift It and Puppet Workshop next; Mobile Maker stays in Seesaw Balance.
 - Opened Head Start/NGSS/year 5 Forces, OpenStax, NWT gear section, six digital descriptions and Exploratorium automata PDF. No reference gameplay or intervention evidence; thin/failed pages are named. Exact-rule/geometry examples are proposals, not tested boards.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); rotated the oldest dated entry with relative links repaired. No code changed; no server started.
-- Not run: typecheck, unit tests, build, browser/offline/hardware/speech/family checks. Practical instructions need a named reviewer; identity/ranges/land fit, mechanism review and older appeal remain future work. Publication was blocked by automatic approval review; local research is complete.
+- Not run: typecheck, unit tests, build, browser/offline/hardware/speech/family checks. Practical instructions need a named reviewer; identity/ranges/land fit, mechanism review and older appeal remain future work. Publication initially required explicit approval; the developer authorized publication and merge on 2026-10-14.
 
 ## 2026-10-14 — Commercial social-play roadmap follow-up
 
