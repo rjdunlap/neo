@@ -813,6 +813,8 @@ export const SCRIPT = {
   'cross.pick': ['What is the secret rule? Tap a picture.'],
   'cross.cont-yes': ['The {who} crossed, but that rule would turn it back.'],
   'cross.cont-no': ['The {who} had to wait, but that rule would let it cross.'],
+  'cross.settle': ['Two pictures are still in the running! Which critter can settle it? Tap one to try it.'],
+  'cross.same': ['Both pictures would say the same about that one. Try another!', 'That one could not tell them apart.'],
   'cross.maybe': ['That could be it so far! Try another critter to be sure.'],
   'cross.hint-test': ['Try the glowing critter. It will tell us a lot!'],
   'cross.hint-pick': ['Look at who crossed and who waited. Which picture fits?'],

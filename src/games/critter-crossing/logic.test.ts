@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { fits } from '../critter-sort/logic';
-import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, PLANS, planFor, sameGate, type CrossPlan, type CrossRound, type Gate } from './logic';
+import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, PLANS, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
 
 const hatBrown: Gate = { kind: 'and', rules: ['hat', 'brown'] };
 
@@ -33,7 +33,7 @@ describe('Critter Crossing', () => {
       expect(p.minTests, p.name).toBeGreaterThanOrEqual(PLANS[i + 1].minTests);
     });
     expect(PLANS[0].mode).toBe('visible');
-    for (const p of PLANS.filter((x) => x.mode === 'hidden')) {
+    for (const p of PLANS.filter((x) => x.mode === 'hidden' && !x.settle)) {
       expect(p.options, p.name).toBeGreaterThanOrEqual(3);
       expect(p.minTests, p.name).toBeLessThan(p.critters);
     }
@@ -153,6 +153,47 @@ describe('Critter Crossing', () => {
         expect(consistent(r.options, evidence)).toHaveLength(1);
         const t = bestTest(r.critters, [], r.options, []);
         expect(t).not.toBeNull();
+      }
+    });
+  });
+
+  describe('level 7, settle it', () => {
+    const plan = PLANS.find((p) => p.settle)!;
+    const rounds = Array.from({ length: 300 }, (_, i) => makeRound(plan, new Rng(i + 1)));
+
+    it('is the top level, and starts with two tried critters (one crossed, one waited) that leave both pictures standing', () => {
+      expect(plan).toBe(planFor(7));
+      for (const r of rounds) {
+        expect(r.options).toHaveLength(2);
+        expect(r.options.some((o) => sameGate(o, r.gate))).toBe(true);
+        expect(r.tried).toHaveLength(2);
+        expect(r.tried!.map((t) => t.passed).sort()).toEqual([false, true]);
+        expect(consistent(r.options, r.tried!)).toHaveLength(2);
+        for (const t of r.tried!) expect(t.passed).toBe(passes(t.c, r.gate));
+      }
+    });
+
+    it('leaves at least one waiting critter who settles it and at least one who does not', () => {
+      for (const r of rounds) {
+        const tried = r.tried!.map((t) => t.c);
+        const waiting = r.critters.filter((c) => !tried.includes(c));
+        expect(waiting).toHaveLength(plan.critters - 2);
+        expect(waiting.some((c) => splits(c, r.options))).toBe(true);
+        expect(waiting.some((c) => !splits(c, r.options))).toBe(true);
+      }
+    });
+
+    it('settles to one picture, the true rule, with any splitter; the hint and the bot both pick a splitter', () => {
+      for (const r of rounds) {
+        const splitter = r.critters.find((c) => !r.tried!.some((t) => t.c === c) && splits(c, r.options))!;
+        const left = consistent(r.options, [...r.tried!, { c: splitter, passed: passes(splitter, r.gate) }]);
+        expect(left).toHaveLength(1);
+        expect(sameGate(left[0], r.gate)).toBe(true);
+        const hint = bestTest(r.critters, r.tried!.map((t) => t.c), r.options, r.tried!)!;
+        expect(splits(hint, r.options)).toBe(true);
+        const step = nextStep(r, plan, r.tried!);
+        expect(step?.do).toBe('try');
+        if (step?.do === 'try') expect(splits(step.critter, r.options)).toBe(true);
       }
     });
   });
