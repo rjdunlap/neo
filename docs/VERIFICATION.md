@@ -2,8 +2,8 @@
 
 ## 2026-10-14 — Routines and self-care subject research
 
-- Docs only: [study](deep-dives/subjects/routines-self-care.md), subject tracker, notebook candidates and [roadmap definition packets](ROADMAP.md#routines-and-self-care-recommendations): Ready for Adventure first, Toy Drawer retrieval and Village Planner for older families.
-- Read the existing routines-adjacent game plans; opened Head Start/AAP/Sesame/NCPMI/Harvard guidance and six first-party digital descriptions. Day & Night is explicitly search-excerpt-only (403); no reference game was played.
+- Docs only: [study](deep-dives/subjects/routines-self-care.md), subject tracker, notebook candidates and [roadmap definition packets](ROADMAP.md#routines-and-self-care-recommendations): Ready for Adventure first, Toy Drawer and Village Planner for older families. Developer follow-up: [Toy Drawer: Make it Fit](deep-dives/subjects/routines-self-care.md#toy-drawer-follow-up-make-it-fit) now leads with inventory packing; retrieval stays optional.
+- Read the existing routines-adjacent game plans; opened Head Start/AAP/Sesame/NCPMI/Harvard guidance and six first-party digital descriptions. Day & Night is explicitly search-excerpt-only (403); no reference game was played. Follow-up opened Blizzard's item guide, Backpack Hero's developer page and Save Room's publisher listing; compared Tangram Town rules and Block Garden's proposal.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier). Older log entries rotated with relative links repaired.
 - Not run: typecheck, units, build, browser/device/child checks. No code or real-care instructions changed; practical-care review, audience appeal and real-world transfer remain open.
 
