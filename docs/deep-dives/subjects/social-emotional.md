@@ -182,6 +182,6 @@ All definitions use links/anchors and diff checks. When implemented: new Common 
 
 ## What was built and checked
 
-Nothing implemented. This study, tracker, notebook, roadmap and review/device records are documentation. Sources were opened and compared with the named built game rules; reference games were not run. Local links/anchors and `git diff --check` are the appropriate checks, recorded in [VERIFICATION](../../VERIFICATION.md#2026-10-14--social-emotional-subject-research). No typecheck, unit/build/browser/offline checks or person/device testing is implied. The adolescent evidence gap is narrower now; demand, emotional transfer and effectiveness of every proposal remain unestablished.
+Nothing implemented. This study, tracker, notebook, roadmap and review/device records are documentation. Sources were opened and compared with the named built game rules; reference games were not run. Local links/anchors and `git diff --check` are the appropriate checks, recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-14.md#2026-10-14--social-emotional-subject-research). No typecheck, unit/build/browser/offline checks or person/device testing is implied. The adolescent evidence gap is narrower now; demand, emotional transfer and effectiveness of every proposal remain unestablished.
 
 The commercial/tabletop roadmap follow-up has its own [verification entry](../../VERIFICATION.md#2026-10-14--commercial-social-play-roadmap-follow-up); its proposed Common Ground younger entry and Dream Cards packet do not authorize band or catalog changes.

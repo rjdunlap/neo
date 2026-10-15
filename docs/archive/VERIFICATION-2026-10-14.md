@@ -77,3 +77,10 @@
 - Opened Head Start, CCSS, Illinois Extension, NAEYC, CDC and FoodSafety.gov sources. USDA PDF/infant Head Start access gaps are explicit; reference games not played. Recommended Recipe Workshop first, equivalent measures/scaling inside Pet Kitchen, then Picnic Pantry's two-solution menu case. No games or real recipes built.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated two old dated entries with relative links repaired. Preserved the pre-existing edit in `docs/archive/COMPLETED-2026-10-09.md` outside this change.
 - Not run: typecheck, unit tests, build, browser/offline/device/child checks. Food-safety review, final identity/bands/destination fit, tween/parent appeal and real-kitchen transfer remain open.
+
+## 2026-10-14 — Social-emotional subject research
+
+- Docs only, base `bf8117f` plus research diff, [PR #321](https://github.com/rjdunlap/neo/pull/321): [study](../deep-dives/subjects/social-emotional.md), every audience L–G, six opened digital precedents and a physical equivalent; synchronized tracker/notebook, [roadmap packets](../ROADMAP.md#social-emotional-play-recommendations), reviewer/device records. Pre-existing completed-work archive edit excluded.
+- Opened CASEL, Head Start, the facial-expression review and an adolescent randomized game trial; its lack of between-group empathic-accuracy improvement is explicit. Access gaps and unplayed references are named. Recommend Playdate Workshop first, Common Ground for older families, and Two Viewpoints/Ask First within existing games.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with local links repaired. No game or practical emotional-health advice built.
+- Not run: typecheck, unit tests, build, browser/offline/device/child checks. Content review, identity/band/land fit, older-family appeal and real-world transfer remain open; practical advice/physical calming requires named qualified review.
