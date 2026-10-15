@@ -63,7 +63,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 14. **`duckling-parade`, ABB at level 11** (school, the existing pattern interaction). New-levels tier. [Dive slice 4](deep-dives/duckling-parade.md#build-slices-in-order)
 15. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
 16. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
-17. **Lands stage C1b group 3**: `bouncy-launch`, `ferry-jam` and `penguin-slide` take keys or a pad live and switch back to touch (`liveController`, `touchReturned()`). Shell tier, `livekeys` filtered. [Lands stage C](#lands-navigation-and-discovery)
+17. **Lands stage C1b group 3**: `bouncy-launch`, `ferry-jam` and `penguin-slide` take keys or a pad live and switch back to touch (`liveController`, `touchReturned()`). Shell tier, `livekeys` filtered. [Lands stage C](#lands-navigation-and-discovery) *Claimed: branch `claude/lands-c1b-group-3`.*
 18. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery)
 
 19. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
