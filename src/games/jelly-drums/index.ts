@@ -46,6 +46,8 @@ class JellyDrums implements Game {
   private tune: number[] = [];
   private at = 0;
   private tunesDone = 0;
+  /** The tunes already played this round, so none comes round twice. */
+  private played: number[][] = [];
   private wrongThisTune = 0;
   private misses = 0;
   private hints = 0;
@@ -232,7 +234,8 @@ class JellyDrums implements Game {
     this.phase = 'listen';
     this.at = 0;
     this.wrongThisTune = 0;
-    this.tune = makeTune(this.ctx.rng, this.plan.length);
+    this.tune = makeTune(this.ctx.rng, this.plan.length, this.played);
+    this.played.push(this.tune);
     await this.playTune(false);
     this.phase = 'turn';
     void this.ctx.instruct('jelly.turn');

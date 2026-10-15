@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-15 — Jelly Drums distinct tunes in a round
+
+- [PR #362](https://github.com/rjdunlap/neo/pull/362), `claude/jelly-drums-distinct-tunes`. Echo levels 4–9 never repeat a tune within a round: `makeTune` takes a `played` list and `index.ts` keeps it. Only this part of deep-dive slice 1 is built; the listen-again target, bounded how-to, `TUNES` table and nudge remain ready.
+- Ran `npm run typecheck` and `npx vitest run src/games/jelly-drums` (9 pass, including the new distinct-tunes rule test).
+- Not run: browser play or `fingerdemo` for Jelly Drums, build, the full unit suite, actual iPad or child play. No coverage-summary row changed (the Jelly Drums row records the level-10 pass).
+
 ## 2026-10-15 — Day by Day count another weather
 
 - [PR #361](https://github.com/rjdunlap/neo/pull/361), `codex/day-by-day-other-weather`, dispatch `day-by-day-other-weather-20261015T104630Z`. Stable 5 records a week, asks two varied relative-day questions, then counts a seeded sunny/cloudy/rainy category with authored totals 0–7. School order [2, 4, 10, 3, 5]; free marks/replays, matching-record/answer glow after two misses. Sunny-only 3 and its RNG stream preserved.

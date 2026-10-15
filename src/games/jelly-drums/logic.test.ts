@@ -3,6 +3,18 @@ import { Rng } from '../../engine/random';
 import { awakeJellies, nearestAwake, WAKE_AT, WAKE_ORDER, FREE_SONG, freeNote, JELLIES, jellyToTap, makeTune, PLANS } from './logic';
 
 describe('Jelly Drums', () => {
+  it('never repeats a tune within a round, at any echo level', () => {
+    for (const plan of PLANS.filter((p) => p.mode === 'echo')) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const rng = new Rng(seed);
+        const played: number[][] = [];
+        for (let n = 0; n < plan.goal; n++) played.push(makeTune(rng, plan.length, played));
+        expect(new Set(played.map((t) => t.join())).size).toBe(plan.goal);
+      }
+    }
+  });
+
+
   it('grows from free play to longer tunes', () => {
     const echo = PLANS.filter((p) => p.mode === 'echo');
     expect(PLANS.slice(0, 3).every((p) => p.mode === 'free')).toBe(true);
