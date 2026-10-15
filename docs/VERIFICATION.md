@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-15 — Discovery direct-next definition
+
+- [PR #395](https://github.com/rjdunlap/neo/pull/395), `codex/discovery-d1a`: froze the [D1b packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game); audited result/layout, route/origin, completion-based suggestions, player-memory reset and all three module band ladders against `cbf6391`. Integrated docs-only coordinator dispatch `0eed4f5`.
+- Specified pictured controls in both orientations, eligibility/selection memory, current band/pin/ordered level and return rules, empty/stale recovery, files and exact future proof. Roadmap now selects D1b; queue preserves dispatch and worker identity.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; docs only. No runtime files changed.
+- Not run: typecheck, tests, build, browser/world/offline or screenshots. Future regression rows are requirements, not passing evidence; iPad speech/reach and child understanding remain open.
+
 ## 2026-10-15 — Inventions subject research
 
 - [PR #392](https://github.com/rjdunlap/neo/pull/392), `claude/inventions-research`: [study](deep-dives/subjects/inventions.md), tracker row, notebook Gadget Bench and Workshop Cases rows and [roadmap packets](ROADMAP.md#inventions-recommendations). Opened NGSS ETS1 (K-2, 3-5, MS), England D&T KS1–3 and history KS1, Beck et al. 2014 (*Frontiers*, full text), the Smithsonian's Wright brothers testing page, Inventioneers, and the Gizmos & Gadgets and Bad Piggies articles; Beck 2011, German and Defeyter, Spark!Lab, the Cardboard Challenge and printing history from search excerpts only. C3 cited from the time-change session, not reopened.
@@ -100,19 +107,13 @@
 - Ran `npm run typecheck`; vitest sing-along-barn, content and registry (124 pass); `BROWSER_SUITE=singalong` pass including the new itsy round (0 misses, 0 hints); `fingerdemo` for `sing-along-barn` at level 6 passed (35.9 s).
 - Not run: portrait screenshot of the six-card chooser (fit is layout math only), build, iPad, device speech and melody against a printed source (added to [DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
-## 2026-10-15 — Opposites level 5 Which two?
-
-- Code, `claude/opposites-which-two`, [PR #370](https://github.com/rjdunlap/neo/pull/370): pre-K `spot` mode (five cards, one opposite pair, three decoys from distinct families, 3 rounds; pre-K window now 3–5). School window and levels 6–10 not built.
-- Ran typecheck and the full `npm test` (151 files, 1315 tests pass), including the new spot rules: exactly one pair, three decoys in distinct families, the bot taps the two right cards.
-- Ran `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=5` (one wrong pair, glow hint, saved score and sticker; one landscape screenshot) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=opposites FINGER_LEVELS=5` (12.3 s), both pass.
-- Not run: portrait screenshot, build, iPad, device speech, child play.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
 | Game deep-dive docs | 2026-10-15: Duckling Parade source audit, six precedents, ladder/experience/slices; links/anchors and diff check. Prior Memory Match clock definition evidence retained | [Duckling Parade](#2026-10-15--duckling-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `marblejump` (`marble-jump`) | 2026-10-14: levels 1/6, invalid jump, hint recovery/repeated hint, portrait and land placement passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `logroll` (`log-roll`) | 2026-10-14: levels 1/3, invalid rolls, hint, Undo, portrait and Tinker Lab launch passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |

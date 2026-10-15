@@ -184,7 +184,99 @@ The developer requested concrete roadmap actions on 2026-10-12. [ROADMAP’s dis
 | **D6 · Keep moving** | **D6** finite automatic-handoff choice | Later explicit opt-in, after deliberate Next and support behavior work; interruptions, changed input/mode and pending Keep return to a preview |
 | **Other discovery entrances** | **D7** scoped pick/shuffle; **D8** profile start preference; **D9** favorites/recent/library | Reuse working selection, planner and entry routes. Do not infer preferences, create endless refills, change favorites limits or promise saved sessions by adding a shortcut |
 
-**Next action:** D1a’s complete screen/pool/route packet; then D1b, D2a, D2b and D3. D1b/D2b each deliver a playable slice, including the pure rules they use, rather than release unused selector/session infrastructure. Further definitions or optional policy choices proceed under the roadmap’s explicit dependencies. These action IDs name scope, not a new dispatch queue or implementation claim.
+**Next action:** build D1b from the [frozen D1a packet](#d1b-build-packet-one-direct-next-game); then D2a, D2b and D3. D1b/D2b each deliver a playable slice, including the pure rules they use, rather than release unused selector/session infrastructure. Further definitions or optional policy choices proceed under the roadmap’s explicit dependencies. These action IDs name scope, not a new dispatch queue or implementation claim.
+
+## D1b build packet: one direct next game
+
+*D1a frozen 2026-10-15 · docs only · source audit `cbf6391` · [PR #395](https://github.com/rjdunlap/neo/pull/395).* This is the complete first pilot specification. D1b implements it as a usable result-to-game flow; none of this UI exists yet. The broader research above remains proposals where it extends this packet.
+
+### Entry and reviewed pool
+
+Offer the control only after an **ordinary completed island touch/mouse round** of one of these three games, with the **active profile in lap or toddler** and the played band matching that profile. A helped finish qualifies exactly like an independent finish. Do not attach it to an unfinished exit, story/picnic, couch result, another game, older profile or controller-driven result. A key/pad change hides the touch-only offer; returning to touch can restore the same offer after release. Existing result controls retain their input behavior. No new controller navigation is implied.
+
+| Stable pool order / ID | Reviewed action and finish | Lap levels now | Toddler levels now |
+| --- | --- | --- | --- |
+| 1. Bubble Pop — `bubble-pop` | Swat/tap bubbles; ordinary round finishes at its target | Ordered **15, 1, 2, 3**, not every integer in min–max; level 15 is the broad swat mode | 1–6 |
+| 2. Sing-Along Barn — `sing-along-barn` | Tap friends to sing the round's notes; song/verse completion | 1–2 | 1–3 |
+| 3. Fill and Dump — `fill-dump` | Drag toys into a bucket and dump; free fill/dump or the level's target rounds | 1–2 | 1–4 |
+
+These are current source ranges, not new pins or hardcoded future launch levels. Each module's `levels(band)` and `store.levelFor` are authoritative at launch. All three have touch how-to cards/demos; preserve the selected level's instructions and finish. This source review establishes a bounded desktop pilot, not device speech, motor fit or child enjoyment. No new pool, duration promise or learning/mastery inference follows.
+
+### Result placement and cues
+
+Wait for the existing celebration's buttons, including its discovery delay where applicable. Keep the sticker acknowledgment, central celebrating pet, discovery pill, Heart, optional Keep, green Again, orange Next level (when available), and blue Home. Add a single pictured **Next game** tile and a separate **Another** button. Neither starts during celebration animation or from the release that finished the round.
+
+Use code-drawn module icon art on a pale blue tile, with a small travel arrow and the target's spoken title. The icon identifies the next game; its whole tile launches. Another shows two cycling game pictures/arrows, says “Another game,” and replaces only that tile. It never uses the orange Next-level arrow alone. Text labels supplement pictures; speech is in `voice-script.ts`, and the offer says “Next game: {title}. Or choose another.” Speak a replacement's title on deliberate Another; no repeating announcement on resize/frame updates. Keep ordinary result/Keep speech intelligible by sequencing the offer after it.
+
+Logical placement uses the usable `view`, inside App's safe areas. The minimum design width is 1024 in both orientations. Coordinates below are top-left rectangles for the new controls; existing result controls keep their current centers. Every target is at least 100 units **after scaling**. Decorations/labels stay within their tile and cannot intercept another target. No global scale-down to fit.
+
+| Element | Landscape `1024 × 768` | Portrait `1024 × 1365` example |
+| --- | --- | --- |
+| Next game tile | `(32, 24, 288, 112)` | Same upper-left rectangle |
+| Another | `(32, 160, 112, 112)` | Same rectangle below the tile |
+| Sticker / Keep / Heart | Centers `(512,253)` / `(317,253)` / `(707,253)` | `(512,450)` / `(317,450)` / `(707,450)` |
+| Discovery pill, if any | Center `(512,426)` | Center `(512,758)` |
+| Orange Next level | Center `(762,403)` | Center `(762,717)` |
+| Green Again / blue Home | Centers `(272,553)` / `(752,553)` | `(272,983)` / `(752,983)` |
+| Celebrating pet | Bottom center `(512,748)` | Bottom center `(512,1345)` |
+
+```text
+Landscape                              Portrait
++----------------------------------+   +----------------------------------+
+| [picture  Next game]              |   | [picture  Next game]              |
+| [Another]  Keep  STICKER  Heart    |   | [Another]                         |
+|                                  |   |                                  |
+|            discovery  Next level |   |          Keep  STICKER  Heart     |
+|      Again    PET     Home        |   |                                  |
++----------------------------------+   |            discovery  Next level |
+                                       |      Again           Home        |
+                                       |                PET               |
+                                       +----------------------------------+
+```
+
+The diagram is schematic; the rectangles/centers specify placement. Reflow every visible result element on resize, including a result already offered; do not rebuild the round or reroll. Check actual sticker rotation, discovery bounds and pet animation against the new controls in D1b. Upper-left space is available because the round's corner Home/help/pet are hidden during celebration. On tall touch phones the existing TurnPrompt still applies; this packet adds no upright exception.
+
+### Selection and transient memory
+
+Use a pure rule over the reviewed IDs, registrations, profile band, completion stats, current game and previous suggestion. Filter first: target exists, is touch playable, supports the active lap/toddler band and resolves to that same band; always exclude the just-finished game. Do not substitute older modes, another catalog pool or a controller route.
+
+1. With more than one candidate, exclude the last suggestion if it is still a candidate. With just one, offer it honestly. **Another** is hidden when there is no different candidate, so it never pretends to change the picture.
+2. Prefer a candidate with no completed round (`plays` absent/0). Otherwise use the oldest latest completed-history timestamp; missing history ranks as 0. Ties use the fixed pool order above, never randomness or object iteration order. A prior unfinished opening is still unplayed.
+3. Record the ID when a suggestion is actually displayed, initially or by Another. Keep one last-suggestion value per active-profile session, separate from land-host memory. Keep the currently displayed tile stable through resize, Heart, Keep, speech, idle frames and closing overlays. Revalidate after relevant band/catalog/input changes; no periodic reroll.
+4. Again and Next level are intentional same-game replays and do not consume a queue. On their next completed result, use the retained last-suggestion value to offer the alternative where available. Home/Explore preserves that session value. Profile switch/removal/restore/reset and reload clear it; an epoch/generation change also invalidates old callbacks, including switching away and back to the same ID. Do not add saved fields, history entries, mastery state or a mix/session planner.
+
+Previewing, Another and dismissing/leaving an intro award nothing, clear no new-game sparkle, and change no plays, misses, hints, difficulty or pins. The finished round has already settled through the existing `finish()` path; discovery must never settle it again.
+
+### Launch, return and recovery
+
+On a fresh Next game press, check the live scene/profile generation, candidate eligibility and input again, then latch navigation once. Resolve the **current profile band**, `playBand`, the module's ordered range and `store.levelFor` at that moment. Do not carry the source game's level, its one-round override, or a cached target level into another game. The target's valid pin wins under normal store rules. Bubble Pop lap's high-ID easy entry 15 must stay valid. The normal how-to card displays that resolved level; preserve its existing level picker/pin behavior.
+
+Launch through the ordinary route with no story, **`again = false`**, and no explicit level override: conceptually `go.game(target.id, currentProfileBand, undefined, false, originalOrigin)`. Full level-specific intro/demo and Play remain governed by the existing grown-up switch. With cards off, the normal direct launch applies. Never mark a different game as Again to bypass its card. If the intro is left before Play, use its normal leave route to the retained origin; no new preview Back screen is introduced in D1b.
+
+Carry the same original `Origin` unchanged through every cross-game hop, including Again/Next level afterward: a land returns to that land, a place to the same band place and remembered layout/page, the journal to its remembered page. No origin falls back to the active profile's home spot. The target's own home land does not replace the launch context. Do not expand `Origin` or reset the existing place/land/journal memories.
+
+If eligibility becomes empty before display, omit both new controls and leave ordinary Again/Next level/Home available. If the displayed candidate becomes invalid at press time, **do not launch a different game behind its picture**: release the latch, replace it with a freshly validated offer (or remove both controls), speak the new offer/recovery once, and require a new press. Invalid/stale callbacks after leaving, profile change, reset/restore or destroy do nothing. Pointer cancellation/lost release performs no action; double taps or held inputs launch at most once, and the target intro requires fresh input. Preserve pending Keep until an explicit navigation choice; Next game, like Again/Home, deliberately leaves it. Do not auto-keep, discard it on Another, or add a confirmation gate.
+
+### Implementation surface and future proof
+
+D1b owns the smallest complete feature. Expected files:
+
+- `src/content/discovery.ts` and focused tests for the reviewed pool, eligibility/ranking/ties; reuse the intent of `lands.suggest` without changing land behavior or shipping an unused service.
+- `src/app/scenes/GameScene.ts` for the real pictured offer, result layout/resize, fresh-press latch and current launch resolution; a small app-owned transient memory helper and `src/app/players.ts`/existing reset hooks only as needed to clear/invalidate it. Keep rules inspectable and test route/event sequences.
+- `src/content/voice-script.ts` for offer/replacement/recovery speech, existing `RoundButton`/`onTap` and module icons for input/art. Change `routes.ts`/`origin.ts` only if tests expose a necessary preservation fix; their contracts above remain intact.
+- `scripts/browser-check.mjs` and README browser table for a **new filtered `discovery` flow** (`DISCOVERY_ONLY=direct-next`), plus ROADMAP, DESIGN if implemented behavior warrants it, and VERIFICATION closeout. No save schema, game rules, new game inventory row or new assets.
+
+Future acceptance (specified here, **not run by D1a**):
+
+| Proof | Exact scope |
+| --- | --- |
+| Pure selection/route tests | All-unplayed stable ties; completed recency/missing history; current/last exclusion; sole/zero/removed/incompatible candidates; no suggestion progress mutation; lap ordered `[15,1,2,3]`; changed target pin and profile band before press; retained land/place/journal/absent origin; reroll stable on resize/Heart/Keep; double press, cancellation, stale callback and profile switch-away/back/reset/restore guards |
+| One filtered desktop flow | With an isolated lap profile, cards **on**, start Bubble Pop 15 from Bubble Beach; complete normally and wait for existing result. Verify one result/sticker. Initially suggest unplayed Sing-Along Barn; Another shows Fill and Dump with unchanged progress; another replacement returns Barn. Hold/release/double-press the pictured Barn control: one launch, full level-correct intro, round absent before Play, no completion credit until its round finishes. Play Barn 1 to completion: exactly one more ordinary result/sticker; Home returns to Bubble Beach without catalog retracing between games. Record tested base/diff, URL and filter |
+| Focused branches in the same flow | Pin a target before launch and confirm its card; confirm Bubble Pop lap 15 via the ordered resolver; toddler uses its own saved/pinned range. Again repeats the finished level, orange Next level stays within that game's order, and neither becomes cross-game. Heart still toggles. A synthetic pending creation verifies Another retains Keep and Keep saves once; deliberate Next leaves it without auto-save. Invalid/empty candidate recovers to ordinary controls; unsupported profile/story/controller results expose no offer. Reuse unit route tests for return variants rather than replaying every game |
+| Layout and input | One landscape and one portrait result screenshot with all applicable controls/pill/Keep; inspect bounds, pet clearance and 100-unit targets. Resize must retain the same suggestion and settled result. Hold/cancel/release through transition cannot activate target Play |
+| Required shell/navigation tier | Typecheck, unit tests, build; `BROWSER_SUITE=discovery DISCOVERY_ONLY=direct-next` once at an explicit strict-port server URL; `BROWSER_SUITE=world`; production offline check after verifying the served hashed build matches `dist`. Add the new suite/filter before invoking it. No full couch/picnic/release sweep |
+
+Device speech, iPad reach and a child's ability to distinguish Next game/Another/Next level remain person checks; Chrome cannot close them. Mixes, autoplay, combined preview/intro, compact results, new pools, saved preferences and unresolved decisions are outside this packet. **Next action: admit and build D1b from this packet; do not implement it in the D1a session.**
 
 ### Important rule and lifecycle proof
 
