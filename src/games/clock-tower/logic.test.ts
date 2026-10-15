@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { clockTower } from './index';
 import { howToFor } from '../../content/howto';
-import { demoAction, requestFor, EVENTS, FIVE_ASKED, handsFor, hourOf, makeTasks, minuteChoices, PLANS, spoken, timeOf } from './logic';
+import { appointmentFor, demoAction, requestFor, EVENTS, FIVE_ASKED, handsFor, hourOf, makeTasks, minuteChoices, PLANS, spoken, timeOf } from './logic';
 
 describe('Clock Tower', () => {
   it('says times the way people do, and places the hour hand between numbers after the hour', () => {
@@ -38,6 +38,10 @@ describe('Clock Tower', () => {
       expect(card.finish).toBe('Four correct answers complete the round.');
       expect(card.note).toContain('After two misses');
       expect(card.note).toContain(level === 5 ? 'picture glows' : 'yellow hands');
+      if (level === 5) {
+        expect(card.steps.join(' ')).toContain('pretend plan');
+        expect(card.steps.join(' ')).toContain('tap the time to hear it for free');
+      }
     }
   });
 
@@ -88,15 +92,40 @@ describe('Clock Tower', () => {
     expect(handsFor(timeOf(3, 25)).minute).toBe(25);
   });
 
-  it('offers three pictures with only one matching the clock', () => {
+  it('supplies three distinct visible appointment times, one match and four distinct seeded targets', () => {
     const plan = PLANS.find((p) => p.mode === 'read')!;
+    const seen = new Map<string, Set<number>>();
+    const targets = new Set<number>();
     for (let seed = 1; seed <= 200; seed++) {
-      for (const t of makeTasks(plan, new Rng(seed))) {
+      const tasks = makeTasks(plan, new Rng(seed));
+      expect(tasks).toEqual(makeTasks(plan, new Rng(seed)));
+      expect(new Set(tasks.map((task) => task.time)).size).toBe(4);
+      expect(tasks[0].options).toEqual(expect.arrayContaining([
+        { id: 'lunch', time: 0 }, { id: 'park', time: 180 }, { id: 'bath', time: 390 },
+      ]));
+      for (const t of tasks) {
+        targets.add(t.time);
         expect(t.options).toHaveLength(3);
-        const matching = t.options!.filter((id) => { const e = EVENTS.find((x) => x.id === id)!; return timeOf(e.hour, e.minute) === t.time; });
-        expect(matching).toHaveLength(1);
+        expect(new Set(t.options!.map((a) => a.id)).size).toBe(3);
+        expect(new Set(t.options!.map((a) => a.time)).size).toBe(3);
+        expect(t.options!.filter((a) => a.time === t.time)).toHaveLength(1);
+        for (const a of t.options!) {
+          expect(EVENTS).toContain(a.id);
+          expect(a.time).toBeGreaterThanOrEqual(0);
+          expect(a.time).toBeLessThan(720);
+          expect([0, 30]).toContain(a.time % 60);
+          const evidence = appointmentFor(a);
+          expect(evidence.event.length).toBeGreaterThan(0);
+          expect(evidence.time).toBe(`${hourOf(a.time)}:${String(a.time % 60).padStart(2, '0')}`);
+          expect(evidence.speech).toBe(spoken(a.time));
+          const times = seen.get(a.id) ?? new Set<number>();
+          times.add(a.time); seen.set(a.id, times);
+        }
       }
     }
+    expect(targets.size).toBe(24);
+    expect([...seen.keys()].sort()).toEqual([...EVENTS].sort());
+    for (const times of seen.values()) expect(times.size).toBe(24);
   });
 
   it('chooses hand turns, the matching picture, and then the bell for a clean demonstration', () => {
@@ -107,8 +136,7 @@ describe('Clock Tower', () => {
       if (plan.mode === 'read') {
         expect(first.kind).toBe('pick');
         const id = (first as { kind: 'pick'; id: string }).id;
-        const event = EVENTS.find((x) => x.id === id)!;
-        expect(timeOf(event.hour, event.minute)).toBe(task.time);
+        expect(task.options!.find((a) => a.id === id)!.time).toBe(task.time);
         continue;
       }
       for (let moves = 0; moves < 3; moves++) {

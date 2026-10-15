@@ -5227,7 +5227,7 @@ async function woodsBatch() {
     log(`Garden Grow ${level} (${plan.mode}): soil, seed packets, taking seeds back, rain, misses and glowing hints, saved score and sticker passed`);
   }
 
-  if (!only || only === 'clock') for (let level = fromLevel; level <= 7; level++) {
+  if (!only || only === 'clock') for (const level of process.env.CLOCK_LEVELS ? process.env.CLOCK_LEVELS.split(',').map(Number) : Array.from({ length: 8 - fromLevel }, (_, i) => i + fromLevel)) {
     await launch('clock-tower', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); };
@@ -5258,7 +5258,30 @@ async function woodsBatch() {
         assert.deepEqual(await counts(), before, 'replay is free');
       }
       if (mode === 'read') {
+        const before = await counts();
+        const board = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return g.task.options.map((a) => {
+            const c = g.choices.find((c) => c.id === a.id);
+            return { ...a, labels: c.replay.children.filter((child) => 'text' in child).map((child) => child.text) };
+          });
+        });
+        assert.equal(board.length, 3);
+        assert.equal(new Set(board.map((a) => a.time)).size, 3);
+        assert.equal(board.filter((a) => a.time === time).length, 1);
+        for (let j = 0; j < 3; j++) {
+          const a = board[j];
+          assert.ok(a.labels.includes(`${Math.floor(a.time / 60) % 12 || 12}:${String(a.time % 60).padStart(2, '0')}`));
+          await tap(`neo.scene.game.choices[${j}].replay`);
+          assert.equal(await page.evaluate(() => neo.scene.game.index), n, 'replay never chooses');
+          assert.deepEqual(await counts(), before, 'appointment replay is free');
+        }
         if (n === 0) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(200);
+          await screenshot('clock-tower-5-appointments-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(200);
           for (let k = 0; k < 2; k++) { await tap('neo.scene.game.choices.find((c) => !neo.scene.game.isRight(c.id)).node'); await settle(); }
           assert.deepEqual(await counts(), [2, 1]);
         }
@@ -5276,7 +5299,7 @@ async function woodsBatch() {
     }
     await finished('clock-tower');
     assert.deepEqual(await score('clock-tower'), [2, 1]);
-    log(`Clock Tower ${level} (${mode}): hands turned by dragging and snapped, wrong times read aloud, hint hands, saved score and sticker passed`);
+    log(`Clock Tower ${level} (${mode}): ${mode === 'read' ? 'visible appointment times, free replay, picture choices' : 'hands turned and snapped'}, two misses, one hint, saved score and sticker passed`);
   }
 
   if (!only || only === 'families') {

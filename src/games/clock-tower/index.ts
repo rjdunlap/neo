@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { demoAction, EVENTS, hourOf, makeTasks, minuteChoices, planFor, PLANS, requestFor, spoken, timeOf, type ClockPlan, type ClockTask } from './logic';
+import { appointmentFor, demoAction, EVENT_WORDS, hourOf, makeTasks, minuteChoices, planFor, PLANS, requestFor, spoken, timeOf, type Appointment, type ClockPlan, type ClockTask } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
@@ -20,7 +20,6 @@ const LEVELS: BandLevels = {
 };
 
 const R = 200;
-const EVENT_WORDS: Record<string, string> = { breakfast: 'breakfast', school: 'school', lunch: 'lunch', park: 'the park', bath: 'a bath', bed: 'bed' };
 
 /** Little pictures of the day, for reading the clock. */
 function eventArt(id: string): Graphics {
@@ -68,7 +67,8 @@ class ClockTower implements Game {
   private readonly requestTime = label('', 38, ink);
   private readonly handKey = new Container();
   readonly bell: RoundButton;
-  readonly choices: { id: string; node: Container }[] = [];
+  readonly choices: { id: string; node: Container; replay: Container; card: Container }[] = [];
+  private readonly appointmentHeading = label("A friend's pretend plan", 28, ink);
 
   private readonly backdrop: Backdrop;
   private readonly tower = new Graphics();
@@ -123,11 +123,13 @@ class ClockTower implements Game {
     const short = label('Short: middle', 20, ink); short.position.set(50, 0);
     const long = label('Long: edge', 20, ink); long.position.set(65, 44);
     this.handKey.addChild(short, long);
+    this.appointmentHeading.visible = this.plan.mode === 'read';
+    this.appointmentHeading.eventMode = 'none';
     this.handKey.visible = this.plan.mode !== 'read';
     this.handKey.eventMode = 'none';
     this.bell = new RoundButton(this.bellArt(), swatch.white, 60, () => void this.check());
     this.bell.visible = this.plan.mode !== 'read';
-    ctx.stage.addChild(this.backdrop, this.tower, this.face, this.glow, this.bell, this.request, this.handKey);
+    ctx.stage.addChild(this.backdrop, this.tower, this.face, this.glow, this.bell, this.request, this.handKey, this.appointmentHeading);
   }
 
   private bellArt() {
@@ -178,7 +180,7 @@ class ClockTower implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const cx = v.w * 0.42;
+    const cx = v.w * (this.plan.mode === 'read' ? 0.30 : 0.42);
     const cy = Math.max(R + 70, v.h * 0.52);
     this.face.position.set(cx, cy);
     // A little tower around the clock.
@@ -187,7 +189,8 @@ class ClockTower implements Game {
     this.bell.position.set(cx + R + 150, cy);
     this.request.position.set(cx + R + 185, cy - 170);
     this.handKey.position.set(cx + R + 150, cy + 120);
-    this.choices.forEach((c, i) => c.node.position.set(cx + R + 170, cy - 160 + i * 160));
+    this.appointmentHeading.position.set(v.w - 250, cy - 285);
+    this.choices.forEach((c, i) => c.card.position.set(v.w - 250, cy - 170 + i * 170));
   }
 
   update(dt: number) {
@@ -196,7 +199,7 @@ class ClockTower implements Game {
     const g = this.glow.clear();
     if (this.hinted && this.plan.mode === 'read' && !this.busy) {
       const right = this.choices.find((c) => this.isRight(c.id));
-      if (right) g.roundRect(right.node.x - 78, right.node.y - 72, 156, 144, 26).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+      if (right) g.roundRect(right.card.x - 224, right.card.y - 79, 448, 158, 26).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
     }
   }
 
@@ -321,25 +324,47 @@ class ClockTower implements Game {
     return this.ctx.instruct(this.plan.mode === 'hour' ? 'clock.hour' : 'clock.set', { time: spoken(t.time) });
   }
 
-  private buildChoices(ids: string[]) {
-    for (const c of this.choices.splice(0)) c.node.destroy({ children: true });
-    for (const id of ids) {
+  private buildChoices(appointments: Appointment[]) {
+    for (const c of this.choices.splice(0)) c.card.destroy({ children: true });
+    for (const appointment of appointments) {
+      const { id, time } = appointment;
+      const evidence = appointmentFor(appointment);
+      const card = new Container();
+      const background = new Graphics().roundRect(-220, -75, 440, 150, 22).fill(cream).stroke({ width: 4, color: wood.line });
+      background.moveTo(-40, -70).lineTo(-40, 70).stroke({ width: 3, color: wood.line });
+      background.eventMode = 'none';
       const node = new Container();
-      node.addChild(new Graphics().roundRect(-70, -64, 140, 128, 22).fill(0xffffff).stroke({ width: 5, color: wood.line }));
+      node.x = -130;
       const art = eventArt(id);
-      art.scale.set(1.3);
-      node.addChild(art);
-      node.hitArea = new Rectangle(-74, -68, 148, 136);
+      art.scale.set(1.1);
+      art.y = -14;
+      const name = label(evidence.event, 22, ink); name.y = 53;
+      node.addChild(art, name);
+      node.hitArea = new Rectangle(-90, -75, 180, 150);
       onTap(node, () => void this.pick(id), { cooldown: 300 });
-      this.choices.push({ id, node });
-      this.ctx.stage.addChild(node);
+      const replay = new Container();
+      replay.x = 90;
+      const clock = miniClock(hourOf(time), time % 60, 36); clock.x = -75;
+      const timeLabel = label(evidence.time, 32, ink); timeLabel.position.set(44, -18);
+      const hear = label('Tap to hear', 19, ink); hear.position.set(44, 24);
+      replay.addChild(clock, timeLabel, hear);
+      replay.hitArea = new Rectangle(-130, -75, 260, 150);
+      onTap(replay, () => {
+        if (this.busy || this.finished) return;
+        sfx.tick();
+        replay.alpha = 0.65;
+        void this.ctx.tw.to(replay, { alpha: 1 }, { duration: 0.2 });
+        void this.ctx.say('clock.appointment', { event: evidence.event, time: evidence.speech });
+      });
+      card.addChild(background, node, replay);
+      this.choices.push({ id, node, replay, card });
+      this.ctx.stage.addChild(card);
     }
     this.resize(this.view);
   }
 
   private isRight(id: string) {
-    const e = EVENTS.find((x) => x.id === id)!;
-    return timeOf(e.hour, e.minute) === this.task.time;
+    return this.task.options!.some((appointment) => appointment.id === id && appointment.time === this.task.time);
   }
 
   private async pick(id: string) {
