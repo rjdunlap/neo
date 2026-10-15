@@ -1,6 +1,6 @@
 # Frog Hop deep dive
 
-*ID `frog-hop` · bands preschool, pre-K, school · levels 1–7 on 2026-10-10 · session `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116))*
+*ID `frog-hop` · bands preschool, pre-K, school · levels 1–8 (8 built 2026-10-15; written when there were 7) · session `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116))*
 
 ## The game today
 
@@ -15,8 +15,9 @@ A frog sits on a row of lily pads, nine in view, each with a numeral under it. A
 | 5 | `gap`, 0–10, 1–5 hops | school | `3 → 8`: how many hops? Tap a number card (1–6). The pads are inert |
 | 6 | `big`, 0–20, 2–6 hops either way | school | the same questions on a line to 20; the nine pads slide to keep the start and the answer in view |
 | 7 | `make-ten`, starts 6–9, remainder 1–4 | school | `7 + ? = 10`: a card for the hops that reach 10, the frog hops there, then `10 + 3`: tap where the rest land |
+| 8 | `back-ten`, starts 11–16, take away 4–8 | school | `13 − 5`: a card for the hops back that reach 10, the frog hops there, the pet says the split, then tap where the rest land (built 2026-10-15) |
 
-Ranges (`LEVELS` in `index.ts`): preschool 1–2, pre-K 1–4, school 3–7. A wrong pad or card boings and the pet says what it is or "Count each hop from {n}"; after two misses (one hint per question, or per stage on level 7) levels 3–7 show the counted hop and the answer glows, levels 1–2 only glow. A right answer gives a spark, a cheer and "Ribbit!". The sticker is a lily pad with a seeded numeral 1–9 and the frog on it.
+Ranges (`LEVELS` in `index.ts`): preschool 1–2, pre-K 1–4, school 3–8 (as built; the 3–7 here and below describes the state when written). A wrong pad or card boings and the pet says what it is or "Count each hop from {n}"; after two misses (one hint per question, or per stage on level 7) levels 3–7 show the counted hop and the answer glows, levels 1–2 only glow. A right answer gives a spark, a cheer and "Ribbit!". The sticker is a lily pad with a seeded numeral 1–9 and the frog on it.
 
 **What a round draws from.** Numbers only: no content pools. One backdrop (seed 61, sunny), one frog, one kind of pad. Questions come from `makeQuestions`, which never repeats an answer twice running and keeps start and answer inside one nine-pad window (`windowFor`; a trip is at most eight pads wide). Level 1 starts each question where the last one ended.
 
@@ -187,7 +188,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 
 1. **Guards, the level-7 fix and named misses** (built 2026-10-11, [PR #162](https://github.com/rjdunlap/neo/pull/162); no decision; decision 4 if the told remainder is kept). A pinned sticker test (the seeded numeral for seeds 0–99 and the frog's fingerprint); `LEVELS.school.max` follows the plan length and `describeLevel` stops clamping silently; bound the how-to's `{ from: 7 }`; the whole sum on level 7 (fresh 2); one hint per question (fresh 5); the inert-pad nudge (fresh 4); `missKind` and the direction and off-by-one lines (fresh 3). **This slice also records the level-7 browser play that never ran.** Tier: typecheck, Frog Hop rule tests (classification, hint count), the how-to and registry tests, `BROWSER_SUITE=woods WOODS_ONLY=hop` at 5 and 7 and `fingerdemo` at 7 (use a long command window or run it in the background).
 2. **Say the numbers, dots and flowers** (ready). Landing numerals and the tally (fresh 1), dots under levels 1–2 and flowers (fresh 6–7) on a layer the sticker and icon do not use, the frog's croak. Tier: rule tests, a play at levels 3 and 6, one portrait screenshot, `fingerdemo` at 3.
-3. **Level 8, Back over ten** (ready; claimed 2026-10-15 on `claude/frog-hop-back-over-ten`, mode `back-ten` in `src/games/frog-hop/`, voice, how-to, bot, tests). New-levels tier: rule tests, one play at 8 (one wrong card, the hint), `fingerdemo` at 8.
+3. **Level 8, Back over ten** (built 2026-10-15, [PR #346](https://github.com/rjdunlap/neo/pull/346); mode `back-ten` in `src/games/frog-hop/`, voice, how-to, bot, tests; school band now 3–8, starts 11–16, take away 4–8, same miss and hint rules as level 7; the couch still stops at 6, reaching 7–10 is a later slice). New-levels tier: rule tests, one play at 8 (one wrong card, the hint), `fingerdemo` at 8.
 4. **Level 9, Count up to take away.** Same tier; the card set stays 1–6.
 5. **Level 10, Over ten, your way** (decision 3). Same tier plus a play of stopping at ten and of landing directly.
 6. **Scenes** (brook, flower path, evening; shares Duck Pond's night art if built). Tier: rule tests for layout at four views, `BROWSER_SUITE=smoke` filtered to Frog Hop, one screenshot each.
