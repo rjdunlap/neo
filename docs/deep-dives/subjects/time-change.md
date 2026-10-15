@@ -141,7 +141,7 @@ The long-ago end is soft and sepia-tinted in palette colors and the now end is b
 
 ## Decisions for the developer
 
-- **Who reviews real-world history content,** and when may a real-object rung (candle, lamp, bulb) begin? This also gates the `inventions` and `daily-life-long-ago` sessions.
+- **Who reviews real-world history content,** and when may a real-object rung (candle, lamp, bulb) begin? This also gates the [inventions study's Better and Better rung](inventions.md#build-slices-in-order) and the `daily-life-long-ago` session.
 - **A personal timeline from stickers?** Stickers carry `at`, but old saves repair it to 0, and a dated strip would show the gaps between visits, which cuts against "nothing waits". Lean: no, unless it shows order only and never dates or gaps.
 - **Land.** Story Grove (built, capacity check needed) or the proposed Storybook Square.
 - **Island Archive's registration:** one case at `school`'s top levels and the same case on the `grownup` shelf, or one of the two.
@@ -157,7 +157,7 @@ The long-ago end is soft and sepia-tinted in palette colors and the now end is b
 6. **Define and build Island Archive** after the registration decision.
 7. **Write the two page cards** after a named review.
 8. **Define Attic Finds** with fictional objects.
-9. **Real things then and now**, only after a reviewer, coordinated with the `inventions` and `daily-life-long-ago` sessions.
+9. **Real things then and now**, only after a reviewer, coordinated with the [inventions study's Better and Better rung](inventions.md#candidates-and-priority) (lean: one shared reviewed definition) and the `daily-life-long-ago` session.
 
 ## What was built and what ran
 

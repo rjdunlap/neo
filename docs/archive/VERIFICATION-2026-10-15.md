@@ -1,5 +1,18 @@
 # Verification 2026-10-15 (archived entries)
 
+## 2026-10-15 — Memory Match level-12 clock definition
+
+- Docs only, `codex/memory-clock-definition`, [PR #369](https://github.com/rjdunlap/neo/pull/369), dispatch `memory-clock-definition-20261015T124701Z`. The [Same time packet](../deep-dives/memory-match.md#level-12-definition-same-time) defines readable numbered faces, seeded three-pair selection, exact matches, replay/misses/help, complete ending and future implementation proof. Level 12 remains unbuilt; no bands/order table, couch, saves or other levels changed.
+- Inspected current Memory Match plans/input/accounting and Clock Tower hand/speech/mini-face code at `7a02cab` (source `7e4e957` plus claim and coordinator docs). Existing approval applies; unresolved developer decisions and iPad/person checks remain open. No new research/learning claim.
+- Ran local Markdown links/anchors and `git diff --check` on that base plus this docs diff; rotated the oldest three live dated entries with links repaired. These prove documentation consistency only.
+- Not run: typecheck, units, build, browser/fingerdemo/offline, actual speech/touch or child play (docs-only tier). Next: separately admitted implementation/proof under the packet; this worker stops after publication.
+
+## 2026-10-15 — Peg Garden bloom guaranteed finish
+
+- Uncommitted work on `worktree-bridge-cse_01BPZDVHcagJedLDXgwJSyZx`, `src/games/peg-garden/`: on the bloom level, after `STALL_AT` (2) pearls in a row that wake no new flower, the next tap's pearl is let go over a waiting flower (`dropAt`) instead of the tapped x. No level or band change.
+- Ran `npm run typecheck` and `npx vitest run src/games/peg-garden` (5 pass, including "finishes a bloom level even when the same spot is tapped every time", which fails without the nudge).
+- Not run: any browser play, `fingerdemo`, a portrait screenshot. No coverage-summary row changed (none covers Peg Garden's rules).
+
 ## 2026-10-15 — Letter Trails journal entries
 
 - [PR #363](https://github.com/rjdunlap/neo/pull/363), `claude/letter-trails-journal`. 26 `letter-trails:<LETTER>` journal entries with voice lines and art (`letterPicture`), filed via `RoundResult.discoveries` only for letters whose picture was shown.
