@@ -3113,6 +3113,84 @@ async function early() {
 }
 
 async function arcade() {
+  if (process.env.PARADE_STEERING === '1') {
+    await launch('duckling-parade', 2);
+    await page.waitForTimeout(400);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const check = (ok, message) => { if (!ok) throw new Error(message); };
+      const send = (type, id = 41, x = 900, y = 290, buttons = 1, receiver = document.querySelector('canvas')) => {
+        const p = g.ctx.stage.toGlobal({ x, y });
+        receiver.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', bubbles: true, clientX: p.x, clientY: p.y, buttons }));
+      };
+      const target = () => JSON.stringify(g.target);
+      send('pointerdown', 41, 900, 200);
+      send('pointermove', 41, 2000, -100);
+      check(g.target.x === g.field(neo.view).x1 && g.target.y === g.field(neo.view).y0, 'Destination must clamp to meadow');
+      check(g.destination.visible && g.destination.eventMode === 'none' && g.destination.x === g.target.x && g.destination.y === g.target.y, 'Immediate noninteractive destination ring missing');
+      send('pointerup', 41);
+      check(g.steering === null, 'Normal release retained pointer');
+      const tapped = target(), start = { x: g.mama.x, y: g.mama.y };
+      send('pointermove', 41, 400, 350);
+      check(target() === tapped, 'Released pointer still steers');
+      await kit.sleep(150);
+      check(Math.hypot(g.mama.x - start.x, g.mama.y - start.y) > 10, 'Tap release stopped walking');
+      for (const type of ['pointercancel', 'lostpointercapture', 'pointerout']) {
+        send('pointerdown');
+        send(type, 99, 400, 350, 0, window);
+        check(g.steering === 41, 'Unrelated pointer cancelled leader');
+        const before = target();
+        send(type, 41, 400, 350, 0, window);
+        check(g.steering === null && !g.destination.visible && target() === before, `${type} did not clear finger/cue while retaining destination`);
+        send('pointermove');
+        check(target() === before, `${type}: stale move changed destination`);
+        send('pointerup');
+      }
+      send('pointerdown');
+      send('pointermove', 41, 400, 350, 0);
+      check(g.steering === null, 'Swallowed mouse/touch release retained leader');
+      send('pointerup');
+      for (const [receiver, type] of [[window, 'blur'], [document, 'visibilitychange']]) {
+        send('pointerdown');
+        receiver.dispatchEvent(new Event(type));
+        check(g.steering === null && !g.destination.visible, `${type} retained finger/cue`);
+        send('pointerup');
+      }
+      send('pointerdown', 41);
+      send('pointerdown', 42, 600, 300);
+      const latest = target();
+      send('pointermove', 41, 400, 350);
+      send('pointerup', 41);
+      check(g.steering === 42 && target() === latest, 'Old finger displaced newest leader');
+      send('pointerup', 42, 600, 300, 0, window);
+      check(g.steering === null, 'Release outside canvas retained leader');
+      for (const id of [41, 42, 43]) send('pointerdown', id);
+      const beforePalm = target();
+      send('pointerdown', 44, 400, 350);
+      check(g.steering === 43 && target() === beforePalm, 'Palm rejection changed');
+      for (const id of [41, 42, 43, 44]) send('pointerup', id);
+      send('pointerdown'); send('pointerup');
+      await kit.sleep(1000);
+      check(!g.destination.visible, 'Destination cue did not fade');
+      window.paradeOld = g;
+    });
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(300);
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const p = g.ctx.stage.toGlobal({ x: neo.view.w - 250, y: neo.view.h * 0.4 });
+      kit.tap(p.x, p.y);
+    });
+    await screenshot('duckling-parade-steering-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await launch('duckling-parade', 2);
+    await page.evaluate(() => {
+      const g = window.paradeOld;
+      if (!g.destroyed || g.steering !== null || g.destination.visible || g.ground.eventNames().length) throw new Error('Destroyed parade retained input/cue');
+      delete window.paradeOld;
+    });
+    log('Duckling Parade: clamped/fading cue, tap walking, cancellation/lost release, newest finger, palm rejection, portrait and destroy passed');
+  }
   // Duckling Parade: walk Mama Duck by tapping the grass; wrong ducklings, extras and the pond.
   await page.evaluate(() => {
     window.walkTo = async (x, y) => {
@@ -3225,6 +3303,7 @@ async function arcade() {
       await goHome();
       if (!await kit.until(() => g.finished, 15000)) throw new Error(`Parade unfinished: ${g.homeCount} home, line ${g.line.length}`);
     });
+    await page.evaluate(() => { const g = neo.scene.game; if (g.steering !== null || g.destination.visible) throw new Error('Finished parade retained steering/cue'); });
     await screenshot(`duckling-parade-${level}`);
     await finished('duckling-parade');
     const r = await page.evaluate(() => { const r = kit.store.stats('duckling-parade').history.at(-1); return [r.misses, r.hints]; });
