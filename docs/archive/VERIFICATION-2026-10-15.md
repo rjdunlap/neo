@@ -17,3 +17,9 @@
 - [PR #333](https://github.com/rjdunlap/neo/pull/333), branch `claude/goodnight-friend-notes` (uncommitted working diff over `1176f47`): slice 10, first half. Each friend has its own pentatonic bell step (`NOTE_STEP` in `src/games/goodnight-room/logic.ts`), played when she says goodnight, replacing the note that rose with the count. The finale is unchanged. The yawn nudge is not built.
 - Passed `npx tsc --noEmit` and the Goodnight Room unit tests (12 pass, including the new "distinct notes per room" test).
 - Not run: browser play, a listen on a device, build, offline.
+
+## 2026-10-15 — Duck Pond level 12 Bye-bye ducks
+
+- Changed: a `bye` plan at level 12 in `src/games/duck-pond` (five ducks, tap one to wave it off, counted down, all swim back; lap and toddler entry), [PR #334](https://github.com/rjdunlap/neo/pull/334). Departing ducks take no taps.
+- Ran: `npm run typecheck`; `npx vitest run src/games` (1028 passed); `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks DUCK_LEVELS=12` (also portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=duck-pond FINGER_LEVELS=12` clean in 28.2 s.
+- Not run: build, device or child check; the screenshot was not reviewed visually. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md).
