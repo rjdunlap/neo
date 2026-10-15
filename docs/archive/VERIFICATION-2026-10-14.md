@@ -168,4 +168,3 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 - [PR #354](https://github.com/rjdunlap/neo/pull/354): added one picture, `bridge` (a rectangle deck on two upside-down hulls at x=±110), to level 6's silhouette pool only (`src/games/tangram-town/logic.ts`). Pictures are now twenty-one by the count of `PICTURES` keys.
 - Ran: `npm run typecheck` clean; vitest on `src/games/tangram-town` and `src/content`, 92 passed; one SVG render of the picture.
 - Not run: browser play, `creative` filter, `fingerdemo`, a device. Open: how the bridge reads on screen at play size.
-
