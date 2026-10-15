@@ -68,6 +68,8 @@ Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is th
 
 **Next content slices** (ready, small; lamp, bus and castle built 2026-10-11):
 
+Claimed 2026-10-15 on `codex/tangram-shovel-picture`: one two-piece shovel (a rectangular handle meeting a trapezoid blade) in existing levels 1–3. Preserve level rules, bands, saves, help and demonstrations. Expected files: `src/games/tangram-town/logic.ts` and the inventory, roadmap, deep-dive and verification docs. Proof: typecheck, existing geometry/solvability/bot rule tests, and one browser screenshot of the new picture.
+
 - **More pictures.** Aim for six to eight per level. A new picture is a few lines of slots in `PICTURES` and one line in a pool, and the tests above cover it. Tent and barn are also built ([PR 167](https://github.com/rjdunlap/neo/pull/167)); the tent has a triangular canopy and rectangular groundsheet, and the barn has a trapezoid roof and a two-triangle wall. Fish, lighthouse, pine and bridge are built too; no candidates are listed now, so propose the next from the same five shapes. Check the new picture reads as itself at 0.4 viewing distance.
 - **Spoken shape names** — **built 2026-10-11** ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each physical piece names its geometric shape once on pickup at toddler, preschool and pre-K. Roofs say triangle; hulls say trapezoid. School pickup is quiet. Actual device pronunciation remains unchecked.
 - **Avoid the same picture twice in a row.** A pool of two repeats half the time. The shell does not keep round history for a game; leave it, or pass the previous picture through the stored `stats` in a later slice.
