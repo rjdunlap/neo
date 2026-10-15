@@ -80,7 +80,7 @@ Status values as in the [game tracker](README.md#tracker): **not started**, **in
 
 | ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `time-change` | Past, present and future; then and now; timelines | C3 D2.His (change and continuity) | Day by Day, Story Steps | Storybook Square | T–M | timeline-ordering puzzle | not started |
+| `time-change` | Past, present and future; then and now; timelines | C3 D2.His (change and continuity) | Day by Day, Story Steps | Storybook Square | T–M | timeline-ordering puzzle | **in progress** (branch `claude/time-change-research`, 2026-10-15) |
 | `daily-life-long-ago` | Everyday life in the past: homes, food, tools, clothes, toys, across cultures | C3; UK Key Stage 1 history | Weather Wardrobe, Pet Kitchen, Market Stall | Storybook Square | P–U | spot-the-anachronism puzzle | not started |
 | `deep-time` | Dinosaurs, early life, prehistory, how fossils tell us | NGSS 3-LS4, 4-ESS1; museum education | Fossil Dig (proposed) | Discovery Marsh | K–U | fossil strata puzzle | not started |
 | `ancient-river-civilizations` | Egypt and Mesopotamia: farming along rivers, writing, cities | C3; museum guides | Letter Trails, Secret Code | Storybook Square | S–M | sign-decoding puzzle | not started |
