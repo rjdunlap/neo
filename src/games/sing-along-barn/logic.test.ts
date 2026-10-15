@@ -16,6 +16,7 @@ import {
   MARY,
   CLAIR,
   RAIN,
+  ITSY,
   VOICES,
   farmAnimals,
   makeSong,
@@ -225,12 +226,28 @@ describe('Rain, Rain, Go Away', () => {
   });
 });
 
+describe('The Itsy Bitsy Spider', () => {
+  it('sings the lyric one syllable per note, answering on each friend\'s "spout"', () => {
+    const song = makeSong(ANIMALS.slice(0, 1), ITSY);
+    expect(song.map((n) => n.syllable).join(' ')).toBe('The it sy bit sy spi der climbed up the wa ter spout climbed up the wa ter spout');
+    expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['spout']);
+    expect(song.length).toBe(13 + 6);
+  });
+
+  it('stays in the pentatonic set and fits a row of eight beads', () => {
+    for (const n of makeSong(ANIMALS.slice(0, 3), ITSY)) {
+      expect([0, 1, 2, 3, 4]).toContain(n.step);
+      expect(n.of).toBeLessThanOrEqual(8);
+    }
+  });
+});
+
 describe('which tune a round sings', () => {
   it('is a seeded draw: the same seed sings the same tune, and every tune turns up', () => {
     expect(pickTune(new Rng(7)).id).toBe(pickTune(new Rng(7)).id);
     const seen = new Set<string>();
     for (let seed = 1; seed <= 40; seed++) seen.add(pickTune(new Rng(seed)).id);
-    expect([...seen].sort()).toEqual(['buns', 'clair', 'macdonald', 'mary', 'rain']);
+    expect([...seen].sort()).toEqual(['buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain']);
   });
 });
 
@@ -263,6 +280,6 @@ describe('the whole Old MacDonald verse', () => {
 
   it('is offered only at the level that has it, beside Hot Cross Buns', () => {
     expect(tunesFor(PLANS[4])).toBe(TUNES);
-    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN]);
+    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY]);
   });
 });

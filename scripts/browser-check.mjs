@@ -1277,6 +1277,11 @@ async function singBarnPlay() {
   assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 12 + 9]);
   await tapNotes(20); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // The Itsy Bitsy Spider, level 1: a thirteen-note opening, then "climbed up the water spout" for the friend, who answers on "spout".
+  await launchTune(1, 'itsy');
+  assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 13 + 6]);
+  await tapNotes(18); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
   await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');

@@ -207,7 +207,7 @@ class SingAlongBarn implements Game {
 
   // ----- Choosing the song -----
 
-  private cardScale = () => (this.tuneCards.length > 4 ? 0.6 : this.tuneCards.length > 3 ? 0.72 : 1);
+  private cardScale = () => (this.tuneCards.length > 5 ? 0.5 : this.tuneCards.length > 4 ? 0.6 : this.tuneCards.length > 3 ? 0.72 : 1);
 
   private layoutCards() {
     // 250 apart: 30 clear between two 220-wide cards, and both fit a 768-wide upright view.
@@ -519,6 +519,12 @@ function drawTuneCard(t: Tune): Container {
     const drops = new Graphics();
     for (const x of [-34, 4, 42]) drops.ellipse(x, 62, 7, 11).fill(0x6ab0e8);
     c.addChild(cloud, drops);
+  } else if (t.id === 'itsy') {
+    const web = new Graphics().moveTo(0, -90).lineTo(0, 0).stroke(line(0x8a9db5, 4));
+    const spider = new Graphics().circle(0, 22, 26).fill(0x4a3a5c);
+    for (const d of [-1, 1]) for (const dy of [-8, 8, 24, 40]) spider.moveTo(d * 20, 22 + dy / 2).lineTo(d * 48, 22 + dy).stroke(line(0x4a3a5c, 5));
+    spider.circle(-9, 14, 5).circle(9, 14, 5).fill(0xffffff);
+    c.addChild(web, spider);
   } else if (t.id === 'mary') {
     const lamb = new Graphics()
       .circle(-40, 30, 26)
@@ -615,14 +621,14 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
-    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away, then choose who sings next after each verse (${friends})`;
-    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away, then choose who sings next after each verse (${friends})`;
-    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away; after each verse, choose who sings next (${friends})`;
-    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away; tap to sing, ${friends} visit`;
+    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away or The Itsy Bitsy Spider, then choose who sings next after each verse (${friends})`;
+    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away or The Itsy Bitsy Spider, then choose who sings next after each verse (${friends})`;
+    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away or The Itsy Bitsy Spider; after each verse, choose who sings next (${friends})`;
+    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away or The Itsy Bitsy Spider; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away or The Itsy Bitsy Spider; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
   coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines.',
-  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away with stuffed animals: bring out one for each verse and make its sound together.',
+  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away or The Itsy Bitsy Spider with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,
