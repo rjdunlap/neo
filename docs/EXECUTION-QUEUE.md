@@ -27,17 +27,12 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; hourly automation; preserve recovered Git-locked checkout. Record-bridge worker complete; #357 merged at `6319c5ef350a0f5954b9cda7ea53323f28129355` and deployed, slot released.
-- Newly admitted: **Day by Day slice 4, Count another weather (stable 5)**, [source](deep-dives/day-by-day.md#build-slices-in-order). New category/zero-capable generator only at 5, school order after 3; preserve sunny-only 3. Exclude other levels/modes, bands, persistence changes and decisions.
-- Dispatch `day-by-day-other-weather-20261015T104630Z`; worker `01a13f2c-3f09-76f3-bfd8-7768a9a63693`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Day by Day 5: count another weather". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/day-by-day-other-weather`, [PR #361](https://github.com/rjdunlap/neo/pull/361), claim `4a5b94b`; source `19dbc4e`.
-- Expected game rules/implementation/tests, required ordering/voice/how-to/browser/docs. Implementation/proof **not run by coordinator**. New-level tier: typecheck/rules with zero/nonzero and sunny-only-3 assertions, filtered level-5 play/demo and shared-content build as affected; no unchanged full/offline suites. Device/child checks open.
-- Admission 2026-10-15 10:46:30 UTC **75% five-hour / 12% weekly used**, resets `1792063357` / `1792650157`; ordinary usage allowed. Estimate **18.75 / 3.75 points** fits actual remaining **25% / 88%**, no daily cap/reserve. Worker rechecks usage/checkpoints if needed; below 25% alone is not a stop rule.
-- Prior proof: #357 typecheck/119 targeted tests/build, filtered touch play/portrait and clean 7.2s demo passed; deployment succeeded, server stopped/tree clean. Final **73% / 11%**, resets `1792063357` / `1792650157`, vs dispatch 62% / 10% same identities: aggregate **11 / 1 points**, reconciled once below. No unchanged proof rerun.
-- Overlap: no active implementation/open PR/dirty work; history/recovery branches preserved, no competing level-5 claim. Coordinator servers none.
-- Worker admission/scope recheck: **78% / 12%** used, resets `1792063357` / `1792650157`; ordinary usage allowed, estimate 18.75 / 3.75 fits remaining 22 / 88. Coordinator exempt; other Neo chats idle, no competing level-5 claim; matching worktrees clean. Proof not run.
-- Worker pre-edit usage **81% / 13%**, pre-browser **82% / 13%**, resets unchanged; ordinary usage allowed. At claim `4a5b94b` plus scoped diff: typecheck, 55 focused rule/ordering/how-to/difficulty tests and shared-content build passed. Filtered level-5 play passed at `http://localhost:5176` (10:53:19 UTC), total 7 portrait reviewed; zero-total ghost finger clean in 45.1 s (10:54:17 UTC). Links/diff/browser syntax passed; owned Vite stopped. Broad/world/offline/device/child checks not run.
-- Pre-publication usage **86% / 14%**, resets `1792063357` / `1792650157` unchanged; ordinary usage allowed. No competing claim or changed origin/main at final proof.
-- Next: publish and merge verified #361, then stop. Coordinator confirms publication and carries final after-commit usage from this worker response into the ledger once before releasing slot; Weather Window (6) is outside this assignment.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks; preserve its checkout.
+- Assigned **Day by Day slice 5, Weather Window (stable 6)**, [source](deep-dives/day-by-day.md#build-slices-in-order). Two supplied seven-day record pages, two replayable comparison questions and separate confirm, ties explicit, free browsing/marks and supported finish. Exclude other modes/levels, bands, persistence, real calendar/weather and unresolved decisions.
+- Dispatch `day-by-day-weather-window-20261015T114231Z`; worker `01a13f60-c5dd-7de1-89f2-2c5254f96483`, host `local`, project `60beeda2-d963-4f35-a4c0-82c972889939`; branch `codex/day-by-day-weather-window`, PR pending. Source `c4688b5`.
+- Worker admission/scope usage **5% five-hour / 15% weekly** used, resets `1792082557` / `1792650157`; ordinary usage allowed. Estimate **18.75 / 3.75 points** fits remaining 95 / 85. Other Neo implementation chats idle; no competing level-6 claim or open PR. Existing level-4 historical worktree has verification doc work only; coordinator queue edit exempt.
+- Required proof: typecheck, meaningful rule/unit tests, filtered level-6 real-input play including wrong answer/hint and portrait, ghost-finger; shared-content build. Proof not run. No unchanged world/offline suites; device speech/touch/child checks open.
+- Next: publish claim/draft PR, implement only 6, verify, document and publish/merge under standing authorization; then stop. Final after-commit usage belongs in this worker response for coordinator reconciliation.
 
 ## Usage observations
 
@@ -111,3 +106,4 @@ The queue is the durable cross-chat memory: scope, claims, outstanding worker, u
 The hourly follow-up checks admission; it does not provide a dedicated reset event or guaranteed automatic recovery from a rate-limit interruption. Persist checkpoints so a later run can resume. Local work requires the computer powered on, the app running, and this checkout still available. Review the first few admitted runs and adjust estimates from evidence. Scheduling and account usage are separate from the game's runtime; no game code or player saves change for this workflow.
 
 Official references: [scheduled tasks](https://learn.chatgpt.com/docs/automations?surface=app) and [usage/pricing](https://learn.chatgpt.com/docs/pricing).
+
