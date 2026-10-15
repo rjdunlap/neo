@@ -42,7 +42,7 @@ class BugBuilder implements Game {
       this.board.addChild(node); this.targets.push({ ...s, node, filled: false, wrong: 0 });
     }
     this.board.addChild(this.glow);
-    for (let token = 0; token < this.plan.colors; token++) {
+    for (const token of puzzle.tokens) {
       const node = new Container(); node.addChild(tile(102, 102), bugToken(token)); node.hitArea = new Circle(0, 0, 55);
       ctx.stage.addChild(node);
       const drag = draggable(node, ctx.tw, {
@@ -55,7 +55,11 @@ class BugBuilder implements Game {
           if (slot.token !== token) {
             this.misses++; slot.wrong++; sfx.boing();
             void ctx.say('bug.wrong');
-            if (slot.wrong === 2) { this.hints++; this.activeHint = slot; void ctx.say('bug.hint', { ...BUG_TOKENS[slot.token] }); }
+            if (slot.wrong === 2) {
+              this.hints++; this.activeHint = slot;
+              const hint = ctx.say('bug.hint', { ...BUG_TOKENS[slot.token] });
+              if (this.plan.mode === 'mirror') void hint.then(() => ctx.say('bug.hintMirror'));
+            }
           } else {
             slot.filled = true;
             slot.node.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -95,11 +99,15 @@ class BugBuilder implements Game {
     });
     this.drawHint();
   }
+  private tray(token: number) { return this.choices.find((c) => c.token === token)!; }
   private drawHint() {
     this.glow.clear(); this.paletteGlow.clear();
     if (!this.activeHint || this.done) return;
-    const s = this.activeHint, choice = this.choices[s.token];
+    const s = this.activeHint, choice = this.tray(s.token);
     this.glow.circle(s.x, s.y, 56).stroke({ width: 7, color: swatch.yellow.line });
+    // Point at the answer's source too: the twin across the line, or the same place on the little model bug.
+    if (this.plan.mode === 'mirror') this.glow.circle(-s.x, s.y, 56).stroke({ width: 7, color: swatch.yellow.line });
+    if (this.plan.mode === 'copy') this.paletteGlow.circle(this.model.x + s.x * this.model.scale.x, this.model.y + s.y * this.model.scale.y, 56 * this.model.scale.x).stroke({ width: 5, color: swatch.yellow.line });
     this.paletteGlow.roundRect(choice.drag.home.x - 59, choice.drag.home.y - 59, 118, 118, 24).stroke({ width: 7, color: swatch.yellow.line });
   }
   update(dt: number) { this.clock += dt; this.glow.alpha = this.paletteGlow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3); if (this.done) this.board.rotation = Math.sin(this.clock * 8) * 0.035; }
@@ -107,7 +115,7 @@ class BugBuilder implements Game {
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     const next = nextStamp(this.targets);
-    const choice = next && this.choices[next.token];
+    const choice = next && this.tray(next.token);
     if (!next || !choice || choice.drag.dragging) return null;
     return { drag: { on: choice.node }, to: { on: this.board, x: next.x, y: next.y } };
   }
