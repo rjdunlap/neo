@@ -19,9 +19,9 @@ Critters, some in top hats, are dragged into hoops whose signs are pictures of a
 **Known gaps.**
 - **Only one independent feature.** Five of the six rules are functions of the animal; only the hat is independent. "Both" is therefore often one animal, and the pool is small enough that a child will see the same pairs within a session. A third feature is already a pending decision shared with Critter Crossing.
 - **"Neither" has no home.** Critters that fit neither rule must stay on the grass, and the round ends silently when the rest are placed. She is never told that leaving them out was right, and nothing marks the place.
-- **The hint is not about the miss.** After two wrong drops `hinting` becomes the first unplaced critter that belongs in a hoop (`sorters.find`), not the one she just got wrong, so the glow can jump to an unrelated critter.
+- **The hint is not about the miss** (fixed 2026-10-14: `hintFor` points at the critter she just missed). Before, after two wrong drops `hinting` becomes the first unplaced critter that belongs in a hoop (`sorters.find`), not the one she just got wrong, so the glow can jump to an unrelated critter.
 - **The guessing level can be passed by elimination alone** and has no "now sort one more" step to prove she holds the rule.
-- **No preschool.** Prek starts at level 1 (5 critters, one hoop), the school window starts at 2, and a child is only ever told a rule by picture and spoken phrase; there is no younger or easier entry.
+- **No preschool** (pre-K now has the level 6 entry; preschool still waits on decision 1). Prek started at level 1 (5 critters, one hoop), the school window starts at 2, and a child is only ever told a rule by picture and spoken phrase; there is no younger or easier entry.
 - **No count, no second look.** A finished round does not ask how many are in each part; the same critters are never re-sorted by a new rule.
 - Couch: none. Journal: no entries. Picnic: none. Controller: none (touch only; the demo is a ghost finger).
 
@@ -77,7 +77,7 @@ IDs are appended, never renumbered. 6 is the easy entry; 7–11 are the new top.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 6 | Just a few | preschool, pre-K (an entry placed before 1) | 3 critters, one hoop, the rule is "wearing a hat" or a single-animal color; one is already inside | Which of the two left critters belongs | A wrong drop is a miss with the spoken reason; one hint glow on the right one | Every round has 1–2 critters that fit, none ambiguous | New plan only; voice reuses `sort.one`; ghost finger unchanged |
+| 6 | Just a few (**pre-K part built 2026-10-14**; preschool waits on decision 1) | preschool, pre-K (an entry placed before 1) | 3 critters, one hoop, the rule is "wearing a hat" or a single-animal color; one is already inside | Which of the two left critters belongs | A wrong drop is a miss with the spoken reason; one hint glow on the right one | Every round has 1–2 critters that fit, none ambiguous | New plan only; voice reuses `sort.one`; ghost finger unchanged |
 | 7 | Where does the new one go? | school (pre-K optional) | Hoops already sorted by the shown rules; one new critter appears at the foot | The part of the diagram the newcomer belongs in, including "neither" | The usual spoken reason; after two misses the right part glows | The new critter's place is derivable from the shown rules; all four places occur across seeds | Needs the neither mat; new voice line; ghost finger drags the newcomer |
 | 8 | A new sign | school | Six critters sorted by one rule; the sign turns over to a second rule and the critters hop out | Move each critter to its place under the new sign | A wrong drop is a miss with the reason; the spoken sign names the new rule every time | The two rules split the same six differently and both leave something in and out | New transition art; voice `sort.again`; bot sorts twice |
 | 9 | This but not that | school | One hoop with sign A and a red-lined sign B inside it | Critters that fit A and not B | Spoken reason names both parts | Every answer exists (at least one in, one fit-A-but-B, one neither) | New sign layout; voice; how-to line |
@@ -104,9 +104,9 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 
 ## Build slices, in order
 
-1. **Neither mat, a hint on the critter she missed, and a worked example** at levels 1–3 and 5. `logic.ts` gains a `hintTarget` test (the hint names the missed critter's correct place); art and voice only. Tier: existing-game fix: typecheck, that game's tests, one filtered play and a portrait screenshot, `fingerdemo` once.
+1. **Neither mat, a hint on the critter she missed (built 2026-10-14), and a worked example** at levels 1–3 and 5 (the worked example is built only for level 6). Remaining: the neither mat and the worked example at levels 1–3 and 5. `logic.ts` gains a `hintTarget` test (the hint names the missed critter's correct place); art and voice only. Tier: existing-game fix: typecheck, that game's tests, one filtered play and a portrait screenshot, `fingerdemo` once.
 2. **Fresh rules** from existing art (single-animal rules for easy entry only), with the split test. Tier: rules (typecheck and that game's tests).
-3. **Level 6 and the preschool opening** (after decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
+3. **Level 6 and the preschool opening** (level 6 for pre-K built 2026-10-14 with `order` [6, 1, 2, 3] and `entryLevels` [6]; the preschool row waits on decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
 4. **Level 7 Where does the new one go?** Needs slice 1. Same tier.
 5. **Level 8 A new sign.** Same tier.
 6. **Level 9 This but not that.** Same tier.
@@ -115,5 +115,7 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 9. **Level 10 Pick the signs** (after decision 3): its own definition first.
 
 ## What was built in this session
+
+On 2026-10-14 a build session (`claude/critter-sort-just-a-few`) added level 6 for pre-K and the `hintFor` fix; checks in [VERIFICATION](../VERIFICATION.md#2026-10-14--critter-sort-level-6-just-a-few-and-the-missed-critter-hint). The deep dive session itself:
 
 Nothing: a deep dive session is research and ideation only. Links and `git diff --check` ran. The genre sources were read through search summaries, not opened in full.
