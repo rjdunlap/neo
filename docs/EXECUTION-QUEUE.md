@@ -36,6 +36,12 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 - Overlap: other Neo implementation chats idle; no open PR or dirty worktree at admission, no competing fraction-art claim. Clean historical dot-layout worktree preserved; coordinator servers none.
 - Next: worker publishes and merges verified PR #377, records after-final-commit usage in its response and stops. Coordinator confirms publication/deployment and reconciles this dispatch once next wake-up. Slice 4 only; circle sectors and unresolved decisions remain separate.
 
+### Clock Tower appointment worker claim
+
+- Dispatch `clock-appointments-20261015T154626Z`; worker `01a1403e-ed5f-7a73-a61e-cbae415731e0`, host `local`, branch `codex/clock-visible-appointments`, draft PR pending. Scope: only [Clock Tower slice 2](deep-dives/clock-tower.md#build-slices-in-order), existing level 5, six pictures, three visible/replayable appointment times. Other art/modes/levels/bands/saves and decisions excluded.
+- Worker admission: **52% / 22% used**, reset identities `1792082557` / `1792650157`, ordinary usage permitted. Estimate 21.25 / 3.75 points fits remaining 48% / 78%. Clean current base `467f200`; no competing open PR, historical coverage worktree clean and merged; coordinator exempt and other implementation chats inactive.
+- Proof pending: typecheck, targeted rules/how-to, one filtered level-5 regression and ghost finger, portrait review; build for shared content changes. Next: publish docs-only claim/draft PR, recheck usage/overlap, implement only this slice.
+
 ## Usage observations
 
 Record one row per admitted run and retain the latest ten. Percentage-point differences are comparable only when the window reset identity is unchanged. A reset-crossing sample is unknown, not zero. Other account work may contribute to a difference; label it as aggregate usage, never exact per-task cost. Unknown samples do not lower estimates. Record each worker/dispatch once; the ledger improves slice estimates and does not impose a daily quota. Store a closeout reading obtained after the final commit in the worker/coordinator chat and carry it into the next checkpoint; do not make another commit solely to log publication overhead.
