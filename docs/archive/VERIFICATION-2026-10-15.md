@@ -90,3 +90,11 @@
 - Ran: `npm run typecheck` passed; `vitest run src/content src/games/bumper-garden src/games/registry` 98 passed.
 - Not run: browser play of level 2 (a one-line change reusing the color-mode count call), `fingerdemo`, a device or a child.
 - Open: whether the count reads well at the 1.2 s relaunch pace.
+
+## 2026-10-15 — Day by Day count beside the record
+
+- [PR #357](https://github.com/rjdunlap/neo/pull/357), `codex/day-by-day-record-bridge`, dispatch `day-by-day-record-bridge-20261015T094230Z`. Stable 10 supplies a seeded immutable week, three baseline outlined suns, reversible free marks/replay and one correct total to finish; school order [2, 4, 10, 3], entry [10]. No schema change or additional mode.
+- Tested claim `a388c39` plus scoped implementation diff: typecheck, 119 focused rule/presentation/registry/how-to/difficulty/store/profile tests and production build passed (existing chunk-size warning). Ordering, entry/birthday landing, stable saved/pinned IDs, immutable evidence and 1–4 plan preservation covered.
+- Passed `BROWSER_SUITE=week WEEK_LEVELS=10 GAME_URL=http://localhost:5176 npm run test:browser` at 09:47:05 UTC: supplied tally start, zero baseline hints, free reversible non-sun marks, immutable records, three wrong totals/one hint, one correct total finishes despite incorrect marks, saved sticker and interrupted-speech exit. Chromium sandbox launch failed before play; isolated outside-sandbox play passed with no page errors.
+- Reviewed `test-results/browser/day-by-day-10-record-portrait.png`: all records, sun outlines, 100-unit logical targets, numbers, text and pet clear. Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=day-by-day FINGER_LEVELS=10 GAME_URL=http://localhost:5176 npm run test:browser` at 09:47:41 UTC: school 10 finished cleanly in 7.2 s. Owned Vite server stopped.
+- Links, diff and browser syntax checks at closeout. Not run: unchanged game plays, broad/world/offline suites, iPad touch/device speech or child play; existing device checks stay open.

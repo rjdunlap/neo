@@ -121,6 +121,23 @@ export const FRACTIONS = [
   { name: 'three quarters', numerator: 3, denominator: 4 },
 ] as const;
 export function fraction(pair: number) { return FRACTIONS[pair]; }
+/** A single 64-unit square, partitioned into exactly two or four equal rectangles. */
+export interface FractionSquare {
+  rotation: number;
+  parts: { x: number; y: number; width: number; height: number; shaded: boolean }[];
+}
+/** Select the filled parts independently of orientation; neither changes the fraction's identity. */
+export function selectFractionSquares(rng: Rng): FractionSquare[] {
+  return FRACTIONS.map(amount => {
+    const shaded = new Set(rng.shuffle(Array.from({ length: amount.denominator }, (_, i) => i)).slice(0, amount.numerator));
+    const width = 32, height = 128 / amount.denominator;
+    return { rotation: rng.int(0, 7) * Math.PI / 4,
+      parts: Array.from({ length: amount.denominator }, (_, i) => ({
+        x: -32 + i % 2 * width, y: -32 + Math.floor(i / 2) * height,
+        width, height, shaded: shaded.has(i),
+      })) };
+  });
+}
 export function makeDeck(pairs: number, rng: Rng): MemoryCard[] {
   return rng.shuffle(Array.from({ length: pairs }, (_, pair) => [{ pair, side: 0 as const }, { pair, side: 1 as const }]).flat());
 }
