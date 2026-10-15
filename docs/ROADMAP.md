@@ -54,7 +54,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 5. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)
 6. **`critter-crossing`, bank shelf**, then **a visible "not" entry** as a second slice. Existing-game tier, then new-levels tier. [Dive slices 1 and 4](deep-dives/critter-crossing.md#build-slices-in-order)
 7. **`critter-sort`, the worked example at levels 1–3 and 5** (slice 1's remainder); then levels 7, 8, 9 and 11, one per slice. [Dive slices 1, 4–7](deep-dives/critter-sort.md#build-slices-in-order)
-8. **Visual identity V1–V2, *docs only***: one Barnyard art and feedback sheet and an Animal Snack responsiveness pilot definition. Links and diff check. [Chunk 21](#chunks)
+8. **Visual identity V1–V2, *docs only***: one Barnyard art and feedback sheet and an Animal Snack responsiveness pilot definition. Links and diff check. [Chunk 21](#chunks) (claimed: `claude/visual-identity-v1-v2`)
 9. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 10. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)
 11. **`clap-syllables`, level 6 *Beat train***, then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
