@@ -10,8 +10,8 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clockFace, pictureFace } from './art';
-import { selectTimes, DOT_RADIUS, selectDotLayouts, selectPictures, type DotSpot, type MemoryPicture, cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
+import { clockFace, fractionFace, pictureFace } from './art';
+import { selectFractionSquares, type FractionSquare, selectTimes, DOT_RADIUS, selectDotLayouts, selectPictures, type DotSpot, type MemoryPicture, cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
@@ -23,6 +23,7 @@ class MemoryMatch implements Game {
   private readonly letters: string[];
   readonly pictures: readonly MemoryPicture[];
   readonly dots: readonly DotSpot[][];
+  readonly squares: readonly FractionSquare[];
   readonly times: readonly number[];
   private readonly background = new Graphics();
   private readonly hint = new Graphics();
@@ -55,6 +56,7 @@ class MemoryMatch implements Game {
     this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
     this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
     this.dots = this.plan.mode === 'numbers' ? selectDotLayouts(this.plan.pairs, ctx.rng) : [];
+    this.squares = this.plan.mode === 'fractions' ? selectFractionSquares(ctx.rng) : [];
     this.remaining = this.plan.pairs;
     ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
     this.ring.eventMode = 'none';
@@ -80,15 +82,7 @@ class MemoryMatch implements Game {
     if (this.plan.mode === 'fractions') {
       const amount = fraction(card.pair)!;
       if (card.side) return label(card.pair === 2 ? 'three\nquarters' : amount.name, card.pair === 2 ? 26 : 30, swatch.orange.line);
-      const g = new Graphics();
-      const whole = 64, cellW = whole / 2, cellH = amount.denominator === 2 ? whole : whole / 2;
-      for (let part = 0; part < amount.denominator; part++) {
-        const x = -whole / 2 + (part % 2) * cellW;
-        const y = -whole / 2 + Math.floor(part / 2) * cellH;
-        g.rect(x, y, cellW, cellH).fill(part < amount.numerator ? swatch.orange.fill : cream)
-          .stroke({ width: 3, color: swatch.orange.line });
-      }
-      return g;
+      return fractionFace(this.squares[card.pair]);
     }
     if (this.plan.mode === 'letters') return label(card.side ? this.letters[card.pair].toLowerCase() : this.letters[card.pair], 74, swatch.purple.line);
     if (this.plan.mode === 'number-words') return label(card.side ? String(card.pair + 1) : numberWord(card.pair), card.side ? 70 : 38, swatch.teal.line);

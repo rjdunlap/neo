@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { Container } from 'pixi.js';
 import { nextLevelOffer, stepLevel, nextLevel } from '../../progress/difficulty';
 import { Rng } from '../../engine/random';
-import { pictureFace } from './art';
+import { fractionFace, pictureFace } from './art';
 import { memoryMatch } from './index';
 import { howToFor } from '../../content/howto';
-import { clockDrawing, clockLabel, digitalTime, selectTimes, PICTURE_POOLS, selectPictures, cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS, DOT_GAP, DOT_REACH, dotLayouts, selectDotLayouts } from './logic';
+import { selectFractionSquares, clockDrawing, clockLabel, digitalTime, selectTimes, PICTURE_POOLS, selectPictures, cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS, DOT_GAP, DOT_REACH, dotLayouts, selectDotLayouts } from './logic';
 
 describe('memory matching', () => {
   it('pins the original code-drawn icon and stickers independently of deck content', () => {
@@ -103,14 +104,50 @@ describe('memory matching', () => {
       expect(new Set(ids.map(id => JSON.stringify(id))).size).toBe(8);
     }
   });
-  it('keeps the fraction pictures as valid shaded equal parts of the same square', () => {
+  it('varies seeded square orientation and shading while preserving exact equal-area fraction pairs', () => {
     expect(FRACTIONS.map(f => [f.numerator, f.denominator])).toEqual([[1, 2], [1, 4], [3, 4]]);
-    for (const f of FRACTIONS) {
-      const cellW = 64 / 2, cellH = f.denominator === 2 ? 64 : 32;
-      expect(cellW * cellH * f.denominator).toBe(64 * 64);
-      expect(f.numerator).toBeGreaterThan(0);
-      expect(f.numerator).toBeLessThan(f.denominator);
+    const rotations = FRACTIONS.map(() => new Set<number>());
+    const masks = FRACTIONS.map(() => new Set<string>());
+    for (let seed = 1; seed <= 200; seed++) {
+      const squares = selectFractionSquares(new Rng(seed));
+      expect(squares).toEqual(selectFractionSquares(new Rng(seed)));
+      expect(squares).toHaveLength(3);
+      const deck = makeDeck(planFor(11).pairs, new Rng(seed));
+      expect(deck).toHaveLength(6);
+      squares.forEach((square, pair) => {
+        const f = FRACTIONS[pair];
+        expect(deck.filter(c => c.pair === pair).map(c => c.side).sort()).toEqual([0, 1]);
+        for (const card of deck.filter(c => c.pair === pair)) expect(cardLabel('fractions', card, [])).toBe(f.name);
+        expect(square.parts).toHaveLength(f.denominator);
+        expect(square.parts.filter(p => p.shaded)).toHaveLength(f.numerator);
+        // Every part tiles the same whole without overlaps; shaded area is the named share.
+        let shadedArea = 0;
+        for (const [i, part] of square.parts.entries()) {
+          expect(part.width * part.height).toBe(64 * 64 / f.denominator);
+          expect(part.x).toBeGreaterThanOrEqual(-32);
+          expect(part.y).toBeGreaterThanOrEqual(-32);
+          expect(part.x + part.width).toBeLessThanOrEqual(32);
+          expect(part.y + part.height).toBeLessThanOrEqual(32);
+          if (part.shaded) shadedArea += part.width * part.height;
+          for (const other of square.parts.slice(i + 1)) {
+            expect(part.x + part.width <= other.x || other.x + other.width <= part.x ||
+              part.y + part.height <= other.y || other.y + other.height <= part.y).toBe(true);
+          }
+        }
+        expect(shadedArea / (64 * 64)).toBe(f.numerator / f.denominator);
+        rotations[pair].add(Math.round(square.rotation / (Math.PI / 4)));
+        masks[pair].add(square.parts.map(p => Number(p.shaded)).join(''));
+        // The actual rotated drawing, including its stroke, stays well inside the 140-unit face.
+        const parent = new Container();
+        const face = fractionFace(square);
+        parent.addChild(face);
+        const bounds = parent.getLocalBounds();
+        expect(Math.max(Math.abs(bounds.x), Math.abs(bounds.y), Math.abs(bounds.x + bounds.width), Math.abs(bounds.y + bounds.height))).toBeLessThan(48);
+        parent.destroy({ children: true });
+      });
     }
+    rotations.forEach(values => expect([...values].sort()).toEqual([0, 1, 2, 3, 4, 5, 6, 7]));
+    expect(masks.map(values => values.size)).toEqual([2, 4, 4]);
   });
   it('never describes an unseen partner as seen, even after earlier misses', () => {
     for (let seed = 1; seed <= 20; seed++) {

@@ -3,7 +3,7 @@ import { Critter, CRITTERS } from '../../art/critter';
 import { prop } from '../../art/props';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { shapePath } from '../../art/shapes';
-import { clockDrawing, digitalTime, type MemoryPicture, type VehicleKind } from './logic';
+import { clockDrawing, digitalTime, type FractionSquare, type MemoryPicture, type VehicleKind } from './logic';
 import { label } from '../../ui/text';
 
 const WHEEL = 0x37474f;
@@ -91,4 +91,15 @@ export function clockFace(time: number, side: 0 | 1): Container {
   hands.circle(0, 0, 3).fill(ink);
   face.addChild(hands);
   return face;
+}
+
+/** Filled cells and their dividing lines are the whole picture: no extra countable decoration. */
+export function fractionFace(square: FractionSquare): Graphics {
+  const g = new Graphics();
+  for (const part of square.parts) {
+    g.rect(part.x, part.y, part.width, part.height).fill(part.shaded ? swatch.orange.fill : cream)
+      .stroke({ width: 3, color: swatch.orange.line });
+  }
+  g.rotation = square.rotation;
+  return g;
 }
