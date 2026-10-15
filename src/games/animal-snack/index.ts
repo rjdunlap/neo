@@ -16,7 +16,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type SnackPlan, type SnackRound } from './logic';
+import { BITE, BITE_SIZES, countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type SnackPlan, type SnackRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -303,9 +303,15 @@ class AnimalSnack implements Game {
     const m = this.mouth(f);
     this.ctx.tw.kill(node);
     await this.ctx.tw.to(node, { x: m.x, y: m.y }, { duration: 0.35, ease: ease.inOutSine });
-    await this.ctx.tw.to(node.scale, { x: 0.2, y: 0.2 }, { duration: 0.15 });
+    const start = node.scale.x;
+    const kind = BITE[FAVORITE[f.name]!];
+    for (const left of BITE_SIZES) {
+      sfx.bite(kind);
+      this.ctx.particles.burst(m.x, m.y, { colors: [wood.fill, swatch.yellow.light], count: 3, speed: [40, 110], gravity: 500, size: [0.15, 0.3] });
+      f.node.poke();
+      await this.ctx.tw.to(node.scale, { x: start * left, y: start * left }, { duration: 0.1 });
+    }
     node.visible = false;
-    sfx.munch();
     const voice = VOICE[f.name];
     if (voice) sfx.animal(voice);
     f.node.cheer();

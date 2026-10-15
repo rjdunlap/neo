@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { ANIMALS, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
+import { BITE, BITE_SIZES, ANIMALS, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
 
 describe('Animal Snack', () => {
+  it('gives every food a bite sound and three shrinking bites that end at nothing', () => {
+    for (const a of ANIMALS) expect(BITE[FAVORITE[a]!]).toBeTruthy();
+    expect(new Set(Object.values(BITE)).size).toBe(6);
+    expect(BITE_SIZES).toHaveLength(3);
+    expect(BITE_SIZES[BITE_SIZES.length - 1]).toBe(0);
+    BITE_SIZES.forEach((s, i) => { if (i) expect(s).toBeLessThan(BITE_SIZES[i - 1]); });
+  });
+
   it('names every drawn snack with a grammatical countable unit from one to six', () => {
     const expected: Record<Food, string[]> = {
       hay: ['bale of hay', 'bales of hay'], carrot: ['carrot', 'carrots'], bone: ['bone', 'bones'],
