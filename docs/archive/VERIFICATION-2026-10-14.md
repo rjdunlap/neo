@@ -90,3 +90,16 @@
 - Opened CASEL, Head Start, the facial-expression review and an adolescent randomized game trial; its lack of between-group empathic-accuracy improvement is explicit. Access gaps and unplayed references are named. Recommend Playdate Workshop first, Common Ground for older families, and Two Viewpoints/Ask First within existing games.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with local links repaired. No game or practical emotional-health advice built.
 - Not run: typecheck, unit tests, build, browser/offline/device/child checks. Content review, identity/band/land fit, older-family appeal and real-world transfer remain open; practical advice/physical calming requires named qualified review.
+
+## 2026-10-14 — Sing-Along Barn fourth tune (Au Clair de la Lune)
+
+- Commit 9c23ff0 on `claude/barn-au-clair` ([PR #323](https://github.com/rjdunlap/neo/pull/323)): tune `clair` (C C C D E D / C E D D C; 11-note opening, 12-note verse answering on "mot") joins the seeded pool and the level 5-6 chooser, whose four cards shrink to 0.72 so the row fits portrait. Levels, bands and rewards unchanged.
+- Passed `npm run typecheck` and `vitest` on `src/games/sing-along-barn` and `src/content` (106 tests). A wider `src/games` run had four failures in bumper-garden, ferry-jam, peg-garden and penguin-slide logic tests, files this slice did not touch; not investigated.
+- Passed `BROWSER_SUITE=singalong` on `http://localhost:5437`, including a new Au Clair round at level 1 (0 misses, 0 hints); one portrait screenshot of the level-5 chooser shows the four cards fitting.
+- Not run: `fingerdemo`, build, offline, device speech. The melody is from the standard form, not a printed score; iPad, speech and a child's tapping remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-14 — Off-screen companions subject research
+
+- Docs only, base `d840a77` plus research diff, [PR #322](https://github.com/rjdunlap/neo/pull/322): [study](../deep-dives/subjects/off-screen-companions.md), every audience L–G; tracker, [roadmap packet](../ROADMAP.md#off-screen-companions-recommendations), IDEAS and Waiting rows.
+- Read from source: Zero to Three's handout (PDF text extracted), AAP Power of Play and Choking Prevention, CPSC small parts, Camp Khan Kids, Vroom. Only summaries: WHO (PDF 403), Barr and Hirsh-Pasek, Cooney Center; Exploratorium (403) and Hoot Owl Hoot's maker page unread.
+- Found by reading `src/`: 93 of 94 games have an `offScreen`; the page shows at most two; at least five lap/toddler lines name small objects; Weather Wardrobe's `{name}` prints literally. Keyword audit, hand read; not a safety finding of record. Recommend a removal-only swap first. No code changed; `node scripts/check-links.mjs` and `git diff --check` below.
