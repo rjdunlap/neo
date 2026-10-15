@@ -168,3 +168,21 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 - [PR #354](https://github.com/rjdunlap/neo/pull/354): added one picture, `bridge` (a rectangle deck on two upside-down hulls at x=±110), to level 6's silhouette pool only (`src/games/tangram-town/logic.ts`). Pictures are now twenty-one by the count of `PICTURES` keys.
 - Ran: `npm run typecheck` clean; vitest on `src/games/tangram-town` and `src/content`, 92 passed; one SVG render of the picture.
 - Not run: browser play, `creative` filter, `fingerdemo`, a device. Open: how the bridge reads on screen at play size.
+
+## 2026-10-14 — Sing-Along Barn fifth tune (Rain, Rain, Go Away)
+
+- Commit ee3da74 on `claude/barn-rain-rain` ([PR #341](https://github.com/rjdunlap/neo/pull/341)): tune `rain` (G E G G E / come again another day; 7-note opening, friend verse "Rain rain go away, we want to play" answering on "play") joins the seeded pool and the level 5-6 chooser, whose five cards now scale 0.6 (132 wide, 150 apart) with a drawn cloud card. Levels, bands and rewards unchanged.
+- Passed `npm run typecheck` and `vitest` on `src/games/sing-along-barn`, `src/content` and the registry (121 tests).
+- Passed `BROWSER_SUITE=singalong` on `http://localhost:5437`, including a new Rain round at level 1; `fingerdemo` for `sing-along-barn` at level 5 passed (54 s).
+- Not run: a portrait screenshot of the five-card chooser (only the layout math), build, offline, device speech. The melody is from the standard form, not a printed score; iPad, hearing and a child's tapping remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-14 — Dot Link deep dive
+
+Docs only: `docs/deep-dives/dot-link.md` (levels 7–10, a toddler entry, fresh content, seven slices), the tracker row, the IDEAS row and a decision in Waiting on the developer. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser. The school window and always-on marks were decided afterwards (2026-10-14).
+
+## 2026-10-14 — Music and instruments subject research
+
+- Docs only, researched at `c27478f` plus docs diff on `codex/music-instruments-subject-research`, [PR #340](https://github.com/rjdunlap/neo/pull/340): [study](../deep-dives/subjects/music-instruments.md), tracker, [roadmap packets](../ROADMAP.md#music-and-instruments-recommendations), notebook and decision/device records. Little Conductor first, Hat Band next; melodic answers remain in Song Maker, Sound Workshop later. Twelve subjects researched; waves A/B complete.
+- Opened arts standards, Carnegie Hall/NAEYC guidance, an LA Phil theme/variation program note and eight first-party digital descriptions. Infant study uses indexed abstract only; source failures/fallbacks are named. No reference played or heard; proposed musical rules are not tested activities.
+- Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); rotated two oldest entries with local links repaired. No runtime code, game, imported audio or practical card built; no server started.
+- Not run: typecheck, units, build, browser/offline, hardware/speech or child/parent play. Identity/ranges/placement, musical-property audibility, independent use, tween/parent appeal, transfer and practical-card review remain open.

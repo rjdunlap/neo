@@ -1701,6 +1701,17 @@ export const SCRIPT = {
   'lemon.restock': ['The ferry captain gives you {n} shells so the stand can open tomorrow!'],
   'lemon.done': ['The stand is closed. What a good week of lemonade!'],
 
+  'window.rain': ['Here are two pretend weeks, A and B. Which has more rainy days? Tap the week tabs to look at both records. Tap a summary to hear it, then the arrow to check. Tap the rain picture to hear this question again.'],
+  'window.sun': ['Now compare the sunny days in both pretend weeks. Are their totals equal or different? Tap both week tabs to look. Hear a summary, then tap the arrow to check.'],
+  'window.page': ['Week {week}. All seven days are here.'],
+  'window.record': ['In pretend week {week}, {day} was {weather}.'],
+  'window.more': ['Week {week} has more {weather} days.'],
+  'window.equal': ['Both weeks have the same number of {weather} days. Their totals are equal.'],
+  'window.different': ['The weeks have different numbers of {weather} days. Their totals are not equal.'],
+  'window.counter': ['Look at the {weather} records on both pages. Week A has {a} and week B has {b}. You can count each matching picture once.'],
+  'window.evidence': ['The records show {a} {weather} days in week A and {b} in week B.'],
+  'window.done': ['We used the records to compare two pretend weeks. These records tell us about these weeks. They do not tell us what the weather will do next.'],
+
   'game.day-by-day': ['Day by Day!'],
   'week.place': ['Find {day} for our pretend week. Tap a card to hear its name, then tap the arrow to place it.'],
   'week.next': ['We just placed {day}. What day comes next? Tap a card to hear it, then tap the arrow to place it.'],

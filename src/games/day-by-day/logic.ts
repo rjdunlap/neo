@@ -8,6 +8,7 @@ export const PLANS = [
   { name: 'Yesterday, tomorrow and a sunny-day tally', relatives: true, tally: true },
   { name: 'A day beside any day', relatives: true, tally: false },
   { name: 'Count this weather, including none', relatives: true, tally: true },
+  { name: 'Weather Window: compare two supplied weeks', relatives: false, tally: false },
 ] as const;
 /** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
 export const ANCHOR_LEVEL = 4;
@@ -57,5 +58,39 @@ export function weekLayout(w: number, h: number) {
     choices: Array.from({ length: 3 }, (_, i) => ({ x: w / 2 + (i - 1) * 190, y: 470 })),
     confirm: { x: w / 2 + 365, y: 470 },
     garden: { x: w / 2, y: h - 105 },
+  };
+}
+
+export type Summary = 'a-more' | 'b-more' | 'equal' | 'different';
+export interface WindowQuestion { weather: number; choices: readonly Summary[] }
+export interface WindowRound { weeks: readonly (readonly number[])[]; questions: readonly WindowQuestion[] }
+export const summaryTrue = (weeks: WindowRound['weeks'], weather: number, summary: Summary): boolean => {
+  const [a, b] = weeks.map(week => weatherCount(week, weather));
+  return summary === 'a-more' ? a > b : summary === 'b-more' ? b > a : summary === 'equal' ? a === b : a !== b;
+};
+/** All comparisons are about these two finite pretend records. No weather/climate prediction. */
+export function makeWindow(rng: Rng): WindowRound {
+  // [rain A, rain B, sun A, sun B]. Include the introductory 2-v-4 rain / equal sunshine record.
+  const counts = rng.pick([[2, 4, 2, 2], [2, 4, 3, 1], [1, 3, 0, 0], [3, 5, 2, 1]]);
+  const week = (rain: number, sun: number) => Object.freeze(rng.shuffle([
+    ...Array<number>(rain).fill(2), ...Array<number>(sun).fill(0), ...Array<number>(7 - rain - sun).fill(1),
+  ]));
+  const weeks = [week(counts[0], counts[2]), week(counts[1], counts[3])];
+  if (rng.chance(0.5)) weeks.reverse();
+  return Object.freeze({
+    weeks: Object.freeze(weeks),
+    questions: Object.freeze([
+      { weather: 2, choices: Object.freeze(rng.shuffle<Summary>(['a-more', 'b-more'])) },
+      { weather: 0, choices: Object.freeze(rng.shuffle<Summary>(['equal', 'different'])) },
+    ]),
+  });
+}
+/** One full-size week page; tabs and summary/confirm targets stay separate from records and pet. */
+export function windowLayout(w: number) {
+  return {
+    tabs: [{ x: w / 2 - 100, y: 234 }, { x: w / 2 + 100, y: 234 }],
+    records: Array.from({ length: 7 }, (_, i) => ({ x: w / 2 + (i - 3) * 118, y: 355 })),
+    choices: [{ x: w / 2 - 170, y: 520 }, { x: w / 2 + 170, y: 520 }],
+    confirm: { x: w / 2, y: 658 },
   };
 }

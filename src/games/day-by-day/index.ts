@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, grass, ink, swatch, wood } from '../../art/palette';
-import { puffs } from '../../art/shapes';
+import { weatherArt } from './art';
+import { WeatherWindow } from './weather-window';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -14,25 +15,8 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { ANCHOR_LEVEL, COUNT_LEVEL, choicesFor, DAYS, makeCountWeek, makeWeek, makeWeatherWeek, neighbor, planFor, relativeQuestions, tallyWeather, weatherCount, WEATHER_COUNT_LEVEL, toggleMark, WEATHER, weekLayout } from './logic';
 import { gardenTreatment, wrapPath } from './presentation';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3, 5] } };
+const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6] } };
 
-function weatherArt(kind: number): Graphics {
-  const g = new Graphics();
-  if (kind === 0) {
-    for (let i = 0; i < 8; i++) {
-      const a = i * Math.PI / 4;
-      g.moveTo(Math.cos(a) * 30, Math.sin(a) * 30).lineTo(Math.cos(a) * 42, Math.sin(a) * 42);
-    }
-    g.stroke({ width: 5, color: swatch.yellow.line, cap: 'round' });
-    g.circle(0, 0, 23).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
-  } else {
-    puffs(g, [[-20, 0, 18], [-14, -14, 23], [15, -10, 20], [22, 2, 16], [0, 6, 17]],
-      kind === 1 ? swatch.white.fill : swatch.blue.light, swatch.blue.line, 3);
-    if (kind === 2) for (const x of [-22, 0, 22]) g.moveTo(x, 26).lineTo(x - 5, 39).stroke({ width: 5, color: swatch.blue.fill, cap: 'round' });
-  }
-  g.eventMode = 'none';
-  return g;
-}
 
 function flower(color: number, grown: boolean): Graphics {
   const g = new Graphics().moveTo(0, 30).lineTo(0, -10).stroke({ width: 6, color: swatch.green.line })
@@ -415,11 +399,11 @@ function weekArt(seed: number): Container {
 
 export const dayByDay: GameModule = {
   id: 'day-by-day', name: 'Day by Day', titleLine: 'game.day-by-day', region: 'cozy-village',
-  skills: ['weekday order', 'yesterday and tomorrow', 'weather records', 'counting observations'], bands: ['prek', 'school'],
+  skills: ['weekday order', 'yesterday and tomorrow', 'weather records', 'counting observations', 'comparing evidence'], bands: ['prek', 'school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.hub, touchDemo: true, entryLevels: [COUNT_LEVEL],
   coplayHint: 'Take turns: one person names and places the day, the other records its pictured weather. Ask what comes before and after.',
   offScreen: 'Make seven day cards for a pretend week. Lay them out, turn Sunday back toward Monday, and talk about yesterday and tomorrow.',
   hubIcon: () => { const art = weekArt(1); art.y = -65; return new WigglyIcon(art); },
-  sticker: weekArt, create: ctx => new DayByDay(ctx),
+  sticker: weekArt, create: ctx => ctx.level === 6 ? new WeatherWindow(ctx) : new DayByDay(ctx),
 };
