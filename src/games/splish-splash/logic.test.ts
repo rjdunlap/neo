@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { allowedParts, askedParts, MUD_BOX, nearMud, nextToScrub, PART_SPOTS, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part } from './logic';
+import { allowedParts, askedParts, MUD_BOX, nearMud, nearestIndex, nextToScrub, PART_SPOTS, PATS_PER_PATCH, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part } from './logic';
 
 describe('Splish Splash', () => {
   it('asks for every part exactly once, one or two at a time', () => {
@@ -129,5 +129,24 @@ describe('Splish Splash', () => {
     // The overlap that needs forgiving is real: the far end of the second ear's stroke is near the head, and inside the first ear's own reach.
     expect(within({ x: -74 + 22, y: -226 }, { x: -74, y: -226, size: 0.7 })).toBe(true);
     expect(nearMud((-74 + 22 - 6) / 0.9, (-226 + 214) / 0.9, 0.9)).toBe(true);
+  });
+
+  it('Pat the bubbles (level 9): every touch makes progress, a round ends in few touches, and a touch anywhere reaches a patch', () => {
+    const plan = planFor(9);
+    expect(plan.mode).toBe('pat');
+    const patches = plan.parts.flatMap((p) => PART_SPOTS[p]);
+    expect(patches.length * PATS_PER_PATCH).toBeLessThanOrEqual(12);
+    // Pats anywhere on the screen (a grid, off the pet too) always pick a patch, and the same pats finish every patch.
+    const points = patches.map(([x, y]) => ({ x, y }));
+    const pats = patches.map(() => 0);
+    for (let n = 0; n < patches.length * PATS_PER_PATCH * 4; n++) {
+      const open = points.filter((_, i) => pats[i] < PATS_PER_PATCH);
+      if (!open.length) break;
+      const i = nearestIndex(open, ((n * 97) % 1200) - 600, ((n * 61) % 900) - 700);
+      expect(i).not.toBeNull();
+      pats[points.indexOf(open[i!])]++;
+    }
+    expect(pats.every((c) => c === PATS_PER_PATCH)).toBe(true);
+    expect(nearestIndex([], 0, 0)).toBeNull();
   });
 });
