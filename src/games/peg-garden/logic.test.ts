@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { simulate, stepBall, type Ball, type BallWorld } from '../../engine/ball';
 import { Rng } from '../../engine/random';
-import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, dropAt, grid, makeBoard, PLANS, planFor, targets } from './logic';
+import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, dropAt, grid, makeBoard, PLANS, planFor, STALL_AT, targets } from './logic';
 
 describe('Peg Garden', () => {
   it('grows buds on the grid, with the right number of specials and numbers', () => {
@@ -79,6 +79,30 @@ describe('Peg Garden', () => {
       }
       // Frames are never the simulation's, and a pearl is chaotic after a few bounces; the bot prefers the soonest touch to keep this high.
       if (plan.mode === 'color') expect(sureHits / sureShots).toBeGreaterThan(0.9);
+    }
+  });
+
+  it("finishes a bloom level even when the same spot is tapped every time", { timeout: 60_000 }, () => {
+    for (const plan of PLANS.filter((p) => p.mode === 'bloom')) {
+      for (let seed = 1; seed <= 15; seed++) {
+        const rng = new Rng(seed);
+        const jitter = new Rng(seed + 1000);
+        const spots = makeBoard(plan, rng);
+        const world = worldOf(spots);
+        const bloomed = spots.map(() => false);
+        for (const tapX of [BOARD.ball, BOARD.w / 2, BOARD.w - BOARD.ball]) {
+          bloomed.fill(false);
+          let stalled = 0;
+          let shots = 0;
+          while (bloomed.some((b) => !b)) {
+            const x = stalled >= STALL_AT ? dropAt(world, (i) => !bloomed[i], rng.clone().range(-DRIFT, DRIFT)).x : tapX;
+            const touched = fly({ x, y: 40, vx: rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball }, world, jitter);
+            stalled = touched.some((i) => !bloomed[i]) ? 0 : stalled + 1;
+            touched.forEach((i) => (bloomed[i] = true));
+            expect(++shots, `seed ${seed} tap ${tapX}`).toBeLessThanOrEqual(20);
+          }
+        }
+      }
     }
   });
 

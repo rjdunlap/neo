@@ -131,3 +131,6 @@ export function dropAt(world: BallWorld, wanted: (bud: number) => boolean, drift
   }
   return { x: best.x, sure: best.floor > 0 };
 }
+
+/** On the bloom level, pearls in a row that wake no new flower before the next one is let go over a waiting flower. */
+export const STALL_AT = 2;
