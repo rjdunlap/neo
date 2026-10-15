@@ -124,4 +124,15 @@ describe('Clock Tower', () => {
       expect(demoAction(plan.mode, hour, minute, task).kind).toBe('check');
     }
   });
+
+  it('always asks half past at level 3, and always crosses the 12 at level 6', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const half = makeTasks(PLANS[3 - 1], new Rng(seed));
+      expect(half.some((task) => task.time % 60 === 30)).toBe(true);
+      const later = makeTasks(PLANS[6 - 1], new Rng(seed));
+      expect(later.map((task) => hourOf(task.from!))).toEqual(expect.arrayContaining([11, 12]));
+      for (const task of later) expect(task.time).toBe((task.from! + 60) % 720);
+      expect(new Set(later.map((task) => task.time)).size).toBe(later.length);
+    }
+  });
 });

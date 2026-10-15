@@ -77,10 +77,14 @@ export function makeTasks(plan: ClockPlan, rng: Rng): ClockTask[] {
     return out;
   }
   const minutes = minuteChoices(plan.mode);
+  // Half past is always asked at least once, and "one hour later" always crosses the 12 (11→12 and 12→1).
+  const halfSlot = rng.int(0, plan.rounds - 1);
+  const wrapSlots = rng.shuffle(Array.from({ length: plan.rounds }, (_, i) => i)).slice(0, 2);
   while (out.length < plan.rounds) {
-    const hour = rng.int(1, 12);
+    const wrapAt = wrapSlots.indexOf(out.length);
+    const hour = plan.mode === 'later' && wrapAt >= 0 ? 11 + wrapAt : rng.int(1, 12);
     // Quarter levels show every quarter at least once, half levels mostly ask for half past.
-    const minute = plan.mode === 'five' ? FIVE_ASKED[(out.length * 2 + rng.int(0, 1)) % FIVE_ASKED.length] : plan.mode === 'quarter' ? minutes[(out.length + 1) % 4] : plan.mode === 'half' ? (rng.chance(0.75) ? 30 : 0) : rng.pick(minutes);
+    const minute = plan.mode === 'five' ? FIVE_ASKED[(out.length * 2 + rng.int(0, 1)) % FIVE_ASKED.length] : plan.mode === 'quarter' ? minutes[(out.length + 1) % 4] : plan.mode === 'half' ? (out.length === halfSlot || rng.chance(0.75) ? 30 : 0) : rng.pick(minutes);
     const shown = toMinutes(hour, minute);
     const task: ClockTask = plan.mode === 'later' ? { time: (shown + 60) % 720, from: shown } : { time: shown };
     if (out.some((t) => t.time === task.time)) continue;
