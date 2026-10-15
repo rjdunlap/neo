@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Recovered grown-up puzzles:** Marble Jump (six levels, Puzzle Peaks), Log Roll (three, Tinker Lab) and Snowball Merge (three, Lantern Lake) need real-iPad touch, device speech and adult enjoyment checks. Inspect controls/pet clearance in both orientations and the ghost finger; can a player understand blocked-route recovery, upright goal and once-per-slide merges? [Integration evidence](archive/SESSION-CLEANUP-2026-10-14.md).
+
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 
 - [ ] **Space proposals, when defined/built:** review whether Moon Window's snapshot spacing, projected illumination, unseen-new-Moon treatment and reference orientation explain the model without implying a literal local sky or an eclipse. Observe independent matching/model repair, supported finish, replay speech, pet clearance and 100-unit targets in both orientations. Try Orbit Garden/Observatory Files with tweens and parents: do they choose to investigate and revise? A named reviewer precedes practical lamp/ball, sky or equipment instructions. Automation cannot establish scientific understanding, appeal, real-sky accuracy or transfer ([study](deep-dives/subjects/space.md)).

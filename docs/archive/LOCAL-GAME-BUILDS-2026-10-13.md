@@ -1,4 +1,6 @@
-# Finished local game builds
+# Historical local-build audit (2026-10-13)
+
+Historical snapshot, superseded by [the integration record](SESSION-CLEANUP-2026-10-14.md). The three games are now integrated; the six-level Marble Jump is canonical, with the duplicate’s repeated-visible-hint guard retained. Original findings follow; their integration instructions are historical.
 
 Audited 2026-10-13 against the source worktrees and their verification logs. These are implemented local slices, **not published games**. Do not select their first slices again. The inventory counts in README and ROADMAP describe the current integrated catalog; these builds are excluded until integrated. Preserve the owning worktrees and their uncommitted changes.
 

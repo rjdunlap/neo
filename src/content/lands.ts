@@ -103,7 +103,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'dog' },
     backdrop: { sky: [0xcfe0ff, 0xfff6e0], hills: [0xb3c7f2, 0x9ed6c6, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 137 },
     music: tune(97, 'marimba', 92),
-    games: ['pattern-train', 'memory-match', 'size-parade', 'puzzle-pals', 'quick-tricks', 'peekaround-island', 'penguin-slide', 'secret-code', 'garden-rows', 'ferry-jam', 'critter-crossing', 'mossy-path'],
+    games: ['marble-jump', 'pattern-train', 'memory-match', 'size-parade', 'puzzle-pals', 'quick-tricks', 'peekaround-island', 'penguin-slide', 'secret-code', 'garden-rows', 'ferry-jam', 'critter-crossing', 'mossy-path'],
   },
   {
     id: 'story-grove',
@@ -121,7 +121,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat', color: 'blue' },
     backdrop: { sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 149 },
     music: tune(113, 'pluck', 100),
-    games: ['robot-path', 'bug-builder', 'sink-float', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'habitat-helpers', 'shape-buddies'],
+    games: ['log-roll', 'robot-path', 'bug-builder', 'sink-float', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'habitat-helpers', 'shape-buddies'],
   },
   {
     // The grown-up puzzles. Every game here is for the `grownup` band, so everyone younger sees them behind the signpost.
@@ -131,7 +131,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat', color: 'purple' },
     backdrop: { sky: [0xd9c8f2, 0xffe9c4], hills: [0xb9c8f2, 0x9ed6d8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: false, seed: 151 },
     music: tune(127, 'bell', 72),
-    games: ['brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'],
+    games: ['snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'],
   },
 ];
 

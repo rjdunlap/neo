@@ -14,6 +14,34 @@ import type { GameHowTo, GameModule, LevelLine } from '../games/types';
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'snowball-merge': {
+    goal: 'Slide matching snowballs together until one reaches the target number.',
+    steps: [
+      'Tap an arrow to slide every snowball toward that edge. Equal neighbours join into their doubled number.',
+      'Each snowball joins at most once per slide. No new snowballs arrive.',
+      'Undo takes back a slide. Start over restores the same starting snowfield.',
+      'Hint outlines an arrow on a finishing route, or Undo if your choices need revision.',
+    ],
+    finish: 'The round ends when the snowfield holds one snowball with the target number.',
+    note: 'There is no clock or loss screen. Exploration and Undo count no misses; Hint and Start over count as help. An arrow that changes nothing adds no slide.',
+  },
+  'log-roll': {
+    goal: 'Tip a log across stepping stones and stand it in the dark hollow with the gold rim.',
+    steps: ['Tap an arrow to roll. A standing log tips onto two stones. Tipping along its length stands it up; rolling sideways moves one space.', 'Both ends need stones. The hollow supports a lying log, but only standing in it finishes.', 'Undo takes back a roll. Hint glows a direction on a shortest route. Start over restores the starting position.'],
+    finish: 'Stand upright in the hollow to finish one puzzle and earn one sticker.',
+    note: 'Exploration counts no misses. An unsupported roll stays put; two in a row show a hint. Help counts toward adaptation. Undo and Start over keep rolls and hints.',
+  },
+  'marble-jump': {
+    goal: 'Leave exactly one marble on the triangle.',
+    steps: [
+      'Tap a marble to select it. Tap it again to cancel, or another marble to change selection.',
+      'Tap an empty hole two spaces away in a straight line, jumping over one marble. The jumped marble comes off.',
+      'Undo takes back a jump; Start over restores this same puzzle.',
+      'Hint outlines a clearing jump. If your route cannot finish, it first takes back jumps to the nearest board that can.',
+    ],
+    finish: 'The round ends as soon as one marble remains.',
+    note: 'Trying a legal route is free exploration. Only an attempted illegal jump counts as a miss. Undo and Start over keep misses and hints.',
+  },
   'mossy-path': {
     goal: 'Bloom every moss tile once and guide the turtle to the pond last.',
     steps: ['Tap a tile beside the turtle to take one step. Each visited tile blooms.', 'Plan around the rocks. Reach the pond only after all other tiles bloom.', 'Undo takes back one step; Start over restores the same patch. Hint outlines a completing next step, or Undo until a route is possible.'],

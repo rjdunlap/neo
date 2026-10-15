@@ -62,6 +62,216 @@ async function finished(id) {
 }
 
 /** Story Theater: creative choices are free; only a watched show can take a bow. */
+/** Marble Jump: real taps, both ladder ends, revision, hint, portrait and one sticker. */
+async function marbleJumpPlay() {
+  const tapHole = async i => { await page.evaluate(i => kit.tapOn(neo.scene.game.nodes[i]), i); await page.waitForTimeout(160); };
+  for (const level of [1, 6]) {
+    await launch('marble-jump', level); await page.waitForTimeout(400);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const start = await page.evaluate(() => neo.scene.game.board);
+    const pair = await page.evaluate(async () => {
+      const L = await import('/src/games/marble-jump/logic.ts'), g = neo.scene.game;
+      for (let a = 0; a < 15; a++) for (let b = 0; b < 15; b++)
+        if (L.occupied(g.board, a) && !L.occupied(g.board, b) && !L.moves(g.board).some(j => j.from === a && j.to === b)) return [a, b];
+    });
+    await tapHole(pair[0]); await tapHole(pair[1]);
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1);
+    assert.equal(await page.evaluate(() => neo.scene.game.board), start);
+    await tap('neo.scene.game.hintButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+    await tap('neo.scene.game.hintButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'repeating the same hint counts once');
+    const first = await page.evaluate(() => neo.scene.game.hinted);
+    await tapHole(first.from); await tapHole(first.to);
+    await tap('neo.scene.game.undoButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.board), start);
+    await tap('neo.scene.game.restartButton');
+    if (level === 6) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(350);
+      assert.ok(await page.evaluate(() => neo.scene.game.nodes.every(n => n.hitArea.radius * n.worldTransform.a / neo.view.scale >= 32)));
+      await screenshot('marble-jump-6-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(350);
+    }
+    if (level === 6) {
+      const route = await page.evaluate(async () => {
+        const L = await import('/src/games/marble-jump/logic.ts');
+        function seek(board) {
+          for (const j of L.moves(board)) {
+            const after = L.jump(board, j);
+            if (L.solve(after) === null) return [j];
+            const rest = seek(after); if (rest) return [j, ...rest];
+          }
+          return null;
+        }
+        return seek(neo.scene.game.board);
+      });
+      assert.ok(route, 'the full triangle permits a legal route that needs revision');
+      for (const j of route) { await tapHole(j.from); await tapHole(j.to); }
+      assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'legal experiments add no miss');
+      const expected = await page.evaluate(async () => {
+        const L = await import('/src/games/marble-jump/logic.ts'), g = neo.scene.game;
+        return g.history[L.recovery(g.history)];
+      });
+      await tap('neo.scene.game.hintButton');
+      assert.equal(await page.evaluate(() => neo.scene.game.board), expected, 'hint returns to the nearest clearing route');
+      assert.ok(await page.evaluate(() => neo.scene.game.hinted !== null));
+    }
+    let jumps = 0;
+    while (!(await page.evaluate(() => neo.scene.finished))) {
+      const next = await page.evaluate(async () => {
+        const L = await import('/src/games/marble-jump/logic.ts'); return L.solve(neo.scene.game.board)[0];
+      });
+      await tapHole(next.from); await tapHole(next.to);
+      assert.ok(++jumps <= 13);
+    }
+    await finished('marble-jump');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('marble-jump').history.at(-1); return [r.misses, r.hints]; }), [1, level === 6 ? 2 : 1]);
+  }
+  await page.evaluate(() => neo.go.land('puzzle-peaks')); await scene('LandScene');
+  await tap("neo.scene.showing.find(m => m.mod.id === 'marble-jump').node"); await scene('GameScene');
+  await page.waitForTimeout(400);
+  assert.equal(await page.evaluate(() => neo.scene.mod.id), 'marble-jump');
+  await page.evaluate(() => neo.go.land('puzzle-peaks')); await scene('LandScene');
+  await page.waitForTimeout(400);
+  assert.deepEqual(errors, []);
+  log('Marble Jump: first/last, illegal jump, hint recovery, undo/restart, portrait, land launch/leave and one sticker passed');
+}
+
+
+/** Log Roll: both ends, rejected edge roll, solver hint, revision and upright completion. */
+async function logRollPlay() {
+  for (const level of [1, 3]) {
+    await launch('log-roll', level); await page.waitForTimeout(400);
+    const original = await page.evaluate(() => ({ ...neo.scene.game.state }));
+    // Walk to an edge using legal rolls, then try an unsupported roll through its real button.
+    const blocked = await page.evaluate(async () => {
+      const { DIRECTIONS, roll, key, solved } = await import('/src/games/log-roll/logic.ts');
+      const g = neo.scene.game, queue = [{ state: g.state, route: [] }], seen = new Set();
+      for (let head = 0; head < queue.length; head++) {
+        const v = queue[head];
+        for (const d of DIRECTIONS) {
+          const n = roll(v.state, d, g.puzzle.plan.floor);
+          if (!n) return [...v.route, d];
+          if (!seen.has(key(n)) && !solved(n, g.puzzle.plan.floor)) {
+            seen.add(key(n)); queue.push({ state: n, route: [...v.route, d] });
+          }
+        }
+      }
+      throw new Error('No unsupported roll found');
+    });
+    for (const d of blocked.slice(0, -1)) await tap(`neo.scene.game.directions.${d}`);
+    const edgeState = await page.evaluate(() => ({ ...neo.scene.game.state }));
+    await tap(`neo.scene.game.directions.${blocked.at(-1)}`);
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.state), edgeState);
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 0);
+    assert.match(await page.evaluate(() => neo.scene.game.status.text), /Both ends need stones/);
+    await tap('neo.scene.game.againButton');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.state), original);
+    await tap('neo.scene.game.hintButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+    await page.evaluate(() => { const g = neo.scene.game; kit.tapOn(g.directions[g.hinted]); });
+    await page.waitForTimeout(180);
+    await tap('neo.scene.game.undoButton');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.state), original);
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+    if (level === 3) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      assert.ok(await page.evaluate(() => neo.scene.game.cell >= 64));
+      await screenshot('log-roll-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+      await screenshot('log-roll-landscape');
+    }
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    await page.evaluate(async () => {
+      const { solutionStep } = await import('/src/games/log-roll/logic.ts');
+      const g = neo.scene.game;
+      for (let guard = 0; guard < 40 && !g.finished; guard++) {
+        const d = solutionStep(g.state, g.puzzle.plan.floor)?.next;
+        if (!d) throw new Error('No Log Roll route');
+        kit.tapOn(g.directions[d]); await kit.sleep(170);
+      }
+    });
+    await finished('log-roll');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    log(`Log Roll level ${level}: edge support, hint, Undo, reset and one sticker passed`);
+  }
+  await page.evaluate(() => neo.go.land('tinker-lab')); await scene('LandScene');
+  await tap("neo.scene.showing.find(m => m.mod.id === 'log-roll').node"); await scene('GameScene');
+  assert.equal(await page.evaluate(() => neo.scene.mod.id), 'log-roll');
+}
+
+
+/** Snowball Merge: real arrows, unjudged inert presses, revision, solver help and a finite finish. */
+async function snowballMergePlay() {
+  const idle = () => page.waitForFunction(() => !neo.scene.game.busy);
+  const direction = () => page.evaluate(() => neo.scene.game.route?.[0]);
+  const press = async d => { await tap(`neo.scene.game.arrows.${d}`); await idle(); };
+  for (const level of [1, 3]) {
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    await launch('snowball-merge', level); await page.waitForTimeout(300);
+    const initial = await page.evaluate(() => neo.scene.game.board.slice());
+    await press(await direction());
+    const inert = await page.evaluate(async () => {
+      const { DIRECTIONS, slide } = await import('/src/games/snowball-merge/logic.ts');
+      return DIRECTIONS.find(d => !slide(neo.scene.game.board, d).changed);
+    });
+    assert.ok(inert, 'a compacted edge offers an inert press');
+    const compacted = await page.evaluate(() => neo.scene.game.board.slice());
+    await press(inert);
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.board), compacted);
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'exploration is not a wrong answer');
+    assert.equal(await page.evaluate(() => neo.scene.game.slides), 1, 'inert presses add no slide');
+    await tap('neo.scene.game.undoButton');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.board), initial);
+    await tap('neo.scene.game.hintButton');
+    const hint = await page.evaluate(() => neo.scene.game.hinted);
+    assert.equal(hint, await direction());
+    await tap('neo.scene.game.hintButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'same hint is counted once');
+    await press(hint);
+    await tap('neo.scene.game.restartButton');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.board), initial);
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 2, 'restart preserves support accounting');
+    if (level === 3) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      const boxes = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return [...Object.values(g.arrows), g.undoButton, g.hintButton, g.restartButton].map(n => ({ x: n.x + n.hitArea.x, y: n.y + n.hitArea.y, w: n.hitArea.width, h: n.hitArea.height }));
+      });
+      const view = await page.evaluate(() => ({ w: neo.view.w, h: neo.view.h }));
+      for (const b of boxes) {
+        assert.ok(b.w >= 100 && b.h >= 100);
+        assert.ok(b.x >= 0 && b.y >= 0 && b.x + b.w <= view.w && b.y + b.h <= view.h);
+        assert.ok(b.x >= 200 || b.y + b.h < view.h - 205, 'clear of the guide pet');
+      }
+      for (let i = 0; i < boxes.length; i++) for (const b of boxes.slice(i + 1)) {
+        const a = boxes[i];
+        assert.ok(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y, 'controls stay apart');
+      }
+      await screenshot('snowball-merge-3-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(250);
+      await screenshot('snowball-merge-3-landscape');
+    }
+    for (let guard = 0; guard < 40 && !await page.evaluate(() => neo.scene.game.finished); guard++) {
+      const d = await direction(); assert.ok(d); await press(d);
+    }
+    await finished('snowball-merge');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('snowball-merge').history.at(-1); return [r.misses, r.hints]; }), [0, 2]);
+  }
+  await page.evaluate(() => neo.go.land('lantern-lake')); await scene('LandScene');
+  await tap("neo.scene.showing.find(m => m.mod.id === 'snowball-merge').node"); await scene('GameScene');
+  await page.waitForTimeout(400);
+  // Leave while a slide's scene-owned tween is in flight.
+  const d = await direction();
+  await page.evaluate(d => { kit.tapOn(neo.scene.game.arrows[d]); neo.go.land('lantern-lake'); }, d);
+  await scene('LandScene'); await page.waitForTimeout(350);
+  assert.deepEqual(errors, []);
+  log('Snowball Merge: first/last, inert exploration, hint once, Undo/Restart, portrait controls, one sticker, land launch and leave during slide passed');
+}
+
+
 async function storyTheaterPlay() {
   const choose = async (field, value) => {
     const i = await page.evaluate(({ field, value }) => neo.scene.game.choices.findIndex(c => c.field === field && c.value === value), { field, value });
@@ -10430,6 +10640,9 @@ try {
   if (suite === 'all' || suite === 'singalong') await singBarnPlay();
   if (suite === 'all' || suite === 'numbertrails') await numberTrailsPlay();
   if (suite === 'all' || suite === 'storytheater') await storyTheaterPlay();
+  if (suite === 'all' || suite === 'marblejump') await marbleJumpPlay();
+  if (suite === 'all' || suite === 'logroll') await logRollPlay();
+  if (suite === 'all' || suite === 'snowball') await snowballMergePlay();
   if (suite === 'all' || suite === 'brainbreak') await brainBreakPlay();
   if (suite === 'all' || suite === 'fruitsums') await fruitSumsPlay();
   if (suite === 'all' || suite === 'pyramid') await pyramidPlay();

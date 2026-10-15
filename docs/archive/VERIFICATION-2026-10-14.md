@@ -70,3 +70,10 @@
 - Content on `claude/memory-match-dot-layouts` (uncommitted): `dotLayouts`/`selectDotLayouts` in `logic.ts` give each numeral-to-dots card one of several curated arrangements (one per pair, seeded, one dot colour); quantities 1–4/1–8 and accounting unchanged.
 - Ran: typecheck, `vitest run src/games/memory-match` (13 pass; two new: valid count/spacing/bounds for 1–8 in at least three layouts for n≥2, seeded and reaches every arrangement), one 1024x768 browser screenshot of level 7 showing varied faces.
 - Not run: bot/`fingerdemo` (interaction unchanged), full browser round, device or child recognition.
+
+## 2026-10-14 — Cooking and recipes subject research
+
+- Docs only, base `ed9d888` plus research diff, [PR #320](https://github.com/rjdunlap/neo/pull/320): [study](../deep-dives/subjects/cooking-recipes.md), every audience L–G, five first-party digital precedents and a physical equivalent; synchronized tracker, notebook, [roadmap packets](../ROADMAP.md#cooking-and-recipes-recommendations), reviewer and future person/device records.
+- Opened Head Start, CCSS, Illinois Extension, NAEYC, CDC and FoodSafety.gov sources. USDA PDF/infant Head Start access gaps are explicit; reference games not played. Recommended Recipe Workshop first, equivalent measures/scaling inside Pet Kitchen, then Picnic Pantry's two-solution menu case. No games or real recipes built.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated two old dated entries with relative links repaired. Preserved the pre-existing edit in `docs/archive/COMPLETED-2026-10-09.md` outside this change.
+- Not run: typecheck, unit tests, build, browser/offline/device/child checks. Food-safety review, final identity/bands/destination fit, tween/parent appeal and real-kitchen transfer remain open.
