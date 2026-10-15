@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { choicesFor, DAYS, makeWeek, neighbor, sunnyCount, toggleMark, weekLayout } from './logic';
+import { ANCHOR_LEVEL, choicesFor, DAYS, makeWeek, neighbor, relativeQuestions, sunnyCount, toggleMark, weekLayout } from './logic';
 
 describe('Day by Day', () => {
   it('creates a repeatable seven-day record with all weather categories and varied weeks', () => {
@@ -30,6 +30,23 @@ describe('Day by Day', () => {
       expect(choices.filter(n => n === answer)).toHaveLength(1);
       expect(choices.every(n => n >= 0 && n < (kind === 'day' ? 7 : 8))).toBe(true);
     }
+  });
+  it('keeps levels 2 and 3 at the week turn and asks level 4 about two different days, one each way', () => {
+    for (const level of [2, 3]) expect(relativeQuestions(level, new Rng(5))).toEqual([{ today: 6, direction: 1 }, { today: 0, direction: -1 }]);
+    const forward = new Set<number>(), back = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const qs = relativeQuestions(ANCHOR_LEVEL, new Rng(seed));
+      expect(qs).toEqual(relativeQuestions(ANCHOR_LEVEL, new Rng(seed)));
+      expect(qs.map(q => q.direction).sort()).toEqual([-1, 1]);
+      expect(qs[0].today).not.toBe(qs[1].today);
+      for (const q of qs) {
+        expect(q.today >= 0 && q.today < 7).toBe(true);
+        expect(neighbor(neighbor(q.today, q.direction), (-q.direction) as -1 | 1)).toBe(q.today);
+        (q.direction === 1 ? forward : back).add(q.today);
+      }
+    }
+    expect(forward.size).toBe(7);
+    expect(back.size).toBe(7);
   });
   it('lets counting marks be revised without changing records or double counting', () => {
     const marks = [2];
