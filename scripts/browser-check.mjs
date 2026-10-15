@@ -1272,6 +1272,11 @@ async function singBarnPlay() {
   assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 11 + 12]);
   await tapNotes(22); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Rain, Rain, Go Away, level 1: a twelve-note opening, then "Rain, rain, go away, we want to play" for the friend, who answers on "play".
+  await launchTune(1, 'rain');
+  assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 12 + 9]);
+  await tapNotes(20); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
   await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');

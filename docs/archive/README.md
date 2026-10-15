@@ -18,7 +18,7 @@ The original design brief also exists as a [historical design artifact](https://
 `MICROGAME-IDEAS.md` and `ARCADE-IDEAS.md` were merged into [IDEAS.md](../IDEAS.md), and `CONTROLLER-SETUP.md` became [COUCH-PLAY.md](../COUCH-PLAY.md); git history has their earlier versions.
 
 - [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch, mirrored-reach, Penguin Slide/Tangram Town level checks and the Beat Builder how-to layout check, the Bouncy Launch level 7 entry, the Mossy Path first-slice entry, and the Sing-Along Barn level 6 entry.
-- [Verification 2026-10-14](VERIFICATION-2026-10-14.md): the Peekaboo Barn beach scene entry, the Critter Crossing level 6, Animal Snack level 3 and Peekaboo Barn bedroom entries, the weather and water and movement research entries, the Memory Match vehicles and dot-arrangements entries, and the routines/self-care, cooking/recipes and social-emotional research entries.
+- [Verification 2026-10-14](VERIFICATION-2026-10-14.md): the Peekaboo Barn beach scene entry, the Critter Crossing level 6, Animal Snack level 3 and Peekaboo Barn bedroom entries, the weather and water and movement research entries, the Memory Match vehicles and dot-arrangements entries, and the routines/self-care, cooking/recipes, social-emotional and off-screen companions research entries.
 
 - [Historical local-build audit](LOCAL-GAME-BUILDS-2026-10-13.md): superseded source-worktree evidence for the three recovered games.
 - [Session cleanup 2026-10-14](SESSION-CLEANUP-2026-10-14.md): source reconciliation, integration checks and the completed recovery audit.

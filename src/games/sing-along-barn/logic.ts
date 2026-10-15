@@ -72,7 +72,16 @@ export const MON_AMI: Phrase = { syllables: ['mon', 'a', 'mi', 'Pier', 'rot'], s
 export const PRETE_MOI: Phrase = { syllables: ['Prê', 'te', 'moi', 'ta', 'plu', 'me'], steps: [0, 0, 0, 1, 2, 1] };
 export const POUR_ECRIRE: Phrase = { syllables: ['pour', 'é', 'cri', 're', 'un', 'mot'], steps: [0, 2, 1, 1, 1, 0] };
 
-export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair';
+/**
+ * "Rain, Rain, Go Away" is a traditional nursery rhyme sung on a falling third, G E (sol mi), inside the pentatonic set.
+ * Written from the tune's standard form, not a printed score: a grown-up singing it is the final check (DEVICE-CHECKS).
+ * One note per sung syllable.
+ */
+export const RAIN_AWAY: Phrase = { syllables: ['Rain', 'rain', 'go', 'a', 'way'], steps: [3, 2, 3, 3, 2] };
+export const COME_AGAIN: Phrase = { syllables: ['come', 'a', 'gain', 'an', 'oth', 'er', 'day'], steps: [3, 3, 2, 3, 3, 3, 2] };
+export const WE_WANT_TO_PLAY: Phrase = { syllables: ['we', 'want', 'to', 'play'], steps: [3, 3, 3, 2] };
+
+export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain';
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -126,7 +135,15 @@ export const CLAIR: Tune = {
   answers: POUR_ECRIRE,
   namesAnimal: false,
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR];
+/** "Rain, rain, go away, come again another day" opens it; each friend's verse is "Rain, rain, go away, we want to play", answering on "play". */
+export const RAIN: Tune = {
+  id: 'rain',
+  opening: [RAIN_AWAY, COME_AGAIN],
+  verse: [RAIN_AWAY, WE_WANT_TO_PLAY],
+  answers: WE_WANT_TO_PLAY,
+  namesAnimal: false,
+};
+export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN];
 
 export interface Note {
   step: number;
@@ -199,7 +216,7 @@ export const PLANS: readonly SingPlan[] = [
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
