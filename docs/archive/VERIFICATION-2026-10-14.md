@@ -129,3 +129,9 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 - Branch `claude/splish-pat-the-bubbles`: a lap entry placed first (`order` [9, 1, 2], `entryLevels` [9]); any touch takes a third off the nearest of four mud patches (12 pats at most), a sparkle after six idle seconds, no misses or hints. Lap range 1 to 9.
 - Passed `npm run typecheck`; full vitest (1274 pass); `BROWSER_SUITE=early EARLY_ONLY=bath` levels 1 to 9 (third run: one earlier run failed at level 6 score [2,0] and one at level 9, unexplained, treated as timing flakes and not diagnosed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=splish-splash FINGER_LEVELS=9` clean in 19.9 s. One landscape screenshot viewed.
 - Not run: build, a portrait screenshot, a person check (does a one-year-old pat or look first).
+
+## 2026-10-14 — Critter Sort level 6 (Just a few) and the missed-critter hint
+
+- [PR #326](https://github.com/rjdunlap/neo/pull/326), branch `claude/critter-sort-just-a-few`: level 6 added as the pre-K entry (`order: [6, 1, 2, 3]`, `entryLevels: [6]`): three critters, one hoop, one fitting critter already inside as a worked example; the hint (`hintFor` in `logic.ts`) now points at the critter she just missed. No preschool row, no "neither" mat, no worked example at levels 1–3 and 5.
+- Passed `npm run typecheck`, the full vitest run (1273 tests, before the rebase onto current `main`) and `FINGER_ONLY=critter-sort FINGER_LEVELS=6,1` (level 6 in 6.5 s, level 1 in 12.5 s).
+- Not run: a browser play with a wrong drop and hint at level 6, a portrait screenshot, iPad, and a child reading the picture signs.

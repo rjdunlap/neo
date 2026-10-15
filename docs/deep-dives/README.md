@@ -118,7 +118,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Read & Do | `read-do` | KS | 3 | 4 | not started (levels 1–3 built) | — | — |
 | Rhyme Time | `rhyme-time` | KS | 4 | 4 | not started | — | — |
 | Rhythm Neighbors | `rhythm-neighbors` | LTPKS | 6 | 4 | not started | — | — |
-| Robot Path | `robot-path` | PKS | 12 | 1 | building (boards slice 2 and levels 11–12 built; preschool slice 3 built; next waypoint slice 6) | `codex/robot-path-level-12-fix-program` (level 11: `codex/robot-path-where-will-it-stop`, [PR 100](https://github.com/rjdunlap/neo/pull/100)); slice 2: `codex/robot-path-board-pool` ([PR #149](https://github.com/rjdunlap/neo/pull/149)); slice 3: `codex/robot-path-preschool` ([PR #154](https://github.com/rjdunlap/neo/pull/154)) | [robot-path.md](robot-path.md) |
+| Robot Path | `robot-path` | PKS | 13 | 1 | building (boards slice 2 and levels 11–13 built; preschool slice 3 built; next loop repair slice 7) | `codex/robot-path-level-12-fix-program` (level 11: `codex/robot-path-where-will-it-stop`, [PR 100](https://github.com/rjdunlap/neo/pull/100)); slice 2: `codex/robot-path-board-pool` ([PR #149](https://github.com/rjdunlap/neo/pull/149)); slice 3: `codex/robot-path-preschool` ([PR #154](https://github.com/rjdunlap/neo/pull/154)) | [robot-path.md](robot-path.md) |
 | Roundup | `roundup` | LTPK | 6 | 4 | not started | — | — |
 | Scoop Shop | `scoop-shop` | LTPKS | 6 | 4 | not started | — | — |
 | Secret Code | `secret-code` | KS | 6 | 4 | not started | — | — |
