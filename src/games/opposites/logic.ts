@@ -37,6 +37,10 @@ export const CONCEPTS = {
   lamp: { words: ['on', 'off'], family: 'lamp', from: 2 },
   wake: { words: ['awake', 'asleep'], family: 'face', from: 2 },
   basket: { words: ['in', 'out'], family: 'position', from: 2 },
+  sponge: { words: ['wet', 'dry'], family: 'wet', from: 3 },
+  plate: { words: ['clean', 'dirty'], family: 'clean', from: 3 },
+  book: { words: ['thick', 'thin'], family: 'size', from: 3 },
+  ball: { words: ['near', 'far'], family: 'position', from: 3 },
 } as const;
 
 export type Concept = keyof typeof CONCEPTS;
