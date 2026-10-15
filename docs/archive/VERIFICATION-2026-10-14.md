@@ -135,3 +135,17 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 - [PR #326](https://github.com/rjdunlap/neo/pull/326), branch `claude/critter-sort-just-a-few`: level 6 added as the pre-K entry (`order: [6, 1, 2, 3]`, `entryLevels: [6]`): three critters, one hoop, one fitting critter already inside as a worked example; the hint (`hintFor` in `logic.ts`) now points at the critter she just missed. No preschool row, no "neither" mat, no worked example at levels 1–3 and 5.
 - Passed `npm run typecheck`, the full vitest run (1273 tests, before the rebase onto current `main`) and `FINGER_ONLY=critter-sort FINGER_LEVELS=6,1` (level 6 in 6.5 s, level 1 in 12.5 s).
 - Not run: a browser play with a wrong drop and hint at level 6, a portrait screenshot, iPad, and a child reading the picture signs.
+
+## 2026-10-14 — Space subject research
+
+- Docs only, base `1a10eba` plus research diff on `codex/space-subject-research`, [PR #335](https://github.com/rjdunlap/neo/pull/335): [study](../deep-dives/subjects/space.md), tracker, [roadmap definitions](../ROADMAP.md#space-science-recommendations), notebook and review/device notes. Moon Window first; Orbit Garden and Observatory Files follow; daylight/scale/gravity launches reuse existing identities.
+- Opened seven NGSS anchors, NASA science/physical-model references, developmental guidance, two primary research abstracts and six official digital precedents (PhET extraction limits recorded). Every audience L–G has an answer; no reference game played or gameplay built. Neopets activity failed to load and stays recalled inspiration.
+- Ran: relative Markdown links/anchors and `git diff --check`; oldest dated entries rotated to the existing archive with incoming links repaired.
+- Not run: typecheck, units, build, browser/offline, hardware, device speech or child/parent checks. Model review, registration/land fit, exploration adaptation, practical-card review and appeal/transfer remain open.
+
+## 2026-10-14 — Life science subject research
+
+- Docs only, researched at `8dfea72`, integrated with `560352b` plus docs diff, [PR #330](https://github.com/rjdunlap/neo/pull/330): [study](../deep-dives/subjects/life-science.md), tracker, [roadmap packets](../ROADMAP.md#life-science-recommendations), notebook and review/device notes. Seed Travelers first; Life Story Lab develops Caterpillar Week; Field Notes and Under the Soil stay in Photo Safari/Garden Grow.
+- Opened Head Start/NGSS/Kew/Smithsonian/NAEYC anchors, six digital precedents, publisher board rules and an unplugged reference. Every audience L–G has an answer; source/access/model limits and older appeal gaps are explicit. No reference game played or game built.
+- Ran: relative Markdown links/anchors and `git diff --check` (docs-only tier); oldest dated entries rotated to the existing archive and incoming links repaired.
+- Not run: typecheck, units, build, browser/offline, hardware or person/child checks. Biology/model review, proposed placement, practical-card review and transfer remain open.
