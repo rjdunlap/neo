@@ -248,3 +248,8 @@ Coordinator confirmed week-art #353 complete/merged/deployed and reconciled fina
 ### Day by Day other-weather worker dispatch (2026-10-15)
 
 Coordinator confirmed record bridge #357 complete/merged/deployed and reconciled final usage once. Actual allowance admits fresh worker `01a13f2c-3f09-76f3-bfd8-7768a9a63693` for level-5 source slice only; no active implementation/open PR/dirty overlap. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed; worker owes zero/nonzero/rule/order checks, filtered level-5 play/demo and affected shared-content build. No coordinator code checks/servers.
+
+
+### 2026-10-15 — Weather Window dispatch
+
+Coordinator reconciled completed Day by Day level 5 [#361](https://github.com/rjdunlap/neo/pull/361) using its final worker proof/usage, confirmed merge and released the slot. Fresh allowance and clean overlap checks admitted only level 6 from [the build slices](deep-dives/day-by-day.md#build-slices-in-order) to worker `01a13f60-c5dd-7de1-89f2-2c5254f96483`. Queue records scope, estimate, resets and pending checks. Docs-only links/anchor and `git diff --check` passed; no gameplay checks rerun.
