@@ -135,7 +135,7 @@ Add each to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the
 
 ## Build slices, in order
 
-1. **Truthful how-to and a count in bloom mode (ready).** Fix step 1 (`to: 1`) and the finish lines per level; add the pet's count at level 2. Check tier: docs-and-copy plus a rule-free change, so typecheck, the how-to test, and one filtered play of level 2.
+1. **Truthful how-to and a count in bloom mode (ready).** Fix step 1 (`to: 1`) and the finish lines per level; add the pet's count at level 2. Check tier: docs-and-copy plus a rule-free change, so typecheck, the how-to test, and one filtered play of level 2. Claimed 2026-10-15 on `claude/bumper-garden-bloom-count`; expected files: `src/games/bumper-garden/index.ts`, `src/content/howto.ts`, GAMES.md, this file.
 2. **Flipper-ready ring (feel; ready).** The pulsing ring on the nearer flipper at levels 2–5. Check: typecheck, one filtered play of level 2 with a portrait screenshot. No logic.
 3. **Tables: layouts and skins for Pond and Hive (rules and art; ready).** New spot sets with reachability tests, skins, notes. Check: typecheck and `logic.test.ts` (every spot reachable, nothing trapped) and one filtered play.
 4. **Count on and Count back, levels 6 and 9.** A `start`/`descend` plan field, voice lines, how-to, README and GAMES entries. Check: rule tests and one filtered play of each, plus `fingerdemo` at the new top level.
