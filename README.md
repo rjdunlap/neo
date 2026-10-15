@@ -62,7 +62,7 @@ There are ninety-four games; the child games are listed below and the grown-up g
 | Jelly Drums | lap–school | free play on five notes (lap starts with one big jelly that wakes its friends) | copy a tune of 2 to 5 notes |
 | Sing-Along Barn | lap–pre-K | tap anywhere to sing the next note of Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb (one per round); a friend comes out for the verse and answers | two friends, then choose which two friends come to the farm, then pick who sings each of three verses, then (pre-K) choose the song too, then sing the whole Old MacDonald verse with two friends |
 | Song Maker | lap–school | tap jellies on a looping beat | copy songs by shadows or a card, continue a pattern, find a tune by ear |
-| Peekaboo Barn | lap–pre-K | tap barnyard or garden covers that swing, part, shake or lift | hear animal and cover names, find a named animal, then remember hiding places |
+| Peekaboo Barn | lap–pre-K | tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift | hear animal and cover names, find a named animal, then remember hiding places |
 | Splish Splash | lap–pre-K | scrub mud off the pet | named body parts in a shuffled order, two at once, then "first … then …" |
 | Feelings Faces | lap–pre-K | tap bubbles to see the pet feel happy, sad, sleepy or surprised | match and name faces, choose what helps, say why a feeling happened, find a friend's feeling, help after an event |
 | Weather Wardrobe | lap–pre-K | tap the sky to change the weather | dress the pet for sun, rain or snow, pack for two kinds of weather, then change outfits when the weather changes (pre-K) |

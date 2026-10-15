@@ -33,6 +33,8 @@ const LEVELS: BandLevels = {
 const GRASS = 0x9edb86;
 const SAND = 0xf3dba0;
 const BEACH: readonly CoverKind[] = ['umbrella', 'sandcastle', 'bucket', 'towel'];
+const RUG = 0xf3c9b0;
+const BEDROOM: readonly CoverKind[] = ['blanket', 'toybox', 'curtain', 'bed'];
 const CRITTER_SCALE = 0.55;
 /** Where a critter's feet sit, relative to the bottom of its cover. The cover's top is at -150. */
 const POSE = { hidden: 90, peek: -82, out: -145 };
@@ -40,7 +42,7 @@ type Pose = keyof typeof POSE;
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
-const ground = (kind: CoverKind) => (BEACH.includes(kind) ? SAND : GRASS);
+const ground = (kind: CoverKind) => (BEACH.includes(kind) ? SAND : BEDROOM.includes(kind) ? RUG : GRASS);
 
 /** Something to hide behind, about 230 wide and 150 tall, standing on (0, 0). */
 function drawCover(kind: CoverKind, grass = true): Graphics {
@@ -88,6 +90,30 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       g.poly([-116, 0, -110, -95, -62, -145, 48, -150, 106, -105, 120, 0]).fill(swatch.white.line).stroke(line(swatch.brown.line));
       g.poly([-110, -95, -62, -145, 48, -150, 10, -94]).fill(swatch.white.light);
       g.moveTo(10, -94).lineTo(48, -34).lineTo(106, -105).stroke(line(swatch.brown.line, 4));
+      break;
+    case 'blanket':
+      g.roundRect(-112, -150, 224, 150, 20).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
+      for (const [x, y] of [[-70, -105], [0, -60], [70, -105], [-60, -35], [60, -35], [0, -125]]) g.circle(x, y, 11).fill(swatch.purple.light);
+      g.roundRect(-112, -150, 224, 28, 14).fill(swatch.white.light).stroke(line(swatch.purple.line, 4));
+      break;
+    case 'toybox':
+      g.roundRect(-108, -140, 216, 140, 8).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.roundRect(-116, -150, 232, 30, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
+      g.circle(-50, -70, 20).fill(swatch.red.fill);
+      g.rect(10, -92, 36, 36).fill(swatch.green.fill);
+      g.poly([-12, -40, 12, -40, 0, -18]).fill(swatch.yellow.light);
+      break;
+    case 'curtain':
+      g.roundRect(-118, -150, 236, 150, 6).fill(swatch.teal.light).stroke(line(swatch.teal.line));
+      g.moveTo(-118, -142).bezierCurveTo(-60, -110, -40, -50, -34, 0).lineTo(-118, 0).closePath().fill(swatch.teal.fill).stroke(line(swatch.teal.line, 4));
+      g.moveTo(118, -142).bezierCurveTo(60, -110, 40, -50, 34, 0).lineTo(118, 0).closePath().fill(swatch.teal.fill).stroke(line(swatch.teal.line, 4));
+      g.moveTo(-120, -150).lineTo(120, -150).stroke(line(wood.line, 8));
+      break;
+    case 'bed':
+      g.roundRect(-116, -150, 232, 150, 12).fill(wood.fill).stroke(line(wood.line));
+      g.roundRect(-100, -104, 200, 98, 10).fill(swatch.pink.light).stroke(line(swatch.pink.line, 4));
+      g.roundRect(-92, -128, 80, 40, 16).fill(swatch.white.light).stroke(line(swatch.white.line, 4));
+      g.roundRect(-100, -70, 200, 64, 10).fill(swatch.pink.fill);
       break;
     case 'umbrella':
       g.moveTo(0, 0).lineTo(0, -140).stroke(line(wood.line, 10));
@@ -263,7 +289,9 @@ class PeekabooBarn implements Game {
     const scene = roundScene(ctx.rng, this.plan.spots);
     this.setting = scene.id;
     this.backdrop = ctx.track(
-      new Backdrop(this.setting === 'beach'
+      new Backdrop(this.setting === 'bedroom'
+        ? { sky: [swatch.purple.light, swatch.pink.light], hills: [swatch.pink.light, RUG], horizon: 0.5, clouds: 0, sun: false, seed: 84 }
+        : this.setting === 'beach'
         ? { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.blue.fill, SAND], horizon: 0.5, clouds: 2, sun: true, seed: 63 }
         : this.setting === 'garden'
         ? { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.green.light, GRASS], horizon: 0.56, clouds: 2, sun: true, seed: 42 }
@@ -459,6 +487,14 @@ class PeekabooBarn implements Game {
   }
 
   private drawBarn(cx: number, y: number) {
+    if (this.setting === 'bedroom') {
+      const g = this.barn.clear();
+      g.roundRect(cx - 120, y - 270, 240, 170, 12).fill(swatch.blue.light).stroke(line(wood.line, 8));
+      g.moveTo(cx, y - 270).lineTo(cx, y - 100).moveTo(cx - 120, y - 185).lineTo(cx + 120, y - 185).stroke(line(wood.line, 5));
+      g.star(cx + 60, y - 225, 5, 16, 7).fill(swatch.yellow.fill);
+      g.circle(cx - 60, y - 225, 18).fill(swatch.white.light);
+      return;
+    }
     if (this.setting === 'beach') {
       const g = this.barn.clear();
       g.poly([cx + 40, y - 140, cx + 40, y - 270, cx + 150, y - 140]).fill(swatch.white.light).stroke(line(swatch.white.line, 4));
