@@ -86,8 +86,10 @@ Levels 7–10 are appended on top; nothing is renumbered.
 
 ## Decisions for the developer
 
-1. **Open a `school` window?** Levels 8–10 are the proposed school play (pattern, make-ten, clear-the-garden); without the window they would sit under pre-K. Added to [Waiting on the developer](../WAITING-ON-DEVELOPER.md).
-2. **Marks in the dots always on, or a grown-up switch?** Recommended: always on; it costs no setting and helps color-blind players.
+Both decided by the developer on 2026-10-14:
+
+1. **Open a `school` window**: yes. Levels 8–10 (pattern line, make ten, clear the garden) are school play; the window is added in the slice that builds level 8, with a rule test over the band table.
+2. **Marks in the dots**: always on, no setting.
 
 ## Build slices, in order
 
@@ -95,8 +97,8 @@ Levels 7–10 are appended on top; nothing is renumbered.
 2. **Level 11 Find my buddy** (toddler entry; `logic.ts` rule test, then new-level tier).
 3. **Level 7 Two colors** (a second count; new-level tier).
 4. **Level 8 Same, different** (a pattern line; new interaction tier: rules first, one scripted play, one portrait screenshot, `fingerdemo`).
-5. **Level 9 Make ten**, after decision 1.
-6. **Level 10 Clear the garden** with the exact solver, after decision 1.
+5. **Level 9 Make ten** (the school window is decided).
+6. **Level 10 Clear the garden** with the exact solver.
 7. **Boards with empty cells** and the anchors.
 
 ## What was built in this session
