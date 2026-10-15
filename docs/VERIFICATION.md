@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-14 — Social-emotional subject research
+
+- Docs only, base `bf8117f` plus research diff, [PR #321](https://github.com/rjdunlap/neo/pull/321): [study](deep-dives/subjects/social-emotional.md), every audience L–G, six opened digital precedents and a physical equivalent; synchronized tracker/notebook, [roadmap packets](ROADMAP.md#social-emotional-play-recommendations), reviewer/device records. Pre-existing completed-work archive edit excluded.
+- Opened CASEL, Head Start, the facial-expression review and an adolescent randomized game trial; its lack of between-group empathic-accuracy improvement is explicit. Access gaps and unplayed references are named. Recommend Playdate Workshop first, Common Ground for older families, and Two Viewpoints/Ask First within existing games.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with local links repaired. No game or practical emotional-health advice built.
+- Not run: typecheck, unit tests, build, browser/offline/device/child checks. Content review, identity/band/land fit, older-family appeal and real-world transfer remain open; practical advice/physical calming requires named qualified review.
+
 ## 2026-10-14 — Cooking and recipes subject research
 
 - Docs only, base `ed9d888` plus research diff, [PR #320](https://github.com/rjdunlap/neo/pull/320): [study](deep-dives/subjects/cooking-recipes.md), every audience L–G, five first-party digital precedents and a physical equivalent; synchronized tracker, notebook, [roadmap packets](ROADMAP.md#cooking-and-recipes-recommendations), reviewer and future person/device records.
@@ -93,18 +100,13 @@
 - One Chrome screenshot of the beach at 1024x768 (landscape only).
 - Not run: portrait screenshot, a play-through, `fingerdemo`, build or offline; scene-content tier, interaction evidence from [cover support](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
-## 2026-10-14 — Critter Crossing deep dive
-
-- Docs only, `claude/critter-crossing-deep-dive` ([PR #303](https://github.com/rjdunlap/neo/pull/303)): added [critter-crossing.md](deep-dives/critter-crossing.md) (current ladder, levels 6–8 and a visible "not" entry proposed, seven build slices, three decisions) and updated the tracker, roadmap chunk 14, IDEAS rows and Waiting on the developer.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Genre sources were read through search summaries; the proposed levels are unplayed.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Subject research docs | 2026-10-14: cooking/recipes study and roadmap packets; relative links and diff passed; prior routines/weather/movement studies retained | [Cooking/recipes](#2026-10-14--cooking-and-recipes-subject-research), [routines/self-care](#2026-10-14--routines-and-self-care-subject-research), [weather/water](#2026-10-14--weather-and-water-subject-research), [movement recommendations](#2026-10-14--movement-roadmap-recommendations), [movement research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; named practical-content reviewers, scientific assertions and audience fit open; no code, device checks or demonstrated transfer |
+| Subject research docs | 2026-10-14: social-emotional study and roadmap packets; relative links and diff passed; prior cooking/routines/weather/movement studies retained | [Social-emotional](#2026-10-14--social-emotional-subject-research), [cooking/recipes](#2026-10-14--cooking-and-recipes-subject-research), [routines/self-care](#2026-10-14--routines-and-self-care-subject-research), [weather/water](#2026-10-14--weather-and-water-subject-research), [movement recommendations](#2026-10-14--movement-roadmap-recommendations), [movement research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; content/reviewer, identity/band/land and person/device/transfer gaps remain explicit; no reference games played |
 | Critter Crossing level 6 (`critter-crossing`) | 2026-10-14: typecheck, 95 critter-crossing/content tests, one landscape dev-server play (marks, four option cards, no page errors) | [Critter Crossing level 6 entry](#2026-10-14--critter-crossing-level-6-either-one) | `fingerdemo` at level 6, portrait screenshot and how-to demo not run; full `npm test` had 9 unrelated load timeouts, not re-run |
 | Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-14: bedroom typecheck, 87 rules/content tests and one portrait screenshot (covers only) passed; earlier beach 92 tests and a landscape screenshot, garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Bedroom verification](#2026-10-14--peekaboo-barn-bedroom-scene) / [Beach verification](#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) | Bedroom, beach and garden full play/build/offline/fingerdemo not rerun; bedroom animals not screenshotted per cover, beach portrait not reviewed; iPad, speech and child play open |
 | `mossypath`, `fingerdemo` (`mossy-path`) | 2026-10-13: first/top gameplay, wrong taps/help/revision/dead-end recovery, rewards, clean 7.8/17.3 s demos, portrait/landscape; corrected filtered land launch/held Home return | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Full suite stopped on old tap-to-leave harness step; corrected navigation passed separately. iPad, speech and child play open |
