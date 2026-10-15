@@ -1374,6 +1374,10 @@ export const SCRIPT = {
   'peek.notit': ["That's the {other}! Where is the {animal}?"],
 
   'duck.along': ['Tap a duck to help it swim!'],
+  'duck.bye': ['Bye-bye, duck! {n} left.', 'Bye-bye! {n} left.'],
+  'duck.byeTap': ['Tap a duck to wave bye-bye!'],
+  'duck.byeAll': ['Bye-bye, last duck!'],
+  'duck.callback': ['Quack, quack! Come back, ducks!'],
   'duck.total': ['{n} ducks!', '{n} ducks swimming!'],
   'duck.make': ['Put {n} in the pond!'],
   'duck.made': ["That's {n}!", 'Yes, {n}!'],

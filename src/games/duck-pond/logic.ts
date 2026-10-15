@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
 
-export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide';
+export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -29,6 +29,8 @@ export const PLANS: DuckPlan[] = [
   { mode: 'ten', rounds: 5, min: 3, max: 9 },
   // School: the total is known, but some ducks are hidden beneath a bridge.
   { mode: 'hide', rounds: 5, min: 5, max: 10 },
+  // Below level 1 (placed first for lap and toddler): five ducks wave bye-bye one at a time, then all swim back. One song is a round.
+  { mode: 'bye', rounds: 1, min: 5, max: 5 },
 ];
 
 export interface HidingPuzzle {
@@ -101,7 +103,7 @@ export function story(rng: Rng, plan: DuckPlan): PondStory {
 
 /**
  * What a capable child touches next: a duck on the bank, or lily pad number `pad` (counting from the left), or null while
- * she waits. Ducks: all of them (along), or only until there are as many swimming as the sign says (make). Pads: the one
+ * she waits. Ducks: all of them (along, or each swimmer in turn to send it off in bye), or only until there are as many swimming as the sign says (make). Pads: the one
  * with the answer. Always a right one, and never a duck too many.
  */
 export type DuckMove = 'duck' | { pad: number };
@@ -109,6 +111,7 @@ export type DuckMove = 'duck' | { pad: number };
 export function duckMove(plan: DuckPlan, bank: number, swimming: number, want: number, pads: readonly number[], answer: number): DuckMove | null {
   if (plan.mode === 'along') return bank > 0 ? 'duck' : null;
   if (plan.mode === 'make') return bank > 0 && swimming < want ? 'duck' : null;
+  if (plan.mode === 'bye') return swimming > 0 ? 'duck' : null;
   const pad = pads.indexOf(answer);
   return pad >= 0 ? { pad } : null;
 }
