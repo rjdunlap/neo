@@ -59,6 +59,9 @@ class DucklingParade implements Game {
   private readonly ground = new Container();
   private readonly pond = new Graphics();
   private readonly pondGlow = new Graphics();
+  private readonly destination = new Graphics().ellipse(0, 0, 52, 24).stroke({ width: 6, color: swatch.green.line }).ellipse(0, 0, 43, 17).stroke({ width: 3, color: swatch.green.light });
+  private destinationAge = 1;
+  private destroyed = false;
   private readonly card = new Container();
   private readonly cardSlots = new Graphics();
   private readonly world = new Container();
@@ -83,15 +86,29 @@ class DucklingParade implements Game {
     this.round = makeRound(this.plan, ctx.rng);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xa6de8e, 0x9edb86], horizon: 0.3, clouds: 3, sun: true, seed: 61 }, ctx.view);
     // The steering layer sits on top: anything drawn above it would catch the finger instead.
-    ctx.stage.addChild(this.backdrop, this.pondGlow, this.pond, this.world, this.card, this.ground);
+    this.destination.eventMode = 'none';
+    this.destination.visible = false;
+    ctx.stage.addChild(this.backdrop, this.pondGlow, this.pond, this.destination, this.world, this.card, this.ground);
     this.card.addChild(this.cardSlots);
 
     this.ground.eventMode = 'static';
     this.ground.on('pointerdown', (e: FederatedPointerEvent) => this.steer(e, true));
-    this.ground.on('globalpointermove', (e: FederatedPointerEvent) => e.pointerId === this.steering && this.steer(e, false));
-    const up = (e: { pointerId: number }) => e.pointerId === this.steering && (this.steering = null);
-    this.ground.on('pointerup', up);
-    this.ground.on('pointerupoutside', up);
+    this.ground.on('globalpointermove', (e: FederatedPointerEvent) => {
+      if (e.pointerId !== this.steering) return;
+      // A swallowed release must not turn a later hover into steering.
+      if (e.buttons === 0) this.release(e);
+      else this.steer(e, false);
+    });
+    this.ground.on('pointerup', this.release);
+    this.ground.on('pointerupoutside', this.release);
+    this.ground.on('pointercancel', this.cancel);
+    // Native events also cover release outside Pixi and system gestures taking over.
+    window.addEventListener('pointerup', this.release, true);
+    window.addEventListener('pointercancel', this.cancel, true);
+    window.addEventListener('lostpointercapture', this.cancel, true);
+    window.addEventListener('pointerout', this.leaveWindow);
+    window.addEventListener('blur', this.clearSteering);
+    document.addEventListener('visibilitychange', this.clearSteering);
 
     this.mama.scale.set(MAMA_SCALE);
     ctx.track(this.mama);
@@ -155,6 +172,7 @@ class DucklingParade implements Game {
   }
 
   resize(v: View) {
+    this.clearSteering();
     this.view = v;
     this.backdrop.resize(v);
     this.ground.hitArea = new Rectangle(0, 0, v.w, v.h);
@@ -207,12 +225,35 @@ class DucklingParade implements Game {
     return { trace: { on: this.ground, x: this.mama.x, y: this.mama.y - 30 }, via: [there] };
   }
 
+  private readonly release = (e: { pointerId: number }) => {
+    if (e.pointerId === this.steering) this.steering = null;
+  };
+
+  private readonly cancel = (e: { pointerId: number }) => {
+    if (e.pointerId === this.steering) this.clearSteering();
+  };
+
+  private readonly leaveWindow = (e: PointerEvent) => {
+    if (e.relatedTarget === null) this.cancel(e);
+  };
+
+  /** Forget the finger, keeping its last destination so a lifted tap still walks there. */
+  private readonly clearSteering = () => {
+    this.steering = null;
+    this.destination.visible = false;
+    this.destinationAge = 1;
+  };
+
   private steer(e: FederatedPointerEvent, down: boolean) {
-    if (this.busy || this.finished) return;
+    if (this.destroyed || this.busy || this.finished) return;
     if (down) {
       // The newest finger leads, so a lost pointerup can never leave Mama stuck.
       if (palmOnGlass()) return;
       this.steering = e.pointerId;
+      this.destinationAge = 0;
+      this.destination.visible = true;
+      this.destination.alpha = 1;
+      this.destination.scale.set(1);
     }
     const p = this.ctx.stage.toLocal(e.global);
     const f = this.field(this.view);
@@ -220,9 +261,15 @@ class DucklingParade implements Game {
     // Mama walks on the meadow; aim a little below the finger so it doesn't hide her.
     this.target.x = Math.max(f.x0, Math.min(f.x1, p.x));
     this.target.y = Math.max(f.y0, Math.min(f.y1, p.y + 30));
+    this.destination.position.copyFrom(this.target);
   }
 
   update(dt: number) {
+    if (this.destroyed) return;
+    this.destinationAge = Math.min(1, this.destinationAge + dt / 0.9);
+    this.destination.alpha = 1 - this.destinationAge;
+    this.destination.scale.set(1 + this.destinationAge * 0.3);
+    this.destination.visible = this.destinationAge < 1;
     this.clock += dt;
     this.walk(dt);
     this.follow(dt);
@@ -424,7 +471,7 @@ class DucklingParade implements Game {
   /** At the pond: ducklings swim in one by one; any extras hop back out to the meadow. */
   private async homecoming() {
     this.busy = true;
-    this.steering = null;
+    this.clearSteering();
     const tw = this.ctx.tw;
     const counting = this.round.target !== undefined;
     const { swimIn, extra } = arrive(this.round, this.homeCount, this.line.length);
@@ -477,6 +524,7 @@ class DucklingParade implements Game {
 
   private async finale() {
     this.finished = true;
+    this.clearSteering();
     const p = this.pondAt;
     this.target.x = p.x;
     this.target.y = p.y + 10;
@@ -491,7 +539,18 @@ class DucklingParade implements Game {
   }
 
   destroy() {
+    this.destroyed = true;
+    this.clearSteering();
+    this.ground.eventMode = 'none';
     this.ground.removeAllListeners();
+    window.removeEventListener('pointerup', this.release, true);
+    window.removeEventListener('pointercancel', this.cancel, true);
+    window.removeEventListener('lostpointercapture', this.cancel, true);
+    window.removeEventListener('pointerout', this.leaveWindow);
+    window.removeEventListener('blur', this.clearSteering);
+    document.removeEventListener('visibilitychange', this.clearSteering);
+    this.ctx.untrack(this.mama);
+    for (const d of this.ducklings) this.ctx.untrack(d.critter);
   }
 }
 
