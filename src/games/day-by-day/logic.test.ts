@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { ANCHOR_LEVEL, choicesFor, DAYS, makeWeek, neighbor, relativeQuestions, sunnyCount, toggleMark, weekLayout } from './logic';
+import { ANCHOR_LEVEL, choicesFor, COUNT_LEVEL, DAYS, makeCountWeek, makeWeek, planFor, neighbor, relativeQuestions, sunnyCount, toggleMark, weekLayout } from './logic';
 
 describe('Day by Day', () => {
   it('creates a repeatable seven-day record with all weather categories and varied weeks', () => {
@@ -16,6 +16,26 @@ describe('Day by Day', () => {
       weeks.add(week.join(','));
     }
     expect(weeks.size).toBeGreaterThan(70);
+  });
+  it('supplies immutable seven-day bridge evidence with three suns and one tally, without changing old plans', () => {
+    const weeks = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const week = makeCountWeek(new Rng(seed));
+      expect(week).toEqual(makeCountWeek(new Rng(seed)));
+      expect(week).toHaveLength(7);
+      expect(Object.isFrozen(week)).toBe(true);
+      expect([...new Set(week)].sort()).toEqual([0, 1, 2]);
+      expect(sunnyCount(week)).toBe(3);
+      let marks: number[] = [];
+      for (let day = 0; day < 7; day++) marks = toggleMark(marks, day, 7);
+      expect(marks).toHaveLength(7); // even marking clouds cannot change the total
+      expect(sunnyCount(week)).toBe(3);
+      weeks.add(week.join(','));
+    }
+    expect(weeks.size).toBeGreaterThan(50);
+    expect(planFor(COUNT_LEVEL)).toMatchObject({ relatives: false, tally: true });
+    expect(planFor(3)).toMatchObject({ relatives: true, tally: true });
+    expect(planFor(4)).toMatchObject({ relatives: true, tally: false });
   });
   it('wraps the week in both directions and undoes a yesterday with tomorrow', () => {
     expect(neighbor(6, 1)).toBe(0);

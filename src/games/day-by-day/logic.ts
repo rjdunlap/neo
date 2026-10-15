@@ -10,7 +10,13 @@ export const PLANS = [
 ] as const;
 /** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
 export const ANCHOR_LEVEL = 4;
-export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+export const COUNT_LEVEL = 10;
+const COUNT_PLAN = { name: 'Count beside the record', relatives: false, tally: true } as const;
+export const planFor = (level: number) => level === COUNT_LEVEL ? COUNT_PLAN : PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+/** Supplied bridge evidence: three suns among both other skies, varied by the round seed. */
+export function makeCountWeek(rng: Rng): readonly number[] {
+  return Object.freeze(rng.shuffle([0, 0, 0, 1, 1, 2, 2]));
+}
 export const neighbor = (day: number, direction: -1 | 1) => (day + direction + 7) % 7;
 export interface Relative { today: number; direction: -1 | 1 }
 /** Two questions, one forward and one back. Before the anchor level they are the week's turn; there, two different seeded days. */
