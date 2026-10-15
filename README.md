@@ -122,7 +122,7 @@ There are ninety-four games; the child games are listed below and the grown-up g
 | Ramp Race | pre-K–school | tap the ramp to make it taller and roll a toy car | stop on a star, choose height and floor (carpet, wood, ice), fair tests comparing two lanes |
 | Critter Sort | pre-K–school | drag critters into a hoop: "wearing a hat" | two hoops, overlapping hoops where the middle is both, guess the rule, a hoop for "not" |
 | Treasure Map | pre-K–school | dig where the apple row meets the red column | grid names like B3, putting things at named squares, following directions ("2 left, then 3 up"), then combining two landmark clues |
-| Opposites | lap–pre-K | tap a picture: it flips to its opposite (big, small; open, closed) | twelve picture pairs from level 2; varied animal subjects and acting lap flips; find the one named, find the opposite among three, match opposite pairs |
+| Opposites | lap–pre-K | tap a picture: it flips to its opposite (big, small; open, closed) | twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; find the one named, find the opposite among three, match opposite pairs |
 | Shape Buddies | pre-K–school | reshape two paper friends, test a seed journey and plant it | flat or sloped bridge plus scoop catcher; undo, replay and free experiments |
 | Day by Day | pre-K, school | place spoken weekday cards and record a pretend week of weather | yesterday, tomorrow across the week boundary, then count sunny records |
 | Orchard Rows | school | plant equal rows and count by groups | turn the same orchard to count by columns, then find and plant a missing row |

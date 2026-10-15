@@ -7,7 +7,10 @@ describe('Opposites', () => {
     const words = CONCEPT_IDS.flatMap((c) => [...CONCEPTS[c].words]);
     expect(new Set(words).size).toBe(words.length);
     expect(poolFor(1)).toEqual(['size', 'mood', 'height', 'lid', 'cup', 'temp', 'sky', 'speed']);
-    expect(poolFor(2)).toEqual(CONCEPT_IDS);
+    expect(poolFor(2)).toEqual(CONCEPT_IDS.filter((c) => CONCEPTS[c].from <= 2));
+    expect(poolFor(2)).toHaveLength(12);
+    expect(poolFor(3)).toEqual(CONCEPT_IDS);
+    expect(poolFor(4)).toHaveLength(16);
     expect(STICKER_CONCEPTS).toEqual(['sky', 'temp', 'cup', 'lid', 'stature', 'lamp', 'wake', 'basket']);
   });
 

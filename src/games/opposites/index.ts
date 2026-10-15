@@ -128,6 +128,38 @@ export function picture(card: Card): Container {
       for (const x of [-34, -18, -2]) g.moveTo(x, 5).lineTo(x, 57).stroke({ width: 3, color: wood.line });
       g.moveTo(-52, 0).quadraticCurveTo(-20, 13, 12, 0).stroke({ width: 4, color: wood.light });
       break;
+    case 'sponge': {
+      // The same sponge: wet is blue and dripping, dry is pale and crumbly.
+      g.roundRect(-52, -30, 104, 62, 14).fill(side === 0 ? swatch.blue.light : swatch.yellow.light).stroke({ width: 5, color: side === 0 ? swatch.blue.fill : swatch.yellow.line });
+      for (const [x, y] of [[-30, -10], [-6, 8], [20, -12], [32, 14], [-24, 16]]) g.circle(x, y, 6).fill({ color: side === 0 ? swatch.blue.fill : swatch.yellow.line, alpha: 0.5 });
+      if (side === 0) for (const [x, y] of [[-28, 50], [4, 58], [34, 48]]) g.moveTo(x, y - 14).quadraticCurveTo(x - 9, y + 4, x, y + 8).quadraticCurveTo(x + 9, y + 4, x, y - 14).fill(swatch.blue.fill);
+      else for (const x of [-30, 0, 30]) g.moveTo(x - 6, 52).lineTo(x + 6, 52).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.5, cap: 'round' });
+      break;
+    }
+    case 'plate':
+      g.circle(0, 4, 56).fill(0xffffff).stroke({ width: 5, color: swatch.blue.line }).circle(0, 4, 36).stroke({ width: 3, color: swatch.blue.light });
+      if (side === 0) for (const [x, y, r] of [[-30, -34, 5], [34, -26, 7], [38, 26, 5]]) g.poly(starPoints(r * 2, r * 0.8).map((n, i) => n + (i % 2 ? y : x))).fill(swatch.yellow.fill);
+      else for (const [x, y, r] of [[-18, -8, 14], [14, 14, 18], [20, -20, 9], [-10, 28, 8]]) g.circle(x, y, r).fill(wood.line).circle(x + r * 0.3, y - r * 0.3, r * 0.3).fill(wood.fill);
+      break;
+    case 'book': {
+      // The same book on its side: only the thickness of its pages changes.
+      const h = side === 0 ? 78 : 22;
+      g.roundRect(-58, 30 - h, 116, h, 6).fill(swatch.purple.fill).stroke({ width: 4, color: swatch.purple.line });
+      g.rect(-52, 34 - h, 104, Math.max(6, h - 10)).fill(0xffffff).stroke({ width: 2, color: swatch.purple.line });
+      g.rect(-64, 30, 128, 6).fill(swatch.green.fill);
+      break;
+    }
+    case 'ball': {
+      // The house stays put; the ball sits close to its door or far along the path.
+      g.rect(-60, 60, 120, 6).fill(swatch.green.fill);
+      g.rect(-60, -12, 40, 50).fill(swatch.orange.light).stroke({ width: 4, color: swatch.orange.line });
+      g.poly([-66, -12, -40, -40, -14, -12]).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' });
+      g.rect(-46, 12, 12, 26).fill(wood.fill);
+      const x = side === 0 ? -4 : 50;
+      g.circle(x, 42, 14).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
+      if (side === 1) for (const dx of [-8, 12, 32]) g.circle(dx, 50, 3).fill(swatch.green.line);
+      break;
+    }
     case 'speed':
       if (side === 0) {
         const bunny = new Critter(CRITTERS.bunny);
