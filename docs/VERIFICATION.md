@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-14 — Weather and water subject research
+
+- Docs only, base `1f56bd6` plus research diff, [PR #313](https://github.com/rjdunlap/neo/pull/313): opened NGSS, USGS, EPA, NOAA, CDC and NAEYC anchors; five digital precedents and one physical reference, with access/model limits recorded in the [study](deep-dives/subjects/weather-water.md).
+- Every audience L–G has an answer; recommended Rain Garden, Drop's Journey and Forecast Detective definition packets, with Weather Window retained in Day by Day. Updated tracker, notebook, roadmap and future decision/device records; no games built or scheduled.
+- Relative Markdown links/anchors and `git diff --check` passed. Rotated Bug Builder's oldest dated entry to the existing archive, repaired its relative links and repointed incoming anchors.
+- Not run: typecheck, units, build, browser/offline or hardware checks (docs-only tier). Scientific transfer, iPad speech/touch and tween/parent appeal remain unestablished; toy-model scope and future scientific content review remain open.
+
 ## 2026-10-14 — Movement roadmap recommendations
 
 - Docs only, base `a0362bc` plus roadmap diff, [PR #312](https://github.com/rjdunlap/neo/pull/312): recorded the developer-requested priorities Adventure Walk and Animal Charades, with Mirror Partners retained as a Pet Says extension.
@@ -86,19 +93,13 @@
 - Docs only, `claude/bumper-garden-deep-dive` ([PR #297](https://github.com/rjdunlap/neo/pull/297)): added [bumper-garden.md](deep-dives/bumper-garden.md) (current ladder, known gaps including a how-to that is false at levels 2–5, genre and developmental research, levels 6–14 proposed, nine build slices), set the tracker row to designed, pointed the IDEAS ladder row and roadmap chunk 14 at it.
 - Ran: link check and `git diff --check`. No code, tests or browser suites (research only). Not established: whether a one-year-old can follow or flip the ball, which needs a person and a device.
 
-## 2026-10-14 — Bug Builder deep dive
-
-- Docs only, `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296)): added [bug-builder.md](deep-dives/bug-builder.md) (current ladder, known gaps, genre research, levels 8–13 proposed, nine build slices) and updated the tracker, roadmap chunk 14 and IDEAS rows.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Standards wording beyond section names is unverified; token-pool and hint findings come from reading the source, not from play.
-
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Subject research docs | 2026-10-14: movement study and requested roadmap follow-ups; relative links and diff passed | [Recommendations](#2026-10-14--movement-roadmap-recommendations), [research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; no physical instruction review, code or device checks |
+| Subject research docs | 2026-10-14: weather/water study and roadmap packets; relative links and diff passed; movement study/follow-ups retained | [Weather/water](#2026-10-14--weather-and-water-subject-research), [movement recommendations](#2026-10-14--movement-roadmap-recommendations), [movement research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; toy-model scope/science review and audience fit open; no physical instruction review, code or device checks |
 | Critter Crossing level 6 (`critter-crossing`) | 2026-10-14: typecheck, 95 critter-crossing/content tests, one landscape dev-server play (marks, four option cards, no page errors) | [Critter Crossing level 6 entry](#2026-10-14--critter-crossing-level-6-either-one) | `fingerdemo` at level 6, portrait screenshot and how-to demo not run; full `npm test` had 9 unrelated load timeouts, not re-run |
 | Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-14: beach typecheck, 92 rules/content/registry tests and one landscape screenshot passed; earlier garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Beach verification](#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) | Beach and garden full play/build/offline/fingerdemo not rerun; beach portrait not reviewed; iPad, speech and child play open |
 | `mossypath`, `fingerdemo` (`mossy-path`) | 2026-10-13: first/top gameplay, wrong taps/help/revision/dead-end recovery, rewards, clean 7.8/17.3 s demos, portrait/landscape; corrected filtered land launch/held Home return | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Full suite stopped on old tap-to-leave harness step; corrected navigation passed separately. iPad, speech and child play open |
