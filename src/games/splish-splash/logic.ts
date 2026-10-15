@@ -1,8 +1,8 @@
 export type Part = 'tummy' | 'head' | 'cheeks' | 'ears' | 'nose';
 
 export interface Plan {
-  /** free: scrub it all off. parts: "wash my ears!", one body part at a time. */
-  mode: 'free' | 'parts';
+  /** free: scrub it all off. parts: "wash my ears!", one body part at a time. pat: any touch anywhere takes a third off the nearest patch. */
+  mode: 'free' | 'parts' | 'pat';
   parts: Part[];
   shuffle?: boolean;
   /** Ask for two parts in one breath ("wash my ears and my nose!"). */
@@ -20,7 +20,11 @@ export const PLANS: Plan[] = [
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks', 'nose'], shuffle: true },
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'nose'], shuffle: true, pairs: true },
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'nose'], shuffle: true, pairs: true, ordered: true },
+  { mode: 'pat', parts: ['tummy', 'head', 'cheeks'] },
 ];
+
+/** Pats it takes to wash one patch of mud off in `pat` mode. */
+export const PATS_PER_PATCH = 3;
 
 export function planFor(level: number): Plan {
   return PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -64,7 +68,7 @@ export const MUD_BOX = { x: 52, y: 44 };
 
 /** The part to scrub next: any muddy one when scrubbing freely, and otherwise the first the question allows. */
 export function nextToScrub(plan: Plan, index: number, clean: (p: Part) => boolean): Part | null {
-  if (plan.mode === 'free') return plan.parts.find((p) => !clean(p)) ?? null;
+  if (plan.mode !== 'parts') return plan.parts.find((p) => !clean(p)) ?? null;
   return allowedParts(plan, index, clean)[0] ?? null;
 }
 
@@ -100,4 +104,18 @@ export function nearMud(lx: number, ly: number, size: number): boolean {
  */
 export function wrongTouches(allowed: Part[], near: Part[], forgiven = false): Part[] {
   return forgiven || near.some((p) => allowed.includes(p)) ? [] : near;
+}
+
+/** The index of the point nearest (x, y), for a pat that lands anywhere; null when there are none. */
+export function nearestIndex(points: { x: number; y: number }[], x: number, y: number): number | null {
+  let best: number | null = null;
+  let bestD = Infinity;
+  points.forEach((p, i) => {
+    const d = Math.hypot(p.x - x, p.y - y);
+    if (d < bestD) {
+      bestD = d;
+      best = i;
+    }
+  });
+  return best;
 }

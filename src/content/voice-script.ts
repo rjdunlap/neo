@@ -1462,6 +1462,7 @@ export const SCRIPT = {
   'garden.done': ['All sorted! What a garden!'],
 
   'bath.free': ['{pet} is muddy! Scrub scrub!'],
+  'bath.pat': ['{pet} is muddy! Pat pat pat!'],
   'bath.part': ['Wash my {part}!', 'Now wash my {part}!'],
   'bath.notthat': ["Hee hee! That's my {touched}! Wash my {part}!"],
   'bath.two': ['Wash my {a} and my {b}!'],

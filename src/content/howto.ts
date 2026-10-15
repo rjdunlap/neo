@@ -245,15 +245,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Give the pet a bath.',
     steps: [
       { to: 2, text: 'Rub a finger over the mud to scrub it off.' },
+      { from: 9, to: 9, text: 'Pat anywhere on the screen: each pat washes a third of the nearest patch of mud away.' },
       { from: 3, to: 6, text: 'Rub a finger over the body part the pet names to wash it, then the next one it asks for.' },
       { from: 7, to: 7, text: 'Rub a finger over each of the two body parts the pet names.' },
-      { from: 8, text: 'Wash the two body parts in the order the pet says: first one, then the other.' },
+      { from: 8, to: 8, text: 'Wash the two body parts in the order the pet says: first one, then the other.' },
     ],
     finish: [
       { to: 2, text: 'The round ends when the mud is all gone.' },
-      { from: 3, text: 'The round ends when everything asked for is clean.' },
+      { from: 3, to: 8, text: 'The round ends when everything asked for is clean.' },
+      { from: 9, to: 9, text: 'The round ends when the mud is all gone.' },
     ],
-    note: [{ from: 3, text: 'Washing the wrong part just makes the pet giggle and repeats the request.' }],
+    note: [{ from: 3, to: 8, text: 'Washing the wrong part just makes the pet giggle and repeats the request.' }],
   },
   'duck-pond': {
     goal: 'Count ducks and put the right number in the pond.',
