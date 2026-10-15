@@ -1971,3 +1971,24 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 
 - Docs only, `claude/critter-crossing-deep-dive` ([PR #303](https://github.com/rjdunlap/neo/pull/303)): added [critter-crossing.md](../deep-dives/critter-crossing.md) (current ladder, levels 6–8 and a visible "not" entry proposed, seven build slices, three decisions) and updated the tracker, roadmap chunk 14, IDEAS rows and Waiting on the developer.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Genre sources were read through search summaries; the proposed levels are unplayed.
+
+## 2026-10-14 — Critter Crossing level 6 (Either one)
+
+- Branch `claude/critter-crossing-either-one`, commit `a839732`: new `or` gate kind (school now levels 2–6), 6 critters, 4 pictures, an "or" card drawn with the word "or", a how-to line; no new voice lines.
+- Passed `npm run typecheck` and vitest for `critter-crossing` and `src/content` (95 tests, including the new "level 6, \"or\" gates" describe). The full `npm test` had 9 timeouts in unrelated games (bumper-garden, ferry-jam, fluffy-salon, peg-garden, penguin-slide, secret-code) under parallel load; not re-run.
+- One scripted dev-server play at level 6: the round and four option cards rendered in landscape, three tries gave crossed and waited marks, no page errors.
+- Not run: `fingerdemo` at level 6 (the bot shares `nextStep`, covered by unit tests, but the ghost finger was not watched), a portrait screenshot, the how-to demonstration, build, offline. Open: iPad and child play.
+
+## 2026-10-14 — Animal Snack level 3 two ways to ask
+
+- PR #305, branch `claude/animal-snack-two-ways`, commit `69b4902`: level 3 alternates "Who eats the carrot?" (food clue) with "Who says moo?" (sound clue, every second question; a speaker bubble replays the sound). The bunny's hop is never the clue. A wrong animal answers in its own voice (`snack.notme`) and counts as a miss; two misses glow the asked animal. No new levels or bands.
+- Passed `npm run typecheck` and vitest for `src/games/animal-snack` and `src/content` (87 tests, including the new alternation and unique-sound tests).
+- Passed `BROWSER_SUITE=woods WOODS_ONLY=snack FROM_LEVEL=3` (levels 3-5).
+- Not run: `fingerdemo` at level 3 (the bot is unchanged and taps the asked animal), a portrait screenshot of the speaker bubble, build, offline. Open: device speech for the new line, iPad and child play.
+
+## 2026-10-14 — Peekaboo Barn bedroom scene
+
+- Uncommitted working diff on `worktree-bridge-cse_01BcFpLFi35RV7MqyWUbVxMZ` (base not recorded): the round seed can now choose a bedroom (blanket, toy box, curtain, bed over a peach rug, lilac wall and a moon-and-star window), beside barnyard, garden and beach. Levels 1–8, bands, interaction, rewards and sticker/icon art unchanged.
+- Passed `npm run typecheck` and `npx vitest run src/games/peekaboo-barn src/content` (87 tests).
+- One portrait screenshot of the bedroom: all four covers read; animals not individually screenshotted against each cover.
+- Not run: browser play-through, `fingerdemo`, build or offline; scene-content tier, interaction evidence from [cover support](VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
