@@ -221,3 +221,7 @@ Coordinator confirmed prior owned mirror definition #254 complete/merged and rec
 ### Bouncy Launch last-flight worker dispatch (2026-10-13)
 
 Coordinator confirmed support #269 complete/merged/deployed and reconciled final usage once; estimate recalibrated for its aggregate overrun. Claims cleared and actual allowance admits fresh worker `01a136e9-ad64-7972-b23a-6a94841e4324` for slice 3 only; slice 2's listening decision remains open. Queue records scope/admission/pending focused checks; unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Worker owes implementation/rules/filtered 5–6 play/demo and affected shared-content checks; no coordinator code checks/servers.
+
+### Day by Day deep-dive worker dispatch (2026-10-15)
+
+Coordinator confirmed last-flight #275 merged and prior owned slice complete, reconciled its readings once; reset-crossing consumption remains unknown. Shared checkout/claims cleared; actual allowance admits fresh docs-only worker `01a13e85-b7aa-7ee1-8326-7a3291f02f23` for Day by Day research/planning. Queue records scope/admission/pending docs checks. Coordinator source links and `git diff --check` passed; worker owes research/docs validation only. No coordinator code checks or servers.
