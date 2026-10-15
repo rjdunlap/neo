@@ -98,7 +98,7 @@ Phoneme work, rhyme (Rhyme Time), a rhythm timing judge, printed syllables, and 
 ## Build slices, in order
 
 1. **More words** (built 2026-10-14; about 12–16 words, with pictures; a dialect exclusion list; spelling and count tests). Unit tests, one portrait screenshot of level 5. Check tier: new content on an existing interaction.
-2. **Visible wait cue in solo** (claimed 2026-10-15, `claude/clap-syllables-wait-ring`; a ring that fills over the 1.5 s pause; no rule change). Unit test on the timing constant; one filtered play. Existing-game tier.
+2. **Visible wait cue in solo** (built 2026-10-15, `claude/clap-syllables-wait-ring`, PR #374; a ring that fills over the 1.5 s pause; no rule change). Unit test on the timing constant; one filtered play. Existing-game tier.
 3. **Level 6, Beat train**. New interaction tier: rule tests, one scripted play (first and last level, wrong drop, hint), ghost finger, how-to card.
 4. **Level 8, Longer or shorter?** and **level 9, Clap along (short)** (cheap).
 5. Decisions 1–3 before names, a toddler window and level 7.
@@ -108,3 +108,5 @@ Phoneme work, rhyme (Rhyme Time), a rhythm timing judge, printed syllables, and 
 Nothing: a deep dive session is research and ideation only. Links and `git diff --check` ran.
 
 **Slice 1, More words (built 2026-10-14, `claude/clap-syllables-more-words`):** nine new words with code-drawn pictures (2 beats: pizza, rainbow, pencil, window, spider; 3: tomato, strawberry, pineapple; 4: caterpillar), 38 in all, short of the 12-16 the slice named, plus a dialect-exclusion test. Typecheck and vitest for `src/games/clap-syllables` and `src/content` passed (93 tests); one screenshot of the new pictures from a probe. Not run: a browser play of the game, a portrait screenshot, a device speech check of the words. Next: slice 2, the visible wait cue.
+
+**Slice 2, Visible wait cue in solo (built 2026-10-15, `claude/clap-syllables-wait-ring`, PR #374):** in solo (level 2) a ring round the hands pad fills over the 1.5 s pause after her last clap, so she can see the word is about to be counted. The fill is a pure `waitFill` in `logic.ts` (unit-tested; 0 before her first clap, clamped to 1), drawn in `index.ts`; the rules are unchanged. Typecheck, `vitest src/games/clap-syllables` (15 tests) and `BROWSER_SUITE=clap` passed on the dev server. Not run: a screenshot of the ring, a portrait view, an iPad or child check. Next: slice 3, Beat train (level 6).
