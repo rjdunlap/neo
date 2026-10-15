@@ -23,7 +23,7 @@ Levels 1–2 are **tap everyone** (no wrong answer, so no misses and no hints). 
 - **One room, one picture** (level 1 and 2's variation is fixed by slice 1; the rest remains). Before slice 1 a round at level 1 never changed; a child who loves the game sees the same four friends in the same places.
 - **The stars shrink at the end.** Each friend adds three stars, so a six-friend room reaches 18, then the finale resets the sky to 12. (`this.stars = 12` in `finale()`.) A small bug on levels 2–4, fixed in slice 1.
 - **Levels 1–2 can never be wrong, and offer no nudge** if she is waiting. The pet repeats the instruction on tap; nothing in the room invites her.
-- **No sound of its own for each friend.** Every goodnight is a rising bell note; the kitten does not yawn.
+- **No yawn of its own for each friend.** Each friend has its own bell note since 2026-10-15, but the kitten does not yet yawn.
 - **Two names in order at level 4 sits in the toddler window.** Sources disagree about whether two-year-olds follow two-step requests (see Similar games). It has a supported miss path and a glow, so it is a person check rather than a change.
 - **Ambiguous friends.** The teddy is the `bear` critter. A real bear cannot join its room, and a request for "the animals" would be unfair to a teddy (see level 5 below).
 - Person checks still open: whether a one-year-old holds a 160-unit tap target, and the real iPad ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
@@ -134,7 +134,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 7. **Level 9, everyone but the one** (built 2026-10-12; [PR #239](https://github.com/rjdunlap/neo/pull/239)): pre-K 5–9; either seeded room asks for the five friends other than its light, in any order. Tapping the light explains the exception; two misses glow a remaining friend. The lamp/lantern stays awake with its warm glow through the finale and a matching closing line. Tier: new levels on an existing interaction.
 8. **Tent and boat cabin rooms** (ready, new art).
 9. **Level 10, goodnight everywhere** (ready after 8).
-10. **Yawn nudge and a note per friend** (ready, any time; sound only; claimed 2026-10-15 on `claude/goodnight-friend-notes`: a note per friend as she says goodnight; the yawn nudge if it stays small).
+10. **Yawn nudge and a note per friend** (sound only). The note per friend is built 2026-10-15 ([PR #333](https://github.com/rjdunlap/neo/pull/333), `claude/goodnight-friend-notes`): each friend rings its own pentatonic bell step as she says goodnight. The yawn nudge is still ready, any time.
 11. **Levels below level 1 and tuck-in** (waits on the level-order decisions).
 
 ## What was built in this session

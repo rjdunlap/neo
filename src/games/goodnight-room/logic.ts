@@ -39,6 +39,10 @@ export type Thing = (typeof THINGS)[number];
 /** The words spoken for each thing. */
 export const NAMES: Record<Thing, string> = { lamp: 'lamp', teddy: 'teddy bear', kitten: 'kitten', clock: 'clock', puppy: 'puppy', fish: 'fish', lantern: 'lantern', cow: 'cow', pig: 'pig', duck: 'duck', bunny: 'bunny', cat: 'barn cat' };
 
+/** Each friend's own pentatonic step (`bell` takes one), so a round plays a small tune in the order she chose.
+ * Every room's six friends use six different steps. */
+export const NOTE_STEP: Record<Thing, number> = { lamp: 2, teddy: 3, kitten: 4, clock: 5, puppy: 6, fish: 7, lantern: 2, cow: 3, pig: 4, duck: 5, bunny: 6, cat: 7 };
+
 /** Main colors and conspicuous trim, excluding tiny facial details and outlines.
  * In color rounds the fish's shelf is blue, so it cannot be mistaken for brown. */
 export const COLORS: Record<Thing, { main: string; visible: readonly string[] }> = {

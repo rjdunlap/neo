@@ -11,7 +11,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, planFor, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, NOTE_STEP, planFor, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -270,7 +270,7 @@ class GoodnightRoom implements Game {
 
   private async goodnight(s: Sleeper, speak = true) {
     s.sleep();
-    sfx.bell(3 + this.sleepers.filter((x) => x.asleep).length, 0.25);
+    sfx.bell(NOTE_STEP[s.thing], 0.25);
     this.stars = this.sleepers.filter((x) => x.asleep).length * 3;
     this.drawSky();
     this.drawDark();
