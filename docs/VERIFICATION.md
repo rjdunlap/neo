@@ -2,7 +2,7 @@
 
 ## 2026-10-14 — Sing-Along Barn fourth tune (Au Clair de la Lune)
 
-- Uncommitted working diff on `claude/barn-au-clair` ([PR #323](https://github.com/rjdunlap/neo/pull/323)): tune `clair` (C C C D E D / C E D D C; 11-note opening, 12-note verse answering on "mot") joins the seeded pool and the level 5-6 chooser, whose four cards shrink to 0.72 so the row fits portrait. Levels, bands and rewards unchanged.
+- Commit 9c23ff0 on `claude/barn-au-clair` ([PR #323](https://github.com/rjdunlap/neo/pull/323)): tune `clair` (C C C D E D / C E D D C; 11-note opening, 12-note verse answering on "mot") joins the seeded pool and the level 5-6 chooser, whose four cards shrink to 0.72 so the row fits portrait. Levels, bands and rewards unchanged.
 - Passed `npm run typecheck` and `vitest` on `src/games/sing-along-barn` and `src/content` (106 tests). A wider `src/games` run had four failures in bumper-garden, ferry-jam, peg-garden and penguin-slide logic tests, files this slice did not touch; not investigated.
 - Passed `BROWSER_SUITE=singalong` on `http://localhost:5437`, including a new Au Clair round at level 1 (0 misses, 0 hints); one portrait screenshot of the level-5 chooser shows the four cards fitting.
 - Not run: `fingerdemo`, build, offline, device speech. The melody is from the standard form, not a printed score; iPad, speech and a child's tapping remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
