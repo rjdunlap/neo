@@ -1,5 +1,5 @@
 import type { CritterName } from '../../art/critter';
-import type { AnimalSound } from '../../audio/sfx';
+import type { AnimalSound, BiteKind } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -60,6 +60,10 @@ export const shouldNudge = (mode: SnackMode, idle: number, busy: boolean, finish
 /** Who eats what: one food each, so every question has one answer. */
 export const FAVORITE: Partial<Record<CritterName, Food>> = { cow: 'hay', bunny: 'carrot', dog: 'bone', cat: 'fish', duck: 'seeds', pig: 'apple', bear: 'honey' };
 export const ANIMALS = Object.keys(FAVORITE) as CritterName[];
+/** How each food sounds when bitten: a crunch, a swish, a gnaw, a gulp, pecks or a lick. */
+export const BITE: Record<Food, BiteKind> = { carrot: 'crunch', apple: 'crunch', hay: 'swish', bone: 'gnaw', fish: 'gulp', seeds: 'peck', honey: 'lick' };
+/** Bites per snack, and the size left after each one: the last leaves nothing. */
+export const BITE_SIZES = [0.7, 0.4, 0] as const;
 export const eaterOf = (food: Food) => ANIMALS.find((a) => FAVORITE[a] === food)!;
 
 /** Each animal's own voice. Every animal present has a different one, so a sound names exactly one animal. */

@@ -13,6 +13,8 @@ function out() {
 }
 
 /** Every sound effect in the game. Pitched ones take pentatonic steps (0 = middle C). */
+export type BiteKind = 'crunch' | 'swish' | 'gnaw' | 'gulp' | 'peck' | 'lick';
+
 export const sfx = {
   /** A bubble's plip: a quick rising chirp with a splash. */
   pop(step = 7) {
@@ -182,6 +184,37 @@ export const sfx = {
     noise(o.ctx, o.dest, o.t, 0.09, 0.3, { type: 'bandpass', hz: 1800 * jitter(80), q: 1.2 });
     noise(o.ctx, o.dest, o.t + 0.12, 0.07, 0.22, { type: 'bandpass', hz: 1400 * jitter(80), q: 1.2 });
     tone(o.ctx, o.dest, 'sine', 160, o.t, 0.25, 0.004, 0.12, 90);
+  },
+
+  /** One bite of a snack, each food in its own way. */
+  bite(kind: BiteKind) {
+    const o = out();
+    if (!o) return;
+    const { ctx, dest, t } = o;
+    switch (kind) {
+      case 'crunch':
+        noise(ctx, dest, t, 0.07, 0.3, { type: 'bandpass', hz: 2200 * jitter(120), q: 1.4 });
+        noise(ctx, dest, t + 0.03, 0.05, 0.2, { type: 'highpass', hz: 3200 });
+        break;
+      case 'swish':
+        noise(ctx, dest, t, 0.16, 0.22, { type: 'bandpass', hz: 900 * jitter(100), q: 0.7 });
+        break;
+      case 'gnaw':
+        tone(ctx, dest, 'triangle', 190 * jitter(80), t, 0.2, 0.004, 0.09, 120);
+        noise(ctx, dest, t, 0.05, 0.16, { type: 'bandpass', hz: 700, q: 2 });
+        break;
+      case 'gulp':
+        tone(ctx, dest, 'sine', 420 * jitter(60), t, 0.26, 0.01, 0.13, 150);
+        break;
+      case 'peck':
+        noise(ctx, dest, t, 0.03, 0.26, { type: 'bandpass', hz: 3000 * jitter(120), q: 3 });
+        tone(ctx, dest, 'square', 900 * jitter(80), t, 0.05, 0.002, 0.03, 600);
+        break;
+      case 'lick':
+        tone(ctx, dest, 'sine', 500 * jitter(60), t, 0.2, 0.02, 0.14, 800);
+        noise(ctx, dest, t + 0.02, 0.1, 0.1, { type: 'bandpass', hz: 1500, q: 1 });
+        break;
+    }
   },
 
   /** A big, happy, low burp. */
