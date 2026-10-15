@@ -72,7 +72,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Day by Day | `day-by-day` | KS | 3 | 10 | slices 1–5 built (week-turn support, varied neighbors, tally bridge, other-weather/zero totals, Weather Window at 6); preschool, months and daylight need decisions | `codex/day-by-day-deep-dive` ([PR #349](https://github.com/rjdunlap/neo/pull/349)) | [day-by-day.md](day-by-day.md) |
 | Dot Link | `dot-link` | LTPK | 5 | 4 | designed (no build yet; slices 1–7 waiting; school window and always-on marks decided 2026-10-14) | `claude/dot-link-deep-dive` ([PR #342](https://github.com/rjdunlap/neo/pull/342)) | [dot-link.md](dot-link.md) |
 | Duck Pond | `duck-pond` | LTPKS | 11 | 3 | designed | `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114)) | [duck-pond.md](duck-pond.md) |
-| Duckling Parade | `duckling-parade` | LTPK | 8 | 4 | not started | — | — |
+| Duckling Parade | `duckling-parade` | LTPKS | 10 | 4 | in progress (docs-only research) | `codex/duckling-parade-deep-dive` | — |
 | Egg Catch | `egg-catch` | LTPKS | 6 | 4 | not started | — | — |
 | Feelings Faces | `feelings-faces` | LTPK | 7 | 4 | not started | — | — |
 | Ferry Jam | `ferry-jam` | KS | 6 | 4 | not started | — | — |
