@@ -141,7 +141,7 @@ Each is sized for one session. The slices that add a level are built in level or
 1. **Fairness guards, four new pairs and the card fixes** (built 2026-10-10, [PR 136](https://github.com/rjdunlap/neo/pull/136)): `family` and `from` on `CONCEPTS`, the unique-word, family and pool tests, tall/short, on/off, awake/asleep and in/out, the larger sticker pool, and the how-to `finish` and level-4 bound fixed. Tier: typecheck, the game's rule tests, the how-to and registry tests, one filtered browser play and a screenshot of each new picture. Update the "eight pairs" count in GAMES.md and the README row.
 2. **Same-subject variation and an acting flip** (built 2026-10-11, [PR 158](https://github.com/rjdunlap/neo/pull/158)): `who` on `Card`, per-side motion, optional sound. Tier: rule tests, one browser play, a portrait screenshot.
 3. **Level 5, Which two?** (ready after 1; the band row becomes pre-K 3–5): the `spot` mode, bot, how-to step, browser loop, `fingerdemo`. Tier: new level on an existing interaction.
-4. **A second batch of pairs** (ready): wet/dry, clean/dirty, thick/thin, near/far, many/few, each at a `from` level.
+4. **A second batch of pairs** (ready; claimed 2026-10-14 on `claude/opposites-second-pairs`: wet/dry, clean/dirty, thick/thin and near/far at `from` level 3; many/few stays last, overlapping Picture Graph): each at a `from` level.
 5. **Level 6, In between** (ready after 4): third pictures for cup, temperature, sky and height.
 6. **Level 7, Line them up** (ready after 5).
 7. **Level 8, Only the word** (decision 1; opens the school window).
