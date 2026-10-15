@@ -1202,6 +1202,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Hear that words are made of beats.',
     steps: [
       { to: 2, text: 'Tap the big hands once for each beat in the word: "but-ter-fly" is three claps.' },
+      { from: 2, to: 2, text: 'After your last clap, wait a moment while the ring fills round the hands and the word is counted.' },
       { from: 3, to: 3, text: 'Drag each picture to the number of beats in its name.' },
       { from: 4, text: 'Listen to the claps, then tap the picture with that many beats.' },
       { from: 5, text: 'Sort long words into the one-, two-, three- and four-clap bins.' },

@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { FAMILIES } from '../rhyme-time/logic';
 import { OWN_PICTURES } from './art';
 import { MIN_TAP_GAP } from '../../engine/ghost';
-import { answerOf, byCount, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, PLANS, pictureToTap, planFor, syllables, WORDS } from './logic';
+import { answerOf, byCount, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, PLANS, pictureToTap, planFor, syllables, waitFill, WORDS } from './logic';
 
 const rhymeWords = new Set(Object.values(FAMILIES).flat());
 
@@ -142,5 +142,14 @@ describe('the ghost finger (what the how-to card plays)', () => {
         expect(cards.filter((c) => syllables(c.word) === q.target)).toHaveLength(1);
       }
     }
+  });
+
+  it('fills the wait ring across the pause and is empty before a first clap', () => {
+    expect(waitFill(5, 0, 0)).toBe(0);
+    expect(waitFill(10, 10, 1)).toBe(0);
+    expect(waitFill(10 + PAUSE / 2, 10, 1)).toBeCloseTo(0.5);
+    expect(waitFill(10 + PAUSE, 10, 2)).toBe(1);
+    expect(waitFill(99, 10, 2)).toBe(1);
+    expect(waitFill(9, 10, 2)).toBe(0);
   });
 });

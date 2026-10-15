@@ -92,6 +92,9 @@ export const clapsWord = (n: number) => `${['zero', 'one', 'two', 'three', 'four
 /** Seconds of quiet after the last clap before a word she clapped by herself is counted. */
 export const PAUSE = 1.5;
 
+/** How full the wait ring is (0 to 1): it fills across the `PAUSE` after her last clap, so she can see the word is about to be counted. 0 before her first clap. */
+export const waitFill = (clock: number, lastClap: number, claps: number, pause = PAUSE) => (claps > 0 ? Math.min(1, Math.max(0, (clock - lastClap) / pause)) : 0);
+
 /**
  * What a capable child does next, for the ghost finger. Clapping a word: a clap for each beat still to go (none once the
  * beats are in, when the game counts them by itself). Sorting: carry the first picture still in the tray to the hoop for its beats.

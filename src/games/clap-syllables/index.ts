@@ -14,7 +14,7 @@ import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bead, fitTo, handsArt, wordPicture } from './art';
-import { answerOf, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, pictureToTap, planFor, syllables, WORDS, type ClapPlan, type Question, type Word } from './logic';
+import { answerOf, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, pictureToTap, planFor, syllables, waitFill, WORDS, type ClapPlan, type Question, type Word } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -47,6 +47,8 @@ class ClapSyllables implements Game {
   readonly bins: Bin[] = [];
   readonly beads: Bead[] = [];
   readonly pad = new Container();
+  /** The ring round the hands that fills while the pause runs out in solo clapping. */
+  private readonly ring = new Graphics();
   readonly replay: RoundButton;
   index = -1;
   misses = 0;
@@ -84,7 +86,8 @@ class ClapSyllables implements Game {
     const disc = new Graphics().circle(0, 6, 96).fill({ color: 0x000000, alpha: 0.12 }).circle(0, 0, 96).fill(swatch.yellow.fill).stroke({ width: 7, color: swatch.yellow.line });
     this.padFace = handsArt(130);
     this.padFace.position.set(0, 12);
-    this.pad.addChild(disc, this.padFace);
+    this.ring.eventMode = 'none';
+    this.pad.addChild(disc, this.padFace, this.ring);
     this.pad.hitArea = new Circle(0, 0, 104);
     onTap(this.pad, () => this.clap(), { cooldown: 90 });
     this.pad.visible = this.plan.mode === 'along' || this.plan.mode === 'solo';
@@ -121,6 +124,10 @@ class ClapSyllables implements Game {
       const p = this.board.toLocal({ x: b.x, y: b.y });
       g.roundRect(p.x - 8, p.y - 8, b.width / this.view.scale + 16, b.height / this.view.scale + 16, 30).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
     }
+    const waiting = this.plan.mode === 'solo' && !this.guided && !this.busy && !this.finished;
+    const fill = waiting ? waitFill(this.clock, this.lastClap, this.claps) : 0;
+    this.ring.clear();
+    if (fill > 0) this.ring.moveTo(0, -112).arc(0, 0, 112, -Math.PI / 2, -Math.PI / 2 + fill * Math.PI * 2).stroke({ width: 12, color: swatch.green.line, cap: 'round' });
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
     if (mode === 'solo' && !this.guided && this.claps > 0 && this.clock - this.lastClap > PAUSE) void this.judge();
