@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { coinArt, marketStall } from './index';
-import { anotherWay, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
+import { anotherWay, coinToName, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
 
 describe('Market Stall', () => {
   it('asks for amounts from 1 to 10 that the level\'s coins can make, never the same twice running', () => {
@@ -142,4 +142,16 @@ describe('Market Stall', () => {
     }
   });
 
+
+  it('names only a coin that is new at levels 2 and 3, and only once per game start', () => {
+    const none = new Set<number>();
+    expect(coinToName(1, 1, none)).toBeNull();
+    expect(coinToName(2, 1, none)).toBeNull();
+    expect(coinToName(2, 2, none)).toBe('two');
+    expect(coinToName(2, 5, none)).toBeNull();
+    expect(coinToName(3, 5, none)).toBe('five');
+    expect(coinToName(3, 2, none)).toBeNull();
+    expect(coinToName(2, 2, new Set([2]))).toBeNull();
+    for (let level = 4; level <= PLANS.length; level++) for (const c of [1, 2, 5]) expect(coinToName(level, c, none)).toBeNull();
+  });
 });

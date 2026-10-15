@@ -98,3 +98,9 @@
 - Passed `BROWSER_SUITE=week WEEK_LEVELS=10 GAME_URL=http://localhost:5176 npm run test:browser` at 09:47:05 UTC: supplied tally start, zero baseline hints, free reversible non-sun marks, immutable records, three wrong totals/one hint, one correct total finishes despite incorrect marks, saved sticker and interrupted-speech exit. Chromium sandbox launch failed before play; isolated outside-sandbox play passed with no page errors.
 - Reviewed `test-results/browser/day-by-day-10-record-portrait.png`: all records, sun outlines, 100-unit logical targets, numbers, text and pet clear. Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=day-by-day FINGER_LEVELS=10 GAME_URL=http://localhost:5176 npm run test:browser` at 09:47:41 UTC: school 10 finished cleanly in 7.2 s. Owned Vite server stopped.
 - Links, diff and browser syntax checks at closeout. Not run: unchanged game plays, broad/world/offline suites, iPad touch/device speech or child play; existing device checks stay open.
+
+## 2026-10-15 — Clock Tower levels 3 and 6 coverage
+
+- [PR #358](https://github.com/rjdunlap/neo/pull/358), branch `claude/clock-tower-coverage`: rules only in `src/games/clock-tower/logic.ts`. Level 3 (half past) always asks half past at least once per round, in a random slot; level 6 (one hour later) always includes a start at 11 and one at 12 (the 11 to 12 and 12 to 1 wraparounds). Four distinct tasks per round kept.
+- Ran: typecheck; Clock Tower vitest (9 pass); the new coverage test was shown failing on the old rule.
+- Not run: browser play, `fingerdemo` (no UI, bot or shared change), a device. Open: the deep dive's animated explanations and level 7 examples.

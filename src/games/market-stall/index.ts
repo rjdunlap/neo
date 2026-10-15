@@ -14,7 +14,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { PLANS, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
+import { PLANS, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -94,6 +94,8 @@ class MarketStall implements Game {
   private hinted = false;
   private hintCharged = false;
   private names: string[] = [];
+  /** Coin values already named this game start (fresh 1). */
+  private readonly named = new Set<number>();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -247,9 +249,17 @@ class MarketStall implements Game {
     node.position.set(from.x, from.y);
     void this.ctx.tw.to(node, end, { duration: 0.22, ease: ease.outQuad });
     sfx.pop(4 + value);
-    // Counting on aloud, except where adding up is the puzzle.
+    // A coin that is new at this level is named the first time it lands; otherwise count on aloud,
+    // except where adding up is the puzzle.
     const total = sum(this.onMat.map((c) => c.value));
-    if (this.plan.mode === 'pair' || this.plan.mode === 'change') void this.ctx.say('count', { n: value });
+    const word = coinToName(this.ctx.level, value, this.named);
+    if (word) {
+      this.named.add(value);
+      const purse = this.purse.find((p) => p.value === value)!.node;
+      const big = purse.scale.x;
+      void this.ctx.tw.to(purse.scale, { x: big * 1.25, y: big * 1.25 }, { duration: 0.18, ease: ease.outQuad }).then(() => this.ctx.tw.to(purse.scale, { x: big, y: big }, { duration: 0.2, ease: ease.outQuad }));
+      void this.ctx.say('shop.name', { word });
+    } else if (this.plan.mode === 'pair' || this.plan.mode === 'change') void this.ctx.say('count', { n: value });
     else void this.ctx.say('count', { n: total });
   }
 
