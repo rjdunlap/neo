@@ -62,7 +62,17 @@ export const MARY_HAD_A: Phrase = { syllables: ['Ma', 'ry', 'had', 'a', 'lit', '
 export const LITTLE_LAMB: Phrase = { syllables: ['lit', 'tle', 'lamb', 'lit', 'tle', 'lamb'], steps: [1, 1, 1, 2, 3, 3] };
 export const FLEECE: Phrase = { syllables: ['its', 'fleece', 'was', 'white', 'as', 'snow'], steps: [2, 1, 1, 2, 1, 0] };
 
-export type TuneId = 'macdonald' | 'buns' | 'mary';
+/**
+ * "Au Clair de la Lune" is a traditional French song. Its tune is C C C D E D / C E D D C (do do do re mi re, do mi re re do),
+ * all inside C D E, so no exception is needed. Written from the tune's standard form, not a printed score: a grown-up
+ * singing it is the final check (DEVICE-CHECKS). One note per sung syllable.
+ */
+export const AU_CLAIR: Phrase = { syllables: ['Au', 'clair', 'de', 'la', 'lu', 'ne'], steps: [0, 0, 0, 1, 2, 1] };
+export const MON_AMI: Phrase = { syllables: ['mon', 'a', 'mi', 'Pier', 'rot'], steps: [0, 2, 1, 1, 0] };
+export const PRETE_MOI: Phrase = { syllables: ['Prê', 'te', 'moi', 'ta', 'plu', 'me'], steps: [0, 0, 0, 1, 2, 1] };
+export const POUR_ECRIRE: Phrase = { syllables: ['pour', 'é', 'cri', 're', 'un', 'mot'], steps: [0, 2, 1, 1, 1, 0] };
+
+export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair';
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -108,7 +118,15 @@ export const MARY: Tune = {
   answers: LITTLE_LAMB,
   namesAnimal: false,
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY];
+/** "Au clair de la lune, mon ami Pierrot" opens it; each friend's verse is "Prête-moi ta plume, pour écrire un mot", answering on "mot". */
+export const CLAIR: Tune = {
+  id: 'clair',
+  opening: [AU_CLAIR, MON_AMI],
+  verse: [PRETE_MOI, POUR_ECRIRE],
+  answers: POUR_ECRIRE,
+  namesAnimal: false,
+};
+export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR];
 
 export interface Note {
   step: number;
@@ -181,7 +199,7 @@ export const PLANS: readonly SingPlan[] = [
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

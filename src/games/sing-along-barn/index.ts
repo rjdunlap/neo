@@ -114,7 +114,7 @@ class SingAlongBarn implements Game {
       this.tuneCards.forEach((card, k) => {
         card.visible = true;
         card.scale.set(0);
-        void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.4, delay: k * 0.1, ease: ease.outBack });
+        void this.ctx.tw.to(card.scale, { x: this.cardScale(), y: this.cardScale() }, { duration: 0.4, delay: k * 0.1, ease: ease.outBack });
       });
       this.layoutCards();
       void this.ctx.instruct('barn.tune');
@@ -207,10 +207,17 @@ class SingAlongBarn implements Game {
 
   // ----- Choosing the song -----
 
+  private cardScale = () => (this.tuneCards.length > 3 ? 0.72 : 1);
+
   private layoutCards() {
     // 250 apart: 30 clear between two 220-wide cards, and both fit a 768-wide upright view.
     const y = this.view.h * 0.42;
-    this.tuneCards.forEach((card, k) => card.position.set(this.view.w / 2 + (k - (this.tuneCards.length - 1) / 2) * 250, y));
+    // Four cards shrink to 0.72 (158 across, 180 apart) so the row still fits an upright 768-wide view with room for the pet.
+    const spacing = 250 * this.cardScale();
+    this.tuneCards.forEach((card, k) => {
+      card.scale.set(this.cardScale());
+      card.position.set(this.view.w / 2 + (k - (this.tuneCards.length - 1) / 2) * spacing, y);
+    });
   }
 
   /** She picks the song: any song is a good one. It sounds its first notes, the cards go, and the song's opening begins. */
@@ -222,7 +229,7 @@ class SingAlongBarn implements Game {
       const card = this.tuneCards[k];
       this.ctx.tw.kill(card.scale);
       if (x === t) {
-        void this.ctx.tw.to(card.scale, { x: 1.15, y: 1.15 }, { duration: 0.2, ease: ease.outBack });
+        void this.ctx.tw.to(card.scale, { x: this.cardScale() * 1.15, y: this.cardScale() * 1.15 }, { duration: 0.2, ease: ease.outBack });
         this.ctx.particles.burst(card.x, card.y, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 10, speed: [120, 260], gravity: 200, life: [0.6, 1] });
       }
     });
@@ -493,7 +500,7 @@ class SingAlongBarn implements Game {
   }
 }
 
-/** A song's card: a barn-red tab with its picture (a cow, or a hot cross bun) and the first beads of its tune. */
+/** A song's card: a barn-red tab with its picture (a cow, a bun, a lamb or a moon) and the first beads of its tune. */
 function drawTuneCard(t: Tune): Container {
   const c = new Container();
   const g = new Graphics().roundRect(-110, -100, 220, 200, 28).fill(0xfff4d6).stroke(line(BARN_DARK, 8));
@@ -504,6 +511,9 @@ function drawTuneCard(t: Tune): Container {
     cow.scale.set(0.36);
     cow.position.set(0, 80);
     c.addChild(cow);
+  } else if (t.id === 'clair') {
+    const moon = new Graphics().circle(0, 30, 52).fill(0xffe9a0).stroke(line(0xd9b85a)).circle(20, 18, 44).fill(0xfff4d6);
+    c.addChild(moon);
   } else if (t.id === 'mary') {
     const lamb = new Graphics()
       .circle(-40, 30, 26)
@@ -600,14 +610,14 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
-    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines) or Hot Cross Buns, then choose who sings next after each verse (${friends})`;
-    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb, then choose who sings next after each verse (${friends})`;
-    if (p.each) return `Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb; after each verse, choose who sings next (${friends})`;
-    return p.invite ? `Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb; tap to sing, ${friends} visit`;
+    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune, then choose who sings next after each verse (${friends})`;
+    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune, then choose who sings next after each verse (${friends})`;
+    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune; after each verse, choose who sings next (${friends})`;
+    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
   coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines.',
-  offScreen: 'Sing Old MacDonald, Hot Cross Buns or Mary Had a Little Lamb with stuffed animals: bring out one for each verse and make its sound together.',
+  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,
