@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
-import { ANIMALS, STICKER_ANIMALS, SCENES, roundScene, COVER_NAMES, nearestSpot, shouldNudge, deal, newcomer, pickTarget, PLANS, spotToTap, type Animal } from './logic';
+import { ANIMALS, STICKER_ANIMALS, SCENES, roundScene, COVER_NAMES, nearestSpot, shouldNudge, shouldSelfOpen, planFor, ONE_DOOR_LEVEL, SELF_OPEN_SECONDS, deal, newcomer, pickTarget, PLANS, spotToTap, type Animal } from './logic';
 
 describe('Peekaboo Barn', () => {
   it('preserves old sticker choices and supplies a distinct spoken name for each cover', () => {
@@ -39,11 +39,11 @@ describe('Peekaboo Barn', () => {
   });
 
   it('nudges only quiet free play after six seconds, with everyone hidden', () => {
-    expect(shouldNudge('free', 5.99, ['hidden', 'hidden'], false)).toBe(false);
-    expect(shouldNudge('free', 6, ['hidden', 'hidden'], false)).toBe(true);
-    for (const pose of ['out', 'peek']) expect(shouldNudge('free', 10, ['hidden', pose], false)).toBe(false);
-    expect(shouldNudge('free', 10, ['hidden'], true)).toBe(false);
-    for (const mode of ['find', 'remember'] as const) expect(shouldNudge(mode, 10, ['hidden'], false)).toBe(false);
+    expect(shouldNudge(PLANS[0], 5.99, ['hidden', 'hidden'], false)).toBe(false);
+    expect(shouldNudge(PLANS[0], 6, ['hidden', 'hidden'], false)).toBe(true);
+    for (const pose of ['out', 'peek']) expect(shouldNudge(PLANS[0], 10, ['hidden', pose], false)).toBe(false);
+    expect(shouldNudge(PLANS[0], 10, ['hidden'], true)).toBe(false);
+    for (const mode of ['find', 'remember'] as const) expect(shouldNudge(PLANS.find((p) => p.mode === mode)!, 10, ['hidden'], false)).toBe(false);
   });
 
   it('fits every level in four hiding places, with a wrong place to try on question levels', () => {
@@ -108,5 +108,37 @@ describe('Peekaboo Barn', () => {
         expect(spotToTap(plan, poses.map((_, k) => (k === last ? 'hidden' : 'out')), animals, null, last)).toBe(last);
       }
     }
+  });
+
+  describe('One door', () => {
+    const door = planFor(ONE_DOOR_LEVEL);
+    it('is one free-play house with six reveals, and the original eight levels are unchanged', () => {
+      expect(door).toMatchObject({ mode: 'free', spots: 1, goal: 6, door: true });
+      for (let level = 1; level <= 8; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+    });
+    it('opens by itself only after six quiet seconds, never over an animal already out, and nudges nothing', () => {
+      expect(SELF_OPEN_SECONDS).toBeGreaterThanOrEqual(6);
+      expect(shouldSelfOpen(door, SELF_OPEN_SECONDS - 0.01, ['hidden'], false)).toBe(false);
+      expect(shouldSelfOpen(door, SELF_OPEN_SECONDS, ['hidden'], false)).toBe(true);
+      for (const pose of ['out', 'peek']) expect(shouldSelfOpen(door, 10, [pose], false)).toBe(false);
+      expect(shouldSelfOpen(door, 10, ['hidden'], true)).toBe(false);
+      expect(shouldNudge(door, 10, ['hidden'], false)).toBe(false);
+      expect(shouldSelfOpen(PLANS[0], 10, ['hidden', 'hidden', 'hidden'], false)).toBe(false);
+    });
+    it('cycles animals and never repeats the one that just showed', () => {
+      for (let seed = 1; seed <= 20; seed++) {
+        const rng = new Rng(seed);
+        let who = deal(rng, 1)[0];
+        for (let i = 0; i < 12; i++) {
+          const next = newcomer(rng, [who]);
+          expect(next).not.toBe(who);
+          who = next;
+        }
+      }
+    });
+    it('is reachable by the ghost finger', () => {
+      expect(spotToTap(door, ['hidden'], ['cow'], null, -1)).toBe(0);
+      expect(spotToTap(door, ['hidden'], ['cow'], null, 0)).toBe(0);
+    });
   });
 });

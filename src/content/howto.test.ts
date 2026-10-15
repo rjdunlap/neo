@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { levelsInOrder } from '../progress/difficulty';
 import { GAMES } from '../games/registry';
 import type { LevelLine } from '../games/types';
 import { COUCH_INFO, demoFor } from '../couch/catalog';
@@ -9,8 +10,7 @@ import { HOW_TO, howToFor, shouldExplain } from './howto';
 function levelsOf(g: (typeof GAMES)[number]): number[] {
   const all = new Set<number>();
   for (const band of g.bands) {
-    const { min, max } = g.levels(band);
-    for (let level = min; level <= max; level++) all.add(level);
+    for (const level of levelsInOrder(g.levels(band))) all.add(level);
   }
   return [...all].sort((a, b) => a - b);
 }

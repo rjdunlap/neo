@@ -172,4 +172,4 @@ Weather Window is an optional smaller extension beside this sequence, through Da
 
 ## What was built and what ran
 
-**Nothing built.** Read-only source/doc inspection, primary-source web research, tracker/notebook/roadmap recommendations and future decision/device records. No `src/`, `scripts/` or `public/` edits; no tests, build or browser suites. The final [verification entry](../../VERIFICATION.md#2026-10-14--weather-and-water-subject-research) records actual link/diff checks. Developmental fit, science transfer, real iPad speech/touch and tween/parent appeal remain unestablished.
+**Nothing built.** Read-only source/doc inspection, primary-source web research, tracker/notebook/roadmap recommendations and future decision/device records. No `src/`, `scripts/` or `public/` edits; no tests, build or browser suites. The final [verification entry](../../archive/VERIFICATION-2026-10-14.md#2026-10-14--weather-and-water-subject-research) records actual link/diff checks. Developmental fit, science transfer, real iPad speech/touch and tween/parent appeal remain unestablished.

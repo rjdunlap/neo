@@ -10,7 +10,7 @@ import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { STICKER_ANIMALS, COVER_NAMES, roundScene, type SceneId, nearestSpot, shouldNudge, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan, type CoverKind } from './logic';
+import { STICKER_ANIMALS, COVER_NAMES, roundScene, type SceneId, nearestSpot, shouldNudge, shouldSelfOpen, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan, type CoverKind } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
@@ -24,7 +24,8 @@ const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
 };
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  // Level 16 (One door) is the easiest, so lap plays it first and then 1, 2 (see `order`).
+  lap: { min: 1, max: 16, order: [16, 1, 2] },
   toddler: { min: 1, max: 5 },
   preschool: { min: 4, max: 8 },
   prek: { min: 6, max: 8 },
@@ -304,6 +305,7 @@ class PeekabooBarn implements Game {
     });
     this.backdrop.eventMode = this.barn.eventMode = 'none';
     onTap(this.input, (e) => {
+      if (this.plan.door) return void this.tapped(this.spots[0]);
       const p = ctx.stage.toLocal(e.global);
       const i = nearestSpot(p.x, p.y, this.spots.map((s) => ({ x: s.x, y: s.y, scale: s.scale.x })));
       if (i !== null) void this.tapped(this.spots[i]);
@@ -325,21 +327,24 @@ class PeekabooBarn implements Game {
     this.view = v;
     this.backdrop.resize(v);
     const cx = v.w / 2;
-    const scale = this.plan.spots === 4 ? 0.82 : 1;
+    const scale = this.plan.door ? 1.5 : this.plan.spots === 4 ? 0.82 : 1;
     const left = 150 + 130 * scale;
     const right = v.w - 30 - 130 * scale;
     this.spots.forEach((s, i) => {
       s.scale.set(scale);
-      s.position.set(left + i * (right - left) / (this.spots.length - 1), v.h - 40);
+      s.position.set(this.spots.length === 1 ? cx : left + i * (right - left) / (this.spots.length - 1), v.h - 40);
     });
-    this.input.hitArea = new Rectangle(150, v.h - 40 - 340 * scale, v.w - 180, 350 * scale);
+    this.input.hitArea = this.plan.door ? new Rectangle(0, 0, v.w, v.h) : new Rectangle(150, v.h - 40 - 340 * scale, v.w - 180, 350 * scale);
     this.drawBarn(cx, this.backdrop.groundY + 30);
   }
 
   update(dt: number) {
     if (this.finished) return;
     this.idle += dt;
-    if (shouldNudge(this.plan.mode, this.idle, this.spots.map((s) => s.pose), this.busy)) {
+    if (shouldSelfOpen(this.plan, this.idle, this.spots.map((s) => s.pose), this.busy)) {
+      this.idle = 0;
+      void this.freeTap(this.spots[0], false);
+    } else if (shouldNudge(this.plan, this.idle, this.spots.map((s) => s.pose), this.busy)) {
       this.spots[this.nudgeCount++ % this.spots.length].wiggle();
       sfx.marimba(0, 0.08);
       this.idle = 0;
@@ -416,7 +421,7 @@ class PeekabooBarn implements Game {
     this.busy = false;
   }
 
-  private async freeTap(spot: Spot) {
+  private async freeTap(spot: Spot, counts = true) {
     if (spot.pose === 'out') {
       this.say(spot.animal);
       return;
@@ -425,9 +430,9 @@ class PeekabooBarn implements Game {
     void spot.go('out');
     this.say(animal);
     void this.ctx.say('peek.found', { word: VOICES[animal].word, animal, cover: COVER_NAMES[spot.kind] });
-    this.done++;
-    if (this.done % 4 === 0) this.ctx.pet.cheer();
-    if (this.done >= this.plan.goal) {
+    if (counts) this.done++;
+    if (counts && this.done % 4 === 0) this.ctx.pet.cheer();
+    if (counts && this.done >= this.plan.goal) {
       this.busy = true;
       await this.ctx.tw.wait(1.4);
       void this.finale();
@@ -436,6 +441,7 @@ class PeekabooBarn implements Game {
     await this.ctx.tw.wait(2.4);
     if (this.finished) return;
     await spot.go('hidden');
+    this.idle = 0;
     // Someone new sneaks in, never the same as a neighbour.
     const taken = this.spots.map((s) => s.animal);
     spot.setAnimal(newcomer(this.ctx.rng, taken));
@@ -616,6 +622,7 @@ export const peekabooBarn: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
+    if (p.door) return 'One big house: touch anywhere to see who pops out';
     if (p.mode === 'free') return `Tap to find who's hiding, ${p.spots} hiding places`;
     if (p.mode === 'find') return `"Where's the cow?" with ${p.spots} animals peeking`;
     return `Remember who hid where, ${p.spots} hiding places`;
@@ -623,6 +630,7 @@ export const peekabooBarn: GameModule = {
   music: STYLES.hub,
   coplayHint: 'Make the animal sounds together: "Moo!" Then say its name.',
   offScreen: 'Play peekaboo with stuffed animals under a blanket. Ask "Where did the cow go?"',
+  entryLevels: [16],
   touchDemo: true,
   hubIcon: () => new BarnIcon(),
   sticker,
