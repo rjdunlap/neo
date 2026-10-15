@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -11,7 +11,7 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chainTouch, hintFor, makeBoards, planFor, trace, type ChainBoard, type ChainPlan, type Layout, type Ramp } from './logic';
+import { chainTouch, hintFor, makeBoards, planFor, trace, type ChainBoard, type ChainPlan, type Layout, type Ramp, type Trace } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
@@ -82,6 +82,8 @@ class ChainReaction implements Game {
   private readonly startCup = new Graphics();
   private readonly marble = new Graphics().circle(0, 0, 19).fill(swatch.red.fill).stroke({ width: 5, color: swatch.red.line });
   private readonly glow = new Graphics();
+  private readonly trail = new Graphics();
+  private lastTrace: Trace | null = null;
   private targetBell: Container | null = null;
   private chimeBell: Container | null = null;
   private hinted: { piece: number; socket: number } | null = null;
@@ -93,9 +95,9 @@ class ChainReaction implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.boards = makeBoards(this.plan, ctx.rng);
-    this.panel.eventMode = this.tracks.eventMode = this.sockets.eventMode = this.fixed.eventMode = this.goal.eventMode = this.glow.eventMode = 'none';
+    this.panel.eventMode = this.tracks.eventMode = this.sockets.eventMode = this.fixed.eventMode = this.goal.eventMode = this.glow.eventMode = this.trail.eventMode = 'none';
     this.marble.visible = false;
-    this.diagram.addChild(this.panel, this.tracks, this.sockets, this.fixed, this.goal, this.startCup, this.marble, this.glow);
+    this.diagram.addChild(this.panel, this.tracks, this.sockets, this.fixed, this.goal, this.trail, this.startCup, this.marble, this.glow);
 
     this.runButton = roundButton(swatch.green.fill, swatch.green.line, (g) => {
       g.poly([-18, -27, 30, 0, -18, 27]).fill(cream).stroke({ width: 4, color: swatch.green.line, join: 'round' });
@@ -106,6 +108,7 @@ class ChainReaction implements Game {
       g.moveTo(-7, 33).lineTo(7, 33).stroke({ width: 7, color: ink, cap: 'round' });
     });
     onTap(this.runButton, () => void this.run(), { cooldown: 400 });
+    onTap(this.startCup, () => void this.watchAgain(), { cooldown: 400 });
     onTap(this.helpButton, () => this.help(), { cooldown: 500 });
     ctx.stage.addChild(this.diagram, this.runButton, this.helpButton);
   }
@@ -166,6 +169,8 @@ class ChainReaction implements Game {
     this.busy = true;
     this.index++;
     this.hinted = null;
+    this.lastTrace = null;
+    this.trail.clear();
     if (this.index >= this.boards.length) return void this.finale();
     this.machine = this.boards[this.index];
     this.placement = Array(this.machine.loose.length).fill(null);
@@ -249,6 +254,7 @@ class ChainReaction implements Game {
     this.startCup.clear().moveTo(this.colX(this.machine.start) - 38, this.top - 42).lineTo(this.colX(this.machine.start) - 17, this.top - 5)
       .lineTo(this.colX(this.machine.start) + 17, this.top - 5).lineTo(this.colX(this.machine.start) + 38, this.top - 42)
       .fill(swatch.blue.light).stroke({ width: 6, color: swatch.blue.line, join: 'round' });
+    this.startCup.hitArea = new Rectangle(this.colX(this.machine.start) - 60, this.top - 80, 120, 104);
 
     this.sockets.removeChildren().forEach((c) => c.destroy({ children: true }));
     for (const cell of this.machine.sockets) {
@@ -310,6 +316,35 @@ class ChainReaction implements Game {
     this.drawGlow();
     this.parts.forEach((p) => { p.handle.enabled = false; });
     const result = trace(this.machine, this.placement);
+    this.lastTrace = result;
+    await this.animate(result);
+    const bottom = this.top + (this.machine.rows + 1) * this.gap;
+    if (result.success) return void this.success();
+    this.drawTrail(result);
+    sfx.boing();
+    await this.ctx.say(!result.chime && this.machine.chime ? 'chain.missed-chime' : result.end < this.machine.target ? 'chain.left' : 'chain.right');
+    await this.ctx.tw.to(this.marble, { y: bottom - 10 }, { duration: 0.15, ease: ease.outBack });
+    this.marble.visible = false;
+    this.parts.forEach((p) => { p.handle.enabled = true; });
+    this.busy = false;
+  }
+
+  /** Tapping the start cup shows the last run again; it changes nothing and counts nothing. */
+  private async watchAgain() {
+    if (this.busy || this.finished || !this.lastTrace) return;
+    this.busy = true;
+    this.hinted = null;
+    this.drawGlow();
+    this.parts.forEach((p) => { p.handle.enabled = false; });
+    await this.animate(this.lastTrace);
+    this.drawTrail(this.lastTrace);
+    this.marble.visible = false;
+    this.parts.forEach((p) => { p.handle.enabled = true; });
+    this.busy = false;
+  }
+
+  private async animate(result: Trace) {
+    this.trail.clear();
     this.marble.visible = true;
     this.marble.position.set(this.colX(this.machine.start), this.top - 18);
     sfx.whoosh();
@@ -328,13 +363,17 @@ class ChainReaction implements Game {
     }
     const bottom = this.top + (this.machine.rows + 1) * this.gap;
     await this.ctx.tw.to(this.marble, { x: this.colX(result.end), y: bottom - 25 }, { duration: 0.32, ease: ease.inQuad });
-    if (result.success) return void this.success();
-    sfx.boing();
-    await this.ctx.say(!result.chime && this.machine.chime ? 'chain.missed-chime' : result.end < this.machine.target ? 'chain.left' : 'chain.right');
-    await this.ctx.tw.to(this.marble, { y: bottom - 10 }, { duration: 0.15, ease: ease.outBack });
-    this.marble.visible = false;
-    this.parts.forEach((p) => { p.handle.enabled = true; });
-    this.busy = false;
+  }
+
+  /** A faint red path of the marble's last run, kept until the next run so the two can be compared. */
+  private drawTrail(result: Trace) {
+    const bottom = this.top + (this.machine.rows + 1) * this.gap;
+    this.trail.clear().moveTo(this.colX(this.machine.start), this.top - 18);
+    for (const step of result.steps) {
+      this.trail.lineTo(this.colX(step.col), this.rowY(step.row) - 15);
+      if (step.ramp) this.trail.lineTo(this.colX(step.col + (step.ramp === 'left' ? -1 : 1)), this.rowY(step.row) + this.gap * 0.55);
+    }
+    this.trail.lineTo(this.colX(result.end), bottom - 25).stroke({ width: 9, color: swatch.red.fill, alpha: 0.35, cap: 'round', join: 'round' });
   }
 
   private async success() {

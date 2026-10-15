@@ -10348,6 +10348,12 @@ async function chainPlay() {
         await tap('neo.scene.game.runButton');
         await readyMachine(index);
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'a failed experiment is not a miss');
+        assert.ok(await page.evaluate(() => neo.scene.game.trail.bounds.width > 0), 'a missed run leaves its trail');
+        await page.evaluate(() => { const g = neo.scene.game, p = g.diagram.toGlobal({ x: g.colX(g.machine.start), y: g.top - 25 }); kit.tap(p.x, p.y); });
+        await page.waitForFunction(() => neo.scene.game.busy, null, { timeout: 5000 });
+        await readyMachine(index);
+        assert.ok(await page.evaluate(() => neo.scene.game.trail.bounds.width > 0), 'watching again keeps the trail');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'watching again counts nothing');
         await tap('neo.scene.game.helpButton');
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 1]);
         assert.ok(await page.evaluate(() => !!neo.scene.game.hinted), 'help glows one ramp and socket');
