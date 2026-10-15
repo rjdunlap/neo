@@ -189,6 +189,6 @@ Each row is sized as one future session. Definitions are docs only; a build star
 
 ## What was built and what ran
 
-Nothing implemented. No source, tests, assets, schemas or practical cards changed; no server started. Updated the subject tracker, candidate notebook, roadmap definition packets and decision/device records. Opened the sources above during the 2026-10-14–15 session and recorded access failures rather than substituting recollection. Markdown links/anchors and `git diff --check` are the docs-only checks recorded in [VERIFICATION](../../VERIFICATION.md#2026-10-15--how-computers-work-subject-research).
+Nothing implemented. No source, tests, assets, schemas or practical cards changed; no server started. Updated the subject tracker, candidate notebook, roadmap definition packets and decision/device records. Opened the sources above during the 2026-10-14–15 session and recorded access failures rather than substituting recollection. Markdown links/anchors and `git diff --check` are the docs-only checks recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-15.md#2026-10-15--how-computers-work-subject-research).
 
 Not run: typecheck, units, build, browser/offline suites, reference-game play, iPad speech/input, child/parent observation or a transfer study. Model correctness, proposed registration/ranges/layout and supported completion still need implementation-specific proof; independent understanding, appeal and transfer remain unestablished.
