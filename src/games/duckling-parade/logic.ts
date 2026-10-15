@@ -28,13 +28,13 @@ export interface ParadePlan {
 
 export const PLANS: ParadePlan[] = [
   { mode: 'tap', ducklings: 3, colors: 1, name: 'Tap to walk Mama Duck; ducklings join her line' },
-  { mode: 'walk', ducklings: 4, colors: 1, name: 'Lead Mama Duck with a finger and bring every duckling to the pond' },
+  { mode: 'walk', ducklings: 4, colors: 1, name: 'Tap the grass or lead with a finger; bring every duckling to the pond' },
   { mode: 'count', ducklings: 6, colors: 1, min: 2, max: 3, name: 'Bring 2 or 3 ducklings home' },
   { mode: 'color', ducklings: 6, colors: 2, name: 'Find the ducklings of one color' },
   { mode: 'count', ducklings: 7, colors: 1, min: 3, max: 5, name: 'Bring 3 to 5 ducklings home' },
   { mode: 'colorCount', ducklings: 8, colors: 3, min: 2, max: 3, name: 'Bring 2 or 3 ducklings of one color home' },
-  { mode: 'pattern', ducklings: 6, colors: 2, unit: 2, name: 'Make a color pattern: yellow, blue, yellow, blue' },
-  { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, name: 'Make a three-color pattern: red, blue, yellow, red, blue, yellow' },
+  { mode: 'pattern', ducklings: 6, colors: 2, unit: 2, name: 'Make a repeating pattern with two alternating colors' },
+  { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, name: 'Make a repeating pattern with three colors' },
   { mode: 'pattern', ducklings: 6, colors: 2, unit: 3, repeatedPair: true, name: 'Make the pattern: two of one color, then one of another' },
   { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, repeatedPair: true, oddDuckling: true, name: 'Make the pattern, leaving out the duckling that does not fit' },
 ];

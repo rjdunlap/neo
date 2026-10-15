@@ -72,7 +72,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Duckling Parade
 
-*lap–school · after Meerca Chase (Neopets).* Tap the grass to walk Mama Duck; ducklings fall in behind (steer a growing line). Later: lead them to the pond, bring exactly N, find one color, make an AB or ABC pattern, then repeat a two-of-one/one-of-another pattern and leave out one duckling that breaks it. A wrong duckling that merely waits beside Mama at the start is never a "not me": a refusal counts only once a finger has set a destination near it (a miss also needs that destination to be nearer it than to any duckling that may join).
+*lap–school · after Meerca Chase (Neopets).* Tap the grass or lead with a finger to walk Mama Duck; ducklings fall in behind (steer a growing line). Later: lead them to the pond, bring exactly N, find one color, make an AB or ABC pattern, then repeat a two-of-one/one-of-another pattern and leave one spare duckling in the meadow. Pattern colors vary by round. Count rounds allow partial deliveries; extra-arrival speech names the combined total, including ducklings already in the pond, and extras hop back out (one arrival miss). A wrong duckling that merely waits beside Mama at the start is never a "not me": a refusal counts only once a finger has set a destination near it (a miss also needs that destination to be nearer it than to any duckling that may join).
 
 ### Roundup
 

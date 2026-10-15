@@ -72,7 +72,7 @@ Solo remains complete. A co-player can be the caller, pointing to the next displ
 
 ### Fresh content inside existing levels
 
-**Ready:** make plan descriptions at 7/8 say two-/three-color repetition rather than fixed generated colors; make the how-to say tap or lead a finger at 2–10 and describe level 10 as a pattern with a spare. Clarify arrival speech as the total in the pond plus extras after a partial trip. Preserve the generator, misses/hints and ten IDs. First cheap slice below.
+**Built in #389:** make plan descriptions at 7/8 say two-/three-color repetition rather than fixed generated colors; make the how-to say tap or lead a finger at 2–10 and describe level 10 as a pattern with a spare. Clarify arrival speech as the total in the pond plus extras after a partial trip. Preserve the generator, misses/hints and ten IDs. Accounting and generator retained; see the build note below.
 
 **Ready after support:** add two cosmetic meadow treatments with seeded selection and decorations outside input routes; preserve pond, Mama start, duck inventory, count ranges, pattern units and color pools. A small authored arrangement pool is only ready after proving open routes and clear choices in both layouts; do not assume random spacing is fair just because inventory is sufficient. No fresh quantity or color-attribute expansion in existing saved levels.
 
@@ -112,7 +112,7 @@ These are open choices, not resolved by this research. [Waiting list](../WAITING
 
 ## Build slices, in order
 
-1. **Ready — truthful support text, existing 1–10.** Correct fixed-color descriptions at 7/8, tap/lead wording, level-10 exclusion terminology and total-versus-batch extra speech. Touch only this game’s description, how-to and voice support plus focused assertions/docs; preserve accounting and generator. Check tier: typecheck, relevant rule/how-to/voice tests and one filtered existing-game regression (6, exercise a partial delivery then extras); no build unless shared behavior changes. The demo action is unchanged; run it only if implementation touches that action. This is the next recommended slice.
+1. Truthful support at existing 1–10 is built in [PR #389](https://github.com/rjdunlap/neo/pull/389); [build note](../archive/COMPLETED-2026-10-09.md#duckling-parade-truthful-support-2026-10-15).
 2. **Ready — destination acknowledgment and cancelled steering.** Local palette grass marker on down, explicit pointercancel/lost release handling and clear finish/destroy lifecycle; preserve tap-to-destination walking and palm rejection. Check tier: existing-interaction bug fix, typecheck, focused rules, filtered cancellation/steering regression and portrait; `fingerdemo` at 10 if demonstrated action changes. Record real-finger feel as open.
 3. **Ready after 2 — two cosmetic meadow treatments.** Seeded art only, fixed playable geometry/inventory and noninteractive decoration. Typecheck, relevant deterministic art/rule tests, one filtered play and portrait under the existing-game tier; no full suites or build for local code-drawn art alone.
 4. **Ready — append ABB at 11.** Six slots and two colors on the existing pattern interaction, extending only school to 11. Typecheck and game rules; one filtered top-level `arcade` play (`ARCADE_ONLY=parade ARCADE_LEVELS=11`) and `fingerdemo` (`FINGER_ONLY=duckling-parade FINGER_LEVELS=11`); build because registry/band integration is shared. Update all game/level docs and person checks. Recheck that 11 is unused first.
@@ -120,6 +120,6 @@ These are open choices, not resolved by this research. [Waiting list](../WAITING
 6. **Decision first — mapping 13, then authoring 14, each its own session.** Define their pictures/acceptance/help and solo/bot phases before implementation. Each uses the new-interaction tier; kept results excluded. Do not broaden windows while implementing the mapping.
 7. **Person/decision first — lap entry 15 and count aid/accounting, separate slices.** Observe 1, resolve the open choices, then define stable orders/entries and exact miss/help semantics. A level uses the new-level tier; an accounting change uses focused rule/regression proof at 3/6 and demo if affected. Any shared difficulty/save/navigation changes require their actual stronger tier. No such implementation is admitted here.
 
-## What was built in this session
+## Build record
 
-Nothing. Docs-only audit, research and proposed slices; links and `git diff --check` are the checks for this session. No tests, build, browser play or device observation.
+The original #387 session was docs-only audit and research, with links and diff checks only. Support slice 1 is built in #389; [verification](../VERIFICATION.md#2026-10-15--duckling-parade-truthful-support). The source audit and known gaps above describe the pre-support base; the fixed-color descriptions, exclusion terms and extra-arrival wording are now corrected. Other proposed slices and person/decision work remain open.
