@@ -307,3 +307,8 @@ Reconciled completed [steering #391](https://github.com/rjdunlap/neo/pull/391), 
 ### 2026-10-15 — Color Garden tap-entry dispatch
 
 Reconciled completed [D1a #395](https://github.com/rjdunlap/neo/pull/395), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Color Garden slice 2](deep-dives/color-garden.md#build-slices-in-order), first current ready-list line, to worker `01a14190-2e01-74e0-bcf9-fbf48fdf028d`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-15 — Goodnight Room content dispatch
+
+Reconciled completed [Color Garden #399](https://github.com/rjdunlap/neo/pull/399), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Goodnight Room slice 8](deep-dives/goodnight-room.md#build-slices-in-order), first current ready-list line, to worker `01a141c7-9808-76c0-929c-55901e818a9c`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
