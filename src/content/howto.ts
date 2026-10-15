@@ -1037,7 +1037,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, text: 'After a few tries, tap the light bulb and pick the picture that matches who crossed.' },
       { from: 4, to: 4, text: 'The rule has two parts: a critter must fit both to cross.' },
       { from: 5, to: 5, text: 'The rule may be "not" something, or have two parts: use everything you have seen.' },
-      { from: 6, text: 'The rule has two parts joined by "or": a critter that fits either one crosses, so most critters cross. Look for who waits.' },
+      { from: 6, to: 6, text: 'The rule has two parts joined by "or": a critter that fits either one crosses, so most critters cross. Look for who waits.' },
+      { from: 7, text: 'Two pictures are still in the running after two tries. Choose the critter that the two pictures would answer differently, then tap the light bulb for the one that is left. A critter they would answer the same way is a free try, never a mistake.' },
     ],
     finish: [
       { to: 1, text: 'The round ends when the critters that fit have crossed.' },

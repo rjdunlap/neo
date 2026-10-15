@@ -61,6 +61,8 @@ export interface CrossPlan {
   /** Critters to try before the guess button wakes up. */
   minTests: number;
   rounds: number;
+  /** Two pictures stay standing after some critters were already tried: she picks who settles them. */
+  settle?: boolean;
 }
 
 export const PLANS: CrossPlan[] = [
@@ -70,6 +72,7 @@ export const PLANS: CrossPlan[] = [
   { name: 'A secret rule with two parts: a critter must fit both to cross', mode: 'hidden', gates: 'and', critters: 6, options: 4, minTests: 3, rounds: 2 },
   { name: 'A secret rule that may be "not" something or two parts: use all the evidence', mode: 'hidden', gates: 'mixed', critters: 6, options: 4, minTests: 3, rounds: 2 },
   { name: 'A secret rule with "or": a critter crosses if it fits either part, so most critters cross', mode: 'hidden', gates: 'or', critters: 6, options: 4, minTests: 3, rounds: 2 },
+  { name: 'Two pictures are still standing: choose the critter who can settle which one is the rule', mode: 'hidden', gates: 'mixed', critters: 6, options: 2, minTests: 3, rounds: 2, settle: true },
 ];
 
 export const planFor = (level: number): CrossPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -79,6 +82,8 @@ export interface CrossRound {
   critters: SortCritter[];
   /** The pictures to guess from (empty on a visible round); the true gate is one of them. */
   options: Gate[];
+  /** Critters already sent to the gate before the round begins (a settle round), with what happened. */
+  tried?: { c: SortCritter; passed: boolean }[];
 }
 
 const KINDS = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'] as const;
@@ -153,6 +158,11 @@ export function makeRound(plan: CrossPlan, rng: Rng, avoid?: string): CrossRound
     // An "or" lets most critters across; that is what tells it from an "and".
     if (plan.gates === 'or' && yes * 2 < critters.length) continue;
     if (plan.mode === 'visible') return { gate, critters, options: [] };
+    if (plan.settle) {
+      const round = settleRound(gate, critters, plan, rng);
+      if (round) return round;
+      continue;
+    }
     const wrong = lookalikes(gate, plan, rng).filter((g) => critters.some((c) => passes(c, g) !== passes(c, gate)));
     if (wrong.length < plan.options - 1) continue;
     const options = rng.shuffle([gate, ...wrong.slice(0, plan.options - 1)]);
@@ -161,6 +171,30 @@ export function makeRound(plan: CrossPlan, rng: Rng, avoid?: string): CrossRound
     return { gate, critters, options };
   }
   throw new Error(`could not make a ${plan.name} round`);
+}
+
+/** Does this critter get a different answer from the two pictures? Trying it settles which one is the rule. */
+export const splits = (c: SortCritter, options: Gate[]) => new Set(options.map((g) => passes(c, g))).size > 1;
+
+/**
+ * A settle round: two pictures (the rule and a lookalike) agree about two critters already tried, one that crossed and
+ * one that waited, and disagree about at least one of the four critters still waiting. At least one of those four
+ * gives the same answer either way, so choosing the one that settles it is a real choice.
+ */
+function settleRound(gate: Gate, critters: SortCritter[], plan: CrossPlan, rng: Rng): CrossRound | null {
+  const rivals = lookalikes(gate, { ...plan, gates: gate.kind === 'one' || gate.kind === 'not' ? 'mixed' : gate.kind }, rng);
+  for (const rival of rivals) {
+    const options = [gate, rival];
+    const same = critters.filter((c) => !splits(c, options));
+    const yes = same.find((c) => passes(c, gate));
+    const no = same.find((c) => !passes(c, gate));
+    if (!yes || !no) continue;
+    const waiting = critters.filter((c) => c !== yes && c !== no);
+    const splitters = waiting.filter((c) => splits(c, options));
+    if (splitters.length < 1 || splitters.length === waiting.length) continue;
+    return { gate, critters: [...rng.shuffle([yes, no]), ...rng.shuffle(waiting)], options: rng.shuffle(options), tried: [yes, no].map((c) => ({ c, passed: passes(c, gate) })) };
+  }
+  return null;
 }
 
 /** What a capable child does next on a round: send a critter to the gate, or guess the rule. */

@@ -39,3 +39,9 @@
 - Roadmap definition packets, subject study/tracker and candidate notebook agree on original content, supported endings, existing-game overlap and reviewer/seat dependencies. No games built or scheduled.
 - Markdown links/anchors and `git diff --check` passed. Rotated the oldest live dated entry into the existing archive and repointed incoming links.
 - Not run: code, browser, offline or device checks (docs-only tier). Proposed age ranges, family appeal and movement instruction review remain open.
+
+## 2026-10-14 — Memory Match vehicles deck
+
+- Content on `claude/memory-match-vehicles` (uncommitted base `66b2baf`): a fourth seeded picture family of eight code-drawn vehicles at levels 1–5 (`VEHICLES`/`PICTURE_POOLS` in `logic.ts`, `vehicleArt` in `art.ts`); no level, band or accounting change.
+- Ran: typecheck, memory-match and content unit tests (pass), one screenshot of all eight vehicles on cards (readable; the plane's wings are flat).
+- Not run: a browser play-through of a full vehicle round, `fingerdemo`, device speech or child recognition of the drawings.

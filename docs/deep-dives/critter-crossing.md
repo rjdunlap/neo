@@ -1,6 +1,6 @@
 # Critter Crossing deep dive
 
-*ID `critter-crossing` · bands pre-K, school · levels 1–5 on 2026-10-14 (pre-K 1–3, school 2–5) · session `claude/critter-crossing-deep-dive` ([PR #303](https://github.com/rjdunlap/neo/pull/303))*
+*ID `critter-crossing` · bands pre-K, school · levels 1–7 on 2026-10-15 (pre-K 1–3, school 2–7) · session `claude/critter-crossing-deep-dive` ([PR #303](https://github.com/rjdunlap/neo/pull/303))*
 
 ## The game today
 
@@ -14,6 +14,7 @@ A bridge gate lets some critters across by a rule. She sends critters to the gat
 | 4 | Secret two-part rule ("both"), 6 critters, 4 pictures, 3 tests | school | A critter must fit both parts |
 | 5 | Secret "one", "not" or "both", 6 critters, 4 pictures, 3 tests | school | Use all the evidence to tell kinds of rule apart |
 | 6 | Secret "or" gate (built 2026-10-14), 6 critters, 4 pictures | school | A critter crosses if it fits either part; tell "or" from its "and" twin |
+| 7 | Settle it (built 2026-10-15): mixed gates, 6 critters, 2 pictures, 2 critters already tried | school | Which waiting critter splits the two pictures |
 
 Each level plays two rounds (`rounds: 2`). Pools: six rules, seven animals (`cow duck pig cat bear dog bunny`) and a hat on or off, so a critter is one of 14 pictures; a round draws 4–6 distinct ones, never all crossing or all waiting. The "not" and "both" wrong pictures are lookalikes that share a half of the truth or are its opposite, and every round is built so trying everyone leaves exactly one picture standing.
 
@@ -97,7 +98,7 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 
 1. **Bank shelf** (crossed / waited copies on hidden levels). Screenshot in landscape and portrait, `fingerdemo` for `critter-crossing`; no rule change. Tier: existing-game bug fix on an unchanged interaction.
 2. **Level 6, Either one**: `or` gates, words, lookalikes, voice, how-to, README and GAMES lines, ghost finger. Tier: typecheck, that game's rule tests, one browser play of the new top level and `fingerdemo` at it.
-3. **Level 7, Settle it** (claimed 2026-10-15, `claude/critter-crossing-settle-it`): the splitter-choosing round. Same tier as slice 2.
+3. **Level 7, Settle it** (built 2026-10-15, `claude/critter-crossing-settle-it`): the splitter-choosing round. Same tier as slice 2.
 4. **Visible "not" entry** between levels 1 and 2 with `order` and `entryLevels`. Rule tests, one play, `fingerdemo`.
 5. **Third critter feature**, shared with Critter Sort (after decision 2): rule tests for both games plus the fairness test across the larger pool.
 6. **Preschool opening** (after decision 1): levels table, registry and lands tests, voice.
@@ -108,3 +109,5 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 The deep dive itself changed only documents; links and `git diff --check` were run. The genre sources were read through search summaries, not opened in full.
 
 **Slice 2, level 6 Either one (2026-10-14, `claude/critter-crossing-either-one`).** New `or` gate kind (hat or whiskers, and so on): a critter crosses if it fits either part, and a round needs at least half the critters to cross. Six critters, four pictures: the true rule, its "and" twin, a lone part, and "or" lookalikes sharing a part. The "or" card is drawn with the word "or"; the how-to line is added, no new voice lines (the `cross.*` lines are reused and `gateWords` says "X or Y"). School is now levels 2–6. Three new rule tests ("level 6, \"or\" gates"). Not yet watched: `fingerdemo` at level 6, a portrait screenshot, the how-to demonstration.
+
+**Slice 3, level 7 Settle it (2026-10-15, `claude/critter-crossing-settle-it`, [PR #332](https://github.com/rjdunlap/neo/pull/332)).** `settleRound` builds a mixed-gate round of 6 critters that starts with two already tried (one crossed, one waited, `CrossRound.tried`) leaving exactly the true rule and a lookalike; only those two are guess cards. Of the four waiting critters at least one splits the pictures and at least one does not (`splits`, `CrossPlan.settle`). A critter both pictures answer alike is a free try with the new line `cross.same` (never a miss); two such tries glow a splitter, counted as one hint. The guess button wakes at 3 tries (the two pre-tried count); `cross.settle` is the instruction. Wrong-guess rules are unchanged, and the ghost-finger bot is unchanged (`bestTest` picks a splitter). School is now levels 2–7. Rule tests: "level 7, settle it". Not yet watched: the how-to demonstration by eye, a landscape screenshot, device speech for the two new lines.

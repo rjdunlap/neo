@@ -14,11 +14,11 @@ import { WigglyIcon } from '../shared';
 import { hatArt, KIND_WORDS, ruleIcon } from '../critter-sort/index';
 import type { Rule, SortCritter } from '../critter-sort/logic';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, type CrossPlan, type CrossRound, type Gate } from './logic';
+import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 6 },
+  school: { min: 2, max: 7 },
 };
 
 const SCALE = 0.32;
@@ -81,6 +81,8 @@ class CritterCrossing implements Game {
   private readonly panel = new Container();
   private view: View;
   private wrongs = 0;
+  /** Tries in a settle round that both standing pictures would have answered the same way. */
+  private sames = 0;
   private hinting: { kind: 'test'; slot: Slot } | { kind: 'option'; gate: Gate } | null = null;
   private cards: { gate: Gate; node: Container }[] = [];
   private open = false;
@@ -219,6 +221,7 @@ class CritterCrossing implements Game {
     this.busy = true;
     this.index++;
     this.wrongs = 0;
+    this.sames = 0;
     this.hinting = null;
     this.closeGuess();
     if (this.index >= this.plan.rounds) return void this.finale();
@@ -239,6 +242,12 @@ class CritterCrossing implements Game {
       onTap(node, () => void this.tryCritter(slot), { cooldown: 300 });
       this.slots.push(slot);
     });
+    // A settle round begins with two critters already sent to the gate: the evidence that left two pictures standing.
+    for (const t of this.round.tried ?? []) {
+      const slot = this.slots.find((x) => x.c === t.c)!;
+      slot.state = t.passed ? 'crossed' : 'turned';
+      this.mark(slot, t.passed);
+    }
     this.sign.removeChildren().forEach((c) => c.destroy({ children: true }));
     const card = new Container();
     const w = this.hidden ? 130 : cardWidth(this.round.gate) - 20;
@@ -249,6 +258,7 @@ class CritterCrossing implements Game {
     this.resize(this.view);
     this.drawDots();
     this.busy = false;
+    if (this.plan.settle) return this.ctx.instruct('cross.settle');
     if (this.index > 0) return;
     if (this.hidden) return this.ctx.instruct('cross.hidden');
     return this.ctx.instruct('cross.visible', { rule: gateWords(this.round.gate) });
@@ -316,9 +326,28 @@ class CritterCrossing implements Game {
         }
       }
     }
+    if (this.plan.settle) await this.noteSettle(slot);
     this.drawDots();
     this.busy = false;
     if (!this.hidden && this.slots.every((s) => s.state === 'crossed' || !passes(s.c, this.round.gate))) void this.roundDone();
+  }
+
+  /**
+   * In a settle round, a critter both standing pictures would answer the same way is a free experiment, never a miss: it
+   * says so, and a second one glows a critter who can settle it (counted as a hint).
+   */
+  private async noteSettle(slot: Slot) {
+    if (this.hinting?.kind === 'test' && this.hinting.slot === slot) this.hinting = null;
+    if (splits(slot.c, this.round.options)) return;
+    this.sames++;
+    await this.ctx.say('cross.same');
+    if (this.sames < 2 || this.hinting) return;
+    const next = bestTest(this.round.critters, this.slots.filter((s) => s.state !== 'waiting').map((s) => s.c), this.round.options, this.evidence());
+    const pick = next && this.slots.find((s) => s.c === next);
+    if (!pick) return;
+    this.hints++;
+    this.sames = 0;
+    this.hinting = { kind: 'test', slot: pick };
   }
 
   private async walkTo(slot: Slot, x: number, y: number) {
