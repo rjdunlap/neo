@@ -1,5 +1,11 @@
 # Verification 2026-10-14 (archived entries)
 
+## 2026-10-14 — Social-emotional subject research
+
+- Docs only, base `bf8117f` plus research diff, [PR #321](https://github.com/rjdunlap/neo/pull/321): [study](../deep-dives/subjects/social-emotional.md), every audience L–G, six opened digital precedents and a physical equivalent; synchronized tracker/notebook, [roadmap packets](../ROADMAP.md#social-emotional-play-recommendations), reviewer/device records. Pre-existing completed-work archive edit excluded.
+- Opened CASEL, Head Start, the facial-expression review and an adolescent randomized game trial; its lack of between-group empathic-accuracy improvement is explicit. Access gaps and unplayed references are named. Recommend Playdate Workshop first, Common Ground for older families, and Two Viewpoints/Ask First within existing games.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with local links repaired. No game or practical emotional-health advice built.
+- Not run: typecheck, unit tests, build, browser/offline/device/child checks. Content review, identity/band/land fit, older-family appeal and real-world transfer remain open; practical advice/physical calming requires named qualified review.
 ## 2026-10-14 — Peekaboo Barn beach scene
 
 - Uncommitted working diff on `claude/roadmap-development-3dc5ea` (branch base not recorded here): the round seed can now choose a beach (umbrella, sandcastle, bucket, towel over sand, a sea band and a sailboat), beside barnyard and garden. Levels 1–8, bands, interaction, rewards and sticker/icon art unchanged.
