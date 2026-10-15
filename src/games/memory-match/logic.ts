@@ -71,6 +71,43 @@ export function hintPartner(cards: readonly MemoryCard[], first: number, seen: R
   return partner >= 0 && seen.has(partner) ? partner : null;
 }
 
+export interface DotSpot { x: number; y: number }
+/** Dot radius on a card face; layouts keep every centre this far apart (twice the radius plus a gap) and inside DOT_REACH. */
+export const DOT_RADIUS = 9;
+export const DOT_GAP = 22;
+export const DOT_REACH = { x: 54, y: 50 };
+const grid = (rows: number[], dx: number, dy: number): DotSpot[] => rows.flatMap((count, r) =>
+  Array.from({ length: count }, (_, c) => ({ x: (c - (count - 1) / 2) * dx, y: (r - (rows.length - 1) / 2) * dy })));
+const SCATTER: Record<number, DotSpot[]> = {
+  2: [{ x: -26, y: -22 }, { x: 26, y: 24 }],
+  3: [{ x: -30, y: -24 }, { x: 30, y: -14 }, { x: 0, y: 30 }],
+  4: [{ x: -28, y: -28 }, { x: 28, y: -28 }, { x: -28, y: 28 }, { x: 28, y: 28 }],
+  5: [{ x: -28, y: -28 }, { x: 28, y: -28 }, { x: 0, y: 0 }, { x: -28, y: 28 }, { x: 28, y: 28 }],
+  6: [{ x: -26, y: -32 }, { x: 26, y: -32 }, { x: -26, y: 0 }, { x: 26, y: 0 }, { x: -26, y: 32 }, { x: 26, y: 32 }],
+  7: [{ x: -40, y: -30 }, { x: 0, y: -38 }, { x: 38, y: -26 }, { x: -22, y: 0 }, { x: 24, y: 6 }, { x: -38, y: 32 }, { x: 8, y: 38 }],
+  8: [{ x: -40, y: -30 }, { x: 0, y: -38 }, { x: 38, y: -26 }, { x: -22, y: 0 }, { x: 24, y: 6 }, { x: -38, y: 32 }, { x: 8, y: 38 }, { x: 42, y: 36 }],
+};
+/**
+ * Curated ways to show n dots on a card (n 1–8): two columns (the original), a dice-like scatter, rows and a
+ * five-frame (a row of five, then the rest). Different cards can show the same number differently, so the match is the
+ * quantity, never one picture of it. Duplicates (one row is also the frame at 1–4) are dropped.
+ */
+export function dotLayouts(n: number): DotSpot[][] {
+  const frame = grid(n <= 5 ? [n] : [5, n - 5], 24, 30);
+  const rows = n <= 4 ? grid([n], 30, 0) : grid([Math.ceil(n / 2), Math.floor(n / 2)], 30, 32);
+  const columns = Array.from({ length: n }, (_, i) => ({ x: (i % 2) * 34 - (n === 1 ? 0 : 17), y: Math.floor(i / 2) * 25 - (Math.ceil(n / 2) - 1) * 12.5 }));
+  const all = [columns, SCATTER[n] ?? grid([1], 0, 0), rows, frame];
+  const seen = new Set<string>();
+  return all.filter(layout => {
+    const key = layout.map(d => `${d.x.toFixed(1)},${d.y.toFixed(1)}`).sort().join('|');
+    return seen.has(key) ? false : (seen.add(key), true);
+  });
+}
+/** One layout per pair, drawn with the seeded RNG; both faces of a pair share its quantity, not its arrangement. */
+export function selectDotLayouts(pairs: number, rng: Rng): DotSpot[][] {
+  return Array.from({ length: pairs }, (_, pair) => rng.pick(dotLayouts(pair + 1)));
+}
+
 export interface MemoryCard { pair: number; side: 0 | 1 }
 /** The reading pairs for level 10. Index zero is the numeral one. */
 export const NUMBER_WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'] as const;

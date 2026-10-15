@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { pictureFace } from './art';
 import { memoryMatch } from './index';
 import { howToFor } from '../../content/howto';
-import { PICTURE_POOLS, selectPictures, cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS } from './logic';
+import { PICTURE_POOLS, selectPictures, cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS, DOT_GAP, DOT_REACH, dotLayouts, selectDotLayouts } from './logic';
 
 describe('memory matching', () => {
   it('pins the original code-drawn icon and stickers independently of deck content', () => {
@@ -176,6 +176,33 @@ describe('memory matching', () => {
         // Turning a pair takes two flips; a mismatch costs two more, and a remembering player has at most one per pair.
         expect(flips).toBeLessThanOrEqual(pairs * 4);
       }
+    }
+  });
+
+  it('shows every quantity 1–8 in several valid arrangements', () => {
+    for (let n = 1; n <= 8; n++) {
+      const layouts = dotLayouts(n);
+      expect(layouts.length, `n=${n}`).toBeGreaterThanOrEqual(n === 1 ? 1 : 3);
+      for (const dots of layouts) {
+        expect(dots).toHaveLength(n);
+        for (const d of dots) {
+          expect(Math.abs(d.x)).toBeLessThanOrEqual(DOT_REACH.x);
+          expect(Math.abs(d.y)).toBeLessThanOrEqual(DOT_REACH.y);
+        }
+        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+          expect(Math.hypot(dots[i].x - dots[j].x, dots[i].y - dots[j].y)).toBeGreaterThanOrEqual(DOT_GAP);
+        }
+      }
+    }
+  });
+
+  it('draws one layout per quantity from the seed and reaches every arrangement', () => {
+    expect(selectDotLayouts(8, new Rng(3)).map(l => l.length)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(selectDotLayouts(8, new Rng(3))).toEqual(selectDotLayouts(8, new Rng(3)));
+    for (const n of [3, 8]) {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 60; seed++) seen.add(JSON.stringify(selectDotLayouts(8, new Rng(seed))[n - 1]));
+      expect(seen.size).toBe(dotLayouts(n).length);
     }
   });
 });
