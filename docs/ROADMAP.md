@@ -61,7 +61,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 12. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
 13. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
 14. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
-15. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery)
+15. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery) — claimed by `claude/lands-c3-pause-actions` (2026-10-15)
 
 16. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
 
