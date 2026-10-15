@@ -8,6 +8,13 @@
 - Not run: other game/browser suites, world/offline (no navigation/persistence/assets changes), real iPad speech/touch or child response ([device check](DEVICE-CHECKS.md)). Owned Vite stopped after checks.
 
 
+## 2026-10-15 — Visual identity V1–V2 definition
+
+- Docs only, `claude/visual-identity-v1-v2`, [PR #400](https://github.com/rjdunlap/neo/pull/400): [definitions/visual-identity.md](definitions/visual-identity.md) (Barnyard sheet V1, Animal Snack busy-touch pilot V2); roadmap chunk 21 now ready.
+- Ran `node scripts/check-links.mjs` and `git diff --check`: passed.
+- Not run: typecheck, units, build, browser, `fingerdemo`, device (no code changed).
+- Open: whether the Barnyard is recognizable and whether the old Animal Snack window felt laggy stay person checks (the Barnyard one in [DEVICE-CHECKS.md](DEVICE-CHECKS.md), the lag one in the [dive](deep-dives/animal-snack.md)).
+
 ## 2026-10-15 — Duckling Parade meadow treatments
 
 - Code, `claude/duckling-meadow-treatments`, [PR #397](https://github.com/rjdunlap/neo/pull/397) (f6b96a7 on 48fad96): dive slice 3. Two seeded meadow looks (flowers, reeds), decoration only behind the pond and back strip, from a child `Rng` so duckling colors, places and wiggles are unchanged per seed.

@@ -4,6 +4,8 @@
 
 - [ ] **Discovery D1b, when built:** check iPad speech sequencing and touch reach in both orientations; observe whether a child recognizes the pictured next game and distinguishes Another, Next game and Next level while keeping an easy way home. D1a supplies a [definition only](DISCOVERY.md#d1b-build-packet-one-direct-next-game); no UI or child/device validation is claimed.
 
+- [ ] **Barnyard recognizable without its label (V1, after the land-scene slice is built; definition 2026-10-15, #400):** show a child the Barnyard land scene and see whether she recognizes it as the barnyard without its label, in both orientations on an iPad. Open until that slice is built.
+
 - [ ] **Duckling Parade audit and proposals (2026-10-15, #387):** observe lap 1 before approving one-duck entry 15; check tap/lead control, cancellation/palm handling, color contrast, speech pacing, sound-off pattern/quantity requests and incidental versus intended pickups on an iPad in both layouts. Do children choose a next color independently or follow glows? Is a partial trip plus extras explanation clear? Voluntary replay, unit continuation/transfer and a co-player caller role need human observation; no bot proves these ([deep dive](deep-dives/duckling-parade.md#experience-and-presentation)).
 
 - [ ] **Clap the Syllables solo wait ring (built 2026-10-15, #374):** at level 2 on the iPad, check the ring round the hands pad is visible and fills evenly over the 1.5 s pause, and that a small child reads it as "the word is about to be counted". Not yet seen in a screenshot or in portrait.
