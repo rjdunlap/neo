@@ -3,10 +3,13 @@ import type { Rng } from '../../engine/random';
 /**
  * Frog Hop: a number line of lily pads. Find a number, then one more and one less, then adding
  * and taking away as hops along the line, then how many hops lie between two numbers, then a
- * longer line to 20, then splits a sum at ten. Nine pads show at a time; on the long line the
+ * longer line to 20, then splits a sum at ten, forward and back. Nine pads show at a time; on the long line the
  * view slides to fit.
  */
-export type HopMode = 'find' | 'next' | 'add' | 'back' | 'gap' | 'big' | 'make-ten';
+export type HopMode = 'find' | 'next' | 'add' | 'back' | 'gap' | 'big' | 'make-ten' | 'back-ten';
+
+/** The two levels that split a trip at ten: a card for the hops to ten, then a pad for where the rest land. */
+export const splitsAtTen = (mode: HopMode) => mode === 'make-ten' || mode === 'back-ten';
 
 export interface HopPlan {
   mode: HopMode;
@@ -24,6 +27,7 @@ export const PLANS: HopPlan[] = [
   { mode: 'gap', top: 10, questions: 5, name: 'How many hops from one number to another? Choose a number card' },
   { mode: 'big', top: 20, questions: 5, name: 'A longer line to 20: hop on or back up to 6' },
   { mode: 'make-ten', top: 20, questions: 5, name: 'Hop to 10 first, then hop the rest of a sum that crosses 10' },
+  { mode: 'back-ten', top: 20, questions: 5, name: 'Hop back to 10 first, then hop the rest of a take-away that crosses 10' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -42,9 +46,9 @@ export interface HopQuestion {
   ask?: 'more' | 'less';
   /** First pad in view. */
   lo: number;
-  /** On make-ten questions, the hops from `start` to ten. */
+  /** On split-at-ten questions, the hops from `start` to ten. */
   toTen?: number;
-  /** On make-ten questions, the hops after reaching ten. */
+  /** On split-at-ten questions, the hops after reaching ten. */
   remaining?: number;
 }
 
@@ -96,6 +100,13 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
         const k = rng.int(2, 6) * (rng.chance(0.6) ? 1 : -1);
         const start = k > 0 ? rng.int(0, top - k) : rng.int(-k, top);
         q = { start, target: start + k, hops: k, lo: 0 };
+      } else if (plan.mode === 'back-ten') {
+        // Mirror of make-ten: from 11–16 back 4–8, so the trip crosses 10 and stays inside nine pads.
+        const start = rng.int(11, 16);
+        const toTen = start - 10;
+        const take = rng.int(Math.max(4, toTen + 1), 8);
+        const remaining = take - toTen;
+        q = { start, target: 10 - remaining, hops: -take, lo: 0, toTen, remaining };
       } else {
         // Keep the whole trip within the nine pads: first bridge to 10, then take 1–4 more.
         const start = rng.int(6, 9);

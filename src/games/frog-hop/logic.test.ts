@@ -44,6 +44,24 @@ describe('Frog Hop', () => {
         expect(q.hops).toBe(q.toTen! + q.remaining!);
         expect(GAP_CARDS).toContain(q.toTen);
       }
+      const backs = makeQuestions(at('back-ten'), new Rng(seed));
+      for (const q of backs) {
+        expect(q.start).toBeGreaterThanOrEqual(11);
+        expect(q.start).toBeLessThanOrEqual(16);
+        expect(-q.hops).toBeGreaterThanOrEqual(4);
+        expect(-q.hops).toBeLessThanOrEqual(8);
+        expect(q.target).toBeGreaterThanOrEqual(2);
+        expect(q.target).toBeLessThan(10);
+        expect(q.toTen).toBe(q.start - 10);
+        expect(q.toTen).toBeGreaterThanOrEqual(1);
+        expect(q.remaining).toBeGreaterThanOrEqual(1);
+        expect(q.remaining).toBe(10 - q.target);
+        expect(q.toTen! + q.remaining!).toBe(-q.hops);
+        expect(GAP_CARDS).toContain(q.toTen);
+        // The whole trip, start to answer, is on screen at once.
+        expect(q.lo).toBeLessThanOrEqual(q.target);
+        expect(q.lo + WINDOW - 1).toBeGreaterThanOrEqual(q.start);
+      }
       // Finding numbers starts where the frog already sits.
       const finds = makeQuestions(at('find'), new Rng(seed));
       finds.slice(1).forEach((q, i) => expect(q.start).toBe(finds[i].target));
@@ -107,6 +125,8 @@ describe('Frog Hop support', () => {
     expect(frogHop.describeLevel(PLANS.length + 1)).toBeUndefined();
     expect(SCRIPT['hop.ten'][0]).toContain('{k}');
     for (const n of ['{a}', '{k}', '{n}']) expect(SCRIPT['hop.rest'][0]).toContain(n);
+    for (const n of ['{a}', '{k}', '{n}']) expect(SCRIPT['hop.restback'][0]).toContain(n);
+    for (const n of ['{n}', '{k}']) expect(SCRIPT['hop.backten'][0]).toContain(n);
   });
 
   it('pins the original seeded sticker numerals and frog drawing', () => {

@@ -141,6 +141,8 @@ export const SCRIPT = {
   'couch.robot.start': ['Help the robot reach the star! Move the stick to add steps, then press the bottom button to play.'],
   'couch.hop.gap': ['How many hops from {n} to {m}? Move to a number card, then press the bottom button.'],
   'hop.ten': ['Start at {n}. {k} hops in all. How many reach 10? Choose that number card!'],
+  'hop.backten': ['Start at {n}. Hop back {k} in all. How many hops back reach 10? Choose that number card!'],
+  'hop.restback': ['That is {a} hops back to 10. {k} hops back in all, so {n} more. Tap where the frog lands!'],
   'hop.rest': ['That is {a} hops to 10. {k} hops in all, so {n} more. Tap where the frog lands!'],
   'couch.sink.guess': ['Will the {thing} float or sink? Choose with left and right, then press the bottom button!'],
   'parent.ask': ['That one is for grown-ups. Ask a grown-up to help!'],

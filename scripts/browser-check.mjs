@@ -4909,12 +4909,12 @@ async function woodsBatch() {
     log(`Secret Code ${level}: stones placed and cleared, marks, ignored clues as misses, suggestion hint, doors opened, saved score and sticker passed`);
   }
 
-  if (!only || only === 'hop') for (const level of process.env.HOP_LEVELS?.split(',').map(Number) || Array.from({ length: Math.max(0, 8 - fromLevel) }, (_, i) => fromLevel + i)) {
+  if (!only || only === 'hop') for (const level of process.env.HOP_LEVELS?.split(',').map(Number) || Array.from({ length: Math.max(0, 9 - fromLevel) }, (_, i) => fromLevel + i)) {
     await launch('frog-hop', level);
     await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
     await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-    if (mode === 'gap' || mode === 'make-ten') {
+    if (mode === 'gap' || mode === 'make-ten' || mode === 'back-ten') {
       await page.evaluate(async () => {
         const g = neo.scene.game;
         for (let i = 0; i < 2; i++) { kit.tapOn(g.pads[0]); await kit.sleep(350); }
@@ -4930,15 +4930,15 @@ async function woodsBatch() {
       await page.evaluate((right) => {
         const g = neo.scene.game; const q = g.questions[g.index];
         if (g.plan.mode === 'gap') { const n = Math.abs(q.hops); kit.tapOn(g.cards.find((c) => right ? c.n === n : c.n !== n).node); return; }
-        if (g.plan.mode === 'make-ten' && g.makeTenStage === 'bridge') { const n = q.toTen; kit.tapOn(g.cards.find((c) => right ? c.n === n : c.n !== n).node); return; }
+        if ((g.plan.mode === 'make-ten' || g.plan.mode === 'back-ten') && g.makeTenStage === 'bridge') { const n = q.toTen; kit.tapOn(g.cards.find((c) => right ? c.n === n : c.n !== n).node); return; }
         const pad = g.pads.find((p) => right ? p.n === q.target : p.n !== q.target && p.n !== q.start);
         kit.tapOn(pad);
       }, right);
       await page.waitForTimeout(250);
       await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
-      if (right && mode === 'make-ten') {
+      if (right && (mode === 'make-ten' || mode === 'back-ten')) {
         if (await page.evaluate(() => neo.scene.game.index === 0)) {
-          assert.equal(await page.evaluate(() => { const g = neo.scene.game; return g.signText.text === `${g.q.start} + ${g.q.toTen} + ${g.q.remaining}`; }), true);
+          assert.equal(await page.evaluate(() => { const g = neo.scene.game; const o = g.plan.mode === 'back-ten' ? '−' : '+'; return g.signText.text === `${g.q.start} ${o} ${g.q.toTen} ${o} ${g.q.remaining}`; }), true);
           await answer(false); await answer(false);
           assert.deepEqual(await counts(), [4, 1], 'help in both stages charges one hint');
           await page.setViewportSize({ width: 768, height: 1024 });
@@ -4965,7 +4965,7 @@ async function woodsBatch() {
       await answer(true);
     }
     await finished('frog-hop');
-    assert.deepEqual(await score('frog-hop'), [mode === 'make-ten' ? 4 : 2, 1]);
+    assert.deepEqual(await score('frog-hop'), [mode === 'make-ten' || mode === 'back-ten' ? 4 : 2, 1]);
     log(`Frog Hop ${level} (${mode}): pads and cards tapped, wrong answers, counted demonstration and glow, saved score and sticker passed`);
   }
 
