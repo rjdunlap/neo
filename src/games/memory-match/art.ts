@@ -1,9 +1,10 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { prop } from '../../art/props';
-import { swatch, type ColorName } from '../../art/palette';
+import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { shapePath } from '../../art/shapes';
-import type { MemoryPicture, VehicleKind } from './logic';
+import { clockDrawing, digitalTime, type MemoryPicture, type VehicleKind } from './logic';
+import { label } from '../../ui/text';
 
 const WHEEL = 0x37474f;
 const GLASS = 0xcfeaf5;
@@ -71,4 +72,23 @@ export function pictureFace(picture: MemoryPicture): Container {
   drawing.eventMode = 'none';
   frame.addChild(drawing);
   return frame;
+}
+
+/** Numbered, upright learning face; every time shares the same art and colors. */
+export function clockFace(time: number, side: 0 | 1): Container {
+  const data = clockDrawing(time);
+  if (side) return label(digitalTime(time), data.digitalSize, ink);
+  const face = new Container();
+  face.addChild(new Graphics().circle(0, 0, data.radius).fill(cream).stroke({ width: 3, color: ink }));
+  for (const n of data.numerals) {
+    const text = label(n.text, data.numeralSize, ink);
+    text.position.set(n.x, n.y); face.addChild(text);
+  }
+  const hands = new Graphics();
+  for (const [hand, color] of [[data.hour, swatch.blue.line], [data.minute, swatch.red.line]] as const) {
+    hands.moveTo(0, 0).lineTo(hand.x, hand.y).stroke({ width: hand.width, color, cap: 'round' });
+  }
+  hands.circle(0, 0, 3).fill(ink);
+  face.addChild(hands);
+  return face;
 }

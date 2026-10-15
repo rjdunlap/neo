@@ -94,7 +94,7 @@ There are ninety-seven games; the child games are listed below and the grown-up 
 | Bug Builder | toddler–school | decorate matching shape outlines | copy a model, then mirror six spots using shape and color |
 | Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; repair a mixed-up story with swaps and undo; untangle two stories into separate rows; predict endings from eight authored clue stories; make narrated picnic shows and revise one event in Story Theater (school 12–13); ten sequencing stories |
 | Pattern Train | preschool–school | AB patterns | AAB, ABB, ABC, animals, missing cars, bells, two gaps, a tunnel of hidden cars, color and shape on their own cycles, counting by 2, 5 or 10, the car that does not belong, fixing a swapped car, the same pattern in new pieces (pick the row, build it) |
-| Memory Match | preschool–school | four named picture cards, shape/friend/fruit decks and free replay | sixteen cards, number↔dots, shape + color, A↔a, number words↔numerals, fraction pictures↔names |
+| Memory Match | preschool–school | four named picture cards, shape/friend/fruit decks and free replay | sixteen cards, number↔dots, shape + color, A↔a, number words↔numerals, fraction pictures↔names, analog↔digital hour/half-hour clocks |
 | Letter Trails | preschool–school | follow a firefly along capital strokes | all 26 capitals starting at the top, spoken short words and the child's name |
 | Stamp Studio | lap–school | pat one huge star (eight pats finish the picture), or press one or two seeded stamp kinds onto a picture; arrow nudges after five, full paper finishes itself | three seeded kinds and a starting color at level 3; choose colors, arrange or bin a selected stamp, change size and orientation, tell a picture story; any creation can finish, with matching button/stamp colors and the kept picture frozen at Finish |
 | Pet Kitchen | toddler–school | cut a sandwich in halves and share | quarters, sharing multiple wholes with alternative equal cuts, doubling and halving a picture recipe, serving a named fraction, sharing pizza thirds |
@@ -302,7 +302,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `readdo` | Read & Do levels 1–3: word and whole-sign replay, wrong pictures, hint, saved reward, portrait and leaving during an action | `READ_LEVELS=1,3` for first and last only |
 | `feelings8` | Feelings Faces level 8: both event scenarios, a wrong helper, a hint, completion and reward | `BROWSER_SUITE=feelings8` |
 | `wardrobe7` | Weather Wardrobe level 7: take off the old outfit, dress for three changing weathers, one wrong choice and a hint | `BROWSER_SUITE=wardrobe7` |
-| `pattern`, `memory`, `letters`, `robot`, `stickers` | Pattern Train; Memory Match; all 26 letter trails and the word and name modes; Robot Path 1–13; sticker placement, removal, paging and portrait | `MEMORY_LEVELS=1,8,9,10,11` |
+| `pattern`, `memory`, `letters`, `robot`, `stickers` | Pattern Train; Memory Match; all 26 letter trails and the word and name modes; Robot Path 1–13; sticker placement, removal, paging and portrait | `MEMORY_LEVELS=1,8,9,10,11,12` |
 
 `scripts/abandon-cards.mjs` is not a suite: it opens each ghost-finger game's card and leaves it at a random moment (by the map, Back or Play), over and over, and fails on any page error; it found a rare fault where a game's `await` is ready in the frame its objects are destroyed (`GAME_URL=… GAME_ONLY=id,id ROUNDS=n`).
 

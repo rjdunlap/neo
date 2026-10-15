@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { nextLevelOffer, stepLevel, nextLevel } from '../../progress/difficulty';
 import { Rng } from '../../engine/random';
 import { pictureFace } from './art';
 import { memoryMatch } from './index';
 import { howToFor } from '../../content/howto';
-import { PICTURE_POOLS, selectPictures, cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS, DOT_GAP, DOT_REACH, dotLayouts, selectDotLayouts } from './logic';
+import { clockDrawing, clockLabel, digitalTime, selectTimes, PICTURE_POOLS, selectPictures, cardLabel, FRACTIONS, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, NUMBER_WORDS, numberWord, pictureIdentity, planFor, PLANS, DOT_GAP, DOT_REACH, dotLayouts, selectDotLayouts } from './logic';
 
 describe('memory matching', () => {
   it('pins the original code-drawn icon and stickers independently of deck content', () => {
@@ -69,15 +70,16 @@ describe('memory matching', () => {
     }
   });
 
-  it('preserves the eleven plans, deck sizes and band windows with scoped instructions', () => {
-    expect(PLANS.map(p => p.pairs)).toEqual([2, 3, 4, 6, 8, 4, 8, 8, 8, 10, 3]);
-    expect(LEVELS).toEqual({ preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 11 } });
+  it('preserves existing plans and IDs, inserting the clock bridge in the school order, deck sizes and band windows with scoped instructions', () => {
+    expect(PLANS.map(p => p.pairs)).toEqual([2, 3, 4, 6, 8, 4, 8, 8, 8, 10, 3, 3]);
+    expect(LEVELS).toEqual({ preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] } });
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(100)).toBe(PLANS[10]);
+    expect(planFor(100)).toBe(PLANS[11]);
     for (let level = 1; level <= PLANS.length; level++) {
       const steps = howToFor(memoryMatch, level)!.steps.join(' ');
       expect(steps.includes('A number word matches')).toBe(level === 10);
       expect(steps.includes('A picture of equal parts')).toBe(level === 11);
+      expect(steps.includes('digital time')).toBe(level === 12);
       expect(steps).toContain('first open card again');
       expect(memoryMatch.describeLevel!(level)).toBe(planFor(level).name);
     }
@@ -86,9 +88,10 @@ describe('memory matching', () => {
     const letters = 'QAZWSXED'.split('');
     for (const plan of PLANS) {
       const labels = Array.from({ length: plan.pairs }, (_, pair) => {
-        const a = cardLabel(plan.mode, { pair, side: 0 }, letters);
+        const times = [120, 270, 420];
+        const a = cardLabel(plan.mode, { pair, side: 0 }, letters, undefined, times);
         expect(a.length).toBeGreaterThan(0);
-        expect(cardLabel(plan.mode, { pair, side: 1 }, letters)).toBe(a);
+        expect(cardLabel(plan.mode, { pair, side: 1 }, letters, undefined, times)).toBe(a);
         return a;
       });
       expect(new Set(labels).size).toBe(plan.pairs);
@@ -204,5 +207,66 @@ describe('memory matching', () => {
       for (let seed = 1; seed <= 60; seed++) seen.add(JSON.stringify(selectDotLayouts(8, new Rng(seed))[n - 1]));
       expect(seen.size).toBe(dotLayouts(n).length);
     }
+  });
+});
+
+
+describe('Same time bridge', () => {
+  it('keeps old saved IDs and pins valid while stepping through the easier bridge', () => {
+    const range = LEVELS.school!;
+    expect(nextLevelOffer(8, range)).toBe(12);
+    expect(nextLevelOffer(12, range)).toBe(9);
+    expect(stepLevel(9, -1, range)).toBe(12);
+    expect(stepLevel(12, -1, range)).toBe(8);
+    expect(nextLevelOffer(11, range)).toBeNull();
+    for (const id of [8, 9, 10, 11, 12]) expect(nextLevel(id, [], range)).toBe(id);
+  });
+  it('selects reproducible mixed boards with three distinct hours and one opposite-side partner', () => {
+    const reached = new Set<number>(), patterns = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed), times = selectTimes(rng), deck = makeDeck(3, rng);
+      const repeat = new Rng(seed);
+      expect(selectTimes(repeat)).toEqual(times);
+      expect(makeDeck(3, repeat)).toEqual(deck);
+      expect(times).toHaveLength(3);
+      expect(new Set(times.map(t => Math.floor(t / 60))).size).toBe(3);
+      expect(new Set(times.map(t => t % 60))).toEqual(new Set([0, 30]));
+      patterns.add(times.map(t => t % 60).sort((a, b) => a - b).join(','));
+      times.forEach(t => reached.add(t));
+      expect(deck).toHaveLength(6);
+      for (const [a, card] of deck.entries()) {
+        let partners = 0;
+        for (const [b, other] of deck.entries()) {
+          const expected = a !== b && times[card.pair] === times[other.pair] && card.side !== other.side;
+          expect(a !== b && card.pair === other.pair).toBe(expected);
+          if (expected) partners++;
+          expect(expected).toBe(b !== a && times[other.pair] === times[card.pair] && other.side !== card.side);
+        }
+        expect(partners).toBe(1);
+        expect(cardLabel('clocks', card, [], [], times)).toBe(clockLabel(times[card.pair]));
+      }
+    }
+    expect([...reached].sort((a, b) => a - b)).toEqual(Array.from({ length: 24 }, (_, i) => i * 30));
+    expect(patterns).toEqual(new Set(['0,0,30', '0,30,30']));
+  });
+  it('uses continuous hour angles and bounded, upright geometry for all 24 times', () => {
+    for (let time = 0; time < 720; time += 30) {
+      const data = clockDrawing(time), minute = time % 60, hour = Math.floor(time / 60);
+      expect(data.hour.degrees).toBe(hour * 30 + minute * 0.5);
+      expect(data.minute.degrees).toBe(minute * 6);
+      expect(data.hour.length).toBeLessThan(data.minute.length);
+      expect(data.hour.width).toBeGreaterThan(data.minute.width);
+      expect(data.minute.length + data.minute.width / 2).toBeLessThan(45 - data.numeralSize / 2);
+      expect(data.numerals.map(n => n.text)).toEqual(Array.from({ length: 12 }, (_, i) => String(i + 1)));
+      expect(data.numerals[11].x).toBeCloseTo(0);
+      expect(data.numerals[11].y).toBe(-45);
+      expect(digitalTime(time)).toBe(`${hour || 12}:${minute === 0 ? '00' : '30'}`);
+      expect(clockLabel(time)).toMatch(minute === 0 ? /o'clock$/ : /^half past /);
+    }
+    expect(clockDrawing(270).hour.degrees).toBe(135);
+    expect(clockDrawing(30).hour.degrees).toBe(15);
+    expect(clockDrawing(690).hour.degrees).toBe(345);
+    expect(clockLabel(0)).toBe("twelve o'clock");
+    expect(clockLabel(30)).toBe('half past twelve');
   });
 });
