@@ -987,6 +987,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Count the hops from one number to the other, then tap a number card.' },
       { from: 6, to: 6, text: 'Hop on or back along the long line, and tap the lily pad where the frog lands.' },
       { from: 7, to: 7, text: 'The sign shows the whole sum. First tap the number card for the hops that reach 10. Listen to the split, then tap the lily pad where the rest of the hops land.' },
+      { from: 8, text: 'The sign shows a take-away across 10. First tap the number card for the hops back that reach 10. Listen to the split, then tap the lily pad where the rest of the hops back land.' },
     ],
     finish: 'Answer five questions to bring the frog home.',
     note: 'Two misses show the hops and glow the answer. Help counts once per question; tapping a pad when a number card is wanted is free.',
