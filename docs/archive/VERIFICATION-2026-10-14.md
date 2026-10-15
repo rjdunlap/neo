@@ -45,3 +45,15 @@
 - Content on `claude/memory-match-vehicles` (uncommitted base `66b2baf`): a fourth seeded picture family of eight code-drawn vehicles at levels 1–5 (`VEHICLES`/`PICTURE_POOLS` in `logic.ts`, `vehicleArt` in `art.ts`); no level, band or accounting change.
 - Ran: typecheck, memory-match and content unit tests (pass), one screenshot of all eight vehicles on cards (readable; the plane's wings are flat).
 - Not run: a browser play-through of a full vehicle round, `fingerdemo`, device speech or child recognition of the drawings.
+
+## 2026-10-14 — Opposites second batch of pairs
+
+- Content on `claude/opposites-second-pairs` ([PR #317](https://github.com/rjdunlap/neo/pull/317)): four pairs in `src/games/opposites` (sponge wet/dry, plate clean/dirty, book thick/thin, ball near/far), all `from` level 3; levels 1–2 unchanged, levels 3–4 draw from sixteen pairs; sticker pool unchanged.
+- Ran: typecheck, the five Opposites rule tests (pool test updated), `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=3` (levels 3 and 4 passed), one screenshot of the four new pictures.
+- Not run: a portrait screenshot, `fingerdemo`, iPad or child legibility at 140 units.
+
+## 2026-10-14 — Critter Sort deep dive
+
+- Docs only, base `e6db692` plus the write-up, [PR #316](https://github.com/rjdunlap/neo/pull/316): `docs/deep-dives/critter-sort.md` (ladder, genre research through search summaries, experience section, nine build slices), tracker row, roadmap chunk 14, IDEAS pointer and a Waiting row.
+- Ran: link check and `git diff --check`. No code, tests or browser suites.
+- Open: sources not opened in full; the CCSS K.MD.B.3 reading is recalled; device speech and a child's reading of the picture signs are person checks.
