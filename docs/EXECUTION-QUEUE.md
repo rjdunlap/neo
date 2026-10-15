@@ -27,17 +27,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation hourly; preserve recovered Git-locked checkout. Week-art worker complete, #353 merged at `688665d4babee8847e64bb9d8a39d3603db95738`; deployment success confirmed. Previous slot released.
-- Newly admitted: **Day by Day slice 3, Count beside the record (stable level 10)**, [source](deep-dives/day-by-day.md#build-slices-in-order). Supplied-record bridge and declared entry ordering before school 3. Exclude other levels/modes, new bands, persistence schema changes and unresolved decisions.
-- Dispatch `day-by-day-record-bridge-20261015T094230Z`; worker `01a13ef1-c0bc-74f1-8f43-b814a4f3c96a`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Day by Day 10: count beside the record". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/day-by-day-record-bridge`; [PR #357](https://github.com/rjdunlap/neo/pull/357), claim `a388c39`; source `c551677`.
-- Expected Day by Day plans/implementation/tests, ordering/entry metadata and necessary voice/how-to/browser/docs updates. Implementation/proof **not run by coordinator**. Source new-level tier: typecheck/rules including ordering/birthday/entry assertions, one filtered level-10 play and ghost finger; affected shared-content build. No persistence/offline claim or unchanged full suites. Actual device/child fit remains open.
-- Admission 2026-10-15 09:42:30 UTC **62% five-hour / 10% weekly used**, resets `1792063357` / `1792650157`; ordinary usage allowed. Estimate **18.75 / 3.75 points**, fits actual remaining **38% / 90%**; no daily cap/reserve. Worker rechecks usage and checkpoints as needed.
-- Previous proof: #353 typecheck/eight rules, filtered `week WEEK_LEVELS=2` at `http://localhost:5176`, portrait/landscape review and docs checks passed; no shared-content or demonstrated-action change, so build/demo/broad/offline omitted per tier. Server stopped/tree clean/deployment succeeded. Final **61% / 10%**, resets `1792063357` / `1792650157`, versus dispatch 49% / 8% same identities: aggregate **12 / 2 points**, reconciled once below. No unchanged proof rerun.
-- Overlap: no active implementation/open PR/dirty work; historical/recovery branches preserved and no competing record-bridge claim. Coordinator servers none.
-- Worker admission/scope recheck: **65% / 10%** used, resets `1792063357` / `1792650157`; ordinary usage allowed, estimate 18.75 / 3.75 fits remaining 35 / 90. Coordinator exempt; no other active Neo chat or competing level-10 claim. Level-4 worktree clean and merged.
-- Worker pre-edit usage **68% / 11%**, pre-browser **69% / 11%**, resets unchanged `1792063357` / `1792650157`; ordinary usage allowed.
-- Worker proof at `a388c39` plus scoped diff: typecheck, 119 focused tests, shared-content build, filtered `week WEEK_LEVELS=10` on `http://localhost:5176` and portrait review passed. Level-10 ghost finger clean in 7.2 s; links/diff/browser syntax pass; owned server stopped; broad/world/offline/device/child checks not run. Pre-publication usage **72% / 11%**, resets unchanged; ordinary usage allowed.
-- Next action: publish and merge verified #357, then stop. Coordinator confirms publication and reconciles final after-commit usage from this worker response once before releasing slot. Next eligible scope is slice 4, other-weather/zero totals (5), outside this worker’s assignment. Resume this worker only if publication remains incomplete.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; hourly automation; preserve recovered Git-locked checkout. Record-bridge worker complete; #357 merged at `6319c5ef350a0f5954b9cda7ea53323f28129355` and deployed, slot released.
+- Newly admitted: **Day by Day slice 4, Count another weather (stable 5)**, [source](deep-dives/day-by-day.md#build-slices-in-order). New category/zero-capable generator only at 5, school order after 3; preserve sunny-only 3. Exclude other levels/modes, bands, persistence changes and decisions.
+- Dispatch `day-by-day-other-weather-20261015T104630Z`; worker `01a13f2c-3f09-76f3-bfd8-7768a9a63693`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Day by Day 5: count another weather". Fresh project/local chat, minimal handoff, no history/model override; branch/claim PR pending; source `88b1c72`.
+- Expected game rules/implementation/tests, required ordering/voice/how-to/browser/docs. Implementation/proof **not run by coordinator**. New-level tier: typecheck/rules with zero/nonzero and sunny-only-3 assertions, filtered level-5 play/demo and shared-content build as affected; no unchanged full/offline suites. Device/child checks open.
+- Admission 2026-10-15 10:46:30 UTC **75% five-hour / 12% weekly used**, resets `1792063357` / `1792650157`; ordinary usage allowed. Estimate **18.75 / 3.75 points** fits actual remaining **25% / 88%**, no daily cap/reserve. Worker rechecks usage/checkpoints if needed; below 25% alone is not a stop rule.
+- Prior proof: #357 typecheck/119 targeted tests/build, filtered touch play/portrait and clean 7.2s demo passed; deployment succeeded, server stopped/tree clean. Final **73% / 11%**, resets `1792063357` / `1792650157`, vs dispatch 62% / 10% same identities: aggregate **11 / 1 points**, reconciled once below. No unchanged proof rerun.
+- Overlap: no active implementation/open PR/dirty work; history/recovery branches preserved, no competing level-5 claim. Coordinator servers none.
+- Next: retrieve worker/PR next wake-up, confirm completion/publication and reconcile final usage once. Resume same worker if unfinished; do not implement here.
 
 ## Usage observations
 
@@ -56,7 +53,6 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 
 
-| 2026-10-12 | Block Tower reach / [#216](https://github.com/rjdunlap/neo/pull/216), dispatch `block-tower-reach-20261012T224849Z` | Existing-game fix | 12% → 23% / `1791856034` | 75% → 77% / `1792295993` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #216; final 22:56:48 UTC. Aggregate endpoints 11 / 2 points; worker complete, reconciled once |
 
 
 
@@ -85,7 +81,10 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-15 | Day by Day week art / [#353](https://github.com/rjdunlap/neo/pull/353), dispatch `day-by-day-week-art-20261015T084300Z` | Existing interaction art | 49% → 61% / `1792063357` | 8% → 10% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 12 / 2. Worker complete, reconciled once |
 
-| 2026-10-15 | Day by Day record bridge 10, dispatch `day-by-day-record-bridge-20261015T094230Z` | New level | 62% → pending / `1792063357` | 10% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Worker `01a13ef1-c0bc-74f1-8f43-b814a4f3c96a`, [#357](https://github.com/rjdunlap/neo/pull/357): source-tier proof passed, publishing; pre-publication 72% / 11%, final after-commit response pending coordinator reconciliation |
+
+| 2026-10-15 | Day by Day record bridge / [#357](https://github.com/rjdunlap/neo/pull/357), dispatch `day-by-day-record-bridge-20261015T094230Z` | New level | 62% → 73% / `1792063357` | 10% → 11% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 11 / 1. Complete, reconciled once |
+
+| 2026-10-15 | Day by Day other weather 5, dispatch `day-by-day-other-weather-20261015T104630Z` | New level | 75% → pending / `1792063357` | 12% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Fresh worker `01a13f2c-3f09-76f3-bfd8-7768a9a63693` admitted; implementation/proof pending |
 
 ## Fresh-worker dispatch and handoff
 

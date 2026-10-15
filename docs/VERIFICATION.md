@@ -236,3 +236,7 @@ Coordinator confirmed dive #349 complete/merged/deployed and reconciled final ag
 ### Day by Day record-bridge worker dispatch (2026-10-15)
 
 Coordinator confirmed week-art #353 complete/merged/deployed and reconciled final aggregate usage once. Actual allowance admits fresh worker `01a13ef1-c0bc-74f1-8f43-b814a4f3c96a` for source slice 3, level 10 only; no active implementation/open PR/dirty overlap found. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed. Worker owes focused rules/order/entry checks, level-10 play/demo and affected shared-content checks; no coordinator code checks or servers.
+
+### Day by Day other-weather worker dispatch (2026-10-15)
+
+Coordinator confirmed record bridge #357 complete/merged/deployed and reconciled final usage once. Actual allowance admits fresh worker `01a13f2c-3f09-76f3-bfd8-7768a9a63693` for level-5 source slice only; no active implementation/open PR/dirty overlap. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed; worker owes zero/nonzero/rule/order checks, filtered level-5 play/demo and affected shared-content build. No coordinator code checks/servers.
