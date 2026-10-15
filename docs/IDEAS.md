@@ -1002,7 +1002,7 @@ Proposed modes, by the game they would extend. Steps already built are in [GAMES
 | Critter Sort / Critter Crossing | **Fripple Orders** (a customer asks for "the one with stripes"; then two attributes and "but not") | 8–11: Sorting Machine |
 | Story Steps | **Sound Detective** (arrange scene cards to match a heard sequence); broader Story Theater, including **Two Viewpoints** | Additional authored clues beyond built clue endings and picnic theater; [Two Viewpoints](deep-dives/subjects/social-emotional.md#candidates-and-fit) replays one mishap from two stated accounts with alternative endings, as an existing-game definition |
 | Duck Pond | **Count the Peekers** (counting in a busy scene, untimed); planned as an entry between levels 6 and 7 in its [deep dive](deep-dives/duck-pond.md#levels-below-level-1-waiting-on-the-level-order-decisions) | Estimate "a few or lots?" first, then count |
-| Color Garden / Pattern Train | **Color Train**, a lap entry (needs the decision about lap levels outside a ladder's order; Color Garden's [deep dive](deep-dives/color-garden.md) plans a tap-and-it-hops entry) | Two things for each car |
+| Color Garden / Pattern Train | Color Train's lap action is built as Color Garden 9, [Tap and it hops](deep-dives/color-garden.md#build-slices-in-order) | Two things for each car |
 | Market Stall | Keep its exact-payment ladder coherent. **Lemonade Stand** is built as a neighboring game (see [GAMES](GAMES.md#lemonade-stand)): weather, cups made and a picture table across days; extra cups go to friends, while its market-week level counts the lemons' cost | Price, unit cost, profit and a bounded recoverable operating loss are Lemonade Stand's later levels |
 | Bounce Back | **Keepy Uppy**, a floatier one-player mode (after Bluey) | A grown-up's second finger joins |
 | Feelings Faces | **Belly Breaths**, a calming strategy (hold the pet's tummy to breathe in); **Ask First**, Avokiddo-inspired prop/reaction play | Belly Breaths remains optional/reviewer-dependent. [Ask First](deep-dives/subjects/social-emotional.md#candidates-and-fit): ask the friend what support they want and accept stated alternatives, including space; free prop experiments stay unscored and check Fluffy Salon overlap; review existing hug/event assumptions and any school window |
@@ -1126,7 +1126,7 @@ The review's findings as of 2026-10-09; the full read of the registry is in [the
 | **Touch forms of the couch puzzles / school, about 8–9** | Lantern Lights, Picture Logic and Island Bridges with fingers instead of a controller | Their solvers, hints and tests already exist; the 100-unit target rule caps a grid at about 7 cells across before any screen chrome, so each layout needs measuring | M each · new, *fits the school band* |
 | **Rule Parade / school, 7–10** | Choose rule tiles and test a machine on a parade of critters | Two conditions and two actions, one rule at a time, with a trace of which rule applied | M · promoted, *fits the school band* in its tiny form |
 
-Already in this notebook and still the right small lap picks: Brown Bear Parade, Color Train and Keepy Uppy ([Color Train waits on the lap-level decision](ROADMAP.md#next-up)). **Needs the band and zone decision:** Sorting Machine at its full 8–11 size, Little Town Planner, Discovery Marsh investigations and Postcard Detective.
+Already in this notebook and still the right small lap picks: Brown Bear Parade, Color Train and Keepy Uppy (Color Train’s tap entry is built as Color Garden 9). **Needs the band and zone decision:** Sorting Machine at its full 8–11 size, Little Town Planner, Discovery Marsh investigations and Postcard Detective.
 
 ### Sketches (first drafts of the definition of ready)
 
@@ -1385,7 +1385,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Garden Grow (L–P · 5) | Flower kinds | **Built 2026-10-10:** levels 6, *One more than the sign*, and 7, *Two rows of three*, open a pre-K window ([build note](archive/COMPLETED-2026-10-09.md#garden-grow-levels-67-one-more-and-two-rows-of-three-2026-10-10)) | — |
 | Treasure Map (K–S · 5) | Maps of new places | **6, Give directions:** the pet asks the way and she chooses the arrows, turning reading directions into writing them | Preschool, at level 1 (a picture row meets a color column) |
 | Owl Walk Home (T–K · 4) ([deep dive](deep-dives/owl-walk.md)) | Paths and seasons; stones that carry color and shape independently | **Levels 1–4 reworked in place and built 2026-10-13** (tap the stone rather than the owl; an owl each at level 2; choose an owl at 3). **Planned in the deep dive**: 6 Color or shape, 7 Our two cards, 8 Check the helper | **Planned as level 5, Stepping stones** (a free toy for lap and toddler; decision 6) |
-| Pattern Train (P–S · 12) ([deep dive](deep-dives/pattern-train.md), which supersedes this row) | A pool of car kinds (fruit, flowers, boats, sizes, turns, acting) so a level never looks the same twice | **Planned as 18, Stairs** (growing patterns), 19 Up and down and 20 Start anywhere; also 13–17 (odd car out, fix the train, same pattern in new pieces, build the same, make your own). Lap and toddler entries in the code are dead; the deep dive proposes a toddler window on level 1 with two choices | Color Train (lap) still waits on the lap-level decision |
+| Pattern Train (P–S · 12) ([deep dive](deep-dives/pattern-train.md), which supersedes this row) | A pool of car kinds (fruit, flowers, boats, sizes, turns, acting) so a level never looks the same twice | **Planned as 18, Stairs** (growing patterns), 19 Up and down and 20 Start anywhere; also 13–17 (odd car out, fix the train, same pattern in new pieces, build the same, make your own). Lap and toddler entries in the code are dead; the deep dive proposes a toddler window on level 1 with two choices | Color Train’s tap entry is built as Color Garden 9 |
 | Memory Match (P–S · 11) | Vehicles and dot arrangements are built (2026-10-14); shape/friend/fruit decks are [built](archive/COMPLETED-2026-10-09.md#memory-match-familiar-picture-decks-2026-10-13) at the same sizes; [researched plan](deep-dives/memory-match.md) | **Built 2026-10-10:** 10 number words, 11 fraction pictures; proposed 12 clocks, 13 same total, 14 same share ([deep dive](deep-dives/memory-match.md#new-levels-on-top)) | Proposed toddler 1–1 (four cards); level 2 has six ([deep dive](deep-dives/memory-match.md#younger-band-openings)) |
 | Size Parade (T–S · 8) | More friends | — (audit: leave) | — |
 | Puzzle Pals (T–S · 7) | **Twelve scenes** (built 2026-10-11, the first six pinned for stickers and the map icon; see its [deep dive](deep-dives/puzzle-pals.md), which supersedes this row) | R1-later: turned pieces (deep dive levels 8–11) | — (below-level-1 ideas are in the deep dive) |
@@ -1613,7 +1613,7 @@ JumpStart Baby (1998, ages 9–24 months) is the closest relative of her current
 | --- | --- | --- |
 | Where's Teddy? / Hide and Seek (Baby 1998†) | Search for Teddy | Built: Peekaboo Barn |
 | Dress Teddy (Baby 1998; in 2000† Teddy names the body part each garment goes on) | Dress the bear for snow or sand | Built: Weather Wardrobe, Teddy Doctor |
-| Color Train (Baby 1998) | Sort colored objects into train cars | Notebook idea [Color Train](#early-learning-software), waits on the lap-level decision |
+| Color Train (Baby 1998) | Sort colored objects into train cars | Built as [Color Garden 9](deep-dives/color-garden.md#build-slices-in-order), Tap and it hops |
 | Puzzle Time (Baby†) | Simple puzzles | Built: Puzzle Pals |
 | Connect-the-Stars (Baby†) | Connect stars to draw a sky picture | **Not on the island**: Dot Link is a color-chain game. See **Star Dots** below |
 | Picture Fun (Baby†, SuperKids "coloring") | Color part of an amusing picture | Built: Rainbow Fingers |
@@ -1815,7 +1815,7 @@ Reading the sources in detail turned up evidence for the rules in [What not to b
 
 **Decided (the developer, 2026-10-11): additional languages go on the roadmap.** JumpStart Spanish (ages 3–6‡) used the same two-step shape the island already has (hear the words, then a goal), and its reviewer found it rarely went beyond naming nouns. The plan, the stages, what does not translate and the open questions (which languages, whose voice) are in the roadmap's [Additional languages](ROADMAP.md#additional-languages). Nothing is built.
 
-**What is nearest to her now.** At one year old her bands are lap and toddler, so the nearest are **Star Dots** (the lap form), **Phone Pal** and the Color Train lap mode already in the notebook. Rhyme Hunt and Warm-and-Cool Dig reach the toddler and preschool bands next. Floe Bridge, Word Jobs, Lock Tiles, Gallery Walk, Cart Workshop and Timeline Trail are school-band horizons and need no work until the earlier bands are served.
+**What is nearest to her now.** At one year old her bands are lap and toddler, so the nearest are **Star Dots** (the lap form), **Phone Pal** and the Color Garden 9 tap entry. Rhyme Hunt and Warm-and-Cool Dig reach the toddler and preschool bands next. Floe Bridge, Word Jobs, Lock Tiles, Gallery Walk, Cart Workshop and Timeline Trail are school-band horizons and need no work until the earlier bands are served.
 
 ### New ideas from the gap review
 
@@ -1823,7 +1823,6 @@ Reading the sources in detail turned up evidence for the rules in [What not to b
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Color Train | JumpStart Baby (Color Train) | Any tap sends the next thing from the cupboard (a red apple, a blue boat) to the train car of its color; the pet names both | She chooses the car; then two things for each car | A lap entry for Color Garden or Pattern Train. Needs the open decision about lap levels outside a ladder's order. S |
 | Build-a-Bug counting ([deep dive](deep-dives/bug-builder.md): level 8) | Millie's Math House (Build-a-Bug) | Freely add legs, eyes and spots to a bug | "A bug with three legs and two eyes"; compare two bugs | A Bug Builder counting mode, not a second bug game. S |
 | Doghouse Directions | Bailey's Book House (Edmo & Houdini) | Tap a picture word and the puppy goes in, out, on, off or under the doghouse | Make the puppy match a picture; two directions in a row | Peekaround Island already places friends behind, in front of and next to; this adds words for movement. A Peekaround mode. S |
 | Fripple Orders | Thinkin' Things (Fripple Shop) | A customer asks for "the one with stripes"; pick it from a shelf of critters | Two attributes, then "stripes but not purple"; later a short written order, read aloud on request | One attribute-logic family with Critter Sort and Critter Crossing; extend those first. S |
@@ -1965,7 +1964,6 @@ Prefer a mode of an existing game when the meaningful action is the same; make a
 | Critter Friends / Piñata Garden / Puppy Pal | Habitat Helpers, journal, and pet treehouse | Befriending, inviting visitors, and pretend care share the persistent world |
 | Echo Knock / a woodpecker's rhythm | Sound Garden's echo level and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
 | Rhyme Picnic | Rhyme Time | Rhyme Time covers choosing a rhyme; a picnic scene is only worth it for its payoff |
-| Color Train (JumpStart Baby) | A lap mode of Color Garden or Pattern Train | Needs the decision about lap levels outside a ladder's order |
 | Build-a-Bug counting | Bug Builder | A counting mode, not a second bug game |
 | Doghouse Directions / Bear Hunt Walk | Peekaround Island for positions; Bear Hunt Walk for movement along a route | Start as a Peekaround mode for in, on and under; build Bear Hunt Walk only if moving along a route proves to be the new decision |
 | Fripple Orders / Sorting Machine | Critter Sort, then Critter Crossing and Rule Parade | One attribute-logic family across ages; the machine adds AND, OR and NOT for 8–11 |

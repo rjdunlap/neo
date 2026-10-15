@@ -6,7 +6,7 @@
 
 She drags fruit, balloons and flowers from a tree into woven baskets lined with their color. Learning: matching and sorting by one attribute (color, then shade), a dragging skill, and the six color names (the pet says the color on each pickup). Source baseline: `origin/main` after PR #301.
 
-Band windows (`LEVELS`): lap 1, toddler 1–5, preschool 3–7, pre-K 4–7. No couch entry.
+Current band windows: lap 9, toddler ordered 9 → 1–5, preschool 3–8, pre-K 4–8. Stable level 9 is the built tap entry; levels 1–8 retain their IDs. No couch entry. The audit below describes the pre-build game.
 
 | Level | Plan | Bands | What she decides |
 | --- | --- | --- | --- |
@@ -108,12 +108,12 @@ Dependency: level 8's sign art is reused by 10. Levels 9 and 10 are independent;
 
 ## Decisions for the developer
 
-None blocks the first slices. Optional: whether baskets should speak their color on touch (an accessibility support that changes feedback in every level), and whether the tap entry should be lap-only or also the first toddler level.
+Optional basket speech remains undecided. The assigned slice explicitly chose the tap entry for both lap and toddler (2026-10-15); no other decision was resolved.
 
 ## Build slices, in order
 
 1. **Mixed kinds at level 6** (built 2026-10-14, `claude/color-garden-mixed-kinds`; fresh content): choose fruit, balloon or flower per item with the seeded rng; update `describeLevel`, a rule test, and the GAMES.md entry. Tier: new levels on an existing interaction, rule tests plus one filtered browser play of level 6 and `fingerdemo`.
-2. **Tap and it hops** (lap and toddler entry; claimed by worker `01a14190-2e01-74e0-bcf9-fbf48fdf028d`, branch `codex/color-tap-entry`, dispatch `color-tap-entry-20261015T215457Z`): the tap path, two baskets, naming, `entryLevels` and `order`; how-to step, `touchDemo` bot. Tier: new interaction: typecheck, unit tests, one scripted play, one portrait screenshot.
+2. **Tap and it hops** (built 2026-10-15, stable level 9, `codex/color-tap-entry`, [PR #399](https://github.com/rjdunlap/neo/pull/399)): lap/toddler tap entry, two baskets, naming, `entryLevels`/`order`, scoped how-to and ghost finger. [Build note](../archive/COMPLETED-2026-10-09.md#color-garden-tap-and-it-hops-2026-10-15).
 3. **Level 8, Color or kind** (built 2026-10-15, `claude/color-garden-color-or-kind`, [PR #351](https://github.com/rjdunlap/neo/pull/351)): the rule sign, the two rules, voice lines, how-to. Same tier as above.
 4. **Level 9, Light, middle, dark**: refactor `SHADE_LOOK` to a table and add the middle shade. Includes a device check for contrast.
 5. **Level 10, Two ways at once**: the 2×2 layout and two-part hints. Last because it is the heaviest and needs the level 8 sign.
@@ -121,5 +121,3 @@ None blocks the first slices. Optional: whether baskets should speak their color
 ## What was built in this session
 
 The deep dive session itself built nothing: it was research and ideation only. Links and `git diff --check` ran.
-
-Slice 2 claim: append level 9 (8 is occupied), lap/toddler ordering and entry, four tap-only items/two colors, spoken naming, scoped how-to and ghost finger. Expected files: `src/games/color-garden/{logic.ts,logic.test.ts,index.ts}`, `src/content/{howto.ts,voice-script.ts}`, browser harness, README and game/roadmap/verification/queue docs. No other levels, basket speech or save changes.
