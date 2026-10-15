@@ -6,9 +6,20 @@ export const PLANS = [
   { name: 'Place the days and record a pretend week', relatives: false, tally: false },
   { name: 'Tomorrow and yesterday, including the week turning', relatives: true, tally: false },
   { name: 'Yesterday, tomorrow and a sunny-day tally', relatives: true, tally: true },
+  { name: 'A day beside any day', relatives: true, tally: false },
 ] as const;
+/** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
+export const ANCHOR_LEVEL = 4;
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const neighbor = (day: number, direction: -1 | 1) => (day + direction + 7) % 7;
+export interface Relative { today: number; direction: -1 | 1 }
+/** Two questions, one forward and one back. Before the anchor level they are the week's turn; there, two different seeded days. */
+export function relativeQuestions(level: number, rng: Rng): Relative[] {
+  if (level < ANCHOR_LEVEL) return [{ today: 6, direction: 1 }, { today: 0, direction: -1 }];
+  const first = rng.int(0, 6);
+  const second = (first + rng.int(1, 6)) % 7;
+  return rng.shuffle<Relative>([{ today: first, direction: 1 }, { today: second, direction: -1 }]);
+}
 export const sunnyCount = (week: readonly number[]) => week.filter(w => w === 0).length;
 /** At least one of each weather, and 1–5 sunny records: no missing category or seven identical days. */
 export function makeWeek(rng: Rng): number[] {

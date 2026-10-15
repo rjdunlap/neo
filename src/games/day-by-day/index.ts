@@ -11,9 +11,9 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { choicesFor, DAYS, makeWeek, neighbor, planFor, sunnyCount, toggleMark, WEATHER, weekLayout } from './logic';
+import { ANCHOR_LEVEL, choicesFor, DAYS, makeWeek, neighbor, planFor, relativeQuestions, sunnyCount, toggleMark, WEATHER, weekLayout } from './logic';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 2, max: 3 } };
+const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 4, order: [2, 4, 3] } };
 
 function weatherArt(kind: number): Graphics {
   const g = new Graphics();
@@ -49,6 +49,7 @@ function flower(color: number, grown: boolean): Graphics {
 class DayByDay implements Game {
   readonly plan;
   readonly week;
+  readonly relatives;
   readonly records: Container[] = [];
   readonly choices: { n: number; node: Container }[] = [];
   readonly confirm = new Container();
@@ -79,6 +80,7 @@ class DayByDay implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.week = makeWeek(ctx.rng);
+    this.relatives = relativeQuestions(ctx.level, ctx.rng);
     this.backdrop = new Backdrop({ sky: [swatch.blue.light, cream], hills: [grass, swatch.green.light], horizon: 0.65, clouds: 2, seed: 72 }, ctx.view);
     this.confirm.addChild(tile(120, 110, 'teal'), new Graphics().moveTo(-28, 0).lineTo(25, 0).stroke({ width: 8, color: ink, cap: 'round' }).poly([8, -22, 34, 0, 8, 22]).fill(ink));
     onTap(this.confirm, () => void this.place());
@@ -235,7 +237,8 @@ class DayByDay implements Game {
     if (this.selected !== this.answer) { await this.miss(); return; }
     sfx.sparkle();
     if (this.phase === 'relative') {
-      await this.ctx.say(this.question === 0 ? 'week.tomorrowyes' : 'week.yesterdayyes', { day: DAYS[this.answer] });
+      const { today, direction } = this.relatives[this.question];
+      await this.ctx.say(`week.${direction === 1 ? 'tomorrow' : 'yesterday'}${this.ctx.level >= ANCHOR_LEVEL ? 'anyyes' : 'yes'}`, { day: DAYS[this.answer], today: DAYS[today] });
       this.question++;
       if (this.question < 2) await this.askRelative();
       else if (this.plan.tally) await this.askTally();
@@ -256,12 +259,13 @@ class DayByDay implements Game {
   private async askRelative() {
     this.busy = true;
     this.phase = 'relative';
-    const today = this.question === 0 ? 6 : 0;
-    this.answer = neighbor(today, this.question === 0 ? 1 : -1);
-    this.caption.text = `Today is ${DAYS[today]}. ${this.question === 0 ? 'Tomorrow' : 'Yesterday'}?`;
-    this.note.text = 'The week repeats: Sunday → Monday. Tap records to listen.';
+    const { today, direction } = this.relatives[this.question];
+    const any = this.ctx.level >= ANCHOR_LEVEL;
+    this.answer = neighbor(today, direction);
+    this.caption.text = `Today is ${DAYS[today]}. ${direction === 1 ? 'Tomorrow' : 'Yesterday'}?`;
+    this.note.text = any ? 'Tomorrow is the next day. Yesterday is the day before. Tap records to listen.' : 'The week repeats: Sunday → Monday. Tap records to listen.';
     this.buildChoices(choicesFor(this.answer, this.ctx.rng, 'day'), 'day');
-    await this.ctx.instruct(this.question === 0 ? 'week.tomorrow' : 'week.yesterday', { day: DAYS[today] });
+    await this.ctx.instruct(`week.${direction === 1 ? 'tomorrow' : 'yesterday'}${any ? 'any' : ''}`, { day: DAYS[today] });
     this.busy = false;
   }
 
@@ -295,7 +299,10 @@ class DayByDay implements Game {
     if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
     if (this.phase === 'weather') await this.ctx.say('week.weatherhint', { weather: WEATHER[this.answer] });
     else if (this.phase === 'tally') await this.ctx.say('week.tallyhint', { n: this.answer });
-    else await this.ctx.say('week.dayhint', { day: DAYS[this.answer] });
+    else if (this.phase === 'relative' && this.ctx.level >= ANCHOR_LEVEL) {
+      const { today, direction } = this.relatives[this.question];
+      await this.ctx.say(direction === 1 ? 'week.tomorrowhint' : 'week.yesterdayhint', { day: DAYS[this.answer], today: DAYS[today] });
+    } else await this.ctx.say('week.dayhint', { day: DAYS[this.answer] });
     this.busy = false;
   }
 
