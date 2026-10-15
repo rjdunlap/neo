@@ -164,3 +164,17 @@
 - Ran typecheck and the full `npm test` (151 files, 1315 tests pass), including the new spot rules: exactly one pair, three decoys in distinct families, the bot taps the two right cards.
 - Ran `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=5` (one wrong pair, glow hint, saved score and sticker; one landscape screenshot) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=opposites FINGER_LEVELS=5` (12.3 s), both pass.
 - Not run: portrait screenshot, build, iPad, device speech, child play.
+
+## 2026-10-15 — Sing-Along Barn sixth tune, The Itsy Bitsy Spider
+
+- Code, `claude/sing-along-itsy-bitsy`, [PR #371](https://github.com/rjdunlap/neo/pull/371): tune `itsy` (first line only, "The itsy bitsy spider climbed up the water spout"); six cards in the level 5-6 chooser, scaled 0.5 to fit a 768 upright view; seeded pool of six.
+- Ran `npm run typecheck`; vitest sing-along-barn, content and registry (124 pass); `BROWSER_SUITE=singalong` pass including the new itsy round (0 misses, 0 hints); `fingerdemo` for `sing-along-barn` at level 6 passed (35.9 s).
+- Not run: portrait screenshot of the six-card chooser (fit is layout math only), build, iPad, device speech and melody against a printed source (added to [DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-15 — Memory Match 12 Same time
+
+- [PR #373](https://github.com/rjdunlap/neo/pull/373), `codex/memory-match-same-time`, dispatch `memory-clock-build-20261015T135031Z`. Tested `5c44128` plus scoped source/browser diff: school clock bridge 12, order [8, 12, 9, 10, 11], unchanged old IDs/levels/pins and couch/save behavior.
+- Passed typecheck, 16 Memory Match rules plus 47 how-to/registry/difficulty tests, and build (shared voice/how-to changed). Rules cover 24-time reachability, distinct hours, mixed minutes, deterministic decks, exact pair/value/side agreement, labels, continuous hand geometry, ordering and valid saved IDs.
+- Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=memory MEMORY_LEVELS=12 npm run test:browser` at 13:56:59 UTC: real taps, free replay/unseen exploration, exactly two known misses, one stable seen-only hint through unrelated exploration, supported finish/saved sticker and leaving during comparison/speech; no page errors. Actual face/text/card bounds passed in four viewports; portrait/landscape exposed-board and all 24 times reviewed (`test-results/browser/memory-clock-{portrait,landscape,all-times}.png`).
+- Passed same URL with `BROWSER_SUITE=fingerdemo FINGER_ONLY=memory-match FINGER_LEVELS=12` at 13:57:28 UTC: 11.0 s, zero misses/hints. Initial Chromium sandbox launch blocked; isolated outside-sandbox run passed. Initial new fit assertion mixed CSS/logical coordinates; small geometry probe confirmed root scale, corrected test then passed without a game layout change.
+- Not run: unchanged old-level browser plays, full unit/browser/world/couch/offline suites, real iPad speech/touch or child play. Device legibility/reveal comfort and bridge value remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device); browser evidence establishes no independent clock understanding. Server stopped after checks; links/diff checks passed.
