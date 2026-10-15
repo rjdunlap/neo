@@ -98,7 +98,7 @@ The island's technology today is one thread: Robot Path (sequences, loops, condi
 
 | ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `programming` | Sequences, loops, conditions, events, functions, variables, debugging | CSTA K-2 and 3-5 (open at source); ScratchJr, Lightbot (20 puzzles: basics, procedures, loops), Kodable | Robot Path, Secret Code | Skywatch Isles | K–M | Human Resource Machine-style logic puzzles | not started |
+| `programming` | Sequences, loops, conditions, events, functions, variables, debugging | CSTA K-2 and 3-5 (open at source); ScratchJr, Lightbot (20 puzzles: basics, procedures, loops), Kodable | Robot Path, Secret Code | Skywatch Isles | K–M | Human Resource Machine-style logic puzzles | in progress 2026-10-14 · `codex/programming-subject-research` |
 | `how-computers-work` | Input, output, memory, codes and binary, logic gates | CSTA; ISTE 1.1.d; Rocky's Boots and Robot Odyssey as precedents | Secret Code, Number Nook; Sorting Machine and Circuit Garden (proposed) | Tinker Lab | P–M | logic-gate and binary puzzles | not started |
 | `networks-citizenship` | Networks, the internet and being kind and safe online, taught with stories and unplugged games (nothing connects to a real network) | ISTE Digital Citizen; district K–5 curricula | Windy Picnic-style stories, Story Theater | Storybook Square | K–M | a conversation-prompt card | not started |
 | `data-ai-literacy` | Sorting, patterns, classification, "teaching" a sorter with examples | CSTA data and analysis; AI4K12 (open at source) | Critter Sort, Picture Graph, Pattern Train | Skywatch Isles | S–M | train-a-classifier puzzle | not started |
