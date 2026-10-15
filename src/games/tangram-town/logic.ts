@@ -30,6 +30,7 @@ export const PICTURES = {
   fish: [{shape:'hull',x:-60,y:0,turns:0},{shape:'triangle',x:110,y:0,turns:0}],
   lighthouse: [{shape:'rectangle',x:0,y:110,turns:0},{shape:'square',x:0,y:-10,turns:0},{shape:'roof',x:0,y:-140,turns:0}],
   pine: [{shape:'roof',x:0,y:-100,turns:0},{shape:'hull',x:0,y:5,turns:2},{shape:'square',x:0,y:120,turns:0}],
+  bridge: [{shape:'rectangle',x:0,y:-40,turns:0},{shape:'hull',x:-110,y:55,turns:2},{shape:'hull',x:110,y:55,turns:2}],
   houseboat: [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:0},{shape:'triangle',x:0,y:-15,turns:2},{shape:'roof',x:0,y:-145,turns:0}],
 } as const satisfies Record<string, readonly Target[]>;
 export type PictureId = keyof typeof PICTURES;
@@ -44,7 +45,7 @@ export const PLANS: readonly Plan[] = [
   { pool:['house','tree','flag','sailboat','lamp','tent','fish'], rotate:true, outlines:true, name:'Turn the shapes with quarter-turn snaps' },
   { pool:['cottage','truck','tower','ferry','bus','barn'], rotate:true, outlines:true, name:'Two triangles make a square; three shapes fill a picture' },
   { pool:['rocket','houseboat','castle','robot'], rotate:true, outlines:true, name:'Build a rocket, houseboat, castle or robot from four shapes' },
-  { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn','robot','lighthouse','pine'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
+  { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn','robot','lighthouse','pine','bridge'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
   { pool:['house'], rotate:true, outlines:false, alternatives:true, name:'Build a house two ways: a square or two triangles can make its wall' },
   { pool:['house','tree','boat','sailboat','flag','lamp','tent','robot','fish'], rotate:true, outlines:true, repair:true, name:'Find a shape facing the wrong way, turn it, then check the repaired picture' },
 ];

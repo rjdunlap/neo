@@ -19,7 +19,7 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 | 7 | One square or two triangles for a wall | school | choose either valid cover |
 | 8 | Repair a misoriented piece, then Check | school | notice and revise what does not match its outline |
 
-**What a round draws from.** Until this session every level drew one fixed picture (house, boat, house, cottage, rocket, cottage), so six levels held five different pictures and a replayed level was identical. Since slice 1 (below) each level draws from a pool of 4–9 pictures through the seeded round generator: 17 pictures in all after the lamp, bus and castle batch ([PR 166](https://github.com/rjdunlap/neo/pull/166)) and tent/barn batch ([PR 167](https://github.com/rjdunlap/neo/pull/167)) and robot at levels 5–6 ([PR #260](https://github.com/rjdunlap/neo/pull/260)).
+**What a round draws from.** Until this session every level drew one fixed picture (house, boat, house, cottage, rocket, cottage), so six levels held five different pictures and a replayed level was identical. Since slice 1 (below) each level draws from a pool of 4–12 pictures through the seeded round generator: 21 pictures in all after the lamp, bus and castle batch ([PR 166](https://github.com/rjdunlap/neo/pull/166)) and tent/barn batch ([PR 167](https://github.com/rjdunlap/neo/pull/167)) and robot at levels 5–6 ([PR #260](https://github.com/rjdunlap/neo/pull/260)), then fish, lighthouse, pine and bridge (2026-10-14 and 2026-10-15; the bridge, a rectangle deck on two upside-down hulls, is in level 6 only, [PR #354](https://github.com/rjdunlap/neo/pull/354)).
 
 **Couplings.** A how-to card (steps scoped from level 3 and 6) and a ghost-finger bot (`autotouch`, which turns each piece with the real button, then carries it). No couch entry, journal entry or picnic step. The how-to steps and `describeLevel` read at the level, not the picture, so they were safe to extend. Voice: "Build a {picture}!" is spoken at the start, so a picture name must begin with a consonant ("a owl" would be wrong); a test now asserts it.
 
@@ -53,22 +53,22 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 
 ### Fresh content inside existing levels
 
-**Built in slice 1.** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat. The 2026-10-11 batches add lamp, bus, castle, tent and barn; the 2026-10-13 batch adds robot. Current pools:
+**Built in slice 1.** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat. The 2026-10-11 batches add lamp, bus, castle, tent and barn; the 2026-10-13 batch adds robot; 2026-10-14 and 2026-10-15 add fish, lighthouse, pine and bridge. Current pools:
 
 | Level | Pool |
 | --- | --- |
 | 1 | house, tree, lamp, tent |
-| 2 | boat, sailboat, flag, lamp, tent |
-| 3 | house, tree, flag, sailboat, lamp, tent |
+| 2 | boat, sailboat, flag, lamp, tent, fish |
+| 3 | house, tree, flag, sailboat, lamp, tent, fish |
 | 4 | cottage, truck, tower, ferry, bus, barn |
 | 5 | rocket, houseboat, castle, robot |
-| 6 | cottage, truck, tower, ferry, houseboat, bus, castle, barn, robot |
+| 6 | cottage, truck, tower, ferry, houseboat, bus, castle, barn, robot, lighthouse, pine, bridge |
 
 Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is three pieces and always holds a pair of triangles that can only make a square, level 5 is four pieces, level 6 hides the outlines. Tests assert that no picture overlaps itself (a separating-axis check), that it stays within ±210 horizontally and −220…200 vertically (clear of the turn and help buttons at the narrowest portrait width and above the tray), that every slot is reachable in any order, and that every picture starts with a consonant.
 
 **Next content slices** (ready, small; lamp, bus and castle built 2026-10-11):
 
-- **More pictures.** Aim for six to eight per level. A new picture is a few lines of slots in `PICTURES` and one line in a pool, and the tests above cover it. Tent and barn are also built ([PR 167](https://github.com/rjdunlap/neo/pull/167)); the tent has a triangular canopy and rectangular groundsheet, and the barn has a trapezoid roof and a two-triangle wall. Remaining candidates built from the same five shapes: a fish (roof body with a triangle tail), a lamp post, a barn (a pair of triangles and a roof), a bridge (rectangle and two hulls), a pine tree of two roofs. Check the new picture reads as itself at 0.4 viewing distance.
+- **More pictures.** Aim for six to eight per level. A new picture is a few lines of slots in `PICTURES` and one line in a pool, and the tests above cover it. Tent and barn are also built ([PR 167](https://github.com/rjdunlap/neo/pull/167)); the tent has a triangular canopy and rectangular groundsheet, and the barn has a trapezoid roof and a two-triangle wall. Fish, lighthouse, pine and bridge are built too; no candidates are listed now, so propose the next from the same five shapes. Check the new picture reads as itself at 0.4 viewing distance.
 - **Spoken shape names** — **built 2026-10-11** ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each physical piece names its geometric shape once on pickup at toddler, preschool and pre-K. Roofs say triangle; hulls say trapezoid. School pickup is quiet. Actual device pronunciation remains unchecked.
 - **Avoid the same picture twice in a row.** A pool of two repeats half the time. The shell does not keep round history for a game; leave it, or pass the previous picture through the stored `stats` in a later slice.
 - **Colour per picture.** Colours are by tray slot today, not by role; a roof that is always a roof colour would make the picture readable as a picture.
@@ -116,7 +116,7 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 ## Build slices, in order
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
-2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. Second batch built ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a two-piece tent at levels 1–3 and a three-piece barn (two triangles make its wall) at levels 4 and 6, bringing the pool to sixteen pictures and 3–8 per level. Third batch built 2026-10-13 ([PR #260](https://github.com/rjdunlap/neo/pull/260)): four-piece robot at levels 5–6 (square head, rectangular body and two triangular feet), seventeen pictures and 4–9 per level. More remain ready, `logic.ts` data only. Rule tests, one screenshot per new picture.
+2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. Second batch built ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a two-piece tent at levels 1–3 and a three-piece barn (two triangles make its wall) at levels 4 and 6, bringing the pool to sixteen pictures and 3–8 per level. Third batch built 2026-10-13 ([PR #260](https://github.com/rjdunlap/neo/pull/260)): four-piece robot at levels 5–6 (square head, rectangular body and two triangular feet), seventeen pictures and 4–9 per level. Fish (levels 2–3), lighthouse and pine (level 6) followed, then the bridge (level 6, rectangle deck on two upside-down hulls at x=±110, 2026-10-15, [PR #354](https://github.com/rjdunlap/neo/pull/354)): twenty-one pictures and 4–12 per level. More remain ready, `logic.ts` data only. Rule tests, one screenshot per new picture.
 3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
 4. **Level 7, two ways** — built 2026-10-13 ([PR #262](https://github.com/rjdunlap/neo/pull/262)): cover sets accept the roof plus square or roof plus two triangles; every accepted partial choice finishes. Spare-wall drops are free, help follows the shortest surviving cover and completion names two or three pieces. Both alternatives and the ghost finger checked; school 5–7.
 5. **Level 8, fix the picture** — built 2026-10-13 ([PR #263](https://github.com/rjdunlap/neo/pull/263)): turn-only repair, eight distinct-center picture pools, one visible mismatch, free in-place selection/turns, truthful hint and explicit Check. School 5–8. Wrong-shape swaps remain unbuilt; no dragging needed for this slice.
