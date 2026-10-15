@@ -89,7 +89,7 @@ Status values as in the [game tracker](README.md#tracker): **not started**, **in
 | `americas-africa` | The Maya, the Andes, West Africa, Indigenous peoples | C3; sources by the peoples concerned | None yet | undecided | S–M | **needs review** | not started; **needs review** |
 | `medieval-life` | Castles, guilds, markets, monasteries (no battles) | C3; museum guides | Block Tower, Market Stall | Storybook Square | S–M | guild-market logic | not started |
 | `exploration-maps` | Navigation, maps, ships and trade (acknowledging, not depicting, colonization) | C3; museum guides | Mail Carrier, Treasure Map, Peekaround Island | Skywatch Isles | S–M | navigation puzzle | not started; **needs review** |
-| `inventions` | Inventors and the wheel, printing press, bulb, flight; how an idea spreads | C3; science and technology museums | Wobble Works, Gear Garden, Chain Reaction | Maker Harbor | P–M | build-the-invention puzzle | not started |
+| `inventions` | Inventors and the wheel, printing press, bulb, flight; how an idea spreads | C3; science and technology museums | Wobble Works, Gear Garden, Chain Reaction | Maker Harbor | P–M | build-the-invention puzzle | **in progress** (branch `claude/inventions-research`, 2026-10-15) |
 | `community-civics` | Community helpers, jobs, rules, voting, how a community runs, local history | C3 civics strand | Market Stall, Lemonade Stand, Little Helpers | Storybook Square | P–M | village-council cozy puzzle | not started |
 
 ### Technology
