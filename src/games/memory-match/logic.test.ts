@@ -50,10 +50,10 @@ describe('memory matching', () => {
           expect(partners.map(card => cardLabel('pictures', card, [], pictures))).toEqual([picture.name, picture.name]);
         }
       }
-      expect([...families].sort()).toEqual(['friend', 'prop', 'shape']);
+      expect([...families].sort()).toEqual(['friend', 'prop', 'shape', 'vehicle']);
     }
     expect([...reached].sort()).toEqual(PICTURE_POOLS.flat().map(p => p.id).sort());
-    expect(PICTURE_POOLS.map(pool => pool.length)).toEqual([8, 8, 8]);
+    expect(PICTURE_POOLS.map(pool => pool.length)).toEqual([8, 8, 8, 8]);
   });
 
   it('keeps every picture inside its card with a readable thumbnail at the smallest picture board', () => {

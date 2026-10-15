@@ -389,7 +389,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap a card to flip it and hear its name, then tap a second card.',
       'Tap your first open card again to hear its name without choosing another card.',
       'Matching cards stay up; others flip back so you can remember them.',
-      { from: 1, to: 5, text: 'Find identical pictures: shapes, island friends, or fruit and other familiar things.' },
+      { from: 1, to: 5, text: 'Find identical pictures: shapes, island friends, fruit and other familiar things, or vehicles.' },
       { from: 6, to: 7, text: 'A number matches the card with that many dots.' },
       { from: 8, to: 8, text: 'A match needs the same shape and the same color.' },
       { from: 9, to: 9, text: 'A capital letter matches its small letter.' },
