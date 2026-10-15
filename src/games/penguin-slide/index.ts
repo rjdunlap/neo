@@ -116,6 +116,8 @@ class PenguinSlide implements Game {
   private told = false;
   /** A restart asked for mid-slide waits until the penguin has stopped. */
   private again = false;
+  /** Touch layout (the undo button) until a key or pad is used; couch play never has it. */
+  private touch: boolean;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -138,6 +140,7 @@ class PenguinSlide implements Game {
     // The couch screen takes no pointer input, so a round arrow there would look like a restart and do nothing.
     // Controllers undo with the left button and restart from the pause menu.
     this.undo.visible = !ctx.couch;
+    this.touch = !ctx.couch;
     ctx.stage.addChild(this.board, this.undo, this.glow);
   }
 
@@ -190,7 +193,17 @@ class PenguinSlide implements Game {
     return out;
   }
 
+  /** A finger came back after keys on the island: the undo button returns. */
+  touchReturned() {
+    if (this.touch || this.ctx.couch || this.finished) return;
+    this.touch = this.undo.visible = true;
+  }
+
   control(input: CouchControls) {
+    if (this.touch) {
+      // The first key or pad press on the island: the undo button goes (the left button undoes).
+      this.touch = this.undo.visible = false;
+    }
     if (this.busy || this.finished) return;
     const p = input.players.find(p => p.undo || p.direction >= 0);
     if (p?.undo) this.back();
@@ -508,6 +521,7 @@ function sticker(seed: number): Container {
 
 export const penguinSlide: GameModule = {
   id: 'penguin-slide',
+  liveController: true,
   name: 'Penguin Slide',
   titleLine: 'game.penguin-slide',
   region: 'puzzle-peaks',
