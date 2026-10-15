@@ -453,17 +453,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 8, text: 'Tap an arrow again to go further the same way ("right x4").' },
       { from: 9, to: 10, text: 'Use the loop button to repeat a few steps.' },
       { from: 11, to: 11, text: 'Read the shown program, tap the square where the robot will stop, then press play to watch.' },
-      { from: 12, text: 'Press play to watch the program once. Then tap the slot to fix and tap an arrow to change it. Press play again.' },
+      { from: 12, to: 12, text: 'Press play to watch the program once. Then tap the slot to fix and tap an arrow to change it. Press play again.' },
+      { from: 13, text: 'Make a path with counted steps that goes through the apple first, then ends on the star. Press play.' },
     ],
     finish: [
       { to: 10, text: 'The round ends when the robot reaches the star.' },
       { from: 11, to: 11, text: 'The round ends after the robot shows where the program stops.' },
-      { from: 12, text: 'The round ends when the fixed program reaches the star.' },
+      { from: 12, to: 12, text: 'The round ends when the fixed program reaches the star.' },
+      { from: 13, text: 'The round ends when the robot has picked up the apple and reached the star.' },
     ],
     note: [
       { to: 10, text: 'The board is drawn from three possible layouts. If the robot cannot get there it simply stops; edit the program and try again.' },
       { from: 11, to: 11, text: 'Predictions are just a chance to think; every guess is welcome.' },
-      { from: 12, text: 'The first watch is free. A repair that still stops short gets a gentle hint after two tries.' },
+      { from: 12, to: 12, text: 'The first watch is free. A repair that still stops short gets a gentle hint after two tries.' },
+      { from: 13, text: 'The apple never sits on the plain way to the star, so the shortest path forgets it. Ending on the star without it is a gentle miss and the apple glows.' },
     ],
   },
   'size-parade': {

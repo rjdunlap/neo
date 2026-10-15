@@ -2128,8 +2128,8 @@ async function traceRound(level, name, wrong = false) {
 }
 
 async function robots() {
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 10); level++) {
-    if (level === 11 || level === 12) await page.setViewportSize({ width: 768, height: 1024 });
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 13); level++) {
+    if (level === 11 || level === 12 || level === 13) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('robot-path', level);
     if (level === 11) {
       await page.evaluate(async () => {
@@ -2177,6 +2177,7 @@ async function robots() {
       log('Robot Path level 12: free watch, two repair misses, slot hint, and fixed program passed');
       continue;
     }
+    if (level === 13) await screenshot('robot-path-13');
     await page.evaluate(async (level) => {
       const g = neo.scene.game;
       const spoken = [];
@@ -2191,7 +2192,18 @@ async function robots() {
         if (!spoken.includes('robot.short') || g.misses !== 1) throw new Error('Short program was not explained');
         if (g.nextHelp() === g.clear) throw new Error('Hint discarded a useful prefix');
       }
-      for (let i = 0; i < (level === 6 ? 1 : 2); i++) {
+      if (level === 13) {
+        // The plain way to the star forgets the apple: a gentle miss that names it and makes it glow.
+        const say = g.ctx.say;
+        g.ctx.say = (id, ...args) => { spoken.push(id); return say(id, ...args); };
+        const { shortestPath, compress } = await import('/src/games/robot-path/logic.ts');
+        for (const slot of compress(shortestPath(g.plan))) for (let k = 0; k < slot.n; k++) { kit.tapOn(g.arrows.find((a) => a.dir === slot.dir).button); await kit.sleep(450); }
+        kit.tapOn(g.play);
+        if (!await kit.until(() => !g.running, 20000)) throw new Error('Straight run stuck');
+        if (g.misses !== 1 || !spoken.includes('robot.forgot')) throw new Error('Forgetting the apple was not a named miss');
+        if (!g.apple.visible) throw new Error('The apple did not come back after the miss');
+      }
+      for (let i = 0; i < (level === 6 ? 1 : level === 13 ? 1 : 2); i++) {
         kit.tapOn(g.clear); await kit.sleep(450); kit.tapOn(g.arrows.find((a) => a.dir === 'left').button); await kit.sleep(180); kit.tapOn(g.play);
         if (!await kit.until(() => !g.running, 12000)) throw new Error('Robot return stuck');
       }

@@ -11,7 +11,8 @@ export const DELTAS: Record<Direction, Cell> = { up: [0, -1], right: [1, 0], dow
  */
 export type RobotMode = 'steps' | 'counts' | 'loop';
 export interface Slot { dir: Direction; n: number }
-export interface RobotPlan { size: number; goal: Cell; rocks: Cell[]; limit: number; name: string; mode?: RobotMode; solution?: { slots: Slot[]; loop: number } }
+/** `via` is an apple the robot must pass through before it ends on the star. */
+export interface RobotPlan { size: number; goal: Cell; rocks: Cell[]; limit: number; name: string; mode?: RobotMode; via?: Cell; solution?: { slots: Slot[]; loop: number } }
 /** An authored program for the prediction level; predictions are experiments, not answers to score. */
 export interface PredictPlan extends RobotPlan { mode: 'steps' | 'counts'; program: Slot[] }
 /** A counted program with one short final run that can be fixed by extending that slot. */
@@ -62,6 +63,16 @@ export const ROBOT_BOARDS: readonly (readonly RobotPlan[])[] = ROBOT_PLANS.map((
 export function boardFor(level: number, rng: Rng): RobotPlan {
   return rng.pick(ROBOT_BOARDS[Math.max(0, Math.min(ROBOT_BOARDS.length - 1, level - 1))]);
 }
+
+/**
+ * Level 13: counted steps again, with an apple on the way. Each apple sits off every shortest route to the star
+ * (the plain way there skips it), and each authored route passes through it and ends on the star.
+ */
+export const VIA_PLANS: RobotPlan[] = [
+  { size: 5, goal: [4, 0], rocks: [], via: [2, 3], limit: 4, mode: 'counts', name: 'Pick up the apple on the way to the star', solution: { slots: [{ dir: 'down', n: 3 }, { dir: 'right', n: 2 }, { dir: 'up', n: 3 }, { dir: 'right', n: 2 }], loop: 1 } },
+  { size: 5, goal: [2, 4], rocks: [[3, 1]], via: [4, 2], limit: 4, mode: 'counts', name: 'Go through the apple, then on to the star', solution: { slots: [{ dir: 'right', n: 4 }, { dir: 'down', n: 2 }, { dir: 'left', n: 2 }, { dir: 'down', n: 2 }], loop: 1 } },
+  { size: 5, goal: [0, 4], rocks: [[1, 1], [1, 2]], via: [3, 3], limit: 4, mode: 'counts', name: 'The apple first, then the star', solution: { slots: [{ dir: 'down', n: 3 }, { dir: 'right', n: 3 }, { dir: 'down', n: 1 }, { dir: 'left', n: 3 }], loop: 1 } },
+];
 
 /** The same blocked route shown as individual steps and as counted steps. */
 export const PREDICT_PLANS: PredictPlan[] = [
@@ -125,15 +136,19 @@ export function step(cell: Cell, dir: Direction): Cell { return [cell[0] + DELTA
 export function allowed(cell: Cell, plan: RobotPlan): boolean {
   return cell.every((n) => n >= 0 && n < plan.size) && !plan.rocks.some((r) => same(r, cell));
 }
-export function runPath(plan: RobotPlan, program: readonly Direction[]): { path: Cell[]; success: boolean; stop: 'goal' | 'bump' | 'short' | 'empty' } {
+export function runPath(plan: RobotPlan, program: readonly Direction[]): { path: Cell[]; success: boolean; stop: 'goal' | 'bump' | 'short' | 'empty' | 'forgot' } {
   const path: Cell[] = [[0, 0]];
+  let picked = !plan.via;
   // On counted and looped levels the limit is on slots, not steps.
   for (const dir of (plan.mode ?? 'steps') === 'steps' ? program.slice(0, plan.limit) : program) {
     const cell = step(path[path.length - 1], dir);
     if (!allowed(cell, plan)) return { path, success: false, stop: 'bump' };
     path.push(cell);
-    if (same(cell, plan.goal)) return { path, success: true, stop: 'goal' };
+    if (plan.via && same(cell, plan.via)) picked = true;
+    if (same(cell, plan.goal) && picked) return { path, success: true, stop: 'goal' };
   }
+  // Ending on the star without the apple is its own miss; passing the star on the way is fine.
+  if (!picked && same(path[path.length - 1], plan.goal)) return { path, success: false, stop: 'forgot' };
   return { path, success: false, stop: program.length ? 'short' : 'empty' };
 }
 export function shortestPath(plan: RobotPlan, start: Cell = [0, 0]): Direction[] {

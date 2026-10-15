@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { allowed, boardFor, compress, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
+import { allowed, boardFor, compress, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, VIA_PLANS, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
 
 describe('robot routes', () => {
   it('keeps every preschool board small, rock-free and solvable in at most three single steps', () => {
@@ -203,5 +203,47 @@ describe('feedback and alternative-route help', () => {
       visit([]);
     }
     expect(alternatives).toBeGreaterThan(0);
+  });
+});
+
+describe('level 13: pick up the apple on the way', () => {
+  const dist = (plan: (typeof VIA_PLANS)[number], to: readonly [number, number]) => shortestPath({ ...plan, goal: to as [number, number] }).length;
+  it('puts each apple off every shortest route, on open ground, and its authored route passes it', () => {
+    for (const plan of VIA_PLANS) {
+      const apple = plan.via!;
+      expect(allowed(apple, plan), plan.name).toBe(true);
+      expect(plan.goal).not.toEqual(apple);
+      // Going via the apple is strictly longer than going straight, so the plain way skips it.
+      expect(dist(plan, apple) + shortestPath({ ...plan, goal: plan.goal }, apple as [number, number]).length, plan.name).toBeGreaterThan(dist(plan, plan.goal));
+      const result = runPath(plan, expand(plan.solution!.slots));
+      expect(result.success, plan.name).toBe(true);
+      expect(result.path.some(([x, y]) => x === apple[0] && y === apple[1]), plan.name).toBe(true);
+      expect(plan.solution!.slots.length, plan.name).toBeLessThanOrEqual(plan.limit);
+    }
+  });
+  it('counts the straight way as a miss that names the apple, and passing the star early is fine', () => {
+    for (const plan of VIA_PLANS) {
+      const straight = runPath(plan, shortestPath(plan));
+      expect(straight.success, plan.name).toBe(false);
+      expect(straight.stop, plan.name).toBe('forgot');
+    }
+    const plan = VIA_PLANS[0];
+    expect(runPath(plan, ['right', 'right']).stop).toBe('short');
+  });
+  it('lets the ghost finger and the hint finish every board', () => {
+    for (const plan of VIA_PLANS) {
+      const program: Slot[] = [];
+      let done = false;
+      for (let presses = 0; presses < 30 && !done; presses++) {
+        const press = routePress(plan, program, 1);
+        if ('play' in press) done = runPath(plan, expand(program)).success;
+        else if ('clear' in press) program.length = 0;
+        else if ('arrow' in press) {
+          const last = program[program.length - 1];
+          if (last && last.dir === press.arrow && last.n < 5) last.n++; else program.push({ dir: press.arrow, n: 1 });
+        }
+      }
+      expect(done, plan.name).toBe(true);
+    }
   });
 });

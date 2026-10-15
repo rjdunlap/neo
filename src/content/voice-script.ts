@@ -1338,6 +1338,8 @@ export const SCRIPT = {
   'robot.fix': ['The program is already here. Press play to watch, then tap a slot to change and tap an arrow. Press play again to reach the star!'],
   'robot.fix.watch': ['It stopped short. Can you fix the program so it reaches the star?'],
   'robot.fix.hint': ['Tap the glowing slot, then add one more step.'],
+  'robot.via': ['Pick up the apple on the way! Make a path that goes through the apple and ends on the star.'],
+  'robot.forgot': ['You forgot the apple! Go through it on the way to the star.'],
   'robot.empty': ['Tap some arrows first.'],
   'robot.short': ['It stopped here. It needs more steps.'],
   'robot.bump': ['A bump! Let us change our path and try again.'],
