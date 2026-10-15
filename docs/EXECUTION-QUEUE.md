@@ -27,16 +27,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation hourly. Owned Bouncy Launch support worker complete; #269 merged at `ace7c3ed37eb38a5d2341ef1865458e2ea257d61` and deployed; slot released. Slice 2 remains blocked on decision 7's listen.
-- Newly admitted: **Bouncy Launch slice 3, Remember the last flight**, [source](deep-dives/bouncy-launch.md#build-slices-in-order): faint dotted prior-flight arc, numbered flags at 6 and third compare hint ring after a miss. Exclude slice-2 notes/skies, new levels/bands, physics/course changes and decisions.
-- Dispatch `bouncy-launch-last-flight-20261013T201653Z`; worker `01a136e9-ad64-7972-b23a-6a94841e4324`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Bouncy Launch: remember the last flight". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/bouncy-launch-last-flight`, claim `604bd31`, [PR #275](https://github.com/rjdunlap/neo/pull/275); source `b51710a`.
-- Expected Bouncy Launch rendering/help and focused rules/browser checks, necessary voice/how-to and related docs. Worker implementation complete; coordinator did not implement. Source requires filtered play and ghost finger at 5/6; AGENTS adds typecheck/meaningful rules and affected shared-content build. No unchanged full suites. Device speech/child fit remains open.
-- Admission 2026-10-13 20:16:53 UTC **55% five-hour / 31% weekly used**, resets `1791925955` / `1792472658`; ordinary usage allowed. Recalibrated gameplay estimate **18.75 / 3.75 points** (1.25 × prior comparable aggregate 15 / 3, exceeding defaults), fits actual remaining **45% / 69%**. No daily cap/reserve; worker rechecks usage.
-- Previous proof: #269 typecheck, 23 focused tests/build, filtered launch 1–6, portrait and clean level-6 ghost finger passed; server stopped/clean checkouts/deployment succeeded. Final **53% / 31%**, resets `1791925955` / `1792472658`, versus dispatch 38% / 28% with same identities: aggregate **15 / 3 points**, reconciled once below. Existing IDEAS link failure remains recorded. No unchanged checks rerun.
-- Overlap: input/navigation claim cleared; no active implementation/open PR or overlap. Old Beat Builder branches correspond to merged PRs; unrelated dirty registry/deep-dive repair preserved. Coordinator servers none.
-- Worker scope/pre-implementation/pre-browser usage: 57/31, 59/32, 60/32%, resets unchanged; ordinary usage allowed. Typecheck/24 focused tests/build, filtered level-5/6 arcade and ghost-finger (18.9/15.1 s), landscape/portrait visual proof pass; see [verification](archive/VERIFICATION-2026-10-13.md#2026-10-13--bouncy-launch-last-flight-slice-3). Pre-publication 63/32%, same resets; ordinary usage allowed.
-- Publication checkpoint: implementation `406568d` pushed; #275 ready for review. Automatic approval review rejected `gh pr merge 275 --merge`: it requires explicit authorization for this exact main-branch merge despite repo standing authorization. No merge/deployment occurred. No workaround attempted.
-- Next action: developer approve merge of #275; then resume this worker for merge/deploy and final usage reading. Coordinator retrieve worker/PR next wake-up, confirm completion/publication and reconcile usage once before another dispatch. Resume same worker if unfinished; do not implement here.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; automation hourly. Owned last-flight worker's slice complete, #275 merged at `e671bf3533e92ea92a07ee38a1e478fb64c35c66`; publication blocker cleared externally, previous slot released. Preserve coordinator checkout (recovered and Git-locked).
+- Newly admitted: **Day by Day docs-only game deep dive**, next unstarted tracker entry. Source [procedure](deep-dives/README.md), [template](deep-dives/TEMPLATE.md), existing [definition](day-by-day.md). Audit existing content/ladder, research and plan bounded slices; no implementation/src/scripts/public/tests/build/browser or developer decisions.
+- Dispatch `day-by-day-dive-20261015T074430Z`; worker `01a13e85-b7aa-7ee1-8326-7a3291f02f23`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), requested title "Day by Day: game deep dive". Fresh project/local chat, minimal handoff, no history/model override; branch/claim PR pending; source `ae77222`.
+- Expected write-up/tracker, roadmap/ideas and verification/queue docs. Research/docs validation **not run by coordinator**; worker owes links/anchors and diff check only. Actual device/child checks remain open.
+- Admission 2026-10-15 07:44:30 UTC **35% five-hour / 6% weekly used**, resets `1792063357` / `1792650157`; ordinary usage allowed. Docs estimate **12.5 / 2.5 points** (1.25 × comparable 10 / 2), fits actual remaining **65% / 94%**; no daily cap/reserve. Worker rechecks actual allowance.
+- Previous proof: #275 typecheck/24 focused tests/build, filtered 5–6 play and ghost-finger checks passed, screenshots reviewed/server stopped. Worker original closeout 66% / 33%, resets `1791925955` / `1792472658`, versus admission 55% / 31% with same identities: aggregate 11 / 2 points. Resumed integration `3a454a3` clean; unchanged dependency proof reused, syntax/diff checks passed; final resumed reading 4% / 33%, resets `1791944433` / `1792472658`. Five-hour crossing makes combined sample unknown; weekly endpoints aggregate +2. Publication later completed externally; no exact task-cost claim. Reconciled once below; no unchanged proof rerun.
+- Overlap: no active implementation/open PR or dirty work; prior game builds integrated/archived and recovery branches preserved. Remaining historical branches checked; none claims Day by Day. Coordinator servers none.
+- Next action: retrieve worker/PR next wake-up, confirm completion/publication and reconcile final usage once before another dispatch. Resume same worker if unfinished; do not implement here.
 
 ## Usage observations
 
@@ -48,7 +46,6 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 
 
-| 2026-10-12 | Beat Builder woodland / [#197](https://github.com/rjdunlap/neo/pull/197), dispatch `beat-builder-woodland-20261012T184648Z` | Content/art | 25% → 34% / `1791838034` | 69% → 70% / `1792295993` (intermediate 1s drift) | Estimate 15 / 2.5 points | Merged #197; final 18:54:41 UTC. Aggregate endpoints 9 / 1 points; worker complete, reconciled once |
 
 
 | 2026-10-12 | Block Tower dive / [#209](https://github.com/rjdunlap/neo/pull/209), dispatch `block-tower-dive-20261012T204519Z` | Docs only | 48% → 3% / `1791838034` → `1791856047` | 73% → 74% / `1792295993` → `1792295992` | Estimate 12 / 2.5 points | Merged #209; final 20:52:52 UTC. Five-hour reset crossing and weekly identity drift: aggregate unknown; worker complete, reconciled once |
@@ -76,9 +73,11 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 
 | 2026-10-13 | Bouncy Launch support / [#269](https://github.com/rjdunlap/neo/pull/269), dispatch `bouncy-launch-support-20261013T181223Z` | Existing-game feedback | 38% → 53% / `1791925955` | 28% → 31% / `1792472658` | Estimate 15 / 2.5 points | Merged/deployed; final worker response, aggregate 15 / 3 points. Reconciled once; recalibrate next comparable estimate upward |
 
-| 2026-10-13 | Bouncy Launch last flight, dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing-game feedback | 55% → pending / `1791925955` | 31% → pending / `1792472658` | Estimate 18.75 / 3.75 points | Fresh worker `01a136e9-ad64-7972-b23a-6a94841e4324` admitted; implementation/proof pending |
 
-| 2026-10-13 | Bouncy Launch last flight / [#275](https://github.com/rjdunlap/neo/pull/275), dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing interaction support | 55% → 63% pre-publication / `1791925955` | 31% → 32% pre-publication / `1792472658` | Estimate 18.75 / 3.75 points | Worker `01a136e9-ad64-7972-b23a-6a94841e4324`, implemented/verified/published at `406568d`, merge blocked by automatic approval review; aggregate preliminary 8 / 1 points; final after-commit reading in worker response, reconcile once |
+
+| 2026-10-13 | Bouncy Launch last flight / [#275](https://github.com/rjdunlap/neo/pull/275), dispatch `bouncy-launch-last-flight-20261013T201653Z` | Existing-game feedback | 55% → 66%, then 4% / `1791925955` → `1791944433` | 31% → 33% / `1792472658` | Estimate 18.75 / 3.75 points | Merged externally; original aggregate 11 / 2; combined five-hour unknown across reset, weekly +2. Resumed final 4% / 33%; publication overhead unknown; reconciled once |
+
+| 2026-10-15 | Day by Day dive, dispatch `day-by-day-dive-20261015T074430Z` | Docs only | 35% → pending / `1792063357` | 6% → pending / `1792650157` | Estimate 12.5 / 2.5 points | Fresh worker `01a13e85-b7aa-7ee1-8326-7a3291f02f23` admitted; research/docs proof pending |
 
 ## Fresh-worker dispatch and handoff
 
