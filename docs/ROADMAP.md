@@ -61,7 +61,6 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 12. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
 13. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
 14. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
-15. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery) — claimed by `claude/lands-c3-pause-actions` (2026-10-15)
 
 16. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
 
@@ -75,7 +74,7 @@ Chunk numbers are stable IDs that other documents cite; rows are sorted by what 
 | 2 | **Deepen short ladders** with a real next decision | ready where a dive defines the slice; define otherwise | A defined slice from the [short ladders](#short-ladders-in-order) table, or a definition for an undefined direction | Docs only for definitions; then new-levels or new-interaction tier | [Below](#short-ladders-in-order) |
 | 11 | **A second lap level for favorites** | ready | Other below-level-1 entries wait on each dive's gates; append the level and place it with `order` | New levels on an existing interaction | Wave-2 [deep dives](deep-dives/README.md) |
 | 18 | **Sing-Along Barn, more tunes and modes** | ready | The next pentatonic tune (ready list), or a repeated-phrase mode. Melodies were written from standard forms, not a printed score (open in [DEVICE-CHECKS](DEVICE-CHECKS.md)) | New levels: rule tests, one top-level play, `fingerdemo` | [Gap review sketch](archive/COMPLETED-2026-10-09.md#sing-along-barn-first-slice-2026-10-12) |
-| 3 | **Lands: navigation and discovery** (stages A, B and D built; C partly built) | ready | C3 (ready list); then C2b and C4; then stage E, Game night | Shell and navigation tier | [Lands](#lands-navigation-and-discovery) |
+| 3 | **Lands: navigation and discovery** (stages A, B and D built; C partly built) | ready | C2b and C4; then stage E, Game night | Shell and navigation tier | [Lands](#lands-navigation-and-discovery) |
 | 8 | **Grown-up play, the open steps** | ready | An Ice Blocks frozen-pond course (`parseBoard` needs a `B` legend, the course a `version`); or define Brain Break's next finite round | Rule tests; `couchcourse` while courses live on the couch | [Grown-up play](#grown-up-play-the-couch-route-for-one) |
 | 9 | **Couch games that score on seeded boards** (Garden Rows, Treasure Map, Quick Tricks) | ready | One game: `control()`, `autoplay`, a catalog entry and a tier slot | `BROWSER_SUITE=couchgames COUCH_ONLY=<id>` | [Extending couch play](DESIGN.md#extending-couch-play) |
 | 12 | **Diagnose the flaky Peg Garden touch suite** | ready | A small probe of `BROWSER_SUITE=batch BATCH_ONLY=pegs`; record a known flake if it does not reproduce | A probe script | [Verification](VERIFICATION.md) |
@@ -203,8 +202,7 @@ What is already built under this chunk is in [the 2026-10-15 cleanup archive](ar
 
 - **A. The lands map**: built 2026-10-09.
 - **B. Lantern Lake and the first touch puzzles**: built 2026-10-13 (the `grownup` band, Lantern Lodge, the six couch-only games on the island, Lantern Lights and Sudoku Garden on touch).
-- **C. The island takes a controller.** Built: C1 (a round on keys or a pad, `src/app/input-in-use.ts`, one owner for Esc), C2 (focus rings on the map and lands, `src/app/screen-keys.ts`), C1b groups 1 to 3 (eleven games switch live between keys and touch, `Game.touchReturned()`). **Still to do, in order:**
-  - **C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and a pad that can use the sheet's own buttons.
+- **C. The island takes a controller.** Built: C1 (a round on keys or a pad, `src/app/input-in-use.ts`, one owner for Esc), C2 (focus rings on the map and lands, `src/app/screen-keys.ts`), C1b groups 1 to 3 (eleven games switch live between keys and touch, `Game.touchReturned()`), C3 (the pause sheet's round entries and a pad on it). **Still to do, in order:**
   - **C2b**: the same ring on the screens without one (home spots, picnic, stickers, treehouse, journal, hatching); then the chooser's Enter opens the island. Waits for C1b and the per-level audit, since today only games at couch-played levels take keys.
   - **C4**: the card's demonstration for the input in use, an on-screen cue that keys work, spoken lines that say "tap" only on touch, and a per-level audit to widen keys beyond the levels couch play has played.
 - **D. Touch for the controller-only puzzles**: built 2026-10-13 (Word Search, Island Bridges, Picture Logic, Pond Conga). No game takes only a controller now; the island's route to a controller-only game's course is kept for the next one.
