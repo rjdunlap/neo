@@ -149,3 +149,10 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 - Opened Head Start/NGSS/Kew/Smithsonian/NAEYC anchors, six digital precedents, publisher board rules and an unplugged reference. Every audience L–G has an answer; source/access/model limits and older appeal gaps are explicit. No reference game played or game built.
 - Ran: relative Markdown links/anchors and `git diff --check` (docs-only tier); oldest dated entries rotated to the existing archive and incoming links repaired.
 - Not run: typecheck, units, build, browser/offline, hardware or person/child checks. Biology/model review, proposed placement, practical-card review and transfer remain open.
+
+## 2026-10-14 — Programming subject research
+
+- Docs only, researched at `5222d51`, integrated upstream `0ac9287` plus research diff on `codex/programming-subject-research`, [PR #338](https://github.com/rjdunlap/neo/pull/338): [study](../deep-dives/subjects/programming.md), subject tracker, [roadmap packets](../ROADMAP.md#programming-recommendations), candidate notebook and decision/device records. Cue Studio first, develop existing Machine Line, then Parcel Programs; route reuse stays in Robot Path.
+- Opened CSTA 2026 and historical 2017 PDFs, the second-grade CAL-ScratchJr trial, official ScratchJr guidance/lesson, six first-party digital precedents and Kidbots. No reference game played; access limits, toddler-readiness, transfer and older-appeal gaps are explicit.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with links repaired. No code, game or practical card built.
+- Not run: typecheck, units, build, browser/offline, hardware, speech or child/parent play. Identity/ranges/placement, creation-versus-Check accounting and practical-card review remain open.
