@@ -11,10 +11,10 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANCHOR_LEVEL, choicesFor, DAYS, makeWeek, neighbor, planFor, relativeQuestions, sunnyCount, toggleMark, WEATHER, weekLayout } from './logic';
+import { ANCHOR_LEVEL, COUNT_LEVEL, choicesFor, DAYS, makeCountWeek, makeWeek, neighbor, planFor, relativeQuestions, sunnyCount, toggleMark, WEATHER, weekLayout } from './logic';
 import { gardenTreatment, wrapPath } from './presentation';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 4, order: [2, 4, 3] } };
+const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3] } };
 
 function weatherArt(kind: number): Graphics {
   const g = new Graphics();
@@ -84,7 +84,8 @@ class DayByDay implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.week = makeWeek(ctx.rng);
+    this.week = ctx.level === COUNT_LEVEL ? makeCountWeek(ctx.rng) : makeWeek(ctx.rng);
+    if (ctx.level === COUNT_LEVEL) { this.recorded = 7; this.day = 7; this.phase = 'tally'; }
     this.relatives = relativeQuestions(ctx.level, ctx.rng);
     this.treatment = gardenTreatment(ctx.rng);
     this.backdrop = new Backdrop({ sky: [swatch.blue.light, cream], hills: [grass, swatch.green.light], horizon: 0.65, clouds: 2, seed: 72 }, ctx.view);
@@ -103,7 +104,7 @@ class DayByDay implements Game {
     this.resize(ctx.view);
   }
 
-  start() { void this.askDay(); }
+  start() { if (this.ctx.level === COUNT_LEVEL) void this.askTally(); else void this.askDay(); }
   destroy() { this.finished = true; }
 
   resize(view: View) {
@@ -205,6 +206,9 @@ class DayByDay implements Game {
       if (i < this.recorded) {
         if (this.ctx.level <= 3) node.addChild(new Graphics().roundRect(-39, -14, 78, 62, 18).fill(cream).stroke({ width: 1.5, color: swatch.teal.light }));
         const art = weatherArt(this.week[i]); art.scale.set(0.55); art.y = 10; node.addChild(art);
+      }
+      if (this.ctx.level === COUNT_LEVEL && this.week[i] === 0) {
+        node.addChild(new Graphics().roundRect(-45, -20, 90, 70, 18).stroke({ width: 4, color: swatch.teal.line }));
       }
       if (this.marks.includes(i)) node.addChild(new Graphics().circle(39, 40, 7).fill(swatch.yellow.line));
       for (const child of node.children) child.eventMode = 'none';
@@ -343,9 +347,9 @@ class DayByDay implements Game {
     this.phase = 'tally';
     this.answer = sunnyCount(this.week);
     this.caption.text = 'How many sunny days?';
-    this.note.text = 'Tap records to mark or unmark them. Choose the total.';
+    this.note.text = this.ctx.level === COUNT_LEVEL ? 'Count the outlined suns. Tap records to mark or unmark; choose the total.' : 'Tap records to mark or unmark them. Choose the total.';
     this.buildChoices(choicesFor(this.answer, this.ctx.rng, 'number'), 'number');
-    await this.ctx.instruct('week.tally');
+    await this.ctx.instruct(this.ctx.level === COUNT_LEVEL ? 'week.countrecord' : 'week.tally');
     this.busy = false;
   }
 
@@ -367,7 +371,7 @@ class DayByDay implements Game {
     sfx.boing();
     if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
     if (this.phase === 'weather') await this.ctx.say('week.weatherhint', { weather: WEATHER[this.answer] });
-    else if (this.phase === 'tally') await this.ctx.say('week.tallyhint', { n: this.answer });
+    else if (this.phase === 'tally') await this.ctx.say(this.ctx.level === COUNT_LEVEL ? 'week.countrecordhint' : 'week.tallyhint', { n: this.answer });
     else if (this.phase === 'relative' && this.ctx.level >= ANCHOR_LEVEL) {
       const { today, direction } = this.relatives[this.question];
       await this.ctx.say(direction === 1 ? 'week.tomorrowhint' : 'week.yesterdayhint', { day: DAYS[this.answer], today: DAYS[today] });
@@ -379,9 +383,9 @@ class DayByDay implements Game {
     this.finished = true;
     this.confirm.visible = false;
     for (const p of this.choices) p.node.visible = false;
-    this.caption.text = 'A whole pretend week!';
+    this.caption.text = this.ctx.level === COUNT_LEVEL ? 'We counted the sunny records!' : 'A whole pretend week!';
     this.note.text = '';
-    await this.ctx.say('week.done');
+    await this.ctx.say(this.ctx.level === COUNT_LEVEL ? 'week.countrecorddone' : 'week.done');
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 }
@@ -400,7 +404,7 @@ export const dayByDay: GameModule = {
   id: 'day-by-day', name: 'Day by Day', titleLine: 'game.day-by-day', region: 'cozy-village',
   skills: ['weekday order', 'yesterday and tomorrow', 'weather records', 'counting observations'], bands: ['prek', 'school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
-  music: STYLES.hub, touchDemo: true,
+  music: STYLES.hub, touchDemo: true, entryLevels: [COUNT_LEVEL],
   coplayHint: 'Take turns: one person names and places the day, the other records its pictured weather. Ask what comes before and after.',
   offScreen: 'Make seven day cards for a pretend week. Lay them out, turn Sunday back toward Monday, and talk about yesterday and tomorrow.',
   hubIcon: () => { const art = weekArt(1); art.y = -65; return new WigglyIcon(art); },

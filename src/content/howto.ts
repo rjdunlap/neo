@@ -80,17 +80,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'day-by-day': {
     goal: 'Make and read a pretend week of days and weather.',
     steps: [
-      'Tap day cards to hear their names, then tap the arrow to place the selected day in the next slot.',
-      'Look at the sky picture, then tap the matching weather button to record that day.',
+      { to: 4, text: 'Tap day cards to hear their names, then tap the arrow to place the selected day in the next slot.' },
+      { to: 4, text: 'Look at the sky picture, then tap the matching weather button to record that day.' },
       { from: 2, to: 3, text: 'After Sunday, choose tomorrow and yesterday for the days spoken. Tap the arrow to confirm. The week repeats from Sunday to Monday.' },
       { from: 4, to: 4, text: 'After the week, a day is named. Choose the day just after it for tomorrow and the day just before it for yesterday. Tap the arrow to confirm.' },
+      { from: 10, to: 10, text: 'The pretend week is already recorded. Count the outlined suns. Tap any record to hear it and mark or unmark it, then choose the total.' },
       { from: 3, to: 3, text: 'Count the sunny records and choose the total. Tap records to mark or unmark them as you count.' },
     ],
     finish: [
       { to: 1, text: 'The round ends after all seven days and their weather are recorded.' },
       { from: 2, to: 2, text: 'Record the week and answer two yesterday/tomorrow questions to finish.' },
       { from: 3, to: 3, text: 'Record the week, answer two day questions, and count the sunny days to finish.' },
-      { from: 4, text: 'Record the week and answer two questions, one tomorrow and one yesterday, from different days to finish.' },
+      { from: 10, to: 10, text: 'Choose the correct sunny-day total once to finish. The outlines are free starting support; marks need not match the suns.' },
+      { from: 4, to: 4, text: 'Record the week and answer two questions, one tomorrow and one yesterday, from different days to finish.' },
     ],
     note: 'Card naming, replaying recorded days, and counting marks are free support. Two wrong answers glow the right choice. This is a pretend week, independent of the real date.',
   },

@@ -89,7 +89,7 @@ export interface GameModule {
   bands: Band[];
   levels(band: Band): LevelRange;
   /**
-   * Easy levels with high IDs, appended above the ladder and placed first by a younger band's `order` (Bubble Pop 15, Pet Says 13).
+   * Easy levels with high IDs, appended above the ladder and placed earlier by a band's `order` (Bubble Pop 15, Day by Day 10).
    * A band that does not list one starts at its own easiest level when a saved level or pin is an entry (`landing`).
    */
   entryLevels?: readonly number[];
