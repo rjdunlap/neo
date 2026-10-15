@@ -13,6 +13,12 @@
 - Ran: typecheck, `vitest run src/games/memory-match` (13 pass; two new: valid count/spacing/bounds for 1–8 in at least three layouts for n≥2, seeded and reaches every arrangement), one 1024x768 browser screenshot of level 7 showing varied faces.
 - Not run: bot/`fingerdemo` (interaction unchanged), full browser round, device or child recognition.
 
+## 2026-10-14 — Opposites second batch of pairs
+
+- Content on `claude/opposites-second-pairs` ([PR #317](https://github.com/rjdunlap/neo/pull/317)): four pairs in `src/games/opposites` (sponge wet/dry, plate clean/dirty, book thick/thin, ball near/far), all `from` level 3; levels 1–2 unchanged, levels 3–4 draw from sixteen pairs; sticker pool unchanged.
+- Ran: typecheck, the five Opposites rule tests (pool test updated), `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=3` (levels 3 and 4 passed), one screenshot of the four new pictures.
+- Not run: a portrait screenshot, `fingerdemo`, iPad or child legibility at 140 units.
+
 ## 2026-10-14 — Memory Match vehicles deck
 
 - Content on `claude/memory-match-vehicles` (uncommitted base `66b2baf`): a fourth seeded picture family of eight code-drawn vehicles at levels 1–5 (`VEHICLES`/`PICTURE_POOLS` in `logic.ts`, `vehicleArt` in `art.ts`); no level, band or accounting change.
@@ -141,7 +147,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Day by Day (`week`, `fingerdemo`) | 2026-10-11: first/top-level real-input play, retries/hint, saved reward, reversible counting, portrait and interrupted speech; demos 1–3 clean (35.9, 43.6, 50.1 s), land entry/intro/return | Day by Day first slice entry | No iPad, actual device speech or child play; level-2 full speech play not run |
 | Orchard Rows (`orchard`, `fingerdemo`) | 2026-10-11: levels 1 and 3, replay, two misses/one hint, saved rewards, portrait and interrupted speech; demos 1–3 clean (23.1, 41.4, 46.5 s); land launch, intro and return | Orchard Rows first slice entry | No iPad, actual device speech or child play; separate level-2 manual play not run |
 | Puzzle Pals scenes (`smoke`, `fingerdemo`) | 2026-10-14: all twelve scenes at current plans passed strict filled-feature tests; sixty-case rendered audit/contact sheet and thirty saved-picture pixel comparisons passed; 2026-10-11 smoke/demo coverage retained | [Visible cues and fairness](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--puzzle-pals-visible-cues-and-fairness) | not every scene played as a puzzle; no new smoke/demo run; iPad and speech unchecked |
-| Opposites content (`woods`, `fingerdemo`) | 2026-10-11: levels 1–4, misses/hints, saved rewards; 20 focused tests, typecheck/build; lap demo clean in 20.3 s; six subjects on both sides reviewed in portrait and bounded inside cards | Opposites varied-subjects and acting-flips entry | iPad, device speech and child play unverified |
+| Opposites content (`woods`, `fingerdemo`) | 2026-10-11: levels 1–4, misses/hints, saved rewards; 20 focused tests, typecheck/build; lap demo clean in 20.3 s; six subjects on both sides reviewed in portrait and bounded inside cards | Opposites varied-subjects and acting-flips entry | 2026-10-14 second batch: four pairs at level 3; typecheck, 5 rule tests, `woods` filtered `opp` levels 3–4 pass, one screenshot; no portrait shot or `fingerdemo` rerun | iPad, device speech and child play unverified |
 | Fill and Dump release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations; story resume/rewards; Together and Face-off trips; integrated production build and offline reload/saves | Fill and Dump preschool pouring entry | Chrome automation; iPad and child judgment remain open |
 | Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
