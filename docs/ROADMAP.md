@@ -126,6 +126,8 @@ Lap keeps Fill and Dump/Monster Munch cause-and-effect play. Portion matching, e
 
 ### Social-emotional play recommendations
 
+**Follow-up in progress, 2026-10-14:** `codex/social-play-references` adds the developer-requested pass over commercial/tabletop references, with source notes and concrete roadmap definitions. Docs only: this section, the subject study/tracker, existing notebook rows and verification.
+
 **Recommended 2026-10-14:** [the subject study](deep-dives/subjects/social-emotional.md), [PR #321](https://github.com/rjdunlap/neo/pull/321), covers lap through parents with opened CASEL/Head Start anchors, six digital precedents, a physical equivalent and an adolescent randomized trial. Define **Playdate Workshop** first, **Two Viewpoints** as a Story Theater extension, and **Common Ground** as the older-family candidate. These are research proposals with docs-first definitions; no game or practical emotional-health advice was built. Earlier subject priorities remain intact.
 
 | Candidate | Status | Next complete definition |
