@@ -227,13 +227,14 @@ export interface Game {
    */
   autotouch?(dt: number): TouchIntent | null;
   /**
-   * Couch pause menu's "start this again": put the board in the round's current part back to its first
+   * The couch pause menu's "start this again", and the island pause sheet's (`GameScene.pauseActions`, labelled the
+   * couch's way, or plainly for a game made only for grown-ups): put the board in the round's current part back to its first
    * position. Tries already made keep counting, so a restart is never a way to improve a score. May be
    * called mid-animation; the game finishes what it is doing first.
    */
   restart?(): void;
   /**
-   * Couch pause menu's "show a hint", for a game whose help is something she asks for (a puzzle with no misses to count).
+   * The couch pause menu's and the island pause sheet's "show a hint", for a game whose help is something she asks for (a puzzle with no misses to count).
    * A hint shown marks a challenge run as helped for good, the same as the games whose help arrives by itself.
    */
   askForHint?(): void;

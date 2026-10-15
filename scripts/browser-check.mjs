@@ -1906,6 +1906,7 @@ async function grownUps() {
   const frozen = await page.evaluate(() => neo.scene.seconds);
   await page.waitForTimeout(800);
   assert.equal(await page.evaluate(() => neo.scene.seconds), frozen, 'the round holds still while paused');
+  assert.equal(await page.locator('.pause button.btn').count(), 1, 'a child\'s game whose help follows misses offers no entries of its own');
   await screenshot('pause-sheet');
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
   await screenshot('pause-sheet-portrait');
@@ -1913,6 +1914,41 @@ async function grownUps() {
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => !document.querySelector('.pause') && !neo.paused);
   await page.waitForFunction((s) => neo.scene.seconds > s, frozen);
+
+  // A puzzle's own Start again and Show a hint, labelled as the couch labels them: by click, then by a pad (Start opens,
+  // the d-pad moves, A presses on release).
+  await launch('sudoku-garden', 1);
+  await page.waitForFunction(() => neo.scene.game?.puzzle);
+  await page.waitForTimeout(500);
+  await page.keyboard.press('Escape'); await page.locator('.pause').waitFor();
+  assert.deepEqual(await page.locator('.pause button.btn').allTextContents(), ['Keep playing', 'Start this bed again', 'Show a hint']);
+  await screenshot('pause-sheet-actions');
+  await page.locator('.pause button.btn', { hasText: 'Show a hint' }).click();
+  await page.waitForFunction(() => !neo.paused && !document.querySelector('.pause') && neo.scene.game.hints === 1);
+  await page.evaluate(() => {
+    const g = neo.scene.game, i = g.grid.findIndex((d) => !d);
+    g.grid[i] = g.puzzle.solution[i];
+    window.fakePad = { connected: true, axes: [0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false })) };
+    navigator.getGamepads = () => [window.fakePad];
+  });
+  const padTap = async (i) => {
+    await page.evaluate((i) => { fakePad.buttons[i].pressed = true; }, i); await page.waitForTimeout(150);
+    await page.evaluate((i) => { fakePad.buttons[i].pressed = false; }, i); await page.waitForTimeout(150);
+  };
+  const focusedText = () => page.evaluate(() => document.activeElement?.textContent);
+  await padTap(9); await page.locator('.pause').waitFor();
+  await padTap(13); await padTap(13);
+  assert.equal(await focusedText(), 'Show a hint');
+  await padTap(13); assert.equal(await focusedText(), 'Keep playing', 'the ring wraps');
+  await padTap(12); await padTap(12);
+  assert.equal(await focusedText(), 'Start this bed again');
+  await padTap(0);
+  await page.waitForFunction(() => !neo.paused && !document.querySelector('.pause'));
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.grid), await page.evaluate(() => neo.scene.game.puzzle.start), 'the pad\'s A started the bed again');
+  assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'and a restart is not a hint');
+  await page.evaluate(() => { delete navigator.getGamepads; });
+  await launch('bubble-pop', 1);
+  await page.waitForTimeout(500);
 
   // From the pause sheet, holding its gear opens the page; Esc closes that to the island map and does not reopen the sheet.
   await page.keyboard.press('Escape');

@@ -1,4 +1,11 @@
 # Puddle Island verification
+## 2026-10-15 — Lands C3, pause sheet Start again, Show a hint and a pad
+
+- [PR #401](https://github.com/rjdunlap/neo/pull/401), `claude/lands-c3-pause-actions` (feature commit `c66d758`, base `0c1b24d`): the island pause sheet lists a round's *Start again* and *Show a hint* (`Scene.pauseActions()`, `pauseLabels()`), and a pad moves over the sheet (`PadSheet`) and presses on release.
+- Passed `npm run typecheck`, `npm test` (152 files, 1,341 tests, including new PadSheet and pauseLabels tests) and `npm run build`.
+- Passed `BROWSER_SUITE=grownups` on `http://localhost:5505`, extended with Sudoku Garden: the sheet shows Keep playing, Start this bed again and Show a hint; the hint click gives hints 1; with a faked `navigator.getGamepads`, Start opens, the d-pad moves and wraps, A on Start again resets the grid and hints stay 1; Bubble Pop's sheet shows no extra entries. Screenshot `pause-sheet-actions` reviewed.
+- Not run: `world`, offline (no route, save or asset change), a real pad or iPad ([device check](DEVICE-CHECKS.md)).
+
 ## 2026-10-15 — Color Garden Tap and it hops
 
 - [PR #399](https://github.com/rjdunlap/neo/pull/399), slice 2 only: stable level 9, four tap-only fruits/two color baskets, naming, lap/toddler order and entry landing, scoped how-to and tap ghost finger. Old levels/pins retained.
@@ -109,13 +116,6 @@
 - Reviewed one exposed level-11 portrait at `http://localhost:5188` using `node test-results/memory-fraction-art.mjs`; three picture/name pairs readable, rotated square clear of card edges and pet; no page errors. Screenshot `test-results/browser/memory-fraction-11-portrait.png`. Chromium's sandbox launch failed; the isolated outside-sandbox capture passed. Owned Vite server stopped.
 - Existing level-11 how-to audited and remains accurate. Not run: browser round, ghost finger, build, broader unit/browser/world/couch/offline suites (content tier, unchanged interaction/shared behavior). Real iPad speech/contrast/touch and child fraction understanding remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device). Links/diff checked.
 
-## 2026-10-15 — Bug Builder bigger pool and hint that points
-
-- `claude/bug-builder-pool-hint`: deep-dive slice 1 (rules and a small glow). `BUG_TOKENS` is 12 (indexes 0-5 unchanged); `pickTokens` draws `plan.colors` distinct tokens by seed (plans of 4 or fewer keep all shapes and colors different); `bugPuzzle` returns `tokens`. On the second wrong drop the hint also rings the twin across the line (mirror) or the same place on the model (copy); mirror adds the line `bug.hintMirror`.
-- Ran: `npm run typecheck`; `vitest run src/games src/content` 1068 passed (new tests: pool size and distinct, copy not symmetric, mirror exact reflection); `BROWSER_SUITE=expansion EXPANSION_ONLY=bug` levels 1-7 (drag, wrong drop, hint, finish, sticker) on a dev server.
-- Not run: a reviewed portrait or hint screenshot, build, `fingerdemo`, a device or a child.
-- Open: the one-hint-per-round accounting decision stays as is (hints per spot).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
@@ -189,7 +189,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `smoke` | 2026-10-09, `habitat-helpers` (levels 1, 4, 6) on the review tree; 2026-10-07, every game then registered (70); `ferry-jam` again 2026-10-08; Penguin Slide, Memory Match and Robot Path after the demonstration cards (2026-10-08); the eleven newest ghost-finger games (2026-10-09, one run in four logged a teardown-race page error); Egg Catch, Bounce Back, Bouncy Launch, Peg Garden and Bumper Garden filtered (2026-10-09) | Clap the Syllables, Harbor Rush, how-to card and ghost finger on eleven more games entries | Proves a game loads and survives stray taps, not that a round can finish |
 | `phonefit`, `phone` | 2026-10-09, `phonefit` on Lands stage A (a land under the faked notch; the chooser opens the map); 2026-10-09, `phonefit` on the chooser (an upright phone is not asked to turn on "Who's playing?", only when the island starts; no sideways scrolling; the couch button 100 units tall); 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
 | `world` | 2026-10-10: Duckling Parade school catalog and subject-card layouts, with 75 reachable games in both school orientations; 2026-10-10, Secret Code 7: every band, both orientations on a frozen snapshot; 2026-10-09, rewritten for Lands stage A (the lands map, a land and its return, the home spot in all bands); 2026-10-09, on the chooser (Add a player instead of the title tap); 2026-10-09, on the profile storage layer; 2026-10-09, with the gear replacing the two-corner gate (2026-10-07: all 72 games in every band and both orientations) | Duckling Parade 9–10 entry; Gear entry | About five and a half minutes |
-| `grownups` | 2026-10-09, on the chooser (held Enter on the gear does not choose a card); 2026-10-09, on the profile storage layer (reset, reload and undo through the store); 2026-10-09 | Gear entry | About 40 seconds |
+| `grownups` | 2026-10-15: pause sheet in Sudoku Garden (Start this bed again, Show a hint, synthetic pad moving, wrapping and A on release); earlier 2026-10-09 gear, storage layer and undo cases | Gear entry | About 40 seconds |
 | `profiles` | 2026-10-09, on Lands stage A (the chooser opens the map); 2026-10-09, new: from an empty device through add-a-player, the three ways in, the grown-ups' page per player, remove, backup and restore of everyone, and a reload | Profiles stage 1b entry | About 1 minute; also broken on purpose (Enter opening the island) to see it fail |
 | `picnic`, `island` | Both 2026-10-09, on Lands stage A (the picnic's map spot and story returns; the home spot's shelf); both 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `lands` | 2026-10-13: `LANDS_ONLY=puzzle-peaks`, all six bands landscape and lap/school/grownup portrait; signpost/host/twinkle passed | [Mossy Path entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Only Puzzle Peaks rerun; other lands keep earlier evidence |

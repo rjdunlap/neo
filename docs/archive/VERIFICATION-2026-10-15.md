@@ -184,3 +184,10 @@
 - [PR #374](https://github.com/rjdunlap/neo/pull/374), `claude/clap-syllables-wait-ring`: in solo (level 2) a ring round the hands pad fills over the 1.5 s pause after her last clap, so she can see when the word is about to be counted. Pure `waitFill` in `logic.ts`, drawn in `index.ts`; no rule change.
 - Passed typecheck, `vitest src/games/clap-syllables` (15 tests, including `waitFill`) and `BROWSER_SUITE=clap` on the dev server.
 - Not run: a screenshot of the ring, a portrait view, build, `fingerdemo`, an iPad or child check. Whether the ring reads clearly to a small child is [open](../DEVICE-CHECKS.md).
+
+## 2026-10-15 — Bug Builder bigger pool and hint that points
+
+- `claude/bug-builder-pool-hint`: deep-dive slice 1 (rules and a small glow). `BUG_TOKENS` is 12 (indexes 0-5 unchanged); `pickTokens` draws `plan.colors` distinct tokens by seed (plans of 4 or fewer keep all shapes and colors different); `bugPuzzle` returns `tokens`. On the second wrong drop the hint also rings the twin across the line (mirror) or the same place on the model (copy); mirror adds the line `bug.hintMirror`.
+- Ran: `npm run typecheck`; `vitest run src/games src/content` 1068 passed (new tests: pool size and distinct, copy not symmetric, mirror exact reflection); `BROWSER_SUITE=expansion EXPANSION_ONLY=bug` levels 1-7 (drag, wrong drop, hint, finish, sticker) on a dev server.
+- Not run: a reviewed portrait or hint screenshot, build, `fingerdemo`, a device or a child.
+- Open: the one-hint-per-round accounting decision stays as is (hints per spot).

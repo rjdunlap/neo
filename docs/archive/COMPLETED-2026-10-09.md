@@ -907,3 +907,7 @@ Typecheck, 16 Memory Match tests (200 seeded fraction selections: exact area/til
 ## Color Garden Tap and it hops (2026-10-15)
 
 [PR #399](https://github.com/rjdunlap/neo/pull/399), deep-dive slice 2: stable level 9 adds four tap-only fruits and two distinct color baskets. Each tap names its color and hops to its own basket, with no wrong choice, miss or hint. Lap plays 9; toddler order is 9, 1–5 with entry landing support; old IDs and pins stay intact. Scoped how-to and ghost finger use taps. Supersedes the Color Train lap candidate; no basket speech, save changes or other proposed levels. Typecheck, 1,333 tests, build, filtered level-9 portrait play and 8.3-second ghost finger passed. Real iPad speech/taps and child response remain open.
+
+## Lands stage C3 (2026-10-15)
+
+[PR #401](https://github.com/rjdunlap/neo/pull/401), `claude/lands-c3-pause-actions`: the island pause sheet lists a round's *Start again* and *Show a hint* under "Keep playing" (`Scene.pauseActions()`, `pauseLabels()`; couch labels where the couch plays the game, plain labels for a grown-ups-only game, none for a child's game without a label), and a pad moves over the sheet (`PadSheet`) and presses on release. Not built: pad focus on the screens without a ring (C2b).
