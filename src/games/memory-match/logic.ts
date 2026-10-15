@@ -25,7 +25,13 @@ const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'h
 export type MemoryPicture =
   | { kind: 'shape'; id: string; name: string; color: ColorName; shape: ShapeKind }
   | { kind: 'friend'; id: string; name: string; animal: CritterName }
-  | { kind: 'prop'; id: string; name: string; prop: PropKind; color: ColorName };
+  | { kind: 'prop'; id: string; name: string; prop: PropKind; color: ColorName }
+  | { kind: 'vehicle'; id: string; name: string; vehicle: VehicleKind; color: ColorName };
+
+/** Eight vehicles that look different even in outline; drawn in `art.ts`. */
+export const VEHICLES = [['car', 'red'], ['bus', 'yellow'], ['truck', 'blue'], ['train', 'green'],
+  ['boat', 'teal'], ['plane', 'purple'], ['rocket', 'orange'], ['tractor', 'pink']] as const;
+export type VehicleKind = typeof VEHICLES[number][0];
 
 /** Each family has eight visually distinct identities; never mix families on one board. */
 export const PICTURE_POOLS: readonly (readonly MemoryPicture[])[] = [
@@ -35,6 +41,7 @@ export const PICTURE_POOLS: readonly (readonly MemoryPicture[])[] = [
   ([['apple', 'red'], ['orange', 'orange'], ['lemon', 'yellow'], ['pear', 'green'],
     ['blueberries', 'blue'], ['grapes', 'purple'], ['balloon', 'pink'], ['flower', 'teal']] as const).map(([prop, color]) =>
     ({ kind: 'prop' as const, id: `prop-${prop}`, name: prop, prop, color })),
+  VEHICLES.map(([vehicle, color]) => ({ kind: 'vehicle' as const, id: `vehicle-${vehicle}`, name: vehicle, vehicle, color })),
 ];
 
 /** Pair IDs index this seeded content selection, rather than a fixed renderer index. */
