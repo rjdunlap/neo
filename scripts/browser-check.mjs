@@ -2164,6 +2164,7 @@ async function traceRound(level, name, wrong = false) {
     if (!g.done) throw new Error('Tracing did not complete');
   });
   await finished('letter-trails');
+  assert.ok(await page.evaluate(() => kit.store.data.journal.found.some((id) => id.startsWith('letter-trails:'))), 'a traced letter is filed in the journal');
   log(`Letter Trails level ${level} (${name || 'single letter'}): tracing and reward passed`);
 }
 
