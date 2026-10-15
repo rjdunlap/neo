@@ -127,7 +127,7 @@ class DucklingParade implements Game {
         void this.ctx.instruct('parade.colorcount', { n: target!, color: want! });
         break;
       case 'pattern':
-        void this.ctx.instruct(this.plan.oddDuckling ? 'parade.repair' : 'parade.pattern', { pattern: pattern!.join(', ') });
+        void this.ctx.instruct(this.plan.oddDuckling ? 'parade.spare' : 'parade.pattern', { pattern: pattern!.join(', ') });
         break;
     }
   }

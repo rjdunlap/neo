@@ -3146,6 +3146,18 @@ async function arcade() {
       const g = neo.scene.game;
       const loose = () => g.ducklings.filter((d) => d.state === 'loose');
       const joinable = (d) => d.state === 'loose' && (g.plan.mode === 'pattern' ? d.color === g.round.pattern[g.line.length] : !g.round.want || d.color === g.round.want);
+      if (neo.scene.level === 6) {
+        // Separate the refusal approach from eligible pickups, so a random
+        // meadow cannot collect part of the later partial-delivery fixture.
+        // Restore ducks picked up at spawn before this fixture was installed.
+        for (const d of g.line.splice(0)) d.state = 'loose';
+        g.trail.length = 0;
+        for (const d of loose()) {
+          d.home = joinable(d) ? { fx: 0.55, fy: 0.85 } : { fx: 0.15, fy: 0.2 };
+          d.critter.position.copyFrom(g.spotAt(d.home));
+        }
+        await kit.sleep(50);
+      }
       // Stop on a duckling that can't join yet: two gentle misses light up the right ones.
       // The wrong duckling farthest from any right one, approached from the far side, so no right
       // one joins first (which would rightly spend the tap).
@@ -3169,6 +3181,38 @@ async function arcade() {
       if (g.plan.mode === 'tap') {
         for (const d of [...g.ducklings]) if (d.state === 'loose') await fetchDuck(d);
         if (!await kit.until(() => g.finished, 20000)) throw new Error('Lap parade never went home');
+        return;
+      }
+      if (neo.scene.level === 6) {
+        // Keep the first trip separate from the remaining wanted-color ducks. This
+        // fixture changes only meadow positions; collection and arrivals use real taps.
+        const wanted = loose().filter(joinable);
+        if (g.line.length) throw new Error('Partial-delivery fixture needs an empty line');
+        for (const d of loose()) {
+          d.home = joinable(d) ? { fx: 0.35, fy: 0.85 } : { fx: 0.05, fy: 0.1 };
+        }
+        wanted[0].home = { fx: 0.55, fy: 0.15 };
+        for (const d of loose()) d.critter.position.copyFrom(g.spotAt(d.home));
+        g.mama.position.set(wanted[0].critter.x - 120, wanted[0].critter.y);
+        g.target.x = g.mama.x; g.target.y = g.mama.y; g.trail.length = 0;
+        const speech = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, values) => { speech.push({ id, values }); return say(id, values); };
+        await kit.sleep(50); // Render the moved fixture before hit-testing.
+        await fetchDuck(wanted[0]);
+        if (g.line.length !== 1) throw new Error('First trip must contain one duckling');
+        await goHome();
+        if (g.homeCount !== 1 || g.finished || g.misses !== 2 || g.hints !== 1) throw new Error('Partial trip changed accounting or finished early');
+        for (const d of wanted.slice(1)) if (d.state === 'loose') await fetchDuck(d);
+        const batch = g.line.length;
+        if (batch !== g.round.target) throw new Error(`Expected ${g.round.target} in second batch, got ${batch}`);
+        await goHome();
+        if (!await kit.until(() => g.finished, 15000)) throw new Error('Partial/extras parade unfinished');
+        const extra = speech.find((s) => s.id === 'parade.extra');
+        if (extra?.values.count !== 1 + batch || extra.values.n !== g.round.target) throw new Error('Extra speech must name combined total, not second batch');
+        const { SCRIPT } = await import('/src/content/voice-script.ts');
+        if (!SCRIPT['parade.extra'].every((s) => s.includes('{count} ducklings altogether') && s.includes('{n} in the pond'))) throw new Error('Extra speech lost total/pond distinction');
+        if (g.homeCount !== g.round.target || wanted.filter((d) => d.state === 'loose').length !== 1) throw new Error('Extra duckling did not return to meadow');
         return;
       }
       // Counting levels: bring one too many, and the extra hops back out.
