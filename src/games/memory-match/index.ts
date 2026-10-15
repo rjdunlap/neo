@@ -11,7 +11,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureFace } from './art';
-import { selectPictures, type MemoryPicture, cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
+import { DOT_RADIUS, selectDotLayouts, selectPictures, type DotSpot, type MemoryPicture, cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
@@ -22,6 +22,7 @@ class MemoryMatch implements Game {
   private readonly plan;
   private readonly letters: string[];
   readonly pictures: readonly MemoryPicture[];
+  readonly dots: readonly DotSpot[][];
   private readonly background = new Graphics();
   private readonly hint = new Graphics();
   private first: number | null = null;
@@ -51,6 +52,7 @@ class MemoryMatch implements Game {
     this.cards = makeDeck(this.plan.pairs, ctx.rng);
     this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
     this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
+    this.dots = this.plan.mode === 'numbers' ? selectDotLayouts(this.plan.pairs, ctx.rng) : [];
     this.remaining = this.plan.pairs;
     ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
     this.ring.eventMode = 'none';
@@ -90,8 +92,7 @@ class MemoryMatch implements Game {
     if (this.plan.mode === 'numbers') {
       if (!card.side) return label(String(card.pair + 1), 74, swatch.teal.line);
       const g = new Graphics();
-      const n = card.pair + 1;
-      for (let i = 0; i < n; i++) g.circle((i % 2) * 34 - (n === 1 ? 0 : 17), Math.floor(i / 2) * 25 - (Math.ceil(n / 2) - 1) * 12.5, 9).fill(swatch.teal.fill);
+      for (const d of this.dots[card.pair]) g.circle(d.x, d.y, DOT_RADIUS).fill(swatch.teal.fill);
       return g;
     }
     const { color, shape } = pictureIdentity(this.plan.mode, card.pair);
