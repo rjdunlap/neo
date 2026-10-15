@@ -1932,3 +1932,13 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 
 - Docs only, `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296)): added [bug-builder.md](../deep-dives/bug-builder.md) (current ladder, known gaps, genre research, levels 8–13 proposed, nine build slices) and updated the tracker, roadmap chunk 14 and IDEAS rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Standards wording beyond section names is unverified; token-pool and hint findings come from reading the source, not from play.
+
+## 2026-10-14 — Chain Reaction deep dive
+
+- Docs only, `claude/chain-reaction-deep-dive` ([PR #299](https://github.com/rjdunlap/neo/pull/299)): added [chain-reaction.md](../deep-dives/chain-reaction.md) (current ladder, the finding that run misses are never counted so adaptation sees hints only, genre research, proposed levels 7–11 and nine build slices); updated the tracker, IDEAS rows and roadmap chunk 14.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites. Preschool cause-and-effect development had no source found; younger entries are marked as design judgment.
+
+## 2026-10-14 — Bumper Garden deep dive
+
+- Docs only, `claude/bumper-garden-deep-dive` ([PR #297](https://github.com/rjdunlap/neo/pull/297)): added [bumper-garden.md](../deep-dives/bumper-garden.md) (current ladder, known gaps including a how-to that is false at levels 2–5, genre and developmental research, levels 6–14 proposed, nine build slices), set the tracker row to designed, pointed the IDEAS ladder row and roadmap chunk 14 at it.
+- Ran: link check and `git diff --check`. No code, tests or browser suites (research only). Not established: whether a one-year-old can follow or flip the ball, which needs a person and a device.

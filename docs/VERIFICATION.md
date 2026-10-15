@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-14 — Routines and self-care subject research
+
+- Docs only: [study](deep-dives/subjects/routines-self-care.md), subject tracker, notebook candidates and [roadmap definition packets](ROADMAP.md#routines-and-self-care-recommendations): Ready for Adventure first, Toy Drawer retrieval and Village Planner for older families.
+- Read the existing routines-adjacent game plans; opened Head Start/AAP/Sesame/NCPMI/Harvard guidance and six first-party digital descriptions. Day & Night is explicitly search-excerpt-only (403); no reference game was played.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier). Older log entries rotated with relative links repaired.
+- Not run: typecheck, units, build, browser/device/child checks. No code or real-care instructions changed; practical-care review, audience appeal and real-world transfer remain open.
+
 ## 2026-10-14 — Weather and water subject research
 
 - Docs only, base `1f56bd6` plus research diff, [PR #313](https://github.com/rjdunlap/neo/pull/313): opened NGSS, USGS, EPA, NOAA, CDC and NAEYC anchors; five digital precedents and one physical reference, with access/model limits recorded in the [study](deep-dives/subjects/weather-water.md).
@@ -90,23 +97,13 @@
 - Isolated `test-results/peek-garden.mjs` at `http://localhost:5186`: reviewed all seven animals out/peeking over all four covers, portrait `peek-garden-portrait.png` and `peek-garden-peeking.png`; no page errors. Probe/screenshots are ignored local artifacts.
 - Not run: full play, build, offline or fingerdemo; scene-content tier, unchanged interaction evidence from [cover support](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
-## 2026-10-14 — Chain Reaction deep dive
-
-- Docs only, `claude/chain-reaction-deep-dive` ([PR #299](https://github.com/rjdunlap/neo/pull/299)): added [chain-reaction.md](deep-dives/chain-reaction.md) (current ladder, the finding that run misses are never counted so adaptation sees hints only, genre research, proposed levels 7–11 and nine build slices); updated the tracker, IDEAS rows and roadmap chunk 14.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites. Preschool cause-and-effect development had no source found; younger entries are marked as design judgment.
-
-## 2026-10-14 — Bumper Garden deep dive
-
-- Docs only, `claude/bumper-garden-deep-dive` ([PR #297](https://github.com/rjdunlap/neo/pull/297)): added [bumper-garden.md](deep-dives/bumper-garden.md) (current ladder, known gaps including a how-to that is false at levels 2–5, genre and developmental research, levels 6–14 proposed, nine build slices), set the tracker row to designed, pointed the IDEAS ladder row and roadmap chunk 14 at it.
-- Ran: link check and `git diff --check`. No code, tests or browser suites (research only). Not established: whether a one-year-old can follow or flip the ball, which needs a person and a device.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Subject research docs | 2026-10-14: weather/water study and roadmap packets; relative links and diff passed; movement study/follow-ups retained | [Weather/water](#2026-10-14--weather-and-water-subject-research), [movement recommendations](#2026-10-14--movement-roadmap-recommendations), [movement research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; toy-model scope/science review and audience fit open; no physical instruction review, code or device checks |
+| Subject research docs | 2026-10-14: routines/self-care study and roadmap packets; relative links and diff passed; prior weather/movement studies retained | [Routines/self-care](#2026-10-14--routines-and-self-care-subject-research), [weather/water](#2026-10-14--weather-and-water-subject-research), [movement recommendations](#2026-10-14--movement-roadmap-recommendations), [movement research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; practical-care reviewer, model science review and audience fit open; no code, device checks or demonstrated transfer |
 | Critter Crossing level 6 (`critter-crossing`) | 2026-10-14: typecheck, 95 critter-crossing/content tests, one landscape dev-server play (marks, four option cards, no page errors) | [Critter Crossing level 6 entry](#2026-10-14--critter-crossing-level-6-either-one) | `fingerdemo` at level 6, portrait screenshot and how-to demo not run; full `npm test` had 9 unrelated load timeouts, not re-run |
 | Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-14: bedroom typecheck, 87 rules/content tests and one portrait screenshot (covers only) passed; earlier beach 92 tests and a landscape screenshot, garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Bedroom verification](#2026-10-14--peekaboo-barn-bedroom-scene) / [Beach verification](#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) | Bedroom, beach and garden full play/build/offline/fingerdemo not rerun; bedroom animals not screenshotted per cover, beach portrait not reviewed; iPad, speech and child play open |
 | `mossypath`, `fingerdemo` (`mossy-path`) | 2026-10-13: first/top gameplay, wrong taps/help/revision/dead-end recovery, rewards, clean 7.8/17.3 s demos, portrait/landscape; corrected filtered land launch/held Home return | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Full suite stopped on old tap-to-leave harness step; corrected navigation passed separately. iPad, speech and child play open |
