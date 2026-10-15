@@ -1956,3 +1956,13 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 - Passed `npm run typecheck`, `npx vitest run src/games/peekaboo-barn/logic.test.ts` (8 tests) and `npx vitest run src/content/howto.test.ts` (18 tests).
 - Isolated `test-results/peek-garden.mjs` at `http://localhost:5186`: reviewed all seven animals out/peeking over all four covers, portrait `peek-garden-portrait.png` and `peek-garden-peeking.png`; no page errors. Probe/screenshots are ignored local artifacts.
 - Not run: full play, build, offline or fingerdemo; scene-content tier, unchanged interaction evidence from [cover support](VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-14 — Color Garden deep dive
+
+- Docs only, `claude/color-garden-deep-dive` ([PR #302](https://github.com/rjdunlap/neo/pull/302)): added [color-garden.md](../deep-dives/color-garden.md) (current ladder, levels 8–10 and a tap entry proposed, five ready build slices) and updated the tracker, roadmap chunk 14 and the IDEAS rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Contrast of the middle shade (slice 4) needs a device check; not run.
+
+## 2026-10-14 — Clap the Syllables deep dive
+
+- Docs only, `claude/clap-syllables-deep-dive` ([PR #301](https://github.com/rjdunlap/neo/pull/301)): added [clap-syllables.md](../deep-dives/clap-syllables.md) (current ladder, known gaps, levels 6–9 proposed, four ready build slices) and updated the tracker, roadmap chunk 14, IDEAS row and Waiting on the developer.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Syllable counts and speech clarity are unverified by play; the device speech check stays open.
