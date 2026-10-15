@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-15 — Duckling Parade deep dive
+
+- [PR #387](https://github.com/rjdunlap/neo/pull/387), `codex/duckling-parade-deep-dive`, dispatch `duckling-dive-20261015T175326Z`: audited existing 1–10, five band windows, generation/accounting, speech/how-to, ghost finger and no couch entry; corrected stale tracker ceiling.
+- [Write-up](deep-dives/duckling-parade.md) compares six precedents and learning references, defines presentation and bounded ready/gated slices. Meerca evidence is first-party search excerpts (open returned 403); other reference pages/PDF opened. None played.
+- Ran Markdown links/anchors and `git diff --check`; docs only. No tests, build or browser suites run. Existing recorded level-10 evidence retained, not rerun.
+- Open: real-iPad speech/control/color and child reaction; count aid/accounting, proposed continuation/mapping/authoring and lap-entry decisions. No implementation or developer decision resolved.
+
 ## 2026-10-15 — Time and change subject research
 
 - [PR #385](https://github.com/rjdunlap/neo/pull/385), `claude/time-change-research`: [study](deep-dives/subjects/time-change.md), tracker row, notebook rows (Timeline Trail, Island Archive, Attic Finds) and [roadmap packets](ROADMAP.md#time-and-change-recommendations). Opened C3 D2.His (NCSS PDF pp. 45–48), England KS1–2, Colorado preschool History 1, Busby Grant and Suddendorf (abstract), Tillman (abstract), Barton (abstract), Major Fun's Timeline review, the Unpacking GDC report, Guidepost Montessori and the Pitt Rivers session sheet; Storyteller, toy sorts and StoryCorps from search excerpts only.
@@ -109,7 +116,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Game deep-dive docs | 2026-10-15: Memory Match level-12 clock definition, links/anchors and diff check; prior Day by Day source audit, five references and ladder/slices retained | [Clock definition](#2026-10-15--memory-match-level-12-clock-definition), [Day by Day](archive/VERIFICATION-2026-10-15.md#2026-10-15--day-by-day-deep-dive) | Docs only; clock level unbuilt, remaining developer/person/device questions open; no code/tests/browser or child evidence |
+| Game deep-dive docs | 2026-10-15: Duckling Parade source audit, six precedents, ladder/experience/slices; links/anchors and diff check. Prior Memory Match clock definition evidence retained | [Duckling Parade](#2026-10-15--duckling-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `marblejump` (`marble-jump`) | 2026-10-14: levels 1/6, invalid jump, hint recovery/repeated hint, portrait and land placement passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `logroll` (`log-roll`) | 2026-10-14: levels 1/3, invalid rolls, hint, Undo, portrait and Tinker Lab launch passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `snowball` (`snowball-merge`) | 2026-10-14: levels 1/3, inert press, hint once, Undo/Restart, portrait and Lantern Lake launch/leave passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |

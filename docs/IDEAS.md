@@ -1290,6 +1290,8 @@ These games stop at pre-K, so appending a level only widens the pre-K range.
 | **Pet Kitchen, Inchworm Measure, Picture Graph** | Raised from the first audit in the last two days. Play them before going higher |
 | **Lemonade Stand** | Owned by the economy pilot |
 
+Duckling Parade now has a [researched ladder](deep-dives/duckling-parade.md) (2026-10-15), superseding its omission below: existing 1–10 and school audited; support and ABB 11 ready; continuation, mapping, authoring and a lap entry remain gated. Its steering references elsewhere remain ideas, not mandates.
+
 Not read in this round: the pre-K ceilings of Color Garden, Shape Sorter, Splish Splash, Peekaboo Barn, Duckling Parade, Roundup and Sound Garden.
 
 **Suggested order** (non-binding): Market Stall, Clock Tower, Frog Hop, Seesaw Balance and Secret Code first. They are plan entries on modes that already exist. Then Robot Path and Egg Catch, which need authored or searched boards. Then Light Lab, Duck Pond and Word Monsters, which need a little new drawing. Mail Carrier is last, because it needs a second map.
