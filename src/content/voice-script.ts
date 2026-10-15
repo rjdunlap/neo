@@ -1345,6 +1345,7 @@ export const SCRIPT = {
 
   'barn.sing': ['Tap, tap, tap to sing Old MacDonald!'],
   'barn.sing.buns': ['Tap, tap, tap to sing Hot Cross Buns!'],
+  'barn.sing.clair': ['Tap, tap, tap to sing Au Clair de la Lune!'],
   'barn.tune': ['Which song shall we sing? Tap one!'],
   'barn.sing.mary': ['Tap, tap, tap to sing Mary Had a Little Lamb!'],
   'barn.invite': ['Who will come to the farm? Tap {count} friends!'],
@@ -1352,6 +1353,7 @@ export const SCRIPT = {
   'barn.invited': ['{animal}!', 'Hello, {animal}!'],
   'barn.done': ['Old MacDonald had a farm! E I E I O!'],
   'barn.done.buns': ['Hot cross buns! One a penny, two a penny!'],
+  'barn.done.clair': ['Au clair de la lune! Mon ami Pierrot!'],
   'barn.done.mary': ['Mary had a little lamb! Its fleece was white as snow!'],
   'jelly.free': ['Tap the jellies to make music!'],
   'jelly.listen': ['Listen!', 'Listen to the jellies!'],

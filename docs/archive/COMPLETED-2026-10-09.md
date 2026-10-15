@@ -820,7 +820,7 @@ Typecheck, eight game-rule tests and eighteen how-to tests passed. An isolated p
 
 Uncommitted working diff on `claude/roadmap-development-3dc5ea` (PR and base not recorded): the round seed now also chooses a beach, with four named covers (umbrella, sandcastle, bucket, towel) over a sand ground, a sea band and a sailboat backdrop, seeded per round like the garden. Levels 1–8, bands, interaction, misses/help, rewards and the original sticker/map art are unchanged. The bedroom scene remains ready in the [deep dive](../deep-dives/peekaboo-barn.md#build-slices-in-order).
 
-Typecheck and the Peekaboo rule, content and registry tests passed (92 tests), and one Chrome screenshot of the beach at 1024x768 was reviewed ([verification](../VERIFICATION.md#2026-10-14--peekaboo-barn-beach-scene)). Not run: portrait screenshot, play-through, `fingerdemo`, build or offline. Real iPad, device speech and child recognition remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+Typecheck and the Peekaboo rule, content and registry tests passed (92 tests), and one Chrome screenshot of the beach at 1024x768 was reviewed ([verification](VERIFICATION-2026-10-14.md#2026-10-14--peekaboo-barn-beach-scene)). Not run: portrait screenshot, play-through, `fingerdemo`, build or offline. Real iPad, device speech and child recognition remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
 ## Peekaboo Barn bedroom scene (2026-10-14)
 

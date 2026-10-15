@@ -1057,6 +1057,11 @@ async function singBarnPlay() {
   assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 13 + 12]);
   await tapNotes(24); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Au Clair de la Lune, level 1: an eleven-note opening, then "Prête-moi ta plume, pour écrire un mot" for the friend, who answers on "mot".
+  await launchTune(1, 'clair');
+  assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 11 + 12]);
+  await tapNotes(22); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
   await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');
