@@ -1569,13 +1569,22 @@ async function weekPlay() {
         assert.deepEqual(await page.evaluate(() => neo.scene.game.marks), []);
         assert.deepEqual(await page.evaluate(() => neo.scene.game.week), weekBefore);
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [3, 1]);
+        if (level === 5) {
+          const tally = await page.evaluate(() => { const g = neo.scene.game; return { answer: g.answer, count: g.week.filter(w => w === g.tallyWeather).length, category: g.tallyWeather, caption: g.caption.text }; });
+          assert.equal(tally.answer, tally.count);
+          assert.ok(tally.caption.includes(['sunny', 'cloudy', 'rainy'][tally.category]));
+          for (let attempt = 0; attempt < 2; attempt++) { await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node'); await wait(); }
+          assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [5, 2]);
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+          await screenshot('day-by-day-5-tally-portrait');
+        }
       }
       await gesture(); await page.waitForTimeout(170); await wait();
     }
     await finished('day-by-day');
     assert.equal(await page.evaluate(() => neo.scene.game.recorded), 7);
-    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('day-by-day').history.at(-1); return [r.misses, r.hints]; }), [3, 1]);
-    if (level === 3) assert.ok(checkedTally, 'read the weather tally');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('day-by-day').history.at(-1); return [r.misses, r.hints]; }), level === 5 ? [5, 2] : [3, 1]);
+    if (level === 3 || level === 5) assert.ok(checkedTally, 'read the weather tally');
     if (level === 2) assert.ok(checkedWrap, 'inspect the week turn in portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Day by Day ${level}: card naming, real placing/weather taps, retries, hint, seven records, tally revision and saved sticker passed`);

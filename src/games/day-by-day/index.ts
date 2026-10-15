@@ -11,10 +11,10 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANCHOR_LEVEL, COUNT_LEVEL, choicesFor, DAYS, makeCountWeek, makeWeek, neighbor, planFor, relativeQuestions, sunnyCount, toggleMark, WEATHER, weekLayout } from './logic';
+import { ANCHOR_LEVEL, COUNT_LEVEL, choicesFor, DAYS, makeCountWeek, makeWeek, makeWeatherWeek, neighbor, planFor, relativeQuestions, tallyWeather, weatherCount, WEATHER_COUNT_LEVEL, toggleMark, WEATHER, weekLayout } from './logic';
 import { gardenTreatment, wrapPath } from './presentation';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3] } };
+const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3, 5] } };
 
 function weatherArt(kind: number): Graphics {
   const g = new Graphics();
@@ -50,6 +50,7 @@ function flower(color: number, grown: boolean): Graphics {
 class DayByDay implements Game {
   readonly plan;
   readonly week;
+  readonly tallyWeather;
   readonly relatives;
   readonly records: Container[] = [];
   readonly choices: { n: number; node: Container }[] = [];
@@ -84,7 +85,8 @@ class DayByDay implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.week = ctx.level === COUNT_LEVEL ? makeCountWeek(ctx.rng) : makeWeek(ctx.rng);
+    this.tallyWeather = tallyWeather(ctx.level, ctx.rng);
+    this.week = ctx.level === COUNT_LEVEL ? makeCountWeek(ctx.rng) : ctx.level === WEATHER_COUNT_LEVEL ? makeWeatherWeek(ctx.rng, this.tallyWeather) : makeWeek(ctx.rng);
     if (ctx.level === COUNT_LEVEL) { this.recorded = 7; this.day = 7; this.phase = 'tally'; }
     this.relatives = relativeQuestions(ctx.level, ctx.rng);
     this.treatment = gardenTreatment(ctx.rng);
@@ -128,6 +130,11 @@ class DayByDay implements Game {
     if (this.busy) return;
     const target = this.hinted ? this.choices.find(p => p.n === this.answer)?.node : null;
     if (target) this.glow.roundRect(target.x - 90, target.y - 60, 180, 120, 20).stroke({ width: 5 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    if (this.hinted && this.phase === 'tally' && this.ctx.level === WEATHER_COUNT_LEVEL) {
+      this.records.forEach((node, i) => {
+        if (this.week[i] === this.tallyWeather) this.glow.roundRect(node.x - 57, node.y - 59, 114, 118, 16).stroke({ width: 4, color: swatch.yellow.line });
+      });
+    }
     if (this.selected !== null) {
       const node = this.choices.find(p => p.n === this.selected)?.node;
       if (node) this.glow.roundRect(node.x - 88, node.y - 58, 176, 116, 20).stroke({ width: 4, color: swatch.teal.line });
@@ -185,7 +192,7 @@ class DayByDay implements Game {
       if (this.selected === this.answer) return { tap: { on: this.confirm } };
     }
     if (this.phase === 'tally') {
-      const day = this.week.findIndex((weather, i) => weather === 0 && !this.marks.includes(i));
+      const day = this.week.findIndex((weather, i) => weather === this.tallyWeather && !this.marks.includes(i));
       if (day >= 0) return { tap: { on: this.records[day] } };
     }
     const node = this.choices.find(p => p.n === this.answer)?.node;
@@ -298,7 +305,7 @@ class DayByDay implements Game {
       else if (this.plan.relatives) await this.askRelative();
       else await this.done();
     } else {
-      await this.ctx.say('week.total', { n: this.answer });
+      await this.ctx.say(this.ctx.level === WEATHER_COUNT_LEVEL ? 'week.weathertotal' : 'week.total', { n: this.answer, weather: WEATHER[this.tallyWeather] });
       await this.done();
     }
   }
@@ -345,11 +352,12 @@ class DayByDay implements Game {
   private async askTally() {
     this.busy = true;
     this.phase = 'tally';
-    this.answer = sunnyCount(this.week);
-    this.caption.text = 'How many sunny days?';
+    this.answer = weatherCount(this.week, this.tallyWeather);
+    this.caption.text = `How many ${WEATHER[this.tallyWeather]} days?`;
+    if (this.ctx.level === WEATHER_COUNT_LEVEL) this.sky.addChild(weatherArt(this.tallyWeather));
     this.note.text = this.ctx.level === COUNT_LEVEL ? 'Count the outlined suns. Tap records to mark or unmark; choose the total.' : 'Tap records to mark or unmark them. Choose the total.';
     this.buildChoices(choicesFor(this.answer, this.ctx.rng, 'number'), 'number');
-    await this.ctx.instruct(this.ctx.level === COUNT_LEVEL ? 'week.countrecord' : 'week.tally');
+    await this.ctx.instruct(this.ctx.level === COUNT_LEVEL ? 'week.countrecord' : this.ctx.level === WEATHER_COUNT_LEVEL ? 'week.weathertally' : 'week.tally', { weather: WEATHER[this.tallyWeather] });
     this.busy = false;
   }
 
@@ -371,7 +379,12 @@ class DayByDay implements Game {
     sfx.boing();
     if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
     if (this.phase === 'weather') await this.ctx.say('week.weatherhint', { weather: WEATHER[this.answer] });
-    else if (this.phase === 'tally') await this.ctx.say(this.ctx.level === COUNT_LEVEL ? 'week.countrecordhint' : 'week.tallyhint', { n: this.answer });
+    else if (this.phase === 'tally') {
+      if (this.ctx.level === WEATHER_COUNT_LEVEL && this.answer === 0 && this.hinted && this.sky.children.length === 1) {
+        const zero = label('0', 42); zero.x = 100; zero.eventMode = 'none'; this.sky.addChild(zero);
+      }
+      await this.ctx.say(this.ctx.level === COUNT_LEVEL ? 'week.countrecordhint' : this.ctx.level === WEATHER_COUNT_LEVEL ? (this.answer === 0 ? 'week.zerohint' : 'week.weathertallyhint') : 'week.tallyhint', { n: this.answer, weather: WEATHER[this.tallyWeather] });
+    }
     else if (this.phase === 'relative' && this.ctx.level >= ANCHOR_LEVEL) {
       const { today, direction } = this.relatives[this.question];
       await this.ctx.say(direction === 1 ? 'week.tomorrowhint' : 'week.yesterdayhint', { day: DAYS[this.answer], today: DAYS[today] });

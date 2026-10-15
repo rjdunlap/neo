@@ -7,10 +7,21 @@ export const PLANS = [
   { name: 'Tomorrow and yesterday, including the week turning', relatives: true, tally: false },
   { name: 'Yesterday, tomorrow and a sunny-day tally', relatives: true, tally: true },
   { name: 'A day beside any day', relatives: true, tally: false },
+  { name: 'Count this weather, including none', relatives: true, tally: true },
 ] as const;
 /** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
 export const ANCHOR_LEVEL = 4;
 export const COUNT_LEVEL = 10;
+export const WEATHER_COUNT_LEVEL = 5;
+/** Only the other-weather level draws a category; old levels keep their RNG stream and sunny tally. */
+export const tallyWeather = (level: number, rng: Rng) => level === WEATHER_COUNT_LEVEL ? rng.pick([2, 0, 1]) : 0;
+export const weatherCount = (week: readonly number[], weather: number) => week.filter(w => w === weather).length;
+/** Author the requested total first, so absent categories and every total 0–7 are reachable. */
+export function makeWeatherWeek(rng: Rng, weather: number): number[] {
+  const count = rng.int(0, 7);
+  const others = [0, 1, 2].filter(w => w !== weather);
+  return rng.shuffle(Array.from({ length: 7 }, (_, i) => i < count ? weather : rng.pick(others)));
+}
 const COUNT_PLAN = { name: 'Count beside the record', relatives: false, tally: true } as const;
 export const planFor = (level: number) => level === COUNT_LEVEL ? COUNT_PLAN : PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 /** Supplied bridge evidence: three suns among both other skies, varied by the round seed. */

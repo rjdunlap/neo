@@ -14,4 +14,4 @@ Use code-drawn palette art and synthesized sound, seeded weather and distractors
 
 Expected files: `src/games/day-by-day/{index,logic,logic.test}.ts`, registry, lands, voice script, how-to, `scripts/browser-check.mjs`, README, GAMES, IDEAS, ROADMAP and VERIFICATION. Checks: typecheck, unit tests, build for catalog integration, one filtered first/top-level scripted play (mistake, hint, reward and portrait), and the filtered finger demonstration. No shared navigation or persistence behavior changes.
 
-The [2026-10-15 deep dive](deep-dives/day-by-day.md) audits this built definition and proposes the next ladder. Its new levels, preschool opening, months and daylight comparisons are not built; its decision gates remain explicit.
+The [2026-10-15 deep dive](deep-dives/day-by-day.md) audits this built definition and proposes the next ladder. Levels 4–5 and the supplied-record bridge 10 are now built; Weather Window remains ready, and preschool, months and daylight retain their decision gates.
