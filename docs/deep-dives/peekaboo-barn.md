@@ -1,6 +1,6 @@
 # Peekaboo Barn deep dive
 
-*ID `peekaboo-barn` · bands lap, toddler, preschool, pre-K · levels 1–8 on 2026-10-10 · session `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96))*
+*ID `peekaboo-barn` · bands lap, toddler, preschool, pre-K · levels 1–8 on 2026-10-10, plus 16 *One door* · session `claude/zen-gauss-qmbqb6` ([PR 96](https://github.com/rjdunlap/neo/pull/96))*
 
 ## The game today
 
@@ -17,7 +17,7 @@ She taps a hiding place (a haystack, bush, crate or door) and an animal pops out
 | 7 | remember, 3 places | 5 | preschool, pre-K | the same among three |
 | 8 | remember, 4 places | 6 | preschool, pre-K | the same among four |
 
-The ranges are lap 1–2, toddler 1–5, preschool 4–8 and pre-K 6–8 (`LEVELS` in `src/games/peekaboo-barn/index.ts`). A level's mode and size are `PLANS` in `logic.ts`.
+The ranges are lap 1–2 and 16 (`order` 16, 1, 2), toddler 1–5, preschool 4–8 and pre-K 6–8 (`LEVELS` in `src/games/peekaboo-barn/index.ts`). A level's mode and size are `PLANS` in `logic.ts`.
 
 **What a round draws from.** Seven animals (`ANIMALS`: cow, duck, pig, cat, dog, bunny, bear), each with one synthesized voice (`sfx.animal`: moo, quack, oink, meow, woof, hop, growl) and a spoken word; four covers (`COVERS`: hay, bush, door, crate), shuffled and cut to the level's places; one scene (`Backdrop`, seed 21, with a barn drawn behind). `deal` puts a different animal behind each place, so a round of three places has 210 possible deals. Free play sends in a newcomer who is never anyone already out. `pickTarget` never asks for the same animal twice in a row. A cover tapped in free play holds its animal out for 2.4 seconds, then it hides and someone new takes its place. In remember rounds the animals pop out 0.7 seconds apart, wait 1.4 seconds and hide.
 
@@ -159,7 +159,7 @@ Slice 1, guards, cover motions and cover names, is [built 2026-10-14](../archive
 6. **Levels 10–11, Whose ears?** (needs the top-pose screenshot first). Same tier.
 7. **Levels 12–14, Switcheroo.** Same tier, plus the abandon-cards stress, since a tween that moves covers can outlive its scene.
 8. **Level 15, Guess who!** Same tier.
-9. **The below-level-1 entries** (wait on decision 3; One door first, Where did it go? second). **In flight:** One door as level 16 (lap, `order` 16, 1, 2; one house, touch anywhere, six touched pops, self-opening after 6 s uncounted), branch `claude/peekaboo-one-door`; expected files `src/games/peekaboo-barn/{logic,index,logic.test}.ts`, `howto.ts`, `scripts/browser-check.mjs`.
+9. **The below-level-1 entries** (wait on decision 3; One door first, Where did it go? second). One door is built as level 16 (2026-10-15, [PR #331](https://github.com/rjdunlap/neo/pull/331)): lap `order` 16, 1, 2; one house, touch anywhere, six touched reveals, self-opening after 6 s uncounted; the person check (swat or look first) is in [DEVICE-CHECKS](../DEVICE-CHECKS.md). Where did it go? is next.
 10. **Sketches:** not clues, who is still hiding, ordinal houses, baby and grown-up pairs.
 
 ## What was built in this session
