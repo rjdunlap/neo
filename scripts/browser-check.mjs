@@ -3744,6 +3744,16 @@ async function originals() {
       for (let r = 0; r < g.plan.rounds; r++) {
         await ready();
         if (g.plan.mode === 'along') { while (g.bank.length && !g.busy) await tapDuck(); await kit.until(() => g.round > r || g.finished, 15000); continue; }
+        if (g.plan.mode === 'bye') {
+          const before = g.swimmers.length;
+          let lost = 0;
+          for (let tries = 0; g.swimmers.length && !g.busy && tries < 12; tries++) { const n = g.swimmers.length; kit.tapOn(g.swimmers[0], 0, -46); await kit.sleep(450); if (g.swimmers.length === n) { lost++; window.__lost = (window.__lost || '') + JSON.stringify([tries, n, g.busy, g.swimmers.map((d) => [Math.round(d.x), Math.round(d.y), d.swimming])]); } }
+          if (lost) throw new Error(`Bye-bye ducks: ${lost} taps did nothing ${window.__lost}`);
+          if (g.swimmers.length > 0 && !g.busy) throw new Error('Bye-bye ducks: a duck stayed ' + g.swimmers.length + ' ' + g.busy + ' ' + g.swimmers.map((d) => Math.round(d.x) + ',' + Math.round(d.y)).join(' '));
+          await kit.until(() => g.round > r || g.finished, 20000);
+          if (before !== 5) throw new Error(`Bye-bye ducks began with ${before}`);
+          continue;
+        }
         if (g.plan.mode === 'make') {
           const want = g.want;
           while (g.swimmers.length < want && !g.busy) await tapDuck();
@@ -3772,7 +3782,7 @@ async function originals() {
     if (revealShot) await revealShot;
     await screenshot(`duck-pond-${level}`);
     await finished('duck-pond');
-    assert.deepEqual(await score('duck-pond'), mode === 'along' || mode === 'make' ? [0, 0] : [2, 1], `ducks ${level} score`);
+    assert.deepEqual(await score('duck-pond'), mode === 'along' || mode === 'make' || mode === 'bye' ? [0, 0] : [2, 1], `ducks ${level} score`);
     if (level === 9 || level === duckTop) await portrait(false);
     log(`Duck Pond ${level} (${mode}): counting along, stopping at a number, answers, mistakes, hint, saved score and sticker passed`);
   }

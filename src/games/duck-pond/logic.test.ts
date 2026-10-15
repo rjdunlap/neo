@@ -73,6 +73,16 @@ describe('Duck Pond', () => {
     }
   });
 
+  it('Bye-bye ducks is one song of five ducks, placed first for lap and toddler', () => {
+    const plan = PLANS[11];
+    expect(plan.mode).toBe('bye');
+    expect(plan.rounds).toBe(1);
+    expect(plan.max).toBeLessThanOrEqual(SLOTS.length);
+    // Seats for five are at least 106 apart, so each duck's 106-unit target stays its own.
+    const seats = SLOTS.slice(0, plan.max);
+    for (const [i, a] of seats.entries()) for (const b of seats.slice(i + 1)) expect(Math.hypot(a[0] - b[0], a[1] - b[1])).toBeGreaterThanOrEqual(106);
+  });
+
   it('has room for every duck asked about, and a spare on the bank so stopping is a choice', () => {
     for (const plan of PLANS) {
       expect(plan.max).toBeLessThanOrEqual(SLOTS.length);
@@ -117,6 +127,10 @@ describe('Duck Pond', () => {
           let swimming = 0;
           while (duckMove(plan, bank, swimming, 0, [], 0) === 'duck') (bank--, swimming++);
           expect(swimming).toBe(plan.max);
+        } else if (plan.mode === 'bye') {
+          let swimming = plan.max;
+          while (duckMove(plan, 0, swimming, 0, [], 0) === 'duck') swimming--;
+          expect(swimming).toBe(0);
         } else if (plan.mode === 'make') {
           let bank = bankSize(plan);
           let swimming = 0;

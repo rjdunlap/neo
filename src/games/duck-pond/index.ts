@@ -14,8 +14,8 @@ import { HIDING_SLOTS, hidingRevealSlots, numberSentence, stickerDucks, bankSize
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 5 },
+  lap: { min: 1, max: 12, order: [12, 1, 2] },
+  toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 9 },
   school: { min: 8, max: 11 },
@@ -218,7 +218,7 @@ class DuckPond implements Game {
     if (this.busy || this.finished) return null;
     const move = duckMove(this.plan, this.bank.filter((d) => !d.resting).length, this.swimmers.length, this.want, this.pads.map((p) => p.value), this.answer);
     if (move === null) return null;
-    if (move === 'duck') return { tap: { on: this.bank.find((d) => !d.resting)!, y: -46 } };
+    if (move === 'duck') return { tap: { on: (this.plan.mode === 'bye' ? this.swimmers[0] : this.bank.find((d) => !d.resting))!, y: -46 } };
     return { tap: { on: this.pads[move.pad] } };
   }
 
@@ -297,6 +297,8 @@ class DuckPond implements Game {
   private async swimAway(ducks = this.swimmers) {
     const leaving = [...ducks];
     this.swimmers = this.swimmers.filter((d) => !leaving.includes(d));
+    // A duck paddling past must not catch the touch meant for one it passes.
+    for (const d of leaving) d.eventMode = 'none';
     await Promise.all(
       leaving.map(async (d, i) => {
         await this.tw.to(d, { x: this.view.w + 120 }, { duration: 1.4 + i * 0.05, ease: ease.inQuad });
@@ -341,6 +343,20 @@ class DuckPond implements Game {
     if (p.mode === 'along') {
       this.spawnBank(p.max);
       if (this.round === 0) await this.ctx.instruct('duck.along');
+      this.busy = false;
+      return;
+    }
+    if (p.mode === 'bye') {
+      for (let i = 0; i < p.max; i++) {
+        const d = new Duck();
+        // Five ducks sit 106 units apart, so each target is a 106-unit circle that stays its own.
+        d.hitArea = new Circle(0, -46, 53);
+        d.position.set(-80, this.view.h * 0.62);
+        this.ducks.addChild(d);
+        onTap(d, () => void this.tapSwimmer(d), { cooldown: 300 });
+        await this.swimIn(d);
+      }
+      if (this.round === 0) await this.ctx.instruct('duck.byeTap');
       this.busy = false;
       return;
     }
@@ -426,6 +442,24 @@ class DuckPond implements Game {
         await this.roundWon(n, false);
       }
     }
+  }
+
+  /** Bye-bye ducks: the tapped duck waves and swims off, the voice counts down, and the last one brings them all back. */
+  private async tapSwimmer(d: Duck) {
+    if (this.busy || !this.swimmers.includes(d)) return;
+    d.critter.cheer();
+    sfx.animal('quack');
+    const left = this.swimmers.length - 1;
+    const gone = this.swimAway([d]);
+    void this.ctx.say(left ? 'duck.bye' : 'duck.byeAll', { n: left });
+    if (left > 0) return;
+    this.busy = true;
+    await gone;
+    await this.tw.wait(0.5);
+    await this.ctx.say('duck.callback');
+    await this.arrive(this.plan.max);
+    await this.countAloud();
+    await this.roundWon(this.plan.max, false);
   }
 
   private async roundWon(n: number, announce = true) {
@@ -649,6 +683,7 @@ export const duckPond: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.mode === 'along') return `Count along as ${p.max} ducks hop in`;
+    if (p.mode === 'bye') return 'Wave bye-bye as each of five ducks swims off, then count them back';
     if (p.mode === 'make') return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
     if (p.mode === 'howmany') return `How many ducks? ${p.min} to ${p.max}`;
     if (p.mode === 'ten') return 'Make ten: how many more ducks fill the pond to 10?';
@@ -661,6 +696,7 @@ export const duckPond: GameModule = {
   coplayHint: 'Count out loud with {name}, and touch each duck as you count.',
   offScreen: 'Line up toy ducks or spoons and count them together, touching each one.',
   hubIcon: () => new PondIcon(),
+  entryLevels: [12],
   touchDemo: true,
   sticker,
   create: (ctx) => new DuckPond(ctx),

@@ -2,6 +2,8 @@
 
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 
+- [ ] **Duck Pond 12, Bye-bye ducks, with her (2026-10-15):** does a one-year-old tap a duck to wave it off on her own, does the bye-bye countdown land (voice, then the swim-back count), and are the ducks easy to tap on an iPad in both orientations? Browser play does not establish a child's reaction or device speech.
+
 - [ ] **Life-science proposals, when defined/built:** can a young player connect the plume/burr structure to transport, see contact/release and distinguish replay from growth? Check 100-unit targets, tap alternatives, pet clearance, sound-off cues, iPad speech and both layouts; inspect the ghost finger at the selected level. Try route/evidence cases with older children/parents and observe chosen replay/role swaps. Biology/model content and any practical card need review; automation establishes neither transfer nor tween/parent appeal ([study](deep-dives/subjects/life-science.md)).
 
 - [ ] **Machines/tools proposals, when defined/built:** can the child see where motion stops, use the tap alternative, place the gear and interpret direction/turn marks with sound off? Check 100-unit targets, pet clearance, iPad speech, both layouts and ghost-finger action. Try ratio/automata cases with older children/parents and observe voluntary replay/role swaps. Review drawn contacts, pulley rigging and cam followers before realism claims; no automation establishes transfer or real-tool safety ([study](deep-dives/subjects/machines-tools.md)).
