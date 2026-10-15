@@ -1,6 +1,6 @@
 # Duck Pond deep dive
 
-*ID `duck-pond` · bands lap, toddler, preschool, pre-K, school · levels 1–11 on 2026-10-10 · session `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114))*
+*ID `duck-pond` · bands lap, toddler, preschool, pre-K, school · levels 1–12 on 2026-10-15 · session `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114))*
 
 ## The game today
 
@@ -19,6 +19,7 @@ Ducks hop onto a pond with a bounce, a splash and a quack, and every number is c
 | 9 | `add` up to 10 with "swim away" | 5 | pre-K, school | adding and taking away, a coin flip each round |
 | 10 | `ten` starts 3–9 | 5 | school | some ducks swim; how many more make ten? The missing ducks then swim in and fill the ten places |
 | 11 | `hide` totals 5–10 | 5 | school | the sign gives the whole; some ducks vanish under a bridge; how many hide? |
+| 12 | `bye` five ducks, one song | 1 | lap, toddler | tap a duck to wave it off; the voice counts down; the mother calls and all swim back (built, slice 10) |
 
 Ranges (`LEVELS` in `index.ts`): lap 1–2, toddler 1–5, preschool 3–7, pre-K 5–9, school 8–11. Pads (`padValues`): the answer and two neighbours within ±2, clipped to 1–10, shuffled. A wrong pad wobbles and counts the answer aloud (counting on from the visible ducks at levels 10 and 11); a right one is counted aloud and the ducks quack.
 
@@ -163,7 +164,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 7. **Layout and pad-cap slice** (ready; prerequisite for 13, and for widening 12 to 8 + 8). A two-row-of-five layout for ten and twenty seats, pads 0–20 with two-digit numerals, a bridge-split left and right layout. Tier: rule tests (seats distinct, inside the pond, clear of the pad row at four views), one landscape and one portrait screenshot.
 8. **Level 13, Ten and some more.** New-levels tier: rule tests, a play at 13 (one wrong pad, the hint), `fingerdemo` at 13.
 9. **Level 14, Every way** (decision 3; define first). Same tier plus a play of tapping a duck back.
-10. **Between and below level 1** (they wait on the level-order decisions): *Bye-bye ducks* first, then *Count the peekers* (after slice 4), then *Which pond has more?* (after slice 6).
+10. **Between and below level 1** (they wait on the level-order decisions): *Bye-bye ducks* is built as level 12 ([PR #334](https://github.com/rjdunlap/neo/pull/334), 2026-10-15; lap order 12, 1, 2; toddler 12 to 5), then then *Count the peekers* (after slice 4), then *Which pond has more?* (after slice 6).
 11. **Night pond, pairs, who was here first, fill to any number** (sketches; pairs after decision 4).
 
 ## What was built in this session
