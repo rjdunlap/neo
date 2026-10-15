@@ -70,7 +70,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Critter Crossing | `critter-crossing` | KS | 5 | 4 | designed (slices 1–7: slice 2, level 6 Either one, built 2026-10-14, and slice 3, level 7 Settle it, built 2026-10-15; slices 1 and 4 ready: bank shelf, a visible “not” entry; 5–7 need decisions) | `claude/critter-crossing-deep-dive` ([PR #303](https://github.com/rjdunlap/neo/pull/303)) | [critter-crossing.md](critter-crossing.md) |
 | Critter Sort | `critter-sort` | KS | 5 | 4 | designed (level 6 pre-K entry and the missed-critter hint built 2026-10-14; slice 1 remainder ready: neither mat, worked example at levels 1–3, 5; levels 7–9, 11 ready; preschool entry and level 10 need decisions) | `claude/critter-sort-deep-dive` ([PR #316](https://github.com/rjdunlap/neo/pull/316)) | [critter-sort.md](critter-sort.md) |
 | Day by Day | `day-by-day` | KS | 3 | 4 | not started (first slice built; [definition](../day-by-day.md)) | — | — |
-| Dot Link | `dot-link` | LTPK | 5 | 4 | in progress | `claude/dot-link-deep-dive` | — |
+| Dot Link | `dot-link` | LTPK | 5 | 4 | designed (no build yet; slices 1–7 waiting; a `school` window needs a decision) | `claude/dot-link-deep-dive` ([PR #342](https://github.com/rjdunlap/neo/pull/342)) | [dot-link.md](dot-link.md) |
 | Duck Pond | `duck-pond` | LTPKS | 11 | 3 | designed | `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114)) | [duck-pond.md](duck-pond.md) |
 | Duckling Parade | `duckling-parade` | LTPK | 8 | 4 | not started | — | — |
 | Egg Catch | `egg-catch` | LTPKS | 6 | 4 | not started | — | — |

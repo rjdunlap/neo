@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-10-14 — Dot Link deep dive
+
+Docs only: `docs/deep-dives/dot-link.md` (levels 7–10, a toddler entry, fresh content, seven slices), the tracker row, the IDEAS row and a decision in Waiting on the developer. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser. Open: the `school` window decision.
+
 ## 2026-10-14 — Music and instruments subject research
 
 - Docs only, researched at `c27478f` plus docs diff on `codex/music-instruments-subject-research`, [PR #340](https://github.com/rjdunlap/neo/pull/340): [study](deep-dives/subjects/music-instruments.md), tracker, [roadmap packets](ROADMAP.md#music-and-instruments-recommendations), notebook and decision/device records. Little Conductor first, Hat Band next; melodic answers remain in Song Maker, Sound Workshop later. Twelve subjects researched; waves A/B complete.
