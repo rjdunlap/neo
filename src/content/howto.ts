@@ -361,7 +361,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Drag each fruit to the basket.' },
       { from: 2, to: 5, text: 'Drag each fruit to the basket of the same color.' },
-      { from: 6, to: 6, text: 'Drag each balloon and flower to the basket of the same color.' },
+      { from: 6, to: 6, text: 'Drag each fruit, balloon and flower to the basket of the same color. A balloon or flower can be any color.' },
       { from: 7, text: 'Both baskets are blue. Drag each balloon and flower to the light blue basket or the dark blue one, whichever matches.' },
     ],
     finish: 'The round ends when everything is in a basket.',

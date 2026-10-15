@@ -112,7 +112,7 @@ None blocks the first slices. Optional: whether baskets should speak their color
 
 ## Build slices, in order
 
-1. **Mixed kinds at level 6** (fresh content): choose fruit, balloon or flower per item with the seeded rng; update `describeLevel`, a rule test, and the GAMES.md entry. Tier: new levels on an existing interaction, rule tests plus one filtered browser play of level 6 and `fingerdemo`.
+1. **Mixed kinds at level 6** (built 2026-10-14, `claude/color-garden-mixed-kinds`; fresh content): choose fruit, balloon or flower per item with the seeded rng; update `describeLevel`, a rule test, and the GAMES.md entry. Tier: new levels on an existing interaction, rule tests plus one filtered browser play of level 6 and `fingerdemo`.
 2. **Tap and it hops** (lap and toddler entry): the tap path, two baskets, naming, `entryLevels` and `order`; how-to step, `touchDemo` bot. Tier: new interaction: typecheck, unit tests, one scripted play, one portrait screenshot.
 3. **Level 8, Color or kind**: the rule sign, the two rules, voice lines, how-to. Same tier as above.
 4. **Level 9, Light, middle, dark**: refactor `SHADE_LOOK` to a table and add the middle shade. Includes a device check for contrast.
@@ -120,4 +120,4 @@ None blocks the first slices. Optional: whether baskets should speak their color
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Links and `git diff --check` ran.
+The deep dive session itself built nothing: it was research and ideation only. Links and `git diff --check` ran.
