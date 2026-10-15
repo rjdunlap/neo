@@ -287,3 +287,8 @@ Reconciled the completed [deep dive #387](https://github.com/rjdunlap/neo/pull/3
 ### 2026-10-15 — Duckling Parade steering dispatch
 
 Reconciled completed [support #389](https://github.com/rjdunlap/neo/pull/389), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [steering slice 2](deep-dives/duckling-parade.md#build-slices-in-order) to worker `01a1411e-24fa-7b30-9214-8ffecd67319d`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-15 — Discovery D1a dispatch
+
+Reconciled completed [steering #391](https://github.com/rjdunlap/neo/pull/391), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [D1a's definition](ROADMAP.md#discovery-actions) to worker `01a14157-9449-7e81-aaf9-b6d2f1d2daf3`; gameplay estimate exceeds the current five-hour remainder. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
