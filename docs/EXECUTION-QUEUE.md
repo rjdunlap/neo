@@ -34,7 +34,8 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 - Admission 2026-10-15 08:43:00 UTC **49% five-hour / 8% weekly used**, resets `1792063357` / `1792650157`; ordinary usage allowed. Conservative gameplay estimate **18.75 / 3.75 points**, fits actual remaining **51% / 92%**; no daily cap/reserve. Worker rechecks actual allowance.
 - Previous docs proof: #349 links/anchors and diff check passed, no local tests/build/browser/server; deployment succeeded. Final **48% / 8%**, resets `1792063357` / `1792650157`, versus dispatch 35% / 6% same identities: aggregate **13 / 2 points**, reconciled once below. Future comparable docs estimate rises to at least 16.25 / 2.5; no unchanged proof rerun.
 - Overlap: no active implementation/open PR/dirty work; historical/recovery branches preserved, no competing Day by Day claim. Coordinator servers none.
-- Next action: retrieve worker/PR next wake-up, confirm completion/publication and reconcile final usage once before another dispatch. Resume same worker if unfinished; do not implement here.
+- Worker claim: `codex/day-by-day-week-art`, source `65ef4e2` (includes coordinator dispatch), draft PR pending. Admission recheck **51% / 8%**, scope/pre-edit **54% / 8%**, resets `1792063357` / `1792650157`; ordinary usage allowed. Estimate 18.75 / 3.75 still fits. Active coordinator exempt; no other active Neo implementation chat, matching level-4 worktree clean and merged in #350, only open PR #352 is coordinator dispatch. No workers/messages authorized.
+- Next action: worker implements only slice 1, then source-tier checks and publication; coordinator retrieves worker/PR next wake-up and reconciles final usage once. Resume same worker if unfinished.
 
 ## Usage observations
 
