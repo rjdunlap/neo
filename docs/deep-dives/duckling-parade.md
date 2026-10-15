@@ -74,7 +74,9 @@ Solo remains complete. A co-player can be the caller, pointing to the next displ
 
 **Built in #389:** make plan descriptions at 7/8 say two-/three-color repetition rather than fixed generated colors; make the how-to say tap or lead a finger at 2–10 and describe level 10 as a pattern with a spare. Clarify arrival speech as the total in the pond plus extras after a partial trip. Preserve the generator, misses/hints and ten IDs. Accounting and generator retained; see the build note below.
 
-**Ready after support:** add two cosmetic meadow treatments with seeded selection and decorations outside input routes; preserve pond, Mama start, duck inventory, count ranges, pattern units and color pools. A small authored arrangement pool is only ready after proving open routes and clear choices in both layouts; do not assume random spacing is fair just because inventory is sufficient. No fresh quantity or color-attribute expansion in existing saved levels.
+**Built in #397:** two cosmetic meadow treatments (flowers, reeds), seeded and drawn outside input routes, with pond, Mama start, duck inventory, count ranges, pattern units and color pools unchanged.
+
+**Ready after support:** a small authored arrangement pool is only ready after proving open routes and clear choices in both layouts; do not assume random spacing is fair just because inventory is sufficient. No fresh quantity or color-attribute expansion in existing saved levels.
 
 ### New levels on top
 
@@ -114,7 +116,7 @@ These are open choices, not resolved by this research. [Waiting list](../WAITING
 
 1. Truthful support at existing 1–10 is built in [PR #389](https://github.com/rjdunlap/neo/pull/389); [build note](../archive/COMPLETED-2026-10-09.md#duckling-parade-truthful-support-2026-10-15).
 2. Destination acknowledgment/cancelled steering is built in [PR #391](https://github.com/rjdunlap/neo/pull/391); [build note](../archive/COMPLETED-2026-10-09.md#duckling-parade-destination-and-cancellation-2026-10-15). Real-finger feel remains open.
-3. **Ready — two cosmetic meadow treatments** (claimed 2026-10-15, branch `claude/duckling-meadow-treatments`). Seeded art only, fixed playable geometry/inventory and noninteractive decoration. Typecheck, relevant deterministic art/rule tests, one filtered play and portrait under the existing-game tier; no full suites or build for local code-drawn art alone.
+3. Two cosmetic meadow treatments are built in [PR #397](https://github.com/rjdunlap/neo/pull/397); [build note](../archive/COMPLETED-2026-10-09.md#duckling-parade-meadow-treatments-2026-10-15). Both are seeded decoration only.
 4. **Ready — append ABB at 11.** Six slots and two colors on the existing pattern interaction, extending only school to 11. Typecheck and game rules; one filtered top-level `arcade` play (`ARCADE_ONLY=parade ARCADE_LEVELS=11`) and `fingerdemo` (`FINGER_ONLY=duckling-parade FINGER_LEVELS=11`); build because registry/band integration is shared. Update all game/level docs and person checks. Recheck that 11 is unused first.
 5. **Decision first — freeze and build 12 only.** After approval, define reference/progress, reveal help and completion; then implement the four-duck continuation with first/last relevant round, one wrong choice, one hint and portrait under the new-interaction tier. Typecheck, meaningful units, filtered play/demo; build for shared changes. No 13/14 bundled in.
 6. **Decision first — mapping 13, then authoring 14, each its own session.** Define their pictures/acceptance/help and solo/bot phases before implementation. Each uses the new-interaction tier; kept results excluded. Do not broaden windows while implementing the mapping.

@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Duckling Parade meadow treatments (2026-10-15)
+
+[PR #397](https://github.com/rjdunlap/neo/pull/397), branch `claude/duckling-meadow-treatments`: build slice 3. Each round picks one of two seeded meadow looks: `flowers` (the original hill colors plus white/orange daisies and white clover) or `reeds` (slightly bluer greens, green reed tufts and brown-headed cattails). Decoration only, drawn in a Graphics layer (`eventMode` none) under the pond and everything that moves, along the back strip of the meadow and behind the pond's far edge (`RIM_ARC` -2.0 to -0.5 rad), never in a duckling color. The meadow comes from a child `Rng` seeded after all existing `ctx.rng` use, so duckling colors, waiting places and wiggles are unchanged per seed. Pond, Mama's start, inventory, counts, pattern units, color pools, rules, levels and saves unchanged (`makeMeadow`, `dressingAt`, `MEADOWS`, `DRESSING_COLORS` in `logic.ts`). [Proof](../VERIFICATION.md#2026-10-15--duckling-parade-meadow-treatments); real-iPad look not checked.
+
+
 ### Duckling Parade destination and cancellation (2026-10-15)
 
 [PR #391](https://github.com/rjdunlap/neo/pull/391), branch `codex/duckling-parade-steering`, worker `01a1411e-24fa-7b30-9214-8ffecd67319d`, dispatch `duckling-steering-20261015T195026Z`: build slice 2 adds a local Graphics ring in palette greens at the clamped destination, fading over 0.9 seconds. Cancellation, lost capture/release, window exit, blur and visibility changes drop steering ownership; tap walking, newest-finger control and palm rejection remain. Arrival/finish/resize clear the cue; destroy removes local/native listeners and tracked critters. No meadow treatments, levels, generator/accounting, bands or saves changed. Existing how-to remains accurate. Typecheck, seven focused rules, filtered steering/level-10 play, portrait review and clean 17.0s ghost finger passed; cancellation regression failed when its response was disabled. [Proof](../VERIFICATION.md#2026-10-15--duckling-parade-destination-and-cancellation). Real-finger feel and iPad checks remain open.
