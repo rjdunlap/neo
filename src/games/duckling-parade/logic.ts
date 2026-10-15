@@ -198,3 +198,54 @@ export function nextStop(
   });
   return best;
 }
+
+/**
+ * Two looks for the meadow, picked by the round's seed. Decoration only: the pond, Mama's start, the ducklings, their
+ * waiting places and every rule stay the same. Dressing sits along the back of the meadow (above where any duckling
+ * waits) and on the far side of the pond, under everything that moves, and never in a duckling color.
+ */
+export type MeadowId = 'flowers' | 'reeds';
+export type DressingKind = 'daisy' | 'clover' | 'reed' | 'cattail';
+
+export interface Dressing {
+  kind: DressingKind;
+  /** 'back': the strip between the hills and the meadow, `t` across it (0–1); 'rim': round the pond, `t` an angle in radians. */
+  place: 'back' | 'rim';
+  t: number;
+  size: number;
+}
+
+export interface Meadow {
+  id: MeadowId;
+  /** Hill colors, back to front, the last one the meadow. */
+  hills: number[];
+  dressing: Dressing[];
+}
+
+/** The colors dressing is drawn in: none is a duckling color, so it never reads as a duckling to find. */
+export const DRESSING_COLORS: Record<DressingKind, ColorName[]> = { daisy: ['white', 'orange'], clover: ['white', 'green'], reed: ['green'], cattail: ['green', 'brown'] };
+
+/** Rim dressing stands behind the pond (it is drawn under the water), clear of the screen's edge and the meadow side where Mama walks in. */
+export const RIM_ARC = { from: -2.0, to: -0.5 };
+
+export const MEADOWS: Record<MeadowId, { hills: number[]; back: DressingKind[]; rim: DressingKind[] }> = {
+  flowers: { hills: [0xc8ecb0, 0xa6de8e, 0x9edb86], back: ['daisy', 'clover'], rim: ['daisy'] },
+  reeds: { hills: [0xbfe6bd, 0x97d49c, 0x8ccf8c], back: ['reed'], rim: ['cattail', 'reed'] },
+};
+
+export function makeMeadow(rng: Rng): Meadow {
+  const id = rng.pick(['flowers', 'reeds'] as MeadowId[]);
+  const style = MEADOWS[id];
+  const dressing: Dressing[] = [];
+  const back = rng.int(7, 10);
+  for (let i = 0; i < back; i++) dressing.push({ kind: rng.pick(style.back), place: 'back', t: (i + rng.range(0.2, 0.8)) / back, size: rng.range(0.8, 1.2) });
+  const rim = rng.int(3, 5);
+  for (let i = 0; i < rim; i++) dressing.push({ kind: rng.pick(style.rim), place: 'rim', t: RIM_ARC.from + ((RIM_ARC.to - RIM_ARC.from) * (i + rng.range(0.25, 0.75))) / rim, size: rng.range(0.85, 1.15) });
+  return { id, hills: style.hills, dressing };
+}
+
+/** Where a piece of dressing stands, in stage units: `field` is the meadow, `horizon` where the hills meet it, `pond` the pond's ellipse. */
+export function dressingAt(d: Dressing, field: { x0: number; x1: number; y0: number }, horizon: number, pond: { x: number; y: number; rx: number; ry: number }) {
+  if (d.place === 'back') return { x: field.x0 + (field.x1 - field.x0) * d.t, y: horizon + (field.y0 - horizon) * 0.7 };
+  return { x: pond.x + Math.cos(d.t) * (pond.rx + 34), y: pond.y + Math.sin(d.t) * (pond.ry + 26) };
+}
