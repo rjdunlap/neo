@@ -147,6 +147,24 @@ export function demoAction(mode: ClockMode, hour: number, minute: number, task: 
 /** Digital labels share the face's normalized time. */
 export const digital = (time: number) => `${hourOf(time)}:${String(time % 60).padStart(2, '0')}`;
 
+/** Worked hour change: unwrap the hand's destination so 12→1 animates forwards. */
+export function laterExample(task: ClockTask) {
+  const from = task.from!;
+  const hourStart = handsFor(from).hour;
+  return {
+    from: digital(from), to: digital(task.time),
+    fromSpeech: spoken(from), toSpeech: spoken(task.time),
+    minute: from % 60, hourStart, hourEnd: hourStart + 5,
+  };
+}
+
+/** The help arc, counted words and requested time all come from the same target. */
+export function fiveExample(task: ClockTask) {
+  const minute = task.time % 60;
+  const marks = Array.from({ length: minute / 5 }, (_, i) => (i + 1) * 5);
+  return { marks, counts: marks.join(', '), time: spoken(task.time) };
+}
+
 /** The request stays visible; later tasks show the starting time, never the answer. */
 export function requestFor(mode: ClockMode, task: ClockTask): { heading: string; time: string; speech: string } {
   const time = mode === 'later' ? task.from! : task.time;

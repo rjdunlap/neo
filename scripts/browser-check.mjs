@@ -5291,6 +5291,36 @@ async function woodsBatch() {
       if (n === 0) {
         await ring(); await ring();
         assert.deepEqual(await counts(), [2, 1]);
+        if (level === 6 || level === 7) {
+          const evidence = await page.evaluate(() => {
+            const g = neo.scene.game;
+            const digital = t => `${Math.floor(t / 60) % 12 || 12}:${String(t % 60).padStart(2, '0')}`;
+            return {
+              comparing: g.comparison.visible, before: g.oldTime.text, after: g.newTime.text,
+              from: digital(g.task.from ?? 0), target: digital(g.task.time), oldAlpha: g.oldClock.alpha,
+              hour: g.example.hour, hourEnd: ((Math.floor((g.task.from ?? 0) / 60) % 12) * 5 + ((g.task.from ?? 0) % 60) / 12) + 5,
+              arc: g.example.arc, minute: g.task.time % 60,
+              rim: g.face.children.filter(child => 'text' in child).map(child => child.text),
+            };
+          });
+          if (level === 6) {
+            assert.equal(evidence.comparing, true);
+            assert.equal(evidence.before, evidence.from);
+            assert.equal(evidence.after, evidence.target);
+            assert.equal(evidence.hour, evidence.hourEnd, 'worked example moves forwards one hour');
+            assert.ok(evidence.oldAlpha < 1, 'old clock is faint');
+          } else {
+            assert.equal(evidence.comparing, false);
+            assert.equal(evidence.arc, evidence.minute, 'help arc reaches the requested minute');
+            assert.ok(evidence.rim.includes('0'));
+            assert.ok(!evidence.rim.includes('60'), 'minute zero belongs at 12');
+          }
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(200);
+          await screenshot(`clock-tower-${level}-explanation-portrait`);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(200);
+        }
         if (level === 4 || level === 7) await screenshot(`clock-tower-${level}-hint`);
       }
       await setTo(time);
