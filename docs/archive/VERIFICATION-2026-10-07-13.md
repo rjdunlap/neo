@@ -1966,3 +1966,8 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 
 - Docs only, `claude/clap-syllables-deep-dive` ([PR #301](https://github.com/rjdunlap/neo/pull/301)): added [clap-syllables.md](../deep-dives/clap-syllables.md) (current ladder, known gaps, levels 6–9 proposed, four ready build slices) and updated the tracker, roadmap chunk 14, IDEAS row and Waiting on the developer.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Syllable counts and speech clarity are unverified by play; the device speech check stays open.
+
+## 2026-10-14 — Critter Crossing deep dive
+
+- Docs only, `claude/critter-crossing-deep-dive` ([PR #303](https://github.com/rjdunlap/neo/pull/303)): added [critter-crossing.md](../deep-dives/critter-crossing.md) (current ladder, levels 6–8 and a visible "not" entry proposed, seven build slices, three decisions) and updated the tracker, roadmap chunk 14, IDEAS rows and Waiting on the developer.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Genre sources were read through search summaries; the proposed levels are unplayed.
