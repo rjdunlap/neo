@@ -5828,7 +5828,7 @@ async function woodsBatch() {
     log(`Treasure Map ${level} (${mode}): squares tapped on the grid, row and column hints spoken, ${mode === 'clues' ? 'two landmark lines glowing, ' : 'glowing column and row, '}${mode === 'steps' ? 'the pet walking the directions, ' : ''}saved score and sticker passed`);
   }
 
-  if (!only || only === 'opp') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'opp') for (let level = fromLevel; level <= 5; level++) {
     await launch('opposites', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const card = async (i) => {
@@ -5845,9 +5845,21 @@ async function woodsBatch() {
         const L = await import('/src/games/opposites/logic.ts'); const g = neo.scene.game; const r = g.round;
         const ok = (c) => g.plan.mode === 'find' ? L.word(c) === L.word(r.ask) : L.opposites(c, r.ask);
         const idx = r.cards.map((c, i) => i);
+        if (g.plan.mode === 'spot') { const pr = idx.filter((i) => idx.some((j) => j !== i && L.opposites(r.cards[i], r.cards[j]))); return { pairs: [pr], others: idx.filter((i) => !pr.includes(i)) }; }
         if (g.plan.mode === 'pairs') return { pairs: idx.filter((i) => idx.some((j) => j > i && L.opposites(r.cards[i], r.cards[j]))).map((i) => [i, idx.find((j) => j > i && L.opposites(r.cards[i], r.cards[j]))]) };
         return { right: idx.find((i) => ok(r.cards[i])), others: idx.filter((i) => !ok(r.cards[i])) };
       });
+      if (mode === 'spot') {
+        if (n === 0) {
+          // Two decoys that aren't opposites: a miss, then a second miss for the glow.
+          await card(others[0]); await card(others[1]);
+          await card(others[0]); await card(others[2]);
+          assert.deepEqual(await counts(), [2, 1]);
+          await screenshot('opposites-5-hint');
+        }
+        await card(pairs[0][0]); await card(pairs[0][1]);
+        continue;
+      }
       if (mode === 'pairs') {
         if (n === 0) {
           // Two pairs that aren't opposites.
