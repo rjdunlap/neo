@@ -11,7 +11,7 @@ import { store } from '../progress/store';
 import { openPauseSheet, type PauseSheet } from '../ui/pause-sheet';
 import { TurnPrompt } from '../ui/TurnPrompt';
 import { InputInUse } from './input-in-use';
-import { escapeAction, padStart } from './pause';
+import { escapeAction, PadSheet, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
@@ -84,6 +84,8 @@ export class App {
   /** Esc was pressed: the scene holds still behind the pause sheet (or the grown-ups' page opened from it). */
   paused = false;
   private sheet: PauseSheet | null = null;
+  /** A pad on the open sheet: made fresh with it, so a button held as it opens does nothing. */
+  private padSheet: PadSheet | null = null;
   /** What the person is using across the plain island screens (the map, the lands): a finger until a key or button, a finger again on a touch. A game round keeps its own. */
   readonly input = new InputInUse();
 
@@ -220,7 +222,10 @@ export class App {
     this.paused = true;
     voice.stop();
     this.syncSleep();
+    this.padSheet = new PadSheet();
+    this.padSheet.poll();
     this.sheet = openPauseSheet({
+      actions: this.scene?.pauseActions() ?? [],
       onResume: () => this.unpause(),
       onShort: () => void voice.say('parent.ask'),
       onGrownUps: () => {
@@ -242,6 +247,7 @@ export class App {
   private closeSheet() {
     this.sheet?.close();
     this.sheet = null;
+    this.padSheet = null;
   }
 
   private tick(dt: number) {
@@ -252,6 +258,11 @@ export class App {
     }
     // Start on a pad pauses and resumes like Esc, also while the scene is held still.
     if (padStart.poll() && this.scene && !this.turning) this.escape();
+    if (this.sheet && this.padSheet) {
+      const action = this.padSheet.poll();
+      if (action === 'press') this.sheet.press();
+      else if (action) this.sheet.move(action === 'up' ? -1 : 1);
+    }
     if (!this.scene || this.paused) return;
     this.scene.update(dt);
   }

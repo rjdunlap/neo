@@ -3,6 +3,7 @@ import { Particles } from '../art/particles';
 import { Tweener } from '../engine/tween';
 import type { View } from '../engine/view';
 import type { App } from './App';
+import type { PauseAction } from './pause';
 
 export interface Updatable {
   update(dt: number): void;
@@ -27,6 +28,11 @@ export abstract class Scene {
 
   constructor(protected readonly app: App) {
     this.root.addChild(this.content, this.particles, this.ui);
+  }
+
+  /** The round's own entries on the pause sheet (start again, show a hint), read when the sheet opens. Most scenes have none. */
+  pauseActions(): PauseAction[] {
+    return [];
   }
 
   get view(): View {

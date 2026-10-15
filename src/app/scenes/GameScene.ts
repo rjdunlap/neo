@@ -11,6 +11,7 @@ import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
 import { howToFor, shouldExplain } from '../../content/howto';
 import { islandDemo } from '../../content/demos';
+import { COUCH_INFO, type CouchInfo } from '../../couch/catalog';
 import { Demo } from '../../couch/demo';
 import type { LineId } from '../../content/voice-script';
 import { CouchInput, type CouchControls } from '../../engine/controller';
@@ -19,6 +20,7 @@ import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { textBoost, type View } from '../../engine/view';
+import { pauseLabels, type PauseAction } from '../pause';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
 import type { Band } from '../../progress/bands';
 import { nextLevelOffer, stepLevel } from '../../progress/difficulty';
@@ -252,6 +254,22 @@ export class GameScene extends Scene {
    */
   private whileHere(spoken: Promise<void>): Promise<void> {
     return new Promise((resolve) => void spoken.then(() => !this.gone && resolve()));
+  }
+
+  /**
+   * Start again and show a hint on the pause sheet, labelled as the couch pause menu labels them; none before the round
+   * is built, while the how-to card is up, or once it is finished. Each resumes first, as the couch does, so a hint can
+   * speak and a restart can finish what it is doing.
+   */
+  override pauseActions(): PauseAction[] {
+    const game = this.game;
+    if (!game || this.helpCard || this.finished || this.gone) return [];
+    const couch = (COUCH_INFO as Record<string, CouchInfo | undefined>)[this.mod.id];
+    const labels = pauseLabels(this.mod.bands, { restart: !!game.restart, hint: !!game.askForHint }, couch);
+    const actions: PauseAction[] = [];
+    if (labels.restart) actions.push({ label: labels.restart, run: () => game.restart?.() });
+    if (labels.hint) actions.push({ label: labels.hint, run: () => game.askForHint?.() });
+    return actions;
   }
 
   /** The grown-up how-to card for this game at this level. Reading it is not a hint and changes no progress. */
