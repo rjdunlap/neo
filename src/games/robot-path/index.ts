@@ -1,4 +1,5 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { prop } from '../../art/props';
 import { cream, ink, swatch } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -12,13 +13,13 @@ import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
+import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, VIA_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
 
-/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict and repair. */
+/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12) and pick up an apple (13). */
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 6 },
-  school: { min: 4, max: ROBOT_PLANS.length + 2 },
+  school: { min: 4, max: ROBOT_PLANS.length + 3 },
 };
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
@@ -47,6 +48,8 @@ class RobotPath implements Game {
   private readonly grid = new Graphics();
   private readonly robot = robotArt(65);
   private readonly star = new Graphics().poly(starPoints(30, 14)).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+  private readonly apple = prop('apple', 'red');
+  private readonly appleGlow = new Graphics();
   private readonly queue = new Container();
   private readonly hint = new Graphics();
   private readonly predictionMark = new Graphics();
@@ -74,7 +77,7 @@ class RobotPath implements Game {
     this.view = ctx.view;
     this.prediction = ctx.level === 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
     this.fixPlan = ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : null;
-    this.plan = this.prediction ?? this.fixPlan ?? boardFor(ctx.level, ctx.rng);
+    this.plan = this.prediction ?? this.fixPlan ?? (ctx.level === 13 ? ctx.rng.pick(VIA_PLANS) : boardFor(ctx.level, ctx.rng));
     this.mode = this.plan.mode ?? 'steps';
     this.solution = this.prediction?.program ?? this.plan.solution?.slots ?? shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
     if (this.prediction) this.program.push(...this.prediction.program.map((slot) => ({ ...slot })));
@@ -100,8 +103,11 @@ class RobotPath implements Game {
       this.drawQueue();
     });
     this.loopButton.visible = this.mode === 'loop';
-    ctx.stage.addChild(this.background, this.grid, this.star, this.robot, this.queue, this.play, this.clear, this.loopButton, this.hint, this.predictionMark);
+    ctx.stage.addChild(this.background, this.grid, this.appleGlow, this.apple, this.star, this.robot, this.queue, this.play, this.clear, this.loopButton, this.hint, this.predictionMark);
     this.hint.eventMode = 'none';
+    this.apple.eventMode = 'none';
+    this.appleGlow.eventMode = 'none';
+    this.apple.visible = !!this.plan.via;
     for (const dir of DIRECTIONS) {
       const button = new RoundButton(arrow(dir), swatch.teal, 50, () => this.add(dir));
       ctx.stage.addChild(button);
@@ -124,7 +130,7 @@ class RobotPath implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.prediction ? 'robot.predict' : this.fixPlan ? 'robot.fix' : this.mode === 'loop' ? 'robot.loop' : this.mode === 'counts' ? 'robot.counts' : 'robot.start');
+    void this.ctx.instruct(this.prediction ? 'robot.predict' : this.fixPlan ? 'robot.fix' : this.plan.via ? 'robot.via' : this.mode === 'loop' ? 'robot.loop' : this.mode === 'counts' ? 'robot.counts' : 'robot.start');
   }
 
   /** An arrow tap: a new step, or on counted levels one more of the same step. */
@@ -181,6 +187,11 @@ class RobotPath implements Game {
       const p = this.position(result.path[i]);
       await this.ctx.tw.to(this.robot, { x: p.x, y: p.y + 42 }, { duration: 0.4 });
       sfx.bell(6, 0.12);
+      if (this.plan.via && sameCell(result.path[i], this.plan.via)) {
+        this.apple.visible = false;
+        sfx.bell(9, 0.2);
+        this.ctx.particles.burst(p.x, p.y, { colors: [swatch.red.fill, swatch.yellow.fill], count: 10 });
+      }
     }
     this.active = -1;
     this.drawQueue();
@@ -213,12 +224,17 @@ class RobotPath implements Game {
       await this.ctx.tw.to(this.robot, { x: x - 12 }, { duration: 0.16 });
       await this.ctx.tw.to(this.robot, { x }, { duration: 0.08 });
       await speech;
+    } else if (result.stop === 'forgot') {
+      this.appleGlow.visible = true;
+      await this.ctx.say('robot.forgot');
     } else {
       await this.ctx.say('robot.short');
     }
     await this.ctx.tw.wait(0.65);
     const p = this.position([0, 0]);
     await this.ctx.tw.to(this.robot, { x: p.x, y: p.y + 42 }, { duration: 0.4 });
+    this.apple.visible = !!this.plan.via;
+    this.appleGlow.visible = false;
     this.running = false;
     if (this.misses === 2) {
       this.hints++;
@@ -330,6 +346,13 @@ class RobotPath implements Game {
     if (!this.running) this.robot.position.set(start.x, start.y + 42);
     this.robot.scale.set(Math.min(1.2, this.cell / 100));
     this.star.position.set(goal.x, goal.y);
+    if (this.plan.via) {
+      const a = this.position(this.plan.via);
+      this.apple.position.set(a.x, a.y);
+      this.apple.scale.set(this.cell / 170);
+      this.appleGlow.clear().circle(a.x, a.y, this.cell / 2 - 6).stroke({ width: 8, color: swatch.yellow.line });
+      this.appleGlow.visible = false;
+    }
     const cx = v.w - 190;
     const cy = portrait ? v.h - 300 : v.h * 0.44;
     this.arrows.forEach(({ dir, button }) => {
@@ -425,7 +448,7 @@ export const robotPath: GameModule = {
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : l === 1 ? 'One or two steps straight to the star' : l === 2 ? 'A short program with a turn' : l === 3 ? 'Plan across a bigger grid' : planFor(l).name,
+  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : l === 13 ? 'Pick up the apple on the way' : l === 1 ? 'One or two steps straight to the star' : l === 2 ? 'A short program with a turn' : l === 3 ? 'Plan across a bigger grid' : planFor(l).name,
   music: STYLES.jelly,
   offScreen: 'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
   hubIcon: () => new WigglyIcon(robotArt(160)),

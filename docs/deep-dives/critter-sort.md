@@ -116,6 +116,6 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 
 ## What was built in this session
 
-On 2026-10-14 a build session (`claude/critter-sort-just-a-few`) added level 6 for pre-K and the `hintFor` fix; checks in [VERIFICATION](../VERIFICATION.md#2026-10-14--critter-sort-level-6-just-a-few-and-the-missed-critter-hint). The deep dive session itself:
+On 2026-10-14 a build session (`claude/critter-sort-just-a-few`) added level 6 for pre-K and the `hintFor` fix; checks in [VERIFICATION](../archive/VERIFICATION-2026-10-14.md#2026-10-14--critter-sort-level-6-just-a-few-and-the-missed-critter-hint). The deep dive session itself:
 
 Nothing: a deep dive session is research and ideation only. Links and `git diff --check` ran. The genre sources were read through search summaries, not opened in full.
