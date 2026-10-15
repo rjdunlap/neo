@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics } from 'pixi.js';
 import { cream, swatch } from '../../art/palette';
+import { entryId } from '../../content/journal';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -15,6 +16,8 @@ import { LEVELS, PLANS, offTrail, stickerLetter, trailLevel, trailTolerance, tra
 class LetterTrails implements Game {
   readonly word: string;
   private letterIndex = 0;
+  /** Letters whose picture she has seen this round (traced to the end): the discoveries for her journal. */
+  private readonly traced = new Set<string>();
   private stroke = 0;
   private progress = 0;
   private points: Point[] = [];
@@ -94,6 +97,7 @@ class LetterTrails implements Game {
       this.busy = false; this.prepareStroke(); void this.ctx.instruct('trails.stroke'); return;
     }
     this.outline.clear(); this.ink.clear(); this.beacon.clear(); this.firefly.visible = false;
+    this.traced.add(this.letter);
     this.picture = letterPicture(this.letter);
     this.picture.position.set(this.size / 2, this.size / 2);
     this.picture.scale.set(Math.min(1.2, this.size / 330));
@@ -104,7 +108,7 @@ class LetterTrails implements Game {
     this.picture.destroy({ children: true }); this.picture = null;
     this.letterIndex++;
     if (this.letterIndex === this.word.length) {
-      this.done = true; this.ctx.finish({ misses: this.misses, hints: this.hints }); return;
+      this.done = true; this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.traced].map((l) => entryId('letter-trails', l)) }); return;
     }
     this.stroke = 0; this.busy = false; this.prepareStroke();
     void this.ctx.instruct('trails.start', { letter: this.letter });

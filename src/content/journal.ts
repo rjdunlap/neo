@@ -1,4 +1,5 @@
 import { ANIMALS, FAVORITE, FOOD_WORDS } from '../games/animal-snack/logic';
+import { WORDS } from '../games/letter-trails/pictures';
 import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
 import type { LineId } from './voice-script';
@@ -9,7 +10,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -61,6 +62,35 @@ const SAFARI_LINES: Record<Action, LineId> = {
   sleeping: 'journal.safari.sleeping',
   eating: 'journal.safari.eating',
   dancing: 'journal.safari.dancing',
+};
+
+const TRAIL_LINES: Record<string, LineId> = {
+  A: 'journal.trails.A',
+  B: 'journal.trails.B',
+  C: 'journal.trails.C',
+  D: 'journal.trails.D',
+  E: 'journal.trails.E',
+  F: 'journal.trails.F',
+  G: 'journal.trails.G',
+  H: 'journal.trails.H',
+  I: 'journal.trails.I',
+  J: 'journal.trails.J',
+  K: 'journal.trails.K',
+  L: 'journal.trails.L',
+  M: 'journal.trails.M',
+  N: 'journal.trails.N',
+  O: 'journal.trails.O',
+  P: 'journal.trails.P',
+  Q: 'journal.trails.Q',
+  R: 'journal.trails.R',
+  S: 'journal.trails.S',
+  T: 'journal.trails.T',
+  U: 'journal.trails.U',
+  V: 'journal.trails.V',
+  W: 'journal.trails.W',
+  X: 'journal.trails.X',
+  Y: 'journal.trails.Y',
+  Z: 'journal.trails.Z',
 };
 
 /** Floaters first, then sinkers, so the cards read as two groups; then the animals in the order the game lists them. */
@@ -131,6 +161,14 @@ export const JOURNAL: readonly JournalEntry[] = [
     line: 'journal.habitat.duck',
     source: { find: 'build a garden with food, water and shelter for Duck and open the gate', found: 'a garden supplied food, water and shelter and Duck visited' },
   },
+  ...Object.keys(WORDS).map((letter): JournalEntry => ({
+    id: entryId('letter-trails', letter),
+    game: 'letter-trails',
+    key: letter,
+    name: `${letter} is for ${WORDS[letter]}`,
+    line: TRAIL_LINES[letter],
+    source: { find: `trace the letter ${letter} to its end`, found: `the letter ${letter} was traced to its end` },
+  })),
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);

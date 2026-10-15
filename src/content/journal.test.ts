@@ -4,17 +4,19 @@ import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
 import { ACTIONS } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats } from '../games/sink-float/logic';
 import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen, sourceText } from './journal';
+import { WORDS } from '../games/letter-trails/pictures';
 import { SCRIPT } from './voice-script';
 
 describe('the entries', () => {
-  it('covers every promised observation from all six source games, and no others', () => {
+  it('covers every promised observation from all seven source games, and no others', () => {
     expect(entriesOf('sink-float').map((e) => e.key).sort()).toEqual([...ALL_THINGS].sort());
     expect(entriesOf('animal-snack').map((e) => e.key).sort()).toEqual([...ANIMALS].sort());
     expect(entriesOf('photo-safari').map((e) => e.key).sort()).toEqual([...ACTIONS].sort());
     expect(entriesOf('seesaw-balance').map((e) => e.key).sort()).toEqual(['equal-level', 'heavy-down']);
     expect(entriesOf('bouncy-launch').map((e) => e.key)).toEqual(['bigger-pull']);
     expect(entriesOf('habitat-helpers').map((e) => e.key).sort()).toEqual(['bunny', 'duck']);
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5);
+    expect(entriesOf('letter-trails').map((e) => e.key)).toEqual(Object.keys(WORDS));
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -66,6 +68,9 @@ describe('the entries', () => {
           expect(said, e.id).toContain('water');
           expect(said, e.id).toContain('shelter');
           break;
+        case 'letter-trails':
+          expect(said, e.id).toContain(`${e.key.toLowerCase()} is for ${WORDS[e.key]}`);
+          break;
       }
     }
   });
@@ -104,6 +109,10 @@ describe('the entries', () => {
       } else if (e.game === 'bouncy-launch') {
         expect(find).toContain('pulls');
         expect(found).toContain('bigger pull');
+      } else if (e.game === 'letter-trails') {
+        expect(find).toContain(`letter ${e.key}`);
+        expect(found).toContain(`letter ${e.key}`);
+        expect(find).toContain('Trace');
       } else {
         expect(find.toLowerCase()).toContain(e.key);
         expect(found.toLowerCase()).toContain(e.key);
