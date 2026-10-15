@@ -11,7 +11,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, dropAt, makeBoard, planFor, targets, type PegPlan, type PegSpot } from './logic';
+import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, dropAt, makeBoard, planFor, STALL_AT, targets, type PegPlan, type PegSpot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -112,6 +112,9 @@ class PegGarden implements Game {
   private wrongs = 0;
   private clock = 0;
   private ballAge = 0;
+  /** Pearls in a row that woke no new flower on the bloom level. */
+  private stalled = 0;
+  private freshThisShot = 0;
   private lastChime = 0;
   // Couch play: the stick sweeps the launcher, the bottom button lets go. `shots` is the face-off score (fewer is better).
   private couchOn = false;
@@ -260,7 +263,9 @@ class PegGarden implements Game {
     if (this.ball || this.finished || palmOnGlass()) return;
     const p = this.local(e);
     if (!this.aimed) {
-      this.fire({ x: Math.max(BOARD.ball, Math.min(BOARD.w - BOARD.ball, p.x)), y: 40, vx: this.ctx.rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball });
+      // Tapping one spot again and again must still finish: after two pearls that woke nothing new, the third is let go over a waiting flower.
+      const x = this.plan.mode === 'bloom' && this.stalled >= STALL_AT ? dropAt(this.world, (i) => !this.buds[i].bloomed, this.ctx.rng.clone().range(-DRIFT, DRIFT)).x : p.x;
+      this.fire({ x: Math.max(BOARD.ball, Math.min(BOARD.w - BOARD.ball, x)), y: 40, vx: this.ctx.rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball });
       return;
     }
     this.aiming = e.pointerId;
@@ -290,6 +295,7 @@ class PegGarden implements Game {
     this.ball = b;
     this.ballAge = 0;
     this.lit = [];
+    this.freshThisShot = 0;
     this.pearl.visible = true;
     this.pearl.position.set(b.x, b.y);
     sfx.pop(9);
@@ -305,6 +311,7 @@ class PegGarden implements Game {
       sfx.bell(4 + Math.round((1 - bud.y / BOARD.h) * 7), fresh ? 0.3 : 0.12);
     }
     if (!fresh) return;
+    this.freshThisShot++;
     const g = this.board.toGlobal(bud.position);
     const p = this.ctx.stage.toLocal(g);
     this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 6, speed: [60, 160], gravity: 0, size: [0.3, 0.45], life: [0.4, 0.7] });
@@ -324,6 +331,7 @@ class PegGarden implements Game {
         return;
       case 'bloom':
         if (this.buds.every((b) => b.bloomed)) return void this.finale();
+        this.stalled = this.freshThisShot > 0 ? 0 : this.stalled + 1;
         return;
       case 'color': {
         const specials = this.buds.filter((b) => b.spot.kind === 'special');

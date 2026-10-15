@@ -14,7 +14,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Peg Garden
 
-*lap–pre-K · after Peggle and pachinko.* A pearl drops through a sea garden; each flower bud it touches blooms and chimes, and nothing is lost. Later levels ask for every flower, the orange ones, then aiming a launcher at a numbered flower and at 1, 2, 3 in order. `engine/ball.ts` simulates every board, so each numbered peg is reachable by some aim. It stays at one lap level: its bloom level has no guaranteed finish if the same spot is tapped again and again.
+*lap–pre-K · after Peggle and pachinko.* A pearl drops through a sea garden; each flower bud it touches blooms and chimes, and nothing is lost. Later levels ask for every flower, the orange ones, then aiming a launcher at a numbered flower and at 1, 2, 3 in order. `engine/ball.ts` simulates every board, so each numbered peg is reachable by some aim. It stays at one lap level. The bloom level always finishes: after two pearls in a row that wake no new flower (the same spot tapped again and again), the next tap's pearl is let go over a waiting flower instead of the tapped spot.
 
 ### Bounce Back
 

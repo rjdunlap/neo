@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-15 — Peg Garden bloom guaranteed finish
+
+- Uncommitted work on `worktree-bridge-cse_01BPZDVHcagJedLDXgwJSyZx`, `src/games/peg-garden/`: on the bloom level, after `STALL_AT` (2) pearls in a row that wake no new flower, the next tap's pearl is let go over a waiting flower (`dropAt`) instead of the tapped x. No level or band change.
+- Ran `npm run typecheck` and `npx vitest run src/games/peg-garden` (5 pass, including "finishes a bloom level even when the same spot is tapped every time", which fails without the nudge).
+- Not run: any browser play, `fingerdemo`, a portrait screenshot. No coverage-summary row changed (none covers Peg Garden's rules).
+
 ## 2026-10-15 — Animal Snack bites
 
 - [PR #366](https://github.com/rjdunlap/neo/pull/366), `claude/animal-snack-bites`: [deep dive](deep-dives/animal-snack.md) slice 2. Each snack is eaten in three shrinking bites (`BITE_SIZES` 0.7/0.4/0) with a synthesized sound per food (`BITE` in `logic.ts`, `sfx.bite`), crumb puffs and an animal poke per bite. No rule or level change.
