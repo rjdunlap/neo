@@ -1,5 +1,11 @@
 # Verification 2026-10-15 (archived entries)
 
+## 2026-10-15 — Letter Trails journal entries
+
+- [PR #363](https://github.com/rjdunlap/neo/pull/363), `claude/letter-trails-journal`. 26 `letter-trails:<LETTER>` journal entries with voice lines and art (`letterPicture`), filed via `RoundResult.discoveries` only for letters whose picture was shown.
+- Ran `npm run typecheck`; vitest `src/content`, `src/games/letter-trails`, `src/progress`, `src/ui` (197 pass); `BROWSER_SUITE=letters` passed on a local dev server, with a new assertion that a letter-trails entry is filed in the journal.
+- Not run: portrait screenshot of the journal with the 26 new cards, build, device speech, actual iPad or child play.
+
 ## 2026-10-15 — Jelly Drums distinct tunes in a round
 
 - [PR #362](https://github.com/rjdunlap/neo/pull/362), `claude/jelly-drums-distinct-tunes`. Echo levels 4–9 never repeat a tune within a round: `makeTune` takes a `played` list and `index.ts` keeps it. Only this part of deep-dive slice 1 is built; the listen-again target, bounded how-to, `TUNES` table and nudge remain ready.
