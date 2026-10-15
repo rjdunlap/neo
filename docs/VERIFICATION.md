@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-14 — Movement roadmap recommendations
+
+- Docs only, base `a0362bc` plus roadmap diff, [PR #312](https://github.com/rjdunlap/neo/pull/312): recorded the developer-requested priorities Adventure Walk and Animal Charades, with Mirror Partners retained as a Pet Says extension.
+- Roadmap definition packets, subject study/tracker and candidate notebook agree on original content, supported endings, existing-game overlap and reviewer/seat dependencies. No games built or scheduled.
+- Markdown links/anchors and `git diff --check` passed. Rotated the oldest live dated entry into the existing archive and repointed incoming links.
+- Not run: code, browser, offline or device checks (docs-only tier). Proposed age ranges, family appeal and movement instruction review remain open.
+
 ## 2026-10-14 — Movement and exercise subject research
 
 - Docs only, base `d7b6804` plus research diff, [PR #311](https://github.com/rjdunlap/neo/pull/311): official WHO/AAP/CDC/SHAPE sources, six comparable references, every audience L–G, existing-game overlap, Dance Workshop proposals and ordered slices.
@@ -38,7 +45,7 @@
 - Uncommitted working diff on `claude/roadmap-development-3dc5ea` (branch base not recorded here): the round seed can now choose a beach (umbrella, sandcastle, bucket, towel over sand, a sea band and a sailboat), beside barnyard and garden. Levels 1–8, bands, interaction, rewards and sticker/icon art unchanged.
 - Passed `npm run typecheck` and the Peekaboo rule tests plus content and registry tests (92 tests).
 - One Chrome screenshot of the beach at 1024x768 (landscape only).
-- Not run: portrait screenshot, a play-through, `fingerdemo`, build or offline; scene-content tier, interaction evidence from [cover support](#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
+- Not run: portrait screenshot, a play-through, `fingerdemo`, build or offline; scene-content tier, interaction evidence from [cover support](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
 ## 2026-10-14 — Critter Crossing deep dive
 
@@ -67,7 +74,7 @@
 - Tested base `356f40d` plus working diff on `codex/peekaboo-garden`, [PR #298](https://github.com/rjdunlap/neo/pull/298): seeded barnyard/garden settings, four named garden covers and fence scenery; how-to names both settings. Levels 1–8, bands, interaction and rewards unchanged.
 - Passed `npm run typecheck`, `npx vitest run src/games/peekaboo-barn/logic.test.ts` (8 tests) and `npx vitest run src/content/howto.test.ts` (18 tests).
 - Isolated `test-results/peek-garden.mjs` at `http://localhost:5186`: reviewed all seven animals out/peeking over all four covers, portrait `peek-garden-portrait.png` and `peek-garden-peeking.png`; no page errors. Probe/screenshots are ignored local artifacts.
-- Not run: full play, build, offline or fingerdemo; scene-content tier, unchanged interaction evidence from [cover support](#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
+- Not run: full play, build, offline or fingerdemo; scene-content tier, unchanged interaction evidence from [cover support](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
 ## 2026-10-14 — Chain Reaction deep dive
 
@@ -85,23 +92,15 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Standards wording beyond section names is unverified; token-pool and hint findings come from reading the source, not from play.
 
 
-## 2026-10-14 — Peekaboo Barn cover support
-
-- Tested claim/base `67eeef9` plus working diff on `codex/peekaboo-cover-support`, [PR #294](https://github.com/rjdunlap/neo/pull/294): pinned sticker/icon animals, scoped how-to, nearest-cover taps with pet clearance, free idle nudge, cover motions/sounds/names, gentle wrong-answer boing and guarded replaced critter cheers. Levels and band windows unchanged.
-- Integrated documentation-only `origin/main` through `6bc61ce`; gameplay code unchanged, so recorded checks reused. Final typecheck, 25 focused tests (seven Peekaboo rules, eighteen how-to tests) and build passed. `GAME_URL=http://localhost:5183 BROWSER_SUITE=originals ORIGINALS_ONLY=peekaboo PEEK_LEVELS=1,5,8` passed idle non-accounting, nearest-neighbor selection, two misses/one hint at question levels, saved rewards and reload; portrait reviewed for pet clearance.
-- At the same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaboo-barn FINGER_LEVELS=1,5,8` passed clean in 17.2/27.1/52.2 seconds (75-second limit). Gameplay evidence was reused after the final bot-only adjustment to shared-layer taps.
-- First play was interrupted by HMR; the next exposed a destroyed critter's resumed cheer. Ignored `test-results/peekaboo-replace-probe.mjs` failed before the fix and passed after with no page errors. Initial demo failed on old direct listeners; corrected bot passed without weakening the check. Logs: ignored `peekaboo-support.log` and `peekaboo-finger.log` in `test-results/`.
-- Not run: full tests, world, production offline, couch or unrelated suites; no navigation or save changes. Real iPad touch, device speech and child reaction remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Subject research docs | 2026-10-14: movement/exercise sources opened; relative links and diff checked | [Movement research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; no physical instruction review, code or device checks |
+| Subject research docs | 2026-10-14: movement study and requested roadmap follow-ups; relative links and diff passed | [Recommendations](#2026-10-14--movement-roadmap-recommendations), [research](#2026-10-14--movement-and-exercise-subject-research) | Research/proposals only; no physical instruction review, code or device checks |
 | Critter Crossing level 6 (`critter-crossing`) | 2026-10-14: typecheck, 95 critter-crossing/content tests, one landscape dev-server play (marks, four option cards, no page errors) | [Critter Crossing level 6 entry](#2026-10-14--critter-crossing-level-6-either-one) | `fingerdemo` at level 6, portrait screenshot and how-to demo not run; full `npm test` had 9 unrelated load timeouts, not re-run |
-| Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-14: beach typecheck, 92 rules/content/registry tests and one landscape screenshot passed; earlier garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Beach verification](#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](#2026-10-14--peekaboo-barn-cover-support) | Beach and garden full play/build/offline/fingerdemo not rerun; beach portrait not reviewed; iPad, speech and child play open |
+| Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-14: beach typecheck, 92 rules/content/registry tests and one landscape screenshot passed; earlier garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Beach verification](#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) | Beach and garden full play/build/offline/fingerdemo not rerun; beach portrait not reviewed; iPad, speech and child play open |
 | `mossypath`, `fingerdemo` (`mossy-path`) | 2026-10-13: first/top gameplay, wrong taps/help/revision/dead-end recovery, rewards, clean 7.8/17.3 s demos, portrait/landscape; corrected filtered land launch/held Home return | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Full suite stopped on old tap-to-leave harness step; corrected navigation passed separately. iPad, speech and child play open |
 | `brainbreak`, `fingerdemo` (`brain-break`) | 2026-10-13: first/last stone-tap rounds, wrong taps/automatic and manual help, checked taps free, portrait/reward; clean 14.4/43.2 s demos; typecheck, 1,237 units and build | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--brain-break-number-order-first-slice) | No world/offline/couch/device runs; iPad comfort, speech and grown-up enjoyment open |
 | `pyramid`, `fingerdemo` (`pyramid-solitaire`); local-build docs audit | 2026-10-13: first/last tap rounds, mismatch/help/revision/dead-end recovery, portrait, reward, land/home/interruption; clean 7.4/19.3 s demos; 1,234 units and build; recent local builds audited from source evidence | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--pyramid-solitaire-first-slice-and-local-build-audit) | No device, world/offline/couch/full release checks; local builds not integrated or rerun here |

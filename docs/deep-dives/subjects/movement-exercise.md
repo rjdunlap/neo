@@ -90,6 +90,18 @@ Effort: S = one small content/definition slice; M = a new complete interaction; 
 | Stretch/yoga or breathing adventure | Possible movement or calming practice | No audience authorized yet | L; qualified instruction/content review, accessibility and cultural framing | Questions only. No pose sequence, dose or therapeutic claim designed here |
 | Stomp Steps | Finger rhythm and musical sequencing | K–S | Existing proposal; rhythm judging overlaps Sound Garden | Leave in music study; do not label taps physical exercise |
 
+## Recommended follow-ups, requested 2026-10-14
+
+**Developer preference to retain:** after discussing other movement ideas, the developer asked to add the recommendations to the roadmap and remember them. Prioritize **Adventure Walk** and **Animal Charades** for definition alongside Dance Workshop; keep **Mirror Partners** within Pet Says. This supplements the study's candidate list; it does not implement a game or schedule a worker. [Roadmap packets](../../ROADMAP.md#movement-and-family-play-recommendations), [PR #312](https://github.com/rjdunlap/neo/pull/312).
+
+| Candidate | Fun action / purpose | Small complete experience and deeper play | Fit / unresolved work |
+| --- | --- | --- | --- |
+| Adventure Walk · T–S, G co-play | Choose a journey and act out or watch its landmarks; spatial language and sequencing | Three pictured landmarks lead to a friend's picnic; choose the destination, preview/replay each event, then arrange the visited pictures to retell it. Later choose a route, revisit landmarks or describe the way back. Retelling allows replay and supported completion, with no judgement of the person's movement | Promote the notebook's Bear Hunt Walk seed under an original island name, with original scenes/story. Distinguish moving along a route from Peekaround's positions and Pet Says' guided actions; no copyrighted text or imported illustrations. Off-screen invitations need named review |
+| Animal Charades · P–G | One person interprets a pictured clue and another guesses; communication, perspective and flexible representation | One clue, unlimited guesses, reveal and voluntary role swap form a complete round. Acting, describing or pointing can contribute. Later combine an animal with an action, or discuss multiple reasonable guesses | New family activity; first define private clue presentation on one device and a solo pet demonstration. No camera, microphone, automated body verdict, elimination or pressure to perform. Family placement/seat credit remains undecided; physical prompts need review |
+| Mirror Partners · T–G | Take turns leading and copying; attention, agency and shared invention | One lead, one response, then swap; replay/finish remain explicit and unjudged. Later change one component or explore an opposite | Pet Says extension, not another game. Reconcile with its existing leader-swap, opposite and This hand plans. A mirror/left-right convention must be explicit; no pose accuracy checking |
+
+These are design recommendations with proposed age ranges, not established developmental outcomes. No new clinical or motor-learning claim is made. Rhythm Detective and Playground Designer are not selected priorities in this follow-up.
+
 ## A first game's ladder: Dance Workshop
 
 Working ID `dance-workshop`, **not registered**. A pet performs a finite pictured phrase; the player composes it, never the app grading a human body. A first definition must recheck overlap with Pet Says, Song Maker and Beat Builder. Use generic pet gestures only, with no spoken instruction for a person to imitate until review.
