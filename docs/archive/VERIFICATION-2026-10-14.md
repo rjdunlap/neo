@@ -12,3 +12,16 @@
 - Branch `claude/clap-syllables-more-words`: nine new words with code-drawn pictures (38 in all) and a dialect-exclusion test.
 - Passed `npm run typecheck` and vitest for `src/games/clap-syllables` and `src/content` (93 tests). One screenshot of the new pictures from a probe (not a game play).
 - Not run: a browser play of the game (`clap` suite), a portrait screenshot, `fingerdemo`, a device speech check of the new words.
+
+## 2026-10-14 — Movement and exercise subject research
+
+- Docs only, base `d7b6804` plus research diff, [PR #311](https://github.com/rjdunlap/neo/pull/311): official WHO/AAP/CDC/SHAPE sources, six comparable references, every audience L–G, existing-game overlap, Dance Workshop proposals and ordered slices.
+- Updated subject tracker, candidate notebook, roadmap next subject, reviewer decisions and future person/device observations. No game implementation, physical instructions or runtime changes.
+- Relative Markdown links/anchors and `git diff --check` passed. Rotated the two oldest dated entries to the existing archive, repaired their relative links and repointed incoming anchors.
+- Not run: typecheck, units, build, browser/offline or hardware checks (docs-only tier). Movement/accessibility reviewers, parent/tween appeal and physical participation remain unestablished.
+
+## 2026-10-14 — Color Garden slice 1 (mixed kinds at level 6)
+
+- Branch `claude/color-garden-mixed-kinds`: level 6 mixes fruit (the color's own fruit), balloons and flowers, with all three kinds in every round (`deal` returns `kinds`, `PLANS[5].mixed`); `describeLevel` and the how-to step updated.
+- Passed `npm run typecheck` and vitest for color-garden, content and registry (97 tests). `BROWSER_SUITE=fingerdemo FINGER_ONLY=color-garden FINGER_LEVELS=6` clean in 44.5 s, no wrong move.
+- Not run: a portrait screenshot, a device check.

@@ -140,7 +140,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Splish Splash
 
-*lap–pre-K.* Scrub mud off the pet; eight levels grow into named body parts in a shuffled order, two at once, then "first … then …". Washing the wrong part just makes the pet giggle and repeats the request; a finger that is still within reach of a patch it scrubbed in the same touch is not told off for brushing a neighbor on the way (the ears reach into the head's patch), but sliding on to another part still is.
+*lap–pre-K.* Scrub mud off the pet; nine levels. Level 9, *Pat the bubbles*, is the lap entry and is placed first (`order` [9, 1, 2], `entryLevels` [9]): any touch anywhere is a splash that takes a third off the nearest of four mud patches (tummy, head, two cheeks; at most 12 pats), with no misses or hints, and a patch sparkles after six idle seconds (an invitation, not a hint). The rest grow into named body parts in a shuffled order, two at once, then "first … then …". Washing the wrong part just makes the pet giggle and repeats the request; a finger that is still within reach of a patch it scrubbed in the same touch is not told off for brushing a neighbor on the way (the ears reach into the head's patch), but sliding on to another part still is.
 
 ### Feelings Faces
 

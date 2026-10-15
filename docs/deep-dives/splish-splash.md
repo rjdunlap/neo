@@ -121,7 +121,7 @@ These are easier than levels that exist, or fall between them, so they are place
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Pat the bubbles** | lap, before level 1 | A big foamy tub and a muddy pet. Any touch anywhere is a splash: bubbles pop, the duck squeaks and the nearest muddy patch comes off a third at a time. Three patches | nothing | None: no miss, no hint. After six seconds without a touch a patch sparkles (not a hint) | every touch makes progress; a round ends in at most nine touches; the touch anywhere reaches the nearest patch | S. A stage-wide input; no new art. A person check: whether she pats or looks first |
+| **Pat the bubbles** (built as level 9, 2026-10-15: four patches, at most 12 pats, `order` [9, 1, 2], `entryLevels` [9]; the planned levels 9 to 12 below move up by one when built) | lap, before level 1 | A big foamy tub and a muddy pet. Any touch anywhere is a splash: bubbles pop, the duck squeaks and the nearest muddy patch comes off a third at a time. Three patches | nothing | None: no miss, no hint. After six seconds without a touch a patch sparkles (not a hint) | every touch makes progress; a round ends in at most nine touches; the touch anywhere reaches the nearest patch | S. A stage-wide input; no new art. A person check: whether she pats or looks first |
 | **Foam hunt** | lap and toddler, between 2 and 3 | Foam heaps hide two or three bath toys (duck, boat, fish). She rubs a heap away and the toy squeaks and says its name; at toddler: "Where is the boat?" | which heap (toddler); nothing (lap) | A wrong heap shows its own toy and names it (a miss at toddler only); two misses wiggle the right heap (a hint) | the asked toy is under exactly one heap; every toy has a name and a sound | M. Reveal-by-rubbing is *Peek-a-Boo Woods*' lap gesture; overlaps Peekaboo Barn's reveal and is kept apart by the rubbing and the toy words |
 | **This one!** | toddler, between 2 and 3 | One question, "Wash my ears!", and the ears sparkle as they are named | which part, with the answer shown | Nothing counts as a miss; the sparkle fades after one pass | the asked part is in the plan; the sparkle ends | S. A plan field `show: true`; reuses the glow without counting a hint |
 | **Wash two, with sparkle** | toddler and preschool, between 4 and 5 | "Wash my ears and my nose!" and both sparkle | two parts in one breath, with help | As level 7, with the sparkle in place of the glow | the pair is distinct; both parts are in the plan | S. ASHA's two-step direction is 19–24 months, so this could be earlier than level 7 |
@@ -163,6 +163,10 @@ Each is sized for one session. Slices that add a level are built in level order 
 9. **Level 12, Top to bottom.** Same tier.
 10. **The below-level-1 entries** (they wait on decision 6; Pat the bubbles first, This one! second).
 11. **Sketches:** left and right (decision 4), a sprout or feet (decision 7), two bathers in order, wash then dry, bedtime.
+
+## Built since
+
+2026-10-15: **Pat the bubbles** as level 9 (lap entry, placed first). Passed typecheck, full vitest, `early` bath and `fingerdemo` at level 9 ([verification](../VERIFICATION.md)). Open: a person check.
 
 ## What was built in this session
 

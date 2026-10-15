@@ -2698,12 +2698,20 @@ async function early() {
       for (let dy = -s; dy <= s && !m.clean; dy += s / 3) await kit.drag(kit.line([p.x - s * 1.2, p.y + dy], [p.x + s * 1.2, p.y + dy], 8), 1, 8);
     };
   });
-  for (let level = 1; level <= 8 && (!only || only === 'bath'); level++) {
+  for (let level = 1; level <= 9 && (!only || only === 'bath'); level++) {
     await launch('splish-splash', level);
     await page.waitForTimeout(500);
     const parts = await page.evaluate(() => neo.scene.game.plan.mode === 'parts');
     await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.mode === 'pat') {
+        // Pat the bubbles: touches far from the mud still wash the nearest patch.
+        for (let guard = 0; guard < 20 && !g.finished; guard++) {
+          kit.tap(80, 400);
+          await kit.sleep(150);
+        }
+        if (!g.finished) throw new Error('PATSTATE ' + JSON.stringify(g.muds.map((m) => [m.pats, m.clean])) + ' ' + g.partIndex);
+      }
       if (g.plan.mode === 'parts') {
         // In first-then levels the "then" part is the wrong one to start with.
         const wrongPart = g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p));
@@ -2714,12 +2722,12 @@ async function early() {
         if (g.muds.find((m) => m.part === wrongPart).clean) throw new Error('Wrong part got washed');
       }
       for (let guard = 0; guard < 40 && !g.finished; guard++) {
-        const next = g.muds.find((m) => !m.clean && (g.plan.mode === 'free' || g.allowed().includes(m.part)));
+        const next = g.plan.mode !== 'pat' && g.muds.find((m) => !m.clean && (g.plan.mode === 'free' || g.allowed().includes(m.part)));
         if (next) await scrubMud(next);
         await kit.sleep(200);
       }
     });
-    if ([1, 6, 8].includes(level)) await screenshot(`splish-splash-${level}`);
+    if ([1, 6, 8, 9].includes(level)) await screenshot(`splish-splash-${level}`);
     await finished('splish-splash');
     const r = await page.evaluate(() => { const r = kit.store.stats('splish-splash').history.at(-1); return [r.misses, r.hints]; });
     assert.deepEqual(r, parts ? [1, 0] : [0, 0], `bath ${level} score (misses, hints): ${JSON.stringify(r)}`);
