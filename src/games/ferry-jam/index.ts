@@ -90,6 +90,8 @@ class FerryJam implements Game {
   private told = false;
   /** What the held boat can reach in its lane while it is held. */
   private held: { boat: number; min: number; max: number } | null = null;
+  /** Touch layout (the undo button, no focus ring) until a key or pad is used; couch play never has it. */
+  private touch: boolean;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -114,7 +116,8 @@ class FerryJam implements Game {
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
     this.undoButton.alpha = 0.35;
     // The couch screen takes no pointer input, so the round arrow there would look like an undo and do nothing: the left button undoes.
-    this.undoButton.visible = !ctx.couch;
+    this.touch = !ctx.couch;
+    this.undoButton.visible = this.touch;
     ctx.stage.addChild(this.board, this.undoButton);
   }
 
@@ -138,7 +141,7 @@ class FerryJam implements Game {
     this.clock += dt;
     const g = this.glow.clear();
     if (this.finished || this.busy) return;
-    if (this.ctx.couch) this.drawFocus(g);
+    if (!this.touch) this.drawFocus(g);
     if (!this.hinted) return;
     const b = this.harbor.boats[this.hinted.boat];
     const at = this.layout[this.hinted.boat];
@@ -397,7 +400,20 @@ class FerryJam implements Game {
     else { head(0, -1, held.p > held.min); head(0, 1, held.p < held.max); }
   }
 
+  /** A finger came back after keys on the island: a boat held by keys goes back, and the undo button returns. */
+  touchReturned() {
+    if (this.touch || this.ctx.couch || this.finished) return;
+    this.touch = true;
+    if (this.grab) this.putBack();
+    this.undoButton.visible = true;
+  }
+
   control(input: CouchControls, dt: number) {
+    if (this.touch) {
+      // The first key or pad press on the island: the undo button goes and the focus ring shows.
+      this.touch = false;
+      this.undoButton.visible = false;
+    }
     if (this.busy || this.finished || !this.harbor) return;
     for (const dir of this.repeat.poll(input, dt)) {
       if (this.grab) this.shift(dir);
@@ -597,6 +613,7 @@ function sticker(seed: number): Container {
 
 export const ferryJam: GameModule = {
   id: 'ferry-jam',
+  liveController: true,
   name: 'Ferry Jam',
   titleLine: 'game.ferry-jam',
   region: 'puzzle-peaks',

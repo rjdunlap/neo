@@ -119,7 +119,7 @@ class BouncyLaunch implements Game {
   private flight: { pts: { x: number; y: number }[]; t: number; duration: number; done: () => void } | null = null;
   private strip = { x0: 0, x1: 0, y: 0 };
   private controllerPower = 0.5;
-  /** Driven by a stick or keys (couch play) instead of a finger: the spring squashes straight down by the power. */
+  /** Driven by a stick or keys (couch play, or a key pressed on the island) instead of a finger: the spring squashes straight down by the power. */
   private stick = false;
   private botWait = 1;
   /** Couch challenge: a fixed run of small clouds, scored by launches. Null in ordinary play. */
@@ -176,7 +176,11 @@ class BouncyLaunch implements Game {
   control(input: CouchControls, dt: number) {
     if (this.flying || this.finished || this.grab) return;
     const p = input.players.find(p => p.x || p.y || p.action);
-    if (!p) return;
+    if (!p) {
+      // The first key on the island (GameScene passes control() only after a real press) shows the spring at once.
+      if (!this.stick) { this.stick = true; this.squash(); }
+      return;
+    }
     // Down (or right) squashes the spring for more power; up (or left) lets it back up.
     const push = Math.max(-1, Math.min(1, p.x + p.y));
     this.stick = true;
@@ -188,6 +192,18 @@ class BouncyLaunch implements Game {
   /** The spring squashed straight down by the current power, the pet riding on top of it. */
   private squash() {
     this.pet.position.set(this.seat.x, this.seat.y + this.controllerPower * SQUASH);
+    this.drawPreview();
+    this.drawSpring();
+  }
+
+  /** A finger came back after keys on the island: the spring springs back up and the pet waits on it to be pulled. */
+  touchReturned() {
+    if (!this.stick || this.ctx.couch || this.finished) return;
+    this.stick = false;
+    // In the air the hop back lands it on the unsquashed seat.
+    if (this.flying) return;
+    this.ctx.tw.kill(this.pet);
+    this.pet.position.set(this.seat.x, this.restingY());
     this.drawPreview();
     this.drawSpring();
   }
@@ -552,7 +568,8 @@ class BouncyLaunch implements Game {
   private async launch(f: number) {
     if (this.flying || this.finished) return;
     this.flying = true;
-    if (this.plan.mode !== 'tap') this.observedPulls.push(f);
+    // A squashed spring is not a pull: only a finger's pulls count toward the "bigger pull" journal entry.
+    if (this.plan.mode !== 'tap' && !this.stick) this.observedPulls.push(f);
     if (this.course) {
       this.tries++;
       this.report();
@@ -621,6 +638,8 @@ class BouncyLaunch implements Game {
     this.drawHistory();
     // Hop back onto the spring (still squashed to the last power on a stick, so a retry is a nudge away).
     await tw.to(this.pet, { x: this.seat.x, y: this.restingY() }, { duration: 0.7, ease: ease.outBack });
+    // A finger may have come back during the hop.
+    this.pet.position.set(this.seat.x, this.restingY());
     this.flying = false;
     if (this.stick) this.squash();
     else this.drawSpring();
@@ -725,6 +744,7 @@ function sticker(seed: number): Container {
 
 export const bouncyLaunch: GameModule = {
   id: 'bouncy-launch',
+  liveController: true,
   name: 'Bouncy Launch',
   titleLine: 'game.bouncy-launch',
   region: 'tinker-lab',

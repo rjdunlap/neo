@@ -10957,14 +10957,17 @@ async function landKeys() {
   log('Land keys: the ring shows at the first key and moves at the next, Enter presses, a held Enter stays in the scene it began in, Backspace leaves a land and does nothing on the map, a tap works with the ring showing');
 }
 
-/** Lands stage C1b: five touch puzzles lay themselves out for keys at the first press and come back to touch at the next finger. */
+/** Lands stage C1b: eleven touch games lay themselves out for keys at the first press and come back to touch at the next finger. LIVE_ONLY=a,b plays only those. */
 async function liveSwitchPlay() {
-  const ids = ['sudoku-garden', 'word-search', 'island-bridges', 'picture-logic', 'pond-conga', 'tile-pairs', 'gem-swap', 'lantern-lights'];
+  const all = ['sudoku-garden', 'word-search', 'island-bridges', 'picture-logic', 'pond-conga', 'tile-pairs', 'gem-swap', 'lantern-lights', 'bouncy-launch', 'ferry-jam', 'penguin-slide'];
+  const only = process.env.LIVE_ONLY?.split(',');
+  const ids = only ? all.filter((id) => only.includes(id)) : all;
   for (const id of ids) {
     const level = await page.evaluate(async (id) => (await import('/src/app/input-in-use.ts')).controllerLevels(id).values().next().value, id);
     await launch(id, level);
     await page.waitForTimeout(900);
-    const touch = () => page.evaluate(() => neo.scene.game.touch);
+    // Bouncy Launch's touch layout is its unsquashed spring (`stick` is the keys' one).
+    const touch = () => page.evaluate(() => { const g = neo.scene.game; return g.touch ?? !g.stick; });
     const press = async (key) => { await page.keyboard.press(key, { delay: 140 }); await page.waitForTimeout(250); };
     const tapAway = async () => { await page.evaluate(() => kit.tap(neo.view.w - 40, neo.view.h / 2)); await page.waitForTimeout(250); };
     assert.equal(await touch(), true, `${id} starts as touch`);
@@ -10972,13 +10975,25 @@ async function liveSwitchPlay() {
     assert.equal(await touch(), false, `${id} lays itself out for the controller at the first key`);
     await tapAway();
     assert.equal(await touch(), true, `${id} comes back to touch at a finger`);
-    const layer = () => page.evaluate(() => { const g = neo.scene.game; return (g.touchLayer ?? g.tapLayer ?? g.undoButton).visible; });
+    const layer = () => page.evaluate(() => {
+      const g = neo.scene.game;
+      if (g.stick !== undefined) return !g.stick && Math.abs(g.pet.y - g.seat.y) < 1;
+      return (g.touchLayer ?? g.tapLayer ?? g.undoButton ?? g.undo).visible;
+    });
     assert.equal(await layer(), true, `${id} shows its touch layer again`);
     await press('ArrowDown');
     assert.equal(await layer(), false, `${id} hides its touch layer for the controller`);
     await tapAway();
     await press('ArrowDown');
     assert.equal(await touch(), false, `${id} goes to the controller again at the next key`);
+    if (id === 'ferry-jam') {
+      // A boat picked up by keys goes back when a finger comes down, so no boat is left held.
+      await press('Enter');
+      assert.ok(await page.evaluate(() => neo.scene.game.grab), 'ferry-jam picks a boat up with Enter');
+      await tapAway();
+      assert.equal(await page.evaluate(() => neo.scene.game.grab), null, 'ferry-jam puts a key-held boat back at a finger');
+      await press('ArrowDown');
+    }
     await tapAway();
     assert.equal(await touch(), true, `${id} comes back again`);
     if (id === 'sudoku-garden') await screenshot('c1b-sudoku-back-to-touch');
