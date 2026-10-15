@@ -1896,3 +1896,26 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 - `GAME_URL=http://localhost:5191 BROWSER_SUITE=numbernook`: first and last levels passed through actual taps, one miss, one hint, Undo, Start over and one reward per round; portrait screenshot inspected for clear controls and targets at least 64 logical units.
 - At the same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-nook` passed the first/last levels cleanly in 5.6/20.7 demo seconds.
 - Not run: offline, world or full couch suites. No real iPad, hardware or device speech check; person understanding and replay value remain open in [device checks](../DEVICE-CHECKS.md).
+
+## 2026-10-14 — Dexterity, popular-mobile and physics research; subject-session tracker
+
+- Docs only, across PRs #289, #290 and #291 and this branch: roadmap chunks 25–28, [Vine Snip](../vine-snip.md), [Block Topple](../block-topple.md), [PHYSICS-GAMES.md](../PHYSICS-GAMES.md), the [subject sessions](../deep-dives/subjects.md) and candidate rows in IDEAS.
+- Ran: `git diff --check` and `node scripts/check-links.mjs` (links ok). No code, tests, browser or device.
+- Later the same day: the subject tracker gained a life-skills group, an every-audience answer for each subject (toddler to middle school to parents) and a middle-band decision; `git diff --check` and links ok again.
+- Open: research came from web searches and a few fetches; the Physics Playground paper and NGSS grade 2–5 text did not load; several figures are search-summary level; the physics-engine choice is a decision for the developer.
+
+## 2026-10-14 — Puzzle Pals visible cues and fairness
+
+- Built locally on `codex/puzzle-pals-visible-cues`, base/claim `3808201` plus working source diff: substantial distinct filled cues in all twelve scenes at existing levels 1–7; saved sticker/map art preserved. Verified source commit `434ad4a`; publication approved by the developer, [PR #292](https://github.com/rjdunlap/neo/pull/292).
+- Passed: typecheck; fourteen Puzzle Pals rule/scene tests and eighteen `src/content/howto.test.ts` tests. The final source differs from the browser-tested source only by removal of obsolete feature metadata; fourteen tests and the rendered audit also passed on final source.
+- `GAME_URL=http://localhost:5177 BROWSER_SUITE=fourth FOURTH_ONLY=puzzle PUZZLE_LEVELS=5,7` passed exploration, two misses, one hint, completion and exactly one sticker; portrait reviewed.
+- Ignored one-off `test-results/puzzle-art-audit.mjs`: sixty rendered scene/seed cases passed (every annotated solid interior at least 90% ink; every 4×3 cell more than 600 non-background pixels, minimum 3,954); thirty saved-picture comparisons against `3808201` were pixel-identical. Twelve-scene contact sheet reviewed; filled-region guards depend on authored geometry and do not establish child readability.
+- Not run: build, offline, world, couch or fingerdemo (scoped art/unchanged-interaction tier). No iPad, device speech or child play; the box lid still awaits its [person check](../DEVICE-CHECKS.md). Existing how-to remains correct; the session's dev server was stopped.
+
+## 2026-10-13 — Story Theater first slice
+
+- [PR #287](https://github.com/rjdunlap/neo/pull/287), tested base `38e8a6b` plus working source diff, after current `origin/main` integration: Story Steps school 12–13, all-valid picnic choices, one-event revision, explicit bow, requested help, undo/replay and one shell sticker. Existing 1–11 and younger ranges preserved.
+- Final `npm run typecheck`, `npm test` (146 files / 1,253 tests) and `npm run build` passed. Browser log-label correction now reports `THEATER_LEVELS`; `node --check` passed, with no browser rerun for that log-only edit.
+- `GAME_URL=http://localhost:5189 BROWSER_SUITE=storytheater` passed levels 12/13 (free choices, comparison, help, undo/replay, finish gating, leaving during narration and rewards; `test-results/story-theater-play.log`). Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=story-steps FINGER_LEVELS=12,13` clean in 10.6/16.4 s (`test-results/story-theater-finger.log`).
+- After art-only blanket placement, umbrella contrast and portrait spacing changes, `BROWSER_SUITE=storytheater THEATER_LEVELS=13` passed (`test-results/story-theater-final-play.log`). Both final portrait/landscape screenshots reviewed; targets/bounds/nonoverlap checked. Demos reused: bot/rules unchanged. Initial visual rerun hit the 25 s harness wait; `theater-probe.mjs` showed normal completion and rainy-blanket fallback at 25.69 s; 45 s wait passed.
+- Not run: `world`, offline, couch or unrelated browser suites (no navigation/save changes), real iPad speech/touch or child interpretation. These remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device). Server stopped; counts unchanged.
