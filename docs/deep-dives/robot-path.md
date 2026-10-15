@@ -123,7 +123,7 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built). If the 
 3. **Preschool at levels 1–2** (built 2026-10-11, [PR #154](https://github.com/rjdunlap/neo/pull/154); person check remains): bands and registry tests. Tier: typecheck and the registry/bands tests.
 4. **Level 11, where will it stop?** (built 2026-10-10): a cell-tap layer for two shown programs (individual and counted steps), an unscored prediction and playback to the actual stopping square. Rule tests check that the correct stop differs from skipping the rock and reading the arrows backwards; the ghost finger predicts and plays it. Typecheck, rule tests, `robot` filtered to level 11 and `fingerdemo` at level 11.
 5. **Level 12, fix the program** (built 2026-10-10): three counted repair boards, the free first watch, select-a-slot editing, and a hint on the slot to change. Typecheck, logic tests, the filtered level-12 browser play, and the level-12 ghost-finger demo passed.
-6. **Level 13, pick it up on the way** (ready): waypoint rule and art. Same tier.
+6. **Level 13, pick it up on the way** (ready; claimed 2026-10-15, branch `claude/robot-path-pick-it-up`, expected files `src/games/robot-path/{logic,index,logic.test}.ts`, voice script, how-to, docs): waypoint rule and art. Same tier.
 7. **Level 14, mend the loop** (after 4).
 8. **Level 15, a routine** (define first: the two-row UI, the call button and the bot).
 9. **Drive the robot, one step then play** (waits on the level-order decisions).
