@@ -1932,3 +1932,27 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 
 - Docs only, `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296)): added [bug-builder.md](../deep-dives/bug-builder.md) (current ladder, known gaps, genre research, levels 8–13 proposed, nine build slices) and updated the tracker, roadmap chunk 14 and IDEAS rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites (research only). Standards wording beyond section names is unverified; token-pool and hint findings come from reading the source, not from play.
+
+## 2026-10-14 — Chain Reaction deep dive
+
+- Docs only, `claude/chain-reaction-deep-dive` ([PR #299](https://github.com/rjdunlap/neo/pull/299)): added [chain-reaction.md](../deep-dives/chain-reaction.md) (current ladder, the finding that run misses are never counted so adaptation sees hints only, genre research, proposed levels 7–11 and nine build slices); updated the tracker, IDEAS rows and roadmap chunk 14.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser suites. Preschool cause-and-effect development had no source found; younger entries are marked as design judgment.
+
+## 2026-10-14 — Bumper Garden deep dive
+
+- Docs only, `claude/bumper-garden-deep-dive` ([PR #297](https://github.com/rjdunlap/neo/pull/297)): added [bumper-garden.md](../deep-dives/bumper-garden.md) (current ladder, known gaps including a how-to that is false at levels 2–5, genre and developmental research, levels 6–14 proposed, nine build slices), set the tracker row to designed, pointed the IDEAS ladder row and roadmap chunk 14 at it.
+- Ran: link check and `git diff --check`. No code, tests or browser suites (research only). Not established: whether a one-year-old can follow or flip the ball, which needs a person and a device.
+
+## 2026-10-14 — Stamp Studio level 7 (Pat the paper)
+
+- [PR #300](https://github.com/rjdunlap/neo/pull/300) on `claude/stamp-studio-pat-the-paper`: lap-only level 7, placed first (`order: [7,1,2]`, `entryLevels: [7]`). One 170-unit star stamp under each pat, no cooldown on the sheet, the eighth pat finishes the picture (misses 0, hints 0); ghost-finger bot pats eight spots then finishes.
+- Typecheck; `vitest run src/games/stamp-studio src/content src/games/registry.test.ts src/progress` passed (224 tests).
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=stamp-studio FINGER_LEVELS=7` passed (12.1 s); `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=1` passed, including the new level-7 block; one landscape screenshot.
+- Not run: portrait screenshot, `npm run build`, iPad or device check. Open: whether a one-year-old pats or presses, and whether the pop rewards it ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-14 — Peekaboo Barn garden scene
+
+- Tested base `356f40d` plus working diff on `codex/peekaboo-garden`, [PR #298](https://github.com/rjdunlap/neo/pull/298): seeded barnyard/garden settings, four named garden covers and fence scenery; how-to names both settings. Levels 1–8, bands, interaction and rewards unchanged.
+- Passed `npm run typecheck`, `npx vitest run src/games/peekaboo-barn/logic.test.ts` (8 tests) and `npx vitest run src/content/howto.test.ts` (18 tests).
+- Isolated `test-results/peek-garden.mjs` at `http://localhost:5186`: reviewed all seven animals out/peeking over all four covers, portrait `peek-garden-portrait.png` and `peek-garden-peeking.png`; no page errors. Probe/screenshots are ignored local artifacts.
+- Not run: full play, build, offline or fingerdemo; scene-content tier, unchanged interaction evidence from [cover support](VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) reused. Real iPad, speech and child recognition remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
