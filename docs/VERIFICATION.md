@@ -250,3 +250,8 @@ Reconciled completed Weather Window [#365](https://github.com/rjdunlap/neo/pull/
 ### 2026-10-15 — Memory Match Same time dispatch
 
 Reconciled the completed [clock definition #369](https://github.com/rjdunlap/neo/pull/369), confirmed merge and released its worker slot. Fresh allowance and clean overlap admitted only [Same time level 12](deep-dives/memory-match.md#level-12-definition-same-time) to worker `01a13fd4-cbd5-7ed0-9b55-7dec3a913ee4`. Queue records usage/reset identities, scope and pending proof. Docs-only source links/anchors and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-15 — Memory Match fraction-art dispatch
+
+Reconciled completed [Same time #373](https://github.com/rjdunlap/neo/pull/373), confirmed merge/deployment and released its slot. Fresh allowance and clean overlap admitted only [build slice 4 at level 11](deep-dives/memory-match.md#build-slices-in-order) to worker `01a1400a-d444-7e70-8343-133fb2313c84`. Queue records scope, usage/reset identities and pending content proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
