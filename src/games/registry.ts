@@ -1,3 +1,6 @@
+import { marbleJump } from './marble-jump';
+import { logRoll } from './log-roll';
+import { snowballMerge } from './snowball-merge';
 import { mossyPath } from './mossy-path';
 import { brainBreak } from './brain-break';
 import { pyramidSolitaire } from './pyramid-solitaire';
@@ -181,6 +184,9 @@ export const GAMES: GameModule[] = [
   numberTrails,
   fruitSums,
   readDo,
+  marbleJump,
+  logRoll,
+  snowballMerge,
   gemSwap,
   tilePairs,
   lanternLights,

@@ -149,4 +149,4 @@ No new game is ready to register from research alone. The next concrete work is 
 
 ## What was built and checked
 
-**Nothing under `src/`, `scripts/` or `public/` changed.** Added this study and synchronized the subject tracker, notebook, roadmap and reviewer/person records. Opened the standards, practitioner/safety guidance and five first-party digital precedents above; failed source access is marked. Verification is recorded in [VERIFICATION](../../VERIFICATION.md#2026-10-14--cooking-and-recipes-subject-research). No games played, code checks, device checks or real-world cooking/feeding trials in this session.
+**Nothing under `src/`, `scripts/` or `public/` changed.** Added this study and synchronized the subject tracker, notebook, roadmap and reviewer/person records. Opened the standards, practitioner/safety guidance and five first-party digital precedents above; failed source access is marked. Verification is recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-14.md#2026-10-14--cooking-and-recipes-subject-research). No games played, code checks, device checks or real-world cooking/feeding trials in this session.
