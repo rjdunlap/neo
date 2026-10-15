@@ -19,7 +19,7 @@ The original design brief also exists as a [historical design artifact](https://
 
 - [Verification 2026-10-13](VERIFICATION-2026-10-13.md): older island touch, mirrored-reach, Penguin Slide/Tangram Town level checks and the Beat Builder how-to layout check, the Bouncy Launch level 7 entry, the Mossy Path first-slice entry, and the Sing-Along Barn level 6 entry.
 - [Verification 2026-10-14](VERIFICATION-2026-10-14.md): the Peekaboo Barn beach scene entry, the Critter Crossing level 6, Animal Snack level 3 and Peekaboo Barn bedroom entries, the weather and water and movement research entries, the Memory Match vehicles and dot-arrangements entries, the routines/self-care, cooking/recipes, social-emotional and off-screen companions research entries, the Word Monsters guards entry, and the machines/tools and commercial social-play research entries, and the Splish Splash level 9 entry (rotated during the computers study).
-- [Verification 2026-10-15](VERIFICATION-2026-10-15.md): the Peekaboo Barn level 16 One door entry.
+- [Verification 2026-10-15](VERIFICATION-2026-10-15.md): the Peekaboo Barn level 16 One door and Critter Crossing level 7 Settle it entries.
 
 - [Historical local-build audit](LOCAL-GAME-BUILDS-2026-10-13.md): superseded source-worktree evidence for the three recovered games.
 - [Session cleanup 2026-10-14](SESSION-CLEANUP-2026-10-14.md): source reconciliation, integration checks and the completed recovery audit.

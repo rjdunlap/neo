@@ -204,7 +204,7 @@ Level 1 explicitly names the next day and finishes after seven weather records. 
 
 ### Color Garden
 
-*toddler–pre-K.* Sort fruit, balloons and flowers into baskets by color; level 1 is dragging practice with one basket, growing to six colors. Level 6 mixes fruit (the color's own fruit), balloons and flowers in one round, with all three kinds in every round, so the kind of thing no longer gives the color away. Level 7 (preschool and pre-K) has two blue baskets, a light one and a dark one, and eight balloons and flowers to sort by shade; a wrong basket gets the usual boing and a spoken hint naming the shade, with a glow after two misses.
+*toddler–pre-K.* Sort fruit, balloons and flowers into baskets by color; level 1 is dragging practice with one basket, growing to six colors. Level 6 mixes fruit (the color's own fruit), balloons and flowers in one round, with all three kinds in every round, so the kind of thing no longer gives the color away. Level 7 (preschool and pre-K) has two blue baskets, a light one and a dark one, and eight balloons and flowers to sort by shade; a wrong basket gets the usual boing and a spoken hint naming the shade, with a glow after two misses. Level 8, *Color or kind* (preschool 3–8, pre-K 4–8; toddler stays 1–5), sorts eight items made from two rainbow colors, each as a fruit and a balloon. A sign at the top right says the rule for the round, shown as two swatches or as a fruit and a balloon icon: sort by color into two color baskets, or by kind into a fruit basket and a balloon basket (icon on a plain cloth). The rule is random per seed. A wrong basket gets the usual boing and a spoken hint naming the rule (`garden.kind.wrong` for kind), with a glow after two misses.
 
 ### Dot Link
 

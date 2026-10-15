@@ -89,7 +89,7 @@ There are ninety-seven games; the child games are listed below and the grown-up 
 | Shape Sorter | toddler–pre-K | one circle hole | six plain holes, one color, tilted pieces, then spoken shape clues |
 | Seesaw Balance | toddler–school | put a big friend on the seesaw so a little one goes up | which friend is heavy enough, level it with blocks, find the heaviest look-alike present, match a weight two ways, weigh one mystery box, infer one of two identical boxes, then take the same off both sides until a box is alone; at the top, share blocks between two identical boxes |
 | Quick Tricks | toddler–school | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle | which leaf covers two friends, matching socks and bridge lengths; a second show turns parcels, sets picnic places and completes berry totals |
-| Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers; light and dark blue |
+| Color Garden | toddler–pre-K | one basket | six colors with balloons and flowers; light and dark blue; color or kind, by a sign |
 | Size Parade | toddler–school | tap the bigger or smaller friend | order three, then five friends in either direction |
 | Bug Builder | toddler–school | decorate matching shape outlines | copy a model, then mirror six spots using shape and color |
 | Story Steps | toddler–school | finish a two-picture story | order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; repair a mixed-up story with swaps and undo; untangle two stories into separate rows; predict endings from eight authored clue stories; make narrated picnic shows and revise one event in Story Theater (school 12–13); ten sequencing stories |
