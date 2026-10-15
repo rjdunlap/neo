@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { arrive, canJoin, makeRound, needed, nextStop, PLANS, readyForPond, type DemoDuckling } from './logic';
+import { arrive, canJoin, dressingAt, DRESSING_COLORS, DUCK_COLORS, makeMeadow, makeRound, needed, nextStop, PLANS, readyForPond, RIM_ARC, type DemoDuckling } from './logic';
 
 const POND = { x: 800, y: 420 };
 
@@ -111,5 +111,33 @@ describe('Duckling Parade', () => {
     const wrongAside: DemoDuckling = { color: 'blue', loose: true, x: 300, y: 650 };
     expect(nextStop(plan, { ...round, ducklings: [...round.ducklings] }, [], 0, [wanted, wrongAside], mama, POND)).toMatchObject({ to: 'duckling', drag: true });
     expect(nextStop(plan, { ...round, ducklings: [...round.ducklings] }, [], 0, [wanted, wrongOnTheWay], mama, POND)).toMatchObject({ to: 'duckling', drag: false });
+  });
+
+  it('dresses the meadow two ways, never in a duckling color and never where a duckling waits or in the pond', () => {
+    const seen = new Set<string>();
+    for (const c of Object.values(DRESSING_COLORS).flat()) expect(DUCK_COLORS).not.toContain(c);
+    // The game's own layout (field, horizon at 0.3 of the height, pond) in landscape, portrait and a wide phone.
+    for (const [w, h] of [[1024, 768], [768, 1024], [1024, 1365], [1366, 768]]) {
+      const field = { x0: 60, x1: w - 60, y0: h * 0.36, y1: h - 40 };
+      const pond = { x: w - 210, y: field.y0 + (field.y1 - field.y0) * 0.55, rx: 165, ry: 95 };
+      // Ducklings wait inside this box (index.ts spots(): fx 0.06–0.54, fy 0.08–0.92), Mama starts at its left.
+      const wait = { x0: field.x0 + (field.x1 - field.x0) * 0.06, x1: field.x0 + (field.x1 - field.x0) * 0.54, y0: field.y0 + (field.y1 - field.y0) * 0.08, y1: field.y0 + (field.y1 - field.y0) * 0.92 };
+      for (let seed = 1; seed <= 200; seed++) {
+        const meadow = makeMeadow(new Rng(seed));
+        seen.add(meadow.id);
+        expect(meadow.dressing.length).toBeGreaterThanOrEqual(10);
+        for (const d of meadow.dressing) {
+          if (d.place === 'rim') expect(d.t >= RIM_ARC.from && d.t <= RIM_ARC.to).toBe(true);
+          const p = dressingAt(d, field, h * 0.3, pond);
+          const inWait = p.x > wait.x0 - 40 && p.x < wait.x1 + 40 && p.y > wait.y0 - 10 && p.y < wait.y1 + 40;
+          expect(inWait, `${meadow.id} ${d.kind} at ${Math.round(p.x)},${Math.round(p.y)} in ${w}x${h}`).toBe(false);
+          expect(((p.x - pond.x) / (pond.rx + 10)) ** 2 + ((p.y - pond.y) / (pond.ry + 8)) ** 2).toBeGreaterThan(1);
+          expect(p.x).toBeLessThan(w - 30);
+          if (d.place === 'rim') expect(p.y).toBeLessThan(pond.y);
+          expect(p.y).toBeGreaterThan(h * 0.3);
+        }
+      }
+    }
+    expect([...seen].sort()).toEqual(['flowers', 'reeds']);
   });
 });

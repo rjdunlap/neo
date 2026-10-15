@@ -10,7 +10,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
-import { arrive, canJoin, makeRound, needed, nextInPattern, nextStop, planFor, readyForPond, type ParadePlan, type Round } from './logic';
+import { arrive, canJoin, dressingAt, DRESSING_COLORS, makeMeadow, makeRound, needed, nextInPattern, nextStop, planFor, readyForPond, type Dressing, type Meadow, type ParadePlan, type Round } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -42,6 +42,23 @@ interface Duckling {
   phase: number;
 }
 
+/** One daisy, clover, reed tuft or cattail standing at x, y, in the colors `DRESSING_COLORS` allows. */
+function drawDressing(g: Graphics, d: Dressing, x: number, y: number) {
+  const k = d.size;
+  const [a, b] = DRESSING_COLORS[d.kind].map((c) => swatch[c]);
+  if (d.kind === 'daisy') {
+    g.moveTo(x, y).lineTo(x, y - 22 * k).stroke({ width: 3, color: swatch.green.line, cap: 'round' });
+    for (let i = 0; i < 6; i++) g.circle(x + Math.cos((i * Math.PI) / 3) * 8 * k, y - 26 * k + Math.sin((i * Math.PI) / 3) * 8 * k, 6 * k).fill(a.fill);
+    g.circle(x, y - 26 * k, 5 * k).fill(b.fill);
+  } else if (d.kind === 'clover') {
+    for (const dx of [-14, 0, 14]) g.circle(x + dx * k, y - 6 * k, 9 * k).fill(b.fill);
+    g.circle(x + 4 * k, y - 18 * k, 7 * k).fill(a.fill).circle(x + 4 * k, y - 18 * k, 7 * k).stroke({ width: 2, color: a.line });
+  } else {
+    for (const lean of [-0.3, 0, 0.25]) g.moveTo(x, y).quadraticCurveTo(x + lean * 20 * k, y - 25 * k, x + lean * 40 * k, y - 50 * k).stroke({ width: 4, color: a.line, cap: 'round' });
+    if (d.kind === 'cattail') g.roundRect(x - 5 * k, y - 66 * k, 10 * k, 26 * k, 5 * k).fill(b.line);
+  }
+}
+
 class DucklingParade implements Game {
   readonly plan: ParadePlan;
   readonly round: Round;
@@ -55,7 +72,10 @@ class DucklingParade implements Game {
   busy = false;
   finished = false;
 
+  readonly meadow: Meadow;
   private readonly backdrop: Backdrop;
+  /** The meadow's flowers or reeds: drawn under everything that moves, and never touched. */
+  private readonly dressing = new Graphics();
   private readonly ground = new Container();
   private readonly pond = new Graphics();
   private readonly pondGlow = new Graphics();
@@ -84,11 +104,16 @@ class DucklingParade implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.round = makeRound(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xa6de8e, 0x9edb86], horizon: 0.3, clouds: 3, sun: true, seed: 61 }, ctx.view);
+    const spots = this.spots(this.round.ducklings.length, ctx.rng);
+    const phases = this.round.ducklings.map(() => ctx.rng.range(0, 6));
+    // Drawn after the ducklings' colors, places and wiggles, so those come out as they always have.
+    this.meadow = makeMeadow(new Rng(ctx.rng.int(1, 1e9)));
+    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: this.meadow.hills, horizon: 0.3, clouds: 3, sun: true, seed: 61 }, ctx.view);
+    this.dressing.eventMode = 'none';
     // The steering layer sits on top: anything drawn above it would catch the finger instead.
     this.destination.eventMode = 'none';
     this.destination.visible = false;
-    ctx.stage.addChild(this.backdrop, this.pondGlow, this.pond, this.destination, this.world, this.card, this.ground);
+    ctx.stage.addChild(this.backdrop, this.dressing, this.pondGlow, this.pond, this.destination, this.world, this.card, this.ground);
     this.card.addChild(this.cardSlots);
 
     this.ground.eventMode = 'static';
@@ -112,14 +137,13 @@ class DucklingParade implements Game {
 
     this.mama.scale.set(MAMA_SCALE);
     ctx.track(this.mama);
-    const spots = this.spots(this.round.ducklings.length, ctx.rng);
     this.round.ducklings.forEach((color, i) => {
       const critter = new Critter({ ...CRITTERS.duck, color });
       critter.scale.set(DUCK_SCALE);
       const glow = new Graphics().ellipse(0, -4, 52, 22).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
       ctx.track(critter);
-      this.ducklings.push({ color, critter, glow, state: 'loose', home: spots[i], calmUntil: 0, phase: ctx.rng.range(0, 6) });
+      this.ducklings.push({ color, critter, glow, state: 'loose', home: spots[i], calmUntil: 0, phase: phases[i] });
       this.world.addChild(glow, critter);
     });
     this.world.addChild(this.mama);
@@ -188,6 +212,7 @@ class DucklingParade implements Game {
       .ellipse(p.x - 60, p.y - 30, 40, 10)
       .fill({ color: 0xffffff, alpha: 0.35 });
     for (const [dx, dy] of [[-150, 60], [140, -60], [120, 70]]) this.pond.circle(p.x + dx, p.y + dy, 20).fill(0x7cc463).stroke({ width: 3, color: 0x4a9a35 });
+    this.drawDressing(v);
     for (const d of this.ducklings) if (d.state === 'loose') d.critter.position.copyFrom(this.spotAt(d.home));
     if (!this.placed) {
       this.placed = true;
@@ -426,6 +451,16 @@ class DucklingParade implements Game {
     this.hints++;
     this.wrongs = 0;
     this.hinting = true;
+  }
+
+  /** Daisies and clover, or reeds and cattails, along the back of the meadow and round the far side of the pond. */
+  private drawDressing(v: View) {
+    const g = this.dressing.clear();
+    const f = this.field(v);
+    for (const d of this.meadow.dressing) {
+      const { x, y } = dressingAt(d, f, this.backdrop.groundY, this.pondAt);
+      drawDressing(g, d, x, y);
+    }
   }
 
   /** Which ducklings the hint lights up, or the pond when the line is ready to go home. */
