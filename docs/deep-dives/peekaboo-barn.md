@@ -159,7 +159,7 @@ Slice 1, guards, cover motions and cover names, is [built 2026-10-14](../archive
 6. **Levels 10–11, Whose ears?** (needs the top-pose screenshot first). Same tier.
 7. **Levels 12–14, Switcheroo.** Same tier, plus the abandon-cards stress, since a tween that moves covers can outlive its scene.
 8. **Level 15, Guess who!** Same tier.
-9. **The below-level-1 entries** (wait on decision 3; One door first, Where did it go? second).
+9. **The below-level-1 entries** (wait on decision 3; One door first, Where did it go? second). **In flight:** One door as level 16 (lap, `order` 16, 1, 2; one house, touch anywhere, six touched pops, self-opening after 6 s uncounted), branch `claude/peekaboo-one-door`; expected files `src/games/peekaboo-barn/{logic,index,logic.test}.ts`, `howto.ts`, `scripts/browser-check.mjs`.
 10. **Sketches:** not clues, who is still hiding, ordinal houses, baby and grown-up pairs.
 
 ## What was built in this session
