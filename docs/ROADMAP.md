@@ -47,7 +47,6 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
-1. **`goodnight-room`, tent and boat cabin rooms**: new seeded rooms, lap to pre-K; level 10 *goodnight everywhere* follows as its own slice. Content tier. [Dive slices 8–9](deep-dives/goodnight-room.md#build-slices-in-order)
 2. **`dot-link`, marks in the dots**: new art only. Existing-game tier, `fingerdemo` at 6. [Dive slice 1](deep-dives/dot-link.md#build-slices-in-order)
 3. **`bumper-garden`, flipper-ready ring**, then **Pond and Hive tables** as a second slice. Feel tier, then rules and art. [Dive slices 2–3](deep-dives/bumper-garden.md#build-slices-in-order)
 4. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)

@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Goodnight Room tent and boat cabin (2026-10-15)
+
+[PR #403](https://github.com/rjdunlap/neo/pull/403), `codex/goodnight-tent-boat`, worker `01a141c7-9808-76c0-929c-55901e818a9c`, dispatch `goodnight-rooms-20261015T225527Z`: build slice 8 adds seeded tent and cabin rooms within existing play. Each cast has six distinct friends/kinds in the existing six spacious slots and one lamp/lantern. The tent has teddy, bunny, puppy, a bankable campfire, lantern and toasting pot; the cabin has duck, cat, anchor, clock, lamp and fishbowl, with a porthole. Category rounds draw the bedroom or cabin with exactly three unambiguous animals and lamp/clock; color rounds retain their fair bedroom casts. Established-room notes stay the same; new-room overrides give each cast six distinct pentatonic steps. No levels, band/order, save or tour changes. Existing how-to remains true. [Proof](../VERIFICATION.md#2026-10-15--goodnight-room-tent-and-boat-cabin); iPad touch/speech and child response remain open. Level 10 is a separate ready slice.
+
+
 ### Visual identity V1–V2 definition (2026-10-15)
 
 [PR #400](https://github.com/rjdunlap/neo/pull/400), branch `claude/visual-identity-v1-v2`: docs only. [definitions/visual-identity.md](../definitions/visual-identity.md) defines V1 (a Barnyard art and feedback sheet: barn, fence edge, pail and motif) and V2 (an Animal Snack busy-touch acknowledgment pilot), with ordered build slices; roadmap chunk 21 moves from define to ready. V3–V4 sheet still unwritten.
