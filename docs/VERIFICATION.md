@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-15 — Word Monsters guards (sound twins, bounded how-to)
+
+Changed: `pickLetters` never offers two letters with the same sound (c and k); the "who says" pool drops q and x; the level 7 how-to step stops at 7; `LEVELS.school.max` follows the plan length ([PR #327](https://github.com/rjdunlap/neo/pull/327)).
+Ran: typecheck; Word Monsters, content and registry unit tests (97 pass, new 200-seed twin test).
+Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8 decoys, the stale sun rule, the pinned sticker test.
+
 ## 2026-10-14 — Commercial social-play roadmap follow-up
 
 - Docs only, base `38731a0`, integrated `924e3f8`, plus follow-up diff, [PR #325](https://github.com/rjdunlap/neo/pull/325): [seven additional references](deep-dives/subjects/social-emotional.md#commercial-and-tabletop-follow-up-requested-2026-10-14), concrete [roadmap definitions](ROADMAP.md#social-emotional-play-recommendations), existing notebook rows and subject tracker. A Place for You extends Common Ground; Dream Cards develops its existing seed; story/prop/role additions stay in their existing candidates.
