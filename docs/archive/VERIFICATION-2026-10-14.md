@@ -57,3 +57,16 @@
 - Docs only, base `e6db692` plus the write-up, [PR #316](https://github.com/rjdunlap/neo/pull/316): `docs/deep-dives/critter-sort.md` (ladder, genre research through search summaries, experience section, nine build slices), tracker row, roadmap chunk 14, IDEAS pointer and a Waiting row.
 - Ran: link check and `git diff --check`. No code, tests or browser suites.
 - Open: sources not opened in full; the CCSS K.MD.B.3 reading is recalled; device speech and a child's reading of the picture signs are person checks.
+
+## 2026-10-14 — Routines and self-care subject research
+
+- Docs only: [study](../deep-dives/subjects/routines-self-care.md), subject tracker, notebook candidates and [roadmap definition packets](../ROADMAP.md#routines-and-self-care-recommendations): Ready for Adventure first, Toy Drawer and Village Planner for older families. Developer follow-up: [Toy Drawer: Make it Fit](../deep-dives/subjects/routines-self-care.md#toy-drawer-follow-up-make-it-fit) now leads with inventory packing; retrieval stays optional.
+- Read the existing routines-adjacent game plans; opened Head Start/AAP/Sesame/NCPMI/Harvard guidance and six first-party digital descriptions. Day & Night is explicitly search-excerpt-only (403); no reference game was played. Follow-up opened Blizzard's item guide, Backpack Hero's developer page and Save Room's publisher listing; compared Tangram Town rules and Block Garden's proposal. Opened Kabam 26.10.0/26.10.1 for the developer's Pharoway Caravan reference; added the later Pack the Wagon manifest/selection mode with exact stacking rules explicitly unverified. Event gameplay not run.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier). Older log entries rotated with relative links repaired.
+- Not run: typecheck, units, build, browser/device/child checks. No code or real-care instructions changed; practical-care review, audience appeal and real-world transfer remain open.
+
+## 2026-10-14 — Memory Match dot arrangements (levels 6–7)
+
+- Content on `claude/memory-match-dot-layouts` (uncommitted): `dotLayouts`/`selectDotLayouts` in `logic.ts` give each numeral-to-dots card one of several curated arrangements (one per pair, seeded, one dot colour); quantities 1–4/1–8 and accounting unchanged.
+- Ran: typecheck, `vitest run src/games/memory-match` (13 pass; two new: valid count/spacing/bounds for 1–8 in at least three layouts for n≥2, seeded and reaches every arrangement), one 1024x768 browser screenshot of level 7 showing varied faces.
+- Not run: bot/`fingerdemo` (interaction unchanged), full browser round, device or child recognition.
