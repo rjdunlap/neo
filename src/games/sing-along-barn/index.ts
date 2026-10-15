@@ -207,7 +207,7 @@ class SingAlongBarn implements Game {
 
   // ----- Choosing the song -----
 
-  private cardScale = () => (this.tuneCards.length > 3 ? 0.72 : 1);
+  private cardScale = () => (this.tuneCards.length > 4 ? 0.6 : this.tuneCards.length > 3 ? 0.72 : 1);
 
   private layoutCards() {
     // 250 apart: 30 clear between two 220-wide cards, and both fit a 768-wide upright view.
@@ -500,7 +500,7 @@ class SingAlongBarn implements Game {
   }
 }
 
-/** A song's card: a barn-red tab with its picture (a cow, a bun, a lamb or a moon) and the first beads of its tune. */
+/** A song's card: a barn-red tab with its picture (a cow, a bun, a lamb, a moon or a rain cloud) and the first beads of its tune. */
 function drawTuneCard(t: Tune): Container {
   const c = new Container();
   const g = new Graphics().roundRect(-110, -100, 220, 200, 28).fill(0xfff4d6).stroke(line(BARN_DARK, 8));
@@ -514,6 +514,11 @@ function drawTuneCard(t: Tune): Container {
   } else if (t.id === 'clair') {
     const moon = new Graphics().circle(0, 30, 52).fill(0xffe9a0).stroke(line(0xd9b85a)).circle(20, 18, 44).fill(0xfff4d6);
     c.addChild(moon);
+  } else if (t.id === 'rain') {
+    const cloud = new Graphics().circle(-36, 0, 32).circle(4, -16, 42).circle(46, 0, 30).rect(-36, 0, 82, 30).fill(0xc9d6e6).stroke(line(0x8a9db5, 5));
+    const drops = new Graphics();
+    for (const x of [-34, 4, 42]) drops.ellipse(x, 62, 7, 11).fill(0x6ab0e8);
+    c.addChild(cloud, drops);
   } else if (t.id === 'mary') {
     const lamb = new Graphics()
       .circle(-40, 30, 26)
@@ -610,14 +615,14 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
-    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune, then choose who sings next after each verse (${friends})`;
-    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune, then choose who sings next after each verse (${friends})`;
-    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune; after each verse, choose who sings next (${friends})`;
-    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune; tap to sing, ${friends} visit`;
+    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away, then choose who sings next after each verse (${friends})`;
+    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away, then choose who sings next after each verse (${friends})`;
+    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away; after each verse, choose who sings next (${friends})`;
+    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
   coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines.',
-  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune with stuffed animals: bring out one for each verse and make its sound together.',
+  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune or Rain, Rain, Go Away with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,

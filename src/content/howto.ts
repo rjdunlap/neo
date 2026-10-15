@@ -231,13 +231,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'A bump counts as a miss, and a hint counts as help. Steps are not timed against you: the pace stays the same.',
   },
   'sing-along-barn': {
-    goal: 'Sing a short song by tapping, Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune: every tap is the next note, and a friend joins each verse.',
+    goal: 'Sing a short song by tapping, Old MacDonald or one of four nursery songs: every tap is the next note, and a friend joins each verse.',
     steps: [
-      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm", then "And on that farm he had a cow" for each friend. Hot Cross Buns, Mary Had a Little Lamb and Au Clair de la Lune each open with their first lines, then each friend sings the next verse.' },
+      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm", then "And on that farm he had a cow" for each friend. The nursery songs (Hot Cross Buns, Mary, Au Clair, Rain Rain) open with their first lines, then each friend sings the next verse.' },
       { from: 3, to: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
       { from: 4, to: 4, text: 'Tap anywhere to sing the opening. Then, at the end of each verse, tap the friend you want to sing next; the friends who have sung wait in the row and only say hello. Tap anywhere to sing that friend\'s verse.' },
-      { from: 5, to: 5, text: 'Tap the song you want, Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune. Then tap anywhere to sing the opening; at the end of each verse, tap the friend you want to sing next. The friends who have sung wait in the row and only say hello.' },
-      { from: 6, text: 'Tap the song you want, the whole Old MacDonald verse, Hot Cross Buns, Mary Had a Little Lamb or Au Clair de la Lune. Tap anywhere to sing; after each verse, tap the friend who sings next. Old MacDonald adds "With a moo-moo here and a moo-moo there" and the first line again.' },
+      { from: 5, to: 5, text: 'Tap the song you want, from five cards. Then tap anywhere to sing the opening; at the end of each verse, tap the friend you want to sing next. The friends who have sung wait in the row and only say hello.' },
+      { from: 6, text: 'Tap the song you want, from five cards (Old MacDonald sings its whole verse). Tap anywhere to sing; after each verse, tap the friend who sings next. Old MacDonald adds "With a moo-moo here and a moo-moo there" and the first line again.' },
     ],
     finish: 'The round ends after the last verse of the last friend. Each round sings one song.',
     note: 'There is no wrong tap. Tapping fast or slowly only changes how the song is sung, and the animals answer on their own.',
