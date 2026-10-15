@@ -189,7 +189,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 
 2. **Words with their own picture, a name cap and per-letter counting** (ready; decisions 3 and 4 lean). Fresh 3 and 4. Tier: rule tests, one portrait screenshot of the word picture, `fingerdemo` at 7 and 8. Coupling: reuse Word Monsters' `wordPicture`; do not start while its slice 2 is in flight on the same table.
 3. **A hint that shows the way, start arrows, a rising tune and trail looks** (ready). Fresh 5 and 6. Tier: rule tests, `fingerdemo` at 1 and 4.
-4. **Journal entries** (ready). Fresh 7. Tier: typecheck, journal and save tests, no browser.
+4. **Journal entries** (ready; **claimed 2026-10-15** on `claude/letter-trails-journal`: `src/content/journal.ts`, `src/ui/journal-art.ts`, the letter-trails finish, `voice-script.ts` and the journal tests). Fresh 7. Tier: typecheck, journal and save tests, no browser.
 5. **Letter-name lines** (after the iPad speech check). Fresh 8.
 6. **Level 9, Three times** (ready after slices 1–3). Tier: rule tests, one scripted play of three tries with one wander (the ribbon comes back), `fingerdemo` at 9, one screenshot of the dotted and start-only tries.
 7. **Lowercase frame and level 10** (decision 1; a new interaction in the frame). Tier: unit tests, one scripted play (first and last letter, a wrong drag, a hint), one portrait screenshot.
