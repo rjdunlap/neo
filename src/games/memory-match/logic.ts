@@ -3,6 +3,7 @@ import type { PropKind } from '../../art/props';
 import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
 import type { BandLevels } from '../../progress/difficulty';
+import { handsFor } from '../clock-tower/logic';
 import type { Rng } from '../../engine/random';
 
 export const PLANS = [
@@ -17,8 +18,9 @@ export const PLANS = [
   { pairs: 8, mode: 'letters', name: 'Match uppercase and lowercase letters' },
   { pairs: 10, mode: 'number-words', name: 'Match number words one–ten to numerals' },
   { pairs: 3, mode: 'fractions', name: 'Match fraction pictures to names' },
+  { pairs: 3, mode: 'clocks', name: 'Same time: match hour and half-hour clocks' },
 ] as const;
-export const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 11 } };
+export const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] } };
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
 
@@ -55,7 +57,8 @@ export function pictureIdentity(mode: MemoryMode, pair: number) {
   return { color: mode === 'attributes' ? COLORS[pair % 2] : COLORS[pair],
     shape: mode === 'attributes' ? SHAPES[Math.floor(pair / 2)] : SHAPES[pair] };
 }
-export function cardLabel(mode: MemoryMode, card: MemoryCard, letters: readonly string[], pictures?: readonly MemoryPicture[]): string {
+export function cardLabel(mode: MemoryMode, card: MemoryCard, letters: readonly string[], pictures?: readonly MemoryPicture[], times: readonly number[] = []): string {
+  if (mode === 'clocks') return clockLabel(times[card.pair]);
   if (mode === 'pictures' && pictures) return pictures[card.pair].name;
   if (mode === 'fractions') return fraction(card.pair).name;
   if (mode === 'letters') return letters[card.pair];
@@ -141,4 +144,30 @@ export function nextCard(cards: readonly MemoryCard[], seen: ReadonlySet<number>
   }
   const known = cards.findIndex((_, k) => open(k) && seen.has(partner(k)));
   return known >= 0 ? known : cards.findIndex((_, k) => open(k) && !seen.has(k));
+}
+
+/** Normalized minutes on a twelve-hour dial, with both kinds and no repeated displayed hour. */
+export function selectTimes(rng: Rng): number[] {
+  const hours = rng.shuffle(Array.from({ length: 12 }, (_, h) => h)).slice(0, 3);
+  const minutes = rng.shuffle([...rng.pick([[0, 0, 30], [0, 30, 30]])]);
+  return hours.map((hour, i) => hour * 60 + minutes[i]);
+}
+const HOUR_WORDS = ['twelve', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven'];
+export function clockLabel(time: number): string {
+  const hour = HOUR_WORDS[Math.floor(time / 60) % 12];
+  return time % 60 === 0 ? `${hour} o'clock` : `half past ${hour}`;
+}
+export const digitalTime = (time: number): string => `${Math.floor(time / 60) % 12 || 12}:${String(time % 60).padStart(2, '0')}`;
+/** Actual learning-face geometry; reuse Clock Tower's continuous hour motion, in degrees from twelve. */
+export function clockDrawing(time: number) {
+  const hands = handsFor(time);
+  const hand = (marks: number, length: number, width: number) => {
+    const degrees = marks * 6, angle = degrees * Math.PI / 180;
+    return { degrees, x: Math.sin(angle) * length, y: -Math.cos(angle) * length, length, width };
+  };
+  return { radius: 56, numeralSize: 14, digitalSize: 36,
+    numerals: Array.from({ length: 12 }, (_, i) => {
+      const hour = i + 1, angle = hour * Math.PI / 6;
+      return { text: String(hour), x: Math.sin(angle) * 45, y: -Math.cos(angle) * 45 };
+    }), hour: hand(hands.hour, 24, 8), minute: hand(hands.minute, 34, 4) };
 }

@@ -10,8 +10,8 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { pictureFace } from './art';
-import { DOT_RADIUS, selectDotLayouts, selectPictures, type DotSpot, type MemoryPicture, cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
+import { clockFace, pictureFace } from './art';
+import { selectTimes, DOT_RADIUS, selectDotLayouts, selectPictures, type DotSpot, type MemoryPicture, cardLabel, fraction, hintPartner, knownMismatch, LEVELS, makeDeck, nextCard, numberWord, planFor, pictureIdentity, type MemoryCard } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
@@ -23,6 +23,7 @@ class MemoryMatch implements Game {
   private readonly letters: string[];
   readonly pictures: readonly MemoryPicture[];
   readonly dots: readonly DotSpot[][];
+  readonly times: readonly number[];
   private readonly background = new Graphics();
   private readonly hint = new Graphics();
   private first: number | null = null;
@@ -49,6 +50,7 @@ class MemoryMatch implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.versus = !!ctx.couch?.versus;
+    this.times = this.plan.mode === 'clocks' ? selectTimes(ctx.rng) : [];
     this.cards = makeDeck(this.plan.pairs, ctx.rng);
     this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
     this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
@@ -73,6 +75,7 @@ class MemoryMatch implements Game {
   }
 
   private face(card: MemoryCard): Container {
+    if (this.plan.mode === 'clocks') return clockFace(this.times[card.pair], card.side);
     if (this.plan.mode === 'pictures') return pictureFace(this.pictures[card.pair]);
     if (this.plan.mode === 'fractions') {
       const amount = fraction(card.pair)!;
@@ -101,12 +104,12 @@ class MemoryMatch implements Game {
 
   get finished() { return this.remaining === 0; }
 
-  start() { void this.ctx.instruct(this.plan.mode === 'numbers' ? 'memory.number' : this.plan.mode === 'letters' ? 'memory.letter' : this.plan.mode === 'number-words' ? 'memory.number-word' : this.plan.mode === 'fractions' ? 'memory.fraction' : 'memory.start'); }
+  start() { void this.ctx.instruct(this.plan.mode === 'clocks' ? 'memory.clock' : this.plan.mode === 'numbers' ? 'memory.number' : this.plan.mode === 'letters' ? 'memory.letter' : this.plan.mode === 'number-words' ? 'memory.number-word' : this.plan.mode === 'fractions' ? 'memory.fraction' : 'memory.start'); }
 
   private async choose(i: number) {
     const view = this.views[i];
     if (this.locked || view.matched || this.remaining === 0) return;
-    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures);
+    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures, this.times);
     if (this.first === i) {
       void this.ctx.say('memory.card', { card: contents });
       return;
@@ -128,13 +131,13 @@ class MemoryMatch implements Game {
       this.remaining--; this.wrong = 0; this.hintAt = null; this.hint.clear();
       // A match earns the same player another turn.
       if (this.versus) { this.won[this.turn]++; this.drawBoard(); }
-      sfx.sparkle(); void this.ctx.say('memory.pair-card', { card: contents });
+      sfx.sparkle(); void this.ctx.say(this.plan.mode === 'clocks' ? 'memory.clock-pair' : 'memory.pair-card', { card: contents });
       await this.ctx.tw.wait(0.35);
     } else {
       const known = knownMismatch(this.cards, first, i, this.seen);
       if (known) { this.misses++; this.wrong++; sfx.boing(); }
       void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
-        first: cardLabel(this.plan.mode, this.cards[first], this.letters, this.pictures), second: contents,
+        first: cardLabel(this.plan.mode, this.cards[first], this.letters, this.pictures, this.times), second: contents,
       });
       await this.ctx.tw.wait(1.2);
       a.front.visible = view.front.visible = false;
@@ -145,7 +148,12 @@ class MemoryMatch implements Game {
         const partner = hintPartner(this.cards, first, this.seen, this.wrong);
         if (partner !== null) {
           this.hints++; this.hintAt = partner;
-          void this.ctx.say('memory.hint');
+          if (this.plan.mode === 'clocks') {
+            const time = this.times[this.cards[partner].pair];
+            void this.ctx.say('memory.clock-hint', { card: cardLabel('clocks', this.cards[partner], [], [], this.times),
+              minute: time % 60 === 0 ? 'twelve' : 'six',
+              hour: time % 60 === 0 ? `on ${Math.floor(time / 60) || 12}` : `halfway between ${Math.floor(time / 60) || 12} and ${Math.floor(time / 60) % 12 + 1}` });
+          } else void this.ctx.say('memory.hint');
           this.drawHint();
         }
       }
@@ -259,7 +267,7 @@ function memoryArt(): Container {
 }
 export const memoryMatch: GameModule = {
   id: 'memory-match', liveController: true, name: 'Memory Match', titleLine: 'game.memory-match', region: 'puzzle-peaks',
-  skills: ['memory', 'matching', 'number-sense', 'letters'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
+  skills: ['memory', 'matching', 'number-sense', 'letters', 'telling-time'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint, offScreen: 'Hide two pairs of familiar objects under cups and take turns finding their partners.',
   hubIcon: () => new WigglyIcon(memoryArt()), touchDemo: true, sticker: () => memoryArt(), create: (ctx) => new MemoryMatch(ctx),

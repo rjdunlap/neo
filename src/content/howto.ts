@@ -440,8 +440,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'A capital letter matches its small letter.' },
       { from: 10, to: 10, text: 'A number word matches the numeral that names it.' },
       { from: 11, to: 11, text: 'A picture of equal parts matches the fraction that names the shaded parts.' },
+      { from: 12, to: 12, text: 'Turn a card and listen to its time. Find the numbered clock face and digital time that show the same hour or half hour.' },
     ],
-    finish: 'The round ends when every pair is found.',
+    finish: [{ from: 1, to: 11, text: 'The round ends when every pair is found.' },
+      { from: 12, to: 12, text: 'Find all three analog and digital clock pairs to finish.' }],
     note: 'A nonmatching pair counts as a miss only when the first card’s partner was already seen. After two misses, one known partner glows until a match clears it.',
   },
   'letter-trails': {

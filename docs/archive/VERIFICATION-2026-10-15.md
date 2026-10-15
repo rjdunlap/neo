@@ -71,3 +71,9 @@
 - Primary publisher/educator descriptions and NGSS anchors opened; no reference played. Links to tracker, notebook, roadmap, decisions/device checks and queue updated. No implementation or learning/appeal claims.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`; scoped diff contains documentation only. Rotated two older live entries with moved-anchor links repaired.
 - Not run: typecheck, units, build, browser/offline, iPad speech/touch or child/co-play. These are research proposals; no game mode built and no server started.
+
+## 2026-10-15 — Color Garden level 8 Color or kind
+
+- [PR #351](https://github.com/rjdunlap/neo/pull/351), branch `claude/color-garden-color-or-kind`: `PLANS[7]` `{ rule: true }`, eight items from two rainbow colors, each as fruit and balloon; a sign top-right (two swatches or fruit and balloon icons) names the rule, then two color baskets or a fruit and a balloon basket (icon on a plain cloth); rule random per seed; preschool 3-8, pre-K 4-8, toddler stays 1-5; voice `garden.rule.color`/`kind`, `garden.is.fruit`/`balloon`, `garden.kind.wrong`; how-to step from level 8.
+- Passed `npx tsc --noEmit`; vitest color-garden, content and registry (99 pass); `BROWSER_SUITE=originals ORIGINALS_ONLY=garden` (levels 1-8, script extended to 8); `fingerdemo` (`FINGER_ONLY=color-garden`): level 8 finished in 29 s with no wrong move; one landscape screenshot reviewed.
+- Not run: portrait screenshot, device speech, build, `smoke` and `howto` suites.
