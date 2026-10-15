@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { acceptsTap, makeNight, makeRequests, PLANS, COLORS, NOTE_STEP, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, PLANS, COLORS, NAMES, NOTE_STEP, noteFor, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
 
 describe('Goodnight Room', () => {
   it('gives every friend in a room its own note', () => {
     for (const room of ROOMS) {
-      const steps = room.friends.map(t => NOTE_STEP[t]);
+      const steps = room.friends.map(t => noteFor(t, room));
       expect(new Set(steps).size).toBe(steps.length);
     }
     for (const t of THINGS) expect(Number.isInteger(NOTE_STEP[t])).toBe(true);
@@ -73,6 +73,10 @@ describe('Goodnight Room', () => {
     expect(SLOTS).toHaveLength(6);
     for (const setting of ROOMS) {
       expect(new Set(setting.friends).size).toBe(6);
+      expect(new Set(setting.friends.map(t => NAMES[t])).size).toBe(6);
+      const kinds: Partial<Record<Thing, string>> = { teddy: 'bear', kitten: 'cat', puppy: 'dog', cow: 'cow', pig: 'pig', duck: 'duck', bunny: 'bunny', cat: 'cat' };
+      const animals = setting.friends.map(t => kinds[t]).filter(Boolean);
+      expect(new Set(animals).size).toBe(animals.length);
       expect(setting.friends.filter(t => t === 'lamp' || t === 'lantern')).toHaveLength(1);
       for (const [x, y] of SLOTS) {
         expect(x).toBeGreaterThan(0.15);
@@ -80,6 +84,22 @@ describe('Goodnight Room', () => {
         expect(y).toBeGreaterThan(0.15);
         expect(y).toBeLessThan(0.95);
       }
+    }
+  });
+
+  it('draws every eligible setting at each existing level, keeping the color bedroom and category fairness', () => {
+    for (const plan of PLANS) {
+      const settings = new Set<string>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const night = makeNight(plan, new Rng(seed));
+        settings.add(night.setting.id);
+        expect(night).toEqual(makeNight(plan, new Rng(seed)));
+        if (plan.mode === 'animals') {
+          expect(night.room.filter(isAnimal)).toHaveLength(3);
+          expect(night.room.filter(t => !isAnimal(t))).toHaveLength(2);
+        }
+      }
+      expect([...settings].sort()).toEqual(plan.mode === 'color' ? ['bedroom'] : plan.mode === 'animals' ? ['bedroom', 'boat'] : ['barn', 'bedroom', 'boat', 'tent']);
     }
   });
 
@@ -137,7 +157,7 @@ describe('Goodnight Room', () => {
         expect(thingToTap(plan, request, asleep.size, asleep, night.room)).toBeNull();
       }
     }
-    expect([...rooms].sort()).toEqual(['barn', 'bedroom']);
+    expect([...rooms].sort()).toEqual(['barn', 'bedroom', 'boat', 'tent']);
   });
 
   it('counts 2–4 free choices in either room, with no repeated sleeper and no extra bot tap', () => {
@@ -172,7 +192,7 @@ describe('Goodnight Room', () => {
       }
     }
     expect([...targets].sort()).toEqual([2, 3, 4]);
-    expect([...rooms].sort()).toEqual(['barn', 'bedroom']);
+    expect([...rooms].sort()).toEqual(['barn', 'bedroom', 'boat', 'tent']);
   });
 
   it('offers two clear color matches, two fair decoys and useful hints in every answer order', () => {
@@ -235,7 +255,7 @@ describe('Goodnight Room', () => {
         expect(acceptsTap(plan, request, asleep.size, asleep, light)).toBe(false);
       }
     }
-    expect([...rooms].sort()).toEqual(['barn', 'bedroom']);
+    expect([...rooms].sort()).toEqual(['barn', 'bedroom', 'boat', 'tent']);
   });
 
   it("gives the ghost finger's bot only right taps, until the room is asleep: everyone awake once, or each thing named in order", () => {

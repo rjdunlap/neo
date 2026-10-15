@@ -33,15 +33,15 @@ export const PLANS: NightPlan[] = [
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Everything that can be in the room, in the order they appear. */
-export const THINGS = ['lamp', 'teddy', 'kitten', 'clock', 'puppy', 'fish', 'lantern', 'cow', 'pig', 'duck', 'bunny', 'cat'] as const;
+export const THINGS = ['lamp', 'teddy', 'kitten', 'clock', 'puppy', 'fish', 'lantern', 'cow', 'pig', 'duck', 'bunny', 'cat', 'campfire', 'pot', 'anchor'] as const;
 export type Thing = (typeof THINGS)[number];
 
 /** The words spoken for each thing. */
-export const NAMES: Record<Thing, string> = { lamp: 'lamp', teddy: 'teddy bear', kitten: 'kitten', clock: 'clock', puppy: 'puppy', fish: 'fish', lantern: 'lantern', cow: 'cow', pig: 'pig', duck: 'duck', bunny: 'bunny', cat: 'barn cat' };
+export const NAMES: Record<Thing, string> = { lamp: 'lamp', teddy: 'teddy bear', kitten: 'kitten', clock: 'clock', puppy: 'puppy', fish: 'fish', lantern: 'lantern', cow: 'cow', pig: 'pig', duck: 'duck', bunny: 'bunny', cat: 'cat', campfire: 'campfire', pot: 'toasting pot', anchor: 'anchor' };
 
 /** Each friend's own pentatonic step (`bell` takes one), so a round plays a small tune in the order she chose.
  * Every room's six friends use six different steps. */
-export const NOTE_STEP: Record<Thing, number> = { lamp: 2, teddy: 3, kitten: 4, clock: 5, puppy: 6, fish: 7, lantern: 2, cow: 3, pig: 4, duck: 5, bunny: 6, cat: 7 };
+export const NOTE_STEP: Record<Thing, number> = { lamp: 2, teddy: 3, kitten: 4, clock: 5, puppy: 6, fish: 7, lantern: 2, cow: 3, pig: 4, duck: 5, bunny: 6, cat: 7, campfire: 4, pot: 5, anchor: 4 };
 
 /** Main colors and conspicuous trim, excluding tiny facial details and outlines.
  * In color rounds the fish's shelf is blue, so it cannot be mistaken for brown. */
@@ -58,6 +58,9 @@ export const COLORS: Record<Thing, { main: string; visible: readonly string[] }>
   duck: { main: 'yellow', visible: ['yellow', 'orange'] },
   bunny: { main: 'white', visible: ['white', 'pink'] },
   cat: { main: 'orange', visible: ['orange'] },
+  campfire: { main: 'orange', visible: ['orange', 'yellow', 'brown'] },
+  pot: { main: 'blue', visible: ['blue'] },
+  anchor: { main: 'blue', visible: ['blue'] },
 };
 /** The orange round excludes the puppy's orange ears; the brown round excludes wooden props. */
 export const COLOR_ROUNDS = [
@@ -69,11 +72,19 @@ export const COLOR_ROUNDS = [
 export const ROOMS = [
   { id: 'bedroom', friends: ['lamp', 'teddy', 'kitten', 'clock', 'puppy', 'fish'] },
   { id: 'barn', friends: ['cow', 'pig', 'duck', 'lantern', 'bunny', 'cat'] },
+  { id: 'tent', friends: ['teddy', 'bunny', 'puppy', 'lantern', 'campfire', 'pot'] },
+  { id: 'boat', friends: ['duck', 'cat', 'anchor', 'clock', 'lamp', 'fish'] },
 ] as const;
 export type NightRoom = (typeof ROOMS)[number];
+/** Keep the established rooms' notes; new casts separate friends that shared a note in different rooms. */
+const ROOM_NOTES: Partial<Record<NightRoom['id'], Partial<Record<Thing, number>>>> = {
+  tent: { puppy: 8 },
+  boat: { duck: 3, cat: 8 },
+};
+export const noteFor = (thing: Thing, room: NightRoom) => ROOM_NOTES[room.id]?.[thing] ?? NOTE_STEP[thing];
 export const SLOTS: readonly [number, number][] = [[0.22, 0.86], [0.4, 0.86], [0.58, 0.88], [0.42, 0.26], [0.78, 0.88], [0.66, 0.46]];
 export const isLight = (thing: Thing) => thing === 'lamp' || thing === 'lantern';
-export const isAnimal = (thing: Thing) => !['lamp', 'lantern', 'clock', 'teddy'].includes(thing);
+export const isAnimal = (thing: Thing) => !['lamp', 'lantern', 'clock', 'teddy', 'campfire', 'pot', 'anchor'].includes(thing);
 
 /** A category round has two objects and three unmistakable living animals; no teddy. */
 export interface Night {
@@ -90,10 +101,10 @@ export function makeNight(plan: NightPlan, rng: Rng): Night {
     const choice = rng.pick([...COLOR_ROUNDS]);
     return { setting: ROOMS[0], room: [...choice.friends], asleep: [], targetCount: 4, color: choice.color };
   }
-  // The barn has just one object, so category rounds use the bedroom.
-  const setting = plan.mode === 'animals' ? ROOMS[0] : rng.pick([...ROOMS]);
+  // Only these rooms have three unambiguous animals plus the clock and light.
+  const setting = rng.pick(plan.mode === 'animals' ? [ROOMS[0], ROOMS[3]] : [...ROOMS]);
   const order: readonly Thing[] = setting.friends;
-  const pool: Thing[] = order.filter(t => plan.mode !== 'animals' || t !== 'teddy');
+  const pool: Thing[] = order.filter(t => plan.mode !== 'animals' || isAnimal(t) || isLight(t) || t === 'clock');
   const room = rng.shuffle(pool).slice(0, plan.things).sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const most = Math.min(plan.asleep, room.length - 2);
   const asleep = most > 0 ? rng.shuffle([...room]).slice(0, rng.int(0, most)) : [];

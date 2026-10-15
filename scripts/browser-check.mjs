@@ -5592,14 +5592,20 @@ async function woodsBatch() {
   }
 
   if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
-    if (level === 1) await page.evaluate(async () => {
+    if (level === 1 || process.env.NIGHT_ROOM) await page.evaluate(async ({ level, room }) => {
       const { goodnightRoom } = await import('/src/games/goodnight-room/index.ts');
       const { Rng } = await import('/src/engine/random.ts');
+      const { makeNight, planFor } = await import('/src/games/goodnight-room/logic.ts');
+      let seed = 1;
+      const wanted = room || 'barn';
+      while (seed < 1000 && makeNight(planFor(level), new Rng(seed)).setting.id !== wanted) seed++;
+      if (seed === 1000) throw new Error(`No seeded ${wanted} room at level ${level}`);
       const create = goodnightRoom.create;
-      goodnightRoom.create = (ctx) => { goodnightRoom.create = create; return create({ ...ctx, rng: new Rng(1) }); };
-    });
+      goodnightRoom.create = (ctx) => { goodnightRoom.create = create; return create({ ...ctx, rng: new Rng(seed) }); };
+    }, { level, room: process.env.NIGHT_ROOM });
     await launch('goodnight-room', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (process.env.NIGHT_ROOM) assert.equal(await page.evaluate(() => neo.scene.game.setting.id), process.env.NIGHT_ROOM);
     if (mode === 'except') await page.evaluate(() => {
       const g = neo.scene.game;
       const say = g.ctx.say.bind(g.ctx);
@@ -5624,10 +5630,10 @@ async function woodsBatch() {
     if (level === 5 || level === 6 || level === 7 || level === 8 || level === 9) {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
-      await screenshot(`goodnight-room-${level}-portrait`);
+      await screenshot(`goodnight-room-${process.env.NIGHT_ROOM || 'random'}-${level}-portrait`);
     }
     if (level === 1) {
-      assert.equal(await page.evaluate(() => neo.scene.game.setting.id), 'barn');
+      assert.equal(await page.evaluate(() => neo.scene.game.setting.id), process.env.NIGHT_ROOM || 'barn');
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
       await screenshot('goodnight-room-barn-portrait');
