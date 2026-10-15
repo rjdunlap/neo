@@ -254,3 +254,8 @@ Reconciled the completed [clock definition #369](https://github.com/rjdunlap/neo
 ### 2026-10-15 — Memory Match fraction-art dispatch
 
 Reconciled completed [Same time #373](https://github.com/rjdunlap/neo/pull/373), confirmed merge/deployment and released its slot. Fresh allowance and clean overlap admitted only [build slice 4 at level 11](deep-dives/memory-match.md#build-slices-in-order) to worker `01a1400a-d444-7e70-8343-133fb2313c84`. Queue records scope, usage/reset identities and pending content proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-15 — Clock Tower appointment dispatch
+
+Reconciled completed [fraction-art #377](https://github.com/rjdunlap/neo/pull/377), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Clock Tower slice 2 at level 5](deep-dives/clock-tower.md#build-slices-in-order) to worker `01a1403e-ed5f-7a73-a61e-cbae415731e0`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
