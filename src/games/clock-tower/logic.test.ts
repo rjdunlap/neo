@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { clockTower } from './index';
 import { howToFor } from '../../content/howto';
-import { appointmentFor, demoAction, requestFor, EVENTS, FIVE_ASKED, handsFor, hourOf, makeTasks, minuteChoices, PLANS, spoken, timeOf } from './logic';
+import { SCRIPT } from '../../content/voice-script';
+import { appointmentFor, demoAction, fiveExample, laterExample, requestFor, EVENTS, FIVE_ASKED, handsFor, hourOf, makeTasks, minuteChoices, PLANS, spoken, timeOf } from './logic';
 
 describe('Clock Tower', () => {
   it('says times the way people do, and places the hour hand between numbers after the hour', () => {
@@ -162,5 +163,44 @@ describe('Clock Tower', () => {
       for (const task of later) expect(task.time).toBe((task.from! + 60) % 720);
       expect(new Set(later.map((task) => task.time)).size).toBe(later.length);
     }
+  });
+
+  it('explains every hour change using the old/new task times, moving forwards through 12', () => {
+    for (let hour = 1; hour <= 12; hour++) for (const minute of [0, 30]) {
+      const from = timeOf(hour, minute), time = (from + 60) % 720;
+      const e = laterExample({ from, time });
+      expect(e.from).toBe(requestFor('later', { from, time }).time);
+      expect(e.to).toBe(requestFor('oclock', { time }).time);
+      expect(e.fromSpeech).toBe(spoken(from));
+      expect(e.toSpeech).toBe(spoken(time));
+      expect(e.minute).toBe(time % 60);
+      expect(e.hourStart).toBe(handsFor(from).hour);
+      expect(e.hourEnd - e.hourStart).toBe(5);
+      expect(e.hourEnd % 60).toBe(handsFor(time).hour);
+      const speech = SCRIPT['clock.later.example'][0].replace('{from}', e.fromSpeech).replace('{time}', e.toSpeech);
+      expect(speech).toContain(spoken(from));
+      expect(speech).toContain(spoken(time));
+      expect(speech).toContain('minutes stay the same');
+    }
+  });
+
+  it('counts fives from zero to the requested minute, without confusing :00 with a full turn', () => {
+    for (let hour = 1; hour <= 12; hour++) for (const minute of minuteChoices('five')) {
+      const time = timeOf(hour, minute), e = fiveExample({ time });
+      expect(e.marks).toEqual(Array.from({ length: minute / 5 }, (_, i) => (i + 1) * 5));
+      expect(e.marks.at(-1) ?? 0).toBe(handsFor(time).minute);
+      expect(e.counts).toBe(e.marks.join(', '));
+      expect(e.time).toBe(requestFor('five', { time }).speech);
+      expect(e.marks).not.toContain(60);
+      const speech = SCRIPT['clock.five.help'][0].replace('{counts}', e.counts).replace('{time}', e.time);
+      expect(speech).toContain(`${e.counts} minutes`);
+      expect(speech).toContain(spoken(time));
+    }
+    expect(howToFor(clockTower, 6)!.steps.join(' ')).toContain('minutes stay the same');
+    expect(howToFor(clockTower, 7)!.steps.join(' ')).toContain('zero is at 12');
+    expect(howToFor(clockTower, 7)!.note).toContain('spoken counting by fives');
+    expect(howToFor(clockTower, 3)!.steps.join(' ')).not.toContain('arc');
+    expect(SCRIPT['clock.five.zero'][0]).toContain('zero minutes');
+    expect(SCRIPT['clock.five.zero'][0]).toContain('sixty minutes');
   });
 });

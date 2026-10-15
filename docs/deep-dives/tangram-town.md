@@ -53,13 +53,13 @@ The pieces are five shapes: square (140), roof (a 180-wide isosceles triangle), 
 
 ### Fresh content inside existing levels
 
-**Built in slice 1.** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat. The 2026-10-11 batches add lamp, bus, castle, tent and barn; the 2026-10-13 batch adds robot; 2026-10-14 and 2026-10-15 add fish, lighthouse, pine and bridge. Current pools:
+**Built in slice 1.** Eleven pictures drawn per level with the round's seeded RNG: house, tree, boat, sailboat, flag, cottage, truck, tower, ferry, rocket, houseboat. The 2026-10-11 batches add lamp, bus, castle, tent and barn; the 2026-10-13 batch adds robot; 2026-10-14 and 2026-10-15 add fish, lighthouse, pine, bridge and shovel. Current pools:
 
 | Level | Pool |
 | --- | --- |
-| 1 | house, tree, lamp, tent |
-| 2 | boat, sailboat, flag, lamp, tent, fish |
-| 3 | house, tree, flag, sailboat, lamp, tent, fish |
+| 1 | house, tree, lamp, tent, shovel |
+| 2 | boat, sailboat, flag, lamp, tent, fish, shovel |
+| 3 | house, tree, flag, sailboat, lamp, tent, fish, shovel |
 | 4 | cottage, truck, tower, ferry, bus, barn |
 | 5 | rocket, houseboat, castle, robot |
 | 6 | cottage, truck, tower, ferry, houseboat, bus, castle, barn, robot, lighthouse, pine, bridge |
@@ -68,7 +68,9 @@ Each pool keeps its level's decision: levels 1–3 are two pieces, level 4 is th
 
 **Next content slices** (ready, small; lamp, bus and castle built 2026-10-11):
 
-- **More pictures.** Aim for six to eight per level. A new picture is a few lines of slots in `PICTURES` and one line in a pool, and the tests above cover it. Tent and barn are also built ([PR 167](https://github.com/rjdunlap/neo/pull/167)); the tent has a triangular canopy and rectangular groundsheet, and the barn has a trapezoid roof and a two-triangle wall. Fish, lighthouse, pine and bridge are built too; no candidates are listed now, so propose the next from the same five shapes. Check the new picture reads as itself at 0.4 viewing distance.
+**Shovel built 2026-10-15** ([PR #384](https://github.com/rjdunlap/neo/pull/384), `codex/tangram-shovel-picture`): a rectangular handle meets a trapezoid blade in existing levels 1–3, now pools of 5/7/8. The catalog has twenty-two pictures; other pools, level rules, bands, saves, help and demonstrations are unchanged. Typecheck, thirteen geometry/solvability/bot rule tests, one real-input level-3 shovel round and a portrait review passed; build, full suites and `fingerdemo` were not rerun. Device recognition and child play remain open.
+
+- **More pictures.** Aim for six to eight per level. A new picture is a few lines of slots in `PICTURES` and one line in a pool, and the tests above cover it. Tent and barn are also built ([PR 167](https://github.com/rjdunlap/neo/pull/167)); the tent has a triangular canopy and rectangular groundsheet, and the barn has a trapezoid roof and a two-triangle wall. Fish, lighthouse, pine, bridge and shovel are built too; no candidates are listed now, so propose the next from the same five shapes. Check the new picture reads as itself at 0.4 viewing distance.
 - **Spoken shape names** — **built 2026-10-11** ([PR 157](https://github.com/rjdunlap/neo/pull/157)): each physical piece names its geometric shape once on pickup at toddler, preschool and pre-K. Roofs say triangle; hulls say trapezoid. School pickup is quiet. Actual device pronunciation remains unchecked.
 - **Avoid the same picture twice in a row.** A pool of two repeats half the time. The shell does not keep round history for a game; leave it, or pass the previous picture through the stored `stats` in a later slice.
 - **Colour per picture.** Colours are by tray slot today, not by role; a roof that is always a roof colour would make the picture readable as a picture.
@@ -88,7 +90,7 @@ The "fewer pieces" level and the "fix the picture" level can both stay at the sc
 
 ### Younger-band openings
 
-- **Toddler** already holds levels 1–2. With the expanded pools, a toddler's two levels offer six distinct pictures. No further opening.
+- **Toddler** already holds levels 1–2. With the expanded pools, a toddler's two levels offer nine distinct pictures. No further opening.
 - **Lap.** The game does not serve the lap band. A one-year-old is below the age range of the supporting research (26 to 46 months). If the developer wants the opening, it is **level 0 below** (next section) and its first fit is a person check, not an automatic claim. It overlaps Shape Sorter and Puzzle Pals, so check whether Tangram Town is the right home.
 
 ### Levels below level 1 (waiting on the level-order decisions)
@@ -116,7 +118,7 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 ## Build slices, in order
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).
-2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. Second batch built ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a two-piece tent at levels 1–3 and a three-piece barn (two triangles make its wall) at levels 4 and 6, bringing the pool to sixteen pictures and 3–8 per level. Third batch built 2026-10-13 ([PR #260](https://github.com/rjdunlap/neo/pull/260)): four-piece robot at levels 5–6 (square head, rectangular body and two triangular feet), seventeen pictures and 4–9 per level. Fish (levels 2–3), lighthouse and pine (level 6) followed, then the bridge (level 6, rectangle deck on two upside-down hulls at x=±110, 2026-10-15, [PR #354](https://github.com/rjdunlap/neo/pull/354)): twenty-one pictures and 4–12 per level. More remain ready, `logic.ts` data only. Rule tests, one screenshot per new picture.
+2. **More pictures** (first batch built 2026-10-11, [PR 166](https://github.com/rjdunlap/neo/pull/166)): lamp at 1–3, bus at 4/6, castle at 5/6; fourteen pictures and 3–7 per level. Second batch built ([PR 167](https://github.com/rjdunlap/neo/pull/167)): a two-piece tent at levels 1–3 and a three-piece barn (two triangles make its wall) at levels 4 and 6, bringing the pool to sixteen pictures and 3–8 per level. Third batch built 2026-10-13 ([PR #260](https://github.com/rjdunlap/neo/pull/260)): four-piece robot at levels 5–6 (square head, rectangular body and two triangular feet), seventeen pictures and 4–9 per level. Fish (levels 2–3), lighthouse and pine (level 6) followed, then the bridge (level 6, rectangle deck on two upside-down hulls at x=±110, 2026-10-15, [PR #354](https://github.com/rjdunlap/neo/pull/354)): twenty-one pictures and 4–12 per level. Shovel followed at levels 1–3 (2026-10-15, [PR #384](https://github.com/rjdunlap/neo/pull/384)): rectangle handle at (0, −45), quarter-turned, meets a hull blade at (0, 100), bringing the catalog to twenty-two pictures; pools 1/2/3 are 5/7/8 and other pools stay fixed. More remain ready, `logic.ts` data only. Rule tests, one screenshot per new picture.
 3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
 4. **Level 7, two ways** — built 2026-10-13 ([PR #262](https://github.com/rjdunlap/neo/pull/262)): cover sets accept the roof plus square or roof plus two triangles; every accepted partial choice finishes. Spare-wall drops are free, help follows the shortest surviving cover and completion names two or three pieces. Both alternatives and the ghost finger checked; school 5–7.
 5. **Level 8, fix the picture** — built 2026-10-13 ([PR #263](https://github.com/rjdunlap/neo/pull/263)): turn-only repair, eight distinct-center picture pools, one visible mismatch, free in-place selection/turns, truthful hint and explicit Check. School 5–8. Wrong-shape swaps remain unbuilt; no dragging needed for this slice.
