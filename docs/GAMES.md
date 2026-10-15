@@ -346,7 +346,7 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 
 ### Bug Builder
 
-*toddler–school.* Two guided levels show pale matching shape outlines; two copy levels use a separate small model; three mirror levels ask for matching wings, ending with two columns and six spots. Reusable stamps return to the tray. The final palette contains repeated shapes and colors, requiring both attributes to match. Drops outside a spot are exploration, not mistakes.
+*toddler–school.* Two guided levels show pale matching shape outlines; two copy levels use a separate small model; three mirror levels ask for matching wings, ending with two columns and six spots. Reusable stamps return to the tray. The final palette contains repeated shapes and colors, requiring both attributes to match. Drops outside a spot are exploration, not mistakes. The tokens come from a pool of twelve, drawn by seed, so a round's colors are distinct (plans of four or fewer also keep every shape and color different), and a copy board is never symmetric. On the second wrong drop the hint glows the matching spot and also rings the twin across the line (mirror levels, with the line "Look across the line at its friend.") or the same place on the little model bug (copy levels).
 
 ### Sink or Float
 
