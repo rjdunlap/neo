@@ -134,7 +134,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 7. **Level 9, everyone but the one** (built 2026-10-12; [PR #239](https://github.com/rjdunlap/neo/pull/239)): pre-K 5–9; either seeded room asks for the five friends other than its light, in any order. Tapping the light explains the exception; two misses glow a remaining friend. The lamp/lantern stays awake with its warm glow through the finale and a matching closing line. Tier: new levels on an existing interaction.
 8. **Tent and boat cabin rooms** (ready, new art).
 9. **Level 10, goodnight everywhere** (ready after 8).
-10. **Yawn nudge and a note per friend** (ready, any time; sound only).
+10. **Yawn nudge and a note per friend** (ready, any time; sound only; claimed 2026-10-15 on `claude/goodnight-friend-notes`: a note per friend as she says goodnight; the yawn nudge if it stays small).
 11. **Levels below level 1 and tuck-in** (waits on the level-order decisions).
 
 ## What was built in this session
