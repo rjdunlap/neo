@@ -293,3 +293,8 @@ Reconciled completed [support #389](https://github.com/rjdunlap/neo/pull/389), c
 ### 2026-10-15 — Discovery D1a dispatch
 
 Reconciled completed [steering #391](https://github.com/rjdunlap/neo/pull/391), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [D1a's definition](ROADMAP.md#discovery-actions) to worker `01a14157-9449-7e81-aaf9-b6d2f1d2daf3`; gameplay estimate exceeds the current five-hour remainder. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-15 — Color Garden tap-entry dispatch
+
+Reconciled completed [D1a #395](https://github.com/rjdunlap/neo/pull/395), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Color Garden slice 2](deep-dives/color-garden.md#build-slices-in-order), first current ready-list line, to worker `01a14190-2e01-74e0-bcf9-fbf48fdf028d`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
