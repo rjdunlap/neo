@@ -123,3 +123,9 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 - Publisher/rules sources plus Common Sense Media, Games for Change, Apple and Spiel des Jahres context. Nintendo DLC mechanics are search-excerpt-only; complete Dixit scoring and reference gameplay unverified. Popularity/recognition and learning effectiveness remain separate; no games, new bands or practical advice built.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier). Rotated oldest dated entries with relative links repaired; fixed the baseline garden-verification archive link in this clean checkout, preserving the original checkout's pending correction.
 - Not run: typecheck, units, build, browser/offline/device/child checks. Proposed identity/ranges/placement, original content review, shared-device privacy, solo/co-play usability and real-world transfer remain future checks. No dev servers started.
+
+## 2026-10-15 — Splish Splash level 9 Pat the bubbles
+
+- Branch `claude/splish-pat-the-bubbles`: a lap entry placed first (`order` [9, 1, 2], `entryLevels` [9]); any touch takes a third off the nearest of four mud patches (12 pats at most), a sparkle after six idle seconds, no misses or hints. Lap range 1 to 9.
+- Passed `npm run typecheck`; full vitest (1274 pass); `BROWSER_SUITE=early EARLY_ONLY=bath` levels 1 to 9 (third run: one earlier run failed at level 6 score [2,0] and one at level 9, unexplained, treated as timing flakes and not diagnosed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=splish-splash FINGER_LEVELS=9` clean in 19.9 s. One landscape screenshot viewed.
+- Not run: build, a portrait screenshot, a person check (does a one-year-old pat or look first).
