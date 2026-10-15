@@ -43,8 +43,9 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 /**
  * A tune to copy, as jelly indexes. Short tunes never repeat a jelly back to back, so each note
  * is a new place to tap; and no tune is one jelly over and over, so there is always a tune to hear.
+ * A tune already in `played` (the round's earlier tunes) is never drawn again.
  */
-export function makeTune(rng: Rng, length: number): number[] {
+export function makeTune(rng: Rng, length: number, played: readonly (readonly number[])[] = []): number[] {
   for (;;) {
     const tune: number[] = [];
     while (tune.length < length) {
@@ -52,7 +53,7 @@ export function makeTune(rng: Rng, length: number): number[] {
       if (tune.length && i === tune[tune.length - 1] && length <= 3) continue;
       tune.push(i);
     }
-    if (length < 2 || new Set(tune).size > 1) return tune;
+    if ((length < 2 || new Set(tune).size > 1) && !played.some((t) => t.length === tune.length && t.every((n, k) => n === tune[k]))) return tune;
   }
 }
 
