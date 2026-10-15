@@ -9,7 +9,7 @@
 
 ## 2026-10-14 — Dot Link deep dive
 
-Docs only: `docs/deep-dives/dot-link.md` (levels 7–10, a toddler entry, fresh content, seven slices), the tracker row, the IDEAS row and a decision in Waiting on the developer. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser. Open: the `school` window decision.
+Docs only: `docs/deep-dives/dot-link.md` (levels 7–10, a toddler entry, fresh content, seven slices), the tracker row, the IDEAS row and a decision in Waiting on the developer. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code, tests or browser. The school window and always-on marks were decided afterwards (2026-10-14).
 
 ## 2026-10-14 — Music and instruments subject research
 
