@@ -104,3 +104,9 @@
 - [PR #358](https://github.com/rjdunlap/neo/pull/358), branch `claude/clock-tower-coverage`: rules only in `src/games/clock-tower/logic.ts`. Level 3 (half past) always asks half past at least once per round, in a random slot; level 6 (one hour later) always includes a start at 11 and one at 12 (the 11 to 12 and 12 to 1 wraparounds). Four distinct tasks per round kept.
 - Ran: typecheck; Clock Tower vitest (9 pass); the new coverage test was shown failing on the old rule.
 - Not run: browser play, `fingerdemo` (no UI, bot or shared change), a device. Open: the deep dive's animated explanations and level 7 examples.
+
+## 2026-10-15 — Chain Reaction trail and watch-again
+
+- Branch `claude/chain-reaction-trail`: after a missed run a faint red path (alpha 0.35) of the marble's last run stays until the next run or machine; tapping the blue start cup (120 by 104 hit area) replays it, changing no misses or hints. Rules unchanged; how-to step updated; the `machines` suite's level 6 now asserts the trail and replay.
+- Ran: typecheck; Chain Reaction unit tests (7 pass); `BROWSER_SUITE=machines` (passed); `fingerdemo` with `FINGER_ONLY=chain-reaction` (both levels passed).
+- Not run: build, offline check, a device or a child. Open: whether a small hand finds the cup to replay.

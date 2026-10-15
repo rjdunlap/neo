@@ -1047,7 +1047,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Touch the middle to turn the short hour hand to the time asked, then ring the bell.' },
       { from: 2, to: 4, text: 'Touch the middle to turn the short hour hand and the edge to turn the long minute hand, then ring the bell.' },
-      { from: 5, to: 5, text: 'Look where the short and long hands point, then tap the picture of what happens at that time.' },
+      { from: 5, to: 5, text: 'Match the big clock to an appointment in a friend’s pretend plan, then tap its picture. Each picture has a little clock and a digital time; tap the time to hear it for free.' },
       { from: 6, to: 6, text: 'Turn the hands to one hour after the time on the sign, then ring the bell.' },
       { from: 7, to: 7, text: 'Turn the hands to the time on the sign, like 3:25. The small numbers around the edge count by fives for the long hand. Then ring the bell.' },
       { to: 4, text: 'Tap the time sign to hear the request again for free.' },
@@ -1056,7 +1056,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: [{ to: 7, text: 'Four correct answers complete the round.' }],
     note: [
       { to: 4, text: 'After two misses on a time, yellow hands show the answer to copy. Turning or replaying is free.' },
-      { from: 5, to: 5, text: 'After two misses on a time, the matching picture glows.' },
+      { from: 5, to: 5, text: 'After two misses on a time, the matching picture glows. Replaying appointment times is free; this is a pretend plan, never a required home routine.' },
       { from: 6, to: 7, text: 'After two misses on a time, yellow hands show the answer to copy. Turning or replaying is free.' },
     ],
   },
