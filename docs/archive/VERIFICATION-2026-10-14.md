@@ -103,3 +103,23 @@
 - Docs only, base `d840a77` plus research diff, [PR #322](https://github.com/rjdunlap/neo/pull/322): [study](../deep-dives/subjects/off-screen-companions.md), every audience L–G; tracker, [roadmap packet](../ROADMAP.md#off-screen-companions-recommendations), IDEAS and Waiting rows.
 - Read from source: Zero to Three's handout (PDF text extracted), AAP Power of Play and Choking Prevention, CPSC small parts, Camp Khan Kids, Vroom. Only summaries: WHO (PDF 403), Barr and Hirsh-Pasek, Cooney Center; Exploratorium (403) and Hoot Owl Hoot's maker page unread.
 - Found by reading `src/`: 93 of 94 games have an `offScreen`; the page shows at most two; at least five lap/toddler lines name small objects; Weather Wardrobe's `{name}` prints literally. Keyword audit, hand read; not a safety finding of record. Recommend a removal-only swap first. No code changed; `node scripts/check-links.mjs` and `git diff --check` below.
+
+## 2026-10-15 — Word Monsters guards (sound twins, bounded how-to)
+
+Changed: `pickLetters` never offers two letters with the same sound (c and k); the "who says" pool drops q and x; the level 7 how-to step stops at 7; `LEVELS.school.max` follows the plan length ([PR #327](https://github.com/rjdunlap/neo/pull/327)).
+Ran: typecheck; Word Monsters, content and registry unit tests (97 pass, new 200-seed twin test).
+Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8 decoys, the stale sun rule, the pinned sticker test.
+
+## 2026-10-14 — Machines and tools subject research
+
+- Docs only, base `6f4b57a`, research `2949bb7`, integrated `2eccd72`, plus docs diff on `codex/machines-tools-subject`: [study](../deep-dives/subjects/machines-tools.md), tracker, [roadmap definitions](../ROADMAP.md#machines-and-tools-recommendations), notebook, pulley clarification in PHYSICS-GAMES and review/device notes. Gear Garden first, Lift It and Puppet Workshop next; Mobile Maker stays in Seesaw Balance.
+- Opened Head Start/NGSS/year 5 Forces, OpenStax, NWT gear section, six digital descriptions and Exploratorium automata PDF. No reference gameplay or intervention evidence; thin/failed pages are named. Exact-rule/geometry examples are proposals, not tested boards.
+- Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); rotated the oldest dated entry with relative links repaired. No code changed; no server started.
+- Not run: typecheck, unit tests, build, browser/offline/hardware/speech/family checks. Practical instructions need a named reviewer; identity/ranges/land fit, mechanism review and older appeal remain future work. Publication initially required explicit approval; the developer authorized publication and merge on 2026-10-14.
+
+## 2026-10-14 — Commercial social-play roadmap follow-up
+
+- Docs only, base `38731a0`, integrated `924e3f8`, plus follow-up diff, [PR #325](https://github.com/rjdunlap/neo/pull/325): [seven additional references](../deep-dives/subjects/social-emotional.md#commercial-and-tabletop-follow-up-requested-2026-10-14), concrete [roadmap definitions](../ROADMAP.md#social-emotional-play-recommendations), existing notebook rows and subject tracker. A Place for You extends Common Ground; Dream Cards develops its existing seed; story/prop/role additions stay in their existing candidates.
+- Publisher/rules sources plus Common Sense Media, Games for Change, Apple and Spiel des Jahres context. Nintendo DLC mechanics are search-excerpt-only; complete Dixit scoring and reference gameplay unverified. Popularity/recognition and learning effectiveness remain separate; no games, new bands or practical advice built.
+- Ran: local Markdown links/anchors and `git diff --check` (docs-only tier). Rotated oldest dated entries with relative links repaired; fixed the baseline garden-verification archive link in this clean checkout, preserving the original checkout's pending correction.
+- Not run: typecheck, units, build, browser/offline/device/child checks. Proposed identity/ranges/placement, original content review, shared-device privacy, solo/co-play usability and real-world transfer remain future checks. No dev servers started.
