@@ -993,6 +993,7 @@ export const SCRIPT = {
   'shop.one.less': ['One shell too many. Can you make one less with your coins?'],
   'shop.big': ['One of those coins is worth more than the whole amount. Try smaller coins.'],
   'shop.full': ['The counter is full. Put some coins back and try a bigger coin.'],
+  'shop.name': ['That is a {word}. It is worth {word}.'],
   'shop.hint': ['Here is one way to make it.'],
   'shop.thanks': ['Thank you!', 'Here you go! Enjoy!', 'Thanks for shopping!'],
   'shop.done': ['The stall is all sold out. Thank you!'],

@@ -114,3 +114,15 @@ export const hintCharge = (wrongs: number, shown: boolean, charged: boolean): nu
 
 /** Original six-fruit sticker draw; adding stall goods must never reinterpret saved seeds. */
 export const stickerGood = (rng: Rng) => rng.int(0, 5);
+
+const COIN_WORDS: Record<number, string> = { 2: 'two', 5: 'five' };
+
+/**
+ * The word to name a coin the first time it is tapped, or null. Only a coin that is new at levels 2 and 3 (the 2, then the 5)
+ * is named, and only once per game start (`named` holds the values already named). Not a miss, not a hint.
+ */
+export function coinToName(level: number, value: number, named: ReadonlySet<number>): string | null {
+  if (level < 2 || level > 3 || named.has(value)) return null;
+  const before = planFor(level - 1).coins;
+  return !before.includes(value) && planFor(level).coins.includes(value) ? (COIN_WORDS[value] ?? null) : null;
+}
