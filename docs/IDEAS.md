@@ -1319,7 +1319,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Roundup (L–K · 6) | More animal kinds | **7, Two things at once:** big pigs in one pen, little pigs in the other. **8, Make the pens fair:** share 6 or 8 animals equally between two pens | — |
 | Egg Catch (L–S · 6) | More chute boards per level | R2: 7 *set it once* | — |
 | Animal Snack (L–P · 5) | Food eaten its own way, scenes, two ways to ask, and sheep, horse, hen and mouse (shared with Peekaboo Barn); see its [deep dive](deep-dives/animal-snack.md), which supersedes this row | **6, Who says moo?**, **7, Their own snacks**, **8, Who eats it too?**, then a school window with **9–10, the menu board** (a decision). Replaces the earlier *Snacks for two* and *Who is still hungry?*, which Monster Munch, Garden Grow and Duck Pond already hold | Open wide, taste test and what does the cow eat? (lap and toddler); all wait on level order |
-| Critter Sort (K–S · 5) | More critter features | **6, Where does the new one go?:** the hoops are already sorted and one more critter arrives, so she places it from the rule | Preschool, at level 1 (one hoop) |
+| Critter Sort (K–S · 5) | More critter features | See the [deep dive](deep-dives/critter-sort.md), which places this as level 7 (6 is a preschool easy entry). **6, Where does the new one go?:** the hoops are already sorted and one more critter arrives, so she places it from the rule | Preschool, at level 1 (one hoop) |
 
 **Numbers**
 
