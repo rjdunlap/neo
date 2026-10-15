@@ -1,5 +1,13 @@
 # Verification 2026-10-15 (archived entries)
 
+## 2026-10-15 — Day by Day count another weather
+
+- [PR #361](https://github.com/rjdunlap/neo/pull/361), `codex/day-by-day-other-weather`, dispatch `day-by-day-other-weather-20261015T104630Z`. Stable 5 records a week, asks two varied relative-day questions, then counts a seeded sunny/cloudy/rainy category with authored totals 0–7. School order [2, 4, 10, 3, 5]; free marks/replays, matching-record/answer glow after two misses. Sunny-only 3 and its RNG stream preserved.
+- Tested claim `4a5b94b` plus scoped source/browser diff: typecheck, 55 targeted Day by Day/registry/how-to/difficulty tests and shared-content build passed. Coverage: zero/nonzero totals, seeded categories, unique answers, sunny-only 3, ordering and birthday/pin landing.
+- Passed `BROWSER_SUITE=week WEEK_LEVELS=5 GAME_URL=http://localhost:5176 npm run test:browser` at 10:53:19 UTC: real naming/placing/weather/tally taps, retries, 5 misses/2 hints, reversible free marks, saved sticker and interrupted speech exit; no page errors. Reviewed `test-results/browser/day-by-day-5-tally-portrait.png`: seven sunny records/total 7, hint outlines, full-size choices, text and pet clear.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=day-by-day FINGER_LEVELS=5 GAME_URL=http://localhost:5176 npm run test:browser` at 10:54:17 UTC: school 5 finished cleanly in 45.1 s; seed 7 requests rainy with zero matches. Initial Chromium sandbox startup blocked; isolated outside-sandbox runs passed. Owned Vite stopped; links/diff/browser syntax passed.
+- Not run: unchanged level-3 browser play (rule assertions cover it), broad/world/offline suites, actual iPad speech/touch/controller or child play. No persistence/navigation changes; device fit and understanding remain open.
+
 ## 2026-10-15 — Day by Day level 4 A day beside any day
 
 - [PR #350](https://github.com/rjdunlap/neo/pull/350), branch `claude/day-by-day-neighbor-l4`: level 4 (`ANCHOR_LEVEL`, `relativeQuestions`): two seeded different anchors, one tomorrow and one yesterday in shuffled order, no tally; pre-K order [1, 2, 4] range 1–4, school order [2, 4, 3] range 2–4; voice `week.tomorrowany`, `yesterdayany`, `tomorrowhint`, `yesterdayhint`; level-scoped how-to lines. Levels 1–3 unchanged.
