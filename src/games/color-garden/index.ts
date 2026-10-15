@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import { prop, FRUIT_FOR, type PropKind } from '../../art/props';
+import { prop, FRUIT_FOR } from '../../art/props';
 import { RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { puffs } from '../../art/shapes';
@@ -117,13 +117,13 @@ class ColorGarden implements Game {
     this.backdrop = ctx.track(
       new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.62, clouds: 2, sun: true, seed: 44 }, ctx.view),
     );
-    const { colors, items } = deal(ctx.rng, this.plan);
+    const { colors, items, kinds } = deal(ctx.rng, this.plan);
     this.baskets = colors.map((c) => ctx.track(new Basket(c, basketWidth(this.plan))));
     ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, this.layer);
 
     this.items = items.map((color, i) => {
       const shade = shadeLook(color);
-      const kind: PropKind = this.plan.fruit ? FRUIT_FOR[color as ColorName]! : i % 2 ? 'balloon' : 'flower';
+      const kind = kinds[i];
       const view = prop(kind, shade ? shade.base : (color as ColorName));
       if (shade) view.tint = shade.tint;
       view.scale.set(ITEM_SCALE);
@@ -316,7 +316,7 @@ export const colorGarden: GameModule = {
     const p = planFor(level);
     if (p.colors === 1) return 'One basket: practice dragging';
     if (p.shades) return `Sort ${p.items} balloons and flowers into light blue and dark blue`;
-    return `Sort ${p.items} ${p.fruit ? 'fruits' : 'balloons and flowers'} into ${p.colors} colors`;
+    return `Sort ${p.items} ${p.fruit ? 'fruits' : p.mixed ? 'fruits, balloons and flowers' : 'balloons and flowers'} into ${p.colors} colors`;
   },
   music: STYLES.paint,
   touchDemo: true,

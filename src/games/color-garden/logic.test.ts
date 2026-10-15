@@ -31,6 +31,22 @@ describe('Color Garden', () => {
     }
   });
 
+  it('level 6 mixes fruit, balloons and flowers in every round, each with a rainbow color of its own', () => {
+    const plan = PLANS[5];
+    for (let seed = 1; seed <= 100; seed++) {
+      const { items, kinds } = deal(new Rng(seed), plan);
+      expect(kinds).toHaveLength(plan.items);
+      expect(kinds).toContain('balloon');
+      expect(kinds).toContain('flower');
+      expect(kinds.some((k) => k !== 'balloon' && k !== 'flower')).toBe(true);
+      kinds.forEach((k, i) => {
+        if (k !== 'balloon' && k !== 'flower') expect(k).toBe(FRUIT_FOR[items[i] as keyof typeof FRUIT_FOR]);
+      });
+    }
+    // Earlier levels keep their kinds: fruit up to 5, balloons and flowers at 7.
+    expect(new Set(deal(new Rng(3), PLANS[4]).kinds.filter((k) => k === 'balloon' || k === 'flower')).size).toBe(0);
+  });
+
   it('drops into the basket under the finger, even where six baskets crowd together', () => {
     for (const plan of PLANS) {
       for (const viewW of [1024, 1366]) {
