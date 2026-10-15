@@ -430,7 +430,7 @@ class BumperGarden implements Game {
     const p = this.ctx.stage.toLocal(this.board.toGlobal({ x: f.x, y: f.y }));
     this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [swatch[f.color].fill, 0xffffff], count: 10, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
     const mode = this.plan.mode;
-    if (mode === 'color') void this.ctx.say('count', { n: this.flowers.filter((o) => o.bloomed).length });
+    if (mode === 'color' || mode === 'bloom') void this.ctx.say('count', { n: this.flowers.filter((o) => o.bloomed).length });
     if (mode === 'order') {
       void this.ctx.say('count', { n: this.next });
       this.next++;

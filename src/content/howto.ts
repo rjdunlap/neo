@@ -853,12 +853,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'bumper-garden': {
     goal: 'Bump the ladybug into flowers so they bloom.',
     steps: [
-      'Tap to send the ladybug up.',
+      { to: 1, text: 'Tap to send the ladybug up.' },
       { from: 2, text: 'Tap the left or right side of the screen to flip the ladybug back up.' },
       { from: 3, to: 3, text: 'Bump the flowers of the color asked for.' },
       { from: 4, text: 'Bump the numbered flowers in order.' },
     ],
-    finish: 'The round ends when the asked-for flowers have bloomed.',
+    finish: [
+      { from: 1, to: 1, text: 'The round ends after six launches.' },
+      { from: 2, to: 2, text: 'The round ends when every flower has bloomed.' },
+      { from: 3, to: 3, text: 'The round ends when all the flowers of that color have bloomed.' },
+      { from: 4, text: 'The round ends when the last numbered flower has bloomed.' },
+    ],
   },
   'quick-tricks': {
     goal: 'Do a short show of tiny tricks.',
