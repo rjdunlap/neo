@@ -1268,6 +1268,7 @@ export const SCRIPT = {
   'bug.mirror': ['Make matching wings! Put each shape across from its friend, like a mirror.'],
   'bug.wrong': ['Look closely at the shape, its color, and its place. Try another one!'],
   'bug.hint': ['Try the {color} {shape} in the glowing spot.'],
+  'bug.hintMirror': ['Look across the line at its friend.'],
   'bug.done': ['Hello, beautiful bug!'],
   'story.start': ['{story}! Drag the picture that comes next into the glowing space. The music button tells the pictures we have placed.'],
   'story.wrong': ['What happened before this picture? Let us try another one.'],

@@ -23,10 +23,10 @@ describe('Size Parade', () => {
 describe('Bug Builder', () => {
   it('generates solvable models and true horizontal reflections, including both columns', () => {
     for (const plan of BUG_PLANS) for (let seed = 1; seed <= 40; seed++) {
-      const { model, targets } = bugPuzzle(plan, new Rng(seed));
+      const { model, targets, tokens } = bugPuzzle(plan, new Rng(seed));
       expect(new Set(targets.map((s) => s.token)).size).toBeGreaterThan(1);
       for (const t of targets) {
-        expect(t.token).toBeLessThan(plan.colors);
+        expect(tokens).toContain(t.token);
         expect(BUG_TOKENS[t.token]).toBeDefined();
         const sourceX = plan.mode === 'mirror' ? -t.x : t.x;
         expect(model.find((s) => s.x === sourceX && s.y === t.y)?.token).toBe(t.token);
