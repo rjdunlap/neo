@@ -268,3 +268,8 @@ Reconciled completed [fraction-art #377](https://github.com/rjdunlap/neo/pull/37
 ### 2026-10-15 — Clock Tower explanation dispatch
 
 Reconciled completed [appointments #381](https://github.com/rjdunlap/neo/pull/381), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [slice 3's remaining explanations](deep-dives/clock-tower.md#build-slices-in-order) to worker `01a14077-2c25-7402-a0cf-36796d3cf1d7`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-15 — Duckling Parade research dispatch
+
+Reconciled completed [Clock Tower explanations #383](https://github.com/rjdunlap/neo/pull/383), confirmed merge and released its slot. Independent Tangram work completed in #384. Fresh allowance and clean overlap admitted only [Duckling Parade research](deep-dives/README.md#one-session-one-game) to worker `01a140b3-2f8f-75c2-9995-b365abd3a91a`. Queue records scope, usage/reset identities, aggregate estimate adjustment and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
