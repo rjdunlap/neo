@@ -13,6 +13,8 @@ export interface SortPlan {
   critters: number;
   rounds: number;
   name: string;
+  /** Critters already sitting in the hoop when the round starts (a worked example). */
+  placed?: number;
 }
 
 export const PLANS: SortPlan[] = [
@@ -21,6 +23,7 @@ export const PLANS: SortPlan[] = [
   { mode: 'venn', critters: 6, rounds: 2, name: 'Overlapping hoops: the middle is for critters that fit both rules' },
   { mode: 'guess', critters: 6, rounds: 3, name: 'Already sorted: what is the rule? Pick the right picture' },
   { mode: 'not', critters: 6, rounds: 3, name: 'A not hoop: put in every critter that does not fit the picture rule' },
+  { mode: 'one', critters: 3, rounds: 2, placed: 1, name: 'Just a few: three critters, one already in the hoop; which of the other two fits?' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -107,6 +110,8 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     const places = new Set(critters.map((c) => placeOf(c, rules)));
     const needed: Place[] = plan.mode === 'two' ? ['left', 'right', 'out'] : plan.mode === 'venn' ? ['left', 'right', 'both', 'out'] : ['left', 'out'];
     if (!needed.every((p) => places.has(p))) continue;
+    // A worked example leaves two to sort, one of which fits: two critters fit the rule, one does not.
+    if (plan.placed && critters.filter((c) => placeOf(c, rules) === 'left').length !== plan.critters - 1) continue;
     if (plan.mode === 'guess') {
       // Two other rules that would sort these critters differently, so only one rule fits.
       const others = rng.shuffle((['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter((r) => r !== rules[0] && critters.some((c) => fits(c, r) !== fits(c, rules[0]))));
@@ -115,6 +120,15 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     }
     return { rules, critters };
   }
+}
+
+/** The critter that starts inside the hoop in a worked-example round: the first one that fits. */
+export const exampleIndex = (round: SortRound): number => round.critters.findIndex((c) => placeOf(c, round.rules) === 'left');
+
+/** The critter the hint points at: the one she just missed, else the first still to place. */
+export function hintFor<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], missed: S, rules: readonly Rule[], not = false): S | null {
+  if (placeOf(missed.c, [...rules], not) !== 'out') return missed;
+  return sorters.find((x) => !x.placed && placeOf(x.c, [...rules], not) !== 'out') ?? null;
 }
 
 /** How big a hoop is. */

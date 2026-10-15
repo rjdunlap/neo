@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { fits, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
+import { exampleIndex, fits, hintFor, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
 
 describe('Critter Sort', () => {
   it('separate hoops never overlap, and overlapping hoops really do', () => {
@@ -89,6 +89,21 @@ describe('Critter Sort', () => {
       const round = makeRound(plan, new Rng(seed));
       expect(round.options).toContain(ruleToTap(round));
       expect(round.critters.every((c) => fits(c, ruleToTap(round)) === (placeOf(c, round.rules) === 'left'))).toBe(true);
+    }
+  });
+
+  it('the worked-example level leaves two to sort, one fits, and the hint points at the critter she missed', () => {
+    const plan = PLANS[5];
+    for (let seed = 1; seed <= 200; seed++) {
+      const r = makeRound(plan, new Rng(seed));
+      const inHoop = r.critters.filter((c) => placeOf(c, r.rules) === 'left');
+      expect(inHoop).toHaveLength(2);
+      expect(exampleIndex(r)).toBeGreaterThanOrEqual(0);
+      const sorters = r.critters.map((c, i) => ({ c, placed: i === exampleIndex(r) ? ('left' as Place) : null }));
+      const miss = sorters.find((s) => !s.placed && placeOf(s.c, r.rules) === 'left')!;
+      expect(hintFor(sorters, miss, r.rules)).toBe(miss);
+      const stay = sorters.find((s) => placeOf(s.c, r.rules) === 'out')!;
+      expect(hintFor(sorters, stay, r.rules)).toBe(miss);
     }
   });
 });

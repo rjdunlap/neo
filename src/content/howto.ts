@@ -1208,6 +1208,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'critter-sort': {
     goal: 'Sort critters by the rule on the hoop.',
     steps: [
+      { from: 6, to: 6, text: 'One critter is already in the hoop. Drag the other critter that fits the sign into it.' },
       { to: 3, text: 'Drag a critter into the hoop where it fits.' },
       { from: 3, to: 3, text: 'In the overlapping hoops, the middle is for critters that fit both rules.' },
       { from: 4, to: 4, text: 'Look at the sorted pictures, work out the rule, then tap the picture that shows it.' },

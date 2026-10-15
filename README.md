@@ -120,7 +120,7 @@ There are ninety-four games; the child games are listed below and the grown-up g
 | Animal Snack | lap–preschool | tap an animal and it munches its favorite snack | snacks float to their eaters, "who eats the carrot?" or "who says moo?", drag each snack to its animal, give 2 to 4 with a numeral and countable dots |
 | Stop and Go | lap–preschool | tap the traffic light: red stops the car, green makes it go | send a car only on green, red light, green light with the pet, a two-road crossing that takes turns |
 | Ramp Race | pre-K–school | tap the ramp to make it taller and roll a toy car | stop on a star, choose height and floor (carpet, wood, ice), fair tests comparing two lanes |
-| Critter Sort | pre-K–school | drag critters into a hoop: "wearing a hat" | two hoops, overlapping hoops where the middle is both, guess the rule, a hoop for "not" |
+| Critter Sort | pre-K–school | drag critters into a hoop: "wearing a hat" | a few-critter entry with one already sorted, two hoops, overlapping hoops where the middle is both, guess the rule, a hoop for "not" |
 | Treasure Map | pre-K–school | dig where the apple row meets the red column | grid names like B3, putting things at named squares, following directions ("2 left, then 3 up"), then combining two landmark clues |
 | Opposites | lap–pre-K | tap a picture: it flips to its opposite (big, small; open, closed) | twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; find the one named, find the opposite among three, match opposite pairs |
 | Shape Buddies | pre-K–school | reshape two paper friends, test a seed journey and plant it | flat or sloped bridge plus scoop catcher; undo, replay and free experiments |

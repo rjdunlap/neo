@@ -12,10 +12,10 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, HOOP_R, hoopCenters, makeRound, nextToSort, placeAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
+import { exampleIndex, fits, HOOP_R, hintFor, hoopCenters, makeRound, nextToSort, placeAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 3 },
+  prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
   school: { min: 2, max: 5 },
 };
 
@@ -190,6 +190,12 @@ class CritterSort implements Game {
       } else s.drag = draggable(node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.drop(s, x, y) });
       this.sorters.push(s);
     }
+    if (this.plan.placed) {
+      // A worked example: one critter that fits is already in the hoop.
+      const done = this.sorters[exampleIndex(this.round)];
+      done.placed = 'left';
+      if (done.drag) done.drag.enabled = false;
+    }
     if (this.plan.mode === 'guess') {
       for (const rule of this.round.options!) {
         const node = new Container();
@@ -248,7 +254,7 @@ class CritterSort implements Game {
     void this.explain(s, at);
     if (this.wrongs >= 2 && !this.hinting) {
       this.hints++;
-      this.hinting = this.sorters.find((x) => !x.placed && placeOf(x.c, this.round.rules, this.plan.mode === 'not') !== 'out') ?? null;
+      this.hinting = hintFor(this.sorters, s, this.round.rules, this.plan.mode === 'not');
     }
     return false;
   }
@@ -340,6 +346,7 @@ export const critterSort: GameModule = {
   skills: ['sorting', 'logic', 'attributes', 'data'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [6],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
