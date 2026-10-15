@@ -156,3 +156,16 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 - Opened CSTA 2026 and historical 2017 PDFs, the second-grade CAL-ScratchJr trial, official ScratchJr guidance/lesson, six first-party digital precedents and Kidbots. No reference game played; access limits, toddler-readiness, transfer and older-appeal gaps are explicit.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with links repaired. No code, game or practical card built.
 - Not run: typecheck, units, build, browser/offline, hardware, speech or child/parent play. Identity/ranges/placement, creation-versus-Check accounting and practical-card review remain open.
+
+## 2026-10-15 — Frog Hop level 8 Back over ten
+
+- [PR #346](https://github.com/rjdunlap/neo/pull/346), branch `claude/frog-hop-back-over-ten`: new mode `back-ten` (school band now 3–8; starts 11–16, take away 4–8): a card for the hops back to 10, the pet says the split, then tap the pad where the rest land. Mirror of level 7; same miss and hint rules. Voice lines, a how-to line from level 8, bot and rule tests.
+- Passed `npm run typecheck`, `npm test` (1297 passed), `BROWSER_SUITE=woods WOODS_ONLY=hop HOP_LEVELS=8` (wrong answers, hint glow, score [4,1]) and `FINGER_ONLY=frog-hop FINGER_LEVELS=8` (clean in 39.0 s).
+- Not run: a portrait screenshot, `npm run build`, couch play (the couch reaches 7–10 in a later slice), iPad, a child.
+
+## 2026-10-15 — Tangram Town bridge (level 6)
+
+- [PR #354](https://github.com/rjdunlap/neo/pull/354): added one picture, `bridge` (a rectangle deck on two upside-down hulls at x=±110), to level 6's silhouette pool only (`src/games/tangram-town/logic.ts`). Pictures are now twenty-one by the count of `PICTURES` keys.
+- Ran: `npm run typecheck` clean; vitest on `src/games/tangram-town` and `src/content`, 92 passed; one SVG render of the picture.
+- Not run: browser play, `creative` filter, `fingerdemo`, a device. Open: how the bridge reads on screen at play size.
+

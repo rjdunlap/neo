@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { ANCHOR_LEVEL, choicesFor, COUNT_LEVEL, DAYS, makeCountWeek, makeWeek, planFor, neighbor, relativeQuestions, sunnyCount, toggleMark, weekLayout } from './logic';
+import { ANCHOR_LEVEL, choicesFor, COUNT_LEVEL, DAYS, makeCountWeek, makeWeek, makeWeatherWeek, tallyWeather, weatherCount, WEATHER_COUNT_LEVEL, planFor, neighbor, relativeQuestions, sunnyCount, toggleMark, weekLayout } from './logic';
 
 describe('Day by Day', () => {
   it('creates a repeatable seven-day record with all weather categories and varied weeks', () => {
@@ -36,6 +36,37 @@ describe('Day by Day', () => {
     expect(planFor(COUNT_LEVEL)).toMatchObject({ relatives: false, tally: true });
     expect(planFor(3)).toMatchObject({ relatives: true, tally: true });
     expect(planFor(4)).toMatchObject({ relatives: true, tally: false });
+  });
+  it('counts seeded weather at 5, including every zero/nonzero total, while 3 stays sunny-only', () => {
+    const categories = new Set<number>();
+    const totals = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const weather = tallyWeather(WEATHER_COUNT_LEVEL, rng);
+      categories.add(weather);
+      const week = makeWeatherWeek(rng, weather);
+      const repeat = new Rng(seed);
+      expect(tallyWeather(5, repeat)).toBe(weather);
+      expect(makeWeatherWeek(repeat, weather)).toEqual(week);
+      expect(week).toHaveLength(7);
+      expect(week.every(w => [0, 1, 2].includes(w))).toBe(true);
+      const total = weatherCount(week, weather);
+      totals.add(total);
+      expect(choicesFor(total, rng, 'number')).toContain(total);
+      const before = [...week];
+      let marks: number[] = [];
+      week.forEach((_, day) => { marks = toggleMark(marks, day, 7); });
+      expect(week).toEqual(before);
+      expect(weatherCount(week, weather)).toBe(total);
+      const oldRng = new Rng(seed);
+      expect(tallyWeather(3, oldRng)).toBe(0);
+      expect(makeWeek(oldRng)).toEqual(makeWeek(new Rng(seed)));
+      expect(sunnyCount(makeWeek(oldRng))).toBeGreaterThan(0);
+    }
+    expect([...categories].sort()).toEqual([0, 1, 2]);
+    expect([...totals].sort()).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(planFor(5)).toMatchObject({ relatives: true, tally: true });
+    expect(planFor(3).name).toContain('sunny');
   });
   it('wraps the week in both directions and undoes a yesterday with tomorrow', () => {
     expect(neighbor(6, 1)).toBe(0);

@@ -56,13 +56,15 @@ describe('game registry', () => {
   it('places Day by Day’s supplied-record bridge before 3, preserving IDs and birthday/pin landing', () => {
     const g = gameById('day-by-day')!;
     const school = g.levels('school'), prek = g.levels('prek');
-    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3]);
+    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5]);
     expect(levelsInOrder(prek)).toEqual([1, 2, 4]);
     expect(g.entryLevels).toEqual([10]);
     expect(stepLevel(4, 1, school)).toBe(10);
     expect(stepLevel(10, 1, school)).toBe(3);
     expect(stepLevel(3, -1, school)).toBe(10);
-    for (const level of [2, 3, 4, 10]) expect(nextLevel(landing(level, school, g.entryLevels), [], school)).toBe(level);
+    expect(stepLevel(3, 1, school)).toBe(5);
+    expect(stepLevel(5, -1, school)).toBe(3);
+    for (const level of [2, 3, 4, 5, 10]) expect(nextLevel(landing(level, school, g.entryLevels), [], school)).toBe(level);
     expect(landing(10, prek, g.entryLevels)).toBe(1);
     expect(landing(4, school, g.entryLevels)).toBe(4); // birthday from pre-K
   });
