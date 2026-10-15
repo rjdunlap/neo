@@ -30,7 +30,7 @@ describe('Opposites', () => {
             seen.add(c);
             expect(CONCEPTS[c].from).toBeLessThanOrEqual(plan.level);
           }
-          if (plan.mode === 'opposite' || plan.mode === 'pairs')
+          if (plan.mode === 'opposite' || plan.mode === 'pairs' || plan.mode === 'spot')
             expect(new Set(concepts.map((c) => CONCEPTS[c].family)).size).toBe(concepts.length);
         }
       }
@@ -66,6 +66,12 @@ describe('Opposites', () => {
             expect(r.cards.filter((c) => opposites(c, r.ask!))).toHaveLength(1);
             expect(r.cards).toHaveLength(3);
           }
+          if (plan.mode === 'spot') {
+            expect(r.cards).toHaveLength(5);
+            const matched = r.cards.filter((c) => r.cards.some((o) => opposites(o, c)));
+            expect(matched).toHaveLength(2);
+            expect(r.cards.filter((c) => !matched.includes(c))).toHaveLength(3);
+          }
           if (plan.mode === 'pairs') {
             expect(r.cards).toHaveLength(6);
             for (const c of r.cards) expect(r.cards.filter((o) => opposites(o, c))).toHaveLength(1);
@@ -87,12 +93,13 @@ describe('Opposites', () => {
             expect(done[i]).toBe(false);
             if (plan.mode === 'find') expect(word(r.cards[i])).toBe(word(r.ask!));
             if (plan.mode === 'opposite') expect(opposites(r.cards[i], r.ask!)).toBe(true);
-            if (plan.mode === 'pairs') {
+            if (plan.mode === 'pairs' || plan.mode === 'spot') {
               if (picked === null) picked = i;
               else {
                 expect(opposites(r.cards[picked], r.cards[i])).toBe(true);
                 done[picked] = done[i] = true;
                 picked = null;
+                if (plan.mode === 'spot') break;
               }
               continue;
             }
@@ -100,8 +107,8 @@ describe('Opposites', () => {
             done.fill(true);
             break;
           }
-          expect(taps).toBe(plan.mode === 'pairs' ? 6 : 1);
-          expect(done.every(Boolean)).toBe(true);
+          expect(taps).toBe(plan.mode === 'pairs' ? 6 : plan.mode === 'spot' ? 2 : 1);
+          if (plan.mode !== 'spot') expect(done.every(Boolean)).toBe(true);
         }
       }
     }

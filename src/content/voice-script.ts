@@ -700,6 +700,7 @@ export const SCRIPT = {
   'opp.word': ['{word}!'],
   'opp.find': ['Which one is {word}? Tap it!'],
   'opp.opposite': ['This one is {word}. Find the opposite!'],
+  'opp.spot': ['Which two are opposites? Tap one, then its opposite.'],
   'opp.pairs': ['Find the opposites! Tap one, then its opposite.'],
   'opp.notfind': ['That one is {what}. Which one is {word}?'],
   'opp.notopp': ['{what} is not the opposite of {word}.'],

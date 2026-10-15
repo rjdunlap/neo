@@ -18,7 +18,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 4 },
+  prek: { min: 3, max: 5 },
 };
 
 /** A picture of one side of a concept, about 140 units square, centered on (0, 0). */
@@ -229,7 +229,11 @@ class Opposites implements Game {
     this.backdrop.resize(v);
     const mode = this.plan.mode;
     if (mode === 'switch') this.cards.forEach((c) => c.node.position.set(v.w / 2, v.h * 0.5));
-    else if (mode === 'pairs') {
+    else if (mode === 'spot') {
+      const top = spread(3, 200, v.w - 80, 230);
+      const low = spread(2, 200, v.w - 80, 230);
+      this.cards.forEach((c, i) => c.node.position.set(i < 3 ? top[i] : low[i - 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
+    } else if (mode === 'pairs') {
       const xs = spread(3, 200, v.w - 80, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
     } else {
@@ -299,7 +303,7 @@ class Opposites implements Game {
     if (mode === 'switch') return this.index === 0 ? this.ctx.instruct('opp.switch') : this.ctx.say('opp.word', { word: word(r.cards[0]) });
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
     if (mode === 'opposite') return this.ctx.instruct('opp.opposite', { word: word(r.ask!) });
-    return this.ctx.instruct('opp.pairs');
+    return this.ctx.instruct(mode === 'spot' ? 'opp.spot' : 'opp.pairs');
   }
 
   private async flip(c: CardView, to: Card) {
@@ -361,7 +365,7 @@ class Opposites implements Game {
       this.drawCard(c, true);
       sfx.sparkle();
       void this.ctx.say('opp.pair', { a: word(a.card), b: word(c.card) });
-      if (this.cards.every((x) => x.done)) {
+      if (mode === 'spot' || this.cards.every((x) => x.done)) {
         this.busy = true;
         await this.ctx.tw.wait(1.2);
         return void this.next();
@@ -380,7 +384,7 @@ class Opposites implements Game {
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       const r = this.round;
-      this.glowing = this.plan.mode === 'find' ? this.cards.find((x) => word(x.card) === word(r.ask!))! : this.plan.mode === 'opposite' ? this.cards.find((x) => opposites(x.card, r.ask!))! : this.cards.find((x) => !x.done)!;
+      this.glowing = this.plan.mode === 'find' ? this.cards.find((x) => word(x.card) === word(r.ask!))! : this.plan.mode === 'opposite' ? this.cards.find((x) => opposites(x.card, r.ask!))! : this.plan.mode === 'spot' ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))! : this.cards.find((x) => !x.done)!;
     }
   }
 

@@ -57,3 +57,10 @@
 - Opened NGSS/Head Start, NAEYC, ACS/Exploratorium, ASA wave guidance, a PhET author commentary and six digital descriptions with indexed/shell/failed-source limits explicit. No reference played, experiment run or learning/appeal/transfer result established.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); rotated the three oldest live entries with links repaired. No code, practical card or server.
 - Not run: typecheck, unit tests, build, browser/offline, hardware/speech or child/parent play. Model review, proposed ranges/placement and independent use remain open; practical electrical/magnet/string cards require named review.
+
+## 2026-10-15 — Day by Day deep dive
+
+- Docs only at `ae77222` plus the documentation diff, integrated with coordinator checkpoint `6f43874`; branch `codex/day-by-day-deep-dive`, [PR #349](https://github.com/rjdunlap/neo/pull/349). [Study](../deep-dives/day-by-day.md) audits levels 1–3, pools, support/accounting and first-slice definition; five reference activities, proposed stable IDs 4–10 and eight bounded build slices. First five slices ready; preschool, months and daylight gated.
+- Primary publisher/educator descriptions and NGSS anchors opened; no reference played. Links to tracker, notebook, roadmap, decisions/device checks and queue updated. No implementation or learning/appeal claims.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`; scoped diff contains documentation only. Rotated two older live entries with moved-anchor links repaired.
+- Not run: typecheck, units, build, browser/offline, iPad speech/touch or child/co-play. These are research proposals; no game mode built and no server started.

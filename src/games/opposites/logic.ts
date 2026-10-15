@@ -3,9 +3,9 @@ import type { Rng } from '../../engine/random';
 /**
  * Opposites: pictures of concept words in pairs (big and small, open and closed). On the lap,
  * tap the picture and it flips to its opposite while the word is spoken. Then find the one named,
- * then find the opposite of a picture among others, then match the opposite pairs.
+ * then find the opposite of a picture among others, then match the opposite pairs, then spot the one pair among five.
  */
-export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs';
+export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot';
 
 export interface OppPlan {
   level: number;
@@ -19,6 +19,7 @@ export const PLANS: OppPlan[] = [
   { level: 2, mode: 'find', rounds: 5, name: 'Find the one named: "find the big one"' },
   { level: 3, mode: 'opposite', rounds: 4, name: 'This one is hot: find its opposite among three' },
   { level: 4, mode: 'pairs', rounds: 2, name: 'Match three pairs of opposites' },
+  { level: 5, mode: 'spot', rounds: 3, name: 'Which two are opposites? One pair hides among five pictures' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -103,6 +104,10 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
       // The opposite, plus two pictures from other concepts.
       const others = differentFamilies(pool, rng, 2, concept).map((c) => card(c, rng.int(0, 1) as 0 | 1));
       out.push({ ask: card(concept, side), cards: rng.shuffle([card(concept, (1 - side) as 0 | 1), ...others]) });
+    } else if (plan.mode === 'spot') {
+      // One opposite pair, plus three single pictures from other families, so no decoy pair or arguable answer exists.
+      const decoys = differentFamilies(pool, rng, 3, concept).map((c) => card(c, rng.int(0, 1) as 0 | 1));
+      out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1), ...decoys]) });
     } else {
       const three = differentFamilies(pool, rng, 3);
       out.push({ cards: rng.shuffle(three.flatMap((c) => [card(c, 0), card(c, 1)])) });
@@ -130,6 +135,10 @@ export function cardToTap(plan: OppPlan, round: OppRound, done: readonly boolean
       return find((c) => word(c) === word(round.ask!));
     case 'opposite':
       return find((c) => opposites(c, round.ask!));
+    case 'spot':
+      return picked === null
+        ? find((c, k) => round.cards.some((o, j) => j !== k && opposites(o, c)))
+        : find((c, k) => k !== picked && opposites(c, round.cards[picked]));
     case 'pairs':
       return picked === null ? find(() => true) : find((c, k) => k !== picked && opposites(c, round.cards[picked]));
   }
