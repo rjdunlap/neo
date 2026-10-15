@@ -1,5 +1,12 @@
 # Verification 2026-10-15 (archived entries)
 
+## 2026-10-15 — Jelly Drums distinct tunes in a round
+
+- [PR #362](https://github.com/rjdunlap/neo/pull/362), `claude/jelly-drums-distinct-tunes`. Echo levels 4–9 never repeat a tune within a round: `makeTune` takes a `played` list and `index.ts` keeps it. Only this part of deep-dive slice 1 is built; the listen-again target, bounded how-to, `TUNES` table and nudge remain ready.
+- Ran `npm run typecheck` and `npx vitest run src/games/jelly-drums` (9 pass, including the new distinct-tunes rule test).
+- Not run: browser play or `fingerdemo` for Jelly Drums, build, the full unit suite, actual iPad or child play. No coverage-summary row changed (the Jelly Drums row records the level-10 pass).
+
+
 ## 2026-10-15 — Day by Day level 4 A day beside any day
 
 - [PR #350](https://github.com/rjdunlap/neo/pull/350), branch `claude/day-by-day-neighbor-l4`: level 4 (`ANCHOR_LEVEL`, `relativeQuestions`): two seeded different anchors, one tomorrow and one yesterday in shuffled order, no tally; pre-K order [1, 2, 4] range 1–4, school order [2, 4, 3] range 2–4; voice `week.tomorrowany`, `yesterdayany`, `tomorrowhint`, `yesterdayhint`; level-scoped how-to lines. Levels 1–3 unchanged.

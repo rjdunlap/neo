@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { appointmentFor, demoAction, EVENT_WORDS, hourOf, makeTasks, minuteChoices, planFor, PLANS, requestFor, spoken, timeOf, type Appointment, type ClockPlan, type ClockTask } from './logic';
+import { appointmentFor, demoAction, EVENT_WORDS, fiveExample, hourOf, laterExample, makeTasks, minuteChoices, planFor, PLANS, requestFor, spoken, timeOf, type Appointment, type ClockPlan, type ClockTask } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
@@ -66,6 +66,14 @@ class ClockTower implements Game {
   private readonly requestHeading = label('', 22, ink);
   private readonly requestTime = label('', 38, ink);
   private readonly handKey = new Container();
+  private readonly comparison = new Container();
+  private readonly oldClock = new Container();
+  private readonly newClock = new Container();
+  private readonly exampleHand = new Graphics();
+  private readonly oldTime = label('', 22, ink);
+  private readonly newTime = label('', 22, ink);
+  private readonly example = { hour: 0, arc: 0 };
+  private readonly minuteArc = new Graphics();
   readonly bell: RoundButton;
   readonly choices: { id: string; node: Container; replay: Container; card: Container }[] = [];
   private readonly appointmentHeading = label("A friend's pretend plan", 28, ink);
@@ -95,8 +103,9 @@ class ClockTower implements Game {
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.6, clouds: 2, sun: true, seed: 19 }, ctx.view);
     this.drawFace();
     this.ghost.eventMode = 'none';
+    this.minuteArc.eventMode = 'none';
     this.glow.eventMode = 'none';
-    this.face.addChild(this.ghost, this.hourHand, this.minuteHand);
+    this.face.addChild(this.minuteArc, this.ghost, this.hourHand, this.minuteHand);
     this.face.addChild(new Graphics().circle(0, 0, 14).fill(ink));
     this.face.eventMode = 'static';
     this.face.hitArea = new Circle(0, 0, R + 30);
@@ -127,9 +136,20 @@ class ClockTower implements Game {
     this.appointmentHeading.eventMode = 'none';
     this.handKey.visible = this.plan.mode !== 'read';
     this.handKey.eventMode = 'none';
+    // Explanations take no input and leave the existing clock, sign and bell untouched.
+    this.comparison.eventMode = 'none';
+    this.comparison.visible = false;
+    this.comparison.addChild(new Graphics().roundRect(-125, -80, 250, 160, 20).fill(cream).stroke({ width: 3, color: wood.line }));
+    const before = label('Before', 20, ink); before.position.set(-65, -58);
+    const after = label('+1 hour', 20, ink); after.position.set(65, -58);
+    this.oldClock.position.set(-65, -2); this.oldClock.alpha = 0.5;
+    this.newClock.position.set(65, -2);
+    this.newClock.addChild(this.exampleHand);
+    this.oldTime.position.set(-65, 55); this.newTime.position.set(65, 55);
+    this.comparison.addChild(before, after, this.oldClock, this.newClock, this.oldTime, this.newTime);
     this.bell = new RoundButton(this.bellArt(), swatch.white, 60, () => void this.check());
     this.bell.visible = this.plan.mode !== 'read';
-    ctx.stage.addChild(this.backdrop, this.tower, this.face, this.glow, this.bell, this.request, this.handKey, this.appointmentHeading);
+    ctx.stage.addChild(this.backdrop, this.tower, this.face, this.glow, this.bell, this.request, this.handKey, this.appointmentHeading, this.comparison);
   }
 
   private bellArt() {
@@ -151,7 +171,7 @@ class ClockTower implements Game {
       // Counting by fives: small helper numbers just outside the rim.
       for (let m = 5; m <= 60; m += 5) {
         const a = (m / 60) * Math.PI * 2;
-        const n = label(String(m), 24, ink);
+        const n = label(String(m % 60), 24, ink);
         n.alpha = 0.6;
         n.position.set(Math.sin(a) * (R + 40), -Math.cos(a) * (R + 40));
         this.face.addChild(n);
@@ -189,6 +209,7 @@ class ClockTower implements Game {
     this.bell.position.set(cx + R + 150, cy);
     this.request.position.set(cx + R + 185, cy - 170);
     this.handKey.position.set(cx + R + 150, cy + 120);
+    this.comparison.position.set(cx + R + 185, Math.min(cy + 265, v.h - 90));
     this.appointmentHeading.position.set(v.w - 250, cy - 285);
     this.choices.forEach((c, i) => c.card.position.set(v.w - 250, cy - 170 + i * 170));
   }
@@ -196,6 +217,16 @@ class ClockTower implements Game {
   update(dt: number) {
     this.clock += dt;
     this.drawHands();
+    if (this.comparison.visible) {
+      const a = this.example.hour / 60 * Math.PI * 2;
+      this.exampleHand.clear().moveTo(0, 0).lineTo(Math.sin(a) * 22, -Math.cos(a) * 22).stroke({ width: 5, color: swatch.blue.line, cap: 'round' });
+    }
+    const arc = this.minuteArc.clear();
+    if (this.hinted && this.plan.mode === 'five' && this.example.arc > 0) {
+      const end = this.example.arc / 60 * Math.PI * 2;
+      arc.arc(0, 0, R + 13, -Math.PI / 2, end - Math.PI / 2).stroke({ width: 7, color: swatch.yellow.line, cap: 'round' });
+      arc.circle(Math.sin(end) * (R + 13), -Math.cos(end) * (R + 13), 9).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    }
     const g = this.glow.clear();
     if (this.hinted && this.plan.mode === 'read' && !this.busy) {
       const right = this.choices.find((c) => this.isRight(c.id));
@@ -295,6 +326,8 @@ class ClockTower implements Game {
     this.index++;
     this.wrongs = 0;
     this.hinted = false;
+    this.comparison.visible = false;
+    this.example.arc = 0;
     if (this.index >= this.tasks.length) return void this.finale();
     const t = this.task;
     if (this.plan.mode === 'read') {
@@ -315,6 +348,7 @@ class ClockTower implements Game {
     this.requestTime.text = request.time;
     await this.instruction();
     if (this.index === 0 && this.plan.mode !== 'read') await this.ctx.say(this.plan.mode === 'hour' ? 'clock.control.hour' : 'clock.controls');
+    if (this.index === 0 && this.plan.mode === 'five') await this.ctx.say('clock.five.zero');
   }
 
   private instruction() {
@@ -385,19 +419,52 @@ class ClockTower implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    await this.ctx.say(line, vars);
+    if (this.plan.mode === 'later') await this.explainLater(vars.now);
+    else if (!(this.plan.mode === 'five' && this.wrongs === 2)) await this.ctx.say(line, vars);
     if (this.wrongs >= 2 && !this.hinted) {
       this.hinted = true;
       this.hints++;
-      void this.ctx.say(this.plan.mode === 'read' ? 'clock.hint.read' : 'clock.hint');
+      if (this.plan.mode === 'five') {
+        const example = fiveExample(this.task);
+        await Promise.all([
+          this.ctx.tw.to(this.example, { arc: this.task.time % 60 }, { duration: 0.8, ease: ease.linear }),
+          this.ctx.say('clock.five.help', { counts: example.counts, time: example.time }),
+        ]);
+      } else void this.ctx.say(this.plan.mode === 'read' ? 'clock.hint.read' : 'clock.hint');
     }
     this.busy = false;
+  }
+
+  private async explainLater(now?: string) {
+    const e = laterExample(this.task);
+    for (const node of this.oldClock.removeChildren()) node.destroy({ children: true });
+    // Keep the animated hand alive when replacing the small static clock.
+    this.exampleHand.removeFromParent();
+    for (const node of this.newClock.removeChildren()) node.destroy({ children: true });
+    this.oldClock.addChild(miniClock(hourOf(this.task.from!), e.minute, 42));
+    // A separate dial avoids changing the icon/sticker's stable drawing helper.
+    const face = new Graphics().circle(0, 0, 50).fill(wood.line).circle(0, 0, 42).fill(cream);
+    for (let h = 0; h < 12; h++) {
+      const a = h / 12 * Math.PI * 2;
+      face.circle(Math.sin(a) * 34, -Math.cos(a) * 34, 2).fill(ink);
+    }
+    const ma = e.minute / 60 * Math.PI * 2;
+    face.moveTo(0, 0).lineTo(Math.sin(ma) * 34, -Math.cos(ma) * 34).stroke({ width: 3, color: swatch.red.line, cap: 'round' });
+    this.newClock.addChild(face, this.exampleHand, new Graphics().circle(0, 0, 3).fill(ink));
+    this.oldTime.text = e.from; this.newTime.text = e.to;
+    this.example.hour = e.hourStart;
+    this.comparison.visible = true;
+    await Promise.all([
+      this.ctx.tw.to(this.example, { hour: e.hourEnd }, { duration: 0.8, ease: ease.inOutSine }),
+      this.ctx.say(now ? 'clock.later.wrong' : 'clock.later.example', { now: now ?? '', from: e.fromSpeech, time: e.toSpeech }),
+    ]);
   }
 
   private async right(event?: string) {
     this.busy = true;
     this.hinted = false;
     const t = this.task.time;
+    if (this.plan.mode === 'later') await this.explainLater();
     // The tower chimes: one dong per hour on the hour, a little tune otherwise.
     if (t % 60 === 0) {
       for (let i = 0; i < hourOf(t); i++) {
@@ -411,7 +478,7 @@ class ClockTower implements Game {
     this.ctx.particles.burst(this.face.x, this.face.y - R, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 18, speed: [120, 320], gravity: 0, life: [0.5, 0.9] });
     this.ctx.pet.cheer();
     if (event) await this.ctx.say('clock.itis', { time: spoken(t), event: EVENT_WORDS[event] });
-    else await this.ctx.say('clock.yay');
+    else if (this.plan.mode !== 'later') await this.ctx.say('clock.yay');
     await this.ctx.tw.to(this.face.scale, { x: 1.04, y: 1.04 }, { duration: 0.12, ease: ease.outQuad });
     await this.ctx.tw.to(this.face.scale, { x: 1, y: 1 }, { duration: 0.15 });
     await this.next();
