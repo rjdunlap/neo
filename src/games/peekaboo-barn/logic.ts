@@ -11,7 +11,13 @@ export interface PeekPlan {
   spots: number;
   /** Reveals (free) or questions (find, remember). */
   goal: number;
+  /** One door: a single big house, and a touch anywhere opens it. */
+  door?: boolean;
 }
+
+/** The lap entry below level 1; its saved ID follows the original eight (see `order` in the band table). */
+export const ONE_DOOR_LEVEL = 16;
+export const SELF_OPEN_SECONDS = 6;
 
 export const PLANS: PeekPlan[] = [
   { mode: 'free', spots: 3, goal: 8 },
@@ -24,7 +30,9 @@ export const PLANS: PeekPlan[] = [
   { mode: 'remember', spots: 4, goal: 6 },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
+
+export const planFor = (level: number) => (level === ONE_DOOR_LEVEL ? ONE_DOOR : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
 
 /** A different animal behind each hiding place. */
 export const deal = (rng: Rng, spots: number): Animal[] => rng.shuffle([...ANIMALS]).slice(0, spots);
@@ -73,8 +81,12 @@ export function nearestSpot(x: number, y: number, spots: readonly { x: number; y
 }
 
 /** A nudge invites a touch, never awards a reveal or interrupts an animal already showing. */
-export const shouldNudge = (mode: PeekPlan['mode'], idle: number, poses: readonly string[], busy: boolean) =>
-  mode === 'free' && idle >= 6 && !busy && poses.every((pose) => pose === 'hidden');
+export const shouldNudge = (plan: PeekPlan, idle: number, poses: readonly string[], busy: boolean) =>
+  plan.mode === 'free' && !plan.door && idle >= SELF_OPEN_SECONDS && !busy && poses.every((pose) => pose === 'hidden');
+
+/** One door opens by itself when she has not touched for a while; that reveal never counts toward the round. */
+export const shouldSelfOpen = (plan: PeekPlan, idle: number, poses: readonly string[], busy: boolean) =>
+  !!plan.door && idle >= SELF_OPEN_SECONDS && !busy && poses.every((pose) => pose === 'hidden');
 
 export const SCENES = {
   barnyard: ['hay', 'bush', 'door', 'crate'],

@@ -3647,8 +3647,8 @@ async function originals() {
   }
 
   // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
-  const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8];
-  for (const level of peekLevels.filter((n) => n >= 1 && n <= 8 && (!only || only === 'peekaboo'))) {
+  const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 16];
+  for (const level of peekLevels.filter((n) => (n >= 1 && n <= 8 || n === 16) && (!only || only === 'peekaboo'))) {
     await launch('peekaboo-barn', level);
     if (level === 1) await page.evaluate(async () => {
       const g = neo.scene.game;
@@ -3659,6 +3659,20 @@ async function originals() {
       kit.tapOn(s, 0, -110);
       await kit.sleep(450);
       if (s.pose !== 'out' || s.opening.amount < 0.99) throw new Error('cover did not open with the touch');
+    });
+    if (level === 16) await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.until(() => !g.busy, 10000);
+      if (g.spots.length !== 1) throw new Error('One door has more than one house');
+      // Quiet for six seconds: it opens by itself, and that does not count.
+      await kit.until(() => g.spots[0].pose !== 'hidden', 9000);
+      if (g.done) throw new Error('self-opening counted toward the round');
+      await kit.until(() => g.spots[0].pose === 'hidden', 6000);
+      // Touch far from the house: it still opens, and that does count.
+      const far = g.ctx.stage.toGlobal({ x: g.view.w - 60, y: 80 });
+      kit.tap(far.x, far.y);
+      await kit.sleep(450);
+      if (g.spots[0].pose !== 'out' || g.done !== 1) throw new Error('a touch anywhere did not open the door');
     });
     if (level === 5) {
       await portrait(true);
@@ -3920,7 +3934,7 @@ async function originals() {
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 8, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
+  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 9, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 7 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }
