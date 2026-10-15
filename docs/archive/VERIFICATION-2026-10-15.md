@@ -1,5 +1,12 @@
 # Verification 2026-10-15 (archived entries)
 
+## 2026-10-15 — Day by Day level 4 A day beside any day
+
+- [PR #350](https://github.com/rjdunlap/neo/pull/350), branch `claude/day-by-day-neighbor-l4`: level 4 (`ANCHOR_LEVEL`, `relativeQuestions`): two seeded different anchors, one tomorrow and one yesterday in shuffled order, no tally; pre-K order [1, 2, 4] range 1–4, school order [2, 4, 3] range 2–4; voice `week.tomorrowany`, `yesterdayany`, `tomorrowhint`, `yesterdayhint`; level-scoped how-to lines. Levels 1–3 unchanged.
+- Passed `npx tsc --noEmit`; vitest day-by-day, content and registry (new rule test: opposite directions, distinct anchors, all seven anchors reachable both ways, levels 2–3 unchanged); `BROWSER_SUITE=week WEEK_LEVELS=4` on localhost:5437 (real taps, retries, hint, seven records, sticker).
+- `fingerdemo` (`FINGER_ONLY=day-by-day FINGER_LEVELS=4`): passed (prek, 44.3 s).
+- Not run: build, portrait screenshot, device speech. Known gap: a hint glows only the answer card, not the adjacent pair the study proposed.
+
 ## 2026-10-15 — Peekaboo Barn level 16 One door
 
 - [PR #331](https://github.com/rjdunlap/neo/pull/331), branch `claude/peekaboo-one-door`: lap entry placed first (lap `order` [16, 1, 2], `entryLevels` [16]); one big house, a touch anywhere opens it (a new animal each time, never repeating), it opens by itself after 6 s untouched and that self-opening does not count; six touched reveals, no misses or hints. `howto.test.ts` now iterates `levelsInOrder`.

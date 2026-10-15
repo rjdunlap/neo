@@ -81,7 +81,16 @@ export const RAIN_AWAY: Phrase = { syllables: ['Rain', 'rain', 'go', 'a', 'way']
 export const COME_AGAIN: Phrase = { syllables: ['come', 'a', 'gain', 'an', 'oth', 'er', 'day'], steps: [3, 3, 2, 3, 3, 3, 2] };
 export const WE_WANT_TO_PLAY: Phrase = { syllables: ['we', 'want', 'to', 'play'], steps: [3, 3, 3, 2] };
 
-export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain';
+/**
+ * "The Itsy Bitsy Spider" is a traditional nursery song. Its first line is sol do do do re mi mi, mi re do re mi do:
+ * G C C C D E E, E D C D E C in C, all inside the pentatonic set. Written from the tune's standard form, not a printed
+ * score: a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable; the second line
+ * ("Down came the rain") is left out until its notes are checked.
+ */
+export const ITSY_BITSY: Phrase = { syllables: ['The', 'it', 'sy', 'bit', 'sy', 'spi', 'der'], steps: [3, 0, 0, 0, 1, 2, 2] };
+export const WATER_SPOUT: Phrase = { syllables: ['climbed', 'up', 'the', 'wa', 'ter', 'spout'], steps: [2, 1, 0, 1, 2, 0] };
+
+export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy';
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -143,7 +152,15 @@ export const RAIN: Tune = {
   answers: WE_WANT_TO_PLAY,
   namesAnimal: false,
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN];
+/** "The itsy bitsy spider climbed up the water spout" opens it; each friend's verse is "climbed up the water spout", answering on "spout". */
+export const ITSY: Tune = {
+  id: 'itsy',
+  opening: [ITSY_BITSY, WATER_SPOUT],
+  verse: [WATER_SPOUT],
+  answers: WATER_SPOUT,
+  namesAnimal: false,
+};
+export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY];
 
 export interface Note {
   step: number;
@@ -216,7 +233,7 @@ export const PLANS: readonly SingPlan[] = [
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
