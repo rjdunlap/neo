@@ -3,7 +3,7 @@ import { FRUIT_FOR } from '../../art/props';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, PLANS } from './logic';
+import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, planFor, PLANS } from './logic';
 
 describe('Color Garden', () => {
   it('gives every basket something to catch, and only things that belong in a basket', () => {
@@ -114,5 +114,25 @@ describe('Color Garden level 8, Color or kind', () => {
   });
   it('is not mixed up with earlier levels', () => {
     expect(deal(new Rng(1), PLANS[6]).rule).toBeUndefined();
+  });
+});
+
+
+describe('Color Garden tap entry (stable level 9)', () => {
+  it('has four fruits, two distinct colors, and exactly one own basket per tap', () => {
+    const plan = planFor(9);
+    expect(plan).toMatchObject({ tap: true, items: 4, colors: 2, fruit: true });
+    for (let seed = 1; seed <= 100; seed++) {
+      const round = deal(new Rng(seed), plan);
+      const waiting = round.items.map(key => ({ key }));
+      const baskets = round.colors.map(key => ({ key }));
+      expect(new Set(round.colors).size).toBe(2);
+      expect(waiting).toHaveLength(4);
+      for (const item of waiting) {
+        expect(baskets.filter(b => b.key === item.key)).toHaveLength(1);
+        expect(nextToSort([item], baskets)?.basket.key).toBe(item.key);
+      }
+    }
+    for (let level = 1; level <= 8; level++) expect(planFor(level).tap).toBeUndefined();
   });
 });

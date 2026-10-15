@@ -6,6 +6,7 @@ import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
@@ -27,8 +28,8 @@ const clothOf = (key: SortKey) => (kindOf(key) ? KIND_CLOTH : shadeLook(key)?.cl
 const shadeOf = (key: SortKey) => (key === 'light-blue' ? 'light' : 'dark');
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 5 },
+  lap: { min: 9, max: 9, order: [9] },
+  toddler: { min: 1, max: 9, order: [9, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 8 },
   prek: { min: 4, max: 8 },
 };
@@ -39,7 +40,8 @@ const BASKET = { fill: 0xd9a066, line: 0x9c6b3c, weave: 0xb9844f };
 interface Item {
   view: Container;
   key: SortKey;
-  drag: DragHandle;
+  drag?: DragHandle;
+  home: { x: number; y: number };
   wrongs: number;
 }
 
@@ -143,8 +145,16 @@ class ColorGarden implements Game {
       const view = prop(kind, shade ? shade.base : (looks?.[i] ?? (color as ColorName)));
       if (shade) view.tint = shade.tint;
       view.scale.set(ITEM_SCALE);
-      const item: Item = { view, key: color, wrongs: 0, drag: null! };
-      item.drag = draggable(view, ctx.tw, {
+      const item: Item = { view, key: color, wrongs: 0, home: { x: 0, y: 0 } };
+      if (this.plan.tap) {
+        onTap(view, () => {
+          const basket = nextToSort([item], this.baskets)?.basket;
+          if (!basket || !this.items.includes(item) || this.finished) return;
+          sfx.tick();
+          void ctx.say(`color.${color as ColorName}`);
+          void this.place(item, basket);
+        }, { radius: 60 / ITEM_SCALE });
+      } else item.drag = draggable(view, ctx.tw, {
         onPick: () => {
           sfx.tick();
           void ctx.say(color === 'kind-fruit' ? 'garden.is.fruit' : color === 'kind-balloon' ? 'garden.is.balloon' : shadeLook(color) ? (color === 'light-blue' ? 'tone.light' : 'tone.dark') : `color.${color as ColorName}`);
@@ -177,7 +187,7 @@ class ColorGarden implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.rule ? this.rule === 'color' ? 'garden.rule.color' : 'garden.rule.kind' : this.plan.shades ? 'garden.shades' : 'garden.start');
+    void this.ctx.instruct(this.plan.tap ? 'garden.tap' : this.rule ? this.rule === 'color' ? 'garden.rule.color' : 'garden.rule.kind' : this.plan.shades ? 'garden.shades' : 'garden.start');
   }
 
   resize(v: View) {
@@ -198,14 +208,15 @@ class ColorGarden implements Game {
     puffs(t, canopy, 0x7cc463, 0x4e9e3a);
 
     // Fruit waiting on the tree.
-    const waiting = this.items.filter((i) => !i.drag.dragging);
+    const waiting = this.items.filter((i) => !i.drag?.dragging);
     waiting.forEach((item, i) => {
       const row = Math.floor(i / perRow);
       const xs = spread(Math.min(perRow, waiting.length - row * perRow), cx - canopyW / 2 + 60, cx + canopyW / 2 - 60, 118);
-      item.drag.home = { x: xs[i % perRow], y: rows === 1 ? 170 : 120 + row * 110 };
-      item.view.position.set(item.drag.home.x, item.drag.home.y);
+      item.home = { x: xs[i % perRow], y: rows === 1 ? 170 : 120 + row * 110 };
+      if (item.drag) item.drag.home = item.home;
+      item.view.position.set(item.home.x, item.home.y);
       // A pale patch behind each spot, so a green pear or flower still stands out from the leaves.
-      t.circle(item.drag.home.x, item.drag.home.y, 50).fill({ color: 0xfffbe8, alpha: 0.8 });
+      t.circle(item.home.x, item.home.y, 50).fill({ color: 0xfffbe8, alpha: 0.8 });
     });
 
     const xs = spread(this.baskets.length, 150, v.w - 40, this.baskets[0].w + 30);
@@ -217,15 +228,16 @@ class ColorGarden implements Game {
     this.clock += dt;
   }
 
-  /** The ghost finger on the how-to card: carry the next piece of fruit to the basket of its own color. */
+  /** The ghost finger uses the round's own action: tap to hop, or drag to sort. */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
-    const next = nextToSort(this.items.filter((i) => !i.drag.dragging && !i.view.destroyed), this.baskets);
+    const next = nextToSort(this.items.filter((i) => !i.drag?.dragging && !i.view.destroyed), this.baskets);
+    if (next && this.plan.tap) return { tap: { on: next.item.view } };
     return next ? { drag: { on: next.item.view }, to: { on: next.basket, x: 0, y: -DROP_ABOVE } } : null;
   }
 
   destroy() {
-    for (const i of this.items) i.drag.destroy();
+    for (const i of this.items) i.drag?.destroy();
   }
 
   private drop(item: Item, x: number, y: number): boolean {
@@ -260,7 +272,9 @@ class ColorGarden implements Game {
 
   /** It drops into the basket and stays there, peeking over the rim. */
   private async place(item: Item, basket: Basket) {
-    item.drag.destroy();
+    item.drag?.destroy();
+    item.view.eventMode = 'none';
+    item.view.removeAllListeners();
     this.items = this.items.filter((i) => i !== item);
     basket.glowing = false;
     const v = item.view;
@@ -268,17 +282,22 @@ class ColorGarden implements Game {
     basket.inside.addChild(v);
     v.position.set(at.x, at.y);
     const slot = basket.inside.children.length - 1;
-    void this.ctx.tw.to(v.scale, { x: 0.5, y: 0.5 }, { duration: 0.25 });
-    await this.ctx.tw.to(v, { x: ((slot % 3) - 1) * 28, y: -30 - Math.floor(slot / 3) * 12 }, { duration: 0.25, ease: ease.outQuad });
+    const target = { x: ((slot % 3) - 1) * 28, y: -30 - Math.floor(slot / 3) * 12 };
+    void this.ctx.tw.to(v.scale, { x: 0.5, y: 0.5 }, { duration: this.plan.tap ? 0.6 : 0.25 });
+    if (this.plan.tap) {
+      // Lift straight away, then arc down into the basket; there is no drop target to choose.
+      await this.ctx.tw.to(v, { x: (at.x + target.x) / 2, y: at.y - 65 }, { duration: 0.18, ease: ease.outQuad });
+    }
+    await this.ctx.tw.to(v, target, { duration: this.plan.tap ? 0.42 : 0.25, ease: this.plan.tap ? ease.inQuad : ease.outQuad });
     basket.happy();
     sfx.bell(4 + this.baskets.indexOf(basket), 0.25);
     this.ctx.particles.burst(basket.x, basket.y - 100, { kind: 'star', colors: [clothOf(item.key).fill, 0xffffff], count: 8, speed: [100, 220], gravity: 0, life: [0.4, 0.7] });
     this.sorted++;
-    if (this.sorted % 3 === 0) {
+    if (!this.plan.tap && this.sorted % 3 === 0) {
       this.ctx.pet.cheer();
       void this.ctx.say('praise');
     }
-    if (this.items.length === 0) void this.finale();
+    if (this.sorted === this.plan.items && !this.finished) void this.finale();
   }
 
   private async finale() {
@@ -349,10 +368,12 @@ export const colorGarden: GameModule = {
   titleLine: 'game.color-garden',
   region: 'rainbow-meadow',
   skills: ['colors', 'sorting', 'fine-motor'],
-  bands: ['toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  entryLevels: [9],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
+    if (p.tap) return 'Tap four fruits: each hops to its own color basket';
     if (p.colors === 1) return 'One basket: practice dragging';
     if (p.rule) return `Sort ${p.items} fruits and balloons by color or by kind, as the sign says`;
     if (p.shades) return `Sort ${p.items} balloons and flowers into light blue and dark blue`;

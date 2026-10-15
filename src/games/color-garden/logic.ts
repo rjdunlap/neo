@@ -3,6 +3,8 @@ import { FRUIT_FOR, type PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
 
 export interface GardenPlan {
+  /** A tap sends each item to its own basket; there is no sorting choice. */
+  tap?: boolean;
   colors: number;
   items: number;
   /** Fruit whose kind gives the color away (an apple is red); otherwise balloons and flowers. */
@@ -33,6 +35,7 @@ export const PLANS: GardenPlan[] = [
   { colors: 6, items: 12, fruit: false, mixed: true },
   { colors: 2, items: 8, fruit: false, shades: true },
   { colors: 2, items: 8, fruit: false, rule: true },
+  { colors: 2, items: 4, fruit: true, tap: true },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];

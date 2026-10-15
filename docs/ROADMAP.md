@@ -47,24 +47,23 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
-1. **`color-garden`, Tap and it hops**: the lap and toddler entry (tap path, two baskets, `order`/`entryLevels`, ghost finger). New-interaction tier. [Dive slice 2](deep-dives/color-garden.md#build-slices-in-order)
-2. **`goodnight-room`, tent and boat cabin rooms**: new seeded rooms, lap to pre-K; level 10 *goodnight everywhere* follows as its own slice. Content tier. [Dive slices 8–9](deep-dives/goodnight-room.md#build-slices-in-order)
-3. **`dot-link`, marks in the dots**: new art only. Existing-game tier, `fingerdemo` at 6. [Dive slice 1](deep-dives/dot-link.md#build-slices-in-order)
-4. **`bumper-garden`, flipper-ready ring**, then **Pond and Hive tables** as a second slice. Feel tier, then rules and art. [Dive slices 2–3](deep-dives/bumper-garden.md#build-slices-in-order)
-5. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)
-6. **`critter-crossing`, bank shelf**, then **a visible "not" entry** as a second slice. Existing-game tier, then new-levels tier. [Dive slices 1 and 4](deep-dives/critter-crossing.md#build-slices-in-order)
-7. **`critter-sort`, the worked example at levels 1–3 and 5** (slice 1's remainder); then levels 7, 8, 9 and 11, one per slice. [Dive slices 1, 4–7](deep-dives/critter-sort.md#build-slices-in-order)
-8. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
-9. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)
-10. **`clap-syllables`, level 6 *Beat train***, then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
-11. **`letter-trails`, a hint that shows the way, start arrows, a rising tune and trail looks**. Rule tests, `fingerdemo` at 1 and 4. [Dive slice 3](deep-dives/letter-trails.md#build-slices-in-order) (slice 2 rests on two leaning decisions; leave it)
-12. **`duckling-parade`, ABB at level 11** (school, the existing pattern interaction). New-levels tier. [Dive slice 4](deep-dives/duckling-parade.md#build-slices-in-order)
-13. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
-14. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
-15. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
-16. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery)
+1. **`goodnight-room`, tent and boat cabin rooms**: new seeded rooms, lap to pre-K; level 10 *goodnight everywhere* follows as its own slice. Content tier. [Dive slices 8–9](deep-dives/goodnight-room.md#build-slices-in-order)
+2. **`dot-link`, marks in the dots**: new art only. Existing-game tier, `fingerdemo` at 6. [Dive slice 1](deep-dives/dot-link.md#build-slices-in-order)
+3. **`bumper-garden`, flipper-ready ring**, then **Pond and Hive tables** as a second slice. Feel tier, then rules and art. [Dive slices 2–3](deep-dives/bumper-garden.md#build-slices-in-order)
+4. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)
+5. **`critter-crossing`, bank shelf**, then **a visible "not" entry** as a second slice. Existing-game tier, then new-levels tier. [Dive slices 1 and 4](deep-dives/critter-crossing.md#build-slices-in-order)
+6. **`critter-sort`, the worked example at levels 1–3 and 5** (slice 1's remainder); then levels 7, 8, 9 and 11, one per slice. [Dive slices 1, 4–7](deep-dives/critter-sort.md#build-slices-in-order)
+7. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
+8. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)
+9. **`clap-syllables`, level 6 *Beat train***, then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
+10. **`letter-trails`, a hint that shows the way, start arrows, a rising tune and trail looks**. Rule tests, `fingerdemo` at 1 and 4. [Dive slice 3](deep-dives/letter-trails.md#build-slices-in-order) (slice 2 rests on two leaning decisions; leave it)
+11. **`duckling-parade`, ABB at level 11** (school, the existing pattern interaction). New-levels tier. [Dive slice 4](deep-dives/duckling-parade.md#build-slices-in-order)
+12. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
+13. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
+14. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
+15. **Lands stage C3**: *Start again* and *Show a hint* on the pause sheet (`Game.restart`, `Game.askForHint`), and pad use of the sheet's buttons. Shell tier. [Lands stage C](#lands-navigation-and-discovery)
 
-17. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
+16. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
 
 ### Chunks
 
@@ -74,7 +73,7 @@ Chunk numbers are stable IDs that other documents cite; rows are sorted by what 
 | --- | --- | --- | --- | --- | --- |
 | 13 | **More to play in every band** (the developer, 2026-10-10: more quantity across bands) | ready | Fresh content inside a level or a new level from a dive; the [ready list](#ready-to-build-now) names the current ones | Content: typecheck, rule tests, one screenshot; new levels: new-levels tier | [Below](#more-to-play-in-every-band) |
 | 2 | **Deepen short ladders** with a real next decision | ready where a dive defines the slice; define otherwise | A defined slice from the [short ladders](#short-ladders-in-order) table, or a definition for an undefined direction | Docs only for definitions; then new-levels or new-interaction tier | [Below](#short-ladders-in-order) |
-| 11 | **A second lap level for favorites** | ready | Color Garden's *Tap and it hops* (ready list). Other below-level-1 entries wait on each dive's gates; append the level and place it with `order` | New levels on an existing interaction | Wave-2 [deep dives](deep-dives/README.md) |
+| 11 | **A second lap level for favorites** | ready | Other below-level-1 entries wait on each dive's gates; append the level and place it with `order` | New levels on an existing interaction | Wave-2 [deep dives](deep-dives/README.md) |
 | 18 | **Sing-Along Barn, more tunes and modes** | ready | The next pentatonic tune (ready list), or a repeated-phrase mode. Melodies were written from standard forms, not a printed score (open in [DEVICE-CHECKS](DEVICE-CHECKS.md)) | New levels: rule tests, one top-level play, `fingerdemo` | [Gap review sketch](archive/COMPLETED-2026-10-09.md#sing-along-barn-first-slice-2026-10-12) |
 | 3 | **Lands: navigation and discovery** (stages A, B and D built; C partly built) | ready | C3 (ready list); then C2b and C4; then stage E, Game night | Shell and navigation tier | [Lands](#lands-navigation-and-discovery) |
 | 8 | **Grown-up play, the open steps** | ready | An Ice Blocks frozen-pond course (`parseBoard` needs a `B` legend, the course a `version`); or define Brain Break's next finite round | Rule tests; `couchcourse` while courses live on the couch | [Grown-up play](#grown-up-play-the-couch-route-for-one) |
@@ -148,10 +147,10 @@ Some toys have a good ceiling. Fresh scenes, better feel or useful co-play can d
 
 The developer asked on 2026-10-10 for "a lot more quantity to a lot of the different games to allow more time to enjoy across age bands". [Round three](IDEAS.md#round-three-more-to-play-in-every-band-2026-10-10) proposes four kinds of addition, in this order. Quantity is welcome; speed, timers, clutter and memory load stay out.
 
-1. **Fresh content inside a level** (any band, no level change). Tangram Town's picture pools take more pictures; each item gets a rule test that it fits its level. Puzzle Pals' box lid is person-dependent.
-2. **Younger-band openings**, in batches: Beat Builder (lap), Memory Match and Habitat Helpers (toddler); Critter Sort, Picture Graph, Inchworm Measure, Treasure Map, Secret Code, Rhyme Time, Light Lab, Ramp Race and Chain Reaction (preschool). Each batch updates the band counts, checks the lands still fit (`lands.test.ts`) and adds its fit to [Needs a person or a device](DEVICE-CHECKS.md#needs-a-person-or-a-device).
-3. **New levels on top**, cheapest first, from [round three](IDEAS.md#round-three-more-to-play-in-every-band-2026-10-10) and the dives. Still to give a ladder a new band window: Feelings Faces to school; Animal Snack (see its [dive](deep-dives/animal-snack.md)), Stop and Go and Garden Grow to pre-K.
-4. **More content for the rest**, game by game, as round three's tables list it (Memory Match's circle sectors remain an optional art slice).
+17. **Fresh content inside a level** (any band, no level change). Tangram Town's picture pools take more pictures; each item gets a rule test that it fits its level. Puzzle Pals' box lid is person-dependent.
+18. **Younger-band openings**, in batches: Beat Builder (lap), Memory Match and Habitat Helpers (toddler); Critter Sort, Picture Graph, Inchworm Measure, Treasure Map, Secret Code, Rhyme Time, Light Lab, Ramp Race and Chain Reaction (preschool). Each batch updates the band counts, checks the lands still fit (`lands.test.ts`) and adds its fit to [Needs a person or a device](DEVICE-CHECKS.md#needs-a-person-or-a-device).
+19. **New levels on top**, cheapest first, from [round three](IDEAS.md#round-three-more-to-play-in-every-band-2026-10-10) and the dives. Still to give a ladder a new band window: Feelings Faces to school; Animal Snack (see its [dive](deep-dives/animal-snack.md)), Stop and Go and Garden Grow to pre-K.
+20. **More content for the rest**, game by game, as round three's tables list it (Memory Match's circle sectors remain an optional art slice).
 
 What is already built under this chunk is in [the 2026-10-15 cleanup archive](archive/ROADMAP-CLEANUP-2026-10-15.md#more-to-play-in-every-band-as-it-stood).
 
@@ -176,9 +175,9 @@ What is already built under this chunk is in [the 2026-10-15 cleanup archive](ar
 
 **Stages** (each a docs-first definition, then its own build):
 
-1. **The pet says the word.** A per-person setting in the grown-ups' page (profiles exist, so the language follows the person, as a bounded and repaired field in `save.ts`) makes the picture-naming lines add the second-language word after the English one: Peekaboo Barn, Animal Snack, Bubble Pop, Rainbow Fingers' color names, Duck Pond's and Frog Hop's number words. The second language is a table keyed by the same `LineId`s for only the lines it covers; a missing line falls back to English rather than going silent. A unit test asserts that every translated line has the same `{placeholders}` as its English line. The voice picks a device voice that matches the language tag and, if the device has none, the grown-ups' page says so and speech stays English. Stickers, levels and misses are unaffected by language.
-2. **Instructions and praise in the language.** An option for older bands (or a family that speaks it): the whole voice switches, the journal and captions read through a `lineText(id)` helper instead of `SCRIPT[id][0]`, and the how-to cards stay English until translated.
-3. **Language-specific play.** The small games JumpStart Spanish suggests, designed per language: hear-then-goal word rooms, a days-and-months calendar, folk songs, puppet-show phrases, and any literacy game that has to change (a deep dive each).
+21. **The pet says the word.** A per-person setting in the grown-ups' page (profiles exist, so the language follows the person, as a bounded and repaired field in `save.ts`) makes the picture-naming lines add the second-language word after the English one: Peekaboo Barn, Animal Snack, Bubble Pop, Rainbow Fingers' color names, Duck Pond's and Frog Hop's number words. The second language is a table keyed by the same `LineId`s for only the lines it covers; a missing line falls back to English rather than going silent. A unit test asserts that every translated line has the same `{placeholders}` as its English line. The voice picks a device voice that matches the language tag and, if the device has none, the grown-ups' page says so and speech stays English. Stickers, levels and misses are unaffected by language.
+22. **Instructions and praise in the language.** An option for older bands (or a family that speaks it): the whole voice switches, the journal and captions read through a `lineText(id)` helper instead of `SCRIPT[id][0]`, and the how-to cards stay English until translated.
+23. **Language-specific play.** The small games JumpStart Spanish suggests, designed per language: hear-then-goal word rooms, a days-and-months calendar, folk songs, puppet-show phrases, and any literacy game that has to change (a deep dive each).
 
 **Rules that hold.** No recorded audio files; English is the default and is always one tap away; nothing is gated by language; a language setting never changes difficulty or save keys; check actual device speech before claiming a pronunciation, as for phonics; and a native speaker reviews every line before it ships. Checks: stage definitions are docs only; stage 1 is the save and shell tier (typecheck, unit tests including placeholder parity, build, the suites of the games it touches).
 

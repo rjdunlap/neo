@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Color Garden Tap and it hops (level 9, #399):** hear each color on iPad, try repeated/quick taps and the how-to ghost finger in both orientations, and observe whether a one-year-old intentionally taps the fruit. Browser completion and portrait review do not establish device speech or child response.
+
 - [ ] **Discovery D1b, when built:** check iPad speech sequencing and touch reach in both orientations; observe whether a child recognizes the pictured next game and distinguishes Another, Next game and Next level while keeping an easy way home. D1a supplies a [definition only](DISCOVERY.md#d1b-build-packet-one-direct-next-game); no UI or child/device validation is claimed.
 
 - [ ] **Barnyard recognizable without its label (V1, after the land-scene slice is built; definition 2026-10-15, #400):** show a child the Barnyard land scene and see whether she recognizes it as the barnyard without its label, in both orientations on an iPad. Open until that slice is built.
