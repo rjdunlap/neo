@@ -11,6 +11,20 @@ import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
 describe('game registry', () => {
+  it('places Color Garden tap entry first without renumbering existing levels or pins', () => {
+    const g = GAMES.find(g => g.id === 'color-garden')!;
+    expect(g.bands).toContain('lap');
+    expect(g.entryLevels).toEqual([9]);
+    expect(g.levels('lap').order).toEqual([9]);
+    const toddler = g.levels('toddler');
+    expect(toddler.order).toEqual([9, 1, 2, 3, 4, 5]);
+    expect(nextLevel(9, [0, 1].map(() => ({ at: 0, level: 9, misses: 0, hints: 0, seconds: 1 })), toddler)).toBe(1);
+    for (const level of [1, 2, 3, 4, 5]) expect(nextLevel(landing(level, toddler, g.entryLevels), [], toddler)).toBe(level);
+    expect(landing(9, g.levels('preschool'), g.entryLevels)).toBe(3);
+    expect(g.levels('preschool')).toEqual({ min: 3, max: 8 });
+    expect(g.levels('prek')).toEqual({ min: 4, max: 8 });
+  });
+
   it('has unique ids and a spoken title for every game', () => {
     expect(new Set(GAMES.map((g) => g.id)).size).toBe(GAMES.length);
     for (const g of GAMES) expect(SCRIPT[g.titleLine]).toBeDefined();

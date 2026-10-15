@@ -1527,6 +1527,7 @@ export const SCRIPT = {
   'shape.heart': ['Heart!'],
   'shape.hexagon': ['Hexagon!'],
 
+  'garden.tap': ['Tap a fruit! It hops to its color basket!'],
   'garden.start': ['Put each one in the basket that matches!'],
   'garden.wrong': ['That one is {color}. Find the {color} basket!'],
   'garden.shades': ['Light blue or dark blue? Put each one in the basket that matches!'],

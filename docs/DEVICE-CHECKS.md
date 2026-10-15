@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Color Garden Tap and it hops (level 9, #399):** hear each color on iPad, try repeated/quick taps and the how-to ghost finger in both orientations, and observe whether a one-year-old intentionally taps the fruit. Browser completion and portrait review do not establish device speech or child response.
+
 - [ ] **Discovery D1b, when built:** check iPad speech sequencing and touch reach in both orientations; observe whether a child recognizes the pictured next game and distinguishes Another, Next game and Next level while keeping an easy way home. D1a supplies a [definition only](DISCOVERY.md#d1b-build-packet-one-direct-next-game); no UI or child/device validation is claimed.
 
 - [ ] **Duckling Parade audit and proposals (2026-10-15, #387):** observe lap 1 before approving one-duck entry 15; check tap/lead control, cancellation/palm handling, color contrast, speech pacing, sound-off pattern/quantity requests and incidental versus intended pickups on an iPad in both layouts. Do children choose a next color independently or follow glows? Is a partial trip plus extras explanation clear? Voluntary replay, unit continuation/transfer and a co-player caller role need human observation; no bot proves these ([deep dive](deep-dives/duckling-parade.md#experience-and-presentation)).

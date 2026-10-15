@@ -178,3 +178,9 @@
 - Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=memory MEMORY_LEVELS=12 npm run test:browser` at 13:56:59 UTC: real taps, free replay/unseen exploration, exactly two known misses, one stable seen-only hint through unrelated exploration, supported finish/saved sticker and leaving during comparison/speech; no page errors. Actual face/text/card bounds passed in four viewports; portrait/landscape exposed-board and all 24 times reviewed (`test-results/browser/memory-clock-{portrait,landscape,all-times}.png`).
 - Passed same URL with `BROWSER_SUITE=fingerdemo FINGER_ONLY=memory-match FINGER_LEVELS=12` at 13:57:28 UTC: 11.0 s, zero misses/hints. Initial Chromium sandbox launch blocked; isolated outside-sandbox run passed. Initial new fit assertion mixed CSS/logical coordinates; small geometry probe confirmed root scale, corrected test then passed without a game layout change.
 - Not run: unchanged old-level browser plays, full unit/browser/world/couch/offline suites, real iPad speech/touch or child play. Device legibility/reveal comfort and bridge value remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device); browser evidence establishes no independent clock understanding. Server stopped after checks; links/diff checks passed.
+
+## 2026-10-15 — Clap the Syllables solo wait ring
+
+- [PR #374](https://github.com/rjdunlap/neo/pull/374), `claude/clap-syllables-wait-ring`: in solo (level 2) a ring round the hands pad fills over the 1.5 s pause after her last clap, so she can see when the word is about to be counted. Pure `waitFill` in `logic.ts`, drawn in `index.ts`; no rule change.
+- Passed typecheck, `vitest src/games/clap-syllables` (15 tests, including `waitFill`) and `BROWSER_SUITE=clap` on the dev server.
+- Not run: a screenshot of the ring, a portrait view, build, `fingerdemo`, an iPad or child check. Whether the ring reads clearly to a small child is [open](../DEVICE-CHECKS.md).

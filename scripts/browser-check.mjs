@@ -4409,12 +4409,36 @@ async function originals() {
   }
 
   // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
-  for (let level = 1; level <= 8 && (!only || only === 'garden'); level++) {
-    if (level === 6) await portrait(true);
+  for (const level of (!only || only === 'garden') ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9]) : []) {
+    if (level === 6 || level === 9) await portrait(true);
     await launch('color-garden', level);
     await page.waitForTimeout(400);
+    if (level === 9) {
+      assert.equal(await page.evaluate(() => neo.scene.game.plan.tap), true, 'Level 9 is a tap entry');
+      await screenshot('color-garden-9-portrait');
+    }
     const baskets = await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.tap) {
+        if (g.items.length !== 4 || g.baskets.length !== 2) throw new Error('Garden tap deal');
+        for (const i of g.items) {
+          if (i.drag || i.view.hitArea.radius * i.view.scale.x < 50) throw new Error('Garden tap target or drag');
+        }
+        // Basket/background touches are free; rapid taps and a repeated tap cannot place twice.
+        await kit.tapOn(g.baskets[0]);
+        const targets = g.items.map(i => ({ view: i.view, basket: g.baskets.find(b => b.key === i.key) }));
+        const first = g.items[0];
+        await kit.tapOn(first.view);
+        await kit.tapOn(first.view);
+        for (const i of [...g.items]) await kit.tapOn(i.view);
+        await kit.until(() => g.sorted === 4);
+        if (g.misses || g.hints || g.baskets.some(b => b.glowing)) throw new Error('Garden tap is not free exploration');
+        for (const { view, basket } of targets) if (view.parent !== basket.inside) throw new Error('Fruit hopped to another color');
+        for (const b of g.baskets) for (const v of b.inside.children) {
+          if (v.eventMode !== 'none') throw new Error('Sorted fruit still accepts taps');
+        }
+        return 0;
+      }
       const into = async (item, basket, dx = 0) => { await kit.dragTo(item.view, basket.parent.toGlobal({ x: basket.x + dx, y: basket.y - 20 }), 12); await kit.sleep(450); };
       const basketFor = (color) => g.baskets.find((b) => b.key === color);
       if (g.baskets.length > 1) {
@@ -4437,14 +4461,14 @@ async function originals() {
     await screenshot(`color-garden-${level}`);
     await finished('color-garden');
     assert.deepEqual(await score('color-garden'), baskets > 1 ? [2, 1] : [0, 0], `garden ${level} score`);
-    if (level === 6) await portrait(false);
-    log(`Color Garden ${level}: dragging into baskets, crowded edges, wrong baskets, glow hint, saved score and sticker passed`);
+    if (level === 6 || level === 9) await portrait(false);
+    log(level === 9 ? 'Color Garden 9: rapid taps, own baskets, inert repeated/basket taps, zero misses/hints, saved score and sticker passed' : `Color Garden ${level}: dragging into baskets, crowded edges, wrong baskets, glow hint, saved score and sticker passed`);
   }
 
   // Everything played above survives a reload.
   await page.reload(); await ready();
   const saved = await page.evaluate(() => ['bubble-pop', 'jelly-drums', 'peekaboo-barn', 'duck-pond', 'shape-sorter', 'color-garden'].map((id) => [id, kit.store.stats(id).history.length]));
-  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 9, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 8 };
+  const want = { 'bubble-pop': 12, 'jelly-drums': 10, 'peekaboo-barn': 9, 'duck-pond': 9, 'shape-sorter': 8, 'color-garden': 9 };
   for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
   log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);
 }
