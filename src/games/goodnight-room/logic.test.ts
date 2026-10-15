@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { acceptsTap, makeNight, makeRequests, PLANS, COLORS, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, PLANS, COLORS, NOTE_STEP, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
 
 describe('Goodnight Room', () => {
+  it('gives every friend in a room its own note', () => {
+    for (const room of ROOMS) {
+      const steps = room.friends.map(t => NOTE_STEP[t]);
+      expect(new Set(steps).size).toBe(steps.length);
+    }
+    for (const t of THINGS) expect(Number.isInteger(NOTE_STEP[t])).toBe(true);
+  });
+
   it('draws a room of the right size from the six friends, in order, with no repeats', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 200; seed++) {
