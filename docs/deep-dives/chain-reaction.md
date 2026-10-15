@@ -75,7 +75,7 @@ Learning sources: the NGSS kindergarten standards on [pushes and pulls](https://
 
 - **Cargo and goal skins, chosen per machine by the seeded RNG:** a marble to a bell (today), an acorn to a squirrel's bowl, a duckling in a tub to the pond. Same trace, same board. Cost: three cheap code-drawn props, three voice lines using the same `chain.rang`-style template, no logic change.
 - **A different note per ramp pair** so a finished machine plays a short run of notes that she may hear as a tune (pentatonic `notes.ts`, already used by `marimba(4/8)`). No rule change.
-- **Last-try trail and "watch again"** as above. No rule change; touches `run()` only.
+- **Last-try trail and "watch again"** (built 2026-10-15, slice 1). No rule change; touches `run()` only.
 - **Free-run counter that never scores:** after three runs on one machine without a hint the bulb pulses gently (no hint counted until it is tapped). Needs decision 1.
 
 ### New levels on top
@@ -119,7 +119,7 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 
 ## Build slices, in order
 
-1. **Trail and watch-again** (cheap, ready). `run()` draws a faded path from `trace().steps`; tapping the start cup replays. Tier: typecheck, the game's rule tests (none change), one filtered browser play at level 3 and `fingerdemo` for the bot.
+1. **Trail and watch-again** (built 2026-10-15; see below). `run()` draws a faded path from `trace().steps`; tapping the start cup replays. Tier: typecheck, the game's rule tests (none change), one filtered browser play at level 3 and `fingerdemo` for the bot.
 2. **Level 8, Which bell?** Plan field `predict`, bell row, voice lines, a how-to line. Tier: typecheck, rule tests (reachable bells, no recorded miss), one filtered play, `fingerdemo` at level 8, and a portrait screenshot.
 3. **Level 7, Tap to turn.** A `turn` mode in the board and `trace`; the ghost finger taps the flip. Tier: the same, plus `order`/`entryLevels` tests in the registry tests.
 4. **Decision 1** if approved: `tries` stat feeding the difficulty step. Tier: shell and save contracts (typecheck, unit tests, build).
@@ -131,4 +131,6 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Docs only; links and `git diff --check` ran.
+The deep-dive session itself built nothing (research and ideation only; links and `git diff --check` ran).
+
+**Slice 1, trail and watch-again (built 2026-10-15, branch `claude/chain-reaction-trail`).** After a run that misses, a faint red path (alpha 0.35) of the marble's last run stays on the board until the next run or the next machine. Tapping the blue start cup (a 120 by 104 hit area) replays the last run and changes no misses or hints. Rules and levels are unchanged and the how-to step is updated. Checks: typecheck, the Chain Reaction unit tests (7), `BROWSER_SUITE=machines` (level 6 now asserts the trail and the replay) and `fingerdemo` with `FINGER_ONLY=chain-reaction` (both levels passed). Not run: build, offline, a device or a child.

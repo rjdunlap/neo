@@ -1205,7 +1205,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Arrange the ramps so the marble rings the big bell (and the little chime first, when there is one).',
     steps: [
       'Drag every loose ramp into a round socket.',
-      'Tap the green arrow to run the machine and watch what each ramp changes.',
+      'Tap the green arrow to run the machine and watch what each ramp changes; a faint red trail stays behind, and tapping the blue cup shows the run again.',
       'Move one ramp and run it again, or tap the yellow light bulb for one useful placement.',
     ],
     finish: 'The round ends after both machines ring their bells.',

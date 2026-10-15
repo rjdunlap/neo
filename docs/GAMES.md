@@ -378,7 +378,7 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 
 ### Chain Reaction
 
-*pre-K–school · after The Incredible Machine.* Drag loose ramps into large sockets, run the machine and watch the marble; then move one part and run again. Six levels with two small machines per round: a single loose ramp, fixed and loose ramps together, two-piece revisions, touching a little chime before the final bell, and a top level with several valid designs. Replay is deterministic. A run that misses is an experiment, never a miss; loose ramps can go back to their tray. The light bulb gives (and counts as a hint) one useful placement that keeps correct work. Rule tests enumerate every visibly different placement across many seeds per level and require the planned solution count, solvability and a useful hint.
+*pre-K–school · after The Incredible Machine.* Drag loose ramps into large sockets, run the machine and watch the marble; then move one part and run again. Six levels with two small machines per round: a single loose ramp, fixed and loose ramps together, two-piece revisions, touching a little chime before the final bell, and a top level with several valid designs. Replay is deterministic. A run that misses is an experiment, never a miss; loose ramps can go back to their tray. After a run that misses, a faint red path of the marble stays on the board until the next run or machine, and tapping the blue start cup replays that run without changing misses or hints. The light bulb gives (and counts as a hint) one useful placement that keeps correct work. Rule tests enumerate every visibly different placement across many seeds per level and require the planned solution count, solvability and a useful hint.
 
 ### Habitat Helpers
 
