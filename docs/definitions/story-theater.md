@@ -17,4 +17,4 @@ Source files: `src/games/story-steps/theater-logic.ts`, its rule tests, `theater
 
 Verification: typecheck and unit tests; one filtered browser play at levels 12 and 13 covering free counterfactual choices, requested help, replay/undo, finish gating, leaving during narration and one sticker; one portrait screenshot; ghost finger at both levels. Build because shared content files change. No navigation or persistence change, so no world/offline suites.
 
-Recorded checks and remaining device/person gaps: [Story Theater verification](../VERIFICATION.md#2026-10-13--story-theater-first-slice).
+Recorded checks and remaining device/person gaps: [Story Theater verification](../archive/VERIFICATION-2026-10-07-13.md#2026-10-13--story-theater-first-slice).
