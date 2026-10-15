@@ -835,3 +835,8 @@ Typecheck and `npx vitest run src/games/peekaboo-barn src/content` (87 tests) pa
 ## Recovered grown-up game slices (2026-10-14)
 
 Snowball Merge’s finite 16/32/64 boards, Marble Jump’s six-level triangle and Log Roll’s three exact-distance puzzles are integrated. All have spoken support, solver hints, revision, how-to cards and ghost-finger demos. The [cleanup record](SESSION-CLEANUP-2026-10-14.md) records source reconciliation, duplicate resolution, land capacity and combined checks; [current rules](../GAMES.md#marble-jump) describe play. Controller courses, larger boards and spawning remain separate proposals. Real-device and enjoyment checks stay open.
+
+
+## Day by Day show the week turning (2026-10-15)
+
+[PR #353](https://github.com/rjdunlap/neo/pull/353), `codex/day-by-day-week-art`, dispatch `day-by-day-week-art-20261015T084300Z`. Slice 1 adds noninteractive placement thread, settling weather stamps, dotted Sunday–Monday return and baseline endpoint outlines during the two boundary questions at levels 1–3. Three seeded garden treatments (wooden box, cream pots, teal-edged bed) vary the presentation with an RNG clone, preserving the question stream. No new levels/bands, calendar, accounting or demonstration action. Level 4 retains its existing presentation. Source-tier proof is recorded in [verification](../VERIFICATION.md#2026-10-15--day-by-day-show-the-week-turning); device speech/touch and child understanding remain open.

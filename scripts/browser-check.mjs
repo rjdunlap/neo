@@ -1516,11 +1516,18 @@ async function weekPlay() {
     assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
     for (let attempt = 0; attempt < 2; attempt++) { await tap('neo.scene.game.confirm'); await wait(); }
     assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted]), [2, 1, true]);
-    let checkedWeather = false, checkedTally = false;
+    let checkedWeather = false, checkedTally = false, checkedWrap = false;
     for (let guard = 0; guard < 80; guard++) {
       if (await page.evaluate(() => neo.scene.finished)) break;
       await wait();
       const phase = await page.evaluate(() => neo.scene.game.phase);
+      if (level === 2 && phase === 'relative' && !checkedWrap) {
+        checkedWrap = true;
+        await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+        assert.equal(await page.evaluate(() => neo.scene.game.evidence.eventMode), 'none');
+        await screenshot('day-by-day-2-wrap-portrait');
+        await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(100);
+      }
       if (phase === 'weather' && !checkedWeather) {
         checkedWeather = true;
         await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node'); await wait();
@@ -1546,6 +1553,7 @@ async function weekPlay() {
     assert.equal(await page.evaluate(() => neo.scene.game.recorded), 7);
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('day-by-day').history.at(-1); return [r.misses, r.hints]; }), [3, 1]);
     if (level === 3) assert.ok(checkedTally, 'read the weather tally');
+    if (level === 2) assert.ok(checkedWrap, 'inspect the week turn in portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Day by Day ${level}: card naming, real placing/weather taps, retries, hint, seven records, tally revision and saved sticker passed`);
   }
