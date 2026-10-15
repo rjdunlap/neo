@@ -21,4 +21,4 @@ The original design brief also exists as a [historical design artifact](https://
 - [Verification 2026-10-14](VERIFICATION-2026-10-14.md): the Peekaboo Barn beach scene entry, the Critter Crossing level 6, Animal Snack level 3 and Peekaboo Barn bedroom entries, the weather and water and movement research entries, the Memory Match vehicles and dot-arrangements entries, and the Routines/self-care research entry.
 
 - [Historical local-build audit](LOCAL-GAME-BUILDS-2026-10-13.md): superseded source-worktree evidence for the three recovered games.
-- [Session cleanup 2026-10-14](SESSION-CLEANUP-2026-10-14.md): source reconciliation, integration checks and provisional recovery audit.
+- [Session cleanup 2026-10-14](SESSION-CLEANUP-2026-10-14.md): source reconciliation, integration checks and the completed recovery audit.
