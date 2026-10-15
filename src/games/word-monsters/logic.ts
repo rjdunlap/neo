@@ -53,6 +53,12 @@ export const ALPHABET = Object.keys(SOUNDS);
 const LOOKALIKES = ['bdpq', 'mnu', 'il'];
 export const lookalike = (a: string, b: string) => a !== b && LOOKALIKES.some((set) => set.includes(a) && set.includes(b));
 
+/** Two different letters that make the same sound (c and k), never offered together: one would be right and be told off. */
+export const soundTwin = (a: string, b: string) => a !== b && SOUNDS[a] === SOUNDS[b];
+
+/** "Who says...?" asks for plain letter sounds, so q ("kwuh") and x ("ks") wait until they have one of their own. */
+export const WHO_POOL = ALPHABET.filter((l) => l !== 'q' && l !== 'x');
+
 /** Picture words whose first sound is the letter's plain sound (no ice cream, no xylophone). */
 export const FIRST_WORDS: Record<string, string> = {
   a: 'apple', b: 'ball', c: 'cat', d: 'duck', e: 'egg', f: 'fish', g: 'grapes', h: 'house', j: 'jelly', k: 'kite', l: 'leaf', m: 'moon',
@@ -79,7 +85,7 @@ export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET
   const out = [...must];
   for (const l of rng.shuffle([...pool])) {
     if (out.length >= n) break;
-    if (out.includes(l) || out.some((o) => lookalike(o, l))) continue;
+    if (out.includes(l) || out.some((o) => lookalike(o, l) || soundTwin(o, l))) continue;
     out.push(l);
   }
   return rng.shuffle(out);
@@ -87,7 +93,7 @@ export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET
 
 export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
   const out: Question[] = [];
-  const pool = plan.mode === 'first' ? Object.keys(FIRST_WORDS) : plan.mode === 'find' ? 'abcdefghkmrstw'.split('') : ALPHABET;
+  const pool = plan.mode === 'first' ? Object.keys(FIRST_WORDS) : plan.mode === 'find' ? 'abcdefghkmrstw'.split('') : plan.mode === 'who' ? WHO_POOL : ALPHABET;
   const used = new Set<string>();
   if (plan.mode === 'family') {
     // Two families, three words each; the other first sounds come from the family when they can, so hearing matters.

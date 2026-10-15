@@ -15,7 +15,7 @@ import { label } from '../../ui/text';
 import { letterPicture } from '../letter-trails/pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, FIRST_WORDS, makeQuestions, nextMonster, planFor, sounded, SOUNDS, PICTURE_WORDS, type MonsterPlan, type Question } from './logic';
+import { fits, FIRST_WORDS, makeQuestions, nextMonster, PLANS, planFor, sounded, SOUNDS, PICTURE_WORDS, type MonsterPlan, type Question } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -23,7 +23,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
+  school: { min: 5, max: PLANS.length },
 };
 
 const FURS: ColorName[] = ['purple', 'teal', 'orange', 'pink', 'blue', 'green', 'red', 'yellow'];
