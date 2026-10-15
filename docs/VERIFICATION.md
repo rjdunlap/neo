@@ -280,3 +280,8 @@ Reconciled completed [Clock Tower explanations #383](https://github.com/rjdunlap
 ### 2026-10-15 — Duckling Parade support dispatch
 
 Reconciled the completed [deep dive #387](https://github.com/rjdunlap/neo/pull/387), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [support slice 1](deep-dives/duckling-parade.md#build-slices-in-order) to worker `01a140eb-497f-7df2-b83e-64f6f9253a42`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-15 — Duckling Parade steering dispatch
+
+Reconciled completed [support #389](https://github.com/rjdunlap/neo/pull/389), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [steering slice 2](deep-dives/duckling-parade.md#build-slices-in-order) to worker `01a1411e-24fa-7b30-9214-8ffecd67319d`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
