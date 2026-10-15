@@ -85,7 +85,7 @@ Opened sources are linked; search excerpts are marked. No reference game was ins
 
 | Audience | First action | Deeper rung |
 | --- | --- | --- |
-| **L** | *None as invention:* not supported. Existing cause-and-effect toys (Bubble Pop, Fill and Dump) already serve; page card: hand a toddler-safe cup and spoon and say what each is for | — |
+| **L** | *None as invention:* not supported. Existing cause-and-effect toys (Bubble Pop, Fill and Dump) already serve; page card: hand a cup and spoon and say what each is for (*needs review*) | — |
 | **T** | *None new:* choosing a tool for a need is not established at two; Fill and Dump and Shape Sorter cover nearby play | — |
 | **P** | Gadget Bench 1: try both gadgets on the path, give the one that works | 2 at pre-K: change one part of the pet's gadget for a new neighbor |
 | **K** | Gadget Bench 2 | 3: fill two sockets; the part's place matters |
@@ -132,7 +132,7 @@ Opened sources are linked; search excerpts are marked. No reference game was ins
 
 ## Workshop Cases: the older and family case
 
-Three prototypes already built by island neighbors sit on the bench, each with a pictured results row across four conditions (Fox's cart: bump ✓ puddle ✗ dark ✓ gate ✗). She reads the table, inspects any prototype freely, and assembles one gadget that passes every condition by combining the parts that made each prototype succeed. The checker accepts every passing assembly; an optional comparison after success shows how many parts it used. Undo, free bench Trys and a supported finish (the socket of the first unmet condition glows after two misses) as above. Its appeal to 12- and 13-year-olds and parents is untested.
+Three prototypes already built by island neighbors sit on the bench, each with a pictured results row across four conditions (Fox's cart: bump ✓ puddle ✗ dark ✓ gate ✗). She reads the table, inspects any prototype freely, and assembles one gadget that passes every condition by combining the parts that made each prototype succeed. **Every case has a built-in conflict** so that copying the winning part for each condition is not enough: two of those parts need the same socket, or the gate constraint rules one out, and one must be swapped for a different part that covers two conditions. A rule test, like Timeline Trail's progress-heuristic test, proves that the naive "take every part that passed" assembly **fails** in every case while at least one passing assembly exists. The checker accepts every passing assembly; an optional comparison after success shows how many parts it used. Undo, free bench Trys and a supported finish (the socket of the first unmet condition glows after two misses) as above. Its appeal to 12- and 13-year-olds and parents is untested.
 
 ## Print Shop: a sketch only
 
@@ -140,7 +140,7 @@ A press with a frame of six slots. Each neighbor's invitation is a row of pictur
 
 ## Experience and presentation
 
-Parts click into sockets with a wooden thunk on a pentatonic step; Try plays a little run along the path with a cheerful toot at each condition passed and a soft wobble at the failure. The version strip is a row of small pictures, never a score. The island's music keeps playing. The first unsupported action is level 1's Try on either gadget: there is no wrong first touch. Replay variety comes from seeded neighbors, requests and paths, not from new rules each round.
+A part lifts and sways the moment a finger lands on it (touch-down feedback), then clicks into its socket with a wooden thunk on a pentatonic step; Try plays a little run along the path with a cheerful toot at each condition passed and a soft wobble at the failure. The version strip is a row of small pictures, never a score. The island's music keeps playing. The first unsupported action is level 1's Try on either gadget: there is no wrong first touch. Replay variety comes from seeded neighbors, requests and paths, not from new rules each round.
 
 ## Decisions for the developer
 
