@@ -11,7 +11,7 @@ Band windows are the actual adaptive ranges (`LEVELS` in `src/games/bumper-garde
 | Level | Plan | Bands | Table and first round | What she decides | Response, help and completion |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `spring` (6 flowers, goal 6) | L, T | Tap anywhere: the ladybug leaves the pot at a random angle | Nothing; the action is the toy | No misses. Flowers bloom when touched. The round ends after the sixth launch. The pet repeats "tap to send the ladybug up" after 8 idle seconds |
-| 2 | `bloom` (5 flowers) | T, P | The pot relaunches by itself after 1.2 s. Tapping the left or right half of the screen flips that flipper, wide reach (+46) | When to flip, which side | No misses and no hints: a ladybug that does nothing is simply caught again. Ends when every flower has bloomed. The pet does not count |
+| 2 | `bloom` (5 flowers) | T, P | The pot relaunches by itself after 1.2 s. Tapping the left or right half of the screen flips that flipper, wide reach (+46) | When to flip, which side | No misses and no hints: a ladybug that does nothing is simply caught again. Ends when every flower has bloomed. The pet counts each bloom aloud (slice 1, 2026-10-15) |
 | 3 | `color` (7 flowers, 3 of the asked color) | P, K | "Bloom the yellow flowers!" Only that color blooms; the others just chime | Which flowers to aim for | A shot (a pot-to-pot trip) that blooms nothing wanted is a gentle miss; two in a row show a glow on the wanted flowers and aim the next launch at one (`aimFor`). The pet counts the bloomed ones |
 | 4 | `order` (6 flowers, 1–3 numbered) | P, K | "Bump the flowers in order. Find 1!" | The next number | Same miss and hint rule. The pet says "Now 2!" after 0.9 s |
 | 5 | `order` (8 flowers, 1–5 numbered) | K | Five numbers among three plain decoys | The next number, with distractions | As level 4 |
@@ -26,10 +26,10 @@ Band windows are the actual adaptive ranges (`LEVELS` in `src/games/bumper-garde
 
 ### Known gaps and person checks
 
-- **The how-to is not true at every level.** Step 1, "Tap to send the ladybug up", has no range; at levels 2–5 the pot relaunches by itself and a tap flips, so it should read `to: 1`. The finish line, "ends when the asked-for flowers have bloomed", is false at level 1 (it ends after six launches) and at level 2 (every flower, not an asked-for one). Put the real finish on each card.
-- **Two things change at once at level 3.** The rule changes (a color) and the reach drops from 76 to 30 (`wide` is only on at `spring` and `bloom`), so the move from 2 to 3 is both a new idea and a harder shot. A toddler or preschooler may need the wide reach to stay on through level 3, and level 2's lack of any counting or aloud feedback leaves it feeling thin beside level 3. A person check, not a bot check.
+- **The how-to is not true at every level (resolved 2026-10-15, slice 1).** Step 1 now reads `to: 1` and each level has its own finish line (L1 after six launches, L2 every flower, L3 all flowers of the asked color, L4+ the last numbered flower).
+- **Two things change at once at level 3.** The rule changes (a color) and the reach drops from 76 to 30 (`wide` is only on at `spring` and `bloom`), so the move from 2 to 3 is both a new idea and a harder shot. A toddler or preschooler may need the wide reach to stay on through level 3, and level 2 may feel thin beside level 3 (it now counts blooms aloud, slice 1). A person check, not a bot check.
 - **Same table every time.** Seeded flower spots change, but the hedges, flippers and pot never do, so round 20 looks like round 2.
-- **Level 2 has no sign she did anything.** The pet is silent on a bloom; levels 3–5 count.
+- **Level 2 has no sign she did anything (resolved 2026-10-15, slice 1).** Level 2 now says the running count as each flower blooms, like levels 3–4.
 - No school window: bands stop at pre-K by design (IDEAS ladder audit). This write-up proposes what a school window could hold, and leaves the call to the developer.
 - Not established by any bot: whether a one-year-old's tap lands near the ladybug at all, whether the 1.2 s pot pause feels long or short, and whether two thumbs on the two halves of a landscape iPad are comfortable. See DEVICE-CHECKS if added.
 
@@ -83,10 +83,10 @@ The long-term arc: lap launches for fun; toddler flips; preschool and pre-K lear
 
 - **Three tables.** The existing garden is the *Meadow*. Add a *Pond* (flowers drawn as lily pads, ripples on a bump, a frog-croak bell timbre) and a *Hive* (hex flowers). Each table has its own `SPOTS` layout (an arch, two columns and a ring are three simple ones) and its own skin; the plan stays the same. Every layout must pass the same reachability tests as `SPOTS`: every spot hit by some launch and no launch trapped. Pick a table by seeded `ctx.rng`, and `describeLevel` stays the plan's name.
 - **Flipper-ready ring** on the nearer flipper (art example above), for levels 2–5. It is a visual cue only; the reach does not change.
-- **A count in bloom mode.** Level 2 says the count as each flower blooms (`count`, like levels 3–4), so the toddler hears that each bloom adds one. Costs one `ctx.say` and no rules change.
+- **A count in bloom mode (built 2026-10-15).** Level 2 says the count as each flower blooms (`count`, like levels 3–4), so the toddler hears that each bloom adds one. Costs one `ctx.say` and no rules change.
 - **Level 3 asked color from more than three colors.** `FLOWER_COLORS` has four; the asked color is already a seeded pick. Allow two asked colors across a round's two goals only in a new level (below), not in 3.
 - **Wide reach through level 3.** A decision for a person check: keep `wide` for `color` mode so the rule and the reach do not both change at once.
-- **Truthful how-to** (a doc/code fix, no rules): step 1 `to: 1`, finish lines per level.
+- **Truthful how-to (built 2026-10-15)** (a doc/code fix, no rules): step 1 `to: 1`, finish lines per level.
 
 ### New levels on top
 
@@ -135,7 +135,7 @@ Add each to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the
 
 ## Build slices, in order
 
-1. **Truthful how-to and a count in bloom mode (ready).** Fix step 1 (`to: 1`) and the finish lines per level; add the pet's count at level 2. Check tier: docs-and-copy plus a rule-free change, so typecheck, the how-to test, and one filtered play of level 2.
+1. **Truthful how-to and a count in bloom mode (built 2026-10-15, [PR #355](https://github.com/rjdunlap/neo/pull/355)).** Step 1 is `to: 1`, the finish line is per level, and level 2 says the count as each flower blooms (`ctx.say('count')`). Checked by typecheck and vitest; browser play of level 2 not run (see [VERIFICATION](../VERIFICATION.md)).
 2. **Flipper-ready ring (feel; ready).** The pulsing ring on the nearer flipper at levels 2–5. Check: typecheck, one filtered play of level 2 with a portrait screenshot. No logic.
 3. **Tables: layouts and skins for Pond and Hive (rules and art; ready).** New spot sets with reachability tests, skins, notes. Check: typecheck and `logic.test.ts` (every spot reachable, nothing trapped) and one filtered play.
 4. **Count on and Count back, levels 6 and 9.** A `start`/`descend` plan field, voice lines, how-to, README and GAMES entries. Check: rule tests and one filtered play of each, plus `fingerdemo` at the new top level.

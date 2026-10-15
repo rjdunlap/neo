@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-15 — Bumper Garden truthful how-to and bloom count
+
+- [PR #355](https://github.com/rjdunlap/neo/pull/355): deep-dive slice 1. Level 2 (bloom) now says the running count as each flower blooms (`ctx.say('count')`, the color levels' call) in `src/games/bumper-garden/index.ts`; the how-to card's step 1 is `to: 1` and the finish line is per level (`src/content/howto.ts`).
+- Ran: `npm run typecheck` passed; `vitest run src/content src/games/bumper-garden src/games/registry` 98 passed.
+- Not run: browser play of level 2 (a one-line change reusing the color-mode count call), `fingerdemo`, a device or a child.
+- Open: whether the count reads well at the 1.2 s relaunch pace.
+
 ## 2026-10-15 — Day by Day show the week turning
 
 - [PR #353](https://github.com/rjdunlap/neo/pull/353), `codex/day-by-day-week-art`; dispatch `day-by-day-week-art-20261015T084300Z`. Levels 1–3: noninteractive placement thread, settling weather stamps, Sunday–Monday return/evidence outlines and three seeded garden treatments; rules, RNG stream, target sizes, accounting and bot actions preserved. Level 4 retained.

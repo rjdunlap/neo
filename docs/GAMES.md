@@ -22,7 +22,7 @@ When a game changes, update its entry here. A new game gets an entry in its subj
 
 ### Bumper Garden
 
-*lap–pre-K · after Pokémon Pinball and 3D Pinball Space Cadet.* A ladybug ball bounces around flower bumpers on a garden table. It never drains: past the flippers a flower pot catches it and pops it back up. Tapping either half of the screen flips that side's flipper; young levels get a wider reach. Levels: launch for fun, flip until every flower blooms, bloom one color, bump numbered flowers in order. On goal levels a shot that blooms nothing wanted is a gentle miss; two in a row light the wanted flowers and aim the next launch at one (found by simulating the table).
+*lap–pre-K · after Pokémon Pinball and 3D Pinball Space Cadet.* A ladybug ball bounces around flower bumpers on a garden table. It never drains: past the flippers a flower pot catches it and pops it back up. Tapping either half of the screen flips that side's flipper; young levels get a wider reach. Levels: launch for fun (ends after six launches), flip until every flower blooms (the pet counts each bloom aloud, as it does at the color level), bloom one color (ends when all of that color have bloomed), bump numbered flowers in order (ends at the last numbered flower). On goal levels a shot that blooms nothing wanted is a gentle miss; two in a row light the wanted flowers and aim the next launch at one (found by simulating the table).
 
 ## Music Mountain (music)
 
