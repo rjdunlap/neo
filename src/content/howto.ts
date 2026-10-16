@@ -1031,6 +1031,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'Tap coins onto the counter to pay the price with as few shells as you can, then ring the bell; tap a coin on the mat to put it back and swap it.' },
     ],
     note: [
+      { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
       { to: 2, text: 'Each coin shows its worth as dots, like the dots on the price tag. Tap a coin on the mat to put it back. Two misses show a payment; help counts once per order.' },
       { from: 3, to: 3, text: 'Each coin shows its worth as dots, like the dots on the price tag. Tap a coin on the mat to put it back. Two misses bring a tip (biggest coin first) and show a payment; help counts once per order.' },
       { from: 4, to: 4, text: 'Tap a coin on the mat to put it back. Two misses show a payment; help counts once per order.' },

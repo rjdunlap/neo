@@ -1,9 +1,55 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { coinArt, marketStall } from './index';
-import { anotherWay, coinToName, PIP_NUMERAL, pips, teachLine, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
+import { prop } from '../../art/props';
+import { computeView } from '../../engine/view';
+import { coinArt, marketStall, STALLS } from './index';
+import { STALL_IDS, stallFor, stallLayout, goodPlacement, anotherWay, coinToName, PIP_NUMERAL, pips, teachLine, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
 
 describe('Market Stall', () => {
+  it('seeds every stall reproducibly, with distinct awnings, keepers and enough named goods for paired orders', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const stall = stallFor(new Rng(seed));
+      expect(stall).toBe(stallFor(new Rng(seed)));
+      seen.add(stall);
+    }
+    expect([...seen].sort()).toEqual([...STALL_IDS].sort());
+    expect(new Set(STALL_IDS.map(id => STALLS[id].awning)).size).toBe(3);
+    expect(new Set(STALL_IDS.map(id => STALLS[id].keeper)).size).toBe(3);
+    for (const id of STALL_IDS) {
+      const goods = STALLS[id].goods;
+      expect(new Set(goods.map(g => g.name)).size).toBe(goods.length);
+      expect(goods.length).toBeGreaterThanOrEqual(2);
+      if (id !== 'fruit') expect(goods.every(g => g.kind === id)).toBe(true);
+    }
+  });
+
+  it('keeps every stock drawing and price tag on screen, clear of the pet, payment mat and each other at four views', () => {
+    for (const [w, h] of [[1024, 768], [1366, 768], [768, 1024], [844, 390]]) {
+      const view = computeView(w, h);
+      const { cy, stockX } = stallLayout(view);
+      for (const id of STALL_IDS) for (const good of STALLS[id].goods) for (const count of [1, 2]) {
+        for (let i = 0; i < count; i++) {
+          const place = goodPlacement(good.kind, count, i);
+          const art = prop(good.kind, good.color);
+          art.scale.set(place.scale);
+          art.position.set(stockX + place.x, cy + place.y);
+          const b = art.getBounds();
+          const tag = { left: stockX + place.x - 56, right: stockX + place.x + 56, top: cy - 194, bottom: cy - 106 };
+          expect(b.x).toBeGreaterThan(150); // pet's left-hand space
+          expect(b.x + b.width).toBeLessThan(view.w);
+          expect(b.y).toBeGreaterThan(tag.bottom);
+          expect(b.y + b.height).toBeLessThan(cy + 70); // top of payment mat
+          expect(tag.left).toBeGreaterThan(150);
+          expect(tag.right).toBeLessThan(view.w);
+          expect(tag.top).toBeGreaterThan(158.5); // awning's scalloped edge
+          expect(b.width).toBeLessThan(150); // paired goods are 150 apart
+          art.destroy({ children: true });
+        }
+      }
+    }
+  });
+
   it('asks for amounts from 1 to 10 that the level\'s coins can make, never the same twice running', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {

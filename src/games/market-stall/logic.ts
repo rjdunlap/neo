@@ -1,3 +1,4 @@
+import type { PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -156,4 +157,19 @@ export function pips(value: number, r: number): { x: number; y: number; r: numbe
 export function teachLine(plan: ShopPlan, firstWay: number[] | null): 'biggest' | 'swap' | null {
   if (plan.mode !== 'mix' && plan.mode !== 'ways' && plan.mode !== 'fewest') return null;
   return firstWay ? 'swap' : 'biggest';
+}
+
+/** Choose the stall once for the round, after making its prices. Sticker draws use their own table. */
+export const STALL_IDS = ['fruit', 'flower', 'balloon'] as const;
+export type StallId = typeof STALL_IDS[number];
+export const stallFor = (rng: Rng): StallId => rng.pick(STALL_IDS);
+
+/** The balloon's string stays above the payment mat; all price tags keep their original position. */
+export function goodPlacement(kind: PropKind, count: number, index: number) {
+  return { x: index * 150 - (count - 1) * 75, y: kind === 'balloon' ? -30 : -10, scale: kind === 'balloon' ? 1 : 1.2 };
+}
+
+/** Shared round stock anchor for every stall; the existing payment area keeps its geometry. */
+export function stallLayout(view: { w: number; h: number }) {
+  return { cx: view.w / 2, cy: Math.min(view.h * 0.5, 420), stockX: view.w / 2 - 150 };
 }

@@ -193,7 +193,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 5. **Level 9, The ten-shell shell** (decision 3). The 10-coin purse, the raised target cap, the ten-bar tag and the row spacing. Same tier plus a screenshot of the tag at price 11, 15 and 20.
 6. **Level 10, Two baskets to twenty.** A plan entry. New-levels tier: rule tests, one play at 10, `fingerdemo` at 10.
 7. **Level 11, Change from twenty** (after 3 and 5). `paid` becomes a plan field. Same tier.
-8. **More stalls** (ready). Flower and balloon stalls, seeded per round (fresh 8). Tier: rule tests for layout at four views, `smoke` filtered to Market Stall, one screenshot each.
+8. **More stalls** — built 2026-10-16 ([PR #444](https://github.com/rjdunlap/neo/pull/444)); fruit, flower and balloon stalls seeded per round, with unchanged sticker art. [Build note](../archive/COMPLETED-2026-10-09.md#market-stall-more-stalls-2026-10-16).
 9. **Entries below and between level 1** (wait on the level-order decisions): *Which coin?* and *Which costs more?* first (no band change), then *Shell in the jar* and *Give me one, two, three*, which add `lap` and `toddler` to `bands`: update the README and roadmap counts, run `lands.test.ts` and add the fit to the person checks.
 10. **Level 12, Can I buy it?** (decision 7; define with a child first), then **level 13, Trade up** (decision 5, prototype first).
 11. **The grown-up window** (G1–G5, decision 6) after Lands stage B or a couch-side plan table; the true-minimum `fewest` (gap 8) is its first piece.

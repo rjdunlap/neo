@@ -14,7 +14,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { PLANS, PIP_LEVELS, PIP_NUMERAL, pips, teachLine, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
+import { stallFor, stallLayout, goodPlacement, type StallId, PLANS, PIP_LEVELS, PIP_NUMERAL, pips, teachLine, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -30,6 +30,23 @@ const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
   { kind: 'grapes', color: 'purple', name: 'bunch of grapes' },
   { kind: 'blueberries', color: 'blue', name: 'box of blueberries' },
 ];
+
+/** Round-only scenery and stock; GOODS above remains the six-fruit sticker recipe. */
+export const STALLS = {
+  fruit: { awning: 'red', keeper: 'pig', goods: GOODS },
+  flower: { awning: 'purple', keeper: 'cat', goods: [
+    { kind: 'flower', color: 'pink', name: 'pink flower' },
+    { kind: 'flower', color: 'yellow', name: 'yellow flower' },
+    { kind: 'flower', color: 'purple', name: 'purple flower' },
+    { kind: 'flower', color: 'blue', name: 'blue flower' },
+  ] },
+  balloon: { awning: 'teal', keeper: 'bear', goods: [
+    { kind: 'balloon', color: 'red', name: 'red balloon' },
+    { kind: 'balloon', color: 'yellow', name: 'yellow balloon' },
+    { kind: 'balloon', color: 'blue', name: 'blue balloon' },
+    { kind: 'balloon', color: 'pink', name: 'pink balloon' },
+  ] },
+} satisfies Record<StallId, { awning: ColorName; keeper: keyof typeof CRITTERS; goods: typeof GOODS }>;
 
 const COIN_LOOK: Record<number, { color: ColorName; r: number }> = {
   1: { color: 'yellow', r: 30 },
@@ -81,6 +98,7 @@ function tagArt(price: number): Container {
 }
 
 class MarketStall implements Game {
+  readonly stallId: StallId;
   readonly plan: ShopPlan;
   readonly orders: Order[];
   /** Coins on the counter, in the order they were put down. */
@@ -115,8 +133,9 @@ class MarketStall implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.orders = makeOrders(this.plan, ctx.rng);
+    this.stallId = stallFor(ctx.rng);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.55, clouds: 2, sun: true, seed: 29 }, ctx.view);
-    this.keeper = new Critter(CRITTERS[ctx.rng.pick(['pig', 'bear', 'cat', 'dog', 'cow'] as const)]);
+    this.keeper = new Critter(CRITTERS[STALLS[this.stallId].keeper]);
     this.keeper.scale.set(0.5);
     ctx.track(this.keeper);
     this.mat.eventMode = 'static';
@@ -150,26 +169,27 @@ class MarketStall implements Game {
   }
 
   private counterY() {
-    return Math.min(this.view.h * 0.5, 420);
+    return stallLayout(this.view).cy;
   }
 
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
     const cy = this.counterY();
-    const cx = v.w / 2;
+    const { cx, stockX } = stallLayout(v);
     const s = this.stall.clear();
+    const awning = swatch[STALLS[this.stallId].awning];
     // An awning with stripes, two posts and a counter.
     s.rect(cx - 330, 70, 20, cy - 70).rect(cx + 310, 70, 20, cy - 70).fill(wood.fill);
-    for (let i = 0; i < 8; i++) s.rect(cx - 340 + i * 85, 60, 85, 56).fill(i % 2 ? 0xffffff : swatch.red.fill);
-    s.rect(cx - 340, 60, 680, 56).stroke({ width: 5, color: swatch.red.line });
+    for (let i = 0; i < 8; i++) s.rect(cx - 340 + i * 85, 60, 85, 56).fill(i % 2 ? 0xffffff : awning.fill);
+    s.rect(cx - 340, 60, 680, 56).stroke({ width: 5, color: awning.line });
     // Scalloped edge hanging below the stripes.
     for (let i = 0; i < 8; i++) s.moveTo(cx - 340 + i * 85, 116).arc(cx - 297.5 + i * 85, 116, 42.5, Math.PI, 0, true);
-    s.fill(swatch.red.fill);
+    s.fill(awning.fill);
     s.roundRect(cx - 360, cy, 720, 50, 14).fill(wood.fill).stroke({ width: 6, color: wood.line });
     s.rect(cx - 340, cy + 50, 680, 200).fill(wood.light).stroke({ width: 5, color: wood.line });
     this.keeper.position.set(cx + 200, cy + 20);
-    this.goods.position.set(cx - 150, cy);
+    this.goods.position.set(stockX, cy);
     // The mat where coins go, on the front of the stall.
     const mw = 500;
     this.mat.position.set(cx - 50, cy + 140);
@@ -221,11 +241,12 @@ class MarketStall implements Game {
     this.goods.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.names = [];
     o.prices.forEach((price, i) => {
-      const good = this.ctx.rng.pick(GOODS.filter((g) => !this.names.includes(g.name)));
+      const good = this.ctx.rng.pick(STALLS[this.stallId].goods.filter((g) => !this.names.includes(g.name)));
       this.names.push(good.name);
       const art = prop(good.kind, good.color);
-      art.scale.set(1.2);
-      art.position.set(i * 150 - (o.prices.length - 1) * 75, -10);
+      const place = goodPlacement(good.kind, o.prices.length, i);
+      art.scale.set(place.scale);
+      art.position.set(place.x, place.y);
       const tag = tagArt(price);
       tag.position.set(art.x, -150);
       this.goods.addChild(art, tag);
