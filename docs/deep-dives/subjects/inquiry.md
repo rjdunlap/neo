@@ -1,0 +1,128 @@
+# Scientific inquiry: fair tests, evidence and data
+
+*Subject `inquiry` · L, T, P, K, S, U, M and G · 2026-10-16 · session `codex/inquiry-subject-research`. U/M are planning audiences, not runtime bands.*
+
+**Recommendation:** deepen **Ramp Race**, rather than register a general Science Lab. Let a player keep two visible trial records, choose a comparison and decide what those particular runs support. **Workshop Detective** is a later older-player mode: repair a confounded investigation and choose a test that separates two explanations. Observation stays in Photo Safari, graph construction in Picture Graph, and unpenalized prediction in Sink or Float. No implementation, new land, band or save system is proposed as a prerequisite.
+
+## Anchors and evidence limits
+
+Sources below were opened on 2026-10-16; reference descriptions were read, not games played. Recommendations are design inferences, not demonstrated learning effects.
+
+| Opened source | Anchor actually inspected | Implication and limit |
+| --- | --- | --- |
+| [Head Start, Cognition Infant](https://www.headstart.gov/school-readiness/article/cognition-infant) | IT-C 1–2; exploration/discovery and causal action across birth–36 months | Familiar actions and repeatable consequences suit the youngest. Guidance describes real-world development; it does not validate an infant touchscreen intervention |
+| [NGSS Appendix F](https://www.nextgenscience.org/sites/default/files/Appendix%20F%20%20Science%20and%20Engineering%20Practices%20in%20the%20NGSS%20-%20FINAL%20060513.pdf) | Practices 3 and 4, K–2, 3–5 and 6–8 progressions | Move from guided investigations and records to controlled variables and evaluating evidence. A practice is not a mandatory linear scientific-method recipe |
+| [NGSS 3-5-ETS1-3](https://www.nextgenscience.org/pe/3-5-ets1-3-engineering-design) | Fair-test planning, controlled variables and trial count; ETS1.B/C | Compare designs against a question; consider repeated observations. Our deterministic toy does not establish real measurement reliability |
+| [NGSS MS-PS2-2](https://www.nextgenscience.org/pe/ms-ps2-2-motion-and-stability-forces-and-interactions) | Investigation planning for motion, with variables and controls | An older case can ask whether evidence distinguishes explanations. Ramp Race does not model force/mass sufficiently to claim this performance expectation is met |
+| [Schulz and Bonawitz, 2007, author manuscript](https://eccl.scripts.mit.edu/papers/bonawitzandschulzseriousfun.pdf) | Preschool exploration after confounded versus unconfounded toy demonstrations; abstract and experimental account | Children averaging 57 months explored ambiguity and could separate toy mechanisms. This narrow laboratory task supports trying concrete uncertainty, not assuming preschoolers independently design fair tests or transfer the skill |
+
+The Head Start **Science Preschool** page (P-SCI 1–6) was found in search, but repeated page opens failed; its individual codes are **not an opened anchor** here. Klahr and Nigam's 2004 control-of-variables paper and a CMU follow-up were found, but PDF opens failed; do not claim their results as reviewed evidence. These remain useful follow-up reading before a teaching-efficacy claim. No primary intervention evidence on this proposed game for ages 6–14 or adults was established. The [tracker's tween evidence](../subjects.md#what-the-search-found-about-the-older-range-2026-10-14) is background, not a test of these proposals.
+
+## On the island today
+
+Inspected current rules, Ramp Race rendering/control flow, how-to/voice entries, the [inventory](../../GAMES.md), [candidate notebook](../../IDEAS.md#candidates), [science gap](../../IDEAS.md#gaps-in-the-catalog), [zone concepts](../../ROADMAP.md#zone-concepts) and related studies. Built means in this checkout; no new device verification is implied.
+
+| Existing game / proposal | Current action and content | Boundary |
+| --- | --- | --- |
+| **Ramp Race** · `ramp-race`, pre-K 1–2, school 1–4 | 1: four free wood-floor rolls; 2: three height-to-star tasks; 3: three height/floor tasks; 4: three two-lane fair comparisons. Heights 2/3/4; carpet/wood/ice multipliers 1/1.5/2.5. Nine setups, distances 2–10 toy marks; height × glide, not a measured physical law | Owns controlled ramp comparisons, predicted stopping points and trial records. Level 1's bot changes heights, but a person may repeat one height; do not claim the round proves comparison |
+| **Sink or Float** · `sink-float`, lap–school | Drop/test objects, unpenalized predictions, then sorting; journal only records observed tests | Keep floating exploration and the separately defined Make it float clay mode here; avoid another guessing tank |
+| **Photo Safari** · lap–school | Photos requested by identity/action/place; current level 7 combines action and place without naming the animal | Keep observation and Field Notes Detective evidence gathering here; do not add a second camera game |
+| **Picture Graph** · pre-K–school, levels 1–7 | Construct/read counts, differences and scaled bars; tally records at 7 | Owns representation of counts. A ramp run is a measurement, not a count of critters; start with two pictured records rather than a generic graph engine |
+| **Light Lab / Chain Reaction / Bouncy Launch** | Manipulate, replay or predict visible deterministic paths | Keep those material interactions and existing prediction modes; no universal experiment shell |
+| **Sample Safari / Sense Detective / Gadget Bench** · proposals | Sampling scope / selecting sensory evidence / adapting a gadget for conditions | Sampling is not causal intervention; sensory uncertainty is not experimental control; a design that works is not automatically an explanation. Coordinate their studies rather than creating duplicate mechanics |
+
+**Known Ramp Race gaps, recorded only:** its how-to says short/long rolls are free, while star modes increment misses; its whole-ladder goal/finish also misdescribe exploration and fair tests. In `fairTest()`, every unfair attempt from the second onward increments hints without displaying a corrective glow. `rampTouch()` returns null for an unfair setup, so the current demonstration helper is not a general recovery solver. These are support/accounting gaps to address in separate build slices; no code changed here. No couch entry was found for Ramp Race. Track Maker remains a separate creative mode proposal, not a prerequisite.
+
+## Similar games and physical play
+
+Six game/app precedents plus two physical activities. Product descriptions show mechanics; none establishes efficacy, a complete difficulty curve, present device behavior or a recommendation to buy.
+
+| Reference / kind | Progression actually supported by opened source | Borrow | Leave out / limit |
+| --- | --- | --- | --- |
+| [Tinybop Simple Machines](https://tinybop.com/apps/simple-machines) · touch exploration | Move among six machine types and vary their setup; no authored level order established | A change has an immediate, inspectable consequence; compare before/after | Castle destruction, broad simulator scope, imported media or copying its art; handbook PDF did not open |
+| [Toca Lab: Elements](https://www.tocaboca.com/toca-boca-jr) · exploratory app | Official collection page describes discovering elements through lab tools; detailed tool progression was not inspected | A tool feels like play, with a visible response worth repeating | Chemistry truth claims from cartoon transformations, collection gates, subscription flow; this is a thin precedent |
+| [PhET Pendulum Lab](https://phet.colorado.edu/en/simulations/pendulum-lab) · interactive physics simulation | Official page opened but delivered only its shell/title; controls and progression not established in this session | Follow-up lead for paired experiments; no specific UI copied into the definition | Numerical pendulum physics, stopwatch pressure; detailed control claims are deliberately withheld |
+| [Gravity Maze](https://www.ravensburger.co.uk/en-GB/products/games/logic-games/gravity-maze-76433) · tabletop construction puzzle | Manufacturer lists 60 beginner-to-expert challenges, a grid and towers | Small complete configurations; the run itself checks a design | Time/score pressure, small physical pieces for lap play, or calling path construction a fair-test curriculum |
+| [Human Resource Machine](https://tomorrowcorporation.com/humanresourcemachine) · programming puzzle | Start with two commands and gain a larger command set; optional optimization challenges | Teach a small vocabulary before asking for a complex plan; inspect input/output consequences | Workplace anxiety, speed optimization and equating a correct program with empirical evidence. Program authoring stays in Robot Path/Parcel Programs |
+| [Zendo](https://www.looneylabs.com/games/zendo) · tabletop induction | Build examples, receive rule classifications, narrow possibilities; easy/medium/difficult rule families | Choose an informative example, preserve evidence, invite cooperative reasoning | Race to guess, arbitrary unbounded hidden rules, competitive stakes. Secret Code already owns code deduction; Example Express owns learning labels |
+| [Sesame Workshop, Little Discoverers: Ramp It Up](https://static.pbslearningmedia.org/media/media_files/46629112-d994-4f61-9d46-f0effb7c121c.pdf) · physical/unplugged | Compare increasing ramp heights; mark and measure stopping positions using a consistent measurer | Pictured records tied to the actual setup; roles for releasing and noticing | Copying characters/worksheets, rigid activity duration, or publishing practical instructions without the project's reviewer |
+| [Exploratorium Slow Your Roll](https://www.exploratorium.edu/snacks/slow-your-roll) · physical investigation | Collect positions and develop representations of motion; source targets grades 6–12 | Older depth through records and competing descriptions | Construction tools, timed performance, full acceleration model; not an infant companion activity |
+
+PhET is a researched access limitation, not evidence for its detailed ladder. The other five game descriptions and two activities supply the usable precedents; a future definition may inspect PhET's actual controls if needed.
+
+## An answer for every audience
+
+These are hypotheses to try, not developmental milestones. No activity requires reading; replayable speech and depicted setups accompany the older symbolic records.
+
+| Audience | First action without an adult supplying the answer | Deeper decision / home |
+| --- | --- | --- |
+| L · under 2 | Drop a visible object in Sink or Float, or repeat a familiar cause/effect tap | Repetition with a grown-up noticing; no test-design quiz or new infant game |
+| T · about 2 | Choose another object and watch its result | Compare two visible outcomes through existing toys; no demand to explain causes |
+| P · about 3 | Make an unpenalized Sink or Float prediction, then test | Choose another example and replay; no independent control-of-variables claim. Ramp Race opening remains a person/age-range decision |
+| K · 4–5 | Change the one unlocked ramp control and roll | Existing Ramp Race 1–2; a shown before/after comparison can be tried with co-play before a new band window is proposed |
+| S · 6–8 | Run two setups and point to the one that rolled farther | Ramp Race proposed 5–6: distinguish prediction from observation, then isolate the named variable; records remove memory load |
+| U · 9–12 | Inspect two confounded trial cards and choose a repair | Proposed 7–8 and Workshop Detective: distinguish a working design from evidence for a cause; accept insufficient evidence |
+| M · 11–14 | Pick a test whose outcomes would separate two visible explanations | Workshop Detective's compact investigation is the teen appeal hypothesis; 11–12 school top, 13+ grownup under current policy. No new band or school extension assumed |
+| G · play for self | Solve one Workshop Detective case, explaining which record licenses a claim | Multiple useful tests and scoped conclusions, later interactions/measurement uncertainty; puzzle appeal untested |
+| G · play with child | One chooses the question/setup; the other runs and reads the pictured record, then swap | Both have a decision; solo still works. No simultaneous touches, multiplayer reward system or required adult answer |
+| G · page tool | Proposed **Two Tries, One Change** conversation card | Original plain HTML: question, prediction, observation, what else could explain it. Real-object procedure stays behind named practical-activity review |
+
+## Candidates and overlap decisions
+
+| Candidate | Fun action / learning purpose | Audience | Effort / new infrastructure |
+| --- | --- | --- | --- |
+| **Ramp Race: Trial Shelf** · first | Roll, retain two pictured stops, select what actually happened; distinguish prediction and record | S initially; K trial later | Medium: mode-specific transient cards, speech/how-to/demo; no generic notebook, journal/save change or registration |
+| **Ramp Race: One Change** | Repair paired setups to answer a named question; control a variable | S–U | Medium, existing two lanes and finite setup rules; extend rather than duplicate level 4 |
+| **Workshop Detective** · Ramp Race older mode first | Select an intervention separating explanations, then make only the claim justified | U–M/G | Medium–large authored case/evaluator; grow within Ramp Race until a non-ramp investigation earns separate identity. Older registration/destination needs a decision |
+| **Field Notes Detective / Sample Safari / Same Meadow, Two Pictures** | Collect discriminating observations / inspect sampling / compare displays | Existing studies' audiences | No additional candidate here; coordinate their existing definition packets |
+| **Two Tries, One Change** | Shared noticing and a question for the next try | P–G family | Small page card after review; no activity tracking, camera, microphone or project persistence |
+
+Discovery Marsh remains a zone proposal. Ramp Race stays in its existing land; a mode adds no tile and creates no land-capacity promise. A separately registered older game would require a destination/capacity audit. No shared investigation framework is justified by this first slice.
+
+## First game's proposed ladder: Ramp Race extensions
+
+Levels 1–4 remain stable, with pre-K 1–2 and school 1–4 unchanged until a build explicitly extends school. Append IDs 5–8; do not claim these ranges are approved or built. No inserted easier ID or birthday entry is needed for the proposed school extensions.
+
+| Level / audience proposal | First round and decision | Mistakes, hints and supported finish | Rule test / cost and couplings |
+| --- | --- | --- | --- |
+| **5 · Guess, roll, remember · S** | Wood floor; two different heights, first 2 then 4. Optional before/past prediction; roll each and retain its setup/stop card. Tap the farther recorded stop. Two pairs finish | Predictions/replays free. Wrong **record-reading answer** boings and replays both stops; after two, one counted hint rings the farther endpoint. Help can point to the answer, allowing normal completion | Recorded values equal `distance`; before/past split uses the first stop; both cards immutable; two genuinely different results; no rounded-value errors. New record/prediction UI, spoken lines, scoped card and ghost finger; no journal/couch |
+| **6 · One change, then compare · S/U** | Question: compare floors. Lane A fixed at height 3 wood; lane B starts height 4 carpet. Make height equal while leaving floors distinct, Check, run, then identify farther observed stop. Two questions, one floor and one height | Editing and exploratory inspection free. Check of a confounded pair is a miss; identical pair gets a nudge. Two misses show one valid repair and count help once per question. All fair alternatives accepted, including a different shared height if both lanes are editable in the eventual packet | Enumerate all 81 ordered pairs and both questions against `judgeFair`; recovery always reaches a valid pair; report observed direction correctly. Existing controls plus record UI; define exact editable lane policy before build |
+| **7 · What can we tell? · U** | Show two records: height 2 carpet → 2, height 4 ice → 10. Ask whether these runs isolate floor, height, or neither. Select neither, then repair one comparison and run it. Two cases, including one already controlled | No penalty for trying a setup or predicting. Explicit evidence-claim Check can miss; highlight both changed icons and speak why. Help makes a fair pair, runs it and supports the final claim; one sticker even with help | Label according to the question and changed variables, not guessed physical truth; include same-setup case only as repeat evidence, not a causal contrast; ensure all offered claims have explicit truth conditions. New claim UI; school-top range decision |
+| **8 · Which test helps? · U/M/G** | Two fictional mechanism cards explain the same existing records; choose among three next setups, run one, retain every explanation consistent with the whole record. One complete case ends the round | Tests free, including uninformative ones. “Both still fit” is valid. A contradictory claim on Check gets reason speech; help highlights a discriminating test, never a hidden answer without evidence | Finite model table, every outcome enumerated, at least one separating test, all consistent explanations accepted, no dead end or guess-the-author grading. New evaluator/art/cards/speech/demo; older routing and model choice gated |
+
+**Bounded Workshop Detective example for a future definition:** use a clearly marked invented workshop device, not a silent replacement for Ramp Race's public height × glide rule. Two binary controls H and F, outcome near/far. Candidate mechanisms A: outcome = H; B: outcome = F. Initial records (0,0) → near and (1,1) → far fit both. Tests (0,1) and (1,0) separate them; repeats do not. After observing (0,1) → far, only B fits. A third “both still possible” choice is correct before that intervention. Enumerate all four setups and both mechanisms, with no randomness in outcomes. Keep it in Ramp Race only if the visible device/model transition is honest and understandable; otherwise define a separate identity later. This example does **not** prove all real inquiry is binary or deterministic.
+
+For 5–7 keep the existing height/floor values, half-marks and explicit toy-model language. Repeating a deterministic run does not add independent evidence or teach measurement noise. Statistics, variability, interaction effects, blinding and randomization belong to later reviewed cases, not a fabricated jitter layer. Do not teach “change one thing” as the only scientific method: observational investigation remains valid in Photo Safari and ecology studies.
+
+## Experience and presentation
+
+First unsupported action: tap the ramp and press the familiar Go. Ramp compresses/highlights on touch-down; car rocks, runs and stops; a small endpoint flag grows into a pictured trial card containing the ramp and floor icons. Use Pixi Graphics and palette wood/swatch colors; carpet hatching, wood lines and ice facets distinguish surfaces without color alone. One short synthesized pentatonic landing note acknowledges the stop, not whether a guess was right. Keep island music unless authored audio actually needs silence.
+
+Two record cards stay visible and replayable while the question is asked; no need to remember a disappearing run or align a car precisely. Controls and answer cards remain at least 100 logical units after scaling, clear of the pet in both orientations. A trial-shelf layout must be defined before building; no smaller targets to fit more records. Preserve only two selected records in the first mode; later cases use bounded paging/inspection rather than a tiny spreadsheet.
+
+Replay varies the ordered height pair, question and surface pairing with seeded selection; decorative car colors never secretly change results. The supported ending is the same two-pair completion with one sticker. Home is always available, and replay is a deliberate choice; no countdown, limited runs, best-test leaderboard or obligation to complete a notebook. Creative setups and predictions are not wrong answers. Avoid smooth zero-miss exploration being advertised as independent mastery; resolve new-mode adaptation before implementation.
+
+For co-play, swap question chooser and observer after a pair; a solo player can do both without hidden information. The proposed off-screen card asks what changed and what was noticed; actual materials/setup instructions await the existing named-review process. Do not reuse Exploratorium construction instructions for a toddler activity.
+
+Human/device questions remain: does a child recognize each card as *that run*; understand “both changed” without reading; distinguish prediction from result; find the supported ending; and enjoy another pair? Check iPad speech for half-marks, target spacing, pet clearance, sound-off understanding and interruption/replay behavior. Older players must judge whether Workshop Detective feels like investigating rather than a disguised quiz. No bot can establish these answers or real-world transfer.
+
+## Decisions for the developer
+
+1. **New-mode accounting/adaptation:** keep prediction, setup editing, repeats and free tests unpenalized. Approve misses only for explicit goal/evidence Checks, and how exploration affects adaptation. Keep the existing level 2–4 rules until an authorized change; correcting their misleading card is ready independently.
+2. **Windows and older routing:** propose school 1–6 first, then school-top 7; pre-K stays 1–2. Preschool entry needs observation. Decide how 13+ gets Workshop Detective without silently introducing a band or a duplicate game tile.
+3. **Workshop identity/model:** explicitly label an invented mechanism; never hide a changed physics law behind familiar ramp art. Review whether the binary-device example belongs to Ramp Race, Sorting Machine or a separate investigation. Generic hidden-rule induction stays with Secret Code/Example Express when those mechanics match.
+4. **Practical card reviewer:** select a person before any physical ramp instructions are printed or spoken. Recommend educator review of model/evidence wording before learning claims; docs-first definitions do not depend on that choice.
+
+## Build slices, in order
+
+1. **Q1 · Truthful Ramp Race support packet — ready, docs only.** Freeze accurate level 1–4 goal/steps/finish and miss wording; specify an idempotent corrective glow and recovery demo after an unfair pair. Keep accounting unchanged. Enumerate wrong-variable-only, both-changed and identical cases. Output a buildable support definition; this subject study is not a full game deep dive and leaves that tracker row unclaimed.
+2. **Q2 · Build the Q1 support correction — after Q1.** Existing-game bug-fix tier: typecheck, Ramp Race rules, one filtered regression (unfair twice → visible recovery → finish), and fingerdemo if demonstrated recovery changes. Build only if shared files change. No navigation/offline sweep.
+3. **Q3 · Define Trial Shelf 5 and One Change 6 — ready, docs only.** Freeze two-record layout, two-pair ending, editable-lane policy, prediction/Check distinction, exact claims/hints, speech/how-to, ghost-finger recovery, resize/cancellation and proposed school window. List invariants above; implementation accounting/range decisions stay explicit.
+4. **Q4 · Build 5, then 6 in separate sessions — after Q3 and decisions 1–2.** New interaction: typecheck/unit rules, one filtered first/top play with wrong Check and hint, portrait screenshot and ghost finger. Build for shared-file changes only. Preserve existing IDs/pins and no added save schema.
+5. **Q5 · Define What can we tell? 7 — after Q3, docs only.** One confounded and one controlled case, finite claim truth table, repair and supported ending. Build later with the new-interaction tier; no general trial-history engine.
+6. **Q6 · Define one Workshop Detective case — after decision 3, docs only.** Freeze four setups/two mechanisms and exact distinguishing actions; resolve host/routing, G solo/co-play, and all consistent answers. A separate identity needs a full new-game definition and land capacity. Implementation uses its actual new-interaction/new-game tier.
+7. **Q7 · Define Two Tries, One Change page card — after named practical review.** Original plain HTML, optional noticing roles, no tracking; implementation check scope depends on the actual parent-panel changes. No practical procedure published in this study.
+
+## What was built
+
+Nothing. Research and documentation only: subject write-up, tracker, candidate notebook, roadmap recommendation/ready definitions, developer decisions and verification entry. Local relative links/anchors and `git diff --check` checked; no tests, build, browser suites, device checks or efficacy claims. Initial tree clean; fetched origin with the overlap script (0 behind/0 ahead, no inquiry match). Automatic approval review initially blocked publication; the developer then explicitly authorized publication. Integrated ten newer upstream commits before final docs checks. No open draft or other PRs were present when reviewed.
