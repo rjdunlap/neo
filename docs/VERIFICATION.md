@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-16 — Bubble Pop mode gallery definition
+
+- Docs only, `claude/bubble-pop-mode-gallery-definition`, [PR #407](https://github.com/rjdunlap/neo/pull/407): [definitions/mode-gallery.md](definitions/mode-gallery.md) (Bubble Pop intro mode gallery, N4); roadmap chunk 20 now ready.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+
 ## 2026-10-15 — Goodnight Room tent and boat cabin
 
 - [PR #403](https://github.com/rjdunlap/neo/pull/403), slice 8 only: two seeded rooms, distinct six-friend casts, six existing slots/one light, code-drawn campfire/pot/anchor and porthole. No new level, band/order or save changes; existing how-to remains accurate.
