@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { chainCounts, collapse, demoMove, ensureMove, findLine, findSquare, makeGrid, PLANS, popped, step, type Grid } from './logic';
+import { chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, PLANS, popped, step, type Grid } from './logic';
 
 const R: ColorName = 'red';
 const B: ColorName = 'blue';
 
 describe('Dot Link', () => {
+  it('gives every dot color its own mark, so no two colors differ by hue alone', () => {
+    const marks = DOT_COLORS.map((k) => DOT_MARKS[k]);
+    expect(marks.every(Boolean)).toBe(true);
+    expect(new Set(marks).size).toBe(DOT_COLORS.length);
+  });
+
   it('extends through same-color neighbors, steps back, and closes squares', () => {
     const g: Grid = [[R, R, B], [R, R, B], [B, B, B]];
     expect(step(g, [{ r: 0, c: 0 }], { r: 0, c: 1 })).toBe('extend');

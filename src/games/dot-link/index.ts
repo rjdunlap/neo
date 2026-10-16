@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
+import { shapePath } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { palmOnGlass } from '../../engine/input';
@@ -9,7 +10,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chainCounts, collapse, demoMove, DOT_COLORS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotPlan, type Grid } from './logic';
+import { chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotMark, type DotPlan, type Grid } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -21,6 +22,46 @@ const LEVELS: BandLevels = {
 
 const GAP = 108;
 const DOT_R = 34;
+const MARK_R = 16;
+
+/** The mark inside a dot, about 2r across and centered. Call fill/stroke after. */
+function markPath(g: Graphics, mark: DotMark, r: number): Graphics {
+  switch (mark) {
+    case 'heart':
+    case 'star':
+      return shapePath(g, mark, r);
+    case 'drop':
+      return g
+        .moveTo(0, -r * 1.1)
+        .bezierCurveTo(r * 0.5, -r * 0.4, r * 0.9, 0, r * 0.9, r * 0.25)
+        .bezierCurveTo(r * 0.9, r * 0.75, r * 0.5, r * 1, 0, r * 1)
+        .bezierCurveTo(-r * 0.5, r * 1, -r * 0.9, r * 0.75, -r * 0.9, r * 0.25)
+        .bezierCurveTo(-r * 0.9, 0, -r * 0.5, -r * 0.4, 0, -r * 1.1)
+        .closePath();
+    case 'leaf':
+      return g
+        .moveTo(-r * 0.85, r * 0.85)
+        .bezierCurveTo(-r * 1.1, -r * 0.3, -r * 0.2, -r * 0.95, r * 0.95, -r * 0.95)
+        .bezierCurveTo(r * 0.95, r * 0.2, r * 0.3, r * 1.1, -r * 0.85, r * 0.85)
+        .closePath();
+    case 'moon': {
+      // A crescent: the outer circle's left half, back along a wider circle through the same tips.
+      const d = r * 2.5;
+      const inner = Math.hypot(r, d);
+      const a = Math.atan2(r, d);
+      const pts: number[] = [];
+      for (let i = 0; i <= 12; i++) {
+        const t = (3 * Math.PI) / 2 - (i / 12) * Math.PI;
+        pts.push(r * 0.3 + Math.cos(t) * r, Math.sin(t) * r);
+      }
+      for (let i = 1; i < 12; i++) {
+        const t = Math.PI - a + (i / 12) * 2 * a;
+        pts.push(r * 0.3 + d + Math.cos(t) * inner, Math.sin(t) * inner);
+      }
+      return g.poly(pts);
+    }
+  }
+}
 
 class DotLink implements Game {
   readonly plan: DotPlan;
@@ -88,7 +129,8 @@ class DotLink implements Game {
   private drawDot(g: Graphics, color: ColorName) {
     const sw = swatch[color];
     g.clear().circle(0, 0, DOT_R).fill(sw.fill).stroke({ width: 5, color: sw.line });
-    g.circle(-10, -10, 9).fill({ color: 0xffffff, alpha: 0.5 });
+    g.circle(-19, -17, 6).fill({ color: 0xffffff, alpha: 0.5 });
+    markPath(g, DOT_MARKS[color]!, MARK_R).fill(sw.light).stroke({ width: 3, color: sw.line, join: 'round' });
   }
 
   private buildDots() {

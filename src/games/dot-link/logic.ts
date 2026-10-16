@@ -39,6 +39,10 @@ export function chainCounts(plan: DotPlan, length: number, loop: boolean): boole
 
 export const DOT_COLORS: ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple'];
 
+export type DotMark = 'heart' | 'drop' | 'star' | 'leaf' | 'moon';
+/** A mark inside each color's dot, always drawn, so red and green differ by more than hue. */
+export const DOT_MARKS: Partial<Record<ColorName, DotMark>> = { red: 'heart', blue: 'drop', yellow: 'star', green: 'leaf', purple: 'moon' };
+
 export type Grid = ColorName[][];
 export interface Cell {
   r: number;

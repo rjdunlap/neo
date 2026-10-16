@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-15 — Dot Link marks in the dots
+
+- [PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, commit `ac46108` on base `c6b3368`: [dive](deep-dives/dot-link.md#build-slices-in-order) slice 1. Each dot color carries an always-on mark (heart, drop, star, leaf, moon; `DOT_MARKS`). Art only: no rule, level, save or setting change.
+- Passed typecheck; `npx vitest run src/games/dot-link` (6 tests, new: every color has its own distinct mark).
+- Passed `GAME_URL=http://localhost:5891 BROWSER_SUITE=batch BATCH_ONLY=dots` (levels 1–6) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=6` (clean, 12.1 s). Reviewed `test-results/browser/dot-link-6.png`: marks legible; purple/moon was not on that seeded board.
+- Not run: build (no shared files changed). Open: marks at 34-unit dots on a real iPad ([device check](DEVICE-CHECKS.md#needs-a-person-or-a-device)).
+
 ## 2026-10-15 — Bumper Garden Count on and Count back
 
 - [PR #408](https://github.com/rjdunlap/neo/pull/408), `codex/bumper-count-on-back`: tested base `1f49fb7`, claim `5049718` plus scoped working diff. IDs 6/9 add seeded count-on/back sequences and highlighted/spoken targets; pre-K order `[3,4,6,5,9]`, old IDs/pins and other bands preserved. IDs 7/8 unbuilt; couch trips/physics/scoring unchanged.
@@ -104,12 +111,6 @@
 - Fixture failures were diagnosed by `test-results/parade-support-probe.mjs`: bottom-left pet intercepted the second pickup; random spawn pickups could prefill the line. Final harness restores an uncollected starting fixture and separates eligible/wrong ducks, then uses real taps/arrival rules. Product steering and accounting were not changed. Owned Vite stopped; links/diff checked.
 - Not run: build (shared text only, no shared behavior), ghost finger (demonstrated action unchanged), other levels/browser suites, portrait, world/couch/offline. Prior level-10 play/demo evidence retained. Real iPad speech, intended pickup and child understanding remain [open](DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
-## 2026-10-15 — Duckling Parade deep dive
-
-- [PR #387](https://github.com/rjdunlap/neo/pull/387), `codex/duckling-parade-deep-dive`, dispatch `duckling-dive-20261015T175326Z`: audited existing 1–10, five band windows, generation/accounting, speech/how-to, ghost finger and no couch entry; corrected stale tracker ceiling.
-- [Write-up](deep-dives/duckling-parade.md) compares six precedents and learning references, defines presentation and bounded ready/gated slices. Meerca evidence is first-party search excerpts (open returned 403); other reference pages/PDF opened. None played.
-- Ran Markdown links/anchors and `git diff --check`; docs only. No tests, build or browser suites run. Existing recorded level-10 evidence retained, not rerun.
-- Open: real-iPad speech/control/color and child reaction; count aid/accounting, proposed continuation/mapping/authoring and lap-entry decisions. No implementation or developer decision resolved.
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
@@ -117,7 +118,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
-| Game deep-dive docs | 2026-10-15: Duckling Parade source audit, six precedents, ladder/experience/slices; links/anchors and diff check. Prior Memory Match clock definition evidence retained | [Duckling Parade](#2026-10-15--duckling-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
+| Game deep-dive docs | 2026-10-15: Duckling Parade source audit, six precedents, ladder/experience/slices; links/anchors and diff check. Prior Memory Match clock definition evidence retained | [Duckling Parade](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `marblejump` (`marble-jump`) | 2026-10-14: levels 1/6, invalid jump, hint recovery/repeated hint, portrait and land placement passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `logroll` (`log-roll`) | 2026-10-14: levels 1/3, invalid rolls, hint, Undo, portrait and Tinker Lab launch passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `snowball` (`snowball-merge`) | 2026-10-14: levels 1/3, inert press, hint once, Undo/Restart, portrait and Lantern Lake launch/leave passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
@@ -168,7 +169,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Duckling Parade (`arcade`, `fingerdemo`) | 2026-10-15: meadow treatments (two seeded looks) typecheck, 11 rules, filtered `arcade` parade 1 and 10, portrait of both looks ([proof](#2026-10-15--duckling-parade-meadow-treatments)); destination/cancel/lost-release/palm/portrait/destroy regression and level 10 [2,1]/sticker; clean 17.0s finger; typecheck/seven rules. Level-6 partial/extras support proof retained | [Steering proof](#2026-10-15--duckling-parade-destination-and-cancellation) | Real iPad speech/touch/meadow look, intended pickup and child understanding open; `fingerdemo` not rerun for meadows |
 | Jelly Drums 10 (`originals`, `fingerdemo`) | 2026-10-13: levels 1–10 passed; clean 34.6 s level-10 demo; typecheck, 1,225 unit tests; two portraits | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--jelly-drums-level-10-one-big-jelly) | No build or offline run; iPad, speech and child play open |
 | Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |
-| Dot Link 6 (`batch`, `fingerdemo`) | 2026-10-10: levels 1–6 passed the filtered Dot Link play with two deliberate misses and a hint; level 6 ghost finger clean in 12.6 s | Dot Link level 6 entry | Browser automation; iPad touch feel, device speech and child play remain open |
+| Dot Link 6 (`batch`, `fingerdemo`) | 2026-10-15: levels 1–6 passed the filtered `dots` play with the new marks; level 6 ghost finger clean in 12.1 s | [Dot Link marks entry](#2026-10-15--dot-link-marks-in-the-dots) | Browser automation; iPad touch feel, device speech and child play remain open |
 | Garden Grow 7 (`woods`, `fingerdemo`) | 2026-10-10: two-by-three array, two wrong rains, hint, saved round and sticker; clean ghost-finger demo in 38.8 s | Garden Grow levels 6–7 entry | Screenshot reviewed; iPad target feel, device speech and child play remain open |
 | Weather Wardrobe 7 (`wardrobe7`, `fingerdemo`) | 2026-10-10: removed the old outfit, dressed for three changing weathers, two wrong choices, hint and saved sticker; ghost finger clean in 20.7 s | Weather Wardrobe level 7 entry | Portrait screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Pixel Pictures 6 (`woods`, `fingerdemo`) | 2026-10-10: typecheck, six targeted logic tests, 15 how-to tests; two-color clues, empty-cell miss, hint, two authored pictures and saved reward; ghost finger clean in 59.1 s | Pixel Pictures level 6 entry | Browser automation; portrait/device feel and speech remain open |
