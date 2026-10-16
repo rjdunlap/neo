@@ -243,7 +243,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'sing-along-barn': {
     goal: 'Sing a short song by tapping, Old MacDonald or one of five nursery songs: every tap is the next note, and a friend joins each verse.',
     steps: [
-      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm", then "And on that farm he had a cow" for each friend. The nursery songs (Hot Cross Buns, Mary, Au Clair, Rain Rain, Itsy Bitsy Spider) open with their first lines, then each friend sings the next verse.' },
+      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm", then "And on that farm he had a cow" for each friend. The nursery songs (Hot Cross Buns, Mary, Au Clair, Rain Rain, Itsy Bitsy, Bounce High) open with their first lines, then each friend sings the next verse.' },
       { from: 3, to: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
       { from: 4, to: 4, text: 'Tap anywhere to sing the opening. Then, at the end of each verse, tap the friend you want to sing next; the friends who have sung wait in the row and only say hello. Tap anywhere to sing that friend\'s verse.' },
       { from: 5, to: 5, text: 'Tap the song you want, from six cards. Then tap anywhere to sing the opening; at the end of each verse, tap the friend you want to sing next. The friends who have sung wait in the row and only say hello.' },
