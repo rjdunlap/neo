@@ -12,7 +12,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { exampleIndex, fits, HOOP_R, hintFor, hoopCenters, makeRound, nextToSort, placeAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
+import { exampleIndices, fits, HOOP_R, hintFor, hoopCenters, makeRound, nextToSort, placeAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
@@ -190,10 +190,10 @@ class CritterSort implements Game {
       } else s.drag = draggable(node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.drop(s, x, y) });
       this.sorters.push(s);
     }
-    if (this.plan.placed) {
-      // A worked example: one critter that fits is already in the hoop.
-      const done = this.sorters[exampleIndex(this.round)];
-      done.placed = 'left';
+    // A worked example: one critter already sits in its place in each hoop (the middle when they overlap).
+    const examples = exampleIndices(this.plan, this.round).map((i) => this.sorters[i]);
+    for (const done of examples) {
+      done.placed = placeOf(done.c, this.round.rules, this.plan.mode === 'not');
       if (done.drag) done.drag.enabled = false;
     }
     if (this.plan.mode === 'guess') {
@@ -222,6 +222,16 @@ class CritterSort implements Game {
       }
     }
     this.busy = false;
+    const index = this.index;
+    await this.instruct();
+    // Name the example only while its round is still on the board.
+    if (this.index !== index || this.finished) return;
+    const [first, second] = examples.map((s) => KIND_WORDS[s.c.kind]);
+    if (second) return this.ctx.say('sort.examples', { a: first, b: second });
+    if (first) return this.ctx.say('sort.example', { who: first });
+  }
+
+  private instruct() {
     const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
     if (this.plan.mode === 'one') return this.ctx.instruct('sort.one', { a });
     if (this.plan.mode === 'two') return this.ctx.instruct('sort.two', { a, b });
