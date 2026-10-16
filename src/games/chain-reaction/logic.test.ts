@@ -104,17 +104,38 @@ describe('Chain Reaction', () => {
         const run = trace(board, []);
         const bells = board.bells!;
         expect(board.loose).toHaveLength(0);
-        expect(board.fixed).toHaveLength(PREDICT_PLAN.fixed);
+        expect(board.fixed.length).toBeGreaterThanOrEqual(PREDICT_PLAN.fixed);
+        expect(board.fixed.length).toBeLessThanOrEqual(PREDICT_PLAN.fixed + 1);
         expect(new Set(bells).size).toBe(PREDICT_PLAN.predict!.bells);
         expect(bells.every((col) => col >= 0 && col < board.cols)).toBe(true);
         // The marble stays on the machine, rings one of the shown bells, and needed its ramps to get there.
         expect(run).toMatchObject({ escaped: false, success: true, end: board.target });
         expect(bells).toContain(run.end);
-        expect(run.end).not.toBe(board.start);
         expect(run.steps.filter((s) => s.ramp)).toHaveLength(PREDICT_PLAN.fixed);
         expect(predictedBell(board)).toBe(board.target);
       }
     }
+  });
+
+  it('level 8 answers vary, so a prediction needs the ramps read rather than a corner guessed', () => {
+    const ends = new Set<number>(), places = new Set<number>(), shifts = new Set<number>();
+    let agree = 0, disagree = 0, offPath = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const board = makeBoard(PREDICT_PLAN, new Rng(seed * 7 + 3));
+      const hit = trace(board, []).steps.filter((s) => s.ramp).map((s) => s.ramp);
+      if (hit[0] === hit[1]) agree++; else disagree++;
+      if (board.fixed.length > hit.length) offPath++;
+      ends.add(board.target);
+      shifts.add(board.target - board.start);
+      places.add(board.bells!.indexOf(board.target));
+    }
+    expect(agree).toBeGreaterThan(20);
+    expect(disagree).toBeGreaterThan(20);
+    expect(offPath).toBeGreaterThan(20);
+    expect(shifts.has(0)).toBe(true);
+    expect(shifts.size).toBeGreaterThanOrEqual(3);
+    expect(ends.size).toBe(4);
+    expect(places.size).toBe(3);
   });
 
   it('level 8 has nothing to place, so a hint or bot never moves a part', () => {

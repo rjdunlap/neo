@@ -26,7 +26,7 @@ export interface ChainPlan {
   solutions: { min: number; max: number };
   machines: number;
   /** A finished machine with several bells: she predicts which one rings, then runs it. Nothing is placed. */
-  predict?: { bells: number };
+  predict?: { bells: number; offPath: number };
 }
 
 export const PLANS: ChainPlan[] = [
@@ -42,7 +42,7 @@ export const PLANS: ChainPlan[] = [
 export const WHICH_BELL = 8;
 export const PREDICT_PLAN: ChainPlan = {
   name: 'Which bell? Tap the bell the marble will ring, then run it', cols: 4, rows: 3, fixed: 2, loose: 0, decoys: 0, chime: false,
-  solutions: { min: 1, max: 1 }, machines: 3, predict: { bells: 3 },
+  solutions: { min: 1, max: 1 }, machines: 3, predict: { bells: 3, offPath: 0.5 },
 };
 
 export const planFor = (level: number): ChainPlan => level === WHICH_BELL ? PREDICT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -185,7 +185,7 @@ function key(c: Cell) {
  * an impossible or ambiguous early round.
  */
 export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
-  if (plan.predict) return makePredictBoard(plan, plan.predict.bells, rng);
+  if (plan.predict) return makePredictBoard(plan, plan.predict, rng);
   for (let attempt = 0; attempt < 800; attempt++) {
     const rows = rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row));
     const looseRows = new Set(rows.slice(0, plan.loose));
@@ -235,17 +235,20 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
 }
 
 /**
- * A finished machine for a prediction: every fixed ramp sits on the marble's path, so each one visibly matters, the marble
- * never leaves the board, and it ends away from where it started (a straight drop would need no reading). The bell it rings
- * is one of the bells shown; the others stand in other columns along the bottom.
+ * A finished machine for a prediction: `plan.fixed` ramps sit on the marble's path and the marble never leaves the board.
+ * Two ramps that agree carry it to a corner; two that disagree bring it back under the cup, so the answer is not always
+ * the far bell. Some machines add one ramp the marble never reaches, so counting ramps is not enough: she follows the
+ * real way down. The bell it rings is one of the bells shown; the others stand in other columns along the bottom.
  */
-function makePredictBoard(plan: ChainPlan, bells: number, rng: Rng): ChainBoard {
+function makePredictBoard(plan: ChainPlan, { bells, offPath }: { bells: number; offPath: number }, rng: Rng): ChainBoard {
   for (let attempt = 0; attempt < 400; attempt++) {
     const rows = new Set(rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row)).slice(0, plan.fixed));
     let col = rng.int(1, plan.cols - 2);
     const start = col;
     const fixed: FixedRamp[] = [];
+    const path: Cell[] = [];
     for (let row = 0; row < plan.rows; row++) {
+      path.push({ row, col });
       if (!rows.has(row)) continue;
       const options: Ramp[] = [];
       if (col > 0) options.push('left');
@@ -254,7 +257,13 @@ function makePredictBoard(plan: ChainPlan, bells: number, rng: Rng): ChainBoard 
       fixed.push({ row, col, ramp });
       col += delta(ramp);
     }
-    if (col === start) continue;
+    if (rng.chance(offPath)) {
+      const visited = new Set(path.map(key));
+      const free = Array.from({ length: plan.rows * plan.cols }, (_, i) => ({ row: Math.floor(i / plan.cols), col: i % plan.cols }))
+        .filter((cell) => !visited.has(key(cell)));
+      const cell = rng.pick(free);
+      fixed.push({ ...cell, ramp: cell.col === 0 ? 'right' : cell.col === plan.cols - 1 ? 'left' : rng.pick<Ramp>(['left', 'right']) });
+    }
     const others = rng.shuffle(Array.from({ length: plan.cols }, (_, c) => c).filter((c) => c !== col)).slice(0, bells - 1);
     const board: ChainBoard = { cols: plan.cols, rows: plan.rows, start, target: col, fixed, loose: [], sockets: [], solution: [], bells: [col, ...others].sort((a, b) => a - b) };
     if (!trace(board, []).success) continue;

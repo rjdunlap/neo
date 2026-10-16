@@ -1243,7 +1243,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 6, text: 'The round ends after both machines ring their bells.' },
     ],
     note: [
-      { from: 8, to: 8, text: 'A prediction is never a wrong answer, and the light bulb is not counted as help. Every round here moves on toward building machines.' },
+      { from: 8, to: 8, text: 'A prediction is never a wrong answer, and the light bulb is not counted as help.' },
       {
         from: 6,
         text: 'A run that misses is an experiment, not a wrong answer. Loose ramps can be moved back to their tray, and this puzzle has several working designs.',
