@@ -458,7 +458,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 6, text: 'The round ends when the whole letter has been traced.' },
       { from: 7, to: 8, text: 'The round ends when the whole word or name has been traced.' },
     ],
-    note: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The ink colour changes from round to round and never changes the trail.',
+    note: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The ink color changes from round to round and never changes the trail.',
   },
   'robot-path': {
     goal: 'Explore how the robot follows or fixes a program.',

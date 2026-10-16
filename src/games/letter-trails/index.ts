@@ -149,7 +149,7 @@ class LetterTrails implements Game {
     points.slice(1).forEach((p) => g.lineTo(p[0] * this.size, p[1] * this.size));
     g.stroke({ width, color, cap: 'round', join: 'round' });
   }
-  /** The round's look: teal, a rainbow that changes colour along the trail, gold with glitter, or sand. Paint only. */
+  /** The round's look: teal, a rainbow that changes color along the trail, gold with glitter, or sand. Paint only. */
   private drawInk(points: readonly Point[]) {
     if (this.look === 'rainbow') {
       for (let i = 1; i < points.length; i++) this.drawPath(this.ink, [points[i - 1], points[i]], swatch[RAINBOW[Math.floor(i / 4) % RAINBOW.length]].fill, 24);
