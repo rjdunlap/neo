@@ -104,6 +104,7 @@ None was played. "Opened" means the page itself was read.
 
 - **Fits:** elimination by features (Who Am I?), behavior-based enrichment with several valid answers (Enrichment Day), a family-tree pairing puzzle (Species Comeback), cast swaps that put zoo friends into games she already knows, a zoo-visit card.
 - **Does not fit, and why:** a zoo manager or tycoon (money, guest pressure, an animal as stock); collecting species as a quota; quizzes of names (2-LS4-1 excludes names); showing extinction, poaching or a dying animal to young bands; a timer on feeding rounds; animals that get hungry or sad while she is away (the treehouse rule: nothing accrues or waits); real animal-care instructions without a reviewer.
+- **Where it lives.** The developer decided on 2026-10-16 to dress existing lands with habitat kits rather than add a zoo land, so "zoo" here means a keeper's care for friends on the island, not a destination.
 - **Captivity framing.** Keepers care for animals that live at the zoo; the island never sells, buys or catches them. How much to say about why zoos exist is a [decision](#decisions-for-the-developer).
 
 ## An answer for every audience
@@ -168,7 +169,7 @@ None was played. "Opened" means the page itself was read.
 
 1. **How zoos are framed.** Proposal: keepers care for friends who live at the zoo; no buying, catching or collecting; why zoos exist is said only on the grown-up card.
 2. **Extinction for young bands.** Proposal: below school, only recovery stories ("there are more ferrets now"), never loss; at U–G, "very few were left" is said once with a source.
-3. **A zoo land or habitat kits?** Proposal: no new land yet; a kit dresses an existing land, and Who Am I? goes to Discovery Marsh's working concept or an existing land with room. The audit flagged this.
+3. **A zoo land or habitat kits?** **Answered by the developer, 2026-10-16** (recorded on main while this study was being written): dress the island with more diverse habitats and vary the scenery, rather than add a zoo land. So Who Am I? and Enrichment Day go to existing lands, and the cast arrives through [habitat kits](../../IDEAS.md#world-variety-animals-pets-and-environments).
 4. **Which kit first.** Proposal: Bamboo Hill for Enrichment Day (panda as a bear variant, the Smithsonian's panda example), Night Garden later (owl exists, bat is a tricky case, nocturnal behavior).
 5. **Who reviews.** The trait table, every conservation statement and the Zoo Detective card need a named reviewer (a zoo educator or biology teacher) before anything ships.
 6. **Species Comeback's home.** Lantern Lake (`grownup`) with a school top-level entry, or `grownup` only; and whether the black-footed ferret is drawn (M) or the puzzle uses an existing friend as a stand-in.
