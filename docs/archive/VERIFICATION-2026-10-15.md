@@ -379,3 +379,10 @@
 - Passed typecheck, build, `BROWSER_SUITE=howtolevel` and `BROWSER_SUITE=howto HOWTO_ONLY=bubble-pop` (rerun after the final layout change; "nothing is saved by looking" asserted). `npm test` 1356/1360: four timeouts (ferry-jam, peg-garden, penguin-slide) under machine load; all 39 tests in those files pass alone (code untouched). New `mode-cards.test.ts` passes.
 - Probe screenshots of lap and pre-K intros at 1024×768 and 768×1024, and pre-K on an 844×390 phone: no page errors, Play on screen. Both bands show the ladder in both iPad orientations (pre-K's seven tiles under the demo window in landscape); the phone drops it for height. A game without `levelCard` takes the old layout path unchanged, so the full `howto` suite was not rerun.
 - Not run: `world`, offline (navigation and persistence unchanged), device speech, iPad. Open: speech of the 15 lines, whether a grown-up finds the ladder clearer than numbers ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-15 — Treasure Map couch play
+
+- [PR #417](https://github.com/rjdunlap/neo/pull/417), `claude/treasure-map-couch` (bd059ce): Treasure Map joins couch play (ring and dig through `control()`, `autoplay()`, twin face-off on wrong digs, last unlock tier); touch play unchanged.
+- Ran `npm run typecheck` and `npx vitest run src/couch src/games/treasure-map src/content` (154 passed). Full `npm test` 1358/1360: Ferry Jam's frozen-harbor test and Peg Garden's ghost-finger aim test timed out under full-run load and passed alone (13/13); untouched code, recorded as a load flake.
+- Passed `GAME_URL=http://localhost:5293 BROWSER_SUITE=couchgames COUCH_ONLY=treasure-map`: intro, controller diagram lights with the bot, bot finishes a round through `control()`, one stop saved, sticker, child save untouched, no page errors. The intro screenshot shows the ring walking A1 to C3.
+- Not run: an in-game couch screenshot (a probe stalled at profile setup), whether the controller reminder covers the grid's bottom row, full `couch`/`couchcourse` (trip and course code unchanged), build, offline, a real controller or TV.

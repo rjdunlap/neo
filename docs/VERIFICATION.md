@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-16 — Missing Melody definition
+
+- Docs only: [definitions/missing-melody.md](definitions/missing-melody.md) defines chunk 7's preschool story episode (entry from Bumpy Hills; Song Maker 4, Sound Garden 2, Sing-Along Barn 3; no typed story result). Levels checked against each game's range in source at `239296f`.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code or browser checks; nothing built.
+- Open: the build, after the Woodland Picnic (chunk 22), with its story/navigation/save tier checks.
+
 ## 2026-10-16 — Critter Sort level 9 This but not that
 
 - [PR #436](https://github.com/rjdunlap/neo/pull/436), `codex/critter-sort-nine`, worker `01a143f7-ff89-7560-8b89-30f08aa4e88a`, dispatch `critter-sort-nine-20261016T090734Z`: tested base `a9c650e` plus implementation diff. One A/not-B hoop, both-part speech, explicit mat and two diagrams; school appends 9, IDs/pins and pre-K preserved.
@@ -104,13 +110,6 @@
 - Ran `npm run typecheck` and `npx vitest run src/games/critter-sort src/content` (87 passed; new rule test: examples in their own places, at least two loose, bot and hint never touch one, 200 seeds per level).
 - Passed `GAME_URL=http://localhost:5961 BROWSER_SUITE=woods WOODS_ONLY=sort` levels 1–4, and level 5 with `FROM_LEVEL=5` after the loop fix; `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=1,2,3,5` clean (12.1, 12.1, 12.2 s at pre-K; 25.2 s at school for 5). One portrait screenshot at level 3 (768×1024) shows the bear in the middle.
 - Not run: build (no shared assets), the full unit suite, the other suites. Device speech for the two new lines is open in [DEVICE-CHECKS.md](DEVICE-CHECKS.md).
-
-## 2026-10-15 — Treasure Map couch play
-
-- [PR #417](https://github.com/rjdunlap/neo/pull/417), `claude/treasure-map-couch` (bd059ce): Treasure Map joins couch play (ring and dig through `control()`, `autoplay()`, twin face-off on wrong digs, last unlock tier); touch play unchanged.
-- Ran `npm run typecheck` and `npx vitest run src/couch src/games/treasure-map src/content` (154 passed). Full `npm test` 1358/1360: Ferry Jam's frozen-harbor test and Peg Garden's ghost-finger aim test timed out under full-run load and passed alone (13/13); untouched code, recorded as a load flake.
-- Passed `GAME_URL=http://localhost:5293 BROWSER_SUITE=couchgames COUCH_ONLY=treasure-map`: intro, controller diagram lights with the bot, bot finishes a round through `control()`, one stop saved, sticker, child save untouched, no page errors. The intro screenshot shows the ring walking A1 to C3.
-- Not run: an in-game couch screenshot (a probe stalled at profile setup), whether the controller reminder covers the grid's bottom row, full `couch`/`couchcourse` (trip and course code unchanged), build, offline, a real controller or TV.
 
 ## Coverage summary
 
