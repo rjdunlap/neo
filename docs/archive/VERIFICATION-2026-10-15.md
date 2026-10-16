@@ -1,5 +1,22 @@
 # Verification 2026-10-15 (archived entries)
 
+## 2026-10-15 — Duckling Parade destination and cancellation
+
+- [PR #391](https://github.com/rjdunlap/neo/pull/391), branch `codex/duckling-parade-steering`, worker `01a1411e-24fa-7b30-9214-8ffecd67319d`, dispatch `duckling-steering-20261015T195026Z`: local palette destination ring and cancelled/lost steering cleanup at existing 1–10; tap walking, palm rejection, generator/accounting and saves retained.
+- Tested claim `630eb8a` plus final game/browser diff; integrated docs-only origin `9c610b1` before publication, preserving this proof. Typecheck and all seven Duckling Parade rule tests passed. Browser script syntax, Markdown links and diff checked.
+- Passed `GAME_URL=http://localhost:5193 BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=10 PARADE_STEERING=1 npm run test:browser` at 19:54:51 UTC: clamped/fading noninteractive cue; walking after release; cancellation, lost capture, window exit, zero-button stale move, blur/visibility, outside release, unrelated/old finger, fourth-touch palm rejection; portrait and destroy cleanup; level 10 wrong choice/hint, pond, expected [2,1] result/sticker and finish cleanup. No page errors. Portrait screenshot visually reviewed.
+- `test-results/parade-steering-probe.mjs` showed off-canvas pointerdown cannot hit Pixi; fixture now starts on canvas then moves outside for clamping. Disabling cancellation made the regression fail at `pointercancel`; restored the identical verified source. `BROWSER_SUITE=fingerdemo FINGER_ONLY=duckling-parade FINGER_LEVELS=10` on the same URL passed cleanly in 17.0 seconds at 19:55:39 UTC.
+- Not run: build (local code-drawn/input change), broad suites, other levels, offline, real hardware. Real iPad finger/cancel feel and child understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device). Owned Vite stopped after checks.
+
+
+## 2026-10-15 — Duckling Parade truthful support
+
+- [PR #389](https://github.com/rjdunlap/neo/pull/389), `codex/duckling-parade-support`, worker `01a140eb-497f-7df2-b83e-64f6f9253a42`, dispatch `duckling-support-20261015T185456Z`: support slice 1 at existing 1–10. Variable-color descriptions, tap/lead how-to, level-10 spare/exclusion speech and combined-total extra-arrival wording; rules/accounting, steering/art, bands/saves retained.
+- Tested `9abb803` plus scoped source/browser diff (base `d8d056d`, claim `841323b`): typecheck and 28 focused rule/how-to/support tests passed. Support assertions cover variable palettes, taps across 1–10, exclusion and combined total after a partial delivery. Browser script syntax passed.
+- Passed `BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=6 GAME_URL=http://localhost:5192 npm run test:browser` at 19:00:35 UTC: two wrong-color misses/one hint, first delivery of one, second batch with one extra, total-versus-batch speech parameters/text, extra back in meadow, [3,1] saved accounting and one sticker; no page errors.
+- Fixture failures were diagnosed by `test-results/parade-support-probe.mjs`: bottom-left pet intercepted the second pickup; random spawn pickups could prefill the line. Final harness restores an uncollected starting fixture and separates eligible/wrong ducks, then uses real taps/arrival rules. Product steering and accounting were not changed. Owned Vite stopped; links/diff checked.
+- Not run: build (shared text only, no shared behavior), ghost finger (demonstrated action unchanged), other levels/browser suites, portrait, world/couch/offline. Prior level-10 play/demo evidence retained. Real iPad speech, intended pickup and child understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
 ## 2026-10-15 — Memory Match level-12 clock definition
 
 - Docs only, `codex/memory-clock-definition`, [PR #369](https://github.com/rjdunlap/neo/pull/369), dispatch `memory-clock-definition-20261015T124701Z`. The [Same time packet](../deep-dives/memory-match.md#level-12-definition-same-time) defines readable numbered faces, seeded three-pair selection, exact matches, replay/misses/help, complete ending and future implementation proof. Level 12 remains unbuilt; no bands/order table, couch, saves or other levels changed.

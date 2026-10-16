@@ -12,8 +12,9 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bubble, drawBubble } from './bubble';
 import { BubbleBackdrop } from './backdrop';
 import { LOOKS, sceneFor } from './scenes';
+import { modePicture } from './mode-art';
 import { TargetSignView } from './sign';
-import { bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
+import { bondNumbers, bubbleToPop, choosePalette, countRun, modeCardFor, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -511,6 +512,10 @@ export const bubblePop: GameModule = {
     if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
     if (p.mode === 'bonds') return `Pop two bubbles that make ${p.sum} together (${p.goal} pairs)`;
     return countLevel(level);
+  },
+  levelCard: (level) => {
+    const card = modeCardFor(level);
+    return { name: card.name, line: card.line, picture: () => modePicture(card.picture) };
   },
   music: STYLES.bubbles,
   coplayHint: 'Say "pop!" together, name the colors as {name} pops them, and count any dots together.',

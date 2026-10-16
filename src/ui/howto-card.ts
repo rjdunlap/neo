@@ -1,10 +1,12 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { ink, swatch } from '../art/palette';
+import { voice } from '../audio/voice';
 import { onTap } from '../engine/input';
 import type { View } from '../engine/view';
 import type { Demo } from '../couch/demo';
 import type { HowToCard } from '../content/howto';
-import { stepLevel } from '../progress/difficulty';
+import type { LevelCard } from '../games/types';
+import { levelsInOrder, stepLevel } from '../progress/difficulty';
 import type { LevelRange } from '../progress/difficulty';
 import { HoldButton, RoundButton } from './buttons';
 import { arrowIcon, checkIcon, houseIcon, playIcon } from './icons';
@@ -27,6 +29,13 @@ const NOTE_MOUSE = 'A demonstration of this level: a pointer clicks and drags. Y
 const STEP_RADIUS = 38;
 const STEP_HOLD = 0.35;
 const STEP_GAP = 10;
+/** A level's picture (a game with `levelCard`): a tile she or a grown-up can tap to hear the level explained. */
+const TILE = 112;
+/** The intro's row of the band's levels, easiest first: tiles shrink to fit one row, and below the smallest the row is left off. */
+const LADDER_MAX = 84;
+const LADDER_MIN = 48;
+const LADDER_GAP = 8;
+const TILE_FILL = 0xe3f3ff;
 
 /** What the card does as the intro before a game's first round: it starts the round, or goes back. */
 export interface HowToIntro {
@@ -40,7 +49,15 @@ export interface HowToIntro {
    * Arrows to choose the level before the round is built: the levels she may play, and what a held arrow does. The scene
    * answers with `show`. Left off when the game has one level.
    */
-  pick?: { range: LevelRange; step: (delta: 1 | -1) => void };
+  /** A game's named, pictured levels (`GameModule.levelCard`), for the ladder of the band's levels. */
+  levelCard?: (level: number) => LevelCard;
+  pick?: {
+    range: LevelRange;
+    step: (delta: 1 | -1) => void;
+    /** The level her progress suggested when the card opened, and a grown-up's pin: marked on the ladder, they do not follow the arrows. */
+    suggested?: number;
+    pinned?: number | null;
+  };
 }
 
 /**
@@ -124,18 +141,21 @@ export class HowToPanel extends Container {
     if (this.intro) this.veil.fill(0xfff4e3);
     else this.veil.fill({ color: 0x2b2440, alpha: 0.5 });
     this.body.removeChildren().forEach((c) => c.destroy({ children: true }));
-    // Long entries step their text down rather than run off a short screen; buttons keep their size.
-    let built = this.build(view, SCALES[0]);
-    for (const scale of SCALES.slice(1)) {
-      if (built.card.height + 24 <= view.h) break;
-      built.card.destroy({ children: true });
-      built = this.build(view, scale);
+    // Long entries step their text down rather than run off a short screen; buttons keep their size. A ladder of levels
+    // that still does not fit at the smallest text is left off before anything else gives.
+    let built = this.build(view, SCALES[0], true);
+    fit: for (const ladder of built.ladder ? [true, false] : [false]) {
+      for (const scale of SCALES) {
+        if (built.card.height + 24 <= view.h) break fit;
+        built.card.destroy({ children: true });
+        built = this.build(view, scale, ladder);
+      }
     }
     this.body.addChild(built.card);
     if (built.window) this.demo!.layout(built.card.x + built.window.x, built.card.y + built.window.y, built.window.w);
   }
 
-  private build(view: View, scale: number): { card: Container; window: { x: number; y: number; w: number } | null } {
+  private build(view: View, scale: number, withLadder: boolean): { card: Container; window: { x: number; y: number; w: number } | null; ladder: boolean } {
     const demo = this.demo;
     this.holds = [];
     const range = this.intro?.pick && this.intro.pick.range.max > this.intro.pick.range.min ? this.intro.pick.range : null;
@@ -150,7 +170,9 @@ export class HowToPanel extends Container {
       new Text({ text: value, style: { fontFamily: FONT, fontSize: size, fill, fontWeight: weight, wordWrap: true, wordWrapWidth: wrap, lineHeight: size * 1.25 } });
     const BODY = Math.round(22 * scale);
 
-    const rows: Text[] = [];
+    const rows: Container[] = [];
+    /** Rows that are not text (the level's picture, the ladder), with the height they take. */
+    const fixed = new Map<Container, number>();
     const add = (label: string, value: string) => {
       rows.push(text(label, 13, MUTED, '600'));
       rows.push(text(value, BODY, ink));
@@ -161,11 +183,30 @@ export class HowToPanel extends Container {
       rows.push(text('HOW TO PLAY', 13, MUTED, '600'));
       rows.push(text(this.info.title, Math.round(34 * scale), ink, '600'));
     }
-    rows.push(text(`THIS LEVEL  ·  ${this.info.levelNumber}`, 13, MUTED, '600'));
-    // With arrows the pair sits to the left of the description, and is the tallest part of the row.
+    const mode = this.info.mode;
+    // A named level keeps its number small after the name: the grown-ups' page and pins still speak in numbers.
+    rows.push(text(mode ? `THIS LEVEL  ·  ${mode.name.toUpperCase()}  ·  level ${this.info.levelNumber}` : `THIS LEVEL  ·  ${this.info.levelNumber}`, 13, MUTED, '600'));
+    // With arrows the pair sits to the left of the description (or of the level's picture), and is the tallest part of the row.
     const side = range ? STEP_RADIUS * 4 + STEP_GAP + 22 : 0;
-    const levelText = text(this.info.level, BODY, ink, '500', inner - side);
+    // With a picture, the arrows and the picture make a row of their own, and the description runs the full width under it.
+    const pictureRow = mode ? new Container() : null;
+    if (pictureRow) {
+      pictureRow.addChild(this.tile(mode!, side));
+      fixed.set(pictureRow, TILE);
+      rows.push(pictureRow);
+    }
+    const levelText = text(this.info.level, BODY, ink, '500', inner - (pictureRow ? 0 : side));
     rows.push(levelText);
+    // Beside a demonstration the ladder goes under its window, where the narrow text column leaves room, packed closer since the
+    // window narrows with the text; otherwise it follows the description.
+    const underWindow = wide && !!demo;
+    const ladder = withLadder && mode ? this.ladder(underWindow ? dw : inner, underWindow ? 4 : LADDER_GAP) : null;
+    const ladderLabel = ladder ? text('LEVELS, EASIEST FIRST', 13, MUTED, '600') : null;
+    if (ladder && !underWindow) {
+      rows.push(ladderLabel!);
+      fixed.set(ladder.row, ladder.size);
+      rows.push(ladder.row);
+    }
     add('GOAL', this.info.goal);
     rows.push(text('WHAT TO DO', 13, MUTED, '600'));
     this.info.steps.forEach((s, i) => rows.push(text(`${i + 1}.  ${s}`, BODY, ink)));
@@ -176,20 +217,23 @@ export class HowToPanel extends Container {
     let y = head ? head.bottom : 30;
     const slot = demo ? { x: wide ? width - 32 - dw : (width - dw) / 2, y: wide ? 22 : y + 2, w: dw } : null;
     if (demo && !wide) y += dh + noteH + 8;
-    const placed: Array<[Text, number]> = [];
+    const placed: Array<[Container, number]> = [];
     let stepY = 0;
     // Beside the window the text column is narrow; below it, where the column is empty, the text runs the full width.
-    const below = wide && demo ? 22 + dh + noteH + 8 : Infinity;
+    const ladderTop = 22 + dh + noteH + 18;
+    const below = !underWindow ? Infinity : ladder ? ladderTop + 24 + ladder.size + 14 : 22 + dh + noteH + 8;
+    const arrowsBeside = pictureRow ?? levelText;
     for (const r of rows) {
-      const small = r.style.fontSize === 13;
+      const small = r instanceof Text && r.style.fontSize === 13;
       if (small && placed.length) y += 14;
-      if (!small && r !== levelText && y >= below) r.style.wordWrapWidth = width - 64;
-      const h = range && r === levelText ? Math.max(r.height, STEP_RADIUS * 2) : r.height;
-      placed.push([r, y + (h - r.height) / 2]);
-      if (range && r === levelText) stepY = y + h / 2;
+      if (r instanceof Text && !small && r !== levelText && y >= below) r.style.wordWrapWidth = width - 64;
+      const own = fixed.get(r) ?? r.height;
+      const h = range && r === arrowsBeside ? Math.max(own, STEP_RADIUS * 2) : own;
+      placed.push([r, y + (h - own) / 2]);
+      if (range && r === arrowsBeside) stepY = y + h / 2;
       y += h + (small ? 3 : 6);
     }
-    if (demo && wide) y = Math.max(y, 22 + dh + noteH + 8);
+    if (demo && wide) y = Math.max(y, below);
     // The intro's Play is the biggest thing on the card; the "?" card has one small check.
     const play = this.intro ? 62 : 52;
     const cardH = y + 24 + play * 2 + 18;
@@ -205,9 +249,14 @@ export class HowToPanel extends Container {
       const note = new Text({ text: { finger: NOTE_FINGER, mouse: NOTE_MOUSE, none: NOTE_CONTROLLER }[demo!.pointer ?? 'none'], style: { fontFamily: FONT, fontSize: 13, fill: MUTED, fontWeight: '500', wordWrap: true, wordWrapWidth: dw, lineHeight: 16 } });
       note.position.set(slot.x, slot.y + dh + 12);
       card.addChild(frame, note);
+      if (ladder && underWindow) {
+        ladderLabel!.position.set(slot.x, ladderTop);
+        ladder.row.position.set(slot.x, ladderTop + 24);
+        card.addChild(ladderLabel!, ladder.row);
+      }
     }
     for (const [r, ry] of placed) {
-      r.position.set(32 + (range && r === levelText ? side : 0), ry);
+      r.position.set(r === pictureRow ? 0 : 32 + (range && r === levelText && !pictureRow ? side : 0), ry);
       card.addChild(r);
     }
     if (range) card.addChild(...this.arrows(range, 32 + STEP_RADIUS, stepY));
@@ -226,7 +275,55 @@ export class HowToPanel extends Container {
     card.position.set((view.w - width) / 2, Math.max(12, (view.h - cardH) / 2));
     // A tap on the card itself must not fall through to the veil and close it.
     card.eventMode = 'static';
-    return { card, window: slot };
+    return { card, window: slot, ladder: !!ladder };
+  }
+
+  /** The level's picture on a pale tile, beside the arrows: a tap says what the level asks, and does nothing else. */
+  private tile(mode: NonNullable<HowToCard['mode']>, side: number): Container {
+    const tile = new Container();
+    tile.addChild(new Graphics().roundRect(0, 0, TILE, TILE, 22).fill(TILE_FILL).stroke({ width: 3, color: swatch.blue.line, alpha: 0.35 }));
+    const picture = mode.picture();
+    picture.eventMode = 'none';
+    picture.position.set(TILE / 2, TILE / 2);
+    tile.addChild(picture);
+    tile.position.set(32 + side, 0);
+    onTap(tile, () => void voice.say(mode.line), { cooldown: 400 });
+    return tile;
+  }
+
+  /**
+   * The band's levels in play order, one small picture each: the level on the card is outlined, the one her progress suggested
+   * has a green dot, a pinned one a pin. It only shows; the arrows are the one way to choose. Null when the levels would be too small.
+   */
+  private ladder(inner: number, gap: number): { row: Container; size: number } | null {
+    const pick = this.intro?.pick;
+    const levelCard = this.intro?.levelCard;
+    if (!pick || !levelCard) return null;
+    const levels = levelsInOrder(pick.range);
+    if (levels.length < 2) return null;
+    const size = Math.min(LADDER_MAX, Math.floor((inner - gap * (levels.length - 1)) / levels.length));
+    if (size < LADDER_MIN) return null;
+    const row = new Container();
+    row.eventMode = 'none';
+    levels.forEach((level, i) => {
+      const cell = new Container();
+      cell.position.set(i * (size + gap), 0);
+      const here = level === this.info.levelNumber;
+      cell.addChild(new Graphics().roundRect(0, 0, size, size, 14).fill(TILE_FILL));
+      const picture = levelCard(level).picture();
+      picture.scale.set((size / TILE) * 0.92);
+      picture.position.set(size / 2, size / 2);
+      cell.addChild(picture);
+      // The level on the card: a heavy outline, told apart from the dot and the pin by its shape.
+      if (here) cell.addChild(new Graphics().roundRect(-3, -3, size + 6, size + 6, 16).stroke({ width: 5, color: ink }));
+      if (level === pick.suggested) cell.addChild(new Graphics().circle(size - 4, 4, 8).fill(swatch.green.fill).stroke({ width: 3, color: 0xffffff }));
+      if (level === pick.pinned) {
+        const pin = new Graphics().moveTo(6, 6).lineTo(12, 18).stroke({ width: 3, color: ink, cap: 'round' }).circle(5, 4, 7).fill(swatch.red.fill).stroke({ width: 2, color: 0xffffff });
+        cell.addChild(pin);
+      }
+      row.addChild(cell);
+    });
+    return { row, size };
   }
 
   /** The two level arrows, side by side. An arrow at the end of the levels is dimmed and does nothing. */
