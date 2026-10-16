@@ -271,3 +271,10 @@
 - [PR #392](https://github.com/rjdunlap/neo/pull/392), `claude/inventions-research`: [study](../deep-dives/subjects/inventions.md), tracker row, notebook Gadget Bench and Workshop Cases rows and [roadmap packets](../ROADMAP.md#inventions-recommendations). Opened NGSS ETS1 (K-2, 3-5, MS), England D&T KS1–3 and history KS1, Beck et al. 2014 (*Frontiers*, full text), the Smithsonian's Wright brothers testing page, Inventioneers, and the Gizmos & Gadgets and Bad Piggies articles; Beck 2011, German and Defeyter, Spark!Lab, the Cardboard Challenge and printing history from search excerpts only. C3 cited from the time-change session, not reopened.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs only).
 - Not run or open: no reference game played; EiE, Spark!Lab and Exploratorium pages failed to open; tween/parent appeal untested; real-invention content and page cards need a named reviewer.
+
+## 2026-10-15 — Lands stage C1b group 3, three games switch live
+
+- Code, `claude/lands-c1b-group-3`, [PR #396](https://github.com/rjdunlap/neo/pull/396) (7c828b7 on 9e7e35e): `bouncy-launch`, `ferry-jam` and `penguin-slide` are `liveController`; `touchReturned()` restores touch (spring up, undo buttons back, a key-held boat put back); a squashed spring no longer counts toward the "bigger pull" journal entry. `livekeys` now covers eleven games and takes `LIVE_ONLY`.
+- Ran `npm run typecheck`, `npm test` (152 files, 1330 tests) and `npm run build`, all passing.
+- Ran `BROWSER_SUITE=livekeys LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` (GAME_URL=http://localhost:5657): bouncy-launch L3, ferry-jam L3, penguin-slide L2 each touch, keys, touch, keys, touch, passing. Removing Ferry Jam's put-back made it fail ("ferry-jam puts a key-held boat back at a finger"); restored.
+- Not run: the other eight livekeys games (code unchanged), world, offline, couch/couchgames (couch path unchanged: `ctx.couch` keeps the controller layout), a real pad or iPad.

@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-15 — Treasure Map couch play
+
+- [PR #417](https://github.com/rjdunlap/neo/pull/417), `claude/treasure-map-couch` (bd059ce): Treasure Map joins couch play (ring and dig through `control()`, `autoplay()`, twin face-off on wrong digs, last unlock tier); touch play unchanged.
+- Ran `npm run typecheck` and `npx vitest run src/couch src/games/treasure-map src/content` (154 passed). Full `npm test` 1358/1360: Ferry Jam's frozen-harbor test and Peg Garden's ghost-finger aim test timed out under full-run load and passed alone (13/13); untouched code, recorded as a load flake.
+- Passed `GAME_URL=http://localhost:5293 BROWSER_SUITE=couchgames COUCH_ONLY=treasure-map`: intro, controller diagram lights with the bot, bot finishes a round through `control()`, one stop saved, sticker, child save untouched, no page errors. The intro screenshot shows the ring walking A1 to C3.
+- Not run: an in-game couch screenshot (a probe stalled at profile setup), whether the controller reminder covers the grid's bottom row, full `couch`/`couchcourse` (trip and course code unchanged), build, offline, a real controller or TV.
+
 ## 2026-10-15 — Bug Builder paired wing finish
 
 - [PR #416](https://github.com/rjdunlap/neo/pull/416), `codex/bug-wing-flutter`, tested base `7d765c2` plus scoped art/index/browser diff: dive slice 2, mirror 5–7 only. Wings and stamps fold across their common hinge and reopen in the existing finish wait; faint model wing remains visible. Rules/accounting unchanged.
@@ -103,13 +110,6 @@
 - Passed `GAME_URL=http://localhost:5387 BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=1,10 npm run test:browser` on the final code (level 10 with wrong-duckling misses and glow hint). A portrait probe (768x1024) screenshotted both looks, no page errors.
 - Not run: `fingerdemo` (bot and input unchanged), build (no shared files), other suites. A real-iPad look is not checked.
 
-## 2026-10-15 — Lands stage C1b group 3, three games switch live
-
-- Code, `claude/lands-c1b-group-3`, [PR #396](https://github.com/rjdunlap/neo/pull/396) (7c828b7 on 9e7e35e): `bouncy-launch`, `ferry-jam` and `penguin-slide` are `liveController`; `touchReturned()` restores touch (spring up, undo buttons back, a key-held boat put back); a squashed spring no longer counts toward the "bigger pull" journal entry. `livekeys` now covers eleven games and takes `LIVE_ONLY`.
-- Ran `npm run typecheck`, `npm test` (152 files, 1330 tests) and `npm run build`, all passing.
-- Ran `BROWSER_SUITE=livekeys LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` (GAME_URL=http://localhost:5657): bouncy-launch L3, ferry-jam L3, penguin-slide L2 each touch, keys, touch, keys, touch, passing. Removing Ferry Jam's put-back made it fail ("ferry-jam puts a key-held boat back at a finger"); restored.
-- Not run: the other eight livekeys games (code unchanged), world, offline, couch/couchgames (couch path unchanged: `ctx.couch` keeps the controller layout), a real pad or iPad.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
@@ -198,7 +198,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `machines` | 2026-10-15 | [Chain Reaction trail](archive/VERIFICATION-2026-10-15.md#2026-10-15--chain-reaction-trail-and-watch-again) | Covers Chain Reaction's first and top levels; level 6 asserts the trail and replay; `fingerdemo` `FINGER_ONLY=chain-reaction` both levels passed |
 | `habitat` | 2026-10-09, again after the review fixes (hidden answer, spaced cards, a hint toward a working garden, tap-to-hear prepared pieces) | Habitat Helpers review entry (first entry: Habitat Helpers entry) | First, prediction and top levels; Chrome automation, not a child or device |
 | `couch` | 2026-10-09, on a frozen snapshot after the chooser replaced the title screen (entry by Enter, the controller press and Back to start); 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
-| `couchgames` | 2026-10-08, Pond Conga filtered (2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered; 2026-10-09: Peg Garden, Bumper Garden, Bouncy Launch, Egg Catch and Bounce Back filtered, after their ghost fingers) | Child's island, couch Settings, Just me, Island Bridges, Pond Conga and last five couch games entries | Peg Garden's bot needed one retry (its known flake) |
+| `couchgames` | 2026-10-15, Treasure Map filtered (bot round through `control()`, one stop saved, sticker, child save untouched; no in-game screenshot) (2026-10-08, Pond Conga filtered; 2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered; 2026-10-09: Peg Garden, Bumper Garden, Bouncy Launch, Egg Catch and Bounce Back filtered, after their ghost fingers) | Child's island, couch Settings, Just me, Island Bridges, Pond Conga and last five couch games entries | Peg Garden's bot needed one retry (its known flake) |
 | `couchcourse` | 2026-10-08, with twelve courses | Island Bridges entry | About four to seven minutes |
 | `couchnames` | 2026-10-08 | Pond Conga entry | |
 | `couchsettings` | 2026-10-08 | Pond Conga entry | About 30 seconds |
