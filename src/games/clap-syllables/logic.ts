@@ -28,11 +28,11 @@ export const WORDS: readonly Word[] = [
 
 export const byCount = (n: number) => WORDS.filter((x) => syllables(x) === n);
 
-export type ClapMode = 'along' | 'solo' | 'sort' | 'match' | 'train';
+export type ClapMode = 'along' | 'solo' | 'sort' | 'match' | 'train' | 'compare';
 
 export interface ClapPlan {
   mode: ClapMode;
-  /** Words per round ('along', 'solo'), pictures to sort ('sort'), questions ('match') or trains to line up ('train', three pictures each). */
+  /** Words per round ('along', 'solo'), pictures to sort ('sort'), questions ('match', 'compare') or trains to line up ('train', three pictures each). */
   count: number;
   /** The most beats a word in this level has. */
   max: 2 | 3 | 4;
@@ -51,16 +51,21 @@ export const PLANS: ClapPlan[] = [
 /** Cars in a beat train: the pictures in one 'train' question. */
 export const CARS = 3;
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const COMPARE_LEVEL = 8;
+export const COMPARE_PLAN: ClapPlan = { mode: 'compare', count: 4, max: 4, name: 'Longer or shorter? Choose the word with more or fewer claps' };
+
+export const planFor = (level: number) => level === COMPARE_LEVEL ? COMPARE_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Question {
-  /** One word to clap ('along', 'solo'), the pictures to sort ('sort'), the pictures to choose from ('match'), or the jumble to line up ('train'). */
+  /** One word to clap ('along', 'solo'), the pictures to sort ('sort'), the pictures to choose from ('match', 'compare'), or the jumble to line up ('train'). */
   words: Word[];
-  /** 'match': how many claps are played; exactly one picture has that many. */
+  /** Answer's clap count: the played count in match, the requested larger/smaller count in compare. */
   target?: number;
+  /** Comparison direction; every pair has unequal counts. */
+  comparison?: 'more' | 'fewer';
 }
 
-/** The word in a 'match' question that has the claps that were played. */
+/** The exact answer to a matching or comparison question, shared by judging, support and the finger. */
 export const answerOf = (q: Question) => q.words.find((x) => syllables(x) === q.target)!;
 
 /** The questions for one round. Words never repeat within a round. */
@@ -93,6 +98,15 @@ export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
       const picked = [first, second];
       picked.push(rng.pick(counts.filter((n) => left(n) > picked.filter((p) => p === n).length)));
       return { words: rng.shuffle(picked.map(take)) };
+    });
+  }
+  if (plan.mode === 'compare') {
+    const first = rng.pick(['more', 'fewer'] as const);
+    return Array.from({ length: plan.count }, (_, i) => {
+      const a = rng.pick(counts.filter((n) => pools.get(n)!.length > 0));
+      const b = rng.pick(counts.filter((n) => n !== a && pools.get(n)!.length > 0));
+      const comparison = i % 2 === 0 ? first : first === 'more' ? 'fewer' : 'more';
+      return { comparison, target: comparison === 'more' ? Math.max(a, b) : Math.min(a, b), words: rng.shuffle([take(a), take(b)]) };
     });
   }
   // match: each question shows one picture of each size and plays one of those sizes.

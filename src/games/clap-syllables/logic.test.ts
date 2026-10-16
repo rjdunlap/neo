@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { FAMILIES } from '../rhyme-time/logic';
 import { OWN_PICTURES } from './art';
 import { MIN_TAP_GAP } from '../../engine/ghost';
-import { answerOf, byCount, CARS, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, PLANS, pictureToTap, planFor, syllables, trainCounts, waitFill, WORDS, type Word } from './logic';
+import { answerOf, byCount, CARS, COMPARE_PLAN, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, PLANS, pictureToTap, planFor, syllables, trainCounts, waitFill, WORDS, type Word } from './logic';
 
 const rhymeWords = new Set(Object.values(FAMILIES).flat());
 
@@ -224,5 +224,52 @@ describe('the beat train', () => {
     const cars: (Word | undefined)[] = [undefined, undefined, word('banana')];
     const cards = words.map((w) => ({ word: w, loaded: w.word === 'banana' }));
     expect(nextForTrain(words, cars, cards)).toEqual({ card: cards[1], car: 0 });
+  });
+});
+
+
+describe('longer or shorter, level 8', () => {
+  it('keeps existing level IDs and skips unbuilt level 7 in school progression', async () => {
+    const { clapSyllables } = await import('./index');
+    const { levelsInOrder, nextLevelOffer, stepLevel } = await import('../../progress/difficulty');
+    expect(planFor(8)).toBe(COMPARE_PLAN);
+    expect(planFor(6)).toBe(PLANS[5]);
+    expect(levelsInOrder(clapSyllables.levels('school'))).toEqual([5, 6, 8]);
+    expect(nextLevelOffer(6, clapSyllables.levels('school'))).toBe(8);
+    expect(stepLevel(8, -1, clapSyllables.levels('school'))).toBe(6);
+    expect(clapSyllables.levels('preschool')).toEqual({ min: 1, max: 2 });
+    expect(clapSyllables.levels('prek')).toEqual({ min: 2, max: 4 });
+  });
+
+  it('alternates seeded requests, with unequal pictured counts, unique words and an exact answer for hints and the finger', () => {
+    const starts = new Set<string>();
+    const positions = new Set<number>();
+    const counts = new Set<number>();
+    for (let seed = 1; seed <= 500; seed++) {
+      const qs = makeQuestions(COMPARE_PLAN, new Rng(seed));
+      expect(qs).toEqual(makeQuestions(COMPARE_PLAN, new Rng(seed)));
+      expect(qs).toHaveLength(4);
+      starts.add(qs[0].comparison!);
+      const words = qs.flatMap((q) => q.words);
+      expect(new Set(words).size).toBe(8);
+      for (const [i, q] of qs.entries()) {
+        expect(q.words).toHaveLength(2);
+        const ns = q.words.map(syllables);
+        ns.forEach((n) => counts.add(n));
+        expect(new Set(ns).size).toBe(2);
+        if (i > 0) expect(q.comparison).not.toBe(qs[i - 1].comparison);
+        const wanted = q.comparison === 'more' ? Math.max(...ns) : Math.min(...ns);
+        expect(q.target).toBe(wanted);
+        const cards = q.words.map((word) => ({ word }));
+        const answer = pictureToTap(q, cards)!;
+        expect(syllables(answer.word)).toBe(wanted);
+        expect(answer.word).toBe(answerOf(q));
+        positions.add(cards.indexOf(answer));
+        expect(q.words.filter((w) => syllables(w) === wanted)).toHaveLength(1);
+      }
+    }
+    expect([...starts].sort()).toEqual(['fewer', 'more']);
+    expect([...positions].sort()).toEqual([0, 1]);
+    expect([...counts].sort()).toEqual([1, 2, 3, 4]);
   });
 });

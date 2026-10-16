@@ -36,3 +36,9 @@
 - At `http://localhost:5827`, `BROWSER_SUITE=woods WOODS_ONLY=shop FROM_LEVEL=2` passed levels 2–7 (misses, hint coins, a second way, saved score and sticker, no page errors); it ran before the pip radius was enlarged. Portrait 768×1024 screenshot at level 3 (5, 2, 1 on the mat): pips legible and matching the tag's dots.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=market-stall FINGER_LEVELS=3` clean in 24.0 s.
 - Not run: full unit suite, other browser suites, offline; device speech, iPad legibility and whether a preschooler matches pips to tag dots (already [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
+
+## 2026-10-16 — Sink or Float level 7 definition
+
+- Docs only ([PR #432](https://github.com/rjdunlap/neo/pull/432), `claude/sink-float-make-it-float`): [Make it float](../definitions/make-it-float.md) defined as Sink or Float level 7 (school), routed to the roadmap's ready list, the idea notebook and the physics notes.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks apply; nothing is built.
+- Open: the build itself (new-interaction tier, `fingerdemo` at level 7); device speech and a child's reaction stay unchecked.

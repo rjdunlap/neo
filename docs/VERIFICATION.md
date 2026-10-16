@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-16 — Clap the Syllables level 8 Longer or shorter?
+
+- [PR #452](https://github.com/rjdunlap/neo/pull/452), `codex/clap-syllables-comparison`, tested `896b63e` (claim `88f0e8f`, base `42d18fd`, docs-only dispatch #451 integrated) plus implementation diff. Four seeded unequal pairs, alternating more/fewer; truthful whole-word counts, free replay, matching support and finger. School order `[5,6,8]`; other bands/IDs/pins unchanged.
+- Passed typecheck, 57 focused tests (`clap-syllables/logic.test.ts`, registry, how-to); final how-to wording checked again (18 tests). Rule properties cover 500 seeds, uniqueness, both directions/answer positions, exact hint/finger answers and school order. Final `npm run build` passed (existing chunk-size advisory).
+- `GAME_URL=http://localhost:5195 BROWSER_SUITE=clap CLAP_LEVELS=8 npm run test:browser` passed: four comparisons, free replay, two misses/one correct answer glow, actual taps via finger target, saved result `[8,2,1]`, exactly one sticker and portrait target bounds. Reviewed `test-results/browser/clap-8-portrait.png`: pictures, pet and corner controls clear.
+- Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=clap-syllables FINGER_LEVELS=8` passed cleanly in 23.5 s. No page errors in either passing run. First attempt interrupted by a how-to HMR reload; repeated after source edits stopped. Owned Vite stopped after checks.
+- Not run: full unit suite, levels 1–6 browser replays (existing evidence retained), world/offline (no navigation/save/assets changes), device speech/touch or child observation; [device checks](DEVICE-CHECKS.md) remain open. Level 9 and other exclusions remain unbuilt. Links and diff checked.
+
 ## 2026-10-16 — Sing-Along Barn Bounce High, Bounce Low
 
 - [PR #450](https://github.com/rjdunlap/neo/pull/450), `claude/sing-barn-bounce-high` (cc25875, base `06a62c1`): the seventh tune, `bounce`, on mi, sol, la; seeded in every level's pool and the seventh card (a red ball) in the level 5-6 chooser, now seven cards at 0.5; voice lines, how-to and `describeLevel` updated.
@@ -101,19 +109,13 @@
 - Passed `GAME_URL=http://localhost:5528 BROWSER_SUITE=couchgames COUCH_ONLY=garden-rows` twice (the second on 0e03cb2): intro, controller diagram lights with the bot, bot round through `control()`, one stop saved, sticker, child save untouched, no page errors. A probe screenshot (level 3, 1024x768) shows the ring on an empty spot with the packets open.
 - Not run: full `npm test`, build, full `couch`/`couchcourse` (trip and course code unchanged), offline, a portrait couch view, a real controller or TV.
 
-## 2026-10-16 — Sink or Float level 7 definition
-
-- Docs only ([PR #432](https://github.com/rjdunlap/neo/pull/432), `claude/sink-float-make-it-float`): [Make it float](definitions/make-it-float.md) defined as Sink or Float level 7 (school), routed to the roadmap's ready list, the idea notebook and the physics notes.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks apply; nothing is built.
-- Open: the build itself (new-interaction tier, `fingerdemo` at level 7); device speech and a child's reaction stay unchecked.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 6 Beat train: typecheck, 99 tests, build, `clap` at level 6 (wrong cars, hint, free drop, three trains, sticker, portrait) and a clean 47.8 s level-6 demo | [Beat train](#2026-10-16--clap-the-syllables-level-6-beat-train) | Levels 1-5 browser play, world/offline, device speech and a child not run |
+| `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 8 comparison, typecheck/57 focused tests/build, filtered play with misses/hint/replay/sticker/portrait, clean 23.5 s ghost finger | [Longer or shorter?](#2026-10-16--clap-the-syllables-level-8-longer-or-shorter) | Prior level-6 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
 | Game deep-dive docs | 2026-10-15: Duckling Parade source audit, six precedents, ladder/experience/slices; links/anchors and diff check. Prior Memory Match clock definition evidence retained | [Duckling Parade](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `critternot` | 2026-10-15: stable entry 8, two misses/one hint, two rounds, one sticker and landscape/portrait passed; 54 focused tests and build | [Visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | Device speech, touch and child interpretation open |
