@@ -104,7 +104,7 @@ Game-specific rendering or feedback uses the existing-game tier: typecheck, focu
 
 **Define the Woodland Picnic first**, using Mail Carrier's map, a sharing/preparation activity and one construction or music activity. Begin with a friend's concrete request, let each completed step visibly change the picnic, and give it a complete ending. Limit it to a few short steps. Free games remain available directly.
 
-Prefer existing idempotent story steps if success alone is enough. If a chosen tune, route or creation changes the next scene, define the smallest typed result for that one consequence using [the proposed contract](DESIGN.md#proposed-story-results). Test leaving/resuming, replay and exactly-once rewards. Do not build a quest framework, currency or world clock as a prerequisite.
+Prefer existing idempotent story steps if success alone is enough. If a chosen tune, route or creation changes the next scene, define the smallest typed result for that one consequence using [the proposed contract](DESIGN.md#proposed-story-results). Test leaving/resuming, replay and exactly-once rewards. Do not build a quest framework, currency or world clock as a prerequisite. Defined 2026-10-16: [the Woodland Picnic](definitions/woodland-picnic.md).
 
 ### W2: a personal world with useful possessions
 

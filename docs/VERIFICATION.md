@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-16 — Woodland Picnic definition
+
+- [PR #424](https://github.com/rjdunlap/neo/pull/424), `claude/woodland-picnic-definition`; docs only. Levels (Mail Carrier 6, Seesaw Balance 7, Beat Builder 3) checked against each game's school range in source at `562b97c`.
+- Ran the link check and `git diff --check`. No code checks (docs only).
+- Open: the build itself, with its story/navigation/save tier checks, is not started.
+
 ## 2026-10-15 — Critter Crossing visible not entry
 
 - [PR #422](https://github.com/rjdunlap/neo/pull/422), `codex/critter-not-entry`; tested base `ca08480` plus scoped game/howto/browser diff (upstream integration changed dispatch docs only). Appended ID 8, pre-K `[1, 8, 2, 3]`, `entryLevels`; school and old IDs/pins unchanged.
