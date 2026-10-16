@@ -7,13 +7,20 @@ export function bugToken(token: number, size = 32): Graphics {
   const t = BUG_TOKENS[token], color = swatch[t.color];
   return shapePath(new Graphics(), t.shape, size).fill(color.fill).stroke({ width: 4, color: color.line });
 }
-export function bugBody(rows = 3, columns = 1): Container {
+/** A wing uses the body's center as its hinge, including the spots added by the game. */
+export function bugWing(rows: number, columns: number, side: number): Graphics {
+  const g = new Graphics(), ry = rows === 1 ? 105 : rows === 2 ? 156 : 207;
+  const rx = columns === 1 ? 108 : 155, cx = columns === 1 ? 94 : 135;
+  for (let row = -1; row <= 1; row++) g.moveTo(side * (cx + rx - 25), row * 65).lineTo(side * (cx + rx + 18), row * 90 + 20).stroke({ width: 9, color: swatch.purple.line, cap: 'round' });
+  return g.ellipse(side * cx, 0, rx, ry).fill(swatch.orange.light).stroke({ width: 7, color: swatch.orange.line });
+}
+export function bugBody(rows = 3, columns = 1, wings?: readonly [Container, Container]): Container {
   const c = new Container(), g = new Graphics();
   const ry = rows === 1 ? 105 : rows === 2 ? 156 : 207;
-  const rx = columns === 1 ? 108 : 155, cx = columns === 1 ? 94 : 135;
-  for (const side of [-1, 1]) {
-    for (let row = -1; row <= 1; row++) g.moveTo(side * (cx + rx - 25), row * 65).lineTo(side * (cx + rx + 18), row * 90 + 20).stroke({ width: 9, color: swatch.purple.line, cap: 'round' });
-    g.ellipse(side * cx, 0, rx, ry).fill(swatch.orange.light).stroke({ width: 7, color: swatch.orange.line });
+  for (const [i, side] of [-1, 1].entries()) {
+    const wing = bugWing(rows, columns, side);
+    if (wings) { wings[i].addChild(wing); c.addChild(wings[i]); }
+    else c.addChild(wing);
   }
   g.ellipse(0, 0, 26, ry + 4).fill(swatch.purple.fill).stroke({ width: 5, color: swatch.purple.line });
   const headY = -ry + 12;
