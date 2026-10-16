@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-16 — Sink or Float level 7 definition
+
+- Docs only ([PR #432](https://github.com/rjdunlap/neo/pull/432), `claude/sink-float-make-it-float`): [Make it float](definitions/make-it-float.md) defined as Sink or Float level 7 (school), routed to the roadmap's ready list, the idea notebook and the physics notes.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks apply; nothing is built.
+- Open: the build itself (new-interaction tier, `fingerdemo` at level 7); device speech and a child's reaction stay unchecked.
+
 ## 2026-10-16 — Market Stall pips and a teaching hint
 
 - [PR #429](https://github.com/rjdunlap/neo/pull/429), `claude/market-stall-pips-hint`: tested commit `2b84c8c` minus a later pip-radius enlargement (geometry only; unit tests re-run), base `1dea66f`. Levels 1–3 coins show ink pips (five to a row) under a smaller numeral on a stall-only layer; at levels 3, 5 and 7 the two-miss hint first says a strategy line. Hint counting, `coinArt`, icon and sticker unchanged.

@@ -1205,7 +1205,7 @@ A new interaction, authored art, a stated model, or a precondition.
 
 | Game (ladder top · school levels) | Next decision | Why it waits |
 | --- | --- | --- |
-| **Sink or Float** (6 · 5–6) | *Make it float:* change one thing about an object (flatten the clay into a boat, take weights off) and compare trials. The first fair-test variable | A stated, honest model of why shapes float, plus the journal; a ghost finger and couch game to keep working |
+| **Sink or Float** (6 · 5–6) | *Make it float:* change one thing about an object (flatten the clay into a boat, take weights off) and compare trials. The first fair-test variable. Defined, not built: [definition](definitions/make-it-float.md) | A stated, honest model of why shapes float, plus the journal; a ghost finger and couch game to keep working |
 | **Ramp Race** (4 · 1–4) | Predict where the car stops, then roll | The finish rule and its half-marks (such as 1.5 × 3) are worked out before building; a recorded-trials table is a new screen ([E2](ROADMAP.md#e2-middle-elementary)) |
 | **Bug Builder** (7 · 6–7) ([deep dive](deep-dives/bug-builder.md)) | *Fold a Friend:* predict where each spot lands when the wing folds over; later, which crease makes the bug match | Pairs with Mirror Brush (above); the crease-choice step belongs near age 9 |
 | **Peekaround Island** (5 · 4–5) | *View from above:* which picture shows the island from the sky | A new top-down view to draw |
@@ -1419,7 +1419,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Clap the Syllables (P–S · 5) ([deep dive](deep-dives/clap-syllables.md)) | More words (slice 1 of the dive: twelve to sixteen words) | **Built 2026-10-10:** level 5 sorts long words into four clap counts; see the [completed-work note](archive/COMPLETED-2026-10-09.md#clap-the-syllables-level-5-long-words-2026-10-10) | — |
 | Robot Path (K–S · 10) | **One authored board per level today**; give each level three. The rule tests already check every authored board ([deep dive](deep-dives/robot-path.md)) | R2: *fix the program*, now planned as level 12 after 11 *where will it stop?* ([deep dive](deep-dives/robot-path.md#new-levels-on-top)) | Preschool, at levels 1–2 ([deep dive](deep-dives/robot-path.md#younger-band-openings)) |
 | Bug Builder (T–S · 7) ([deep dive](deep-dives/bug-builder.md)) | Bug and wing shapes | R1-later: fold a friend | — |
-| Sink or Float (T–S · 6) | More things to test (nine today) | R1-later: make it float | — |
+| Sink or Float (T–S · 6) | More things to test (nine today) | R1-later: make it float (defined, not built: [definition](definitions/make-it-float.md)) | — |
 | Bouncy Launch (L–S · 5) ([deep dive](deep-dives/bouncy-launch.md)) | Cloud skies; notches and rising landing notes; a seeded cloud bag at level 1 | R1: 6 *predict the cloud* (built). **Planned in the deep dive**: 7 Near or far (an easy entry), 8 Feed the friend, 9 Between two flights, 10 Where on the line?, 11 Pick a spring | A lap pull level (decision) |
 | Seesaw Balance (T–S · 9) | Friends and presents | R2: 10 *two steps* | — |
 | Ramp Race (K–S · 4) | Floors and cars | R1-later: predict the stop | Preschool, at level 1 (higher goes farther) |

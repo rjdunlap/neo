@@ -60,6 +60,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 16. **`photo-safari`, free the polaroid textures, then level 7 *Two clues, no name*** (school), then level 5 made truthful and waving/swimming actions, one per slice. Bug-fix tier, then new-interaction tier. [Dive slices 1–4](deep-dives/photo-safari.md#build-slices-in-order)
 17. **Woodland Picnic, the second Island Errand** (school, from Wonder Woods; Mail Carrier 6, Seesaw Balance 7, Beat Builder 3). Story/navigation/save tier. [Definition](definitions/woodland-picnic.md)
 18. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
+19. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
 
 ### Chunks
 
@@ -134,7 +135,7 @@ The [first](IDEAS.md#short-ladder-audit-2026-10-09) and [second](IDEAS.md#round-
 | **Day by Day** | Preschool, months and daylight are decision-dependent; causal seasons stay separate | [Build slices](deep-dives/day-by-day.md#build-slices-in-order) |
 | **Robot Path's reusable routine** | Decision-dependent scope under Waiting on the developer | [Build slices](deep-dives/robot-path.md#build-slices-in-order) |
 | **Photo Safari's two-clue observations** | Designed: free the polaroid textures, then level 7 *Two clues, no name*, then level 5 made truthful and new actions are ready; *What changed?* and *Is it true?* wait on decisions | [Build slices](deep-dives/photo-safari.md#build-slices-in-order) |
-| **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored. Being defined on branch `claude/sink-float-make-it-float` (docs only) | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
+| **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored. Defined and ready to build as level 7 (new-interaction tier): [definition](definitions/make-it-float.md) | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
 | **Ramp Race's predicted stop and recorded trials** | Define the finish, half-unit outcomes and the comparison view | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 | **Seesaw Balance's unknowns and Garden Rows' boxes** | Define each as its own session; prove explanation, solvability and useful hints | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 
