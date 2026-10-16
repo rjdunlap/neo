@@ -2,6 +2,7 @@ import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } fr
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { HeldDirection, idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -105,6 +106,13 @@ class GardenRows implements Game {
   private flash: { cells: { r: number; c: number }[]; color: number; until: number } | null = null;
   private clock = 0;
   private settled = false;
+  // Couch play: a teal ring over a spot in the bed, moved one spot at a time; pressing an empty spot opens the seed packets.
+  private cursor = { r: 0, c: 0 };
+  private couchOn = false;
+  private choosing = false;
+  private readonly ring = new Graphics();
+  private readonly held = new HeldDirection();
+  private botWait = 1.5;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -112,7 +120,9 @@ class GardenRows implements Game {
     this.glow.eventMode = 'none';
     this.plants.eventMode = 'none';
     this.packetRing.eventMode = 'none';
-    this.board.addChild(this.soil, this.plants, this.glow);
+    this.ring.eventMode = 'none';
+    // The ring last, so it sits over the flowers and the hint glow.
+    this.board.addChild(this.soil, this.plants, this.glow, this.ring);
     this.board.eventMode = 'static';
     onTap(this.board, (e) => this.tapBoard(e), { cooldown: 80 });
     for (let f = 0; f < this.plan.size; f++) {
@@ -172,7 +182,14 @@ class GardenRows implements Game {
     }
     const ring = this.packetRing.clear();
     const picked = this.packets.children[this.selected];
-    if (picked && picked !== this.packetRing) ring.circle(picked.x, picked.y, PACKET + 9).stroke({ width: 7, color: ink });
+    // On the couch, while the packets are open, the chosen packet's ring turns teal: the ring has moved out to them.
+    const open = this.couchOn && this.choosing && !this.busy;
+    if (picked && picked !== this.packetRing) ring.circle(picked.x, picked.y, PACKET + 9).stroke({ width: open ? 9 : 7, color: open ? swatch.teal.line : ink });
+    const spot = this.ring.clear();
+    if (this.couchOn && !this.busy) {
+      const { r, c } = this.cursor;
+      spot.roundRect(c * CELL + 8, r * CELL + 8, CELL - 16, CELL - 16, 14).stroke({ width: 8, color: swatch.teal.line, alpha: this.choosing ? 0.5 : 1 });
+    }
     if (this.hinted?.kind === 'plant' && !this.busy) {
       const p = this.packets.children[this.hinted.flower];
       if (p) ring.circle(p.x, p.y, PACKET + 9 + 3 * Math.sin(this.clock * 6)).stroke({ width: 6, color: swatch.yellow.fill });
@@ -189,6 +206,73 @@ class GardenRows implements Game {
     return { tap: { on: this.board, x: step.c * CELL + CELL / 2, y: step.r * CELL + CELL / 2 } };
   }
 
+  /**
+   * Couch play: the stick or the arrows move the ring over the bed; the bottom button on an empty spot opens the packets,
+   * where the stick picks a flower and the bottom button plants it (the left button closes them). The bottom button on a
+   * flower she planted takes it out again, as a tap does.
+   */
+  control(input: CouchControls, dt: number) {
+    this.couchOn = true;
+    if (this.busy || this.finished) return;
+    for (const dir of this.held.poll(input, dt)) this.move(dir);
+    if (input.players.some((p) => p.action)) this.press();
+    else if (input.players.some((p) => p.undo) && this.choosing) {
+      this.choosing = false;
+      sfx.tick();
+    }
+  }
+
+  private move(dir: number) {
+    if (this.choosing) {
+      // The packets stand in a column or a row depending on the screen: right and down are the next one, left and up the one before.
+      const step = dir === 0 || dir === 1 ? 1 : -1;
+      return this.select((this.selected + step + this.n) % this.n);
+    }
+    const last = this.n - 1;
+    const r = Math.min(last, Math.max(0, this.cursor.r + [0, 1, 0, -1][dir]));
+    const c = Math.min(last, Math.max(0, this.cursor.c + [1, 0, -1, 0][dir]));
+    if (r === this.cursor.r && c === this.cursor.c) return;
+    this.cursor = { r, c };
+    sfx.tick();
+  }
+
+  private press() {
+    const { r, c } = this.cursor;
+    if (this.choosing) {
+      this.choosing = false;
+      return this.act(r, c);
+    }
+    if (this.given[r][c]) return void sfx.tick();
+    if (this.bed[r][c] !== null) return this.takeOut(r, c);
+    this.choosing = true;
+    sfx.bell(3 + this.selected * 2, 0.3);
+  }
+
+  /** The "watch me" demo: walk the ring to the tightest spot, open the packets, step to its flower and plant it. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    const p = out.players[0];
+    p.active = true;
+    this.botWait -= dt;
+    const puzzle = this.puzzles[this.index];
+    if (this.busy || this.finished || !puzzle || this.botWait > 0) return out;
+    this.botWait = 0.3;
+    if (this.choosing) {
+      const want = puzzle.solution[this.cursor.r][this.cursor.c]!;
+      if (want === this.selected) p.action = true;
+      else p.direction = (want - this.selected + this.n) % this.n <= this.n / 2 ? 0 : 2;
+      return out;
+    }
+    const step = nextPlanting(this.bed, puzzle.solution, this.plan.rule, this.selected);
+    if (!step) return out;
+    const { r, c } = this.cursor;
+    if (step.c !== c) p.direction = step.c > c ? 0 : 2;
+    else if (step.r !== r) p.direction = step.r > r ? 1 : 3;
+    else p.action = true;
+    if (!p.action) this.botWait = 0.2;
+    return out;
+  }
+
   destroy() {}
 
   private async next() {
@@ -197,6 +281,7 @@ class GardenRows implements Game {
     this.wrongs = 0;
     this.hinted = null;
     this.flash = null;
+    this.choosing = false;
     if (this.index >= this.puzzles.length) return void this.finale();
     const puzzle = this.puzzles[this.index];
     this.bed = copyBed(puzzle.start);
@@ -248,6 +333,11 @@ class GardenRows implements Game {
     const c = Math.floor(p.x / CELL);
     const r = Math.floor(p.y / CELL);
     if (r < 0 || c < 0 || r >= this.n || c >= this.n) return;
+    this.act(r, c);
+  }
+
+  /** A tap on a spot, or a planting from the couch's ring: a planted-to-start flower stays, hers comes out, an empty spot takes the chosen seeds. */
+  private act(r: number, c: number) {
     if (this.given[r][c]) return void sfx.tick();
     if (this.bed[r][c] !== null) return this.takeOut(r, c);
     this.plant(r, c, this.selected);
@@ -333,7 +423,8 @@ class GardenRows implements Game {
     sfx.tada();
     await this.ctx.say('rows.done');
     await this.ctx.tw.wait(0.4);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    // On the couch, wrong plantings are the face-off score (lower is better).
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.misses });
   }
 }
 
