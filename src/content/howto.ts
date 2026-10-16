@@ -875,6 +875,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'The round ends when all the flowers of that color have bloomed.' },
       { from: 4, text: 'The round ends when the last numbered flower has bloomed.' },
     ],
+    note: [{ from: 2, to: 5, text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.' }],
   },
   'quick-tricks': {
     goal: 'Do a short show of tiny tricks.',
