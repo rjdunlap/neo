@@ -17,7 +17,7 @@ import { Bead, fitTo, handsArt, wordPicture } from './art';
 import { answerOf, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, pictureToTap, planFor, CARS, syllables, waitFill, WORDS, type ClapPlan, type Question, type Word } from './logic';
 
 const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
+  preschool: { min: 1, max: 9, order: [9, 1, 2] },
   prek: { min: 2, max: 4 },
   school: { min: 5, max: 8, order: [5, 6, 8] },
 };
@@ -766,6 +766,7 @@ export const clapSyllables: GameModule = {
   skills: ['syllables', 'phonological-awareness', 'rhythm', 'counting'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   touchDemo: true,
   music: silenced(STYLES.paint),

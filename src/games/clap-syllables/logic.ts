@@ -54,7 +54,10 @@ export const CARS = 3;
 export const COMPARE_LEVEL = 8;
 export const COMPARE_PLAN: ClapPlan = { mode: 'compare', count: 4, max: 4, name: 'Longer or shorter? Choose the word with more or fewer claps' };
 
-export const planFor = (level: number) => level === COMPARE_LEVEL ? COMPARE_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const SHORT_LEVEL = 9;
+export const SHORT_PLAN: ClapPlan = { mode: 'along', count: 2, max: 2, name: 'Clap along (short): two words with one and two beats' };
+
+export const planFor = (level: number) => level === SHORT_LEVEL ? SHORT_PLAN : level === COMPARE_LEVEL ? COMPARE_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Question {
   /** One word to clap ('along', 'solo'), the pictures to sort ('sort'), the pictures to choose from ('match', 'compare'), or the jumble to line up ('train'). */
