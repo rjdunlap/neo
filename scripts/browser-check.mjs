@@ -6163,6 +6163,50 @@ async function woodsBatch() {
         }
         continue;
       }
+      if (level === 11) {
+        const countTap = async i => {
+          await page.evaluate(i => { const p = neo.scene.game.sorters[i].node.toGlobal({ x: 0, y: -120 }); kit.tap(p.x, p.y); }, i);
+          await settle();
+        };
+        const data = await page.evaluate(async () => {
+          const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game;
+          const totals = L.countParts(g.round.critters, g.round.rules);
+          return { places: g.sorters.map(s => L.placeOf(s.c, g.round.rules)), totals, right: L.morePart(totals) };
+        });
+        assert.deepEqual(Object.values(data.totals).sort(), [1, 2, 3]);
+        // Sorting remains required; no sticker or comparison until the mat is sorted too.
+        for (const [i, place] of data.places.entries()) if (place !== 'out') await dropTo(i, place);
+        assert.equal(await page.evaluate(() => neo.scene.game.counting), false);
+        for (const [i, place] of data.places.entries()) if (place === 'out') await dropTo(i, place);
+        assert.equal(await page.evaluate(() => neo.scene.game.counting && !neo.scene.game.finished), true);
+        assert.equal(await page.evaluate(() => neo.scene.game.sorters.every(s => !s.drag)), true);
+        for (let i = 0; i < data.places.length; i++) {
+          await countTap(i);
+        }
+        assert.deepEqual(await page.evaluate(() => {
+          const g = neo.scene.game;
+          return Object.fromEntries(['left', 'right', 'out'].map(p => [p, [...g.counted.keys()].filter(s => s.placed === p).length]));
+        }), data.totals);
+        await countTap(0);
+        assert.equal(await page.evaluate(() => neo.scene.game.counted.size), 6);
+        assert.deepEqual(await counts(), n === 0 ? [0, 0] : [2, 1]);
+        if (n === 0) {
+          const wrong = Object.keys(data.totals).find(p => p !== data.right);
+          await tap(`neo.scene.game.comparisons.find(o => o.place === '${wrong}').node`); await settle();
+          await tap(`neo.scene.game.comparisons.find(o => o.place === '${wrong}').node`); await settle();
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.equal(await page.evaluate(() => neo.scene.game.comparisonHint), true);
+          await screenshot('critter-sort-11-counts');
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+          // Count targets survive resize; replay stays free.
+          await countTap(0);
+          assert.deepEqual(await counts(), [2, 1]);
+          await screenshot('critter-sort-11-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+        }
+        await tap(`neo.scene.game.comparisons.find(o => o.place === '${data.right}').node`); await settle();
+        continue;
+      }
       if (level === 9) {
         const data = await page.evaluate(async () => {
           const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game;

@@ -1,14 +1,47 @@
 import { critterSort } from './index';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
+import { COUNT_PARTS, COUNT_PLAN, countParts, morePart, countSpot, planFor, exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
 
 describe('Critter Sort', () => {
-  it('preserves the younger ladder and stable school IDs, appending 7, 8 and 9 after 5', () => {
+  it('preserves the younger ladder and stable school IDs, appending 11 without opening reserved level 10', () => {
     expect(critterSort.levels('prek').order).toEqual([6, 1, 2, 3]);
-    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7, 8, 9]);
+    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7, 8, 9, 11]);
     expect(critterSort.entryLevels).toEqual([6]);
     expect(PLANS).toHaveLength(9);
+  });
+
+  it('level 11 counts every disjoint part from placeOf and has exactly one greatest part across seeds', () => {
+    expect(planFor(11)).toBe(COUNT_PLAN);
+    expect(planFor(9)).toBe(PLANS[8]);
+    const winners = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = makeRound(COUNT_PLAN, new Rng(seed));
+      expect(r).toEqual(makeRound(COUNT_PLAN, new Rng(seed)));
+      expect(new Set(r.critters.map(c => `${c.kind}${c.hat}`)).size).toBe(6);
+      const counts = countParts(r.critters, r.rules);
+      expect(Object.values(counts).sort()).toEqual([1, 2, 3]);
+      const right = morePart(counts)!;
+      winners.add(right);
+      for (const part of COUNT_PARTS) {
+        expect(counts[part]).toBe(r.critters.filter(c => placeOf(c, r.rules) === part).length);
+        expect(counts[right]).toBeGreaterThanOrEqual(counts[part]);
+      }
+      // Both the sorting bot and the final counting positions stay in their proper parts.
+      for (const v of [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }]) {
+        const centers = hoopCenters('two', 2, v);
+        const points = COUNT_PARTS.flatMap(part => Array.from({ length: counts[part] }, (_, k) => {
+          const p = countSpot(centers, part, k, counts[part]);
+          expect(sortPlaceAt(centers, 'two', p.x, p.y)).toBe(part);
+          return p;
+        }));
+        for (let i = 0; i < points.length; i++) for (let j = i + 1; j < points.length; j++) {
+          expect(Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y)).toBeGreaterThan(108.8);
+        }
+      }
+    }
+    expect(winners).toEqual(new Set(COUNT_PARTS));
+    expect(morePart({ left: 2, right: 2, out: 2 })).toBeNull();
   });
 
   it('separate hoops never overlap, and overlapping hoops really do', () => {
