@@ -28,11 +28,11 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Dispatch `planet-hop-20261016T182105Z`; worker `01a145f2-c677-7c62-a022-7bdf79702997`, host `local`, branch `codex/planet-hop-12`, draft PR pending. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks.
-- Scope: only Bouncy Launch school level 12 per [definition](definitions/planet-hop.md); same shown pull, light/heavy comparison, three pairs, unscored prediction and counted requested help. Preserve levels 1–7, IDs/pins and Cloud Hopper v1; no saves/journal changes.
-- Scope admission **79% / 84%**, resets `1792178084` / `1792650157`; ordinary usage allowed. Estimate **18.75 / 3.75 points** fits. Clean tree and overlap check clear; branch starts at `30233f5`.
-- Proof: not run. Expected files: Bouncy Launch logic/rendering and rule/course tests, voice/how-to, filtered browser case, README/GAMES/roadmap/definition/verification and queue.
-- Next: publish claim/draft PR, implement this slice, proportionate verification, publish/merge or checkpoint, then stop.
+- Dispatch `planet-hop-20261016T182105Z`; worker `01a145f2-c677-7c62-a022-7bdf79702997`, host `local`, branch `codex/planet-hop-12`, claim `6f46532`, [PR #466](https://github.com/rjdunlap/neo/pull/466). Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks. Base `30233f5`; docs-only dispatch through `bbd5edf` integrated without game changes.
+- Complete locally: only Bouncy Launch school level 12 per [definition](definitions/planet-hop.md), three same-pull home/planet pairs, light/heavy toy pull, unscored past/before prediction and counted requested help. School order `[4,5,7,6,12]`; all younger bands, existing IDs/pins, Cloud Hopper v1 and journal/saves preserved. Removed ready-list line. The shell has an optional level-specific hint label, used only here.
+- Coordinator admission **77% / 84%**, worker scope **79% / 84%**, pre-code **83% / 84%**, pre-verification **85% / 85%**, pre-publication **90% / 86%**; resets `1792178084` / `1792650157`, ordinary usage allowed. Estimate **18.75 / 3.75 points** fit at admission. No competing active worker/claim found.
+- [Proof](VERIFICATION.md#2026-10-16--bouncy-launch-12-planet-hop): typecheck, 1405 unit tests, build, then 18 registry tests after adding explicit band/pin regression; filtered `arcade` Launch 12 with different guess, actual pause hint, three pairs, result `[0,1]`, one sticker; portrait reviewed; `fingerdemo` 12 clean in 19.5 s. Isolated URL `http://localhost:5199`. World/offline/couch/other game plays not run (no navigation, save, asset or couch changes); device speech/sound/child understanding open.
+- Next: publish verified implementation, merge #466 and confirm deployment, then stop. Final post-commit usage reading belongs in the worker response for one-time coordinator reconciliation; keep this same worker if publication remains unfinished.
 
 ## Usage observations
 
@@ -50,8 +50,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-16 | Clap comparison 8 / [#452](https://github.com/rjdunlap/neo/pull/452), dispatch `clap-comparison-20261016T141435Z` | New level | 0% → 14% / `1792178084` | 72% → 74% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 2. Complete, reconciled once |
 | 2026-10-16 | Clap short 9 / [#454](https://github.com/rjdunlap/neo/pull/454), dispatch `clap-short-20261016T151435Z` | New level/entry | 14% → 25% / `1792178084` | 74% → 75% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 11 / 1. Complete, reconciled once |
 | 2026-10-16 | Tangram broom / [#456](https://github.com/rjdunlap/neo/pull/456), dispatch `tangram-picture-20261016T161705Z` | Existing-level content | 32% → 46% / `1792178084` | 76% → 79% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 3. Complete, reconciled once |
-| 2026-10-16 | Barnyard identity, dispatch `barnyard-identity-20261016T171305Z` | Shared visuals | 61% → pending / `1792178084` | 81% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Fresh worker `01a145b5-14be-7a70-bf23-05834da67fa9` admitted; implementation/proof pending |
-| 2026-10-16 | Barnyard land / [#460](https://github.com/rjdunlap/neo/pull/460), dispatch `barnyard-identity-20261016T171305Z` | Shared visuals | 61% → pending / `1792178084` | 81% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Worker `01a145b5-14be-7a70-bf23-05834da67fa9`, `codex/barnyard-land-identity`: verified, publishing; final post-commit reading in worker response |
+| 2026-10-16 | Barnyard V1 / [#460](https://github.com/rjdunlap/neo/pull/460), dispatch `barnyard-identity-20261016T171305Z` | Shared visuals | 61% → 76% / `1792178084` | 81% → 83% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 15 / 2. Complete, reconciled once |
+| 2026-10-16 | Planet Hop 12, dispatch `planet-hop-20261016T182105Z` | New level | 77% → pending / `1792178084` | 84% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Worker `01a145f2-c677-7c62-a022-7bdf79702997`, `codex/planet-hop-12`, [#466](https://github.com/rjdunlap/neo/pull/466): verified locally, publishing; final post-commit reading in worker response |
 
 ## Fresh-worker dispatch and handoff
 

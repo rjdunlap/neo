@@ -3,6 +3,14 @@ import { CLOUDS, cloudMinimum } from './course';
 import { judge, padAt, padHit, PADS, planFor, pullFor, reach } from './logic';
 
 describe('the Cloud Hopper course', () => {
+  it('pins the version-one course and shared island mapping', () => {
+    expect(CLOUDS).toMatchObject({ version: 1, padWidth: 0.5, targets: [2, 4, 0, 3, 1, 4, 2, 0, 3, 1, 4, 2] });
+    expect(PADS).toBe(5);
+    expect([padAt(0), padAt(2), padAt(4)]).toEqual([0.1, 0.5, 0.9]);
+    expect([reach(30), reach(100), reach(170)]).toEqual([0, 0.5, 1]);
+    expect([padHit(0.1, 0.5), padHit(0.2, 0.5), padHit(0.9, 0.5)]).toEqual([0, -1, 4]);
+  });
+
   it('freezes a fixed run of twelve clouds, one launch each at the very best', () => {
     expect(CLOUDS.version).toBe(1);
     expect(CLOUDS.targets).toHaveLength(12);

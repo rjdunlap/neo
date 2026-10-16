@@ -3561,6 +3561,39 @@ async function arcade() {
     await launch('bouncy-launch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level === 12) {
+      await page.waitForFunction(() => neo.scene.game.planetPhase === 'choose' && !neo.scene.game.flying);
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      assert.ok(await page.evaluate(async () => {
+        const g = neo.scene.game, { pullFor } = await import('/src/games/bouncy-launch/logic.ts');
+        return Math.abs(g.pullNow() - pullFor(g.pairs[g.shot].base)) < 0.01 && g.flagNumbers.children[0]?.text === '1' && !g.pads.some(p => p.visible);
+      }), 'Planet Hop portrait keeps fixed pull, numbered home flag and clear regions');
+      await screenshot('bouncy-launch-12-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+      // Request help through the real pause sheet, then deliberately predict the opposite side.
+      await page.keyboard.press('Escape');
+      await page.getByRole('button', { name: 'Show a hint', exact: true }).click();
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (g.hints !== 1 || !g.predictionRing.context.instructions.length) throw new Error('Planet help must ring and count once');
+        const { planetBotLanding } = await import('/src/games/bouncy-launch/logic.ts');
+        while (!g.finished) {
+          if (!await kit.until(() => g.finished || (g.planetPhase === 'choose' && !g.flying), 15000)) throw new Error('No planet choice');
+          if (g.finished) break;
+          const pair = g.pairs[g.shot];
+          const f = g.shot === 0 ? (pair.planet === 'light' ? pair.base / 2 : pair.base * 2) : planetBotLanding(pair);
+          kit.tapOn(g.planetInput, g.landX(f), g.strip.y - 160);
+          if (!g.predictionRing.context.instructions.length) throw new Error('Prediction needs immediate ring');
+          await kit.until(() => g.planetPhase !== 'choose' || g.finished, 3000);
+        }
+        if (g.shot !== 3 || g.misses !== 0 || g.hints !== 1 || g.observedPulls.length) throw new Error('Planet accounting or journal observation');
+      });
+      await finished('bouncy-launch');
+      const result = await page.evaluate(() => { const h = kit.store.stats('bouncy-launch').history.at(-1); return [h.misses, h.hints]; });
+      assert.deepEqual(result, [0, 1]);
+      log('Bouncy Launch 12: three pairs, different guess, pause hint, portrait, no misses and one sticker passed');
+      continue;
+    }
     if (level === 6) {
       await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
       assert.ok(await page.evaluate(async () => {

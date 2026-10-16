@@ -265,7 +265,7 @@ export class GameScene extends Scene {
     const game = this.game;
     if (!game || this.helpCard || this.finished || this.gone) return [];
     const couch = (COUCH_INFO as Record<string, CouchInfo | undefined>)[this.mod.id];
-    const labels = pauseLabels(this.mod.bands, { restart: !!game.restart, hint: !!game.askForHint }, couch);
+    const labels = pauseLabels(this.mod.bands, { restart: !!game.restart, hint: !!game.askForHint }, game.hintLabel ? { ...couch, hint: game.hintLabel } : couch);
     const actions: PauseAction[] = [];
     if (labels.restart) actions.push({ label: labels.restart, run: () => game.restart?.() });
     if (labels.hint) actions.push({ label: labels.hint, run: () => game.askForHint?.() });

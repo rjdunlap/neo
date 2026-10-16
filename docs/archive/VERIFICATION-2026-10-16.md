@@ -105,3 +105,10 @@
 - `GAME_URL=http://localhost:5193 BROWSER_SUITE=smoke SMOKE_ONLY=market-stall` passed levels 1, 4, 7: stray taps, how-to and portrait, no page errors. Chromium needed sandbox escalation at startup.
 - Isolated `test-results/market-stalls-proof.mjs`: all three stalls, distinct paired spoken names, rendered stock/mat/pet clearance; fruit/flower landscape and balloon portrait screenshots reviewed (`test-results/browser/market-stall-{fruit,flower,balloon}.png`). Probe corrected to read serialized Bounds min/max fields; no game defect.
 - Links/diff checked; owned Vite stopped after proof. Not run: full units, gameplay/ghost-finger suites (unchanged interaction), world/offline, iPad/device speech/child checks; [device gaps](../DEVICE-CHECKS.md) stay open.
+
+## 2026-10-16 — Duckling Parade ABB level 11
+
+- [PR #445](https://github.com/rjdunlap/neo/pull/445), `claude/duckling-abb-eleven`, commit `6b384e4` on base `99d659a`: level 11 ABB parade (`repeatedPair: 'abb'`), school range 9–11, how-to lines and a 300-seed rule test; levels 9/10 unchanged.
+- `npm run typecheck`; `npx vitest run src/games/duckling-parade src/games/registry src/content/howto` (46 passed); `npm run build`.
+- On `http://localhost:5235` (dev, this worktree): `BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=11` passed (walking, joining, refusals with 2 misses and 1 hint, pond, score and sticker; screenshot `test-results/browser/duckling-parade-11.png` shows A B B A B B); `BROWSER_SUITE=fingerdemo FINGER_ONLY=duckling-parade FINGER_LEVELS=11` clean in 19.0 s.
+- Not run: full unit suite, portrait screenshot, world/offline. Open ([device checks](../DEVICE-CHECKS.md)): ABB on a real iPad by a school-age child.

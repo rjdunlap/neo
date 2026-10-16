@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
+import { PLANET_PLAN, planetPairs, gravityFor, planetBotLanding, planetSide, airtimeFor, FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
 
 describe('Bouncy Launch', () => {
   it('turns a bigger pull into a farther flight, and every pad has a pull that lands on it', () => {
@@ -141,5 +141,43 @@ describe('Bouncy Launch', () => {
         spots.forEach((spot, shot) => expect(judgeFriend(reach(pullToTake(FRIEND_PLAN, shot, [], undefined, spots)), spot)).toBe('yes'));
       }
     });
+  });
+});
+
+
+describe('Planet Hop, level 12', () => {
+  it('keeps IDs 1–7 and reserves 8–11', () => {
+    for (let i = 1; i <= 6; i++) expect(planFor(i)).toBe(PLANS[i - 1]);
+    expect(planFor(7)).toBe(FRIEND_PLAN);
+    expect(planFor(12)).toBe(PLANET_PLAN);
+  });
+
+  it('shows distinct safe home flights, both planets, and clear past/before evidence for every seed', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const pairs = planetPairs(new Rng(seed));
+      expect(planetPairs(new Rng(seed))).toEqual(pairs);
+      expect(pairs).toHaveLength(3);
+      expect(new Set(pairs.map(p => p.planet)).size).toBe(2);
+      expect(pairs.map(p => p.base).sort()).toEqual([0.2, 0.3, 0.4]);
+      for (const pair of pairs) {
+        const landing = reach(pullFor(pair.base), gravityFor(pair.planet));
+        for (const f of [pair.base, landing]) {
+          expect(f).toBeGreaterThanOrEqual(0.05);
+          expect(f).toBeLessThanOrEqual(0.95);
+        }
+        expect(Math.abs(landing - pair.base)).toBeGreaterThanOrEqual(0.1 - 1e-10);
+        expect(landing > pair.base).toBe(pair.planet === 'light');
+        expect(planetSide(380 + 564 * planetBotLanding(pair), 380 + 564 * pair.base)).toBe(pair.planet === 'light' ? 'past' : 'before');
+        expect(judge(PLANET_PLAN, landing, 0)).toBe('yes');
+      }
+    }
+    expect(airtimeFor('light')).toBe(1.5);
+    expect(airtimeFor('heavy')).toBe(0.8);
+    expect(planetSide(0, 492.8)).toBe('before');
+    expect(planetSide(1024, 492.8)).toBe('past');
+  });
+
+  it('preserves the default island mapping for every pull, including clamped pulls', () => {
+    for (let p = -10; p <= 200; p++) expect(reach(p)).toBe(reach(p, 1));
   });
 });
