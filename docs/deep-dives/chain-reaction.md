@@ -120,7 +120,7 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 ## Build slices, in order
 
 1. **Trail and watch-again** (built 2026-10-15; see below). `run()` draws a faded path from `trace().steps`; tapping the start cup replays. Tier: typecheck, the game's rule tests (none change), one filtered browser play at level 3 and `fingerdemo` for the bot.
-2. **Level 8, Which bell?** Plan field `predict`, bell row, voice lines, a how-to line. Tier: typecheck, rule tests (reachable bells, no recorded miss), one filtered play, `fingerdemo` at level 8, and a portrait screenshot.
+2. **Level 8, Which bell?** (claimed 2026-10-16 by branch `claude/chain-reaction-which-bell`: pre-K entry before level 1, `src/games/chain-reaction/`, voice, how-to, browser check; preschool window left to decision 2) Plan field `predict`, bell row, voice lines, a how-to line. Tier: typecheck, rule tests (reachable bells, no recorded miss), one filtered play, `fingerdemo` at level 8, and a portrait screenshot.
 3. **Level 7, Tap to turn.** A `turn` mode in the board and `trace`; the ghost finger taps the flip. Tier: the same, plus `order`/`entryLevels` tests in the registry tests.
 4. **Decision 1** if approved: `tries` stat feeding the difficulty step. Tier: shell and save contracts (typecheck, unit tests, build).
 5. **Cargo and goal skins, note per ramp.** Tier: typecheck and one screenshot.
