@@ -7452,7 +7452,7 @@ async function couchBeds() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   assert.equal(await page.locator('[data-course="beds"] small').innerText(), 'Not finished yet · par 124');
   assert.equal(await page.locator('[data-course="bigbeds"] small').innerText(), 'Not finished yet · par 149');
   await page.locator('[data-course="beds"]').click(); await screenIs('course');
@@ -7621,7 +7621,7 @@ async function couchLanterns() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   assert.equal(await page.locator('[data-course="lanterns"] small').innerText(), 'Not finished yet · par 36');
   await page.locator('[data-course="lanterns"]').click(); await screenIs('course');
   assert.equal(await page.locator('.couch-sheet h1').innerText(), 'Dusk on the Pond');
@@ -7751,7 +7751,7 @@ async function couchPictures() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   assert.equal(await page.locator('[data-course="pictures"] small').innerText(), 'Not finished yet · par 182');
   assert.equal(await page.locator('[data-course="bigpictures"] small').innerText(), 'Not finished yet · par 230');
   await page.locator('[data-course="pictures"]').click(); await screenIs('course');
@@ -7917,7 +7917,7 @@ async function couchHarbors() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   assert.equal(await page.locator('[data-course="harbors"] small').innerText(), 'Not finished yet · par 64');
   await screenshot('couch-harbors-shelf');
   await page.locator('[data-course="harbors"]').click(); await screenIs('course');
@@ -8093,7 +8093,7 @@ async function couchWords() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   assert.equal(await page.locator('[data-course="words"] small').innerText(), 'Not finished yet · par 25');
   assert.equal(await page.locator('[data-course="bigwords"] small').innerText(), 'Not finished yet · par 24');
   await page.locator('[data-course="words"]').click(); await screenIs('course');
@@ -8237,7 +8237,7 @@ async function couchConga() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   assert.equal(await page.locator('[data-course="conga"] small').innerText(), 'Not finished yet · par 259');
   await page.locator('[data-course="conga"]').click(); await screenIs('course');
   assert.equal(await page.locator('.couch-sheet h1').innerText(), 'Crumb Trail');
@@ -8387,7 +8387,7 @@ async function couchBridges() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   assert.equal(await page.locator('[data-course="bridges"] small').innerText(), 'Not finished yet · par 120');
   await page.locator('[data-course="bridges"]').click(); await screenIs('course');
   assert.equal(await page.locator('.couch-sheet h1').innerText(), 'Island Hopping');
@@ -8699,7 +8699,7 @@ async function couchCourse() {
   await screenshot('couch-course-modes');
   await page.locator('[data-mode="course"]').click();
   await page.waitForFunction(() => neo.scene.screen === 'courses'); await page.waitForTimeout(450);
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
   await screenshot('couch-course-menu');
   await page.locator('[data-course="ponds"]').click();
   await onCourse();
@@ -8937,6 +8937,23 @@ async function couchCourse() {
     assert.equal(await page.locator('.couch-big b').innerText(), String(parts.reduce((a, b) => a + b, 0)));
   }
 
+  // --- The Frozen Ponds, Player 1: ice blocks read from the board, pushed with the d-pad, a push counted as a slide.
+  await page.reload(); await ready(); await makePads(); await toCourse('frozen');
+  assert.equal(await page.locator('.couch-sheet h1').innerText(), 'The Frozen Ponds');
+  assert.match(await page.locator('.couch-sheet').innerText(), /Pushing an ice block is a slide too/);
+  const frozenBefore = await stickers();
+  await page.getByRole('button', { name: 'Player 1 plays', exact: true }).click();
+  await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'game');
+  await page.waitForTimeout(600); await makePads(); await page.waitForTimeout(150);
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.blocks), [{ x: 5, y: 3 }], 'the first pond has its block');
+  await screenshot('couch-course-frozen');
+  for (let pond = 0; pond < 5; pond++) await clearPond();
+  await onCourse();
+  assert.equal(await stickers(), frozenBefore + 1, 'one sticker for the frozen run');
+  assert.equal(await page.locator('.couch-big b').innerText(), '31');
+  assert.match(await page.locator('.couch-outcome-line').innerText(), /The fewest slides possible: perfect!/);
+  assert.deepEqual((await stored()).courses.frozen.players[0].badges, ['finish', 'minimum']);
+
   // --- backup and restore carry every course, byte for byte; the child's save was never touched.
   const finalSave = await page.evaluate(() => localStorage.getItem('neo.couch.v1'));
   await page.getByRole('button', { name: 'All challenges', exact: true }).click();
@@ -8953,7 +8970,7 @@ async function couchCourse() {
   assert.equal(await page.evaluate(() => localStorage.getItem('neo.couch.v1')), finalSave, 'backup round trip');
   assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data)), childBefore, 'the child save is untouched');
   assert.deepEqual(errors, []);
-  log('Couch courses: Challenges menu, controller play in both games and the gentle course, undone slides and missed launches counted, resume after reload with tries kept, hints mark a run helped, one sticker per run, separate records and badges per player and course, backup round trip, child isolation passed');
+  log('Couch courses: Challenges menu, controller play in both games, the gentle course and the frozen ponds (block pushes), undone slides and missed launches counted, resume after reload with tries kept, hints mark a run helped, one sticker per run, separate records and badges per player and course, backup round trip, child isolation passed');
 }
 
 /**

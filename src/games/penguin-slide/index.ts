@@ -235,7 +235,7 @@ class PenguinSlide implements Game {
     if (this.course) {
       if (this.told) return;
       this.told = true;
-      return this.ctx.instruct('slide.go');
+      return this.ctx.instruct(this.course.boards.some(b => b.blocks?.length) ? 'slide.ice' : 'slide.go');
     }
     if (this.index > 0) return;
     if (this.plan.blocks) return this.ctx.instruct(this.plan.pairedBlocks ? 'slide.paired' : this.plan.soft ? 'slide.ice-snow' : this.plan.fish === 2 ? 'slide.ice-two' : 'slide.ice');
