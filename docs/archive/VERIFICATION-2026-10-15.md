@@ -278,3 +278,10 @@
 - Ran `npm run typecheck`, `npm test` (152 files, 1330 tests) and `npm run build`, all passing.
 - Ran `BROWSER_SUITE=livekeys LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` (GAME_URL=http://localhost:5657): bouncy-launch L3, ferry-jam L3, penguin-slide L2 each touch, keys, touch, keys, touch, passing. Removing Ferry Jam's put-back made it fail ("ferry-jam puts a key-held boat back at a finger"); restored.
 - Not run: the other eight livekeys games (code unchanged), world, offline, couch/couchgames (couch path unchanged: `ctx.couch` keeps the controller layout), a real pad or iPad.
+
+## 2026-10-15 — Duckling Parade meadow treatments
+
+- Code, `claude/duckling-meadow-treatments`, [PR #397](https://github.com/rjdunlap/neo/pull/397) (f6b96a7 on 48fad96): dive slice 3. Two seeded meadow looks (flowers, reeds), decoration only behind the pond and back strip, from a child `Rng` so duckling colors, places and wiggles are unchanged per seed.
+- Ran `npm run typecheck` and `npx vitest run src/games/duckling-parade` (11/11; new test: both looks over 200 seeds, dressing colors exclude `DUCK_COLORS`, no piece in the waiting box or pond or past the right edge and rim pieces behind the pond at 1024x768, 768x1024, 1024x1365 and 1366x768).
+- Passed `GAME_URL=http://localhost:5387 BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=1,10 npm run test:browser` on the final code (level 10 with wrong-duckling misses and glow hint). A portrait probe (768x1024) screenshotted both looks, no page errors.
+- Not run: `fingerdemo` (bot and input unchanged), build (no shared files), other suites. A real-iPad look is not checked.

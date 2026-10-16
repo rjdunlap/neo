@@ -104,7 +104,7 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 
 ## Build slices, in order
 
-1. **Neither mat, a hint on the critter she missed (built 2026-10-14), and a worked example** at levels 1–3 and 5 (the worked example is built only for level 6). Remaining: the neither mat and the worked example at levels 1–3 and 5 (the worked example claimed 2026-10-16 by `claude/critter-sort-worked-example`). `logic.ts` gains a `hintTarget` test (the hint names the missed critter's correct place); art and voice only. Tier: existing-game fix: typecheck, that game's tests, one filtered play and a portrait screenshot, `fingerdemo` once.
+1. **Neither mat, a hint on the critter she missed (built 2026-10-14), and a worked example** at levels 1–3 and 5 (level 6 has one; levels 1–3 and 5 built 2026-10-16). Remaining: the neither mat only. `logic.ts` gains a `hintTarget` test (the hint names the missed critter's correct place); art and voice only. Tier: existing-game fix: typecheck, that game's tests, one filtered play and a portrait screenshot, `fingerdemo` once.
 2. **Fresh rules** from existing art (single-animal rules for easy entry only), with the split test. Tier: rules (typecheck and that game's tests).
 3. **Level 6 and the preschool opening** (level 6 for pre-K built 2026-10-14 with `order` [6, 1, 2, 3] and `entryLevels` [6]; the preschool row waits on decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
 4. **Level 7 Where does the new one go?** Needs slice 1. Same tier.
@@ -116,6 +116,6 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 
 ## What was built in this session
 
-On 2026-10-14 a build session (`claude/critter-sort-just-a-few`) added level 6 for pre-K and the `hintFor` fix; checks in [VERIFICATION](../archive/VERIFICATION-2026-10-14.md#2026-10-14--critter-sort-level-6-just-a-few-and-the-missed-critter-hint). The deep dive session itself:
+On 2026-10-14 a build session (`claude/critter-sort-just-a-few`) added level 6 for pre-K and the `hintFor` fix; checks in [VERIFICATION](../archive/VERIFICATION-2026-10-14.md#2026-10-14--critter-sort-level-6-just-a-few-and-the-missed-critter-hint). On 2026-10-16 a build session (`claude/critter-sort-worked-example`, [PR #418](https://github.com/rjdunlap/neo/pull/418)) added the worked example at levels 1, 2, 3 and 5 (`SortPlan.example`/`fitting`, `examplePlaces`, `exampleIndices`; voice `sort.example`/`sort.examples`); the neither mat is not built. The deep dive session itself:
 
 Nothing: a deep dive session is research and ideation only. Links and `git diff --check` ran. The genre sources were read through search summaries, not opened in full.

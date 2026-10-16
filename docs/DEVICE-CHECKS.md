@@ -2,6 +2,7 @@
 
 - [ ] **Bubble Pop mode gallery (built 2026-10-16, #412):** on an iPad, hear the 15 spoken mode lines from the picture tile; ask whether a grown-up finds the named levels and the ladder (green suggested dot, red pin) clearer than numbers. A second game (Pet Says or Jelly Drums) waits on this look.
 
+- [ ] **Critter Sort worked example (built 2026-10-16, #418):** on an iPad at levels 1, 2, 3 and 5, hear "Look, the {who} is already in its place." after the rule and check the pet's name for the critter reads naturally; observe whether a child sees the critter in the hoop as the model before she drags.
 - [ ] **Critter Crossing bank shelf (#405):** on an iPad at levels 4–7, does the small crossed / waited shelf in the bottom-right corner read beside six critters, and does a child glance at it rather than lose track of who crossed?
 - [ ] **Color Garden Tap and it hops (level 9, #399):** hear each color on iPad, try repeated/quick taps and the how-to ghost finger in both orientations, and observe whether a one-year-old intentionally taps the fruit. Browser completion and portrait review do not establish device speech or child response.
 
