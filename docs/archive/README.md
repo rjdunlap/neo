@@ -27,3 +27,5 @@ The original design brief also exists as a [historical design artifact](https://
 - [Roadmap cleanup 2026-10-15](ROADMAP-CLEANUP-2026-10-15.md): the Next up table, short-ladder and more-to-play lists, Lands, Profiles first and Grown-up play text as they stood before the roadmap was shortened to a ready-to-build list.
 
 Earth-materials research closeout also rotated the oldest live verification entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
+
+Body/health research closeout also rotated the Shape Buddies level 2 definition and Critter Sort level 11 entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
