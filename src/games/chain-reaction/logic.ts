@@ -25,6 +25,8 @@ export interface ChainPlan {
   /** Accepted arrangements; the last level deliberately permits more than one design. */
   solutions: { min: number; max: number };
   machines: number;
+  /** A finished machine with several bells: she predicts which one rings, then runs it. Nothing is placed. */
+  predict?: { bells: number };
 }
 
 export const PLANS: ChainPlan[] = [
@@ -36,7 +38,14 @@ export const PLANS: ChainPlan[] = [
   { name: 'Find one of several working designs for the chime and bell', cols: 5, rows: 5, fixed: 3, loose: 2, decoys: 6, chime: true, solutions: { min: 2, max: 6 }, machines: 2 },
 ];
 
-export const planFor = (level: number): ChainPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** Level 8, an easy entry placed before level 1 by the band's `order`: read a finished machine and predict the bell. */
+export const WHICH_BELL = 8;
+export const PREDICT_PLAN: ChainPlan = {
+  name: 'Which bell? Tap the bell the marble will ring, then run it', cols: 4, rows: 3, fixed: 2, loose: 0, decoys: 0, chime: false,
+  solutions: { min: 1, max: 1 }, machines: 3, predict: { bells: 3 },
+};
+
+export const planFor = (level: number): ChainPlan => level === WHICH_BELL ? PREDICT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** One socket index per loose ramp; null means that ramp is still in the tray. */
 export type Layout = (number | null)[];
@@ -53,6 +62,8 @@ export interface ChainBoard {
   solution: number[];
   /** The marble must arrive at this cell as well as at the target bell. */
   chime?: Cell;
+  /** Bell columns along the bottom, left to right, for a prediction machine; `target` is the one the marble rings. */
+  bells?: number[];
 }
 
 export interface TraceStep extends Cell {
@@ -174,6 +185,7 @@ function key(c: Cell) {
  * an impossible or ambiguous early round.
  */
 export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
+  if (plan.predict) return makePredictBoard(plan, plan.predict.bells, rng);
   for (let attempt = 0; attempt < 800; attempt++) {
     const rows = rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row));
     const looseRows = new Set(rows.slice(0, plan.loose));
@@ -221,5 +233,37 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
   }
   throw new Error(`could not make a Chain Reaction board for ${plan.name}`);
 }
+
+/**
+ * A finished machine for a prediction: every fixed ramp sits on the marble's path, so each one visibly matters, the marble
+ * never leaves the board, and it ends away from where it started (a straight drop would need no reading). The bell it rings
+ * is one of the bells shown; the others stand in other columns along the bottom.
+ */
+function makePredictBoard(plan: ChainPlan, bells: number, rng: Rng): ChainBoard {
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const rows = new Set(rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row)).slice(0, plan.fixed));
+    let col = rng.int(1, plan.cols - 2);
+    const start = col;
+    const fixed: FixedRamp[] = [];
+    for (let row = 0; row < plan.rows; row++) {
+      if (!rows.has(row)) continue;
+      const options: Ramp[] = [];
+      if (col > 0) options.push('left');
+      if (col < plan.cols - 1) options.push('right');
+      const ramp = rng.pick(options);
+      fixed.push({ row, col, ramp });
+      col += delta(ramp);
+    }
+    if (col === start) continue;
+    const others = rng.shuffle(Array.from({ length: plan.cols }, (_, c) => c).filter((c) => c !== col)).slice(0, bells - 1);
+    const board: ChainBoard = { cols: plan.cols, rows: plan.rows, start, target: col, fixed, loose: [], sockets: [], solution: [], bells: [col, ...others].sort((a, b) => a - b) };
+    if (!trace(board, []).success) continue;
+    return board;
+  }
+  throw new Error(`could not make a Chain Reaction prediction for ${plan.name}`);
+}
+
+/** The bell the ghost finger predicts: the one the marble's trace really ends at. */
+export const predictedBell = (board: ChainBoard): number => trace(board, []).end;
 
 export const makeBoards = (plan: ChainPlan, rng: Rng) => Array.from({ length: plan.machines }, () => makeBoard(plan, rng));

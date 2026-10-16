@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { chainTouch, hintFor, makeBoard, PLANS, planFor, solutions, trace } from './logic';
+import { chainTouch, hintFor, makeBoard, makeBoards, PLANS, planFor, predictedBell, PREDICT_PLAN, solutions, trace, WHICH_BELL } from './logic';
 
 describe('Chain Reaction', () => {
   it('demonstrates every generated machine by completing one accepted design before running it', () => {
@@ -93,5 +93,33 @@ describe('Chain Reaction', () => {
     expect(planFor(99)).toBe(PLANS.at(-1));
     const top = makeBoard(PLANS.at(-1)!, new Rng(88));
     expect(solutions(top).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('level 8 shows a finished machine whose marble rings one of three reachable bells', () => {
+    expect(planFor(WHICH_BELL)).toBe(PREDICT_PLAN);
+    for (let seed = 1; seed <= 200; seed++) {
+      const boards = makeBoards(PREDICT_PLAN, new Rng(seed * 31 + 8));
+      expect(boards).toHaveLength(PREDICT_PLAN.machines);
+      for (const board of boards) {
+        const run = trace(board, []);
+        const bells = board.bells!;
+        expect(board.loose).toHaveLength(0);
+        expect(board.fixed).toHaveLength(PREDICT_PLAN.fixed);
+        expect(new Set(bells).size).toBe(PREDICT_PLAN.predict!.bells);
+        expect(bells.every((col) => col >= 0 && col < board.cols)).toBe(true);
+        // The marble stays on the machine, rings one of the shown bells, and needed its ramps to get there.
+        expect(run).toMatchObject({ escaped: false, success: true, end: board.target });
+        expect(bells).toContain(run.end);
+        expect(run.end).not.toBe(board.start);
+        expect(run.steps.filter((s) => s.ramp)).toHaveLength(PREDICT_PLAN.fixed);
+        expect(predictedBell(board)).toBe(board.target);
+      }
+    }
+  });
+
+  it('level 8 has nothing to place, so a hint or bot never moves a part', () => {
+    const board = makeBoard(PREDICT_PLAN, new Rng(4));
+    expect(hintFor(board, [])).toBeNull();
+    expect(chainTouch(board, [])).toEqual({ kind: 'run' });
   });
 });
