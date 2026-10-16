@@ -134,6 +134,8 @@ Positions in the windows follow in "Easier entries"; "Band window" below is wher
 
 Lap currently has level 1 (tap): five taps are a complete experience. **Option (decision 2):** let lap also play level 2, the pull, with the notches and the wrong-way help, since a one-year-old can drag and every pull is right. Without the wrong-way reply (gap 2) this would be a silent toy; with it, it is a response to every touch. It adds `lap: { min: 1, max: 2 }` and makes the game's level 2 appear for her own band today. Toddler needs nothing new except the easier entry below.
 
+**Level 12, Planet Hop** (school, last in order `[4, 5, 7, 6, 12]`): the same shown pull on a light or heavy planet, predicted then compared, unscored. Defined in [definitions/planet-hop.md](../definitions/planet-hop.md).
+
 ### Easier entries and levels between existing ones
 
 Append 8 (near or far; 7 is built as Feed the friend) and place it with the built `order`; declare it in `entryLevels` as an easy entry so a birthday into a band that does not list it lands on that band's easiest level. The shared `registry.test.ts` checks that every entry is first in some band. Proposed windows, in step order (the exact API is in `src/progress/difficulty.ts`; copy the Owl Walk, Block Tower or Opposites windows rather than re-deriving):
@@ -181,6 +183,7 @@ These go on the roadmap's "Waiting on the developer" list as one row.
 7. **Level 10, Where on the line?** Needs the 10-tick strip and nearest-tick routing. *Tier: as slice 5.*
 8. **Lap's pull level** (decision 2) and the magnet tier (decision 4). *Tier: filtered lap play, one person check noted open.*
 9. **Level 11, Pick a spring.** Needs decision 3. *Tier: as slice 5.*
+10. **Level 12, Planet Hop.** Defined in [definitions/planet-hop.md](../definitions/planet-hop.md). *Tier: as slice 4 (new level on an existing interaction).*
 
 Every slice also updates the README row, the `GAMES.md` entry, the how-to card and the ghost-finger bot, and records a short VERIFICATION entry. The couch catalog and Cloud Hopper stay on level 3 and are untouched by levels 7–11.
 
