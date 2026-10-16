@@ -323,3 +323,8 @@ Reconciled completed [Goodnight rooms #403](https://github.com/rjdunlap/neo/pull
 ### 2026-10-16 — Bug Builder flutter dispatch
 
 Reconciled completed Bumper Garden [#410](https://github.com/rjdunlap/neo/pull/410)/[#411](https://github.com/rjdunlap/neo/pull/411), confirmed merges and released its slot. Fresh allowance and overlap admitted only [Bug Builder slice 2](deep-dives/bug-builder.md#build-slices-in-order) to worker `01a142ae-a2cb-71e2-98b6-c0937479cdea`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Critter Crossing not-entry dispatch
+
+Reconciled completed [flutter #416](https://github.com/rjdunlap/neo/pull/416), confirmed merge and released its slot; Critter Sort #418 is merged. Fresh allowance and overlap admitted only [Critter Crossing slice 4](deep-dives/critter-crossing.md#build-slices-in-order) to worker `01a1431d-314b-7163-8fac-e54497cdcd77`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
