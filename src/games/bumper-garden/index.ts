@@ -148,6 +148,7 @@ class BumperGarden implements Game {
 
   private readonly ballNode = ladybug();
   private readonly glow = new Graphics();
+  private readonly readyRing = new Graphics();
   private readonly input = new Container();
   private readonly sides: Record<FlipperSide, Graphics> = { left: new Graphics(), right: new Graphics() };
   private progressed = false;
@@ -196,7 +197,8 @@ class BumperGarden implements Game {
     this.flippers.left.node.position.set(FLIPPER.x, FLIPPER.y);
     this.flippers.right.node.position.set(TABLE.w - FLIPPER.x, FLIPPER.y);
     this.flippers.right.node.scale.x = -1;
-    this.board.addChild(bed, this.glow, hedge, ...this.flowers, this.flippers.left.node, this.flippers.right.node, pot, this.ballNode);
+    this.readyRing.eventMode = 'none';
+    this.board.addChild(bed, this.glow, hedge, ...this.flowers, this.flippers.left.node, this.flippers.right.node, this.readyRing, pot, this.ballNode);
     this.ballNode.position.set(this.ball.x, this.ball.y);
 
     // Tap anywhere: the left half flips the left flipper, the right half the right one.
@@ -406,6 +408,24 @@ class BumperGarden implements Game {
     this.ballNode.position.set(this.ball.x, this.ball.y);
     this.ballNode.rotation = Math.atan2(this.ball.vy, this.ball.vx) + Math.PI / 2;
     this.drawGlow();
+    this.drawReadyRing();
+  }
+
+  /** A timing cue only: use the real kick's reach without consuming a random draw or counting a hint. */
+  private drawReadyRing() {
+    const g = this.readyRing.clear();
+    if (this.plan.mode === 'spring' || this.finished || this.state !== 'flying' || this.ball.vy <= 0) return;
+    const side = this.ball.x < TABLE.w / 2 ? 'left' : 'right';
+    if (!kickBall(this.ball, side, this.wide, () => 0)) return;
+    const f = this.flippers[side];
+    const s = side === 'left' ? 1 : -1;
+    const x = f.node.x + s * Math.cos(f.angle) * FLIPPER.length;
+    const y = FLIPPER.y + Math.sin(f.angle) * FLIPPER.length;
+    const pulse = (1 + Math.sin(this.clock * 6)) / 2;
+    const r = 25 + pulse * 5;
+    g.circle(x, y, r).fill({ color: swatch.yellow.light, alpha: 0.16 + pulse * 0.12 })
+      .stroke({ color: swatch.white.fill, width: 9, alpha: 0.85 })
+      .circle(x, y, r).stroke({ color: swatch.yellow.line, width: 4, alpha: 0.8 + pulse * 0.2 });
   }
 
   private drawGlow() {

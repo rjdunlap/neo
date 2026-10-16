@@ -22,6 +22,9 @@ const LEVELS: BandLevels = {
 };
 
 const SCALE = 0.32;
+/** The small copies on the bank shelf, and the gap between them. */
+const SHELF_SCALE = 0.15;
+const SHELF_GAP = 58;
 
 /** A picture of a rule, as it appears on the gate and on the guessing cards. */
 export function gateIcon(g: Gate, size = 1): Container {
@@ -79,6 +82,10 @@ class CritterCrossing implements Game {
   private readonly bulb: Container;
   private readonly dots = new Graphics();
   private readonly panel = new Container();
+  /** The bank shelf: small copies of who crossed and who waited, in the order she tried them. */
+  private readonly shelf = new Container();
+  /** Critters with an answer, in the order the gate gave it. */
+  private tried: Slot[] = [];
   private view: View;
   private wrongs = 0;
   /** Tries in a settle round that both standing pictures would have answered the same way. */
@@ -98,12 +105,13 @@ class CritterCrossing implements Game {
     this.sign.eventMode = 'none';
     this.bar.eventMode = 'none';
     this.dots.eventMode = 'none';
+    this.shelf.eventMode = 'none';
     const bulb = new Container();
     bulb.addChild(new Graphics().circle(0, 5, 56).fill(wood.line).circle(0, 0, 56).fill(0xffffff).stroke({ width: 6, color: swatch.yellow.line }), bulbIcon());
     bulb.hitArea = new Circle(0, 0, 70);
     onTap(bulb, () => this.toggleGuess(), { cooldown: 300 });
     this.bulb = bulb;
-    ctx.stage.addChild(this.backdrop, this.scenery, this.sign, this.bar, this.glow, this.dots, this.bulb, this.panel);
+    ctx.stage.addChild(this.backdrop, this.scenery, this.sign, this.bar, this.glow, this.dots, this.shelf, this.bulb, this.panel);
   }
 
   start() {
@@ -150,6 +158,7 @@ class CritterCrossing implements Game {
     this.bulb.position.set(v.w * 0.5, v.h - 80);
     this.dots.position.set(v.w * 0.5, v.h - 160);
     this.drawDots();
+    this.shelf.position.set(v.w - 24, v.h - 20);
     for (const [i, s] of this.slots.entries()) {
       const home = s.state === 'crossed' ? this.rightSlot(this.slots.filter((x, j) => j < i && x.state === 'crossed').length) : this.leftSlot(i);
       s.home = home;
@@ -229,6 +238,7 @@ class CritterCrossing implements Game {
       this.ctx.untrack(s.node);
       s.node.destroy({ children: true });
     }
+    this.tried = [];
     this.round = makeRound(this.plan, this.ctx.rng, this.lastGate);
     this.lastGate = gateKey(this.round.gate);
     this.round.critters.forEach((c, i) => {
@@ -257,6 +267,7 @@ class CritterCrossing implements Game {
     this.drawGate(false);
     this.resize(this.view);
     this.drawDots();
+    this.drawShelf();
     this.busy = false;
     if (this.plan.settle) return this.ctx.instruct('cross.settle');
     if (this.index > 0) return;
@@ -270,14 +281,49 @@ class CritterCrossing implements Game {
 
   private mark(slot: Slot, passed: boolean) {
     slot.badge?.destroy();
-    const b = new Graphics();
-    if (passed) b.circle(0, 0, 22).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line }).moveTo(-10, 1).lineTo(-3, 8).lineTo(11, -9).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
-    else b.circle(0, 0, 22).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line }).moveTo(-9, -9).lineTo(9, 9).moveTo(9, -9).lineTo(-9, 9).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+    const b = CritterCrossing.badge(passed);
     b.position.set(0, -330);
     b.scale.set(1 / SCALE * 0.9);
     b.eventMode = 'none';
     slot.node.addChild(b);
     slot.badge = b;
+    if (!this.tried.includes(slot)) this.tried.push(slot);
+    this.drawShelf();
+  }
+
+  private static badge(passed: boolean): Graphics {
+    const b = new Graphics();
+    if (passed) b.circle(0, 0, 22).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line }).moveTo(-10, 1).lineTo(-3, 8).lineTo(11, -9).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
+    else b.circle(0, 0, 22).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line }).moveTo(-9, -9).lineTo(9, 9).moveTo(9, -9).lineTo(-9, 9).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+    return b;
+  }
+
+  /**
+   * The bank shelf in the bottom-right corner: a row of who crossed under a tick and a row of who waited under a cross,
+   * so on a secret rule the evidence is one glance rather than something to remember. It only shows, never takes a tap.
+   */
+  private drawShelf() {
+    this.shelf.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (!this.hidden) return;
+    const rows = [true, false].map((passed) => this.tried.filter((s) => (s.state === 'crossed') === passed));
+    const most = Math.max(5, ...rows.map((r) => r.length));
+    const w = 70 + most * SHELF_GAP;
+    this.shelf.addChild(new Graphics().roundRect(-w, -138, w, 134, 18).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 5, color: wood.line }).moveTo(-w + 12, -70).lineTo(-12, -70).stroke({ width: 3, color: wood.line, alpha: 0.5 }));
+    rows.forEach((row, r) => {
+      const y = r ? -12 : -78;
+      const badge = CritterCrossing.badge(!r);
+      badge.scale.set(0.8);
+      badge.position.set(-w + 32, y - 22);
+      this.shelf.addChild(badge);
+      row.forEach((s, i) => {
+        const k = new Critter(CRITTERS[s.c.kind]);
+        k.alive = false;
+        if (s.c.hat) k.attach(hatArt());
+        k.scale.set(SHELF_SCALE);
+        k.position.set(-w + 62 + SHELF_GAP / 2 + i * SHELF_GAP, y);
+        this.shelf.addChild(k);
+      });
+    });
   }
 
   /** A critter walks to the gate; it opens for a critter that fits and stays shut for one that does not. */
