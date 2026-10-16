@@ -4671,14 +4671,26 @@ async function next() {
   }
 
   // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 5 && (!only || only === 'bumper'); level++) {
-    if (level === 1 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
+  const bumperLevels = process.env.BUMPER_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 9].filter(l => l >= Number(process.env.FROM_LEVEL || 1));
+  for (const level of (!only || only === 'bumper') ? bumperLevels : []) {
+    if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('bumper-garden', level);
     await page.waitForTimeout(400);
+    if (level === 6 || level === 9) await screenshot(`bumper-garden-${level}`);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const result = await page.evaluate(async () => {
       const g = neo.scene.game;
       const { FLIPPER, TABLE } = await import('/src/games/bumper-garden/logic.ts');
+      if (g.plan.start) {
+        const { orderNumbers } = await import('/src/games/bumper-garden/logic.ts');
+        const sequence = orderNumbers(g.plan);
+        const pictured = g.numberStrip.children.filter(c => typeof c.text === 'string').map(c => Number(c.text));
+        if (JSON.stringify(pictured) !== JSON.stringify(sequence) || g.next !== sequence[0]) throw new Error('Bumper sequence strip/start mismatch');
+        const wrong = g.flowers.findIndex(f => f.bumper.number !== null && f.bumper.number !== g.next);
+        const before = { next: g.next, misses: g.misses, hints: g.hints };
+        g.bumped(wrong); // The physics may bump an out-of-order flower; it only chimes.
+        if (g.next !== before.next || g.misses !== before.misses || g.hints !== before.hints || g.flowers[wrong].bloomed) throw new Error('Out-of-order bump changed progress');
+      }
       const flipNear = () => {
         const b = g.ball;
         if (g.state !== 'flying' || b.vy <= 0 || b.y < FLIPPER.y - 90) return;
@@ -4709,12 +4721,12 @@ async function next() {
       if (!g.finished) throw new Error(`Bumper never finished: next ${g.next}, bloomed ${g.flowers.filter((f) => f.bloomed).length}`);
       return { launches: g.launches, misses: g.misses, hints: g.hints };
     });
-    await screenshot(`bumper-garden-${level}`);
+    if (level !== 6 && level !== 9) await screenshot(`bumper-garden-${level}`);
     await finished('bumper-garden');
     const r = await score('bumper-garden');
     if (mode === 'spring' || mode === 'bloom') assert.deepEqual(r, [0, 0], `bumper ${level} score`);
     else assert.ok(r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints, `bumper ${level} score ${r}`);
-    if (level === 1 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bumper Garden ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`);
   }
 

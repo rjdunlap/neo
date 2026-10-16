@@ -22,6 +22,7 @@ import {
   launchVelocity,
   makeBumpers,
   makeWorld,
+  orderNumbers,
   planFlip,
   planFor,
   STEP,
@@ -37,7 +38,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
+  prek: { min: 3, max: 9, order: [3, 4, 6, 5, 9] },
 };
 
 /** Colors a flower can be; on color levels the first is the one to bloom. */
@@ -149,6 +150,7 @@ class BumperGarden implements Game {
   private readonly ballNode = ladybug();
   private readonly glow = new Graphics();
   private readonly readyRing = new Graphics();
+  private readonly numberStrip = new Container();
   private readonly input = new Container();
   private readonly sides: Record<FlipperSide, Graphics> = { left: new Graphics(), right: new Graphics() };
   private progressed = false;
@@ -169,7 +171,8 @@ class BumperGarden implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.plan = planFor(ctx.level);
+    this.plan = planFor(ctx.level, ctx.rng);
+    this.next = this.plan.start ?? 1;
     this.bumpers = makeBumpers(this.plan, ctx.rng);
     const colors = ctx.rng.shuffle([...FLOWER_COLORS]);
     this.target = colors[0];
@@ -198,7 +201,9 @@ class BumperGarden implements Game {
     this.flippers.right.node.position.set(TABLE.w - FLIPPER.x, FLIPPER.y);
     this.flippers.right.node.scale.x = -1;
     this.readyRing.eventMode = 'none';
-    this.board.addChild(bed, this.glow, hedge, ...this.flowers, this.flippers.left.node, this.flippers.right.node, this.readyRing, pot, this.ballNode);
+    this.numberStrip.eventMode = 'none';
+    this.board.addChild(bed, this.glow, hedge, ...this.flowers, this.flippers.left.node, this.flippers.right.node, this.readyRing, pot, this.ballNode, this.numberStrip);
+    this.drawNumberStrip();
     this.ballNode.position.set(this.ball.x, this.ball.y);
 
     // Tap anywhere: the left half flips the left flipper, the right half the right one.
@@ -222,6 +227,8 @@ class BumperGarden implements Game {
     if (p.mode === 'spring') void this.ctx.instruct('bumper.spring');
     else if (p.mode === 'bloom') void this.ctx.instruct('bumper.bloom');
     else if (p.mode === 'color') void this.ctx.instruct('bumper.color', { color: this.target });
+    else if (p.descend) void this.ctx.instruct('bumper.back', { n: this.next });
+    else if (p.start) void this.ctx.instruct('bumper.start', { n: this.next });
     else void this.ctx.instruct('bumper.order', { n: this.next });
     this.holdFor = p.mode === 'spring' ? Infinity : 2.2;
   }
@@ -437,6 +444,25 @@ class BumperGarden implements Game {
     });
   }
 
+  /** A pictured route through the new number sequences; the ring marks the number being asked for. */
+  private drawNumberStrip() {
+    if (!this.plan.start) return;
+    this.numberStrip.removeChildren().forEach((child) => child.destroy());
+    const numbers = orderNumbers(this.plan);
+    const gap = 60;
+    numbers.forEach((n, i) => {
+      const x = TABLE.w / 2 + (i - (numbers.length - 1) / 2) * gap;
+      const current = n === this.next && !this.finished;
+      const circle = new Graphics().circle(x, 40, 22).fill(current ? swatch.yellow.fill : swatch.white.light)
+        .stroke({ color: current ? swatch.orange.line : swatch.green.line, width: current ? 5 : 2 });
+      const text = label(String(n), 25, ink);
+      text.position.set(x, 40);
+      this.numberStrip.addChild(circle, text);
+      if (i < numbers.length - 1) this.numberStrip.addChild(new Graphics()
+        .moveTo(x + 27, 36).lineTo(x + 32, 40).lineTo(x + 27, 44).stroke(line(swatch.green.line, 3)));
+    });
+  }
+
   private bumped(i: number) {
     const f = this.flowers[i];
     if (this.clock - f.lastHit > 0.2) sfx.bell(stepFromUnit(1 - f.y / TABLE.h, 4, 11), 0.25);
@@ -453,7 +479,8 @@ class BumperGarden implements Game {
     if (mode === 'color' || mode === 'bloom') void this.ctx.say('count', { n: this.flowers.filter((o) => o.bloomed).length });
     if (mode === 'order') {
       void this.ctx.say('count', { n: this.next });
-      this.next++;
+      this.next += this.plan.descend ? -1 : 1;
+      this.drawNumberStrip();
     }
     if (this.done()) void this.finale();
     else if (mode === 'order') void this.ctx.tw.wait(0.9).then(() => {
@@ -464,7 +491,7 @@ class BumperGarden implements Game {
   private done(): boolean {
     const p = this.plan;
     if (p.mode === 'spring') return false;
-    if (p.mode === 'order') return this.next > p.goal;
+    if (p.mode === 'order') return !orderNumbers(p).includes(this.next);
     return this.flowers.every((f, i) => f.bloomed || !this.wanted(i));
   }
 

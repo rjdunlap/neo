@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Bumper Garden Count on and Count back (2026-10-15)
+
+[PR #408](https://github.com/rjdunlap/neo/pull/408), `codex/bumper-count-on-back`: deep-dive slice 4 adds stable IDs 6 and 9. Count on draws a start from 2–6 and three or four consecutive flowers; Count back draws a start from 5–8 and descends to 1. A noninteractive number strip highlights the next target, and spoken instructions name the start/direction. Pre-K follows `[3, 4, 6, 5, 9]`; other bands, old IDs/pins, physics/scoring and couch trip levels 3/4 remain unchanged. IDs 7/8 are unbuilt. The flipper-ready cue also appears at the new levels. Typecheck, 41 focused tests, build, both filtered plays, landscape/portrait review and both clean finger demos passed ([proof](../VERIFICATION.md#2026-10-15--bumper-garden-count-on-and-count-back)); iPad/controller/child checks remain open. Pond/Hive tables remain a separate ready slice.
+
+
 ### Bumper Garden flipper-ready ring (2026-10-15)
 
 [PR #406](https://github.com/rjdunlap/neo/pull/406), `codex/bumper-garden-ready-ring`: deep-dive slice 2 adds a palette Graphics ring at the nearer flipper tip for levels 2–5, only while the ladybug is flying, falling and within the actual `kickBall` reach. The ring is noninteractive; physics, scoring, hints and RNG are unchanged. The how-to note is scoped to levels 2–5. Typecheck, 24 focused tests, build, a level-2 cue/input/completion regression and portrait review passed; ghost finger and broader suites were not rerun. [Proof](../VERIFICATION.md#2026-10-15--bumper-garden-flipper-ready-ring). Pond and Hive tables remain the next separate slice; iPad/child timing-cue comfort remains open.
@@ -31,7 +36,7 @@
 
 ### Clock Tower hour-change and fives explanations (2026-10-15)
 
-[PR #383](https://github.com/rjdunlap/neo/pull/383), branch `codex/clock-explanations`, dispatch `clock-explanations-20261015T164756Z`: completes only build slice 3 at existing levels. Reuses #358’s level-3 required half-past request and level-6 starts at 11 and 12. Each level-6 check shows the starting clock faintly beside a forward one-hour animation and explains unchanged minutes; labels, speech and hand endpoints use the task data. Level 7 marks zero at 12, explains the full 60-minute turn into the next hour, and on earned help counts by fives with an arc to that task’s target minute. The overlays take no input. Four tasks, modes, controls/target sizes, misses/hints, bands/pins/saves and original icon/sticker art retained. [Proof](../VERIFICATION.md#2026-10-15--clock-tower-hour-change-and-fives-explanations); device speech/touch and child comprehension remain open. No new levels or appointment art; slices 8–11 and the preschool opening await decisions.
+[PR #383](https://github.com/rjdunlap/neo/pull/383), branch `codex/clock-explanations`, dispatch `clock-explanations-20261015T164756Z`: completes only build slice 3 at existing levels. Reuses #358’s level-3 required half-past request and level-6 starts at 11 and 12. Each level-6 check shows the starting clock faintly beside a forward one-hour animation and explains unchanged minutes; labels, speech and hand endpoints use the task data. Level 7 marks zero at 12, explains the full 60-minute turn into the next hour, and on earned help counts by fives with an arc to that task’s target minute. The overlays take no input. Four tasks, modes, controls/target sizes, misses/hints, bands/pins/saves and original icon/sticker art retained. [Proof](VERIFICATION-2026-10-15.md#2026-10-15--clock-tower-hour-change-and-fives-explanations); device speech/touch and child comprehension remain open. No new levels or appointment art; slices 8–11 and the preschool opening await decisions.
 
 ### Clock Tower 5 visible appointments (2026-10-15)
 
@@ -904,7 +909,7 @@ Typecheck, 16 Memory Match tests (200 seeded fraction selections: exact area/til
 
 ## Tangram Town shovel picture (2026-10-15)
 
-[PR #384](https://github.com/rjdunlap/neo/pull/384), `codex/tangram-shovel-picture`: a quarter-turned rectangle handle meets a trapezoid blade, adding one two-piece shovel to existing levels 1–3 (pools 5/7/8; twenty-two pictures overall). Other pools, interaction, bands, saved IDs and level pins stay fixed. The existing how-to remains accurate. Typecheck, thirteen geometry/solvability/bot rules, one isolated real-input level-3 shovel round with a saved sticker and a portrait review passed; build, full suites and ghost-finger browser play were not rerun. [Verification](../VERIFICATION.md#2026-10-15--tangram-town-shovel-picture) records the probe timing correction and open device/child checks. More picture content remains ready.
+[PR #384](https://github.com/rjdunlap/neo/pull/384), `codex/tangram-shovel-picture`: a quarter-turned rectangle handle meets a trapezoid blade, adding one two-piece shovel to existing levels 1–3 (pools 5/7/8; twenty-two pictures overall). Other pools, interaction, bands, saved IDs and level pins stay fixed. The existing how-to remains accurate. Typecheck, thirteen geometry/solvability/bot rules, one isolated real-input level-3 shovel round with a saved sticker and a portrait review passed; build, full suites and ghost-finger browser play were not rerun. [Verification](VERIFICATION-2026-10-15.md#2026-10-15--tangram-town-shovel-picture) records the probe timing correction and open device/child checks. More picture content remains ready.
 
 ## Discovery D1a direct-next packet (2026-10-15)
 
