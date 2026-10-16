@@ -1,8 +1,16 @@
+import { critterSort } from './index';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
 
 describe('Critter Sort', () => {
+  it('preserves the younger ladder and stable school IDs, appending only 7 after 5', () => {
+    expect(critterSort.levels('prek').order).toEqual([6, 1, 2, 3]);
+    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7]);
+    expect(critterSort.entryLevels).toEqual([6]);
+    expect(PLANS).toHaveLength(7);
+  });
+
   it('separate hoops never overlap, and overlapping hoops really do', () => {
     const kinds = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'] as const;
     const all = kinds.flatMap((kind) => [{ kind, hat: false }, { kind, hat: true }]);
@@ -70,6 +78,34 @@ describe('Critter Sort', () => {
         expect(sorters.filter((s) => s.placed === null).every((s) => placeOf(s.c, round.rules, not) === 'out')).toBe(true);
       }
     }
+  });
+
+  it('level 7 leaves exactly one newcomer and visible examples in all four places; its bot and hint select only the newcomer', () => {
+    const plan = PLANS[6];
+    expect(plan.newcomer).toBe(true);
+    const seen = new Set<Place>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const round = makeRound(plan, new Rng(seed));
+      expect(round).toEqual(makeRound(plan, new Rng(seed)));
+      expect(round.newcomer).toBeGreaterThanOrEqual(0);
+      const sorters = round.critters.map((c, i) => ({ c, placed: i === round.newcomer ? null : placeOf(c, round.rules) }));
+      const who = sorters[round.newcomer!];
+      const place = placeOf(who.c, round.rules);
+      seen.add(place);
+      expect(new Set(sorters.filter(s => s.placed).map(s => s.placed))).toEqual(new Set(['left', 'right', 'both', 'out']));
+      expect(sorters.filter(s => !s.placed)).toEqual([who]);
+      const next = nextToSort(sorters, round.rules, false, true)!;
+      expect(next).toEqual({ who, place });
+      expect(hintFor(sorters, who, round.rules, false, true)).toBe(who);
+      for (const v of [{ w: 1024, h: 768 }, { w: 768, h: 1024 }]) {
+        const centers = hoopCenters(plan.mode, 2, v);
+        const target = spotFor(centers, plan.mode, place, 1);
+        expect(sortPlaceAt(centers, plan.mode, target.x, target.y)).toBe(place);
+      }
+      who.placed = place;
+      expect(nextToSort(sorters, round.rules, false, true)).toBeUndefined();
+    }
+    expect(seen).toEqual(new Set(['left', 'right', 'both', 'out']));
   });
 
   it('makes the not hoop the complement of its pictured rule, leaving every pictured critter outside', () => {

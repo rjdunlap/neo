@@ -17,6 +17,8 @@ export interface SortPlan {
   example?: boolean;
   /** Exactly this many critters belong in the hoop (Just a few: the example and one more). */
   fitting?: number;
+  /** All but one critter start sorted; the newcomer is the only movable one. */
+  newcomer?: boolean;
 }
 
 export const PLANS: SortPlan[] = [
@@ -26,6 +28,7 @@ export const PLANS: SortPlan[] = [
   { mode: 'guess', critters: 6, rounds: 3, name: 'Already sorted: what is the rule? Pick the right picture' },
   { mode: 'not', critters: 6, rounds: 3, example: true, name: 'A not hoop, one critter already in: put in every critter that does not fit the picture rule' },
   { mode: 'one', critters: 3, rounds: 2, example: true, fitting: 2, name: 'Just a few: three critters, one already in the hoop; which of the other two fits?' },
+  { mode: 'venn', critters: 6, rounds: 3, newcomer: true, name: 'Where does the new one go? Place one newcomer in a sorted diagram: left, right, both, or neither' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -94,6 +97,8 @@ export interface SortRound {
   critters: SortCritter[];
   /** 'guess': the true rule and two others offered (one hoop). */
   options?: Rule[];
+  /** Index of the single newcomer in an otherwise sorted diagram. */
+  newcomer?: number;
 }
 
 /** A round where every place in play gets at least one critter, so each part of the diagram matters. */
@@ -123,6 +128,12 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
       const others = rng.shuffle((['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter((r) => r !== rules[0] && critters.some((c) => fits(c, r) !== fits(c, rules[0]))));
       if (others.length < 2) continue;
       return { rules, critters, options: rng.shuffle([rules[0], ...others.slice(0, 2)]) };
+    }
+    if (plan.newcomer) {
+      // Removing it must leave a visible example in every region, including neither.
+      const candidates = critters.map((c, i) => ({ i, place: placeOf(c, rules) }))
+        .filter(({ place }) => critters.filter((c) => placeOf(c, rules) === place).length > 1);
+      return { rules, critters, newcomer: rng.pick(candidates).i };
     }
     return { rules, critters };
   }

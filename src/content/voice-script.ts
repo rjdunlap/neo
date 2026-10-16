@@ -747,6 +747,7 @@ export const SCRIPT = {
   'ramp.done': ['What a scientist! You tested it fairly.'],
   'sort.one': ['Put every critter {a} in the hoop!'],
   'sort.two': ['One hoop is for critters {a}, the other is for critters {b}. Critters that fit neither go on the leaf mat!'],
+  'sort.newcomer': ['These critters are already sorted. This hoop is for critters {a}, and this hoop is for critters {b}. Where does the new friend go? The middle fits both. The leaf mat fits neither.'],
   'sort.venn': ['One hoop is for critters {a}, the other for critters {b}. Critters that are both go in the middle! Critters that fit neither go on the leaf mat!'],
   'sort.not': ['This hoop is for critters not {a}. The picture has a red line through it! Critters that fit the picture go on the leaf mat!'],
   'sort.mat.yes': ['The {who} fits neither hoop. It belongs on the leaf mat!'],

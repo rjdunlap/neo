@@ -315,3 +315,18 @@
 - Focused `BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=6 TO_LEVEL=6 NIGHT_ROOM=tent` passed: early light taps, two misses/one glow hint, reverse-order goodnights, saved score and sticker. The same filter with `NIGHT_ROOM=boat` also passed. Both portrait screenshots reviewed for clear targets and guide clearance; shelf-only follow-up recaptured separately.
 - Initial sandbox Chromium launch needed escalation; the first dev-server play was interrupted by Vite reloading for an unrelated nested worktree's new tsconfig. Frozen-snapshot rerun passed; snapshot-only FS allow entry serves the repository's font dependency.
 - Not run: full unit/browser suites, build (no shared runtime/assets), fingerdemo (content-only tier; bot rules covered), world/offline, real iPad touch/speech or child response ([device checks](../DEVICE-CHECKS.md)). Level 10/tour stays separate.
+
+## 2026-10-15 — Critter Crossing bank shelf
+
+- [PR #405](https://github.com/rjdunlap/neo/pull/405), dive slice 1: a drawing-only shelf of crossed and waited critter copies on hidden levels 2–7 (`src/games/critter-crossing/index.ts`); no rule, level, voice, save or how-to change.
+- Passed `npm run typecheck` and `npx vitest run src/games/critter-crossing` (19 tests). `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-crossing FINGER_LEVELS=6,7` on `http://localhost:5978` passed (level 6 27.8 s, level 7 21.4 s, no page errors).
+- A probe at level 5 after four tries took landscape 1024×768 and portrait 768×1024 screenshots: shelf readable, hats visible, clear of the bulb, the dots and the pet.
+- Not run: build (no shared files), `fingerdemo` at levels 1–5 (level 1 unaffected), iPad readability beside six critters ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-10-15 — Bumper Garden flipper-ready ring
+
+- [PR #406](https://github.com/rjdunlap/neo/pull/406), `codex/bumper-garden-ready-ring`: tested base `3564945`, claim `f831af6` plus scoped working diff. Levels 2–5 get a noninteractive cue within actual falling-ball kick reach; physics/accounting/RNG unchanged.
+- Passed `npm run typecheck`, `npx vitest run src/games/bumper-garden/logic.test.ts src/content/howto.test.ts` (24 tests), and build (existing chunk-size warning).
+- Passed isolated `test-results/bumper-ring.mjs` at `GAME_URL=http://localhost:5187`: 14 cue gates including both sides/rising/held/finished/spring/out-of-reach, `eventMode = none`, real pointer flip through the decoration; level 2 finished in 14.94 s, 7 taps, 5 blooms, zero misses/hints, exactly one saved sticker and no page errors. This was a filtered probe, not the standard `next` suite.
+- Portrait `test-results/browser/bumper-ready-ring-portrait.png` reviewed: ring clear, no obstruction. Owned server stopped; links/diff checked.
+- Not run: `fingerdemo` (bot unchanged), broader browser/offline/device checks. Real iPad touch/speech, cue comfort and child play remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).

@@ -16,7 +16,7 @@ import { exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, n
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
-  school: { min: 2, max: 5 },
+  school: { min: 2, max: 7, order: [2, 3, 4, 5, 7] },
 };
 
 const SCALE = 0.32;
@@ -199,7 +199,7 @@ class CritterSort implements Game {
     }
     for (const o of this.options.splice(0)) o.node.destroy({ children: true });
     this.round = makeRound(this.plan, this.ctx.rng, this.round?.rules.join());
-    for (const c of this.round.critters) {
+    for (const [i, c] of this.round.critters.entries()) {
       const node = new Critter(CRITTERS[c.kind]);
       node.scale.set(SCALE);
       if (c.hat) node.attach(hatArt());
@@ -207,8 +207,9 @@ class CritterSort implements Game {
       this.ctx.track(node);
       this.ctx.stage.addChild(node);
       const s: Sorter = { c, node, placed: null, home: { x: 0, y: 0 } };
-      if (this.plan.mode === 'guess') {
-        // Already sorted: the ones that fit sit in the hoop.
+      if (this.plan.mode === 'guess' || (this.plan.newcomer && i !== this.round.newcomer)) {
+        // The sorted diagram is a reference, leaving only the newcomer movable.
+        node.eventMode = 'none';
         s.placed = placeOf(c, this.round.rules);
       } else s.drag = draggable(node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.drop(s, x, y) });
       this.sorters.push(s);
@@ -242,6 +243,7 @@ class CritterSort implements Game {
 
   private instruct() {
     const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
+    if (this.plan.newcomer) return this.ctx.instruct('sort.newcomer', { a, b });
     if (this.plan.mode === 'one') return this.ctx.instruct('sort.one', { a });
     if (this.plan.mode === 'two') return this.ctx.instruct('sort.two', { a, b });
     if (this.plan.mode === 'venn') return this.ctx.instruct('sort.venn', { a, b });
