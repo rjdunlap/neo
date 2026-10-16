@@ -47,7 +47,6 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
-12. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
 14. **Barnyard land scene: barn, fence, pail, motif (V1)**. Shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
 15. **`bouncy-launch`, level 12 *Planet Hop*** (the same shown pull on a light or heavy planet; predict past or before the flag; unscored). New-levels tier, `fingerdemo` at 12. [Definition](definitions/planet-hop.md)
 16. **`photo-safari`, free the polaroid textures, then level 7 *Two clues, no name*** (school), then level 5 made truthful and waving/swimming actions, one per slice. Bug-fix tier, then new-interaction tier. [Dive slices 1–4](deep-dives/photo-safari.md#build-slices-in-order)

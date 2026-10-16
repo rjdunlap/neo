@@ -1039,3 +1039,8 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 ## Clap the Syllables level 9 Clap along short (2026-10-16)
 
 [PR #454](https://github.com/rjdunlap/neo/pull/454), `codex/clap-syllables-short`, dispatch `clap-short-20261016T151435Z`: an easier preschool entry with two seeded distinct words, one with one beat and one with two. Preschool order is `[9,1,2]`, with `entryLevels: [9]`; existing IDs/pins, pre-K/school and supported bands retain their meaning. Reuses the guided hands pad, lit beads, whole-word speech, quiet-time support replay and ghost finger; no timing or wrong-clap judgment. Toddler/lap, names and isolated syllables remain excluded. See [verification](../VERIFICATION.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) for proof and device gaps.
+
+
+### Tangram Town broom — 2026-10-16
+
+[PR #456](https://github.com/rjdunlap/neo/pull/456): one two-piece broom added only to existing levels 1–3, rectangle handle joined to a roof-shaped brush; twenty-four pictures total. No shapes, levels, saved IDs/pins, bands, stickers or input changes. Typecheck, 14 focused rules and a seeded level-3 real-turn/drag completion with portrait review passed. More pictures remain a content candidate in the deep dive, outside this completed slice.
