@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-16 — Planet Hop definition
+
+- `claude/planet-hop-definition` (PR #414): docs only. Added `docs/definitions/planet-hop.md` (Bouncy Launch level 12) and routed it through the roadmap (chunk 27, ready list), PHYSICS-GAMES, the Bouncy Launch dive and IDEAS.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, browser or device checks; the build is not started.
+
 ## 2026-10-16 — Bubble Pop mode gallery
 
 - [PR #412](https://github.com/rjdunlap/neo/pull/412), `claude/bubble-pop-mode-gallery`, code `5967799` on base `32ca812`: optional `GameModule.levelCard`, `HowToCard.mode`, a named and pictured level tile and an intro ladder in `HowToPanel`; Bubble Pop's 15 mode cards and voice lines.
