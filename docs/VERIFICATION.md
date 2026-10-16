@@ -377,3 +377,8 @@ Reconciled completed [Tangram broom #456](https://github.com/rjdunlap/neo/pull/4
 ### 2026-10-16 — Planet Hop dispatch
 
 Reconciled completed [Barnyard V1 #460](https://github.com/rjdunlap/neo/pull/460), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Planet Hop level 12](definitions/planet-hop.md) to worker `01a145f2-c677-7c62-a022-7bdf79702997`. Queue records scope, resets and pending proof; actual allowance fits the estimate with no reserve. Docs-only source links and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Photo Safari texture dispatch
+
+Reconciled completed [Planet Hop #466](https://github.com/rjdunlap/neo/pull/466), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 1](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1462b-8eb4-7363-b00e-202f80bdb205`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
