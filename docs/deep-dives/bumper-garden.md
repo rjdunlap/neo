@@ -136,7 +136,7 @@ Add each to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the
 ## Build slices, in order
 
 1. **Truthful how-to and a count in bloom mode (built 2026-10-15, [PR #355](https://github.com/rjdunlap/neo/pull/355)).** Step 1 is `to: 1`, the finish line is per level, and level 2 says the count as each flower blooms (`ctx.say('count')`). Checked by typecheck and vitest; browser play of level 2 not run (see [VERIFICATION](../VERIFICATION.md)).
-2. **Flipper-ready ring (feel; ready).** The pulsing ring on the nearer flipper at levels 2–5. Check: typecheck, one filtered play of level 2 with a portrait screenshot. No logic.
+2. **Flipper-ready ring (feel; claimed on `codex/bumper-garden-ready-ring`).** The pulsing ring on the nearer flipper at levels 2–5. Scope: `src/games/bumper-garden/index.ts`, the level-scoped how-to note and game documentation; no physics or scoring changes. Check: typecheck, one filtered play of level 2 with a portrait screenshot. No logic.
 3. **Tables: layouts and skins for Pond and Hive (rules and art; ready).** New spot sets with reachability tests, skins, notes. Check: typecheck and `logic.test.ts` (every spot reachable, nothing trapped) and one filtered play.
 4. **Count on and Count back, levels 6 and 9.** A `start`/`descend` plan field, voice lines, how-to, README and GAMES entries. Check: rule tests and one filtered play of each, plus `fingerdemo` at the new top level.
 5. **Not this color, level 8.** Check as slice 4.
