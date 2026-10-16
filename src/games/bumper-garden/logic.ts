@@ -61,6 +61,26 @@ export const SPOTS: { x: number; y: number }[] = [
   { x: 480, y: 390 },
 ];
 
+/** Each theme has eight well-spaced spots; the mission and collision sizes stay the same. */
+export const TABLE_IDS = ['meadow', 'pond', 'hive'] as const;
+export type TableId = typeof TABLE_IDS[number];
+export const TABLE_SPOTS: Record<TableId, readonly { x: number; y: number }[]> = {
+  meadow: SPOTS,
+  pond: [
+    { x: 165, y: 110 }, { x: 435, y: 110 },
+    { x: 165, y: 220 }, { x: 435, y: 220 },
+    { x: 165, y: 330 }, { x: 435, y: 330 },
+    { x: 165, y: 440 }, { x: 435, y: 440 },
+  ],
+  hive: [
+    { x: 300, y: 90 }, { x: 445, y: 145 },
+    { x: 505, y: 270 }, { x: 445, y: 395 },
+    { x: 300, y: 450 }, { x: 155, y: 395 },
+    { x: 95, y: 270 }, { x: 155, y: 145 },
+  ],
+};
+export const pickTable = (rng: Rng): TableId => rng.pick(TABLE_IDS);
+
 /** Flippers: pivot, length, and the angles at rest and flipped (left flipper; the right one mirrors). */
 export const FLIPPER = { x: 170, y: 600, length: 106, rest: 0.5, up: -0.4 };
 /** Below this the ball has passed the flippers: the pot catches it. */
@@ -100,8 +120,8 @@ export interface Bumper {
 }
 
 /** Flowers for a round. Color levels have exactly `goal` flowers of the asked color (color 0). */
-export function makeBumpers(plan: BumperPlan, rng: Rng): Bumper[] {
-  const spots = rng.shuffle([...SPOTS]).slice(0, plan.bumpers);
+export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow'): Bumper[] {
+  const spots = rng.shuffle([...TABLE_SPOTS[table]]).slice(0, plan.bumpers);
   const numbers = orderNumbers(plan);
   return spots.map((s, i) => {
     if (plan.mode === 'color') return { ...s, color: i < plan.goal ? 0 : 1 + (i % 2), number: null };

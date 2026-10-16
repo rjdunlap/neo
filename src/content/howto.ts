@@ -878,7 +878,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 6, text: 'The round ends when the last numbered flower has bloomed.' },
       { from: 9, to: 9, text: 'The round ends when flower 1 blooms, after all the numbers before it.' },
     ],
-    note: [{ from: 2, to: 6, text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.' },
+    note: [{ text: 'Each round has a Meadow, Pond or Hive table. Lily pads and hexagonal flowers bloom by the same rule.' }, { from: 2, to: 6, text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.' },
       { from: 9, to: 9, text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.' }],
   },
   'quick-tricks': {
