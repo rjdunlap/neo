@@ -28,10 +28,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Dispatch `barnyard-identity-20261016T171305Z`; worker `01a145b5-14be-7a70-bf23-05834da67fa9`, host `local`, branch `codex/barnyard-land-identity`, draft PR pending. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks.
-- Scope: only V1 build slice 2 in [the definition](definitions/visual-identity.md#build-slices-in-order): Barnyard land barn silhouette, fence/straw edge, cow's milk pail and once-per-session pentatonic marimba greeting. No game backgrounds, other lands, input, saves, layout/navigation or music-loop changes.
-- Worker admission/scope **64% / 81%**; resets `1792178084` / `1792650157`, ordinary usage allowed. Estimate **18.75 / 3.75 points** fits remaining allowance. Fresh overlap check found no competing implementation; independent research and coordinator work preserved.
-- Proof: not run (claim only). Next: publish claim/draft PR, implement, run the definition's shared-visuals checks, publish and merge, then stop.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; preserve Git-locked checkout. Picture worker `01a14581-731a-7d50-96c7-c83872d9eaa9` completed; [#456](https://github.com/rjdunlap/neo/pull/456) merged at `feff68b8a9cd0e5e36ddf13bde706c2d75599bee`, deployment successful, slot released.
+- Newly admitted: **V1 Barnyard land scene only**, [definition slice 2](definitions/visual-identity.md#build-slices-in-order), first current ready-list line. Barn silhouette, fence/straw edge, milk pail and once-per-session pentatonic greeting motif; preserve layout/targets/navigation/music. Exclude game backgrounds, other lands, input changes, saves and unresolved decisions.
+- Dispatch `barnyard-identity-20261016T171305Z`; worker `01a145b5-14be-7a70-bf23-05834da67fa9`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), title "Barnyard: barn, fence, pail and motif". Fresh project/local chat, minimal handoff, no history/model override; branch/claim PR pending; source `bff537a`.
+- Admission 2026-10-16 17:13:05 UTC **61% five-hour / 81% weekly used**, resets `1792178084` / `1792650157`; ordinary usage allowed. Conservative gameplay estimate **18.75 / 3.75 points** fits actual remaining **39% / 19%**, no daily cap/reserve. Docs estimate remains 16.25 / 2.5; later account research usage is separate.
+- Required shared-visual proof: typecheck, unit tests including all-band/four-view land fit, build, small Barnyard portrait/landscape probe. No navigation change, so no world/offline suite. Worker implementation/checks **not run by coordinator**; device/audio/child evidence stays open. Remove completed ready-list line per AGENTS.
+- Prior proof reused: #456 typecheck, 14 rule tests, seeded level-3 broom play and portrait passed; deployment successful, tree clean/server stopped. Device speech/recognition open. Final **46% / 79%**, resets `1792178084` / `1792650157`, vs dispatch 32% / 76% same identities: aggregate **14 / 3 points**, reconciled once below.
+- Overlap: other Neo chats idle; no open PR/unpublished implementation/competing land-scene claim. Historical visual-identity definition branch preserved; retained Dot Link code matches main. Coordinator servers none.
+- Next: retrieve worker/PR next wake-up, confirm completion/publication and reconcile final usage once. Resume same worker if unfinished; do not implement here.
 
 ## Usage observations
 
@@ -41,7 +45,6 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Slice estimate / retired daily allocation-debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
 
-| 2026-10-16 | Critter Crossing not / [#422](https://github.com/rjdunlap/neo/pull/422), dispatch `critter-not-entry-20261016T050833Z` | New level | 12% → 25% / `1792138065` | 51% → 53% / `1792650157` | Estimate 21.25 / 3.75 points | Merged/deployed; final worker response, aggregate 13 / 2. Complete, reconciled once |
 | 2026-10-16 | Critter Sort 7 / [#426](https://github.com/rjdunlap/neo/pull/426), dispatch `critter-sort-seven-20261016T060833Z` | New level | 45% → 59% / `1792138065` | 56% → 58% / `1792650157` | Estimate 21.25 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 2. Complete, reconciled once |
 | 2026-10-16 | Critter Sort 8 / [#428](https://github.com/rjdunlap/neo/pull/428), dispatch `critter-sort-eight-20261016T071003Z` | New level | 61% → 71% / `1792138065` | 59% → 60% / `1792650157` | Estimate 21.25 / 3.75 points | Merged/deployed; final worker response, aggregate 10 / 1. Complete, reconciled once |
 | 2026-10-16 | Critter Sort 9 / [#436](https://github.com/rjdunlap/neo/pull/436), dispatch `critter-sort-nine-20261016T090734Z` | New level | 0% → 12% / `1792159662` | 62% → 64% / `1792650157` | Estimate 17.5 / 2.5 points | Merged/deployed; final worker response, aggregate 12 / 2. Complete, reconciled once |
@@ -50,7 +53,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-16 | Chain Reaction 7 / [#448](https://github.com/rjdunlap/neo/pull/448), dispatch `chain-turn-20261016T131304Z` | New level/interaction | 44% → 59% / `1792159662` | 69% → 71% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 15 / 2. Complete, reconciled once |
 | 2026-10-16 | Clap comparison 8 / [#452](https://github.com/rjdunlap/neo/pull/452), dispatch `clap-comparison-20261016T141435Z` | New level | 0% → 14% / `1792178084` | 72% → 74% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 2. Complete, reconciled once |
 | 2026-10-16 | Clap short 9 / [#454](https://github.com/rjdunlap/neo/pull/454), dispatch `clap-short-20261016T151435Z` | New level/entry | 14% → 25% / `1792178084` | 74% → 75% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 11 / 1. Complete, reconciled once |
-| 2026-10-16 | Tangram broom / [#456](https://github.com/rjdunlap/neo/pull/456), dispatch `tangram-picture-20261016T161705Z` | Existing-level content | 32% → pending / `1792178084` | 76% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Worker `01a14581-731a-7d50-96c7-c83872d9eaa9`, `codex/tangram-two-piece-picture`: verified, publishing; final post-commit reading in worker response for one-time reconciliation |
+| 2026-10-16 | Tangram broom / [#456](https://github.com/rjdunlap/neo/pull/456), dispatch `tangram-picture-20261016T161705Z` | Existing-level content | 32% → 46% / `1792178084` | 76% → 79% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 3. Complete, reconciled once |
+| 2026-10-16 | Barnyard identity, dispatch `barnyard-identity-20261016T171305Z` | Shared visuals | 61% → pending / `1792178084` | 81% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Fresh worker `01a145b5-14be-7a70-bf23-05834da67fa9` admitted; implementation/proof pending |
 
 ## Fresh-worker dispatch and handoff
 
