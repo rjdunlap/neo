@@ -68,3 +68,16 @@
 - Ran `npm run typecheck` and `npx vitest run src/couch src/games/garden-rows src/content` (161 passed; the howto test's bot-game count is now 25).
 - Passed `GAME_URL=http://localhost:5528 BROWSER_SUITE=couchgames COUCH_ONLY=garden-rows` twice (the second on 0e03cb2): intro, controller diagram lights with the bot, bot round through `control()`, one stop saved, sticker, child save untouched, no page errors. A probe screenshot (level 3, 1024x768) shows the ring on an empty spot with the packets open.
 - Not run: full `npm test`, build, full `couch`/`couchcourse` (trip and course code unchanged), offline, a portrait couch view, a real controller or TV.
+
+## 2026-10-16 — Shape Buddies level 2 definition
+
+- [PR #440](https://github.com/rjdunlap/neo/pull/440), `claude/shape-buddies-step-definition`: docs only. Defines Shape Buddies level 2 *A step down* in [the definition](../definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16); nothing built.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, unit or browser checks.
+
+## 2026-10-16 — Critter Sort level 11 How many?
+
+- [PR #439](https://github.com/rjdunlap/neo/pull/439), `codex/critter-sort-eleven`, worker `01a14435-4fa4-75c2-bc0c-802e92b789e9`, dispatch `critter-sort-eleven-20261016T101434Z`: tested base `feeafa8` plus implementation diff. School appends 11, skips reserved 10, IDs/pins and pre-K preserved.
+- Passed typecheck, 48 focused Critter Sort/registry/how-to tests, and build (existing chunk warning). Across 300 seeds, counts match `placeOf`, parts have 1/2/3 critters, every part can be largest, and counting targets are distinct/reachable in landscape and portrait.
+- `GAME_URL=http://localhost:5191 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=11 TO_LEVEL=11`: two mandatory sorts and comparisons, every critter tapped/count badges truthful, repeated taps free, two comparison misses/one hint, resize/replay, saved result/sticker and no page errors. Count-badge landscape and portrait screenshots reviewed.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=11` clean in 52.8 s: sorts, counts every part and chooses the largest in both diagrams. Links and diff checked; owned Vite stopped after checks.
+- Not run: full units, other browser suites, world/offline (no save/navigation/assets change), device speech/iPad/child checks. Open person/device checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

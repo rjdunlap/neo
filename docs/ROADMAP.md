@@ -295,6 +295,20 @@ For older players, combine **named project cards**, **child-chosen permanent unl
 
 Definition packets recommended by the [subject studies](deep-dives/subjects.md), kept in the roadmap (the developer asked for the movement study's to stay here, 2026-10-14; the later studies follow the same pattern). They are **proposals and docs-first definitions, not a dispatch queue**: a routine reaches one only through a `define` row in [Next up](#next-up) or when the grown-up selects it. A new subject study adds its section here, at this heading level.
 
+### Body and health recommendations
+
+**Recommended 2026-10-16:** [the subject study](deep-dives/subjects/body-health.md), [PR #458](https://github.com/rjdunlap/neo/pull/458), covers lap through parents with opened Head Start, NGSS, NHES and NIH anchors, five first-party digital references and a physical activity. **Define Sense Detective first**: choose an information source and compare what the clues support. These are research proposals and docs-first definitions; existing ready-build priorities stay unchanged. Practical health guidance remains an explicitly unresearched/reviewer-gated area.
+
+| Candidate | Status | Next complete definition |
+| --- | --- | --- |
+| **Sense Detective** · pre-K–school first, preschool trial | define first · B1 | Freeze levels 1–2, bell/rattle/drum evidence tables, view/sound depictions and accessible equivalent clues; free investigations/replays/edits, explicit Check misses, useful support and assisted finish. Resolve identity beside Photo Safari, adaptation, 100-unit layouts, speech/how-to/ghost finger, ranges and destination capacity. B2 builds only the frozen first rounds |
+| **Sense Detective: still possible** · pre-K–school, upper-school authorship horizon | define after B1 · B3 | Freeze exact consistent sets and insufficient-evidence tasks for levels 3–5; no grading against a hidden answer when several fit. Hints improve the set and useful observations reduce it. B4 is a separate new-interaction build; authoring remains a later scope |
+| **Body Connections** · school–older family | define second game · B5 | One reviewed functional model and accepted partial orders; sound-to-signal boundaries first, digestion and interacting systems later. Put simple sequencing in Story Steps. No repairing a person, diagnostic model, clinical advice or general physiology engine |
+| **Perception Studio** · upper school–parent | define older case · B6 | One original tiled-surround scene, invariant rails and alignment guides; manipulate, compare, compose and Show. Perceptions are never wrong. Freeze geometry, Light Lab overlap, model language, older registration and destination/layout; no new band |
+| **Body words / Whose Clue? / Notice Together** · lap–school and family | define within existing games / page · B7–B8 | Naming/imitation stays in Pet Says/Teddy Doctor, pure listening in Sound Garden, photography in Photo Safari; existing dives preserve IDs/pins. Original plain-HTML role cards need named practical review before publication; no food/sleep/hygiene prescriptions drafted |
+
+The [ordered slices](deep-dives/subjects/body-health.md#build-slices-in-order) separate definitions from builds. No game, health advice, band or save change was built. Science/health model review, free-exploration adaptation, placement and actual child/teen/parent appeal remain open; sources support relevance rather than efficacy. Definitions use links/diff checks; eventual builds use their actual activity tier.
+
 ### Ecosystems recommendations
 
 **Recommended 2026-10-16:** [the ecosystems study](deep-dives/subjects/ecosystems.md) answers for lap through parents with opened Head Start/NGSS anchors, practitioner guidance, five digital precedents and two tabletop references. Data/AI literacy was already claimed elsewhere, so this study takes a non-overlapping wave-D subject. **Define Food Web Workshop first** for constructing and repairing relationship models; keep younger habitat/observation work in existing games. These are research proposals and docs-first definitions, with no game, band or zone built and no change to the ready-build queue.
