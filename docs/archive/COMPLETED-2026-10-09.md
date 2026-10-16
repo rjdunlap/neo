@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Sing-Along Barn, Bounce High, Bounce Low (2026-10-16)
+
+[PR #450](https://github.com/rjdunlap/neo/pull/450), `claude/sing-barn-bounce-high`, roadmap chunk 18: the seventh tune, tune id `bounce`, sung on mi, sol and la (E G A): "Bounce high, bounce low" is sol la sol mi and "bounce the ball to Shi-loh" is sol sol la la sol mi. The opening is 10 notes; each friend's verse is "Bounce high, bounce low, bounce the ball to the <friend>" (10 notes) with `namesAnimal: true`, so the friend answers on its name. It joins the seeded tune pool at every level and is the seventh card (a red ball) in the level 5-6 chooser, which now scales seven cards to 0.5 (110 by 100 logical). New voice lines `barn.sing.bounce` and `barn.done.bounce`; the how-to nursery-songs list and the `describeLevel`/off-screen strings name it. Two new rule tests (lyric, answers and verse ends; only mi, sol, la with "high" above "low"). Notes are from the standard form, not a printed score ([device check](../DEVICE-CHECKS.md)).
+
 ### Chain Reaction level 7 Tap to turn (2026-10-16)
 
 [PR #448](https://github.com/rjdunlap/neo/pull/448), `codex/chain-reaction-tap-turn`, dispatch `chain-turn-20261016T131304Z`, worker `01a144d8-e5df-75b1-acf4-e98706d91d69`: two preplaced coloured ramps turn on tap around one fixed wooden ramp. Seeded three-row boards start unsolved; all four flip states are enumerated for accepted solutions, useful hints and the tapping ghost finger. Free experimental runs/replay, counted requested help and two-machine sticker completion retained. Pre-K order `[7, 8, 1, 2, 3]`, entry IDs `[7, 8]`; school range and bands unchanged. No younger openings, other levels, run-count adaptation, cargo or saves. [Proof](../VERIFICATION.md#2026-10-16--chain-reaction-level-7-tap-to-turn).
@@ -1001,7 +1005,7 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 
 ## Market Stall pips and a teaching hint (2026-10-16)
 
-[PR #429](https://github.com/rjdunlap/neo/pull/429), `claude/market-stall-pips-hint`, completes deep-dive slice 2 (fresh 2 and 7): at levels 1–3 every coin (purse, mat, faint hint coins) shows one ink pip per shell, five to a row, under a smaller numeral, drawn on a stall-only layer (`shopCoin`; `pips`, `PIP_LEVELS`, `PIP_NUMERAL` in `logic.ts`) so `coinArt`, the hub icon, the sticker and Lemonade Stand's coins are unchanged. At mix, ways and fewest the two-miss hint first says a strategy line (`shop.hint.biggest`, or `shop.hint.swap` for a ways level's second payment), chosen by `teachLine`, then shows the faint coins; one hint per order. The how-to note is per level. Name the coin was built earlier (PR #378). [Verification](../VERIFICATION.md#2026-10-16--market-stall-pips-and-a-teaching-hint).
+[PR #429](https://github.com/rjdunlap/neo/pull/429), `claude/market-stall-pips-hint`, completes deep-dive slice 2 (fresh 2 and 7): at levels 1–3 every coin (purse, mat, faint hint coins) shows one ink pip per shell, five to a row, under a smaller numeral, drawn on a stall-only layer (`shopCoin`; `pips`, `PIP_LEVELS`, `PIP_NUMERAL` in `logic.ts`) so `coinArt`, the hub icon, the sticker and Lemonade Stand's coins are unchanged. At mix, ways and fewest the two-miss hint first says a strategy line (`shop.hint.biggest`, or `shop.hint.swap` for a ways level's second payment), chosen by `teachLine`, then shows the faint coins; one hint per order. The how-to note is per level. Name the coin was built earlier (PR #378). [Verification](VERIFICATION-2026-10-16.md#2026-10-16--market-stall-pips-and-a-teaching-hint).
 
 ## Garden Rows couch play (2026-10-16)
 

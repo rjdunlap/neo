@@ -28,3 +28,11 @@
 - At `http://localhost:5188`, `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=8 TO_LEVEL=8` passed same-node/critters identity across both sorts, changed sign, free grass, two misses/one hint, no completion before mat placement, saved result/sticker and no page errors. Landscape and portrait screenshots reviewed.
 - At the same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=8` sorted both passes cleanly in 30.0 s. Initial sandbox Chromium bootstrap blocked; isolated browser run with native permissions passed. Links and diff checked after closeout edits; owned Vite stopped.
 - Not run: full units, other levels/suites, world/offline (no navigation/persistence changes), iPad speech/touch and child interpretation; device checks remain open.
+
+## 2026-10-16 — Market Stall pips and a teaching hint
+
+- [PR #429](https://github.com/rjdunlap/neo/pull/429), `claude/market-stall-pips-hint`: tested commit `2b84c8c` minus a later pip-radius enlargement (geometry only; unit tests re-run), base `1dea66f`. Levels 1–3 coins show ink pips (five to a row) under a smaller numeral on a stall-only layer; at levels 3, 5 and 7 the two-miss hint first says a strategy line. Hint counting, `coinArt`, icon and sticker unchanged.
+- Passed typecheck; `npx vitest run src/games/market-stall src/content src/games/registry` (106 tests, incl. pip geometry and teach-line legality; the pinned sticker/`coinArt` snapshot still passes); build.
+- At `http://localhost:5827`, `BROWSER_SUITE=woods WOODS_ONLY=shop FROM_LEVEL=2` passed levels 2–7 (misses, hint coins, a second way, saved score and sticker, no page errors); it ran before the pip radius was enlarged. Portrait 768×1024 screenshot at level 3 (5, 2, 1 on the mat): pips legible and matching the tag's dots.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=market-stall FINGER_LEVELS=3` clean in 24.0 s.
+- Not run: full unit suite, other browser suites, offline; device speech, iPad legibility and whether a preschooler matches pips to tag dots (already [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
