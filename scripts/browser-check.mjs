@@ -10966,12 +10966,56 @@ async function chainPlay() {
     for (let piece = 0; piece < layout.length; piece++) await put(piece, layout[piece]);
   };
 
-  // CHAIN_LEVELS=8 plays only the prediction entry; the default plays 1, 6 and 8.
-  const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,8').split(',').map(Number);
+  // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7 and 8.
+  const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8').split(',').map(Number);
   const tapBell = (col) => page.evaluate(async (col) => {
     const g = neo.scene.game, b = g.bellNodes.find((n) => n.col === col).node.getGlobalPosition();
     await kit.tap(b.x, b.y - 10); await kit.sleep(150);
   }, col);
+  if (chainLevels.includes(7)) {
+    const stickers = await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length);
+    await launch('chain-reaction', 7);
+    for (let index = 0; index < 2; index++) {
+      await readyMachine(index);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.turnNodes.length, neo.scene.game.parts.length]), [2, 0]);
+      if (index === 0) {
+        await tap('neo.scene.game.runButton');
+        await readyMachine(index);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'a failed turn experiment is free');
+        assert.ok(await page.evaluate(() => neo.scene.game.trail.bounds.width > 0), 'failed run leaves its trail');
+        await tap('neo.scene.game.helpButton');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.turnGlow !== null]), [0, 1, true]);
+        await screenshot('chain-reaction-7');
+      }
+      for (let step = 0; step < 3; step++) {
+        const piece = await page.evaluate(async () => {
+          const g = neo.scene.game, { turnHint } = await import('/src/games/chain-reaction/logic.ts');
+          return turnHint(g.machine, g.flipped);
+        });
+        if (piece === null) break;
+        await tap(`neo.scene.game.turnNodes[${piece}]`);
+        await page.waitForTimeout(200);
+      }
+      assert.equal(await page.evaluate(async () => { const g = neo.scene.game, { trace } = await import('/src/games/chain-reaction/logic.ts'); return trace(g.machine, [], g.flipped).success; }), true);
+      await tap('neo.scene.game.runButton');
+    }
+    await finished('chain-reaction');
+    assert.deepEqual(await score(), [0, 1]);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), stickers + 1);
+    await launch('chain-reaction', 7); await readyMachine(0);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+    assert.ok(await page.evaluate(() => {
+      const g = neo.scene.game;
+      return [...g.turnNodes, g.runButton, g.helpButton].every((node) => {
+        const b = node.getBounds();
+        return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight;
+      }) && g.turnNodes.every((n) => n.hitArea.width >= 100 && n.hitArea.height >= 100);
+    }), 'portrait turn targets and controls fit and keep 100-unit areas');
+    await screenshot('chain-reaction-7-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Chain Reaction 7: free failed experiment, counted useful flip hint, real ramp taps, both machines, one sticker and portrait fit passed');
+  }
+
   if (chainLevels.includes(8)) {
     const stickers = await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length);
     await launch('chain-reaction', 8);

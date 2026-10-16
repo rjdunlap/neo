@@ -538,6 +538,8 @@ export const SCRIPT = {
   'chain.missed-chime': ['The marble reached the bottom, but it missed the little chime. Move one ramp and try again!'],
   'chain.rang': ['Ding! The whole machine worked!'],
   'chain.done': ['What a marvelous machine!'],
+  'chain.turn-start': ['Tap a coloured ramp to turn it. Then tap the green arrow and see if the marble rings the bell!'],
+  'chain.turn-hint': ['Turn this glowing ramp. Follow its groove to see where the marble will go.'],
   'chain.predict-start': ['This machine is all built. Which bell will the marble ring? Tap that bell, then tap the green arrow and watch!'],
   'chain.predict-first': ['First tap the bell you think the marble will ring.'],
   'chain.predict-hint': ['Put your finger on the marble and follow its way down. Each ramp sends it to the side its groove points.'],
