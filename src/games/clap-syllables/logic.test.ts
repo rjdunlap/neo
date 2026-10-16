@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { FAMILIES } from '../rhyme-time/logic';
 import { OWN_PICTURES } from './art';
 import { MIN_TAP_GAP } from '../../engine/ghost';
-import { answerOf, byCount, CARS, COMPARE_PLAN, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, PLANS, pictureToTap, planFor, syllables, trainCounts, waitFill, WORDS, type Word } from './logic';
+import { answerOf, byCount, CARS, COMPARE_PLAN, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, PLANS, SHORT_PLAN, pictureToTap, planFor, syllables, trainCounts, waitFill, WORDS, type Word } from './logic';
 
 const rhymeWords = new Set(Object.values(FAMILIES).flat());
 
@@ -237,7 +237,7 @@ describe('longer or shorter, level 8', () => {
     expect(levelsInOrder(clapSyllables.levels('school'))).toEqual([5, 6, 8]);
     expect(nextLevelOffer(6, clapSyllables.levels('school'))).toBe(8);
     expect(stepLevel(8, -1, clapSyllables.levels('school'))).toBe(6);
-    expect(clapSyllables.levels('preschool')).toEqual({ min: 1, max: 2 });
+    expect(clapSyllables.levels('preschool')).toEqual({ min: 1, max: 9, order: [9, 1, 2] });
     expect(clapSyllables.levels('prek')).toEqual({ min: 2, max: 4 });
   });
 
@@ -271,5 +271,40 @@ describe('longer or shorter, level 8', () => {
     expect([...starts].sort()).toEqual(['fewer', 'more']);
     expect([...positions].sort()).toEqual([0, 1]);
     expect([...counts].sort()).toEqual([1, 2, 3, 4]);
+  });
+});
+
+
+describe('short preschool entry, stable level 9', () => {
+  it('has exactly two distinct words, one of each count, seeded and playable by the finger', () => {
+    expect(planFor(9)).toBe(SHORT_PLAN);
+    expect(SHORT_PLAN.mode).toBe('along');
+    for (let seed = 1; seed <= 200; seed++) {
+      const qs = makeQuestions(SHORT_PLAN, new Rng(seed));
+      expect(qs).toEqual(makeQuestions(SHORT_PLAN, new Rng(seed)));
+      expect(qs).toHaveLength(2);
+      expect(qs.map((q) => syllables(q.words[0])).sort()).toEqual([1, 2]);
+      expect(new Set(qs.map((q) => q.words[0].word)).size).toBe(2);
+      for (const q of qs) {
+        for (let claps = 0; claps <= syllables(q.words[0]); claps++) {
+          expect(clapsToGo(q.words[0], claps)).toBe(syllables(q.words[0]) - claps);
+        }
+      }
+    }
+  });
+
+  it('precedes existing preschool IDs without changing other bands or pin meanings', async () => {
+    const { clapSyllables: mod } = await import('./index');
+    const { levelsInOrder, nextLevelOffer, stepLevel, landing } = await import('../../progress/difficulty');
+    const range = mod.levels('preschool');
+    expect(levelsInOrder(range)).toEqual([9, 1, 2]);
+    expect(nextLevelOffer(9, range)).toBe(1);
+    expect(stepLevel(1, -1, range)).toBe(9);
+    expect(mod.entryLevels).toEqual([9]);
+    expect(landing(9, mod.levels('prek'), mod.entryLevels)).toBe(2);
+    expect(landing(1, range, mod.entryLevels)).toBe(1);
+    expect(landing(2, range, mod.entryLevels)).toBe(2);
+    expect(mod.bands).toEqual(['preschool', 'prek', 'school']);
+    PLANS.forEach((p, i) => expect(planFor(i + 1)).toBe(p));
   });
 });

@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+
+## 2026-10-16 — Clap the Syllables level 9 Clap along short
+
+- [PR #454](https://github.com/rjdunlap/neo/pull/454), `codex/clap-syllables-short`, dispatch `clap-short-20261016T151435Z`; tested `c0df9c3` (base `03e4f92`, including docs-only dispatch #453) plus implementation diff. Two seeded words, one/two beats; preschool order `[9,1,2]`, entry `[9]`, existing IDs/pins and other bands preserved.
+- Passed typecheck, 59 focused tests (`clap-syllables/logic.test.ts`, registry and how-to), then 18 how-to tests after correcting the new support wording. 200-seed short-round generation and finger-count properties, entry/band landing and progression tested. Final build passed (existing chunk-size advisory).
+- `GAME_URL=http://localhost:5196 BROWSER_SUITE=clap CLAP_LEVELS=9 npm run test:browser` passed: both guided words, quiet-time support replay free, bead per actual tap, result `[9,0,0]`, one sticker, portrait bounds. Reviewed `test-results/browser/clap-9-portrait.png`: picture, beads, pad, pet and corner controls clear. First passing probe had a no-op picture tap; tightened to prove the actual automatic replay and reran successfully.
+- Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=clap-syllables FINGER_LEVELS=9` passed cleanly in 10.0 s. No page errors in either final passing run; owned Vite stopped after checks. Links and diff checked.
+- Not run: full units, other levels/suites, world/offline (no save/navigation/assets changes), iPad/device speech/child play; [device checks](DEVICE-CHECKS.md) remain open. No wrong answer or hint is possible in guided clap-along.
+
 ## 2026-10-16 — Clap the Syllables level 8 Longer or shorter?
 
 - [PR #452](https://github.com/rjdunlap/neo/pull/452), `codex/clap-syllables-comparison`, tested `896b63e` (claim `88f0e8f`, base `42d18fd`, docs-only dispatch #451 integrated) plus implementation diff. Four seeded unequal pairs, alternating more/fewer; truthful whole-word counts, free replay, matching support and finger. School order `[5,6,8]`; other bands/IDs/pins unchanged.
@@ -115,7 +124,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 8 comparison, typecheck/57 focused tests/build, filtered play with misses/hint/replay/sticker/portrait, clean 23.5 s ghost finger | [Longer or shorter?](#2026-10-16--clap-the-syllables-level-8-longer-or-shorter) | Prior level-6 proof retained above; device speech, touch and child play open |
+| `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
 | Game deep-dive docs | 2026-10-15: Duckling Parade source audit, six precedents, ladder/experience/slices; links/anchors and diff check. Prior Memory Match clock definition evidence retained | [Duckling Parade](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `critternot` | 2026-10-15: stable entry 8, two misses/one hint, two rounds, one sticker and landscape/portrait passed; 54 focused tests and build | [Visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | Device speech, touch and child interpretation open |
