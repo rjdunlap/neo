@@ -12,20 +12,39 @@ export type BumperMode = 'spring' | 'bloom' | 'color' | 'order';
 export interface BumperPlan {
   mode: BumperMode;
   bumpers: number;
-  /** spring: launches. bloom: every flower. color: flowers of the asked color. order: numbers 1..goal. */
+  /** spring: launches. bloom: every flower. color: flowers of the asked color. order: sequence length. */
   goal: number;
   name: string;
+  /** First numbered flower; defaults to one on the original order levels. */
+  start?: number;
+  descend?: boolean;
 }
 
-export const PLANS: BumperPlan[] = [
-  { mode: 'spring', bumpers: 6, goal: 6, name: 'Tap to launch the ladybug; flowers bloom when it bumps them' },
-  { mode: 'bloom', bumpers: 5, goal: 5, name: 'Flip the ladybug back up until every flower blooms' },
-  { mode: 'color', bumpers: 7, goal: 3, name: 'Bloom the three flowers of one color' },
-  { mode: 'order', bumpers: 6, goal: 3, name: 'Bump flowers 1, 2, 3 in order' },
-  { mode: 'order', bumpers: 8, goal: 5, name: 'Bump flowers 1 to 5 in order, with others in the way' },
-];
+/** IDs 7 and 8 remain reserved for the pattern and negation slices. */
+export const PLANS: Record<number, BumperPlan> = {
+  1: { mode: 'spring', bumpers: 6, goal: 6, name: 'Tap to launch the ladybug; flowers bloom when it bumps them' },
+  2: { mode: 'bloom', bumpers: 5, goal: 5, name: 'Flip the ladybug back up until every flower blooms' },
+  3: { mode: 'color', bumpers: 7, goal: 3, name: 'Bloom the three flowers of one color' },
+  4: { mode: 'order', bumpers: 6, goal: 3, name: 'Bump flowers 1, 2, 3 in order' },
+  5: { mode: 'order', bumpers: 8, goal: 5, name: 'Bump flowers 1 to 5 in order, with others in the way' },
+  6: { mode: 'order', bumpers: 6, goal: 3, start: 3, name: 'Count on from a number between 2 and 6: three or four flowers in order' },
+  9: { mode: 'order', bumpers: 8, goal: 5, start: 5, descend: true, name: 'Count back to 1 from a starting number between 5 and 8' },
+};
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export function planFor(level: number, rng?: Rng): BumperPlan {
+  const plan = PLANS[level] ?? PLANS[1];
+  if (level === 6 && rng) return { ...plan, start: rng.int(2, 6), goal: rng.int(3, 4) };
+  if (level === 9 && rng) {
+    const start = rng.int(5, 8);
+    return { ...plan, start, goal: start };
+  }
+  return plan;
+}
+
+/** The exact order used by flower art, spoken targets, the bot and completion. */
+export const orderNumbers = (plan: BumperPlan): number[] => plan.mode === 'order'
+  ? Array.from({ length: plan.goal }, (_, i) => (plan.start ?? 1) + i * (plan.descend ? -1 : 1))
+  : [];
 
 /** The table in its own units; the ball falls out between the flippers into the pot. */
 export const TABLE = { w: 600, h: 720, ball: 18, bumper: 36, gravity: 430, bounce: 0.72, kick: 380 };
@@ -83,9 +102,10 @@ export interface Bumper {
 /** Flowers for a round. Color levels have exactly `goal` flowers of the asked color (color 0). */
 export function makeBumpers(plan: BumperPlan, rng: Rng): Bumper[] {
   const spots = rng.shuffle([...SPOTS]).slice(0, plan.bumpers);
+  const numbers = orderNumbers(plan);
   return spots.map((s, i) => {
     if (plan.mode === 'color') return { ...s, color: i < plan.goal ? 0 : 1 + (i % 2), number: null };
-    if (plan.mode === 'order') return { ...s, color: i % 3, number: i < plan.goal ? i + 1 : null };
+    if (plan.mode === 'order') return { ...s, color: i % 3, number: numbers[i] ?? null };
     return { ...s, color: i % 3, number: null };
   });
 }

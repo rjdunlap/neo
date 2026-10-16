@@ -611,6 +611,8 @@ export const SCRIPT = {
   'bumper.bloom': ['Tap this side or that side to flip the ladybug back up. Make every flower bloom!'],
   'bumper.color': ['Bloom the {color} flowers!'],
   'bumper.order': ['Bump the flowers in order. Find {n}!'],
+  'bumper.start': ['Start at {n}! Bump the numbered flowers to count on, one more each time.'],
+  'bumper.back': ['Start at {n}! Bump the numbered flowers to count back, one less each time, all the way to one.'],
   'bumper.next': ['Now {n}!'],
   'bumper.again-color': ['Almost! Find the {color} flowers.'],
   'bumper.again-order': ['Where is {n}? Flip it up again!'],
