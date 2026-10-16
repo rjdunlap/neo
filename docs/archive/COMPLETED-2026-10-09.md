@@ -21,7 +21,7 @@
 
 ### Bumper Garden Count on and Count back (2026-10-15)
 
-[PR #408](https://github.com/rjdunlap/neo/pull/408), `codex/bumper-count-on-back`: deep-dive slice 4 adds stable IDs 6 and 9. Count on draws a start from 2–6 and three or four consecutive flowers; Count back draws a start from 5–8 and descends to 1. A noninteractive number strip highlights the next target, and spoken instructions name the start/direction. Pre-K follows `[3, 4, 6, 5, 9]`; other bands, old IDs/pins, physics/scoring and couch trip levels 3/4 remain unchanged. IDs 7/8 are unbuilt. The flipper-ready cue also appears at the new levels. Typecheck, 41 focused tests, build, both filtered plays, landscape/portrait review and both clean finger demos passed ([proof](../VERIFICATION.md#2026-10-15--bumper-garden-count-on-and-count-back)); iPad/controller/child checks remain open. Pond/Hive tables remain a separate ready slice.
+[PR #408](https://github.com/rjdunlap/neo/pull/408), `codex/bumper-count-on-back`: deep-dive slice 4 adds stable IDs 6 and 9. Count on draws a start from 2–6 and three or four consecutive flowers; Count back draws a start from 5–8 and descends to 1. A noninteractive number strip highlights the next target, and spoken instructions name the start/direction. Pre-K follows `[3, 4, 6, 5, 9]`; other bands, old IDs/pins, physics/scoring and couch trip levels 3/4 remain unchanged. IDs 7/8 are unbuilt. The flipper-ready cue also appears at the new levels. Typecheck, 41 focused tests, build, both filtered plays, landscape/portrait review and both clean finger demos passed ([proof](VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-count-on-and-count-back)); iPad/controller/child checks remain open. Pond/Hive tables remain a separate ready slice.
 
 
 ### Bumper Garden flipper-ready ring (2026-10-15)
@@ -978,3 +978,7 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 ## Critter Sort level 8: A new sign (2026-10-16)
 
 [PR #428](https://github.com/rjdunlap/neo/pull/428), deep-dive slice 5: six critters sorted twice, first by one pictured rule then by a new spoken sign, with explicit hoop/mat answers on both passes. One sticker after the second sort, cumulative misses/hints, same nodes and drag handles, bot on both passes. School order appends stable ID 8; pre-K, saves and pins keep their meanings. Later levels and unresolved decisions remain proposed. [Verification](../VERIFICATION.md#2026-10-16--critter-sort-level-8-a-new-sign).
+
+## Market Stall pips and a teaching hint (2026-10-16)
+
+[PR #429](https://github.com/rjdunlap/neo/pull/429), `claude/market-stall-pips-hint`, completes deep-dive slice 2 (fresh 2 and 7): at levels 1–3 every coin (purse, mat, faint hint coins) shows one ink pip per shell, five to a row, under a smaller numeral, drawn on a stall-only layer (`shopCoin`; `pips`, `PIP_LEVELS`, `PIP_NUMERAL` in `logic.ts`) so `coinArt`, the hub icon, the sticker and Lemonade Stand's coins are unchanged. At mix, ways and fewest the two-miss hint first says a strategy line (`shop.hint.biggest`, or `shop.hint.swap` for a ways level's second payment), chosen by `teachLine`, then shows the faint coins; one hint per order. The how-to note is per level. Name the coin was built earlier (PR #378). [Verification](../VERIFICATION.md#2026-10-16--market-stall-pips-and-a-teaching-hint).
