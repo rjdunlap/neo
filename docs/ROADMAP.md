@@ -146,7 +146,7 @@ What is already built under this chunk is in [the 2026-10-15 cleanup archive](ar
 
 ### Additional languages
 
-**Decided (the developer, 2026-10-11): additional languages are wanted.** Which languages and in what order is not decided; see [Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer). The reference is JumpStart Spanish (1997, ages 3–6): ten clubhouse activities, each in two levels (hear the words, then reach a goal), plus folk songs, a calendar and puppet-show phrases; its reviewer found it rarely went beyond naming nouns, so the island's version should reach phrases, counting and songs ([IDEAS](IDEAS.md#jumpstart-title-by-title-2026-10-11)).
+**Decided (the developer, 2026-10-11): additional languages are wanted.** **Which languages (the developer, 2026-10-16): Portuguese, Arabic, French and Spanish, the languages the family speaks.** The order, which variety of each (for example Brazilian or European Portuguese, and which spoken Arabic beside Modern Standard Arabic) and who in the family reviews each language's lines are not decided. Arabic is the one that changes the plan: any written word on a card or the grown-ups' page reads right to left, and its device voices need their own check; see [Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer). The reference is JumpStart Spanish (1997, ages 3–6): ten clubhouse activities, each in two levels (hear the words, then reach a goal), plus folk songs, a calendar and puppet-show phrases; its reviewer found it rarely went beyond naming nouns, so the island's version should reach phrases, counting and songs ([IDEAS](IDEAS.md#jumpstart-title-by-title-2026-10-11)).
 
 **What the code does today** (read, not changed):
 

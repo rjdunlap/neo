@@ -116,13 +116,13 @@ So the rows have something concrete, a few sketches. Each would need its own ses
 2. **`fractions`, `ratio-proportion`, `chance-statistics`**: the clearest Common Core gaps at U–M, where the catalog is thinnest.
 3. **`speaking-listening`, `vocabulary-word-parts`, `poetry-wordplay`**: language beyond phonics, from lap upward.
 4. **`strategy-games`, `estimation`, `algebra-balance`, `area-volume-space`, `integers`, `oceans`, `informational-reading`, `writing-composition`, `theatre-puppetry`, `philosophy-reasoning`, `media-literacy`** in any order.
-5. **`world-languages`, `sign-language`** wait for the developer's decisions below.
+5. **`world-languages`** can start (the family's four languages are chosen); **`sign-language`** still waits for a reviewer.
 
 ## Decisions for the developer
 
-- **Which second language, if any?** World languages depend on the device's speech voices and on what the family speaks; a session cannot choose. Sign language needs a Deaf reviewer and accurate hand drawings.
+- **Which second language, if any?** **Answered 2026-10-16: Portuguese, Arabic, French and Spanish, the languages the family speaks.** The `world-languages` session follows the roadmap's [Additional languages](../../ROADMAP.md#additional-languages) plan; order, variety and reviewers stay open in [Waiting on the developer](../../WAITING-ON-DEVELOPER.md). Sign language still needs a Deaf reviewer and accurate hand drawings.
 - **How far up does math go?** The ratio, integer and algebra rows sit at 11–14; whether that belongs to `school`'s top levels or a future band is the tracker's open [middle-band decision](../subjects.md#decisions-for-the-developer).
-- **A zoo or habitat land?** Zoo animals could dress existing lands with habitat kits or need a destination of their own; the [zone concepts](../../ROADMAP.md#zone-concepts) are the place to decide.
+- **A zoo or habitat land?** **Answered 2026-10-16: dress the island with more diverse habitats** (the [habitat kits](../../IDEAS.md#world-variety-animals-pets-and-environments): savanna, reef, rainforest, desert, bamboo hill, night garden) and change up the scenery, rather than add a zoo land.
 
 ## Not run
 
