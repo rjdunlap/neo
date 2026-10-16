@@ -99,7 +99,7 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 1. **Bank shelf** (built 2026-10-15, `claude/critter-crossing-bank-shelf`; crossed / waited copies on hidden levels). Screenshot in landscape and portrait, `fingerdemo` for `critter-crossing`; no rule change. Tier: existing-game bug fix on an unchanged interaction.
 2. **Level 6, Either one**: `or` gates, words, lookalikes, voice, how-to, README and GAMES lines, ghost finger. Tier: typecheck, that game's rule tests, one browser play of the new top level and `fingerdemo` at it.
 3. **Level 7, Settle it** (built 2026-10-15, `claude/critter-crossing-settle-it`): the splitter-choosing round. Same tier as slice 2.
-4. **Visible "not" entry** between levels 1 and 2 with `order` and `entryLevels`. Rule tests, one play, `fingerdemo`.
+4. **Visible "not" entry** between levels 1 and 2 with `order` and `entryLevels`. Claimed by `codex/critter-not-entry`, worker `01a1431d-314b-7163-8fac-e54497cdcd77`, dispatch `critter-not-entry-20261016T050833Z`. Scope: append ID 8, visible picture/slash rule, pre-K order, scoped how-to, rule tests and filtered browser proof; no other levels, bands or saves. Expected files: game logic/index/tests, howto, browser check, README/GAMES/roadmap/verification/queue. Rule tests, one play, `fingerdemo`.
 5. **Third critter feature**, shared with Critter Sort (after decision 2): rule tests for both games plus the fairness test across the larger pool.
 6. **Preschool opening** (after decision 1): levels table, registry and lands tests, voice.
 7. **Be the gate** (after decision 3): a new interaction; its own definition first.
