@@ -973,3 +973,8 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 ## Critter Sort neither mat (2026-10-15)
 
 [PR #423](https://github.com/rjdunlap/neo/pull/423), `codex/critter-sort-neither-mat`, completes deep-dive slice 1: levels 2, 3 and 5 get an explicit code-drawn leaf mat for outside critters, spoken reasons, mat-aware missed-critter hints, completion and ghost-finger sorting. Bare-grass put-downs stay free; entries 1 and 6 keep their leave-it-out choice. The how-to is level-scoped. The filtered `woods` sort case accepts `TO_LEVEL`, checks free grass and required mat placement, and transforms logical drag targets for portrait. Typecheck, nine focused rule tests, build, level-3 regression (two rounds, two misses/one hint), clean 24.1 s demonstration and portrait review passed; restoring the old completion rule made that regression fail. Verified implementation pending merge; iPad speech and child understanding remain open.
+
+
+## Critter Sort level 8: A new sign (2026-10-16)
+
+[PR #428](https://github.com/rjdunlap/neo/pull/428), deep-dive slice 5: six critters sorted twice, first by one pictured rule then by a new spoken sign, with explicit hoop/mat answers on both passes. One sticker after the second sort, cumulative misses/hints, same nodes and drag handles, bot on both passes. School order appends stable ID 8; pre-K, saves and pins keep their meanings. Later levels and unresolved decisions remain proposed. [Verification](../VERIFICATION.md#2026-10-16--critter-sort-level-8-a-new-sign).

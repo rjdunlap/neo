@@ -745,6 +745,8 @@ export const SCRIPT = {
   'ramp.unfair.height': ['That is not a fair test: the floors are different too. Change only the ramp.'],
   'ramp.fairyay': ['A fair test! The {what} went farther.'],
   'ramp.done': ['What a scientist! You tested it fairly.'],
+  'sort.first': ['Put every critter {a} in the hoop. Put the others on the leaf mat. Then we will try a new sign!'],
+  'sort.again': ['A new sign! These are the same six friends. Now put every critter {a} in the hoop, and the others on the leaf mat.'],
   'sort.one': ['Put every critter {a} in the hoop!'],
   'sort.two': ['One hoop is for critters {a}, the other is for critters {b}. Critters that fit neither go on the leaf mat!'],
   'sort.newcomer': ['These critters are already sorted. This hoop is for critters {a}, and this hoop is for critters {b}. Where does the new friend go? The middle fits both. The leaf mat fits neither.'],

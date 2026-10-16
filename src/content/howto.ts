@@ -1275,6 +1275,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'critter-sort': {
     goal: 'Sort critters by the rule on the hoop.',
     steps: [
+      { from: 8, to: 8, text: 'Sort all six critters by the pictured sign: into the hoop if they fit, onto the leaf mat if they do not. The sign turns over and the same six hop out; sort them again by the new rule.' },
       { from: 7, to: 7, text: 'The critters are already sorted by the two signs. Drag the one newcomer to the left, right, middle for both rules, or leaf mat for neither.' },
       { from: 6, to: 6, text: 'One critter is already in the hoop. Drag the other critter that fits the sign into it.' },
       { to: 1, text: 'One critter is already in the hoop. Drag every other critter that fits the sign into it.' },
@@ -1284,6 +1285,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'The red line means not. One critter is already in the hoop. Drag every other critter that is not like the picture into it. Critters that fit the picture go on the leaf mat.' },
     ],
     finish: [
+      { from: 8, to: 8, text: 'Finish both sorts of the same six critters for one sticker.' },
       { from: 7, to: 7, text: 'Place the newcomer correctly in each of three diagrams to finish.' },
       { to: 1, text: 'The round ends when every critter that fits is in the hoop; the others can stay on the grass.' },
       { from: 2, to: 3, text: 'The round ends when every critter is in a hoop or on the leaf mat.' },
