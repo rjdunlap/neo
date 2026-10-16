@@ -916,3 +916,7 @@ Typecheck, 16 Memory Match tests (200 seeded fraction selections: exact area/til
 ## Lands stage C3 (2026-10-15)
 
 [PR #401](https://github.com/rjdunlap/neo/pull/401), `claude/lands-c3-pause-actions`: the island pause sheet lists a round's *Start again* and *Show a hint* under "Keep playing" (`Scene.pauseActions()`, `pauseLabels()`; couch labels where the couch plays the game, plain labels for a grown-ups-only game, none for a child's game without a label), and a pad moves over the sheet (`PadSheet`) and presses on release. Not built: pad focus on the screens without a ring (C2b).
+
+## Critter Crossing bank shelf (2026-10-15)
+
+[PR #405](https://github.com/rjdunlap/neo/pull/405), `claude/critter-crossing-bank-shelf`, [dive](../deep-dives/critter-crossing.md#build-slices-in-order) slice 1: on hidden levels 2–7 a white plank in the bottom-right corner shows non-interactive copies (`Critter` at 0.15 scale, hat included) of each critter with an answer, a crossed row under a green tick and a waited row under a red cross, in the order tried. Level 7's two pre-tried critters and the reveal's walk-ups go on it too. Level 1 shows none. `eventMode` is none, so it never takes a tap. No rule, level, voice, save or how-to change (no card step mentions remembering who crossed).
