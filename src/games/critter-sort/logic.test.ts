@@ -4,11 +4,11 @@ import { Rng } from '../../engine/random';
 import { exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
 
 describe('Critter Sort', () => {
-  it('preserves the younger ladder and stable school IDs, appending only 7 after 5', () => {
+  it('preserves the younger ladder and stable school IDs, appending 7 and 8 after 5', () => {
     expect(critterSort.levels('prek').order).toEqual([6, 1, 2, 3]);
-    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7]);
+    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7, 8]);
     expect(critterSort.entryLevels).toEqual([6]);
-    expect(PLANS).toHaveLength(7);
+    expect(PLANS).toHaveLength(8);
   });
 
   it('separate hoops never overlap, and overlapping hoops really do', () => {
@@ -45,8 +45,8 @@ describe('Critter Sort', () => {
   it('drops a critter on the middle of its part of the diagram, in every layout and at either screen size', () => {
     for (const plan of PLANS) {
       if (plan.mode === 'guess') continue;
-      const hoops = plan.mode === 'one' || plan.mode === 'not' ? 1 : 2;
-      const places: Place[] = plan.mode === 'one' || plan.mode === 'not' ? ['left'] : plan.mode === 'two' ? ['left', 'right'] : ['left', 'right', 'both'];
+      const hoops = ['one', 'not', 'resort'].includes(plan.mode) ? 1 : 2;
+      const places: Place[] = ['one', 'not', 'resort'].includes(plan.mode) ? ['left'] : plan.mode === 'two' ? ['left', 'right'] : ['left', 'right', 'both'];
       for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 1024 }, { w: 768, h: 1024 }]) {
         const centers = hoopCenters(plan.mode, hoops, v);
         // k = 1 is the spot the ghost finger uses; 0 is the hint's glow.
@@ -108,6 +108,29 @@ describe('Critter Sort', () => {
     expect(seen).toEqual(new Set(['left', 'right', 'both', 'out']));
   });
 
+  it('level 8 keeps six identical critters for two distinct splitting rules, with reachable bot answers on both passes', () => {
+    const plan = PLANS[7];
+    expect(plan.rounds).toBe(1);
+    for (let seed = 1; seed <= 300; seed++) {
+      const round = makeRound(plan, new Rng(seed));
+      expect(round).toEqual(makeRound(plan, new Rng(seed)));
+      expect(round.nextRule).toBeDefined();
+      expect(round.critters.some(c => fits(c, round.rules[0]) !== fits(c, round.nextRule!))).toBe(true);
+      for (const rule of [round.rules[0], round.nextRule!]) {
+        const sorters = round.critters.map(c => ({ c, placed: null as Place | null }));
+        expect(new Set(sorters.map(s => placeOf(s.c, [rule])))).toEqual(new Set(['left', 'out']));
+        for (let next = nextToSort(sorters, [rule], false, true); next; next = nextToSort(sorters, [rule], false, true)) {
+          const centers = hoopCenters(plan.mode, 1, { w: 1024, h: 768 });
+          const target = spotFor(centers, plan.mode, next.place, 1);
+          expect(sortPlaceAt(centers, plan.mode, target.x, target.y)).toBe(next.place);
+          expect(hintFor(sorters, next.who, [rule], false, true)).toBe(next.who);
+          next.who.placed = next.place;
+        }
+        expect(sorters.every(s => s.placed)).toBe(true);
+      }
+    }
+  });
+
   it('makes the not hoop the complement of its pictured rule, leaving every pictured critter outside', () => {
     const plan = PLANS.find((p) => p.mode === 'not')!;
     for (let seed = 1; seed <= 200; seed++) {
@@ -121,7 +144,7 @@ describe('Critter Sort', () => {
 
   it('makes the leaf mat an explicit, reachable outside answer, keeps bare grass free, and hints the missed outsider', () => {
     for (const plan of PLANS) {
-      expect(hasNeitherMat(plan.mode)).toBe(['two', 'venn', 'not'].includes(plan.mode));
+      expect(hasNeitherMat(plan.mode)).toBe(['two', 'venn', 'not', 'resort'].includes(plan.mode));
       for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 768 }, { w: 1024, h: 1366 }]) {
         const centers = hoopCenters(plan.mode, ['two', 'venn'].includes(plan.mode) ? 2 : 1, v);
         expect(sortPlaceAt(centers, plan.mode, v.w / 2, v.h - 40)).toBeNull();

@@ -16,7 +16,7 @@ import { exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, n
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
-  school: { min: 2, max: 7, order: [2, 3, 4, 5, 7] },
+  school: { min: 2, max: 8, order: [2, 3, 4, 5, 7, 8] },
 };
 
 const SCALE = 0.32;
@@ -70,6 +70,7 @@ class CritterSort implements Game {
   readonly sorters: Sorter[] = [];
   readonly options: { rule: Rule; node: Container }[] = [];
   index = -1;
+  pass = 0;
   misses = 0;
   hints = 0;
   busy = true;
@@ -244,6 +245,7 @@ class CritterSort implements Game {
   private instruct() {
     const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
     if (this.plan.newcomer) return this.ctx.instruct('sort.newcomer', { a, b });
+    if (this.plan.mode === 'resort') return this.ctx.instruct(this.pass ? 'sort.again' : 'sort.first', { a });
     if (this.plan.mode === 'one') return this.ctx.instruct('sort.one', { a });
     if (this.plan.mode === 'two') return this.ctx.instruct('sort.two', { a, b });
     if (this.plan.mode === 'venn') return this.ctx.instruct('sort.venn', { a, b });
@@ -328,6 +330,22 @@ class CritterSort implements Game {
     for (const s of this.sorters) if (s.placed && s.placed !== 'out') s.node.cheer();
     await this.ctx.say(this.plan.mode === 'guess' ? 'sort.guessyay' : 'sort.yay', { rule: RULE_WORDS[this.round.rules[0]] });
     await this.ctx.tw.wait(0.5);
+    if (this.plan.mode === 'resort' && this.pass === 0) {
+      // Keep the very same critters and drag handles; the sign and destinations change.
+      await this.ctx.tw.to(this.signs.children[0].scale, { x: 0 }, { duration: 0.25 });
+      this.pass = 1;
+      this.round.rules = [this.round.nextRule!];
+      this.wrongs = 0;
+      for (const s of this.sorters) s.placed = null;
+      this.resize(this.view);
+      this.signs.children[0].scale.x = 0;
+      for (const s of this.sorters) s.node.hop();
+      await this.ctx.tw.to(this.signs.children[0].scale, { x: 1 }, { duration: 0.25 });
+      await this.instruct();
+      for (const s of this.sorters) if (s.drag) s.drag.enabled = true;
+      this.busy = false;
+      return;
+    }
     await this.next();
   }
 

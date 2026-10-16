@@ -6133,6 +6133,36 @@ async function woodsBatch() {
         await tap(`neo.scene.game.options.find((x) => x.rule === '${right}').node`); await settle();
         continue;
       }
+      if (level === 8) {
+        const original = await page.evaluate(() => { const g = neo.scene.game; window.sortEightNodes = g.sorters.map(s => s.node); return { critters: g.round.critters, rule: g.round.rules[0] }; });
+        for (let pass = 0; pass < 2; pass++) {
+          const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map(s => L.placeOf(s.c, g.round.rules)); });
+          assert.ok(places.includes('left') && places.includes('out'));
+          assert.equal(await page.evaluate(() => neo.scene.game.sorters.every((s, i) => s.node === window.sortEightNodes[i] && !s.placed && s.drag.enabled)), true);
+          if (pass === 0) {
+            const outsider = places.indexOf('out');
+            await page.evaluate(async i => { const g = neo.scene.game; await kit.dragTo(g.sorters[i].node, g.ctx.stage.toGlobal({ x: neo.view.w / 2, y: neo.view.h - 5 }), 14); }, outsider);
+            await settle(); assert.deepEqual(await counts(), [0, 0]);
+            await dropTo(outsider, 'left'); await dropTo(outsider, 'left');
+            assert.deepEqual(await counts(), [2, 1]);
+            assert.equal(await page.evaluate(i => neo.scene.game.hinting === neo.scene.game.sorters[i], outsider), true);
+          } else {
+            assert.deepEqual(await page.evaluate(() => neo.scene.game.round.critters), original.critters);
+            assert.notEqual(await page.evaluate(() => neo.scene.game.round.rules[0]), original.rule);
+            await screenshot('critter-sort-8-new-sign');
+            await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+            await screenshot('critter-sort-8-portrait');
+          }
+          for (const [i, place] of places.entries()) if (place === 'left') await dropTo(i, place);
+          assert.equal(await page.evaluate(pass => !neo.scene.game.busy && neo.scene.game.pass === pass && !neo.scene.game.finished, pass), true);
+          for (const [i, place] of places.entries()) if (place === 'out') await dropTo(i, place);
+          if (pass === 0) {
+            assert.equal(await page.evaluate(() => neo.scene.game.pass), 1);
+            assert.equal(await page.evaluate(() => neo.scene.game.finished), false);
+          }
+        }
+        continue;
+      }
       const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map((s) => (s.placed ? 'example' : L.placeOf(s.c, g.round.rules, g.plan.mode === 'not'))); });
       if (level === 7) {
         const i = await page.evaluate(() => neo.scene.game.round.newcomer);

@@ -330,3 +330,8 @@
 - Passed isolated `test-results/bumper-ring.mjs` at `GAME_URL=http://localhost:5187`: 14 cue gates including both sides/rising/held/finished/spring/out-of-reach, `eventMode = none`, real pointer flip through the decoration; level 2 finished in 14.94 s, 7 taps, 5 blooms, zero misses/hints, exactly one saved sticker and no page errors. This was a filtered probe, not the standard `next` suite.
 - Portrait `test-results/browser/bumper-ready-ring-portrait.png` reviewed: ring clear, no obstruction. Owned server stopped; links/diff checked.
 - Not run: `fingerdemo` (bot unchanged), broader browser/offline/device checks. Real iPad touch/speech, cue comfort and child play remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-16 — Bubble Pop mode gallery definition
+
+- Docs only, `claude/bubble-pop-mode-gallery-definition`, [PR #407](https://github.com/rjdunlap/neo/pull/407): [definitions/mode-gallery.md](../definitions/mode-gallery.md) (Bubble Pop intro mode gallery, N4); roadmap chunk 20 now ready.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.

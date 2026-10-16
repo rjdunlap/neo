@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * into a hoop: first one rule (in or out), then two separate hoops, then two overlapping hoops
  * where the middle means "both", and finally, with critters already sorted, work out the rule.
  */
-export type SortMode = 'one' | 'two' | 'venn' | 'guess' | 'not';
+export type SortMode = 'one' | 'two' | 'venn' | 'guess' | 'not' | 'resort';
 
 export interface SortPlan {
   mode: SortMode;
@@ -29,6 +29,7 @@ export const PLANS: SortPlan[] = [
   { mode: 'not', critters: 6, rounds: 3, example: true, name: 'A not hoop, one critter already in: put in every critter that does not fit the picture rule' },
   { mode: 'one', critters: 3, rounds: 2, example: true, fitting: 2, name: 'Just a few: three critters, one already in the hoop; which of the other two fits?' },
   { mode: 'venn', critters: 6, rounds: 3, newcomer: true, name: 'Where does the new one go? Place one newcomer in a sorted diagram: left, right, both, or neither' },
+  { mode: 'resort', critters: 6, rounds: 1, name: 'A new sign: sort six critters into a hoop or onto the leaf mat, then sort the same six again by a new rule' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -97,6 +98,8 @@ export interface SortRound {
   critters: SortCritter[];
   /** 'guess': the true rule and two others offered (one hoop). */
   options?: Rule[];
+  /** A second pictured rule for the same critters in A new sign. */
+  nextRule?: Rule;
   /** Index of the single newcomer in an otherwise sorted diagram. */
   newcomer?: number;
 }
@@ -123,6 +126,13 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     if (plan.fitting && bound !== plan.fitting) continue;
     // Otherwise the examples still leave at least two critters for her to carry into a hoop.
     if (plan.example && !plan.fitting && bound - examplePlaces(plan.mode).length < 2) continue;
+    if (plan.mode === 'resort') {
+      const choices = (['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter((rule) =>
+        critters.some(c => fits(c, rule)) && critters.some(c => !fits(c, rule)) &&
+        critters.some(c => fits(c, rule) !== fits(c, rules[0])));
+      if (!choices.length) continue;
+      return { rules, critters, nextRule: rng.pick(choices) };
+    }
     if (plan.mode === 'guess') {
       // Two other rules that would sort these critters differently, so only one rule fits.
       const others = rng.shuffle((['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter((r) => r !== rules[0] && critters.some((c) => fits(c, r) !== fits(c, rules[0]))));
@@ -150,7 +160,7 @@ export function exampleIndices(plan: SortPlan, round: SortRound): number[] {
 }
 
 /** The younger one-hoop entries keep their free leave-it-out choice. */
-export const hasNeitherMat = (mode: SortMode): boolean => mode === 'two' || mode === 'venn' || mode === 'not';
+export const hasNeitherMat = (mode: SortMode): boolean => mode === 'two' || mode === 'venn' || mode === 'not' || mode === 'resort';
 
 /** The critter the hint points at: the one she just missed, including the mat when it is in play. */
 export function hintFor<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], missed: S, rules: readonly Rule[], not = false, mat = false): S | null {
