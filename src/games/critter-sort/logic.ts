@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * into a hoop: first one rule (in or out), then two separate hoops, then two overlapping hoops
  * where the middle means "both", and finally, with critters already sorted, work out the rule.
  */
-export type SortMode = 'one' | 'two' | 'venn' | 'guess' | 'not' | 'resort';
+export type SortMode = 'one' | 'two' | 'venn' | 'guess' | 'not' | 'resort' | 'butnot';
 
 export interface SortPlan {
   mode: SortMode;
@@ -30,6 +30,7 @@ export const PLANS: SortPlan[] = [
   { mode: 'one', critters: 3, rounds: 2, example: true, fitting: 2, name: 'Just a few: three critters, one already in the hoop; which of the other two fits?' },
   { mode: 'venn', critters: 6, rounds: 3, newcomer: true, name: 'Where does the new one go? Place one newcomer in a sorted diagram: left, right, both, or neither' },
   { mode: 'resort', critters: 6, rounds: 1, name: 'A new sign: sort six critters into a hoop or onto the leaf mat, then sort the same six again by a new rule' },
+  { mode: 'butnot', critters: 6, rounds: 2, name: 'This but not that: one hoop for critters that fit the first sign but not the crossed-out sign; all others go on the leaf mat' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -87,7 +88,8 @@ export const OVERLAPPING: [Rule, Rule][] = [
 /** Where a critter belongs: in the left hoop, the right hoop, both (the middle) or neither. */
 export type Place = 'left' | 'right' | 'both' | 'out';
 
-export function placeOf(c: SortCritter, rules: Rule[], not = false): Place {
+export function placeOf(c: SortCritter, rules: Rule[], not: boolean | 'butnot' = false): Place {
+  if (not === 'butnot') return fits(c, rules[0]) && !fits(c, rules[1]) ? 'left' : 'out';
   const a = not ? !fits(c, rules[0]) : fits(c, rules[0]);
   const b = rules[1] ? fits(c, rules[1]) : false;
   return a && b ? 'both' : a ? 'left' : b ? 'right' : 'out';
@@ -109,7 +111,7 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
   for (;;) {
     let rules: Rule[];
     if (plan.mode === 'two') rules = [...rng.pick(SEPARATE)];
-    else if (plan.mode === 'venn') rules = [...rng.pick(OVERLAPPING)];
+    else if (plan.mode === 'venn' || plan.mode === 'butnot') rules = [...rng.pick(OVERLAPPING)];
     else rules = [rng.pick(['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[])];
     if (rng.chance(0.5)) rules.reverse();
     if (rules.join() === avoid) continue;
@@ -117,10 +119,13 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     for (let i = 0; i < plan.critters; i++) critters.push({ kind: rng.pick(KINDS), hat: rng.chance(0.4) });
     const key = (c: SortCritter) => `${c.kind}${c.hat}`;
     if (new Set(critters.map(key)).size < critters.length) continue;
-    const not = plan.mode === 'not';
+    const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
     const places = new Set(critters.map((c) => placeOf(c, rules, not)));
     const needed: Place[] = plan.mode === 'two' ? ['left', 'right', 'out'] : plan.mode === 'venn' ? ['left', 'right', 'both', 'out'] : ['left', 'out'];
     if (!needed.every((p) => places.has(p))) continue;
+    // Both tempting A-and-B exclusions and critters matching neither must be visible.
+    if (plan.mode === 'butnot' && (!critters.some(c => fits(c, rules[0]) && fits(c, rules[1])) ||
+      !critters.some(c => !fits(c, rules[0]) && !fits(c, rules[1])))) continue;
     const bound = critters.filter((c) => placeOf(c, rules, not) !== 'out').length;
     // Just a few: two to sort after the example, one of which fits.
     if (plan.fitting && bound !== plan.fitting) continue;
@@ -155,15 +160,15 @@ export const examplePlaces = (mode: SortMode): Place[] => (mode === 'two' ? ['le
 /** The critters that start already sorted in a worked-example round: the first one belonging in each example place. */
 export function exampleIndices(plan: SortPlan, round: SortRound): number[] {
   if (!plan.example) return [];
-  const not = plan.mode === 'not';
+  const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
   return examplePlaces(plan.mode).map((place) => round.critters.findIndex((c) => placeOf(c, round.rules, not) === place));
 }
 
 /** The younger one-hoop entries keep their free leave-it-out choice. */
-export const hasNeitherMat = (mode: SortMode): boolean => mode === 'two' || mode === 'venn' || mode === 'not' || mode === 'resort';
+export const hasNeitherMat = (mode: SortMode): boolean => mode === 'two' || mode === 'venn' || mode === 'not' || mode === 'resort' || mode === 'butnot';
 
 /** The critter the hint points at: the one she just missed, including the mat when it is in play. */
-export function hintFor<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], missed: S, rules: readonly Rule[], not = false, mat = false): S | null {
+export function hintFor<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], missed: S, rules: readonly Rule[], not: boolean | 'butnot' = false, mat = false): S | null {
   if (mat) return missed.placed ? sorters.find((s) => !s.placed) ?? null : missed;
   if (placeOf(missed.c, [...rules], not) !== 'out') return missed;
   return sorters.find((x) => !x.placed && placeOf(x.c, [...rules], not) !== 'out') ?? null;
@@ -228,7 +233,7 @@ export function spotFor(centers: readonly Point[], mode: SortMode, place: Place,
  * What a capable child does next: carry the first critter still on the grass that belongs in a hoop to the middle of
  * its part of the diagram, including the leaf mat where present. The ghost finger follows this.
  */
-export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[], not = false, mat = false): { who: S; place: Place } | undefined {
+export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[], not: boolean | 'butnot' = false, mat = false): { who: S; place: Place } | undefined {
   for (const who of sorters) {
     const place = placeOf(who.c, [...rules], not);
     if (!who.placed && (mat || place !== 'out')) return { who, place };

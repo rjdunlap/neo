@@ -16,7 +16,7 @@ import { exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, n
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
-  school: { min: 2, max: 8, order: [2, 3, 4, 5, 7, 8] },
+  school: { min: 2, max: 9, order: [2, 3, 4, 5, 7, 8, 9] },
 };
 
 const SCALE = 0.32;
@@ -101,8 +101,12 @@ class CritterSort implements Game {
     void this.next();
   }
 
+  private get ruleMode(): boolean | 'butnot' {
+    return this.plan.mode === 'butnot' ? 'butnot' : this.plan.mode === 'not';
+  }
+
   private centers() {
-    return hoopCenters(this.plan.mode, this.round?.rules.length ?? 1, this.view);
+    return hoopCenters(this.plan.mode, this.plan.mode === 'butnot' ? 1 : this.round?.rules.length ?? 1, this.view);
   }
 
   resize(v: View) {
@@ -130,7 +134,16 @@ class CritterSort implements Game {
         sign.addChild(ruleIcon(this.round.rules[i]));
         if (this.plan.mode === 'not') sign.addChild(new Graphics().moveTo(-38, -34).lineTo(38, 34).stroke({ width: 9, color: swatch.red.fill, cap: 'round' }));
       }
-      sign.position.set(c.x + (this.round.rules.length === 2 ? (i ? 80 : -80) : 0), c.y - HOOP_R - 50);
+      if (this.plan.mode === 'butnot') {
+        // A single paired sign belongs to the single hoop; the second picture means exclusion.
+        sign.children[0].destroy();
+        sign.addChildAt(new Graphics().roundRect(-112, -46, 224, 92, 20).fill(0xffffff).stroke({ width: 6, color: colors[i].fill }), 0);
+        sign.children[1].x = -58;
+        const excluded = ruleIcon(this.round.rules[1]);
+        excluded.x = 58;
+        sign.addChild(excluded, new Graphics().moveTo(20, -34).lineTo(96, 34).stroke({ width: 9, color: swatch.red.fill, cap: 'round' }));
+      }
+      sign.position.set(c.x + (this.centers().length === 2 ? (i ? 80 : -80) : 0), c.y - HOOP_R - 50);
       this.signs.addChild(sign);
     });
     const loose = this.sorters.filter((s) => !s.placed);
@@ -161,7 +174,7 @@ class CritterSort implements Game {
     const g = this.glow.clear();
     if (!this.hinting || this.busy) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
-    const target = this.spotFor(placeOf(this.hinting.c, this.round.rules, this.plan.mode === 'not'));
+    const target = this.spotFor(placeOf(this.hinting.c, this.round.rules, this.ruleMode));
     g.circle(target.x, target.y - 50, 60).stroke({ width: pulse, color: swatch.yellow.fill });
     g.circle(this.hinting.node.x, this.hinting.node.y - 50, 70).stroke({ width: pulse, color: swatch.yellow.fill });
   }
@@ -173,7 +186,7 @@ class CritterSort implements Game {
       const option = this.options.find((o) => o.rule === ruleToTap(this.round));
       return option ? { tap: { on: option.node } } : null;
     }
-    const next = nextToSort(this.sorters.filter((s) => !s.drag?.dragging && !s.node.destroyed), this.round.rules, this.plan.mode === 'not', hasNeitherMat(this.plan.mode));
+    const next = nextToSort(this.sorters.filter((s) => !s.drag?.dragging && !s.node.destroyed), this.round.rules, this.ruleMode, hasNeitherMat(this.plan.mode));
     if (!next?.who.drag) return null;
     const spot = this.spotFor(next.place, 1);
     return { drag: { on: next.who.node }, to: { on: this.ctx.stage, x: spot.x, y: spot.y } };
@@ -218,7 +231,7 @@ class CritterSort implements Game {
     // A worked example: one critter already sits in its place in each hoop (the middle when they overlap).
     const examples = exampleIndices(this.plan, this.round).map((i) => this.sorters[i]);
     for (const done of examples) {
-      done.placed = placeOf(done.c, this.round.rules, this.plan.mode === 'not');
+      done.placed = placeOf(done.c, this.round.rules, this.ruleMode);
       if (done.drag) done.drag.enabled = false;
     }
     if (this.plan.mode === 'guess') {
@@ -244,6 +257,7 @@ class CritterSort implements Game {
 
   private instruct() {
     const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
+    if (this.plan.mode === 'butnot') return this.ctx.instruct('sort.butnot', { a, b });
     if (this.plan.newcomer) return this.ctx.instruct('sort.newcomer', { a, b });
     if (this.plan.mode === 'resort') return this.ctx.instruct(this.pass ? 'sort.again' : 'sort.first', { a });
     if (this.plan.mode === 'one') return this.ctx.instruct('sort.one', { a });
@@ -258,20 +272,21 @@ class CritterSort implements Game {
     const at = sortPlaceAt(this.centers(), this.plan.mode, x, y);
     // Back on the grass: just put down again, never a mistake.
     if (at === null) return false;
-    const right = placeOf(s.c, this.round.rules, this.plan.mode === 'not');
+    const right = placeOf(s.c, this.round.rules, this.ruleMode);
     if (at === right) {
       s.placed = at;
       if (s.drag) s.drag.enabled = false;
       sfx.pop(6 + this.sorters.filter((x) => x.placed).length);
+      if (this.plan.mode === 'butnot') void this.explainButNot(s);
       if (at === 'out') {
         sfx.whoosh();
-        void this.ctx.say(this.plan.mode === 'not' ? 'sort.mat.not' : 'sort.mat.yes', { who: KIND_WORDS[s.c.kind], rule: RULE_WORDS[this.round.rules[0]] });
+        if (this.plan.mode !== 'butnot') void this.ctx.say(this.plan.mode === 'not' ? 'sort.mat.not' : 'sort.mat.yes', { who: KIND_WORDS[s.c.kind], rule: RULE_WORDS[this.round.rules[0]] });
       }
       s.node.cheer();
       this.wrongs = 0;
       if (this.hinting === s) this.hinting = null;
       this.resize(this.view);
-      if (this.sorters.every((x) => x.placed || (!hasNeitherMat(this.plan.mode) && placeOf(x.c, this.round.rules, this.plan.mode === 'not') === 'out'))) void this.roundDone();
+      if (this.sorters.every((x) => x.placed || (!hasNeitherMat(this.plan.mode) && placeOf(x.c, this.round.rules, this.ruleMode) === 'out'))) void this.roundDone();
       return true;
     }
     this.misses++;
@@ -281,13 +296,14 @@ class CritterSort implements Game {
     void this.explain(s, at);
     if (this.wrongs >= 2 && !this.hinting) {
       this.hints++;
-      this.hinting = hintFor(this.sorters, s, this.round.rules, this.plan.mode === 'not', hasNeitherMat(this.plan.mode));
+      this.hinting = hintFor(this.sorters, s, this.round.rules, this.ruleMode, hasNeitherMat(this.plan.mode));
     }
     return false;
   }
 
   /** Say why it doesn't go there: which rule it fails, or which rule it also fits. */
   private explain(s: Sorter, at: Place) {
+    if (this.plan.mode === 'butnot') return this.explainButNot(s);
     const who = KIND_WORDS[s.c.kind];
     const rules = this.round.rules;
     if (at === 'out' && this.plan.mode !== 'not') {
@@ -301,6 +317,13 @@ class CritterSort implements Game {
     if (wantB && !fits(s.c, rules[1])) return this.ctx.say('sort.isnot', { who, rule: RULE_WORDS[rules[1]] });
     // It fits both, so it belongs in the middle.
     return this.ctx.say('sort.both', { who, a: RULE_WORDS[rules[0]], b: RULE_WORDS[rules[1]] });
+  }
+
+  private explainButNot(s: Sorter) {
+    const [a, b] = this.round.rules;
+    const key = fits(s.c, a) ? (fits(s.c, b) ? 'sort.butnot.both' : 'sort.butnot.in') :
+      (fits(s.c, b) ? 'sort.butnot.onlyb' : 'sort.butnot.neither');
+    return this.ctx.say(key, { who: KIND_WORDS[s.c.kind], a: RULE_WORDS[a], b: RULE_WORDS[b] });
   }
 
   private async guess(rule: Rule) {

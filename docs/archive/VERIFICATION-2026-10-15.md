@@ -367,3 +367,15 @@
 - Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=expansion EXPANSION_ONLY=bug BUG_LEVELS=7 npm run test:browser`: outside-drop exploration, two misses/one hint, matching stamps, synchronized fold through -1 and reopening to 1, faint reference, saved result/sticker and no page errors. Initial sandbox Chromium launch failed on macOS Mach access; isolated escalated run passed.
 - Reviewed `test-results/browser/bug-builder-portrait.png` and `bug-builder-fold.png`: targets/tray/pet clear, stationary body and faint model during the fold. Owned Vite stopped after checks; links/diff checked.
 - Not run: rule tests (no logic change), other levels, standalone fingerdemo (input/bot unchanged), broader suites/offline, iPad/speech or child interpretation; existing device checks remain open.
+
+## 2026-10-16 — Planet Hop definition
+
+- `claude/planet-hop-definition` (PR #414): docs only. Added `docs/definitions/planet-hop.md` (Bouncy Launch level 12) and routed it through the roadmap (chunk 27, ready list), PHYSICS-GAMES, the Bouncy Launch dive and IDEAS.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, browser or device checks; the build is not started.
+
+## 2026-10-16 — Bubble Pop mode gallery
+
+- [PR #412](https://github.com/rjdunlap/neo/pull/412), `claude/bubble-pop-mode-gallery`, code `5967799` on base `32ca812`: optional `GameModule.levelCard`, `HowToCard.mode`, a named and pictured level tile and an intro ladder in `HowToPanel`; Bubble Pop's 15 mode cards and voice lines.
+- Passed typecheck, build, `BROWSER_SUITE=howtolevel` and `BROWSER_SUITE=howto HOWTO_ONLY=bubble-pop` (rerun after the final layout change; "nothing is saved by looking" asserted). `npm test` 1356/1360: four timeouts (ferry-jam, peg-garden, penguin-slide) under machine load; all 39 tests in those files pass alone (code untouched). New `mode-cards.test.ts` passes.
+- Probe screenshots of lap and pre-K intros at 1024×768 and 768×1024, and pre-K on an 844×390 phone: no page errors, Play on screen. Both bands show the ladder in both iPad orientations (pre-K's seven tiles under the demo window in landscape); the phone drops it for height. A game without `levelCard` takes the old layout path unchanged, so the full `howto` suite was not rerun.
+- Not run: `world`, offline (navigation and persistence unchanged), device speech, iPad. Open: speech of the 15 lines, whether a grown-up finds the ladder clearer than numbers ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

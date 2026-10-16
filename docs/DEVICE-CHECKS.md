@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Critter Sort level 9 (#436):** on iPad in both orientations, hear the A/not-B instruction and both-part placement reasons; check that the paired pictures and red line communicate exclusion, and observe whether a child distinguishes A-only from A-and-B and neither. Desktop checks do not establish device speech or child understanding.
+
 - [ ] **Critter Sort level 8 (#428):** on iPad in both orientations, hear the first and changed rule, check that the sign flip and returning critters make re-sorting clear, and observe whether a child uses the new rule. Desktop automation does not establish device speech or child understanding.
 
 - [ ] **Critter Sort level 7 (#426):** on an iPad in both orientations, hear the newcomer instruction and reasons; check that the sorted examples help identify left/right/both/neither and that one movable newcomer is clear. Desktop completion and screenshots do not establish device speech or child understanding.
