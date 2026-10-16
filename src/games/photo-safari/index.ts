@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, Sprite } from 'pixi.js';
+import { Circle, Container, Graphics, Sprite, type Texture } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
@@ -138,6 +138,8 @@ class PhotoSafari implements Game {
   private readonly flash = new Graphics();
   private view: View;
   private wrongs = 0;
+  private readonly textures: Texture[] = [];
+  private destroyed = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -209,9 +211,17 @@ class PhotoSafari implements Game {
     for (const a of this.actors) a.update(dt);
   }
 
-  destroy() {}
+  destroy() {
+    this.destroyed = true;
+    this.busy = true;
+    // Release the sprites before their game-owned generated textures and GPU sources.
+    this.album.removeChildren().forEach((card) => card.destroy({ children: true }));
+    for (const texture of this.textures) texture.destroy(true);
+    this.textures.length = 0;
+  }
 
   private async nextScene() {
+    if (this.destroyed) return;
     this.busy = true;
     this.wrongs = 0;
     for (const a of this.actors) a.destroy({ children: true });
@@ -271,6 +281,7 @@ class PhotoSafari implements Game {
   /** A photo of the animal flies up into the album strip. */
   private async polaroid(a: Actor) {
     const tex = this.ctx.renderer.generateTexture({ target: a.critter, resolution: 1 });
+    this.textures.push(tex);
     const card = new Container();
     const frame = new Graphics().roundRect(-80, -90, 160, 190, 8).fill(0xffffff).stroke({ width: 4, color: 0xd6dde4 });
     const bg = new Graphics().rect(-66, -76, 132, 132).fill(0xbfe6fb);

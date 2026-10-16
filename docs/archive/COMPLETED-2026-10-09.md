@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Photo Safari texture cleanup (2026-10-16)
+
+[PR #468](https://github.com/rjdunlap/neo/pull/468), `codex/safari-textures`, dispatch `safari-textures-20261016T192305Z`: slice 1 owns every generated polaroid texture and releases album sprites before textures/GPU sources on destroy. A queued next scene cannot rebuild after destruction. No gameplay, levels, clues, bands, saves or how-to changes. [Proof](../VERIFICATION.md#2026-10-16--photo-safari-texture-cleanup).
+
 ### Bouncy Launch 12 Planet Hop (2026-10-16)
 
 [PR #466](https://github.com/rjdunlap/neo/pull/466), `codex/planet-hop-12`, dispatch `planet-hop-20261016T182105Z`, worker `01a145f2-c677-7c62-a022-7bdf79702997`: three same-pull home/planet pairs with distinct numbered flags, both light/heavy toy worlds, full-height past/before predictions, immediate rings, explanatory speech and counted requested pause help. School order `[4,5,7,6,12]`; IDs 8–11 remain reserved; younger bands, Cloud Hopper v1 and saves/journal preserved. Code-drawn worlds, scaled airtime/puff gravity and landing notes, level-specific how-to and ghost finger. [Proof](../VERIFICATION.md#2026-10-16--bouncy-launch-12-planet-hop); device sound/touch/understanding open.
