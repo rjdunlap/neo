@@ -82,7 +82,7 @@ The long-term arc: lap launches for fun; toddler flips; preschool and pre-K lear
 ### Fresh content inside existing levels
 
 - **Three tables.** The existing garden is the *Meadow*. Add a *Pond* (flowers drawn as lily pads, ripples on a bump, a frog-croak bell timbre) and a *Hive* (hex flowers). Each table has its own `SPOTS` layout (an arch, two columns and a ring are three simple ones) and its own skin; the plan stays the same. Every layout must pass the same reachability tests as `SPOTS`: every spot hit by some launch and no launch trapped. Pick a table by seeded `ctx.rng`, and `describeLevel` stays the plan's name.
-- **Flipper-ready ring** on the nearer flipper (art example above), for levels 2–5. It is a visual cue only; the reach does not change.
+- **Flipper-ready ring (built 2026-10-15, [PR #406](https://github.com/rjdunlap/neo/pull/406))** on the nearer flipper (art example above), for levels 2–5. It shows only while the falling ladybug is within actual kick reach; it changes no physics and counts no hint.
 - **A count in bloom mode (built 2026-10-15).** Level 2 says the count as each flower blooms (`count`, like levels 3–4), so the toddler hears that each bloom adds one. Costs one `ctx.say` and no rules change.
 - **Level 3 asked color from more than three colors.** `FLOWER_COLORS` has four; the asked color is already a seeded pick. Allow two asked colors across a round's two goals only in a new level (below), not in 3.
 - **Wide reach through level 3.** A decision for a person check: keep `wide` for `color` mode so the rule and the reach do not both change at once.
@@ -136,7 +136,7 @@ Add each to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the
 ## Build slices, in order
 
 1. **Truthful how-to and a count in bloom mode (built 2026-10-15, [PR #355](https://github.com/rjdunlap/neo/pull/355)).** Step 1 is `to: 1`, the finish line is per level, and level 2 says the count as each flower blooms (`ctx.say('count')`). Checked by typecheck and vitest; browser play of level 2 not run (see [VERIFICATION](../VERIFICATION.md)).
-2. **Flipper-ready ring (feel; claimed on `codex/bumper-garden-ready-ring`).** The pulsing ring on the nearer flipper at levels 2–5. Scope: `src/games/bumper-garden/index.ts`, the level-scoped how-to note and game documentation; no physics or scoring changes. Check: typecheck, one filtered play of level 2 with a portrait screenshot. No logic.
+2. **Flipper-ready ring (built 2026-10-15, [PR #406](https://github.com/rjdunlap/neo/pull/406)).** A noninteractive pulsing ring on the nearer flipper at levels 2–5, only while flying, falling and within actual kick reach. Physics, scoring, hints and RNG unchanged; how-to note scoped to 2–5. Typecheck, 24 focused tests, build, level-2 cue/input/completion regression and portrait review passed ([verification](../VERIFICATION.md#2026-10-15--bumper-garden-flipper-ready-ring)); ghost finger not rerun (bot unchanged).
 3. **Tables: layouts and skins for Pond and Hive (rules and art; ready).** New spot sets with reachability tests, skins, notes. Check: typecheck and `logic.test.ts` (every spot reachable, nothing trapped) and one filtered play.
 4. **Count on and Count back, levels 6 and 9.** A `start`/`descend` plan field, voice lines, how-to, README and GAMES entries. Check: rule tests and one filtered play of each, plus `fingerdemo` at the new top level.
 5. **Not this color, level 8.** Check as slice 4.
