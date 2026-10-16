@@ -390,3 +390,8 @@ Reconciled completed [Barnyard V1 #460](https://github.com/rjdunlap/neo/pull/460
 ### 2026-10-16 — Photo Safari texture dispatch
 
 Reconciled completed [Planet Hop #466](https://github.com/rjdunlap/neo/pull/466), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 1](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1462b-8eb4-7363-b00e-202f80bdb205`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Photo Safari two-clue dispatch
+
+Reconciled completed [texture cleanup #468](https://github.com/rjdunlap/neo/pull/468), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 2](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1465e-cadf-7402-8cd5-676524c857a6`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.

@@ -28,11 +28,16 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency check; preserve its checkout. Prior Safari texture slice #468 is merged; its cleanup is retained.
-- Dispatch `safari-two-clues-20261016T201906Z`; worker `01a1465e-cadf-7402-8cd5-676524c857a6`, host `local`, branch `codex/safari-two-clues`, source `origin/main` at `6ea3785`. Assigned only Photo Safari level 7, school action/place conjunction, shared spots and nearest-target taps. Excludes level 5 rewrite, new actions/journal entries, other levels/bands, saves and decisions.
-- Scope admission: ordinary usage allowed; **13% five-hour / 88% weekly used**, resets `1792196596` / `1792650157`; estimate **18.75 / 3.75 points** fits remaining **87% / 12%**. No reserve or daily cap.
-- Overlap: no other active implementation chat, open PR or competing slice claim. Historical research checkout clean and preserved. Working tree clean before claim.
-- Proof: not run; docs claim only. Next: publish draft claim, implement slice 2, run its filtered checks, publish verified result and stop.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; preserve Git-locked checkout. Texture worker `01a1462b-8eb4-7363-b00e-202f80bdb205` completed; [#468](https://github.com/rjdunlap/neo/pull/468) merged at `6ea3785dcc8fd8aa7a4127f5aa0374bc5c1a3fda`, deployment successful, slot released.
+- Newly admitted: **Photo Safari slice 2, level 7 Two clues, no name**, [source](deep-dives/photo-safari.md#build-slices-in-order), first current ready-list item. School-only action/place conjunction, shared spots/nearest-target taps; each clue alone has multiple matches, both exactly one. Preserve IDs/pins and cleanup. Exclude level-5 rewrite, new actions/journal, other levels/bands, saves and unresolved decisions.
+- Dispatch `safari-two-clues-20261016T201906Z`; worker `01a1465e-cadf-7402-8cd5-676524c857a6`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), title "Photo Safari 7: Two clues, no name". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/safari-two-clues`, claim `7063cd5`, [PR #470](https://github.com/rjdunlap/neo/pull/470); source `6ea3785`.
+- Admission 2026-10-16 20:19:06 UTC **11% five-hour / 88% weekly used**, resets `1792196596` / `1792650157`; ordinary usage allowed. Gameplay estimate **18.75 / 3.75 points** fits actual remaining **89% / 12%**, no daily cap/reserve. Docs estimate remains 16.25 / 2.5.
+- Worker scope usage **13% / 88%**, pre-code **17% / 89%**, same resets; ordinary usage allowed.
+- Required new-interaction proof: typecheck/rules for unique conjunction, clue ambiguity and reachable spaced actors, filtered 4/7 play with wrong photo/hint, level-7 ghost finger and portrait; build for affected shared content. Worker implementation/checks **not run by coordinator**; device/child evidence stays open. Remove only level-7 pointer on completion, retaining later slices.
+- Prior proof reused: #468 typecheck, five rule tests, filtered level-6 play and lifecycle regression probes passed; deployment successful, tree clean/server stopped. Final **9% / 88%**, resets `1792196596` / `1792650157`, vs dispatch 1% / 86% same identities: aggregate **8 / 2 points**, reconciled once below.
+- Overlap: other Neo chats idle; no open PR/unpublished implementation/competing level-7 claim. Historical research branch/other checkouts preserved; retained Dot Link dirty code matches main. Coordinator servers none.
+- Next: retrieve worker/PR next wake-up, confirm completion/publication and reconcile final usage once. Resume same worker if unfinished; do not implement here.
+
 
 ## Usage observations
 
@@ -42,7 +47,6 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Slice estimate / retired daily allocation-debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
 
-| 2026-10-16 | Critter Sort 9 / [#436](https://github.com/rjdunlap/neo/pull/436), dispatch `critter-sort-nine-20261016T090734Z` | New level | 0% → 12% / `1792159662` | 62% → 64% / `1792650157` | Estimate 17.5 / 2.5 points | Merged/deployed; final worker response, aggregate 12 / 2. Complete, reconciled once |
 | 2026-10-16 | Critter Sort 11 / [#439](https://github.com/rjdunlap/neo/pull/439), dispatch `critter-sort-eleven-20261016T101434Z` | New level/interaction | 13% → 28% / `1792159662` | 64% → 67% / `1792650157` | Estimate 17.5 / 2.5 points | Merged/deployed; final worker response, aggregate 15 / 3. Complete, reconciled once; next gameplay estimate 18.75 / 3.75 |
 | 2026-10-16 | Market stalls / [#444](https://github.com/rjdunlap/neo/pull/444), dispatch `market-stalls-20261016T121134Z` | Existing-level content | 30% → 42% / `1792159662` | 67% → 69% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 12 / 2. Complete, reconciled once |
 | 2026-10-16 | Chain Reaction 7 / [#448](https://github.com/rjdunlap/neo/pull/448), dispatch `chain-turn-20261016T131304Z` | New level/interaction | 44% → 59% / `1792159662` | 69% → 71% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 15 / 2. Complete, reconciled once |
@@ -51,7 +55,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-16 | Tangram broom / [#456](https://github.com/rjdunlap/neo/pull/456), dispatch `tangram-picture-20261016T161705Z` | Existing-level content | 32% → 46% / `1792178084` | 76% → 79% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 3. Complete, reconciled once |
 | 2026-10-16 | Barnyard V1 / [#460](https://github.com/rjdunlap/neo/pull/460), dispatch `barnyard-identity-20261016T171305Z` | Shared visuals | 61% → 76% / `1792178084` | 81% → 83% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 15 / 2. Complete, reconciled once |
 | 2026-10-16 | Planet Hop / [#466](https://github.com/rjdunlap/neo/pull/466), dispatch `planet-hop-20261016T182105Z` | New level | 77% → 91% / `1792178084` | 84% → 86% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 2. Complete, reconciled once |
-| 2026-10-16 | Safari textures, dispatch `safari-textures-20261016T192305Z` | Existing-game fix | 1% → pending / `1792196596` | 86% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Worker `01a1462b-8eb4-7363-b00e-202f80bdb205`, `codex/safari-textures`, [#468](https://github.com/rjdunlap/neo/pull/468): cleanup verified, publishing; final post-commit reading in worker response |
+| 2026-10-16 | Safari textures / [#468](https://github.com/rjdunlap/neo/pull/468), dispatch `safari-textures-20261016T192305Z` | Existing-game fix | 1% → 9% / `1792196596` | 86% → 88% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 8 / 2. Complete, reconciled once |
+| 2026-10-16 | Safari two clues 7, dispatch `safari-two-clues-20261016T201906Z` | New level/interaction | 11% → pending / `1792196596` | 88% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Fresh worker `01a1465e-cadf-7402-8cd5-676524c857a6` admitted; implementation/proof pending |
 
 ## Fresh-worker dispatch and handoff
 
