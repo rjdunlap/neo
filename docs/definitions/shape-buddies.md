@@ -1,4 +1,4 @@
-# Shape Buddies: first solo round
+# Shape Buddies: first solo round, and level 2
 
 **Solo definition, 2026-10-11; level 1 implemented 2026-10-12 ([PR #204](https://github.com/rjdunlap/neo/pull/204)).** Stable ID `shape-buddies`; roadmap [chunk 5](../ROADMAP.md#next-up), [candidate](../IDEAS.md#candidates). This is one round, not a whole-game ladder or research session.
 
@@ -34,4 +34,50 @@ Put silhouettes, docks, legal placements, undo snapshots and a pure trace in the
 
 Future implementation tier: **new game/new interaction** from [AGENTS](../../AGENTS.md#verification-budget). Typecheck and meaningful unit tests: all accepted identity/shape arrangements; failure at each missing role; hint actions that lead to a solution; undo/replay preserving/restoring state; seeded presentation consistency; completion once and hint deduplication. One filtered scripted play at level 1 (first and last are the same), failed trial, hint, undo/replay, assisted finish and exactly one shell sticker; ghost finger must use the same touch actions. One portrait screenshot checks clearance/100-unit targets; build when shared registry/content files change. Add the normal module/land/voice/how-to/README/GAMES integration then, not now. Device speech, real iPad touch and child understanding remain human checks. This document originally recorded no implementation proof; see [verification](../archive/VERIFICATION-2026-10-07-13.md#2026-10-12--shape-buddies-solo-seed-journey) for the subsequent build checks.
 
-Future proposals only: a different fixed dock arrangement, then two useful shapes combined. No committed levels or band ranges beyond proposed level 1. No developer decision blocks this bounded definition; the developer commissioned the solo implementation on 2026-10-12. Arbitrary cutting, general physics, cooperative seats and competitive modes stay excluded.
+Future proposals only: two useful shapes combined. The different fixed dock arrangement is now defined as [level 2](#level-2-a-step-down-defined-2026-10-16). No developer decision blocks this bounded definition; the developer commissioned the solo implementation on 2026-10-12. Arbitrary cutting, general physics, cooperative seats and competitive modes stay excluded.
+
+## Level 2: a step down (defined 2026-10-16)
+
+**Status: ready** (docs-only definition, roadmap [chunk 5](../ROADMAP.md#chunks); nothing here waits on the developer). One appended level on the existing interaction: same two friends, same three tools, same docks, buttons, drags and trace model. Only the bank heights change, and with them which bridge shape works.
+
+**Why it is a real next decision.** At level 1 Flat and Slope both cross a level gap. At level 2 the far bank sits one step lower than the chute's bank. A flat friend lies level at the high side and its far end hangs in the air over the stream, short of the low bank, so the seed rolls off its end and drops onto the cushion in the stream. A slope descending right reaches down to the low bank, so the seed rolls down onto it. The cup still matters: on the low bank the seed would roll past the catching dock and away without a scoop there. The learning goal stays the game's own (a shape's function depends on where it is used) and becomes visible: the same Flat that worked yesterday does not work here. Nothing becomes routing a ball through sockets; that stays Chain Reaction's.
+
+**Arrangement and geometry.** Level 1's layout is unchanged. Level 2 raises the left bank and the starter chute by **50 units**. The bridge dock moves up to `y 275`, so its 180×110 box spans 220–330. The catching dock, the pot, the low bank, parks, tools and buttons keep their level-1 positions: receiver `y 300` (box 245–355), parks and tools `y 485` (boxes 430–540), buttons at `h − 118`. No box moves, shrinks or overlaps another, and the pet corner stays clear as at level 1. The raised chute's left end must clear the caption (its bottom is near `y 192`). If the portrait screenshot shows they touch, move the caption up; never shrink or move a target. A flat friend in the bridge dock is drawn level with the high bank, ending visibly above the low bank. A sloped friend is drawn tilted from the high bank down to the low one. Both reuse the existing silhouettes. The stream gets a second cushion under the flat bridge's end, drawn like level 1's.
+
+**Outcomes, all from the finite trace.**
+
+| Bridge dock | Catching dock | Result | Spoken |
+| --- | --- | --- | --- |
+| slope | scoop | caught; tap the pot to plant | `buddies.plant` |
+| flatten | anything | falls off the flat end (`bridge`) | `buddies.stepFlat` |
+| empty, plain or scoop | anything | falls into the gap (`bridge`) | `buddies.stepBridge` |
+| slope | empty, plain, flatten or slope | rolls past (`receiver`) | `buddies.cup` (unchanged) |
+
+Accepted constructions: friend A sloped at the bridge with B scooped at the catcher, or the identities exchanged (two in all). Accept the visible outcome; never compare to a stored answer. As at level 1, choosing, reshaping, parking and failed trials are exploration: **misses stay 0**. Hints keep the role rule: after two unsuccessful runs for the same role, or explicit Help, glow that role's friend, tool and dock. Each role counts at most one hint across the round. At level 2 the bridge role's useful tool is **Slope**. Replay, Undo, occupied-dock rejection, the run and carry lock, completion once through `ctx.finish({ misses, hints })` and one shell sticker are all unchanged.
+
+**Rules in `logic.ts`.** Add a plan table keyed by level, for example `PLANS = { 1: { bridges: ['flatten', 'slope'], drop: 0 }, 2: { bridges: ['slope'], drop: 50 } }`. `trace(s, level)` reads `bridges`. A flat bridge at a level with `drop > 0` still returns the `bridge` failure; the scene picks `buddies.stepFlat` for it. `guidance(s, level)` suggests the first shape in `bridges`, so Slope at level 2, with the same friend choice (the dock's occupant, else a parked friend). `SeedRound` takes the level. `layout(w, h, level)` applies `drop` to the left bank, the chute and the bridge dock only. Level 1's behavior, voice and layout must be byte-for-byte what they are now.
+
+**Ladder and IDs.** `LEVELS` becomes `prek: { min: 1, max: 2 }`, `school: { min: 1, max: 2 }`; no `order` is needed. Level 1 keeps its number and meaning, so saved levels and pins survive and nothing is renumbered. Both bands get level 2: pre-K is about 4–5, and the step is one visible change with spoken support. The usual two-smooth-rounds step-up applies. Misses are always 0 here, so a hint-free level 1 round counts as smooth. `describeLevel(1)` keeps “Reshape a bridge and cup; test and plant one seed”. `describeLevel(2)` is “A step down: only a slope bridge reaches the low bank; test and plant one seed”.
+
+**Speech and how-to.** New lines in `src/content/voice-script.ts`:
+
+- `buddies.start2` (the `ctx.instruct` line at level 2, repeated by the corner pet): “The far bank is lower. Make a slope and a cup for the seed. Choose a friend, change its shape, and drag it to a dock.”
+- `buddies.stepFlat`: “The flat bridge stays up high. It doesn't reach the low bank. A slope goes down to it.”
+- `buddies.stepBridge`: “The seed needs a slope down. Choose the friend at the gap, or a parked friend. Make it a slope and drag it to the bridge dock.”
+
+The level-1 `buddies.bridge` line stays for level 1 only. The caption's text has no “flat” wording, so it needs no change. In `src/content/howto.ts`, split the second step into two `LevelLine`s. `{ from: 1, to: 1 }` keeps today's text. `{ from: 2, to: 2 }` says: “Drag one friend to the bridge dock and the other to the catching dock. The far bank is lower, so only a sloped bridge reaches it; a cup catches the seed.” The goal, finish and note hold at both levels. A co-play prompt for level 2: “Why didn't the flat one work this time?” Off screen: the soft toy slides down a cardboard ramp from a cushion to the floor and into a bowl.
+
+**Ghost finger.** `autotouch()` already follows `guidance()`; passing the level makes it select a friend, tap Slope, drag to the raised bridge dock, then do the same for the cup, Try and the pot. No new intent type.
+
+**Check tier: new levels on an existing interaction.**
+
+- Typecheck.
+- Shape Buddies rule tests: both accepted level-2 constructions catch. Flat at the bridge fails `bridge` at level 2 and still passes at level 1, where all four accepted constructions are unchanged. Every other row of the table above gives its failure. `guidance` at level 2 reaches `caught` from the initial state and from a level-1 solution (a flat bridge plus a cup). Hint de-duplication per role holds at level 2. Level 2 layout boxes do not overlap and stay at least 100 units.
+- Registry and how-to tests: the ranges, `describeLevel(2)` and the level-scoped how-to lines.
+- One browser play at level 2 in the `buddies` suite: a flat bridge fails and speaks `buddies.stepFlat`, a slope succeeds, then plant, finishing with misses 0 and one sticker. Add one portrait screenshot at level 2.
+- `fingerdemo` with `FINGER_ONLY=shape-buddies` at level 2.
+- Build only if shared files beyond the game, voice script and how-to change.
+
+Device speech, iPad touch and a child's reaction stay human checks.
+
+**Excluded:** two shapes combined (still a proposal), a third friend or tool, new bands, kept creations, save fields, controller or couch modes, cutting, and general physics.

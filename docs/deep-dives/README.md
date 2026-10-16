@@ -123,7 +123,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Scoop Shop | `scoop-shop` | LTPKS | 6 | 4 | not started | — | — |
 | Secret Code | `secret-code` | KS | 6 | 4 | not started | — | — |
 | Seesaw Balance | `seesaw-balance` | TPKS | 9 | 4 | not started | — | — |
-| Shape Buddies | `shape-buddies` | KS | 1 | 4 | not started (solo level 1 built; [definition](../definitions/shape-buddies.md)) | — | — |
+| Shape Buddies | `shape-buddies` | KS | 1 | 4 | not started (solo level 1 built; level 2 *A step down* defined, [definition](../definitions/shape-buddies.md)) | — | — |
 | Shape Sorter | `shape-sorter` | TPK | 7 | 4 | not started | — | — |
 | Sink or Float | `sink-float` | LTPKS | 6 | 4 | not started | — | — |
 | Sing-Along Barn | `sing-along-barn` | LTPK | 4 | 4 | not started (built: Old MacDonald, levels 1–3, [PR #219](https://github.com/rjdunlap/neo/pull/219); Hot Cross Buns, [PR #277](https://github.com/rjdunlap/neo/pull/277); level 4, [PR #278](https://github.com/rjdunlap/neo/pull/278); Mary Had a Little Lamb, 2026-10-13) | — | — |
