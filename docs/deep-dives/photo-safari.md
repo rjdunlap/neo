@@ -102,7 +102,7 @@ Photo scoring and stars, rare animals, timers or moving rails, zoom precision, h
 
 ## Build slices, in order
 
-1. **Ready: free the polaroid textures.** Keep each `generateTexture` result and destroy it in `destroy()`. Tier: existing-game bug fix (typecheck, the Photo Safari rule tests, one filtered `BATCH_ONLY=safari` play with `FROM_LEVEL=6`).
+1. **Claimed: free the polaroid textures.** `codex/safari-textures`, dispatch `safari-textures-20261016T192305Z`, worker `01a1462b-8eb4-7363-b00e-202f80bdb205` (draft PR pending). Scope: only generated-photo ownership and safe release in `src/games/photo-safari/index.ts`, focused cleanup regression proof, and documentation/queue closeout; no gameplay, level, clue, band or save changes. Keep each `generateTexture` result and destroy it in `destroy()`. Tier: existing-game bug fix (typecheck, the Photo Safari rule tests, one filtered `BATCH_ONLY=safari` play with `FROM_LEVEL=6`).
 2. **Ready: level 7, Two clues, no name** (school 4–7), with the shared-spot layout and nearest-target taps. Tier: new interaction (typecheck, rule tests above, one filtered play at 4 and 7 with one wrong photo and one hint, `fingerdemo` with `FINGER_ONLY=photo-safari` at 7, one portrait screenshot). Update the how-to card, GAMES, README row, the batch case's top level.
 3. **Ready after 2: level 5 made truthful** (distractors share the target's spot or action). Tier: rule tests and one filtered play at 5.
 4. **Ready: new actions, waving and swimming**, with journal entries. Tier: rule tests, the journal tests, one screenshot of each animation, one filtered play at 3.
