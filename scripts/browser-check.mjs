@@ -4672,11 +4672,28 @@ async function next() {
 
   // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
   const bumperLevels = process.env.BUMPER_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 9].filter(l => l >= Number(process.env.FROM_LEVEL || 1));
-  for (const level of (!only || only === 'bumper') ? bumperLevels : []) {
+  const bumperTables = process.env.BUMPER_TABLES?.split(',') ?? [null];
+  for (const table of bumperTables) for (const level of (!only || only === 'bumper') ? bumperLevels : []) {
     if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 768, height: 1024 });
+    if (table) await page.evaluate(async ({ table, level }) => {
+      const { bumperGarden } = await import('/src/games/bumper-garden/index.ts');
+      const { pickTable, planFor, TABLE_IDS } = await import('/src/games/bumper-garden/logic.ts');
+      const { Rng } = await import('/src/engine/random.ts');
+      if (!TABLE_IDS.includes(table)) throw new Error(`Unknown bumper table ${table}`);
+      let seed = 1;
+      for (; seed < 100; seed++) {
+        const rng = new Rng(seed); planFor(level, rng);
+        if (pickTable(rng) === table) break;
+      }
+      if (seed === 100) throw new Error(`No seed for bumper ${table}`);
+      // Inject a known round RNG only in this isolated context; production still picks by ctx.rng.
+      const create = bumperGarden.create;
+      bumperGarden.create = ctx => { bumperGarden.create = create; return create({ ...ctx, rng: new Rng(seed) }); };
+    }, { table, level });
     await launch('bumper-garden', level);
+    if (table) assert.equal(await page.evaluate(() => neo.scene.game.table), table);
     await page.waitForTimeout(400);
-    if (level === 6 || level === 9) await screenshot(`bumper-garden-${level}`);
+    if (table || level === 6 || level === 9) await screenshot(`bumper-garden-${table ? `${table}-` : ''}${level}`);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const result = await page.evaluate(async () => {
       const g = neo.scene.game;
@@ -4727,7 +4744,7 @@ async function next() {
     if (mode === 'spring' || mode === 'bloom') assert.deepEqual(r, [0, 0], `bumper ${level} score`);
     else assert.ok(r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints, `bumper ${level} score ${r}`);
     if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Bumper Garden ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`);
+    log(`Bumper Garden ${table ?? 'random'} ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`);
   }
 
   // Quick Tricks: a show of three tricks, two gentle misses in each, then the right move and the arrow.

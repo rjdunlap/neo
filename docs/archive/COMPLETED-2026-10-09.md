@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Bumper Garden Pond and Hive tables (2026-10-15)
+
+[PR #410](https://github.com/rjdunlap/neo/pull/410), `codex/bumper-pond-hive`, worker `01a14275-5f44-70b2-afb4-0d962c698c1e`, dispatch `bumper-tables-20261016T020502Z`: slice 3 adds seeded Meadow/Pond/Hive tables with arch/columns/ring spot sets, lily pads and ripples, hex flowers and distinct pentatonic timbres. Existing levels, bands, physics and accounting remain the same. Every table passes reachability, spacing, no-trap and ghost-finger-planning rules; Pond/Hive level-5 filtered plays save results/stickers and both portraits were reviewed. [Proof](../VERIFICATION.md#2026-10-15--bumper-garden-pond-and-hive-tables). Real iPad sound/feel and child response stay open.
+
+
 ### Bumper Garden Count on and Count back (2026-10-15)
 
 [PR #408](https://github.com/rjdunlap/neo/pull/408), `codex/bumper-count-on-back`: deep-dive slice 4 adds stable IDs 6 and 9. Count on draws a start from 2–6 and three or four consecutive flowers; Count back draws a start from 5–8 and descends to 1. A noninteractive number strip highlights the next target, and spoken instructions name the start/direction. Pre-K follows `[3, 4, 6, 5, 9]`; other bands, old IDs/pins, physics/scoring and couch trip levels 3/4 remain unchanged. IDs 7/8 are unbuilt. The flipper-ready cue also appears at the new levels. Typecheck, 41 focused tests, build, both filtered plays, landscape/portrait review and both clean finger demos passed ([proof](../VERIFICATION.md#2026-10-15--bumper-garden-count-on-and-count-back)); iPad/controller/child checks remain open. Pond/Hive tables remain a separate ready slice.

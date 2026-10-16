@@ -1,22 +1,46 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { stepBall, type Ball } from '../../engine/ball';
-import { aimFor, CATCH_Y, FLIPPER, flight, kickBall, kickReach, LAUNCH, launchVelocity, makeBumpers, makeWorld, orderNumbers, planFlip, planFor, PLANS, restingFlippers, SPOTS, STEP, swingFlippers, TABLE } from './logic';
+import { simulate, stepBall, type Ball } from '../../engine/ball';
+import { aimFor, CATCH_Y, FLIPPER, flight, kickBall, kickReach, LAUNCH, launchVelocity, makeBumpers, makeWorld, orderNumbers, planFlip, planFor, PLANS, restingFlippers, pickTable, TABLE_IDS, TABLE_SPOTS, STEP, swingFlippers, TABLE } from './logic';
 import { bumperGarden } from './index';
 import { levelsInOrder, nextLevelOffer, stepLevel } from '../../progress/difficulty';
 
 describe('Bumper Garden', () => {
-  it('can bump every flower spot with some launch', () => {
-    const bumpers = SPOTS.map((s) => ({ ...s, color: 0, number: null }));
-    const world = makeWorld(bumpers);
-    for (let i = 0; i < SPOTS.length; i++) expect(aimFor(world, bumpers.length, (k) => k === i), `spot ${i}`).not.toBeNull();
+  it('rebuilds the same table and flowers from a seed and offers all three themes', () => {
+    const seen = new Set<string>();
+    const round = (seed: number) => {
+      const rng = new Rng(seed);
+      const table = pickTable(rng);
+      seen.add(table);
+      return { table, bumpers: makeBumpers(PLANS[5], rng, table) };
+    };
+    for (let seed = 1; seed <= 30; seed++) expect(round(seed)).toEqual(round(seed));
+    expect([...seen].sort()).toEqual([...TABLE_IDS].sort());
   });
 
-  it('never traps the ladybug: every launch comes back down to the pot', () => {
+  it.each(TABLE_IDS)('can bump every %s flower spot with some launch', (table) => {
+    const bumpers = TABLE_SPOTS[table].map((s) => ({ ...s, color: 0, number: null }));
+    const world = makeWorld(bumpers);
+    for (let i = 0; i < bumpers.length; i++) expect(aimFor(world, bumpers.length, (k) => k === i), `spot ${i}`).not.toBeNull();
+  });
+
+  it.each(TABLE_IDS)('reaches every %s spot and returns at the game physics step', table => {
+    const bumpers = TABLE_SPOTS[table].map(s => ({ ...s, color: 0, number: null }));
+    const world = makeWorld(bumpers);
+    const reached = new Set<number>();
+    for (let k = -42; k <= 42; k++) {
+      const result = simulate({ x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(k * 0.01), r: TABLE.ball }, world, CATCH_Y, 40, STEP);
+      result.hits.filter(i => i < bumpers.length).forEach(i => reached.add(i));
+      expect(result.landed.y + TABLE.ball, `${table} angle ${k / 100}`).toBeGreaterThanOrEqual(CATCH_Y);
+    }
+    expect(reached.size).toBe(bumpers.length);
+  });
+
+  it.each(TABLE_IDS)('never traps the ladybug on %s: every launch comes back down to the pot', (table) => {
     for (let seed = 1; seed <= 12; seed++) {
       const plans = Object.values(PLANS);
       const plan = plans[seed % plans.length];
-      const world = makeWorld(makeBumpers(plan, new Rng(seed)));
+      const world = makeWorld(makeBumpers(plan, new Rng(seed), table));
       for (let a = -0.42; a <= 0.42; a += 0.06) {
         const { landed } = flight(world, a, 40);
         expect(landed.y + TABLE.ball, `seed ${seed} angle ${a.toFixed(2)}`).toBeGreaterThanOrEqual(CATCH_Y);
@@ -27,9 +51,9 @@ describe('Bumper Garden', () => {
   });
 
   it('sets out the right flowers: one color to bloom, or numbers to bump in order', () => {
-    for (const plan of Object.values(PLANS)) {
+    for (const table of TABLE_IDS) for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 100; seed++) {
-        const bumpers = makeBumpers(plan, new Rng(seed));
+        const bumpers = makeBumpers(plan, new Rng(seed), table);
         expect(bumpers).toHaveLength(plan.bumpers);
         // Flowers never overlap.
         for (const a of bumpers) for (const b of bumpers) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(TABLE.bumper * 2 + TABLE.ball * 2);
@@ -59,7 +83,7 @@ describe('Bumper Garden', () => {
   it('makes reproducible count-on and count-back sequences with one reachable flower for each target', () => {
     const starts = new Set<number>();
     const backs = new Set<number>();
-    for (const level of [6, 9]) for (let seed = 1; seed <= 40; seed++) {
+    for (const table of TABLE_IDS) for (const level of [6, 9]) for (let seed = 1; seed <= 40; seed++) {
       const plan = planFor(level, new Rng(seed));
       expect(plan).toEqual(planFor(level, new Rng(seed)));
       const numbers = orderNumbers(plan);
@@ -79,7 +103,7 @@ describe('Bumper Garden', () => {
         expect(numbers.at(-1)).toBe(1);
         numbers.slice(1).forEach((n, i) => expect(n).toBe(numbers[i] - 1));
       }
-      const bumpers = makeBumpers(plan, new Rng(seed));
+      const bumpers = makeBumpers(plan, new Rng(seed), table);
       const world = makeWorld(bumpers);
       for (const n of numbers) {
         const target = bumpers.findIndex(b => b.number === n);
@@ -136,10 +160,10 @@ describe('Bumper Garden', () => {
     let planned = 0;
     let touchedOne = 0;
     let free = 0;
-    for (const level of [3, 4, 5, 6, 9]) {
+    for (const table of TABLE_IDS) for (const level of [3, 4, 5, 6, 9]) {
       const plan = planFor(level);
       for (let seed = 1; seed <= 6; seed++) {
-        const bumpers = makeBumpers(plan, new Rng(seed));
+        const bumpers = makeBumpers(plan, new Rng(seed), table);
         const world = makeWorld(bumpers);
         const wanted = (i: number) => (plan.mode === 'color' ? bumpers[i].color === 0 : bumpers[i].number === orderNumbers(plan)[0]);
         for (const angle of [-0.3, -0.1, 0.15, 0.35]) {
