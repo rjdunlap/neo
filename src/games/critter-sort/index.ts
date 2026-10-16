@@ -12,11 +12,11 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, neitherMat, hoopCenters, makeRound, nextToSort, sortPlaceAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
+import { COUNT_PARTS, countParts, countSpot, morePart, type CountPart, exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, neitherMat, hoopCenters, makeRound, nextToSort, sortPlaceAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
-  school: { min: 2, max: 9, order: [2, 3, 4, 5, 7, 8, 9] },
+  school: { min: 2, max: 11, order: [2, 3, 4, 5, 7, 8, 9, 11] },
 };
 
 const SCALE = 0.32;
@@ -75,6 +75,11 @@ class CritterSort implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  counting = false;
+  readonly counted = new Map<Sorter, number>();
+  readonly comparisons: { place: CountPart; node: Container }[] = [];
+  private readonly badges = new Container();
+  private comparisonHint = false;
 
   private readonly backdrop: Backdrop;
   private readonly hoops = new Graphics();
@@ -93,8 +98,9 @@ class CritterSort implements Game {
     this.glow.eventMode = 'none';
     this.hoops.eventMode = 'none';
     this.mat.eventMode = 'none';
+    this.badges.eventMode = 'none';
     this.signs.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.hoops, this.mat, this.signs, this.glow);
+    ctx.stage.addChild(this.backdrop, this.hoops, this.mat, this.signs, this.glow, this.badges);
   }
 
   start() {
@@ -161,9 +167,13 @@ class CritterSort implements Game {
         const xs = spread(this.sorters.filter((x) => x.placed === 'out').length, 190, v.w - 50, 150);
         s.node.position.set(xs[k], Math.min(v.h * 0.42 + HOOP_R + 120, v.h - 150));
       } else {
-        const p = this.spotFor(s.placed, k);
+        const p = this.counting ? countSpot(this.centers(), s.placed as CountPart, k, this.totals()[s.placed as CountPart]) : this.spotFor(s.placed, k);
         s.node.position.set(p.x, p.y);
       }
+    }
+    if (this.counting) {
+      this.comparisons.forEach((o, i) => o.node.position.set(v.w / 2 + (i - 1) * 190, v.h - 65));
+      this.drawBadges();
     }
     const os = spread(this.options.length, 220, v.w - 120, 190);
     this.options.forEach((o, i) => o.node.position.set(os[i], v.h - 90));
@@ -172,6 +182,10 @@ class CritterSort implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
+    if (this.counting && this.comparisonHint && !this.busy) {
+      const right = this.comparisons.find(o => o.place === morePart(this.totals()))!;
+      g.roundRect(right.node.x - 80, right.node.y - 60, 160, 120, 24).stroke({ width: 6 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    }
     if (!this.hinting || this.busy) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
     const target = this.spotFor(placeOf(this.hinting.c, this.round.rules, this.ruleMode));
@@ -182,6 +196,12 @@ class CritterSort implements Game {
   /** The ghost finger carries critters to hoops and the leaf mat, or taps the picture of the rule. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
+    if (this.counting) {
+      const next = this.sorters.find(s => !this.counted.has(s));
+      if (next) return { tap: { on: next.node, y: -120 } };
+      const right = this.comparisons.find(o => o.place === morePart(this.totals()));
+      return right ? { tap: { on: right.node } } : null;
+    }
     if (this.plan.mode === 'guess') {
       const option = this.options.find((o) => o.rule === ruleToTap(this.round));
       return option ? { tap: { on: option.node } } : null;
@@ -205,6 +225,11 @@ class CritterSort implements Game {
     this.index++;
     this.wrongs = 0;
     this.hinting = null;
+    this.counting = false;
+    this.counted.clear();
+    this.comparisonHint = false;
+    this.badges.removeChildren().forEach(c => c.destroy({ children: true }));
+    for (const o of this.comparisons.splice(0)) o.node.destroy({ children: true });
     if (this.index >= this.plan.rounds) return void this.finale();
     for (const s of this.sorters.splice(0)) {
       s.drag?.destroy();
@@ -257,6 +282,7 @@ class CritterSort implements Game {
 
   private instruct() {
     const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
+    if (this.plan.count) return this.ctx.instruct('sort.howmany.sort', { a, b });
     if (this.plan.mode === 'butnot') return this.ctx.instruct('sort.butnot', { a, b });
     if (this.plan.newcomer) return this.ctx.instruct('sort.newcomer', { a, b });
     if (this.plan.mode === 'resort') return this.ctx.instruct(this.pass ? 'sort.again' : 'sort.first', { a });
@@ -286,7 +312,10 @@ class CritterSort implements Game {
       this.wrongs = 0;
       if (this.hinting === s) this.hinting = null;
       this.resize(this.view);
-      if (this.sorters.every((x) => x.placed || (!hasNeitherMat(this.plan.mode) && placeOf(x.c, this.round.rules, this.ruleMode) === 'out'))) void this.roundDone();
+      if (this.sorters.every((x) => x.placed || (!hasNeitherMat(this.plan.mode) && placeOf(x.c, this.round.rules, this.ruleMode) === 'out'))) {
+        if (this.plan.count) this.startCounting();
+        else void this.roundDone();
+      }
       return true;
     }
     this.misses++;
@@ -342,6 +371,77 @@ class CritterSort implements Game {
       const right = this.options.find((o) => o.rule === this.round.rules[0])!;
       right.node.scale.set(1.12);
     }
+    this.busy = false;
+  }
+
+  private totals() { return countParts(this.round.critters, this.round.rules); }
+
+  private drawBadges() {
+    this.badges.removeChildren().forEach(c => c.destroy({ children: true }));
+    for (const part of COUNT_PARTS) {
+      const center = part === 'out' ? neitherMat(this.centers()) : this.centers()[part === 'left' ? 0 : 1];
+      const n = this.comparisonHint ? this.totals()[part] : [...this.counted.keys()].filter(s => s.placed === part).length;
+      const badge = new Container();
+      badge.addChild(new Graphics().circle(0, 0, 27).fill(0xffffff).stroke({ width: 4, color: wood.line }), label(String(n), 34, ink));
+      badge.position.set(center.x + (part === 'out' ? MAT_RX + 40 : HOOP_R + 30), center.y);
+      this.badges.addChild(badge);
+    }
+    // A ring marks each counted critter without intercepting another touch.
+    for (const s of this.counted.keys()) {
+      this.badges.addChild(new Graphics().circle(s.node.x, s.node.y - 38, 48).stroke({ width: 4, color: swatch.yellow.fill }));
+    }
+  }
+
+  private startCounting() {
+    this.counting = true;
+    this.wrongs = 0;
+    this.hinting = null;
+    for (const s of this.sorters) {
+      s.drag?.destroy();
+      s.drag = undefined;
+      onTap(s.node, () => {
+        if (this.busy || this.finished || !this.counting) return;
+        if (!this.counted.has(s)) this.counted.set(s, [...this.counted.keys()].filter(x => x.placed === s.placed).length + 1);
+        s.node.hop(0.5);
+        sfx.tick();
+        void this.ctx.say('count', { n: this.counted.get(s)! });
+        this.drawBadges();
+      });
+    }
+    for (const [i, place] of COUNT_PARTS.entries()) {
+      const node = new Container();
+      const color = [swatch.orange, swatch.teal, swatch.green][i];
+      node.addChild(new Graphics().roundRect(-72, -54, 144, 108, 22).fill(0xffffff).stroke({ width: 5, color: color.fill }));
+      if (place === 'out') node.addChild(new Graphics().ellipse(0, 0, 45, 23).fill(color.light).stroke({ width: 4, color: color.line }));
+      else {
+        node.addChild(new Graphics().circle(0, 0, 38).stroke({ width: 6, color: color.fill }), ruleIcon(this.round.rules[i]));
+      }
+      node.hitArea = new Rectangle(-72, -54, 144, 108);
+      onTap(node, () => void this.compare(place));
+      this.comparisons.push({ place, node });
+      this.ctx.stage.addChild(node);
+    }
+    this.resize(this.view);
+    void this.ctx.instruct('sort.howmany.count');
+  }
+
+  private async compare(place: CountPart) {
+    if (this.busy || this.finished || !this.counting) return;
+    const totals = this.totals();
+    const right = morePart(totals)!;
+    if (place === right) return void this.roundDone();
+    this.busy = true;
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    this.comparisons.find(o => o.place === place)!.node.scale.set(0.96);
+    if (this.wrongs >= 2 && !this.comparisonHint) {
+      this.hints++;
+      this.comparisonHint = true;
+      this.drawBadges();
+    }
+    await this.ctx.say('sort.howmany.try', { small: totals[place], big: totals[right] });
+    this.comparisons.find(o => o.place === place)!.node.scale.set(1);
     this.busy = false;
   }
 

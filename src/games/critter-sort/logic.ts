@@ -19,6 +19,8 @@ export interface SortPlan {
   fitting?: number;
   /** All but one critter start sorted; the newcomer is the only movable one. */
   newcomer?: boolean;
+  /** Count the sorted parts, then compare their quantities. */
+  count?: boolean;
 }
 
 export const PLANS: SortPlan[] = [
@@ -33,7 +35,9 @@ export const PLANS: SortPlan[] = [
   { mode: 'butnot', critters: 6, rounds: 2, name: 'This but not that: one hoop for critters that fit the first sign but not the crossed-out sign; all others go on the leaf mat' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+// ID 10 remains reserved for Pick the signs; existing plan IDs never move.
+export const COUNT_PLAN: SortPlan = { mode: 'two', critters: 6, rounds: 2, count: true, name: 'How many? Sort six critters, tap to count each hoop and the leaf mat aloud, then choose the part with more' };
+export const planFor = (level: number) => level === 11 ? COUNT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export type Rule = 'hat' | 'brown' | 'white' | 'floppy' | 'pointy' | 'whiskers';
 
@@ -126,6 +130,8 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     // Both tempting A-and-B exclusions and critters matching neither must be visible.
     if (plan.mode === 'butnot' && (!critters.some(c => fits(c, rules[0]) && fits(c, rules[1])) ||
       !critters.some(c => !fits(c, rules[0]) && !fits(c, rules[1])))) continue;
+    // Three distinct, small quantities (1, 2, 3) keep counting targets roomy and "more" clear.
+    if (plan.count && new Set(COUNT_PARTS.map(p => countParts(critters, rules)[p])).size !== 3) continue;
     const bound = critters.filter((c) => placeOf(c, rules, not) !== 'out').length;
     // Just a few: two to sort after the example, one of which fits.
     if (plan.fitting && bound !== plan.fitting) continue;
@@ -243,3 +249,30 @@ export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(s
 
 /** In the "what is the rule?" round, the picture the ghost finger taps. */
 export const ruleToTap = (round: SortRound): Rule => round.rules[0];
+
+/** Disjoint parts of How many?: the outside mat counts too. */
+export const COUNT_PARTS = ['left', 'right', 'out'] as const;
+export type CountPart = typeof COUNT_PARTS[number];
+export function countParts(critters: readonly SortCritter[], rules: Rule[]): Record<CountPart, number> {
+  const counts = { left: 0, right: 0, out: 0 };
+  for (const c of critters) {
+    const place = placeOf(c, rules);
+    if (place !== 'both') counts[place]++;
+  }
+  return counts;
+}
+export function morePart(counts: Record<CountPart, number>): CountPart | null {
+  const ranked = [...COUNT_PARTS].sort((a, b) => counts[b] - counts[a]);
+  return counts[ranked[0]] > counts[ranked[1]] ? ranked[0] : null;
+}
+
+/** Separate 100-unit touch targets for the counted critters, within their own part. */
+export function countSpot(centers: readonly Point[], place: CountPart, k: number, total: number): Point {
+  if (place === 'out') {
+    const mat = neitherMat(centers);
+    return { x: mat.x + (k - (total - 1) / 2) * 112, y: mat.y + 50 };
+  }
+  const c = centers[place === 'left' ? 0 : 1];
+  return total === 3 && k === 2 ? { x: c.x, y: c.y - 50 } :
+    { x: c.x + (k - (Math.min(total, 2) - 1) / 2) * 112, y: c.y + 70 };
+}

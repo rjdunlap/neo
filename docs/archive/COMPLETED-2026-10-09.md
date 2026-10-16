@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Critter Sort level 11 How many? (2026-10-16)
+
+[PR #439](https://github.com/rjdunlap/neo/pull/439), `codex/critter-sort-eleven`, dispatch `critter-sort-eleven-20261016T101434Z`: school appends stable ID 11, skipping reserved 10. Sort six critters into two separate hoops and the leaf mat; tap to count groups of one, two and three with spoken numbers, rings and badges, then choose the uniquely largest part. Repeated counting is free; two wrong comparisons reveal totals/glow and add one hint. Two diagrams earn one shell-owned sticker. Ghost finger sorts, counts and compares. [Proof](../VERIFICATION.md#2026-10-16--critter-sort-level-11-how-many). Existing IDs/pins and pre-K preserved; level 10, third feature, bands, kept creations/saves and unresolved decisions excluded. Device/child checks open.
+
 ### Critter Sort level 9 This but not that (2026-10-16)
 
 [PR #436](https://github.com/rjdunlap/neo/pull/436), `codex/critter-sort-nine`, dispatch `critter-sort-nine-20261016T090734Z`: school appends stable ID 9. One paired A/not-B sign above a single hoop; six distinct critters include accepted, A-and-B and neither witnesses. Every placement explains both parts. All critters must reach the hoop or leaf mat in two diagrams; free grass, missed-critter hint and ghost finger retained. IDs/pins and pre-K unchanged. [Proof](../VERIFICATION.md#2026-10-16--critter-sort-level-9-this-but-not-that). Levels 10/11, third feature, new bands, creations/saves and unresolved decisions excluded; device/child checks remain open.
