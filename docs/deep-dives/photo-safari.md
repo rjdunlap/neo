@@ -26,7 +26,7 @@ Ranges are `lap 1–2, toddler 1–2, preschool 2–4, prek 3–5, school 4–6`
 **Known gaps (source audit):**
 
 - **Level 5 does not need both clues.** Every animal stands in its own spot, so the place word alone picks the target. The action word is decoration (already noted in [IDEAS](../IDEAS.md#round-two-the-longer-ladders-2026-10-10)). Level 4's name is likewise redundant (all three are the same animal), and level 3's distractor actions all differ from the target's, so the action alone suffices. Levels 3 and 4 still teach their one new word truthfully; level 5 does not teach "both".
-- **Polaroid textures are never freed.** `polaroid()` calls `renderer.generateTexture` for every photo and `destroy()` is empty, so each round leaves four to six textures behind. AGENTS requires games to release their render textures.
+- **Polaroid textures were never freed (fixed in slice 1).** `polaroid()` calls `renderer.generateTexture` for every photo and `destroy()` is empty, so each round leaves four to six textures behind. AGENTS requires games to release their render textures.
 - **One spot per animal caps the evidence design.** Any two-clue level needs two animals able to share a spot, which means a layout with an offset per animal and nearest-target tap resolution (the hit circles are 95 units in radius).
 - Device speech for "behind the bush" and "not sleeping" is unchecked (already listed in [DEVICE-CHECKS](../DEVICE-CHECKS.md)).
 - No couch entry and no picnic step.
@@ -102,7 +102,7 @@ Photo scoring and stars, rare animals, timers or moving rails, zoom precision, h
 
 ## Build slices, in order
 
-1. **Claimed: free the polaroid textures.** `codex/safari-textures`, dispatch `safari-textures-20261016T192305Z`, worker `01a1462b-8eb4-7363-b00e-202f80bdb205` (draft PR pending). Scope: only generated-photo ownership and safe release in `src/games/photo-safari/index.ts`, focused cleanup regression proof, and documentation/queue closeout; no gameplay, level, clue, band or save changes. Keep each `generateTexture` result and destroy it in `destroy()`. Tier: existing-game bug fix (typecheck, the Photo Safari rule tests, one filtered `BATCH_ONLY=safari` play with `FROM_LEVEL=6`).
+1. **Built: free the polaroid textures.** [PR #468](https://github.com/rjdunlap/neo/pull/468), `codex/safari-textures`: generated textures are owned by the round and freed with their GPU sources after album sprites on destroy; queued scene work is guarded. Gameplay unchanged. [Proof](../VERIFICATION.md#2026-10-16--photo-safari-texture-cleanup).
 2. **Ready: level 7, Two clues, no name** (school 4–7), with the shared-spot layout and nearest-target taps. Tier: new interaction (typecheck, rule tests above, one filtered play at 4 and 7 with one wrong photo and one hint, `fingerdemo` with `FINGER_ONLY=photo-safari` at 7, one portrait screenshot). Update the how-to card, GAMES, README row, the batch case's top level.
 3. **Ready after 2: level 5 made truthful** (distractors share the target's spot or action). Tier: rule tests and one filtered play at 5.
 4. **Ready: new actions, waving and swimming**, with journal entries. Tier: rule tests, the journal tests, one screenshot of each animation, one filtered play at 3.
