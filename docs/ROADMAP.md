@@ -91,6 +91,7 @@ Chunk numbers are stable IDs that other documents cite; rows are sorted by what 
 | 23 | **Useful family roles** | decision (with chunk 16) | After chunk 16's placement and seat-credit decisions: define one Secret Code maker/breaker or Buddy Delivery role-swapped round, with a solo fallback | Docs only | [W3](FAMILY-EXPERIENCE.md#w3-one-shared-job) |
 | 16 | **Family table: games two people play together** (the developer, 2026-10-11) | decision | After the placement and seat decisions: Secret Code's maker and breaker, or Row Together's lap level. Chunk 23 shares this decision | Docs only; then its tier | [Family table](IDEAS.md#mario-party-and-the-family-table-2026-10-11) |
 | 15 | **Additional languages** (the developer, 2026-10-11: wanted) | decision (which language, and a reviewer) | Stage 1 is defined in [additional-languages.md](definitions/additional-languages.md) (a word table and a per-person setting; Peekaboo Barn, Animal Snack, Bubble Pop). Build once a language and reviewer are named | Save and shell tier | [Additional languages](#additional-languages) |
+| 29 | **A better voice** (the developer, 2026-10-15: improve the voice without recorded lines) | V0 ready; V1 onward **decision** (the audio-file rule) | **V0**: prefer the device's Enhanced or Premium voices and tell grown-ups how to download one; then the **V1** listening test once the rule is decided | V0: shell tier with the grown-ups' page; V1: docs and a scratch script, nothing shipped | [Below](#a-better-voice) |
 | 10 | **Maker Harbor fair board**, then a voluntary Harbor Bank | person (Lemonade Stand played by an older child) | If Lemonade Stand is fun, try one fair board | Design first | [Older-child progression](#older-child-progression-a-market-week-not-an-island-grind) |
 
 ### Discovery actions
@@ -176,6 +177,34 @@ What is already built under this chunk is in [the 2026-10-15 cleanup archive](ar
 23. **Language-specific play.** The small games JumpStart Spanish suggests, designed per language: hear-then-goal word rooms, a days-and-months calendar, folk songs, puppet-show phrases, and any literacy game that has to change (a deep dive each).
 
 **Rules that hold.** No recorded audio files; English is the default and is always one tap away; nothing is gated by language; a language setting never changes difficulty or save keys; check actual device speech before claiming a pronunciation, as for phonics; and a native speaker reviews every line before it ships. Checks: stage definitions are docs only; stage 1 is the save and shell tier (typecheck, unit tests including placeholder parity, build, the suites of the games it touches).
+
+### A better voice
+
+**Requested 2026-10-15:** a significantly better voice without a stack of human-read lines. Research the same day (vendor pricing pages and 2026 comparisons; prices change, so recheck before buying).
+
+**Constraints from the code.** `SCRIPT` holds about 1,740 ids and 1,895 variants, about 87,000 characters (roughly 95 minutes of speech). 580 variants have slots (`{n}` alone 163; also `{color}`, `{animal}`, `{word}`, `{pet}`, `{name}`). The app is an offline PWA on a public site, so live cloud speech is out: the key would be public and speech would stop offline. The project rule against imported audio files blocks pre-rendered clips until the developer amends it ([Waiting on the developer](WAITING-ON-DEVELOPER.md)).
+
+**Options.**
+
+| Option | Quality | Cost for the whole script | Notes |
+| --- | --- | --- | --- |
+| Device Enhanced/Premium voices (iPad Settings → Accessibility → Spoken Content) | Better than the default compact voice | $0 | No rule change; rate 0.95 and pitch 1.15 need retuning on them |
+| ElevenLabs (v3 or Multilingual v2, 1 credit a character) | The strongest character voices and a fixed voice ID | One Creator month (121k credits), about $11–22; commercial use needs a paid plan | Best fit for a consistent pet voice over months of new lines |
+| Gemini 3.8 Flash TTS ($9 per million audio tokens, 25 a second, through 2026) | Good, steerable by a style prompt | About $1–2, with a free tier | Prompt-steered voices can drift between batches; pin voice and prompt |
+| OpenAI gpt-4o-mini-tts (about $0.015 a minute, unconfirmed) | Good, steerable | About $1.50 | Price from community reports, not the pricing page |
+| Kokoro (82M, Apache-2.0) run on the Mac | Clean, less expressive | $0 | Deterministic and offline; in-browser use (80 MB or more, WebGPU on iPad) is too risky |
+
+Cost is not the deciding factor even with retakes (3–5×). Voice consistency for lines added later, licensing in a public repository, and bundle size (about 20–25 MB at 32 kbps mono AAC/MP3; Opus is unreliable on older iPads) are.
+
+**Slices.**
+
+- **V0 (ready, no rule change):** `pickVoice` prefers Enhanced/Premium English voices, and the grown-ups' page says how to download one. Device check: retune rate and pitch on an iPad.
+- **V1 (after the decision): listening test.** A scratch script renders the same twenty lines (praise, an instruction, a counted `{n}` line, a name line, and Word Monsters' isolated sounds) on two or three engines; the developer picks one voice by ear. Nothing ships.
+- **V2: build-time clips.** A script renders slot-free variants to hashed files listed in a manifest, cached by the service worker; `voice.ts` plays a clip by line and variant and falls back to device speech when none exists. A test fails if a line changed without its clip being regenerated (or marks it as falling back).
+- **V3: slots.** Render fragments (numbers to 20, colors, animals, `{pet}` names) and stitch them, or keep slotted lines on device speech; a mid-sentence voice change sounds jarring, so stitch only where it listens well. `{name}` stays on device speech unless a grown-up asks for a rendered name. Word Monsters' phonemes need their own check: neural voices often get isolated sounds wrong.
+
+**Rules that hold.** Clips are generated from the script, never recorded or hand-edited; device speech always remains the fallback; additional languages ([above](#additional-languages)) render through the same pipeline once a reviewer approves the lines; check the result on an iPad before claiming it is better.
+
 
 ## Family experience: quality and range
 
