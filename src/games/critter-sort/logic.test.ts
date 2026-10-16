@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { exampleIndices, examplePlaces, fits, hintFor, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
+import { exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
 
 describe('Critter Sort', () => {
   it('separate hoops never overlap, and overlapping hoops really do', () => {
@@ -79,6 +79,47 @@ describe('Critter Sort', () => {
       for (const critter of round.critters) {
         expect(placeOf(critter, round.rules, true) === 'left').toBe(!fits(critter, round.rules[0]));
         expect(placeOf(critter, round.rules, true) === 'out').toBe(fits(critter, round.rules[0]));
+      }
+    }
+  });
+
+  it('makes the leaf mat an explicit, reachable outside answer, keeps bare grass free, and hints the missed outsider', () => {
+    for (const plan of PLANS) {
+      expect(hasNeitherMat(plan.mode)).toBe(['two', 'venn', 'not'].includes(plan.mode));
+      for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 768 }, { w: 1024, h: 1366 }]) {
+        const centers = hoopCenters(plan.mode, ['two', 'venn'].includes(plan.mode) ? 2 : 1, v);
+        expect(sortPlaceAt(centers, plan.mode, v.w / 2, v.h - 40)).toBeNull();
+        if (!hasNeitherMat(plan.mode)) continue;
+        const mat = neitherMat(centers);
+        expect(mat.x - MAT_RX).toBeGreaterThan(150);
+        expect(mat.x + MAT_RX).toBeLessThan(v.w);
+        expect(mat.y - MAT_RY).toBeGreaterThan(centers[0].y + 150);
+        expect(mat.y + MAT_RY).toBeLessThan(v.h - 120);
+        // The whole 100-unit center target is accepted, with no hoop overlap.
+        for (const [dx, dy] of [[-50, 0], [50, 0], [0, -50], [0, 50]]) {
+          expect(sortPlaceAt(centers, plan.mode, mat.x + dx, mat.y + 50 + dy)).toBe('out');
+        }
+        for (let seed = 1; seed <= 100; seed++) {
+          const r = makeRound(plan, new Rng(seed));
+          const not = plan.mode === 'not';
+          const examples = exampleIndices(plan, r);
+          const sorters = r.critters.map((c, i) => ({ c, placed: examples.includes(i) ? placeOf(c, r.rules, not) : null as Place | null }));
+          const outsider = sorters.find((s) => placeOf(s.c, r.rules, not) === 'out')!;
+          expect(hintFor(sorters, outsider, r.rules, not, true)).toBe(outsider);
+          let moves = 0;
+          for (let next = nextToSort(sorters, r.rules, not, true); next; next = nextToSort(sorters, r.rules, not, true)) {
+            const p = spotFor(centers, plan.mode, next.place, 1);
+            expect(sortPlaceAt(centers, plan.mode, p.x, p.y)).toBe(next.place);
+            next.who.placed = next.place;
+            moves++;
+          }
+          expect(moves).toBe(plan.critters - examples.length);
+          expect(sorters.every((s) => s.placed !== null)).toBe(true);
+          for (let k = 0; k < 4; k++) {
+            const p = spotFor(centers, plan.mode, 'out', k);
+            expect(sortPlaceAt(centers, plan.mode, p.x, p.y)).toBe('out');
+          }
+        }
       }
     }
   });

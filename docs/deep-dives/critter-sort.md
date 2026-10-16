@@ -1,27 +1,27 @@
 # Critter Sort deep dive
 
-*ID `critter-sort` · bands pre-K, school · levels 1–5 on 2026-10-14 (pre-K 1–3, school 2–5) · session `claude/critter-sort-deep-dive` ([PR #316](https://github.com/rjdunlap/neo/pull/316))*
+*ID `critter-sort` · bands pre-K, school · levels 1–6 (pre-K order 6, 1, 2, 3; school 2–5) · session `claude/critter-sort-deep-dive` ([PR #316](https://github.com/rjdunlap/neo/pull/316))*
 
 ## The game today
 
-Critters, some in top hats, are dragged into hoops whose signs are pictures of a rule. Dropping a critter in the wrong part of the diagram is a miss with a spoken reason (`sort.isnot`, `sort.both`, `sort.not.in/out`); putting it back on the grass is never a miss. Two wrong drops in a row light the hint. Rules, rounds and the bot's order are in `src/games/critter-sort/logic.ts`; the hoop geometry is `hoopCenters`/`placeAt`/`spotFor`.
+Critters, some in top hats, are dragged into hoops whose signs are pictures of a rule. Dropping a critter in the wrong part of the diagram is a miss with a spoken reason (`sort.isnot`, `sort.both`, `sort.not.in/out`); putting it back on the grass is never a miss. Two wrong drops in a row light the hint. Rules, rounds and the bot's order are in `src/games/critter-sort/logic.ts`; the geometry is `hoopCenters`/`sortPlaceAt`/`neitherMat`/`spotFor`. Levels 2, 3 and 5 require an explicit outside answer on a leaf mat; a correct drop explains why the critter belongs there. The hint and ghost finger sort the mat too, and completion waits for every critter. Levels 1 and 6 retain the free leave-it-out choice.
 
 | Level | Plan | Bands whose window includes it | What she decides |
 | --- | --- | --- | --- |
 | 1 | One hoop, 5 critters, 2 rounds | pre-K | Which critters fit the sign |
-| 2 | Two separate hoops, 6 critters, some fit neither | pre-K, school | Left, right, or leave it on the grass |
+| 2 | Two separate hoops, 6 critters, some fit neither | pre-K, school | Left, right, or place it on the leaf mat |
 | 3 | Overlapping hoops, the middle is "both" | pre-K, school | Left, right, middle, or neither |
 | 4 | Already sorted, 3 rounds: tap the picture of the rule (3 pictures) | school | What the hoop's rule is |
-| 5 | One hoop with a red-lined picture ("not"), 3 rounds | school | The critters that do not fit the picture |
+| 5 | One hoop with a red-lined picture ("not"), 3 rounds | school | The critters that do not fit the picture go in; the others go on the leaf mat |
+| 6 | Just a few: three critters, one already in the hoop | pre-K, first in its order | Carry the other critter that fits; the outsider can stay on the grass |
 
 **Pools.** Seven animals (`cow duck pig cat bear dog bunny`) times a hat on or off make 14 distinct pictures. Six rules: `hat`, `brown` (bear, dog), `white` (cow, bunny), `floppy` (cow, dog), `pointy` (pig, cat), `whiskers` (cat, bunny). Two-hoop rule pairs are `SEPARATE` (3 pairs) or `OVERLAPPING` (6 pairs). A round never repeats the previous round's rules and has all-different critters; every part of the diagram in play gets a critter, and the guess round offers exactly one rule that sorts the shown critters that way (all rule-tested).
 
 **Known gaps.**
 - **Only one independent feature.** Five of the six rules are functions of the animal; only the hat is independent. "Both" is therefore often one animal, and the pool is small enough that a child will see the same pairs within a session. A third feature is already a pending decision shared with Critter Crossing.
-- **"Neither" has no home.** Critters that fit neither rule must stay on the grass, and the round ends silently when the rest are placed. She is never told that leaving them out was right, and nothing marks the place.
 - **The hint is not about the miss** (fixed 2026-10-14: `hintFor` points at the critter she just missed). Before, after two wrong drops `hinting` becomes the first unplaced critter that belongs in a hoop (`sorters.find`), not the one she just got wrong, so the glow can jump to an unrelated critter.
 - **The guessing level can be passed by elimination alone** and has no "now sort one more" step to prove she holds the rule.
-- **No preschool** (pre-K now has the level 6 entry; preschool still waits on decision 1). Prek started at level 1 (5 critters, one hoop), the school window starts at 2, and a child is only ever told a rule by picture and spoken phrase; there is no younger or easier entry.
+- **No preschool** (pre-K now has the level 6 entry; preschool still waits on decision 1). The school window starts at 2; picture signs and spoken phrases support the rules.
 - **No count, no second look.** A finished round does not ask how many are in each part; the same critters are never re-sorted by a new rule.
 - Couch: none. Journal: no entries. Picnic: none. Controller: none (touch only; the demo is a ghost finger).
 
@@ -43,7 +43,7 @@ The search tool returned summaries only; none of these pages was opened in full.
 
 The game already gets the key thing right: dropping a critter back on the grass is free, and a miss always names the rule. The arc is **one rule → two rules → both → what is the rule → not**, and the next steps are the ones physical hoop play and Fripple Shop point at:
 
-1. **A place for "neither", and a worked example.** Hoop teachers put one piece in the middle first; here the first critter of a round can already sit in its place, and a leaf-mat for "neither" makes the leave-it-out answer visible.
+1. **A place for "neither", and a worked example.** Hoop teachers put one piece in the middle first; here the first critter of a round can already sit in its place, and the built leaf mat for "neither" makes the outside answer explicit.
 2. **A newcomer.** The diagram is already sorted and one more critter arrives (IDEAS round three). It is the same decision with no fixed pile to scan.
 3. **A new rule for the same critters** (DCCS). Flexible categories are the point of sorting: the same six critters, a new sign.
 4. **"A but not B"**, after "both" and "not".
@@ -55,11 +55,11 @@ Left for other games: animal classes (mammal, bird, fish) and habitats belong to
 ## Experience and presentation
 
 - **First unsupported action:** pick up a critter and drop it in the hoop. The first round of level 1 is one hoop and one picture, and she can try any critter first.
-- **What feels good, and the consequence:** a drag already ticks on pick-up and pops with a rising feel on a right drop (`sfx.pop(6)`, `cheer()`). Concrete addition, code-drawn only: a **leaf mat** (a few `Graphics` leaves) in the grass for "neither"; a critter put there hops in place and the mat rustles (a short `sfx` noise burst), and when the last critter is placed the hoop rims shine briefly. The pop's pitch should rise with each placement, using the pentatonic steps in `src/audio/notes.ts`, so a full sort plays a little tune.
+- **What feels good, and the consequence:** a drag already ticks on pick-up and pops with a rising feel on a right drop (`sfx.pop(6)`, `cheer()`). Built 2026-10-15: a code-drawn **leaf mat** (a few `Graphics` leaves) in the grass for "neither", with a spoken reason and synthesized rustle (`sfx.whoosh()`) on correct placement. Correct placements rise through pentatonic pop steps (`sfx.pop(6 + number placed)`). Shining hoop rims remain a presentation proposal.
 - **Return to readiness:** a wrong drop sends the critter home, which is the draggable's behavior now; nothing blocks the next drag.
 - **Variety on replay:** which rule, which critters, which hoop is left or right, and which critter starts sorted. The rule of the game never changes.
 - **Reasoning versus reading and motor:** no reading; the signs are pictures, spoken once. Targets are 100+ units. Memory load stays at six critters; the neither mat and the worked example keep the unsorted pile from being the whole picture.
-- **Supported ending:** two wrong drops glow the right place for the critter she missed (slice 1 fixes this); the guessing level's two-miss hint grows the right picture. A sticker follows every finished round, with help.
+- **Supported ending:** two wrong drops glow the right place for the critter she missed (built); the guessing level's two-miss hint grows the right picture. A sticker follows every finished round, with help.
 - **Co-play:** a grown-up asks "why does the dog go in the middle?" (already the hint text); a second child can be the "newcomer" who chooses the next critter. Off-screen: two hula hoops and a basket of toys or socks, the existing suggestion; later, choose the signs with her (Level 10).
 - **Needs a person or device:** whether a 3–4-year-old reads the picture signs without help; whether the leaf mat is understood as "neither"; device speech for the new lines; whether the "not" red line reads on a small iPad.
 
@@ -104,10 +104,10 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 
 ## Build slices, in order
 
-1. **Neither mat, a hint on the critter she missed (built 2026-10-14), and a worked example** at levels 1–3 and 5 (level 6 has one; levels 1–3 and 5 built 2026-10-16). Remaining: the neither mat only. **Claimed:** `codex/critter-sort-neither-mat`; explicit leaf-mat sorting and feedback, including hint/bot/completion rules. Expected files: `src/games/critter-sort/{index,logic,logic.test}.ts`, voice/how-to content, the filtered browser case, and closeout docs. `logic.ts` gains a `hintTarget` test (the hint names the missed critter's correct place); art and voice only. Tier: existing-game fix: typecheck, that game's tests, one filtered play and a portrait screenshot, `fingerdemo` once.
+1. **Neither mat, a hint on the critter she missed, and worked examples — built.** The hint landed 2026-10-14, examples in [PR #418](https://github.com/rjdunlap/neo/pull/418), and the leaf mat at levels 2, 3 and 5 in [PR #423](https://github.com/rjdunlap/neo/pull/423) (2026-10-15). Correct outside drops are explicit, bare grass stays free, and hints, completion and the ghost finger include the mat. [Verification](../VERIFICATION.md#2026-10-15--critter-sort-neither-mat).
 2. **Fresh rules** from existing art (single-animal rules for easy entry only), with the split test. Tier: rules (typecheck and that game's tests).
 3. **Level 6 and the preschool opening** (level 6 for pre-K built 2026-10-14 with `order` [6, 1, 2, 3] and `entryLevels` [6]; the preschool row waits on decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
-4. **Level 7 Where does the new one go?** Needs slice 1. Same tier.
+4. **Level 7 Where does the new one go?** Slice 1 is built. Same tier.
 5. **Level 8 A new sign.** Same tier.
 6. **Level 9 This but not that.** Same tier.
 7. **Level 11 How many?** Same tier; a count badge screenshot.
@@ -116,6 +116,6 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 
 ## What was built in this session
 
-On 2026-10-14 a build session (`claude/critter-sort-just-a-few`) added level 6 for pre-K and the `hintFor` fix; checks in [VERIFICATION](../archive/VERIFICATION-2026-10-14.md#2026-10-14--critter-sort-level-6-just-a-few-and-the-missed-critter-hint). On 2026-10-16 a build session (`claude/critter-sort-worked-example`, [PR #418](https://github.com/rjdunlap/neo/pull/418)) added the worked example at levels 1, 2, 3 and 5 (`SortPlan.example`/`fitting`, `examplePlaces`, `exampleIndices`; voice `sort.example`/`sort.examples`); the neither mat is not built. The deep dive session itself:
+On 2026-10-14 a build session (`claude/critter-sort-just-a-few`) added level 6 for pre-K and the `hintFor` fix; checks in [VERIFICATION](../archive/VERIFICATION-2026-10-14.md#2026-10-14--critter-sort-level-6-just-a-few-and-the-missed-critter-hint). On 2026-10-16 a build session (`claude/critter-sort-worked-example`, [PR #418](https://github.com/rjdunlap/neo/pull/418)) added the worked example at levels 1, 2, 3 and 5 (`SortPlan.example`/`fitting`, `examplePlaces`, `exampleIndices`; voice `sort.example`/`sort.examples`). On 2026-10-15, `codex/critter-sort-neither-mat` ([PR #423](https://github.com/rjdunlap/neo/pull/423)) completed slice 1 with the explicit mat, spoken reasons and mat-aware hints/completion/bot. The deep dive session itself:
 
 Nothing: a deep dive session is research and ideation only. Links and `git diff --check` ran. The genre sources were read through search summaries, not opened in full.

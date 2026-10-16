@@ -138,8 +138,12 @@ export function exampleIndices(plan: SortPlan, round: SortRound): number[] {
   return examplePlaces(plan.mode).map((place) => round.critters.findIndex((c) => placeOf(c, round.rules, not) === place));
 }
 
-/** The critter the hint points at: the one she just missed, else the first still to place. */
-export function hintFor<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], missed: S, rules: readonly Rule[], not = false): S | null {
+/** The younger one-hoop entries keep their free leave-it-out choice. */
+export const hasNeitherMat = (mode: SortMode): boolean => mode === 'two' || mode === 'venn' || mode === 'not';
+
+/** The critter the hint points at: the one she just missed, including the mat when it is in play. */
+export function hintFor<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], missed: S, rules: readonly Rule[], not = false, mat = false): S | null {
+  if (mat) return missed.placed ? sorters.find((s) => !s.placed) ?? null : missed;
   if (placeOf(missed.c, [...rules], not) !== 'out') return missed;
   return sorters.find((x) => !x.placed && placeOf(x.c, [...rules], not) !== 'out') ?? null;
 }
@@ -170,8 +174,28 @@ export function placeAt(centers: readonly Point[], x: number, y: number): Place 
   return inA && inB ? 'both' : inA ? 'left' : inB ? 'right' : 'out';
 }
 
+/** A wide leaf mat below the hoops, clear of the loose critters and corner guide. */
+export function neitherMat(centers: readonly Point[]): Point {
+  return { x: (centers[0].x + centers[centers.length - 1].x) / 2, y: centers[0].y + HOOP_R + 85 };
+}
+
+export const MAT_RX = 170;
+export const MAT_RY = 60;
+
+/** Bare grass is a free put-down; only the pictured mat is an explicit outside answer. */
+export function sortPlaceAt(centers: readonly Point[], mode: SortMode, x: number, y: number): Place | null {
+  const hoop = placeAt(centers, x, y);
+  if (hoop !== 'out' || !hasNeitherMat(mode)) return hoop === 'out' ? null : hoop;
+  const mat = neitherMat(centers);
+  return ((x - mat.x) / MAT_RX) ** 2 + ((y - 50 - mat.y) / MAT_RY) ** 2 <= 1 ? 'out' : null;
+}
+
 /** A good spot inside a part of the diagram for a critter's feet (`k` spreads several apart; 1 is the middle of the part). */
 export function spotFor(centers: readonly Point[], mode: SortMode, place: Place, k = 0): Point {
+  if (place === 'out') {
+    const mat = neitherMat(centers);
+    return { x: mat.x + (k % 4) * 64 - 96, y: mat.y + 50 };
+  }
   const jitter = (k % 3) * 64 - 64;
   if (place === 'both') return { x: (centers[0].x + centers[1].x) / 2, y: centers[0].y + 40 + jitter * 0.6 };
   const c = centers[place === 'right' ? 1 : 0];
@@ -181,12 +205,12 @@ export function spotFor(centers: readonly Point[], mode: SortMode, place: Place,
 
 /**
  * What a capable child does next: carry the first critter still on the grass that belongs in a hoop to the middle of
- * its part of the diagram. A critter that fits neither rule stays where it is, so it is never carried. The ghost finger follows this.
+ * its part of the diagram, including the leaf mat where present. The ghost finger follows this.
  */
-export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[], not = false): { who: S; place: Place } | undefined {
+export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[], not = false, mat = false): { who: S; place: Place } | undefined {
   for (const who of sorters) {
     const place = placeOf(who.c, [...rules], not);
-    if (!who.placed && place !== 'out') return { who, place };
+    if (!who.placed && (mat || place !== 'out')) return { who, place };
   }
   return undefined;
 }

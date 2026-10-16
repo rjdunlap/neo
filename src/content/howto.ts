@@ -1277,12 +1277,23 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { from: 6, to: 6, text: 'One critter is already in the hoop. Drag the other critter that fits the sign into it.' },
       { to: 1, text: 'One critter is already in the hoop. Drag every other critter that fits the sign into it.' },
-      { from: 2, to: 2, text: 'One critter is already in each hoop. Drag each other critter into the hoop where it fits; some fit neither.' },
-      { from: 3, to: 3, text: 'One critter is already in the middle, where the hoops overlap: it fits both rules. Drag the others to where they fit.' },
+      { from: 2, to: 2, text: 'One critter is already in each hoop. Drag each other critter into the hoop where it fits; critters that fit neither go on the leaf mat.' },
+      { from: 3, to: 3, text: 'One critter is already in the middle, where the hoops overlap: it fits both rules. Drag the others to where they fit; critters that fit neither rule go on the leaf mat.' },
       { from: 4, to: 4, text: 'Look at the sorted pictures, work out the rule, then tap the picture that shows it.' },
-      { from: 5, to: 5, text: 'The red line means not. One critter is already in the hoop. Drag every other critter that is not like the picture into it.' },
+      { from: 5, to: 5, text: 'The red line means not. One critter is already in the hoop. Drag every other critter that is not like the picture into it. Critters that fit the picture go on the leaf mat.' },
     ],
-    finish: 'The round ends when every critter has been sorted.',
+    finish: [
+      { to: 1, text: 'The round ends when every critter that fits is in the hoop; the others can stay on the grass.' },
+      { from: 2, to: 3, text: 'The round ends when every critter is in a hoop or on the leaf mat.' },
+      { from: 4, to: 4, text: 'The round ends when you pick the rule that matches the sorted critters.' },
+      { from: 5, to: 5, text: 'The round ends when every critter is in the not hoop or on the leaf mat.' },
+      { from: 6, to: 6, text: 'The round ends when the other critter that fits is in the hoop; the last one can stay on the grass.' },
+    ],
+    note: [
+      { to: 3, text: 'Putting a critter back on bare grass is a free try. Two wrong drops glow a useful place and critter.' },
+      { from: 4, to: 4, text: 'Two wrong guesses make the correct rule picture larger.' },
+      { from: 5, text: 'Putting a critter back on bare grass is a free try. Two wrong drops glow a useful place and critter.' },
+    ],
   },
   'treasure-map': {
     goal: 'Use the grid to find or place things.',

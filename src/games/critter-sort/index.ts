@@ -12,7 +12,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { exampleIndices, fits, HOOP_R, hintFor, hoopCenters, makeRound, nextToSort, placeAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
+import { exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, neitherMat, hoopCenters, makeRound, nextToSort, sortPlaceAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
@@ -77,6 +77,7 @@ class CritterSort implements Game {
 
   private readonly backdrop: Backdrop;
   private readonly hoops = new Graphics();
+  private readonly mat = new Graphics();
   private readonly signs = new Container();
   private readonly glow = new Graphics();
   private view: View;
@@ -90,8 +91,9 @@ class CritterSort implements Game {
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.3, clouds: 2, sun: false, seed: 44 }, ctx.view);
     this.glow.eventMode = 'none';
     this.hoops.eventMode = 'none';
+    this.mat.eventMode = 'none';
     this.signs.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.hoops, this.signs, this.glow);
+    ctx.stage.addChild(this.backdrop, this.hoops, this.mat, this.signs, this.glow);
   }
 
   start() {
@@ -109,6 +111,15 @@ class CritterSort implements Game {
     const g = this.hoops.clear();
     const colors = [swatch.orange, swatch.teal];
     this.centers().forEach((c, i) => g.circle(c.x, c.y, HOOP_R).fill({ color: colors[i].light, alpha: 0.45 }).stroke({ width: 10, color: colors[i].fill }));
+    this.mat.clear();
+    if (hasNeitherMat(this.plan.mode)) {
+      const p = neitherMat(this.centers());
+      this.mat.ellipse(p.x, p.y, MAT_RX, MAT_RY).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line });
+      for (const dx of [-125, -75, -25, 25, 75, 125]) {
+        this.mat.ellipse(p.x + dx, p.y, 30, 46).fill({ color: swatch.green.fill, alpha: 0.6 });
+        this.mat.moveTo(p.x + dx, p.y + 35).lineTo(p.x + dx, p.y - 35).stroke({ width: 3, color: swatch.green.line, alpha: 0.6 });
+      }
+    }
     this.signs.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.centers().forEach((c, i) => {
       const sign = new Container();
@@ -128,6 +139,18 @@ class CritterSort implements Game {
       if (s.drag) s.drag.home = s.home;
       if (!s.drag?.dragging) s.node.position.set(s.home.x, s.home.y);
     });
+    const placedCounts: Record<Place, number> = { left: 0, right: 0, both: 0, out: 0 };
+    for (const s of this.sorters) {
+      if (!s.placed) continue;
+      const k = placedCounts[s.placed]++;
+      if (s.placed === 'out' && !hasNeitherMat(this.plan.mode)) {
+        const xs = spread(this.sorters.filter((x) => x.placed === 'out').length, 190, v.w - 50, 150);
+        s.node.position.set(xs[k], Math.min(v.h * 0.42 + HOOP_R + 120, v.h - 150));
+      } else {
+        const p = this.spotFor(s.placed, k);
+        s.node.position.set(p.x, p.y);
+      }
+    }
     const os = spread(this.options.length, 220, v.w - 120, 190);
     this.options.forEach((o, i) => o.node.position.set(os[i], v.h - 90));
   }
@@ -138,18 +161,18 @@ class CritterSort implements Game {
     if (!this.hinting || this.busy) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
     const target = this.spotFor(placeOf(this.hinting.c, this.round.rules, this.plan.mode === 'not'));
-    g.circle(target.x, target.y, 60).stroke({ width: pulse, color: swatch.yellow.fill });
+    g.circle(target.x, target.y - 50, 60).stroke({ width: pulse, color: swatch.yellow.fill });
     g.circle(this.hinting.node.x, this.hinting.node.y - 50, 70).stroke({ width: pulse, color: swatch.yellow.fill });
   }
 
-  /** The ghost finger on the how-to card: carry each critter that fits a rule to its part of the diagram, or tap the picture of the rule. */
+  /** The ghost finger carries critters to hoops and the leaf mat, or taps the picture of the rule. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
     if (this.plan.mode === 'guess') {
       const option = this.options.find((o) => o.rule === ruleToTap(this.round));
       return option ? { tap: { on: option.node } } : null;
     }
-    const next = nextToSort(this.sorters.filter((s) => !s.drag?.dragging && !s.node.destroyed), this.round.rules, this.plan.mode === 'not');
+    const next = nextToSort(this.sorters.filter((s) => !s.drag?.dragging && !s.node.destroyed), this.round.rules, this.plan.mode === 'not', hasNeitherMat(this.plan.mode));
     if (!next?.who.drag) return null;
     const spot = this.spotFor(next.place, 1);
     return { drag: { on: next.who.node }, to: { on: this.ctx.stage, x: spot.x, y: spot.y } };
@@ -207,20 +230,6 @@ class CritterSort implements Game {
       }
     }
     this.resize(this.view);
-    // Sorted critters stand in their places (guess level): in the hoop, or outside it on the grass.
-    let inK = 0;
-    let outK = 0;
-    for (const s of this.sorters) {
-      if (s.placed === null) continue;
-      if (s.placed === 'out') {
-        const xs = spread(this.sorters.filter((x) => x.placed === 'out').length, 190, this.view.w - 50, 150);
-        s.node.position.set(xs[outK++], this.view.h * 0.42 + HOOP_R + 120);
-        s.node.y = Math.min(s.node.y, this.view.h - 150);
-      } else {
-        const p = this.spotFor(s.placed, inK++);
-        s.node.position.set(p.x, p.y);
-      }
-    }
     this.busy = false;
     const index = this.index;
     await this.instruct();
@@ -242,19 +251,23 @@ class CritterSort implements Game {
 
   private drop(s: Sorter, x: number, y: number): boolean {
     if (this.busy || this.finished) return false;
-    const at = placeAt(this.centers(), x, y);
+    const at = sortPlaceAt(this.centers(), this.plan.mode, x, y);
     // Back on the grass: just put down again, never a mistake.
-    if (at === 'out') return false;
+    if (at === null) return false;
     const right = placeOf(s.c, this.round.rules, this.plan.mode === 'not');
     if (at === right) {
       s.placed = at;
       if (s.drag) s.drag.enabled = false;
-      sfx.pop(6);
+      sfx.pop(6 + this.sorters.filter((x) => x.placed).length);
+      if (at === 'out') {
+        sfx.whoosh();
+        void this.ctx.say(this.plan.mode === 'not' ? 'sort.mat.not' : 'sort.mat.yes', { who: KIND_WORDS[s.c.kind], rule: RULE_WORDS[this.round.rules[0]] });
+      }
       s.node.cheer();
       this.wrongs = 0;
       if (this.hinting === s) this.hinting = null;
       this.resize(this.view);
-      if (this.sorters.every((x) => x.placed || placeOf(x.c, this.round.rules, this.plan.mode === 'not') === 'out')) void this.roundDone();
+      if (this.sorters.every((x) => x.placed || (!hasNeitherMat(this.plan.mode) && placeOf(x.c, this.round.rules, this.plan.mode === 'not') === 'out'))) void this.roundDone();
       return true;
     }
     this.misses++;
@@ -264,7 +277,7 @@ class CritterSort implements Game {
     void this.explain(s, at);
     if (this.wrongs >= 2 && !this.hinting) {
       this.hints++;
-      this.hinting = hintFor(this.sorters, s, this.round.rules, this.plan.mode === 'not');
+      this.hinting = hintFor(this.sorters, s, this.round.rules, this.plan.mode === 'not', hasNeitherMat(this.plan.mode));
     }
     return false;
   }
@@ -273,6 +286,10 @@ class CritterSort implements Game {
   private explain(s: Sorter, at: Place) {
     const who = KIND_WORDS[s.c.kind];
     const rules = this.round.rules;
+    if (at === 'out' && this.plan.mode !== 'not') {
+      const rule = rules.find((r) => fits(s.c, r))!;
+      return this.ctx.say('sort.mat.hoop', { who, rule: RULE_WORDS[rule] });
+    }
     if (this.plan.mode === 'not') return this.ctx.say(fits(s.c, rules[0]) ? 'sort.not.in' : 'sort.not.out', { who, rule: RULE_WORDS[rules[0]] });
     const wantA = at === 'left' || at === 'both';
     const wantB = at === 'right' || at === 'both';
