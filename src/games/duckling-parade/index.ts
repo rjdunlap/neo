@@ -18,7 +18,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 6 },
   prek: { min: 4, max: 8 },
-  school: { min: 9, max: 10 },
+  school: { min: 9, max: 11 },
 };
 
 const MAMA_SCALE = 0.5;

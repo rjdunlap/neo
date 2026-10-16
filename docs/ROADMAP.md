@@ -49,7 +49,6 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 
 8. **`chain-reaction`, level 7 *Tap to turn***. New-levels tier. [Dive slice 3](deep-dives/chain-reaction.md#build-slices-in-order)
 9. **`clap-syllables`, level 6 *Beat train***, then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
-11. **`duckling-parade`, ABB at level 11** (school, the existing pattern interaction). New-levels tier. [Dive slice 4](deep-dives/duckling-parade.md#build-slices-in-order)
 12. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
 13. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
 14. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
