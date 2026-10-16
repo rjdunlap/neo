@@ -80,10 +80,10 @@ describe('Bumper Garden', () => {
     expect(levelsInOrder(bumperGarden.levels('preschool'))).toEqual([2, 3, 4]);
   });
 
-  it('makes reproducible count-on and count-back sequences with one reachable flower for each target', () => {
+  it.each(TABLE_IDS)('makes reproducible count-on and count-back sequences with reachable %s targets', table => {
     const starts = new Set<number>();
     const backs = new Set<number>();
-    for (const table of TABLE_IDS) for (const level of [6, 9]) for (let seed = 1; seed <= 40; seed++) {
+    for (const level of [6, 9]) for (let seed = 1; seed <= 40; seed++) {
       const plan = planFor(level, new Rng(seed));
       expect(plan).toEqual(planFor(level, new Rng(seed)));
       const numbers = orderNumbers(plan);
@@ -115,7 +115,7 @@ describe('Bumper Garden', () => {
     expect(backs.size).toBe(4);
     expect(orderNumbers(planFor(6))).toEqual([3, 4, 5]);
     expect(orderNumbers(planFor(9))).toEqual([5, 4, 3, 2, 1]);
-  });
+  }, 15000);
 
   it('bats the ladybug the way a flipper should: near the pivot it goes across, near the tip back the other way, nothing out of reach, and the chance is asked for only when it connects', () => {
     const ball = (x: number, y: number, vy = 200): Ball => ({ x, y, vx: 0, vy, r: TABLE.ball });
@@ -156,11 +156,11 @@ describe('Bumper Garden', () => {
     expect(tip()).toEqual(rest);
   });
 
-  it("plans the ghost finger's flip so the ladybug touches a flower that is still waiting, or else stays up for another go, and plans none when it will touch one anyway", () => {
+  it.each(TABLE_IDS)("plans the ghost finger on %s to reach a waiting flower or stay up longer, and needs no flip when it reaches one anyway", table => {
     let planned = 0;
     let touchedOne = 0;
     let free = 0;
-    for (const table of TABLE_IDS) for (const level of [3, 4, 5, 6, 9]) {
+    for (const level of [3, 4, 5, 6, 9]) {
       const plan = planFor(level);
       for (let seed = 1; seed <= 6; seed++) {
         const bumpers = makeBumpers(plan, new Rng(seed), table);
@@ -207,5 +207,5 @@ describe('Bumper Garden', () => {
     expect(planned).toBeGreaterThan(5);
     expect(free).toBeGreaterThan(0);
     expect(touchedOne / planned).toBeGreaterThan(0.4);
-  });
+  }, 15000);
 });

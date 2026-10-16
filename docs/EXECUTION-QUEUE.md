@@ -36,7 +36,8 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 - Prior proof reused: #403 typecheck, 13 focused rules, both room play-throughs, portrait reviews and CI passed; tree clean/servers stopped. Device checks open. Final **39% / 42%**, resets `1792119304` / `1792650157`, vs dispatch 22% / 39% same identities: aggregate **17 / 3 points**, reconciled once below.
 - Overlap: other Neo chats idle; no open PR or competing table claim. Dot Link #404 merged; its three dirty implementation files hash-identical to origin/main, so no unpublished work inferred; preserve checkout. Other worktrees clean, historical Bumper branch preserved; coordinator servers none.
 - Worker scope/pre-code/pre-verification readings: **68% / 47%, 70% / 47%, 72% / 47%**, reset identities unchanged; ordinary usage permitted. Typecheck, 16 expanded rule tests, 18 how-to tests and build pass; seeded Pond/Hive level-5 play passed (6 launches/3 misses/1 hint and 3/2/1), both portraits reviewed, saved results/stickers and no page errors. Owned server stopped; wider/offline/controller/iPad/audio/child checks not run. Pre-publication usage **76% / 48%**, same resets.
-- Next: worker publishes/merges verified #410 and reports after-commit usage here, then stops. Coordinator confirms publication and reconciles final usage once; no next slice authorized here.
+- Publication: #410 merged at `8d34240`; CI blocked deployment on two 5 s expanded-rule timeouts (1,351 other tests passed). Follow-up `codex/bumper-table-ci` splits those loops by table, retains assertions/samples and gives exhaustive cases 15 s; all 20 rules pass locally.
+- Next: worker publishes/merges the test-only CI fix, confirms deployment and reports after-commit usage here, then stops. Coordinator confirms publication and reconciles final usage once; no next slice authorized here.
 
 ## Usage observations
 

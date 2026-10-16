@@ -6,7 +6,8 @@
 - Passed typecheck, 16 focused rules (reachability, no trapped launches at 60/120 Hz, fair colors/numbers/spacing, seeded reproduction, ghost-finger planning) and 18 how-to tests. Build passed with existing chunk warning. New how-to note's LevelLine shape corrected after initial type/test failure.
 - Passed `GAME_URL=http://localhost:5188 BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=5 BUMPER_TABLES=pond,hive npm run test:browser`: Pond 6 launches/3 misses/1 hint; Hive 3/2/1; flips, supported completion, saved result/sticker and no page errors. Isolated contexts injected known round RNG seeds.
 - Reviewed portrait `test-results/browser/bumper-garden-pond-5.png` and `bumper-garden-hive-5.png`: clear columns/ring, numbers, controls and pet clearance. Owned Vite stopped; links/diff checked. After play only help text, docs and exact-step rule coverage changed.
-- Not run: wider suites, standalone fingerdemo, offline, real controller/iPad/audio/child judgment. Shared physics/navigation/persistence unchanged; device comfort and sound quality remain open.
+- CI on merge `8d34240` passed 1,351 other tests but two expanded physics loops exceeded 5 s. Follow-up partitions both by table with a 15 s exhaustive-case budget; all 20 resulting rules passed locally (same assertions/samples). No product changes; prior play/build proof retained.
+- Not run: wider browser suites, standalone fingerdemo, offline, real controller/iPad/audio/child judgment. Shared physics/navigation/persistence unchanged; device comfort and sound quality remain open.
 
 ## 2026-10-15 — Dot Link marks in the dots
 
