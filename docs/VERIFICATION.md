@@ -328,3 +328,8 @@ Reconciled completed Bumper Garden [#410](https://github.com/rjdunlap/neo/pull/4
 ### 2026-10-16 — Critter Crossing not-entry dispatch
 
 Reconciled completed [flutter #416](https://github.com/rjdunlap/neo/pull/416), confirmed merge and released its slot; Critter Sort #418 is merged. Fresh allowance and overlap admitted only [Critter Crossing slice 4](deep-dives/critter-crossing.md#build-slices-in-order) to worker `01a1431d-314b-7163-8fac-e54497cdcd77`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Critter Sort level-7 dispatch
+
+Reconciled completed [visible not #422](https://github.com/rjdunlap/neo/pull/422), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 4](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a14354-252d-7ee2-a076-513abb65a3af`; independent subject research has no implementation overlap. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
