@@ -21,6 +21,7 @@ import { label } from '../../ui/text';
 import type { App } from '../App';
 import { ScreenKeys, type FocusSpot } from '../screen-keys';
 import { Scene } from '../Scene';
+import { drawBarnyard } from './barnyard';
 
 /** Landmarks are drawn at the largest size a land uses and scaled down when a crowded land needs smaller ones. */
 const BOX = { w: 170, h: 155 };
@@ -63,6 +64,10 @@ export class LandScene extends Scene {
   layout: LandLayout | null = null;
 
   private backdrop!: Backdrop;
+  private readonly barnyard: Graphics | null;
+  /** Greeting notes advance on scene time, so leaving or pausing cannot leave a timer behind. */
+  private motifStep = -1;
+  private motifTime = 0;
   private readonly field = new Container();
   private readonly glow = new Graphics();
   private glowLeft = 0;
@@ -85,6 +90,7 @@ export class LandScene extends Scene {
   ) {
     super(app);
     this.land = landFor(id);
+    this.barnyard = id === 'barnyard' ? new Graphics() : null;
     this.band = store.data.profile.band;
     const host = makeHost(this.land);
     this.host = host.node;
@@ -97,7 +103,12 @@ export class LandScene extends Scene {
     this.heading.text = this.land.name;
     this.backdrop = this.track(new Backdrop(this.land.backdrop, this.view));
     this.glow.eventMode = 'none';
-    this.content.addChild(this.backdrop, this.glow, this.field);
+    this.content.addChild(this.backdrop);
+    if (this.barnyard) {
+      this.barnyard.eventMode = 'none';
+      this.content.addChild(this.barnyard);
+    }
+    this.content.addChild(this.glow, this.field);
     const build = (mods: typeof GAMES, into: Landmark[]) => {
       for (const mod of mods) {
         const mark = makeLandmark(mod, BOX, store.isNew(mod.id), spotRect({ x: 0, y: 0 }, BOX));
@@ -147,6 +158,7 @@ export class LandScene extends Scene {
     this.heading.position.set(v.w / 2, 65);
     this.pip.position.set(92, v.h - 12);
     if (!layout) return;
+    if (this.barnyard) drawBarnyard(this.barnyard, layout, v, this.backdrop.groundY);
     this.scale0 = layout.box.w / BOX.w;
     for (const mark of [...this.mine, ...this.older]) mark.node.visible = false;
     this.showing.forEach((mark, i) => {
@@ -166,6 +178,11 @@ export class LandScene extends Scene {
     music.play(this.land.music);
     const first = !greeted.has(this.id);
     greeted.add(this.id);
+    if (first && this.barnyard) {
+      sfx.marimba(this.land.music.range[0], 0.24);
+      this.motifStep = 1;
+      this.motifTime = 0;
+    }
     // Each line waits for the one before; a tap that leaves cancels speech, so check before speaking on.
     void voice.say(first ? this.land.line : 'hub.pick').then(() => {
       if (first && !this.leaving) return voice.say('hub.pick');
@@ -249,6 +266,14 @@ export class LandScene extends Scene {
   update(dt: number) {
     super.update(dt);
     this.keys.update(dt);
+    if (this.motifStep >= 0 && !this.leaving) {
+      this.motifTime += dt;
+      if (this.motifTime >= 0.16) {
+        this.motifTime -= 0.16;
+        sfx.marimba(this.land.music.range[0] + this.motifStep * 2, 0.24);
+        if (++this.motifStep === 3) this.motifStep = -1;
+      }
+    }
     // A soft glow under the suggested game for a moment.
     this.glowLeft = Math.max(0, this.glowLeft - dt);
     const mark = this.suggested ? this.showing.find((m) => m.mod.id === this.suggested) : undefined;
@@ -260,6 +285,7 @@ export class LandScene extends Scene {
   }
 
   exit() {
+    this.motifStep = -1;
     voice.stop();
   }
 

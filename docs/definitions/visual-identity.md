@@ -1,12 +1,12 @@
 # Visual identity V1–V2: a Barnyard sheet and an Animal Snack pilot
 
-**Definition, 2026-10-15 (docs only).** Roadmap [chunk 21](../ROADMAP.md#chunks), source pilots [V1 and V2](../FAMILY-EXPERIENCE.md#visual-character-and-game-feel). This turns two of the review's pilots into build slices: an art and feedback sheet for one land (the Barnyard) and a touch-acknowledgment pilot in one game (Animal Snack). V3–V6 are not defined here. V4's Animal Snack example ("the fed friend chews its own way") already shipped as food eaten its own way ([PR #366](https://github.com/rjdunlap/neo/pull/366)), so a V4 slice would need a different game.
+**Definition, 2026-10-15; slices 1–2 built 2026-10-16.** Roadmap [chunk 21](../ROADMAP.md#chunks), source pilots [V1 and V2](../FAMILY-EXPERIENCE.md#visual-character-and-game-feel). This turns two of the review's pilots into build slices: an art and feedback sheet for one land (the Barnyard) and a touch-acknowledgment pilot in one game (Animal Snack). V3–V6 are not defined here. V4's Animal Snack example ("the fed friend chews its own way") already shipped as food eaten its own way ([PR #366](https://github.com/rjdunlap/neo/pull/366)), so a V4 slice would need a different game.
 
 Nothing here changes levels, bands, saves, stickers, misses, hints or the bot. Each build slice below is one game or one scene, uses existing helpers, and adds no shared helper until a second implemented use needs it (the review's rule).
 
 ## V1 · The Barnyard as a place
 
-### What exists (read from `origin/main`)
+### Baseline at definition (read from `origin/main`, 2026-10-15)
 
 | Where | What it draws today |
 | --- | --- |
@@ -73,7 +73,7 @@ Boundaries: an acknowledged touch does not queue a feeding, does not count a mis
 ## Build slices, in order
 
 1. **V2 · Animal Snack busy-touch acknowledgment** (built 2026-10-16, [#446](https://github.com/rjdunlap/neo/pull/446)). The pilot above. Tier: existing game, unchanged interaction: `npm run typecheck`, Animal Snack's rule tests, one filtered regression play (`WOODS_ONLY=snack`) with a rapid second tap at level 2 and at level 3 that checks misses, hints and fed count are unchanged. `fingerdemo` is not needed (the bot's action is unchanged). Whether the old window felt laggy and whether the wiggle reads as "wait" stay the dive's person check (decision 7).
-2. **V1 · Barnyard land scene: barn, fence edge, pail and motif** (ready). Land scene only, no game changes. Tier: shared visuals, no navigation change: typecheck, unit tests (the lands layout test must still fit every band in four views), `npm run build` (shared `src/art/lands.ts` or `LandScene` changes), and one small probe that opens the Barnyard and takes a portrait and a landscape screenshot. The `world` suite has no filter and navigation is unchanged, so it is not run.
+2. **V1 · Barnyard land scene: barn, fence edge, pail and motif** (built 2026-10-16, [#460](https://github.com/rjdunlap/neo/pull/460)). Land scene only, no game changes. Tier: shared visuals, no navigation change: typecheck, unit tests (the lands layout test must still fit every band in four views), `npm run build` (shared `src/art/lands.ts` or `LandScene` changes), and one small probe that opens the Barnyard and takes a portrait and a landscape screenshot. The `world` suite has no filter and navigation is unchanged, so it is not run.
 3. **V1 · a far barn in one game background**, one game per slice, Animal Snack or Egg Catch first. Tier: existing game: typecheck, rule tests, one portrait and one landscape screenshot, one filtered regression play. Peekaboo Barn is excluded; Duckling Parade keeps its meadow treatments.
 4. **Apply V2's lesson to one other tap game** only after a person has played slice 1 (the review's rule).
 
