@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Critter Sort level 7 newcomer (2026-10-15)
+
+[PR #426](https://github.com/rjdunlap/neo/pull/426), `codex/critter-sort-seven`, dispatch `critter-sort-seven-20261016T060833Z`: school-only stable ID 7 adds three already-sorted diagrams with one newcomer to place. Every region retains a visible example; all four newcomer answers occur across seeds. Reuses the leaf mat, spoken wrong-place reasons, two-miss hint and ghost-finger drag. School order `[2, 3, 4, 5, 7]` preserves IDs and pins; pre-K remains `[6, 1, 2, 3]`. [Proof](../VERIFICATION.md#2026-10-15--critter-sort-level-7-newcomer). Levels 8–11, new bands, third feature, kept creations and save changes excluded; device/child evidence open.
+
+
 ### Critter Crossing visible not entry (2026-10-15)
 
 [PR #422](https://github.com/rjdunlap/neo/pull/422), `codex/critter-not-entry`, dispatch `critter-not-entry-20261016T050833Z`: appended stable ID 8 shows the pictured rule with a red slash and reuses spoken `cross.visible` with the negated rule. Pre-K follows `[1, 8, 2, 3]`, with `entryLevels: [8]`; school stays 2–7, existing IDs/pins retain their meaning. Two visible rounds, gentle refusal and glow after two misses, shell reward and passing-only ghost finger. Scoped how-to excludes hidden-rule instructions at 8. [Proof](../VERIFICATION.md#2026-10-15--critter-crossing-visible-not-entry). Preschool, a third feature and Be the gate remain excluded; iPad speech and child interpretation remain open.
@@ -21,7 +26,7 @@
 
 ### Bumper Garden flipper-ready ring (2026-10-15)
 
-[PR #406](https://github.com/rjdunlap/neo/pull/406), `codex/bumper-garden-ready-ring`: deep-dive slice 2 adds a palette Graphics ring at the nearer flipper tip for levels 2–5, only while the ladybug is flying, falling and within the actual `kickBall` reach. The ring is noninteractive; physics, scoring, hints and RNG are unchanged. The how-to note is scoped to levels 2–5. Typecheck, 24 focused tests, build, a level-2 cue/input/completion regression and portrait review passed; ghost finger and broader suites were not rerun. [Proof](../VERIFICATION.md#2026-10-15--bumper-garden-flipper-ready-ring). Pond and Hive tables remain the next separate slice; iPad/child timing-cue comfort remains open.
+[PR #406](https://github.com/rjdunlap/neo/pull/406), `codex/bumper-garden-ready-ring`: deep-dive slice 2 adds a palette Graphics ring at the nearer flipper tip for levels 2–5, only while the ladybug is flying, falling and within the actual `kickBall` reach. The ring is noninteractive; physics, scoring, hints and RNG are unchanged. The how-to note is scoped to levels 2–5. Typecheck, 24 focused tests, build, a level-2 cue/input/completion regression and portrait review passed; ghost finger and broader suites were not rerun. [Proof](VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-flipper-ready-ring). Pond and Hive tables remain the next separate slice; iPad/child timing-cue comfort remains open.
 
 
 ### Goodnight Room tent and boat cabin (2026-10-15)

@@ -6134,6 +6134,25 @@ async function woodsBatch() {
         continue;
       }
       const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map((s) => (s.placed ? 'example' : L.placeOf(s.c, g.round.rules, g.plan.mode === 'not'))); });
+      if (level === 7) {
+        const i = await page.evaluate(() => neo.scene.game.round.newcomer);
+        assert.equal(places.filter(p => p === 'example').length, 5);
+        assert.equal(await page.evaluate(() => neo.scene.game.sorters.filter(s => s.drag).length), 1);
+        if (n === 0) {
+          await page.evaluate(async i => { const g = neo.scene.game; await kit.dragTo(g.sorters[i].node, g.ctx.stage.toGlobal({ x: neo.view.w / 2, y: neo.view.h - 5 }), 14); }, i);
+          await settle();
+          assert.deepEqual(await counts(), [0, 0]);
+          const wrong = places[i] === 'left' ? 'right' : 'left';
+          await dropTo(i, wrong); await dropTo(i, wrong);
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.equal(await page.evaluate(i => neo.scene.game.hinting === neo.scene.game.sorters[i], i), true);
+          await screenshot('critter-sort-7-hint');
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+          await screenshot('critter-sort-7-portrait');
+        }
+        await dropTo(i, places[i]);
+        continue;
+      }
       const mat = ['two', 'venn', 'not'].includes(mode);
       // Worked examples start in their places; one is in every round.
       assert.ok(places.includes('example'));

@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Critter Sort level 7 (#426):** on an iPad in both orientations, hear the newcomer instruction and reasons; check that the sorted examples help identify left/right/both/neither and that one movable newcomer is clear. Desktop completion and screenshots do not establish device speech or child understanding.
+
 - [ ] **Critter Sort leaf mat (#423):** at levels 2, 3 and 5 on an iPad in both orientations, hear the mat instructions and correct/wrong-drop reasons, check drag reach and the body-centered hint, and observe whether a child understands the mat as the explicit outside answer. Browser completion and portrait review do not establish device speech or independent understanding.
 
 - [ ] **Critter Crossing visible not entry (ID 8, #422):** hear the reused negated rule on iPad and observe whether a child reads the picture/red slash as “not” before the hidden-rule levels. Check touch reach and the demonstration in both orientations; browser play does not establish learning or device speech.

@@ -78,7 +78,7 @@ IDs are appended, never renumbered. 6 is the easy entry; 7–11 are the new top.
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 6 | Just a few (**pre-K part built 2026-10-14**; preschool waits on decision 1) | preschool, pre-K (an entry placed before 1) | 3 critters, one hoop, the rule is "wearing a hat" or a single-animal color; one is already inside | Which of the two left critters belongs | A wrong drop is a miss with the spoken reason; one hint glow on the right one | Every round has 1–2 critters that fit, none ambiguous | New plan only; voice reuses `sort.one`; ghost finger unchanged |
-| 7 | Where does the new one go? | school (pre-K optional) | Hoops already sorted by the shown rules; one new critter appears at the foot | The part of the diagram the newcomer belongs in, including "neither" | The usual spoken reason; after two misses the right part glows | The new critter's place is derivable from the shown rules; all four places occur across seeds | Needs the neither mat; new voice line; ghost finger drags the newcomer |
+| 7 | Where does the new one go? (**school built 2026-10-15**) | school (pre-K optional, not built) | Hoops already sorted by the shown rules; one new critter appears at the foot | The part of the diagram the newcomer belongs in, including "neither" | The usual spoken reason; after two misses the right part glows | The new critter's place is derivable from the shown rules; all four places occur across seeds | Needs the neither mat; new voice line; ghost finger drags the newcomer |
 | 8 | A new sign | school | Six critters sorted by one rule; the sign turns over to a second rule and the critters hop out | Move each critter to its place under the new sign | A wrong drop is a miss with the reason; the spoken sign names the new rule every time | The two rules split the same six differently and both leave something in and out | New transition art; voice `sort.again`; bot sorts twice |
 | 9 | This but not that | school | One hoop with sign A and a red-lined sign B inside it | Critters that fit A and not B | Spoken reason names both parts | Every answer exists (at least one in, one fit-A-but-B, one neither) | New sign layout; voice; how-to line |
 | 10 | Pick the signs | school | Critters in the middle; two signs on the table to choose from | Which signs go on the hoops (free), then the sorting by her own rule | Choosing signs is never counted; only dropping a critter against her own signs is a miss | Signs offered always make at least one critter fit each; no pair makes an empty hoop | Needs Decision 3 on whether a creation is kept; no new bot beyond a random choice |
@@ -90,7 +90,7 @@ IDs are appended, never renumbered. 6 is the easy entry; 7–11 are the new top.
 
 ### Easier entries and levels between existing ones
 
-Level 6 is an easy entry appended with a stable ID: preschool `order: [6, 1]`, pre-K `order: [6, 1, 2, 3]` (so the entry is available before the older level 1), school `order: [2, 3, 4, 5, 7, 8, 9, 10, 11]`. `entryLevels: [6]` so birthdays land safely. A pre-K child who has saved level 1 keeps it. Nothing is renumbered.
+Level 6 is an easy entry appended with a stable ID: preschool `order: [6, 1]`, pre-K `order: [6, 1, 2, 3]` (so the entry is available before the older level 1), school currently `order: [2, 3, 4, 5, 7]`; its proposed full ladder is `[2, 3, 4, 5, 7, 8, 9, 10, 11]`. `entryLevels: [6]` so birthdays land safely. A pre-K child who has saved level 1 keeps it. Nothing is renumbered.
 
 ### Left out on purpose
 
@@ -107,7 +107,7 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 1. **Neither mat, a hint on the critter she missed, and worked examples — built.** The hint landed 2026-10-14, examples in [PR #418](https://github.com/rjdunlap/neo/pull/418), and the leaf mat at levels 2, 3 and 5 in [PR #423](https://github.com/rjdunlap/neo/pull/423) (2026-10-15). Correct outside drops are explicit, bare grass stays free, and hints, completion and the ghost finger include the mat. [Verification](../VERIFICATION.md#2026-10-15--critter-sort-neither-mat).
 2. **Fresh rules** from existing art (single-animal rules for easy entry only), with the split test. Tier: rules (typecheck and that game's tests).
 3. **Level 6 and the preschool opening** (level 6 for pre-K built 2026-10-14 with `order` [6, 1, 2, 3] and `entryLevels` [6]; the preschool row waits on decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
-4. **Level 7 Where does the new one go?** Slice 1 is built. Same tier.
+4. **Level 7 Where does the new one go? — built** (school only), [PR #426](https://github.com/rjdunlap/neo/pull/426). Five sorted examples, one newcomer, three diagrams; explicit neither mat and existing mistake/hint/bot support. School order `[2, 3, 4, 5, 7]`; IDs and pins preserved. [Proof](../VERIFICATION.md#2026-10-15--critter-sort-level-7-newcomer).
 5. **Level 8 A new sign.** Same tier.
 6. **Level 9 This but not that.** Same tier.
 7. **Level 11 How many?** Same tier; a count badge screenshot.
