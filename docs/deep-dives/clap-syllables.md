@@ -101,7 +101,7 @@ Phoneme work, rhyme (Rhyme Time), a rhythm timing judge, printed syllables, and 
 1. **More words** (built 2026-10-14; about 12–16 words, with pictures; a dialect exclusion list; spelling and count tests). Unit tests, one portrait screenshot of level 5. Check tier: new content on an existing interaction.
 2. **Visible wait cue in solo** (built 2026-10-15, `claude/clap-syllables-wait-ring`, PR #374; a ring that fills over the 1.5 s pause; no rule change). Unit test on the timing constant; one filtered play. Existing-game tier.
 3. **Level 6, Beat train** (built 2026-10-16, `claude/clap-beat-train`, [PR #449](https://github.com/rjdunlap/neo/pull/449)). New interaction tier: rule tests, one scripted play (first and last level, wrong drop, hint), ghost finger, how-to card.
-4. **Level 8, Longer or shorter?** and **level 9, Clap along (short)** (cheap).
+4. **Level 8, Longer or shorter?** and **level 9, Clap along (short)** (cheap). Level 8 only claimed 2026-10-16 by worker `01a14511-3cbe-7753-a007-323828dbf516`, branch `codex/clap-syllables-comparison`, dispatch `clap-comparison-20261016T141435Z`; draft PR pending. Expected files: clap-syllables logic/runtime/tests, voice/how-to, filtered browser check and game/roadmap/verification/queue documentation. School only; level 9 and all decisions excluded.
 5. Decisions 1–3 before names, a toddler window and level 7.
 
 ## What was built in this session
