@@ -388,3 +388,8 @@ Reconciled completed [Planet Hop #466](https://github.com/rjdunlap/neo/pull/466)
 ### 2026-10-16 — Photo Safari two-clue dispatch
 
 Reconciled completed [texture cleanup #468](https://github.com/rjdunlap/neo/pull/468), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 2](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1465e-cadf-7402-8cd5-676524c857a6`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Photo Safari level-5 dispatch
+
+Reconciled completed [two-clue #470](https://github.com/rjdunlap/neo/pull/470), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 3](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1469d-e439-7542-b9df-31d1c33d9f42`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
