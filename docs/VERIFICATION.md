@@ -6,7 +6,7 @@
 - Opened official standards, primary research and seven reference activities; failed full-paper/lesson-PDF extraction is explicit. No reference games played.
 - Passed `node scripts/check-links.mjs` and `git diff --check`; older log entries archived with inbound links updated.
 - Not run: typecheck, tests, build, browsers or hardware; no code changed. Audience appeal, independent understanding and transfer remain unestablished.
-- Publication authorized explicitly by the developer on 2026-10-16 after the initial approval-review block; integrated current main before the docs-only link/diff checks.
+- [PR #431](https://github.com/rjdunlap/neo/pull/431); publication explicitly authorized on 2026-10-16 after the initial approval-review block. Integrated main `1dea66f`; checks apply to research commit `8384fbd` plus these publication-link edits.
 
 
 ## 2026-10-16 — Critter Sort level 8 A new sign
