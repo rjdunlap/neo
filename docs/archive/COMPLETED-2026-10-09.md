@@ -1025,7 +1025,7 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 
 ## Market Stall more stalls (2026-10-16)
 
-[PR #444](https://github.com/rjdunlap/neo/pull/444), `codex/market-stalls`, completes deep-dive slice 8 (fresh 8): a round seeds a red fruit stall with a pig, purple flower stall with a cat or teal balloon stall with a bear. Existing flower/balloon props have color names for distinct paired orders; the balloon string stays clear of the mat. The original `GOODS` table and sticker RNG/art are retained; payment rules, tags, mat, levels, bands and saves are unchanged. Typecheck, thirteen Market Stall rules/layout/snapshot tests, filtered smoke and three screenshots passed; [verification](../VERIFICATION.md#2026-10-16--market-stall-more-stalls). Device/child checks remain open.
+[PR #444](https://github.com/rjdunlap/neo/pull/444), `codex/market-stalls`, completes deep-dive slice 8 (fresh 8): a round seeds a red fruit stall with a pig, purple flower stall with a cat or teal balloon stall with a bear. Existing flower/balloon props have color names for distinct paired orders; the balloon string stays clear of the mat. The original `GOODS` table and sticker RNG/art are retained; payment rules, tags, mat, levels, bands and saves are unchanged. Typecheck, thirteen Market Stall rules/layout/snapshot tests, filtered smoke and three screenshots passed; [verification](VERIFICATION-2026-10-16.md#2026-10-16--market-stall-more-stalls). Device/child checks remain open.
 
 ## Duckling Parade ABB at level 11 (2026-10-16)
 

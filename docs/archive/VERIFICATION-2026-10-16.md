@@ -97,3 +97,11 @@
 - `GAME_URL=http://localhost:5812 BROWSER_SUITE=machines CHAIN_LEVELS=8` passed (rerun after the fix): run-before-pick prompt, uncounted help, wrong bell with trail and 0 misses/0 hints, three machines, one sticker, landscape and portrait screenshots reviewed. `CHAIN_LEVELS=1,6` regression passed before the fix (levels 1–6 untouched by it).
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=chain-reaction FINGER_LEVELS=8` clean in 19.5 s.
 - Not run: build (no shared assets), world, offline, iPad, device speech, a child. Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-16 — Market Stall more stalls
+
+- [PR #444](https://github.com/rjdunlap/neo/pull/444), `codex/market-stalls`, dispatch `market-stalls-20261016T121134Z`; tested `9f5c724` plus implementation diff (base `c1c438f`). Fruit/flower/balloon stalls vary awning, goods and keeper; existing payment behavior and sticker recipes retained.
+- Typecheck, 47 focused Market Stall/registry/how-to tests and build passed. Stock drawings and tags fit four views (1024×768, 1366×768, 768×1024, 844×390), clear of pet/mat; sticker seeds 0–99 and shared coin snapshots unchanged.
+- `GAME_URL=http://localhost:5193 BROWSER_SUITE=smoke SMOKE_ONLY=market-stall` passed levels 1, 4, 7: stray taps, how-to and portrait, no page errors. Chromium needed sandbox escalation at startup.
+- Isolated `test-results/market-stalls-proof.mjs`: all three stalls, distinct paired spoken names, rendered stock/mat/pet clearance; fruit/flower landscape and balloon portrait screenshots reviewed (`test-results/browser/market-stall-{fruit,flower,balloon}.png`). Probe corrected to read serialized Bounds min/max fields; no game defect.
+- Links/diff checked; owned Vite stopped after proof. Not run: full units, gameplay/ghost-finger suites (unchanged interaction), world/offline, iPad/device speech/child checks; [device gaps](../DEVICE-CHECKS.md) stay open.
