@@ -6,7 +6,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bugBody, bugSticker, bugToken } from './art';
+import { bugBody, bugSticker, bugToken, bugWing } from './art';
 import { BUG_PLANS, BUG_TOKENS, bugPuzzle, nextStamp, slotAt, type BugSpot } from './logic';
 
 interface Spot extends BugSpot { node: Container; filled: boolean; wrong: number }
@@ -17,6 +17,9 @@ class BugBuilder implements Game {
   private readonly background = new Graphics();
   private readonly board = new Container();
   private readonly model = new Container();
+  private readonly wings: [Container, Container] = [new Container(), new Container()];
+  private readonly foldReference = new Container();
+  private finishTime = 0;
   private readonly glow = new Graphics();
   private readonly paletteGlow = new Graphics();
   private readonly decorations = new Graphics();
@@ -29,17 +32,27 @@ class BugBuilder implements Game {
     this.plan = BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, ctx.level - 1))];
     const puzzle = bugPuzzle(this.plan, ctx.rng);
     ctx.stage.addChild(this.background, this.decorations, this.model, this.board, this.paletteGlow);
-    this.board.addChild(bugBody(this.plan.rows, this.plan.columns));
+    const mirror = this.plan.mode === 'mirror';
+    if (mirror) {
+      this.foldReference.addChild(bugWing(this.plan.rows, this.plan.columns, -1));
+      for (const s of puzzle.model) {
+        const shape = bugToken(s.token); shape.position.set(s.x, s.y); this.foldReference.addChild(shape);
+      }
+      this.foldReference.alpha = 0.22; this.foldReference.visible = false;
+      this.foldReference.eventMode = 'none';
+      this.board.addChild(this.foldReference);
+    }
+    this.board.addChild(bugBody(this.plan.rows, this.plan.columns, mirror ? this.wings : undefined));
     if (this.plan.mode === 'copy') this.model.addChild(bugBody(this.plan.rows, this.plan.columns));
     if (this.plan.mode !== 'guided') for (const s of puzzle.model) {
       const shape = bugToken(s.token); shape.position.set(s.x, s.y);
-      (this.plan.mode === 'mirror' ? this.board : this.model).addChild(shape);
+      (mirror ? this.wings[0] : this.model).addChild(shape);
     }
     for (const s of puzzle.targets) {
       const node = new Container(); node.position.set(s.x, s.y);
       node.addChild(new Graphics().circle(0, 0, 50).fill(cream).stroke({ width: 3, color: swatch.orange.line }));
       if (this.plan.mode === 'guided') { const ghost = bugToken(s.token); ghost.alpha = 0.32; node.addChild(ghost); }
-      this.board.addChild(node); this.targets.push({ ...s, node, filled: false, wrong: 0 });
+      (mirror ? this.wings[1] : this.board).addChild(node); this.targets.push({ ...s, node, filled: false, wrong: 0 });
     }
     this.board.addChild(this.glow);
     for (const token of puzzle.tokens) {
@@ -67,7 +80,7 @@ class BugBuilder implements Game {
             if (this.activeHint === slot) this.activeHint = null;
             sfx.bell(5 + token, 0.3); ctx.pet.cheer();
             if (this.targets.every((s) => s.filled)) {
-              this.done = true; this.choices.forEach((c) => c.drag.enabled = false);
+              this.done = true; this.foldReference.visible = mirror; this.choices.forEach((c) => c.drag.enabled = false);
               void ctx.say('bug.done');
               void ctx.tw.wait(1.2).then(() => ctx.finish({ misses: this.misses, hints: this.hints }));
             }
@@ -110,7 +123,16 @@ class BugBuilder implements Game {
     if (this.plan.mode === 'copy') this.paletteGlow.circle(this.model.x + s.x * this.model.scale.x, this.model.y + s.y * this.model.scale.y, 56 * this.model.scale.x).stroke({ width: 5, color: swatch.yellow.line });
     this.paletteGlow.roundRect(choice.drag.home.x - 59, choice.drag.home.y - 59, 118, 118, 24).stroke({ width: 7, color: swatch.yellow.line });
   }
-  update(dt: number) { this.clock += dt; this.glow.alpha = this.paletteGlow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3); if (this.done) this.board.rotation = Math.sin(this.clock * 8) * 0.035; }
+  update(dt: number) {
+    this.clock += dt; this.glow.alpha = this.paletteGlow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3);
+    if (!this.done) return;
+    if (this.plan.mode !== 'mirror') { this.board.rotation = Math.sin(this.clock * 8) * 0.035; return; }
+    // Fold both wings across the same hinge, meet their twins, then open together.
+    // Scene time keeps the finish still when paused; leave the existing 1.2 s finish wait alone.
+    this.finishTime = Math.min(1.1, this.finishTime + dt);
+    const scale = Math.cos(this.finishTime / 1.1 * Math.PI * 2);
+    for (const wing of this.wings) wing.scale.x = Math.abs(scale) < 0.001 ? 0.001 : scale;
+  }
   /** The ghost finger on the how-to card: carry the color the next empty spot needs from the tray to it. */
   autotouch(): TouchIntent | null {
     if (this.done) return null;

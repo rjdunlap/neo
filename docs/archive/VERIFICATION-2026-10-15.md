@@ -258,3 +258,16 @@
 - [Write-up](../deep-dives/duckling-parade.md) compares six precedents and learning references, defines presentation and bounded ready/gated slices. Meerca evidence is first-party search excerpts (open returned 403); other reference pages/PDF opened. None played.
 - Ran Markdown links/anchors and `git diff --check`; docs only. No tests, build or browser suites run. Existing recorded level-10 evidence retained, not rerun.
 - Open: real-iPad speech/control/color and child reaction; count aid/accounting, proposed continuation/mapping/authoring and lap-entry decisions. No implementation or developer decision resolved.
+
+## 2026-10-15 — Discovery direct-next definition
+
+- [PR #395](https://github.com/rjdunlap/neo/pull/395), `codex/discovery-d1a`: froze the [D1b packet](../DISCOVERY.md#d1b-build-packet-one-direct-next-game); audited result/layout, route/origin, completion-based suggestions, player-memory reset and all three module band ladders against `cbf6391`. Integrated docs-only coordinator dispatch `0eed4f5`.
+- Specified pictured controls in both orientations, eligibility/selection memory, current band/pin/ordered level and return rules, empty/stale recovery, files and exact future proof. Roadmap now selects D1b; queue preserves dispatch and worker identity.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; docs only. No runtime files changed.
+- Not run: typecheck, tests, build, browser/world/offline or screenshots. Future regression rows are requirements, not passing evidence; iPad speech/reach and child understanding remain open.
+
+## 2026-10-15 — Inventions subject research
+
+- [PR #392](https://github.com/rjdunlap/neo/pull/392), `claude/inventions-research`: [study](../deep-dives/subjects/inventions.md), tracker row, notebook Gadget Bench and Workshop Cases rows and [roadmap packets](../ROADMAP.md#inventions-recommendations). Opened NGSS ETS1 (K-2, 3-5, MS), England D&T KS1–3 and history KS1, Beck et al. 2014 (*Frontiers*, full text), the Smithsonian's Wright brothers testing page, Inventioneers, and the Gizmos & Gadgets and Bad Piggies articles; Beck 2011, German and Defeyter, Spark!Lab, the Cardboard Challenge and printing history from search excerpts only. C3 cited from the time-change session, not reopened.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs only).
+- Not run or open: no reference game played; EiE, Spark!Lab and Exploratorium pages failed to open; tween/parent appeal untested; real-invention content and page cards need a named reviewer.

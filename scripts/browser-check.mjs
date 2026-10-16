@@ -2524,7 +2524,7 @@ async function expansion() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Size Parade ${level}: comparison/order, mistakes, hint, saved round and sticker passed`);
   }
-  for (let level = 1; level <= 7 && (!only || only === 'bug'); level++) {
+  for (const level of (process.env.BUG_LEVELS || '1,2,3,4,5,6,7').split(',').map(Number).filter(() => !only || only === 'bug')) {
     await launch('bug-builder', level);
     await page.evaluate(async () => {
       const g = neo.scene.game, target = g.targets[0], wrong = g.choices.find((c) => c.token !== target.token);
@@ -2534,17 +2534,40 @@ async function expansion() {
       for (let i = 0; i < 2; i++) { const p = target.node.getGlobalPosition(); await kit.dragTo(wrong.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(600); }
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `bug ${level} hint`);
-    if ([1, 4, 7].includes(level)) await screenshot(`bug-builder-${level}`);
+    if ([1, 4].includes(level)) await screenshot(`bug-builder-${level}`);
     if (level === 7) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot('bug-builder-portrait'); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (const target of g.targets) {
         const c = g.choices.find((c) => c.token === target.token), p = target.node.getGlobalPosition();
-        await kit.dragTo(c.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(550);
+        await kit.dragTo(c.node, { x: p.x, y: p.y + 40 * neo.view.scale });
         if (!target.filled) throw new Error('Bug spot rejected its matching shape');
+        if (!g.done) await kit.sleep(550);
+      }
+      if (g.plan.mode === 'mirror') {
+        // Observe the real finish while the screenshot is taken, through both halves of the fold.
+        window.bugFoldProof = { min: 1, maxDifference: 0, reopened: false, reference: g.foldReference.visible };
+        const sample = () => {
+          const [left, right] = g.wings.map(w => w.scale.x), proof = window.bugFoldProof;
+          proof.min = Math.min(proof.min, left);
+          proof.maxDifference = Math.max(proof.maxDifference, Math.abs(left - right));
+          proof.reopened ||= g.finishTime >= 1.1 && left === 1;
+          if (g.finishTime < 1.1) requestAnimationFrame(sample);
+        };
+        sample();
       }
     });
+    if (level === 7) {
+      await page.waitForFunction(() => neo.scene.game.finishTime >= 0.16);
+      await screenshot('bug-builder-fold');
+    }
     await finished('bug-builder');
+    if (level >= 5) {
+      const proof = await page.evaluate(() => window.bugFoldProof);
+      assert.ok(proof.min < -0.98, 'wings fold across to their twins');
+      assert.equal(proof.maxDifference, 0, 'wings fold together');
+      assert.ok(proof.reopened && proof.reference, 'wings reopen with a faint model left visible');
+    }
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('bug-builder').history.at(-1); return [r.misses, r.hints]; }), [2, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bug Builder ${level}: drag, copy/symmetry, mistakes, hint, saved round and sticker passed`);
