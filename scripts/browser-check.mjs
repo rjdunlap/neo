@@ -6109,7 +6109,7 @@ async function woodsBatch() {
     log(`Ramp Race ${level} (${mode}): ramps and floors changed by tapping, rolls, ${mode === 'fair' ? 'unfair tests as misses' : mode === 'explore' ? 'free exploring' : 'short and long rolls as misses, ghost-ramp hint'}, saved score and sticker passed`);
   }
 
-  if (!only || only === 'sort') for (let level = fromLevel; level <= 5; level++) {
+  if (!only || only === 'sort') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 5); level++) {
     await launch('critter-sort', level);
     const { mode, rounds } = await page.evaluate(() => neo.scene.game.plan);
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); await page.waitForTimeout(250); };
@@ -6117,7 +6117,7 @@ async function woodsBatch() {
     const dropTo = async (i, place) => {
       await page.evaluate(async ({ i, place }) => {
         const g = neo.scene.game; const s = g.sorters[i]; const p = g.spotFor(place);
-        await kit.dragTo(s.node, { x: p.x, y: p.y + 40 }, 14);
+        await kit.dragTo(s.node, g.ctx.stage.toGlobal({ x: p.x, y: p.y + 40 }), 14);
       }, { i, place });
       await settle();
     };
@@ -6134,19 +6134,34 @@ async function woodsBatch() {
         continue;
       }
       const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map((s) => (s.placed ? 'example' : L.placeOf(s.c, g.round.rules, g.plan.mode === 'not'))); });
+      const mat = ['two', 'venn', 'not'].includes(mode);
       // Worked examples start in their places; one is in every round.
       assert.ok(places.includes('example'));
       if (n === 0) {
         const outsider = places.indexOf('out');
+        // Returning a critter to the loose grass costs nothing.
+        await page.evaluate(async (i) => { const g = neo.scene.game; await kit.dragTo(g.sorters[i].node, g.ctx.stage.toGlobal({ x: neo.view.w / 2, y: neo.view.h - 5 }), 14); }, outsider);
+        await settle();
+        assert.deepEqual(await counts(), [0, 0]);
         await dropTo(outsider, 'left'); await dropTo(outsider, 'left');
         assert.deepEqual(await counts(), [2, 1]);
+        if (mat) assert.equal(await page.evaluate(i => neo.scene.game.hinting === neo.scene.game.sorters[i], outsider), true);
         if (level === 3 || level === 5) await screenshot(`critter-sort-${level}-hint`);
+        if (level === 3) {
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+          await screenshot('critter-sort-neither-portrait');
+        }
       }
       for (const [i, place] of places.entries()) if (place !== 'out' && place !== 'example') await dropTo(i, place);
+      if (mat) {
+        // Sorting the hoops alone must not silently finish while the outside critters are loose.
+        assert.equal(await page.evaluate(n => !neo.scene.game.busy && neo.scene.game.index === n, n), true);
+        for (const [i, place] of places.entries()) if (place === 'out') await dropTo(i, place);
+      }
     }
     await finished('critter-sort');
     assert.deepEqual(await score('critter-sort'), [2, 1]);
-    log(`Critter Sort ${level} (${mode}): critters dragged into hoops and the middle, wrong hoops explained as misses, glow hint, ${mode === 'guess' ? 'rules guessed, ' : ''}saved score and sticker passed`);
+    log(`Critter Sort ${level} (${mode}): critters dragged into hoops, the middle and the leaf mat where present, bare-grass drops free, wrong places explained as misses, glow hint, ${mode === 'guess' ? 'rules guessed, ' : ''}saved score and sticker passed`);
   }
 
   if (!only || only === 'pair') {

@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Critter Sort leaf mat (#423):** at levels 2, 3 and 5 on an iPad in both orientations, hear the mat instructions and correct/wrong-drop reasons, check drag reach and the body-centered hint, and observe whether a child understands the mat as the explicit outside answer. Browser completion and portrait review do not establish device speech or independent understanding.
+
 - [ ] **Critter Crossing visible not entry (ID 8, #422):** hear the reused negated rule on iPad and observe whether a child reads the picture/red slash as “not” before the hidden-rule levels. Check touch reach and the demonstration in both orientations; browser play does not establish learning or device speech.
 
 - [ ] **Bubble Pop mode gallery (built 2026-10-16, #412):** on an iPad, hear the 15 spoken mode lines from the picture tile; ask whether a grown-up finds the named levels and the ladder (green suggested dot, red pin) clearer than numbers. A second game (Pet Says or Jelly Drums) waits on this look.
