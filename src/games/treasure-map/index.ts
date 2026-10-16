@@ -5,6 +5,7 @@ import { prop } from '../../art/props';
 import { flower, puffs, starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -87,6 +88,11 @@ class TreasureMap implements Game {
   private wrongs = 0;
   private hinting = false;
   private clock = 0;
+  // Couch play: a ring over the square a press would dig, moved one square at a time.
+  private cursor: Square = { col: 0, row: 0 };
+  private couchOn = false;
+  private readonly ring = new Graphics();
+  private botWait = 1.5;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -96,6 +102,7 @@ class TreasureMap implements Game {
     this.marks.eventMode = 'none';
     this.sign.eventMode = 'none';
     this.landmarks.eventMode = 'none';
+    this.ring.eventMode = 'none';
     this.grid.addChild(this.paper, this.headers, this.marks, this.landmarks, this.glow);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => void this.tapGrid(e), { cooldown: 250 });
@@ -106,6 +113,8 @@ class TreasureMap implements Game {
       ctx.track(this.pirate);
       this.grid.addChild(this.pirate);
     }
+    // Last, so the ring sits over the pet and the dig marks.
+    this.grid.addChild(this.ring);
     ctx.stage.addChild(new Graphics().rect(0, 0, 4000, 4000).fill(0x9fd3e8), this.grid, this.sign);
   }
 
@@ -150,6 +159,11 @@ class TreasureMap implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    const ring = this.ring.clear();
+    if (this.couchOn && !this.busy && !this.finished) {
+      const at = this.cellAt(this.cursor);
+      ring.roundRect(at.x - CELL / 2 + 6, at.y - CELL / 2 + 6, CELL - 12, CELL - 12, 16).stroke({ width: 8, color: swatch.teal.line });
+    }
     const g = this.glow.clear();
     if (!this.hinting || this.busy || !this.find) return;
     const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
@@ -175,6 +189,41 @@ class TreasureMap implements Game {
     return { tap: { on: this.grid, x: at.x, y: at.y } };
   }
 
+  /** Couch play: the stick or the arrows move the ring a square at a time; the bottom button digs where it is. */
+  control(input: CouchControls) {
+    this.couchOn = true;
+    if (this.busy || this.finished || !this.find) return;
+    const last = this.plan.size - 1;
+    for (const p of input.players) {
+      const c = this.cursor;
+      if (p.direction === 0) c.col = Math.min(last, c.col + 1);
+      else if (p.direction === 2) c.col = Math.max(0, c.col - 1);
+      // Row 1 is at the bottom, so up on the stick is the next row up.
+      else if (p.direction === 3) c.row = Math.min(last, c.row + 1);
+      else if (p.direction === 1) c.row = Math.max(0, c.row - 1);
+      if (p.action) return void this.dig({ ...c });
+    }
+  }
+
+  /** The "watch me" demo: walk the ring along the column letters, then up or down the rows, to the square asked for, and dig. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    out.players[0].active = true;
+    this.botWait -= dt;
+    if (this.busy || this.finished || !this.find || this.botWait > 0) return out;
+    const want = this.find.square;
+    const c = this.cursor;
+    if (want.col !== c.col) out.players[0].direction = want.col > c.col ? 0 : 2;
+    else if (want.row !== c.row) out.players[0].direction = want.row > c.row ? 3 : 1;
+    else {
+      out.players[0].action = true;
+      this.botWait = 1;
+      return out;
+    }
+    this.botWait = 0.35;
+    return out;
+  }
+
   destroy() {}
 
   private async next() {
@@ -184,6 +233,8 @@ class TreasureMap implements Game {
     this.hinting = false;
     if (this.index >= this.finds.length) return void this.finale();
     const f = this.find;
+    // Following directions starts where the pet stands, so the ring walks the same steps.
+    if (f.from) this.cursor = { ...f.from };
     this.resize(this.view);
     this.drawLandmarks(f);
     this.drawSign(f);
@@ -243,11 +294,16 @@ class TreasureMap implements Game {
     }
   }
 
-  private async tapGrid(e: FederatedPointerEvent) {
+  private tapGrid(e: FederatedPointerEvent) {
     if (this.busy || this.finished) return;
     const p = this.grid.toLocal(e.global);
     const guess = squareAt(p.x, p.y, this.plan.size);
-    if (!guess) return;
+    if (guess) return this.dig(guess);
+  }
+
+  /** A dig at a square, from a finger or the couch's ring. */
+  private async dig(guess: Square) {
+    if (this.busy || this.finished) return;
     const { col, row } = guess;
     const want = this.find.square;
     const result = compare(guess, want);
@@ -306,7 +362,8 @@ class TreasureMap implements Game {
     sfx.tada();
     await this.ctx.say('map.done');
     await this.ctx.tw.wait(0.4);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    // On the couch, wrong digs are the face-off score (lower is better).
+    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.misses });
   }
 }
 

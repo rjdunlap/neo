@@ -259,6 +259,23 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     level: (stop) => [3, 3, 4, 5, 6, 6][stop] ?? 6,
     lines: { 'hop.gap': 'couch.hop.gap' },
   },
+  'treasure-map': {
+    goal: 'couch.how.treasure-map',
+    tagline: 'Find the square by its column and row, then dig for treasure.',
+    controls: [
+      { parts: STICK, text: 'Move the ring from square to square.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'Dig, or put the thing down, on the square in the ring.', keys: 'Enter' },
+    ],
+    // The squares come from the seed, so both players hunt the same map: fewer wrong digs wins.
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'wrong digs' },
+    // School's range (1–5) holds every mode; trips start at grid names, after the picture level.
+    band: 'school',
+    demoLevel: 2,
+    level: (stop) => [2, 3, 3, 4, 4, 5][stop] ?? 5,
+    lines: { 'map.steps': 'couch.map.steps', 'map.clues': 'couch.map.clues' },
+  },
   'sink-float': {
     goal: 'couch.how.sink-float',
     tagline: 'Will it float or sink? Guess, then watch the water.',
