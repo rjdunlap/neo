@@ -1229,14 +1229,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'The pet says each word whole and claps its beats with beads lighting up; a wrong count just brings the demonstration and another try. Check on the device that the words are said clearly.',
   },
   'chain-reaction': {
-    goal: 'Arrange the ramps so the marble rings the big bell (and the little chime first, when there is one).',
+    goal: 'Predict and plan where a marble will go: build the ramps so it rings the big bell, or say which bell a finished machine rings.',
     steps: [
-      'Drag every loose ramp into a round socket.',
-      'Tap the green arrow to run the machine and watch what each ramp changes; a faint red trail stays behind, and tapping the blue cup shows the run again.',
-      'Move one ramp and run it again, or tap the yellow light bulb for one useful placement.',
+      { from: 8, to: 8, text: 'Look at the finished machine and tap the bell you think the marble will ring.' },
+      { from: 8, to: 8, text: 'Tap the green arrow and watch. If another bell rings, a faint red trail shows the way the ramps sent it.' },
+      { from: 8, to: 8, text: 'The yellow light bulb glows the start and says to follow the marble down with a finger.' },
+      { from: 1, to: 6, text: 'Drag every loose ramp into a round socket.' },
+      { from: 1, to: 6, text: 'Tap the green arrow to run the machine and watch what each ramp changes; a faint red trail stays behind, and tapping the blue cup shows the run again.' },
+      { from: 1, to: 6, text: 'Move one ramp and run it again, or tap the yellow light bulb for one useful placement.' },
     ],
-    finish: 'The round ends after both machines ring their bells.',
+    finish: [
+      { from: 8, to: 8, text: 'The round ends after three machines have run, whichever bell each one rang.' },
+      { from: 1, to: 6, text: 'The round ends after both machines ring their bells.' },
+    ],
     note: [
+      { from: 8, to: 8, text: 'A prediction is never a wrong answer, and the light bulb is not counted as help.' },
       {
         from: 6,
         text: 'A run that misses is an experiment, not a wrong answer. Loose ramps can be moved back to their tray, and this puzzle has several working designs.',

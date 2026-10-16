@@ -10939,7 +10939,56 @@ async function chainPlay() {
     for (let piece = 0; piece < layout.length; piece++) await put(piece, layout[piece]);
   };
 
-  for (const level of [1, 6]) {
+  // CHAIN_LEVELS=8 plays only the prediction entry; the default plays 1, 6 and 8.
+  const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,8').split(',').map(Number);
+  const tapBell = (col) => page.evaluate(async (col) => {
+    const g = neo.scene.game, b = g.bellNodes.find((n) => n.col === col).node.getGlobalPosition();
+    await kit.tap(b.x, b.y - 10); await kit.sleep(150);
+  }, col);
+  if (chainLevels.includes(8)) {
+    const stickers = await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length);
+    await launch('chain-reaction', 8);
+    const machines = await page.evaluate(() => neo.scene.game.boards.length);
+    assert.equal(machines, 3);
+    for (let index = 0; index < machines; index++) {
+      await readyMachine(index);
+      const { target, bells } = await page.evaluate(() => ({ target: neo.scene.game.machine.target, bells: neo.scene.game.machine.bells }));
+      assert.equal(bells.length, 3);
+      assert.ok(await page.evaluate(() => neo.scene.game.parts.length === 0), 'nothing to place at level 8');
+      if (index === 0) {
+        // Running before predicting just asks for a bell; the help glows the start and counts nothing.
+        await tap('neo.scene.game.runButton');
+        await tap('neo.scene.game.helpButton');
+        assert.ok(await page.evaluate(() => neo.scene.game.glow.bounds.width > 0), 'help glows the start cup');
+        assert.ok(await page.evaluate(() => neo.scene.game.bellNodes.every((b) => { const r = b.node.getBounds(); return r.width >= 84 && b.node.hitArea.width >= 100 && b.node.hitArea.height >= 100; })), 'bells are large targets');
+        await tapBell(bells.find((c) => c !== target));
+        assert.notEqual(await page.evaluate(() => neo.scene.game.picked), null, 'a tapped bell is chosen');
+        await screenshot('chain-reaction-8');
+        await tap('neo.scene.game.runButton');
+        await page.waitForFunction(() => neo.scene.game.trail.bounds.width > 0, null, { timeout: 15000 });
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'another bell is not a miss');
+      } else {
+        await tapBell(target);
+        assert.equal(await page.evaluate(() => neo.scene.game.picked), target);
+        await tap('neo.scene.game.runButton');
+      }
+      await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.index > index, index, { timeout: 30000 });
+    }
+    await finished('chain-reaction');
+    assert.deepEqual(await score(), [0, 0]);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), stickers + 1);
+    await launch('chain-reaction', 8); await readyMachine(0);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    assert.ok(await page.evaluate(() => {
+      const g = neo.scene.game;
+      return [...g.bellNodes.map((b) => b.node), g.runButton, g.helpButton].every((node) => { const b = node.getBounds(); return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight; });
+    }), 'portrait bells and controls fit');
+    await screenshot('chain-reaction-8-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Chain Reaction 8: run-before-predicting prompt, uncounted follow-the-marble help, a different bell rang without a miss and kept its trail, three predicted machines, one sticker, portrait fit passed');
+  }
+
+  for (const level of [1, 6].filter((l) => chainLevels.includes(l))) {
     await launch('chain-reaction', level);
     const machines = await page.evaluate(() => neo.scene.game.boards.length);
     for (let index = 0; index < machines; index++) {
@@ -10990,11 +11039,12 @@ async function chainPlay() {
     }
     await finished('chain-reaction');
     assert.deepEqual(await score(), level === 1 ? [0, 0] : [0, 1]);
-    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), level === 1 ? 1 : 2);
+    assert.ok(await page.evaluate(() => kit.store.data.stickers.some((s) => s.game === 'chain-reaction')));
     log(`Chain Reaction ${level}: large-piece dragging, ${level === 1 ? 'starting glow and incomplete run' : 'failed experiment, explicit hint, chime'}, replay, two machines, saved score and sticker passed`);
   }
 
   // The tallest board keeps its controls, tray and sockets on screen in portrait.
+  if (!chainLevels.includes(6)) return void assert.deepEqual(errors, []);
   await launch('chain-reaction', 6); await readyMachine(0);
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
   assert.ok(await page.evaluate(() => {

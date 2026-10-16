@@ -386,3 +386,17 @@
 - Ran `npm run typecheck` and `npx vitest run src/couch src/games/treasure-map src/content` (154 passed). Full `npm test` 1358/1360: Ferry Jam's frozen-harbor test and Peg Garden's ghost-finger aim test timed out under full-run load and passed alone (13/13); untouched code, recorded as a load flake.
 - Passed `GAME_URL=http://localhost:5293 BROWSER_SUITE=couchgames COUCH_ONLY=treasure-map`: intro, controller diagram lights with the bot, bot finishes a round through `control()`, one stop saved, sticker, child save untouched, no page errors. The intro screenshot shows the ring walking A1 to C3.
 - Not run: an in-game couch screenshot (a probe stalled at profile setup), whether the controller reminder covers the grid's bottom row, full `couch`/`couchcourse` (trip and course code unchanged), build, offline, a real controller or TV.
+
+## 2026-10-15 — Photo Safari deep dive
+
+- Docs only, `claude/photo-safari-deep-dive`, [PR #420](https://github.com/rjdunlap/neo/pull/420): [deep-dives/photo-safari.md](../deep-dives/photo-safari.md) (build slices 1–8, three decisions); tracker row designed, roadmap short-ladders row and ready-list line 16, IDEAS pointers, [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) row.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, `fingerdemo`, device (no code changed).
+- Open: the three decisions in the dive; the toddler entry also needs a person check.
+
+## 2026-10-15 — Penguin Slide Frozen Ponds couch course
+
+- `claude/penguin-frozen-course` (PR #419, commit 715c7a2): `parseBoard` reads a `B` ice-block legend; third course `frozen` (five block ponds, minimum 31) in `COURSE_IDS`; block-aware course tests.
+- Ran `npm run typecheck` (clean); `npx vitest run src/games/penguin-slide src/couch` (92 passed); full `npm test` 1359 passed with 4 known 5 s timeouts under parallel load (ferry-jam frozen harbors, peg-garden launcher aim, two penguin-slide logic tests), all passing in isolation (41/41); `npm run build` passed.
+- Passed `GAME_URL=http://localhost:5743 BROWSER_SUITE=couchcourse` on 715c7a2, including The Frozen Ponds by controller with the solver (perfect 31, one sticker, both badges; screenshot `couch-course-frozen`). One earlier run failed only on a wrong new assertion, since fixed.
+- Not run: `couch`, `couchgames`, offline, `world`; no controller or device check.
