@@ -5,7 +5,8 @@
 - Docs only, base `ee89b32`, branch `claude/zoo-animals-subject`, [PR #462](https://github.com/rjdunlap/neo/pull/462): [study](deep-dives/subjects/zoo-animals.md), subject tracker row, three notebook candidates and the roadmap packet. No overlapping claim found by `scripts/overlap.sh`.
 - Opened NGSS K-LS1-1, 2-LS4-1, 3-LS3-1, 3-LS4-3 and MS-LS2-5, the England science programmes of study, two Smithsonian National Zoo pages, an OSU teacher page and a study record; AZA pages (403) and SAFE figures are marked search-only and unused. No reference games played.
 - Passed relative Markdown links (`node scripts/check-links.mjs`) and `git diff --check`. No typecheck/unit/build/browser/offline checks (research-only tier); no code changed or servers started.
-- Open: a named reviewer for the trait table and conservation lines, captivity/extinction framing, kit and land choice, Species Comeback's band, and any child, device or older-family play.
+- Follow-up after the developer's habitat-kit decision (no zoo land): a [kit order](deep-dives/subjects/zoo-animals.md#habitat-kits-order-lands-and-cast-swaps) with the lands each dresses and the games that swap cast; links and diff checked again.
+- Open: a named reviewer for the trait table and conservation lines, captivity/extinction framing, how a kit shows (variant, time of day or permanent), Species Comeback's band, and any child, device or older-family play.
 
 ## 2026-10-16 — Barnyard land identity V1
 

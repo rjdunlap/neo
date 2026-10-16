@@ -85,6 +85,21 @@ So Who Am I? levels 1–3 cost an art refactor (S) and no new anatomy; the bat (
 - **Whale and `oceans`.** This row owns the whale as a *classification* case (a mammal that lives in water); `oceans` owns ocean habitats, depth zones and tides. One whale drawing serves both.
 - **Habitat needs** stay with Habitat Helpers and `life-science`; **food webs** with `ecosystems`; **inheritance mechanisms** with the proposed `genetics` row.
 
+### Habitat kits: order, lands and cast swaps
+
+**Decided by the developer, 2026-10-16:** no zoo land; "dress the island with more diverse habitats" and change up the scenery. A kit is the notebook's bundle ([World variety](../../IDEAS.md#world-variety-animals-pets-and-environments)): a backdrop variant, three or four friends, a prop set and music. Each land already owns a `backdrop` (`BackdropStyle` in `src/content/lands.ts`), so a kit dresses a land's scenery and the scenes of a few games; it adds no map spot, and every game keeps its land, ID and levels. The order below puts first the kits whose friends are cheapest and teach something the games here need. Pairings are proposals.
+
+| Order | Kit | Friends (cost) | Dresses | Games that swap their cast | Why here |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Night Garden** | owl (exists, Owl Walk), **bat** (S–M, Who Am I?'s first new species), fireflies (particles, S); hedgehog later (spikes, M) | Rainbow Meadow at dusk (Owl Walk already lives there) and Story Grove | Photo Safari (who is awake at night, who is asleep), Peekaboo Barn (a night-garden scene), Size Parade, Who Am I? | Cheapest kit; the bat is the tricky case Who Am I? needs; awake-at-night is a behavior, not a name |
+| 2 | **Bamboo Hill** | **panda** (S: bear body plus an eye-patch part); red panda and crane later (a tail part, long legs: M each) | Puzzle Peaks | Enrichment Day, Animal Snack (bamboo), Size Parade, Puzzle Pals | Enrichment Day's host; the Smithsonian's opened panda enrichment example |
+| 3 | **Tide Pools and Reef** | fish (exists), crab, starfish, octopus (M each); whale for both rows (M) | Bubble Beach and Counting Cove | Bubble Pop (fish already), Duck Pond, Peekaboo Barn's beach scene, Who Am I? (whale) | **Shared with the `oceans` row**: build it from that session's plan, not twice |
+| 4 | **Rainforest Canopy** | frog (exists), monkey, parrot, sloth (M each) | Story Grove's trees or Tinker Lab | Photo Safari (climbing, hanging), Sound Garden (calls), Who Am I? | Climbing and calls; the frog makes the amphibian case without new art |
+| 5 | **Savanna** | giraffe, zebra, elephant (M each; the elephant needs a trunk part) | Cozy Village's hills or Puzzle Peaks | Size Parade (tallest, longest), Enrichment Day (the elephant's sand pile, opened), Photo Safari | Most expensive; strongest for size and enrichment |
+| 6 | **Desert Oasis** | fennec fox (S–M: a cat or dog variant with big ears), lizard (M), camel (M) | Cozy Village or Counting Cove | Who Am I? (the lizard is a second reptile), Weather Wardrobe's sunny days, Photo Safari | A second reptile; adapting to heat is the `ecosystems` row's ground, so keep it to looks and behavior here |
+
+**Barnyard** keeps its farm identity (just given its barn, fence and pail, [PR #460](https://github.com/rjdunlap/neo/pull/460)), and Lantern Lake stays a grown-up land. **Proof first, per the notebook:** dress one land in Night Garden and swap the cast in two games (Photo Safari and Peekaboo Barn) before a second kit. A cast swap must keep each game's rules: an animal needs every pose and part the game uses (Photo Safari's actions, Peekaboo Barn's hiding sizes), so a new friend is checked game by game. Whether a kit's scenery is a seeded variant of the land's backdrop, a time of day, or a permanent change is a [decision](#decisions-for-the-developer).
+
 ## Similar games, apps and physical play
 
 None was played. "Opened" means the page itself was read.
@@ -170,7 +185,7 @@ None was played. "Opened" means the page itself was read.
 1. **How zoos are framed.** Proposal: keepers care for friends who live at the zoo; no buying, catching or collecting; why zoos exist is said only on the grown-up card.
 2. **Extinction for young bands.** Proposal: below school, only recovery stories ("there are more ferrets now"), never loss; at U–G, "very few were left" is said once with a source.
 3. **A zoo land or habitat kits?** **Answered by the developer, 2026-10-16** (recorded on main while this study was being written): dress the island with more diverse habitats and vary the scenery, rather than add a zoo land. So Who Am I? and Enrichment Day go to existing lands, and the cast arrives through [habitat kits](../../IDEAS.md#world-variety-animals-pets-and-environments).
-4. **Which kit first.** Proposal: Bamboo Hill for Enrichment Day (panda as a bear variant, the Smithsonian's panda example), Night Garden later (owl exists, bat is a tricky case, nocturnal behavior).
+4. **Which kit first, and how it shows.** Proposal: Night Garden first (owl exists, the bat serves Who Am I?), Bamboo Hill second for Enrichment Day; see [the kit order](#habitat-kits-order-lands-and-cast-swaps). Open: whether a kit is a seeded scenery variant, a time of day, or a permanent change to a land's backdrop.
 5. **Who reviews.** The trait table, every conservation statement and the Zoo Detective card need a named reviewer (a zoo educator or biology teacher) before anything ships.
 6. **Species Comeback's home.** Lantern Lake (`grownup`) with a school top-level entry, or `grownup` only; and whether the black-footed ferret is drawn (M) or the puzzle uses an existing friend as a stand-in.
 7. **Preschool entry for Who Am I?** Level 1 is plausible at 4 with picture signs; whether it opens to `preschool` waits on play.
@@ -181,10 +196,11 @@ None was played. "Opened" means the page itself was read.
 2. **Z2 · Shared cast art**: move penguin, frog, turtle and one fish drawing into `src/art/` with no visual change, only as Z3 needs them.
 3. **Z3 · Build Who Am I? levels 1–3**: rules in `logic.ts`, tests, ghost finger, how-to card, one scripted play.
 4. **Z4 · The bat and level 4**: a membrane-wing part (or bespoke art), the surprise rounds, its tests.
-5. **Z5 · Define Enrichment Day** on one kit (decision 4), with its accepted-answer table and the sharing rung.
-6. **Z6 · Define Species Comeback**: the family-tree model, the pairing rule (no siblings, then no shared grandparent), several valid plans, a solver test, and the release-site match; decision 6.
-7. **Z7 · Zoo Detective and Who Am I? cards** for the grown-ups' page, after review.
-8. **Z8 · Who Am I? levels 5–7**, then the cast swaps (Who's Calling?, Photo Safari, Size Parade) once a kit exists.
+5. **Z5 · Prove Night Garden**: dress Rainbow Meadow and swap the cast in Photo Safari and Peekaboo Barn (owl, bat, fireflies), per the notebook's two-game proof.
+6. **Z6 · Define Enrichment Day** on Bamboo Hill (decision 4), with its accepted-answer table and the sharing rung.
+7. **Z7 · Define Species Comeback**: the family-tree model, the pairing rule (no siblings, then no shared grandparent), several valid plans, a solver test, and the release-site match; decision 6.
+8. **Z8 · Zoo Detective and Who Am I? cards** for the grown-ups' page, after review.
+9. **Z9 · Who Am I? levels 5–7**, then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
 
 ## What was built
 
