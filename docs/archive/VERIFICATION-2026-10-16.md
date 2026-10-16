@@ -128,3 +128,17 @@
 - `npm run typecheck`; `npx vitest run src/games/duckling-parade src/games/registry src/content/howto` (46 passed); `npm run build`.
 - On `http://localhost:5235` (dev, this worktree): `BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=11` passed (walking, joining, refusals with 2 misses and 1 hint, pond, score and sticker; screenshot `test-results/browser/duckling-parade-11.png` shows A B B A B B); `BROWSER_SUITE=fingerdemo FINGER_ONLY=duckling-parade FINGER_LEVELS=11` clean in 19.0 s.
 - Not run: full unit suite, portrait screenshot, world/offline. Open ([device checks](../DEVICE-CHECKS.md)): ABB on a real iPad by a school-age child.
+
+## 2026-10-16 — Sing-Along Barn Bounce High, Bounce Low
+
+- [PR #450](https://github.com/rjdunlap/neo/pull/450), `claude/sing-barn-bounce-high` (cc25875, base `06a62c1`): the seventh tune, `bounce`, on mi, sol, la; seeded in every level's pool and the seventh card (a red ball) in the level 5-6 chooser, now seven cards at 0.5; voice lines, how-to and `describeLevel` updated.
+- Passed `npm run typecheck`; vitest `sing-along-barn`, `src/content` and registry (129 tests, incl. two new Bounce tests: lyric, answers and verse ends; mi, sol, la only with "high" above "low"); `npm run build`.
+- At `http://localhost:5379`, `BROWSER_SUITE=singalong` passed with a new level-1 Bounce round (10 + 10 notes, no misses or hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=5,6` passed (54.2 s, 36.2 s); a portrait 768x1024 probe screenshot of the level-6 seven-card chooser (cards about 104 logical tall, pet clear).
+- Not run: full unit suite, world/offline, a grown-up singing the tune against the taps (notes from the standard form; sources confirm only the three notes; [device check](../DEVICE-CHECKS.md)), device speech, a child's play.
+
+## 2026-10-16 — Clap the Syllables level 6 Beat train
+
+- [PR #449](https://github.com/rjdunlap/neo/pull/449), `claude/clap-beat-train` (f2b6a07, base `fff0166`): school plays 5-6; drag three pictures into train cars, fewest claps first, ties either way; new rules `fitsCar`, `nextForTrain`, `trainCounts`; level-6 how-to lines plus bounded level 4/5 steps.
+- Passed `npx tsc --noEmit`; `vitest src/games/clap-syllables src/content` 99 tests (four new train tests: any loading order, ties, hint/ghost fits the next car over 200 seeds, generation over 500 seeds); `vitest src/games src/content` 1130 earlier; `npm run build` (shared voice and how-to files changed).
+- At `http://localhost:5710`, `BROWSER_SUITE=clap CLAP_LEVELS=6` passed (two wrong cars: 2 misses, 1 hint and glow; free empty drop; three trains; one sticker; portrait fit); screenshots `clap-6` and `clap-6-portrait` reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=clap-syllables FINGER_LEVELS=6` passed in 47.8 s.
+- Not run: levels 1-5 browser play (interactions unchanged), world/offline, iPad or device speech, a child's play ([device checks](../DEVICE-CHECKS.md)).

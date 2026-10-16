@@ -340,6 +340,8 @@ export const SCRIPT = {
   'journal.safari.jumping': ['Jumping means going up into the air and coming down again.'],
   'journal.safari.sleeping': ['Sleeping means resting with your eyes closed.'],
   'journal.safari.eating': ['Eating means taking bites of food.'],
+  'journal.safari.waving': ['Waving means moving your hand to say hello or goodbye.'],
+  'journal.safari.swimming': ['Swimming means moving through water.'],
   'journal.safari.dancing': ['Dancing means moving your body to music.'],
   'journal.seesaw.heavy': ['The side with more weight goes down, and the lighter side goes up.'],
   'journal.seesaw.equal': ['When both sides have the same weight, the seesaw stays level.'],

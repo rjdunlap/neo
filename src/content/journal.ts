@@ -62,6 +62,8 @@ const SAFARI_LINES: Record<Action, LineId> = {
   sleeping: 'journal.safari.sleeping',
   eating: 'journal.safari.eating',
   dancing: 'journal.safari.dancing',
+  waving: 'journal.safari.waving',
+  swimming: 'journal.safari.swimming',
 };
 
 const TRAIL_LINES: Record<string, LineId> = {
