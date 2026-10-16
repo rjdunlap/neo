@@ -16,7 +16,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { BITE, BITE_SIZES, countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type SnackPlan, type SnackRound } from './logic';
+import { BITE, BITE_SIZES, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type SnackPlan, type SnackRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -319,6 +319,11 @@ class AnimalSnack implements Game {
   }
 
   private async tapFriend(f: Friend) {
+    if (busyTouch(this.busy, this.finished, { friend: true })) {
+      f.node.poke();
+      sfx.tick();
+      return;
+    }
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
     if (mode === 'munch') {
@@ -380,6 +385,7 @@ class AnimalSnack implements Game {
 
   private async tapSnack(item: SnackItem) {
     this.idle = 0;
+    if (busyTouch(this.busy, this.finished, { snack: { eaten: item.eaten, visible: item.node.visible } })) return this.wiggle(item);
     if (this.busy || this.finished || item.eaten) return;
     if (this.plan.mode === 'float') {
       this.busy = true;
@@ -401,6 +407,18 @@ class AnimalSnack implements Game {
       void this.ctx.say('count', { n: this.snacks.filter((s) => s.eaten).length });
       this.busy = false;
     }
+  }
+
+  /** A snack touched while busy wiggles its drawing, never the node, which eat() reads its starting size from. */
+  private wiggle(item: SnackItem) {
+    const art = item.node.children[0];
+    if (!art || art.destroyed) return;
+    sfx.tick();
+    this.ctx.tw.kill(art);
+    art.rotation = 0;
+    void this.ctx.tw.to(art, { rotation: 0.18 }, { duration: 0.05 })
+      .then(() => this.ctx.tw.to(art, { rotation: -0.18 }, { duration: 0.1 }))
+      .then(() => this.ctx.tw.to(art, { rotation: 0 }, { duration: 0.05 }));
   }
 
   private drop(item: SnackItem, x: number, y: number): boolean {

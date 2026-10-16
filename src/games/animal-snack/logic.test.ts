@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BITE, BITE_SIZES, ANIMALS, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
+import { BITE, BITE_SIZES, ANIMALS, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
 
 describe('Animal Snack', () => {
   it('gives every food a bite sound and three shrinking bites that end at nothing', () => {
@@ -148,5 +148,19 @@ describe('Animal Snack', () => {
     const r = makeRounds(PLANS[2], new Rng(9))[1];
     const table: SnackTable = { friends: r.animals, snacks: [], ask: r.ask, eatenCount: 0 };
     expect(snackTouch(PLANS[2], table)).toEqual({ friend: r.animals.indexOf(r.ask!) });
+  });
+
+  it('answers a busy touch with a poke or a wiggle that never feeds or counts', () => {
+    const friend = Object.freeze({ friend: true as const });
+    const snack = Object.freeze({ snack: Object.freeze({ eaten: false, visible: true }) });
+    expect(busyTouch(false, false, friend)).toBeNull();
+    expect(busyTouch(false, false, snack)).toBeNull();
+    expect(busyTouch(true, false, friend)).toBe('poke');
+    expect(busyTouch(true, false, snack)).toBe('wiggle');
+    expect(busyTouch(true, true, friend)).toBeNull();
+    expect(busyTouch(true, true, snack)).toBeNull();
+    expect(busyTouch(true, false, { snack: { eaten: true, visible: true } })).toBeNull();
+    expect(busyTouch(true, false, { snack: { eaten: false, visible: false } })).toBeNull();
+    expect(snack.snack).toEqual({ eaten: false, visible: true });
   });
 });
