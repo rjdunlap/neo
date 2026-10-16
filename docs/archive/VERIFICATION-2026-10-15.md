@@ -191,3 +191,46 @@
 - Ran: `npm run typecheck`; `vitest run src/games src/content` 1068 passed (new tests: pool size and distinct, copy not symmetric, mirror exact reflection); `BROWSER_SUITE=expansion EXPANSION_ONLY=bug` levels 1-7 (drag, wrong drop, hint, finish, sticker) on a dev server.
 - Not run: a reviewed portrait or hint screenshot, build, `fingerdemo`, a device or a child.
 - Open: the one-hint-per-round accounting decision stays as is (hints per spot).
+
+## 2026-10-15 — Clock Tower visible appointments
+
+- [PR #381](https://github.com/rjdunlap/neo/pull/381), `codex/clock-visible-appointments`, dispatch `clock-appointments-20261015T154626Z`. Tested base `6adc865` plus scoped source/browser diff: only existing level 5, three pictured pretend appointments with analog/digital time evidence and separate free replay, four distinct seeded target times, six existing pictures. Other modes/levels/bands/saves and old icon/sticker drawings retained.
+- Passed typecheck, 27 focused Clock Tower/how-to tests and build (shared voice/how-to changed). Across 200 seeds: repeatability, three distinct pictures/times, one matching answer, four different targets, all 24 hour/half-hour targets and all six pictures at all times reached, speech/labels from appointment data; icon/sticker snapshots pass.
+- Passed `BROWSER_SUITE=woods WOODS_ONLY=clock CLOCK_LEVELS=5` at `http://localhost:5189`: all twelve free replays do not submit/change counts, labels match task evidence, two wrong choices count [2,1], four right choices finish/save one sticker; no page errors. Reviewed `test-results/browser/clock-tower-5-appointments-portrait.png`: all three picture/replay cards legible and clear of pet; baseline landscape play passed.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=clock-tower FINGER_LEVELS=5` at the same URL, clean 12.9 s. Initial sandboxed Chromium launch failed on macOS Mach permission; isolated outside-sandbox runs passed. Owned Vite server stopped. Links/diff checked.
+- Not run: other levels' browser plays, full unit/browser/world/couch/offline suites (unchanged areas). Real iPad speech, finger comfort, pretend-plan comprehension and child learning remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device); new appointment art and later slices/decisions are separate.
+
+## 2026-10-15 — Market Stall name the coin
+
+- [PR #378](https://github.com/rjdunlap/neo/pull/378), branch `claude/market-stall-name-coin`: levels 2 and 3 only. The first tap of a coin new at that level (the 2 at level 2, the 5 at level 3) has the pet say "That is a two. It is worth two." in place of the count, and the purse coin pulses; once per game start; not a miss or hint. `coinToName` in `src/games/market-stall/logic.ts`, line `shop.name`.
+- Passed `npm run typecheck`; 88 tests in `src/games/market-stall` and `src/content`; `BROWSER_SUITE=woods WOODS_ONLY=shop` levels 1–7 on a dev server.
+- Not run: screenshot, `fingerdemo`, build, device speech. Pips and the teaching hint (deep-dive slice 2 remainder) are not built.
+
+## 2026-10-15 — Memory Match fraction squares
+
+- [PR #377](https://github.com/rjdunlap/neo/pull/377), `codex/memory-fraction-squares`, dispatch `memory-fraction-art-20261015T144931Z`. Tested base `c69ed5c` plus the four-file Memory Match source/test diff. Existing level 11 only: seeded rotations and equal-area masks; same three values/pairs, other levels/bands/order, accounting, couch and saves.
+- Passed `npm run typecheck` and `npx vitest run src/games/memory-match/logic.test.ts` (16 tests). Across 200 seeds: exact same-whole tiling/area and numerator, pair sides/labels, repeatability, all eight rotations and every legal shaded mask, actual rotated drawing within card bounds. Existing icon/sticker snapshots pass.
+- Reviewed one exposed level-11 portrait at `http://localhost:5188` using `node test-results/memory-fraction-art.mjs`; three picture/name pairs readable, rotated square clear of card edges and pet; no page errors. Screenshot `test-results/browser/memory-fraction-11-portrait.png`. Chromium's sandbox launch failed; the isolated outside-sandbox capture passed. Owned Vite server stopped.
+- Existing level-11 how-to audited and remains accurate. Not run: browser round, ghost finger, build, broader unit/browser/world/couch/offline suites (content tier, unchanged interaction/shared behavior). Real iPad speech/contrast/touch and child fraction understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device). Links/diff checked.
+
+## 2026-10-15 — Time and change subject research
+
+- [PR #385](https://github.com/rjdunlap/neo/pull/385), `claude/time-change-research`: [study](../deep-dives/subjects/time-change.md), tracker row, notebook rows (Timeline Trail, Island Archive, Attic Finds) and [roadmap packets](../ROADMAP.md#time-and-change-recommendations). Opened C3 D2.His (NCSS PDF pp. 45–48), England KS1–2, Colorado preschool History 1, Busby Grant and Suddendorf (abstract), Tillman (abstract), Barton (abstract), Major Fun's Timeline review, the Unpacking GDC report, Guidepost Montessori and the Pitt Rivers session sheet; Storyteller, toy sorts and StoryCorps from search excerpts only.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs only).
+- Not run or open: no reference game played; no study of under-fives learning historical sequence from a game; tween/parent appeal untested; real-object content and page cards need a named reviewer.
+
+## 2026-10-15 — Clock Tower hour-change and fives explanations
+
+- [PR #383](https://github.com/rjdunlap/neo/pull/383), `codex/clock-explanations`, worker `01a14077-2c25-7402-a0cf-36796d3cf1d7`, dispatch `clock-explanations-20261015T164756Z`. Only slice 3 remainder: old/new hour-change explanation at 6; zero/60-minute speech, spoken fives and help arc at 7. Reuses #358’s 3/6 exposure rules; four tasks, modes, target sizes, accounting, bands/pins/saves and icon/stickers retained.
+- Passed typecheck and 29 targeted Clock Tower/how-to tests: all 24 hour/half-hour changes including 11→12 and 12→1, unchanged minutes, forward hand endpoints, target-derived count/label/speech and existing seeded exposure/art snapshots. Regression tested `881eddb` plus final scoped source/browser diff. Integrated unrelated Tangram #384 as `d6216f7`; no Clock Tower dependency changed. Build and ghost finger passed on that integrated base plus the same diff.
+- Passed `BROWSER_SUITE=woods WOODS_ONLY=clock CLOCK_LEVELS=6,7 GAME_URL=http://localhost:5190 npm run test:browser` at 16:58:47 UTC: free replay, old/new times and forward animation endpoint, zero-labelled rim and target arc, two misses/one hint, four correct tasks and one saved sticker per round; no page errors. Portraits `test-results/browser/clock-tower-{6,7}-explanation-portrait.png` reviewed: overlays/labels readable, bell/hand guide/pet clear.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=clock-tower FINGER_LEVELS=6,7` at the same URL at 17:00:12 UTC: clean 18.4 s / 23.8 s, zero misses/hints and no page errors. Initial regression timeouts were diagnosed by `test-results/clock-explanation-probe.mjs`: animation finished while duplicated feedback speech was still pending; explanations now replace duplicate wrong/success/help lines, without widening the browser wait. Isolated Chromium ran outside the sandbox. Owned Vite stopped; syntax/links/diff checked.
+- Not run: unchanged level 3 browser play, broader unit/browser/world/couch/offline suites. No navigation/persistence/assets change. Real iPad speech/touch and child understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device); new levels, appointment art and unresolved decisions excluded.
+
+## 2026-10-15 — Tangram Town shovel picture
+
+- [PR #384](https://github.com/rjdunlap/neo/pull/384), `codex/tangram-shovel-picture`. Tested base `1fc7729`, claim `cdfc7cd` and scoped source diff: a rectangle handle/trapezoid blade picture in existing levels 1–3 (pools 5/7/8; twenty-two pictures total). Other pools, rules, bands, saves and help unchanged; existing how-to remains accurate.
+- Passed `npm run typecheck` and `npx vitest run src/games/tangram-town/logic.test.ts` (13 tests): every pooled picture's bounds/no overlap, seeded trays, useful hints and ghost-finger solution rules.
+- Passed `node test-results/tangram-shovel.mjs` at `http://localhost:5191`, forcing shovel in an isolated runtime level-3 pool: real taps, quarter turns and drags finish with zero misses/hints, one saved sticker and no page errors. Portrait `test-results/browser/tangram-shovel-portrait.png` reviewed: connected handle/blade reads as shovel, controls and pet clear.
+- Initial Chromium sandbox startup denied; elevated isolated run passed. Initial probe released before the existing 0.45 s piece-return completed (one miss); 550 ms waits passed without a product fix. Owned Vite server stopped; links/diff checked.
+- Not run: build, full suites or `fingerdemo` (content-only tier). Real iPad touch/speech, picture recognition and child play remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).

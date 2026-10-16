@@ -4671,14 +4671,26 @@ async function next() {
   }
 
   // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 5 && (!only || only === 'bumper'); level++) {
-    if (level === 1 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
+  const bumperLevels = process.env.BUMPER_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 9].filter(l => l >= Number(process.env.FROM_LEVEL || 1));
+  for (const level of (!only || only === 'bumper') ? bumperLevels : []) {
+    if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('bumper-garden', level);
     await page.waitForTimeout(400);
+    if (level === 6 || level === 9) await screenshot(`bumper-garden-${level}`);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const result = await page.evaluate(async () => {
       const g = neo.scene.game;
       const { FLIPPER, TABLE } = await import('/src/games/bumper-garden/logic.ts');
+      if (g.plan.start) {
+        const { orderNumbers } = await import('/src/games/bumper-garden/logic.ts');
+        const sequence = orderNumbers(g.plan);
+        const pictured = g.numberStrip.children.filter(c => typeof c.text === 'string').map(c => Number(c.text));
+        if (JSON.stringify(pictured) !== JSON.stringify(sequence) || g.next !== sequence[0]) throw new Error('Bumper sequence strip/start mismatch');
+        const wrong = g.flowers.findIndex(f => f.bumper.number !== null && f.bumper.number !== g.next);
+        const before = { next: g.next, misses: g.misses, hints: g.hints };
+        g.bumped(wrong); // The physics may bump an out-of-order flower; it only chimes.
+        if (g.next !== before.next || g.misses !== before.misses || g.hints !== before.hints || g.flowers[wrong].bloomed) throw new Error('Out-of-order bump changed progress');
+      }
       const flipNear = () => {
         const b = g.ball;
         if (g.state !== 'flying' || b.vy <= 0 || b.y < FLIPPER.y - 90) return;
@@ -4709,12 +4721,12 @@ async function next() {
       if (!g.finished) throw new Error(`Bumper never finished: next ${g.next}, bloomed ${g.flowers.filter((f) => f.bloomed).length}`);
       return { launches: g.launches, misses: g.misses, hints: g.hints };
     });
-    await screenshot(`bumper-garden-${level}`);
+    if (level !== 6 && level !== 9) await screenshot(`bumper-garden-${level}`);
     await finished('bumper-garden');
     const r = await score('bumper-garden');
     if (mode === 'spring' || mode === 'bloom') assert.deepEqual(r, [0, 0], `bumper ${level} score`);
     else assert.ok(r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints, `bumper ${level} score ${r}`);
-    if (level === 1 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bumper Garden ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`);
   }
 
@@ -5592,14 +5604,20 @@ async function woodsBatch() {
   }
 
   if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
-    if (level === 1) await page.evaluate(async () => {
+    if (level === 1 || process.env.NIGHT_ROOM) await page.evaluate(async ({ level, room }) => {
       const { goodnightRoom } = await import('/src/games/goodnight-room/index.ts');
       const { Rng } = await import('/src/engine/random.ts');
+      const { makeNight, planFor } = await import('/src/games/goodnight-room/logic.ts');
+      let seed = 1;
+      const wanted = room || 'barn';
+      while (seed < 1000 && makeNight(planFor(level), new Rng(seed)).setting.id !== wanted) seed++;
+      if (seed === 1000) throw new Error(`No seeded ${wanted} room at level ${level}`);
       const create = goodnightRoom.create;
-      goodnightRoom.create = (ctx) => { goodnightRoom.create = create; return create({ ...ctx, rng: new Rng(1) }); };
-    });
+      goodnightRoom.create = (ctx) => { goodnightRoom.create = create; return create({ ...ctx, rng: new Rng(seed) }); };
+    }, { level, room: process.env.NIGHT_ROOM });
     await launch('goodnight-room', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (process.env.NIGHT_ROOM) assert.equal(await page.evaluate(() => neo.scene.game.setting.id), process.env.NIGHT_ROOM);
     if (mode === 'except') await page.evaluate(() => {
       const g = neo.scene.game;
       const say = g.ctx.say.bind(g.ctx);
@@ -5624,10 +5642,10 @@ async function woodsBatch() {
     if (level === 5 || level === 6 || level === 7 || level === 8 || level === 9) {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
-      await screenshot(`goodnight-room-${level}-portrait`);
+      await screenshot(`goodnight-room-${process.env.NIGHT_ROOM || 'random'}-${level}-portrait`);
     }
     if (level === 1) {
-      assert.equal(await page.evaluate(() => neo.scene.game.setting.id), 'barn');
+      assert.equal(await page.evaluate(() => neo.scene.game.setting.id), process.env.NIGHT_ROOM || 'barn');
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
       await screenshot('goodnight-room-barn-portrait');

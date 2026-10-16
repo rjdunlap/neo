@@ -11,7 +11,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, NOTE_STEP, planFor, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, noteFor, planFor, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -75,6 +75,28 @@ class Sleeper extends Container {
       eyes(g, 0, -205, open, 6);
       this.glow.clear();
       if (open) this.glow.ellipse(0, -120, 120, 90).fill({ color: 0xfff3a0, alpha: 0.35 });
+    } else if (this.thing === 'campfire') {
+      g.ellipse(0, 42, 65, 18).fill(wood.line);
+      g.moveTo(-44, 35).lineTo(42, 56).moveTo(-42, 56).lineTo(44, 35).stroke({ width: 14, color: wood.fill, cap: 'round' });
+      // A sleeping fire banks down to warm coals; the lantern is the tent's one light.
+      if (open) {
+        g.poly([-48, 30, -35, -20, -15, -5, 0, -68, 28, -15, 40, -28, 52, 30]).fill(swatch.orange.fill);
+        g.poly([-22, 30, -12, 0, 0, -30, 25, 30]).fill(swatch.yellow.fill);
+      } else g.ellipse(0, 32, 30, 8).fill(swatch.orange.line);
+      eyes(g, 0, 20, open, 5);
+    } else if (this.thing === 'pot') {
+      g.roundRect(-46, -35, 92, 76, 20).fill(swatch.blue.fill).stroke({ width: 5, color: swatch.blue.line });
+      g.roundRect(-62, -22, 124, 22, 10).stroke({ width: 6, color: swatch.blue.line });
+      g.ellipse(0, -36, 50, 12).fill(swatch.blue.light).stroke({ width: 4, color: swatch.blue.line });
+      g.circle(0, -51, 10).fill(swatch.blue.line);
+      eyes(g, 0, 10, open, 6);
+    } else if (this.thing === 'anchor') {
+      g.circle(0, -44, 17).stroke({ width: 10, color: swatch.blue.line });
+      g.moveTo(0, -27).lineTo(0, 52).moveTo(-32, -6).lineTo(32, -6)
+        .moveTo(-52, 16).quadraticCurveTo(-48, 52, 0, 52).quadraticCurveTo(48, 52, 52, 16)
+        .stroke({ width: 12, color: swatch.blue.line, cap: 'round' });
+      g.poly([-63, 28, -52, 6, -38, 28]).poly([38, 28, 52, 6, 63, 28]).fill(swatch.blue.line);
+      eyes(g, 0, 23, open, 4);
     } else if (this.thing === 'clock') {
       g.circle(0, 0, 62).fill(0xffffff).stroke({ width: 8, color: wood.line });
       g.moveTo(0, 0).lineTo(0, -38).moveTo(0, 0).lineTo(26, 10).stroke({ width: 6, color: ink, cap: 'round' });
@@ -181,6 +203,21 @@ class GoodnightRoom implements Game {
       this.room.roundRect(v.w * 0.55, v.h * 0.47, v.w * 0.22, 20, 6).fill(wood.line);
       for (const [x, y] of SLOTS.filter((_, i) => i !== 3)) this.room.ellipse(v.w * x, v.h * y + 4, 70, 18).fill(swatch.yellow.light);
     }
+    if (this.setting.id === 'tent') {
+      this.room.rect(0, 0, v.w, floor).fill(swatch.green.light);
+      this.room.poly([0, floor, v.w * 0.5, 0, v.w, floor]).fill(swatch.yellow.light)
+        .stroke({ width: 8, color: swatch.green.line });
+      this.room.moveTo(v.w * 0.5, 0).lineTo(v.w * 0.5, floor).stroke({ width: 4, color: wood.fill });
+      this.room.roundRect(v.w * 0.55, v.h * 0.46 + 44, v.w * 0.22, 16, 6).fill(wood.line);
+      for (const i of [0, 1, 2]) {
+        const [x, y] = SLOTS[i];
+        this.room.roundRect(v.w * x - 65, v.h * y - 15, 130, 40, 18).fill(swatch.green.fill);
+      }
+    } else if (this.setting.id === 'boat') {
+      this.room.rect(0, 0, v.w, floor).fill(wood.light);
+      for (let y = 20; y < floor; y += 65) this.room.moveTo(0, y).lineTo(v.w, y).stroke({ width: 3, color: wood.fill });
+      this.room.roundRect(v.w * 0.14, v.h * 0.87, v.w * 0.34, 30, 12).fill(swatch.blue.fill);
+    }
     this.drawSky();
     for (const s of this.sleepers) {
       const p = this.spot(s.thing);
@@ -207,11 +244,24 @@ class GoodnightRoom implements Game {
     const v = this.view;
     const x = v.w - 260;
     const g = this.sky.clear();
-    g.roundRect(x - 10, 50, 220, 180, 16).fill(wood.fill);
-    g.roundRect(x, 60, 200, 160, 10).fill(this.stars ? NIGHT : 0x6f86c9);
-    g.circle(x + 150, 110, 28).fill(swatch.yellow.light).circle(x + 162, 102, 24).fill(this.stars ? NIGHT : 0x6f86c9);
-    for (let i = 0; i < this.stars; i++) g.poly(starPoints(9, 4).map((n, k) => n + (k % 2 ? 80 + ((i * 37) % 110) : x + 20 + ((i * 53) % 110)))).fill(swatch.yellow.fill);
-    g.rect(x + 97, 60, 6, 160).rect(x, 137, 200, 6).fill(wood.fill);
+    const boat = this.setting.id === 'boat';
+    if (boat) {
+      g.circle(x + 100, 140, 100).fill(swatch.yellow.fill).stroke({ width: 6, color: wood.line });
+      g.circle(x + 100, 140, 86).fill(this.stars ? NIGHT : swatch.blue.line);
+      for (const [dx, dy] of [[0, -92], [92, 0], [0, 92], [-92, 0]]) g.circle(x + 100 + dx, 140 + dy, 4).fill(wood.line);
+    } else {
+      g.roundRect(x - 10, 50, 220, 180, 16).fill(wood.fill);
+      g.roundRect(x, 60, 200, 160, 10).fill(this.stars ? NIGHT : 0x6f86c9);
+    }
+    g.circle(x + 150, 110, 28).fill(swatch.yellow.light).circle(x + 162, 102, 24).fill(this.stars ? NIGHT : boat ? swatch.blue.line : 0x6f86c9);
+    for (let i = 0; i < this.stars; i++) {
+      const angle = i * 2.4;
+      const radius = 28 + (i * 17) % 40;
+      const sx = boat ? x + 100 + Math.cos(angle) * radius : x + 20 + ((i * 53) % 110);
+      const sy = boat ? 140 + Math.sin(angle) * radius : 80 + ((i * 37) % 110);
+      g.poly(starPoints(9, 4).map((n, k) => n + (k % 2 ? sy : sx))).fill(swatch.yellow.fill);
+    }
+    if (!boat) g.rect(x + 97, 60, 6, 160).rect(x, 137, 200, 6).fill(wood.fill);
   }
 
   private drawDark() {
@@ -270,7 +320,7 @@ class GoodnightRoom implements Game {
 
   private async goodnight(s: Sleeper, speak = true) {
     s.sleep();
-    sfx.bell(NOTE_STEP[s.thing], 0.25);
+    sfx.bell(noteFor(s.thing, this.setting), 0.25);
     this.stars = this.sleepers.filter((x) => x.asleep).length * 3;
     this.drawSky();
     this.drawDark();

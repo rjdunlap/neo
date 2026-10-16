@@ -47,11 +47,10 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
-1. **`goodnight-room`, tent and boat cabin rooms**: new seeded rooms, lap to pre-K; level 10 *goodnight everywhere* follows as its own slice. Content tier. [Dive slices 8–9](deep-dives/goodnight-room.md#build-slices-in-order)
 2. **`dot-link`, marks in the dots**: new art only. Existing-game tier, `fingerdemo` at 6. [Dive slice 1](deep-dives/dot-link.md#build-slices-in-order)
-3. **`bumper-garden`, flipper-ready ring**, then **Pond and Hive tables** as a second slice. Feel tier, then rules and art. [Dive slices 2–3](deep-dives/bumper-garden.md#build-slices-in-order)
+3. **`bumper-garden`, Pond and Hive tables**. Rules and art tier. [Dive slice 3](deep-dives/bumper-garden.md#build-slices-in-order)
 4. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)
-5. **`critter-crossing`, bank shelf**, then **a visible "not" entry** as a second slice. Existing-game tier, then new-levels tier. [Dive slices 1 and 4](deep-dives/critter-crossing.md#build-slices-in-order)
+5. **`critter-crossing`, a visible "not" entry** between levels 1 and 2. Rule tests, one play, `fingerdemo`. [Dive slice 4](deep-dives/critter-crossing.md#build-slices-in-order)
 6. **`critter-sort`, the worked example at levels 1–3 and 5** (slice 1's remainder); then levels 7, 8, 9 and 11, one per slice. [Dive slices 1, 4–7](deep-dives/critter-sort.md#build-slices-in-order)
 7. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 8. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)
@@ -63,6 +62,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 14. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
 
 16. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
+17. **Bubble Pop mode gallery** (chunk 20): a named, pictured mode and a ladder on the intro card. Shell tier. [Definition](definitions/mode-gallery.md#build-slice)
 
 ### Chunks
 
@@ -79,7 +79,7 @@ Chunk numbers are stable IDs that other documents cite; rows are sorted by what 
 | 9 | **Couch games that score on seeded boards** (Garden Rows, Treasure Map, Quick Tricks) | ready | One game: `control()`, `autoplay`, a catalog entry and a tier slot | `BROWSER_SUITE=couchgames COUCH_ONLY=<id>` | [Extending couch play](DESIGN.md#extending-couch-play) |
 | 12 | **Diagnose the flaky Peg Garden touch suite** | ready | A small probe of `BROWSER_SUITE=batch BATCH_ONLY=pegs`; record a known flake if it does not reproduce | A probe script | [Verification](VERIFICATION.md) |
 | 19 | **Discovery: direct play and short mixes** | ready (D1b) | **D1b**: build the frozen pictured Next game/Another flow for the reviewed lap/toddler touch pool, retaining intro, result and return behavior | Shell/navigation tier | [Discovery actions](#discovery-actions), [research](DISCOVERY.md) |
-| 20 | **Understandable modes and levels** | define | Define an illustrated Bubble Pop intro gallery ordered by `levelsInOrder` within the resolved `playBand`; save nothing until completion; preserve pins | Docs only; then shell tier | [N4](FAMILY-EXPERIENCE.md#n4-show-modes-not-only-numbers) |
+| 20 | **Understandable modes and levels** | ready | Build the Bubble Pop mode gallery per the definition: named, pictured modes in `levelsInOrder` within the resolved `playBand`, nothing saved until completion, pins preserved | Shell tier: typecheck, unit tests, build, `howtolevel` and `howto HOWTO_ONLY=bubble-pop`, two screenshots | [N4](FAMILY-EXPERIENCE.md#n4-show-modes-not-only-numbers); [Definition](definitions/mode-gallery.md) |
 | 21 | **Visual identity, game feel and comfort** | ready | The V2 Animal Snack busy-touch pilot, then the V1 Barnyard land scene; then a Fill and Dump material-feedback pilot definition (V3, still define) | Existing-game tier; then shared-visuals tier | [Definition V1–V2](definitions/visual-identity.md), [V1–V6](FAMILY-EXPERIENCE.md#visual-character-and-game-feel) |
 | 22 | **A world worth revisiting** (owns chunk 7's Woodland Picnic) | define | Define the Woodland Picnic's first scene, a few existing-game steps and one visible consequence | Docs only; then story/navigation/save tier | [W1–W2](FAMILY-EXPERIENCE.md#a-world-to-revisit-and-a-family-to-play-with) |
 | 7 | **A second story episode** | define (the Woodland Picnic is chunk 22's; do not dispatch both) | Only a different episode: a missing melody or a mixed-up delivery. Use the [typed story result](DESIGN.md#proposed-story-results) only if it carries something she made | Docs only | [Story episodes](IDEAS.md#story-episodes-and-the-personal-world) |
