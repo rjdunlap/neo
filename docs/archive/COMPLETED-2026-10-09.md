@@ -1060,3 +1060,8 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 ### Tangram Town broom — 2026-10-16
 
 [PR #456](https://github.com/rjdunlap/neo/pull/456): one two-piece broom added only to existing levels 1–3, rectangle handle joined to a roof-shaped brush; twenty-four pictures total. No shapes, levels, saved IDs/pins, bands, stickers or input changes. Typecheck, 14 focused rules and a seeded level-3 real-turn/drag completion with portrait review passed. More pictures remain a content candidate in the deep dive, outside this completed slice.
+
+
+## Photo Safari level 5 both clues (2026-10-16)
+
+[PR #472](https://github.com/rjdunlap/neo/pull/472), `codex/safari-five`, dispatch `safari-five-20261016T212806Z`: existing level 5 now puts three same-kind animals at two places. One distractor shares the target's action and another shares its place, making both spoken clues necessary. Reuses level 7's broad place drawings, nearest-body taps and demonstration receiver; IDs, pins, ranges, other levels, actions, journal and saves unchanged. [Proof](../VERIFICATION.md#2026-10-16--photo-safari-level-5-both-clues).

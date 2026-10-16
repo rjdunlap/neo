@@ -8,7 +8,7 @@ group('Photo Safari', () => {
       for (let seed = 1; seed <= 300; seed++) {
         const scene = makeScene(plan, new Rng(seed));
         expect(scene.sightings).toHaveLength(plan.animals);
-        if (plan.mode !== 'clues') expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(plan.animals);
+        if (plan.mode !== 'clues' && plan.mode !== 'both') expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(plan.animals);
         if (plan.mode === 'snap') {
           expect(scene.target).toBe(-1);
           continue;
@@ -30,6 +30,20 @@ group('Photo Safari', () => {
     expect(shared).toBeGreaterThan(100);
   });
 
+  it('level 5 needs action and place together even when the animal name is known', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const scene = makeScene(PLANS[4], new Rng(seed));
+      expect(makeScene(PLANS[4], new Rng(seed))).toEqual(scene);
+      const t = scene.sightings[scene.target];
+      expect(scene.sightings.every((s) => s.animal === t.animal)).toBe(true);
+      expect(scene.sightings.filter((s) => matches('doing', s, t))).toHaveLength(2);
+      expect(scene.sightings.filter((s) => matches('where', s, t))).toHaveLength(2);
+      expect(scene.sightings.filter((s) => matches('both', s, t))).toEqual([t]);
+      expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(2);
+      expect(request('both', scene)).toBe(describe('both', t));
+    }
+  });
+
   it('requires both clues with exactly one action-only, place-only and neither distractor', () => {
     for (let seed = 1; seed <= 300; seed++) {
       const scene = makeScene(PLANS[6], new Rng(seed));
@@ -45,8 +59,8 @@ group('Photo Safari', () => {
   });
 
   it('keeps shared actors 150 units apart and gives each a 100-unit nearest-target area after resizing', () => {
-    for (let seed = 1; seed <= 100; seed++) {
-      const scene = makeScene(PLANS[6], new Rng(seed));
+    for (const plan of [PLANS[4], PLANS[6]]) for (let seed = 1; seed <= 100; seed++) {
+      const scene = makeScene(plan, new Rng(seed));
       for (const [w, h] of [[1024, 768], [1366, 768], [1024, 1366], [1180, 820]]) {
         const positions = sightingPositions(scene.sightings, w, h);
         positions.forEach((p, i) => {
