@@ -28,11 +28,10 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Dispatch `tangram-picture-20261016T161705Z`; worker `01a14581-731a-7d50-96c7-c83872d9eaa9`, host `local`, branch `codex/tangram-two-piece-picture`, claim `33e2e4e`, [PR #456](https://github.com/rjdunlap/neo/pull/456). Base `d255ef9`; integrated docs-only coordinator dispatch #455 (`deeb6b6`) at `1e28b9c`. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks.
-- Implemented only **broom**: rectangle handle meets triangular roof brush, added to compatible existing levels 1–3. Pools 6/8/9; 24 pictures total. Shapes, level IDs/pins, bands, stickers, input, saves and unresolved decisions preserved.
-- Admission **32% / 76%**, scope **35% / 77%**, pre-code **40% / 78%**, pre-verification **41% / 78%**, pre-publication **44% / 78%**; resets `1792178084` / `1792650157`, ordinary usage allowed. Estimate **18.75 / 3.75 points** fit actual remaining. No competing implementation/claim; independent research docs preserved.
-- [Proof](VERIFICATION.md#2026-10-16--tangram-town-broom-picture): typecheck, 14 focused rules (contact/nonoverlap/bounds/pools, seeded hint/bot solvability); isolated seeded level-3 real turn/drag completion with no misses/hints, one sticker, no page errors and reviewed portrait at `http://localhost:5197`. Owned Vite stopped. Broad suites/build/offline and separate ghost-finger browser run not run (unchanged interaction/content tier); device/child recognition remains open.
-- Next: publish and merge #456, confirm deployment, then stop. Coordinator reconciles final post-commit reading from worker response once; do not dispatch another slice here.
+- Dispatch `barnyard-identity-20261016T171305Z`; worker `01a145b5-14be-7a70-bf23-05834da67fa9`, host `local`, branch `codex/barnyard-land-identity`, draft PR pending. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks.
+- Scope: only V1 build slice 2 in [the definition](definitions/visual-identity.md#build-slices-in-order): Barnyard land barn silhouette, fence/straw edge, cow's milk pail and once-per-session pentatonic marimba greeting. No game backgrounds, other lands, input, saves, layout/navigation or music-loop changes.
+- Worker admission/scope **64% / 81%**; resets `1792178084` / `1792650157`, ordinary usage allowed. Estimate **18.75 / 3.75 points** fits remaining allowance. Fresh overlap check found no competing implementation; independent research and coordinator work preserved.
+- Proof: not run (claim only). Next: publish claim/draft PR, implement, run the definition's shared-visuals checks, publish and merge, then stop.
 
 ## Usage observations
 
