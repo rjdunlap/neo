@@ -54,7 +54,7 @@ export interface CrossPlan {
   name: string;
   mode: CrossMode;
   /** Which kinds of secret rule a round may draw. */
-  gates: 'one' | 'and' | 'or' | 'mixed';
+  gates: 'one' | 'not' | 'and' | 'or' | 'mixed';
   critters: number;
   /** Rules offered when it is time to guess, the true one among them. */
   options: number;
@@ -73,6 +73,8 @@ export const PLANS: CrossPlan[] = [
   { name: 'A secret rule that may be "not" something or two parts: use all the evidence', mode: 'hidden', gates: 'mixed', critters: 6, options: 4, minTests: 3, rounds: 2 },
   { name: 'A secret rule with "or": a critter crosses if it fits either part, so most critters cross', mode: 'hidden', gates: 'or', critters: 6, options: 4, minTests: 3, rounds: 2 },
   { name: 'Two pictures are still standing: choose the critter who can settle which one is the rule', mode: 'hidden', gates: 'mixed', critters: 6, options: 2, minTests: 3, rounds: 2, settle: true },
+  // Appended entry: saved IDs 1–7 retain their rules. Pre-K places this between 1 and 2.
+  { name: 'The sign shows a picture with a slash: send the critters that do not fit that picture', mode: 'visible', gates: 'not', critters: 5, options: 0, minTests: 0, rounds: 2 },
 ];
 
 export const planFor = (level: number): CrossPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];

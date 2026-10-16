@@ -17,7 +17,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 3 },
+  prek: { min: 1, max: 8, order: [1, 8, 2, 3] },
   school: { min: 2, max: 7 },
 };
 
@@ -616,6 +616,7 @@ export const critterCrossing: GameModule = {
   skills: ['deduction', 'using-evidence', 'attributes', 'reasoning'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [8],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Ask: who crossed, and who had to wait? What do the ones who crossed have in common?',

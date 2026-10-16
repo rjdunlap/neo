@@ -81,7 +81,7 @@ Level 1 is already simple enough to open to preschool in principle (five critter
 
 ### Easier entries and levels between existing ones
 
-- **A visible "not" gate** (the sign shows the picture with a red slash) placed between levels 1 and 2 as an appended entry ID and `order` slot, so pre-K sees "not" before it has to infer it. Declare it in `entryLevels`. Rule test: a visible `not` round has critters on both sides; the bot sends the critters that do not fit.
+- **Visible "not" gate built:** appended ID 8 sits between levels 1 and 2 for pre-K; see slice 4 below.
 - **A school start at 2** is deliberate: a school child skips the sign-only level. Keep it.
 
 ### Left out on purpose
@@ -99,7 +99,7 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 1. **Bank shelf** (built 2026-10-15, `claude/critter-crossing-bank-shelf`; crossed / waited copies on hidden levels). Screenshot in landscape and portrait, `fingerdemo` for `critter-crossing`; no rule change. Tier: existing-game bug fix on an unchanged interaction.
 2. **Level 6, Either one**: `or` gates, words, lookalikes, voice, how-to, README and GAMES lines, ghost finger. Tier: typecheck, that game's rule tests, one browser play of the new top level and `fingerdemo` at it.
 3. **Level 7, Settle it** (built 2026-10-15, `claude/critter-crossing-settle-it`): the splitter-choosing round. Same tier as slice 2.
-4. **Visible "not" entry** between levels 1 and 2 with `order` and `entryLevels`. Rule tests, one play, `fingerdemo`.
+4. **Visible "not" entry** (built 2026-10-15, [PR #422](https://github.com/rjdunlap/neo/pull/422)): stable ID 8, pre-K order `[1, 8, 2, 3]`, pictured/slashed rule and `entryLevels`; school remains 2–7. Rule tests, filtered play and `fingerdemo`; [build note](../archive/COMPLETED-2026-10-09.md#critter-crossing-visible-not-entry-2026-10-15).
 5. **Third critter feature**, shared with Critter Sort (after decision 2): rule tests for both games plus the fairness test across the larger pool.
 6. **Preschool opening** (after decision 1): levels table, registry and lands tests, voice.
 7. **Be the gate** (after decision 3): a new interaction; its own definition first.

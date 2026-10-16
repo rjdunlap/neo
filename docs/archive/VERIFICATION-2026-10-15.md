@@ -292,3 +292,18 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`: passed.
 - Not run: typecheck, units, build, browser, `fingerdemo`, device (no code changed).
 - Open: whether the Barnyard is recognizable and whether the old Animal Snack window felt laggy stay person checks (the Barnyard one in [DEVICE-CHECKS.md](../DEVICE-CHECKS.md), the lag one in the [dive](../deep-dives/animal-snack.md)).
+
+## 2026-10-15 — Lands C3, pause sheet Start again, Show a hint and a pad
+
+- [PR #401](https://github.com/rjdunlap/neo/pull/401), `claude/lands-c3-pause-actions` (feature commit `c66d758`, base `0c1b24d`): the island pause sheet lists a round's *Start again* and *Show a hint* (`Scene.pauseActions()`, `pauseLabels()`), and a pad moves over the sheet (`PadSheet`) and presses on release.
+- Passed `npm run typecheck`, `npm test` (152 files, 1,341 tests, including new PadSheet and pauseLabels tests) and `npm run build`.
+- Passed `BROWSER_SUITE=grownups` on `http://localhost:5505`, extended with Sudoku Garden: the sheet shows Keep playing, Start this bed again and Show a hint; the hint click gives hints 1; with a faked `navigator.getGamepads`, Start opens, the d-pad moves and wraps, A on Start again resets the grid and hints stay 1; Bubble Pop's sheet shows no extra entries. Screenshot `pause-sheet-actions` reviewed.
+- Not run: `world`, offline (no route, save or asset change), a real pad or iPad ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-10-15 — Color Garden Tap and it hops
+
+- [PR #399](https://github.com/rjdunlap/neo/pull/399), slice 2 only: stable level 9, four tap-only fruits/two color baskets, naming, lap/toddler order and entry landing, scoped how-to and tap ghost finger. Old levels/pins retained.
+- Passed typecheck, all 152 unit files / 1,333 tests (including deal/routing, registry ordering, entry landing, lands and how-to), build, links and diff check. Tested base `53c59df` plus claim `4d0d799` and feature diff.
+- Passed `BROWSER_SUITE=originals ORIGINALS_ONLY=garden GARDEN_LEVELS=9 GAME_URL=http://localhost:5183`: rapid/repeated taps, each own basket, inert basket touches, zero misses/hints, one sticker, history after reload. Portrait `test-results/browser/color-garden-9-portrait.png` reviewed for targets/guide clearance. Wrong answer and hint are impossible in this mode.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=color-garden FINGER_LEVELS=9` on the same URL: clean lap demonstration in 8.3 s. Temporarily disabling the tap plan failed the regression; restored identical runtime and strengthened regression passed. Initial sandbox Chromium launch failed on macOS Mach permission; isolated escalated Chromium passed.
+- Not run: other game/browser suites, world/offline (no navigation/persistence/assets changes), real iPad speech/touch or child response ([device check](../DEVICE-CHECKS.md)). Owned Vite stopped after checks.

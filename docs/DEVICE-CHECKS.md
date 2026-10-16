@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Critter Crossing visible not entry (ID 8, #422):** hear the reused negated rule on iPad and observe whether a child reads the picture/red slash as “not” before the hidden-rule levels. Check touch reach and the demonstration in both orientations; browser play does not establish learning or device speech.
+
 - [ ] **Bubble Pop mode gallery (built 2026-10-16, #412):** on an iPad, hear the 15 spoken mode lines from the picture tile; ask whether a grown-up finds the named levels and the ladder (green suggested dot, red pin) clearer than numbers. A second game (Pet Says or Jelly Drums) waits on this look.
 
 - [ ] **Critter Sort worked example (built 2026-10-16, #418):** on an iPad at levels 1, 2, 3 and 5, hear "Look, the {who} is already in its place." after the rule and check the pet's name for the critter reads naturally; observe whether a child sees the critter in the hoop as the model before she drags.

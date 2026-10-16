@@ -28,7 +28,7 @@ describe('Critter Crossing', () => {
 
   it('climbs: more critters to try, more pictures, more to try before guessing', () => {
     // From the first secret rule on (the visible level is a different kind of round).
-    PLANS.slice(2).forEach((p, i) => {
+    PLANS.slice(2, 7).forEach((p, i) => {
       expect(p.critters, p.name).toBeGreaterThanOrEqual(PLANS[i + 1].critters);
       expect(p.minTests, p.name).toBeGreaterThanOrEqual(PLANS[i + 1].minTests);
     });
@@ -113,6 +113,24 @@ describe('Critter Crossing', () => {
     }
   });
 
+  it('appends a visible not entry with both outcomes, without changing the old plans', () => {
+    const plan = planFor(8);
+    expect(plan).toMatchObject({ mode: 'visible', gates: 'not', critters: 5, rounds: 2 });
+    expect(PLANS.slice(0, 7).map(p => [p.mode, p.gates])).toEqual([
+      ['visible', 'one'], ['hidden', 'one'], ['hidden', 'one'], ['hidden', 'and'],
+      ['hidden', 'mixed'], ['hidden', 'or'], ['hidden', 'mixed'],
+    ]);
+    for (let seed = 1; seed <= 300; seed++) {
+      const round = makeRound(plan, new Rng(seed));
+      expect(round.gate.kind).toBe('not');
+      expect(round.options).toEqual([]);
+      const outcomes = round.critters.map(c => passes(c, round.gate));
+      expect(outcomes).toContain(true);
+      expect(outcomes).toContain(false);
+      if (round.gate.kind === 'not') for (const c of round.critters) expect(passes(c, round.gate)).toBe(!fits(c, round.gate.rule));
+    }
+  });
+
   describe('level 6, "or" gates', () => {
     const plan = PLANS.find((p) => p.gates === 'or')!;
     const rounds = Array.from({ length: 300 }, (_, i) => makeRound(plan, new Rng(i + 1)));
@@ -161,7 +179,7 @@ describe('Critter Crossing', () => {
     const plan = PLANS.find((p) => p.settle)!;
     const rounds = Array.from({ length: 300 }, (_, i) => makeRound(plan, new Rng(i + 1)));
 
-    it('is the top level, and starts with two tried critters (one crossed, one waited) that leave both pictures standing', () => {
+    it('starts with two tried critters (one crossed, one waited) that leave both pictures standing', () => {
       expect(plan).toBe(planFor(7));
       for (const r of rounds) {
         expect(r.options).toHaveLength(2);
@@ -213,13 +231,14 @@ describe('Critter Crossing', () => {
     };
 
     it('on a visible round sends exactly the critters that fit, and none that would be turned back', () => {
-      const plan = PLANS.find((p) => p.mode === 'visible')!;
-      for (let seed = 1; seed <= 300; seed++) {
-        const round = makeRound(plan, new Rng(seed));
-        const { tried, guess } = play(round, plan);
-        expect(guess).toBeNull();
-        expect(tried.every((t) => t.passed), `seed ${seed}`).toBe(true);
-        expect(tried.length).toBe(round.critters.filter((c) => passes(c, round.gate)).length);
+      for (const plan of PLANS.filter((p) => p.mode === 'visible')) {
+        for (let seed = 1; seed <= 300; seed++) {
+          const round = makeRound(plan, new Rng(seed));
+          const { tried, guess } = play(round, plan);
+          expect(guess).toBeNull();
+          expect(tried.every((t) => t.passed), `seed ${seed}`).toBe(true);
+          expect(tried.length).toBe(round.critters.filter((c) => passes(c, round.gate)).length);
+        }
       }
     });
 
