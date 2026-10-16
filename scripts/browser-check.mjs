@@ -8940,7 +8940,7 @@ async function couchCourse() {
   // --- The Frozen Ponds, Player 1: ice blocks read from the board, pushed with the d-pad, a push counted as a slide.
   await page.reload(); await ready(); await makePads(); await toCourse('frozen');
   assert.equal(await page.locator('.couch-sheet h1').innerText(), 'The Frozen Ponds');
-  assert.match(await page.locator('.couch-sheet').innerText(), /Pushing an ice block is a slide too/);
+  assert.match(await page.locator('.couch-sheet').innerText(), /fewest slides the whole course can take is 31/);
   const frozenBefore = await stickers();
   await page.getByRole('button', { name: 'Player 1 plays', exact: true }).click();
   await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'game');
