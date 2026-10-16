@@ -60,7 +60,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 14. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
 
 16. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
-17. **Bubble Pop mode gallery** (chunk 20): a named, pictured mode and a ladder on the intro card. Shell tier. [Definition](definitions/mode-gallery.md#build-slice)
+17. **Bubble Pop mode gallery** (chunk 20): a named, pictured mode and a ladder on the intro card. Shell tier. [Definition](definitions/mode-gallery.md#build-slice) *Claimed: branch `claude/bubble-pop-mode-gallery`.*
 
 ### Chunks
 
