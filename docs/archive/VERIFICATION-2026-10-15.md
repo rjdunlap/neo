@@ -408,3 +408,11 @@
 - Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=critternot`: two misses, one valid glow, both rounds, saved level-8 result/one sticker, no page errors. Landscape and portrait reviewed (`test-results/browser/critter-not-entry-{landscape,portrait}.png`). Initial harness tapped above the critter; corrected to its transformed body center (no game change).
 - Passed same URL `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-crossing FINGER_LEVELS=8`: 19.7 s, zero misses/hints. Links and `git diff --check` passed.
 - Not run: full units, other browser suites, offline/world (no persistence/navigation changes), real device/child checks; speech and slash interpretation remain in [DEVICE-CHECKS.md](../DEVICE-CHECKS.md).
+
+## 2026-10-15 — Critter Sort neither mat
+
+- [PR #423](https://github.com/rjdunlap/neo/pull/423), `codex/critter-sort-neither-mat`: tested base `3e44d62` plus working diff; explicit leaf mat at levels 2, 3 and 5, free bare grass, spoken reasons and mat-aware hints/completion/bot. Upstream integration at `f40a99f` added Woodland Picnic documentation only; gameplay evidence remains valid.
+- Installed this worktree's dependencies with `npm ci`; typecheck, nine Critter Sort rule tests (100 seeds per mat mode/view), final combined logic/how-to checks (27 tests) and build passed (existing chunk-size warning).
+- Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=3 TO_LEVEL=3`: two rounds, two misses/one hint, free grass, required mat sorting and saved reward; portrait screenshot reviewed. Initial portrait failure was logical coordinates supplied as CSS pixels, diagnosed with `test-results/probe-neither.mjs` and fixed with `stage.toGlobal`.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=3` clean in 24.1 s. Restoring the old completion condition made the regression fail at its required-mat assertion; verified code restored byte-for-byte.
+- Sandbox Chromium bootstrap was blocked; escalated isolated run passed. Not run: full suites, offline or iPad checks (one-game tier); device speech and child understanding of the mat remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
