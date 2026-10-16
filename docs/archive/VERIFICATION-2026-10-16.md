@@ -42,3 +42,29 @@
 - Docs only ([PR #432](https://github.com/rjdunlap/neo/pull/432), `claude/sink-float-make-it-float`): [Make it float](../definitions/make-it-float.md) defined as Sink or Float level 7 (school), routed to the roadmap's ready list, the idea notebook and the physics notes.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks apply; nothing is built.
 - Open: the build itself (new-interaction tier, `fingerdemo` at level 7); device speech and a child's reaction stay unchecked.
+
+## 2026-10-16 — Missing Melody definition
+
+- Docs only: [definitions/missing-melody.md](../definitions/missing-melody.md) defines chunk 7's preschool story episode (entry from Bumpy Hills; Song Maker 4, Sound Garden 2, Sing-Along Barn 3; no typed story result). Levels checked against each game's range in source at `239296f`.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code or browser checks; nothing built.
+- Open: the build, after the Woodland Picnic (chunk 22), with its story/navigation/save tier checks.
+## 2026-10-16 — Critter Sort level 9 This but not that
+
+- [PR #436](https://github.com/rjdunlap/neo/pull/436), `codex/critter-sort-nine`, worker `01a143f7-ff89-7560-8b89-30f08aa4e88a`, dispatch `critter-sort-nine-20261016T090734Z`: tested base `a9c650e` plus implementation diff. One A/not-B hoop, both-part speech, explicit mat and two diagrams; school appends 9, IDs/pins and pre-K preserved.
+- Passed typecheck, 47 focused Critter Sort/registry/how-to tests, and build (existing chunk warning). Across 400 seeds, level 9 accepts exactly A and not B, includes accepted/A-and-B/neither witnesses, avoids the previous pair, and has reachable hint/bot destinations in both views.
+- `GAME_URL=http://localhost:5189 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=9 TO_LEVEL=9`: both diagrams, one hoop, evidence categories, free grass, two misses/one hint, correct glow, mandatory mat completion, saved result/sticker and no page errors. Landscape and portrait screenshots reviewed.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=9` clean in 28.3 s. Initial sandbox launch blocked by Chromium bootstrap permissions; isolated run outside sandbox passed. Links and diff checked; owned Vite stopped after checks.
+- Not run: full unit suite, other browser suites, world/offline (no save/navigation/assets change), device speech/iPad/child checks. Device checks remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-16 — Tangram Town ship picture
+
+- [PR #434](https://github.com/rjdunlap/neo/pull/434), `claude/tangram-ship` (90799ef): a four-piece ship (hull, upright rectangle mast, a triangle sail each side) joins level 5's pool, now five; twenty-three pictures. No rule, band or save change.
+- Ran `npm run typecheck` and `npx vitest run src/games/tangram-town src/games/registry` (29 passed: overlap, picture box, pool membership, any-order fill, pool sizes).
+- One real-input probe (`test-results/ship-probe.mjs`, Vite at `http://localhost:5497`, school band, level 5 pinned, portrait 768x1024): one wrong drop counted one miss, every piece selected, turned and dragged home, round finished with a sticker, no page errors; start and built screenshots reviewed.
+- Not run: build (no shared files), the `creative` suite, `fingerdemo` (bot unchanged), a device, a child.
+## 2026-10-16 — Garden Rows couch play
+
+- [PR #433](https://github.com/rjdunlap/neo/pull/433), `claude/garden-rows-couch` (0e03cb2): Garden Rows joins couch play (ring over the bed, seed packets on a press, `autoplay()`, twin face-off on wrong plantings, last unlock tier); touch play unchanged.
+- Ran `npm run typecheck` and `npx vitest run src/couch src/games/garden-rows src/content` (161 passed; the howto test's bot-game count is now 25).
+- Passed `GAME_URL=http://localhost:5528 BROWSER_SUITE=couchgames COUCH_ONLY=garden-rows` twice (the second on 0e03cb2): intro, controller diagram lights with the bot, bot round through `control()`, one stop saved, sticker, child save untouched, no page errors. A probe screenshot (level 3, 1024x768) shows the ring on an empty spot with the packets open.
+- Not run: full `npm test`, build, full `couch`/`couchcourse` (trip and course code unchanged), offline, a portrait couch view, a real controller or TV.
