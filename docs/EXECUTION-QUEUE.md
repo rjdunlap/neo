@@ -28,11 +28,14 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Dispatch `tangram-picture-20261016T161705Z`; worker `01a14581-731a-7d50-96c7-c83872d9eaa9`, host `local`, branch `codex/tangram-two-piece-picture`, base `d255ef9`, PR pending. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks.
-- Assigned only one new consonant-named two-piece picture in compatible level 1–3 pools: **broom**, rectangle handle plus roof-shaped brush. Preserve shapes, level IDs/pins, bands, stickers, input and saves; unresolved decisions excluded.
-- Scope reading: **35% five-hour / 77% weekly used**, resets `1792178084` / `1792650157`, ordinary usage allowed; estimate **18.75 / 3.75 points** fits remaining **65% / 23%**. Fresh overlap check: no Tangram claim/open PR; other active chat is earth-materials docs research, not implementation. Clean source checkout; prior Clap slice merged #454.
-- Proof planned: typecheck, focused Tangram rules including contact/fit and seeded hint/bot solvability; one screenshot of the broom. No new interaction or levels; broad suites/build/offline unnecessary.
-- Next: publish docs-only claim/draft PR, implement just this picture, verify and publish, then stop. Device speech and child recognition remain person checks.
+- Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; preserve Git-locked checkout. Short-entry worker `01a14548-1785-7251-97f3-ca8b120b7d72` completed; [#454](https://github.com/rjdunlap/neo/pull/454) merged at `2bca358d670114de85bacfff18f85932ffbb7176`, deployment successful, slot released.
+- Newly admitted: **Tangram Town, one new two-piece picture in compatible existing 1–3 pools**, [source](deep-dives/tangram-town.md), first current ready-list line. Choose one recognizable unused consonant-named picture from existing five shapes; preserve rules, IDs/pins, bands, sticker art/input. Exclude new shapes/levels, other picture batches, saves and unresolved decisions.
+- Dispatch `tangram-picture-20261016T161705Z`; worker `01a14581-731a-7d50-96c7-c83872d9eaa9`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), title "Tangram Town: one new two-piece picture". Fresh project/local chat, minimal handoff, no history/model override; branch/claim PR pending; source `d255ef9`.
+- Admission 2026-10-16 16:17:05 UTC **32% five-hour / 76% weekly used**, resets `1792178084` / `1792650157`; ordinary usage allowed. Conservative gameplay estimate **18.75 / 3.75 points** fits actual remaining **68% / 24%**, no daily cap/reserve. Docs estimate remains 16.25 / 2.5.
+- Required content proof: typecheck/rules for geometry/nonoverlap, bounds, reachable slots and seeded pool inclusion; one new-art screenshot and proportionate filtered play. Worker implementation/checks **not run by coordinator**; device recognition/child checks stay open. Roadmap still may retain a narrowly refreshed future-picture pointer, not built history.
+- Prior proof reused: #454 typecheck, 59 focused tests, build, filtered play, portrait and clean 10.0s ghost finger; deployment successful, tree clean/server stopped. Final **25% / 75%**, resets `1792178084` / `1792650157`, vs dispatch 14% / 74% same identities: aggregate **11 / 1 points**, reconciled once below. Later account research usage separate.
+- Overlap: no active implementation/open PR/competing picture claim. Active subject-research chat has only subjects-tracker docs, no runtime overlap; preserve work. No unpublished implementation differences beyond retained Dot Link code matching main; other checkouts preserved. Coordinator servers none.
+- Next: retrieve worker/PR next wake-up, confirm completion/publication and reconcile final usage once. Resume same worker if unfinished; do not implement here.
 
 ## Usage observations
 
@@ -42,7 +45,6 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Slice estimate / retired daily allocation-debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
 
-| 2026-10-16 | Bug Builder flutter / [#416](https://github.com/rjdunlap/neo/pull/416), dispatch `bug-flutter-20261016T030732Z` | Visual feedback | 0% → 10% / `1792138065` | 49% → 51% / `1792650157` | Estimate 21.25 / 3.75 points | Merged/deployed; final worker response, aggregate 10 / 2. Complete, reconciled once |
 | 2026-10-16 | Critter Crossing not / [#422](https://github.com/rjdunlap/neo/pull/422), dispatch `critter-not-entry-20261016T050833Z` | New level | 12% → 25% / `1792138065` | 51% → 53% / `1792650157` | Estimate 21.25 / 3.75 points | Merged/deployed; final worker response, aggregate 13 / 2. Complete, reconciled once |
 | 2026-10-16 | Critter Sort 7 / [#426](https://github.com/rjdunlap/neo/pull/426), dispatch `critter-sort-seven-20261016T060833Z` | New level | 45% → 59% / `1792138065` | 56% → 58% / `1792650157` | Estimate 21.25 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 2. Complete, reconciled once |
 | 2026-10-16 | Critter Sort 8 / [#428](https://github.com/rjdunlap/neo/pull/428), dispatch `critter-sort-eight-20261016T071003Z` | New level | 61% → 71% / `1792138065` | 59% → 60% / `1792650157` | Estimate 21.25 / 3.75 points | Merged/deployed; final worker response, aggregate 10 / 1. Complete, reconciled once |
@@ -51,7 +53,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-16 | Market stalls / [#444](https://github.com/rjdunlap/neo/pull/444), dispatch `market-stalls-20261016T121134Z` | Existing-level content | 30% → 42% / `1792159662` | 67% → 69% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 12 / 2. Complete, reconciled once |
 | 2026-10-16 | Chain Reaction 7 / [#448](https://github.com/rjdunlap/neo/pull/448), dispatch `chain-turn-20261016T131304Z` | New level/interaction | 44% → 59% / `1792159662` | 69% → 71% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 15 / 2. Complete, reconciled once |
 | 2026-10-16 | Clap comparison 8 / [#452](https://github.com/rjdunlap/neo/pull/452), dispatch `clap-comparison-20261016T141435Z` | New level | 0% → 14% / `1792178084` | 72% → 74% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 14 / 2. Complete, reconciled once |
-| 2026-10-16 | Clap short 9, dispatch `clap-short-20261016T151435Z` | New level/entry | 14% → pending / `1792178084` | 74% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Worker `01a14548-1785-7251-97f3-ca8b120b7d72`, `codex/clap-syllables-short`, [#454](https://github.com/rjdunlap/neo/pull/454): verified, publishing; final post-commit usage in worker response for one-time reconciliation |
+| 2026-10-16 | Clap short 9 / [#454](https://github.com/rjdunlap/neo/pull/454), dispatch `clap-short-20261016T151435Z` | New level/entry | 14% → 25% / `1792178084` | 74% → 75% / `1792650157` | Estimate 18.75 / 3.75 points | Merged/deployed; final worker response, aggregate 11 / 1. Complete, reconciled once |
+| 2026-10-16 | Tangram picture, dispatch `tangram-picture-20261016T161705Z` | Existing-level content | 32% → pending / `1792178084` | 76% → pending / `1792650157` | Estimate 18.75 / 3.75 points | Fresh worker `01a14581-731a-7d50-96c7-c83872d9eaa9` admitted; implementation/proof pending |
 
 ## Fresh-worker dispatch and handoff
 
