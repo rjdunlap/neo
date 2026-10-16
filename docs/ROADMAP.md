@@ -48,7 +48,7 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
 6. **`critter-sort`, levels 9 and 11**, one per slice. [Dive slices 5–7](deep-dives/critter-sort.md#build-slices-in-order)
-7. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
+7. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built; pips and the teaching hint claimed on `claude/market-stall-pips-hint`), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 8. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)
 9. **`clap-syllables`, level 6 *Beat train***, then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
 10. **`letter-trails`, a hint that shows the way, start arrows, a rising tune and trail looks**. Rule tests, `fingerdemo` at 1 and 4. [Dive slice 3](deep-dives/letter-trails.md#build-slices-in-order) (slice 2 rests on two leaning decisions; leave it)
