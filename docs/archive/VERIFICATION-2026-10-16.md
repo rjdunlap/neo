@@ -81,3 +81,19 @@
 - `GAME_URL=http://localhost:5191 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=11 TO_LEVEL=11`: two mandatory sorts and comparisons, every critter tapped/count badges truthful, repeated taps free, two comparison misses/one hint, resize/replay, saved result/sticker and no page errors. Count-badge landscape and portrait screenshots reviewed.
 - Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=11` clean in 52.8 s: sorts, counts every part and chooses the largest in both diagrams. Links and diff checked; owned Vite stopped after checks.
 - Not run: full units, other browser suites, world/offline (no save/navigation/assets change), device speech/iPad/child checks. Open person/device checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-16 — Letter Trails show the way, arrows, rising tune and looks
+
+- [PR #442](https://github.com/rjdunlap/neo/pull/442), `claude/letter-trails-show-the-way` (code `9c50949` on base `e1020db`), levels 1–8, no new level: the second wandering drag on a stroke (still one hint) makes the firefly fly the next stretch (up to 12 checkpoints) and return; a start arrow beside each stroke; the firefly's note climbs a pentatonic step per fifth of a stroke; teal, rainbow, glitter or sand ink per round, drawn after the word. How-to card updated.
+- Ran `npm run typecheck`; `vitest run src/games/letter-trails` (16 passed, 6 new: shown path equals the next checkpoints and ends at the stroke's end, one hint per stroke, arrow at the start along the first segment, tune climbs 0 to 4 and never falls, every look appears, a look never changes the word); `src/content` and registry tests (95 passed); `npm run build`.
+- `GAME_URL=http://localhost:5245 BROWSER_SUITE=letters` passed (level 1 with two wanders, one hint and the firefly back at its checkpoint; 4; 7; 8 Zoë-Rose; 8 A–Z); landscape screenshot of the shown way (sand) and one portrait probe at level 5 showing the start arrow (rainbow) reviewed.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=letter-trails FINGER_LEVELS=1,4` clean (9.5 s, 7.8 s).
+- Not run: the full unit suite, other suites, world, offline. Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): device speech and feel, whether a child follows the shown way, the rising tune on an iPad.
+
+## 2026-10-16 — Chain Reaction level 8 Which bell?
+
+- [PR #441](https://github.com/rjdunlap/neo/pull/441), `claude/chain-reaction-which-bell` (tested at the final branch tip, merged with `origin/main` `725c597`): new level 8 prediction (a finished machine, three bells, tap one then run; a different bell is never a miss; agreeing ramps reach a corner, disagreeing ones return under the cup, some machines add an unreached ramp, and a 200-seed test proves the answers vary); pre-K `{ 1, 8, order [8, 1, 2, 3] }`, `entryLevels [8]`; how-to scoped to 8 and 1–6; five `chain.predict-*` lines; `chainPlay` gained level 8 and `CHAIN_LEVELS`.
+- Ran `npm run typecheck`; `vitest run src/games src/content` (127 files, 1111 tests passed); after the variety fix, Chain Reaction, registry and content tests (105 passed, three level-8 rule tests).
+- `GAME_URL=http://localhost:5812 BROWSER_SUITE=machines CHAIN_LEVELS=8` passed (rerun after the fix): run-before-pick prompt, uncounted help, wrong bell with trail and 0 misses/0 hints, three machines, one sticker, landscape and portrait screenshots reviewed. `CHAIN_LEVELS=1,6` regression passed before the fix (levels 1–6 untouched by it).
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=chain-reaction FINGER_LEVELS=8` clean in 19.5 s.
+- Not run: build (no shared assets), world, offline, iPad, device speech, a child. Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

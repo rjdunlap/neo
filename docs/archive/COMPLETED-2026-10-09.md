@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Barnyard land identity V1 (2026-10-16)
+
+[PR #460](https://github.com/rjdunlap/neo/pull/460), `codex/barnyard-land-identity`, dispatch `barnyard-identity-20261016T171305Z`, worker `01a145b5-14be-7a70-bf23-05834da67fa9`: only visual-identity build slice 2. A subdued red gabled barn behind the cow, split-rail fence and straw edge above the first row's reserved target rectangles, straw under the host and a grey milk pail beside her. Decorative `Graphics` takes no input; the layout, targets, routes and loop are unchanged. Three marimba pentatonic steps (3, 5, 7) accompany only the session's first land greeting, on scene time with exit cancellation. Game backgrounds and other lands excluded. [Proof](../VERIFICATION.md#2026-10-16--barnyard-land-identity-v1); child recognition/device audio remain open.
+
 ### Clap the Syllables level 8 Longer or shorter? (2026-10-16)
 
 [PR #452](https://github.com/rjdunlap/neo/pull/452), `codex/clap-syllables-comparison`, dispatch `clap-comparison-20261016T141435Z`, worker `01a14511-3cbe-7753-a007-323828dbf516`: four seeded pairs of unequal syllable counts, alternating more/fewer from a seeded start; whole-word spoken counts, claps, free replay, matching-style misses and second-miss answer glow, shared answer for judging/hint/ghost finger. School order `[5,6,8]` preserves existing IDs and skips reserved 7; no level 9 or younger openings. [Proof](../VERIFICATION.md#2026-10-16--clap-the-syllables-level-8-longer-or-shorter).
