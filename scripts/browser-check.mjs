@@ -1328,6 +1328,11 @@ async function singBarnPlay() {
   assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 13 + 6]);
   await tapNotes(18); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Bounce High, Bounce Low, level 1: a ten-note opening to Shiloh, then "bounce the ball to the <friend>", who answers on its name.
+  await launchTune(1, 'bounce');
+  assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 10 + 10]);
+  await tapNotes(19); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
   await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');

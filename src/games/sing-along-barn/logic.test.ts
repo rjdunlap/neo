@@ -17,6 +17,7 @@ import {
   CLAIR,
   RAIN,
   ITSY,
+  BOUNCE,
   VOICES,
   farmAnimals,
   makeSong,
@@ -242,12 +243,33 @@ describe('The Itsy Bitsy Spider', () => {
   });
 });
 
+describe('Bounce High, Bounce Low', () => {
+  it('bounces the ball to Shiloh, then to each friend by name, one syllable per note', () => {
+    const song = makeSong(['cow', 'duck'], BOUNCE);
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'Bounce high bounce low bounce the ball to Shi loh Bounce high bounce low bounce the ball to the cow Bounce high bounce low bounce the ball to the duck',
+    );
+    expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['cow', 'duck']);
+    expect(song.filter((n) => n.verseEnd)).toHaveLength(3);
+    expect(song.length).toBe(10 + 10 + 10);
+  });
+
+  it('is sung on mi, sol and la alone, with "high" above "low"', () => {
+    const song = makeSong(ANIMALS.slice(0, 3), BOUNCE);
+    expect([...new Set(song.map((n) => n.step))].sort()).toEqual([2, 3, 4]);
+    for (const n of song) expect(n.of).toBeLessThanOrEqual(8);
+    const high = song.find((n) => n.syllable === 'high')!;
+    const low = song.find((n) => n.syllable === 'low')!;
+    expect(high.step).toBeGreaterThan(low.step);
+  });
+});
+
 describe('which tune a round sings', () => {
   it('is a seeded draw: the same seed sings the same tune, and every tune turns up', () => {
     expect(pickTune(new Rng(7)).id).toBe(pickTune(new Rng(7)).id);
     const seen = new Set<string>();
     for (let seed = 1; seed <= 40; seed++) seen.add(pickTune(new Rng(seed)).id);
-    expect([...seen].sort()).toEqual(['buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain']);
+    expect([...seen].sort()).toEqual(['bounce', 'buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain']);
   });
 });
 
@@ -280,6 +302,6 @@ describe('the whole Old MacDonald verse', () => {
 
   it('is offered only at the level that has it, beside Hot Cross Buns', () => {
     expect(tunesFor(PLANS[4])).toBe(TUNES);
-    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY]);
+    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE]);
   });
 });
