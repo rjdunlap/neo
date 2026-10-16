@@ -3327,8 +3327,8 @@ async function arcade() {
     };
   });
   const only = process.env.ARCADE_ONLY;
-  const paradeLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 10 }, (_, i) => i + 1);
-  for (const level of paradeLevels.filter((n) => n >= 1 && n <= 10)) {
+  const paradeLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 11 }, (_, i) => i + 1);
+  for (const level of paradeLevels.filter((n) => n >= 1 && n <= 11)) {
     if (only && only !== 'parade') continue;
     await launch('duckling-parade', level);
     await page.waitForTimeout(500);

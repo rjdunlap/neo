@@ -52,6 +52,28 @@ describe('Duckling Parade', () => {
     }
   });
 
+  it('makes an ABB parade at level 11: a different unit from AAB, with every next duckling waiting', () => {
+    const plan = PLANS[10];
+    expect(plan.mode).toBe('pattern');
+    for (let seed = 1; seed <= 300; seed++) {
+      const round = makeRound(plan, new Rng(seed));
+      const p = round.pattern!;
+      expect(p).toHaveLength(6);
+      const [a, b] = p;
+      expect(a).not.toBe(b);
+      expect(p).toEqual([a, b, b, a, b, b]);
+      // Exactly the pattern's ducklings, no decoy, so every prefix can be met from the meadow.
+      expect([...round.ducklings].sort()).toEqual([...p].sort());
+      for (let i = 0; i < p.length; i++) {
+        expect(canJoin(plan, round, p.slice(0, i), p[i])).toBe('join');
+        const other = p[i] === a ? b : a;
+        expect(canJoin(plan, round, p.slice(0, i), other)).toBe('wrong-next');
+      }
+      expect(readyForPond(plan, round, 5)).toBe(false);
+      expect(readyForPond(plan, round, 6)).toBe(true);
+    }
+  });
+
   it('turns away other colors, and sends extras back out of the pond', () => {
     const plan = PLANS.find((p) => p.mode === 'colorCount')!;
     const round = makeRound(plan, new Rng(9));
