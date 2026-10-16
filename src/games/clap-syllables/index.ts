@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
-import { ink, swatch, type ColorName } from '../../art/palette';
+import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -14,12 +14,12 @@ import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bead, fitTo, handsArt, wordPicture } from './art';
-import { answerOf, clapsToGo, clapsWord, makeQuestions, nextToSort, PAUSE, pictureToTap, planFor, syllables, waitFill, WORDS, type ClapPlan, type Question, type Word } from './logic';
+import { answerOf, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, pictureToTap, planFor, CARS, syllables, waitFill, WORDS, type ClapPlan, type Question, type Word } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 5, max: 5 },
+  school: { min: 5, max: 6 },
 };
 
 const BEAT_COLORS: ColorName[] = ['red', 'yellow', 'blue'];
@@ -38,13 +38,27 @@ interface Bin {
   filled: number;
 }
 
-const INSTRUCTION = { along: 'clap.along', solo: 'clap.solo', sort: 'clap.sort', match: 'clap.match' } as const;
+const INSTRUCTION = { along: 'clap.along', solo: 'clap.solo', sort: 'clap.sort', match: 'clap.match', train: 'clap.train' } as const;
+
+/** Beat train geometry: car spacing, and where a loaded picture sits above its car. */
+const CAR_GAP = 196;
+const CAR_Y = -70;
+const CAR_COLORS: ColorName[] = ['blue', 'green', 'orange'];
+
+interface Car {
+  node: Container;
+  word?: Word;
+}
 
 class ClapSyllables implements Game {
   readonly plan: ClapPlan;
   readonly questions: Question[];
   readonly cards: Card[] = [];
   readonly bins: Bin[] = [];
+  /** The beat train's cars, left to right (fewest claps to most), and the train that carries them off. */
+  readonly cars: Car[] = [];
+  private train: Container | null = null;
+  private departing = false;
   readonly beads: Bead[] = [];
   readonly pad = new Container();
   /** The ring round the hands that fills while the pause runs out in solo clapping. */
@@ -157,6 +171,10 @@ class ClapSyllables implements Game {
         const card = pictureToTap(this.q, this.cards);
         return card ? { tap: { on: card.node } } : null;
       }
+      case 'train': {
+        const next = nextForTrain(this.q.words, this.cars.map((c) => c.word), this.cards.map((card) => ({ card, word: card.word, loaded: !card.drag || !card.drag.enabled || card.drag.dragging })));
+        return next ? { drag: { on: next.card.card.node }, to: { on: this.cars[next.car].node } } : null;
+      }
     }
   }
 
@@ -173,6 +191,9 @@ class ClapSyllables implements Game {
     }
     for (const b of this.bins.splice(0)) b.node.destroy({ children: true });
     for (const b of this.beads.splice(0)) b.destroy();
+    this.cars.length = 0;
+    this.train?.destroy({ children: true });
+    this.train = null;
     this.caption.text = '';
     this.glowing = null;
   }
@@ -214,6 +235,18 @@ class ClapSyllables implements Game {
         await this.ctx.tw.wait(0.4);
         if (first) await this.ctx.instruct(INSTRUCTION.match);
         await this.playClaps(q.target!);
+        break;
+      case 'train':
+        this.buildTrain(q);
+        this.layout();
+        await this.ctx.tw.wait(0.4);
+        if (this.index === 0) await this.ctx.instruct(INSTRUCTION.train);
+        // Each picture's name, so she knows what she is clapping.
+        for (const card of this.cards) {
+          card.node.scale.set(1.12);
+          void this.ctx.tw.to(card.node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+          await this.ctx.say('clap.word', { word: card.word.word });
+        }
         break;
     }
     this.busy = false;
@@ -483,6 +516,104 @@ class ClapSyllables implements Game {
     void this.next();
   }
 
+  // --- the beat train: fewest claps to most ---
+
+  private buildTrain(q: Question) {
+    this.departing = false;
+    const train = new Container();
+    train.eventMode = 'passive';
+    this.train = train;
+    this.board.addChild(train);
+    const engine = engineArt();
+    engine.position.set((CARS - 1) * CAR_GAP + 164, 0);
+    train.addChild(engine);
+    for (let i = 0; i < q.words.length; i++) {
+      const node = carArt(CAR_COLORS[i % CAR_COLORS.length], i > 0);
+      node.position.set(i * CAR_GAP, 0);
+      train.addChild(node);
+      this.cars.push({ node });
+    }
+    for (const word of q.words) {
+      const card = this.makeCard(word, 150);
+      this.board.addChild(card.node);
+      this.cards.push(card);
+    }
+    this.layout();
+    for (const card of this.cards) {
+      card.drag = draggable(card.node, this.ctx.tw, {
+        onPick: () => {
+          sfx.tick();
+          this.glowing = null;
+        },
+        onDrop: (x, y) => this.load(card, x, y),
+      });
+      card.drag.home = { x: card.node.x, y: card.node.y };
+    }
+  }
+
+  /** A picture dropped near a car. An empty car in its place in the line takes it; a wrong car sends it back with its claps. */
+  private load(card: Card, x: number, y: number): boolean {
+    if (this.busy || this.finished || !this.train) return false;
+    const t = this.train;
+    const near = this.cars.map((c, i) => ({ i, d: Math.hypot(t.x + c.node.x - x, t.y + c.node.y + CAR_Y / 2 - y) })).sort((a, b) => a.d - b.d)[0];
+    // Empty space, or a car that already has a passenger: just a try, with no penalty.
+    if (!near || near.d > 150 || this.cars[near.i].word) return false;
+    const words = this.q.words;
+    const n = syllables(card.word);
+    if (!fitsCar(words, this.cars.map((c) => c.word), card.word, near.i)) {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      void this.ctx.say('clap.train.wrong', { word: card.word.word, count: clapsWord(n) });
+      void this.clapOut(n);
+      if (this.wrongs >= 2) {
+        this.hints++;
+        const next = nextForTrain(words, this.cars.map((c) => c.word), this.cards.map((c) => ({ card: c, word: c.word, loaded: !c.drag?.enabled })));
+        this.glowing = next?.card.card.node ?? null;
+      }
+      return false;
+    }
+    this.wrongs = 0;
+    this.glowing = null;
+    card.drag!.enabled = false;
+    const car = this.cars[near.i];
+    car.word = card.word;
+    // The picture rides in the car from now on, so it leaves with the train.
+    t.addChild(card.node);
+    card.node.position.set(x - t.x, y - t.y);
+    void this.ctx.tw.to(card.node, { x: car.node.x, y: car.node.y + CAR_Y }, { duration: 0.3, ease: ease.outBack });
+    void this.ctx.tw.to(card.node.scale, { x: 0.72, y: 0.72 }, { duration: 0.3 });
+    for (let i = 0; i < n; i++) {
+      const dot = new Bead(BEAT_COLORS[i % BEAT_COLORS.length], 13);
+      dot.light(true);
+      dot.position.set((i - (n - 1) / 2) * 32, 8);
+      car.node.addChild(dot);
+    }
+    void this.clapOut(n);
+    if (this.cars.every((c) => c.word)) void this.depart();
+    return true;
+  }
+
+  /** The full train claps its cars in order, fewest to most, and chugs away. */
+  private async depart() {
+    this.busy = true;
+    this.departing = true;
+    await this.ctx.tw.wait(0.6);
+    for (const car of this.cars) {
+      car.node.scale.set(1.08);
+      void this.ctx.tw.to(car.node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+      await this.clapOut(syllables(car.word!));
+      await this.ctx.tw.wait(0.25);
+    }
+    sfx.sparkle();
+    await this.ctx.say('clap.train.go');
+    if (this.train) {
+      sfx.whoosh();
+      await this.ctx.tw.to(this.train, { x: this.view.w + 200 }, { duration: 1.1, ease: ease.inQuad });
+    }
+    void this.next();
+  }
+
   // --- layout and the end ---
 
   private layout() {
@@ -509,6 +640,18 @@ class ClapSyllables implements Game {
       });
       const binY = this.cards.length > 5 ? v.h * 0.66 : v.h * 0.72;
       this.bins.forEach((b, i) => b.node.position.set(v.w / 2 + (i - (this.bins.length - 1) / 2) * 250, binY));
+    } else if (mode === 'train') {
+      // The jumble on top, the train below it: clear of the pet in the bottom-left corner.
+      const xs = spread(this.cards.length, 160, v.w - 160, 230);
+      const lift = [0, 34, -18];
+      this.cards.forEach((c, i) => {
+        if (c.drag?.enabled === false) return;
+        const y = v.h * 0.27 + lift[i % lift.length];
+        c.node.position.set(xs[i], y);
+        if (c.drag) c.drag.home = { x: xs[i], y };
+      });
+      // Centred on the span from the first car's back (-84) to the engine's nose.
+      if (this.train && !this.departing) this.train.position.set(v.w / 2 - ((CARS - 1) * CAR_GAP + 164 + 94 - 84) / 2, v.h * 0.66);
     } else {
       const xs = spread(this.cards.length, 190, v.w - 90, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * 0.62));
@@ -528,6 +671,34 @@ class ClapSyllables implements Game {
     await this.ctx.tw.wait(0.4);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
+}
+
+/** A train car: an open wagon with wheels, in its colour. A picture rides on top. */
+function carArt(color: ColorName, coupled: boolean): Container {
+  const c = new Container();
+  const s = swatch[color];
+  const g = new Graphics();
+  // The hitch to the car behind.
+  if (coupled) g.rect(-CAR_GAP + 82, 4, 34, 10).fill(wood.line);
+  g.roundRect(-84, -26, 168, 70, 16).fill(s.fill).stroke({ width: 6, color: s.line })
+    .roundRect(-70, -16, 140, 46, 10).fill({ color: 0xffffff, alpha: 0.55 });
+  for (const x of [-50, 50]) g.circle(x, 52, 18).fill(ink).circle(x, 52, 7).fill(0xdddddd);
+  c.addChild(g);
+  return c;
+}
+
+/** The engine at the front (on the right), with a cab and a chimney. */
+function engineArt(): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-70, -90, 70, 134, 14).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line })
+    .roundRect(-58, -76, 46, 40, 8).fill(swatch.blue.light)
+    .roundRect(-6, -30, 100, 74, 18).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line })
+    .rect(50, -78, 26, 50).fill(ink)
+    .circle(94, 20, 10).fill(swatch.yellow.fill);
+  for (const x of [-34, 30, 70]) g.circle(x, 52, x < 0 ? 22 : 16).fill(ink).circle(x, 52, 7).fill(0xdddddd);
+  c.addChild(g);
+  return c;
 }
 
 function clapIcon(): Container {
