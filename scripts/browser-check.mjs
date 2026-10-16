@@ -6163,6 +6163,31 @@ async function woodsBatch() {
         }
         continue;
       }
+      if (level === 9) {
+        const data = await page.evaluate(async () => {
+          const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game;
+          const [a, b] = g.round.rules;
+          return { places: g.sorters.map(s => L.placeOf(s.c, g.round.rules, 'butnot')),
+            both: g.sorters.findIndex(s => L.fits(s.c, a) && L.fits(s.c, b)),
+            neither: g.sorters.findIndex(s => !L.fits(s.c, a) && !L.fits(s.c, b)), centers: g.centers().length };
+        });
+        assert.equal(data.centers, 1);
+        assert.ok(data.both >= 0 && data.neither >= 0 && data.places.includes('left'));
+        if (n === 0) {
+          await page.evaluate(async i => { const g = neo.scene.game; await kit.dragTo(g.sorters[i].node, g.ctx.stage.toGlobal({ x: neo.view.w / 2, y: neo.view.h - 5 }), 14); }, data.both);
+          await settle(); assert.deepEqual(await counts(), [0, 0]);
+          await dropTo(data.both, 'left'); await dropTo(data.neither, 'left');
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.equal(await page.evaluate(i => neo.scene.game.hinting === neo.scene.game.sorters[i], data.neither), true);
+          await screenshot('critter-sort-9-hint');
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+          await screenshot('critter-sort-9-portrait');
+        }
+        for (const [i, place] of data.places.entries()) if (place === 'left') await dropTo(i, place);
+        assert.equal(await page.evaluate(n => !neo.scene.game.busy && neo.scene.game.index === n && !neo.scene.game.finished, n), true);
+        for (const [i, place] of data.places.entries()) if (place === 'out') await dropTo(i, place);
+        continue;
+      }
       const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map((s) => (s.placed ? 'example' : L.placeOf(s.c, g.round.rules, g.plan.mode === 'not'))); });
       if (level === 7) {
         const i = await page.evaluate(() => neo.scene.game.round.newcomer);
