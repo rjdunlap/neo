@@ -380,3 +380,8 @@ Reconciled completed [Chain Reaction 7 #448](https://github.com/rjdunlap/neo/pul
 ### 2026-10-16 — Clap short-entry dispatch
 
 Reconciled completed [Clap level 8 #452](https://github.com/rjdunlap/neo/pull/452), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Clap level 9](deep-dives/clap-syllables.md#build-slices-in-order) to worker `01a14548-1785-7251-97f3-ca8b120b7d72`, with toddler/lap excluded. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Tangram picture dispatch
+
+Reconciled completed [Clap short #454](https://github.com/rjdunlap/neo/pull/454), confirmed merge and released its slot. Fresh allowance and overlap admitted only one new two-piece picture from [Tangram's content direction](deep-dives/tangram-town.md) to worker `01a14581-731a-7d50-96c7-c83872d9eaa9`. Independent subject research has no runtime overlap. Queue records scope, resets and pending proof. Docs-only source links and `git diff --check` passed; no gameplay checks rerun.
