@@ -350,3 +350,8 @@ Reconciled completed [Critter Sort 11 #439](https://github.com/rjdunlap/neo/pull
 ### 2026-10-16 — Chain Reaction tap-to-turn dispatch
 
 Reconciled completed [Market stalls #444](https://github.com/rjdunlap/neo/pull/444), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Chain Reaction slice 3](deep-dives/chain-reaction.md#build-slices-in-order) to worker `01a144d8-e5df-75b1-acf4-e98706d91d69`, with younger-band decisions excluded. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Clap comparison dispatch
+
+Reconciled completed [Chain Reaction 7 #448](https://github.com/rjdunlap/neo/pull/448), confirmed merge and released its slot; Beat Train #449 landed independently. Fresh allowance and overlap admitted only [Clap level 8](deep-dives/clap-syllables.md#build-slices-in-order) to worker `01a14511-3cbe-7753-a007-323828dbf516`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
