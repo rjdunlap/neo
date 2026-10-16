@@ -25,6 +25,8 @@ export interface ChainPlan {
   /** Accepted arrangements; the last level deliberately permits more than one design. */
   solutions: { min: number; max: number };
   machines: number;
+  /** Two coloured ramps are already placed; taps reverse their directions. */
+  turn?: boolean;
   /** A finished machine with several bells: she predicts which one rings, then runs it. Nothing is placed. */
   predict?: { bells: number; offPath: number };
 }
@@ -45,7 +47,13 @@ export const PREDICT_PLAN: ChainPlan = {
   solutions: { min: 1, max: 1 }, machines: 3, predict: { bells: 3, offPath: 0.5 },
 };
 
-export const planFor = (level: number): ChainPlan => level === WHICH_BELL ? PREDICT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const TAP_TO_TURN = 7;
+export const TURN_PLAN: ChainPlan = {
+  name: 'Tap the coloured ramps to turn them so the marble rings the bell', cols: 4, rows: 3, fixed: 1, loose: 2, decoys: 0, chime: false,
+  solutions: { min: 1, max: 4 }, machines: 2, turn: true,
+};
+
+export const planFor = (level: number): ChainPlan => level === TAP_TO_TURN ? TURN_PLAN : level === WHICH_BELL ? PREDICT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** One socket index per loose ramp; null means that ramp is still in the tray. */
 export type Layout = (number | null)[];
@@ -64,6 +72,8 @@ export interface ChainBoard {
   chime?: Cell;
   /** Bell columns along the bottom, left to right, for a prediction machine; `target` is the one the marble rings. */
   bells?: number[];
+  /** Preplaced coloured ramps; each boolean in the turn state reverses one groove. */
+  turn?: FixedRamp[];
 }
 
 export interface TraceStep extends Cell {
@@ -85,7 +95,7 @@ const sameCell = (a: Cell, b: Cell) => a.row === b.row && a.col === b.col;
 const delta = (r: Ramp) => (r === 'left' ? -1 : 1);
 
 /** Follow the marble through a placement. It is deterministic, so run, hints and tests use one rule. */
-export function trace(board: ChainBoard, layout: Layout): Trace {
+export function trace(board: ChainBoard, layout: Layout, flipped: boolean[] = []): Trace {
   let col = board.start;
   let chimed = false;
   const steps: TraceStep[] = [];
@@ -94,7 +104,12 @@ export function trace(board: ChainBoard, layout: Layout): Trace {
     const at = { row, col };
     if (board.chime && sameCell(at, board.chime)) chimed = true;
     const fixed = board.fixed.find((p) => sameCell(p, at));
+    const turning = board.turn?.findIndex((p) => sameCell(p, at)) ?? -1;
     let ramp = fixed?.ramp;
+    if (turning >= 0) {
+      ramp = board.turn![turning].ramp;
+      if (flipped[turning]) ramp = ramp === 'left' ? 'right' : 'left';
+    }
     let loose: number | undefined;
     if (!ramp) {
       loose = layout.findIndex((socket) => socket !== null && sameCell(board.sockets[socket], at));
@@ -165,10 +180,29 @@ export function hintFor(board: ChainBoard, layout: Layout): { piece: number; soc
   return piece < 0 ? null : { piece, socket: way[piece] };
 }
 
-export type ChainTouch = { kind: 'place'; piece: number; socket: number } | { kind: 'run' };
+/** All accepted flip states. Only the two preplaced ramps can change. */
+export function turnSolutions(board: ChainBoard): boolean[][] {
+  return Array.from({ length: 2 ** (board.turn?.length ?? 0) }, (_, mask) =>
+    (board.turn ?? []).map((_, i) => !!(mask & (1 << i))))
+    .filter((flipped) => trace(board, [], flipped).success);
+}
+
+/** Keep the nearest working state and name one ramp that needs turning. */
+export function turnHint(board: ChainBoard, flipped: boolean[]): number | null {
+  const distance = (way: boolean[]) => way.reduce((n, value, i) => n + (value !== !!flipped[i] ? 1 : 0), 0);
+  const way = turnSolutions(board).sort((a, b) => distance(a) - distance(b))[0];
+  const piece = way?.findIndex((value, i) => value !== !!flipped[i]) ?? -1;
+  return piece < 0 ? null : piece;
+}
+
+export type ChainTouch = { kind: 'flip'; piece: number } | { kind: 'place'; piece: number; socket: number } | { kind: 'run' };
 
 /** Follow one accepted design a part at a time, then press the machine's real run button. */
-export function chainTouch(board: ChainBoard, layout: Layout): ChainTouch | null {
+export function chainTouch(board: ChainBoard, layout: Layout, flipped: boolean[] = []): ChainTouch | null {
+  if (board.turn) {
+    const piece = turnHint(board, flipped);
+    return piece !== null ? { kind: 'flip', piece } : trace(board, [], flipped).success ? { kind: 'run' } : null;
+  }
   const way = closestWorkingLayout(board, layout);
   const piece = way?.findIndex((socket, i) => layout[i] !== socket) ?? -1;
   if (way && piece >= 0) return { kind: 'place', piece, socket: way[piece] };
@@ -185,6 +219,17 @@ function key(c: Cell) {
  * an impossible or ambiguous early round.
  */
 export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
+  if (plan.turn) {
+    const base = makeBoard({ ...plan, turn: false }, rng);
+    const turn = base.solution.map((socket, i) => ({ ...base.sockets[socket], ramp: base.loose[i] }));
+    const board: ChainBoard = { ...base, loose: [], sockets: [], solution: [], turn };
+    // Choose an unsolved starting state without changing the authored, reachable bell.
+    const wrong = Array.from({ length: 2 ** turn.length }, (_, mask) => turn.map((_, i) => !!(mask & (1 << i))))
+      .filter((flipped) => !trace(board, [], flipped).success);
+    const initial = rng.pick(wrong);
+    turn.forEach((part, i) => { if (initial[i]) part.ramp = part.ramp === 'left' ? 'right' : 'left'; });
+    return board;
+  }
   if (plan.predict) return makePredictBoard(plan, plan.predict, rng);
   for (let attempt = 0; attempt < 800; attempt++) {
     const rows = rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row));

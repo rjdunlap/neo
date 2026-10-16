@@ -11,6 +11,22 @@ import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
 describe('game registry', () => {
+  it('Chain Reaction adds tap-to-turn before prediction without changing existing IDs or school pins', () => {
+    const g = GAMES.find((g) => g.id === 'chain-reaction')!;
+    expect(g.bands).toEqual(['prek', 'school']);
+    expect(g.entryLevels).toEqual([7, 8]);
+    const prek = g.levels('prek'), school = g.levels('school');
+    expect(prek.order).toEqual([7, 8, 1, 2, 3]);
+    expect(school).toEqual({ min: 3, max: 6 });
+    expect(nextLevel(0, [], prek)).toBe(7);
+    expect(landing(7, school, g.entryLevels)).toBe(3);
+    expect(landing(8, school, g.entryLevels)).toBe(3);
+    for (const level of [1, 2, 3, 4, 5, 6, 8]) {
+      const range = level <= 3 || level === 8 ? prek : school;
+      expect(landing(level, range, g.entryLevels)).toBe(level);
+    }
+  });
+
   it('places Color Garden tap entry first without renumbering existing levels or pins', () => {
     const g = GAMES.find(g => g.id === 'color-garden')!;
     expect(g.bands).toContain('lap');

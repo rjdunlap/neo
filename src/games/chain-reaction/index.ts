@@ -12,11 +12,11 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chainTouch, hintFor, makeBoards, planFor, predictedBell, trace, WHICH_BELL, type ChainBoard, type ChainPlan, type Layout, type Ramp, type Trace } from './logic';
+import { chainTouch, hintFor, makeBoards, planFor, predictedBell, trace, turnHint, TAP_TO_TURN, WHICH_BELL, type ChainBoard, type ChainPlan, type Layout, type Ramp, type Trace } from './logic';
 
 const LEVELS: BandLevels = {
-  // Level 8, Which bell?, is an easy entry (predict a finished machine), so pre-K plays it before level 1.
-  prek: { min: 1, max: 8, order: [WHICH_BELL, 1, 2, 3] },
+  // Tap to turn and Which bell? are easy entries before the existing drag levels.
+  prek: { min: 1, max: 8, order: [TAP_TO_TURN, WHICH_BELL, 1, 2, 3] },
   school: { min: 3, max: 6 },
 };
 
@@ -66,6 +66,9 @@ class ChainReaction implements Game {
   index = -1;
   machine!: ChainBoard;
   placement: Layout = [];
+  flipped: boolean[] = [];
+  readonly turnNodes: Container[] = [];
+  private turnGlow: number | null = null;
   misses = 0;
   hints = 0;
   busy = true;
@@ -140,6 +143,10 @@ class ChainReaction implements Game {
       const at = socket === null || socket === undefined ? part.home : this.socketPosition(socket);
       part.node.position.set(at.x, at.y);
     });
+    this.turnNodes.forEach((node, i) => {
+      const at = this.machine.turn![i];
+      node.position.set(this.colX(at.col), this.rowY(at.row));
+    });
     if (this.machine) this.drawMachine();
   }
 
@@ -152,9 +159,10 @@ class ChainReaction implements Game {
       const bell = this.bellNodes.find((b) => b.col === predictedBell(this.machine));
       return this.picked === bell?.col ? { tap: { on: this.runButton } } : bell ? { tap: { on: bell.node } } : null;
     }
-    const move = chainTouch(this.machine, this.placement);
+    const move = chainTouch(this.machine, this.placement, this.flipped);
     if (!move) return null;
     if (move.kind === 'run') return { tap: { on: this.runButton } };
+    if (move.kind === 'flip') return { tap: { on: this.turnNodes[move.piece] } };
     const part = this.parts[move.piece];
     const at = this.socketPosition(move.socket);
     return part && !part.handle.dragging ? { drag: { on: part.node }, to: { on: this.ctx.stage, x: at.x, y: at.y } } : null;
@@ -183,12 +191,25 @@ class ChainReaction implements Game {
     this.hinted = null;
     this.lastTrace = null;
     this.picked = null;
+    this.turnGlow = null;
     this.trail.clear();
     if (this.index >= this.boards.length) return void this.finale();
     this.machine = this.boards[this.index];
     this.placement = Array(this.machine.loose.length).fill(null);
     for (const p of this.parts) p.handle.destroy();
     this.parts.splice(0).forEach((p) => p.node.destroy({ children: true }));
+    this.flipped = (this.machine.turn ?? []).map(() => false);
+    this.turnNodes.splice(0).forEach((node) => node.destroy({ children: true }));
+    this.machine.turn?.forEach((part, i) => {
+      const node = new Container();
+      node.addChild(rampArt(part.ramp, true));
+      node.hitArea = new Rectangle(-52, -50, 104, 100);
+      node.position.set(this.colX(part.col), this.rowY(part.row));
+      onTap(node, () => this.flip(i));
+      this.turnNodes.push(node);
+      this.diagram.addChild(node);
+    });
+    this.diagram.addChild(this.glow);
     this.makeParts();
     // The first machine at level 1 shows the useful socket without counting it as assistance.
     if (this.ctx.level === 1 && this.index === 0) this.hinted = hintFor(this.machine, this.placement);
@@ -197,7 +218,24 @@ class ChainReaction implements Game {
     await this.ctx.tw.to(this.diagram, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     this.drawGlow();
-    if (this.index === 0) await this.ctx.instruct(this.plan.predict ? 'chain.predict-start' : this.plan.chime ? 'chain.chime-start' : 'chain.start');
+    if (this.index === 0) await this.ctx.instruct(this.plan.turn ? 'chain.turn-start' : this.plan.predict ? 'chain.predict-start' : this.plan.chime ? 'chain.chime-start' : 'chain.start');
+  }
+
+  private flip(piece: number) {
+    if (this.busy || this.finished) return;
+    this.flipped[piece] = !this.flipped[piece];
+    const node = this.turnNodes[piece];
+    node.removeChildren().forEach((child) => child.destroy({ children: true }));
+    const ramp = this.machine.turn![piece].ramp;
+    const art = rampArt(this.flipped[piece] ? (ramp === 'left' ? 'right' : 'left') : ramp, true);
+    art.eventMode = 'none';
+    node.addChild(art);
+    // The groove answers on touch-down, with a small scene-owned turn animation.
+    art.rotation = this.flipped[piece] ? -0.12 : 0.12;
+    void this.ctx.tw.to(art, { rotation: 0 }, { duration: 0.18 });
+    this.turnGlow = null;
+    this.drawGlow();
+    sfx.pop(4 + piece * 2);
   }
 
   private makeParts() {
@@ -336,6 +374,13 @@ class ChainReaction implements Game {
       if (this.followHint && !this.busy) this.glow.circle(this.colX(this.machine.start), this.top - 22, 58).stroke({ width: 9, color: swatch.yellow.fill, alpha: 0.9 });
       return;
     }
+    if (this.plan.turn) {
+      if (this.turnGlow !== null && !this.busy) {
+        const node = this.turnNodes[this.turnGlow];
+        this.glow.circle(node.x, node.y, 59).stroke({ width: 9, color: swatch.yellow.fill, alpha: 0.9 });
+      }
+      return;
+    }
     if (!this.hinted || this.busy) return;
     const socket = this.socketPosition(this.hinted.socket);
     const pulse = 62;
@@ -352,6 +397,15 @@ class ChainReaction implements Game {
       this.drawGlow();
       sfx.sparkle();
       return void this.ctx.say('chain.predict-hint');
+    }
+    if (this.plan.turn) {
+      const piece = turnHint(this.machine, this.flipped);
+      if (piece === null) return void this.ctx.say('chain.run-now');
+      this.turnGlow = piece;
+      this.hints++;
+      this.drawGlow();
+      sfx.sparkle();
+      return void this.ctx.say('chain.turn-hint');
     }
     const hint = hintFor(this.machine, this.placement);
     if (!hint) return void this.ctx.say('chain.run-now');
@@ -373,7 +427,7 @@ class ChainReaction implements Game {
     this.hinted = null;
     this.drawGlow();
     this.parts.forEach((p) => { p.handle.enabled = false; });
-    const result = trace(this.machine, this.placement);
+    const result = trace(this.machine, this.placement, this.flipped);
     this.lastTrace = result;
     await this.animate(result);
     const bottom = this.top + (this.machine.rows + 1) * this.gap;
@@ -518,7 +572,7 @@ export const chainReaction: GameModule = {
   skills: ['prediction', 'cause-and-effect', 'planning', 'revision'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [WHICH_BELL],
+  entryLevels: [TAP_TO_TURN, WHICH_BELL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   touchDemo: true,

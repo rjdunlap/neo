@@ -6,7 +6,7 @@
 
 She drags purple (point left) and teal (point right) ramps from a tray into round sockets on a small wooden machine, taps the green arrow, and a red marble falls row by row. Each ramp it meets sends it one column sideways. A run that ends on the big bell wins; at the higher levels the marble must also touch a little chime on the way. Every round is two machines. Sources read: [`index.ts`](../../src/games/chain-reaction/index.ts), [`logic.ts`](../../src/games/chain-reaction/logic.ts), [`logic.test.ts`](../../src/games/chain-reaction/logic.test.ts), [GAMES.md](../GAMES.md#chain-reaction), the how-to card (`src/content/howto.ts`), voice lines `chain.*`, and the IDEAS rows. It has no couch entry and no journal entry. It lives in the Tinker Lab subject and in the Maker lands list (`LANDS`).
 
-Band windows (`levels`): pre-K 1–3, school 3–6. Lap, toddler and preschool are not served.
+Current band windows (`levels`): pre-K order 7, 8, 1, 2, 3; school 3–6. The source audit below describes levels 1–6 before the appended entries. Lap, toddler and preschool are not served.
 
 | Level | Plan (`PLANS`) | Bands | Board · parts | What she decides |
 | --- | --- | --- | --- | --- |
@@ -121,7 +121,7 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 
 1. **Trail and watch-again** (built 2026-10-15; see below). `run()` draws a faded path from `trace().steps`; tapping the start cup replays. Tier: typecheck, the game's rule tests (none change), one filtered browser play at level 3 and `fingerdemo` for the bot.
 2. **Level 8, Which bell?** (built 2026-10-16, branch `claude/chain-reaction-which-bell`, PR #441; preschool window left to decision 2) Plan field `predict`, bell row, voice lines, a how-to line. Tier: typecheck, rule tests (reachable bells, no recorded miss), one filtered play, `fingerdemo` at level 8, and a portrait screenshot.
-3. **Level 7, Tap to turn.** A `turn` mode in the board and `trace`; the ghost finger taps the flip. Tier: the same, plus `order`/`entryLevels` tests in the registry tests.
+3. **Level 7, Tap to turn.** (built 2026-10-16, branch `codex/chain-reaction-tap-turn`, [PR #448](https://github.com/rjdunlap/neo/pull/448)). Two preplaced tappable ramps, a fixed wooden ramp, solver-backed flips/hints and ghost-finger taps. Pre-K order `[7, 8, 1, 2, 3]`, entry IDs `[7, 8]`; school 3–6 and supported bands unchanged. Younger openings and other decisions remain open. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-7-tap-to-turn-2026-10-16).
 4. **Decision 1** if approved: `tries` stat feeding the difficulty step. Tier: shell and save contracts (typecheck, unit tests, build).
 5. **Cargo and goal skins, note per ramp.** Tier: typecheck and one screenshot.
 6. **Level 9, Two marbles.** Tier: rule tests and one play.
