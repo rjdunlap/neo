@@ -156,4 +156,4 @@ Definitions are docs-only, links and diff checks. Builds below are later session
 
 ## What was built
 
-Nothing. Research and Markdown only. The tracker, IDEAS candidate table, roadmap recommendation packet and verification log accompany this study. No source, tests, assets, installed reference games, browser play, device speech or real family observation. Link/diff results are recorded in [VERIFICATION](../../VERIFICATION.md#2026-10-15--data-and-ai-literacy-subject-research). Publication was explicitly authorized by the developer on 2026-10-16 after the initial approval-review block.
+Nothing. Research and Markdown only. The tracker, IDEAS candidate table, roadmap recommendation packet and verification log accompany this study. No source, tests, assets, installed reference games, browser play, device speech or real family observation. Link/diff results are recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-16.md#2026-10-15--data-and-ai-literacy-subject-research). Publication was explicitly authorized by the developer on 2026-10-16 after the initial approval-review block.

@@ -47,7 +47,7 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
-9. **`clap-syllables`, level 6 *Beat train*** (claimed 2026-10-16, `claude/clap-beat-train`), then levels 8–9. New-interaction tier. [Dive slices 3–4](deep-dives/clap-syllables.md#build-slices-in-order)
+9. **`clap-syllables`, levels 8 *Longer or shorter?* and 9 *Clap along (short)***. New-levels tier, `fingerdemo`. [Dive slice 4](deep-dives/clap-syllables.md#build-slices-in-order)
 12. **`tangram-town`, more pictures** in the level pools (a few lines each, a fit test per picture). Content tier. [Dive](deep-dives/tangram-town.md)
 13. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
 14. **Barnyard land scene: barn, fence, pail, motif (V1)**. Shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
