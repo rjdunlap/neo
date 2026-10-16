@@ -28,6 +28,8 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
+- Level-9 worker `01a143f7-ff89-7560-8b89-30f08aa4e88a`, dispatch `critter-sort-nine-20261016T090734Z`, branch `codex/critter-sort-nine`, source `e9f392c`: scope defined, claim publishing. Only slice 6: A and not B, pictured dual sign, both-part speech, accepted/A-and-B/neither witnesses; exclusions per dispatch. Scope usage **2% / 63%**, resets `1792159662` / `1792650157`, ordinary usage allowed; estimated 21.25 / 3.75 fits. No competing implementation; coordinator exempt, prior level-8 branch is merged. Proof not run. Next: claim PR, implement and verify only level 9.
+
 - Worker scope reading **62% / 59%**, pre-code **65% / 59%**, resets `1792138065` / `1792650157`; ordinary usage allowed. Claim `6c0eb06`, branch `codex/critter-sort-eight`, [PR #428](https://github.com/rjdunlap/neo/pull/428), worker `01a1438c-7bb8-7aa3-bf27-b75caa6f890a`, dispatch `critter-sort-eight-20261016T071003Z`. No competing level-8 implementation; implemented and verified only slice 5, publication next.
 
 - Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; preserve Git-locked checkout. Level-7 worker `01a14354-252d-7ee2-a076-513abb65a3af` completed; [#426](https://github.com/rjdunlap/neo/pull/426) merged at `7b9abb397b9e41c1535c778c47c0a9724551e727`, deployment successful, slot released.
