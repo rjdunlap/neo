@@ -106,7 +106,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Penguin Slide | `penguin-slide` | PKS | 5 | 4 | not started | — | — |
 | Pet Kitchen | `pet-kitchen` | TPKS | 8 | 4 | not started | — | — |
 | Pet Says | `pet-says` | LTPK | 5 | 2 | building (slice 1 built) | `codex/pet-says-guards` ([PR 161](https://github.com/rjdunlap/neo/pull/161)); `claude/roadmap-item-14-game-content-ghbpi1` ([PR 112](https://github.com/rjdunlap/neo/pull/112)) | [pet-says.md](pet-says.md) |
-| Photo Safari | `photo-safari` | LTPKS | 6 | 4 | in progress | `claude/photo-safari-deep-dive` | — |
+| Photo Safari | `photo-safari` | LTPKS | 6 | 4 | designed | `claude/photo-safari-deep-dive` ([PR #420](https://github.com/rjdunlap/neo/pull/420)) | [photo-safari.md](photo-safari.md) |
 | Picture Graph | `picture-graph` | KS | 6 | 4 | not started | — | — |
 | Picture Logic | `picture-logic` | G | 4 | 4 | not started (island touch built 2026-10-13) | — | — |
 | Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |

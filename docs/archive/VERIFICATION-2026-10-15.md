@@ -285,3 +285,10 @@
 - Ran `npm run typecheck` and `npx vitest run src/games/duckling-parade` (11/11; new test: both looks over 200 seeds, dressing colors exclude `DUCK_COLORS`, no piece in the waiting box or pond or past the right edge and rim pieces behind the pond at 1024x768, 768x1024, 1024x1365 and 1366x768).
 - Passed `GAME_URL=http://localhost:5387 BROWSER_SUITE=arcade ARCADE_ONLY=parade ARCADE_LEVELS=1,10 npm run test:browser` on the final code (level 10 with wrong-duckling misses and glow hint). A portrait probe (768x1024) screenshotted both looks, no page errors.
 - Not run: `fingerdemo` (bot and input unchanged), build (no shared files), other suites. A real-iPad look is not checked.
+
+## 2026-10-15 — Visual identity V1–V2 definition
+
+- Docs only, `claude/visual-identity-v1-v2`, [PR #400](https://github.com/rjdunlap/neo/pull/400): [definitions/visual-identity.md](../definitions/visual-identity.md) (Barnyard sheet V1, Animal Snack busy-touch pilot V2); roadmap chunk 21 now ready.
+- Ran `node scripts/check-links.mjs` and `git diff --check`: passed.
+- Not run: typecheck, units, build, browser, `fingerdemo`, device (no code changed).
+- Open: whether the Barnyard is recognizable and whether the old Animal Snack window felt laggy stay person checks (the Barnyard one in [DEVICE-CHECKS.md](../DEVICE-CHECKS.md), the lag one in the [dive](../deep-dives/animal-snack.md)).

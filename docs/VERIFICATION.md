@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-15 — Photo Safari deep dive
+
+- Docs only, `claude/photo-safari-deep-dive`, [PR #420](https://github.com/rjdunlap/neo/pull/420): [deep-dives/photo-safari.md](deep-dives/photo-safari.md) (build slices 1–8, three decisions); tracker row designed, roadmap short-ladders row and ready-list line 16, IDEAS pointers, [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md) row.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, `fingerdemo`, device (no code changed).
+- Open: the three decisions in the dive; the toddler entry also needs a person check.
+
 ## 2026-10-15 — Penguin Slide Frozen Ponds couch course
 
 - `claude/penguin-frozen-course` (PR #419, commit 715c7a2): `parseBoard` reads a `B` ice-block legend; third course `frozen` (five block ponds, minimum 31) in `COURSE_IDS`; block-aware course tests.
@@ -109,13 +116,6 @@
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=color-garden FINGER_LEVELS=9` on the same URL: clean lap demonstration in 8.3 s. Temporarily disabling the tap plan failed the regression; restored identical runtime and strengthened regression passed. Initial sandbox Chromium launch failed on macOS Mach permission; isolated escalated Chromium passed.
 - Not run: other game/browser suites, world/offline (no navigation/persistence/assets changes), real iPad speech/touch or child response ([device check](DEVICE-CHECKS.md)). Owned Vite stopped after checks.
 
-
-## 2026-10-15 — Visual identity V1–V2 definition
-
-- Docs only, `claude/visual-identity-v1-v2`, [PR #400](https://github.com/rjdunlap/neo/pull/400): [definitions/visual-identity.md](definitions/visual-identity.md) (Barnyard sheet V1, Animal Snack busy-touch pilot V2); roadmap chunk 21 now ready.
-- Ran `node scripts/check-links.mjs` and `git diff --check`: passed.
-- Not run: typecheck, units, build, browser, `fingerdemo`, device (no code changed).
-- Open: whether the Barnyard is recognizable and whether the old Animal Snack window felt laggy stay person checks (the Barnyard one in [DEVICE-CHECKS.md](DEVICE-CHECKS.md), the lag one in the [dive](deep-dives/animal-snack.md)).
 
 ## Coverage summary
 
