@@ -28,6 +28,8 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
+- Level 8 worker `01a1438c-7bb8-7aa3-bf27-b75caa6f890a`, dispatch `critter-sort-eight-20261016T071003Z`, branch `codex/critter-sort-eight`: scope confirmed, draft claim pending. Scope reading **62% / 59%**, resets `1792138065` / `1792650157`, ordinary usage allowed. No competing implementation chat or level-8 claim; coordinator exempt. Next: implement only slice 5, verify scoped play and bot, publish.
+
 - Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d`; preserve Git-locked checkout. Not-entry worker `01a1431d-314b-7163-8fac-e54497cdcd77` completed; [#422](https://github.com/rjdunlap/neo/pull/422) merged at `562b97c6ed33de82ce9d1fd3ed5abccb401257d6`, deployment successful, slot released.
 - Newly admitted: **Critter Sort slice 4, level 7 Where does the new one go?**, [source](deep-dives/critter-sort.md#build-slices-in-order), first current ready-list line. Sorted hoops and one newcomer, including neither; school only, existing rule/mat support. Preserve IDs/pins. Exclude levels 8–11, optional pre-K opening, third feature, new bands, kept creations/save changes and unresolved decisions.
 - Dispatch `critter-sort-seven-20261016T060833Z`; worker `01a14354-252d-7ee2-a076-513abb65a3af`, host `local`, Neo project `60beeda2-d963-4f35-a4c0-82c972889939` (`/Users/robert/git/neo`), title "Critter Sort 7: Where does the new one go?". Fresh project/local chat, minimal handoff, no history/model override; branch `codex/critter-sort-seven`, claim `f65dbf3`, [PR #426](https://github.com/rjdunlap/neo/pull/426); source `d316d9b`.

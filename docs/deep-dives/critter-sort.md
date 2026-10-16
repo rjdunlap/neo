@@ -108,7 +108,7 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 2. **Fresh rules** from existing art (single-animal rules for easy entry only), with the split test. Tier: rules (typecheck and that game's tests).
 3. **Level 6 and the preschool opening** (level 6 for pre-K built 2026-10-14 with `order` [6, 1, 2, 3] and `entryLevels` [6]; the preschool row waits on decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
 4. **Level 7 Where does the new one go? — built** (school only), [PR #426](https://github.com/rjdunlap/neo/pull/426). Five sorted examples, one newcomer, three diagrams; explicit neither mat and existing mistake/hint/bot support. School order `[2, 3, 4, 5, 7]`; IDs and pins preserved. [Proof](../VERIFICATION.md#2026-10-15--critter-sort-level-7-newcomer).
-5. **Level 8 A new sign.** Same tier.
+5. **Level 8 A new sign — claimed** by `codex/critter-sort-eight`, worker `01a1438c-7bb8-7aa3-bf27-b75caa6f890a`, dispatch `critter-sort-eight-20261016T071003Z`. Same six critters sorted twice under distinct splitting rules; school only. Expected files: game logic/runtime/tests, voice/how-to, filtered browser case and closeout docs. Tier: new levels. Draft PR pending.
 6. **Level 9 This but not that.** Same tier.
 7. **Level 11 How many?** Same tier; a count badge screenshot.
 8. **Third critter feature** (decision 2), shared with Critter Crossing: both games' rule tests plus the fairness test across the larger pool.
