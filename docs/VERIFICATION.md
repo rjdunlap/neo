@@ -338,3 +338,8 @@ Reconciled completed [visible not #422](https://github.com/rjdunlap/neo/pull/422
 ### 2026-10-16 — Critter Sort level-8 dispatch
 
 Reconciled completed [level 7 #426](https://github.com/rjdunlap/neo/pull/426), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 5](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a1438c-7bb8-7aa3-bf27-b75caa6f890a`. Independent subject docs are preserved. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Critter Sort level-9 dispatch
+
+Reconciled completed [level 8 #428](https://github.com/rjdunlap/neo/pull/428), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 6](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a143f7-ff89-7560-8b89-30f08aa4e88a`; open ecosystems research has no runtime overlap. Queue records recalculated estimate, scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
