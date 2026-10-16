@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Critter Crossing visible not entry (2026-10-15)
+
+[PR #422](https://github.com/rjdunlap/neo/pull/422), `codex/critter-not-entry`, dispatch `critter-not-entry-20261016T050833Z`: appended stable ID 8 shows the pictured rule with a red slash and reuses spoken `cross.visible` with the negated rule. Pre-K follows `[1, 8, 2, 3]`, with `entryLevels: [8]`; school stays 2–7, existing IDs/pins retain their meaning. Two visible rounds, gentle refusal and glow after two misses, shell reward and passing-only ghost finger. Scoped how-to excludes hidden-rule instructions at 8. [Proof](../VERIFICATION.md#2026-10-15--critter-crossing-visible-not-entry). Preschool, a third feature and Be the gate remain excluded; iPad speech and child interpretation remain open.
+
+
 ### Bubble Pop mode gallery (2026-10-16)
 
 [PR #412](https://github.com/rjdunlap/neo/pull/412), `claude/bubble-pop-mode-gallery`, [definition](../definitions/mode-gallery.md#build-slice): optional `GameModule.levelCard(level)` (`LevelCard`: name, spoken line, picture) and `HowToCard.mode`; only Bubble Pop sets it (15 cards in `MODE_CARDS`, `mode-art.ts`, voice lines `bubble.mode.<id>`). `HowToPanel` labels the level `THIS LEVEL · <NAME> · level <n>`, shows a 112-unit picture tile beside the held arrows (a tap speaks the line) and, on the intro only, a decorative ladder of the played band's `levelsInOrder`: current level outlined, green dot on the level her progress suggested, red pin on a pinned level. Deviation from the definition: beside a demonstration the ladder sits under the demo window, and it is dropped first if the card cannot fit; lap and pre-K show it in both orientations. Checks: typecheck, build, `howtolevel`, `howto HOWTO_ONLY=bubble-pop`, `mode-cards.test.ts` ([entry](../VERIFICATION.md#2026-10-16--bubble-pop-mode-gallery)). Open: device speech, whether the ladder reads clearer than numbers.

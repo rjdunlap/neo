@@ -25,6 +25,21 @@ describe('game registry', () => {
     expect(g.levels('prek')).toEqual({ min: 4, max: 8 });
   });
 
+  it('places Critter Crossing visible not between 1 and 2 while preserving school and saved IDs', () => {
+    const g = gameById('critter-crossing')!;
+    const prek = g.levels('prek'), school = g.levels('school');
+    expect(g.bands).toEqual(['prek', 'school']);
+    expect(levelsInOrder(prek)).toEqual([1, 8, 2, 3]);
+    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(g.entryLevels).toEqual([8]);
+    expect(stepLevel(1, 1, prek)).toBe(8);
+    expect(stepLevel(8, 1, prek)).toBe(2);
+    expect(stepLevel(2, -1, prek)).toBe(8);
+    expect(landing(8, school, g.entryLevels)).toBe(2);
+    for (const l of [1, 2, 3]) expect(nextLevel(l, [], prek)).toBe(l);
+    for (const l of [2, 3, 4, 5, 6, 7]) expect(nextLevel(l, [], school)).toBe(l);
+  });
+
   it('has unique ids and a spoken title for every game', () => {
     expect(new Set(GAMES.map((g) => g.id)).size).toBe(GAMES.length);
     for (const g of GAMES) expect(SCRIPT[g.titleLine]).toBeDefined();
