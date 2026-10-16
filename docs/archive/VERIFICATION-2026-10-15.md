@@ -343,3 +343,10 @@
 - Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=6,9 npm run test:browser`: 5/6 launches, each round 3 misses/1 hint, strip targets, out-of-order chime without accounting, saved round/sticker and no page errors.
 - Passed same URL with `BROWSER_SUITE=fingerdemo FINGER_ONLY=bumper-garden FINGER_LEVELS=6,9`: clean 12.8/21.2 s, no page errors. Reviewed landscape `test-results/browser/bumper-garden-6.png` (6,7,8) and portrait `bumper-garden-9.png` (5,4,3,2,1): clear strip/layout. Owned server stopped; links/diff checked.
 - Not run: wider browser/offline/iPad/controller/child checks. Device touch/speech and child counting understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-15 — Dot Link marks in the dots
+
+- [PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, commit `ac46108` on base `c6b3368`: [dive](../deep-dives/dot-link.md#build-slices-in-order) slice 1. Each dot color carries an always-on mark (heart, drop, star, leaf, moon; `DOT_MARKS`). Art only: no rule, level, save or setting change.
+- Passed typecheck; `npx vitest run src/games/dot-link` (6 tests, new: every color has its own distinct mark).
+- Passed `GAME_URL=http://localhost:5891 BROWSER_SUITE=batch BATCH_ONLY=dots` (levels 1–6) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=6` (clean, 12.1 s). Reviewed `test-results/browser/dot-link-6.png`: marks legible; purple/moon was not on that seeded board.
+- Not run: build (no shared files changed). Open: marks at 34-unit dots on a real iPad ([device check](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).

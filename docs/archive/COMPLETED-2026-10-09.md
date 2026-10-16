@@ -952,7 +952,7 @@ Typecheck, 16 Memory Match tests (200 seeded fraction selections: exact area/til
 
 ## Dot Link marks in the dots (2026-10-15)
 
-[PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, [dive](../deep-dives/dot-link.md#build-slices-in-order) slice 1: every dot color carries an always-on mark drawn inside it (red heart, blue drop, yellow star, green leaf, purple moon; `DOT_MARKS` in `src/games/dot-link/logic.ts`, drawn in `index.ts`), so color is never the only cue. No rule, level, save or setting change and no grown-up switch (decided always on, 2026-10-14). Checks: typecheck, Dot Link rule tests (a test that each color has a distinct mark), filtered `dots` play at levels 1–6, `fingerdemo` at level 6 ([entry](../VERIFICATION.md#2026-10-15--dot-link-marks-in-the-dots)). Open: legibility at 34-unit dots on a real iPad.
+[PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, [dive](../deep-dives/dot-link.md#build-slices-in-order) slice 1: every dot color carries an always-on mark drawn inside it (red heart, blue drop, yellow star, green leaf, purple moon; `DOT_MARKS` in `src/games/dot-link/logic.ts`, drawn in `index.ts`), so color is never the only cue. No rule, level, save or setting change and no grown-up switch (decided always on, 2026-10-14). Checks: typecheck, Dot Link rule tests (a test that each color has a distinct mark), filtered `dots` play at levels 1–6, `fingerdemo` at level 6 ([entry](VERIFICATION-2026-10-15.md#2026-10-15--dot-link-marks-in-the-dots)). Open: legibility at 34-unit dots on a real iPad.
 
 ## Bug Builder paired wing finish (2026-10-15)
 
