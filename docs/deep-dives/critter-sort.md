@@ -107,7 +107,7 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 1. **Neither mat, a hint on the critter she missed, and worked examples — built.** The hint landed 2026-10-14, examples in [PR #418](https://github.com/rjdunlap/neo/pull/418), and the leaf mat at levels 2, 3 and 5 in [PR #423](https://github.com/rjdunlap/neo/pull/423) (2026-10-15). Correct outside drops are explicit, bare grass stays free, and hints, completion and the ghost finger include the mat. [Verification](../VERIFICATION.md#2026-10-15--critter-sort-neither-mat).
 2. **Fresh rules** from existing art (single-animal rules for easy entry only), with the split test. Tier: rules (typecheck and that game's tests).
 3. **Level 6 and the preschool opening** (level 6 for pre-K built 2026-10-14 with `order` [6, 1, 2, 3] and `entryLevels` [6]; the preschool row waits on decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
-4. **Level 7 Where does the new one go?** Slice 1 is built. Same tier.
+4. **Level 7 Where does the new one go?** Claimed by `01a14354-252d-7ee2-a076-513abb65a3af` on `codex/critter-sort-seven` (dispatch `critter-sort-seven-20261016T060833Z`). School only: sorted diagram and one newcomer, all four destinations; preserve IDs/pins. Expected files: game logic/runtime/tests, how-to/voice, browser case, README/GAMES/roadmap/verification/queue. Slice 1 is built. New-levels tier.
 5. **Level 8 A new sign.** Same tier.
 6. **Level 9 This but not that.** Same tier.
 7. **Level 11 How many?** Same tier; a count badge screenshot.
