@@ -359,3 +359,11 @@
 - Reviewed portrait `test-results/browser/bumper-garden-pond-5.png` and `bumper-garden-hive-5.png`: clear columns/ring, numbers, controls and pet clearance. Owned Vite stopped; links/diff checked. After play only help text, docs and exact-step rule coverage changed.
 - CI on merge `8d34240` passed 1,351 other tests but two expanded physics loops exceeded 5 s. Follow-up partitions both by table with a 15 s exhaustive-case budget; all 20 resulting rules passed locally (same assertions/samples). No product changes; prior play/build proof retained.
 - Not run: wider browser suites, standalone fingerdemo, offline, real controller/iPad/audio/child judgment. Shared physics/navigation/persistence unchanged; device comfort and sound quality remain open.
+
+## 2026-10-15 — Bug Builder paired wing finish
+
+- [PR #416](https://github.com/rjdunlap/neo/pull/416), `codex/bug-wing-flutter`, tested base `7d765c2` plus scoped art/index/browser diff: dive slice 2, mirror 5–7 only. Wings and stamps fold across their common hinge and reopen in the existing finish wait; faint model wing remains visible. Rules/accounting unchanged.
+- Passed typecheck, 18 how-to tests and build (existing chunk warning); help text updated after play, runtime unchanged.
+- Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=expansion EXPANSION_ONLY=bug BUG_LEVELS=7 npm run test:browser`: outside-drop exploration, two misses/one hint, matching stamps, synchronized fold through -1 and reopening to 1, faint reference, saved result/sticker and no page errors. Initial sandbox Chromium launch failed on macOS Mach access; isolated escalated run passed.
+- Reviewed `test-results/browser/bug-builder-portrait.png` and `bug-builder-fold.png`: targets/tray/pet clear, stationary body and faint model during the fold. Owned Vite stopped after checks; links/diff checked.
+- Not run: rule tests (no logic change), other levels, standalone fingerdemo (input/bot unchanged), broader suites/offline, iPad/speech or child interpretation; existing device checks remain open.
