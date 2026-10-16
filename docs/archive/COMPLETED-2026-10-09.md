@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Clap the Syllables level 8 Longer or shorter? (2026-10-16)
+
+[PR #452](https://github.com/rjdunlap/neo/pull/452), `codex/clap-syllables-comparison`, dispatch `clap-comparison-20261016T141435Z`, worker `01a14511-3cbe-7753-a007-323828dbf516`: four seeded pairs of unequal syllable counts, alternating more/fewer from a seeded start; whole-word spoken counts, claps, free replay, matching-style misses and second-miss answer glow, shared answer for judging/hint/ghost finger. School order `[5,6,8]` preserves existing IDs and skips reserved 7; no level 9 or younger openings. [Proof](../VERIFICATION.md#2026-10-16--clap-the-syllables-level-8-longer-or-shorter).
+
 ### Sing-Along Barn, Bounce High, Bounce Low (2026-10-16)
 
 [PR #450](https://github.com/rjdunlap/neo/pull/450), `claude/sing-barn-bounce-high`, roadmap chunk 18: the seventh tune, tune id `bounce`, sung on mi, sol and la (E G A): "Bounce high, bounce low" is sol la sol mi and "bounce the ball to Shi-loh" is sol sol la la sol mi. The opening is 10 notes; each friend's verse is "Bounce high, bounce low, bounce the ball to the <friend>" (10 notes) with `namesAnimal: true`, so the friend answers on its name. It joins the seeded tune pool at every level and is the seventh card (a red ball) in the level 5-6 chooser, which now scales seven cards to 0.5 (110 by 100 logical). New voice lines `barn.sing.bounce` and `barn.done.bounce`; the how-to nursery-songs list and the `describeLevel`/off-screen strings name it. Two new rule tests (lyric, answers and verse ends; only mi, sol, la with "high" above "low"). Notes are from the standard form, not a printed score ([device check](../DEVICE-CHECKS.md)).

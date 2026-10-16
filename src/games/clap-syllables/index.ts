@@ -19,7 +19,7 @@ import { answerOf, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, n
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 5, max: 6 },
+  school: { min: 5, max: 8, order: [5, 6, 8] },
 };
 
 const BEAT_COLORS: ColorName[] = ['red', 'yellow', 'blue'];
@@ -106,7 +106,7 @@ class ClapSyllables implements Game {
     onTap(this.pad, () => this.clap(), { cooldown: 90 });
     this.pad.visible = this.plan.mode === 'along' || this.plan.mode === 'solo';
     this.replay = new RoundButton(handsArt(60), swatch.white, 52, () => void this.again());
-    this.replay.visible = this.plan.mode === 'match';
+    this.replay.visible = this.plan.mode === 'match' || this.plan.mode === 'compare';
     ctx.stage.addChild(this.backdrop, this.board, this.caption, this.glow, this.pad, this.replay);
   }
 
@@ -167,6 +167,7 @@ class ClapSyllables implements Game {
         const next = nextToSort(this.cards.map((card) => ({ card, word: card.word, sorted: !card.drag || !card.drag.enabled || card.drag.dragging })), this.bins);
         return next ? { drag: { on: next.card.card.node }, to: { on: next.bin.node } } : null;
       }
+      case 'compare':
       case 'match': {
         const card = pictureToTap(this.q, this.cards);
         return card ? { tap: { on: card.node } } : null;
@@ -235,6 +236,12 @@ class ClapSyllables implements Game {
         await this.ctx.tw.wait(0.4);
         if (first) await this.ctx.instruct(INSTRUCTION.match);
         await this.playClaps(q.target!);
+        break;
+      case 'compare':
+        this.buildMatch(q);
+        this.layout();
+        await this.ctx.tw.wait(0.4);
+        await this.comparePrompt();
         break;
       case 'train':
         this.buildTrain(q);
@@ -310,6 +317,7 @@ class ClapSyllables implements Game {
   private async again() {
     if (this.busy || this.finished) return;
     this.idle = 0;
+    if (this.plan.mode === 'compare') return this.comparePrompt();
     if (this.plan.mode === 'match') return this.playClaps(this.q.target!);
     this.busy = true;
     this.claps = 0;
@@ -484,7 +492,20 @@ class ClapSyllables implements Game {
       this.board.addChild(card.node);
       this.cards.push(card);
     }
-    this.makeBeads(q.target!);
+    if (this.plan.mode === 'match') this.makeBeads(q.target!);
+  }
+
+  /** Say and clap both whole words, then repeat the requested comparison. Replay costs no hint. */
+  private async comparePrompt() {
+    this.busy = true;
+    for (const card of this.cards) {
+      card.node.scale.set(1.07);
+      await this.ctx.say('clap.count', { word: card.word.word, count: clapsWord(syllables(card.word)) });
+      await this.clapOut(syllables(card.word));
+      await this.ctx.tw.to(card.node.scale, { x: 1, y: 1 }, { duration: 0.2 });
+    }
+    await this.ctx.instruct(this.q.comparison === 'more' ? 'clap.more' : 'clap.fewer');
+    this.busy = false;
   }
 
   private async pick(card: Card) {
@@ -496,9 +517,14 @@ class ClapSyllables implements Game {
       this.wrongs++;
       this.busy = true;
       sfx.boing();
-      await this.ctx.say('clap.match.wrong', { word: card.word.word, count: clapsWord(n) });
-      await this.clapOut(n);
-      await this.playClaps(q.target!);
+      if (this.plan.mode === 'compare') {
+        await this.ctx.say('clap.compare.wrong', { word: card.word.word, count: clapsWord(n) });
+        await this.comparePrompt();
+      } else {
+        await this.ctx.say('clap.match.wrong', { word: card.word.word, count: clapsWord(n) });
+        await this.clapOut(n);
+        await this.playClaps(q.target!);
+      }
       if (this.wrongs >= 2) {
         this.hints++;
         this.glowing = this.cards.find((c) => c.word === answerOf(q))!.node;
