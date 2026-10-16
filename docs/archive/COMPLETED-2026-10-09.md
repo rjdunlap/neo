@@ -930,3 +930,7 @@ Typecheck, 16 Memory Match tests (200 seeded fraction selections: exact area/til
 ## Critter Crossing bank shelf (2026-10-15)
 
 [PR #405](https://github.com/rjdunlap/neo/pull/405), `claude/critter-crossing-bank-shelf`, [dive](../deep-dives/critter-crossing.md#build-slices-in-order) slice 1: on hidden levels 2–7 a white plank in the bottom-right corner shows non-interactive copies (`Critter` at 0.15 scale, hat included) of each critter with an answer, a crossed row under a green tick and a waited row under a red cross, in the order tried. Level 7's two pre-tried critters and the reveal's walk-ups go on it too. Level 1 shows none. `eventMode` is none, so it never takes a tap. No rule, level, voice, save or how-to change (no card step mentions remembering who crossed).
+
+## Dot Link marks in the dots (2026-10-15)
+
+[PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, [dive](../deep-dives/dot-link.md#build-slices-in-order) slice 1: every dot color carries an always-on mark drawn inside it (red heart, blue drop, yellow star, green leaf, purple moon; `DOT_MARKS` in `src/games/dot-link/logic.ts`, drawn in `index.ts`), so color is never the only cue. No rule, level, save or setting change and no grown-up switch (decided always on, 2026-10-14). Checks: typecheck, Dot Link rule tests (a test that each color has a distinct mark), filtered `dots` play at levels 1–6, `fingerdemo` at level 6 ([entry](../VERIFICATION.md#2026-10-15--dot-link-marks-in-the-dots)). Open: legibility at 34-unit dots on a real iPad.

@@ -234,3 +234,10 @@
 - Passed `node test-results/tangram-shovel.mjs` at `http://localhost:5191`, forcing shovel in an isolated runtime level-3 pool: real taps, quarter turns and drags finish with zero misses/hints, one saved sticker and no page errors. Portrait `test-results/browser/tangram-shovel-portrait.png` reviewed: connected handle/blade reads as shovel, controls and pet clear.
 - Initial Chromium sandbox startup denied; elevated isolated run passed. Initial probe released before the existing 0.45 s piece-return completed (one miss); 550 ms waits passed without a product fix. Owned Vite server stopped; links/diff checked.
 - Not run: build, full suites or `fingerdemo` (content-only tier). Real iPad touch/speech, picture recognition and child play remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-15 — Duckling Parade deep dive
+
+- [PR #387](https://github.com/rjdunlap/neo/pull/387), `codex/duckling-parade-deep-dive`, dispatch `duckling-dive-20261015T175326Z`: audited existing 1–10, five band windows, generation/accounting, speech/how-to, ghost finger and no couch entry; corrected stale tracker ceiling.
+- [Write-up](../deep-dives/duckling-parade.md) compares six precedents and learning references, defines presentation and bounded ready/gated slices. Meerca evidence is first-party search excerpts (open returned 403); other reference pages/PDF opened. None played.
+- Ran Markdown links/anchors and `git diff --check`; docs only. No tests, build or browser suites run. Existing recorded level-10 evidence retained, not rerun.
+- Open: real-iPad speech/control/color and child reaction; count aid/accounting, proposed continuation/mapping/authoring and lap-entry decisions. No implementation or developer decision resolved.

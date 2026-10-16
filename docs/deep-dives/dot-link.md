@@ -93,7 +93,7 @@ Both decided by the developer on 2026-10-14:
 
 ## Build slices, in order
 
-1. **Marks in the dots** (claimed by branch `claude/dot-link-marks`; new art only; existing-game tier: typecheck, the rule tests, one filtered play and `fingerdemo` at level 6).
+1. **Marks in the dots** (built 2026-10-15; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-marks-in-the-dots-2026-10-15)).
 2. **Level 11 Find my buddy** (toddler entry; `logic.ts` rule test, then new-level tier).
 3. **Level 7 Two colors** (a second count; new-level tier).
 4. **Level 8 Same, different** (a pattern line; new interaction tier: rules first, one scripted play, one portrait screenshot, `fingerdemo`).

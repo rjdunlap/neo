@@ -208,7 +208,7 @@ Level 1 explicitly names the next day and finishes after seven weather records. 
 
 ### Dot Link
 
-*lap–pre-K · after Two Dots and Candy Crush.* Tap dots to pop them, then drag a line through neighboring dots of one color; new dots drop in from the top. Later levels ask for one color, chains of four, and a closed square that clears every dot of that color. Pre-K level 6 asks for exactly five neighboring dots in a line, three times; a shorter, longer or closed line pops but does not count, and gets a gentle reminder. A move that counts always exists.
+*lap–pre-K · after Two Dots and Candy Crush.* Tap dots to pop them, then drag a line through neighboring dots of one color; new dots drop in from the top. Later levels ask for one color, chains of four, and a closed square that clears every dot of that color. Pre-K level 6 asks for exactly five neighboring dots in a line, three times; a shorter, longer or closed line pops but does not count, and gets a gentle reminder. A move that counts always exists. Every color also carries an always-on mark drawn inside its dot (red heart, blue drop, yellow star, green leaf, purple moon), so color is never the only cue; the marks change no rule or level.
 
 ### Tangram Town
 
