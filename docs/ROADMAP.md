@@ -58,7 +58,8 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 13. **`sing-along-barn`, the next pentatonic tune** (*Bounce High, Bounce Low* suggested; tunes that need F wait on a decision). New-levels tier, `fingerdemo`. [Chunk 18](#chunks)
 14. **`animal-snack`, busy-touch acknowledgment (V2)**, then **Barnyard land scene: barn, fence, pail, motif (V1)** as a second slice. Existing-game tier, then shared-visuals tier. [Definition](definitions/visual-identity.md#build-slices-in-order)
 15. **`bouncy-launch`, level 12 *Planet Hop*** (the same shown pull on a light or heavy planet; predict past or before the flag; unscored). New-levels tier, `fingerdemo` at 12. [Definition](definitions/planet-hop.md)
-16. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
+16. **`photo-safari`, free the polaroid textures, then level 7 *Two clues, no name*** (school), then level 5 made truthful and waving/swimming actions, one per slice. Bug-fix tier, then new-interaction tier. [Dive slices 1–4](deep-dives/photo-safari.md#build-slices-in-order)
+17. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
 
 ### Chunks
 
@@ -132,7 +133,7 @@ The [first](IDEAS.md#short-ladder-audit-2026-10-09) and [second](IDEAS.md#round-
 | **Clock Tower's elapsed time** | Appended levels 8–11, their order and a preschool opening are decision-dependent | [Build slices](deep-dives/clock-tower.md#build-slices-in-order) |
 | **Day by Day** | Preschool, months and daylight are decision-dependent; causal seasons stay separate | [Build slices](deep-dives/day-by-day.md#build-slices-in-order) |
 | **Robot Path's reusable routine** | Decision-dependent scope under Waiting on the developer | [Build slices](deep-dives/robot-path.md#build-slices-in-order) |
-| **Photo Safari's two-clue observations** | Define through its one-game dive: evidence, fair scenes, journal records | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
+| **Photo Safari's two-clue observations** | Designed: free the polaroid textures, then level 7 *Two clues, no name*, then level 5 made truthful and new actions are ready; *What changed?* and *Is it true?* wait on decisions | [Build slices](deep-dives/photo-safari.md#build-slices-in-order) |
 | **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
 | **Ramp Race's predicted stop and recorded trials** | Define the finish, half-unit outcomes and the comparison view | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 | **Seesaw Balance's unknowns and Garden Rows' boxes** | Define each as its own session; prove explanation, solvability and useful hints | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
