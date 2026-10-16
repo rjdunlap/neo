@@ -307,3 +307,8 @@ Reconciled completed [D1a #395](https://github.com/rjdunlap/neo/pull/395), confi
 ### 2026-10-15 — Goodnight Room content dispatch
 
 Reconciled completed [Color Garden #399](https://github.com/rjdunlap/neo/pull/399), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Goodnight Room slice 8](deep-dives/goodnight-room.md#build-slices-in-order), first current ready-list line, to worker `01a141c7-9808-76c0-929c-55901e818a9c`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Bumper Garden table dispatch
+
+Reconciled completed [Goodnight rooms #403](https://github.com/rjdunlap/neo/pull/403), confirmed merge and released its slot. Dot Link #404 is merged; retained dirty code matches origin/main byte-for-byte. Fresh allowance and overlap admitted only [Bumper Garden slice 3](deep-dives/bumper-garden.md#build-slices-in-order) to worker `01a14275-5f44-70b2-afb4-0d962c698c1e`. Queue records recalculated estimate, scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
