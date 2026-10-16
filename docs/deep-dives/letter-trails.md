@@ -188,7 +188,7 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are
 Each is sized for one session. A slice that adds a level is built in level order so saved IDs stay unbroken, raises `LEVELS.school.max`, and updates `describeLevel`, the how-to `LevelLine`s, the README row and [GAMES.md](../GAMES.md).
 
 2. **Words with their own picture, a name cap and per-letter counting** (ready; decisions 3 and 4 lean). Fresh 3 and 4. Tier: rule tests, one portrait screenshot of the word picture, `fingerdemo` at 7 and 8. Coupling: reuse Word Monsters' `wordPicture`; do not start while its slice 2 is in flight on the same table.
-3. **A hint that shows the way, start arrows, a rising tune and trail looks** (ready). Fresh 5 and 6. Tier: rule tests, `fingerdemo` at 1 and 4.
+3. **A hint that shows the way, start arrows, a rising tune and trail looks** (claimed 2026-10-16, `claude/letter-trails-show-the-way`). Fresh 5 and 6. Tier: rule tests, `fingerdemo` at 1 and 4.
 4. **Journal entries** (**built 2026-10-15**, [PR #363](https://github.com/rjdunlap/neo/pull/363), `claude/letter-trails-journal`). 26 entries `letter-trails:<LETTER>` in `src/content/journal.ts`, lines `journal.trails.A`–`Z`, art from `letterPicture` in `src/ui/journal-art.ts`; the finish files a letter only when its picture was shown, at any level. Journal total grows by 26. Not run: portrait screenshot of the journal, device speech.
 5. **Letter-name lines** (after the iPad speech check). Fresh 8.
 6. **Level 9, Three times** (ready after slices 1–3). Tier: rule tests, one scripted play of three tries with one wander (the ribbon comes back), `fingerdemo` at 9, one screenshot of the dotted and start-only tries.
