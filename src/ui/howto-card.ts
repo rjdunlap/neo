@@ -197,9 +197,10 @@ export class HowToPanel extends Container {
     }
     const levelText = text(this.info.level, BODY, ink, '500', inner - (pictureRow ? 0 : side));
     rows.push(levelText);
-    // Beside a demonstration the ladder goes under its window, where the narrow text column leaves room; otherwise it follows the description.
+    // Beside a demonstration the ladder goes under its window, where the narrow text column leaves room, packed closer since the
+    // window narrows with the text; otherwise it follows the description.
     const underWindow = wide && !!demo;
-    const ladder = withLadder && mode ? this.ladder(underWindow ? dw : inner) : null;
+    const ladder = withLadder && mode ? this.ladder(underWindow ? dw : inner, underWindow ? 4 : LADDER_GAP) : null;
     const ladderLabel = ladder ? text('LEVELS, EASIEST FIRST', 13, MUTED, '600') : null;
     if (ladder && !underWindow) {
       rows.push(ladderLabel!);
@@ -294,19 +295,19 @@ export class HowToPanel extends Container {
    * The band's levels in play order, one small picture each: the level on the card is outlined, the one her progress suggested
    * has a green dot, a pinned one a pin. It only shows; the arrows are the one way to choose. Null when the levels would be too small.
    */
-  private ladder(inner: number): { row: Container; size: number } | null {
+  private ladder(inner: number, gap: number): { row: Container; size: number } | null {
     const pick = this.intro?.pick;
     const levelCard = this.intro?.levelCard;
     if (!pick || !levelCard) return null;
     const levels = levelsInOrder(pick.range);
     if (levels.length < 2) return null;
-    const size = Math.min(LADDER_MAX, Math.floor((inner - LADDER_GAP * (levels.length - 1)) / levels.length));
+    const size = Math.min(LADDER_MAX, Math.floor((inner - gap * (levels.length - 1)) / levels.length));
     if (size < LADDER_MIN) return null;
     const row = new Container();
     row.eventMode = 'none';
     levels.forEach((level, i) => {
       const cell = new Container();
-      cell.position.set(i * (size + LADDER_GAP), 0);
+      cell.position.set(i * (size + gap), 0);
       const here = level === this.info.levelNumber;
       cell.addChild(new Graphics().roundRect(0, 0, size, size, 14).fill(TILE_FILL));
       const picture = levelCard(level).picture();
