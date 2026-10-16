@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-16 — Bubble Pop mode gallery definition
+
+- Docs only, `claude/bubble-pop-mode-gallery-definition`, [PR #407](https://github.com/rjdunlap/neo/pull/407): [definitions/mode-gallery.md](definitions/mode-gallery.md) (Bubble Pop intro mode gallery, N4); roadmap chunk 20 now ready.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+
 ## 2026-10-15 — Critter Crossing bank shelf
 
 - [PR #405](https://github.com/rjdunlap/neo/pull/405), dive slice 1: a drawing-only shelf of crossed and waited critter copies on hidden levels 2–7 (`src/games/critter-crossing/index.ts`); no rule, level, voice, save or how-to change.
