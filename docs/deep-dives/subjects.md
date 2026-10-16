@@ -1,6 +1,6 @@
 # Subject deep-research sessions: sciences, history, technology and life skills
 
-**Requested by the developer, 2026-10-14:** add research sessions for the sciences beyond physics, for a range of history subjects, for technology (could it expand beyond coding?), and (same day, after the question "other subjects, life skills, recipes, exercise?") for life skills. **The goal, stated the same day: games for toddlers, preschoolers, elementary children, middle schoolers *and* the parents.** So every session must answer for every audience, not only the school years. A game deep dive researches one built game; a **subject session** researches one subject and returns candidates, modes for existing games, and a ladder for one first game. Physics already has [its own plan](../PHYSICS-GAMES.md).
+**Requested by the developer, 2026-10-14:** add research sessions for the sciences beyond physics, for a range of history subjects, for technology (could it expand beyond coding?), and (same day, after the question "other subjects, life skills, recipes, exercise?") for life skills. **The goal, stated the same day: games for toddlers, preschoolers, elementary children, middle schoolers *and* the parents.** So every session must answer for every audience, not only the school years. A game deep dive researches one built game; a **subject session** researches one subject and returns candidates, modes for existing games, and a ladder for one first game. Physics already has [its own plan](../PHYSICS-GAMES.md). A [standards audit](subjects/standards-audit.md) (2026-10-16) laid Common Core, Head Start, EYFS, IB, the arts and language standards over this tracker and added the mathematics, language and literacy, and languages-arts-thinking rows.
 
 **A subject session is research and ideation only: documents, no code**, with the same rule as a game deep dive (nothing under `src/`, `scripts/` or `public/`; no tests; do not build a slice, however small). The roadmap's chunk 28 points here. Nothing below is built, scheduled or promised. The long-term direction reaches about age eleven ([Later horizons](../ROADMAP.md#later-horizons-elementary)); she is about one, so the nearer rungs matter first (see the order below).
 
@@ -126,6 +126,45 @@ Added after the developer asked about recipes and exercise. This group is the ne
 | `money-economy` | Needs and wants, saving, trade, fairness (a check of what Lemonade Stand and Maker Harbor already cover) | Financial-education frameworks (open at source) | Market Stall, Lemonade Stand, Maker Harbor (proposed) | Maker Harbor | P–M | household-budget cozy puzzle | not started |
 | `off-screen-companions` | The off-screen activity for each game, for the grown-ups' page: what a parent and child do with a real jar, a wooden spoon or a song | WHO on caregiver time; early-years play guidance | Every game's `offScreen` field | the grown-ups' page | L–U | the whole point; plain HTML | **designed** ([study](subjects/off-screen-companions.md), 2026-10-14, PR #322) |
 
+### Mathematics
+
+Added 2026-10-16 from the [standards audit](subjects/standards-audit.md): Common Core's early math is covered by built games and their game deep dives, so these rows are the later domains, where U, M and G have least.
+
+| ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `fractions` | Fractions as numbers: unit fractions, equivalence, comparing, on a number line | CCSS 3.NF, 4.NF, 5.NF | Pet Kitchen, Memory Match, Frog Hop | Counting Cove | P–U; G | fraction-strip tiling puzzle | not started |
+| `ratio-proportion` | Ratios, rates, scaling, percent; mixing to the same taste or color | CCSS 6.RP, 7.RP | Pet Kitchen, Lemonade Stand, Rainbow Fingers | Counting Cove / Tinker Lab | U–M; G | mix-to-match puzzle | not started |
+| `integers` | Below zero: temperature, sea level, floors, owing and having | CCSS 6.NS.C, 7.NS.A | Frog Hop, Weather Wardrobe | Counting Cove / Bubble Beach | U–M | diving or elevator puzzle | not started |
+| `algebra-balance` | Unknowns, doing the same to both sides, growing patterns, a rule from a table | CCSS 6.EE, 7.EE, 8.EE, 8.F | Seesaw Balance, Pattern Train, Fruit Sums | Puzzle Peaks | S–M; G | Box Balance-style cozy puzzle | not started |
+| `area-volume-space` | Area and perimeter, filling boxes, nets, views and the coordinate grid | CCSS 3.MD.C, 4.MD.A, 5.MD.C, 5.G.A, 6.G | Garden Rows, Tangram Town, Shape Buddies, Fill and Dump; Skyline View (proposed) | Rainbow Meadow | P–M; G | packing or floor-plan puzzle | not started |
+| `chance-statistics` | Likely and unlikely, fair spinners, mean and spread, what happens most often | CCSS 6.SP, 7.SP.C, HS S-CP | Picture Graph, Egg Catch, Critter Crossing | Tinker Lab | K–M; G | probability puzzle | not started |
+| `estimation` | Guess, then check: how many, how long, how heavy; a sensible range | CCSS MP1, MP5, MP6; K.CC, 2.MD.A.3 | Inchworm Measure, Seesaw Balance, Fill and Dump; Guess the Pumpkin (proposed) | Counting Cove | T–G | family jar-guess card | not started |
+
+### Language and literacy
+
+Phonics, letters, rhyme and syllables are researched as game deep dives (Word Monsters, Letter Trails, Rhyme Time, Clap the Syllables, Read & Do); these rows are the rest of Common Core ELA and early language.
+
+| ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `speaking-listening` | Conversation, retelling, describing, asking, following and giving directions (the island cannot hear her, so co-play and cards) | CCSS SL.K–5; EYFS communication and language; Head Start ELOF language | Peekaround Island, Story Steps | Story Grove | L–U; G | conversation cards; describer/finder barrier game | not started |
+| `vocabulary-word-parts` | Word meaning, categories, prefixes, suffixes, roots, multiple meanings | CCSS L.K–2.4–5, L.3–8.4 | Opposites, Word Monsters, Critter Sort | Story Grove | T–M; G | root-word puzzle | not started |
+| `informational-reading` | Labels, captions, diagrams, maps, a how-to; finding an answer in a text, with spoken support | CCSS RI.K–5, RST.6–8 | Read & Do, Mail Carrier, Photo Safari | Story Grove | P–M | field-guide puzzle | not started |
+| `writing-composition` | A message, a list, a story, an opinion with a reason, and revising it | CCSS W.K–5.1–5 | Story Steps, Letter Trails, Stamp Studio; Story Weaver (proposed) | Story Grove | P–M | family story cards | not started |
+| `poetry-wordplay` | Nursery rhymes, riddles, jokes, puns, tongue-twisters | CCSS RL.K–2.4, L.4–5.5 | Rhyme Time, Sing-Along Barn, Clap the Syllables; Mother Goose Muddle (proposed) | Story Grove / Music Mountain | L–M; G | riddle cards; pun puzzle | not started |
+
+### Languages, arts, thinking and the natural world
+
+| ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `zoo-animals` | Animal diversity: vertebrate groups and tricky cases, coverings, behavior and calls, keeper care and enrichment, endangered species and recovery (beyond `life-science` and `ecosystems`) | NGSS K-LS1-1, 2-LS4-1, 3-LS3-1, 3-LS4-3, MS-LS2-5; Smithsonian National Zoo and AZA education | Critter Sort, Photo Safari, Peekaboo Barn, Animal Snack, Teddy Doctor, Habitat Helpers, Sound Garden, Size Parade; Habitat kits (proposed) | Barnyard; a zoo or habitat land is a decision | L–M; G | conservation-planning puzzle; keeper/visitor co-play; zoo-visit card | not started; each new species is new critter anatomy (M each) |
+| `oceans` | Beach and tide pools, depth zones, ocean animals, tides and currents, a clean sea | NGSS 2-ESS2-3, 4-ESS2-2, K-ESS3-3; NOAA ocean literacy | Splish Splash, Duck Pond, Sink or Float; Tide Pools and Reef kit (proposed) | Bubble Beach | L–M; G | dive-mapping puzzle | not started |
+| `world-languages` | Words, songs, greetings and numbers in a second language; comparing languages | ACTFL World-Readiness (5 Cs) | Word Monsters, Memory Match, Sing-Along Barn | undecided | L–M; G | family phrase card | not started; **needs review** (device voices, which language) |
+| `sign-language` | Everyday signs, the manual alphabet, fingerspelling a name (receptive only; no camera) | ASL resources by Deaf educators | Pet Says, Peekaboo Barn | undecided | L–S; G | sign-of-the-week card | not started; **needs review** by the Deaf community |
+| `theatre-puppetry` | Pretend, character voices, puppet shows, acting a story for an audience | Core Arts theatre (TH:Cr, TH:Pr); EYFS expressive arts | Story Steps, Feelings Faces, Pet Says; broader Story Theater (proposed) | Story Grove | T–M; G | puppet-show card; director/actor co-play | not started |
+| `philosophy-reasoning` | Is it fair? What if? Reasons, counterexamples, disagreeing kindly | Philosophy for Children practice; CCSS SL.1, MP3 | Feelings Faces, Critter Sort, Story Steps | Story Grove | P–M; G | dinner-table question cards | not started |
+| `media-literacy` | Real or made up? Who made this and why? Ads, edited pictures, checking a claim | NAMLE core principles; ISTE knowledge constructor; CCSS RI.8 | Photo Safari, Pixel Pictures | Tinker Lab | K–M; G | spot-the-edit puzzle; "how do we know?" card | not started |
+| `strategy-games` | Two-player thinking games: Nim, mancala, tic-tac-toe, dots and boxes, chess puzzles; a kind bot and a "show me why" replay | CCSS MP1, MP7; traditional games, with sources from the cultures concerned | Secret Code, Island Bridges, couch face-offs | Puzzle Peaks / Lantern Lake | P–M; G | parent and child as equals | not started |
+
 ## Suggested order (non-binding)
 
 The long horizon is real, but the nearest rungs serve a one-year-old, so the order starts there.
@@ -134,6 +173,7 @@ The long horizon is real, but the nearest rungs serve a one-year-old, so the ord
 - **B. Closest to what is built:** `weather-water`, `matter`, `life-science`, `programming`, `music-instruments`.
 - **C. A gap in the catalog is wide here:** upper school and early-teen content (`space`, `energy-waves`, `how-computers-work`, `inventions`, `data-ai-literacy`, `time-change`) and parent puzzles.
 - **D. Everything else** in any order. `ecosystems`, `earth-materials` and `body-health` are researched; `inquiry` is the next unclaimed science row, followed by `genetics`. `americas-africa`, `exploration-maps`, `geography-cultures` and `safety` wait for a reviewer decision.
+- **E. From the [standards audit](subjects/standards-audit.md#order-non-binding) (2026-10-16):** `zoo-animals` first, then the Common Core gaps at U–M (`fractions`, `ratio-proportion`, `chance-statistics`), then language beyond phonics; `world-languages` and `sign-language` wait for a decision.
 
 ## Decisions for the developer
 

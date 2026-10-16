@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-16 — Standards audit for new subject sessions
+
+- Docs only, base `bff537a`, branch `claude/educational-game-subjects-1da8ca`: [standards audit](deep-dives/subjects/standards-audit.md) and 20 new **not started** rows in the [subject tracker](deep-dives/subjects.md#mathematics) (mathematics, language and literacy, languages/arts/thinking/natural world, including `zoo-animals`).
+- Opened the Common Core math domain navigation, 6.RP and the practice standards, the ELA strand index and the ACTFL goal areas. Head Start ELOF (403), EYFS, IB PYP, C3, Core Arts, Jump$tart and zoo-program NGSS alignments came from search summaries and are marked secondary.
+- Passed `node scripts/check-links.mjs` and `git diff --check`. No code changed; no typecheck, unit, build or browser runs (docs-only tier).
+- Open: every new row's anchors must be opened at source by its own session; language choice, sign-language review and a zoo destination are developer decisions.
+
 ## 2026-10-16 — Body and health subject research
 
 - Docs only, base `1fd4d39`, branch `codex/body-health-subject-research`, [PR #458](https://github.com/rjdunlap/neo/pull/458): [study](deep-dives/subjects/body-health.md), subject tracker, candidate notebook, roadmap packets and open developer decisions. Twenty subject studies now recorded; inquiry is the next unclaimed science row.
