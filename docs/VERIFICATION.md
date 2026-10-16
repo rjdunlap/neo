@@ -342,3 +342,8 @@ Reconciled completed [level 8 #428](https://github.com/rjdunlap/neo/pull/428), c
 ### 2026-10-16 — Critter Sort level-11 dispatch
 
 Reconciled completed [level 9 #436](https://github.com/rjdunlap/neo/pull/436), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 7](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a14435-4fa4-75c2-bc0c-802e92b789e9`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Market Stall content dispatch
+
+Reconciled completed [Critter Sort 11 #439](https://github.com/rjdunlap/neo/pull/439), confirmed merge and released its slot; Letter Trails #442 is merged. Fresh allowance and overlap admitted only [Market Stall slice 8](deep-dives/market-stall.md#build-slices-in-order) to worker `01a144a0-7198-7991-9aca-b368c1f69b7d`. Queue records recalculated estimate, scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
