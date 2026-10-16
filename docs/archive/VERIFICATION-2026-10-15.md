@@ -191,3 +191,24 @@
 - Ran: `npm run typecheck`; `vitest run src/games src/content` 1068 passed (new tests: pool size and distinct, copy not symmetric, mirror exact reflection); `BROWSER_SUITE=expansion EXPANSION_ONLY=bug` levels 1-7 (drag, wrong drop, hint, finish, sticker) on a dev server.
 - Not run: a reviewed portrait or hint screenshot, build, `fingerdemo`, a device or a child.
 - Open: the one-hint-per-round accounting decision stays as is (hints per spot).
+
+## 2026-10-15 — Clock Tower visible appointments
+
+- [PR #381](https://github.com/rjdunlap/neo/pull/381), `codex/clock-visible-appointments`, dispatch `clock-appointments-20261015T154626Z`. Tested base `6adc865` plus scoped source/browser diff: only existing level 5, three pictured pretend appointments with analog/digital time evidence and separate free replay, four distinct seeded target times, six existing pictures. Other modes/levels/bands/saves and old icon/sticker drawings retained.
+- Passed typecheck, 27 focused Clock Tower/how-to tests and build (shared voice/how-to changed). Across 200 seeds: repeatability, three distinct pictures/times, one matching answer, four different targets, all 24 hour/half-hour targets and all six pictures at all times reached, speech/labels from appointment data; icon/sticker snapshots pass.
+- Passed `BROWSER_SUITE=woods WOODS_ONLY=clock CLOCK_LEVELS=5` at `http://localhost:5189`: all twelve free replays do not submit/change counts, labels match task evidence, two wrong choices count [2,1], four right choices finish/save one sticker; no page errors. Reviewed `test-results/browser/clock-tower-5-appointments-portrait.png`: all three picture/replay cards legible and clear of pet; baseline landscape play passed.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=clock-tower FINGER_LEVELS=5` at the same URL, clean 12.9 s. Initial sandboxed Chromium launch failed on macOS Mach permission; isolated outside-sandbox runs passed. Owned Vite server stopped. Links/diff checked.
+- Not run: other levels' browser plays, full unit/browser/world/couch/offline suites (unchanged areas). Real iPad speech, finger comfort, pretend-plan comprehension and child learning remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device); new appointment art and later slices/decisions are separate.
+
+## 2026-10-15 — Market Stall name the coin
+
+- [PR #378](https://github.com/rjdunlap/neo/pull/378), branch `claude/market-stall-name-coin`: levels 2 and 3 only. The first tap of a coin new at that level (the 2 at level 2, the 5 at level 3) has the pet say "That is a two. It is worth two." in place of the count, and the purse coin pulses; once per game start; not a miss or hint. `coinToName` in `src/games/market-stall/logic.ts`, line `shop.name`.
+- Passed `npm run typecheck`; 88 tests in `src/games/market-stall` and `src/content`; `BROWSER_SUITE=woods WOODS_ONLY=shop` levels 1–7 on a dev server.
+- Not run: screenshot, `fingerdemo`, build, device speech. Pips and the teaching hint (deep-dive slice 2 remainder) are not built.
+
+## 2026-10-15 — Memory Match fraction squares
+
+- [PR #377](https://github.com/rjdunlap/neo/pull/377), `codex/memory-fraction-squares`, dispatch `memory-fraction-art-20261015T144931Z`. Tested base `c69ed5c` plus the four-file Memory Match source/test diff. Existing level 11 only: seeded rotations and equal-area masks; same three values/pairs, other levels/bands/order, accounting, couch and saves.
+- Passed `npm run typecheck` and `npx vitest run src/games/memory-match/logic.test.ts` (16 tests). Across 200 seeds: exact same-whole tiling/area and numerator, pair sides/labels, repeatability, all eight rotations and every legal shaded mask, actual rotated drawing within card bounds. Existing icon/sticker snapshots pass.
+- Reviewed one exposed level-11 portrait at `http://localhost:5188` using `node test-results/memory-fraction-art.mjs`; three picture/name pairs readable, rotated square clear of card edges and pet; no page errors. Screenshot `test-results/browser/memory-fraction-11-portrait.png`. Chromium's sandbox launch failed; the isolated outside-sandbox capture passed. Owned Vite server stopped.
+- Existing level-11 how-to audited and remains accurate. Not run: browser round, ghost finger, build, broader unit/browser/world/couch/offline suites (content tier, unchanged interaction/shared behavior). Real iPad speech/contrast/touch and child fraction understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device). Links/diff checked.
