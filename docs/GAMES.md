@@ -280,7 +280,9 @@ Tapping the turtle is free. Non-adjacent, visited and early-pond taps give speci
 
 ### Garden Rows
 
-*pre-K–school · after picture sudoku and Latin squares.* Plant a 3 by 3 flower bed so each row has one of every flower; from level 2 the columns count too, then 4 by 4 beds with fewer flowers to start, and a 5 by 5 bed. Every bed has exactly one way to finish (rule-tested over many seeds per level). A flower that repeats in a row or column will not stay and counts as a miss; tapping a planted flower takes it out. The glowing spot is a hint. Seeded beds would suit a couch face-off; it is not a couch game yet.
+*pre-K–school · after picture sudoku and Latin squares.* Plant a 3 by 3 flower bed so each row has one of every flower; from level 2 the columns count too, then 4 by 4 beds with fewer flowers to start, and a 5 by 5 bed. Every bed has exactly one way to finish (rule-tested over many seeds per level). A flower that repeats in a row or column will not stay and counts as a miss; tapping a planted flower takes it out. The glowing spot is a hint.
+
+**On the couch.** Grown-ups play its 4 by 4 and 5 by 5 beds (levels 3 to 6) with a controller: the stick, D-pad or arrow keys move a teal ring over the bed one spot at a time; the bottom button on an empty spot opens the seed packets, the stick steps through them, and the bottom button plants the chosen flower on the ringed spot; the left button closes the packets without planting. The bottom button on a flower the player planted takes it out, as a tap does (flowers the bed started with stay), and taps and the ring share one `act(r, c)`. A clash or a dead end counts as a wrong planting; the score is wrong plantings (lower wins), so a face-off gives both players the same seeded bed. A bot walks the columns then the rows, opens the packets, steps to the right one and plants (`nextPlanting`). No course yet.
 
 ### Ferry Jam
 

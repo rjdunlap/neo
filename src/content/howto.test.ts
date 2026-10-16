@@ -211,7 +211,7 @@ describe('the demonstration on a card', () => {
     const withBot = GAMES.filter((g) => demoFor(g.id)).map((g) => g.id).sort();
     const couchOnIsland = Object.keys(COUCH_INFO).filter((id) => GAMES.some((g) => g.id === id)).sort();
     expect(withBot).toEqual(couchOnIsland);
-    expect(withBot).toHaveLength(24);
+    expect(withBot).toHaveLength(25);
     expect(demoFor('monster-munch')).toBeNull();
     expect(demoFor('no-such-game')).toBeNull();
   });

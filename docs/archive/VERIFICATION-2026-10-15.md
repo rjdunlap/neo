@@ -350,3 +350,12 @@
 - Passed typecheck; `npx vitest run src/games/dot-link` (6 tests, new: every color has its own distinct mark).
 - Passed `GAME_URL=http://localhost:5891 BROWSER_SUITE=batch BATCH_ONLY=dots` (levels 1–6) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=6` (clean, 12.1 s). Reviewed `test-results/browser/dot-link-6.png`: marks legible; purple/moon was not on that seeded board.
 - Not run: build (no shared files changed). Open: marks at 34-unit dots on a real iPad ([device check](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
+
+## 2026-10-15 — Bumper Garden Pond and Hive tables
+
+- [PR #410](https://github.com/rjdunlap/neo/pull/410), `codex/bumper-pond-hive`: tested base `756fa27` plus claim `e4bf576` and scoped diff. Seeded Meadow/Pond/Hive layouts/skins/notes; existing plans/bands/physics/accounting preserved.
+- Passed typecheck, 16 focused rules (reachability, no trapped launches at 60/120 Hz, fair colors/numbers/spacing, seeded reproduction, ghost-finger planning) and 18 how-to tests. Build passed with existing chunk warning. New how-to note's LevelLine shape corrected after initial type/test failure.
+- Passed `GAME_URL=http://localhost:5188 BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=5 BUMPER_TABLES=pond,hive npm run test:browser`: Pond 6 launches/3 misses/1 hint; Hive 3/2/1; flips, supported completion, saved result/sticker and no page errors. Isolated contexts injected known round RNG seeds.
+- Reviewed portrait `test-results/browser/bumper-garden-pond-5.png` and `bumper-garden-hive-5.png`: clear columns/ring, numbers, controls and pet clearance. Owned Vite stopped; links/diff checked. After play only help text, docs and exact-step rule coverage changed.
+- CI on merge `8d34240` passed 1,351 other tests but two expanded physics loops exceeded 5 s. Follow-up partitions both by table with a 15 s exhaustive-case budget; all 20 resulting rules passed locally (same assertions/samples). No product changes; prior play/build proof retained.
+- Not run: wider browser suites, standalone fingerdemo, offline, real controller/iPad/audio/child judgment. Shared physics/navigation/persistence unchanged; device comfort and sound quality remain open.

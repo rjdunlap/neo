@@ -259,6 +259,24 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     level: (stop) => [3, 3, 4, 5, 6, 6][stop] ?? 6,
     lines: { 'hop.gap': 'couch.hop.gap' },
   },
+  'garden-rows': {
+    goal: 'couch.how.garden-rows',
+    tagline: 'Plant one of each flower in every row and column.',
+    controls: [
+      { parts: STICK, text: 'Move the ring over the bed, or along the seed packets.', keys: 'Arrow keys' },
+      { parts: ['bottom'], text: 'On an empty spot, open the packets; then plant the flower in the ring. On a flower you planted, take it out.', keys: 'Enter' },
+      { parts: ['left'], text: 'Close the packets without planting.', keys: 'Backspace' },
+    ],
+    // The beds come from the seed, so both players fill the same beds: fewer wrong plantings wins.
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'wrong plantings' },
+    // School's range (3–6): trips start on 4 by 4 beds with a few spots empty and end on the 5 by 5.
+    band: 'school',
+    demoLevel: 3,
+    level: (stop) => [3, 3, 4, 4, 5, 6][stop] ?? 6,
+    lines: { 'rows.rows': 'couch.rows.rows', 'rows.both': 'couch.rows.both', 'rows.stuck': 'couch.rows.stuck', 'rows.hint-fix': 'couch.rows.hint-fix' },
+  },
   'treasure-map': {
     goal: 'couch.how.treasure-map',
     tagline: 'Find the square by its column and row, then dig for treasure.',
