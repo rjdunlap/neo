@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics } from 'pixi.js';
-import { cream, swatch } from '../../art/palette';
+import { cream, RAINBOW, swatch } from '../../art/palette';
 import { entryId } from '../../content/journal';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -11,7 +11,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { letterPicture, WORDS } from './pictures';
 import { advanceTrace, LETTERS, sampleStroke, traceWaypoints, type Point } from './strokes';
 import { rangeFor } from '../../progress/difficulty';
-import { LEVELS, PLANS, offTrail, stickerLetter, trailLevel, trailTolerance, trailWord } from './logic';
+import { LEVELS, PLANS, hintDue, offTrail, pickLook, showTheWay, startArrow, stickerLetter, trailLevel, trailTolerance, trailWord, tuneStep, type Look } from './logic';
 
 class LetterTrails implements Game {
   readonly word: string;
@@ -40,10 +40,17 @@ class LetterTrails implements Game {
   private missedDrag = false;
   private clock = 0;
   private tolerance: number;
+  private readonly look: Look;
+  /** The fifth of the stroke whose note last sounded; the firefly's note climbs as she reaches each new one. */
+  private fifth = 0;
+  /** The second wander on a stroke asks the firefly to show the way once she lets go. */
+  private showPending = false;
 
   constructor(private readonly ctx: GameContext) {
     this.word = trailWord(ctx.level, ctx.childName, ctx.rng);
     this.tolerance = trailTolerance(ctx.level);
+    // Drawn after the word, so a look never changes which letter or word a seed gives.
+    this.look = pickLook(ctx.rng);
     ctx.stage.addChild(this.background, this.canvas, this.heading);
     this.canvas.addChild(this.outline, this.ink, this.beacon, this.firefly);
     this.firefly.addChild(new Graphics().ellipse(-14, -12, 16, 10).ellipse(14, -12, 16, 10).fill(swatch.teal.light).circle(0, 0, 18).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line }).circle(-6, -3, 3).circle(6, -3, 3).fill(swatch.brown.line));
@@ -52,7 +59,7 @@ class LetterTrails implements Game {
       lift: 0,
       onPick: () => { this.previous = this.points[this.progress]; this.missedDrag = false; sfx.bell(7, 0.15); },
       onMove: (x, y) => this.trace([x / this.size, y / this.size]),
-      onDrop: () => { this.placeFirefly(); return true; },
+      onDrop: () => { this.placeFirefly(); if (this.showPending) void this.showWay(); return true; },
     });
     this.prepareStroke();
   }
@@ -60,7 +67,7 @@ class LetterTrails implements Game {
   private get letter() { return this.word[this.letterIndex]; }
   private prepareStroke() {
     this.points = sampleStroke(LETTERS[this.letter][this.stroke]);
-    this.progress = 0; this.previous = this.points[0]; this.wrong = 0;
+    this.progress = 0; this.previous = this.points[0]; this.wrong = 0; this.fifth = 0; this.showPending = false;
     this.handle.enabled = true; this.firefly.visible = true;
     this.draw(); this.placeFirefly();
   }
@@ -78,12 +85,35 @@ class LetterTrails implements Game {
     if (next === this.progress && offTrail(to, checkpoint, this.tolerance) && !this.missedDrag) {
       this.missedDrag = true; this.misses++; this.wrong++;
       sfx.boing(); void this.ctx.say('trails.wrong');
-      if (this.wrong === 2) this.hints++;
+      if (hintDue(this.wrong)) { this.hints++; this.showPending = true; }
     }
     this.progress = next;
+    const fifth = tuneStep(next, this.points.length);
+    if (fifth > this.fifth) { this.fifth = fifth; sfx.marimba(5 + fifth, 0.3); }
     this.previous = to;
     this.placeFirefly(); this.draw();
     if (this.progress === this.points.length - 1) void this.completeStroke();
+  }
+
+  /** The hint: the firefly flies the next stretch of trail by itself, leaving dots where it went, then comes back to her. */
+  private async showWay() {
+    this.showPending = false;
+    if (this.busy || this.done) return;
+    this.busy = true; this.handle.enabled = false;
+    const path = showTheWay(this.points, this.progress);
+    const trail = new Graphics();
+    this.canvas.addChildAt(trail, this.canvas.getChildIndex(this.firefly));
+    sfx.chirp();
+    for (const p of path.slice(1)) {
+      await this.ctx.tw.to(this.firefly, { x: p[0] * this.size, y: p[1] * this.size }, { duration: 0.07 });
+      trail.circle(p[0] * this.size, p[1] * this.size, 7).fill({ color: swatch.yellow.fill, alpha: 0.8 });
+    }
+    await this.ctx.tw.wait(0.3);
+    const home = this.points[this.progress];
+    await this.ctx.tw.to(this.firefly, { x: home[0] * this.size, y: home[1] * this.size }, { duration: 0.35 });
+    trail.destroy();
+    if (this.done) return;
+    this.busy = false; this.handle.enabled = true; this.placeFirefly();
   }
 
   private async completeStroke() {
@@ -119,14 +149,40 @@ class LetterTrails implements Game {
     points.slice(1).forEach((p) => g.lineTo(p[0] * this.size, p[1] * this.size));
     g.stroke({ width, color, cap: 'round', join: 'round' });
   }
+  /** The round's look: teal, a rainbow that changes colour along the trail, gold with glitter, or sand. Paint only. */
+  private drawInk(points: readonly Point[]) {
+    if (this.look === 'rainbow') {
+      for (let i = 1; i < points.length; i++) this.drawPath(this.ink, [points[i - 1], points[i]], swatch[RAINBOW[Math.floor(i / 4) % RAINBOW.length]].fill, 24);
+    } else if (this.look === 'glitter') {
+      this.drawPath(this.ink, points, swatch.yellow.fill, 24);
+      points.forEach((p, i) => { if (i % 3 === 1) this.ink.circle(p[0] * this.size + (i % 2 ? 5 : -5), p[1] * this.size + (i % 4 < 2 ? -4 : 4), 3).fill(swatch.white.fill); });
+    } else {
+      this.drawPath(this.ink, points, this.look === 'sand' ? swatch.brown.light : swatch.teal.fill, 24);
+      if (this.look === 'sand') this.drawPath(this.ink, points, swatch.brown.fill, 6);
+    }
+  }
+
+  /** A small arrow beside the current stroke's start, pointing the way the trail goes. Shown until she sets off. */
+  private drawArrow() {
+    if (this.progress > 0) return;
+    const { at, angle } = startArrow(this.points);
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    // Off to the side of the trail (a quarter turn), so the arrow never sits under the firefly.
+    const ox = at[0] * this.size - sin * 46, oy = at[1] * this.size + cos * 46;
+    const pt = (x: number, y: number) => [ox + x * cos - y * sin, oy + x * sin + y * cos] as const;
+    const [ax, ay] = pt(-14, 0), [bx, by] = pt(16, 0), [l1x, l1y] = pt(4, -10), [l2x, l2y] = pt(4, 10);
+    this.outline.moveTo(ax, ay).lineTo(bx, by).moveTo(l1x, l1y).lineTo(bx, by).lineTo(l2x, l2y).stroke({ width: 6, color: swatch.purple.fill, cap: 'round', join: 'round' });
+  }
+
   private draw() {
     if (this.picture || this.done) return;
     this.outline.clear(); this.ink.clear();
     LETTERS[this.letter].forEach((stroke, i) => {
       this.drawPath(this.outline, stroke, i === this.stroke ? swatch.purple.light : swatch.white.line, 28);
-      if (i < this.stroke) this.drawPath(this.ink, stroke, swatch.teal.fill, 24);
+      if (i < this.stroke) this.drawInk(sampleStroke(stroke));
     });
-    if (this.progress > 0) this.drawPath(this.ink, this.points.slice(0, this.progress + 1), swatch.teal.fill, 24);
+    if (this.progress > 0) this.drawInk(this.points.slice(0, this.progress + 1));
+    this.drawArrow();
     this.heading.text = this.word.length > 1 ? this.word.split('').map((c, i) => i === this.letterIndex ? `[ ${c} ]` : c).join('  ') : this.letter;
   }
   resize(v: View) {
