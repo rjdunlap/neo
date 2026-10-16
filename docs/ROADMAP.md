@@ -54,6 +54,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 
 21. **`ramp-race`, truthful support packet Q1** (docs only): per-level goal/finish/miss wording, visible repair hint and demo recovery; preserve current accounting. [Inquiry slices](deep-dives/subjects/inquiry.md#build-slices-in-order)
 22. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
+23. **Sprout Shuffle first model definition G1** (docs only): one-locus rules, visible contributions/all four routes, supported finish, accounting and band/land decisions; model review before implementation. [Genetics slices](deep-dives/subjects/genetics.md#build-slices-in-order)
 
 ### Chunks
 
@@ -294,6 +295,19 @@ For older players, combine **named project cards**, **child-chosen permanent unl
 ## Subject study recommendations
 
 Definition packets recommended by the [subject studies](deep-dives/subjects.md), kept in the roadmap (the developer asked for the movement study's to stay here, 2026-10-14; the later studies follow the same pattern). They are **proposals and docs-first definitions, not a dispatch queue**: a routine reaches one only through a `define` row in [Next up](#next-up) or when the grown-up selects it. A new subject study adds its section here, at this heading level.
+
+### Genetics recommendations
+
+**Recommended 2026-10-16:** [the traits/inheritance study](deep-dives/subjects/genetics.md), [PR #476](https://github.com/rjdunlap/neo/pull/476), covers every audience using opened NGSS 1-LS3-1, 3-LS3-1/2 and MS-LS3-2, NHGRI and NAEYC, a developmental abstract with access limits, six first-party digital references and a paper chromosome activity. Define **Sprout Shuffle** first for the older end of school: combine one information tile from each invented plant and inspect every possible offspring route. Younger bands keep observation in familiar games; no claim of toddler inheritance understanding. These are docs-first proposals, not implementations or a new scheduled queue.
+
+| Candidate | Status | Next complete definition |
+| --- | --- | --- |
+| **Sprout Shuffle** · upper school first · G1 | define now, docs only | Freeze one-locus/two-allele toy rules and levels 1–3: one contribution per parent, all four routes including duplicates, possible appearances, then possible versus guaranteed. Free samples/edits, explicit Check, counterexample help/supported finish, exploration/adaptation policy, speech/how-to/ghost finger and 100-unit layouts. Resolve school entry and existing-land fit; biology/wording review before build. Random offspring never gate rewards. [Ladder](deep-dives/subjects/genetics.md#first-games-proposed-ladder-sprout-shuffle) |
+| **Hidden Sprouts** · upper school–parent · G5 | define older mode | Known tester, two hidden genotype candidates, an ambiguous all-spotted record and a decisive plain observation; retain every compatible explanation and choose a potentially informative test. No finite all-spotted sample proves a genotype. Resolve school-top/13+ entry without a new band. [Case](deep-dives/subjects/genetics.md#hidden-sprouts-one-older-family-case) |
+| **Patchwork Conservatory** · upper school–parent · G7 | define later within Sprout Shuffle | One two-locus guarantee brief, explicitly independent toy loci, all legal pairs evaluated, undo and selected-locus inspector. Distinct from Species Comeback's pedigree/release planning; no ongoing garden or superiority score. [Case](deep-dives/subjects/genetics.md#patchwork-conservatory-later-parent-puzzle) |
+| **Same Kind, Different Sprouts / Growing Conditions / Paper Sprouts** · G4/G8 | separate later definitions | Keep visible comparisons in Critter Sort/Photo Safari and starting-information/condition comparisons in Garden Grow, coordinating inquiry and life science. A reviewed original plain-HTML drawing/conversation card is optional; no personal family/genetic data |
+
+[Ordered slices](deep-dives/subjects/genetics.md#build-slices-in-order) separate definitions and builds. The saved companion is never bred or evaluated; trial plants stay inside a round. Model review, entry/accounting/placement, device clarity and independent child/tween/parent understanding remain open. No game, engine, save schema or band was added; links/diff checks only. The definitions can proceed before reviewer selection; reviewed content and resolved implementation decisions precede building.
 
 ### Scientific inquiry recommendations
 
