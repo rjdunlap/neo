@@ -18,7 +18,7 @@ import type { CouchId } from './party';
  */
 export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -50,11 +50,11 @@ export interface CourseInfo {
   badges: { finish: { title: string; how: string }; minimum: { title: string; how: string } };
 }
 
-/** The two Penguin Slide courses speak alike; only the ponds, and how they are pitched, differ. */
+/** The Penguin Slide courses speak alike; only the ponds, and how they are pitched, differ. */
 const ponds = (id: PondCourseId, card: string): CourseInfo => ({
   id, game: 'penguin-slide', level: 5, version: PONDS[id].version, name: PONDS[id].name, blurb: PONDS[id].blurb, card,
   part: 'pond', unit: 'slide', par: 'best route', routes: true, best: courseBoards(id).map(b => b.best), minimum: courseMinimum(id),
-  rule: 'Slide for the fewest slides. Every slide counts, even one you undo.',
+  rule: id === 'frozen' ? 'Slide for the fewest slides. Pushing an ice block is a slide too, and every slide counts, even one you undo.' : 'Slide for the fewest slides. Every slide counts, even one you undo.',
   note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a pond starts that pond again, and the slides you made still count.',
   leaving: 'Leaving or refreshing starts the pond you are on again, and the slides you made on it still count. Finished ponds stay saved.',
   done: 'couch.course.done',
@@ -109,6 +109,7 @@ const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
 const build: Record<CourseId, () => CourseInfo> = {
   practice: () => ponds('practice', 'Penguin Slide, five gentle ice puzzles with no dead ends. A warm-up, or an easy game for the evening.'),
   ponds: () => ponds('ponds', 'Penguin Slide, five ice puzzles that take real planning. Use the fewest slides you can, then beat your own best.'),
+  frozen: () => ponds('frozen', 'Penguin Slide, five ponds with ice blocks. Push a block to park it where you need a stop; a push counts as a slide.'),
   conga: () => ({
     id: 'conga', game: 'pond-conga', level: 5, version: CONGA.conga.version, name: CONGA.conga.name, blurb: CONGA.conga.blurb,
     card: 'Pond Conga, four ponds in a row. Steer the ducklings to each crumb in order with as few steps as the way allows, then beat your own best.',

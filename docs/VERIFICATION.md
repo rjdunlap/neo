@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-15 — Penguin Slide Frozen Ponds couch course
+
+- `claude/penguin-frozen-course` (PR #419, commit 715c7a2): `parseBoard` reads a `B` ice-block legend; third course `frozen` (five block ponds, minimum 31) in `COURSE_IDS`; block-aware course tests.
+- Ran `npm run typecheck` (clean); `npx vitest run src/games/penguin-slide src/couch` (92 passed); full `npm test` 1359 passed with 4 known 5 s timeouts under parallel load (ferry-jam frozen harbors, peg-garden launcher aim, two penguin-slide logic tests), all passing in isolation (41/41); `npm run build` passed.
+- Passed `GAME_URL=http://localhost:5743 BROWSER_SUITE=couchcourse` on 715c7a2, including The Frozen Ponds by controller with the solver (perfect 31, one sticker, both badges; screenshot `couch-course-frozen`). One earlier run failed only on a wrong new assertion, since fixed.
+- Not run: `couch`, `couchgames`, offline, `world`; no controller or device check.
+
 ## 2026-10-16 — Critter Sort worked example
 
 - [PR #418](https://github.com/rjdunlap/neo/pull/418), `claude/critter-sort-worked-example` (bff1137): a worked example at levels 1, 2, 3 and 5; two harness fixes (the `woods` sort loop plays `plan.rounds`; `fingerdemo` `FINGER_LEVELS` picks a band whose order has the level).
@@ -199,7 +206,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `habitat` | 2026-10-09, again after the review fixes (hidden answer, spaced cards, a hint toward a working garden, tap-to-hear prepared pieces) | Habitat Helpers review entry (first entry: Habitat Helpers entry) | First, prediction and top levels; Chrome automation, not a child or device |
 | `couch` | 2026-10-09, on a frozen snapshot after the chooser replaced the title screen (entry by Enter, the controller press and Back to start); 2026-10-08, after the grown-up games batch (six more tiers) | Island Bridges entry | About seven to nine minutes; run on a snapshot |
 | `couchgames` | 2026-10-15, Treasure Map filtered (bot round through `control()`, one stop saved, sticker, child save untouched; no in-game screenshot) (2026-10-08, Pond Conga filtered; 2026-10-07: all fourteen island games; Penguin Slide, Bounce Back and Light Lab again after the Settings page, Penguin Slide and Light Lab after Just me; all nineteen couch games on one snapshot of the batch (Sudoku Garden to Word Search), Island Bridges again filtered; 2026-10-09: Peg Garden, Bumper Garden, Bouncy Launch, Egg Catch and Bounce Back filtered, after their ghost fingers) | Child's island, couch Settings, Just me, Island Bridges, Pond Conga and last five couch games entries | Peg Garden's bot needed one retry (its known flake) |
-| `couchcourse` | 2026-10-08, with twelve courses | Island Bridges entry | About four to seven minutes |
+| `couchcourse` | 2026-10-15, with fourteen courses (The Frozen Ponds played by controller) | [Penguin Slide Frozen Ponds entry](#2026-10-15--penguin-slide-frozen-ponds-couch-course) | About four to seven minutes |
 | `couchnames` | 2026-10-08 | Pond Conga entry | |
 | `couchsettings` | 2026-10-08 | Pond Conga entry | About 30 seconds |
 | `couchsolo` | 2026-10-09, entering through the chooser (the shared helper every couch suite now uses); 2026-10-08, after Pond Conga joined the shelf; again after the demonstration teardown fix | Pond Conga entry | About 40 seconds |
