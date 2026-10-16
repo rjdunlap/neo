@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { exampleIndex, fits, hintFor, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
+import { exampleIndices, examplePlaces, fits, hintFor, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
 
 describe('Critter Sort', () => {
   it('separate hoops never overlap, and overlapping hoops really do', () => {
@@ -98,12 +98,43 @@ describe('Critter Sort', () => {
       const r = makeRound(plan, new Rng(seed));
       const inHoop = r.critters.filter((c) => placeOf(c, r.rules) === 'left');
       expect(inHoop).toHaveLength(2);
-      expect(exampleIndex(r)).toBeGreaterThanOrEqual(0);
-      const sorters = r.critters.map((c, i) => ({ c, placed: i === exampleIndex(r) ? ('left' as Place) : null }));
+      const [example] = exampleIndices(plan, r);
+      expect(example).toBeGreaterThanOrEqual(0);
+      const sorters = r.critters.map((c, i) => ({ c, placed: i === example ? ('left' as Place) : null }));
       const miss = sorters.find((s) => !s.placed && placeOf(s.c, r.rules) === 'left')!;
       expect(hintFor(sorters, miss, r.rules)).toBe(miss);
       const stay = sorters.find((s) => placeOf(s.c, r.rules) === 'out')!;
       expect(hintFor(sorters, stay, r.rules)).toBe(miss);
     }
+  });
+
+  it('worked examples sit in their own places (each hoop, or the middle), leave at least two to carry, and the bot and hint never touch them', () => {
+    for (const [level, places] of [[1, ['left']], [2, ['left', 'right']], [3, ['both']], [5, ['left']]] as const) {
+      const plan = PLANS[level - 1];
+      expect(examplePlaces(plan.mode)).toEqual(places);
+      const not = plan.mode === 'not';
+      for (let seed = 1; seed <= 200; seed++) {
+        const r = makeRound(plan, new Rng(seed));
+        const ex = exampleIndices(plan, r);
+        expect(ex).toHaveLength(places.length);
+        expect(new Set(ex).size).toBe(ex.length);
+        ex.forEach((i, k) => expect(placeOf(r.critters[i], r.rules, not), `level ${level} seed ${seed}`).toBe(places[k]));
+        const sorters = r.critters.map((c, i) => ({ c, placed: ex.includes(i) ? placeOf(c, r.rules, not) : (null as Place | null) }));
+        const loose = sorters.filter((s) => !s.placed && placeOf(s.c, r.rules, not) !== 'out');
+        expect(loose.length).toBeGreaterThanOrEqual(2);
+        // The hint after a miss on a critter that stays out points at a loose critter, never an example.
+        const stay = sorters.find((s) => placeOf(s.c, r.rules, not) === 'out')!;
+        expect(loose).toContain(hintFor(sorters, stay, r.rules, not));
+        let moves = 0;
+        for (let next = nextToSort(sorters, r.rules, not); next; next = nextToSort(sorters, r.rules, not)) {
+          expect(ex.map((i) => sorters[i])).not.toContain(next.who);
+          next.who.placed = next.place;
+          moves++;
+        }
+        expect(moves).toBe(loose.length);
+      }
+    }
+    // Already sorted rounds have no example to add.
+    expect(exampleIndices(PLANS[3], makeRound(PLANS[3], new Rng(1)))).toEqual([]);
   });
 });

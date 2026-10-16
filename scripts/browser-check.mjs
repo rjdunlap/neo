@@ -6065,7 +6065,7 @@ async function woodsBatch() {
 
   if (!only || only === 'sort') for (let level = fromLevel; level <= 5; level++) {
     await launch('critter-sort', level);
-    const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    const { mode, rounds } = await page.evaluate(() => neo.scene.game.plan);
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); await page.waitForTimeout(250); };
     // Drag a critter (it rides above the finger) so its feet land on a spot in a part of the diagram.
     const dropTo = async (i, place) => {
@@ -6075,7 +6075,7 @@ async function woodsBatch() {
       }, { i, place });
       await settle();
     };
-    for (let n = 0; n < (mode === 'guess' ? 3 : 2); n++) {
+    for (let n = 0; n < rounds; n++) {
       await idle(n);
       if (mode === 'guess') {
         const { right, options } = await page.evaluate(() => { const g = neo.scene.game; return { right: g.round.rules[0], options: g.round.options }; });
@@ -6087,14 +6087,16 @@ async function woodsBatch() {
         await tap(`neo.scene.game.options.find((x) => x.rule === '${right}').node`); await settle();
         continue;
       }
-      const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map((s) => L.placeOf(s.c, g.round.rules, g.plan.mode === 'not')); });
+      const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map((s) => (s.placed ? 'example' : L.placeOf(s.c, g.round.rules, g.plan.mode === 'not'))); });
+      // Worked examples start in their places; one is in every round.
+      assert.ok(places.includes('example'));
       if (n === 0) {
         const outsider = places.indexOf('out');
         await dropTo(outsider, 'left'); await dropTo(outsider, 'left');
         assert.deepEqual(await counts(), [2, 1]);
         if (level === 3 || level === 5) await screenshot(`critter-sort-${level}-hint`);
       }
-      for (const [i, place] of places.entries()) if (place !== 'out') await dropTo(i, place);
+      for (const [i, place] of places.entries()) if (place !== 'out' && place !== 'example') await dropTo(i, place);
     }
     await finished('critter-sort');
     assert.deepEqual(await score('critter-sort'), [2, 1]);
@@ -9851,7 +9853,7 @@ async function fingerDemos() {
   });
   // FINGER_LEVELS=3,4: play these levels instead of the first and last (each in the first band that has it), to time the ones between.
   const levels = process.env.FINGER_LEVELS?.split(',').map(Number);
-  if (levels) for (const g of games) g.plays = levels.flatMap((level) => { const r = g.ranges.find((x) => level >= x.min && level <= x.max); return r ? [{ band: r.band, level }] : []; });
+  if (levels) for (const g of games) g.plays = levels.flatMap((level) => { const r = g.ranges.find((x) => (x.order ? x.order.includes(level) : level >= x.min && level <= x.max)); return r ? [{ band: r.band, level }] : []; });
   const picked = games.filter((g) => !only || only.includes(g.id));
   assert.ok(picked.length > 0, `FINGER_ONLY matched no game: ${only}`);
   await page.evaluate(() => {

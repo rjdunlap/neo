@@ -749,6 +749,8 @@ export const SCRIPT = {
   'sort.two': ['One hoop is for critters {a}, the other is for critters {b}. Some critters do not go in either!'],
   'sort.venn': ['One hoop is for critters {a}, the other for critters {b}. Critters that are both go in the middle!'],
   'sort.not': ['This hoop is for critters not {a}. The picture has a red line through it!'],
+  'sort.example': ['Look, the {who} is already in its place.'],
+  'sort.examples': ['Look, the {a} and the {b} are already in their places.'],
   'sort.guess': ['These critters are already sorted. What is the rule for the hoop? Tap the picture!'],
   'sort.not.in': ['The {who} is {rule}, so it stays out of this hoop.'],
   'sort.not.out': ['The {who} is not {rule}, so it goes in this hoop.'],
