@@ -2339,8 +2339,16 @@ async function traceRound(level, name, wrong = false) {
         await kit.drag(kit.line([p.x, p.y], [neo.view.w * neo.view.scale - 10, 15], 30)); await kit.sleep(250);
       }
     });
-    assert.ok(await page.evaluate(() => neo.scene.game.hints >= 1), 'tracing hint');
+    // The second wander is one hint: the firefly flies the next stretch by itself (leaving dots), then comes back to where she was.
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'one tracing hint per stroke');
+    await page.waitForTimeout(500);
     await screenshot('letter-trails');
+    assert.ok(await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (!await kit.until(() => !g.busy, 6000)) return false;
+      const p = g.points[g.progress];
+      return Math.hypot(g.firefly.x - p[0] * g.size, g.firefly.y - p[1] * g.size) < 1;
+    }), 'the firefly shows the way and comes back to her checkpoint');
   }
   await page.evaluate(async () => {
     const g = neo.scene.game;

@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Letter Trails: show the way, start arrows, rising tune and trail looks (2026-10-16)
+
+[PR #442](https://github.com/rjdunlap/neo/pull/442), `claude/letter-trails-show-the-way`, [dive slice 3](../deep-dives/letter-trails.md#build-slices-in-order), levels 1–8 (no new level; IDs, saves and pins unchanged). The second wandering drag on one stroke is still one hint and the ring still lights (`hintDue`, `HINT_AFTER`); once she lets go the firefly flies the next stretch (up to 12 checkpoints, `showTheWay`, `SHOW_SPAN`) leaving yellow dots, then returns to her checkpoint. A small purple start arrow sits a quarter turn off each stroke's start and points along its first stretch until she sets off (`startArrow`). The firefly's marimba note climbs one pentatonic step per fifth of a stroke (`tuneStep`); music stays `STYLES.paint`. The ink is teal, rainbow, glitter or sand per round, drawn from the seed after the word so it never changes the letter, word or a checkpoint (`LOOKS`, `pickLook`). How-to card gained the arrow and rising-note wording and a note on misses, the shown way and the ink. Six new rule tests; the `letters` browser suite now asserts exactly one hint and the firefly's return. Not run: device speech or feel, whether a child follows the shown way, the rising tune on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
 ### Chain Reaction level 8 Which bell? (2026-10-16)
 
 [PR #441](https://github.com/rjdunlap/neo/pull/441), `claude/chain-reaction-which-bell`, [dive slice 2](../deep-dives/chain-reaction.md#build-slices-in-order): a pre-K entry before level 1 (pre-K `{ 1, 8, order [8, 1, 2, 3] }`, `entryLevels [8]`; school stays 3–6). A finished fixed machine with three bells; she taps the one she predicts, then runs it. A different bell is shown with the trail and never counts a miss; the bulb glows the start cup and is not a hint. Three machines make a round. The preschool window waits on dive decision 2.
@@ -19,7 +23,7 @@
 
 ### Critter Crossing visible not entry (2026-10-15)
 
-[PR #422](https://github.com/rjdunlap/neo/pull/422), `codex/critter-not-entry`, dispatch `critter-not-entry-20261016T050833Z`: appended stable ID 8 shows the pictured rule with a red slash and reuses spoken `cross.visible` with the negated rule. Pre-K follows `[1, 8, 2, 3]`, with `entryLevels: [8]`; school stays 2–7, existing IDs/pins retain their meaning. Two visible rounds, gentle refusal and glow after two misses, shell reward and passing-only ghost finger. Scoped how-to excludes hidden-rule instructions at 8. [Proof](../VERIFICATION.md#2026-10-15--critter-crossing-visible-not-entry). Preschool, a third feature and Be the gate remain excluded; iPad speech and child interpretation remain open.
+[PR #422](https://github.com/rjdunlap/neo/pull/422), `codex/critter-not-entry`, dispatch `critter-not-entry-20261016T050833Z`: appended stable ID 8 shows the pictured rule with a red slash and reuses spoken `cross.visible` with the negated rule. Pre-K follows `[1, 8, 2, 3]`, with `entryLevels: [8]`; school stays 2–7, existing IDs/pins retain their meaning. Two visible rounds, gentle refusal and glow after two misses, shell reward and passing-only ghost finger. Scoped how-to excludes hidden-rule instructions at 8. [Proof](VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry). Preschool, a third feature and Be the gate remain excluded; iPad speech and child interpretation remain open.
 
 
 ### Bubble Pop mode gallery (2026-10-16)
