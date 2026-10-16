@@ -335,3 +335,11 @@
 
 - Docs only, `claude/bubble-pop-mode-gallery-definition`, [PR #407](https://github.com/rjdunlap/neo/pull/407): [definitions/mode-gallery.md](../definitions/mode-gallery.md) (Bubble Pop intro mode gallery, N4); roadmap chunk 20 now ready.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
+
+## 2026-10-15 — Bumper Garden Count on and Count back
+
+- [PR #408](https://github.com/rjdunlap/neo/pull/408), `codex/bumper-count-on-back`: tested base `1f49fb7`, claim `5049718` plus scoped working diff. IDs 6/9 add seeded count-on/back sequences and highlighted/spoken targets; pre-K order `[3,4,6,5,9]`, old IDs/pins and other bands preserved. IDs 7/8 unbuilt; couch trips/physics/scoring unchanged.
+- Passed typecheck; `npx vitest run src/games/bumper-garden/logic.test.ts src/content/howto.test.ts src/games/registry.test.ts` (41 tests); build (existing chunk warning).
+- Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=6,9 npm run test:browser`: 5/6 launches, each round 3 misses/1 hint, strip targets, out-of-order chime without accounting, saved round/sticker and no page errors.
+- Passed same URL with `BROWSER_SUITE=fingerdemo FINGER_ONLY=bumper-garden FINGER_LEVELS=6,9`: clean 12.8/21.2 s, no page errors. Reviewed landscape `test-results/browser/bumper-garden-6.png` (6,7,8) and portrait `bumper-garden-9.png` (5,4,3,2,1): clear strip/layout. Owned server stopped; links/diff checked.
+- Not run: wider browser/offline/iPad/controller/child checks. Device touch/speech and child counting understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
