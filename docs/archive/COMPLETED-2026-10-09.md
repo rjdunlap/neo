@@ -18,7 +18,7 @@
 
 ### Clap the Syllables level 8 Longer or shorter? (2026-10-16)
 
-[PR #452](https://github.com/rjdunlap/neo/pull/452), `codex/clap-syllables-comparison`, dispatch `clap-comparison-20261016T141435Z`, worker `01a14511-3cbe-7753-a007-323828dbf516`: four seeded pairs of unequal syllable counts, alternating more/fewer from a seeded start; whole-word spoken counts, claps, free replay, matching-style misses and second-miss answer glow, shared answer for judging/hint/ghost finger. School order `[5,6,8]` preserves existing IDs and skips reserved 7; no level 9 or younger openings. [Proof](../VERIFICATION.md#2026-10-16--clap-the-syllables-level-8-longer-or-shorter).
+[PR #452](https://github.com/rjdunlap/neo/pull/452), `codex/clap-syllables-comparison`, dispatch `clap-comparison-20261016T141435Z`, worker `01a14511-3cbe-7753-a007-323828dbf516`: four seeded pairs of unequal syllable counts, alternating more/fewer from a seeded start; whole-word spoken counts, claps, free replay, matching-style misses and second-miss answer glow, shared answer for judging/hint/ghost finger. School order `[5,6,8]` preserves existing IDs and skips reserved 7; no level 9 or younger openings. [Proof](VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-8-longer-or-shorter).
 
 ### Sing-Along Barn, Bounce High, Bounce Low (2026-10-16)
 
@@ -1054,7 +1054,7 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 
 ## Clap the Syllables level 9 Clap along short (2026-10-16)
 
-[PR #454](https://github.com/rjdunlap/neo/pull/454), `codex/clap-syllables-short`, dispatch `clap-short-20261016T151435Z`: an easier preschool entry with two seeded distinct words, one with one beat and one with two. Preschool order is `[9,1,2]`, with `entryLevels: [9]`; existing IDs/pins, pre-K/school and supported bands retain their meaning. Reuses the guided hands pad, lit beads, whole-word speech, quiet-time support replay and ghost finger; no timing or wrong-clap judgment. Toddler/lap, names and isolated syllables remain excluded. See [verification](../VERIFICATION.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) for proof and device gaps.
+[PR #454](https://github.com/rjdunlap/neo/pull/454), `codex/clap-syllables-short`, dispatch `clap-short-20261016T151435Z`: an easier preschool entry with two seeded distinct words, one with one beat and one with two. Preschool order is `[9,1,2]`, with `entryLevels: [9]`; existing IDs/pins, pre-K/school and supported bands retain their meaning. Reuses the guided hands pad, lit beads, whole-word speech, quiet-time support replay and ghost finger; no timing or wrong-clap judgment. Toddler/lap, names and isolated syllables remain excluded. See [verification](VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) for proof and device gaps.
 
 
 ### Tangram Town broom — 2026-10-16
