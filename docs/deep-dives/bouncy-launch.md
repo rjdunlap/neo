@@ -183,9 +183,9 @@ These go on the roadmap's "Waiting on the developer" list as one row.
 7. **Level 10, Where on the line?** Needs the 10-tick strip and nearest-tick routing. *Tier: as slice 5.*
 8. **Lap's pull level** (decision 2) and the magnet tier (decision 4). *Tier: filtered lap play, one person check noted open.*
 9. **Level 11, Pick a spring.** Needs decision 3. *Tier: as slice 5.*
-10. **Level 12, Planet Hop.** Defined in [definitions/planet-hop.md](../definitions/planet-hop.md). *Tier: as slice 4 (new level on an existing interaction).*
+10. Built 2026-10-16: **Level 12, Planet Hop**, school only. [Build record](../archive/COMPLETED-2026-10-09.md#bouncy-launch-12-planet-hop-2026-10-16).
 
-Every slice also updates the README row, the `GAMES.md` entry, the how-to card and the ghost-finger bot, and records a short VERIFICATION entry. The couch catalog and Cloud Hopper stay on level 3 and are untouched by levels 7–11.
+Every slice also updates the README row, the `GAMES.md` entry, the how-to card and the ghost-finger bot, and records a short VERIFICATION entry. The couch catalog and Cloud Hopper stay on level 3 and are untouched by levels 7–12.
 
 ## What was built in this session
 

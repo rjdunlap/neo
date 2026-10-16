@@ -250,6 +250,8 @@ export interface Game {
    * A hint shown marks a challenge run as helped for good, the same as the games whose help arrives by itself.
    */
   askForHint?(): void;
+  /** Explicit island pause label for requested help on a level outside the couch/grown-up catalog. */
+  hintLabel?: string;
   start(): void;
   update(dt: number): void;
   resize(view: View): void;

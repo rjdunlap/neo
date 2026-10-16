@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Planet Hop, Bouncy Launch 12 (#466):** on an iPad in both orientations, hear the named pet's ask and toy-gravity explanations, compare landing notes with the music, try the before/past regions and pause hint, and observe whether the same shown pull and numbered flag communicate the changed world pull. Browser play does not establish speech, touch comfort or understanding.
+
 - [ ] **Letter Trails show the way (#442):** on an iPad, hear the rising firefly note across a stroke, see whether the purple start arrow reads and the yellow shown way helps a small hand follow after two wanders, and check the four ink looks are legible in both orientations.
 
 - [ ] **Critter Sort level 11 (#439):** on iPad in both orientations, hear sorting/counting/comparison speech, tap and replay every counted critter, and check that the rings, badges and three pictured choices communicate which part has more. Observe a child counting the groups and using the comparison hint. Desktop proof does not establish device speech or independent understanding.

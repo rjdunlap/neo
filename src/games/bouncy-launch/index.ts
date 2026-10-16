@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, type FederatedPointerEvent } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
@@ -18,7 +18,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CLOUDS } from './course';
-import { friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
+import { airtimeFor, gravityFor, planetPairs, planetSide, planetBotLanding, type PlanetPair, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -27,7 +27,7 @@ const LEVELS: BandLevels = {
   preschool: { min: 2, max: 4 },
   // Level 7, Feed the friend, comes after the numbered clouds and before comparing.
   prek: { min: 3, max: 7, order: [3, 4, 7, 5] },
-  school: { min: 4, max: 7, order: [4, 5, 7, 6] },
+  school: { min: 4, max: 12, order: [4, 5, 7, 6, 12] },
 };
 
 const PET_SCALE = 0.5;
@@ -52,6 +52,15 @@ class BouncyLaunch implements Game {
   readonly targets: number[];
   /** Feed the friend: where the friend stands for each shot, as a fraction along the strip. */
   readonly spots: number[] = [];
+  readonly pairs: PlanetPair[] = [];
+  askForHint?: () => void;
+  hintLabel?: string;
+  private view: View;
+  planetPhase: 'home' | 'choose' | 'flight' = 'home';
+  private planetRingSide: 'before' | 'past' | undefined;
+  private readonly planetInput = new Container();
+  private readonly planetArt = new Graphics();
+  private readonly planetBackdrops: Backdrop[] = [];
   readonly pet: Critter;
   readonly pads: Container[] = [];
   shot = 0;
@@ -156,6 +165,10 @@ class BouncyLaunch implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.flying || this.finished || this.grab) return null;
+    if (this.plan.mode === 'planet') {
+      const pair = this.pairs[this.shot];
+      return this.planetPhase === 'choose' && pair ? { tap: { on: this.planetInput, x: this.landX(planetBotLanding(pair)), y: this.strip.y - 160 } } : null;
+    }
     if (this.plan.mode === 'tap') return { tap: { on: this.pet, y: -125 } };
     if (this.plan.mode === 'predict') {
       const target = this.targets[this.shot];
@@ -174,6 +187,7 @@ class BouncyLaunch implements Game {
   }
 
   control(input: CouchControls, dt: number) {
+    if (this.plan.mode === 'planet') return;
     if (this.flying || this.finished || this.grab) return;
     const p = input.players.find(p => p.x || p.y || p.action);
     if (!p) {
@@ -221,6 +235,7 @@ class BouncyLaunch implements Game {
   }
 
   constructor(private readonly ctx: GameContext) {
+    this.view = ctx.view;
     const run = ctx.couch?.course;
     if (run?.id === 'clouds') {
       // A star over each cloud, as in the "land on the cloud with the star" level, but on the course's own clouds.
@@ -234,14 +249,25 @@ class BouncyLaunch implements Game {
     } else {
       this.plan = planFor(ctx.level);
       this.course = null;
-      if (this.plan.mode === 'friend') {
+      if (this.plan.mode === 'planet') {
+        this.targets = [];
+        this.pairs = planetPairs(ctx.rng);
+      } else if (this.plan.mode === 'friend') {
         this.targets = [];
         this.spots = friendSpots(this.plan, ctx.rng);
       } else this.targets = targets(this.plan, ctx.rng);
     }
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.78, clouds: 4, sun: true, seed: 88 }, ctx.view);
+    if (this.plan.mode === 'planet') {
+      for (const light of [true, false]) {
+        const backdrop = new Backdrop({ sky: light ? [swatch.purple.light, swatch.blue.light] : [swatch.orange.light, swatch.yellow.light], hills: light ? [swatch.purple.fill, swatch.purple.light] : [swatch.orange.line, swatch.orange.fill], horizon: 0.78, clouds: 0, seed: 88 }, ctx.view);
+        backdrop.visible = false;
+        this.planetBackdrops.push(backdrop);
+      }
+      this.planetArt.eventMode = 'none';
+    }
     this.flag.eventMode = this.flagNumbers.eventMode = this.lastArc.eventMode = this.compareRing.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.lastArc, this.flag, this.flagNumbers, this.compareRing, this.predictionRing, this.pullArrow);
+    ctx.stage.addChild(this.backdrop, ...this.planetBackdrops, this.planetArt, this.lastArc, this.flag, this.flagNumbers, this.compareRing, this.predictionRing, this.pullArrow);
     this.pullArrow.eventMode = 'none';
     const padW = this.course?.padWidth ?? 0.85;
     for (let i = 0; i < PADS; i++) {
@@ -254,7 +280,7 @@ class BouncyLaunch implements Game {
         pad.addChild(n);
       }
       this.pads.push(pad);
-      pad.visible = this.plan.mode !== 'friend';
+      pad.visible = this.plan.mode !== 'friend' && this.plan.mode !== 'planet';
       ctx.stage.addChild(pad);
       if (this.plan.mode === 'predict') onTap(pad, () => void this.predict(i), { cooldown: 500 });
     }
@@ -284,7 +310,7 @@ class BouncyLaunch implements Game {
     ctx.stage.addChild(this.star, this.spring, this.preview, this.replay, this.pet);
     if (this.plan.mode === 'tap') {
       onTap(this.pet, () => void this.launch(this.ctx.rng.range(0.15, 0.95)), { cooldown: 500 });
-    } else if (this.plan.mode !== 'predict') {
+    } else if (this.plan.mode !== 'predict' && this.plan.mode !== 'planet') {
       // A slingshot pull, not a drag-and-drop: the pet moves by however far the finger moves,
       // wherever on the pet it was grabbed (drag.ts would snap the pet onto the fingertip).
       this.pet.eventMode = 'static';
@@ -310,13 +336,108 @@ class BouncyLaunch implements Game {
     }
   }
 
+  /** Requested support explains the world's rule; predictions themselves never count as misses. */
+  private showPlanetHint() {
+    if (this.plan.mode !== 'planet' || this.planetPhase !== 'choose' || this.flying || this.finished) return;
+    this.hints++;
+    const pair = this.pairs[this.shot];
+    this.ringPlanet(planetSide(this.landX(planetBotLanding(pair)), this.landX(pair.base)));
+    void this.ctx.say(pair.planet === 'light' ? 'launch.planet-why-light' : 'launch.planet-why-heavy');
+  }
+
+  private drawPlanet(v: View) {
+    this.planetBackdrops.forEach(b => b.resize(v));
+    this.planetInput.hitArea = new Rectangle(0, 0, v.w, v.h);
+    const g = this.planetArt.clear();
+    const pair = this.pairs[this.shot];
+    const onPlanet = this.planetPhase !== 'home' && !!pair;
+    this.backdrop.visible = !onPlanet;
+    this.planetBackdrops.forEach((b, i) => { b.visible = onPlanet && i === (pair.planet === 'light' ? 0 : 1); });
+    if (!onPlanet) return;
+    if (pair.planet === 'light') {
+      for (const f of [0.15, 0.5, 0.85]) g.ellipse(v.w * f, this.strip.y + 75, 40, 12).fill(swatch.purple.fill).stroke({ width: 3, color: swatch.purple.line });
+      const x = v.w * 0.75;
+      g.ellipse(x, 130, 60, 17).fill(swatch.green.fill);
+      g.poly([x - 58, 135, x, 170, x + 58, 135]).fill(wood.fill);
+    } else {
+      const x = v.w * 0.78, y = v.h * 0.56;
+      g.circle(x, y, 52).fill(swatch.purple.light).stroke({ width: 4, color: swatch.purple.line });
+      g.ellipse(x, y + 8, 90, 18).stroke({ width: 8, color: swatch.purple.fill });
+    }
+    if (this.planetRingSide) this.ringPlanet(this.planetRingSide);
+    const flagX = this.landX(pair.base);
+    g.moveTo(flagX, 0).lineTo(flagX, v.h).stroke({ width: 3, color: ink, alpha: 0.18 });
+  }
+
+  private ringPlanet(side: 'before' | 'past') {
+    this.planetRingSide = side;
+    const flagX = this.landX(this.pairs[this.shot].base);
+    const x = side === 'before' ? (this.strip.x0 + flagX) / 2 : (flagX + this.strip.x1) / 2;
+    this.predictionRing.clear().ellipse(x, this.strip.y - 80, 48, 48).stroke({ width: 6, color: swatch.yellow.fill });
+  }
+
+  private async predictPlanet(x: number) {
+    if (this.planetPhase !== 'choose' || this.flying || this.finished) return;
+    this.planetPhase = 'flight';
+    const pair = this.pairs[this.shot];
+    this.ringPlanet(planetSide(x, this.landX(pair.base)));
+    sfx.pop(5);
+    await this.ctx.say('launch.lets-see');
+    void this.launch(planetBotLanding(pair));
+  }
+
+  private async homePlanet() {
+    this.planetPhase = 'home';
+    this.planetRingSide = undefined;
+    this.lastFlight = undefined;
+    this.drawHistory();
+    this.drawFlag();
+    this.drawPlanet(this.view);
+    this.showPredictionPull();
+    // Leave time to see the fixed pull before its home flight.
+    this.flying = true;
+    await this.ctx.tw.wait(1);
+    this.flying = false;
+    void this.launch(this.pairs[this.shot].base);
+  }
+
+  private async planetLanded() {
+    if (this.planetPhase === 'home') {
+      this.last = this.pairs[this.shot].base;
+      this.planetPhase = 'choose';
+      this.drawFlag();
+      await this.ctx.tw.to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.7, ease: ease.outBack });
+      this.flying = false;
+      this.drawPlanet(this.view);
+      this.showPredictionPull();
+      await this.instruct(this.pairs[this.shot].planet === 'light' ? 'launch.planet-light' : 'launch.planet-heavy');
+      return;
+    }
+    await this.ctx.say(this.pairs[this.shot].planet === 'light' ? 'launch.planet-why-light' : 'launch.planet-why-heavy');
+    this.shot++;
+    this.predictionRing.clear();
+    if (this.shot >= this.pairs.length) return void this.finale();
+    await this.ctx.tw.to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.7, ease: ease.outBack });
+    this.flying = false;
+    await this.homePlanet();
+  }
+
   start() {
     // A challenge run left after its last cloud was landed on has nothing more to play: settle it.
     if (this.course && this.shot >= this.targets.length) return void this.finale();
+    if (this.plan.mode === 'planet') {
+      this.askForHint = () => this.showPlanetHint();
+      this.hintLabel = 'Show a hint';
+      this.ctx.stage.addChildAt(this.planetInput, this.ctx.stage.getChildIndex(this.replay));
+      onTap(this.pet, () => this.repeatInstruction(), { cooldown: 500 });
+      onTap(this.planetInput, e => void this.predictPlanet(this.ctx.stage.toLocal(e.global).x), { cooldown: 500 });
+      return void this.homePlanet();
+    }
     void this.askShot();
   }
 
   resize(v: View) {
+    this.view = v;
     this.backdrop.resize(v);
     const ground = this.backdrop.groundY + 30;
     this.seat = { x: 210, y: ground - 150 };
@@ -324,7 +445,7 @@ class BouncyLaunch implements Game {
     this.replay.position.set(this.seat.x, this.strip.y - 8);
     this.pads.forEach((pad, i) => pad.position.set(this.landX(padAt(i)), this.strip.y));
     if (!this.flying && !this.grab) {
-      if (this.plan.mode === 'predict') this.showPredictionPull();
+      if (this.plan.mode === 'predict' || this.plan.mode === 'planet') this.showPredictionPull();
       else this.pet.position.set(this.seat.x, this.restingY());
     }
     if (this.stick && !this.flying) this.squash();
@@ -333,6 +454,7 @@ class BouncyLaunch implements Game {
     this.placeFriend();
     this.drawHistory();
     this.drawFlag();
+    if (this.plan.mode === 'planet') this.drawPlanet(v);
   }
 
   private placeFriend() {
@@ -488,8 +610,9 @@ class BouncyLaunch implements Game {
   /** Set the pet at a fixed, visible pull. The pure pull/landing mapping makes this repeatable on every device. */
   private showPredictionPull() {
     const target = this.targets[this.shot];
-    if (target === undefined) return;
-    const pull = pullFor(padAt(target));
+    const base = this.plan.mode === 'planet' ? this.pairs[this.shot]?.base : target === undefined ? undefined : padAt(target);
+    if (base === undefined) return;
+    const pull = pullFor(base);
     const d = { x: -0.35, y: 0.94 };
     const len = Math.hypot(d.x, d.y);
     this.pet.position.set(this.seat.x + (d.x / len) * pull, this.seat.y + (d.y / len) * pull);
@@ -569,7 +692,7 @@ class BouncyLaunch implements Game {
     if (this.flying || this.finished) return;
     this.flying = true;
     // A squashed spring is not a pull: only a finger's pulls count toward the "bigger pull" journal entry.
-    if (this.plan.mode !== 'tap' && !this.stick) this.observedPulls.push(f);
+    if (this.plan.mode !== 'tap' && this.plan.mode !== 'planet' && !this.stick) this.observedPulls.push(f);
     if (this.course) {
       this.tries++;
       this.report();
@@ -581,20 +704,22 @@ class BouncyLaunch implements Game {
     // Fly from where the pull let go.
     pts[0] = { x: this.pet.x, y: this.pet.y };
     this.drawSpring();
-    await new Promise<void>((done) => (this.flight = { pts, t: 0, duration: 0.7 + 0.6 * f, done }));
+    await new Promise<void>((done) => (this.flight = { pts, t: 0, duration: (0.7 + 0.6 * f) * (this.plan.mode === 'planet' && this.planetPhase !== 'home' ? airtimeFor(this.pairs[this.shot].planet) : 1), done }));
     this.lastFlight = f;
     this.arcAge = 0;
     this.lastArc.alpha = 1;
     this.drawHistory();
     this.pet.rotation = 0;
     this.pet.y = this.strip.y - 20;
-    sfx.pop(4);
-    this.ctx.particles.burst(this.pet.x, this.pet.y, { colors: [0xffffff, 0xd6eefa], count: 14, speed: [80, 220], gravity: 300, angle: -Math.PI / 2, spread: 1.6, size: [0.3, 0.6] });
+    const planet = this.plan.mode === 'planet' && this.planetPhase !== 'home' ? this.pairs[this.shot].planet : undefined;
+    sfx.pop(planet === 'light' ? 5 : planet === 'heavy' ? 3 : 4);
+    this.ctx.particles.burst(this.pet.x, this.pet.y, { colors: [0xffffff, 0xd6eefa], count: 14, speed: [80, 220], gravity: 300 * (planet ? gravityFor(planet) : 1), angle: -Math.PI / 2, spread: 1.6, size: [0.3, 0.6] });
     this.pet.poke();
     await this.landed(f);
   }
 
   private async landed(f: number) {
+    if (this.plan.mode === 'planet') return this.planetLanded();
     const tw = this.ctx.tw;
     const verdict = this.plan.mode === 'friend' ? judgeFriend(f, this.spots[this.shot]) : judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
     if (this.plan.mode === 'star' || this.plan.mode === 'number') this.off += Math.abs(f - padAt(this.targets[this.shot]));
@@ -675,13 +800,14 @@ class BouncyLaunch implements Game {
     const g = this.flag.clear();
     this.flagNumbers.removeChildren().forEach((child) => child.destroy());
     const flights = this.plan.mode === 'compare' && this.last !== undefined ? [this.last]
-      : this.plan.mode === 'predict' ? [...new Set(this.predictionFlights)].map(padAt) : [];
+      : this.plan.mode === 'predict' ? [...new Set(this.predictionFlights)].map(padAt)
+      : this.plan.mode === 'planet' && this.planetPhase !== 'home' && this.pairs[this.shot] ? [this.pairs[this.shot].base] : [];
     for (const f of flights) {
       const x = this.landX(f), y = this.strip.y + 10;
       g.moveTo(x, y).lineTo(x, y - 90).stroke({ width: 6, color: wood.line, cap: 'round' });
       g.poly([x, y - 90, x + 50, y - 74, x, y - 58]).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' });
-      if (this.plan.mode === 'predict') {
-        const n = label(String(Math.round(f * PADS + 0.5)), 24, 0xffffff);
+      if (this.plan.mode === 'predict' || this.plan.mode === 'planet') {
+        const n = label(String(this.plan.mode === 'planet' ? this.shot + 1 : Math.round(f * PADS + 0.5)), 24, 0xffffff);
         n.position.set(x + 17, y - 75);
         this.flagNumbers.addChild(n);
       }
