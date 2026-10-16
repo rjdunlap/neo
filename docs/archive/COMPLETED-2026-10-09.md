@@ -36,7 +36,7 @@
 
 ### Duckling Parade truthful support (2026-10-15)
 
-[PR #389](https://github.com/rjdunlap/neo/pull/389), branch `codex/duckling-parade-support`, dispatch `duckling-support-20261015T185456Z`: build slice 1 at existing 1–10. Descriptions at 7/8 name two-/three-color repetition without promising generated colors; the how-to offers taps or leading a finger; level 10 describes leaving a spare in the meadow, with `parade.spare` speech. Extra-arrival speech names the combined total, including earlier pond deliveries. Generator, accounting, steering/art, levels, bands and saves retained. [Proof](VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-truthful-support); device speech/understanding remain open. Destination feedback/cancellation is the next ready slice, not implemented here.
+[PR #389](https://github.com/rjdunlap/neo/pull/389), branch `codex/duckling-parade-support`, dispatch `duckling-support-20261015T185456Z`: build slice 1 at existing 1–10. Descriptions at 7/8 name two-/three-color repetition without promising generated colors; the how-to offers taps or leading a finger; level 10 describes leaving a spare in the meadow, with `parade.spare` speech. Extra-arrival speech names the combined total, including earlier pond deliveries. Generator, accounting, steering/art, levels, bands and saves retained. [Proof](../VERIFICATION.md#2026-10-15--duckling-parade-truthful-support); device speech/understanding remain open. Destination feedback/cancellation is the next ready slice, not implemented here.
 
 
 ### Clock Tower hour-change and fives explanations (2026-10-15)
