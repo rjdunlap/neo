@@ -19,8 +19,8 @@ export interface ParadePlan {
   max?: number;
   /** pattern: the repeating unit length (AB or ABC). */
   unit?: number;
-  /** Pattern shape for a repeated AAB unit. */
-  repeatedPair?: boolean;
+  /** A three-long unit with a repeated color: AAB (the pair first) or ABB (the pair last). */
+  repeatedPair?: 'aab' | 'abb';
   /** Add one duckling that does not fit the shown pattern. */
   oddDuckling?: boolean;
   name: string;
@@ -35,8 +35,9 @@ export const PLANS: ParadePlan[] = [
   { mode: 'colorCount', ducklings: 8, colors: 3, min: 2, max: 3, name: 'Bring 2 or 3 ducklings of one color home' },
   { mode: 'pattern', ducklings: 6, colors: 2, unit: 2, name: 'Make a repeating pattern with two alternating colors' },
   { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, name: 'Make a repeating pattern with three colors' },
-  { mode: 'pattern', ducklings: 6, colors: 2, unit: 3, repeatedPair: true, name: 'Make the pattern: two of one color, then one of another' },
-  { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, repeatedPair: true, oddDuckling: true, name: 'Make the pattern, leaving out the duckling that does not fit' },
+  { mode: 'pattern', ducklings: 6, colors: 2, unit: 3, repeatedPair: 'aab', name: 'Make the pattern: two of one color, then one of another' },
+  { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, repeatedPair: 'aab', oddDuckling: true, name: 'Make the pattern, leaving out the duckling that does not fit' },
+  { mode: 'pattern', ducklings: 6, colors: 2, unit: 3, repeatedPair: 'abb', name: 'Make the pattern: one of a color, then two of another' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -59,7 +60,8 @@ export function makeRound(plan: ParadePlan, rng: Rng): Round {
   const palette = plan.colors === 1 ? ['yellow' as ColorName] : rng.shuffle([...DUCK_COLORS]).slice(0, plan.colors);
   const target = plan.min !== undefined ? rng.int(plan.min, plan.max ?? plan.min) : undefined;
   if (plan.mode === 'pattern') {
-    const unit = plan.repeatedPair ? [palette[0], palette[0], palette[1]] : palette.slice(0, plan.unit ?? 2);
+    const unit =
+      plan.repeatedPair === 'aab' ? [palette[0], palette[0], palette[1]] : plan.repeatedPair === 'abb' ? [palette[0], palette[1], palette[1]] : palette.slice(0, plan.unit ?? 2);
     const pattern = Array.from({ length: plan.ducklings }, (_, i) => unit[i % unit.length]);
     const ducklings = [...pattern];
     if (plan.oddDuckling) ducklings.push(palette[2]);

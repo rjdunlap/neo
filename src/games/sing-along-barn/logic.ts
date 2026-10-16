@@ -90,7 +90,19 @@ export const WE_WANT_TO_PLAY: Phrase = { syllables: ['we', 'want', 'to', 'play']
 export const ITSY_BITSY: Phrase = { syllables: ['The', 'it', 'sy', 'bit', 'sy', 'spi', 'der'], steps: [3, 0, 0, 0, 1, 2, 2] };
 export const WATER_SPOUT: Phrase = { syllables: ['climbed', 'up', 'the', 'wa', 'ter', 'spout'], steps: [2, 1, 0, 1, 2, 0] };
 
-export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy';
+/**
+ * "Bounce High, Bounce Low" is a traditional American ball-passing song, sung on three notes, mi sol la (E G A in C),
+ * all inside the pentatonic set: "high" climbs to la and "low" drops to mi. Written from the tune's standard form
+ * (sol la sol mi, sol sol la la sol mi); the sources found give only its three notes, not a printed score, so a
+ * grown-up singing it is the final check (DEVICE-CHECKS). In the game the ball goes to "Shiloh" in the opening, then
+ * to each friend by name ("bounce the ball to the cow"), the way the playground game sings a child's name.
+ */
+export const BOUNCE_HIGH: Phrase = { syllables: ['Bounce', 'high', 'bounce', 'low'], steps: [3, 4, 3, 2] };
+export const TO_SHILOH: Phrase = { syllables: ['bounce', 'the', 'ball', 'to', 'Shi', 'loh'], steps: [3, 3, 4, 4, 3, 2] };
+/** The verse's line: the last syllable is the friend's name. */
+export const TO_THE: Phrase = { syllables: ['bounce', 'the', 'ball', 'to', 'the', ''], steps: [3, 3, 4, 4, 3, 2] };
+
+export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce';
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -160,7 +172,15 @@ export const ITSY: Tune = {
   answers: WATER_SPOUT,
   namesAnimal: false,
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY];
+/** "Bounce high, bounce low, bounce the ball to Shiloh" opens it; each friend's verse sends the ball to that friend, who answers on its name. */
+export const BOUNCE: Tune = {
+  id: 'bounce',
+  opening: [BOUNCE_HIGH, TO_SHILOH],
+  verse: [BOUNCE_HIGH, TO_THE],
+  answers: TO_THE,
+  namesAnimal: true,
+};
+export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE];
 
 export interface Note {
   step: number;
@@ -233,7 +253,7 @@ export const PLANS: readonly SingPlan[] = [
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

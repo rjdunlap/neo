@@ -243,7 +243,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'sing-along-barn': {
     goal: 'Sing a short song by tapping, Old MacDonald or one of five nursery songs: every tap is the next note, and a friend joins each verse.',
     steps: [
-      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm", then "And on that farm he had a cow" for each friend. The nursery songs (Hot Cross Buns, Mary, Au Clair, Rain Rain, Itsy Bitsy Spider) open with their first lines, then each friend sings the next verse.' },
+      { to: 2, text: 'Tap anywhere to play the next note. Sing along, one syllable for each note. Old MacDonald: "Old MacDonald had a farm", then "And on that farm he had a cow" for each friend. The nursery songs (Hot Cross Buns, Mary, Au Clair, Rain Rain, Itsy Bitsy, Bounce High) open with their first lines, then each friend sings the next verse.' },
       { from: 3, to: 3, text: 'Tap the friends you want on the farm. When the barn is full, tap anywhere to play each note of the song.' },
       { from: 4, to: 4, text: 'Tap anywhere to sing the opening. Then, at the end of each verse, tap the friend you want to sing next; the friends who have sung wait in the row and only say hello. Tap anywhere to sing that friend\'s verse.' },
       { from: 5, to: 5, text: 'Tap the song you want, from six cards. Then tap anywhere to sing the opening; at the end of each verse, tap the friend you want to sing next. The friends who have sung wait in the row and only say hello.' },
@@ -450,14 +450,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'letter-trails': {
     goal: 'Form capital letters, words and names by following a trail with one finger.',
     steps: [
-      'Start at the glowing dot.',
-      "Drag along the firefly's path to draw the letter.",
+      'Start at the glowing dot. The little arrow beside it shows which way the stroke goes.',
+      "Drag along the firefly's path to draw the letter. Its note climbs as the stroke goes on.",
       { from: 7, to: 8, text: 'Trace each letter in turn, from the first to the last.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the whole letter has been traced.' },
       { from: 7, to: 8, text: 'The round ends when the whole word or name has been traced.' },
     ],
+    note: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The ink color changes from round to round and never changes the trail.',
   },
   'robot-path': {
     goal: 'Explore how the robot follows or fixes a program.',
@@ -631,7 +632,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, to: 6, text: 'Bring exactly the number of ducklings of the color named to the pond.' },
       { from: 7, to: 8, text: 'Collect ducklings in the color pattern asked for, in order, then bring them to the pond.' },
       { from: 9, to: 9, text: 'Repeat a group of two matching colors followed by one different color.' },
-      { from: 10, text: 'Follow the shown color pattern in order; leave the spare duckling in the meadow.' },
+      { from: 10, to: 10, text: 'Follow the shown color pattern in order; leave the spare duckling in the meadow.' },
+      { from: 11, text: 'Repeat a group of one color followed by two matching colors of another.' },
     ],
     finish: 'The round ends when the right ducklings reach the pond.',
   },
@@ -1029,7 +1031,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, to: 6, text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.' },
       { from: 7, to: 7, text: 'Tap coins onto the counter to pay the price with as few shells as you can, then ring the bell; tap a coin on the mat to put it back and swap it.' },
     ],
-    note: 'Tap a coin on the mat to put it back. Two misses show a payment; help counts once per order, including when you pay two different ways.',
+    note: [
+      { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
+      { to: 2, text: 'Each coin shows its worth as dots, like the dots on the price tag. Tap a coin on the mat to put it back. Two misses show a payment; help counts once per order.' },
+      { from: 3, to: 3, text: 'Each coin shows its worth as dots, like the dots on the price tag. Tap a coin on the mat to put it back. Two misses bring a tip (biggest coin first) and show a payment; help counts once per order.' },
+      { from: 4, to: 4, text: 'Tap a coin on the mat to put it back. Two misses show a payment; help counts once per order.' },
+      { from: 5, to: 5, text: 'Tap a coin on the mat to put it back. Two misses bring a tip (biggest coin first, or swap coins for the second way) and show a payment; help counts once per order, including when you pay two different ways.' },
+      { from: 6, to: 6, text: 'Tap a coin on the mat to put it back. Two misses show a payment; help counts once per order.' },
+      { from: 7, to: 7, text: 'Tap a coin on the mat to put it back. Two misses bring a tip (biggest coin first) and show a payment; help counts once per order.' },
+    ],
     finish: [
       { to: 5, text: 'The round ends when the right amount has been paid.' },
       { from: 6, to: 6, text: 'The round ends when the right change has been given.' },
@@ -1212,26 +1222,50 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'clap-syllables': {
     goal: 'Hear that words are made of beats.',
     steps: [
+      { from: 9, to: 9, text: 'Tap the big hands once for each beat. The pet shows one word with one clap and one with two; each tap lights the next bead.' },
       { to: 2, text: 'Tap the big hands once for each beat in the word: "but-ter-fly" is three claps.' },
       { from: 2, to: 2, text: 'After your last clap, wait a moment while the ring fills round the hands and the word is counted.' },
       { from: 3, to: 3, text: 'Drag each picture to the number of beats in its name.' },
-      { from: 4, text: 'Listen to the claps, then tap the picture with that many beats.' },
-      { from: 5, text: 'Sort long words into the one-, two-, three- and four-clap bins.' },
+      { from: 4, to: 4, text: 'Listen to the claps, then tap the picture with that many beats.' },
+      { from: 5, to: 5, text: 'Sort long words into the one-, two-, three- and four-clap bins.' },
+      { from: 8, to: 8, text: 'Listen to both words and their claps. Tap the picture whose word has more claps, or fewer, as the pet asks. The hands button repeats both counts and the request.' },
+      { from: 6, to: 6, text: 'Drag each picture into a train car: fewest claps at the back, most claps by the engine. Two with the same claps can go either way round.' },
     ],
-    finish: 'The round ends after the last word, sort or question.',
-    note: 'The pet says each word whole and claps its beats with beads lighting up; a wrong count just brings the demonstration and another try. Check on the device that the words are said clearly.',
+    finish: [
+      { from: 9, to: 9, text: 'The round ends after two words. Every clap moves a bead along, so you can always finish.' },
+      { to: 5, text: 'The round ends after the last word, sort or question.' },
+      { from: 6, to: 6, text: 'The round ends after three trains have left.' },
+      { from: 8, to: 8, text: 'The round ends after four comparisons. A second wrong choice glows the answer; you can always finish with help.' },
+    ],
+    note: [
+      { from: 9, to: 9, text: 'The pet says each word whole and shows its claps. There is no timing test or wrong clap. After a quiet moment the pet shows the word again for free; check that device speech says the words clearly.' },
+      { to: 6, text: 'The pet says each word whole and claps its beats with beads lighting up; a wrong count just brings the demonstration and another try. Check on the device that the words are said clearly.' },
+      { from: 8, to: 8, text: 'Compare the beats in the words, rather than picture size. Wrong choices repeat both counts; replay is free. Check on the device that the words and more/fewer prompts are clear.' },
+    ],
   },
   'chain-reaction': {
-    goal: 'Arrange the ramps so the marble rings the big bell (and the little chime first, when there is one).',
+    goal: 'Predict and plan where a marble will go: build the ramps so it rings the big bell, or say which bell a finished machine rings.',
     steps: [
-      'Drag every loose ramp into a round socket.',
-      'Tap the green arrow to run the machine and watch what each ramp changes; a faint red trail stays behind, and tapping the blue cup shows the run again.',
-      'Move one ramp and run it again, or tap the yellow light bulb for one useful placement.',
+      { from: 7, to: 7, text: 'Tap a coloured ramp to flip its direction. The wooden ramp stays fixed.' },
+      { from: 7, to: 7, text: 'Tap the green arrow to test the machine. The red trail shows the last run; tap the blue cup to watch it again.' },
+      { from: 7, to: 7, text: 'Try another turn, or tap the yellow light bulb to glow a useful ramp to flip.' },
+      { from: 8, to: 8, text: 'Look at the finished machine and tap the bell you think the marble will ring.' },
+      { from: 8, to: 8, text: 'Tap the green arrow and watch. If another bell rings, a faint red trail shows the way the ramps sent it.' },
+      { from: 8, to: 8, text: 'The yellow light bulb glows the start and says to follow the marble down with a finger.' },
+      { from: 1, to: 6, text: 'Drag every loose ramp into a round socket.' },
+      { from: 1, to: 6, text: 'Tap the green arrow to run the machine and watch what each ramp changes; a faint red trail stays behind, and tapping the blue cup shows the run again.' },
+      { from: 1, to: 6, text: 'Move one ramp and run it again, or tap the yellow light bulb for one useful placement.' },
     ],
-    finish: 'The round ends after both machines ring their bells.',
+    finish: [
+      { from: 7, to: 7, text: 'The round ends after both machines ring their bells.' },
+      { from: 8, to: 8, text: 'The round ends after three machines have run, whichever bell each one rang.' },
+      { from: 1, to: 6, text: 'The round ends after both machines ring their bells.' },
+    ],
     note: [
+      { from: 7, to: 7, text: 'Experimental runs are free. Requested help counts as a hint; the ramps stay in their sockets.' },
+      { from: 8, to: 8, text: 'A prediction is never a wrong answer, and the light bulb is not counted as help.' },
       {
-        from: 6,
+        from: 6, to: 6,
         text: 'A run that misses is an experiment, not a wrong answer. Loose ramps can be moved back to their tray, and this puzzle has several working designs.',
       },
       { text: 'A run that misses is an experiment, not a wrong answer. Loose ramps can be moved back to their tray.' },
@@ -1273,8 +1307,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'A run that goes too far or not far enough is a free try.',
   },
   'critter-sort': {
-    goal: 'Sort critters by the rule on the hoop.',
+    goal: 'Sort critters by pictured rules and explore the groups you made.',
     steps: [
+      { from: 11, to: 11, text: 'Sort all six critters into the two separate hoops or onto the leaf mat. Then tap critters to count each part aloud; a ring marks each counted critter. Tap a part’s picture below to choose which has more.' },
+      { from: 9, to: 9, text: 'The hoop has two pictures: fit the first, but not the crossed-out second picture. Drag matching critters into the one hoop; put every other critter on the leaf mat.' },
       { from: 8, to: 8, text: 'Sort all six critters by the pictured sign: into the hoop if they fit, onto the leaf mat if they do not. The sign turns over and the same six hop out; sort them again by the new rule.' },
       { from: 7, to: 7, text: 'The critters are already sorted by the two signs. Drag the one newcomer to the left, right, middle for both rules, or leaf mat for neither.' },
       { from: 6, to: 6, text: 'One critter is already in the hoop. Drag the other critter that fits the sign into it.' },
@@ -1285,6 +1321,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'The red line means not. One critter is already in the hoop. Drag every other critter that is not like the picture into it. Critters that fit the picture go on the leaf mat.' },
     ],
     finish: [
+      { from: 11, to: 11, text: 'Choose the part with more critters in each of two diagrams for one sticker. You may count as often as you like, or choose when ready.' },
+      { from: 9, to: 9, text: 'Sort every critter into the hoop or onto the leaf mat in both diagrams for one sticker.' },
       { from: 8, to: 8, text: 'Finish both sorts of the same six critters for one sticker.' },
       { from: 7, to: 7, text: 'Place the newcomer correctly in each of three diagrams to finish.' },
       { to: 1, text: 'The round ends when every critter that fits is in the hoop; the others can stay on the grass.' },
@@ -1294,9 +1332,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, to: 6, text: 'The round ends when the other critter that fits is in the hoop; the last one can stay on the grass.' },
     ],
     note: [
+      { from: 11, to: 11, text: 'Counting taps are free. Tapping a marked critter replays its number without adding it again. Wrong drops or comparison choices get a spoken explanation; two wrong comparisons show totals and glow the answer.' },
       { to: 3, text: 'Putting a critter back on bare grass is a free try. Two wrong drops glow a useful place and critter.' },
       { from: 4, to: 4, text: 'Two wrong guesses make the correct rule picture larger.' },
-      { from: 5, text: 'Putting a critter back on bare grass is a free try. Two wrong drops glow a useful place and critter.' },
+      { from: 5, to: 9, text: 'Putting a critter back on bare grass is a free try. Two wrong drops glow a useful place and critter.' },
     ],
   },
   'treasure-map': {

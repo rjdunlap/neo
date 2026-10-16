@@ -2,6 +2,7 @@ import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
+import type { LineId } from '../../content/voice-script';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
@@ -11,10 +12,11 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chainTouch, hintFor, makeBoards, planFor, trace, type ChainBoard, type ChainPlan, type Layout, type Ramp, type Trace } from './logic';
+import { chainTouch, hintFor, makeBoards, planFor, predictedBell, trace, turnHint, TAP_TO_TURN, WHICH_BELL, type ChainBoard, type ChainPlan, type Layout, type Ramp, type Trace } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 3 },
+  // Tap to turn and Which bell? are easy entries before the existing drag levels.
+  prek: { min: 1, max: 8, order: [TAP_TO_TURN, WHICH_BELL, 1, 2, 3] },
   school: { min: 3, max: 6 },
 };
 
@@ -64,6 +66,9 @@ class ChainReaction implements Game {
   index = -1;
   machine!: ChainBoard;
   placement: Layout = [];
+  flipped: boolean[] = [];
+  readonly turnNodes: Container[] = [];
+  private turnGlow: number | null = null;
   misses = 0;
   hints = 0;
   busy = true;
@@ -85,9 +90,15 @@ class ChainReaction implements Game {
   private readonly trail = new Graphics();
   private lastTrace: Trace | null = null;
   private targetBell: Container | null = null;
+  /** Level 8's bells along the bottom, each a tap target for her prediction. */
+  private bellNodes: { col: number; node: Container }[] = [];
+  private picked: number | null = null;
+  private readonly pickRing = new Graphics();
   private chimeBell: Container | null = null;
   private hinted: { piece: number; socket: number } | null = null;
   private settled = false;
+  /** Level 8's help: the start cup glows while the pet says to follow the marble's way down with a finger. */
+  private followHint = false;
   private top = 120;
   private gap = 92;
   private left = 180;
@@ -95,9 +106,9 @@ class ChainReaction implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.boards = makeBoards(this.plan, ctx.rng);
-    this.panel.eventMode = this.tracks.eventMode = this.sockets.eventMode = this.fixed.eventMode = this.goal.eventMode = this.glow.eventMode = this.trail.eventMode = 'none';
+    this.panel.eventMode = this.tracks.eventMode = this.sockets.eventMode = this.fixed.eventMode = this.goal.eventMode = this.glow.eventMode = this.trail.eventMode = this.pickRing.eventMode = 'none';
     this.marble.visible = false;
-    this.diagram.addChild(this.panel, this.tracks, this.sockets, this.fixed, this.goal, this.trail, this.startCup, this.marble, this.glow);
+    this.diagram.addChild(this.panel, this.tracks, this.sockets, this.fixed, this.goal, this.trail, this.pickRing, this.startCup, this.marble, this.glow);
 
     this.runButton = roundButton(swatch.green.fill, swatch.green.line, (g) => {
       g.poly([-18, -27, 30, 0, -18, 27]).fill(cream).stroke({ width: 4, color: swatch.green.line, join: 'round' });
@@ -132,6 +143,10 @@ class ChainReaction implements Game {
       const at = socket === null || socket === undefined ? part.home : this.socketPosition(socket);
       part.node.position.set(at.x, at.y);
     });
+    this.turnNodes.forEach((node, i) => {
+      const at = this.machine.turn![i];
+      node.position.set(this.colX(at.col), this.rowY(at.row));
+    });
     if (this.machine) this.drawMachine();
   }
 
@@ -140,9 +155,14 @@ class ChainReaction implements Game {
   /** Carry each ramp along a working design, then run the marble through the finished machine. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.machine) return null;
-    const move = chainTouch(this.machine, this.placement);
+    if (this.plan.predict) {
+      const bell = this.bellNodes.find((b) => b.col === predictedBell(this.machine));
+      return this.picked === bell?.col ? { tap: { on: this.runButton } } : bell ? { tap: { on: bell.node } } : null;
+    }
+    const move = chainTouch(this.machine, this.placement, this.flipped);
     if (!move) return null;
     if (move.kind === 'run') return { tap: { on: this.runButton } };
+    if (move.kind === 'flip') return { tap: { on: this.turnNodes[move.piece] } };
     const part = this.parts[move.piece];
     const at = this.socketPosition(move.socket);
     return part && !part.handle.dragging ? { drag: { on: part.node }, to: { on: this.ctx.stage, x: at.x, y: at.y } } : null;
@@ -170,12 +190,26 @@ class ChainReaction implements Game {
     this.index++;
     this.hinted = null;
     this.lastTrace = null;
+    this.picked = null;
+    this.turnGlow = null;
     this.trail.clear();
     if (this.index >= this.boards.length) return void this.finale();
     this.machine = this.boards[this.index];
     this.placement = Array(this.machine.loose.length).fill(null);
     for (const p of this.parts) p.handle.destroy();
     this.parts.splice(0).forEach((p) => p.node.destroy({ children: true }));
+    this.flipped = (this.machine.turn ?? []).map(() => false);
+    this.turnNodes.splice(0).forEach((node) => node.destroy({ children: true }));
+    this.machine.turn?.forEach((part, i) => {
+      const node = new Container();
+      node.addChild(rampArt(part.ramp, true));
+      node.hitArea = new Rectangle(-52, -50, 104, 100);
+      node.position.set(this.colX(part.col), this.rowY(part.row));
+      onTap(node, () => this.flip(i));
+      this.turnNodes.push(node);
+      this.diagram.addChild(node);
+    });
+    this.diagram.addChild(this.glow);
     this.makeParts();
     // The first machine at level 1 shows the useful socket without counting it as assistance.
     if (this.ctx.level === 1 && this.index === 0) this.hinted = hintFor(this.machine, this.placement);
@@ -184,7 +218,24 @@ class ChainReaction implements Game {
     await this.ctx.tw.to(this.diagram, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     this.drawGlow();
-    if (this.index === 0) await this.ctx.instruct(this.plan.chime ? 'chain.chime-start' : 'chain.start');
+    if (this.index === 0) await this.ctx.instruct(this.plan.turn ? 'chain.turn-start' : this.plan.predict ? 'chain.predict-start' : this.plan.chime ? 'chain.chime-start' : 'chain.start');
+  }
+
+  private flip(piece: number) {
+    if (this.busy || this.finished) return;
+    this.flipped[piece] = !this.flipped[piece];
+    const node = this.turnNodes[piece];
+    node.removeChildren().forEach((child) => child.destroy({ children: true }));
+    const ramp = this.machine.turn![piece].ramp;
+    const art = rampArt(this.flipped[piece] ? (ramp === 'left' ? 'right' : 'left') : ramp, true);
+    art.eventMode = 'none';
+    node.addChild(art);
+    // The groove answers on touch-down, with a small scene-owned turn animation.
+    art.rotation = this.flipped[piece] ? -0.12 : 0.12;
+    void this.ctx.tw.to(art, { rotation: 0 }, { duration: 0.18 });
+    this.turnGlow = null;
+    this.drawGlow();
+    sfx.pop(4 + piece * 2);
   }
 
   private makeParts() {
@@ -271,9 +322,24 @@ class ChainReaction implements Game {
       this.fixed.addChild(node);
     }
     this.goal.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.targetBell = bellArt();
-    this.targetBell.position.set(this.colX(this.machine.target), bottom - 32);
-    this.goal.addChild(this.targetBell);
+    this.bellNodes.forEach((b) => b.node.destroy({ children: true }));
+    this.bellNodes = [];
+    if (this.machine.bells) {
+      // Each bell is its own 104 by 140 target; neighbouring columns are 104 apart, so the areas meet but never overlap.
+      for (const col of this.machine.bells) {
+        const node = bellArt();
+        node.position.set(this.colX(col), bottom - 32);
+        node.hitArea = new Rectangle(-52, -84, 104, 140);
+        onTap(node, () => this.pick(col), { cooldown: 250 });
+        this.diagram.addChildAt(node, this.diagram.getChildIndex(this.pickRing) + 1);
+        this.bellNodes.push({ col, node });
+      }
+      this.targetBell = this.bellNodes.find((b) => b.col === this.machine.target)!.node;
+    } else {
+      this.targetBell = bellArt();
+      this.targetBell.position.set(this.colX(this.machine.target), bottom - 32);
+      this.goal.addChild(this.targetBell);
+    }
     this.chimeBell = null;
     if (this.machine.chime) {
       this.chimeBell = bellArt(true);
@@ -281,11 +347,40 @@ class ChainReaction implements Game {
       this.goal.addChild(this.chimeBell);
     }
     this.marble.position.set(this.colX(this.machine.start), this.top - 16);
+    this.drawPick();
     this.drawGlow();
+  }
+
+  /** Her prediction: tapping a bell rings its own little note and circles it. Any bell may be chosen; none is wrong. */
+  private pick(col: number) {
+    if (this.busy || this.finished || !this.plan.predict) return;
+    this.picked = col;
+    this.hinted = null;
+    sfx.bell(2 + this.bellNodes.findIndex((b) => b.col === col) * 2, 0.18);
+    this.drawPick();
+    this.drawGlow();
+  }
+
+  private drawPick() {
+    this.pickRing.clear();
+    const bell = this.bellNodes.find((b) => b.col === this.picked);
+    if (!bell) return;
+    this.pickRing.roundRect(bell.node.x - 50, bell.node.y - 66, 100, 116, 26).fill({ color: swatch.blue.light, alpha: 0.85 }).stroke({ width: 7, color: swatch.blue.line });
   }
 
   private drawGlow() {
     this.glow.clear();
+    if (this.plan.predict) {
+      if (this.followHint && !this.busy) this.glow.circle(this.colX(this.machine.start), this.top - 22, 58).stroke({ width: 9, color: swatch.yellow.fill, alpha: 0.9 });
+      return;
+    }
+    if (this.plan.turn) {
+      if (this.turnGlow !== null && !this.busy) {
+        const node = this.turnNodes[this.turnGlow];
+        this.glow.circle(node.x, node.y, 59).stroke({ width: 9, color: swatch.yellow.fill, alpha: 0.9 });
+      }
+      return;
+    }
     if (!this.hinted || this.busy) return;
     const socket = this.socketPosition(this.hinted.socket);
     const pulse = 62;
@@ -296,6 +391,22 @@ class ChainReaction implements Game {
 
   private help() {
     if (this.busy || this.finished) return;
+    if (this.plan.predict) {
+      // Following the way down is how a prediction is made, not assistance with an answer, so it is not counted.
+      this.followHint = true;
+      this.drawGlow();
+      sfx.sparkle();
+      return void this.ctx.say('chain.predict-hint');
+    }
+    if (this.plan.turn) {
+      const piece = turnHint(this.machine, this.flipped);
+      if (piece === null) return void this.ctx.say('chain.run-now');
+      this.turnGlow = piece;
+      this.hints++;
+      this.drawGlow();
+      sfx.sparkle();
+      return void this.ctx.say('chain.turn-hint');
+    }
     const hint = hintFor(this.machine, this.placement);
     if (!hint) return void this.ctx.say('chain.run-now');
     this.hinted = hint;
@@ -307,6 +418,7 @@ class ChainReaction implements Game {
 
   private async run() {
     if (this.busy || this.finished) return;
+    if (this.plan.predict) return void this.runPrediction();
     if (this.placement.some((socket) => socket === null)) {
       sfx.boing();
       return void this.ctx.say('chain.parts');
@@ -315,7 +427,7 @@ class ChainReaction implements Game {
     this.hinted = null;
     this.drawGlow();
     this.parts.forEach((p) => { p.handle.enabled = false; });
-    const result = trace(this.machine, this.placement);
+    const result = trace(this.machine, this.placement, this.flipped);
     this.lastTrace = result;
     await this.animate(result);
     const bottom = this.top + (this.machine.rows + 1) * this.gap;
@@ -327,6 +439,31 @@ class ChainReaction implements Game {
     this.marble.visible = false;
     this.parts.forEach((p) => { p.handle.enabled = true; });
     this.busy = false;
+  }
+
+  /**
+   * Level 8: the marble runs the finished machine and rings its bell. A different bell from her choice is not a miss: the
+   * pet says which bell rang, the trail stays to show why, and the next machine follows.
+   */
+  private async runPrediction() {
+    if (this.picked === null) {
+      sfx.pop(2);
+      return void this.ctx.say('chain.predict-first');
+    }
+    this.busy = true;
+    this.followHint = false;
+    this.drawGlow();
+    const result = trace(this.machine, []);
+    this.lastTrace = result;
+    await this.animate(result);
+    if (result.end === this.picked) return void this.success('chain.predict-right');
+    this.drawTrail(result);
+    sfx.bell(4, 0.3);
+    if (this.targetBell) await this.ctx.tw.to(this.targetBell.scale, { x: 1.15, y: 1.15 }, { duration: 0.12, ease: ease.outBack }).then(() => this.ctx.tw.to(this.targetBell!.scale, { x: 1, y: 1 }, { duration: 0.15 }));
+    await this.ctx.say('chain.predict-other');
+    await this.ctx.tw.wait(0.8);
+    await this.ctx.tw.to(this.diagram, { alpha: 0 }, { duration: 0.3 });
+    await this.next();
   }
 
   /** Tapping the start cup shows the last run again; it changes nothing and counts nothing. */
@@ -376,7 +513,7 @@ class ChainReaction implements Game {
     this.trail.lineTo(this.colX(result.end), bottom - 25).stroke({ width: 9, color: swatch.red.fill, alpha: 0.35, cap: 'round', join: 'round' });
   }
 
-  private async success() {
+  private async success(line: LineId = 'chain.rang') {
     sfx.tada();
     if (this.targetBell) {
       await this.ctx.tw.to(this.targetBell.scale, { x: 1.18, y: 1.18 }, { duration: 0.12, ease: ease.outBack });
@@ -385,7 +522,7 @@ class ChainReaction implements Game {
     const at = { x: this.marble.x, y: this.marble.y };
     this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff], count: 20, speed: [120, 300], gravity: 140, life: [0.5, 0.9] });
     this.ctx.pet.cheer();
-    await this.ctx.say('chain.rang');
+    await this.ctx.say(line);
     await this.ctx.tw.to(this.diagram, { alpha: 0 }, { duration: 0.3 });
     await this.next();
   }
@@ -435,6 +572,7 @@ export const chainReaction: GameModule = {
   skills: ['prediction', 'cause-and-effect', 'planning', 'revision'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [TAP_TO_TURN, WHICH_BELL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   touchDemo: true,

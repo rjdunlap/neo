@@ -1,6 +1,6 @@
 # Ecosystems: neighbors, food webs and changing places
 
-**Subject:** `ecosystems` · **Audiences:** L, T, P, K, S, U, M, G · **Date:** 2026-10-16 · **Session:** `codex/ecosystems-subject-research` · **Base:** `1dea66f`.
+**Subject:** `ecosystems` · **Audiences:** L, T, P, K, S, U, M, G · **Date:** 2026-10-16 · **Session:** `codex/ecosystems-subject-research` · **Base:** `1dea66f` · [PR #430](https://github.com/rjdunlap/neo/pull/430).
 
 Research and proposals only, from [roadmap chunk 28](../../ROADMAP.md#chunks) and the [subject procedure](../subjects.md#the-procedure-one-session-one-subject). Data/AI literacy was already claimed by another worktree, so this session takes the first unclaimed science row in wave D. Remote publication was initially blocked by automatic approval review; the developer explicitly authorized publishing the research branch and draft PR. No reference game was installed or played. No game, band, zone, save field or parent card was built.
 

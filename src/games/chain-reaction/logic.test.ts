@@ -1,8 +1,65 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { chainTouch, hintFor, makeBoard, PLANS, planFor, solutions, trace } from './logic';
+import { chainTouch, hintFor, makeBoard, makeBoards, PLANS, planFor, predictedBell, PREDICT_PLAN, solutions, trace, turnHint, turnSolutions, TURN_PLAN, TAP_TO_TURN, WHICH_BELL } from './logic';
 
 describe('Chain Reaction', () => {
+  it('level 7 starts unsolved and has an exact working flip set for every seeded machine', () => {
+    expect(planFor(TAP_TO_TURN)).toBe(TURN_PLAN);
+    for (let seed = 0; seed < 200; seed++) {
+      const boards = makeBoards(TURN_PLAN, new Rng(seed));
+      expect(makeBoards(TURN_PLAN, new Rng(seed))).toEqual(boards);
+      for (const board of boards) {
+        expect(board.rows).toBe(3);
+        expect(board.fixed).toHaveLength(1);
+        expect(board.turn).toHaveLength(2);
+        expect(board.loose).toEqual([]);
+        expect(board.sockets).toEqual([]);
+        expect(new Set([...board.fixed, ...board.turn!].map((p) => p.row)).size).toBe(3);
+        expect(trace(board, [], [false, false]).success).toBe(false);
+        const ways = turnSolutions(board);
+        expect(ways.length).toBeGreaterThan(0);
+        for (const way of ways) expect(trace(board, [], way)).toMatchObject({ success: true, escaped: false, end: board.target });
+        // Independently follow all four visible groove combinations, including off-path ramps.
+        for (const state of [[false, false], [false, true], [true, false], [true, true]]) {
+          let col = board.start;
+          for (let row = 0; row < board.rows && col >= 0 && col < board.cols; row++) {
+            const fixed = board.fixed.find((p) => p.row === row && p.col === col);
+            const i = board.turn!.findIndex((p) => p.row === row && p.col === col);
+            if (fixed) col += fixed.ramp === 'left' ? -1 : 1;
+            else if (i >= 0) col += (board.turn![i].ramp === 'left' ? -1 : 1) * (state[i] ? -1 : 1);
+          }
+          expect(trace(board, [], state).success).toBe(col >= 0 && col < board.cols && col === board.target);
+        }
+      }
+    }
+  });
+
+  it('a turn hint and touch bot improve every unsolved state and finish with taps', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const board = makeBoard(TURN_PLAN, new Rng(seed));
+      const before = structuredClone(board);
+      for (const state of [[false, false], [false, true], [true, false], [true, true]]) {
+        const distance = () => Math.min(...turnSolutions(board).map((way) => way.filter((value, i) => value !== state[i]).length));
+        for (let step = 0; step < 3; step++) {
+          const oldDistance = distance();
+          const hint = turnHint(board, state);
+          const action = chainTouch(board, [], state);
+          if (oldDistance === 0) {
+            expect(hint).toBeNull();
+            expect(action).toEqual({ kind: 'run' });
+            break;
+          }
+          expect(action).toEqual({ kind: 'flip', piece: hint });
+          expect(hint).not.toBeNull();
+          state[hint!] = !state[hint!];
+          expect(distance()).toBe(oldDistance - 1);
+        }
+        expect(trace(board, [], state).success).toBe(true);
+      }
+      expect(board).toEqual(before);
+    }
+  });
+
   it('demonstrates every generated machine by completing one accepted design before running it', () => {
     PLANS.forEach((plan, level) => {
       for (let seed = 1; seed <= 50; seed++) {
@@ -93,5 +150,54 @@ describe('Chain Reaction', () => {
     expect(planFor(99)).toBe(PLANS.at(-1));
     const top = makeBoard(PLANS.at(-1)!, new Rng(88));
     expect(solutions(top).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('level 8 shows a finished machine whose marble rings one of three reachable bells', () => {
+    expect(planFor(WHICH_BELL)).toBe(PREDICT_PLAN);
+    for (let seed = 1; seed <= 200; seed++) {
+      const boards = makeBoards(PREDICT_PLAN, new Rng(seed * 31 + 8));
+      expect(boards).toHaveLength(PREDICT_PLAN.machines);
+      for (const board of boards) {
+        const run = trace(board, []);
+        const bells = board.bells!;
+        expect(board.loose).toHaveLength(0);
+        expect(board.fixed.length).toBeGreaterThanOrEqual(PREDICT_PLAN.fixed);
+        expect(board.fixed.length).toBeLessThanOrEqual(PREDICT_PLAN.fixed + 1);
+        expect(new Set(bells).size).toBe(PREDICT_PLAN.predict!.bells);
+        expect(bells.every((col) => col >= 0 && col < board.cols)).toBe(true);
+        // The marble stays on the machine, rings one of the shown bells, and needed its ramps to get there.
+        expect(run).toMatchObject({ escaped: false, success: true, end: board.target });
+        expect(bells).toContain(run.end);
+        expect(run.steps.filter((s) => s.ramp)).toHaveLength(PREDICT_PLAN.fixed);
+        expect(predictedBell(board)).toBe(board.target);
+      }
+    }
+  });
+
+  it('level 8 answers vary, so a prediction needs the ramps read rather than a corner guessed', () => {
+    const ends = new Set<number>(), places = new Set<number>(), shifts = new Set<number>();
+    let agree = 0, disagree = 0, offPath = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const board = makeBoard(PREDICT_PLAN, new Rng(seed * 7 + 3));
+      const hit = trace(board, []).steps.filter((s) => s.ramp).map((s) => s.ramp);
+      if (hit[0] === hit[1]) agree++; else disagree++;
+      if (board.fixed.length > hit.length) offPath++;
+      ends.add(board.target);
+      shifts.add(board.target - board.start);
+      places.add(board.bells!.indexOf(board.target));
+    }
+    expect(agree).toBeGreaterThan(20);
+    expect(disagree).toBeGreaterThan(20);
+    expect(offPath).toBeGreaterThan(20);
+    expect(shifts.has(0)).toBe(true);
+    expect(shifts.size).toBeGreaterThanOrEqual(3);
+    expect(ends.size).toBe(4);
+    expect(places.size).toBe(3);
+  });
+
+  it('level 8 has nothing to place, so a hint or bot never moves a part', () => {
+    const board = makeBoard(PREDICT_PLAN, new Rng(4));
+    expect(hintFor(board, [])).toBeNull();
+    expect(chainTouch(board, [])).toEqual({ kind: 'run' });
   });
 });

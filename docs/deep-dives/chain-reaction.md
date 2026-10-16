@@ -6,7 +6,7 @@
 
 She drags purple (point left) and teal (point right) ramps from a tray into round sockets on a small wooden machine, taps the green arrow, and a red marble falls row by row. Each ramp it meets sends it one column sideways. A run that ends on the big bell wins; at the higher levels the marble must also touch a little chime on the way. Every round is two machines. Sources read: [`index.ts`](../../src/games/chain-reaction/index.ts), [`logic.ts`](../../src/games/chain-reaction/logic.ts), [`logic.test.ts`](../../src/games/chain-reaction/logic.test.ts), [GAMES.md](../GAMES.md#chain-reaction), the how-to card (`src/content/howto.ts`), voice lines `chain.*`, and the IDEAS rows. It has no couch entry and no journal entry. It lives in the Tinker Lab subject and in the Maker lands list (`LANDS`).
 
-Band windows (`levels`): pre-K 1–3, school 3–6. Lap, toddler and preschool are not served.
+Current band windows (`levels`): pre-K order 7, 8, 1, 2, 3; school 3–6. The source audit below describes levels 1–6 before the appended entries. Lap, toddler and preschool are not served.
 
 | Level | Plan (`PLANS`) | Bands | Board · parts | What she decides |
 | --- | --- | --- | --- | --- |
@@ -120,8 +120,8 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 ## Build slices, in order
 
 1. **Trail and watch-again** (built 2026-10-15; see below). `run()` draws a faded path from `trace().steps`; tapping the start cup replays. Tier: typecheck, the game's rule tests (none change), one filtered browser play at level 3 and `fingerdemo` for the bot.
-2. **Level 8, Which bell?** Plan field `predict`, bell row, voice lines, a how-to line. Tier: typecheck, rule tests (reachable bells, no recorded miss), one filtered play, `fingerdemo` at level 8, and a portrait screenshot.
-3. **Level 7, Tap to turn.** A `turn` mode in the board and `trace`; the ghost finger taps the flip. Tier: the same, plus `order`/`entryLevels` tests in the registry tests.
+2. **Level 8, Which bell?** (built 2026-10-16, branch `claude/chain-reaction-which-bell`, PR #441; preschool window left to decision 2) Plan field `predict`, bell row, voice lines, a how-to line. Tier: typecheck, rule tests (reachable bells, no recorded miss), one filtered play, `fingerdemo` at level 8, and a portrait screenshot.
+3. **Level 7, Tap to turn.** (built 2026-10-16, branch `codex/chain-reaction-tap-turn`, [PR #448](https://github.com/rjdunlap/neo/pull/448)). Two preplaced tappable ramps, a fixed wooden ramp, solver-backed flips/hints and ghost-finger taps. Pre-K order `[7, 8, 1, 2, 3]`, entry IDs `[7, 8]`; school 3–6 and supported bands unchanged. Younger openings and other decisions remain open. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-7-tap-to-turn-2026-10-16).
 4. **Decision 1** if approved: `tries` stat feeding the difficulty step. Tier: shell and save contracts (typecheck, unit tests, build).
 5. **Cargo and goal skins, note per ramp.** Tier: typecheck and one screenshot.
 6. **Level 9, Two marbles.** Tier: rule tests and one play.
@@ -132,5 +132,7 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 ## What was built in this session
 
 The deep-dive session itself built nothing (research and ideation only; links and `git diff --check` ran).
+
+**Slice 2, level 8 Which bell? (built 2026-10-16, branch `claude/chain-reaction-which-bell`, PR #441).** A finished fixed machine (4 columns, 3 rows, 2 fixed ramps on the marble's path, sometimes a third it never reaches; it never escapes, and two ramps that disagree bring it back under the cup, so the answer is not always a corner) with three bells (104 by 140 tap areas). She taps a bell (blue backdrop), then runs; a different bell is told and shown with the trail, never a miss, and running first only asks for a bell. The bulb glows the start cup (not a hint). Three machines per round. Pre-K is now `{ min 1, max 8, order [8, 1, 2, 3] }` with `entryLevels [8]`; school stays 3–6; the preschool window waits on decision 2. Ghost finger taps the correct bell, then run. Voice: `chain.predict-start/-first/-hint/-right/-other`. Checks: see [VERIFICATION](../VERIFICATION.md).
 
 **Slice 1, trail and watch-again (built 2026-10-15, branch `claude/chain-reaction-trail`).** After a run that misses, a faint red path (alpha 0.35) of the marble's last run stays on the board until the next run or the next machine. Tapping the blue start cup (a 120 by 104 hit area) replays the last run and changes no misses or hints. Rules and levels are unchanged and the how-to step is updated. Checks: typecheck, the Chain Reaction unit tests (7), `BROWSER_SUITE=machines` (level 6 now asserts the trail and the replay) and `fingerdemo` with `FINGER_ONLY=chain-reaction` (both levels passed). Not run: build, offline, a device or a child.

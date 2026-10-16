@@ -335,3 +335,92 @@
 
 - Docs only, `claude/bubble-pop-mode-gallery-definition`, [PR #407](https://github.com/rjdunlap/neo/pull/407): [definitions/mode-gallery.md](../definitions/mode-gallery.md) (Bubble Pop intro mode gallery, N4); roadmap chunk 20 now ready.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
+
+## 2026-10-15 — Bumper Garden Count on and Count back
+
+- [PR #408](https://github.com/rjdunlap/neo/pull/408), `codex/bumper-count-on-back`: tested base `1f49fb7`, claim `5049718` plus scoped working diff. IDs 6/9 add seeded count-on/back sequences and highlighted/spoken targets; pre-K order `[3,4,6,5,9]`, old IDs/pins and other bands preserved. IDs 7/8 unbuilt; couch trips/physics/scoring unchanged.
+- Passed typecheck; `npx vitest run src/games/bumper-garden/logic.test.ts src/content/howto.test.ts src/games/registry.test.ts` (41 tests); build (existing chunk warning).
+- Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=6,9 npm run test:browser`: 5/6 launches, each round 3 misses/1 hint, strip targets, out-of-order chime without accounting, saved round/sticker and no page errors.
+- Passed same URL with `BROWSER_SUITE=fingerdemo FINGER_ONLY=bumper-garden FINGER_LEVELS=6,9`: clean 12.8/21.2 s, no page errors. Reviewed landscape `test-results/browser/bumper-garden-6.png` (6,7,8) and portrait `bumper-garden-9.png` (5,4,3,2,1): clear strip/layout. Owned server stopped; links/diff checked.
+- Not run: wider browser/offline/iPad/controller/child checks. Device touch/speech and child counting understanding remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-15 — Dot Link marks in the dots
+
+- [PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, commit `ac46108` on base `c6b3368`: [dive](../deep-dives/dot-link.md#build-slices-in-order) slice 1. Each dot color carries an always-on mark (heart, drop, star, leaf, moon; `DOT_MARKS`). Art only: no rule, level, save or setting change.
+- Passed typecheck; `npx vitest run src/games/dot-link` (6 tests, new: every color has its own distinct mark).
+- Passed `GAME_URL=http://localhost:5891 BROWSER_SUITE=batch BATCH_ONLY=dots` (levels 1–6) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=6` (clean, 12.1 s). Reviewed `test-results/browser/dot-link-6.png`: marks legible; purple/moon was not on that seeded board.
+- Not run: build (no shared files changed). Open: marks at 34-unit dots on a real iPad ([device check](../DEVICE-CHECKS.md#needs-a-person-or-a-device)).
+
+## 2026-10-15 — Bumper Garden Pond and Hive tables
+
+- [PR #410](https://github.com/rjdunlap/neo/pull/410), `codex/bumper-pond-hive`: tested base `756fa27` plus claim `e4bf576` and scoped diff. Seeded Meadow/Pond/Hive layouts/skins/notes; existing plans/bands/physics/accounting preserved.
+- Passed typecheck, 16 focused rules (reachability, no trapped launches at 60/120 Hz, fair colors/numbers/spacing, seeded reproduction, ghost-finger planning) and 18 how-to tests. Build passed with existing chunk warning. New how-to note's LevelLine shape corrected after initial type/test failure.
+- Passed `GAME_URL=http://localhost:5188 BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=5 BUMPER_TABLES=pond,hive npm run test:browser`: Pond 6 launches/3 misses/1 hint; Hive 3/2/1; flips, supported completion, saved result/sticker and no page errors. Isolated contexts injected known round RNG seeds.
+- Reviewed portrait `test-results/browser/bumper-garden-pond-5.png` and `bumper-garden-hive-5.png`: clear columns/ring, numbers, controls and pet clearance. Owned Vite stopped; links/diff checked. After play only help text, docs and exact-step rule coverage changed.
+- CI on merge `8d34240` passed 1,351 other tests but two expanded physics loops exceeded 5 s. Follow-up partitions both by table with a 15 s exhaustive-case budget; all 20 resulting rules passed locally (same assertions/samples). No product changes; prior play/build proof retained.
+- Not run: wider browser suites, standalone fingerdemo, offline, real controller/iPad/audio/child judgment. Shared physics/navigation/persistence unchanged; device comfort and sound quality remain open.
+
+## 2026-10-15 — Bug Builder paired wing finish
+
+- [PR #416](https://github.com/rjdunlap/neo/pull/416), `codex/bug-wing-flutter`, tested base `7d765c2` plus scoped art/index/browser diff: dive slice 2, mirror 5–7 only. Wings and stamps fold across their common hinge and reopen in the existing finish wait; faint model wing remains visible. Rules/accounting unchanged.
+- Passed typecheck, 18 how-to tests and build (existing chunk warning); help text updated after play, runtime unchanged.
+- Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=expansion EXPANSION_ONLY=bug BUG_LEVELS=7 npm run test:browser`: outside-drop exploration, two misses/one hint, matching stamps, synchronized fold through -1 and reopening to 1, faint reference, saved result/sticker and no page errors. Initial sandbox Chromium launch failed on macOS Mach access; isolated escalated run passed.
+- Reviewed `test-results/browser/bug-builder-portrait.png` and `bug-builder-fold.png`: targets/tray/pet clear, stationary body and faint model during the fold. Owned Vite stopped after checks; links/diff checked.
+- Not run: rule tests (no logic change), other levels, standalone fingerdemo (input/bot unchanged), broader suites/offline, iPad/speech or child interpretation; existing device checks remain open.
+
+## 2026-10-16 — Planet Hop definition
+
+- `claude/planet-hop-definition` (PR #414): docs only. Added `docs/definitions/planet-hop.md` (Bouncy Launch level 12) and routed it through the roadmap (chunk 27, ready list), PHYSICS-GAMES, the Bouncy Launch dive and IDEAS.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, browser or device checks; the build is not started.
+
+## 2026-10-16 — Bubble Pop mode gallery
+
+- [PR #412](https://github.com/rjdunlap/neo/pull/412), `claude/bubble-pop-mode-gallery`, code `5967799` on base `32ca812`: optional `GameModule.levelCard`, `HowToCard.mode`, a named and pictured level tile and an intro ladder in `HowToPanel`; Bubble Pop's 15 mode cards and voice lines.
+- Passed typecheck, build, `BROWSER_SUITE=howtolevel` and `BROWSER_SUITE=howto HOWTO_ONLY=bubble-pop` (rerun after the final layout change; "nothing is saved by looking" asserted). `npm test` 1356/1360: four timeouts (ferry-jam, peg-garden, penguin-slide) under machine load; all 39 tests in those files pass alone (code untouched). New `mode-cards.test.ts` passes.
+- Probe screenshots of lap and pre-K intros at 1024×768 and 768×1024, and pre-K on an 844×390 phone: no page errors, Play on screen. Both bands show the ladder in both iPad orientations (pre-K's seven tiles under the demo window in landscape); the phone drops it for height. A game without `levelCard` takes the old layout path unchanged, so the full `howto` suite was not rerun.
+- Not run: `world`, offline (navigation and persistence unchanged), device speech, iPad. Open: speech of the 15 lines, whether a grown-up finds the ladder clearer than numbers ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-15 — Treasure Map couch play
+
+- [PR #417](https://github.com/rjdunlap/neo/pull/417), `claude/treasure-map-couch` (bd059ce): Treasure Map joins couch play (ring and dig through `control()`, `autoplay()`, twin face-off on wrong digs, last unlock tier); touch play unchanged.
+- Ran `npm run typecheck` and `npx vitest run src/couch src/games/treasure-map src/content` (154 passed). Full `npm test` 1358/1360: Ferry Jam's frozen-harbor test and Peg Garden's ghost-finger aim test timed out under full-run load and passed alone (13/13); untouched code, recorded as a load flake.
+- Passed `GAME_URL=http://localhost:5293 BROWSER_SUITE=couchgames COUCH_ONLY=treasure-map`: intro, controller diagram lights with the bot, bot finishes a round through `control()`, one stop saved, sticker, child save untouched, no page errors. The intro screenshot shows the ring walking A1 to C3.
+- Not run: an in-game couch screenshot (a probe stalled at profile setup), whether the controller reminder covers the grid's bottom row, full `couch`/`couchcourse` (trip and course code unchanged), build, offline, a real controller or TV.
+
+## 2026-10-15 — Photo Safari deep dive
+
+- Docs only, `claude/photo-safari-deep-dive`, [PR #420](https://github.com/rjdunlap/neo/pull/420): [deep-dives/photo-safari.md](../deep-dives/photo-safari.md) (build slices 1–8, three decisions); tracker row designed, roadmap short-ladders row and ready-list line 16, IDEAS pointers, [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) row.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, `fingerdemo`, device (no code changed).
+- Open: the three decisions in the dive; the toddler entry also needs a person check.
+
+## 2026-10-15 — Penguin Slide Frozen Ponds couch course
+
+- `claude/penguin-frozen-course` (PR #419, commit 715c7a2): `parseBoard` reads a `B` ice-block legend; third course `frozen` (five block ponds, minimum 31) in `COURSE_IDS`; block-aware course tests.
+- Ran `npm run typecheck` (clean); `npx vitest run src/games/penguin-slide src/couch` (92 passed); full `npm test` 1359 passed with 4 known 5 s timeouts under parallel load (ferry-jam frozen harbors, peg-garden launcher aim, two penguin-slide logic tests), all passing in isolation (41/41); `npm run build` passed.
+- Passed `GAME_URL=http://localhost:5743 BROWSER_SUITE=couchcourse` on 715c7a2, including The Frozen Ponds by controller with the solver (perfect 31, one sticker, both badges; screenshot `couch-course-frozen`). One earlier run failed only on a wrong new assertion, since fixed.
+- Not run: `couch`, `couchgames`, offline, `world`; no controller or device check.
+
+## 2026-10-15 — Critter Crossing visible not entry
+
+- [PR #422](https://github.com/rjdunlap/neo/pull/422), `codex/critter-not-entry`; tested base `ca08480` plus scoped game/howto/browser diff (upstream integration changed dispatch docs only). Appended ID 8, pre-K `[1, 8, 2, 3]`, `entryLevels`; school and old IDs/pins unchanged.
+- Passed typecheck; 54 focused tests (`critter-crossing/logic`, registry, howto); build (existing chunk-size warning). Rule/bot tests cover 300 visible-not seeds, both outcomes, passing-only bot and existing plans; registry asserts order/landing.
+- Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=critternot`: two misses, one valid glow, both rounds, saved level-8 result/one sticker, no page errors. Landscape and portrait reviewed (`test-results/browser/critter-not-entry-{landscape,portrait}.png`). Initial harness tapped above the critter; corrected to its transformed body center (no game change).
+- Passed same URL `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-crossing FINGER_LEVELS=8`: 19.7 s, zero misses/hints. Links and `git diff --check` passed.
+- Not run: full units, other browser suites, offline/world (no persistence/navigation changes), real device/child checks; speech and slash interpretation remain in [DEVICE-CHECKS.md](../DEVICE-CHECKS.md).
+
+## 2026-10-15 — Critter Sort neither mat
+
+- [PR #423](https://github.com/rjdunlap/neo/pull/423), `codex/critter-sort-neither-mat`: tested base `3e44d62` plus working diff; explicit leaf mat at levels 2, 3 and 5, free bare grass, spoken reasons and mat-aware hints/completion/bot. Upstream integration at `f40a99f` added Woodland Picnic documentation only; gameplay evidence remains valid.
+- Installed this worktree's dependencies with `npm ci`; typecheck, nine Critter Sort rule tests (100 seeds per mat mode/view), final combined logic/how-to checks (27 tests) and build passed (existing chunk-size warning).
+- Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=3 TO_LEVEL=3`: two rounds, two misses/one hint, free grass, required mat sorting and saved reward; portrait screenshot reviewed. Initial portrait failure was logical coordinates supplied as CSS pixels, diagnosed with `test-results/probe-neither.mjs` and fixed with `stage.toGlobal`.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=3` clean in 24.1 s. Restoring the old completion condition made the regression fail at its required-mat assertion; verified code restored byte-for-byte.
+- Sandbox Chromium bootstrap was blocked; escalated isolated run passed. Not run: full suites, offline or iPad checks (one-game tier); device speech and child understanding of the mat remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-15 — Critter Sort level 7 newcomer
+
+- [PR #426](https://github.com/rjdunlap/neo/pull/426), `codex/critter-sort-seven`, dispatch `critter-sort-seven-20261016T060833Z`: tested claim `f65dbf3` plus game/content/browser diff. School ID 7 places one newcomer in three sorted diagrams; school order `[2, 3, 4, 5, 7]`, pre-K and IDs/pins unchanged.
+- Passed typecheck, 45 focused Critter Sort/registry/how-to tests and build (existing chunk warning). The 300-seed newcomer test checks a unique movable critter, visible examples in all four regions, deterministic rules, all four answers across seeds, hint/bot selection and portrait/landscape destination geometry.
+- Passed `GAME_URL=http://localhost:5188 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=7 TO_LEVEL=7`: three diagrams, five sorted references/one drag each, free grass, two misses/one hint, saved result and one sticker, no page errors. Landscape and portrait hint screenshots reviewed.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=7` clean in 9.0 s. Initial sandbox Chromium bootstrap blocked; escalated isolated play passed. Links and diff checked; owned Vite stopped after checks.
+- Not run: full unit/browser suites, world/offline/couch, other game levels, real iPad/device speech or child play (new-levels tier). [Device checks](../DEVICE-CHECKS.md#needs-a-person-or-a-device) remain open. No save or shared engine change.

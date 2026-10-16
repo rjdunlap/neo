@@ -18,7 +18,7 @@ describe('Duckling Parade support', () => {
   });
 
   it('offers taps throughout the ladder and describes the spare as exclusion', () => {
-    for (let level = 1; level <= 10; level++) {
+    for (let level = 1; level <= 11; level++) {
       const steps = howToFor(game, level)!.steps.join(' ');
       expect(steps).toContain('Tap the grass');
       if (level >= 2) expect(steps).toContain('lead with a finger');
@@ -28,6 +28,8 @@ describe('Duckling Parade support', () => {
     expect(SCRIPT['parade.walk'][0]).toContain('Tap the grass or lead with a finger');
     expect(SCRIPT['parade.spare'][0]).toContain('Leave the spare duckling in the meadow');
     expect(howToFor(game, 10)!.steps.join(' ')).toContain('in order');
+    expect(howToFor(game, 11)!.steps.join(' ')).toContain('one color followed by two matching colors');
+    expect(game.levels('school')).toEqual({ min: 9, max: 11 });
   });
 
   it('names the combined total after a partial delivery, rather than the arriving batch', () => {

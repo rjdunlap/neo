@@ -1,3 +1,4 @@
+import type { PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -125,4 +126,50 @@ export function coinToName(level: number, value: number, named: ReadonlySet<numb
   if (level < 2 || level > 3 || named.has(value)) return null;
   const before = planFor(level - 1).coins;
   return !before.includes(value) && planFor(level).coins.includes(value) ? (COIN_WORDS[value] ?? null) : null;
+}
+
+/** Levels whose coins carry pips (fresh 2): the ones where she is still learning what each coin is worth. */
+export const PIP_LEVELS = 3;
+
+/** On a coin with pips the numeral shrinks and lifts (in coin radii) so the pips have room below it. */
+export const PIP_NUMERAL = { scale: 0.8, y: -0.2 };
+
+/**
+ * Pips for a coin of radius `r`: one dot per shell of value, five to a row, below the numeral, so a coin's pips match the
+ * price tag's dots. A single row sits between the coin's lower rim dots.
+ */
+export function pips(value: number, r: number): { x: number; y: number; r: number }[] {
+  const out: { x: number; y: number; r: number }[] = [];
+  const step = r * 0.25;
+  const rows = Math.ceil(value / 5);
+  for (let i = 0; i < value; i++) {
+    const row = Math.floor(i / 5);
+    const inRow = Math.min(5, value - row * 5);
+    out.push({ x: ((i % 5) - (inRow - 1) / 2) * step, y: r * (rows > 1 ? 0.3 : 0.36) + row * r * 0.26, r: r * 0.11 });
+  }
+  return out;
+}
+
+/**
+ * The strategy the pet says before the faint coins (fresh 7), or null where the hint stays the coins alone. On a 'ways'
+ * level's second payment the biggest-first payment may be the first way again, so the line is to swap a coin for smaller ones.
+ */
+export function teachLine(plan: ShopPlan, firstWay: number[] | null): 'biggest' | 'swap' | null {
+  if (plan.mode !== 'mix' && plan.mode !== 'ways' && plan.mode !== 'fewest') return null;
+  return firstWay ? 'swap' : 'biggest';
+}
+
+/** Choose the stall once for the round, after making its prices. Sticker draws use their own table. */
+export const STALL_IDS = ['fruit', 'flower', 'balloon'] as const;
+export type StallId = typeof STALL_IDS[number];
+export const stallFor = (rng: Rng): StallId => rng.pick(STALL_IDS);
+
+/** The balloon's string stays above the payment mat; all price tags keep their original position. */
+export function goodPlacement(kind: PropKind, count: number, index: number) {
+  return { x: index * 150 - (count - 1) * 75, y: kind === 'balloon' ? -30 : -10, scale: kind === 'balloon' ? 1 : 1.2 };
+}
+
+/** Shared round stock anchor for every stall; the existing payment area keeps its geometry. */
+export function stallLayout(view: { w: number; h: number }) {
+  return { cx: view.w / 2, cy: Math.min(view.h * 0.5, 420), stockX: view.w / 2 - 150 };
 }

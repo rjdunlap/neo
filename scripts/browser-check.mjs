@@ -1328,6 +1328,11 @@ async function singBarnPlay() {
   assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 13 + 6]);
   await tapNotes(18); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  // Bounce High, Bounce Low, level 1: a ten-note opening to Shiloh, then "bounce the ball to the <friend>", who answers on its name.
+  await launchTune(1, 'bounce');
+  assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 10 + 10]);
+  await tapNotes(19); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
   await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');
@@ -2339,8 +2344,16 @@ async function traceRound(level, name, wrong = false) {
         await kit.drag(kit.line([p.x, p.y], [neo.view.w * neo.view.scale - 10, 15], 30)); await kit.sleep(250);
       }
     });
-    assert.ok(await page.evaluate(() => neo.scene.game.hints >= 1), 'tracing hint');
+    // The second wander is one hint: the firefly flies the next stretch by itself (leaving dots), then comes back to where she was.
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'one tracing hint per stroke');
+    await page.waitForTimeout(500);
     await screenshot('letter-trails');
+    assert.ok(await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (!await kit.until(() => !g.busy, 6000)) return false;
+      const p = g.points[g.progress];
+      return Math.hypot(g.firefly.x - p[0] * g.size, g.firefly.y - p[1] * g.size) < 1;
+    }), 'the firefly shows the way and comes back to her checkpoint');
   }
   await page.evaluate(async () => {
     const g = neo.scene.game;
@@ -3319,8 +3332,8 @@ async function arcade() {
     };
   });
   const only = process.env.ARCADE_ONLY;
-  const paradeLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 10 }, (_, i) => i + 1);
-  for (const level of paradeLevels.filter((n) => n >= 1 && n <= 10)) {
+  const paradeLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 11 }, (_, i) => i + 1);
+  for (const level of paradeLevels.filter((n) => n >= 1 && n <= 11)) {
     if (only && only !== 'parade') continue;
     await launch('duckling-parade', level);
     await page.waitForTimeout(500);
@@ -5847,7 +5860,19 @@ async function woodsBatch() {
     // The animals must stand in the meadow, where a finger can reach them (at level 1 they once sat unplaced in the top-left corner).
     assert.ok(await page.evaluate(() => neo.scene.game.friends.every((f) => { const p = f.node.getGlobalPosition(); return p.x > 100 && p.x < innerWidth - 100 && p.y > innerHeight * 0.4; })), `animal snack level ${level}: the animals are on screen`);
     if (mode === 'munch') for (let k = 0; k < 6; k++) await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k % 3].name, k));
-    else if (mode === 'float') for (let k = 0; k < 6; k++) await tapSnack();
+    else if (mode === 'float') {
+      // A second snack touched while the first is being eaten wiggles, and is not queued or fed.
+      await page.evaluate(() => kit.tapOn(neo.scene.game.snacks.find((s) => !s.eaten).node));
+      await page.waitForTimeout(120);
+      assert.ok(await page.evaluate(() => neo.scene.game.busy), 'the first snack is being eaten');
+      await page.evaluate(() => { const g = neo.scene.game; g.wiggled = g.snacks.find((s) => !s.eaten); kit.tapOn(g.wiggled.node); });
+      await page.waitForTimeout(40);
+      assert.notEqual(await page.evaluate(() => neo.scene.game.wiggled.node.children[0].rotation), 0, 'a busy touch wiggles the snack');
+      await settle();
+      assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.eatenCount, g.snacks.filter((s) => s.eaten).length, g.wiggled.eaten, g.wiggled.node.scale.x]; }), [1, 1, false, 1.2], 'a busy touch feeds nothing');
+      assert.deepEqual(await counts(), [0, 0]);
+      for (let k = 1; k < 6; k++) await tapSnack();
+    }
     else if (mode === 'match') {
       const pairs = await page.evaluate(async () => { const L = await import('/src/games/animal-snack/logic.ts'); return neo.scene.game.snacks.map((s) => [s.food, L.eaterOf(s.food)]); });
       const others = await page.evaluate(() => neo.scene.game.friends.map((f) => f.name));
@@ -5862,7 +5887,14 @@ async function woodsBatch() {
         await idle(n);
         if (mode === 'who') {
           if (n === 0) { const wrong = r.animals.find((a) => a !== r.ask); await tapAnimal(wrong); await tapAnimal(wrong); assert.deepEqual(await counts(), [2, 1]); }
-          await tapAnimal(r.ask);
+          if (n === 1) {
+            // A wrong animal touched while the right one eats is poked, not counted as a miss.
+            await page.evaluate((name) => kit.tapOn(neo.scene.game.friends.find((f) => f.name === name).node, 0, -120), r.ask);
+            await page.waitForTimeout(150);
+            await page.evaluate((name) => kit.tapOn(neo.scene.game.friends.find((f) => f.name === name).node, 0, -120), r.animals.find((a) => a !== r.ask));
+            await settle();
+            assert.deepEqual(await counts(), [2, 1], 'a busy touch is not a miss');
+          } else await tapAnimal(r.ask);
         } else {
           const ring = async () => { await tap('neo.scene.game.bell'); await settle(); };
           if (n === 0) {
@@ -6161,6 +6193,75 @@ async function woodsBatch() {
             assert.equal(await page.evaluate(() => neo.scene.game.finished), false);
           }
         }
+        continue;
+      }
+      if (level === 11) {
+        const countTap = async i => {
+          await page.evaluate(i => { const p = neo.scene.game.sorters[i].node.toGlobal({ x: 0, y: -120 }); kit.tap(p.x, p.y); }, i);
+          await settle();
+        };
+        const data = await page.evaluate(async () => {
+          const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game;
+          const totals = L.countParts(g.round.critters, g.round.rules);
+          return { places: g.sorters.map(s => L.placeOf(s.c, g.round.rules)), totals, right: L.morePart(totals) };
+        });
+        assert.deepEqual(Object.values(data.totals).sort(), [1, 2, 3]);
+        // Sorting remains required; no sticker or comparison until the mat is sorted too.
+        for (const [i, place] of data.places.entries()) if (place !== 'out') await dropTo(i, place);
+        assert.equal(await page.evaluate(() => neo.scene.game.counting), false);
+        for (const [i, place] of data.places.entries()) if (place === 'out') await dropTo(i, place);
+        assert.equal(await page.evaluate(() => neo.scene.game.counting && !neo.scene.game.finished), true);
+        assert.equal(await page.evaluate(() => neo.scene.game.sorters.every(s => !s.drag)), true);
+        for (let i = 0; i < data.places.length; i++) {
+          await countTap(i);
+        }
+        assert.deepEqual(await page.evaluate(() => {
+          const g = neo.scene.game;
+          return Object.fromEntries(['left', 'right', 'out'].map(p => [p, [...g.counted.keys()].filter(s => s.placed === p).length]));
+        }), data.totals);
+        await countTap(0);
+        assert.equal(await page.evaluate(() => neo.scene.game.counted.size), 6);
+        assert.deepEqual(await counts(), n === 0 ? [0, 0] : [2, 1]);
+        if (n === 0) {
+          const wrong = Object.keys(data.totals).find(p => p !== data.right);
+          await tap(`neo.scene.game.comparisons.find(o => o.place === '${wrong}').node`); await settle();
+          await tap(`neo.scene.game.comparisons.find(o => o.place === '${wrong}').node`); await settle();
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.equal(await page.evaluate(() => neo.scene.game.comparisonHint), true);
+          await screenshot('critter-sort-11-counts');
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+          // Count targets survive resize; replay stays free.
+          await countTap(0);
+          assert.deepEqual(await counts(), [2, 1]);
+          await screenshot('critter-sort-11-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+        }
+        await tap(`neo.scene.game.comparisons.find(o => o.place === '${data.right}').node`); await settle();
+        continue;
+      }
+      if (level === 9) {
+        const data = await page.evaluate(async () => {
+          const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game;
+          const [a, b] = g.round.rules;
+          return { places: g.sorters.map(s => L.placeOf(s.c, g.round.rules, 'butnot')),
+            both: g.sorters.findIndex(s => L.fits(s.c, a) && L.fits(s.c, b)),
+            neither: g.sorters.findIndex(s => !L.fits(s.c, a) && !L.fits(s.c, b)), centers: g.centers().length };
+        });
+        assert.equal(data.centers, 1);
+        assert.ok(data.both >= 0 && data.neither >= 0 && data.places.includes('left'));
+        if (n === 0) {
+          await page.evaluate(async i => { const g = neo.scene.game; await kit.dragTo(g.sorters[i].node, g.ctx.stage.toGlobal({ x: neo.view.w / 2, y: neo.view.h - 5 }), 14); }, data.both);
+          await settle(); assert.deepEqual(await counts(), [0, 0]);
+          await dropTo(data.both, 'left'); await dropTo(data.neither, 'left');
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.equal(await page.evaluate(i => neo.scene.game.hinting === neo.scene.game.sorters[i], data.neither), true);
+          await screenshot('critter-sort-9-hint');
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+          await screenshot('critter-sort-9-portrait');
+        }
+        for (const [i, place] of data.places.entries()) if (place === 'left') await dropTo(i, place);
+        assert.equal(await page.evaluate(n => !neo.scene.game.busy && neo.scene.game.index === n && !neo.scene.game.finished, n), true);
+        for (const [i, place] of data.places.entries()) if (place === 'out') await dropTo(i, place);
         continue;
       }
       const places = await page.evaluate(async () => { const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game; return g.sorters.map((s) => (s.placed ? 'example' : L.placeOf(s.c, g.round.rules, g.plan.mode === 'not'))); });
@@ -10850,6 +10951,113 @@ async function clapPlay() {
   log('Clap the Syllables: levels 1–4 retain their clap-along, solo, three-bin sort and matching rounds; level 5 sorts eight long-word pictures into four large bins, including all four clap counts, with a wrong-bin hint and a portrait layout; one sticker per round');
 }
 
+/** Clap the Syllables level 6, Beat train: two wrong cars (a miss each, then the next picture glows), a free drop in empty space, three trains, portrait. */
+async function clapTrainPlay() {
+  await page.evaluate(() => { kit.store.data.stickers = []; });
+  const idleGame = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 40000 });
+  const state = () => page.evaluate(() => { const g = neo.scene.game; return { counts: g.cards.map((c) => c.word.parts.length), sorted: g.cards.map((c) => c.word.parts.length).sort((a, b) => a - b), full: g.cars.map((c) => !!c.word) }; });
+  const load = (cardIndex, car) => page.evaluate(async ({ cardIndex, car }) => {
+    const g = neo.scene.game; const p = g.cars[car].node.getGlobalPosition();
+    await kit.dragTo(g.cards[cardIndex].node, { x: p.x, y: p.y + 10 }, 12);
+  }, { cardIndex, car });
+  await launch('clap-syllables', 6); await idleGame();
+  await screenshot('clap-6');
+  assert.ok(await page.evaluate(() => neo.scene.game.cards.every((c) => c.node.hitArea.width >= 100)), 'each picture keeps a large drag target');
+  for (let t = 0; t < 3; t++) {
+    if (t > 0) await page.waitForFunction((t) => neo.scene.game.index === t && !neo.scene.game.busy, t, { timeout: 40000 });
+    let { counts, sorted } = await state();
+    assert.equal(new Set(counts).size >= 2, true, 'a train has an order to find');
+    if (t === 0) {
+      const wrongCar = sorted.findIndex((n) => n !== counts[0]);
+      await load(0, wrongCar); await page.waitForTimeout(700);
+      await load(0, wrongCar); await page.waitForTimeout(1400);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, !!neo.scene.game.glowing]), [2, 1, true], 'two wrong cars: two misses and the next picture glows');
+      await page.evaluate(async () => { await kit.dragTo(neo.scene.game.cards[0].node, { x: 60, y: 300 }, 8); });
+      await page.waitForTimeout(500);
+      assert.equal(await page.evaluate(() => neo.scene.game.misses), 2, 'dropping in empty space is not a miss');
+    }
+    for (let i = 0; i < 3; i++) {
+      const { full } = await state();
+      const car = sorted.findIndex((n, k) => n === counts[i] && !full[k]);
+      await load(i, car); await page.waitForTimeout(600);
+    }
+    assert.deepEqual((await state()).full, [true, true, true], 'every car loaded');
+  }
+  await finished('clap-syllables');
+  assert.deepEqual(await page.evaluate(() => [kit.store.stats('clap-syllables').history.at(-1).misses, kit.store.stats('clap-syllables').history.at(-1).hints, kit.store.data.stickers.length]), [2, 1, 1]);
+  await launch('clap-syllables', 6); await idleGame();
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  assert.ok(await page.evaluate(() => [...neo.scene.game.cards, ...neo.scene.game.cars].every((c) => { const b = c.node.getBounds(); return b.x > 0 && b.x + b.width < innerWidth && b.y > 0 && b.y + b.height < innerHeight; })), 'pictures and cars on screen in portrait');
+  await screenshot('clap-6-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.deepEqual(errors, []);
+  log('Clap the Syllables level 6: three beat trains loaded fewest claps to most, two wrong cars then a glowing next picture, a free drop in empty space, one sticker; portrait layout');
+}
+
+/** Short guided preschool entry: two words, no count or timing mistakes. */
+async function clapShortPlay() {
+  await page.evaluate(() => { kit.store.data.stickers = []; });
+  const idle = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 40000 });
+  await launch('clap-syllables', 9); await idle();
+  const counts = [];
+  for (let i = 0; i < 2; i++) {
+    await page.waitForFunction((i) => neo.scene.game.index === i && !neo.scene.game.busy, i, { timeout: 40000 });
+    const n = await page.evaluate(() => neo.scene.game.word.parts.length);
+    counts.push(n);
+    assert.equal(await page.evaluate(() => neo.scene.game.beads.length), n);
+    if (i === 0) {
+      await page.evaluate(() => { neo.scene.game.idle = 100; });
+      await page.waitForFunction(() => neo.scene.game.busy, null, { timeout: 5000 }); await idle();
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.claps]), [0, 0, 0]);
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+      assert.ok(await page.evaluate(() => { const g = neo.scene.game; const p = g.pad.getBounds(); const c = g.cards[0].node.getBounds(); return p.width >= 100 && p.height >= 100 && p.x >= 0 && p.x + p.width <= innerWidth && p.y >= 0 && p.y + p.height <= innerHeight && c.y + c.height < p.y; }), 'picture and large hands fit portrait without overlap');
+      await screenshot('clap-9-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+    }
+    for (let j = 0; j < n; j++) {
+      await tap('neo.scene.game.pad');
+      assert.equal(await page.evaluate(() => neo.scene.game.beads.filter((b) => b.lit).length), j + 1);
+    }
+  }
+  await finished('clap-syllables');
+  assert.deepEqual(counts.sort(), [1, 2]);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('clap-syllables').history.at(-1); return [r.level, r.misses, r.hints, kit.store.data.stickers.length]; }), [9, 0, 0, 1]);
+  assert.deepEqual(errors, []);
+  log('Clap level 9: two guided words, one and two beats, automatic support replay, lit bead per tap, no misses/hints, one sticker and portrait');
+}
+
+async function clapComparePlay() {
+  await page.evaluate(() => { kit.store.data.stickers = []; });
+  const idle = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 40000 });
+  await launch('clap-syllables', 8); await idle();
+  const directions = [];
+  for (let i = 0; i < 4; i++) {
+    await page.waitForFunction((i) => neo.scene.game.index === i && !neo.scene.game.busy, i, { timeout: 40000 });
+    directions.push(await page.evaluate(() => neo.scene.game.q.comparison));
+    assert.equal(await page.evaluate(() => { const ns = neo.scene.game.q.words.map((w) => w.parts.length); return ns.length === 2 && ns[0] !== ns[1]; }), true);
+    if (i === 0) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+      assert.ok(await page.evaluate(() => neo.scene.game.cards.every((c) => { const b = c.node.getBounds(); return b.width >= 100 && b.x > 0 && b.x + b.width < innerWidth && b.y > 0 && b.y + b.height < innerHeight; })), 'comparison targets fit portrait');
+      await screenshot('clap-8-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+      // Replay is free; a wrong choice is a miss; the second glows the correct picture.
+      await tap('neo.scene.game.replay'); await idle();
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+      for (let n = 0; n < 2; n++) {
+        await page.evaluate(async () => { const g = neo.scene.game; await kit.tapOn(g.cards.find((c) => c.word.parts.length !== g.q.target).node); });
+        await idle();
+      }
+      assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.misses, g.hints, g.glowing === g.cards.find((c) => c.word.parts.length === g.q.target).node]; }), [2, 1, true]);
+    }
+    await page.evaluate(async () => { const g = neo.scene.game; const intent = g.autotouch(); await kit.tapOn(intent.tap.on); });
+  }
+  await finished('clap-syllables');
+  assert.deepEqual(directions, [directions[0], directions[0] === 'more' ? 'fewer' : 'more', directions[0], directions[0] === 'more' ? 'fewer' : 'more']);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('clap-syllables').history.at(-1); return [r.level, r.misses, r.hints, kit.store.data.stickers.length]; }), [8, 2, 1, 1]);
+  assert.deepEqual(errors, []);
+  log('Clap level 8: alternating more/fewer, free replay, two misses then correct glow, finger choices, one sticker and portrait');
+}
+
 async function chainPlay() {
   const score = () => page.evaluate(() => { const r = kit.store.stats('chain-reaction').history.at(-1); return [r.misses, r.hints]; });
   const readyMachine = (index) => page.waitForFunction((index) => { const g = neo.scene.game; return g.index === index && !g.busy; }, index, { timeout: 30000 });
@@ -10870,7 +11078,100 @@ async function chainPlay() {
     for (let piece = 0; piece < layout.length; piece++) await put(piece, layout[piece]);
   };
 
-  for (const level of [1, 6]) {
+  // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7 and 8.
+  const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8').split(',').map(Number);
+  const tapBell = (col) => page.evaluate(async (col) => {
+    const g = neo.scene.game, b = g.bellNodes.find((n) => n.col === col).node.getGlobalPosition();
+    await kit.tap(b.x, b.y - 10); await kit.sleep(150);
+  }, col);
+  if (chainLevels.includes(7)) {
+    const stickers = await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length);
+    await launch('chain-reaction', 7);
+    for (let index = 0; index < 2; index++) {
+      await readyMachine(index);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.turnNodes.length, neo.scene.game.parts.length]), [2, 0]);
+      if (index === 0) {
+        await tap('neo.scene.game.runButton');
+        await readyMachine(index);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'a failed turn experiment is free');
+        assert.ok(await page.evaluate(() => neo.scene.game.trail.bounds.width > 0), 'failed run leaves its trail');
+        await tap('neo.scene.game.helpButton');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.turnGlow !== null]), [0, 1, true]);
+        await screenshot('chain-reaction-7');
+      }
+      for (let step = 0; step < 3; step++) {
+        const piece = await page.evaluate(async () => {
+          const g = neo.scene.game, { turnHint } = await import('/src/games/chain-reaction/logic.ts');
+          return turnHint(g.machine, g.flipped);
+        });
+        if (piece === null) break;
+        await tap(`neo.scene.game.turnNodes[${piece}]`);
+        await page.waitForTimeout(200);
+      }
+      assert.equal(await page.evaluate(async () => { const g = neo.scene.game, { trace } = await import('/src/games/chain-reaction/logic.ts'); return trace(g.machine, [], g.flipped).success; }), true);
+      await tap('neo.scene.game.runButton');
+    }
+    await finished('chain-reaction');
+    assert.deepEqual(await score(), [0, 1]);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), stickers + 1);
+    await launch('chain-reaction', 7); await readyMachine(0);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+    assert.ok(await page.evaluate(() => {
+      const g = neo.scene.game;
+      return [...g.turnNodes, g.runButton, g.helpButton].every((node) => {
+        const b = node.getBounds();
+        return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight;
+      }) && g.turnNodes.every((n) => n.hitArea.width >= 100 && n.hitArea.height >= 100);
+    }), 'portrait turn targets and controls fit and keep 100-unit areas');
+    await screenshot('chain-reaction-7-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Chain Reaction 7: free failed experiment, counted useful flip hint, real ramp taps, both machines, one sticker and portrait fit passed');
+  }
+
+  if (chainLevels.includes(8)) {
+    const stickers = await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length);
+    await launch('chain-reaction', 8);
+    const machines = await page.evaluate(() => neo.scene.game.boards.length);
+    assert.equal(machines, 3);
+    for (let index = 0; index < machines; index++) {
+      await readyMachine(index);
+      const { target, bells } = await page.evaluate(() => ({ target: neo.scene.game.machine.target, bells: neo.scene.game.machine.bells }));
+      assert.equal(bells.length, 3);
+      assert.ok(await page.evaluate(() => neo.scene.game.parts.length === 0), 'nothing to place at level 8');
+      if (index === 0) {
+        // Running before predicting just asks for a bell; the help glows the start and counts nothing.
+        await tap('neo.scene.game.runButton');
+        await tap('neo.scene.game.helpButton');
+        assert.ok(await page.evaluate(() => neo.scene.game.glow.bounds.width > 0), 'help glows the start cup');
+        assert.ok(await page.evaluate(() => neo.scene.game.bellNodes.every((b) => { const r = b.node.getBounds(); return r.width >= 84 && b.node.hitArea.width >= 100 && b.node.hitArea.height >= 100; })), 'bells are large targets');
+        await tapBell(bells.find((c) => c !== target));
+        assert.notEqual(await page.evaluate(() => neo.scene.game.picked), null, 'a tapped bell is chosen');
+        await screenshot('chain-reaction-8');
+        await tap('neo.scene.game.runButton');
+        await page.waitForFunction(() => neo.scene.game.trail.bounds.width > 0, null, { timeout: 15000 });
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'another bell is not a miss');
+      } else {
+        await tapBell(target);
+        assert.equal(await page.evaluate(() => neo.scene.game.picked), target);
+        await tap('neo.scene.game.runButton');
+      }
+      await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.index > index, index, { timeout: 30000 });
+    }
+    await finished('chain-reaction');
+    assert.deepEqual(await score(), [0, 0]);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), stickers + 1);
+    await launch('chain-reaction', 8); await readyMachine(0);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    assert.ok(await page.evaluate(() => {
+      const g = neo.scene.game;
+      return [...g.bellNodes.map((b) => b.node), g.runButton, g.helpButton].every((node) => { const b = node.getBounds(); return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight; });
+    }), 'portrait bells and controls fit');
+    await screenshot('chain-reaction-8-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Chain Reaction 8: run-before-predicting prompt, uncounted follow-the-marble help, a different bell rang without a miss and kept its trail, three predicted machines, one sticker, portrait fit passed');
+  }
+
+  for (const level of [1, 6].filter((l) => chainLevels.includes(l))) {
     await launch('chain-reaction', level);
     const machines = await page.evaluate(() => neo.scene.game.boards.length);
     for (let index = 0; index < machines; index++) {
@@ -10921,11 +11222,12 @@ async function chainPlay() {
     }
     await finished('chain-reaction');
     assert.deepEqual(await score(), level === 1 ? [0, 0] : [0, 1]);
-    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), level === 1 ? 1 : 2);
+    assert.ok(await page.evaluate(() => kit.store.data.stickers.some((s) => s.game === 'chain-reaction')));
     log(`Chain Reaction ${level}: large-piece dragging, ${level === 1 ? 'starting glow and incomplete run' : 'failed experiment, explicit hint, chime'}, replay, two machines, saved score and sticker passed`);
   }
 
   // The tallest board keeps its controls, tray and sockets on screen in portrait.
+  if (!chainLevels.includes(6)) return void assert.deepEqual(errors, []);
   await launch('chain-reaction', 6); await readyMachine(0);
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
   assert.ok(await page.evaluate(() => {
@@ -11331,7 +11633,10 @@ try {
   if (suite === 'all' || suite === 'island') await islandShelf();
   if (suite === 'all' || suite === 'creations') await creationsRoom();
   if (suite === 'all' || suite === 'journal') await journalPlay();
-  if (suite === 'all' || suite === 'clap') await clapPlay();
+  if (suite === 'all' || (suite === 'clap' && !process.env.CLAP_LEVELS)) await clapPlay();
+  if (suite === 'all' || (suite === 'clap' && (!process.env.CLAP_LEVELS || process.env.CLAP_LEVELS === '6'))) await clapTrainPlay();
+  if (suite === 'all' || (suite === 'clap' && (!process.env.CLAP_LEVELS || process.env.CLAP_LEVELS === '8'))) await clapComparePlay();
+  if (suite === 'all' || (suite === 'clap' && (!process.env.CLAP_LEVELS || process.env.CLAP_LEVELS === '9'))) await clapShortPlay();
   if (suite === 'all' || suite === 'machines') await chainPlay();
   if (suite === 'all' || suite === 'habitat') await habitatPlay();
   if (suite === 'stickers') await page.evaluate(() => {

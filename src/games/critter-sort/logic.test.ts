@@ -1,14 +1,47 @@
 import { critterSort } from './index';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
+import { COUNT_PARTS, COUNT_PLAN, countParts, morePart, countSpot, planFor, exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
 
 describe('Critter Sort', () => {
-  it('preserves the younger ladder and stable school IDs, appending 7 and 8 after 5', () => {
+  it('preserves the younger ladder and stable school IDs, appending 11 without opening reserved level 10', () => {
     expect(critterSort.levels('prek').order).toEqual([6, 1, 2, 3]);
-    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7, 8]);
+    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7, 8, 9, 11]);
     expect(critterSort.entryLevels).toEqual([6]);
-    expect(PLANS).toHaveLength(8);
+    expect(PLANS).toHaveLength(9);
+  });
+
+  it('level 11 counts every disjoint part from placeOf and has exactly one greatest part across seeds', () => {
+    expect(planFor(11)).toBe(COUNT_PLAN);
+    expect(planFor(9)).toBe(PLANS[8]);
+    const winners = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = makeRound(COUNT_PLAN, new Rng(seed));
+      expect(r).toEqual(makeRound(COUNT_PLAN, new Rng(seed)));
+      expect(new Set(r.critters.map(c => `${c.kind}${c.hat}`)).size).toBe(6);
+      const counts = countParts(r.critters, r.rules);
+      expect(Object.values(counts).sort()).toEqual([1, 2, 3]);
+      const right = morePart(counts)!;
+      winners.add(right);
+      for (const part of COUNT_PARTS) {
+        expect(counts[part]).toBe(r.critters.filter(c => placeOf(c, r.rules) === part).length);
+        expect(counts[right]).toBeGreaterThanOrEqual(counts[part]);
+      }
+      // Both the sorting bot and the final counting positions stay in their proper parts.
+      for (const v of [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }]) {
+        const centers = hoopCenters('two', 2, v);
+        const points = COUNT_PARTS.flatMap(part => Array.from({ length: counts[part] }, (_, k) => {
+          const p = countSpot(centers, part, k, counts[part]);
+          expect(sortPlaceAt(centers, 'two', p.x, p.y)).toBe(part);
+          return p;
+        }));
+        for (let i = 0; i < points.length; i++) for (let j = i + 1; j < points.length; j++) {
+          expect(Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y)).toBeGreaterThan(108.8);
+        }
+      }
+    }
+    expect(winners).toEqual(new Set(COUNT_PARTS));
+    expect(morePart({ left: 2, right: 2, out: 2 })).toBeNull();
   });
 
   it('separate hoops never overlap, and overlapping hoops really do', () => {
@@ -28,7 +61,7 @@ describe('Critter Sort', () => {
         const r = makeRound(plan, new Rng(seed));
         expect(r.critters).toHaveLength(plan.critters);
         expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}`)).size).toBe(plan.critters);
-        const places = new Set(r.critters.map((c) => placeOf(c, r.rules, plan.mode === 'not')));
+        const places = new Set(r.critters.map((c) => placeOf(c, r.rules, plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not')));
         expect(places.has('out')).toBe(true);
         expect(places.has('left')).toBe(true);
         if (plan.mode === 'two') expect(places.has('right')).toBe(true), expect(places.has('both')).toBe(false);
@@ -45,8 +78,8 @@ describe('Critter Sort', () => {
   it('drops a critter on the middle of its part of the diagram, in every layout and at either screen size', () => {
     for (const plan of PLANS) {
       if (plan.mode === 'guess') continue;
-      const hoops = ['one', 'not', 'resort'].includes(plan.mode) ? 1 : 2;
-      const places: Place[] = ['one', 'not', 'resort'].includes(plan.mode) ? ['left'] : plan.mode === 'two' ? ['left', 'right'] : ['left', 'right', 'both'];
+      const hoops = ['one', 'not', 'resort', 'butnot'].includes(plan.mode) ? 1 : 2;
+      const places: Place[] = ['one', 'not', 'resort', 'butnot'].includes(plan.mode) ? ['left'] : plan.mode === 'two' ? ['left', 'right'] : ['left', 'right', 'both'];
       for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 1024 }, { w: 768, h: 1024 }]) {
         const centers = hoopCenters(plan.mode, hoops, v);
         // k = 1 is the spot the ghost finger uses; 0 is the hint's glow.
@@ -62,8 +95,8 @@ describe('Critter Sort', () => {
       if (plan.mode === 'guess') continue;
       for (let seed = 1; seed <= 100; seed++) {
         const round = makeRound(plan, new Rng(seed));
-        const centers = hoopCenters(plan.mode, round.rules.length, { w: 1024, h: 768 });
-        const not = plan.mode === 'not';
+        const centers = hoopCenters(plan.mode, plan.mode === 'butnot' ? 1 : round.rules.length, { w: 1024, h: 768 });
+        const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
         const sorters = round.critters.map((c) => ({ c, placed: null as Place | null }));
         let moves = 0;
         for (let next = nextToSort(sorters, round.rules, not); next; next = nextToSort(sorters, round.rules, not)) {
@@ -131,6 +164,38 @@ describe('Critter Sort', () => {
     }
   });
 
+  it('level 9 accepts exactly A and not B and supplies accepted, A-and-B, and neither witnesses', () => {
+    const plan = PLANS[8];
+    expect(plan.mode).toBe('butnot');
+    const pairs = new Set<string>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const r = makeRound(plan, new Rng(seed));
+      expect(r).toEqual(makeRound(plan, new Rng(seed)));
+      pairs.add(r.rules.join());
+      const [a, b] = r.rules;
+      expect(r.critters.some(c => fits(c, a) && !fits(c, b))).toBe(true);
+      expect(r.critters.some(c => fits(c, a) && fits(c, b))).toBe(true);
+      expect(r.critters.some(c => !fits(c, a) && !fits(c, b))).toBe(true);
+      const sorters = r.critters.map(c => ({ c, placed: null as Place | null }));
+      for (const s of sorters) {
+        expect(placeOf(s.c, r.rules, 'butnot')).toBe(fits(s.c, a) && !fits(s.c, b) ? 'left' : 'out');
+        expect(hintFor(sorters, s, r.rules, 'butnot', true)).toBe(s);
+      }
+      for (const v of [{ w: 1024, h: 768 }, { w: 768, h: 1024 }]) {
+        const centers = hoopCenters(plan.mode, 1, v);
+        for (const s of sorters) {
+          const place = placeOf(s.c, r.rules, 'butnot');
+          const target = spotFor(centers, plan.mode, place, 1);
+          expect(sortPlaceAt(centers, plan.mode, target.x, target.y)).toBe(place);
+        }
+      }
+      for (let next = nextToSort(sorters, r.rules, 'butnot', true); next; next = nextToSort(sorters, r.rules, 'butnot', true)) next.who.placed = next.place;
+      expect(sorters.every(s => s.placed)).toBe(true);
+      expect(makeRound(plan, new Rng(seed), r.rules.join()).rules.join()).not.toBe(r.rules.join());
+    }
+    expect(pairs.size).toBeGreaterThan(6);
+  });
+
   it('makes the not hoop the complement of its pictured rule, leaving every pictured critter outside', () => {
     const plan = PLANS.find((p) => p.mode === 'not')!;
     for (let seed = 1; seed <= 200; seed++) {
@@ -144,7 +209,7 @@ describe('Critter Sort', () => {
 
   it('makes the leaf mat an explicit, reachable outside answer, keeps bare grass free, and hints the missed outsider', () => {
     for (const plan of PLANS) {
-      expect(hasNeitherMat(plan.mode)).toBe(['two', 'venn', 'not', 'resort'].includes(plan.mode));
+      expect(hasNeitherMat(plan.mode)).toBe(['two', 'venn', 'not', 'resort', 'butnot'].includes(plan.mode));
       for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 768 }, { w: 1024, h: 1366 }]) {
         const centers = hoopCenters(plan.mode, ['two', 'venn'].includes(plan.mode) ? 2 : 1, v);
         expect(sortPlaceAt(centers, plan.mode, v.w / 2, v.h - 40)).toBeNull();
@@ -160,7 +225,7 @@ describe('Critter Sort', () => {
         }
         for (let seed = 1; seed <= 100; seed++) {
           const r = makeRound(plan, new Rng(seed));
-          const not = plan.mode === 'not';
+          const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
           const examples = exampleIndices(plan, r);
           const sorters = r.critters.map((c, i) => ({ c, placed: examples.includes(i) ? placeOf(c, r.rules, not) : null as Place | null }));
           const outsider = sorters.find((s) => placeOf(s.c, r.rules, not) === 'out')!;
@@ -212,7 +277,7 @@ describe('Critter Sort', () => {
     for (const [level, places] of [[1, ['left']], [2, ['left', 'right']], [3, ['both']], [5, ['left']]] as const) {
       const plan = PLANS[level - 1];
       expect(examplePlaces(plan.mode)).toEqual(places);
-      const not = plan.mode === 'not';
+      const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
       for (let seed = 1; seed <= 200; seed++) {
         const r = makeRound(plan, new Rng(seed));
         const ex = exampleIndices(plan, r);

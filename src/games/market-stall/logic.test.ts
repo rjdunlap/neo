@@ -1,9 +1,55 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { coinArt, marketStall } from './index';
-import { anotherWay, coinToName, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
+import { prop } from '../../art/props';
+import { computeView } from '../../engine/view';
+import { coinArt, marketStall, STALLS } from './index';
+import { STALL_IDS, stallFor, stallLayout, goodPlacement, anotherWay, coinToName, PIP_NUMERAL, pips, teachLine, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
 
 describe('Market Stall', () => {
+  it('seeds every stall reproducibly, with distinct awnings, keepers and enough named goods for paired orders', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const stall = stallFor(new Rng(seed));
+      expect(stall).toBe(stallFor(new Rng(seed)));
+      seen.add(stall);
+    }
+    expect([...seen].sort()).toEqual([...STALL_IDS].sort());
+    expect(new Set(STALL_IDS.map(id => STALLS[id].awning)).size).toBe(3);
+    expect(new Set(STALL_IDS.map(id => STALLS[id].keeper)).size).toBe(3);
+    for (const id of STALL_IDS) {
+      const goods = STALLS[id].goods;
+      expect(new Set(goods.map(g => g.name)).size).toBe(goods.length);
+      expect(goods.length).toBeGreaterThanOrEqual(2);
+      if (id !== 'fruit') expect(goods.every(g => g.kind === id)).toBe(true);
+    }
+  });
+
+  it('keeps every stock drawing and price tag on screen, clear of the pet, payment mat and each other at four views', () => {
+    for (const [w, h] of [[1024, 768], [1366, 768], [768, 1024], [844, 390]]) {
+      const view = computeView(w, h);
+      const { cy, stockX } = stallLayout(view);
+      for (const id of STALL_IDS) for (const good of STALLS[id].goods) for (const count of [1, 2]) {
+        for (let i = 0; i < count; i++) {
+          const place = goodPlacement(good.kind, count, i);
+          const art = prop(good.kind, good.color);
+          art.scale.set(place.scale);
+          art.position.set(stockX + place.x, cy + place.y);
+          const b = art.getBounds();
+          const tag = { left: stockX + place.x - 56, right: stockX + place.x + 56, top: cy - 194, bottom: cy - 106 };
+          expect(b.x).toBeGreaterThan(150); // pet's left-hand space
+          expect(b.x + b.width).toBeLessThan(view.w);
+          expect(b.y).toBeGreaterThan(tag.bottom);
+          expect(b.y + b.height).toBeLessThan(cy + 70); // top of payment mat
+          expect(tag.left).toBeGreaterThan(150);
+          expect(tag.right).toBeLessThan(view.w);
+          expect(tag.top).toBeGreaterThan(158.5); // awning's scalloped edge
+          expect(b.width).toBeLessThan(150); // paired goods are 150 apart
+          art.destroy({ children: true });
+        }
+      }
+    }
+  });
+
   it('asks for amounts from 1 to 10 that the level\'s coins can make, never the same twice running', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {
@@ -153,5 +199,46 @@ describe('Market Stall', () => {
     expect(coinToName(3, 2, none)).toBeNull();
     expect(coinToName(2, 2, new Set([2]))).toBeNull();
     for (let level = 4; level <= PLANS.length; level++) for (const c of [1, 2, 5]) expect(coinToName(level, c, none)).toBeNull();
+  });
+  it('draws one pip per shell of value, five to a row, inside the coin and clear of its rim dots', () => {
+    for (const value of [1, 2, 3, 5, 10]) for (const r of [30, 35, 40, 44]) {
+      const dots = pips(value, r);
+      expect(dots).toHaveLength(value);
+      const rows = new Map<number, number>();
+      for (const d of dots) {
+        rows.set(d.y, (rows.get(d.y) ?? 0) + 1);
+        // Inside the coin's 4-unit outline.
+        expect(Math.hypot(d.x, d.y) + d.r).toBeLessThan(r - 2);
+        // Below the numeral (font size 0.95r, its glyphs about 0.35r either side of center, then scaled and lifted) and clear of the rim dots at 0.78r.
+        expect(d.y - d.r).toBeGreaterThan(r * (PIP_NUMERAL.y + 0.35 * PIP_NUMERAL.scale));
+        if (value <= 5) for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4;
+          expect(Math.hypot(d.x - Math.cos(a) * r * 0.78, d.y - Math.sin(a) * r * 0.78)).toBeGreaterThan(d.r + r * 0.08);
+        }
+      }
+      expect([...rows.values()].every((n) => n <= 5)).toBe(true);
+      if (value === 10) expect([...rows.values()]).toEqual([5, 5]);
+    }
+  });
+
+  it('teaches a strategy before the faint coins only at mix, ways and fewest, and the strategy pays legally', () => {
+    PLANS.forEach((plan) => {
+      if (!['mix', 'ways', 'fewest'].includes(plan.mode)) return void expect(teachLine(plan, null)).toBeNull();
+      expect(teachLine(plan, null)).toBe('biggest');
+      for (let want = plan.price[0]; want <= plan.price[1]; want++) {
+        // Biggest coin that fits first is the payment the hint then shows.
+        const biggest = fewest(want, plan.coins);
+        expect(sum(biggest)).toBe(want);
+        expect(usesFewestCoins(want, plan.coins, biggest)).toBe(true);
+        if (plan.mode !== 'ways') continue;
+        // On the second way, the hint swaps coins rather than repeating the first way.
+        for (const first of [biggest, fewest(want, [1, 2]), Array(want).fill(1)]) {
+          expect(teachLine(plan, first)).toBe('swap');
+          const second = anotherWay(want, plan.coins, first);
+          expect(sum(second)).toBe(want);
+          expect(sameWay(second, first)).toBe(false);
+        }
+      }
+    });
   });
 });

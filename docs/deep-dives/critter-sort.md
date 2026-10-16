@@ -1,6 +1,6 @@
 # Critter Sort deep dive
 
-*ID `critter-sort` · bands pre-K, school · levels 1–6 (pre-K order 6, 1, 2, 3; school 2–5) · session `claude/critter-sort-deep-dive` ([PR #316](https://github.com/rjdunlap/neo/pull/316))*
+*ID `critter-sort` · bands pre-K, school · levels 1–9 and 11 (pre-K order 6, 1, 2, 3; school 2, 3, 4, 5, 7, 8, 9, 11) · session `claude/critter-sort-deep-dive` ([PR #316](https://github.com/rjdunlap/neo/pull/316))*
 
 ## The game today
 
@@ -14,6 +14,10 @@ Critters, some in top hats, are dragged into hoops whose signs are pictures of a
 | 4 | Already sorted, 3 rounds: tap the picture of the rule (3 pictures) | school | What the hoop's rule is |
 | 5 | One hoop with a red-lined picture ("not"), 3 rounds | school | The critters that do not fit the picture go in; the others go on the leaf mat |
 | 6 | Just a few: three critters, one already in the hoop | pre-K, first in its order | Carry the other critter that fits; the outsider can stay on the grass |
+| 7 | Five sorted examples and one newcomer, 3 diagrams | school | Place the newcomer, including neither |
+| 8 | Sort the same six twice under a new sign | school | Revise the sort when the rule changes |
+| 9 | One A/not-B hoop and leaf mat, 2 diagrams | school | Fit the first picture but exclude the second |
+| 11 | Sort, freely count each part, compare, 2 diagrams | school | Which part has more (one, two or three) |
 
 **Pools.** Seven animals (`cow duck pig cat bear dog bunny`) times a hat on or off make 14 distinct pictures. Six rules: `hat`, `brown` (bear, dog), `white` (cow, bunny), `floppy` (cow, dog), `pointy` (pig, cat), `whiskers` (cat, bunny). Two-hoop rule pairs are `SEPARATE` (3 pairs) or `OVERLAPPING` (6 pairs). A round never repeats the previous round's rules and has all-different critters; every part of the diagram in play gets a critter, and the guess round offers exactly one rule that sorts the shown critters that way (all rule-tested).
 
@@ -22,7 +26,7 @@ Critters, some in top hats, are dragged into hoops whose signs are pictures of a
 - **The hint is not about the miss** (fixed 2026-10-14: `hintFor` points at the critter she just missed). Before, after two wrong drops `hinting` becomes the first unplaced critter that belongs in a hoop (`sorters.find`), not the one she just got wrong, so the glow can jump to an unrelated critter.
 - **The guessing level can be passed by elimination alone** and has no "now sort one more" step to prove she holds the rule.
 - **No preschool** (pre-K now has the level 6 entry; preschool still waits on decision 1). The school window starts at 2; picture signs and spoken phrases support the rules.
-- **No count, no second look.** A finished round does not ask how many are in each part; the same critters are never re-sorted by a new rule.
+- **Count and second look built.** School level 8 re-sorts the same six by a new rule; level 11 counts each sorted part and compares quantities.
 - Couch: none. Journal: no entries. Picnic: none. Controller: none (touch only; the demo is a ghost finger).
 
 ## Similar games
@@ -80,9 +84,9 @@ IDs are appended, never renumbered. 6 is the easy entry; 7–11 are the new top.
 | 6 | Just a few (**pre-K part built 2026-10-14**; preschool waits on decision 1) | preschool, pre-K (an entry placed before 1) | 3 critters, one hoop, the rule is "wearing a hat" or a single-animal color; one is already inside | Which of the two left critters belongs | A wrong drop is a miss with the spoken reason; one hint glow on the right one | Every round has 1–2 critters that fit, none ambiguous | New plan only; voice reuses `sort.one`; ghost finger unchanged |
 | 7 | Where does the new one go? (**school built 2026-10-15**) | school (pre-K optional, not built) | Hoops already sorted by the shown rules; one new critter appears at the foot | The part of the diagram the newcomer belongs in, including "neither" | The usual spoken reason; after two misses the right part glows | The new critter's place is derivable from the shown rules; all four places occur across seeds | Needs the neither mat; new voice line; ghost finger drags the newcomer |
 | 8 | A new sign (**school built 2026-10-16**) | school | Six critters sorted by one rule; the sign turns over to a second rule and the critters hop out | Move each critter to its place under the new sign | A wrong drop is a miss with the reason; the spoken sign names the new rule every time | The two rules split the same six differently and both leave something in and out | New transition art; voice `sort.again`; bot sorts twice |
-| 9 | This but not that | school | One hoop with sign A and a red-lined sign B inside it | Critters that fit A and not B | Spoken reason names both parts | Every answer exists (at least one in, one fit-A-but-B, one neither) | New sign layout; voice; how-to line |
+| 9 | This but not that (**school built 2026-10-16**) | school | One hoop with sign A and a red-lined sign B inside it | Critters that fit A and not B | Spoken reason names both parts | Every answer exists (at least one in, one fit-A-but-B, one neither) | New sign layout; voice; how-to line |
 | 10 | Pick the signs | school | Critters in the middle; two signs on the table to choose from | Which signs go on the hoops (free), then the sorting by her own rule | Choosing signs is never counted; only dropping a critter against her own signs is a miss | Signs offered always make at least one critter fit each; no pair makes an empty hoop | Needs Decision 3 on whether a creation is kept; no new bot beyond a random choice |
-| 11 | How many? | school | After a sort, tap each critter in a part to count it aloud | The count for each part, then which part has more | Tapping to count is free; only the "which has more" answer can miss | Counts match `placeOf` for every seed; the "more" answer is unambiguous | Spoken numbers already exist; a small number badge; links to Picture Graph |
+| 11 | How many? (**school built 2026-10-16**) | school | After a sort, tap each critter in a part to count it aloud | The count for each part, then which part has more | Tapping to count is free; only the "which has more" answer can miss | Counts match `placeOf` for every seed; the "more" answer is unambiguous | Spoken numbers already exist; a small number badge; links to Picture Graph |
 
 ### Younger-band openings
 
@@ -90,7 +94,7 @@ IDs are appended, never renumbered. 6 is the easy entry; 7–11 are the new top.
 
 ### Easier entries and levels between existing ones
 
-Level 6 is an easy entry appended with a stable ID: preschool `order: [6, 1]`, pre-K `order: [6, 1, 2, 3]` (so the entry is available before the older level 1), school currently `order: [2, 3, 4, 5, 7, 8]`; its proposed full ladder is `[2, 3, 4, 5, 7, 8, 9, 10, 11]`. `entryLevels: [6]` so birthdays land safely. A pre-K child who has saved level 1 keeps it. Nothing is renumbered.
+Level 6 is an easy entry appended with a stable ID: preschool `order: [6, 1]`, pre-K `order: [6, 1, 2, 3]` (so the entry is available before the older level 1), school currently `order: [2, 3, 4, 5, 7, 8, 9, 11]`; its proposed full ladder is `[2, 3, 4, 5, 7, 8, 9, 10, 11]`. `entryLevels: [6]` so birthdays land safely. A pre-K child who has saved level 1 keeps it. Nothing is renumbered.
 
 ### Left out on purpose
 
@@ -104,13 +108,13 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 
 ## Build slices, in order
 
-1. **Neither mat, a hint on the critter she missed, and worked examples — built.** The hint landed 2026-10-14, examples in [PR #418](https://github.com/rjdunlap/neo/pull/418), and the leaf mat at levels 2, 3 and 5 in [PR #423](https://github.com/rjdunlap/neo/pull/423) (2026-10-15). Correct outside drops are explicit, bare grass stays free, and hints, completion and the ghost finger include the mat. [Verification](../VERIFICATION.md#2026-10-15--critter-sort-neither-mat).
+1. **Neither mat, a hint on the critter she missed, and worked examples — built.** The hint landed 2026-10-14, examples in [PR #418](https://github.com/rjdunlap/neo/pull/418), and the leaf mat at levels 2, 3 and 5 in [PR #423](https://github.com/rjdunlap/neo/pull/423) (2026-10-15). Correct outside drops are explicit, bare grass stays free, and hints, completion and the ghost finger include the mat. [Verification](../archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-sort-neither-mat).
 2. **Fresh rules** from existing art (single-animal rules for easy entry only), with the split test. Tier: rules (typecheck and that game's tests).
 3. **Level 6 and the preschool opening** (level 6 for pre-K built 2026-10-14 with `order` [6, 1, 2, 3] and `entryLevels` [6]; the preschool row waits on decision 1): plan, `order` and `entryLevels`, registry and lands tests, how-to, voice. Tier: new levels: unit tests, one browser play of level 6 and `fingerdemo`.
-4. **Level 7 Where does the new one go? — built** (school only), [PR #426](https://github.com/rjdunlap/neo/pull/426). Five sorted examples, one newcomer, three diagrams; explicit neither mat and existing mistake/hint/bot support. School order `[2, 3, 4, 5, 7]`; IDs and pins preserved. [Proof](../VERIFICATION.md#2026-10-15--critter-sort-level-7-newcomer).
-5. **Level 8 A new sign — built** (school only), [PR #428](https://github.com/rjdunlap/neo/pull/428). Sort the same six twice under two different pictured/spoken splitting rules; sign flip, hop back to grass, explicit leaf mat and bot on both passes. School appends ID 8; existing IDs/pins and pre-K unchanged. [Proof](../VERIFICATION.md#2026-10-16--critter-sort-level-8-a-new-sign).
-6. **Level 9 This but not that.** Same tier.
-7. **Level 11 How many?** Same tier; a count badge screenshot.
+4. **Level 7 Where does the new one go? — built** (school only), [PR #426](https://github.com/rjdunlap/neo/pull/426). Five sorted examples, one newcomer, three diagrams; explicit neither mat and existing mistake/hint/bot support. School order `[2, 3, 4, 5, 7]`; IDs and pins preserved. [Proof](../archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-sort-level-7-newcomer).
+5. **Level 8 A new sign — built** (school only), [PR #428](https://github.com/rjdunlap/neo/pull/428). Sort the same six twice under two different pictured/spoken splitting rules; sign flip, hop back to grass, explicit leaf mat and bot on both passes. School appends ID 8; existing IDs/pins and pre-K unchanged. [Proof](../archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-8-a-new-sign).
+6. **Level 9 This but not that — built** (school only), [PR #436](https://github.com/rjdunlap/neo/pull/436), `codex/critter-sort-nine`, dispatch `critter-sort-nine-20261016T090734Z`. One A/not-B hoop and leaf mat, both-part spoken explanations, seeded accepted/A-and-B/neither witnesses, two diagrams and a clean ghost finger. School appends ID 9; existing IDs/pins and pre-K unchanged. [Proof](../VERIFICATION.md#2026-10-16--critter-sort-level-9-this-but-not-that).
+7. **Level 11 How many? — built** (school only), [PR #439](https://github.com/rjdunlap/neo/pull/439), `codex/critter-sort-eleven`, worker `01a14435-4fa4-75c2-bc0c-802e92b789e9`, dispatch `critter-sort-eleven-20261016T101434Z`. Two separate hoops plus the mat contain one, two and three critters. Sort, freely tap to count each part aloud with badges/rings, then choose the uniquely largest part; repeated counting taps do not inflate totals. Two wrong comparisons reveal totals/glow and count one hint. School appends 11, skipping 10; IDs/pins preserved. [Proof](../VERIFICATION.md#2026-10-16--critter-sort-level-11-how-many). Excludes level 10, third feature, bands and saves; device/child checks open.
 8. **Third critter feature** (decision 2), shared with Critter Crossing: both games' rule tests plus the fairness test across the larger pool.
 9. **Level 10 Pick the signs** (after decision 3): its own definition first.
 
