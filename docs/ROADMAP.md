@@ -134,7 +134,7 @@ The [first](IDEAS.md#short-ladder-audit-2026-10-09) and [second](IDEAS.md#round-
 | **Day by Day** | Preschool, months and daylight are decision-dependent; causal seasons stay separate | [Build slices](deep-dives/day-by-day.md#build-slices-in-order) |
 | **Robot Path's reusable routine** | Decision-dependent scope under Waiting on the developer | [Build slices](deep-dives/robot-path.md#build-slices-in-order) |
 | **Photo Safari's two-clue observations** | Designed: free the polaroid textures, then level 7 *Two clues, no name*, then level 5 made truthful and new actions are ready; *What changed?* and *Is it true?* wait on decisions | [Build slices](deep-dives/photo-safari.md#build-slices-in-order) |
-| **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
+| **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored. Being defined on branch `claude/sink-float-make-it-float` (docs only) | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
 | **Ramp Race's predicted stop and recorded trials** | Define the finish, half-unit outcomes and the comparison view | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 | **Seesaw Balance's unknowns and Garden Rows' boxes** | Define each as its own session; prove explanation, solvability and useful hints | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 
