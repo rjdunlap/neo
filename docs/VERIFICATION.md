@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-16 — Scientific inquiry subject research
+
+- Added [inquiry study](deep-dives/subjects/inquiry.md): opened curriculum/developmental sources, six game/app references (PhET shell-only), two physical references, every audience, existing-game overlap, Ramp Race 5–8 proposals and ordered definition/build slices. Recorded failed source opens and support/accounting gaps without fixing code.
+- Updated subject tracker, candidate notebook, roadmap recommendations/ready definitions and developer decisions. Passed local relative-link/anchor checks and `git diff --check`. No tests, build or browser suites run: docs-only research; no iPad/child/teen observations or transfer established.
+- Initial tree clean; overlap check found no inquiry claim. Publication was initially blocked by automatic approval review; the developer explicitly authorized publication on 2026-10-16. Integrated ten upstream commits before final docs checks, preserving both Photo Safari verification entries. No open PRs, including drafts, were present at publication review. Feature branch: `codex/inquiry-subject-research`.
+
 ## 2026-10-16 — Photo Safari waving and swimming
 
 - [PR #474](https://github.com/rjdunlap/neo/pull/474), `codex/safari-actions`, dispatch `safari-actions-20261016T222436Z`; tested `ad09b31` plus implementation diff. Docs-only upstream integration `3c53157` changes no game dependencies.

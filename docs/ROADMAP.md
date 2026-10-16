@@ -52,6 +52,9 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 19. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
 20. **`shape-buddies`, level 2 *A step down*** (pre-K and school; only a slope bridge reaches the lower far bank). New-levels tier, `fingerdemo` at 2. [Definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)
 
+21. **`ramp-race`, truthful support packet Q1** (docs only): per-level goal/finish/miss wording, visible repair hint and demo recovery; preserve current accounting. [Inquiry slices](deep-dives/subjects/inquiry.md#build-slices-in-order)
+22. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
+
 ### Chunks
 
 Chunk numbers are stable IDs that other documents cite; rows are sorted by what can be done now, not by number. Detail and history live behind the links.
@@ -291,6 +294,19 @@ For older players, combine **named project cards**, **child-chosen permanent unl
 ## Subject study recommendations
 
 Definition packets recommended by the [subject studies](deep-dives/subjects.md), kept in the roadmap (the developer asked for the movement study's to stay here, 2026-10-14; the later studies follow the same pattern). They are **proposals and docs-first definitions, not a dispatch queue**: a routine reaches one only through a `define` row in [Next up](#next-up) or when the grown-up selects it. A new subject study adds its section here, at this heading level.
+
+### Scientific inquiry recommendations
+
+**Recommended 2026-10-16:** [the inquiry study](deep-dives/subjects/inquiry.md) covers lap through parents using opened Head Start IT-C 1–2, NGSS practices 3/4, 3-5-ETS1-3 and MS-PS2-2, a preschool causal-exploration study, game descriptions and physical investigations. **Extend Ramp Race first**, whose level 4 already teaches paired fair tests. Preserve observation in Photo Safari, counts/displays in Picture Graph and unpenalized predictions in Sink or Float. This is a subject proposal, not a completed Ramp Race game deep dive or an implementation.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Ramp Race truthful support** · Q1 | define now, docs only | Accurate per-level goal/finish and miss wording; a visible, once-counted repair hint for unfair pairs; recovery demo specification. Current accounting stays unchanged. Q2 builds the correction with existing-game checks. [Gaps and slices](deep-dives/subjects/inquiry.md#build-slices-in-order) |
+| **Trial Shelf / One Change** · school first · Q3 | define now, docs only | Appended 5–6: two pictured setup/stop records, free predictions, evidence-reading and controlled comparisons; exact two-pair ending, lane policy, hints, speech/how-to/ghost finger and 100-unit portrait layout. Build only after accounting/range decisions. [Ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions) |
+| **What can we tell? / Workshop Detective** · U–parent · Q5–Q6 | later definitions | Distinguish confounded records and select a test separating two explanations; accept all consistent models and insufficient evidence. Keep a Ramp Race mode unless another device earns separate identity; explicitly label invented models. Older host/routing unresolved; no new band or hidden physics change |
+| **Two Tries, One Change** · family · Q7 | named practical review first | Original plain-HTML optional conversation card; no real-object procedure published or activity tracking |
+
+[Ordered slices](deep-dives/subjects/inquiry.md#build-slices-in-order) separate definitions and builds. Source-access gaps, child/device understanding, older appeal and transfer remain open. No game, tests, build, browser checks, save system or zone was added; docs links/diff only. Definitions do not claim deterministic repeated rolls teach measurement uncertainty.
 
 ### Zoo animals recommendations
 
