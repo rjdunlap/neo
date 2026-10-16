@@ -47,7 +47,7 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
-16. **`photo-safari`, level 7 *Two clues, no name*** (school), then level 5 made truthful and waving/swimming actions, one per slice. New-interaction tier. [Dive slices 2–4](deep-dives/photo-safari.md#build-slices-in-order)
+16. **`photo-safari`, level 5 made truthful**, then waving/swimming actions, one per slice. Rule tests and filtered play. [Dive slices 3–4](deep-dives/photo-safari.md#build-slices-in-order)
 17. **Woodland Picnic, the second Island Errand** (school, from Wonder Woods; Mail Carrier 6, Seesaw Balance 7, Beat Builder 3). Story/navigation/save tier. [Definition](definitions/woodland-picnic.md)
 18. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
 19. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
@@ -125,7 +125,7 @@ The [first](IDEAS.md#short-ladder-audit-2026-10-09) and [second](IDEAS.md#round-
 | **Clock Tower's elapsed time** | Appended levels 8–11, their order and a preschool opening are decision-dependent | [Build slices](deep-dives/clock-tower.md#build-slices-in-order) |
 | **Day by Day** | Preschool, months and daylight are decision-dependent; causal seasons stay separate | [Build slices](deep-dives/day-by-day.md#build-slices-in-order) |
 | **Robot Path's reusable routine** | Decision-dependent scope under Waiting on the developer | [Build slices](deep-dives/robot-path.md#build-slices-in-order) |
-| **Photo Safari's two-clue observations** | Designed: level 7 *Two clues, no name*, then level 5 made truthful and new actions are ready; *What changed?* and *Is it true?* wait on decisions | [Build slices](deep-dives/photo-safari.md#build-slices-in-order) |
+| **Photo Safari's two-clue observations** | Ready: level 5 made truthful, then new actions; school two-clue observations are built; *What changed?* and *Is it true?* wait on decisions | [Build slices](deep-dives/photo-safari.md#build-slices-in-order) |
 | **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored. Defined and ready to build as level 7 (new-interaction tier): [definition](definitions/make-it-float.md) | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
 | **Ramp Race's predicted stop and recorded trials** | Define the finish, half-unit outcomes and the comparison view | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 | **Seesaw Balance's unknowns and Garden Rows' boxes** | Define each as its own session; prove explanation, solvability and useful hints | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |

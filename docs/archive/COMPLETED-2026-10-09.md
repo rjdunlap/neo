@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Photo Safari 7 Two clues, no name (2026-10-16)
+
+[PR #470](https://github.com/rjdunlap/neo/pull/470), `codex/safari-two-clues`, dispatch `safari-two-clues-20261016T201906Z`, worker `01a1465e-cadf-7402-8cd5-676524c857a6`: school range 4–7 appends a four-photo action/place conjunction without an animal name. Each clue fits two sightings, both fit exactly one. Two broad shared places, 160-unit actor spacing and nearest-body tap resolution; wrong photos name the actual animal/action/place, two misses glow the target and count one hint. Ghost finger sends the same target tap to the shared receiver. Level-specific how-to and speech; earlier IDs/pins, younger bands, level 5, journal and texture cleanup retained. [Proof](../VERIFICATION.md#2026-10-16--photo-safari-7-two-clues-no-name); iPad speech and child understanding remain open.
+
 ### Photo Safari texture cleanup (2026-10-16)
 
 [PR #468](https://github.com/rjdunlap/neo/pull/468), `codex/safari-textures`, dispatch `safari-textures-20261016T192305Z`: slice 1 owns every generated polaroid texture and releases album sprites before textures/GPU sources on destroy. A queued next scene cannot rebuild after destruction. No gameplay, levels, clues, bands, saves or how-to changes. [Proof](../VERIFICATION.md#2026-10-16--photo-safari-texture-cleanup).
@@ -22,7 +26,7 @@
 
 ### Chain Reaction level 7 Tap to turn (2026-10-16)
 
-[PR #448](https://github.com/rjdunlap/neo/pull/448), `codex/chain-reaction-tap-turn`, dispatch `chain-turn-20261016T131304Z`, worker `01a144d8-e5df-75b1-acf4-e98706d91d69`: two preplaced coloured ramps turn on tap around one fixed wooden ramp. Seeded three-row boards start unsolved; all four flip states are enumerated for accepted solutions, useful hints and the tapping ghost finger. Free experimental runs/replay, counted requested help and two-machine sticker completion retained. Pre-K order `[7, 8, 1, 2, 3]`, entry IDs `[7, 8]`; school range and bands unchanged. No younger openings, other levels, run-count adaptation, cargo or saves. [Proof](../VERIFICATION.md#2026-10-16--chain-reaction-level-7-tap-to-turn).
+[PR #448](https://github.com/rjdunlap/neo/pull/448), `codex/chain-reaction-tap-turn`, dispatch `chain-turn-20261016T131304Z`, worker `01a144d8-e5df-75b1-acf4-e98706d91d69`: two preplaced coloured ramps turn on tap around one fixed wooden ramp. Seeded three-row boards start unsolved; all four flip states are enumerated for accepted solutions, useful hints and the tapping ghost finger. Free experimental runs/replay, counted requested help and two-machine sticker completion retained. Pre-K order `[7, 8, 1, 2, 3]`, entry IDs `[7, 8]`; school range and bands unchanged. No younger openings, other levels, run-count adaptation, cargo or saves. [Proof](VERIFICATION-2026-10-16.md#2026-10-16--chain-reaction-level-7-tap-to-turn).
 
 ### Letter Trails: show the way, start arrows, rising tune and trail looks (2026-10-16)
 

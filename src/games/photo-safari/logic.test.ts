@@ -1,14 +1,14 @@
 import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalToTap, describe, makeScene, matches, PLANS, request } from './logic';
+import { animalToTap, describe, makeScene, matches, PLANS, request, nearestSighting, sightingPositions } from './logic';
 
 group('Photo Safari', () => {
-  it('always has exactly one animal matching the request, each in its own spot', () => {
+  it('always has exactly one animal matching the request, with distinct spots in the original modes', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {
         const scene = makeScene(plan, new Rng(seed));
         expect(scene.sightings).toHaveLength(plan.animals);
-        expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(plan.animals);
+        if (plan.mode !== 'clues') expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(plan.animals);
         if (plan.mode === 'snap') {
           expect(scene.target).toBe(-1);
           continue;
@@ -30,12 +30,50 @@ group('Photo Safari', () => {
     expect(shared).toBeGreaterThan(100);
   });
 
+  it('requires both clues with exactly one action-only, place-only and neither distractor', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const scene = makeScene(PLANS[6], new Rng(seed));
+      expect(makeScene(PLANS[6], new Rng(seed))).toEqual(scene);
+      const t = scene.sightings[scene.target];
+      expect(scene.sightings.filter((s) => s.action === t.action)).toHaveLength(2);
+      expect(scene.sightings.filter((s) => s.spot === t.spot)).toHaveLength(2);
+      expect(scene.sightings.filter((s) => matches('clues', s, t))).toEqual([t]);
+      expect(request('clues', scene)).toBe(describe('clues', t));
+      expect(request('clues', scene)).toMatch(/^the animal /);
+      expect(request('clues', scene)).not.toContain(t.animal);
+    }
+  });
+
+  it('keeps shared actors 150 units apart and gives each a 100-unit nearest-target area after resizing', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const scene = makeScene(PLANS[6], new Rng(seed));
+      for (const [w, h] of [[1024, 768], [1366, 768], [1024, 1366], [1180, 820]]) {
+        const positions = sightingPositions(scene.sightings, w, h);
+        positions.forEach((p, i) => {
+          expect(p.x).toBeGreaterThanOrEqual(150);
+          expect(p.x).toBeLessThanOrEqual(w - 95);
+          expect(p.y - 155).toBeGreaterThan(150);
+          for (let j = i + 1; j < positions.length; j++) expect(Math.hypot(p.x - positions[j].x, p.y - positions[j].y)).toBeGreaterThanOrEqual(150);
+          // Body centre and the entire boundary of a 100-unit target, even in the overlapping circles.
+          for (const radius of [0, 50, 75]) for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
+            const point = { x: p.x + radius * Math.cos(angle), y: p.y - 60 + radius * Math.sin(angle) };
+            expect(nearestSighting(positions, point)).toBe(i);
+            const reverse = [...positions].reverse();
+            expect(nearestSighting(reverse, point)).toBe(positions.length - 1 - i);
+          }
+        });
+        expect(nearestSighting(positions, { x: 0, y: 0 })).toBe(-1);
+      }
+    }
+  });
+
   it('describes sightings in words', () => {
     const s = { animal: 'bunny' as const, action: 'jumping' as const, spot: 'bush' as const };
     expect(describe('who', s)).toBe('the bunny');
     expect(describe('doing', s)).toBe('the bunny jumping');
     expect(describe('where', s)).toBe('the bunny behind the bush');
     expect(describe('both', s)).toBe('the bunny jumping behind the bush');
+    expect(describe('clues', s)).toBe('the animal jumping behind the bush');
   });
 
   it('not levels: everyone else does the same thing, and only the one asked for does something else', () => {

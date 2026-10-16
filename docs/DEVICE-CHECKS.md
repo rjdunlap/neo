@@ -146,6 +146,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 
 **Later, at three to five**
 
+- [ ] Photo Safari level 7: on an iPad, hear both action/place clues clearly, distinguish the four animations at shared places, and observe whether a child combines them; browser play cannot establish understanding.
 - [ ] Word Monsters, Photo Safari and Clap the Syllables: vocabulary, spoken prompts, answer clarity, and whether device speech produces usable letter sounds and clear words. Do not claim phonics coverage from letter-name playback alone.
 - [ ] Tangram Town: actual device pronunciation of square, triangle, rectangle and trapezoid, and whether once-per-piece pickup cues are clear while she moves and turns the shapes.
 - [ ] Physical play: Peg Garden and Egg Catch (reachable goals feel reachable, motion slow enough, forgiving catches); Bounce Back with two real hands and the pet taking over; Dot Link's line through dots for small fingers, and whether its heart, drop, star, leaf and moon marks read at 34-unit dots; Bumper Garden's half-screen flipping; Lasso Loops' loop gesture with small fingers.

@@ -782,14 +782,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: [{ from: 8, text: 'The stones mark the path length. Count them together; every destination has one path with fewer stones.' }],
   },
   'photo-safari': {
-    goal: 'Take photos of the animal that is named.',
+    goal: 'Take photos that match the spoken request.',
     steps: [
       { to: 1, text: 'Tap any animal to take its photo.' },
       { from: 2, to: 2, text: 'Listen for the animal named, then tap it to take its photo.' },
       { from: 3, to: 3, text: 'Listen for the animal and what it is doing, like "the bunny jumping", then tap it.' },
       { from: 4, to: 4, text: 'Listen for the animal and where it is, like "the duck under the tree", then tap it.' },
       { from: 5, to: 5, text: 'Listen for what it is doing and where it is, like "the cat sleeping behind the bush", then tap it.' },
-      { from: 6, text: 'Listen for what the animal is not doing, like "the animal that is not sleeping", then tap it.' },
+      { from: 6, to: 6, text: 'Listen for what the animal is not doing, like "the animal that is not sleeping", then tap it.' },
+      { from: 7, to: 7, text: 'Use both clues: what the animal is doing and where it is. Two animals fit each clue alone; tap the one that fits both.' },
     ],
     finish: 'The round ends when the photos asked for are taken.',
     note: 'Each action she successfully photographs is added to her discovery journal in the treehouse.',
