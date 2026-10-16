@@ -4049,17 +4049,30 @@ async function batch() {
   }
 
   // Photo Safari: photograph the asked-for animal; a wrong photo names what it caught.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 6 && (!only || only === 'safari'); level++) {
+  const safariLevels = process.env.SAFARI_LEVELS?.split(',').map(Number)
+    ?? Array.from({ length: 7 }, (_, i) => i + 1).filter((l) => l >= Number(process.env.FROM_LEVEL || 1) && l <= Number(process.env.TO_LEVEL || 7));
+  for (const level of safariLevels.filter(() => !only || only === 'safari')) {
     await launch('photo-safari', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level === 7) {
+      assert.deepEqual(await page.evaluate(() => {
+        const g = neo.scene.game, t = g.target.sighting;
+        return [g.scene.sightings.filter((s) => s.action === t.action).length, g.scene.sightings.filter((s) => s.spot === t.spot).length];
+      }), [2, 2]);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(400);
+      await screenshot('photo-safari-7-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let p = 0; p < g.plan.photos; p++) {
         await kit.until(() => g.photos === p && !g.busy && g.actors.length, 15000);
         const right = g.target ?? g.actors[p % g.actors.length];
         if (p === 0 && g.target) {
-          const wrong = g.actors.find((a) => a !== right);
+          const wrong = g.actors.find((a) => a !== right && (g.plan.mode !== 'clues' || a.sighting.spot === right.sighting.spot));
           for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }
           if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible) throw new Error(`Safari hint: ${g.misses} ${g.hints}`);
         }

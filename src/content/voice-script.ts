@@ -1118,6 +1118,7 @@ export const SCRIPT = {
   'around.now': ['Now the {who} is {where} the tree!'],
   'around.done': ['Everyone came out to play!'],
   'safari.snap': ['Tap an animal to take its picture!'],
+  'safari.clues': ['Use both clues! Take a picture of {what}!'],
   'safari.ask': ['Take a picture of {what}!'],
   'safari.thatis': ['That is {desc}!'],
   'safari.click': ['Click!', 'Say cheese!', 'Snap!'],

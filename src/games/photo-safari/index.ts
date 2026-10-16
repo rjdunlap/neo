@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, Sprite, type Texture } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Sprite, type Texture } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
@@ -14,7 +14,7 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalToTap, describe, makeScene, planFor, request, type Action, type Animal, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
+import { animalToTap, describe, makeScene, planFor, request, nearestSighting, sightingPositions, spotPosition, type Action, type Animal, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -22,11 +22,10 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 6 },
+  school: { min: 4, max: 7 },
 };
 
 const SCALE = 0.5;
-const SPOT_X: Record<Spot, number> = { tree: 0.24, bush: 0.45, rock: 0.66, pond: 0.86 };
 
 /** One animal on the safari, doing its thing. */
 class Actor extends Container {
@@ -145,6 +144,13 @@ class PhotoSafari implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xa6de8e, 0x9edb86], horizon: 0.45, clouds: 3, sun: true, seed: 64 }, ctx.view);
+    if (this.plan.mode === 'clues') {
+      onTap(this.cast, (e) => {
+        const point = this.cast.toLocal(e.global);
+        const i = nearestSighting(this.actors, point);
+        if (i >= 0) void this.snap(this.actors[i]);
+      }, { cooldown: 500 });
+    }
     this.flash.alpha = 0;
     // Scenery in front of the animals (the bush, the pond's edge, the flash) must not catch taps.
     for (const layer of [this.backs, this.fronts, this.album, this.flash]) layer.eventMode = 'none';
@@ -163,7 +169,7 @@ class PhotoSafari implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.scene) return null;
     const animal = this.actors[animalToTap(this.scene, this.photos)];
-    return animal && !animal.destroyed ? { tap: { on: animal, y: -60 } } : null;
+    return animal && !animal.destroyed ? { tap: { on: animal, y: -60 }, receiver: this.plan.mode === 'clues' ? this.cast : animal } : null;
   }
 
   private ground() {
@@ -171,8 +177,7 @@ class PhotoSafari implements Game {
   }
 
   private spotPos(spot: Spot) {
-    const y = this.ground();
-    return { x: this.view.w * SPOT_X[spot], y: spot === 'rock' ? y - 56 : spot === 'pond' ? y + 26 : y };
+    return spotPosition(spot, this.scene?.sightings ?? [], this.view.w, this.view.h);
   }
 
   resize(v: View) {
@@ -180,8 +185,14 @@ class PhotoSafari implements Game {
     this.backdrop.resize(v);
     this.flash.clear().rect(0, 0, v.w, v.h).fill(0xffffff);
     this.drawSpots();
-    for (const a of this.actors) a.position.copyFrom(this.spotPos(a.sighting.spot));
+    this.layoutActors();
+    if (this.plan.mode === 'clues') this.cast.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.album.position.set(180, 24);
+  }
+
+  private layoutActors() {
+    const positions = sightingPositions(this.actors.map((a) => a.sighting), this.view.w, this.view.h);
+    this.actors.forEach((a, i) => a.position.copyFrom(positions[i]));
   }
 
   /** The four places: a tree to stand under, a bush to hide behind, a rock, and a pond. */
@@ -189,21 +200,26 @@ class PhotoSafari implements Game {
     this.backs.removeChildren().forEach((c) => c.destroy());
     this.fronts.removeChildren().forEach((c) => c.destroy());
     const y = this.ground();
-    const at = (s: Spot) => this.view.w * SPOT_X[s];
+    const at = (s: Spot) => this.spotPos(s).x;
+    const show = (s: Spot) => this.plan.mode !== 'clues' || this.scene?.sightings.some((a) => a.spot === s);
     const back = new Graphics();
     // Tree: trunk and canopy, high enough to stand under.
-    back.roundRect(at('tree') - 70, y - 250, 36, 250, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
-    puffs(back, [[at('tree') - 90, y - 270, 70], [at('tree') - 20, y - 300, 80], [at('tree') + 60, y - 265, 66]], swatch.green.fill, swatch.green.line, 6);
+    if (show('tree')) {
+      back.roundRect(at('tree') - 70, y - 250, 36, 250, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
+      puffs(back, [[at('tree') - 90, y - 270, 70], [at('tree') - 20, y - 300, 80], [at('tree') + 60, y - 265, 66]], swatch.green.fill, swatch.green.line, 6);
+    }
+    const extent = this.plan.mode === 'clues' ? 155 : 90;
+    const pondExtent = this.plan.mode === 'clues' ? 165 : 110;
     // Rock.
-    back.moveTo(at('rock') - 90, y + 4).bezierCurveTo(at('rock') - 90, y - 90, at('rock') + 90, y - 90, at('rock') + 90, y + 4).closePath().fill(0xb9b2a6).stroke({ width: 5, color: 0x8c857a });
+    if (show('rock')) back.moveTo(at('rock') - extent, y + 4).bezierCurveTo(at('rock') - extent, y - 90, at('rock') + extent, y - 90, at('rock') + extent, y + 4).closePath().fill(0xb9b2a6).stroke({ width: 5, color: 0x8c857a });
     // Pond, back half.
-    back.ellipse(at('pond'), y + 20, 110, 34).fill(0x7cc4f2).stroke({ width: 5, color: 0x5aa9e0 });
+    if (show('pond')) back.ellipse(at('pond'), y + 20, pondExtent, 34).fill(0x7cc4f2).stroke({ width: 5, color: 0x5aa9e0 });
     this.backs.addChild(back);
     const front = new Graphics();
     // Low enough that a face still peeks over the top.
-    puffs(front, [[at('bush') - 62, y + 2, 38], [at('bush'), y - 12, 43], [at('bush') + 62, y + 2, 38]], 0x7cc463, 0x4a9a35, 6);
+    if (show('bush')) puffs(front, [[at('bush') - 62, y + 2, 38], [at('bush'), y - 12, 43], [at('bush') + 62, y + 2, 38]], 0x7cc463, 0x4a9a35, 6);
     // The pond's near edge covers a swimmer's legs.
-    front.moveTo(at('pond') - 110, y + 20).bezierCurveTo(at('pond') - 110, y + 70, at('pond') + 110, y + 70, at('pond') + 110, y + 20).closePath().fill(0x7cc4f2).stroke({ width: 5, color: 0x5aa9e0 });
+    if (show('pond')) front.moveTo(at('pond') - pondExtent, y + 20).bezierCurveTo(at('pond') - pondExtent, y + 70, at('pond') + pondExtent, y + 70, at('pond') + pondExtent, y + 20).closePath().fill(0x7cc4f2).stroke({ width: 5, color: 0x5aa9e0 });
     this.fronts.addChild(front);
   }
 
@@ -231,19 +247,21 @@ class PhotoSafari implements Game {
     this.actors = this.scene.sightings.map((s) => {
       const a = new Actor(s);
       a.position.copyFrom(this.spotPos(s.spot));
-      onTap(a, () => void this.snap(a), { cooldown: 500 });
+      if (this.plan.mode === 'clues') a.eventMode = 'none';
+      else onTap(a, () => void this.snap(a), { cooldown: 500 });
       this.cast.addChild(a);
       a.scale.set(0);
       void this.ctx.tw.to(a.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
       return a;
     });
+    if (this.plan.mode === 'clues') this.resize(this.view);
     await this.ctx.tw.wait(0.4);
     this.busy = false;
     const t = this.target;
     if (this.plan.mode === 'snap') {
       if (this.photos === 0) await this.ctx.instruct('safari.snap');
     } else if (t) {
-      await this.ctx.instruct('safari.ask', { what: request(this.plan.mode, this.scene!) });
+      await this.ctx.instruct(this.plan.mode === 'clues' ? 'safari.clues' : 'safari.ask', { what: request(this.plan.mode, this.scene!) });
     }
   }
 
@@ -260,7 +278,7 @@ class PhotoSafari implements Game {
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      void this.ctx.say('safari.thatis', { desc: describe(this.plan.mode, a.sighting) });
+      void this.ctx.say('safari.thatis', { desc: describe(this.plan.mode === 'clues' ? 'both' : this.plan.mode, a.sighting) });
       if (this.wrongs >= 2 && t && !t.glow.visible) {
         t.glow.visible = true;
         this.hints++;
@@ -360,7 +378,7 @@ export const photoSafari: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Look at the album together at the end: "What is the bunny doing? Where is it?"',
+  coplayHint: 'Make an I spy request with an action and a place: "I spy someone jumping in the pond." Look at the album together at the end: "What is the bunny doing? Where is it?"',
   offScreen: 'Play "I spy" with places: "I spy a teddy under the table."',
   touchDemo: true,
   hubIcon: () => new SafariIcon(),

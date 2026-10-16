@@ -11,6 +11,16 @@ import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
 describe('game registry', () => {
+  it('appends Photo Safari two clues only to school, keeping earlier levels and pins', () => {
+    const g = gameById('photo-safari')!;
+    expect(g.levels('school')).toEqual({ min: 4, max: 7 });
+    expect(g.levels('prek')).toEqual({ min: 3, max: 5 });
+    expect(g.levels('preschool')).toEqual({ min: 2, max: 4 });
+    for (const band of ['lap', 'toddler'] as const) expect(g.levels(band)).toEqual({ min: 1, max: 2 });
+    for (const band of g.bands) for (const level of levelsInOrder(g.levels(band)).filter((l) => l <= 6)) expect(landing(level, g.levels(band))).toBe(level);
+    expect(stepLevel(7, 1, g.levels('school'))).toBe(7);
+  });
+
   it('adds Planet Hop only at the end of school without moving existing Launch pins', () => {
     const g = gameById('bouncy-launch')!;
     expect(g.bands).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school']);

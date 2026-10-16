@@ -1,5 +1,21 @@
 # Verification 2026-10-16 (archived entries)
 
+## 2026-10-16 — Chain Reaction level 7 Tap to turn
+
+- [PR #448](https://github.com/rjdunlap/neo/pull/448), `codex/chain-reaction-tap-turn`, claim `f702157` on base `e0a88f4` plus implementation diff (docs-only dispatch `c334599` integrated at `63bf7d7`, no game dependency changes): two preplaced ramp taps, unsolved seeded boards, exact flip solver/hints, pre-K order `[7,8,1,2,3]` and entry IDs `[7,8]`; existing IDs/pins, school range and bands retained.
+- Passed `npm run typecheck`; 47 focused tests (`npx vitest run src/games/chain-reaction/logic.test.ts src/games/registry.test.ts src/content/howto.test.ts`), including 200 seeded two-board rounds and every flip state's independently traced outcome, plus hint/bot progress and entry/pin checks. `npm run build` passed (existing chunk-size advisory).
+- `GAME_URL=http://localhost:5194 BROWSER_SUITE=machines CHAIN_LEVELS=7 npm run test:browser` passed: failed experiment/trail with zero misses, one requested hint, real ramp taps, both machines, saved result `[0,1]`, exactly one sticker and portrait fit/100-unit areas. Reviewed `test-results/browser/chain-reaction-7-portrait.png` (board, controls and pet clear).
+- Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=chain-reaction FINGER_LEVELS=7` passed cleanly in 13.2 s, through real taps. Both browser checks had no page errors. Initial sandbox Chromium launch was blocked; the authorized unsandboxed local run passed.
+- Not run: full units, other game levels/suites, world/offline (no navigation, save or asset contract changes), device speech/touch or child observation; these remain [device checks](../DEVICE-CHECKS.md). Owned Vite stopped after checks.
+
+## 2026-10-16 — Animal Snack busy-touch acknowledgment
+
+- [PR #446](https://github.com/rjdunlap/neo/pull/446), `claude/animal-snack-busy-touch`, commit `64191bf` on base `caf0f0d`: pure `busyTouch(busy, finished, target)` in `logic.ts`; while busy, a tapped animal pokes with a tick and an uneaten snack wiggles its inner drawing; no voice, food or miss, nothing queued.
+- `npm run typecheck`; `npx vitest run src/games/animal-snack` (10 passed, including the new `busyTouch` test).
+- `GAME_URL=http://localhost:5863 BROWSER_SUITE=woods WOODS_ONLY=snack` passed levels 1–5 with new assertions: level 2 second snack tap mid-eat wiggles and feeds nothing (fed 1, no misses or hints, node scale 1.2); level 3 round 2 wrong animal 150 ms after the right one is not a miss. Level-2 check fails with the wiggle removed.
+- Not run: `fingerdemo` (bot unchanged), build (no shared files), portrait screenshot. Open ([device checks](../DEVICE-CHECKS.md)): whether the wiggle reads as "wait" to a child.
+
+
 ## 2026-10-16 — Critter Sort worked example
 
 - [PR #418](https://github.com/rjdunlap/neo/pull/418), `claude/critter-sort-worked-example` (bff1137): a worked example at levels 1, 2, 3 and 5; two harness fixes (the `woods` sort loop plays `plan.rounds`; `fingerdemo` `FINGER_LEVELS` picks a band whose order has the level).

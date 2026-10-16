@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * different places. Tap one to take its photo. Requests grow from naming the animal to
  * what it's doing ("jumping") and where it is ("under the tree"), for verbs and positions.
  */
-export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both' | 'not';
+export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both' | 'not' | 'clues';
 export type Animal = 'cat' | 'dog' | 'bunny' | 'pig' | 'duck' | 'bear';
 export type Action = 'jumping' | 'sleeping' | 'eating' | 'dancing';
 export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
@@ -25,6 +25,7 @@ export const PLANS: SafariPlan[] = [
   { mode: 'where', photos: 4, animals: 3, name: 'Place words: "the duck under the tree"' },
   { mode: 'both', photos: 4, animals: 3, name: 'Both: "the cat sleeping behind the bush"' },
   { mode: 'not', photos: 4, animals: 3, name: 'Not: "the animal that is not sleeping"' },
+  { mode: 'clues', photos: 4, animals: 4, name: 'Two clues, no name: combine what an animal is doing and where it is' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -49,7 +50,7 @@ export interface Scene {
 }
 
 /** What a request talks about at each level. */
-const keys = (mode: SafariMode): (keyof Sighting)[] => (mode === 'who' ? ['animal'] : mode === 'not' ? ['action'] : mode === 'doing' ? ['animal', 'action'] : mode === 'where' ? ['animal', 'spot'] : mode === 'both' ? ['animal', 'action', 'spot'] : []);
+const keys = (mode: SafariMode): (keyof Sighting)[] => (mode === 'clues' ? ['action', 'spot'] : mode === 'who' ? ['animal'] : mode === 'not' ? ['action'] : mode === 'doing' ? ['animal', 'action'] : mode === 'where' ? ['animal', 'spot'] : mode === 'both' ? ['animal', 'action', 'spot'] : []);
 
 /** Does a sighting match the target on everything the request mentions? */
 export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolean {
@@ -57,11 +58,24 @@ export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolea
 }
 
 /**
- * One scene: animals in different spots, exactly one matching the request. Distractors share
- * part of the description (the same animal doing something else, or in another place), so
- * the extra words matter.
+ * One scene with exactly one match. Original modes use distinct spots; two-clue scenes
+ * share places so that neither the action nor the place alone identifies the target.
  */
 export function makeScene(plan: SafariPlan, rng: Rng): Scene {
+  if (plan.mode === 'clues') {
+    const [spot, otherSpot] = rng.shuffle([...SPOTS]);
+    const [action, otherAction] = rng.shuffle([...ACTIONS]);
+    const animals = rng.shuffle([...ANIMALS]);
+    // Neither clue suffices: one action-only, one place-only and one neither witness.
+    const sightings: Sighting[] = [
+      { animal: animals[0], action, spot },
+      { animal: animals[1], action: otherAction, spot },
+      { animal: animals[2], action, spot: otherSpot },
+      { animal: animals[3], action: otherAction, spot: otherSpot },
+    ];
+    const order = rng.shuffle([0, 1, 2, 3]);
+    return { sightings: order.map((i) => sightings[i]), target: order.indexOf(0) };
+  }
   for (let tries = 0; tries < 200; tries++) {
     const spots = rng.shuffle([...SPOTS]).slice(0, plan.animals);
     const target: Sighting = { animal: rng.pick(ANIMALS), action: rng.pick(ACTIONS), spot: spots[0] };
@@ -103,9 +117,9 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
 
 /** "the bunny jumping behind the bush", for the voice. */
 export function describe(mode: SafariMode, s: Sighting): string {
-  const parts = [`the ${s.animal}`];
-  if (mode === 'doing' || mode === 'both' || mode === 'snap' || mode === 'not') parts.push(s.action);
-  if (mode === 'where' || mode === 'both') parts.push(PLACE_WORDS[s.spot]);
+  const parts = [mode === 'clues' ? 'the animal' : `the ${s.animal}`];
+  if (mode === 'clues' || mode === 'doing' || mode === 'both' || mode === 'snap' || mode === 'not') parts.push(s.action);
+  if (mode === 'clues' || mode === 'where' || mode === 'both') parts.push(PLACE_WORDS[s.spot]);
   return parts.join(' ');
 }
 
@@ -117,3 +131,33 @@ export function request(mode: SafariMode, scene: Scene): string {
 
 /** Which animal a capable child photographs next: the one asked for, or in free snapping each in turn. Always a right one. */
 export const animalToTap = (scene: Scene, photos: number): number => (scene.target >= 0 ? scene.target : photos % scene.sightings.length);
+
+export interface SafariPoint { x: number; y: number }
+const SPOT_X: Record<Spot, number> = { tree: 0.24, bush: 0.45, rock: 0.66, pond: 0.86 };
+
+/** Shared places get two broad, separated stages; the earlier single-place layout stays intact. */
+export function spotPosition(spot: Spot, sightings: Sighting[], w: number, h: number): SafariPoint {
+  const shared = new Set(sightings.map((s) => s.spot)).size < sightings.length;
+  const occupied = SPOTS.filter((s) => sightings.some((a) => a.spot === s));
+  const x = shared ? (occupied.indexOf(spot) === 0 ? 0.3 : 0.76) : SPOT_X[spot];
+  return { x: w * x, y: h * 0.78 + (spot === 'rock' ? -56 : spot === 'pond' ? 26 : 0) };
+}
+
+export function sightingPositions(sightings: Sighting[], w: number, h: number): SafariPoint[] {
+  return sightings.map((s, i) => {
+    const at = spotPosition(s.spot, sightings, w, h);
+    const peers = sightings.flatMap((other, j) => other.spot === s.spot ? [j] : []);
+    return { x: at.x + (peers.length > 1 ? (peers.indexOf(i) === 0 ? -80 : 80) : 0), y: at.y };
+  });
+}
+
+/** Nearest body centre wins overlapping forgiving circles, independently of draw order. */
+export function nearestSighting(positions: SafariPoint[], point: SafariPoint): number {
+  let nearest = -1;
+  let distance = 95;
+  positions.forEach((p, i) => {
+    const d = Math.hypot(p.x - point.x, p.y - 60 - point.y);
+    if (d < distance) { nearest = i; distance = d; }
+  });
+  return nearest;
+}
