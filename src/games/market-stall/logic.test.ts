@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { coinArt, marketStall } from './index';
-import { anotherWay, coinToName, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
+import { anotherWay, coinToName, PIP_NUMERAL, pips, teachLine, hintCharge, missKind, stickerGood, fewest, makeOrders, PAID, paymentFor, payTouch, PLANS, sameWay, sum, target, usesFewestCoins } from './logic';
 
 describe('Market Stall', () => {
   it('asks for amounts from 1 to 10 that the level\'s coins can make, never the same twice running', () => {
@@ -153,5 +153,46 @@ describe('Market Stall', () => {
     expect(coinToName(3, 2, none)).toBeNull();
     expect(coinToName(2, 2, new Set([2]))).toBeNull();
     for (let level = 4; level <= PLANS.length; level++) for (const c of [1, 2, 5]) expect(coinToName(level, c, none)).toBeNull();
+  });
+  it('draws one pip per shell of value, five to a row, inside the coin and clear of its rim dots', () => {
+    for (const value of [1, 2, 3, 5, 10]) for (const r of [30, 35, 40, 44]) {
+      const dots = pips(value, r);
+      expect(dots).toHaveLength(value);
+      const rows = new Map<number, number>();
+      for (const d of dots) {
+        rows.set(d.y, (rows.get(d.y) ?? 0) + 1);
+        // Inside the coin's 4-unit outline.
+        expect(Math.hypot(d.x, d.y) + d.r).toBeLessThan(r - 2);
+        // Below the numeral (font size 0.95r, its glyphs about 0.35r either side of center, then scaled and lifted) and clear of the rim dots at 0.78r.
+        expect(d.y - d.r).toBeGreaterThan(r * (PIP_NUMERAL.y + 0.35 * PIP_NUMERAL.scale));
+        if (value <= 5) for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4;
+          expect(Math.hypot(d.x - Math.cos(a) * r * 0.78, d.y - Math.sin(a) * r * 0.78)).toBeGreaterThan(d.r + r * 0.08);
+        }
+      }
+      expect([...rows.values()].every((n) => n <= 5)).toBe(true);
+      if (value === 10) expect([...rows.values()]).toEqual([5, 5]);
+    }
+  });
+
+  it('teaches a strategy before the faint coins only at mix, ways and fewest, and the strategy pays legally', () => {
+    PLANS.forEach((plan) => {
+      if (!['mix', 'ways', 'fewest'].includes(plan.mode)) return void expect(teachLine(plan, null)).toBeNull();
+      expect(teachLine(plan, null)).toBe('biggest');
+      for (let want = plan.price[0]; want <= plan.price[1]; want++) {
+        // Biggest coin that fits first is the payment the hint then shows.
+        const biggest = fewest(want, plan.coins);
+        expect(sum(biggest)).toBe(want);
+        expect(usesFewestCoins(want, plan.coins, biggest)).toBe(true);
+        if (plan.mode !== 'ways') continue;
+        // On the second way, the hint swaps coins rather than repeating the first way.
+        for (const first of [biggest, fewest(want, [1, 2]), Array(want).fill(1)]) {
+          expect(teachLine(plan, first)).toBe('swap');
+          const second = anotherWay(want, plan.coins, first);
+          expect(sum(second)).toBe(want);
+          expect(sameWay(second, first)).toBe(false);
+        }
+      }
+    });
   });
 });

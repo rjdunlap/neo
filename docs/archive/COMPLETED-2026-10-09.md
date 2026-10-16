@@ -952,7 +952,7 @@ Typecheck, 16 Memory Match tests (200 seeded fraction selections: exact area/til
 
 ## Dot Link marks in the dots (2026-10-15)
 
-[PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, [dive](../deep-dives/dot-link.md#build-slices-in-order) slice 1: every dot color carries an always-on mark drawn inside it (red heart, blue drop, yellow star, green leaf, purple moon; `DOT_MARKS` in `src/games/dot-link/logic.ts`, drawn in `index.ts`), so color is never the only cue. No rule, level, save or setting change and no grown-up switch (decided always on, 2026-10-14). Checks: typecheck, Dot Link rule tests (a test that each color has a distinct mark), filtered `dots` play at levels 1–6, `fingerdemo` at level 6 ([entry](../VERIFICATION.md#2026-10-15--dot-link-marks-in-the-dots)). Open: legibility at 34-unit dots on a real iPad.
+[PR #404](https://github.com/rjdunlap/neo/pull/404), `claude/dot-link-marks-finish`, [dive](../deep-dives/dot-link.md#build-slices-in-order) slice 1: every dot color carries an always-on mark drawn inside it (red heart, blue drop, yellow star, green leaf, purple moon; `DOT_MARKS` in `src/games/dot-link/logic.ts`, drawn in `index.ts`), so color is never the only cue. No rule, level, save or setting change and no grown-up switch (decided always on, 2026-10-14). Checks: typecheck, Dot Link rule tests (a test that each color has a distinct mark), filtered `dots` play at levels 1–6, `fingerdemo` at level 6 ([entry](VERIFICATION-2026-10-15.md#2026-10-15--dot-link-marks-in-the-dots)). Open: legibility at 34-unit dots on a real iPad.
 
 ## Bug Builder paired wing finish (2026-10-15)
 
@@ -978,3 +978,7 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 ## Critter Sort level 8: A new sign (2026-10-16)
 
 [PR #428](https://github.com/rjdunlap/neo/pull/428), deep-dive slice 5: six critters sorted twice, first by one pictured rule then by a new spoken sign, with explicit hoop/mat answers on both passes. One sticker after the second sort, cumulative misses/hints, same nodes and drag handles, bot on both passes. School order appends stable ID 8; pre-K, saves and pins keep their meanings. Later levels and unresolved decisions remain proposed. [Verification](../VERIFICATION.md#2026-10-16--critter-sort-level-8-a-new-sign).
+
+## Market Stall pips and a teaching hint (2026-10-16)
+
+[PR #429](https://github.com/rjdunlap/neo/pull/429), `claude/market-stall-pips-hint`, completes deep-dive slice 2 (fresh 2 and 7): at levels 1–3 every coin (purse, mat, faint hint coins) shows one ink pip per shell, five to a row, under a smaller numeral, drawn on a stall-only layer (`shopCoin`; `pips`, `PIP_LEVELS`, `PIP_NUMERAL` in `logic.ts`) so `coinArt`, the hub icon, the sticker and Lemonade Stand's coins are unchanged. At mix, ways and fewest the two-miss hint first says a strategy line (`shop.hint.biggest`, or `shop.hint.swap` for a ways level's second payment), chosen by `teachLine`, then shows the faint coins; one hint per order. The how-to note is per level. Name the coin was built earlier (PR #378). [Verification](../VERIFICATION.md#2026-10-16--market-stall-pips-and-a-teaching-hint).

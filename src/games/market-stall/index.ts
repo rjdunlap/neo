@@ -14,7 +14,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { PLANS, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
+import { PLANS, PIP_LEVELS, PIP_NUMERAL, pips, teachLine, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -50,6 +50,20 @@ export function coinArt(value: number): Container {
     g.circle(Math.cos(a) * r * 0.78, Math.sin(a) * r * 0.78, r * 0.08).fill({ color: 0xffffff, alpha: 0.6 });
   }
   c.addChild(g, label(String(value), r * 0.95, ink));
+  return c;
+}
+
+/** A coin for the stall: at the first levels it also shows its value as pips, on a layer of its own (fresh 2). */
+function shopCoin(value: number, level: number): Container {
+  const c = coinArt(value);
+  if (level > PIP_LEVELS) return c;
+  const { r } = COIN_LOOK[value];
+  // Shrink and lift the numeral so the pips sit clear of it.
+  c.children[1].scale.set(PIP_NUMERAL.scale);
+  c.children[1].y = r * PIP_NUMERAL.y;
+  const g = new Graphics();
+  for (const d of pips(value, r)) g.circle(d.x, d.y, d.r).fill(ink);
+  c.addChild(g);
   return c;
 }
 
@@ -111,7 +125,7 @@ class MarketStall implements Game {
     this.ghost.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.keeper, this.stall, this.goods, this.mat, this.ghost, this.bell);
     for (const value of this.plan.coins) {
-      const node = coinArt(value);
+      const node = shopCoin(value, ctx.level);
       node.scale.set(1.25);
       node.hitArea = new Circle(0, 0, 46);
       onTap(node, () => this.add(value), { cooldown: 140 });
@@ -239,7 +253,7 @@ class MarketStall implements Game {
       void this.ctx.say('shop.full');
       return;
     }
-    const node = coinArt(value);
+    const node = shopCoin(value, this.ctx.level);
     node.eventMode = 'none';
     this.mat.addChild(node);
     this.onMat.push({ value, node });
@@ -338,10 +352,13 @@ class MarketStall implements Game {
       this.hints += hintCharge(this.wrongs, this.hinted, this.hintCharged);
       this.hintCharged = true;
       this.hinted = true;
+      // A strategy first, then one payment that follows it (fresh 7).
+      const teach = teachLine(this.plan, this.firstWay);
+      if (teach) await this.ctx.say(teach === 'swap' ? 'shop.hint.swap' : 'shop.hint.biggest');
       const want = target(this.plan, this.order);
       const idea = this.firstWay ? anotherWay(want, this.plan.coins, this.firstWay) : fewest(want, this.plan.coins);
       idea.forEach((v, i) => {
-        const c = coinArt(v);
+        const c = shopCoin(v, this.ctx.level);
         c.alpha = 0.45;
         c.scale.set(0.7);
         c.position.set(-200 + i * 60, -110);
