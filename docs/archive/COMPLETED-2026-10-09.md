@@ -997,7 +997,7 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 
 ## Critter Sort level 8: A new sign (2026-10-16)
 
-[PR #428](https://github.com/rjdunlap/neo/pull/428), deep-dive slice 5: six critters sorted twice, first by one pictured rule then by a new spoken sign, with explicit hoop/mat answers on both passes. One sticker after the second sort, cumulative misses/hints, same nodes and drag handles, bot on both passes. School order appends stable ID 8; pre-K, saves and pins keep their meanings. Later levels and unresolved decisions remain proposed. [Verification](../VERIFICATION.md#2026-10-16--critter-sort-level-8-a-new-sign).
+[PR #428](https://github.com/rjdunlap/neo/pull/428), deep-dive slice 5: six critters sorted twice, first by one pictured rule then by a new spoken sign, with explicit hoop/mat answers on both passes. One sticker after the second sort, cumulative misses/hints, same nodes and drag handles, bot on both passes. School order appends stable ID 8; pre-K, saves and pins keep their meanings. Later levels and unresolved decisions remain proposed. [Verification](VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-8-a-new-sign).
 
 ## Market Stall pips and a teaching hint (2026-10-16)
 
@@ -1022,3 +1022,7 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 ## Animal Snack busy-touch acknowledgment, visual-identity V2 (2026-10-16)
 
 [PR #446](https://github.com/rjdunlap/neo/pull/446), `claude/animal-snack-busy-touch`, slice 1 of the [visual-identity definition](../definitions/visual-identity.md): pure `busyTouch(busy, finished, target)` in `src/games/animal-snack/logic.ts` returns `'poke' | 'wiggle' | null`. While busy and not finished, a tapped animal gets `Critter.poke()` and `sfx.tick()` (also a wrong animal at level 3 during the right answer's eat and speech: no voice, food or miss), and an uneaten visible snack wiggles its inner drawing by rotation through `ctx.tw`, never the node's scale. Nothing is queued; eaten count, misses, hints, idle nudge, autotouch, bell, speaker bubble and `onTap` cooldowns are unchanged. Whether the wiggle reads as "wait" is the dive's decision 7 and a [device check](../DEVICE-CHECKS.md).
+
+## Clap the Syllables level 6, Beat train (2026-10-16)
+
+[PR #449](https://github.com/rjdunlap/neo/pull/449), `claude/clap-beat-train`, slice 3 of the [dive](../deep-dives/clap-syllables.md#build-slices-in-order): school now plays levels 5-6. Three pictures in a jumble go into the cars of a train, fewest claps at the back to most by the engine on the right; equal counts go either way round. Rules `fitsCar`, `nextForTrain` and `trainCounts` in `logic.ts`; rounds are three trains of three pictures with at least two distinct counts, counts 1-4, no picture twice. A wrong car is a miss (count said and clapped); the second and later misses add a hint that glows the picture for the first empty car; empty-space and loaded-car drops are free. The ghost finger drags the next fitting picture. The how-to card gained the level-6 lines and its level 4 and 5 steps were bounded so they stop leaking onto later levels. [Proof](../VERIFICATION.md#2026-10-16--clap-the-syllables-level-6-beat-train); device speech for the new lines and a child's play are not checked.

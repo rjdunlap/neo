@@ -28,11 +28,11 @@ export const WORDS: readonly Word[] = [
 
 export const byCount = (n: number) => WORDS.filter((x) => syllables(x) === n);
 
-export type ClapMode = 'along' | 'solo' | 'sort' | 'match';
+export type ClapMode = 'along' | 'solo' | 'sort' | 'match' | 'train';
 
 export interface ClapPlan {
   mode: ClapMode;
-  /** Words per round ('along', 'solo'), pictures to sort ('sort') or questions ('match'). */
+  /** Words per round ('along', 'solo'), pictures to sort ('sort'), questions ('match') or trains to line up ('train', three pictures each). */
   count: number;
   /** The most beats a word in this level has. */
   max: 2 | 3 | 4;
@@ -45,12 +45,16 @@ export const PLANS: ClapPlan[] = [
   { mode: 'sort', count: 5, max: 3, name: 'Sort pictures by how many claps are in their names' },
   { mode: 'match', count: 4, max: 3, name: 'Hear the claps, then find the picture with that many beats' },
   { mode: 'sort', count: 8, max: 4, name: 'Sort longer words by one, two, three or four claps' },
+  { mode: 'train', count: 3, max: 4, name: 'Beat train: line up three pictures from fewest claps to most' },
 ];
+
+/** Cars in a beat train: the pictures in one 'train' question. */
+export const CARS = 3;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Question {
-  /** One word to clap ('along', 'solo'), the pictures to sort ('sort'), or the pictures to choose from ('match'). */
+  /** One word to clap ('along', 'solo'), the pictures to sort ('sort'), the pictures to choose from ('match'), or the jumble to line up ('train'). */
   words: Word[];
   /** 'match': how many claps are played; exactly one picture has that many. */
   target?: number;
@@ -79,6 +83,17 @@ export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
       picked.push(rng.pick(available));
     }
     return [{ words: rng.shuffle(picked.map(take)) }];
+  }
+  if (plan.mode === 'train') {
+    // Each train has at least two different clap counts, so there is an order to find; a third picture may tie with one of them.
+    const left = (n: number) => pools.get(n)!.length;
+    return Array.from({ length: plan.count }, () => {
+      const first = rng.pick(counts.filter((n) => left(n) > 0));
+      const second = rng.pick(counts.filter((n) => n !== first && left(n) > 0));
+      const picked = [first, second];
+      picked.push(rng.pick(counts.filter((n) => left(n) > picked.filter((p) => p === n).length)));
+      return { words: rng.shuffle(picked.map(take)) };
+    });
   }
   // match: each question shows one picture of each size and plays one of those sizes.
   const targets = rng.shuffle([...counts]);
@@ -111,3 +126,21 @@ export function nextToSort<C extends { word: Word; sorted: boolean }, B extends 
 }
 
 export const pictureToTap = <C extends { word: Word }>(q: Question, cards: readonly C[]): C | undefined => cards.find((c) => c.word === answerOf(q));
+
+/** The beat train, fewest claps to most: the clap count each car holds, left to right. Equal counts may go either way round. */
+export const trainCounts = (words: readonly Word[]) => words.map(syllables).sort((a, b) => a - b);
+
+/** Whether a picture belongs in an empty car: the car's place in the fewest-to-most line has as many claps as the picture. */
+export const fitsCar = (words: readonly Word[], cars: readonly (Word | undefined)[], word: Word, car: number) =>
+  car >= 0 && car < words.length && !cars[car] && trainCounts(words)[car] === syllables(word);
+
+/**
+ * What goes next in a beat train, for the hint and the ghost finger: the first empty car, and a picture still waiting
+ * whose claps fit it.
+ */
+export function nextForTrain<C extends { word: Word; loaded: boolean }>(words: readonly Word[], cars: readonly (Word | undefined)[], cards: readonly C[]): { card: C; car: number } | undefined {
+  const car = words.findIndex((_, i) => !cars[i]);
+  if (car < 0) return undefined;
+  const card = cards.find((c) => !c.loaded && fitsCar(words, cars, c.word, car));
+  return card ? { card, car } : undefined;
+}

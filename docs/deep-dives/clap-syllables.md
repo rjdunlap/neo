@@ -1,12 +1,12 @@
 # Clap the Syllables deep dive
 
-*ID `clap-syllables` · bands preschool, pre-K, school · levels 1–5 on 2026-10-14 · session `claude/clap-syllables-deep-dive` ([PR #301](https://github.com/rjdunlap/neo/pull/301))*
+*ID `clap-syllables` · bands preschool, pre-K, school · levels 1–6 on 2026-10-16 · session `claude/clap-syllables-deep-dive` ([PR #301](https://github.com/rjdunlap/neo/pull/301))*
 
 ## The game today
 
 She hears that words are made of beats: the pet says a word and claps it, she claps along, claps alone, sorts pictures into clap bins, or hears claps and finds the picture. Learning: syllable segmentation and counting (phonological awareness), with a rhythm feel. Source baseline: `origin/main` `07a3099`; inspected `src/games/clap-syllables/` (`logic.ts`, `index.ts`, `logic.test.ts`), its [GAMES.md](../GAMES.md#clap-the-syllables) entry, its how-to card and its voice lines (`clap.*`).
 
-Band windows (`LEVELS`): preschool 1–2, pre-K 2–4, school 5. No lap or toddler window; no couch entry.
+Band windows (`LEVELS`): preschool 1–2, pre-K 2–4, school 5–6. No lap or toddler window; no couch entry.
 
 | Level | Plan | Bands | What she decides |
 | --- | --- | --- | --- |
@@ -15,6 +15,7 @@ Band windows (`LEVELS`): preschool 1–2, pre-K 2–4, school 5. No lap or toddl
 | 3 | Sort: 5 pictures, up to 3 | pre-K | Drag each picture to the 1-, 2- or 3-clap bin |
 | 4 | Match: 4 questions, up to 3 | pre-K | Hear N claps, tap the one picture (of three) with N beats |
 | 5 | Sort: 8 pictures, up to 4 | school | Four bins; long words |
+| 6 | Beat train: 3 trains of 3 pictures, counts 1–4 | school | Drag each picture into the train car for its count, fewest at the back |
 
 Content: 29 words with pictures — 16 one-beat, 6 two-beat, 5 three-beat and only **2 four-beat** (watermelon, helicopter). Rounds never repeat a word within a round, but level 5 always contains both four-beat words, so its hardest bin is the same two pictures every time.
 
@@ -99,7 +100,7 @@ Phoneme work, rhyme (Rhyme Time), a rhythm timing judge, printed syllables, and 
 
 1. **More words** (built 2026-10-14; about 12–16 words, with pictures; a dialect exclusion list; spelling and count tests). Unit tests, one portrait screenshot of level 5. Check tier: new content on an existing interaction.
 2. **Visible wait cue in solo** (built 2026-10-15, `claude/clap-syllables-wait-ring`, PR #374; a ring that fills over the 1.5 s pause; no rule change). Unit test on the timing constant; one filtered play. Existing-game tier.
-3. **Level 6, Beat train**. New interaction tier: rule tests, one scripted play (first and last level, wrong drop, hint), ghost finger, how-to card.
+3. **Level 6, Beat train** (built 2026-10-16, `claude/clap-beat-train`, [PR #449](https://github.com/rjdunlap/neo/pull/449)). New interaction tier: rule tests, one scripted play (first and last level, wrong drop, hint), ghost finger, how-to card.
 4. **Level 8, Longer or shorter?** and **level 9, Clap along (short)** (cheap).
 5. Decisions 1–3 before names, a toddler window and level 7.
 
@@ -110,3 +111,5 @@ Nothing: a deep dive session is research and ideation only. Links and `git diff 
 **Slice 1, More words (built 2026-10-14, `claude/clap-syllables-more-words`):** nine new words with code-drawn pictures (2 beats: pizza, rainbow, pencil, window, spider; 3: tomato, strawberry, pineapple; 4: caterpillar), 38 in all, short of the 12-16 the slice named, plus a dialect-exclusion test. Typecheck and vitest for `src/games/clap-syllables` and `src/content` passed (93 tests); one screenshot of the new pictures from a probe. Not run: a browser play of the game, a portrait screenshot, a device speech check of the words. Next: slice 2, the visible wait cue.
 
 **Slice 2, Visible wait cue in solo (built 2026-10-15, `claude/clap-syllables-wait-ring`, PR #374):** in solo (level 2) a ring round the hands pad fills over the 1.5 s pause after her last clap, so she can see the word is about to be counted. The fill is a pure `waitFill` in `logic.ts` (unit-tested; 0 before her first clap, clamped to 1), drawn in `index.ts`; the rules are unchanged. Typecheck, `vitest src/games/clap-syllables` (15 tests) and `BROWSER_SUITE=clap` passed on the dev server. Not run: a screenshot of the ring, a portrait view, an iPad or child check. Next: slice 3, Beat train (level 6).
+
+**Slice 3, Level 6 Beat train (built 2026-10-16, `claude/clap-beat-train`, [PR #449](https://github.com/rjdunlap/neo/pull/449)):** school now plays 5-6 (preschool 1-2 and pre-K 2-4 unchanged). Three pictures sit in a jumble above a train of three cars, engine on the right; she drags each into a car, fewest claps at the back to most by the engine, and equal counts are accepted either way round. A round is three trains of three pictures, each with at least two distinct counts, no picture twice, counts 1-4. A drop on a wrong car is a miss (boing, the word's count said and clapped); the second and later misses add a hint and glow the picture for the first empty car; a drop in empty space or on a loaded car is free. A loaded car shows beads; the full train claps each car and chugs away. Rules `fitsCar`, `nextForTrain`, `trainCounts` in `logic.ts`; the ghost finger drags the next fitting picture. The how-to gained a level-6 step and finish, and the level 4 and 5 steps (open-ended `from`) were bounded so level 5 no longer shows the level-4 line. Typecheck, vitest for `src/games/clap-syllables` and `src/content` (99 tests, four new train tests including 200-seed hint/ghost and 500-seed generation) and build passed; `BROWSER_SUITE=clap CLAP_LEVELS=6` and `fingerdemo` at level 6 passed ([proof](../VERIFICATION.md#2026-10-16--clap-the-syllables-level-6-beat-train)). Not run: levels 1-5 browser play, an iPad, device speech, a child. Next: slice 4, levels 8 and 9.
