@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Chain Reaction level 8 Which bell? (2026-10-16)
+
+[PR #441](https://github.com/rjdunlap/neo/pull/441), `claude/chain-reaction-which-bell`, [dive slice 2](../deep-dives/chain-reaction.md#build-slices-in-order): a pre-K entry before level 1 (pre-K `{ 1, 8, order [8, 1, 2, 3] }`, `entryLevels [8]`; school stays 3–6). A finished fixed machine with three bells; she taps the one she predicts, then runs it. A different bell is shown with the trail and never counts a miss; the bulb glows the start cup and is not a hint. Three machines make a round. The preschool window waits on dive decision 2.
+
 ### Critter Sort level 11 How many? (2026-10-16)
 
 [PR #439](https://github.com/rjdunlap/neo/pull/439), `codex/critter-sort-eleven`, dispatch `critter-sort-eleven-20261016T101434Z`: school appends stable ID 11, skipping reserved 10. Sort six critters into two separate hoops and the leaf mat; tap to count groups of one, two and three with spoken numbers, rings and badges, then choose the uniquely largest part. Repeated counting is free; two wrong comparisons reveal totals/glow and add one hint. Two diagrams earn one shell-owned sticker. Ghost finger sorts, counts and compares. [Proof](../VERIFICATION.md#2026-10-16--critter-sort-level-11-how-many). Existing IDs/pins and pre-K preserved; level 10, third feature, bands, kept creations/saves and unresolved decisions excluded. Device/child checks open.
