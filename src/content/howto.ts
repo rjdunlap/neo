@@ -788,7 +788,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Listen for the animal named, then tap it to take its photo.' },
       { from: 3, to: 3, text: 'Listen for the animal and what it is doing, like "the bunny jumping", then tap it.' },
       { from: 4, to: 4, text: 'Listen for the animal and where it is, like "the duck under the tree", then tap it.' },
-      { from: 5, to: 5, text: 'Listen for what it is doing and where it is, like "the cat sleeping behind the bush", then tap it.' },
+      { from: 5, to: 5, text: 'All three animals are the same kind. Listen for what it is doing and where it is, like "the cat sleeping behind the bush". Two fit each clue alone; tap the one that fits both.' },
       { from: 6, to: 6, text: 'Listen for what the animal is not doing, like "the animal that is not sleeping", then tap it.' },
       { from: 7, to: 7, text: 'Use both clues: what the animal is doing and where it is. Two animals fit each clue alone; tap the one that fits both.' },
     ],

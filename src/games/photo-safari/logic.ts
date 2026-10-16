@@ -58,10 +58,23 @@ export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolea
 }
 
 /**
- * One scene with exactly one match. Original modes use distinct spots; two-clue scenes
- * share places so that neither the action nor the place alone identifies the target.
+ * One scene with exactly one match. Both-clue modes share places so that neither
+ * the action nor the place alone identifies the target; other modes use distinct spots.
  */
 export function makeScene(plan: SafariPlan, rng: Rng): Scene {
+  if (plan.mode === 'both') {
+    const [spot, otherSpot] = rng.shuffle([...SPOTS]);
+    const [action, otherAction] = rng.shuffle([...ACTIONS]);
+    const animal = rng.pick(ANIMALS);
+    // Name alone and either name + action or name + place leave multiple matches.
+    const sightings: Sighting[] = [
+      { animal, action, spot },
+      { animal, action: otherAction, spot },
+      { animal, action, spot: otherSpot },
+    ];
+    const order = rng.shuffle([0, 1, 2]);
+    return { sightings: order.map((i) => sightings[i]), target: order.indexOf(0) };
+  }
   if (plan.mode === 'clues') {
     const [spot, otherSpot] = rng.shuffle([...SPOTS]);
     const [action, otherAction] = rng.shuffle([...ACTIONS]);
@@ -93,11 +106,6 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
           // Everyone else is doing the same thing; only the target is doing something different.
           s = { animal: rng.pick(ANIMALS), action: rng.pick(ACTIONS.filter((a) => a !== target.action)), spot };
           if (sightings.length > 1) s.action = sightings[1].action;
-          break;
-        case 'both':
-          s = rng.chance(0.5)
-            ? { animal: target.animal, action: target.action, spot }
-            : { animal: target.animal, action: rng.pick(ACTIONS.filter((a) => a !== target.action)), spot };
           break;
         default:
           s = { animal: rng.pick(ANIMALS.filter((a) => !sightings.some((x) => x.animal === a))), action: rng.pick(ACTIONS), spot };

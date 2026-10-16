@@ -4055,14 +4055,14 @@ async function batch() {
     await launch('photo-safari', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-    if (level === 7) {
+    if (level === 5 || level === 7) {
       assert.deepEqual(await page.evaluate(() => {
         const g = neo.scene.game, t = g.target.sighting;
         return [g.scene.sightings.filter((s) => s.action === t.action).length, g.scene.sightings.filter((s) => s.spot === t.spot).length];
       }), [2, 2]);
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(400);
-      await screenshot('photo-safari-7-portrait');
+      await screenshot(`photo-safari-${level}-portrait`);
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(400);
     }
@@ -4072,7 +4072,7 @@ async function batch() {
         await kit.until(() => g.photos === p && !g.busy && g.actors.length, 15000);
         const right = g.target ?? g.actors[p % g.actors.length];
         if (p === 0 && g.target) {
-          const wrong = g.actors.find((a) => a !== right && (g.plan.mode !== 'clues' || a.sighting.spot === right.sighting.spot));
+          const wrong = g.actors.find((a) => a !== right && (!['both', 'clues'].includes(g.plan.mode) || a.sighting.spot === right.sighting.spot));
           for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }
           if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible) throw new Error(`Safari hint: ${g.misses} ${g.hints}`);
         }

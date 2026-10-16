@@ -144,7 +144,7 @@ class PhotoSafari implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xa6de8e, 0x9edb86], horizon: 0.45, clouds: 3, sun: true, seed: 64 }, ctx.view);
-    if (this.plan.mode === 'clues') {
+    if (this.sharedPlaces) {
       onTap(this.cast, (e) => {
         const point = this.cast.toLocal(e.global);
         const i = nearestSighting(this.actors, point);
@@ -155,6 +155,10 @@ class PhotoSafari implements Game {
     // Scenery in front of the animals (the bush, the pond's edge, the flash) must not catch taps.
     for (const layer of [this.backs, this.fronts, this.album, this.flash]) layer.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.backs, this.cast, this.fronts, this.album, this.flash);
+  }
+
+  private get sharedPlaces(): boolean {
+    return this.plan.mode === 'both' || this.plan.mode === 'clues';
   }
 
   get target(): Actor | undefined {
@@ -169,7 +173,7 @@ class PhotoSafari implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.scene) return null;
     const animal = this.actors[animalToTap(this.scene, this.photos)];
-    return animal && !animal.destroyed ? { tap: { on: animal, y: -60 }, receiver: this.plan.mode === 'clues' ? this.cast : animal } : null;
+    return animal && !animal.destroyed ? { tap: { on: animal, y: -60 }, receiver: this.sharedPlaces ? this.cast : animal } : null;
   }
 
   private ground() {
@@ -186,7 +190,7 @@ class PhotoSafari implements Game {
     this.flash.clear().rect(0, 0, v.w, v.h).fill(0xffffff);
     this.drawSpots();
     this.layoutActors();
-    if (this.plan.mode === 'clues') this.cast.hitArea = new Rectangle(0, 0, v.w, v.h);
+    if (this.sharedPlaces) this.cast.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.album.position.set(180, 24);
   }
 
@@ -201,15 +205,15 @@ class PhotoSafari implements Game {
     this.fronts.removeChildren().forEach((c) => c.destroy());
     const y = this.ground();
     const at = (s: Spot) => this.spotPos(s).x;
-    const show = (s: Spot) => this.plan.mode !== 'clues' || this.scene?.sightings.some((a) => a.spot === s);
+    const show = (s: Spot) => !this.sharedPlaces || this.scene?.sightings.some((a) => a.spot === s);
     const back = new Graphics();
     // Tree: trunk and canopy, high enough to stand under.
     if (show('tree')) {
       back.roundRect(at('tree') - 70, y - 250, 36, 250, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
       puffs(back, [[at('tree') - 90, y - 270, 70], [at('tree') - 20, y - 300, 80], [at('tree') + 60, y - 265, 66]], swatch.green.fill, swatch.green.line, 6);
     }
-    const extent = this.plan.mode === 'clues' ? 155 : 90;
-    const pondExtent = this.plan.mode === 'clues' ? 165 : 110;
+    const extent = this.sharedPlaces ? 155 : 90;
+    const pondExtent = this.sharedPlaces ? 165 : 110;
     // Rock.
     if (show('rock')) back.moveTo(at('rock') - extent, y + 4).bezierCurveTo(at('rock') - extent, y - 90, at('rock') + extent, y - 90, at('rock') + extent, y + 4).closePath().fill(0xb9b2a6).stroke({ width: 5, color: 0x8c857a });
     // Pond, back half.
@@ -247,14 +251,14 @@ class PhotoSafari implements Game {
     this.actors = this.scene.sightings.map((s) => {
       const a = new Actor(s);
       a.position.copyFrom(this.spotPos(s.spot));
-      if (this.plan.mode === 'clues') a.eventMode = 'none';
+      if (this.sharedPlaces) a.eventMode = 'none';
       else onTap(a, () => void this.snap(a), { cooldown: 500 });
       this.cast.addChild(a);
       a.scale.set(0);
       void this.ctx.tw.to(a.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
       return a;
     });
-    if (this.plan.mode === 'clues') this.resize(this.view);
+    if (this.sharedPlaces) this.resize(this.view);
     await this.ctx.tw.wait(0.4);
     this.busy = false;
     const t = this.target;
