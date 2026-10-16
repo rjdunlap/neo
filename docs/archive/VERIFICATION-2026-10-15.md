@@ -416,3 +416,11 @@
 - Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=3 TO_LEVEL=3`: two rounds, two misses/one hint, free grass, required mat sorting and saved reward; portrait screenshot reviewed. Initial portrait failure was logical coordinates supplied as CSS pixels, diagnosed with `test-results/probe-neither.mjs` and fixed with `stage.toGlobal`.
 - Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=3` clean in 24.1 s. Restoring the old completion condition made the regression fail at its required-mat assertion; verified code restored byte-for-byte.
 - Sandbox Chromium bootstrap was blocked; escalated isolated run passed. Not run: full suites, offline or iPad checks (one-game tier); device speech and child understanding of the mat remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
+
+## 2026-10-15 — Critter Sort level 7 newcomer
+
+- [PR #426](https://github.com/rjdunlap/neo/pull/426), `codex/critter-sort-seven`, dispatch `critter-sort-seven-20261016T060833Z`: tested claim `f65dbf3` plus game/content/browser diff. School ID 7 places one newcomer in three sorted diagrams; school order `[2, 3, 4, 5, 7]`, pre-K and IDs/pins unchanged.
+- Passed typecheck, 45 focused Critter Sort/registry/how-to tests and build (existing chunk warning). The 300-seed newcomer test checks a unique movable critter, visible examples in all four regions, deterministic rules, all four answers across seeds, hint/bot selection and portrait/landscape destination geometry.
+- Passed `GAME_URL=http://localhost:5188 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=7 TO_LEVEL=7`: three diagrams, five sorted references/one drag each, free grass, two misses/one hint, saved result and one sticker, no page errors. Landscape and portrait hint screenshots reviewed.
+- Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=7` clean in 9.0 s. Initial sandbox Chromium bootstrap blocked; escalated isolated play passed. Links and diff checked; owned Vite stopped after checks.
+- Not run: full unit/browser suites, world/offline/couch, other game levels, real iPad/device speech or child play (new-levels tier). [Device checks](../DEVICE-CHECKS.md#needs-a-person-or-a-device) remain open. No save or shared engine change.

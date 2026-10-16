@@ -57,6 +57,15 @@ export function nearestFriend(points: { x: number; y: number }[], x: number, y: 
 export const shouldNudge = (mode: SnackMode, idle: number, busy: boolean, finished: boolean) =>
   (mode === 'munch' || mode === 'float') && idle >= 6 && !busy && !finished;
 
+/** What a touch gets while an eat or a sentence is under way: an animal squishes, a snack on the blanket wiggles. It never feeds or counts. */
+export type BusyAnswer = 'poke' | 'wiggle' | null;
+export type BusyTarget = { friend: true } | { snack: { eaten: boolean; visible: boolean } };
+export function busyTouch(busy: boolean, finished: boolean, target: BusyTarget): BusyAnswer {
+  if (!busy || finished) return null;
+  if ('friend' in target) return 'poke';
+  return !target.snack.eaten && target.snack.visible ? 'wiggle' : null;
+}
+
 /** Who eats what: one food each, so every question has one answer. */
 export const FAVORITE: Partial<Record<CritterName, Food>> = { cow: 'hay', bunny: 'carrot', dog: 'bone', cat: 'fish', duck: 'seeds', pig: 'apple', bear: 'honey' };
 export const ANIMALS = Object.keys(FAVORITE) as CritterName[];

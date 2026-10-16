@@ -5855,7 +5855,19 @@ async function woodsBatch() {
     // The animals must stand in the meadow, where a finger can reach them (at level 1 they once sat unplaced in the top-left corner).
     assert.ok(await page.evaluate(() => neo.scene.game.friends.every((f) => { const p = f.node.getGlobalPosition(); return p.x > 100 && p.x < innerWidth - 100 && p.y > innerHeight * 0.4; })), `animal snack level ${level}: the animals are on screen`);
     if (mode === 'munch') for (let k = 0; k < 6; k++) await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k % 3].name, k));
-    else if (mode === 'float') for (let k = 0; k < 6; k++) await tapSnack();
+    else if (mode === 'float') {
+      // A second snack touched while the first is being eaten wiggles, and is not queued or fed.
+      await page.evaluate(() => kit.tapOn(neo.scene.game.snacks.find((s) => !s.eaten).node));
+      await page.waitForTimeout(120);
+      assert.ok(await page.evaluate(() => neo.scene.game.busy), 'the first snack is being eaten');
+      await page.evaluate(() => { const g = neo.scene.game; g.wiggled = g.snacks.find((s) => !s.eaten); kit.tapOn(g.wiggled.node); });
+      await page.waitForTimeout(40);
+      assert.notEqual(await page.evaluate(() => neo.scene.game.wiggled.node.children[0].rotation), 0, 'a busy touch wiggles the snack');
+      await settle();
+      assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.eatenCount, g.snacks.filter((s) => s.eaten).length, g.wiggled.eaten, g.wiggled.node.scale.x]; }), [1, 1, false, 1.2], 'a busy touch feeds nothing');
+      assert.deepEqual(await counts(), [0, 0]);
+      for (let k = 1; k < 6; k++) await tapSnack();
+    }
     else if (mode === 'match') {
       const pairs = await page.evaluate(async () => { const L = await import('/src/games/animal-snack/logic.ts'); return neo.scene.game.snacks.map((s) => [s.food, L.eaterOf(s.food)]); });
       const others = await page.evaluate(() => neo.scene.game.friends.map((f) => f.name));
@@ -5870,7 +5882,14 @@ async function woodsBatch() {
         await idle(n);
         if (mode === 'who') {
           if (n === 0) { const wrong = r.animals.find((a) => a !== r.ask); await tapAnimal(wrong); await tapAnimal(wrong); assert.deepEqual(await counts(), [2, 1]); }
-          await tapAnimal(r.ask);
+          if (n === 1) {
+            // A wrong animal touched while the right one eats is poked, not counted as a miss.
+            await page.evaluate((name) => kit.tapOn(neo.scene.game.friends.find((f) => f.name === name).node, 0, -120), r.ask);
+            await page.waitForTimeout(150);
+            await page.evaluate((name) => kit.tapOn(neo.scene.game.friends.find((f) => f.name === name).node, 0, -120), r.animals.find((a) => a !== r.ask));
+            await settle();
+            assert.deepEqual(await counts(), [2, 1], 'a busy touch is not a miss');
+          } else await tapAnimal(r.ask);
         } else {
           const ring = async () => { await tap('neo.scene.game.bell'); await settle(); };
           if (n === 0) {
