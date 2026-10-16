@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Bubble Pop mode gallery (built 2026-10-16, #412):** on an iPad, hear the 15 spoken mode lines from the picture tile; ask whether a grown-up finds the named levels and the ladder (green suggested dot, red pin) clearer than numbers; note that pre-K landscape at 1024×768 shows no ladder. A second game (Pet Says or Jelly Drums) waits on this look.
+
 - [ ] **Critter Crossing bank shelf (#405):** on an iPad at levels 4–7, does the small crossed / waited shelf in the bottom-right corner read beside six critters, and does a child glance at it rather than lose track of who crossed?
 - [ ] **Color Garden Tap and it hops (level 9, #399):** hear each color on iPad, try repeated/quick taps and the how-to ghost finger in both orientations, and observe whether a one-year-old intentionally taps the fruit. Browser completion and portrait review do not establish device speech or child response.
 
