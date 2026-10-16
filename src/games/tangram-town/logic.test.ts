@@ -168,3 +168,17 @@ it('repair help follows actual mismatches even after changing more than one piec
  expect(repairAction(targets,pieces,0)).toEqual({pick:1});
  expect(repairMismatches(targets,pieces)).toEqual([1]);
 });
+
+// A broom's handle ends at the brush tip: no gap, overlap, or extra piece.
+it('the two-piece broom joins its handle to its brush and belongs only to the early pools',()=>{
+ const [handle,brush]=PICTURES.broom, h=world(handle), b=world(brush);
+ expect(handle.shape).toBe('rectangle');expect(brush.shape).toBe('roof');
+ expect(Math.max(...h.map(p=>p[1]))).toBe(Math.min(...b.map(p=>p[1])));
+ expect(b).toContainEqual([0,30]);expect(h.some(([x,y])=>x<0&&y===30)).toBe(true);
+ expect(h.some(([x,y])=>x>0&&y===30)).toBe(true);
+ expect(overlap(h,b)).toBe(false);
+ expect([...h,...b].every(([x,y])=>Math.abs(x)<=PICTURE_BOX.x&&y>=PICTURE_BOX.top&&y<=PICTURE_BOX.bottom)).toBe(true);
+ expect(PLANS.flatMap((p,i)=>p.pool.includes('broom')?[i+1]:[])).toEqual([1,2,3]);
+ // Every seeded tray, its useful hint and real quarter-turn bot path are
+ // exercised above for every pool entry; low levels require zero turns.
+});

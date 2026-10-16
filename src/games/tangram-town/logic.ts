@@ -24,6 +24,7 @@ export const PICTURES = {
   ferry: [{shape:'hull',x:0,y:100,turns:0},{shape:'triangle',x:0,y:-15,turns:0},{shape:'triangle',x:0,y:-15,turns:2}],
   rocket: [{shape:'rectangle',x:0,y:35,turns:1},{shape:'roof',x:0,y:-125,turns:0},{shape:'triangle',x:-120,y:65,turns:2},{shape:'triangle',x:120,y:65,turns:3}],
   lamp: [{shape:'hull',x:0,y:-65,turns:2},{shape:'rectangle',x:0,y:80,turns:1}],
+  broom: [{shape:'rectangle',x:0,y:-70,turns:1},{shape:'roof',x:0,y:100,turns:0}],
   shovel: [{shape:'rectangle',x:0,y:-45,turns:1},{shape:'hull',x:0,y:100,turns:0}],
   bus: [{shape:'rectangle',x:60,y:90,turns:0},{shape:'triangle',x:-110,y:70,turns:0},{shape:'triangle',x:-110,y:70,turns:2}],
   castle: [{shape:'triangle',x:0,y:30,turns:0},{shape:'triangle',x:0,y:30,turns:2},{shape:'roof',x:0,y:-100,turns:0},{shape:'rectangle',x:0,y:150,turns:0}],
@@ -42,9 +43,9 @@ export const PICTURE_IDS = Object.keys(PICTURES) as PictureId[];
 export const PICTURE_BOX = { x: 210, top: -220, bottom: 200 };
 export interface Plan { rotate: boolean; outlines: boolean; name: string; pool: readonly PictureId[]; alternatives?: boolean; repair?: boolean }
 export const PLANS: readonly Plan[] = [
-  { pool:['house','tree','lamp','tent','shovel'], rotate:false, outlines:true, name:'Two big shapes, already the right way up, make a house, tree, lamp, tent or shovel' },
-  { pool:['boat','sailboat','flag','lamp','tent','fish','shovel'], rotate:false, outlines:true, name:'Fit two shapes to build a boat, flag, lamp, tent, fish or shovel' },
-  { pool:['house','tree','flag','sailboat','lamp','tent','fish','shovel'], rotate:true, outlines:true, name:'Turn the shapes with quarter-turn snaps' },
+  { pool:['house','tree','lamp','tent','shovel','broom'], rotate:false, outlines:true, name:'Two big shapes, already the right way up, make a house, tree, lamp, tent, shovel or broom' },
+  { pool:['boat','sailboat','flag','lamp','tent','fish','shovel','broom'], rotate:false, outlines:true, name:'Fit two shapes to build a boat, flag, lamp, tent, fish, shovel or broom' },
+  { pool:['house','tree','flag','sailboat','lamp','tent','fish','shovel','broom'], rotate:true, outlines:true, name:'Turn the shapes with quarter-turn snaps' },
   { pool:['cottage','truck','tower','ferry','bus','barn'], rotate:true, outlines:true, name:'Two triangles make a square; three shapes fill a picture' },
   { pool:['rocket','houseboat','castle','robot','ship'], rotate:true, outlines:true, name:'Build a rocket, houseboat, castle, robot or ship from four shapes' },
   { pool:['cottage','truck','tower','ferry','houseboat','bus','castle','barn','robot','lighthouse','pine','bridge'], rotate:true, outlines:false, name:'Fill a silhouette; ask for outlines and the next turn when needed' },
