@@ -316,3 +316,8 @@ Reconciled completed [Color Garden #399](https://github.com/rjdunlap/neo/pull/39
 ### 2026-10-16 — Bumper Garden table dispatch
 
 Reconciled completed [Goodnight rooms #403](https://github.com/rjdunlap/neo/pull/403), confirmed merge and released its slot. Dot Link #404 is merged; retained dirty code matches origin/main byte-for-byte. Fresh allowance and overlap admitted only [Bumper Garden slice 3](deep-dives/bumper-garden.md#build-slices-in-order) to worker `01a14275-5f44-70b2-afb4-0d962c698c1e`. Queue records recalculated estimate, scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+
+### 2026-10-16 — Bug Builder flutter dispatch
+
+Reconciled completed Bumper Garden [#410](https://github.com/rjdunlap/neo/pull/410)/[#411](https://github.com/rjdunlap/neo/pull/411), confirmed merges and released its slot. Fresh allowance and overlap admitted only [Bug Builder slice 2](deep-dives/bug-builder.md#build-slices-in-order) to worker `01a142ae-a2cb-71e2-98b6-c0937479cdea`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
