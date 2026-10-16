@@ -50,7 +50,7 @@ Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none o
 2. **`dot-link`, marks in the dots**: new art only. Existing-game tier, `fingerdemo` at 6. [Dive slice 1](deep-dives/dot-link.md#build-slices-in-order)
 3. **`bumper-garden`, Pond and Hive tables**. Rules and art tier. [Dive slice 3](deep-dives/bumper-garden.md#build-slices-in-order)
 4. **`bug-builder`, wing flutter and a fold finish** at the mirror levels 5–7. Feel tier. [Dive slice 2](deep-dives/bug-builder.md#build-slices-in-order)
-5. **`critter-crossing`, bank shelf**, then **a visible "not" entry** as a second slice. Existing-game tier, then new-levels tier. [Dive slices 1 and 4](deep-dives/critter-crossing.md#build-slices-in-order)
+5. **`critter-crossing`, a visible "not" entry** between levels 1 and 2. Rule tests, one play, `fingerdemo`. [Dive slice 4](deep-dives/critter-crossing.md#build-slices-in-order)
 6. **`critter-sort`, the worked example at levels 1–3 and 5** (slice 1's remainder); then levels 7, 8, 9 and 11, one per slice. [Dive slices 1, 4–7](deep-dives/critter-sort.md#build-slices-in-order)
 7. **`market-stall`, pips and the teaching hint** (slice 2's remainder; Name the coin is built), then **more stalls** (slice 8). [Dive](deep-dives/market-stall.md#build-slices-in-order)
 8. **`chain-reaction`, level 8 *Which bell?*** (a no-penalty prediction), then **level 7 *Tap to turn***. New-levels tier. [Dive slices 2–3](deep-dives/chain-reaction.md#build-slices-in-order)

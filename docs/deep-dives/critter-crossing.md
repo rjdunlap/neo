@@ -21,7 +21,7 @@ Each level plays two rounds (`rounds: 2`). Pools: six rules, seven animals (`cow
 **Known gaps.**
 - School starts at level 2, so a school child meets only four plans, and only two of them add anything new (levels 4 and 5).
 - A critter has only two independent features (animal and hat). "Brown", "white", "floppy", "pointy" and "whiskers" are all functions of the animal, so a "both" rule often reduces to one animal, and "hat and X" is the only truly independent pairing. Richer rules need another visible feature, which is shared with Critter Sort's `SortCritter`.
-- Evidence is held only by the red marks and who has crossed; there is no tidy "crossed / waited" shelf to look back at, which is the memory load levels 4–5 lean on.
+- Evidence used to be held only by the red marks and who had crossed. The bank shelf (built 2026-10-15) now keeps a crossed row and a waited row on hidden levels; whether it reads at tablet size is still a device check.
 - Only prek and school play it; there is no preschool or younger entry. Level 1 is the only place the sign is visible, and it never shows "not" or "both".
 - Couch: none. Journal: no entries. Picnic: none.
 
@@ -96,7 +96,7 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 
 ## Build slices, in order
 
-1. **Bank shelf** (crossed / waited copies on hidden levels). Screenshot in landscape and portrait, `fingerdemo` for `critter-crossing`; no rule change. Tier: existing-game bug fix on an unchanged interaction.
+1. **Bank shelf** (built 2026-10-15, `claude/critter-crossing-bank-shelf`; crossed / waited copies on hidden levels). Screenshot in landscape and portrait, `fingerdemo` for `critter-crossing`; no rule change. Tier: existing-game bug fix on an unchanged interaction.
 2. **Level 6, Either one**: `or` gates, words, lookalikes, voice, how-to, README and GAMES lines, ghost finger. Tier: typecheck, that game's rule tests, one browser play of the new top level and `fingerdemo` at it.
 3. **Level 7, Settle it** (built 2026-10-15, `claude/critter-crossing-settle-it`): the splitter-choosing round. Same tier as slice 2.
 4. **Visible "not" entry** between levels 1 and 2 with `order` and `entryLevels`. Rule tests, one play, `fingerdemo`.
