@@ -400,3 +400,11 @@
 - Ran `npm run typecheck` (clean); `npx vitest run src/games/penguin-slide src/couch` (92 passed); full `npm test` 1359 passed with 4 known 5 s timeouts under parallel load (ferry-jam frozen harbors, peg-garden launcher aim, two penguin-slide logic tests), all passing in isolation (41/41); `npm run build` passed.
 - Passed `GAME_URL=http://localhost:5743 BROWSER_SUITE=couchcourse` on 715c7a2, including The Frozen Ponds by controller with the solver (perfect 31, one sticker, both badges; screenshot `couch-course-frozen`). One earlier run failed only on a wrong new assertion, since fixed.
 - Not run: `couch`, `couchgames`, offline, `world`; no controller or device check.
+
+## 2026-10-15 — Critter Crossing visible not entry
+
+- [PR #422](https://github.com/rjdunlap/neo/pull/422), `codex/critter-not-entry`; tested base `ca08480` plus scoped game/howto/browser diff (upstream integration changed dispatch docs only). Appended ID 8, pre-K `[1, 8, 2, 3]`, `entryLevels`; school and old IDs/pins unchanged.
+- Passed typecheck; 54 focused tests (`critter-crossing/logic`, registry, howto); build (existing chunk-size warning). Rule/bot tests cover 300 visible-not seeds, both outcomes, passing-only bot and existing plans; registry asserts order/landing.
+- Passed `GAME_URL=http://localhost:5187 BROWSER_SUITE=critternot`: two misses, one valid glow, both rounds, saved level-8 result/one sticker, no page errors. Landscape and portrait reviewed (`test-results/browser/critter-not-entry-{landscape,portrait}.png`). Initial harness tapped above the critter; corrected to its transformed body center (no game change).
+- Passed same URL `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-crossing FINGER_LEVELS=8`: 19.7 s, zero misses/hints. Links and `git diff --check` passed.
+- Not run: full units, other browser suites, offline/world (no persistence/navigation changes), real device/child checks; speech and slash interpretation remain in [DEVICE-CHECKS.md](../DEVICE-CHECKS.md).
