@@ -2,6 +2,7 @@ import type { CritterName } from '../../art/critter';
 import { RAINBOW, type ColorName } from '../../art/palette';
 import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
+import type { LineId } from '../../content/voice-script';
 
 export type BubbleMode = 'free' | 'color' | 'count' | 'bonds';
 
@@ -222,3 +223,42 @@ export function signFor(plan: BubblePlan, level: number, run: readonly number[])
   if (step > 1) return { kind: 'by', n: step, dots: false };
   return run[0] > 1 ? { kind: 'start', n: run[0], dots: false } : null;
 }
+
+/** What a mode's little picture on the how-to card shows: fixed example numbers, never a round's draw. */
+export type ModePicture =
+  | { kind: 'palm' }
+  | { kind: 'plain'; bubbles: number }
+  | { kind: 'colors'; colors: number }
+  /** Numbered bubbles in a row, then `… upTo` when the run goes on past them. */
+  | { kind: 'count'; numbers: number[]; upTo?: number; dots?: boolean }
+  /** The sign the round shows above its bubbles: a number to start at, or to count back from. */
+  | { kind: 'sign'; sign: number; numbers: number[]; arrow: 1 | -1 }
+  | { kind: 'bond'; numbers: [number, number]; sum: number };
+
+export interface BubbleModeCard {
+  name: string;
+  line: LineId;
+  picture: ModePicture;
+}
+
+/** A short name, a spoken line and a picture for every level, for the grown-up's intro card. Names are distinct in every band. */
+export const MODE_CARDS: Record<number, BubbleModeCard> = {
+  15: { name: 'Pop anywhere', line: 'bubble.mode.15', picture: { kind: 'palm' } },
+  1: { name: 'Pop the bubbles', line: 'bubble.mode.1', picture: { kind: 'plain', bubbles: 3 } },
+  2: { name: 'More bubbles', line: 'bubble.mode.2', picture: { kind: 'plain', bubbles: 4 } },
+  3: { name: 'Lots of bubbles', line: 'bubble.mode.3', picture: { kind: 'plain', bubbles: 5 } },
+  4: { name: 'Two colors', line: 'bubble.mode.4', picture: { kind: 'colors', colors: 2 } },
+  5: { name: 'Three colors', line: 'bubble.mode.5', picture: { kind: 'colors', colors: 3 } },
+  6: { name: 'Five colors', line: 'bubble.mode.6', picture: { kind: 'colors', colors: 5 } },
+  7: { name: 'Count to 5', line: 'bubble.mode.7', picture: { kind: 'count', numbers: [1, 2, 3], dots: true } },
+  8: { name: 'Count to 7', line: 'bubble.mode.8', picture: { kind: 'count', numbers: [1, 2, 3], upTo: 7, dots: true } },
+  9: { name: 'Count to 10', line: 'bubble.mode.9', picture: { kind: 'count', numbers: [1, 2, 3], upTo: 10 } },
+  10: { name: 'Make 5', line: 'bubble.mode.10', picture: { kind: 'bond', numbers: [2, 3], sum: 5 } },
+  11: { name: 'Make 10', line: 'bubble.mode.11', picture: { kind: 'bond', numbers: [4, 6], sum: 10 } },
+  12: { name: 'Start at a number', line: 'bubble.mode.12', picture: { kind: 'sign', sign: 4, numbers: [4, 5, 6], arrow: 1 } },
+  13: { name: 'Count back', line: 'bubble.mode.13', picture: { kind: 'sign', sign: 5, numbers: [5, 4, 3], arrow: -1 } },
+  14: { name: 'Tens and fives', line: 'bubble.mode.14', picture: { kind: 'count', numbers: [10, 20, 30] } },
+};
+
+/** The card for a level, clamped like `planFor`. */
+export const modeCardFor = (level: number): BubbleModeCard => MODE_CARDS[Math.min(PLANS.length, Math.max(1, level))];

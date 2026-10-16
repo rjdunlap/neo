@@ -290,8 +290,11 @@ export class GameScene extends Scene {
     const demo = this.demoAt(this.level);
     // Held arrows choose the level the round is built at. They stay within her band's levels, like the grown-up zone's picker.
     const range = mod.levels(this.band);
-    const pick = range.max > range.min ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta) } : undefined;
-    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo, pick });
+    // The ladder marks what her progress suggests and a grown-up's pin; neither follows the arrows. A celebration's next level is not a suggestion.
+    const suggested = store.levelFor(mod.id, range, mod.entryLevels);
+    const pinned = store.data.games[mod.id]?.pinned ?? null;
+    const pick = range.max > range.min ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta), suggested, pinned } : undefined;
+    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo, pick, levelCard: mod.levelCard });
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
     // The loop that follows her in from the place would sit under a demonstration of making music; `begin` plays the same style later.

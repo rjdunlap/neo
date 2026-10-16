@@ -1,4 +1,4 @@
-import type { GameHowTo, GameModule, LevelLine } from '../games/types';
+import type { GameHowTo, GameModule, LevelCard, LevelLine } from '../games/types';
 
 /**
  * Grown-up help for the touch games, one entry per game id. It sits next to the voice script rather than
@@ -1449,6 +1449,8 @@ export interface HowToCard {
   steps: readonly string[];
   finish: string;
   note?: string;
+  /** The level's name, spoken line and picture, for a game that gives them (`GameModule.levelCard`). */
+  mode?: LevelCard;
 }
 
 /** Whether a line holds at a level. */
@@ -1460,7 +1462,7 @@ function firstAt(lines: string | readonly LevelLine[] | undefined, level: number
   return lines.find((l) => holdsAt(l, level))?.text;
 }
 
-export function howToFor(mod: Pick<GameModule, 'id' | 'name' | 'describeLevel'>, level: number): HowToCard | null {
+export function howToFor(mod: Pick<GameModule, 'id' | 'name' | 'describeLevel' | 'levelCard'>, level: number): HowToCard | null {
   const entry = HOW_TO[mod.id];
   if (!entry) return null;
   return {
@@ -1471,6 +1473,7 @@ export function howToFor(mod: Pick<GameModule, 'id' | 'name' | 'describeLevel'>,
     steps: entry.steps.flatMap((s) => (typeof s === 'string' ? [s] : holdsAt(s, level) ? [s.text] : [])),
     finish: firstAt(entry.finish, level) ?? '',
     note: firstAt(entry.note, level),
+    ...(mod.levelCard ? { mode: mod.levelCard(level) } : {}),
   };
 }
 

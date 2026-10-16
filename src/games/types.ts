@@ -78,6 +78,13 @@ export interface GameHowTo {
 }
 
 /** A minigame describes itself and builds rounds. Everything around a round belongs to the shell. */
+/** A level's name, its spoken explanation and a picture fitting a 112-unit square centered on (0, 0), made fresh each call. */
+export interface LevelCard {
+  name: string;
+  line: LineId;
+  picture: () => Container;
+}
+
 export interface GameModule {
   id: string;
   /** For grown-ups (parent zone). Kids hear `titleLine` instead. */
@@ -95,6 +102,11 @@ export interface GameModule {
   entryLevels?: readonly number[];
   /** What a level plays like, in a few words for grown-ups ("Pop one color, 3 colors"). */
   describeLevel(level: number): string;
+  /**
+   * A short name, a picture and a spoken explanation for a level, shown on the intro and "?" cards (the intro also lays a
+   * row of the band's levels in play order). Optional: a game without it keeps the plain card. Bubble Pop only, for now.
+   */
+  levelCard?: (level: number) => LevelCard;
   music: MusicStyle;
   /** A prompt for the grown-up in early bands. `{name}` is the child's name. */
   coplayHint?: string;
