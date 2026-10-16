@@ -1012,6 +1012,8 @@ export const SCRIPT = {
   'shop.full': ['The counter is full. Put some coins back and try a bigger coin.'],
   'shop.name': ['That is a {word}. It is worth {word}.'],
   'shop.hint': ['Here is one way to make it.'],
+  'shop.hint.biggest': ['Try the biggest coin that fits first, then fill up what is left.'],
+  'shop.hint.swap': ['Try different coins: swap a big coin for smaller ones, or smaller ones for a big one.'],
   'shop.thanks': ['Thank you!', 'Here you go! Enjoy!', 'Thanks for shopping!'],
   'shop.done': ['The stall is all sold out. Thank you!'],
   'hop.find': ['Hop to {n}! Tap the lily pad with {n}.'],
