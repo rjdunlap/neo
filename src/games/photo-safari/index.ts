@@ -32,6 +32,7 @@ class Actor extends Container {
   readonly critter: Critter;
   readonly glow = new Graphics();
   private readonly extra = new Container();
+  private readonly gesture = new Graphics();
   private clock = Math.random() * 6;
   private next = 0.4;
 
@@ -41,8 +42,9 @@ class Actor extends Container {
     this.critter.scale.set(SCALE);
     this.glow.ellipse(0, -60, 90, 100).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.glow.visible = false;
-    this.addChild(this.glow, this.critter, this.extra);
+    this.addChild(this.glow, this.critter, this.extra, this.gesture);
     this.hitArea = new Circle(0, -60, 95);
+    this.drawGesture(0);
     if (sighting.action === 'sleeping') this.critter.setMood('sleepy');
     if (sighting.action === 'eating') {
       const apple = prop('apple', 'red');
@@ -52,9 +54,34 @@ class Actor extends Container {
     }
   }
 
+  /** Scene-owned Graphics: no timers or listeners survive an actor. */
+  private drawGesture(time: number) {
+    const g = this.gesture.clear();
+    if (this.sighting.action === 'waving') {
+      const sw = this.critter.sw;
+      const handX = 62 + 10 * Math.sin(time * 7);
+      const handY = -104 + 7 * Math.cos(time * 7);
+      g.moveTo(30, -48).quadraticCurveTo(60, -62, handX, handY)
+        .stroke({ width: 20, color: sw.line, cap: 'round' });
+      g.moveTo(30, -48).quadraticCurveTo(60, -62, handX, handY)
+        .stroke({ width: 13, color: sw.fill, cap: 'round' });
+      g.circle(handX, handY, 12).fill(sw.fill).stroke({ width: 3, color: sw.line });
+    } else if (this.sighting.action === 'swimming') {
+      const blue = swatch.blue;
+      // Water covers the feet even in a journal picture or photograph.
+      g.ellipse(0, -6, 65, 18).fill(blue.fill);
+      for (const side of [-1, 1]) {
+        const x = side * (45 + 6 * Math.sin(time * 5));
+        g.moveTo(x - 15, -12).quadraticCurveTo(x, -2, x + 15, -12)
+          .stroke({ width: 4, color: blue.line, cap: 'round' });
+      }
+    }
+  }
+
   update(dt: number) {
     this.clock += dt;
     this.critter.update(dt);
+    this.drawGesture(this.clock);
     if (this.glow.visible) this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 7);
     switch (this.sighting.action) {
       case 'jumping':
@@ -63,6 +90,11 @@ class Actor extends Container {
           this.critter.hop(0.75);
           this.next = 0.85;
         }
+        break;
+      case 'swimming':
+        this.critter.x = 9 * Math.sin(this.clock * 3);
+        this.critter.y = 5 * Math.sin(this.clock * 5);
+        this.critter.rotation = 0.1 * Math.sin(this.clock * 3);
         break;
       case 'dancing':
         this.critter.rotation = 0.22 * Math.sin(this.clock * 6);
@@ -94,11 +126,11 @@ class Actor extends Container {
   }
 }
 
-const ACTION_FRIEND: Record<Action, Animal> = { jumping: 'bunny', sleeping: 'cat', eating: 'pig', dancing: 'duck' };
+const ACTION_FRIEND: Record<Action, Animal> = { jumping: 'bunny', sleeping: 'cat', eating: 'pig', dancing: 'duck', waving: 'bear', swimming: 'duck' };
 
 /** A still from the safari for the discovery journal's action-word cards. */
 export function safariJournalPicture(action: Action): Container {
-  const actor = new Actor({ animal: ACTION_FRIEND[action], action, spot: 'tree' });
+  const actor = new Actor({ animal: ACTION_FRIEND[action], action, spot: action === 'swimming' ? 'pond' : 'tree' });
   actor.critter.alive = false;
   actor.glow.visible = false;
   if (action === 'jumping') {
@@ -302,7 +334,7 @@ class PhotoSafari implements Game {
 
   /** A photo of the animal flies up into the album strip. */
   private async polaroid(a: Actor) {
-    const tex = this.ctx.renderer.generateTexture({ target: a.critter, resolution: 1 });
+    const tex = this.ctx.renderer.generateTexture({ target: a, resolution: 1 });
     this.textures.push(tex);
     const card = new Container();
     const frame = new Graphics().roundRect(-80, -90, 160, 190, 8).fill(0xffffff).stroke({ width: 4, color: 0xd6dde4 });

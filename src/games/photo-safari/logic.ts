@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  */
 export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both' | 'not' | 'clues';
 export type Animal = 'cat' | 'dog' | 'bunny' | 'pig' | 'duck' | 'bear';
-export type Action = 'jumping' | 'sleeping' | 'eating' | 'dancing';
+export type Action = 'jumping' | 'sleeping' | 'eating' | 'dancing' | 'waving' | 'swimming';
 export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
 
 export interface SafariPlan {
@@ -31,7 +31,9 @@ export const PLANS: SafariPlan[] = [
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export const ANIMALS: Animal[] = ['cat', 'dog', 'bunny', 'pig', 'duck', 'bear'];
-export const ACTIONS: Action[] = ['jumping', 'sleeping', 'eating', 'dancing'];
+export const ACTIONS: Action[] = ['jumping', 'sleeping', 'eating', 'dancing', 'waving', 'swimming'];
+/** A swimming animal must have water; other actions work at every spot. */
+export const actionsAt = (spot: Spot): Action[] => ACTIONS.filter((a) => a !== 'swimming' || spot === 'pond');
 export const SPOTS: Spot[] = ['tree', 'bush', 'rock', 'pond'];
 export const PLACE_WORDS: Record<Spot, string> = { tree: 'under the tree', bush: 'behind the bush', rock: 'on the rock', pond: 'in the pond' };
 
@@ -64,7 +66,8 @@ export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolea
 export function makeScene(plan: SafariPlan, rng: Rng): Scene {
   if (plan.mode === 'both') {
     const [spot, otherSpot] = rng.shuffle([...SPOTS]);
-    const [action, otherAction] = rng.shuffle([...ACTIONS]);
+    // Each action must occur at two distinct places, so pond-only swimming cannot be a clue.
+    const [action, otherAction] = rng.shuffle(actionsAt('tree'));
     const animal = rng.pick(ANIMALS);
     // Name alone and either name + action or name + place leave multiple matches.
     const sightings: Sighting[] = [
@@ -77,7 +80,8 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
   }
   if (plan.mode === 'clues') {
     const [spot, otherSpot] = rng.shuffle([...SPOTS]);
-    const [action, otherAction] = rng.shuffle([...ACTIONS]);
+    // Each action must occur at two distinct places, so pond-only swimming cannot be a clue.
+    const [action, otherAction] = rng.shuffle(actionsAt('tree'));
     const animals = rng.shuffle([...ANIMALS]);
     // Neither clue suffices: one action-only, one place-only and one neither witness.
     const sightings: Sighting[] = [
@@ -91,24 +95,25 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
   }
   for (let tries = 0; tries < 200; tries++) {
     const spots = rng.shuffle([...SPOTS]).slice(0, plan.animals);
-    const target: Sighting = { animal: rng.pick(ANIMALS), action: rng.pick(ACTIONS), spot: spots[0] };
+    const target: Sighting = { animal: rng.pick(ANIMALS), action: rng.pick(actionsAt(spots[0])), spot: spots[0] };
     const sightings: Sighting[] = [target];
     for (const spot of spots.slice(1)) {
       let s: Sighting;
       switch (plan.mode) {
         case 'doing':
-          s = { animal: rng.chance(0.7) ? target.animal : rng.pick(ANIMALS), action: rng.pick(ACTIONS.filter((a) => a !== target.action)), spot };
+          s = { animal: rng.chance(0.7) ? target.animal : rng.pick(ANIMALS), action: rng.pick(actionsAt(spot).filter((a) => a !== target.action)), spot };
           break;
         case 'where':
-          s = { animal: target.animal, action: rng.pick(ACTIONS), spot };
+          s = { animal: target.animal, action: rng.pick(actionsAt(spot)), spot };
           break;
         case 'not':
           // Everyone else is doing the same thing; only the target is doing something different.
-          s = { animal: rng.pick(ANIMALS), action: rng.pick(ACTIONS.filter((a) => a !== target.action)), spot };
+          // Distractors share an action across distinct spots, including dry land.
+          s = { animal: rng.pick(ANIMALS), action: rng.pick(actionsAt('tree').filter((a) => a !== target.action)), spot };
           if (sightings.length > 1) s.action = sightings[1].action;
           break;
         default:
-          s = { animal: rng.pick(ANIMALS.filter((a) => !sightings.some((x) => x.animal === a))), action: rng.pick(ACTIONS), spot };
+          s = { animal: rng.pick(ANIMALS.filter((a) => !sightings.some((x) => x.animal === a))), action: rng.pick(actionsAt(spot)), spot };
       }
       sightings.push(s);
     }

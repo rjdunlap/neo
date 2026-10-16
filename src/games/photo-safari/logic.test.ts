@@ -1,6 +1,6 @@
 import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalToTap, describe, makeScene, matches, PLANS, request, nearestSighting, sightingPositions } from './logic';
+import { ACTIONS, animalToTap, describe, makeScene, matches, PLANS, request, nearestSighting, sightingPositions } from './logic';
 
 group('Photo Safari', () => {
   it('always has exactly one animal matching the request, with distinct spots in the original modes', () => {
@@ -78,6 +78,25 @@ group('Photo Safari', () => {
         });
         expect(nearestSighting(positions, { x: 0, y: 0 })).toBe(-1);
       }
+    }
+  });
+
+  it('keeps swimming in water across every mode while offering every action', () => {
+    for (const plan of PLANS) {
+      const seen = new Set<string>();
+      const targets = new Set<string>();
+      for (let seed = 1; seed <= 500; seed++) {
+        const scene = makeScene(plan, new Rng(seed));
+        for (const s of scene.sightings) {
+          if (s.action === 'swimming') expect(s.spot).toBe('pond');
+          seen.add(s.action);
+        }
+        if (scene.target >= 0) targets.add(scene.sightings[scene.target].action);
+      }
+      // Two-place conjunctions cannot repeat pond-only swimming at a dry place.
+      const expected = ACTIONS.filter((a) => a !== 'swimming' || !['both', 'clues'].includes(plan.mode));
+      expect([...seen].sort()).toEqual([...expected].sort());
+      if (plan.mode !== 'snap') expect([...targets].sort()).toEqual([...expected].sort());
     }
   });
 
