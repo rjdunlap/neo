@@ -28,11 +28,11 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Dispatch `barnyard-identity-20261016T171305Z`; worker `01a145b5-14be-7a70-bf23-05834da67fa9`, host `local`, branch `codex/barnyard-land-identity`, claim `62a8378`, [PR #460](https://github.com/rjdunlap/neo/pull/460). Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks. Base `bff537a` (claim parent); docs-only upstream through `3f261c5` integrated at `d4abb5b`.
-- Completed only V1 definition slice 2: Barnyard land barn silhouette, fence/straw edge, milk pail and first-session pentatonic marimba greeting. Game backgrounds, other lands, input, saves, layout/navigation and music loop unchanged. Ready-list line removed; device/child recognition/audio remain open.
-- Coordinator admission **61% / 81%**, worker scope **64% / 81%**, pre-code **67% / 82%**, pre-verification **69% / 82%**, pre-publication **72% / 83%**; resets `1792178084` / `1792650157`, ordinary usage allowed. Estimate **18.75 / 3.75 points** fit remaining allowance. Independent research and dispatch docs preserved.
-- [Proof](VERIFICATION.md#2026-10-16--barnyard-land-identity-v1): typecheck/build; units 1400/1401 with the one unchanged timeout passing alone; 14 lands tests/all-band four-view fit; clean isolated portrait/landscape, cow touch, scenery input/layer order, first/revisit/session-reset greeting and exit cancellation at `http://localhost:5198`. Owned Vite stopped. No world/offline/game suites (unchanged scope).
-- Next: publish and merge #460, confirm deployment, then stop. Final post-commit usage reading goes in the worker response for one-time coordinator reconciliation.
+- Dispatch `planet-hop-20261016T182105Z`; worker `01a145f2-c677-7c62-a022-7bdf79702997`, host `local`, branch `codex/planet-hop-12`, draft PR pending. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency checks.
+- Scope: only Bouncy Launch school level 12 per [definition](definitions/planet-hop.md); same shown pull, light/heavy comparison, three pairs, unscored prediction and counted requested help. Preserve levels 1–7, IDs/pins and Cloud Hopper v1; no saves/journal changes.
+- Scope admission **79% / 84%**, resets `1792178084` / `1792650157`; ordinary usage allowed. Estimate **18.75 / 3.75 points** fits. Clean tree and overlap check clear; branch starts at `30233f5`.
+- Proof: not run. Expected files: Bouncy Launch logic/rendering and rule/course tests, voice/how-to, filtered browser case, README/GAMES/roadmap/definition/verification and queue.
+- Next: publish claim/draft PR, implement this slice, proportionate verification, publish/merge or checkpoint, then stop.
 
 ## Usage observations
 
