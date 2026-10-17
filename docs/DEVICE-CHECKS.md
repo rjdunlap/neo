@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Home/navigation RW03 (2026-10-17, #501):** run the [short observed-play script](rework/HOME-NAVIGATION.md#short-observed-play-script-and-open-observations) with lap/toddler co-play, preschool and school separately. Record Home/Back/Next-game interpretation, creature/dress discovery, younger-favorite retrieval, interrupted-project recovery and speech/reach on an iPad. Prototype only; real game/save/controller integration must first land in RW05–RW08. None run.
+
 - [ ] **Creature art prototype (RW02, 2026-10-17, #499):** on an iPad, open a dev build at `/?creatures` in both orientations; watch the frame rate with all six creatures moving (headless software rendering gave ≈21 fps, which says nothing about the device), tap each creature and card, and check the hop, rear-up and loop feel right under a finger. Show a child the three creatures with and without the scarf and crown: do they tell them apart, want to touch and dress them, and mind that the glider wears no scarf? None of this was run.
 
 - [ ] **Creature-world name and opening (RW01 packet, 2026-10-17):** have a 4–6-year-old, an 8–11-year-old and a grown-up say "Puddlewild" and "Puddlings" after hearing each once, ask a day later for the name, ask a parent who sees only the title and its descriptive line what kind of app it is, and listen to iPad speech say both names and the [opening lines](rework/NAME-AND-STORY.md#pictured-opening). Before any public rename, a real USPTO/App Store/Google Play/domain screen. None of this was run.

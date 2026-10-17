@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW03 home and navigation exploration (2026-10-17)
+
+[PR #501](https://github.com/rjdunlap/neo/pull/501): [packet](../rework/HOME-NAVIGATION.md) and standalone document wireframe cover age presentations, creature/collection/dress, Explore/workshop/library, full-catalog responsibilities, Home/Back, project interruption, profile/input boundaries and exact RW05–RW08 gates. Reconciles landed D1b; no production cutover or downstream implementation. Desktop route-state inspection and both layouts, links/diff passed; real-child/device and production integration remain open. [Proof](../VERIFICATION.md#2026-10-17--rw03-home-and-navigation-packet).
+
+
 ### Discovery D1b direct Next game (2026-10-17)
 
 [PR #483](https://github.com/rjdunlap/neo/pull/483), `codex/discovery-direct-next`, dispatch `discovery-direct-20261017T013407Z`: pictured Next game/Another after eligible ordinary lap/toddler touch results, fixed Bubble Pop/Barn/Fill and Dump pool, completion-based selection and transient per-profile memory. Launch revalidates the pictured target and uses its normal current band/pin/intro with the original return context. Existing result controls, explicit Keep and single round settlement remain intact; result layout reflows in both orientations. Native pointer cancellation was reproduced and fixed. No mixes, new settings, controller discovery or save fields. [Verification](../VERIFICATION.md#2026-10-17--discovery-d1b-direct-next-game); iPad speech/reach and child interpretation remain open. D2a is the next definition.
