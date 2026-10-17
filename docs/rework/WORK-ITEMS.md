@@ -14,7 +14,7 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 | [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | prototype and packet done 2026-10-17 ([CREATURE-ART.md](CREATURE-ART.md)); production style is a developer decision | None; use provisional names |
 | [RW02b](#rw02b-generated-creature-art-and-animation-pilot) | Generated creature art and animation pilot | partly done 2026-10-17 ([PR #503](https://github.com/rjdunlap/neo/pull/503), [result](GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)): pipeline, rig and comparison proven on a concept-sheet stand-in; **step 1, generating candidates, still ready**: the developer runs ChatGPT passes from the [art bible](ART-BIBLE.md) and [prompts](ART-PROMPTS.md); the developer chose the illustrated direction | RW02 prototype; no RW03 dependency |
 | [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | packet and wireframe done 2026-10-17 ([HOME-NAVIGATION.md](HOME-NAVIGATION.md)); production cutover waits for RW08 | Reconciled D1b; RW01 informs language |
-| [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | ready, docs definition | Existing game/source audit; coordinate RW01–RW03 |
+| [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | done 2026-10-17: [packet](WELCOME-ADVENTURE.md) | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | define after upstream packets | RW02, RW03 |
 | [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | define after upstream packets | RW03, RW05 |
 | [RW07](https://github.com/rjdunlap/neo/issues/491) | Welcome adventure and visible reward | define after upstream packets | RW04, RW06 |
@@ -104,6 +104,8 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 - Identify overlaps with Missing Melody, visual/habitat studies and current creation storage; specify the first complete implementation slice and its check filters before RW07 is ready.
 
 **Likely files:** a definition under `docs/rework/`, references to existing game logic/how-to/voice and picnic contracts. **Proof:** source/rule audit, links and diff; no claim of observed engagement or learning transfer.
+
+**Delivered 2026-10-17:** [Welcome a New Friend packet](WELCOME-ADVENTURE.md): Stamp Studio 3/4, Pet Kitchen 2/5 (fixed plates the round guarantees) and Song Maker 2 (free loop, a stated out-of-range exception awaiting the developer), typed step results kept with the project, once-only adoption/item, evidence classes and the RW07a/RW07 slice. Observed play and learning not run.
 
 ## RW05: Creature collection and active companion
 

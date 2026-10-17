@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — RW04 welcome adventure definition
+
+- Defined Welcome a New Friend in [the packet](rework/WELCOME-ADVENTURE.md) from a source audit at `84e1433`: Stamp Studio, Pet Kitchen and Song Maker ranges, which rounds report a creation, which Pet Kitchen levels fix their plates, and how a story round's creation is (not) kept today. Docs only; no code, save, voice or band change.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser, offline and fingerdemo not run: no code changed.
+- Open: the developer's hello-song level decision; RW05/RW06 before RW07; observed play and learning.
+
 ## 2026-10-17 — Sprout Shuffle G1 definition
 
 - Defined Sprout Shuffle levels 1–3 in [the definition](definitions/sprout-shuffle.md): one-locus rules, four-route tables, Check/help/finish and layouts. Docs only; no code, registration, voice, save or band change. G2 stays blocked on four developer decisions (reviewer, school entry, level 1 accounting, home land), each with a proposal.
@@ -95,24 +101,13 @@
 - Recorded the requested astronomy follow-up as not started, linked to the completed Space study and roadmap. Scope: stars/life cycles, galaxies, telescopes/observational evidence, deeper eclipse/season models; existing Space candidate identities and overlaps retained.
 - Local Markdown links/anchors and `git diff --check` passed. Setup only: no external research, completed subject study, implementation, code/build/browser/device checks or scientific review claimed.
 
-## 2026-10-16 — Chemistry follow-up research brief
-
-- Recorded the requested chemistry follow-up as not started, linked to the completed Matter study and roadmap. Brief covers atoms/molecules, reactions/conservation and possible acids/bases extension, audience/overlap questions, and SpaceChem as a requested reference.
-- Official SpaceChem description inspected through search output; educator guide only seen in search summary. No game played, curriculum anchors opened, full subject research or implementation claimed in this setup pass.
-- Local Markdown links/anchors and `git diff --check` passed. Docs only; code/build/browser/device checks not run.
-
-## 2026-10-16 — Writing and typing research gaps
-
-- Checked composition/Letter Trails coverage and opened primary CCSS W.3.6, W.4.6 and grade-1 Language text. Added unstarted keyboarding/editing and spelling/sentence research rows; clarified composition versus handwriting and touchscreen versus hardware input boundaries in the follow-up audit.
-- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code, browser, device or learning-transfer checks. Full developmental/teaching research remains open.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Creature-world rework planning | 2026-10-17: RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW02b pilot](#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](#2026-10-17--rw02-creature-art-prototype), [RW01 packet](#2026-10-17--rw01-name-and-story-packet), [rework plan](#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
+| Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](#2026-10-17--rw02-creature-art-prototype), [RW01 packet](#2026-10-17--rw01-name-and-story-packet), [rework plan](#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
