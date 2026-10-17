@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-17 — Garden Grow deep dive
+
+- [PR #530](https://github.com/rjdunlap/neo/pull/530), `claude/dive-garden-grow`, docs only: [deep dive](deep-dives/garden-grow.md) with the ladder for levels 1–7 today, fresh content (true how-to, growth stages, flower kinds) and appended levels 8 *Grow it up* (lap) and 9–11 rows, columns and same in every row (pre-K).
+- Found reading the code: uncapped how-to steps at 5 and 7, level 3's untrue take-out step, level 7 always solved by filling every bed, no words for full beds or a seed taken out. Recorded, not fixed.
+- Opened Common Sense Media (Sago Mini Farm, Toca Nature, Toca Lab: Plants, Plants HD), GamePressure's Viva Piñata guide, the Nico & Nor App Store page, NGSS K-LS1-1 and the CDC 15-month page; the Viva Piñata wiki (402), Tenderleaf, First Orchard and 2-LS2-1 are search summaries; Stardew Valley/Harvest Moon recalled.
+- Seven ready slices added to the roadmap; one decision row to WAITING. Under the Soil and the other subject modes stay with their own definitions.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Shape Buddies level 3 definition
 
 - Defined Shape Buddies' two-shapes-combined level in [the definition](definitions/shape-buddies-combined.md): a wide gap where a flat friend (near half) and a cup friend (far half) hold hands into a spoon; the existing `bridge`/`receiver` docks move side by side, `PLANS[3]` accepts only Flat, a pure `failureLine` picks four new spoken failures, misses stay 0, per-role hints, the guidance-driven bot, how-to `LevelLine`, pre-K and school 1–3.
