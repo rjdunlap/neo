@@ -104,7 +104,7 @@ The wing beats at 2.2 rad/s at idle and eases up to 9 rad/s during the touch loo
 - **Edges:** the sprite was checked on light, dark and checkerboard backgrounds.
 - **Production build:** no sprite or preview code in `dist/` or the precache, so no offline check is needed.
 
-**Assessment.** The illustrated glider keeps the concept's broad wing, integrated body, cloud markings and ribbons, which is what the Graphics version lost. Whether it is better is the developer's call: look at the images above or the live preview.
+**Assessment.** The illustrated glider keeps the concept's broad wing, integrated body, cloud markings and ribbons, which is what the Graphics version lost. **Developer verdict (2026-10-17): "the illustrated looks much better."** Illustrated sprites on a mesh rig are the creature direction. RW05 keeps the illustrated glider and deletes the Graphics glider; sprout and river follow once real candidates are generated (step 1).
 
 **Defects and limits:**
 - **Soft source.** About 1.4 sprite pixels per logical unit on the stage, so about 0.7 per device pixel on a 2× iPad: visibly soft up close. A production generation should be at least 2–3× larger.
