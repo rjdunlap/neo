@@ -71,7 +71,7 @@ The existing celebration is unchanged: sticker, pet, discovery pill, Heart, Keep
 
 ### Leaving a game during a mix
 
-The pause sheet opens only from Esc or a pad, so on touch it cannot be a child's only way to skip. Instead, **while a mix is live, every route back to the home spot reopens the preview** at the next-up stop:
+The pause sheet opens only from Esc or a pad, so on touch it cannot be a child's only way to skip. Instead, **while a mix is live, every route back to the home spot reopens the preview** at the next-up stop. This departs from the study, which has leaving end the first pilot's mix: touch Skip needs a screen to live on, and the preview is that screen. The preview's **Back** is the mix's **Explore**, so the roadmap's "Explore ends the itinerary" still holds there ([decision 4](#open-decisions)). The routes back are:
 
 - the round's corner Home (the round is abandoned exactly as Home abandons it today);
 - leaving the how-to card before Play;
@@ -79,7 +79,7 @@ The pause sheet opens only from Esc or a pad, so on touch it cannot be a child's
 
 From the preview she can Play again, Skip or press Back. Esc or a pad's pause sheet adds **Skip this game** through `Scene.pauseActions()`. It does the same as Skip on the abandoned stop and opens the next stop's intro, or the ending.
 
-**Ending a mix** happens through the preview's Back, any other island route (the map's island button, the sticker book, "Who's playing?"), a profile switch, reset, restore or undo, and a reload. A game opened any way other than the mix launcher is never in a mix.
+**Ending a mix:** the session ends when any scene enters other than the `GameScene` the mix launched or its origin `PlaceScene` (where the sheet reopens). That covers the preview's Back (Explore), the map, the sticker book, the chooser and pause-sheet routes without listing them. A profile switch, reset, restore or undo, and a reload also end it. A game opened any way other than the mix launcher is never in a mix.
 
 ### Ending
 
@@ -87,8 +87,8 @@ The same sheet geometry as the preview, opened over the last result or the previ
 
 - the three tiles in their final states, with played tiles showing their sticker copies;
 - the pet's cheer and `mix.end` ("That was Little surprises!"), or `mix.end.quiet` ("We can play these another time.") when every stop was skipped;
-- **Again mix** (the green replay circle at `(372, 640)`): a new session from position 1;
-- **Home** (blue, `(652, 640)`): back to the home spot with the mix ended.
+- **Again mix** (the green replay circle, center `(372, 640)` landscape, `(372, 900)` portrait): a new session from position 1;
+- **Home** (blue, center `(652, 640)` landscape, `(652, 900)` portrait): back to the home spot with the mix ended.
 
 There is no bonus sticker, finale reward, score, tally of mistakes or "you finished" quota language. A tile copy shows a sticker she already owns; it awards nothing.
 
@@ -133,7 +133,7 @@ D2b puts the itinerary in a pure module (proposed `src/content/mix.ts`: the froz
 - **Eligibility:** lap and toddler only; place band must equal profile band; a missing or unsupported ID gives no entry rather than a partial mix; there is never a controller route.
 - **Order and tokens:** a complete run is 0 → 1 → 2 → ending. Next stop moves exactly once under a double press. A finish with a stale `R`, or after the session ended, changes nothing. Two finishes for one `R` settle the item once.
 - **Skips:** skipping from the preview, from the result and from the pause sheet. An unfinished replay skip keeps played. Skipping everything leads to the quiet ending. Unavailable is treated like skipped.
-- **Ending the session:** preview Back, profile switch or epoch bump, and reload each end it with zero stat changes. Completed rounds stay saved.
+- **Ending the session:** preview Back, entering any scene other than the launched `GameScene` or the origin `PlaceScene`, profile switch or epoch bump, and reload each end it with zero stat changes. Completed rounds stay saved.
 - **Launch resolution:** a launch resolves the current band, order (lap Bubble Pop 15 first) and pin at that moment. A pin changed between preview and launch wins. A band changed by a birthday makes the item unavailable, never a silent substitute.
 - **No reward from the mix:** a full run adds exactly one sticker per completed round, and the mix adds nothing on top.
 
@@ -217,3 +217,4 @@ None of these gates D2b. Each has a lean the build follows unless the developer 
 1. **Name and picture.** "Little surprises", with a picnic-blanket spot. Lean: keep it. The title remains an exploration, like the rework's names.
 2. **A grown-up switch to hide the mix spot.** Lean: none now. The spot is one optional tap and the map stays the default. Revisit with D8.
 3. **Where the entry lives after RW08.** Lean: the new Home's direct-play area, decided in RW08 rather than now.
+4. **Home during a mix reopens the preview instead of ending the mix.** This departs from the study's first-pilot rule. The pause sheet's Skip needs Esc or a pad, so on touch the preview is the only place for Skip. The preview's Back is the mix's Explore and does end it. Lean: keep this. The alternative is to end the mix on Home and accept that touch has no mid-round Skip.
