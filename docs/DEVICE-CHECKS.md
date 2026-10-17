@@ -100,6 +100,7 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 - [ ] **Robot Path preschool opening.** Does a three-year-old understand adding one to three arrows, then pressing Play, and use Undo or replayed instructions to revise? Levels 1–2 are small rock-free boards; actual iPad speech, finger comfort and child understanding remain unchecked.
 
 - [ ] **Fill and Dump pouring on an iPad:** does pulling right to tip the jug feel natural, are the purple fill lines and tray-return arrow understood, and is the six-percent cup tolerance forgiving? Preschool's levels 1–5, device speech and child play remain unjudged.
+- [ ] **Fill and Dump with a toddler** (added 2026-10-17, [dive](deep-dives/fill-dump.md#decisions-for-the-developer)): does a two-year-old pull the level-5 jug far enough without help (gates a toddler pour rung), and does a one-year-old notice that grass taps work once lap reach is built?
 
 - [ ] **Goodnight Room barn, animals and colors.** On an iPad, check target spacing, device speech for names and colors, whether preschool/pre-K players understand living animals among objects, and whether orange fish inside a blue bowl and brown puppy/teddy are clear color matches. No child or device judgment is established by browser play.
 

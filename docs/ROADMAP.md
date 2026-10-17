@@ -64,7 +64,7 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 17. **`fill-dump`, count sign** (existing-game change): a dot card that fills as fruit goes in at levels 3–4; extras show outside it. [Slice 1](deep-dives/fill-dump.md#build-slices-in-order)
 18. **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
 19. **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
-20. **`fill-dump`, level 7 Which holds more?** (new interaction): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
+20. **`fill-dump`, level 7 Which holds more?** (new interaction; after item 19 lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 21. **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 
 ### Chunks
