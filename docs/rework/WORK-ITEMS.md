@@ -12,6 +12,7 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 | --- | --- | --- | --- |
 | [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | packet written 2026-10-17 ([NAME-AND-STORY.md](NAME-AND-STORY.md)); final name is a developer decision | None |
 | [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | prototype and packet done 2026-10-17 ([CREATURE-ART.md](CREATURE-ART.md)); production style is a developer decision | None; use provisional names |
+| [RW02b](#rw02b-generated-creature-art-and-animation-pilot) | Generated creature art and animation pilot | claimed 2026-10-17 by [`claude/rw02b-illustrated-glider`](https://github.com/rjdunlap/neo/tree/claude/rw02b-illustrated-glider); sprites approved 2026-10-17, assistant makes the assets | RW02 prototype; no RW03 dependency |
 | [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | packet and wireframe done 2026-10-17 ([HOME-NAVIGATION.md](HOME-NAVIGATION.md)); production cutover waits for RW08 | Reconciled D1b; RW01 informs language |
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | ready, docs definition | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | define after upstream packets | RW02, RW03 |
@@ -57,6 +58,14 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 - Name RW05 as the integration/removal point for a prototype-only renderer/route, or explicitly retain the preview only as an existing dev test surface.
 
 **Likely files:** `src/art/creatures/` and a minimal existing-dev entry, plus a reference packet under `docs/rework/`. **Proof:** typecheck, build if shared rendering/assets change, one preview covering movement/accessories in landscape/portrait; cleanup and touch geometry checks where interactive. No game suites for untouched games.
+
+## RW02b: Generated creature art and animation pilot
+
+**Status:** ready; bounded follow-up to RW02, with sprite permission approved by the developer on 2026-10-17. The assistant creates and prepares the assets; no developer drawing work is required. No new GitHub issue has been created for this follow-up.
+
+**First slice:** one illustrated cloud glider, generated from the concept reference and animated with a small layered/deformable or pose-based rig; idle, wingbeat, touch reaction, collection portrait and crown, compared with the existing Graphics glider in the isolated dev preview. No full-cast reskin or production route/save change.
+
+**Definition, acceptance, research and fresh-session handoff:** [generated creature pilot](GENERATED-CREATURE-PILOT.md). RW05 consumes the accepted result; final style approval remains distinct from permission to generate sprites.
 
 ## RW03: Home and navigation packet
 
