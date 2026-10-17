@@ -1750,6 +1750,13 @@ export const SCRIPT = {
   'sink.oops': ['Let us test it in the water!'],
   'sink.hint': ['Look at the glowing basket!'],
   'sink.done': ['What a good scientist!'],
+  'sink.clay-sinks': ['This clay sinks. Watch!'],
+  'sink.clay-ask': ['Can you make it float? Change its shape!'],
+  'sink.clay-flat': ['Flat clay is still solid clay, so it sinks.'],
+  'sink.clay-leaky': ['The water came in through the hole, so it sank.'],
+  'sink.clay-boat': ['A hollow boat pushes away lots of water. The water holds it up!'],
+  'sink.clay-same': ['Same clay, same weight. Only the shape changed!'],
+  'sink.clay-hint': ['Try a hollow shape that keeps the water out.'],
 
   'color.red': ['Red!'],
   'color.orange': ['Orange!'],

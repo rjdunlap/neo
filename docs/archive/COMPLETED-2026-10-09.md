@@ -1093,3 +1093,9 @@ Contract: `WOODLAND_STEPS`, `STORY_STEPS`, `StoryId` and `StoryStep` in `src/con
 ## RW02 creature art prototype (2026-10-17)
 
 [PR #499](https://github.com/rjdunlap/neo/pull/499), `claude/rw02-creature-art`, [issue #486](https://github.com/rjdunlap/neo/issues/486). A dev-only `/?creatures` preview (`src/dev/creature-preview.ts`, hooked in `src/main.ts` under `import.meta.env.DEV`) shows `src/art/creatures/`: a squat sprout, a long river creature and a broad cloud glider in Pixi `Graphics`, each with an idle and a touch reaction; a scarf (neck slot) and a flower crown (head slot), the glider declining the scarf with a recorded reason; a three-card collection and landscape/portrait layouts. The [packet](../rework/CREATURE-ART.md) recommends playful-flat construction, records cost and names RW05 as the removal point. No route, game, save or catalog art changed. Checks are in [VERIFICATION.md](../VERIFICATION.md#2026-10-17--rw02-creature-art-prototype).
+
+## Sink or Float level 7, Make it float (2026-10-17)
+
+[PR #502](https://github.com/rjdunlap/neo/pull/502), `claude/sink-float-make-it-float-build`, built from its [definition](../definitions/make-it-float.md). School band is now levels 5-7. She squashes a lump of clay into one of three shapes (flat, boat, leaky boat) and watches it; sinking trials are never misses, and a glow plus one hint after two sinks points to the hollow shape. Idea row moved here from the notebook's round-two longer ladders:
+
+| **Sink or Float** (6 · 5–6) | *Make it float:* change one thing about an object (flatten the clay into a boat, take weights off) and compare trials. The first fair-test variable. Defined, not built: [definition](../definitions/make-it-float.md) | A stated, honest model of why shapes float, plus the journal; a ghost finger and couch game to keep working |
