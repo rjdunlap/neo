@@ -1550,11 +1550,27 @@ async function buddiesPlay() {
   await tap('neo.scene.game.friends[1]'); await tap('neo.scene.game.tools[0]'); await drag(1, 'bridge');
   await tap('neo.scene.game.tryButton'); await wait(); await tap('neo.scene.game.pot'); await finished('shape-buddies');
   assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+  // Level 2, a step down: the flat bridge that worked at level 1 falls short; a slope reaches the low bank.
+  await launch('shape-buddies', 2); await wait();
+  const before2 = await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; return kit.store.data.stickers.length; });
+  await tap('neo.scene.game.tools[0]'); await drag(0, 'bridge');
+  await tap('neo.scene.game.friends[1]'); await tap('neo.scene.game.tools[1]'); await drag(1, 'receiver');
+  await tap('neo.scene.game.tryButton'); await wait();
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.phase, neo.scene.game.spoken.includes('buddies.stepFlat'), neo.scene.game.misses]), ['edit', true, 0], 'flat bridge falls short at the step and is explained');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+  await screenshot('shape-buddies-2-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  await tap('neo.scene.game.friends[0]'); await tap('neo.scene.game.tools[2]');
+  await tap('neo.scene.game.tryButton'); await wait();
+  assert.equal(await page.evaluate(() => neo.scene.game.round.phase), 'caught', 'a slope reaches the low bank');
+  await tap('neo.scene.game.pot'); await finished('shape-buddies');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before2 + 1);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('shape-buddies').history.at(-1); return [r.level, r.misses, r.hints]; }), [2, 0, 0]);
   // Leave during a running trace, then return through the normal land route.
   await launch('shape-buddies', 1); await tap('neo.scene.game.tryButton');
   await page.evaluate(() => neo.go.land('tinker-lab')); await scene('LandScene'); await page.waitForTimeout(700);
   assert.deepEqual(errors, []);
-  log('Shape Buddies: experiments, role hints, both bridge shapes/identities/bands, occupied dock, replay, caught-seed undo, portrait, one sticker and interrupted run passed');
+  log('Shape Buddies: experiments, role hints, both bridge shapes/identities/bands, occupied dock, replay, caught-seed undo, portrait, one sticker, level 2 flat-falls-short then slope, and interrupted run passed');
 }
 
 async function weekPlay() {

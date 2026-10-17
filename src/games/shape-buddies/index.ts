@@ -10,9 +10,9 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { guidance, layout, SeedRound, type Dock, type Shape } from './logic';
+import { guidance, layout, planFor, SeedRound, type Dock, type Shape } from './logic';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 1 }, school: { min: 1, max: 1 } };
+const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 1, max: 2 } };
 const TOOLS = ['flatten', 'scoop', 'slope'] as const;
 function paper(shape: Shape, color: ColorName): Graphics {
   const g = new Graphics(), c = swatch[color];
@@ -29,7 +29,9 @@ function seedArt() { return new Graphics().ellipse(0, 0, 12, 16).fill(swatch.bro
 function potArt() { return new Graphics().poly([-40, -12, 40, -12, 30, 45, -30, 45]).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line }).roundRect(-46, -23, 92, 20, 6).fill(wood.fill).stroke({ width: 4, color: wood.line }); }
 
 class ShapeBuddies implements Game {
-  readonly round = new SeedRound();
+  readonly round: SeedRound;
+  readonly level: number;
+  private readonly step: number;
   readonly friends = [new Container(), new Container()];
   readonly parks = [new Container(), new Container()];
   readonly docks = { bridge: new Container(), receiver: new Container() };
@@ -58,6 +60,7 @@ class ShapeBuddies implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
+    this.level = ctx.level; this.step = planFor(ctx.level).drop; this.round = new SeedRound(ctx.level);
     this.colors = ctx.rng.shuffle(['teal', 'purple', 'pink', 'blue'] as ColorName[]).slice(0, 2);
     for (const dock of ['bridge', 'receiver'] as const) {
       const node = this.docks[dock];
@@ -99,12 +102,13 @@ class ShapeBuddies implements Game {
     ctx.stage.addChild(this.scenery, ...this.parks, this.docks.bridge, this.docks.receiver, this.pot, ...this.friends, ...this.tools, this.tryButton, this.undoButton, this.helpButton, this.seed, this.sprout, this.heading, this.caption, this.rings);
     this.resize(ctx.view); this.sync();
   }
-  start() { void this.ctx.instruct('buddies.start'); }
+  start() { void this.ctx.instruct(this.step ? 'buddies.start2' : 'buddies.start'); }
+  private place() { return layout(this.view.w, this.view.h, this.level); }
   private canEdit() { return !this.dead && !this.busy && this.round.editable && !this.handles.some(h => h.dragging); }
   private drop(i: number, x: number, y: number) {
     if (this.dead || this.busy) return false;
     this.round.select(i);
-    const l = layout(this.view.w, this.view.h);
+    const l = this.place();
     const candidates = [
       { place: 'bridge' as const, ...l.bridge, radius: 90 }, { place: 'receiver' as const, ...l.receiver, radius: 70 },
       { place: 'park' as const, ...l.parks[i], radius: 70 },
@@ -116,10 +120,16 @@ class ShapeBuddies implements Game {
     this.round.edit(undefined, target.place); sfx.pop(); this.sync(); return true;
   }
   private sync() {
-    const l = layout(this.view.w, this.view.h);
+    const l = this.place();
     this.friends.forEach((node, i) => {
       for (const c of node.removeChildren()) c.destroy({ children: true });
-      node.addChild(paper(this.round.state.friends[i].shape, this.colors[i]));
+      const art = paper(this.round.state.friends[i].shape, this.colors[i]);
+      if (this.step && this.round.state.friends[i].place === 'bridge') {
+        // Over a step down: Flat stays level and ends above the stream; Slope tilts down to the low bank.
+        if (this.round.state.friends[i].shape === 'flatten') { art.scale.x = 0.8; art.x = -10; }
+        if (this.round.state.friends[i].shape === 'slope') { art.rotation = 0.2; art.y = 8; }
+      }
+      node.addChild(art);
       node.hitArea = new Rectangle(this.round.state.friends[i].place === 'bridge' ? -90 : -70, -55, this.round.state.friends[i].place === 'bridge' ? 180 : 140, 110);
       const place = this.round.state.friends[i].place;
       const p = place === 'park' ? l.parks[i] : l[place];
@@ -138,17 +148,21 @@ class ShapeBuddies implements Game {
     if (this.busy || this.dead) return;
     const node = this.friends[this.round.state.selected];
     this.rings.roundRect(node.x - 94, node.y - 59, 188, 118, 18).stroke({ width: 3, color: swatch[this.colors[this.round.state.selected]].line });
-    const g = guidance(this.round.state);
+    const g = guidance(this.round.state, this.level);
     if (g && this.round.shown.has(g.dock)) {
-      const l = layout(this.view.w, this.view.h), p = l[g.dock], tool = this.tools[TOOLS.indexOf(g.shape as typeof TOOLS[number])];
+      const l = this.place(), p = l[g.dock], tool = this.tools[TOOLS.indexOf(g.shape as typeof TOOLS[number])];
       const friend = this.friends[g.friend];
       for (const [x, y, w] of [[p.x, p.y, g.dock === 'bridge' ? 188 : 120], [tool.x, tool.y, 138], [friend.x, friend.y, 188]]) this.rings.roundRect(x - w / 2, y - 60, w, 120, 16).stroke({ width: 5 + Math.sin(this.clock * 5), color: swatch.yellow.line });
     }
     if (this.round.phase === 'caught') this.rings.circle(this.pot.x, this.pot.y, 66).stroke({ width: 5, color: swatch.yellow.line });
   }
   private explain() {
-    const g = guidance(this.round.state);
-    return this.ctx.say(g ? g.dock === 'bridge' ? 'buddies.bridge' : 'buddies.cup' : this.round.phase === 'caught' ? 'buddies.plant' : 'buddies.try');
+    const g = guidance(this.round.state, this.level);
+    return this.ctx.say(g ? g.dock === 'bridge' ? this.bridgeLine() : 'buddies.cup' : this.round.phase === 'caught' ? 'buddies.plant' : 'buddies.try');
+  }
+  private bridgeLine() {
+    if (!this.step) return 'buddies.bridge';
+    return this.round.state.friends.some(f => f.place === 'bridge' && f.shape === 'flatten') ? 'buddies.stepFlat' : 'buddies.stepBridge';
   }
   private async run() {
     if (!this.canEdit()) return;
@@ -156,9 +170,12 @@ class ShapeBuddies implements Game {
     const result = this.round.trySeed(); if (!result) return;
     this.busy = true; this.sync(); this.flight = { x: -180, y: -48 };
     const move = (x: number, y: number, duration: number) => this.ctx.tw.to(this.flight, { x, y }, { duration });
+    // The trace decides; these offsets from the bridge dock only draw it. `d` is the far bank's step down.
+    const d = this.step, flat = d > 0 && this.round.state.friends.some(f => f.place === 'bridge' && f.shape === 'flatten');
     await move(-85, -25, 0.45); if (this.dead) return;
-    await move(result === 'bridge' ? 0 : 90, result === 'bridge' ? 112 : -20, 0.6); if (this.dead) return;
-    if (result !== 'bridge') { await move(230, result === 'caught' ? 5 : 112, 0.5); if (this.dead) return; }
+    if (flat) { await move(55, -25, 0.4); if (this.dead) return; await move(45, 112 + d, 0.5); if (this.dead) return; }
+    else { await move(result === 'bridge' ? 0 : 90, result === 'bridge' ? 112 + d : -20 + d, 0.6); if (this.dead) return; }
+    if (result !== 'bridge') { await move(230, result === 'caught' ? 5 + d : 112 + d, 0.5); if (this.dead) return; }
     if (result !== 'caught') { await this.ctx.tw.wait(0.5); if (this.dead) return; sfx.boing(); } else sfx.sparkle();
     this.round.settle(result); this.busy = false; this.sync();
     if (result === 'caught') await this.ctx.instruct('buddies.plant'); else await this.explain();
@@ -167,13 +184,14 @@ class ShapeBuddies implements Game {
     if (this.dead || this.busy || !this.round.carry()) return;
     this.busy = true; this.sync();
     const receiver = this.round.state.friends.findIndex(f => f.place === 'receiver');
-    this.flight = { x: 230, y: 5 };
-    await this.ctx.tw.to(this.flight, { x: 470, y: -25 }, { duration: 1 }); if (this.dead) return;
+    const d = this.step;
+    this.flight = { x: 230, y: 5 + d };
+    await this.ctx.tw.to(this.flight, { x: 470, y: -25 + d }, { duration: 1 }); if (this.dead) return;
     void this.ctx.tw.to(this.friends[receiver], { rotation: 0.6 }, { duration: 0.4 });
-    await this.ctx.tw.to(this.flight, { y: 25 }, { duration: 0.4 }); if (this.dead) return;
+    await this.ctx.tw.to(this.flight, { y: 25 + d }, { duration: 0.4 }); if (this.dead) return;
     if (!this.round.finish()) return;
     this.finished = true; this.seed.visible = false;
-    const l = layout(this.view.w, this.view.h);
+    const l = this.place();
     this.friends[receiver].position.set(l.pot.x - 95, l.pot.y);
     this.sprout.moveTo(0, 0).lineTo(0, -68).stroke({ width: 7, color: swatch.green.line }).ellipse(-17, -45, 21, 10).ellipse(17, -62, 21, 10).fill(swatch.green.fill);
     this.caption.text = 'Your shapes brought a seed home!'; sfx.sparkle();
@@ -191,7 +209,7 @@ class ShapeBuddies implements Game {
   update(dt: number) {
     this.clock += dt;
     if (this.busy && !this.finished) {
-      const l = layout(this.view.w, this.view.h);
+      const l = this.place();
       this.seed.position.set(l.bridge.x + this.flight.x, l.bridge.y + this.flight.y);
       if (this.round.phase === 'carrying') {
         const i = this.round.state.friends.findIndex(f => f.place === 'receiver');
@@ -201,12 +219,16 @@ class ShapeBuddies implements Game {
     this.drawRings();
   }
   resize(view: View) {
-    this.view = view; const l = layout(view.w, view.h), x = l.bridge.x;
+    this.view = view; const l = layout(view.w, view.h, this.level), x = l.bridge.x, d = this.step;
     this.scenery.clear().rect(0, 0, view.w, view.h).fill(cream)
-      .roundRect(x - 250, 340, 175, 75, 20).roundRect(x + 75, 340, 485, 75, 20).fill(grass)
-      .roundRect(x - 65, 397, 130, 22, 10).roundRect(x + 180, 397, 100, 22, 10).fill(swatch.pink.light)
-      .poly([x - 245, 238, x - 175, 260, x - 85, 285, x - 85, 303, x - 245, 257]).fill(wood.fill).stroke({ width: 4, color: wood.line });
-    this.heading.position.set(view.w / 2, 128); this.caption.position.set(view.w / 2, 180);
+      .roundRect(x - 250, 340 - d, 175, 75 + d, 20).roundRect(x + 75, 340, 485, 75, 20).fill(grass)
+      .roundRect(x + 180, 397, 100, 22, 10).fill(swatch.pink.light);
+    // A step down gets a second cushion in the stream, under the end of a flat bridge.
+    if (d) this.scenery.roundRect(x - 70, 397, 80, 22, 10).roundRect(x + 15, 397, 60, 22, 10).fill(swatch.pink.light);
+    else this.scenery.roundRect(x - 65, 397, 130, 22, 10).fill(swatch.pink.light);
+    this.scenery.poly([x - 245, 238 - d, x - 175, 260 - d, x - 85, 285 - d, x - 85, 303 - d, x - 245, 257 - d]).fill(wood.fill).stroke({ width: 4, color: wood.line });
+    // The raised bridge dock's label sits where the caption was, so a step down lifts the words, never a target.
+    this.heading.position.set(view.w / 2, d ? 110 : 128); this.caption.position.set(view.w / 2, d ? 150 : 180);
     for (const dock of ['bridge', 'receiver'] as Dock[]) this.docks[dock].position.set(l[dock].x, l[dock].y);
     this.pot.position.set(l.pot.x, l.pot.y); this.sprout.position.set(l.pot.x, l.pot.y - 20);
     this.parks.forEach((p, i) => p.position.set(l.parks[i].x, l.parks[i].y));
@@ -217,7 +239,7 @@ class ShapeBuddies implements Game {
   autotouch(): TouchIntent | null {
     if (!this.canEdit() || this.finished) return null;
     if (this.round.phase === 'caught') return { tap: { on: this.pot } };
-    const g = guidance(this.round.state);
+    const g = guidance(this.round.state, this.level);
     if (!g) return { tap: { on: this.tryButton } };
     if (this.round.state.selected !== g.friend) return { tap: { on: this.friends[g.friend] } };
     if (this.round.state.friends[g.friend].shape !== g.shape) return { tap: { on: this.tools[TOOLS.indexOf(g.shape as typeof TOOLS[number])] } };
@@ -234,9 +256,9 @@ function sticker(seed: number) {
 export const shapeBuddies: GameModule = {
   id: 'shape-buddies', name: 'Shape Buddies', titleLine: 'game.shape-buddies', region: 'tinker-lab',
   skills: ['shape and function', 'spatial planning', 'testing and revision'], bands: ['prek', 'school'],
-  levels: band => rangeFor(LEVELS, band), describeLevel: () => 'Reshape a bridge and cup; test and plant one seed',
+  levels: band => rangeFor(LEVELS, band), describeLevel: level => level >= 2 ? 'A step down: only a slope bridge reaches the low bank; test and plant one seed' : 'Reshape a bridge and cup; test and plant one seed',
   music: STYLES.hub, touchDemo: true,
-  coplayHint: 'Ask which shape can hold the seed. Take turns choosing a friend and testing what its shape does.',
-  offScreen: 'Slide a large soft toy over a cardboard bridge into a bowl. Change the bridge or bowl and try again.',
+  coplayHint: 'Ask which shape can hold the seed. Take turns choosing a friend and testing what its shape does. When the far bank is lower, ask why the flat one did not work this time.',
+  offScreen: 'Slide a large soft toy over a cardboard bridge into a bowl. Change the bridge or bowl and try again. For a step down, slide it down a cardboard ramp from a cushion to the floor and into the bowl.',
   hubIcon: () => new WigglyIcon(sticker(1)), sticker, create: ctx => new ShapeBuddies(ctx),
 };

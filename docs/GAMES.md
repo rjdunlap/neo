@@ -521,13 +521,15 @@ Tap a gem then its neighbour, or use the D-pad and bottom button; selecting a di
 
 ## Shape Buddies
 
-**Fun action:** reshape two paper friends, try their construction, then carry a caught seed to a pot. **Learning:** shape and function, spatial planning, testing and revision. Pre-K and school both play level 1; subject/home land Tinker Lab.
+**Fun action:** reshape two paper friends, try their construction, then carry a caught seed to a pot. **Learning:** shape and function, spatial planning, testing and revision. Pre-K and school both play levels 1–2; subject/home land Tinker Lab.
 
-Tap a friend, choose Flat, Cup or Slope, then drag it to the bridge or catching dock. Flat and sloped bridges both work, and either friend can take either role. Try releases the seed along a fixed chute. A bridge carries it across the gap; a scoop at the receiver catches it and waits. Tap the pot to carry and tip the seed into it, grow a sprout and finish through the shell for one sticker.
+Tap a friend, choose Flat, Cup or Slope, then drag it to the bridge or catching dock. At level 1 flat and sloped bridges both work, and either friend can take either role. Try releases the seed along a fixed chute. A bridge carries it across the gap; a scoop at the receiver catches it and waits. Tap the pot to carry and tip the seed into it, grow a sprout and finish through the shell for one sticker.
 
 A failed trial drops the seed onto a cushion and names the first unsupported role. Experiments, edits and occupied-dock drops are free: misses always stay zero. After two unsuccessful trials for the same role, or explicit Help, useful friend/tool/dock outlines glow; each role counts at most one hint across the round. Undo restores the last construction edit, including selection. Replay resets a caught seed without changing the construction. Undo and other edits also return a caught seed to the chute. A friend can be parked in its own spot to free its dock; occupied docks never evict the other friend. Input is locked during the run and carry.
 
-Rules use a finite inspectable trace, independent of collision/frame timing. The ghost finger uses selection, tools, drags, Try and the pot through the same handlers as touch play. Colors are seeded; geometry and solvability are fixed. Co-play asks which shape can hold the seed; off screen, slide a large soft toy across cardboard into a bowl. No controller or second-seat mode. Future arrangements remain proposals.
+**Level 2, A step down:** the far bank is one step lower (the left bank and chute, and the bridge dock, are raised 50 units). Only a Slope bridge reaches it: a Flat bridge stays up high and the seed drops into the stream (`buddies.stepFlat`); an empty, plain or scoop bridge says `buddies.stepBridge`. The cup role is unchanged. Misses stay 0, each role still counts at most one hint, and guidance suggests Slope. Spoken start is `buddies.start2`.
+
+Rules use a finite inspectable trace, independent of collision/frame timing. The ghost finger uses selection, tools, drags, Try and the pot through the same handlers as touch play. Colors are seeded; geometry and solvability are fixed. Co-play asks which shape can hold the seed; off screen, slide a large soft toy across cardboard into a bowl. At level 2, ask why the flat one did not work this time; off screen, add a step-down ramp. No controller or second-seat mode. Future arrangements remain proposals.
 
 
 ## Sing-Along Barn

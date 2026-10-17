@@ -7,17 +7,23 @@ export interface Construction { friends: [Friend, Friend]; selected: number }
 export type Failure = Dock;
 export const initial = (): Construction => ({ friends: [{ shape: 'plain', place: 'park' }, { shape: 'plain', place: 'park' }], selected: 0 });
 export const copy = (s: Construction): Construction => ({ friends: s.friends.map(f => ({ ...f })) as [Friend, Friend], selected: s.selected });
-export function trace(s: Construction): Failure | 'caught' {
+/** Which bridge shapes reach the far bank, and how far below the chute's bank it sits. */
+export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number }> = {
+  1: { bridges: ['flatten', 'slope'], drop: 0 },
+  2: { bridges: ['slope'], drop: 50 },
+};
+export const planFor = (level: number) => PLANS[level] ?? PLANS[1];
+export function trace(s: Construction, level = 1): Failure | 'caught' {
   const bridge = s.friends.find(f => f.place === 'bridge');
-  if (!bridge || !['flatten', 'slope'].includes(bridge.shape)) return 'bridge';
+  if (!bridge || !planFor(level).bridges.includes(bridge.shape)) return 'bridge';
   return s.friends.find(f => f.place === 'receiver')?.shape === 'scoop' ? 'caught' : 'receiver';
 }
-export function guidance(s: Construction): { friend: number; shape: Shape; dock: Dock } | null {
-  const failure = trace(s);
+export function guidance(s: Construction, level = 1): { friend: number; shape: Shape; dock: Dock } | null {
+  const failure = trace(s, level);
   if (failure === 'caught') return null;
   const occupant = s.friends.findIndex(f => f.place === failure);
   const friend = occupant >= 0 ? occupant : s.friends.findIndex(f => f.place === 'park');
-  return { friend, shape: failure === 'bridge' ? 'flatten' : 'scoop', dock: failure };
+  return { friend, shape: failure === 'bridge' ? planFor(level).bridges[0] : 'scoop', dock: failure };
 }
 /** Exploration never counts as a miss. Hint support belongs to the unresolved role, not the number of taps. */
 export class SeedRound {
@@ -28,6 +34,7 @@ export class SeedRound {
   readonly failures: Record<Failure, number> = { bridge: 0, receiver: 0 };
   hints = 0;
   misses = 0;
+  constructor(readonly level = 1) {}
   get editable() { return this.phase === 'edit' || this.phase === 'caught'; }
   select(i: number) { if (this.editable && (i === 0 || i === 1)) this.state.selected = i; }
   edit(shape?: Shape, place?: Place): boolean {
@@ -47,14 +54,14 @@ export class SeedRound {
   }
   replay() { if (this.phase === 'caught') this.phase = 'edit'; }
   help(): Failure | null {
-    const role = trace(this.state);
+    const role = trace(this.state, this.level);
     if (role === 'caught') return null;
     if (!this.shown.has(role)) { this.shown.add(role); this.hints++; }
     return role;
   }
   trySeed(): Failure | 'caught' | null {
     if (this.phase !== 'edit') return null;
-    this.phase = 'running'; return trace(this.state);
+    this.phase = 'running'; return trace(this.state, this.level);
   }
   settle(result: Failure | 'caught') {
     if (this.phase !== 'running') return;
@@ -64,10 +71,11 @@ export class SeedRound {
   carry(): boolean { if (this.phase !== 'caught') return false; this.phase = 'carrying'; return true; }
   finish(): boolean { if (this.phase !== 'carrying') return false; this.phase = 'done'; return true; }
 }
-export function layout(w: number, h: number) {
+/** Level 2 raises only the chute's bank, so the bridge dock moves up with it. */
+export function layout(w: number, h: number, level = 1) {
   const left = (w - 1024) / 2;
   return {
-    bridge: { x: left + 400, y: 300 }, receiver: { x: left + 630, y: 300 }, pot: { x: left + 870, y: 300 },
+    bridge: { x: left + 400, y: 300 - planFor(level).drop }, receiver: { x: left + 630, y: 300 }, pot: { x: left + 870, y: 300 },
     parks: [{ x: left + 250, y: 485 }, { x: left + 420, y: 485 }],
     tools: [{ x: left + 590, y: 485 }, { x: left + 740, y: 485 }, { x: left + 890, y: 485 }],
     buttons: [{ x: left + 340, y: h - 118 }, { x: left + 520, y: h - 118 }, { x: left + 700, y: h - 118 }],
