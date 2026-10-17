@@ -61,6 +61,11 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 14. **`goodnight-room`, slice 9 Level 10, goodnight everywhere** (new level on an existing interaction: rule tests, a level-10 `BROWSER_SUITE=night` play, `fingerdemo` at it): pre-K; a big arrow tours three distinct rooms, each asking for everyone, then the stars fill the sky; no wrong answers, one sticker for the tour. [Dive](deep-dives/goodnight-room.md#build-slices-in-order)
 15. **`peekaboo-barn`, slice 3 first half: animals who name how they feel** (rule tests, `critter.test.ts`, one screenshot, `fingerdemo` at level 1). More animals stays with decision 4. [Dive](deep-dives/peekaboo-barn.md#build-slices-in-order)
 16. **Zoo study Z1: define Who Am I? levels 1–4** (docs only): trait table for the existing cast plus penguin and bat, clue signs, rule tests, voice, how-to, land and bands; name the reviewer. [Zoo study](deep-dives/subjects/zoo-animals.md#build-slices-in-order)
+17. **`fill-dump`, count sign** (existing-game change): a dot card that fills as fruit goes in at levels 3–4; extras show outside it. [Slice 1](deep-dives/fill-dump.md#build-slices-in-order)
+18. **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
+19. **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
+20. **`fill-dump`, level 7 Which holds more?** (new interaction): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
+21. **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 
 ### Chunks
 
