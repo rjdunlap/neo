@@ -77,7 +77,6 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 33. **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); solvable gardens (built backward at 1–4, frozen at 5–8), free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
 34. **`sound-garden`, fair varied listening** (existing-game bug fix): seeded sound specs in `logic.ts`, plans keyed by level ID and a capped how-to step, equal-span fast/slow, bird and frog as heard pitch references, varied up/down tunes; level 2's rule kept for the Missing Melody. [Slice 1](deep-dives/sound-garden.md#build-slices-in-order)
 35. **`sound-garden`, the whole cast sings** (level 1 content): the turtle joins, a pitched frog, a seeded cast of five from six. [Slice 2](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
-36. **`fruit-slice`, build levels 1–8** (new-game tier): fruit hangs at the top of a slow arc and a swipe splits it; tap at 1, swipe at 2, then only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N and pieces by twos; no clock, missed fruit comes back; Bubble Beach. [Definition](definitions/fruit-slice.md)
 36. **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
 37. **`sound-garden`, echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree answers. [Slice 4](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
 38. **`sound-garden`, level 8 One big friend** (new lap entry): one screen-filling singer, `entryLevels`, lap order 8, 1. [Slice 5](deep-dives/sound-garden.md#new-levels-on-top)
@@ -88,6 +87,7 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 43. **`teddy-doctor`, weigh and measure** (content, levels 5–6): a scale and a height chart join the check-up, three of five steps per round; no care claim. [Slice 2](deep-dives/teddy-doctor.md#fresh-content-inside-existing-levels)
 44. **`teddy-doctor`, level 7 Who needs help?** (new level): two friends, tap the one with a boo-boo, then bandage it; toddler order 1, 7, 2, 3, `entryLevels: [7]`. [Slice 3](deep-dives/teddy-doctor.md#new-levels-on-top)
 45. **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
+46. **`fruit-slice`, build levels 1–8** (new-game tier): fruit hangs at the top of a slow arc and a swipe splits it; tap at 1, swipe at 2, then only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N and pieces by twos; no clock, missed fruit comes back; Bubble Beach. [Definition](definitions/fruit-slice.md)
 
 ### Chunks
 
