@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Pile Match definition
+
+- Defined Pile Match levels 1–8 in [the definition](definitions/pile-match.md): 2D layered heap with a top-only freedom rule, a tray derived from the piece mask (3-slot asked basket at 1–2, 5 slots from 3), free put-back, kinds assigned in consecutive triples along a clearing route so no state dead-ends, computed portrait-fit layout, wrong-kind and full-tray accounting, hint order, bot, how-to and registration; six references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; layout numbers and the hint time bound are computed, not measured; no child has played it.
+
 ## 2026-10-17 — Robots and automation subject research
 
 - Added the [robots-and-automation study](deep-dives/subjects/robots-automation.md): opened the CSTA 2026 PDF (EK/E1/E2-SOC-HU-15, E2-SYS-HW-11, E3-PRO-PD-04, E5-SYS-HW-12, MS-SYS-HW-31, MS-SOC-CE-45, S2-PHY-IO-02; printed pages), NGSS Appendix G, Levy and Mioduser (2010), Hallström (2021), the Hokayem et al. (2020) abstract, Treasureworld, and Autonauts, shapez, Opus Magnum, micro:bit, KIBO and CS Unplugged pages; Kempton (1986), KIBO sensors and Opus Magnum metrics marked recalled or secondhand. Helper House is the first ladder.
