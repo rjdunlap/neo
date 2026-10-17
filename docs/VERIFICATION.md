@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Ramp Race support definition (Q1)
+
+- Defined the truthful Ramp Race support packet in [the definition](definitions/ramp-race-support.md): accurate level 1–4 goal, steps, finish and miss wording, plus an idempotent corrective glow and recovery demo after an unfair pair. Accounting unchanged.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser, offline and fingerdemo not run: no code changed.
+- Open: the Q2 build; device speech for the half-marks; whether a child understands the glow. Neither is established by this docs-only entry.
+
 ## 2026-10-17 — Shape Buddies level 2, A step down
 
 - [PR #504](https://github.com/rjdunlap/neo/pull/504), `claude/shape-buddies-step-down`, tested commit `7fc5f33`, `GAME_URL=http://localhost:5876`: pre-K and school now play levels 1–2; at level 2 the far bank is one step lower and only a slope bridge reaches it (misses always 0, one hint per role). As-built geometry differs from the definition (see [definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)): bridge dock at `y 250`, heading and caption lifted at level 2 only.
@@ -93,18 +99,6 @@
 
 - Checked composition/Letter Trails coverage and opened primary CCSS W.3.6, W.4.6 and grade-1 Language text. Added unstarted keyboarding/editing and spelling/sentence research rows; clarified composition versus handwriting and touchscreen versus hardware input boundaries in the follow-up audit.
 - Local Markdown links/anchors and `git diff --check` passed. Docs only; no code, browser, device or learning-transfer checks. Full developmental/teaching research remains open.
-
-## 2026-10-16 — Additional subject gap review
-
-- Compared the current tracker, original standards audit and existing game coverage with opened primary CCSS, National Core Arts Standards and National Agriculture in the Classroom pages. Added three unstarted research rows and an overlap/source review; no subject study or build is claimed complete.
-- Explicit scope recommendations for geometry, visual art and engineering remain within their existing sessions. Research/build dispatch order unchanged.
-- Passed local Markdown links/anchors and `git diff --check`. Docs only; no code tests, build, browser or device checks run. Developmental/competitor research and detailed agriculture outcomes remain for full sessions.
-
-## 2026-10-16 — Subject docs completed-work cleanup
-
-- Clarified that designed subject rows mean completed research, removed researched waves from the suggested research backlog, and refreshed the standards audit after the zoo study and language/habitat decisions.
-- Updated space/physics references for built Planet Hop school level 12 and life-science/zoo references for Photo Safari’s built clues and actions. Other proposed modes, habitat kits and reviewer decisions remain open; dated research evidence is retained.
-- Passed local Markdown links/anchors (`node scripts/check-links.mjs`) and `git diff --check`. Docs only; no code tests, build, browser or device checks run.
 
 ## Coverage summary
 
