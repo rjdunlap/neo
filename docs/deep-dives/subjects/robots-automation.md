@@ -48,7 +48,7 @@ Opened 2026-10-17 unless marked. Anchors are guides, not prerequisites or claims
 | T | One action, one immediate response; something that "notices" her friend can delight without being understood |
 | P | Pictured if/then in a story ("when it's dark, the lamp turns on"); choosing which picture fits, with the result shown |
 | K | One rule with two condition/action pairs on a board (Levy and Mioduser); explanation lags construction |
-| S | Two rules; noticing a rule is re-checked all day; placing a sensor where it can see the right thing |
+| S | One rule with both its pairs (on and off); noticing a rule is re-checked all day; placing a sensor where it can see the right thing |
 | U | The loop: an action changes what is sensed; a single threshold that makes a helper flicker. Feedback reasoning is uncommon before this (Hokayem et al.), so the loop is drawn |
 | M | Two thresholds (a calm band), helpers that fight, describing real devices (MS-SYS-HW-31) and automation and work (MS-SOC-CE-45) |
 | G | The valve misconception is common in adults (Kempton via Brandes and Wilensky) |
@@ -87,7 +87,7 @@ The LEGO SPIKE Essential page was opened but is retired and does not state its s
 - **Rework fit.** A helper she sets up stays in the creature home as a permanent unlock (the porch lamp keeps coming on at dusk at home), shown only for the helpers actually completed. This needs RW-era home infrastructure and is not part of the first build.
 - **Does not fit:** a general robot-programming editor (Cue Studio and Robot Path own sequences), real-world appliance advice, surveillance framing (cameras watching people), robots as fighters (Gladiabots-style), job-loss simulation for children, or a timer on the day.
 
-**Overlap test against Sorting Machine.** If a proposed round can be completed by classifying *one* input once (hat → open), it belongs in Sorting Machine. A Helper House round must need *time*: either the rule has to keep acting over several checks (the door opens for every friend and closes after), or the action changes the sensed value (the lamp lighting its own sensor, the heater warming its thermometer). The rule tests below check this property for every authored level.
+**Overlap test against Sorting Machine.** A Helper House goal must depend on **helper state carried from an earlier step** (the lamp still on in the morning because no row turns it off; the heater still running when the nook is already warm) **or on a reading the helper itself changed** (the lamp lighting its own sensor, the heater warming its thermometer). A twelve-step day alone does not pass: Sorting Machine's parade also checks several critters. Stated openly: levels 0–2 (place the eye, choose eye or sun) share their action with Sorting Machine's "choose the sensor" round; they are a cause-and-effect opening, and Helper House earns its identity from level 3, where a missing off row leaves the lamp on. If the developer prefers, levels 1–2 can fold into Sorting Machine and Helper House start at 3. The rule tests check the property for every authored level from 3 up.
 
 ## An answer for every audience
 
@@ -118,7 +118,7 @@ The LEGO SPIKE Essential page was opened but is retired and does not state its s
 
 ### The model, stated once
 
-One house, one day of **12 steps** (dawn to night and back), played at a steady pace with Pause and Step. Each step: (1) the world changes (the sun moves, a friend arrives, outside air cools); (2) **every sensor reads**, and a pulse runs to its rule cards; (3) each rule whose condition matches sets its helper; (4) the helper acts on the world. Readings are pictured levels: near/far for the eye, dark/dim/bright for the sun sensor, warmth 0–6 for the thermometer (a fictional scale; 2–4 is "comfy" for the lizard friend). A heater adds 1 warmth per step while on; the nook loses 1 per step toward the outside value while off. A lamp adds one light level where it shines. Rules with no matching condition leave a helper as it is, which is what makes a missing *off* row visible.
+One house, one day of **12 steps** (dawn to night and back), played at a steady pace with Pause and Step. Each step: (1) the world changes (the sun moves, a friend arrives, outside air cools); (2) **every sensor reads**, and a pulse runs to its rule cards; (3) each rule whose condition matches sets its helper; (4) the helper acts on the world. Readings are pictured levels: near/far for the eye, dark/dim/bright for the sun sensor, warmth 0–6 for the thermometer (a fictional scale; 2–4 is "comfy" for the lizard friend). A heater adds 1 warmth per step while on; the nook loses 1 per step toward the outside value while off. A lamp lights its own glow two levels (dark to bright), so a sun sensor placed inside that glow reads bright while the lamp is on. Rules with no matching condition leave a helper as it is, which is what makes a missing *off* row visible.
 
 ### Proposed levels and bands
 
@@ -140,7 +140,7 @@ Levels are proposals; IDs, band ranges and orders are frozen only in the definit
 
 ### A rule test
 
-`logic.ts` exhaustively enumerates every board a level allows (sensors × sockets × rule cards × line positions; bounded and small) and checks: at least one accepted board; every accepted board meets the level's goal on every seeded day; the starting board fails; hints lead to an accepted board; **the overlap property** (no accepted board is reachable as a one-input, one-check classification: the goal needs three or more checks or a reading changed by the helper); at level 5 the under-the-lamp position oscillates and the window position does not; at level 6 a higher line never reaches comfy sooner than a lower one (the valve idea is false in the model); at level 7 every accepted two-line board switches fewer times than every one-line board (the exact bound is frozen in RA4).
+`logic.ts` exhaustively enumerates every board a level allows (sensors × sockets × rule cards × line positions; bounded and small) and checks: at least one accepted board; every accepted board meets the level's goal on every seeded day; the starting board fails; hints lead to an accepted board; **the overlap property** for levels 3 and up (some board that meets every single-step classification still fails the goal, because of carried helper state or a reading the helper changed); at level 5, with the level 3 rows (dark → on, bright → off), the under-the-lamp position flickers on and off every step after dusk and the window position does not; at level 6 a higher line never reaches comfy sooner than a lower one (the valve idea is false in the model); at level 7, with ±1 warmth per step and comfy 2–4, every one-line board switches every step and **exactly one** two-line board is accepted (on at 2 or below, off at 4 or above), so the level asks her to find that gap rather than choose among several; RA4 may widen the comfy band if a choice is wanted.
 
 ### Cost
 
@@ -157,7 +157,7 @@ M–L: a new `logic.ts` simulator and solver, `Graphics` house, helpers and gaug
 
 ## Decisions for the developer
 
-1. **Identity and placement:** Helper House as a new game (recommended, since the overlap test separates it from Sorting Machine), placed in Tinker Lab after a capacity check, Cozy Village, or a future zone?
+1. **Identity and placement:** Helper House as a new game (recommended, since the overlap test separates it from Sorting Machine from level 3), and do levels 1–2 stay as its opening or fold into Sorting Machine, placed in Tinker Lab after a capacity check, Cozy Village, or a future zone?
 2. **Accounting:** are Watch runs always free, with only repeated identical failures counting a hint (the Welcome Ways rule), or does a deliberate Check button count misses so adaptation has evidence?
 3. **Toddler entry (H0):** worth a level, given no sensor concept at two, or leave toddlers to existing cause-and-effect games?
 4. **Older reach:** register H8–H9 at `grownup` too, or keep them at `school`'s top only?
