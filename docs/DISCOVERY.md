@@ -184,7 +184,7 @@ The developer requested concrete roadmap actions on 2026-10-12. [ROADMAP’s dis
 | **D6 · Keep moving** | **D6** finite automatic-handoff choice | Later explicit opt-in, after deliberate Next and support behavior work; interruptions, changed input/mode and pending Keep return to a preview |
 | **Other discovery entrances** | **D7** scoped pick/shuffle; **D8** profile start preference; **D9** favorites/recent/library | Reuse working selection, planner and entry routes. Do not infer preferences, create endless refills, change favorites limits or promise saved sessions by adding a shortcut |
 
-**Next action:** define D2a; D1b is built from the [frozen D1a packet](#d1b-build-packet-one-direct-next-game). D2b and D3 follow their definitions. D1b/D2b each deliver a playable slice, including the pure rules they use, rather than release unused selector/session infrastructure. Further definitions or optional policy choices proceed under the roadmap’s explicit dependencies. These action IDs name scope, not a new dispatch queue or implementation claim.
+**Next action:** build D2b from the [Little surprises definition](definitions/little-surprises.md) (D2a, 2026-10-17); D1b is built from the [frozen D1a packet](#d1b-build-packet-one-direct-next-game). D2b and D3 follow their definitions. D1b/D2b each deliver a playable slice, including the pure rules they use, rather than release unused selector/session infrastructure. Further definitions or optional policy choices proceed under the roadmap’s explicit dependencies. These action IDs name scope, not a new dispatch queue or implementation claim.
 
 ## D1b build packet: one direct next game
 
@@ -278,7 +278,7 @@ Acceptance scope (specified by D1a; D1b results are recorded in [verification](a
 | Layout and input | One landscape and one portrait result screenshot with all applicable controls/pill/Keep; inspect bounds, pet clearance and 100-unit targets. Resize must retain the same suggestion and settled result. Hold/cancel/release through transition cannot activate target Play |
 | Required shell/navigation tier | Typecheck, unit tests, build; `BROWSER_SUITE=discovery DISCOVERY_ONLY=direct-next` once at an explicit strict-port server URL; `BROWSER_SUITE=world`; production offline check after verifying the served hashed build matches `dist`. Add the new suite/filter before invoking it. No full couch/picnic/release sweep |
 
-Device speech, iPad reach and a child's ability to distinguish Next game/Another/Next level remain person checks; Chrome cannot close them. Mixes, autoplay, combined preview/intro, compact results, new pools, saved preferences and unresolved decisions are outside this packet. **Next action: define D2a; do not expand the built D1b pool or add automatic handoff.**
+Device speech, iPad reach and a child's ability to distinguish Next game/Another/Next level remain person checks; Chrome cannot close them. Mixes, autoplay, combined preview/intro, compact results, new pools, saved preferences and unresolved decisions are outside this packet. **Next action: build D2b from the [D2a definition](definitions/little-surprises.md); do not expand the built D1b pool or add automatic handoff.**
 
 ### Important rule and lifecycle proof
 
