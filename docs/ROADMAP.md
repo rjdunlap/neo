@@ -6,6 +6,8 @@ What Puddle Island is aiming for, where it stands, and what to do next. Unchecke
 
 ## Direction
 
+**Updated direction (the developer, 2026-10-16):** the [creature-world brief](rework/README.md) expands the familiar island into collecting/customizing companions, projects with visible consequences, learning through play and permanent unlocks. [RW01–RW12](rework/WORK-ITEMS.md) stage the change in place; name/cast/style remain explorations. It supersedes older single-Pip and blanket no-unlocks proposals, while the current behavior below remains accurate until replaced. Old development saves/backups may reset; do not schedule legacy migration work. Finish active claims before taking the next eligible rework exploration.
+
 Puddle Island is an iPad learning game for the developer's daughter, who turns one in October 2026, in the spirit of JumpStart's playful learning, Neopets' companion and personal world, and the variety of classic arcade games. It should grow with her from lap play through elementary school, to about grade 5 (age eleven), on one familiar island where younger favorites never disappear. Four threads carry it:
 
 1. **Many small, satisfying games with a clear learning purpose**, where the skill causes the fun: sharing fills plates, a pattern moves a train, a revised route reaches a friend. Familiar games grow deeper modes; a new game earns its place with a new kind of decision or interaction.
@@ -45,22 +47,28 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 ### Ready to build now
 
-Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
+The existing content slices were re-checked 2026-10-15 against their dives and `origin/main`. Added the rework explorations on 2026-10-16: after active D1b, take the first unclaimed eligible RW exploration before the retained content list. Each line is one bounded session; being ready for exploration does not authorize its downstream implementation.
 
-18. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
-19. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
-20. **`shape-buddies`, level 2 *A step down*** (pre-K and school; only a slope bridge reaches the lower far bank). New-levels tier, `fingerdemo` at 2. [Definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)
-
-21. **`ramp-race`, truthful support packet Q1** (docs only): per-level goal/finish/miss wording, visible repair hint and demo recovery; preserve current accounting. [Inquiry slices](deep-dives/subjects/inquiry.md#build-slices-in-order)
-22. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
-23. **Sprout Shuffle first model definition G1** (docs only): one-locus rules, visible contributions/all four routes, supported finish, accounting and band/land decisions; model review before implementation. [Genetics slices](deep-dives/subjects/genetics.md#build-slices-in-order)
+1. **Discovery D1b, direct Next game** (claimed [#483](https://github.com/rjdunlap/neo/pull/483)): finish the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
+2. **RW01 — name and story** (docs exploration): compare naming structures and define a Discovery Club opening/invitation; current title remains usable. [Packet](rework/WORK-ITEMS.md#rw01-name-and-story)
+3. **RW02 — creature art and animation** (bounded prototype exploration): three silhouettes, idle/touch reactions and shared accessories in the current renderer; no catalog reskin. [Packet and proof](rework/WORK-ITEMS.md#rw02-creature-art-and-animation-prototype)
+4. **RW03 — home and navigation** (docs/prototype exploration): define Home/Back, collection and Explore, reconciled with D1b; no production-route cutover. [Packet](rework/WORK-ITEMS.md#rw03-home-and-navigation-packet)
+5. **RW04 — welcome adventure and learning** (docs definition): audit concrete existing modes and define adoption, a kept creation and observed learning actions. [Packet](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet)
+6. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
+7. **`shape-buddies`, level 2 *A step down*** (pre-K and school; only a slope bridge reaches the lower far bank). New-levels tier, `fingerdemo` at 2. [Definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)
+8. **`ramp-race`, truthful support packet Q1** (docs only): per-level goal/finish/miss wording, visible repair hint and demo recovery; preserve current accounting. [Inquiry slices](deep-dives/subjects/inquiry.md#build-slices-in-order)
+9. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
+10. **Sprout Shuffle first model definition G1** (docs only): one-locus rules, visible contributions/all four routes, supported finish, accounting and band/land decisions; model review before implementation. [Genetics slices](deep-dives/subjects/genetics.md#build-slices-in-order)
 
 ### Chunks
 
 Chunk numbers are stable IDs that other documents cite; rows are sorted by what can be done now, not by number. Detail and history live behind the links.
 
+Before claiming unstarted shell, pet, story or broad visual work in chunks 3, 7 and 19–22, reconcile it with [RW02–RW08](rework/WORK-ITEMS.md#sequence). Existing claims continue; useful game/content work remains eligible. The Missing Melody and habitat/visual studies supply material for the new packets, not parallel replacement frameworks.
+
 | # | Chunk | Status | One session's next slice | Check tier | Detail |
 | --- | --- | --- | --- | --- | --- |
+| 30 | **Creature-world rework** | ready for RW01–RW04 exploration only | After active claims, take the next eligible exploration; RW05–RW12 wait for their upstream packets | Docs: links/diff; RW02: scoped art prototype checks | [Direction](rework/README.md), [work items](rework/WORK-ITEMS.md), [epic #484](https://github.com/rjdunlap/neo/issues/484) |
 | 13 | **More to play in every band** (the developer, 2026-10-10: more quantity across bands) | ready | Fresh content inside a level or a new level from a dive; the [ready list](#ready-to-build-now) names the current ones | Content: typecheck, rule tests, one screenshot; new levels: new-levels tier | [Below](#more-to-play-in-every-band) |
 | 2 | **Deepen short ladders** with a real next decision | ready where a dive defines the slice; define otherwise | A defined slice from the [short ladders](#short-ladders-in-order) table, or a definition for an undefined direction | Docs only for definitions; then new-levels or new-interaction tier | [Below](#short-ladders-in-order) |
 | 11 | **A second lap level for favorites** | ready | Other below-level-1 entries wait on each dive's gates; append the level and place it with `order` | New levels on an existing interaction | Wave-2 [deep dives](deep-dives/README.md) |
@@ -216,6 +224,8 @@ Cost is not the deciding factor even with retakes (3–5×). Voice consistency f
 
 ## Lands: navigation and discovery
 
+**Rework scope:** the 2026-10-09 decision below describes the current map. RW03/RW08 may replace its landing/navigation model, and RW07/RW10 introduce authored permanent unlocks while ordinary learning and help remain accessible. “Nothing gates” does not prohibit those rework mechanics. Reconcile controller and Game night work before changing their routes.
+
 **Decided (the developer, 2026-10-09).** The island is **themed lands** plus an "all my games" home spot (the person's age place). A land shows its games for the person's age and younger, with a signpost to its bigger kids' games; every launch plays at `playBand`; nothing gates. New grown-up games go on the map, not the couch shell, and the couch puzzles reach the island as the same modules gaining touch. How it works is in [DESIGN](DESIGN.md#the-island-lands-and-a-home-spot); the decision as written, its reasons and the built stages' notes are in [the 2026-10-15 cleanup archive](archive/ROADMAP-CLEANUP-2026-10-15.md#lands-as-it-stood).
 
 **Stages.** Each ships alone, and nothing is removed before its replacement exists. They took over Profiles stages 2 to 5.
@@ -231,6 +241,8 @@ Cost is not the deciding factor even with retakes (3–5×). Voice consistency f
 **Still open:** the name Paint Pier. Targets are decided: 64 logical units for grown-up games, zooming or scrolling when needed; child-band targets and shared navigation stay 100.
 
 ## Profiles first: one map for every age
+
+**Rework scope:** RW05 introduces multiple owned creatures and an active companion; one Pip is today's implementation, not the target. The [development-save exception](rework/README.md#decisions-and-working-recommendations) permits a fresh model without old-save migration work.
 
 **Decided (the developer, 2026-10-09) and built as stage 1.** The front door is **Who's playing?**: a card per person and Add a player (name, birth month and year, friend). A person's age sets their band, home spot and starting levels; play adapts from there; every place stays open. Couch play is a way of playing that any person can choose, not a kind of person: a profile has no child/grown-up flag. Stages 2 to 5 moved to [Lands](#lands-navigation-and-discovery) (C, B, B and D, E). The contracts are in [DESIGN](DESIGN.md#persistence-and-grown-up-ui).
 

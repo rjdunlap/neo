@@ -4,9 +4,13 @@ Shared guidance for human contributors and coding assistants. Paths are relative
 
 ## Project direction
 
-Puddle Island is an iPad learning game for the developer's daughter (about one year old in October 2026): many small, satisfying games on a familiar island, after JumpStart, Neopets and classic arcades. Bands are `lap`, `toddler`, `preschool`, `prek`, `school` (about 6–8, up to 12; Wonder Woods) and `grownup` (13 and up; Lantern Lodge); each band's home spot on the map is an age place; the long-term direction reaches about age eleven. Built today: the games, on a map of themed lands, a pet with its treehouse (saved creations, a discovery journal), one story (the Windy Picnic), and a separate grown-up **couch play** route. The [roadmap](docs/ROADMAP.md) holds the direction and what is only proposed; do not assume a proposed zone, story or band exists.
+Puddle Island is an iPad learning game for the developer's daughter (about one year old in October 2026): many small, satisfying games on a familiar island, after JumpStart, Neopets and classic arcades. Bands are `lap`, `toddler`, `preschool`, `prek`, `school` (about 6–8, up to 12; Wonder Woods) and `grownup` (13 and up; Lantern Lodge); each band's home spot on the map is an age place; the long-term direction reaches about age eleven. Built today: the games, on a map of themed lands, a pet with its treehouse (saved creations, a discovery journal), two stories (the Windy Picnic and Woodland Picnic), and a separate grown-up **couch play** route. The [roadmap](docs/ROADMAP.md) holds the direction and what is only proposed; do not assume a proposed zone, story or band exists.
 
 Each activity needs a fun action and a clear learning purpose: sharing fills plates, a pattern moves a train, a revised route reaches a friend. Extend an existing game when the meaningful action is the same; make a new one when the learning or interaction warrants it, at whatever band fits. Follow the requested scope and the roadmap; build complete, playable slices, and add shared infrastructure only when an implemented activity needs it.
+
+**Rework direction (the developer, 2026-10-16):** grow into an educational creature world with collecting, customization, permanent unlocks through play, meaningful projects and manageable navigation. [The rework brief](docs/rework/README.md) and [work items](docs/rework/WORK-ITEMS.md) define the staged target; the title and final cast/style are still explorations. Change the app in place, reuse its games and research, and archive only superseded documents as replacements ship. Current implementation contracts below remain descriptions of what exists, not a veto on the rework's approved direction; older blanket no-unlocks and single-companion proposals yield to the brief.
+
+**Development-save exception:** the developer clarified that all of this is development and saves are not an issue. Rework slices may reset or reject old development saves/backups instead of building compatibility or migration layers. This overrides legacy-save preservation requirements for this rework; keep current-format validation, reliable writes, profile isolation, backup/restore and offline checks, and define a clear reset/reseed path at cutover. This planning change resets nothing.
 
 ## Where things are written down
 
@@ -14,6 +18,7 @@ Each activity needs a fun action and a clear learning purpose: sharing fills pla
 | --- | --- |
 | [README.md](README.md) | Setup, the game inventory and count, browser suites |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Direction, current position, next up (an ordered **ready to build now** list, then chunks with a status, a next slice and a check tier), elementary horizons, planning rules |
+| [docs/rework/](docs/rework/README.md) | Creature-world target, incremental structure and dependency-ordered exploration/implementation work items; proposed behavior until delivered |
 | [docs/WAITING-ON-DEVELOPER.md](docs/WAITING-ON-DEVELOPER.md), [docs/DEVICE-CHECKS.md](docs/DEVICE-CHECKS.md) | Decisions only the developer can make; checks that need a person or a device (both were roadmap sections until 2026-10-13) |
 | [docs/DESIGN.md](docs/DESIGN.md) | Current architecture, systems and contracts |
 | [docs/GAMES.md](docs/GAMES.md) | What each game does: rules, misses, hints, level steps |

@@ -33,3 +33,5 @@ Body/health research closeout also rotated the Shape Buddies level 2 definition 
 Genetics research closeout rotated the Clap the Syllables level 8 and 9 entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
 
 Deep-time research closeout rotated the oldest live Ecosystems subject-research entry into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
+
+Creature-world planning closeout rotated nine older entries (Photo Safari two-clue/texture, Planet Hop, zoo animals, Barnyard visuals, standards, body/health, earth materials and Tangram broom) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
