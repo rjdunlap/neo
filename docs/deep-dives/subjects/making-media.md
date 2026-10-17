@@ -106,7 +106,7 @@ Story Weaver, Draw a Song and the programming/puppet proposals stay with their o
 ### The model, stated once
 
 - **Shots.** A shot is a pre-drawn little scene on one set (a pond, a garden, the creature home), played for about two seconds with a small loop of motion. Each shot carries a finite set of **facts** the audience learns from it: `who` (Pip), `where` (the garden), `thing` (the hat), `event` (lands, opens, finds), `detail` (the key on the hook), `feeling` (Pip smiles). Facts are authored per shot, never computed from art.
-- **Sounds.** A sound pad is a synthesized effect from `src/audio/sfx.ts` (splash, boing, knock, bell, giggle, snore). An **event sound** matches one fact (`splash` ↔ `event: lands-in-water`); a free sound matches nothing and is always welcome.
+- **Sounds.** A sound pad is a synthesized effect from `src/audio/sfx.ts` (splash, boing, giggle, whoosh, clunk, bell and animal voices exist today; a knock or a snore would be new synthesized effects). An **event sound** matches one fact (`splash` ↔ `event: lands-in-water`); a free sound matches nothing and is always welcome.
 - **The brief.** A pictured request from an audience member (no reading): a set of facts the audience must know by the end, and optionally an ordering constraint (`thing` revealed only after `event: opens`, for a surprise), or a fact that must **not** be known before the last shot.
 - **The premiere.** Plays the strip in order and updates the audience's known facts shot by shot. Each audience member reacts: a happy cheer if their brief is met; otherwise they ask the one question for the **first** unmet requirement ("Where was the hat?", "That splash came before the jump!", "We already knew it was a kite!"). The reaction is computed from the same rule the tests use.
 - **Framing (levels 6+).** The viewfinder is a frame placed over a wide scene in two sizes. A shot's facts are those of the objects whose centers lie inside the frame; a `detail` fact counts only in the close size. Positions snap to a coarse grid, so accepted frames are enumerable.
@@ -140,7 +140,7 @@ For every authored round: at least one accepted strip exists; every accepted str
 
 ### Cost
 
-Levels 1–3: one session to define, one to build (strip, sound pads, a premiere with three audience critters, how-to card, ghost finger dragging a pad). Levels 4–5: one definition, one build (the fact model and briefs). Levels 6–9: a definition and a build for the viewfinder, then one for the cases. Placement: Paint Pier (four games), checked by the layout test, with the open question of Paint Pier's name ([ROADMAP](../ROADMAP.md#planning-rules) records it as open).
+Levels 1–3: one session to define, one to build (strip, sound pads, a premiere with three audience critters, how-to card, ghost finger dragging a pad). Levels 4–5: one definition, one build (the fact model and briefs). Levels 6–9: a definition and a build for the viewfinder, then one for the cases. Placement: Paint Pier (four games), checked by the layout test, with the open question of Paint Pier's name (recorded under [Lands: navigation and discovery](../../ROADMAP.md#lands-navigation-and-discovery)).
 
 ## Experience and presentation
 
