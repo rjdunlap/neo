@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Stop and Go deep dive
+
+- Docs only: [deep dive](deep-dives/stop-and-go.md) on `claude/dive-stop-and-go` ([PR #535](https://github.com/rjdunlap/neo/pull/535)). Audited levels 1–4; gaps: the lap car ignores taps, back cars silent, the hint rings the light instead of the car or feet, the walk hint never resets, "Great driving" at the walk level, colour the only state cue, one fixed rhythm, no help when idle at the crossing.
+- Opened Common Sense Media (Traffic Rush), Wikipedia (Mini Motorways), iGameMom (Sago Mini Road Trip), the dance-mat go/no-go study (PMC6805719), the Red Light, Purple Light 2019 trial record and Maryland Zero Deaths' pedestrian page; LEGO DUPLO World, Horn Book, Crossy Crash and Traffic Jelly are search summaries; NHTSA refused the fetch; Red Light Green Light, Frogger/Crossy Road and toy traffic lights recalled.
+- Five ready slices added to the roadmap; one decision row to WAITING (walk signal waits on the safety reviewer).
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Discovery D2a Little surprises definition
 
 - Defined the three-game mix in [the definition](definitions/little-surprises.md): a lap/toddler home-spot mix spot (the story-spot slot), a preview sheet, Next stop/Skip/All done in D1b's result rectangles with D1b's offer suppressed, every route back to the home spot reopening the preview, a no-bonus ending, and a session/item/round token table reusing `DiscoveryMemory`'s owner + epoch guard. Source audited on `d0d5b65`.

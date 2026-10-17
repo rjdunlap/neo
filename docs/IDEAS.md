@@ -1419,7 +1419,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Weather Wardrobe (L–K · 7) | **New weathers: wind and fog**, with a kite and a bright coat | — | — |
 | Scoop Shop (L–S · 6) | Toppings and cones | — (audit: leave) | — |
 | Teddy Doctor (L–S · 6) ([deep dive](deep-dives/teddy-doctor.md)) | More patients (five today) and boo-boos; the deep dive adds a scale and height chart to check-ups and keeps new ailments as a decision | **7 Who needs help?** (toddler entry), **8 Before and after** (school); the deep dive supersedes this row | Level 1 every touch counts, with the part named |
-| Stop and Go (L–P · 4) | Bikes and boats as well as cars | **5, Walk signal:** the walker crosses only on the little green figure, which opens a pre-K window | — |
+| Stop and Go (L–P · 4) ([deep dive](deep-dives/stop-and-go.md)) | Bikes and boats as well as cars | **5, Walk signal:** the walker crosses only on the little green figure, which opens a pre-K window (in the deep dive: level 8, gated on the safety review; 5 is *Whose light?*) | — |
 | Pet Says (L–K · 5) ([deep dive](deep-dives/pet-says.md)) | Moves in tiers (peekaboo, pat-a-cake, tiptoe, march, frog, cat, duck, bird), ten body words and a chant, counts, richer tricks, four tunes with named statue poses and five scenes; the deep dive supersedes this row | **6 Opposite day, 7 Quiet dance, 8 More opposites, 9 A walk in the woods, 10 Sun or moon** (pre-K 3–10), and as a decision a school window **6–12** with 11 Pet says, opposite and 12 This hand (nothing is judged: the pet reveals the opposite) | Pat the pet (lap) and Your turn! (toddler); both wait on level order |
 
 **Colors, shapes and puzzles**
