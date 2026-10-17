@@ -76,7 +76,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Egg Catch | `egg-catch` | LTPKS | 6 | 4 | not started | — | — |
 | Feelings Faces | `feelings-faces` | LTPK | 7 | 4 | not started | — | — |
 | Ferry Jam | `ferry-jam` | KS | 6 | 4 | not started | — | — |
-| Fill and Dump | `fill-dump` | LTP | 5 | 4 | not started (built after the gap review; pour mode built) | — | — |
+| Fill and Dump | `fill-dump` | LTP | 5 | 4 | in progress (built after the gap review; pour mode built) | `claude/fill-dump-deep-dive` | — |
 | Fluffy Salon | `fluffy-salon` | LTPK | 5 | 4 | not started | — | — |
 | Frog Hop | `frog-hop` | PKS | 7 | 3 | building (slice 1, guards, PR #162, and slice 3, level 8 Back over ten, PR #346, built) | `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116)) | [frog-hop.md](frog-hop.md) |
 | Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
