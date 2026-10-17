@@ -7,7 +7,7 @@
 ## Summary
 
 - **Working recommendation:** a world-led title, **Puddlewild**, with **Puddle Island as its first region** and a plain descriptive line under it (for grown-ups, e.g. *"explore, make and learn with creature friends"*) rather than a second brand.
-- **"Discovery Club" stays a story premise, not a product subtitle.** The name screen found a pending US trademark application, **DISCOVERY CLUB PSP**, for children's educational apps, plus the Discovery family of kids' and education marks. On screen, the club shares the title's name: **the Puddlewild Club** (provisional). This packet still says "the club" for the idea.
+- **"Discovery Club" stays a story premise, not a product subtitle.** The name screen found a US trademark application, **DISCOVERY CLUB PSP** (filed 2021; current status not checked), for children's educational apps, plus the Discovery family of kids' and education marks. On screen, the club shares the title's name: **the Puddlewild Club** (provisional). This packet still says "the club" for the idea.
 - **The creatures' family name stays open.** "Puddlings" screened clean and works as a word a child can say. RW02 and RW05 can adopt it or drop it when the cast is set, and it is not proposed as the title.
 - Functional rework (RW02–RW08) continues under the current title and placeholders; a final rename is one later, explicit change.
 
@@ -34,7 +34,7 @@ These are informal web searches made on 2026-10-17 through the session's search 
 | Query | What turned up | Reading |
 | --- | --- | --- |
 | `"Puddlewild"` | No app, game, toy or brand; only general "puddle" pages | No conflict found. Sound-alike: [Idlewild & SoakZone](https://en.wikipedia.org/wiki/Idlewild_and_Soak_Zone), a children's amusement and water park in Pennsylvania. That is a different class of goods, but the sound is close, so note it for a real screen |
-| `"Discovery Club" … trademark educational software children` | A pending application, [DISCOVERY CLUB PSP](https://trademark.justia.com/971/28/discovery-club-97128387.html) (filed 2021), covering downloadable children's educational apps. Also [DISCOVERY CLUBS BY RIGHT AT SCHOOL](https://trademarks.justia.com/987/52/discovery-clubs-by-right-at-98752424.html) (after-school clubs) and the Discovery Communications and Discovery Education family | **Conflict risk in our exact category.** Don't use it as a product name or subtitle |
+| `"Discovery Club" … trademark educational software children` | An application, [DISCOVERY CLUB PSP](https://trademarks.justia.com/971/28/discovery-club-97128387.html) (filed 2021; the record page refused a fetch, so current status not checked), covering downloadable children's educational apps. Also [DISCOVERY CLUBS BY RIGHT AT SCHOOL](https://trademarks.justia.com/987/52/discovery-clubs-by-right-at-98752424.html) (after-school clubs) and the Discovery Communications and Discovery Education family | **Conflict risk in our exact category.** Don't use it as a product name or subtitle |
 | `"Discovery Club" kids app …` | Discovery Kids apps; [WORLD DISCOVERY KIDS CLUB](https://trademark.justia.com/866/22/world-discovery-kids-86622316.html) (travel education) | Supports the risk above |
 | `"Puddlings" game OR app OR toy` | Only pudding-themed games | No conflict found; confusable with "pudding" |
 | `"Puddle Pals" OR "Puddlepals" …` | No product; puddle games such as Puddle and Puddle Puzzles | Not a candidate, recorded for completeness |
@@ -46,7 +46,7 @@ These are informal web searches made on 2026-10-17 through the session's search 
 
 - **The child** is a new member of the club: an explorer, maker and helper. She chooses where to go, makes things (a picture, a tune, a meal, a bridge) and decides what to try next. The story never tests her before she can play; it invites her.
 - **The creatures** are friends with their own personalities, looks and favourite things. A companion travels with her, says the instruction again, cheers and is sometimes funny. Others wait at home, and nothing goes wrong while she is away. They **never answer the learning task for her**. A creature can carry, light, sing or splash something she has decided on (RW11), but the counting, matching, building and explaining stay hers.
-- **The club** is the frame: a cosy home base with a door to the island. It holds her creatures, her creations, her tools and a journal of what she actually did. The club's question of the day is the invitation.
+- **The club** is the frame: a cosy home base with a door to the island. It holds her creatures, her creations, her tools and a journal of what she actually did. The question card on the club's pinboard is the invitation. A new card appears when a project is finished, never on a clock: nothing waits, expires or rotates.
 - **Grown-ups** sit beside a lap or toddler player, and a family recap shows them what a project involved (RW09). The couch route stays its own grown-up mode.
 
 ### Why the mini-games matter
@@ -92,7 +92,7 @@ This is the first time a profile enters the rework's home. It is written as on-s
 
 1. **Sees:** a round wooden door in a hillside by the puddles, with a lantern glowing over it. Her companion bounces beside it. **Said:** "Knock knock! Tap the door, {name}!" **Taps:** the door (a large target, with touch-down feedback: a wobble and a knock sound).
 2. **Sees:** the door swings open on a cosy room: a pinboard, a shelf, a little bed and a round window onto the island. **Said:** "Welcome to the Puddlewild Club! This is our home. We explore, we make things, and we help our friends."
-3. **Sees:** the companion hops to the pinboard, where the card for today's question glows: a picture of an empty basket and a "?". **Said:** "Every day there's a question on our board. Tap it to find out!" **Taps:** the card.
+3. **Sees:** the companion hops to the pinboard, where a question card glows: a picture of an empty basket and a "?". **Said:** "There's a question on our board. Tap it to find out!" **Taps:** the card.
 4. **Sees:** the card flips over to the invitation (below). A small "island" picture by the window also glows: that is Explore, for any game she likes. **Said:** "Or tap the window to play anything on the island."
 
 **First time only:** steps 1–2 play once per profile, and step 3 onward is the home's normal greeting. A grown-up can skip the whole opening, and "Who's playing?" stays the front door.
@@ -118,8 +118,8 @@ Between steps, the card comes back with finished steps ticked, and the companion
 
 **Ending:**
 
-1. **Sees:** back home, her picture is hanging on the wall and the bowl is on the floor. **Said:** "Everything's ready. Let's call our new friend!" **Taps:** the round window.
-2. **Sees:** the shy creature waddles in, sniffs the bowl, looks up at her picture and wags. **Plays:** her tune. **Said:** "Listen, it's your song! They love it."
+1. **Sees:** back home, her picture is hanging on the wall and the bowl is on the floor. **Said:** "Everything's ready. Let's call our new friend!" **Taps:** the club's door.
+2. **Sees:** the door opens and the shy creature waddles in, sniffs the bowl, looks up at her picture and wags. **Plays:** her tune. **Said:** "Listen, it's your song! They love it."
 3. **Sees:** the newcomer curls up in the basket under her picture. **Said:** "Our new friend wants a name. Tap a name to hear it, then tap the green arrow." (This reuses the hatching name picker's pattern.)
 4. **Said:** "Welcome home, {friend}! You made this home, {name}." **Sees:** the journal page for the project (her picture, a note for her tune, the new friend) and a glowing card for the next question.
 
@@ -138,7 +138,7 @@ Nothing below has been observed. Record results in [device checks](../DEVICE-CHE
 
 ## What this hands on
 
-- **RW03 (home and navigation):** take "the club" as the home's frame, the pinboard question card as the adventure/continue action and the window as Explore. Home means the club; Back means one step out.
+- **RW03 (home and navigation):** take "the club" as the home's frame, the pinboard question card as the adventure/continue action and the window as Explore (the door is for arrivals and the island's way in; keep each place's meaning stable). Home means the club; Back means one step out.
 - **RW04 (welcome adventure):** satisfy or revise the three story needs above. Its definition wins on games, modes and accounting.
 - **RW02 and RW05:** decide whether the cast is called Puddlings. The first newcomer is a shy, basket-sized creature; RW02's three pilot species can supply it.
 - **Developer:** the final title and the on-screen club name ([waiting on the developer](../WAITING-ON-DEVELOPER.md)).
