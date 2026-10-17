@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Fruit Slice definition
+
+- Defined Fruit Slice levels 1–8 in [the definition](definitions/fruit-slice.md): closed-form slow arcs (no engine), a swept-segment slice test, tap at 1 and swipe from 2, one kind, only fruit, stop-and-send counts, two kinds, a straight line through exactly N still fruit, pieces by twos; at most one miss per stroke, a glow after two, a trace bot, the how-to card and Bubble Beach. Fractions rungs deferred to the fractions study (#480).
+- References: Fruit Ninja (App Store 4+, Common Sense 7+), Math Master's press release and Toca Kitchen 2's parent page were opened; the Zen-mode clock is from a fan page and the Aziz gesture papers from a search summary only (403).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the five defaulted decisions; arc and hang numbers are computed, not felt; no child has played it.
+
 ## 2026-10-17 — Teddy Doctor deep dive
 
 - Docs only: [deep dive](deep-dives/teddy-doctor.md) on `claude/dive-teddy-doctor` ([PR #525](https://github.com/rjdunlap/neo/pull/525)). Audited levels 1–6; gaps: level 1 taps dropped during the instruction and silent away from a boo-boo, how-to says "tap" for the level 2–3 drags, an unbounded level 6 step, lap's level 2 drag unwatched.
