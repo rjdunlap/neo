@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-16 — Everyday life long ago subject research
+
+- [PR #477](https://github.com/rjdunlap/neo/pull/477), `codex/daily-life-long-ago-subject-research`: added [study](deep-dives/subjects/daily-life-long-ago.md) with opened curriculum/developmental/material-culture sources, five first-party digital references and physical precedents, every audience, eight candidates, an Attic Finds ladder and ordered definition/build slices. Real-history/community review and access/coverage gaps remain explicit.
+- Updated tracker, notebook and roadmap; cross-linked the earlier Attic Finds proposal to prevent duplicate definitions. Initial tree clean; overlap found genetics claimed and this subject unclaimed. Integrated merged genetics research at `533437d`; preserved its proposals. Docs only: local relative links/anchors and `git diff --check` checked. No tests, build, browser suites, device/child/teen observations, practical-card review or learning-transfer claims.
+
 ## 2026-10-16 — Genetics subject research
 
 - Docs only, base `2402c57`, branch `codex/genetics-subject-research`, [PR #476](https://github.com/rjdunlap/neo/pull/476): [study](deep-dives/subjects/genetics.md), subject tracker, three notebook candidates, roadmap definitions and developer decisions. Current origin showed inquiry already researched; overlap check found no genetics claim.

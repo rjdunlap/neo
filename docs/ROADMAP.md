@@ -309,6 +309,20 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md),
 
 [Ordered slices](deep-dives/subjects/genetics.md#build-slices-in-order) separate definitions and builds. The saved companion is never bred or evaluated; trial plants stay inside a round. Model review, entry/accounting/placement, device clarity and independent child/tween/parent understanding remain open. No game, engine, save schema or band was added; links/diff checks only. The definitions can proceed before reviewer selection; reviewed content and resolved implementation decisions precede building.
 
+### Everyday life long ago recommendations
+
+**Recommended 2026-10-16:** [the everyday-life study](deep-dives/subjects/daily-life-long-ago.md) covers lap through parents with opened C3/England history anchors, Head Start guidance, material-history research, NPS/V&A/Te Papa collection and teaching sources, five first-party game references and physical investigations. **Define Attic Finds first**, developing the same proposal in the time/change study: inspect and try a fictional object, then use evidence to explain its function. Youngest play teaches cause/effect; real historical knowledge is not claimed. No new game, band, zone or ready-build line is added.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Attic Finds** · P–school · H1 | define now, docs only | Two fictional object encounters; turning, functional trials, supported evidence link, exact misses/hints and windows, voice/how-to, ghost finger and 100-unit portrait controls. Consolidate the earlier Attic Finds task; no duplicate ID |
+| **Lid and Lever / Same Job** · lap–school · H3–H4 | later definitions | Giant-handle exploration with a voluntary finish; then alternative tools meeting a need and context changing suitability. No historical mastery claim or hidden preferred tool |
+| **Household Casebook** · upper school–parent · H5 | later definition | Three sources/claims, supported captions and honest unknowns; an older Attic Finds mode. Chronological deduction stays with Island Archive; room arranging stays with Unpack the Room |
+| **Located real-object packet / Laundry Day** · H6–H7 | research/review first | One place/time/source packet, historian/community review, then existing-game story content where ordering is the action. No universal technology ladder, culture-as-past sorting or unreviewed chores |
+| **One Object, Two Stories** · family · H8 | reviewed definition first | Optional plain-HTML conversation card; no antique/appliance handling, family-history requirement, uploads or recording |
+
+[Ordered slices and decisions](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order) separate definitions from implementation. Historical/community review, broader cultural coverage, exact registration/accounting, device understanding and voluntary older appeal remain open. The proposals do not enter the execution queue automatically.
+
 ### Scientific inquiry recommendations
 
 **Recommended 2026-10-16:** [the inquiry study](deep-dives/subjects/inquiry.md) covers lap through parents using opened Head Start IT-C 1–2, NGSS practices 3/4, 3-5-ETS1-3 and MS-PS2-2, a preschool causal-exploration study, game descriptions and physical investigations. **Extend Ramp Race first**, whose level 4 already teaches paired fair tests. Preserve observation in Photo Safari, counts/displays in Picture Graph and unpenalized predictions in Sink or Float. This is a subject proposal, not a completed Ramp Race game deep dive or an implementation.
