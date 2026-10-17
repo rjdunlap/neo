@@ -3080,12 +3080,20 @@ async function fourth() {
     log(`Weather Wardrobe ${level}: weather, dressing, mistakes, hint, saved round and sticker passed`);
   }
 
-  // Sink or Float: guesses are never misses; wrong sorts are tested in the water.
-  if (!only || only === 'sink') for (let level = 1; level <= 6; level++) {
+  // Sink or Float: guesses are never misses; wrong sorts are tested in the water. Level 7 (FOURTH_ONLY=sink7 alone):
+  // flat and leaky clay sink as experiments, the boat glows after them (one hint), the second lump floats by controller keys.
+  if (!only || only === 'sink' || only === 'sink7') for (const level of only === 'sink7' ? [7] : [1, 2, 3, 4, 5, 6, 7]) {
     await launch('sink-float', level);
     await page.waitForTimeout(700);
-    await page.evaluate(async () => {
+    const boatAt = await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.mode === 'shape') {
+        const tile = (s) => g.tiles.find((t) => t.shape === s).node;
+        for (const s of ['flat', 'leaky']) { await kit.until(() => g.choosing, 30000); await kit.sleep(100); kit.tapOn(tile(s)); await kit.sleep(300); }
+        await kit.until(() => g.choosing, 30000);
+        if (g.sunk !== 2 || g.hints !== 1 || g.misses !== 0) throw new Error(`clay trials: sunk ${g.sunk}, hints ${g.hints}, misses ${g.misses}`);
+        return -1;
+      }
       const floats = { duck: 1, boat: 1, ball: 1, leaf: 1, apple: 1 };
       const basket = (f) => ({ x: neo.view.w * 0.87, y: (f ? neo.view.h * 0.3 : neo.view.h * 0.56) + 40 });
       if (g.plan.mode === 'drop' || g.plan.mode === 'say') { for (const i of [...g.items]) { kit.tapOn(i.node); await kit.sleep(450); } return; }
@@ -3105,11 +3113,27 @@ async function fourth() {
       }
       for (const i of g.items.filter((i) => !i.done)) { await kit.dragTo(i.node, basket(!!floats[i.thing])); await kit.sleep(450); }
     });
+    if (boatAt === -1) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+      await screenshot('sink-float-7-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+      await page.evaluate(async () => { const g = neo.scene.game; kit.tapOn(g.tiles.find((t) => t.shape === 'boat').node); await kit.until(() => g.experiment === 1 && g.choosing, 40000); });
+      // Island keys reach control() only on couch levels (controllerLevels), so drive the three-tile ring directly.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const { idle } = await import('/src/engine/controller.ts');
+        const press = (f) => { const c = idle(); f(c.players[0]); g.control(c, 0.016); };
+        for (let i = 0; i < 2; i++) press((p) => (p.direction = 2));
+        for (let i = 0; i < g.experiments[1].order.indexOf('boat'); i++) press((p) => (p.direction = 0));
+        press((p) => (p.action = true));
+      });
+      await page.waitForFunction(() => neo.scene.game.clayShape === 'boat', null, { timeout: 5000 });
+    }
     await page.waitForTimeout(1000);
     if ([2, 3, 5].includes(level)) await screenshot(`sink-float-${level}`);
     await finished('sink-float');
     const r = await page.evaluate(() => { const r = kit.store.stats('sink-float').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, level === 4 || level === 5 ? [2, 1] : [0, 0], `sink ${level} score`);
+    assert.deepEqual(r, level === 4 || level === 5 ? [2, 1] : level === 7 ? [0, 1] : [0, 0], `sink ${level} score`);
     log(`Sink or Float ${level}: splashes, guesses, sorting, saved round and sticker passed`);
   }
 
