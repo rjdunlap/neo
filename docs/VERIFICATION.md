@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Block Garden definition
+
+- Defined Block Garden levels 1–8 in [the definition](definitions/block-garden.md): fixed-shape placement with row and column clears, every bud to bloom (level 8 empties the bed), gardens built backward and solver-checked, the computed layout with 100-unit squares (72 at the grown-up levels 7–8), refused-drop and wander accounting, bounded hint search with an undo fallback, a drag bot, the how-to card and registration; five references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; the layout numbers and hint time bound are computed, not measured; no child has played it.
+
 ## 2026-10-17 — Splish Splash slice 1, words and guards
 
 - [PR #519](https://github.com/rjdunlap/neo/pull/519), `claude/splish-words-guards`, code at `80f8ce9` on `origin/main` `d35dad9`: palm brush (1.6) on levels 1–2, phrase table, naming at first touch and as parts go clean, free-play nudge after 8 s, bounded how-to notes; accounting and level ids unchanged.
