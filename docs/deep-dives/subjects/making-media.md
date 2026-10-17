@@ -83,7 +83,7 @@ Source audit of [GAMES](../../GAMES.md), the [notebook](../../IDEAS.md), the pro
 | P | Movie Night 1 **Sound for the show**: three filmed shots; drop any sound pad on any shot; Watch; the audience laughs at a boing on a sleeping duck | The same, with a pet-chosen favorite sound to place | Movie Night |
 | K | Movie Night 2 **Right on time**: the splash sound goes on the shot where the frog lands | Movie Night 3: two sounds, two moments (a knock, then "hello") | Movie Night |
 | S | Movie Night 4 **Pick the shots**: three of four shots so the audience knows who found what, and where | Movie Night 5 **Keep the surprise**: the present's contents shot must come last | Movie Night |
-| U | Movie Night 6 **Point the camera**: frame a busy scene wide (where) and close (the tiny key on the hook) | 7 **What they don't see**: keep a hiding friend out of frame until the last shot; 8 **Same footage, two movies** | Movie Night (school top levels); Pixel Flipbook for frame animation |
+| U | Movie Night 6 **Point the camera**: frame a busy scene wide (where) and close (the tiny key on the hook) | 7 **What they don't see**: keep a hiding friend out of frame until the last shot; 8 **Same footage, two movies** (two audiences, two factual briefs) | Movie Night (school top levels); Pixel Flipbook for frame animation |
 | M | Movie Night 9 **Director's case**: a pictured audience brief with three facts and one surprise, four slots, a set to frame | An optional fewer-shots comparison after success, never required | School's top level through 12; 13+ cases in `grownup` |
 | G, for themselves | **Director's cases** at 64-unit targets: several briefs on one footage set, each enumerable | Two audiences with different briefs from one strip (a friend who already knows, one who does not) | Lantern Lake, after a registration decision |
 | G, with the child | **Family premiere**: the grown-up looks away while she makes a movie, then watches it cold and says what happened; she checks whether the movie said what she meant. At older rungs, swap: the grown-up makes, she watches | The watcher states the brief first, the maker meets it | Movie Night co-play note and how-to |
@@ -122,7 +122,7 @@ Story Weaver, Draw a Song and the programming/puppet proposals stay with their o
 | 5 | Keep the surprise | school | A box arrives, Bunny opens it, a kite inside, Bunny's face | Order so the kite is unknown until it is opened | Brief met; both orders of the two setup shots accepted |
 | 6 | Point the camera | school (top) | A wide garden; two slots to fill by framing | Wide for where, close for the tiny key | Both facts known |
 | 7 | What they don't see | school (top) | Hide-and-seek: the brief says the audience must not know where Roly hides until the last shot | Frame the seeker without the hider, then reveal | The hiding fact first appears in the last shot |
-| 8 | Same footage, two movies | school (top) | One footage set; a cheerful brief and a worried brief | Two strips: the storm cloud before Pip's face for worried, after it clears for cheerful | Both briefs met; music free |
+| 8 | Same footage, two movies | school (top) | One footage set of a rainy picnic; two audience friends with different factual briefs: one must learn that the storm came before Pip went inside, the other that the sun came out at the end | Two strips from the same shots, chosen and ordered for each audience (remix, ISTE 1.6.b) | Both briefs met; music free. Whether order changes the *feeling* a viewer reads is never judged (a `media-literacy` and social-emotional question; see decision 7) |
 | 9 | Director's case | school (top), grownup | A three-fact brief with one surprise, four slots, a set to frame | Framing, choice and order together | Brief met; optional fewer-shots comparison afterwards |
 
 Level 1 is the creative way in; levels 2–3 keep one mechanic (sound on a shot). Levels 4–5 replace sound with shot choice on the same strip; 6–9 add the viewfinder. Each group is its own definition packet, so a build never carries two unproven interactions.
@@ -159,6 +159,7 @@ Levels 1–3: one session to define, one to build (strip, sound pads, a premiere
 4. **Kept movies and Pixel Flipbook frames:** the existing [Flipbook storage](../../WAITING-ON-DEVELOPER.md) decision. The 2026-10-16 development-save exception removes the migration cost that row assumed; current-format validation, repair and backup are still needed. Lean: first slices transient.
 5. **Picture Show:** in the treehouse now, or wait for the rework's creature home (RW03/RW08). Lean: wait.
 6. **Cast:** today's critters first, or the rework's pilot creatures when they exist.
+7. **Feelings from editing:** a level where order or music changes the feeling a viewer reads (the classic editing effect) is not proposed as a judged rule; it prescribes a feeling and overlaps `media-literacy` and the social-emotional boundary. Lean: leave it to the media-literacy session, with review.
 
 ## Build slices, in order
 
@@ -166,7 +167,7 @@ Levels 1–3: one session to define, one to build (strip, sound pads, a premiere
 2. **MM2 · Build Movie Night 1–3** at the new-game tier.
 3. **MM3 · Define 4–5**: the shot-fact model, briefs, enumerated accepted strips, the Story Steps overlap test.
 4. **MM4 · Build 4–5.**
-5. **MM5 · Define 6–8**: the viewfinder grid, sizes, hiding facts, two-brief level; Photo Safari overlap test.
+5. **MM5 · Define 6–8**: the viewfinder grid, sizes, hiding facts, the two-audience factual briefs; Photo Safari overlap test.
 6. **MM6 · Define 9 and the 13+ cases** after the registration decision; open Media Arts grade 8 first.
 7. **MM7 · Define Pixel Flipbook** in the Pixel Pictures dive, after the storage decision.
 8. **MM8 · Make a movie at home** card, after the practical-card review.
