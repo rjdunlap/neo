@@ -73,6 +73,7 @@ export class GameScene extends Scene {
   private navigating = false;
   private returningTouch = false;
   private speechSerial = 0;
+  private resultSpeech: Promise<void> = Promise.resolve();
   private readonly touchUp = () => { this.returningTouch = false; };
   private level = 1;
   private seconds = 0;
@@ -496,8 +497,8 @@ export class GameScene extends Scene {
       if (on) {
         sfx.sparkle();
         confetti.burst(heart.x, heart.y, { kind: 'star', colors: [swatch.pink.fill, 0xffffff], count: 14, speed: [180, 340], gravity: 0, life: [0.5, 0.9] });
-        void voice.say('heart.on');
-      } else void voice.say('heart.off');
+        void this.resultVoice('heart.on');
+      } else void this.resultVoice('heart.off');
     });
     // Something she made: a button to hang it in her treehouse room. Explicit, and it replaces (never deletes) the earlier one.
     let keep: RoundButton | null = null;
@@ -518,7 +519,7 @@ export class GameScene extends Scene {
         check.visible = true;
         sfx.sparkle();
         confetti.burst(keep!.x, keep!.y, { kind: 'star', colors: [swatch.green.fill, 0xffffff], count: 14, speed: [180, 340], gravity: 0, life: [0.5, 0.9] });
-        void voice.say('keep.done');
+        void this.resultVoice('keep.done');
       });
       keep.position.set(v.w / 2 - 195, v.h * 0.33);
     }
@@ -535,8 +536,8 @@ export class GameScene extends Scene {
     }
     layer.addChild(this.ring);
     this.layoutResult(this.view);
-    const serial = ++this.speechSerial;
-    const speech = this.whileHere(voice.say(keep ? 'keep.offer' : 'again'));
+    const speech = this.resultVoice(keep ? 'keep.offer' : 'again');
+    const serial = this.speechSerial;
     // Wait out the buttons' arrival. A finger already held over the new tile has never armed it.
     await this.tw.wait(0.45);
     if (!this.liveResult() || this.navigating) return;
@@ -597,7 +598,7 @@ export class GameScene extends Scene {
     this.discovery = null;
     const mod = suggestDiscovery(candidates, store.data.games, discoveryMemory.last);
     if (!mod || !this.canDiscover()) {
-      if (!mod && speak && this.canDiscover()) { this.speechSerial++; void voice.say('discovery.empty'); }
+      if (!mod && speak && this.canDiscover()) void this.queueDiscovery('discovery.empty');
       return;
     }
     const tile = new DiscoveryTile(288, 112, nextGameArt(mod, SCRIPT[mod.titleLine][0].replace(/!$/, '')), () => this.chooseDiscovery(mod.id), () => this.canDiscover());
@@ -622,8 +623,20 @@ export class GameScene extends Scene {
   private sayDiscovery(line: 'discovery.offer' | 'discovery.another') {
     const mod = this.candidates().find(m => m.id === this.discovery?.id);
     if (!mod || !this.canDiscover()) return;
+    void this.queueDiscovery(line, SCRIPT[mod.titleLine][0].replace(/!$/, ''), mod.id);
+  }
+
+  private resultVoice(line: LineId): Promise<void> {
     this.speechSerial++;
-    void voice.say(line, { title: SCRIPT[mod.titleLine][0].replace(/!$/, '') });
+    return this.resultSpeech = this.whileHere(voice.say(line));
+  }
+
+  /** An offer restored or deliberately changed mid-speech waits for the ordinary result/Keep line. */
+  private async queueDiscovery(line: LineId, title?: string, id = this.discovery?.id) {
+    const serial = ++this.speechSerial;
+    await this.resultSpeech;
+    if (serial !== this.speechSerial || this.discovery?.id !== id || !this.canDiscover()) return;
+    await voice.say(line, title ? { title } : undefined);
   }
 
   private chooseDiscovery(id: string) {

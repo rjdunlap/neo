@@ -310,4 +310,4 @@ Record selection actions, wrong destinations, support requests, understanding of
 
 ## Verification of this research
 
-Research, repository source review and documentation only. No game, route, save, policy or asset changed. Source links and local Markdown references/diff formatting are the appropriate checks; actual results are recorded in [VERIFICATION](VERIFICATION.md). Future implementation checks above were specified, not performed.
+The original study and D1a were research, repository source review and documentation only; they changed no runtime behavior. Their source/link checks and the later D1b implementation proof are recorded separately in [VERIFICATION](VERIFICATION.md). The acceptance table above preserves D1a’s specified scope; the dated D1b entry records what actually ran.

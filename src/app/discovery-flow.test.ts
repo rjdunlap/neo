@@ -5,6 +5,7 @@ import { gameById } from '../games/registry';
 import { playBand } from '../progress/bands';
 import { GameScene } from './scenes/GameScene';
 import { discoveryMemory } from './discovery';
+import { voice } from '../audio/voice';
 vi.mock('../audio/voice', () => ({ voice: { stop: vi.fn(), say: vi.fn(async () => {}) } }));
 
 // Exercise the real scene callbacks without constructing a renderer or celebrating a synthetic round.
@@ -59,6 +60,27 @@ describe('direct-next result callbacks', () => {
     scene.chooseDiscovery('sing-along-barn'); expect(launched).toEqual([]);
     if (['gone', 'left', 'replaced', 'epoch'].includes(condition)) {
       const before = JSON.stringify(store.data); scene.finish({ misses: 0, hints: 0 }); expect(JSON.stringify(store.data)).toBe(before);
+    }
+  });
+});
+
+describe('discovery speech after ordinary result speech', () => {
+  it('waits for result/Keep speech before naming a restored or changed offer', async () => {
+    const { scene } = result(); let finish!: () => void;
+    scene.resultSpeech = new Promise<void>(resolve => { finish = resolve; });
+    vi.mocked(voice.say).mockClear();
+    const pending = scene.queueDiscovery('discovery.offer', 'Barn', 'sing-along-barn');
+    expect(voice.say).not.toHaveBeenCalled(); finish(); await pending;
+    expect(voice.say).toHaveBeenCalledExactlyOnceWith('discovery.offer', { title: 'Barn' });
+  });
+  it('drops an obsolete announcement after another choice or a profile reset', async () => {
+    for (const change of ['choice', 'reset']) {
+      const { scene } = result(); let finish!: () => void;
+      scene.resultSpeech = new Promise<void>(resolve => { finish = resolve; });
+      vi.mocked(voice.say).mockClear();
+      const pending = scene.queueDiscovery('discovery.offer', 'Barn', 'sing-along-barn');
+      if (change === 'choice') scene.speechSerial++; else store.data = defaults();
+      finish(); await pending; expect(voice.say).not.toHaveBeenCalled();
     }
   });
 });
