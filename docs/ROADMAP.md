@@ -52,6 +52,8 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 5. **`ramp-race`, build the Q1 support correction Q2** (existing-game bug-fix tier): accurate level 1–4 card and miss wording, idempotent repair glow and recovery demo; accounting unchanged. [Definition](definitions/ramp-race-support.md)
 6. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
 
+*Refill in progress on branch `claude/ready-list-refill` (2026-10-17).*
+
 ### Chunks
 
 Chunk numbers are stable IDs that other documents cite; rows are sorted by what can be done now, not by number. Detail and history live behind the links.
