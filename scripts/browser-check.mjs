@@ -4184,7 +4184,10 @@ async function batch() {
   }
 
   // Dot Link: drag real lines through dots; wrong colors, short/long chains and open lines are gentle misses.
-  for (let level = 1; level <= 6 && (!only || only === 'dots'); level++) {
+  // Level 11 (Find my buddy): a line that is not the wiggling pair shakes and stays (one miss); `DOTS_LEVELS=11` plays only it.
+  const dotLevels = process.env.DOTS_LEVELS ? process.env.DOTS_LEVELS.split(',').map(Number) : [1, 2, 3, 4, 5, 6, 11];
+  for (const level of dotLevels) {
+    if (only && only !== 'dots') break;
     await launch('dot-link', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -4205,6 +4208,17 @@ async function batch() {
         await ready();
       };
       const p = g.plan;
+      if (p.mode === 'buddy') {
+        const same = (a, b) => a.r === b.r && a.c === b.c;
+        const { pairs } = await import('/src/games/dot-link/logic.ts');
+        await ready();
+        const other = pairs(g.grid).find((q) => !q.every((c) => g.buddy.some((b) => same(b, c))));
+        const before = JSON.stringify(g.grid);
+        await draw(other);
+        if (g.misses !== 1 || g.hints !== 0 || g.progress !== 0 || JSON.stringify(g.grid) !== before) throw new Error(`Buddy miss: ${g.misses} ${g.hints} ${g.progress}`);
+        for (let guard = 0; guard < 12 && !g.finished; guard++) { await ready(); await draw([...g.buddy]); }
+        return;
+      }
       if (p.mode === 'tap') {
         for (let i = 0; i < p.goal; i++) { await ready(); const [x, y] = at({ r: i % p.rows, c: i % p.cols }); kit.tap(x, y); await kit.sleep(200); }
         return;
@@ -4229,7 +4243,7 @@ async function batch() {
     await screenshot(`dot-link-${level}`);
     await finished('dot-link');
     const r = await page.evaluate(() => { const r = kit.store.stats('dot-link').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, mode === 'tap' || mode === 'pair' ? [0, 0] : [2, 1], `dots ${level} score`);
+    assert.deepEqual(r, mode === 'tap' || mode === 'pair' ? [0, 0] : mode === 'buddy' ? [1, 0] : [2, 1], `dots ${level} score`);
     log(`Dot Link ${level} (${mode}): lines, pops, falls, mistakes, hint, saved score and sticker passed`);
   }
 }

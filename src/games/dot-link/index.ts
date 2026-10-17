@@ -10,12 +10,13 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, planFor, popped, step, type Cell, type DotMark, type DotPlan, type Grid } from './logic';
+import { BUDDY_LEVEL, buddyCounts, chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, pickBuddy, planFor, popped, step, type Cell, type DotMark, type DotPlan, type Grid } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
+  // Level 11, Find my buddy, is the toddler step between tapping and linking any pair.
+  toddler: { min: 1, max: 11, order: [1, BUDDY_LEVEL, 2] },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
 };
@@ -87,6 +88,8 @@ class DotLink implements Game {
   private idle = 0;
   private clock = 0;
   private hintCells: Cell[] = [];
+  /** Buddy mode: the pair that wiggles from the start (not a hint) and the only line that links. */
+  buddy: Cell[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -97,6 +100,7 @@ class DotLink implements Game {
     this.board.addChild(this.lines, this.layer, this.touch);
     ctx.stage.addChild(this.backdrop, this.board);
     this.buildDots();
+    this.chooseBuddy();
 
     this.touch.eventMode = 'static';
     this.touch.hitArea = new Rectangle(-GAP / 2, -GAP / 2, this.plan.cols * GAP, this.plan.rows * GAP);
@@ -113,6 +117,8 @@ class DotLink implements Game {
         return void this.ctx.instruct('dots.tap');
       case 'pair':
         return void this.ctx.instruct('dots.pair');
+      case 'buddy':
+        return void this.ctx.instruct('dots.buddy');
       case 'color':
         return void this.ctx.instruct('dots.color', { n: p.goal, color: this.target! });
       case 'chain':
@@ -150,20 +156,21 @@ class DotLink implements Game {
     this.backdrop.resize(v);
     const w = (this.plan.cols - 1) * GAP;
     const h = (this.plan.rows - 1) * GAP;
-    const s = Math.min(1, (v.h - 150) / (h + GAP), (v.w - 260) / (w + GAP));
+    // The small buddy board grows so each dot's catch area stays well over 100 units for a toddler.
+    const s = Math.min(this.plan.mode === 'buddy' ? 1.4 : 1, (v.h - 150) / (h + GAP), (v.w - 260) / (w + GAP));
     this.board.scale.set(s);
     this.board.position.set(Math.max(190 + (GAP * s) / 2, (v.w - w * s) / 2), (v.h - h * s) / 2 + 20);
   }
 
   update(dt: number) {
     this.clock += dt;
-    if (!this.busy && !this.finished && !this.path.length) {
+    if (!this.busy && !this.finished && !this.path.length && this.plan.mode !== 'buddy') {
       this.idle += dt;
       if (this.idle > 12 && !this.hintCells.length) this.hint();
     }
     // Hinted dots bob gently.
     this.dots.forEach((row, r) => row.forEach((g, c) => {
-      const lit = this.hintCells.some((h) => h.r === r && h.c === c);
+      const lit = [...this.hintCells, ...this.buddy].some((h) => h.r === r && h.c === c);
       const inPath = this.path.some((p) => p.r === r && p.c === c);
       const k = inPath ? 1.15 : lit ? 1 + 0.12 * Math.abs(Math.sin(this.clock * 5)) : 1;
       g.scale.x += (k - g.scale.x) * Math.min(1, dt * 12);
@@ -173,7 +180,7 @@ class DotLink implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.path.length) return null;
-    const move = demoMove(this.plan, this.grid, this.target);
+    const move = demoMove(this.plan, this.grid, this.target, this.buddy);
     if (!move) return null;
     const spots = move.map((cell) => ({ on: this.touch, ...this.pos(cell) }));
     return move.length === 1
@@ -251,13 +258,37 @@ class DotLink implements Game {
     void this.judge(path, loop);
   }
 
+  /** Buddy mode: wiggle a fresh pair after the board settles. */
+  private chooseBuddy() {
+    if (this.plan.mode === 'buddy') this.buddy = pickBuddy(this.grid, this.ctx.rng) ?? [];
+  }
+
+  /** Buddy mode: the wiggling pair pops; any other line shakes, stays, and points back at the buddies. */
+  private async judgeBuddy(path: Cell[]) {
+    if (buddyCounts(this.buddy, path)) {
+      const pair = this.buddy;
+      this.buddy = [];
+      await this.pop(pair, false);
+      return;
+    }
+    this.misses++;
+    sfx.boing();
+    void this.ctx.say('dots.buddyhint');
+    for (const c of path) {
+      const g = this.dots[c.r][c.c];
+      const { x } = this.pos(c);
+      void this.ctx.tw.to(g, { x: x + 10 }, { duration: 0.06 }).then(() => this.ctx.tw.to(g, { x: x - 10 }, { duration: 0.1 })).then(() => this.ctx.tw.to(g, { x }, { duration: 0.06 }));
+    }
+  }
+
   /** A finished line: pop it, then see if it counts toward the goal. */
   private async judge(path: Cell[], loop: boolean) {
+    if (this.plan.mode === 'buddy') return this.judgeBuddy(path);
     const color = this.grid[path[0].r][path[0].c];
     const p = this.plan;
     let counts = 0;
     let line: 'dots.notthat' | 'dots.longer' | 'dots.around' | 'dots.exact' | null = null;
-    if (p.mode === 'pair') counts = 1;
+    if (p.mode === 'pair' || p.mode === 'buddy') counts = 1;
     else if (p.mode === 'color') {
       if (color === this.target) counts = loop ? popped(this.grid, path, true).length : path.length;
       else line = 'dots.notthat';
@@ -310,6 +341,7 @@ class DotLink implements Game {
     }
     // A repainted dot (to keep a move possible) just appears in place.
     await tw.wait(0.34);
+    this.chooseBuddy();
     this.busy = false;
     if (this.progress >= this.plan.goal && before < this.plan.goal) void this.finale();
   }
@@ -376,5 +408,6 @@ export const dotLink: GameModule = {
   hubIcon: () => new DotsIcon(),
   sticker,
   touchDemo: true,
+  entryLevels: [BUDDY_LEVEL],
   create: (ctx) => new DotLink(ctx),
 };

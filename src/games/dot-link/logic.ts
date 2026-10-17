@@ -6,14 +6,14 @@ import type { Rng } from '../../engine/random';
  * new dots drop in from the top. Later levels ask for a color, a longer chain, or a closed
  * square (which clears every dot of that color).
  */
-export type DotMode = 'tap' | 'pair' | 'color' | 'chain' | 'square';
+export type DotMode = 'tap' | 'pair' | 'buddy' | 'color' | 'chain' | 'square';
 
 export interface DotPlan {
   mode: DotMode;
   rows: number;
   cols: number;
   colors: number;
-  /** Pops (tap), links (pair), dots of the color, chains, or squares to finish. */
+  /** Pops (tap), links (pair), buddies joined (buddy), dots of the color, chains, or squares to finish. */
   goal: number;
   /** chain: how long a chain must be. */
   length?: number;
@@ -31,7 +31,14 @@ export const PLANS: DotPlan[] = [
   { mode: 'chain', rows: 5, cols: 6, colors: 4, goal: 3, length: 5, exactLength: true, name: 'Make three chains of exactly 5 dots' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** Level 11, the toddler entry before level 2: one pair of dots wiggles from the start, and only that pair links. */
+export const BUDDY_LEVEL = 11;
+export const BUDDY: DotPlan = { mode: 'buddy', rows: 3, cols: 3, colors: 2, goal: 4, name: 'Find my buddy: link the two wiggling dots' };
+
+/** Every plan by level ID; 7–10 are kept for the levels the dive appends above 6. */
+export const LEVEL_PLANS: ReadonlyMap<number, DotPlan> = new Map([...PLANS.map((p, i) => [i + 1, p] as const), [BUDDY_LEVEL, BUDDY]]);
+
+export const planFor = (level: number) => LEVEL_PLANS.get(level) ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export function chainCounts(plan: DotPlan, length: number, loop: boolean): boolean {
   return plan.exactLength ? length === plan.length && !loop : length >= (plan.length ?? 2) || loop;
@@ -139,9 +146,32 @@ export function findSquare(grid: Grid): Cell[] | null {
   return null;
 }
 
+/** Every pair of neighboring dots that share a color. */
+export function pairs(grid: Grid): [Cell, Cell][] {
+  const out: [Cell, Cell][] = [];
+  grid.forEach((row, r) => row.forEach((k, c) => {
+    if (c + 1 < row.length && row[c + 1] === k) out.push([{ r, c }, { r, c: c + 1 }]);
+    if (r + 1 < grid.length && grid[r + 1][c] === k) out.push([{ r, c }, { r: r + 1, c }]);
+  }));
+  return out;
+}
+
+/**
+ * The buddy pair that wiggles, chosen from the board's same-color neighbors. A full two-color 3×3 board always has
+ * at least two such pairs (only a checkerboard has none, and `ensureMove` repaints one), so only the chosen one is lit.
+ */
+export function pickBuddy(grid: Grid, rng: Rng): [Cell, Cell] | null {
+  const all = pairs(grid);
+  return all.length ? rng.pick(all) : null;
+}
+
+/** A buddy line counts when it joins both buddies, in either direction; a longer line through both still counts. */
+export const buddyCounts = (buddy: readonly Cell[], path: readonly Cell[]) => buddy.length === 2 && buddy.every((b) => path.some((p) => same(p, b)));
+
 /** A clean next move for the demonstration, including the return to the first dot for a square. */
-export function demoMove(plan: DotPlan, grid: Grid, target?: ColorName): Cell[] | null {
+export function demoMove(plan: DotPlan, grid: Grid, target?: ColorName, buddy?: readonly Cell[]): Cell[] | null {
   if (plan.mode === 'tap') return [{ r: 0, c: 0 }];
+  if (plan.mode === 'buddy') return buddy?.length === 2 ? [...buddy] : findLine(grid, 2);
   if (plan.mode === 'square') {
     const square = findSquare(grid);
     return square ? [...square, square[0]] : null;

@@ -353,3 +353,33 @@
 - `BROWSER_SUITE=woodland` (new) passed at `http://localhost:5173`: entry only in Wonder Woods, story spot first, portrait cards, real Mail Carrier 6 round with a wrong house, Seesaw left mid-round and finished with help, Beat Builder 3 on `PicnicStage`, reload resume, ending and one photo, one sticker per round, retelling, Home; screenshots `woodland-start-portrait.png`, `woodland-finale.png`. `picnic` and `world` passed as regressions.
 - Production offline check passed against the current build (`assets/index-gguiz4Kg.js` confirmed, preview `http://localhost:4173`) after its fixture was updated to expect the untold woodland telling.
 - Open: device speech and the picnic beat on an iPad, a child playing it ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-10-17 — Shape Buddies level 2, A step down
+
+- [PR #504](https://github.com/rjdunlap/neo/pull/504), `claude/shape-buddies-step-down`, tested commit `7fc5f33`, `GAME_URL=http://localhost:5876`: pre-K and school now play levels 1–2; at level 2 the far bank is one step lower and only a slope bridge reaches it (misses always 0, one hint per role). As-built geometry differs from the definition (see [definition](../definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)): bridge dock at `y 250`, heading and caption lifted at level 2 only.
+- Ran `npm run typecheck` (pass); full `npm test` 159 files, 1459 tests (pass); `BROWSER_SUITE=buddies` (pass, now with a level-2 play: flat bridge fails and speaks `buddies.stepFlat`, slope succeeds, plant, misses 0 hints 0, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-buddies FINGER_LEVELS=2` (pass, pre-K, finished in 15.0 s).
+- One level-2 portrait screenshot: the first showed the Bridge label overlapping the caption; fixed by lifting heading and caption, re-screenshotted clean.
+- Not run: `npm run build` (only the game, voice script and how-to changed), offline check, level-2 landscape screenshot. iPad touch, device speech and a child's understanding stay open in [device checks](../DEVICE-CHECKS.md).
+
+## 2026-10-17 — RW02b illustrated glider pilot
+
+- [PR #503](https://github.com/rjdunlap/neo/pull/503), `claude/rw02b-illustrated-glider`, based on `b6b2a68`: illustrated glider on a deformable mesh beside the Graphics glider in the dev-only `/?creatures` preview ([result](../rework/GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)). The art is cut from the committed concept sheet; no new image was generated (no tool in the session).
+- Typecheck passed. The 7 new creature tests passed, alongside the 3 existing ones; the frame-to-frame test failed at 15 px before the wingbeat-phase fix. The full unit suite passed except 5 known-heavy Ferry Jam, Peg Garden and Penguin Slide tests, which time out under default parallel load; those files passed 41/41 with `--maxWorkers=2`.
+- The build passed, with no sprite or preview code in `dist/` or the precache, so no offline check was needed.
+- One-off probe `test-results/rw02b-probe.mjs` against `http://localhost:5197/?creatures`, 1024×768 and 768×1024: double tap, accessory toggles, card fit and exit to the chooser all passed, with no page errors. Headless fps was 7–10 in software rendering.
+- Inspected stills: idle, touch and reaction-end wingbeat strips; blink open and shut; sprite edges on light, dark and checkerboard. Real-time motion was not watched by a person.
+- Not run: game, world and couch suites (no game, route or save changed); iPad performance and touch; child preference.
+
+## 2026-10-17 — Sink or Float level 7, Make it float
+
+- [PR #502](https://github.com/rjdunlap/neo/pull/502), `claude/sink-float-make-it-float-build`, tested commit `6bc07ac`, `GAME_URL=http://localhost:5919`: school band now levels 5–7; clay squashed into flat, boat or leaky shapes, sinking trials never misses, glow after two sinks counts one hint.
+- Ran `npm run typecheck` (pass); sink-float, registry, howto and journal tests (55 pass); full `npm test` 1451/1455, the 4 failures in ferry-jam, peg-garden and penguin-slide logic tests under machine load, all passing when rerun alone (timing flake, unrelated files); `npm run build` (pass).
+- `BROWSER_SUITE=fourth FOURTH_ONLY=sink7` passed: flat and leaky trials, glow = one hint, boat, second experiment (by direct `control()` calls), finish with misses 0 hints 1; portrait `test-results/browser/sink-float-7-portrait.png`. `BROWSER_SUITE=fingerdemo FINGER_ONLY=sink-float` passed at levels 1 and 7.
+- Not run: `couchgames` (the couch's two-choice control path is unchanged); a real island controller press at level 7 (unreachable until `controllerLevels` includes it); iPad, device speech, a child.
+
+## 2026-10-17 — RW02 creature art prototype
+
+- [PR #499](https://github.com/rjdunlap/neo/pull/499), `claude/rw02-creature-art`, based on `1da1207`: three creatures, scarf and crown with slots/misfits, dev-only `/?creatures` preview ([packet](../rework/CREATURE-ART.md)); `src/main.ts` gained only the dev-gated hook.
+- Passed typecheck, all 159 unit files / 1,451 tests (3 new creature tests: slot or misfit per accessory, slots move ≥15 units in a touch and settle) and `npm run build`; no preview or creature code in `dist/assets`.
+- One-off local probe (ignored `test-results/rw02-probe.mjs`, not committed) at `http://localhost:5191` (strict port), headless Chromium, 1024×768 and 768×1024: real clicks made each creature react; crowns moved 40–108 px with the head; hit radii 105–135 logical units; the scarf toggle took scarves off and on (glider declined); the glider card selected and showed its misfit mark; no page errors; without the flag the front door is still `ChooserScene`. Screenshots `rw02-{landscape,portrait}-{idle,touch}.png` reviewed; the sprout's scarf was lowered and the river's collar moved after the first look.
+- Cost probe: 17/49/77 `Graphics` per species, ≤2.3 µs per update; headless software rendering ≈21 fps frozen or animated (chooser ≈40), not an iPad prediction. No game suites, world or offline (no route, game or asset changed). iPad frame rate, touch feel and child reaction open in [DEVICE-CHECKS](../DEVICE-CHECKS.md). Dev server stopped.
