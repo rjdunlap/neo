@@ -36,7 +36,7 @@ Defined 2026-10-17 as slice **Q3** of the [scientific inquiry study](../deep-div
 - The study's example first round is the `[2, 4]` order.
 
 **A pair, step by step:**
-1. **First roll.** The ramp stands at the start height. `ramp.shelf` asks her to roll it (`ctx.instruct`). She presses go and the car rolls, as on levels 1–3.
+1. **First roll.** The ramp stands at the start height and is **locked** until the first card lands: tapping it says `ramp.shelf.first` (a nudge, not a miss), so every pair really starts at 2 or 4. `ramp.shelf` asks her to roll it (`ctx.instruct`). She presses go and the car rolls, as on levels 1–3.
    - When it stops, a blue flag grows at the stop on the lane floor and one pentatonic landing note sounds. The note acknowledges the stop; it never judges.
    - Record card A (blue stripe) slides into the top slot of the shelf.
    - The car returns to the ramp top. The blue flag stays on the lane floor.
@@ -109,18 +109,18 @@ The study's principle is that **prediction, editing, guessing, repeats and nudge
 
 | Event | Level 5 | Level 6 |
 | --- | --- | --- |
-| Guess, change, re-tap the paw, tap the locked lane, same pair or same height | Free | Free |
+| Guess, change, re-tap the paw, tap a locked ramp or lane, same pair or same height | Free | Free |
 | Go on a confounded pair (`wrong-only` / `both-changed`) | — | 1 miss each, a boing and its line |
 | Second confounded Check on one question | — | Q2's corrective glow on lane B and `ramp.fairhint`. **1 hint, once per question**; further unfair Checks still miss but never stack, restart or re-announce the glow |
 | Tap the card that went less far | 1 miss, a boing, `ramp.shelf.wrong`. Both cards replay at once: each card's mini car slides from its ramp to its flag | Same |
-| Second wrong card on one pair or question | A pulsing yellow ring on the farther card and `ramp.shelf.hint`. **1 hint, once**. Tapping it completes the pair normally | Same |
+| Second wrong card on one pair or question | A pulsing yellow ring on the farther card and `ramp.shelf.hint`. **1 hint, once**. Tapping it completes the pair normally. With two cards this is reached only by tapping the same wrong card again: the replay after the first miss is the real help | Same |
 
 - **Contrast with level 4.** Level 6 counts setup help **once per question**. Level 4, as Q1 recorded and Q2 keeps, counts a hint on every unfair Check from the second on.
   - Level 6 is new, so it starts with the once-per-question rule the other levels use.
   - Whether level 4 also moves to it stays part of decision 1.
 - **Most help in one question:** 2 hints, one for the setup and one for the reading.
 - **Help still finishes:** a round finished with help ends normally, with one sticker.
-- **Adaptation:** reading two pictured cards correctly is the skill level 5 checks. So a zero-miss round there is fair evidence for the two-smooth-rounds step up into level 6. A guess that turns out wrong is never counted, so a cautious guesser is not stepped down.
+- **Adaptation:** reading two pictured cards correctly is the skill level 5 checks. So a zero-miss round there counts toward the two-smooth-rounds step up into level 6, but it is **weak evidence**: with two cards a pure guesser has at most one miss in about three rounds of four. A guess that turns out wrong is never counted, so a cautious guesser is not stepped down.
   - Decision 1 still has to approve this, including whether a level-5 round with no wrong card taps but many same-height nudges should count as smooth. **Proposed: yes**, because nudges are not errors.
 - **The ring and glow take no touches:** both draw in the existing `glow` graphic (`eventMode = 'none'`). The ring is worked out each frame from the card positions, so a resize cannot strand it.
 
@@ -161,7 +161,7 @@ Q4 puts the arithmetic in a pure `shelfLayout(view, mode)` in `logic.ts` so a ru
 
 **Resize and cancellation:**
 - Records are data (`TrialRecord`), and cards, flags, the paw and the ring are redrawn from marks on every `resize`. Nothing is stored in pixels.
-- Taps during a roll, a card slide or a replay are ignored (`busy`). `onTap` already handles cancel and leave.
+- Taps during a roll, a card slide or a replay are ignored (`busy`). While the cards are asking (levels 5 and 6), the ramps, floors, guess zone and Go are inert too; only the cards answer. `onTap` already handles cancel and leave.
 - If the scene is destroyed mid-roll, the awaited chain stops with the tweens, as the scene contract says. No game-owned timer or listener is added, so `destroy()` stays as small as now.
 - Card art draws with Pixi `Graphics` into containers the game owns. No `RenderTexture`.
 
@@ -231,6 +231,7 @@ export function tally(events: RampEvent[]): { misses: number; hints: number };
 | --- | --- | --- |
 | `ramp.shelf` | Press go and watch where the car stops. Its card will remember. | 5, first roll (instruct) |
 | `ramp.shelf.change` | Now change the ramp. If you like, tap the floor to guess: will it stop before the blue flag, or past it? Then press go. | 5, second roll (instruct) |
+| `ramp.shelf.first` | Press go first. Then you can change it. | 5, ramp tapped before the first card |
 | `ramp.shelf.same` | That is the same ramp as last time. Change it to find out something new. | 5, nudge |
 | `ramp.guess.right` | You guessed {side} the flag, and it stopped {side}! | 5, after a guess that matched |
 | `ramp.guess.new` | You guessed {guess} the flag. It stopped {side}. Now we know! | 5, after a guess that did not match. No boing |
@@ -257,7 +258,7 @@ Q1's level-4 lines become `{ from: 4, to: 4, … }`, and these are added. The go
 | Finish | The round ends after two pairs of cards. | The round ends after two fair tests, one of floors and one of ramps. |
 | Note | Guesses are free, and rolling the same ramp twice only gets a reminder. Tapping the card that went less far is a miss; after two on one pair, the farther card glows. | Two lanes that are just the same get a reminder, not a miss. Pressing go when anything besides the thing on the sign is different is a miss, and so is tapping the card that went less far; after two of either on one test, what to change or tap glows. |
 
-The longest resolved card, level 6, is about 700 characters including the goal and the level name, under the 840 limit.
+The longest resolved card, level 6, is about 650 characters including the goal and the level name, under the 840 limit.
 
 `coplayHint` stays as Q1 changed it (*Guess together before each roll: how far will the car go, and why?*). It fits levels 5–6. Co-play there is one person choosing the change and the other reading the cards, then swapping. Solo play hides nothing.
 
@@ -305,7 +306,7 @@ PhET Pendulum Lab's controls were not established by the study, and nothing is b
    - misses only for unfair Checks and wrong cards;
    - one hint per question for setup help, and one for reading help;
    - nudges, guesses and same-height rolls free;
-   - zero-miss reading counts as smooth.
+   - zero-miss reading counts as smooth, although two cards can be guessed (about 75% of guessed rounds have at most one miss). Decide whether level 5 alone may step a player up to 6, or whether 6's own Checks are the real gate.
 2. **Window (inquiry decision 2).** School 1–6, plain range; pre-K stays 1–2.
 3. **Level-6 lane policy.** **Recommended:** a locked blue control lane. The alternative is both lanes editable with any fair pair accepted, which needs a two-lane repair solver and a level-4-style reset. Only the recommended policy is specified here; choosing the other reopens this packet's level-6 sections.
 
