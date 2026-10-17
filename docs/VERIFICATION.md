@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — RW01 name and story packet
+
+- Docs only: [name and story packet](rework/NAME-AND-STORY.md) on `claude/rw01-name-and-story` ([PR #498](https://github.com/rjdunlap/neo/pull/498)), based on `4daf52a`. Routed the working recommendation to the rework brief, the title decision to waiting-on-developer and the human checks to device checks; removed the RW01 ready line.
+- Name screen: six informal web searches on 2026-10-17, recorded in the packet; not USPTO/App Store/Google Play searches and not legal clearance.
+- Checked every game the packet names exists in `src/games/`. Passed `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit, build, browser, offline, device speech, child/parent name and appeal checks not run.
+
 ## 2026-10-17 — Discovery D1b direct Next game
 
 - [PR #483](https://github.com/rjdunlap/neo/pull/483), `codex/discovery-direct-next`, dispatch `discovery-direct-20261017T013407Z`; tested base `4e5bd15` plus implementation diff. Fixed reviewed lap/toddler pool, pictured Next game/Another, live pin/band resolution, retained origins, transient profile guards and celebration resize; no saved fields.
@@ -111,7 +117,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Creature-world rework planning | 2026-10-16: source/planning audit, dependency-ordered work items, links/anchors and diff check | [Rework plan](#2026-10-16--creature-world-rework-plan) | Proposed direction only; runtime, name/appeal, device/child and learning-transfer checks not run |
+| Creature-world rework planning | 2026-10-17: RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW01 packet](#2026-10-17--rw01-name-and-story-packet), [rework plan](#2026-10-16--creature-world-rework-plan) | Proposed direction only; runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |

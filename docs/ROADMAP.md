@@ -49,15 +49,14 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 The existing content slices were re-checked 2026-10-15 against their dives and `origin/main`. Added the rework explorations on 2026-10-16: after the recorded worker is closed out, take the first unclaimed eligible RW exploration before the retained content list. Each line is one bounded session; being ready for exploration does not authorize its downstream implementation.
 
-1. **RW01 — name and story** (docs exploration): compare naming structures and define a Discovery Club opening/invitation; current title remains usable. [Packet](rework/WORK-ITEMS.md#rw01-name-and-story) Claimed 2026-10-17: branch `claude/rw01-name-and-story`.
-2. **RW02 — creature art and animation** (bounded prototype exploration): three silhouettes, idle/touch reactions and shared accessories in the current renderer; no catalog reskin. [Packet and proof](rework/WORK-ITEMS.md#rw02-creature-art-and-animation-prototype)
-3. **RW03 — home and navigation** (docs/prototype exploration): define Home/Back, collection and Explore, reconciled with D1b; no production-route cutover. [Packet](rework/WORK-ITEMS.md#rw03-home-and-navigation-packet)
-4. **RW04 — welcome adventure and learning** (docs definition): audit concrete existing modes and define adoption, a kept creation and observed learning actions. [Packet](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet)
-5. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
-6. **`shape-buddies`, level 2 *A step down*** (pre-K and school; only a slope bridge reaches the lower far bank). New-levels tier, `fingerdemo` at 2. [Definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)
-7. **`ramp-race`, truthful support packet Q1** (docs only): per-level goal/finish/miss wording, visible repair hint and demo recovery; preserve current accounting. [Inquiry slices](deep-dives/subjects/inquiry.md#build-slices-in-order)
-8. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
-9. **Sprout Shuffle first model definition G1** (docs only): one-locus rules, visible contributions/all four routes, supported finish, accounting and band/land decisions; model review before implementation. [Genetics slices](deep-dives/subjects/genetics.md#build-slices-in-order)
+1. **RW02 — creature art and animation** (bounded prototype exploration): three silhouettes, idle/touch reactions and shared accessories in the current renderer; no catalog reskin. [Packet and proof](rework/WORK-ITEMS.md#rw02-creature-art-and-animation-prototype)
+2. **RW03 — home and navigation** (docs/prototype exploration): define Home/Back, collection and Explore, reconciled with D1b; no production-route cutover. [Packet](rework/WORK-ITEMS.md#rw03-home-and-navigation-packet)
+3. **RW04 — welcome adventure and learning** (docs definition): audit concrete existing modes and define adoption, a kept creation and observed learning actions. [Packet](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet)
+4. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
+5. **`shape-buddies`, level 2 *A step down*** (pre-K and school; only a slope bridge reaches the lower far bank). New-levels tier, `fingerdemo` at 2. [Definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)
+6. **`ramp-race`, truthful support packet Q1** (docs only): per-level goal/finish/miss wording, visible repair hint and demo recovery; preserve current accounting. [Inquiry slices](deep-dives/subjects/inquiry.md#build-slices-in-order)
+7. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
+8. **Sprout Shuffle first model definition G1** (docs only): one-locus rules, visible contributions/all four routes, supported finish, accounting and band/land decisions; model review before implementation. [Genetics slices](deep-dives/subjects/genetics.md#build-slices-in-order)
 
 ### Chunks
 
@@ -67,7 +66,7 @@ Before claiming unstarted shell, pet, story or broad visual work in chunks 3, 7 
 
 | # | Chunk | Status | One session's next slice | Check tier | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 30 | **Creature-world rework** | ready for RW01–RW04 exploration only | After active claims, take the next eligible exploration; RW05–RW12 wait for their upstream packets | Docs: links/diff; RW02: scoped art prototype checks | [Direction](rework/README.md), [work items](rework/WORK-ITEMS.md), [epic #484](https://github.com/rjdunlap/neo/issues/484) |
+| 30 | **Creature-world rework** | ready for RW02–RW04 exploration only (RW01 [packet](rework/NAME-AND-STORY.md) written 2026-10-17) | After active claims, take the next eligible exploration; RW05–RW12 wait for their upstream packets | Docs: links/diff; RW02: scoped art prototype checks | [Direction](rework/README.md), [work items](rework/WORK-ITEMS.md), [epic #484](https://github.com/rjdunlap/neo/issues/484) |
 | 13 | **More to play in every band** (the developer, 2026-10-10: more quantity across bands) | ready | Fresh content inside a level or a new level from a dive; the [ready list](#ready-to-build-now) names the current ones | Content: typecheck, rule tests, one screenshot; new levels: new-levels tier | [Below](#more-to-play-in-every-band) |
 | 2 | **Deepen short ladders** with a real next decision | ready where a dive defines the slice; define otherwise | A defined slice from the [short ladders](#short-ladders-in-order) table, or a definition for an undefined direction | Docs only for definitions; then new-levels or new-interaction tier | [Below](#short-ladders-in-order) |
 | 11 | **A second lap level for favorites** | ready | Other below-level-1 entries wait on each dive's gates; append the level and place it with `order` | New levels on an existing interaction | Wave-2 [deep dives](deep-dives/README.md) |
