@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ACCESSORIES, ACCESSORY_SLOT, dress, makeCreature, SPECIES } from '.';
 
-const at = (c: ReturnType<typeof makeCreature>, slot: 'head' | 'neck') => {
+type Slot = 'head' | 'neck';
+const slotsOf = (c: ReturnType<typeof makeCreature>) => Object.keys(c.slots) as Slot[];
+const at = (c: ReturnType<typeof makeCreature>, slot: Slot) => {
   const p = c.slots[slot]!.node.getGlobalPosition();
   return { x: p.x, y: p.y };
 };
@@ -27,19 +29,23 @@ describe('RW02 creatures', () => {
       const c = makeCreature(id);
       for (const kind of ACCESSORIES) dress(c, kind, true);
       c.update(1 / 60);
-      const slot = c.slots.head ? 'head' : 'neck';
-      const rest = at(c, slot);
+      const slots = slotsOf(c);
+      const rest = slots.map((s) => at(c, s));
       c.poke();
-      let moved = 0;
+      const moved = slots.map(() => 0);
       for (let i = 0; i < 30; i++) {
         c.update(1 / 60);
-        const p = at(c, slot);
-        expect(Number.isFinite(p.x) && Number.isFinite(p.y)).toBe(true);
-        moved = Math.max(moved, Math.hypot(p.x - rest.x, p.y - rest.y));
+        slots.forEach((s, k) => {
+          const p = at(c, s);
+          expect(Number.isFinite(p.x) && Number.isFinite(p.y)).toBe(true);
+          moved[k] = Math.max(moved[k], Math.hypot(p.x - rest[k].x, p.y - rest[k].y));
+        });
       }
-      expect(moved, id).toBeGreaterThan(15);
-      // The accessory is a child of the slot, so it moved too.
-      expect(c.slots[slot]!.node.children.length).toBeGreaterThan(0);
+      slots.forEach((s, k) => {
+        expect(moved[k], `${id} ${s}`).toBeGreaterThan(15);
+        // The accessory is a child of the slot, so it moved too.
+        expect(c.slots[s]!.node.children.length).toBeGreaterThan(0);
+      });
     }
   });
 
@@ -47,12 +53,14 @@ describe('RW02 creatures', () => {
     for (const id of SPECIES) {
       const c = makeCreature(id);
       c.update(1 / 60);
-      const slot = c.slots.head ? 'head' : 'neck';
-      const rest = at(c, slot);
+      const slots = slotsOf(c);
+      const rest = slots.map((s) => at(c, s));
       c.poke();
       for (let i = 0; i < 120; i++) c.update(1 / 60);
-      const p = at(c, slot);
-      expect(Math.hypot(p.x - rest.x, p.y - rest.y), id).toBeLessThan(30); // idle sway only
+      slots.forEach((s, k) => {
+        const p = at(c, s);
+        expect(Math.hypot(p.x - rest[k].x, p.y - rest[k].y), `${id} ${s}`).toBeLessThan(30); // idle sway only
+      });
     }
   });
 });

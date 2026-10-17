@@ -74,7 +74,7 @@ Compared with the [concept sheet](concepts/art-directions-2026-10-16.png) (refer
 
 Every part is drawn once at construction. Idle and touch motion only move, rotate and scale containers, so no `Graphics` is cleared or redrawn per frame. A creature is plain shapes with a few transform updates per frame.
 
-Measured in the dev preview (headless Chromium, `test-results/rw02-cost.mjs`):
+Measured in the dev preview (headless Chromium, a one-off local probe in the ignored `test-results/`, not committed; a copy is in the session's shared notes):
 
 | Species | Display objects | `Graphics` | `update()` per frame |
 | --- | --- | --- | --- |
