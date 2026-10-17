@@ -50,7 +50,6 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 The existing content slices were re-checked 2026-10-15 against their dives and `origin/main`. Added the rework explorations on 2026-10-16: after the recorded worker is closed out, take the first unclaimed eligible RW exploration before the retained content list. Each line is one bounded session; being ready for exploration does not authorize its downstream implementation.
 
 2. **RW04 — welcome adventure and learning** (docs definition): audit concrete existing modes and define adoption, a kept creation and observed learning actions. [Packet](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet)
-3. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md). *Claimed 2026-10-17 by `claude/sink-float-make-it-float-build`.*
 4. **`shape-buddies`, level 2 *A step down*** (pre-K and school; only a slope bridge reaches the lower far bank). New-levels tier, `fingerdemo` at 2. [Definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)
 5. **`ramp-race`, truthful support packet Q1** (docs only): per-level goal/finish/miss wording, visible repair hint and demo recovery; preserve current accounting. [Inquiry slices](deep-dives/subjects/inquiry.md#build-slices-in-order)
 6. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
@@ -133,7 +132,7 @@ The [first](IDEAS.md#short-ladder-audit-2026-10-09) and [second](IDEAS.md#round-
 | **Day by Day** | Preschool, months and daylight are decision-dependent; causal seasons stay separate | [Build slices](deep-dives/day-by-day.md#build-slices-in-order) |
 | **Robot Path's reusable routine** | Decision-dependent scope under Waiting on the developer | [Build slices](deep-dives/robot-path.md#build-slices-in-order) |
 | **Photo Safari's two-clue observations** | Ready: new actions; school two-clue observations are built; *What changed?* and *Is it true?* wait on decisions | [Build slices](deep-dives/photo-safari.md#build-slices-in-order) |
-| **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored. Defined and ready to build as level 7 (new-interaction tier): [definition](definitions/make-it-float.md) | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
+| **Sink or Float's make-it-float experiment** | Define the manipulation and a truthful limited model; guesses stay unscored. Built as level 7 (2026-10-17): [definition](definitions/make-it-float.md) | [Research shortlist](FAMILY-EXPERIENCE.md#research-sessions-worth-doing) |
 | **Ramp Race's predicted stop and recorded trials** | Define the finish, half-unit outcomes and the comparison view | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 | **Seesaw Balance's unknowns and Garden Rows' boxes** | Define each as its own session; prove explanation, solvability and useful hints | [Longer-ladder audit](IDEAS.md#round-two-the-longer-ladders-2026-10-10) |
 
