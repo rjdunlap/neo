@@ -598,6 +598,8 @@ export const SCRIPT = {
   'game.dot-link': ['Dot link!'],
   'dots.tap': ['Tap the dots to pop them!'],
   'dots.pair': ['Draw a line between two dots of the same color!'],
+  'dots.buddy': ['Find the two dots that wiggle. Draw a line from one buddy to the other!'],
+  'dots.buddyhint': ['Look for the wiggly dots! Join those two buddies.'],
   'dots.color': ['Pop {n} {color} dots!'],
   'dots.chain': ['Make a chain of {n} dots!'],
   'dots.exact': ['Make a line of exactly {n} dots!'],

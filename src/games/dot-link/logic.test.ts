@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, PLANS, popped, step, type Grid } from './logic';
+import { BUDDY, BUDDY_LEVEL, buddyCounts, chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, pairs, pickBuddy, planFor, PLANS, popped, step, type Grid } from './logic';
 
 const R: ColorName = 'red';
 const B: ColorName = 'blue';
@@ -37,7 +37,7 @@ describe('Dot Link', () => {
   });
 
   it('always leaves a move that counts for the level', () => {
-    for (const plan of PLANS) {
+    for (const plan of [...PLANS, BUDDY]) {
       for (let seed = 1; seed <= 200; seed++) {
         const rng = new Rng(seed);
         const palette: ColorName[] = ['red', 'blue', 'yellow', 'green'].slice(0, plan.colors) as ColorName[];
@@ -49,7 +49,7 @@ describe('Dot Link', () => {
   });
 
   it('chooses a clean demonstration move that satisfies each level rule', () => {
-    for (const plan of PLANS) for (let seed = 1; seed <= 200; seed++) {
+    for (const plan of [...PLANS, BUDDY]) for (let seed = 1; seed <= 200; seed++) {
       const rng = new Rng(seed);
       const palette: ColorName[] = ['red', 'blue', 'yellow', 'green'].slice(0, plan.colors) as ColorName[];
       const target = plan.mode === 'color' ? R : undefined;
@@ -84,5 +84,36 @@ describe('Dot Link', () => {
     const line = demoMove(plan, grid)!;
     expect(line).toHaveLength(5);
     for (let i = 1; i < line.length; i++) expect(step(grid, line.slice(0, i), line[i])).toBe('extend');
+  });
+
+  it('plays level 11 as Find my buddy: one lit pair of neighbors that is the only line that links', () => {
+    expect(planFor(BUDDY_LEVEL)).toBe(BUDDY);
+    expect(BUDDY).toMatchObject({ mode: 'buddy', rows: 3, cols: 3, colors: 2 });
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const grid = ensureMove(BUDDY, makeGrid(BUDDY, rng, [R, B]), rng);
+      const buddy = pickBuddy(grid, rng)!;
+      expect(buddy).toHaveLength(2);
+      const [a, b] = buddy;
+      expect(Math.abs(a.r - b.r) + Math.abs(a.c - b.c)).toBe(1);
+      expect(grid[a.r][a.c]).toBe(grid[b.r][b.c]);
+      // The demonstration traces exactly the lit pair, as a real line.
+      const move = demoMove(BUDDY, grid, undefined, buddy)!;
+      expect(move).toEqual(buddy);
+      expect(step(grid, [move[0]], move[1])).toBe('extend');
+      // Both directions count; every other same-color pair does not.
+      expect(buddyCounts(buddy, buddy)).toBe(true);
+      expect(buddyCounts(buddy, [b, a])).toBe(true);
+      for (const other of pairs(grid)) {
+        const isBuddy = other.every((o) => buddy.some((x) => x.r === o.r && x.c === o.c));
+        expect(buddyCounts(buddy, other)).toBe(isBuddy);
+      }
+    }
+  });
+
+  it('keeps the earlier levels where they were', () => {
+    expect(planFor(1).mode).toBe('tap');
+    expect(planFor(2).mode).toBe('pair');
+    expect(planFor(6)).toBe(PLANS[5]);
   });
 });
