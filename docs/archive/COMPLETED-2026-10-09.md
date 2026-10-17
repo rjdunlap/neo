@@ -1069,11 +1069,11 @@ PR #419, `claude/penguin-frozen-course`: a third Penguin Slide course for the co
 
 ## Photo Safari level 5 both clues (2026-10-16)
 
-[PR #472](https://github.com/rjdunlap/neo/pull/472), `codex/safari-five`, dispatch `safari-five-20261016T212806Z`: existing level 5 now puts three same-kind animals at two places. One distractor shares the target's action and another shares its place, making both spoken clues necessary. Reuses level 7's broad place drawings, nearest-body taps and demonstration receiver; IDs, pins, ranges, other levels, actions, journal and saves unchanged. [Proof](../VERIFICATION.md#2026-10-16--photo-safari-level-5-both-clues).
+[PR #472](https://github.com/rjdunlap/neo/pull/472), `codex/safari-five`, dispatch `safari-five-20261016T212806Z`: existing level 5 now puts three same-kind animals at two places. One distractor shares the target's action and another shares its place, making both spoken clues necessary. Reuses level 7's broad place drawings, nearest-body taps and demonstration receiver; IDs, pins, ranges, other levels, actions, journal and saves unchanged. [Proof](VERIFICATION-2026-10-16.md#2026-10-16--photo-safari-level-5-both-clues).
 
 ## Photo Safari actions (2026-10-16)
 
-[PR #474](https://github.com/rjdunlap/neo/pull/474), dispatch `safari-actions-20261016T222436Z`: waving and pond-only swimming, six spoken action-word journal cards, and actor gestures retained in album pictures. Two-place conjunctions omit swimming to keep both clues necessary. Levels, bands, backdrop and save schema unchanged. [Verification](../VERIFICATION.md#2026-10-16--photo-safari-waving-and-swimming); remaining Safari work requires developer decisions/person checks.
+[PR #474](https://github.com/rjdunlap/neo/pull/474), dispatch `safari-actions-20261016T222436Z`: waving and pond-only swimming, six spoken action-word journal cards, and actor gestures retained in album pictures. Two-place conjunctions omit swimming to keep both clues necessary. Levels, bands, backdrop and save schema unchanged. [Verification](VERIFICATION-2026-10-16.md#2026-10-16--photo-safari-waving-and-swimming); remaining Safari work requires developer decisions/person checks.
 
 ## The Woodland Picnic, the second Island Errand (2026-10-16)
 
@@ -1084,3 +1084,7 @@ Contract: `WOODLAND_STEPS`, `STORY_STEPS`, `StoryId` and `StoryStep` in `src/con
 ## RW01 name and story packet (2026-10-17)
 
 [PR #498](https://github.com/rjdunlap/neo/pull/498), `claude/rw01-name-and-story`, [issue #485](https://github.com/rjdunlap/neo/issues/485). Docs only: [NAME-AND-STORY.md](../rework/NAME-AND-STORY.md) compares a world-led Puddlewild, a creature-led Puddlings and the current Puddle Island; recommends Puddlewild as the working title with Puddle Island as its first region; keeps "Discovery Club" as a story premise after an informal screen found a 2021 DISCOVERY CLUB PSP application for children's educational apps; writes the club's roles, fact/fiction rule, three-age presentation, a pictured opening and the Welcome a New Friend invitation and ending (RW04 owns its steps). The final name stays a developer decision; human name/appeal checks are open in device checks.
+
+## RW02 creature art prototype (2026-10-17)
+
+[PR #499](https://github.com/rjdunlap/neo/pull/499), `claude/rw02-creature-art`, [issue #486](https://github.com/rjdunlap/neo/issues/486). A dev-only `/?creatures` preview (`src/dev/creature-preview.ts`, hooked in `src/main.ts` under `import.meta.env.DEV`) shows `src/art/creatures/`: a squat sprout, a long river creature and a broad cloud glider in Pixi `Graphics`, each with an idle and a touch reaction; a scarf (neck slot) and a flower crown (head slot), the glider declining the scarf with a recorded reason; a three-card collection and landscape/portrait layouts. The [packet](../rework/CREATURE-ART.md) recommends playful-flat construction, records cost and names RW05 as the removal point. No route, game, save or catalog art changed. Checks are in [VERIFICATION.md](../VERIFICATION.md#2026-10-17--rw02-creature-art-prototype).

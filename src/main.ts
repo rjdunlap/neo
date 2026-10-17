@@ -15,7 +15,11 @@ async function boot() {
   const app = new App();
   await app.init(document.getElementById('app')!);
   app.go = createRoutes(app);
-  app.go.start();
+  // RW02's creature preview, development builds only, in place of the front door (removed at RW05).
+  if (import.meta.env.DEV && new URLSearchParams(location.search).has('creatures')) {
+    const { CreaturePreview } = await import('./dev/creature-preview');
+    void app.show(new CreaturePreview(app));
+  } else app.go.start();
   // A handle for poking at the running game from the browser console during development.
   if (import.meta.env.DEV) {
     Object.assign(window, { neo: app });
