@@ -1,5 +1,44 @@
 # Puddle Island verification
 
+## 2026-10-16 — Subject docs publication reconciliation
+
+- Reconciled with `origin/main` at `786889a`, retaining completed inquiry, genetics, daily-life-long-ago and deep-time studies. New research rows remain unstarted; broader evolution is a follow-up scope rather than a claim that genetics research is unfinished.
+- Recorded the final discussion’s acoustics/optics/wind, oceanography and other physics/cross-subject ideas as proposed scopes, not new build-ready work. Rechecked local Markdown links/anchors and diff whitespace after reconciliation; no code checks required.
+
+## 2026-10-16 — Further subject and progression gaps
+
+- Compared the expanded tracker, built catalog descriptions and family experience matrix; opened primary CCSS measurement/base-ten/reading and NGSS cell/natural-selection pages. Recorded source limits in the gap audit.
+- Added unstarted measurement-units and cells-microbes rows. Clarified decimals, evolution and everyday geography scope, plus connected-text reading and other expansions within existing research. No game or completed deep-research session implied; dispatch order retained.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code/build/browser/device checks, full developmental/competitor review or scientific validation.
+
+## 2026-10-16 — Astronomy follow-up research brief
+
+- Recorded the requested astronomy follow-up as not started, linked to the completed Space study and roadmap. Scope: stars/life cycles, galaxies, telescopes/observational evidence, deeper eclipse/season models; existing Space candidate identities and overlaps retained.
+- Local Markdown links/anchors and `git diff --check` passed. Setup only: no external research, completed subject study, implementation, code/build/browser/device checks or scientific review claimed.
+
+## 2026-10-16 — Chemistry follow-up research brief
+
+- Recorded the requested chemistry follow-up as not started, linked to the completed Matter study and roadmap. Brief covers atoms/molecules, reactions/conservation and possible acids/bases extension, audience/overlap questions, and SpaceChem as a requested reference.
+- Official SpaceChem description inspected through search output; educator guide only seen in search summary. No game played, curriculum anchors opened, full subject research or implementation claimed in this setup pass.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; code/build/browser/device checks not run.
+
+## 2026-10-16 — Writing and typing research gaps
+
+- Checked composition/Letter Trails coverage and opened primary CCSS W.3.6, W.4.6 and grade-1 Language text. Added unstarted keyboarding/editing and spelling/sentence research rows; clarified composition versus handwriting and touchscreen versus hardware input boundaries in the follow-up audit.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code, browser, device or learning-transfer checks. Full developmental/teaching research remains open.
+
+## 2026-10-16 — Additional subject gap review
+
+- Compared the current tracker, original standards audit and existing game coverage with opened primary CCSS, National Core Arts Standards and National Agriculture in the Classroom pages. Added three unstarted research rows and an overlap/source review; no subject study or build is claimed complete.
+- Explicit scope recommendations for geometry, visual art and engineering remain within their existing sessions. Research/build dispatch order unchanged.
+- Passed local Markdown links/anchors and `git diff --check`. Docs only; no code tests, build, browser or device checks run. Developmental/competitor research and detailed agriculture outcomes remain for full sessions.
+
+## 2026-10-16 — Subject docs completed-work cleanup
+
+- Clarified that designed subject rows mean completed research, removed researched waves from the suggested research backlog, and refreshed the standards audit after the zoo study and language/habitat decisions.
+- Updated space/physics references for built Planet Hop school level 12 and life-science/zoo references for Photo Safari’s built clues and actions. Other proposed modes, habitat kits and reviewer decisions remain open; dated research evidence is retained.
+- Passed local Markdown links/anchors (`node scripts/check-links.mjs`) and `git diff --check`. Docs only; no code tests, build, browser or device checks run.
+
 ## 2026-10-16 — Deep time subject research
 
 - Docs only, base `2d7e623`, claim `2d53873`, `codex/deep-time-subject-research`, [PR #478](https://github.com/rjdunlap/neo/pull/478): [study](deep-dives/subjects/deep-time.md), tracker, candidate notebook, roadmap definitions and developer decisions. Initial tree clean; no overlapping deep-time work; daily-life research already complete in PR #477.
