@@ -1,5 +1,16 @@
 # Verification 2026-10-16 (archived entries)
 
+## 2026-10-16 — Subject docs publication reconciliation
+
+- Reconciled with `origin/main` at `786889a`, retaining completed inquiry, genetics, daily-life-long-ago and deep-time studies. New research rows remain unstarted; broader evolution is a follow-up scope rather than a claim that genetics research is unfinished.
+- Recorded the final discussion’s acoustics/optics/wind, oceanography and other physics/cross-subject ideas as proposed scopes, not new build-ready work. Rechecked local Markdown links/anchors and diff whitespace after reconciliation; no code checks required.
+
+## 2026-10-16 — Further subject and progression gaps
+
+- Compared the expanded tracker, built catalog descriptions and family experience matrix; opened primary CCSS measurement/base-ten/reading and NGSS cell/natural-selection pages. Recorded source limits in the gap audit.
+- Added unstarted measurement-units and cells-microbes rows. Clarified decimals, evolution and everyday geography scope, plus connected-text reading and other expansions within existing research. No game or completed deep-research session implied; dispatch order retained.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code/build/browser/device checks, full developmental/competitor review or scientific validation.
+
 ## 2026-10-16 — Astronomy follow-up research brief
 
 - Recorded the requested astronomy follow-up as not started, linked to the completed Space study and roadmap. Scope: stars/life cycles, galaxies, telescopes/observational evidence, deeper eclipse/season models; existing Space candidate identities and overlaps retained.

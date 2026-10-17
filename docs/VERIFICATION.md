@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Song Maker deep dive
+
+- Wrote [the Song Maker deep dive](deep-dives/song-maker.md): a source audit of levels 1–7 and their pools; computed gaps (levels 5–6 hit areas about 91–92 units, a free round that can end without a keepable song, creative rounds stepping up, the inline level table, no sol on any grid); nine precedents and NCAS references; proposed levels 8–13, including M4 *answer the phrase* as level 9; nine ordered slices. Three are ready (roadmap ready list 7–9); D1–D6 are added to WAITING-ON-DEVELOPER.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the developer decisions; the computed target sizes are unmeasured on a device; no child has heard a question-and-answer round.
+
 ## 2026-10-17 — Astronomy subject research
 
 - Added the [astronomy study](deep-dives/subjects/astronomy.md): opened NGSS 5-ESS1-1, MS-ESS1-1/2 and HS-ESS1-1/2/3 (via page source), NASA/OpenStax/Chandra/Webb/Space Place science pages, two full papers (Agan 2004, Starakis and Halkia 2014), two abstracts and eight references. Snippet-only items are marked. Far Lights is the first ladder; eclipses, seasons, clusters and two-view cases extend Moon Window and Observatory Files.
@@ -97,17 +103,6 @@
 - Production offline check passed against the current build (`assets/index-gguiz4Kg.js` confirmed, preview `http://localhost:4173`) after its fixture was updated to expect the untold woodland telling.
 - Open: device speech and the picnic beat on an iPad, a child playing it ([device check](DEVICE-CHECKS.md)).
 
-## 2026-10-16 — Subject docs publication reconciliation
-
-- Reconciled with `origin/main` at `786889a`, retaining completed inquiry, genetics, daily-life-long-ago and deep-time studies. New research rows remain unstarted; broader evolution is a follow-up scope rather than a claim that genetics research is unfinished.
-- Recorded the final discussion’s acoustics/optics/wind, oceanography and other physics/cross-subject ideas as proposed scopes, not new build-ready work. Rechecked local Markdown links/anchors and diff whitespace after reconciliation; no code checks required.
-
-## 2026-10-16 — Further subject and progression gaps
-
-- Compared the expanded tracker, built catalog descriptions and family experience matrix; opened primary CCSS measurement/base-ten/reading and NGSS cell/natural-selection pages. Recorded source limits in the gap audit.
-- Added unstarted measurement-units and cells-microbes rows. Clarified decimals, evolution and everyday geography scope, plus connected-text reading and other expansions within existing research. No game or completed deep-research session implied; dispatch order retained.
-- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code/build/browser/device checks, full developmental/competitor review or scientific validation.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
@@ -118,7 +113,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
-| Game deep-dive docs | 2026-10-17: Fill and Dump source audit, eight references, ladder/experience/slices; links/anchors and diff check | [Fill and Dump](#2026-10-17--fill-and-dump-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
+| Game deep-dive docs | 2026-10-17: Song Maker source audit (computed level 5–6 target sizes), nine precedents and NCAS references, ladder 8–13, experience and nine slices; links/anchors and diff check. Prior Fill and Dump (2026-10-17) and Duckling Parade evidence retained | [Song Maker](#2026-10-17--song-maker-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `critternot` | 2026-10-15: stable entry 8, two misses/one hint, two rounds, one sticker and landscape/portrait passed; 54 focused tests and build | [Visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | Device speech, touch and child interpretation open |
 | `marblejump` (`marble-jump`) | 2026-10-14: levels 1/6, invalid jump, hint recovery/repeated hint, portrait and land placement passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `logroll` (`log-roll`) | 2026-10-14: levels 1/3, invalid rolls, hint, Undo, portrait and Tinker Lab launch passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
