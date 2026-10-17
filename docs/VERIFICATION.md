@@ -3,10 +3,10 @@
 ## 2026-10-17 — RW02b illustrated glider pilot
 
 - [PR #503](https://github.com/rjdunlap/neo/pull/503), `claude/rw02b-illustrated-glider`, based on `b6b2a68`: illustrated glider on a deformable mesh beside the Graphics glider in the dev-only `/?creatures` preview ([result](rework/GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)). The art is cut from the committed concept sheet; no new image was generated (no tool in the session).
-- Typecheck passed. The 6 new creature tests passed, alongside the 3 existing ones. The full unit suite passed except 5 known-heavy Ferry Jam, Peg Garden and Penguin Slide tests, which time out under default parallel load; those files passed 41/41 with `--maxWorkers=2`.
+- Typecheck passed. The 7 new creature tests passed, alongside the 3 existing ones; the frame-to-frame test failed at 15 px before the wingbeat-phase fix. The full unit suite passed except 5 known-heavy Ferry Jam, Peg Garden and Penguin Slide tests, which time out under default parallel load; those files passed 41/41 with `--maxWorkers=2`.
 - The build passed, with no sprite or preview code in `dist/` or the precache, so no offline check was needed.
 - One-off probe `test-results/rw02b-probe.mjs` against `http://localhost:5197/?creatures`, 1024×768 and 768×1024: double tap, accessory toggles, card fit and exit to the chooser all passed, with no page errors. Headless fps was 7–10 in software rendering.
-- Inspected stills: idle and touch wingbeat strips; blink open and shut; sprite edges on light, dark and checkerboard. Real-time motion was not watched by a person.
+- Inspected stills: idle, touch and reaction-end wingbeat strips; blink open and shut; sprite edges on light, dark and checkerboard. Real-time motion was not watched by a person.
 - Not run: game, world and couch suites (no game, route or save changed); iPad performance and touch; child preference.
 
 ## 2026-10-17 — RW03 home and navigation packet

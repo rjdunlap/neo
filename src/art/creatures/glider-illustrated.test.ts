@@ -114,6 +114,22 @@ describe('RW02b illustrated glider', () => {
     expect(Math.max(...ratios) - Math.min(...ratios)).toBeGreaterThan(0.5);
   });
 
+  it('never jumps between frames, at the start or end of a reaction or on a re-tap', () => {
+    const c = make();
+    for (let i = 0; i < 30; i++) c.update(1 / 60);
+    let prev = c.mesh.geometry.positions.slice();
+    let worst = 0;
+    for (let f = 0; f < 400; f++) {
+      if (f === 20 || f === 120 || f === 130) c.poke(); // into a reaction, past its end, then two quick taps
+      c.update(1 / 60);
+      const p = c.mesh.geometry.positions;
+      for (let i = 0; i < p.length; i += 2) worst = Math.max(worst, Math.hypot(p[i] - prev[i], p[i + 1] - prev[i + 1]));
+      prev = p.slice();
+    }
+    // The fastest honest motion (tip at full lift and the fast beat) is under 6 px a frame.
+    expect(worst).toBeLessThan(8);
+  });
+
   it('carries the crown through the loop and settles it back', () => {
     const c = make();
     dress(c, 'crown', true);

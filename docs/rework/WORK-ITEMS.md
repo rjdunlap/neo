@@ -12,7 +12,7 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 | --- | --- | --- | --- |
 | [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | packet written 2026-10-17 ([NAME-AND-STORY.md](NAME-AND-STORY.md)); final name is a developer decision | None |
 | [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | prototype and packet done 2026-10-17 ([CREATURE-ART.md](CREATURE-ART.md)); production style is a developer decision | None; use provisional names |
-| [RW02b](#rw02b-generated-creature-art-and-animation-pilot) | Generated creature art and animation pilot | pilot built 2026-10-17 ([PR #503](https://github.com/rjdunlap/neo/pull/503), [result](GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)) from the concept sheet's glider; new candidate generation open (needs an image tool) | RW02 prototype; no RW03 dependency |
+| [RW02b](#rw02b-generated-creature-art-and-animation-pilot) | Generated creature art and animation pilot | partly done 2026-10-17 ([PR #503](https://github.com/rjdunlap/neo/pull/503), [result](GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)): pipeline, rig and comparison proven on a concept-sheet stand-in; **step 1, generating candidates, still ready** for a session with an image tool | RW02 prototype; no RW03 dependency |
 | [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | packet and wireframe done 2026-10-17 ([HOME-NAVIGATION.md](HOME-NAVIGATION.md)); production cutover waits for RW08 | Reconciled D1b; RW01 informs language |
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | ready, docs definition | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | define after upstream packets | RW02, RW03 |
@@ -61,7 +61,7 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 
 ## RW02b: Generated creature art and animation pilot
 
-**Status:** pilot built 2026-10-17 ([result](GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)); candidate generation still open. Bounded follow-up to RW02, with sprite permission approved by the developer on 2026-10-17. The assistant creates and prepares the assets; no developer drawing work is required. No new GitHub issue has been created for this follow-up.
+**Status:** partly done 2026-10-17 ([result](GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)); step 1, generating candidates, is still ready and needs an image-generation tool. Bounded follow-up to RW02, with sprite permission approved by the developer on 2026-10-17. The assistant creates and prepares the assets; no developer drawing work is required. No new GitHub issue has been created for this follow-up.
 
 **First slice:** one illustrated cloud glider, generated from the concept reference and animated with a small layered/deformable or pose-based rig; idle, wingbeat, touch reaction, collection portrait and crown, compared with the existing Graphics glider in the isolated dev preview. No full-cast reskin or production route/save change.
 

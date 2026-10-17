@@ -1,6 +1,6 @@
 # RW02b: Generated creature art and animation pilot
 
-**Status:** pilot built 2026-10-17 ([PR #503](https://github.com/rjdunlap/neo/pull/503)); see [Pilot result](#pilot-result-2026-10-17). New candidate generation is still open: no image-generation tool was available to the building session. Defined 2026-10-17 as a follow-up to [RW02 / PR #499](https://github.com/rjdunlap/neo/pull/499), before production art is consumed by RW05. [Work-item index](WORK-ITEMS.md#rw02b-generated-creature-art-and-animation-pilot).
+**Status:** partly done. On 2026-10-17 ([PR #503](https://github.com/rjdunlap/neo/pull/503)) the preparation pipeline, mesh rig and comparison were proven on a stand-in cut from the concept sheet; see [Pilot result](#pilot-result-2026-10-17). **First-slice step 1 (generate candidates) is still ready** for a session that has an image-generation tool; the building session had none. Defined 2026-10-17 as a follow-up to [RW02 / PR #499](https://github.com/rjdunlap/neo/pull/499), before production art is consumed by RW05. [Work-item index](WORK-ITEMS.md#rw02b-generated-creature-art-and-animation-pilot).
 
 ## Developer decision and ownership
 
@@ -64,7 +64,7 @@ Built on `claude/rw02b-illustrated-glider` from merged `main` (`b6b2a68`). The u
 **The art is the concept sheet's glider, not a new generation.** This session had no image-generation tool. So the pilot cut the "Illustrated adventure" glider out of the committed concept sheet as a labelled stand-in, to prove preparation, rig and comparison.
 - **Rebuild:** run `node scripts/creature-art/prepare-glider.mjs`.
 - **Manifest:** [`src/art/creatures/illustrated/README.md`](../../src/art/creatures/illustrated/README.md).
-- **Still open:** step 1's candidate set (several generated gliders, a chosen design, consistent re-generation for poses or layers). The next session with an image tool should start there, re-run the same preparation and keep the rig.
+- **Still open:** step 1's candidate set (several generated gliders, a chosen design, consistent re-generation for poses or layers). The next session with an image tool should start there, re-run the same preparation and keep the rig. The next-session instruction below still applies, starting at step 1.
 
 **Animation: a deformable mesh, not layers.** A flat image has no hidden overlap to cut layers from, so the sprite rides a 30 × 14 mesh and vertices move by weight:
 - the body and face are pinned;
@@ -72,7 +72,7 @@ Built on `claude/rw02b-illustrated-glider` from merged `main` (`b6b2a68`). The u
 - the far fin beats against the wing;
 - the ribbons ripple behind the trailing edge.
 
-The wing beats at 2.2 per second at idle and 9 per second during the touch loop. The painted eyes cannot close, so a lid of wing colour with a lash line covers each one for a blink.
+The wing beats at 2.2 rad/s at idle and eases up to 9 rad/s during the touch loop. Its phase accumulates and the reaction's strength is eased, so neither the start or end of a reaction nor a quick re-tap snaps the wing; a test bounds every vertex's movement per frame, and it failed at 15 px before this was fixed. The painted eyes cannot close, so a lid of wing colour with a lash line covers each one for a blink.
 
 ![Six phases of the touch wingbeat, crown on](concepts/rw02b-glider-wingbeat.png)
 
@@ -84,7 +84,7 @@ The wing beats at 2.2 per second at idle and 9 per second during the touch loop.
 | Headless preview, four gliders plus sprout and river | — | 7–10 fps in software rendering, against ≈21 fps for RW02's six creatures in the same kind of harness; says nothing about an iPad |
 
 **Proof.**
-- **Unit tests** (`glider-illustrated.test.ts`, 6 tests):
+- **Unit tests** (`glider-illustrated.test.ts`, 7 tests):
   - same species, slots and scarf misfit as the Graphics glider;
   - touch circle ≥ 100 units at stage scale;
   - the sprite's recorded size, a transparent border and opaque eyes;
@@ -92,6 +92,7 @@ The wing beats at 2.2 per second at idle and 9 per second during the touch loop.
   - the wing tip travels more than 12 px;
   - no painted pixel stretches past double;
   - the tip/mid ratio varies (a bend, not a hinge);
+  - no vertex moves more than 8 px between frames through a reaction's start, its end and a quick re-tap;
   - the crown rides the loop and settles;
   - destroy frees the geometry and not the shared texture.
 - **Preview probe** (`test-results/rw02b-probe.mjs`, Chromium headless, 1024 × 768 and 768 × 1024):
@@ -99,7 +100,7 @@ The wing beats at 2.2 per second at idle and 9 per second during the touch loop.
   - the crown and scarf toggles work dressed and bare;
   - cards fit;
   - leaving to the chooser raised no page errors.
-- **Wingbeat strips:** both strips (idle and touch, six phases each) were inspected as stills. The real-time motion was not watched by a person.
+- **Wingbeat strips:** three strips were inspected as stills: idle, touch, and the reaction's end with the loop live (six frames each). The real-time motion was not watched by a person.
 - **Edges:** the sprite was checked on light, dark and checkerboard backgrounds.
 - **Production build:** no sprite or preview code in `dist/` or the precache, so no offline check is needed.
 
@@ -111,6 +112,7 @@ The wing beats at 2.2 per second at idle and 9 per second during the touch loop.
 - **Covered ears.** The crown covers the ear tips.
 - **Painted lids.** The blink lids are painted patches. A generated eye-closed variant would look better.
 - **Ribbon kink.** The upper ribbon compresses slightly where it leaves the wing at the beat's extreme.
+- **Loop restart.** A re-tap mid-reaction restarts the craft's loop with a small jump (about 17 units), inherited from the Graphics glider; the mesh itself does not jump.
 - **No underside view.** The wing never shows its underside; a mesh cannot fold, so a deeper beat needs alternate artwork.
 
 **Recommended workflow:**

@@ -88,6 +88,10 @@ export class IllustratedGlider extends Creature {
   readonly rest: Float32Array;
   private readonly w: { wing: number; fin: number; ribbon: number; ribbonReach: number }[] = [];
   private readonly lids: Graphics[] = [];
+  /** Wingbeat phase, accumulated so a change of beat rate never jumps the wing. */
+  private phase = 0;
+  /** The reaction's excitement, eased, so a re-tap mid-reaction cannot snap the wing's size. */
+  private stir = 0;
 
   constructor(texture: Texture) {
     super();
@@ -129,7 +133,7 @@ export class IllustratedGlider extends Creature {
     this.animate();
   }
 
-  protected animate() {
+  protected animate(dt = 0) {
     const t = this.clock;
     const p = this.sincePoke;
     const looping = p < this.reactionLength;
@@ -141,8 +145,11 @@ export class IllustratedGlider extends Creature {
     this.craft.rotation = -a + 0.05 * Math.sin(t * 1.1);
 
     // A wingbeat is a wave from root to tip: the tip lags, so the wing bends rather than hinges.
-    const ex = this.excite(this.reactionLength);
-    const beat = looping ? 9 : 2.2;
+    // The beat quickens and slows with the reaction, and its phase accumulates, so nothing snaps.
+    this.stir += (this.excite(this.reactionLength) - this.stir) * Math.min(1, dt * 10);
+    const ex = this.stir;
+    this.phase += dt * (2.2 + 6.8 * ex);
+    const beat = this.phase;
     const lift = 16 + 22 * ex;
     const pos = this.mesh.geometry.positions;
     for (let i = 0, k = 0; i < pos.length; i += 2, k++) {
@@ -152,14 +159,14 @@ export class IllustratedGlider extends Creature {
       let dx = 0;
       let dy = 0;
       if (wing > 0) {
-        dy += lift * wing * Math.sin(t * beat - 1.1 * wing);
+        dy += lift * wing * Math.sin(beat - 1.1 * wing);
         // Drawn in towards the body as it rises, so the membrane keeps its length.
-        dx += 0.25 * lift * wing * wing * Math.cos(t * beat - 1.1 * wing);
+        dx += 0.25 * lift * wing * wing * Math.cos(beat - 1.1 * wing);
       }
-      if (fin > 0) dy -= 9 * (1 + ex) * fin * Math.sin(t * beat - 0.4);
+      if (fin > 0) dy -= 9 * (1 + ex) * fin * Math.sin(beat - 0.4);
       if (ribbon > 0) {
         const r = ribbonReach;
-        dy += ribbon * r * ((7 + 10 * ex) * Math.sin(t * 2.6 - 7 * r) + (looping ? 18 * Math.sin(u * Math.PI) : 0));
+        dy += ribbon * r * ((7 + 10 * ex) * Math.sin(t * 2.6 - 7 * r) + 18 * ex);
         dx += ribbon * r * 4 * Math.cos(t * 2.6 - 7 * r);
       }
       pos[i] = x + dx;
