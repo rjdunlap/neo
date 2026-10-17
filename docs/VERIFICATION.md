@@ -6,6 +6,12 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser, offline and fingerdemo not run: no code changed.
 - Open: the build, and whether a child reads the cards as *her* runs and tells a guess from a record (device checks when Q4 builds).
 
+## 2026-10-17 — Jar Sort definition
+
+- Defined Jar Sort levels 1–8 in [the definition](definitions/jar-sort.md): one-piece-per-move model, frozen solver-checked boards, computed jar layout, lit targets at 1–2, refused-move and wander accounting, bounded hint search with an undo fallback, bot, how-to and registration; five references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; the layout numbers and hint time bound are computed, not measured; no child has played it.
+
 ## 2026-10-17 — Song Maker deep dive
 
 - Wrote [the Song Maker deep dive](deep-dives/song-maker.md): a source audit of levels 1–7 and their pools; computed gaps (levels 5–6 hit areas about 91–92 units, a free round that can end without a keepable song, creative rounds stepping up, the inline level table, no sol on any grid); nine precedents and NCAS references; proposed levels 8–13, including M4 *answer the phrase* as level 9; nine ordered slices. Three are ready (roadmap ready list 7–9); D1–D6 are added to WAITING-ON-DEVELOPER.
@@ -101,14 +107,6 @@
 - Passed `node scripts/check-links.mjs` and `git diff --check`. Docs-only change; typecheck, unit, build, browser, offline, device/child and learning-transfer checks not run.
 - Publication resumed 2026-10-17 in [PR #497](https://github.com/rjdunlap/neo/pull/497): integrated D1b on `94d3bb2`, retained its verification and worker checkpoint, and removed its completed ready-list entry. Rechecked links/diff for the merged documentation; no runtime difference from that main commit.
 
-## 2026-10-16 — Woodland Picnic
-
-- [PR #479](https://github.com/rjdunlap/neo/pull/479), `claude/woodland-picnic`, code at `f57b77c` on `origin/main` `2d7e623`: the second Island Errand (school, from Wonder Woods); new save field `stories.woodland`, story-ID store methods, `go.woodland`, `StoryRound` union.
-- Passed `npm run typecheck`, `npm test` (154 files, 1416 tests, including save migration, store story and woodland content tests with story levels inside each game's school range) and `npm run build`.
-- `BROWSER_SUITE=woodland` (new) passed at `http://localhost:5173`: entry only in Wonder Woods, story spot first, portrait cards, real Mail Carrier 6 round with a wrong house, Seesaw left mid-round and finished with help, Beat Builder 3 on `PicnicStage`, reload resume, ending and one photo, one sticker per round, retelling, Home; screenshots `woodland-start-portrait.png`, `woodland-finale.png`. `picnic` and `world` passed as regressions.
-- Production offline check passed against the current build (`assets/index-gguiz4Kg.js` confirmed, preview `http://localhost:4173`) after its fixture was updated to expect the untold woodland telling.
-- Open: device speech and the picnic beat on an iPad, a child playing it ([device check](DEVICE-CHECKS.md)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
@@ -189,8 +187,8 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `world` | 2026-10-17: D1b passed at localhost:5187, six bands in landscape/portrait, hatching/save reload, land/home/subject return routes, birthdays and parent settings | [Discovery D1b](#2026-10-17--discovery-d1b-direct-next-game) | Reused after final speech-only fix; device checks open |
 | `grownups` | 2026-10-15: pause sheet in Sudoku Garden (Start this bed again, Show a hint, synthetic pad moving, wrapping and A on release); earlier 2026-10-09 gear, storage layer and undo cases | Gear entry | About 40 seconds |
 | `profiles` | 2026-10-09, on Lands stage A (the chooser opens the map); 2026-10-09, new: from an empty device through add-a-player, the three ways in, the grown-ups' page per player, remove, backup and restore of everyone, and a reload | Profiles stage 1b entry | About 1 minute; also broken on purpose (Enter opening the island) to see it fail |
-| `woodland` | 2026-10-16: new suite (about 1.5 minutes), entry only at school, story spot first, portrait, real story rounds with a miss and help, resume, ending, one photo, one sticker per round, retelling, Home | [Woodland Picnic](#2026-10-16--woodland-picnic) | Device speech, iPad and child play open |
-| `picnic` | 2026-10-16: passed as a regression after story-ID store changes | [Woodland Picnic](#2026-10-16--woodland-picnic) | Windy Picnic unchanged |
+| `woodland` | 2026-10-16: new suite (about 1.5 minutes), entry only at school, story spot first, portrait, real story rounds with a miss and help, resume, ending, one photo, one sticker per round, retelling, Home | [Woodland Picnic](archive/VERIFICATION-2026-10-16.md#2026-10-16--woodland-picnic) | Device speech, iPad and child play open |
+| `picnic` | 2026-10-16: passed as a regression after story-ID store changes | [Woodland Picnic](archive/VERIFICATION-2026-10-16.md#2026-10-16--woodland-picnic) | Windy Picnic unchanged |
 | `island` | 2026-10-09, the home spot's shelf on Lands stage A; 2026-10-08, after the demonstration cards | How-to card with demonstrations entry | |
 | `lands` | 2026-10-13: `LANDS_ONLY=puzzle-peaks`, all six bands landscape and lap/school/grownup portrait; signpost/host/twinkle passed | [Mossy Path entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Only Puzzle Peaks rerun; other lands keep earlier evidence |
 | `room` | 2026-10-07 | Discovery journal entry | |

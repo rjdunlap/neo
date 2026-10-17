@@ -1,5 +1,13 @@
 # Verification 2026-10-16 (archived entries)
 
+## 2026-10-16 — Woodland Picnic
+
+- [PR #479](https://github.com/rjdunlap/neo/pull/479), `claude/woodland-picnic`, code at `f57b77c` on `origin/main` `2d7e623`: the second Island Errand (school, from Wonder Woods); new save field `stories.woodland`, story-ID store methods, `go.woodland`, `StoryRound` union.
+- Passed `npm run typecheck`, `npm test` (154 files, 1416 tests, including save migration, store story and woodland content tests with story levels inside each game's school range) and `npm run build`.
+- `BROWSER_SUITE=woodland` (new) passed at `http://localhost:5173`: entry only in Wonder Woods, story spot first, portrait cards, real Mail Carrier 6 round with a wrong house, Seesaw left mid-round and finished with help, Beat Builder 3 on `PicnicStage`, reload resume, ending and one photo, one sticker per round, retelling, Home; screenshots `woodland-start-portrait.png`, `woodland-finale.png`. `picnic` and `world` passed as regressions.
+- Production offline check passed against the current build (`assets/index-gguiz4Kg.js` confirmed, preview `http://localhost:4173`) after its fixture was updated to expect the untold woodland telling.
+- Open: device speech and the picnic beat on an iPad, a child playing it ([device check](../DEVICE-CHECKS.md)).
+
 ## 2026-10-16 — Subject docs publication reconciliation
 
 - Reconciled with `origin/main` at `786889a`, retaining completed inquiry, genetics, daily-life-long-ago and deep-time studies. New research rows remain unstarted; broader evolution is a follow-up scope rather than a claim that genetics research is unfinished.
