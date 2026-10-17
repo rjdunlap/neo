@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW04 welcome adventure definition (2026-10-17)
+
+[PR #509](https://github.com/rjdunlap/neo/pull/509): [packet](../rework/WELCOME-ADVENTURE.md) defines Welcome a New Friend for preschool and pre-K: Stamp Studio 3/4 keeps her picture, Pet Kitchen 2/5 gives plates the round really guarantees, Song Maker 2's free loop keeps her tune (an out-of-range exception awaiting the developer). Typed step results stored with the project, once-only adoption and item, evidence classes, and an RW07a/RW07 slice with check filters. Source audit at `84e1433`, links/diff passed; no code. [Proof](../VERIFICATION.md#2026-10-17--rw04-welcome-adventure-definition).
+
 ### Ramp Race truthful support definition, Q1 (2026-10-17)
 
 [PR #507](https://github.com/rjdunlap/neo/pull/507): docs only. [Definition](../definitions/ramp-race-support.md) freezes accurate level 1–4 goal, steps, finish and miss wording and specifies an idempotent corrective glow and recovery demo after an unfair pair; accounting unchanged. Q2 builds it.

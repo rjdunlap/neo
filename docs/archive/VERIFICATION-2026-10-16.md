@@ -1,5 +1,16 @@
 # Verification 2026-10-16 (archived entries)
 
+## 2026-10-16 — Chemistry follow-up research brief
+
+- Recorded the requested chemistry follow-up as not started, linked to the completed Matter study and roadmap. Brief covers atoms/molecules, reactions/conservation and possible acids/bases extension, audience/overlap questions, and SpaceChem as a requested reference.
+- Official SpaceChem description inspected through search output; educator guide only seen in search summary. No game played, curriculum anchors opened, full subject research or implementation claimed in this setup pass.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; code/build/browser/device checks not run.
+
+## 2026-10-16 — Writing and typing research gaps
+
+- Checked composition/Letter Trails coverage and opened primary CCSS W.3.6, W.4.6 and grade-1 Language text. Added unstarted keyboarding/editing and spelling/sentence research rows; clarified composition versus handwriting and touchscreen versus hardware input boundaries in the follow-up audit.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code, browser, device or learning-transfer checks. Full developmental/teaching research remains open.
+
 ## 2026-10-16 — Scientific inquiry subject research
 
 - Added [inquiry study](../deep-dives/subjects/inquiry.md): opened curriculum/developmental sources, six game/app references (PhET shell-only), two physical references, every audience, existing-game overlap, Ramp Race 5–8 proposals and ordered definition/build slices. Recorded failed source opens and support/accounting gaps without fixing code.
