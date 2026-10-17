@@ -2,10 +2,10 @@
 
 ## 2026-10-17 — Mirror Brush fold button definition
 
-- Defined Rainbow Fingers' fold page in [the definition](definitions/mirror-brush-fold.md): a seeded page type at level 2 (no new level ID), a 104-unit fold button after the first mark, a swing-press-open print that mirrors only paint added since the last fold, no misses or counted hints, a nudge wiggle, the bot, how-to lines and pure `mirrorX`/`foldMarks`/`pageKind` rules. Prediction stays with Bug Builder's *Fold a friend*.
+- Defined Rainbow Fingers' fold page in [the definition](definitions/mirror-brush-fold.md): a seeded page type at level 2 (no new level ID), a 104-unit fold button after the first mark, a swing-press-open print through a wet layer, so only paint added since the last fold is mirrored, no misses or counted hints, a nudge wiggle, the bot, how-to lines and pure `mirrorX`/`foldMarks`/`pageKind` rules. Prediction stays with Bug Builder's *Fold a friend*.
 - References: Tullet's *Mix It Up!* (Publishers Weekly and Kirkus reviews, from a search summary), butterfly blots (UGA), *Silk* (National Math Festival page, search summary), the dive's symmetry apps.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the two defaulted decisions; no child has seen a fold.
+- Open: decision 0 (a fold button in Rainbow Fingers reverses part of the approved no-button lean) gates the build; two defaulted decisions; no child has seen a fold.
 
 ## 2026-10-17 — Engineering design subject research
 

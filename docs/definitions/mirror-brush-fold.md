@@ -2,6 +2,8 @@
 
 Defined 2026-10-17 for [chunk 4](../ROADMAP.md) (*Mirror Brush's fold button*), from the sketch **Fold!** in [Rainbow Fingers' deep dive](../deep-dives/rainbow-fingers.md#new-levels-on-top) and the *Mirror Brush* row in [IDEAS](../IDEAS.md). The dive's fresh-content item 5 already plans the **live mirror**: crease pages at levels 1–2, where each dab is copied to the other side as she paints. This definition covers the other half of Mirror Brush, which IDEAS kept back: **a fold button that presses the paper closed and prints one side onto the other**, as a butterfly blot does. Bug Builder's level 10, *Fold a friend*, keeps the step where she predicts the unfolded half ([dive](../deep-dives/bug-builder.md)). Nothing here asks her to predict.
 
+**Status: decision.** On 2026-10-12 the developer approved the dive's leans, and decision 6 among them says crease pages have *no button* and "the fold button and prediction stay with Bug Builder". Putting a fold button in Rainbow Fingers reverses part of an approved lean, so the build waits on open decision 0 below. Everything else here is ready once that is answered.
+
 **Fun action and purpose:** she paints wet color on a page with a dashed crease down the middle. Then she taps the big fold button. The right half of the paper swings over, presses with a soft squish and swings back open, and her painting now has a matching mirror twin. The learning goal is exposure to mirror symmetry and to cause and effect, in the safe form IDEAS settled on: the fold does the work, so nothing is wrong and nothing is scored. Preschool guidance is to show children symmetry without expecting symmetrical work. Children match symmetric pairs no better than chance until about 8 to 9 ([Shao and Gentner, 2019](https://groups.psych.northwestern.edu/gentner/papers/ShaoGentner_2019-Symmetry.pdf)). Line symmetry is a grade 4 standard ([4.G.A.3](https://thecorestandards.org/Math/Content/4/G/A/3/)). So the toy belongs at the young end, and prediction waits for Bug Builder.
 
 ## References
@@ -19,7 +21,7 @@ Defined 2026-10-17 for [chunk 4](../ROADMAP.md) (*Mirror Brush's fold button*), 
 Fold pages are a **seeded page type at level 2** (*Paint pots*: lap 1–2, toddler 1–3, preschool 2–5), not a new level ID. A new ID would have to be appended after 7, and IDs 8–12 are already planned in the dive as color-mixing levels. Level 2 is where she first picks a pot color, so a print is in colors she chose. It is also the youngest level where she can sensibly aim for a button. Level 1 keeps only plain and crease pages.
 
 - **The page draw** (a pure `pageKind(level, rng)` in `logic.ts`): level 1 gives plain or crease (the dive's one in three). Level 2 gives plain, crease or fold, about a third each. Level 3 and up always give plain (they are coloring pages with pictures).
-- **If the crease pages are not built yet**, this slice builds the shared pieces they need: `mirrorX`, the dashed crease and the faint wings. Level 2 then draws plain or fold, half each, and the crease slice adds its third later. The two slices can land in either order. Lean: crease first, because it is already "ready" in the dive.
+- **If the crease pages are not built yet**, this slice builds the shared pieces they need: `mirrorX`, the dashed crease and the faint wings. Level 2 then draws plain or fold, half each, and the crease slice adds its third later. The two slices can land in either order. Lean: crease first. Its lean (decision 6) was approved on 2026-10-12, and slice 7 in the dive builds it.
 - **Bands:** a lap child can play a fold page, because a stray tap on the button just makes a print, and there is a co-play line for it. Preschool reaches it at its lowest level only. School does not reach level 2; Bug Builder's fold covers that age.
 
 ## First round (a fold page)
@@ -35,7 +37,7 @@ Fold pages are a **seeded page type at level 2** (*Paint pots*: lap 1–2, toddl
 5. She can paint more and fold again as often as she likes. A later fold prints only what she painted since the last fold, so marks already printed are not printed twice (see the rule).
 6. **Finish:** unchanged. The frame button appears after the usual count of strokes (once the dive's slice 2 lands, any five touches). A fold counts as one stroke toward it. She is never required to fold, and tapping the frame hangs the painting as on any level 2 page.
 
-**The print rule:** at a fold, every mark made since the last fold gets a mirrored copy across the crease (`x → 1 − x` in the paper's normalized space). Paint on the right prints to the left as well, as real paint would. A mark whose distance to the crease is less than its own radius is not copied, because it already sits across the fold. On screen, the build copies the painting's `RenderTexture` to one reusable scratch texture and draws the scratch over the painting, flipped about the crease, at alpha 0.85, since a blot print is a little lighter. A texture cannot be drawn into itself, which is why it needs the scratch. The scratch is created on the first fold and destroyed in `destroy()`.
+**The print rule:** at a fold, every mark made since the last fold gets a mirrored copy across the crease (`x → 1 − x` in the paper's normalized space). Paint on the right prints to the left as well, as real paint would. A mark whose distance to the crease is less than its own radius is not copied, because it already sits across the fold. On screen the same rule holds, through a **wet layer**: on a fold page, new stamps and blooms bake into a second, page-sized `RenderTexture` (the wet paint), which is shown above the dry painting. At a fold, the wet layer is drawn into the painting twice, once as it is and once flipped about the crease at alpha 0.85 (a blot print is a little lighter). Then the wet layer is cleared. Paint already printed is dry, so it never prints again, and the screen matches `foldMarks`. The wet layer is created when a fold page starts and destroyed in `destroy()`. When the frame is tapped, any wet paint is baked into the painting as it is, unprinted.
 
 ## What she decides
 
@@ -59,7 +61,7 @@ What to paint, which colors, which side, and when to fold. Every choice is welco
 
 ## Ghost-finger bot
 
-`autotouch()` on a fold page: tap a pot (as level 2 does now), draw two wavy strokes from `scribble` inside `foldScribbleArea`, tap the fold button, wait while the fold runs (`folding` is false again), then tap the frame. On plain and crease pages the bot is unchanged. The how-to card's demonstration plays whichever page kind the seeded round would draw. The scripted check below therefore restarts until it gets a fold page (one in three, so about six tries at most) instead of adding a dev-only override.
+`autotouch()` on a fold page: tap a pot (as level 2 does now), draw two wavy strokes from `scribble` inside `foldScribbleArea`, tap the fold button, wait while the fold runs (`folding` is false again), then tap the frame. On plain and crease pages the bot is unchanged. The how-to card's demonstration plays whichever page kind the seeded round would draw. The scripted check below therefore restarts until it gets a fold page (one page in three, so usually within six restarts; the probe loops until it gets one) instead of adding a dev-only override.
 
 ## How-to card (`howto.ts`, `rainbow-fingers`)
 
@@ -84,8 +86,9 @@ What to paint, which colors, which side, and when to fold. Every choice is welco
 
 ## Open developer decisions
 
+0. **Does the fold button belong in Rainbow Fingers?** This reverses part of the approved decision 6 lean, which kept the button with Bug Builder. Lean: yes. A press with no prediction does not overlap *Fold a friend*, which is about predicting, and IDEAS' Mirror Brush row puts both halves in Rainbow Fingers. If the answer is no, the fold stays with Bug Builder level 10 and this page is dropped. **This gates the build.**
 1. **Where the fold appears.** Lean: level 2 only, about one page in three, as above. The alternative is a fold button on every level 1–2 page, which is simpler but takes away the plain toy page.
 2. **Fold button versus dragging the paper closed.** Lean: the button, since a toddler can tap a 104-unit target but cannot reliably drag a page edge across the screen. A corner drag stays a sketch for older bands.
 3. **Person check (add to DEVICE-CHECKS when built):** does a two-year-old connect the press to the copy, and is the squish pleasant rather than startling?
 
-None of these gates the build: the leans are the defaults.
+Decisions 1–2 do not gate the build: their leans are the defaults. Decision 0 does.
