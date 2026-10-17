@@ -98,12 +98,12 @@ describe('touch how-to cards', () => {
   });
 
   it('keeps the guarded ladders bounded so new levels inherit no instructions or finish claims', () => {
-    for (const id of ['bubble-pop', 'animal-snack', 'clock-tower', 'block-tower', 'peekaboo-barn', 'splish-splash']) {
+    for (const id of ['bubble-pop', 'animal-snack', 'clock-tower', 'block-tower', 'peekaboo-barn', 'splish-splash', 'jelly-drums']) {
       const game = GAMES.find((g) => g.id === id)!;
       const last = Math.max(...levelsOf(game));
       expect(howToFor(game, last + 1)!.steps, id).toEqual([]);
-      if (id === 'clock-tower' || id === 'block-tower' || id === 'peekaboo-barn' || id === 'splish-splash') expect(howToFor(game, last + 1)!.finish).toBe('');
-      if (id === 'splish-splash') expect(howToFor(game, last + 1)!.note).toBeFalsy();
+      if (id === 'clock-tower' || id === 'block-tower' || id === 'peekaboo-barn' || id === 'splish-splash' || id === 'jelly-drums') expect(howToFor(game, last + 1)!.finish).toBe('');
+      if (id === 'splish-splash' || id === 'jelly-drums') expect(howToFor(game, last + 1)!.note).toBeFalsy();
     }
     const snack = GAMES.find((g) => g.id === 'animal-snack')!;
     const finishes = [1, 2, 3, 4, 5].map((level) => howToFor(snack, level)!.finish);
