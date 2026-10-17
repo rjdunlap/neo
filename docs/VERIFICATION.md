@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Egg Catch deep dive
+
+- Docs only: [deep dive](deep-dives/egg-catch.md) on `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517)). Audited levels 1–7 and pools; gaps: levels 4–5 roll on a 3.5/2 s clock, a near-silent level-2 miss with no glow, hens laying while nobody plays, level 1's silent mid-fall taps, level 6's counted predictions, `Math.random` in `hatch`, the `eggs` browser loop stopping at 5.
+- Opened the Big Bird's Egg Catch manual, Mario Wiki's *Egg*, TechCrunch on Turing Tumble, CDC 1-year milestones and CSTA/NGSS sources; Kaboom!, Gravity Maze, GraviTrax and Pipe Mania marked search summary or recalled.
+- Seven ready slices added to the roadmap; five decisions to WAITING; level-1 every-touch waits on V2.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Ramp Race Trial Shelf / One Change definition (Q3)
 
 - Defined Ramp Race levels 5–6 in [the definition](definitions/ramp-race-trial-shelf.md): stacked record cards, free paw guesses, a locked control lane with both-changed starts, once-per-question hints, a ghost-finger plan and a frozen layout. Not built; Q4 waits on Q2 and inquiry decisions 1–2 plus the lane policy.

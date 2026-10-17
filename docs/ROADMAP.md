@@ -69,6 +69,13 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 23. **`song-maker`, ten spoken patterns at level 6, slice 2** (content tier): five new pattern shapes, each named aloud before play. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
 24. **`song-maker`, authored motifs for levels 3–5, slice 3** (content tier): short pentatonic motifs replace random rows; level 4's Missing Melody shape is frozen. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
 25. **`jar-sort`, build levels 1–8** (new-game tier): tap a jar to lift its top fruit, drop it on the same fruit or an empty jar until each jar holds one kind; frozen solver-checked boards, free undo, lit targets at 1–2, refused moves count from 3; Rainbow Meadow. [Definition](definitions/jar-sort.md)
+26. **`egg-catch`, roll when ready at levels 4–5** (new interaction, with the bot, how-to and browser case): the egg waits for the green arrow; no clock decides. [Slice 1](deep-dives/egg-catch.md#build-slices-in-order)
+27. **`egg-catch`, a miss that teaches and hens that wait** (existing-game change): boing, line and next-lane glow at levels 2–3; no eggs laid while nobody plays. [Slice 2](deep-dives/egg-catch.md#build-slices-in-order)
+28. **`egg-catch`, notes, egg colours and the hatching basket** (content): pentatonic hens, catchable colours at 1–2, chicks at the finish. [Slice 3](deep-dives/egg-catch.md#fresh-content-inside-existing-levels)
+29. **`egg-catch`, level 8 Under the hen** (new interaction): tap a lane, the basket hops; toddler order 1, 8, 2. [Slice 4](deep-dives/egg-catch.md#new-levels-on-top)
+30. **`egg-catch`, level 9 One gate** (new level; after *roll when ready*): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
+31. **`egg-catch`, level 10 Fix the run** (new interaction; after *roll when ready*): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
+32. **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 
 ### Chunks
 
