@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Discovery D2a Little surprises definition
+
+- Defined the three-game mix in [the definition](definitions/little-surprises.md): a lap/toddler home-spot mix spot (the story-spot slot), a preview sheet, Next stop/Skip/All done in D1b's result rectangles with D1b's offer suppressed, every route back to the home spot reopening the preview, a no-bonus ending, and a session/item/round token table reusing `DiscoveryMemory`'s owner + epoch guard. Source audited on `d0d5b65`.
+- References: Just Dance 2023 playlist help, WarioWare, Khan Academy Kids (search summary), YouTube Kids autoplay controls (Google support), Xbox AG 116.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build and browser not run: no code changed.
+- Open: four non-gating leans (name, no hide switch, post-RW08 placement, Home reopening the preview); a child's grasp of Next stop vs Next level is a person check.
+
 ## 2026-10-17 — Jelly Drums slice 1 remainder, guards and tunes
 
 - Listen-again note button on echo levels 4–9 (counts no miss or hint), echo levels instruct `jelly.echo`, `tunesOf`/`drawTune` (shapes plus Hot Cross Buns, Mary, Jingle Bells; songs checked against letter-note charts found by web search; Oh! Susanna left out), idle nudge on levels 1–3, bounded how-to lines. Commit 435ba0a, PR #529.
