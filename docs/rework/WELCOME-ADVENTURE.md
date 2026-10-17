@@ -43,10 +43,10 @@ Each step is an ordinary round played at the project's level, launched from the 
 | Step ID | Ask (spoken on the project page) | Game and level | Fun action / learning purpose | Result kept |
 | --- | --- | --- | --- | --- |
 | `pretty` | "Our new friend needs something pretty over their bed. Make them a picture!" | Stamp Studio **3** (preschool), **4** (pre-K) | stamping, choosing, arranging / composition and spatial choices, free creation | her `StampPictureCreation` |
-| `yummy` | "Our new friend is hungry. Share the sandwich so all four of us get the same!" (preschool) · "Our new friend loves fruit salad. Make it twice as big so there's enough for two!" (pre-K) | Pet Kitchen **2** (preschool), **5** (pre-K) | cutting and dealing / equal quarters; doubling a pictured recipe | none; the fixed picture is true by the round's rule |
+| `yummy` | "Our new friend is hungry. Share the sandwich so all four of us get the same!" (preschool) · "Our new friend loves fruit salad. Make it twice as big so there's enough for two!" (pre-K: one bowl big enough for the companion and the newcomer) | Pet Kitchen **2** (preschool), **5** (pre-K) | cutting and dealing / equal quarters; doubling a pictured recipe | none; the fixed picture is true by the round's rule |
 | `song` | "Let's make a song to say hello. Tap the jellies to make your own tune!" | Song Maker **2** (free 6-beat loop), both bands, as a stated exception | lighting notes on a loop / high and low, a pattern that repeats, free creation | her `TuneCreation`, or none if fewer than two notes stayed lit |
 
-Done lines (after the round returns to the project page): "Look, it's hanging over the basket!" · "Four plates, all the same. Yum!" / "Two bowls, twice as much. Yum!" · "That's our hello song!" (or, with no tune, "We'll hum hello together!"). The card's recap line for each finished step repeats the done line. All of these are new `welcome.*` lines in `voice-script.ts`; the game rounds keep their own lines.
+Done lines (after the round returns to the project page): "Look, it's hanging over the basket!" · "Four plates, all the same. Yum!" / "A bowl big enough for two. Yum!" · "That's our hello song!" (or, with no tune, "We'll hum hello together!"). The card's recap line for each finished step repeats the done line. All of these are new `welcome.*` lines in `voice-script.ts`; the game rounds keep their own lines.
 
 ### 1. Something pretty (Stamp Studio)
 
@@ -56,7 +56,7 @@ Done lines (after the round returns to the project page): "Look, it's hanging ov
 
 ### 2. Something yummy (Pet Kitchen)
 
-- The fiction names the plates: her companion, the newcomer and two club friends (preschool, four quarters), or the companion's bowl and the newcomer's bowl (pre-K, one berry and one apple each becomes two each).
+- The fiction names the plates: her companion, the newcomer and two club friends (preschool, four quarters), or one shared bowl for the companion and the newcomer (pre-K: the card's one berry and one apple become two of each in the one meal the round draws, `pet-kitchen/index.ts:163`).
 - The project page and ending picture exactly what the round guarantees: four plates with one quarter each, or a bowl of two berries and two apples. A test pins the level/band pair to the plan and recipe so a later ladder change fails loudly.
 - Misses and hints keep their current meaning in the game; the project ignores them except as [learning evidence](#learning-intentions-and-evidence).
 
@@ -122,7 +122,7 @@ What a step can show, using only what the shell records today (`misses`, `hints`
 
 | Step | Intention | Observable action | Evidence class |
 | --- | --- | --- | --- |
-| `pretty` | makes and arranges a picture by choice | stamps placed, kinds and colors used, stamps moved or turned (in the saved picture) | **free creation**: participation, never correct/incorrect |
+| `pretty` | makes and arranges a picture by choice | stamps placed, kinds, colors, sizes and turns (all in the saved picture); whether she moved stamps is not saved and would be an RW09 signal | **free creation**: participation, never correct/incorrect |
 | `yummy` (preschool) | makes four equal shares from one whole | served four equal quarters | **independent** if finished with 0 misses and 0 hints; **helped** if any hint or the two-miss glow; **unknown** if left unfinished |
 | `yummy` (pre-K) | doubles each part of a pictured recipe | made two of each from one of each | same three classes |
 | `song` | explores high and low notes in a repeating loop | notes lit, rows (pitches) used, beats used (in the saved tune) | **free creation**; whether she meant a melody is unknown |
@@ -139,6 +139,8 @@ One round is one observation. Finishing with help is supported completion, not i
 - **D1b discovery hops:** skipped for project rounds, as for story rounds.
 
 ## Younger and older variants (not defined here)
+
+**In the first slice,** lap, toddler and school profiles see no welcome card: nothing is gated or hidden for them, and their home works without a project. RW05's collection must not make this project the only way to adopt a creature, so a child outside these bands, or one who never plays it, still gets companions.
 
 - **Lap / toddler:** one-action shared play (RW01's "one or two glowing toys"). Toddler ranges happen to include Stamp Studio 2, Pet Kitchen 1 and Song Maker 2, but a three-step project is not assumed to suit them; define a one-step welcome separately after observation.
 - **School:** Stamp Studio 5–6, Pet Kitchen 5–9 and Song Maker 6–7 (no free mode in range) need their own project with planning and revision (RW12's territory).
