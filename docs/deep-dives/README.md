@@ -79,7 +79,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Fill and Dump | `fill-dump` | LTP | 5 | 4 | designed (slices 1–5 ready: count sign, lap reach, level 6 Full and empty, level 7 Which holds more?, things to put away; pouring feel waits on V3, pre-K levels 8–9, toddler pour and Two jugs need decisions) | `claude/fill-dump-deep-dive` ([PR #513](https://github.com/rjdunlap/neo/pull/513)) | [fill-dump.md](fill-dump.md) |
 | Fluffy Salon | `fluffy-salon` | LTPK | 5 | 4 | not started | — | — |
 | Frog Hop | `frog-hop` | PKS | 7 | 3 | building (slice 1, guards, PR #162, and slice 3, level 8 Back over ten, PR #346, built) | `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116)) | [frog-hop.md](frog-hop.md) |
-| Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
+| Garden Grow | `garden-grow` | LTP | 5 | 4 | designed (7 slices ready: true how-to and spoken gaps, growth stages and wet soil, flower kinds, lap 8 Grow it up, pre-K 9 Rows of colors, 10 Columns of colors, 11 Same in every row; windows, creature hooks and the subject modes need decisions) | `claude/dive-garden-grow` ([PR #530](https://github.com/rjdunlap/neo/pull/530)) | [garden-grow.md](garden-grow.md) |
 | Garden Rows | `garden-rows` | KS | 6 | 4 | not started | — | — |
 | Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (levels 1–9, tent and boat rooms (PR #403) and a note per friend (PR #333) built); level 10 and the yawn nudge next | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)); level 9 ([PR #239](https://github.com/rjdunlap/neo/pull/239)); earlier build history in the write-up | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
@@ -123,7 +123,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Scoop Shop | `scoop-shop` | LTPKS | 6 | 4 | not started | — | — |
 | Secret Code | `secret-code` | KS | 6 | 4 | not started | — | — |
 | Seesaw Balance | `seesaw-balance` | TPKS | 9 | 4 | not started | — | — |
-| Shape Buddies | `shape-buddies` | KS | 1 | 4 | not started (solo levels 1 and 2 built, level 2 *A step down* 2026-10-17; [definition](../definitions/shape-buddies.md)) | — | — |
+| Shape Buddies | `shape-buddies` | KS | 1 | 4 | not started (solo levels 1 and 2 built, level 2 *A step down* 2026-10-17; [definition](../definitions/shape-buddies.md); level 3 *Two make one* defined, [definition](../definitions/shape-buddies-combined.md)) | — | — |
 | Shape Sorter | `shape-sorter` | TPK | 7 | 4 | not started | — | — |
 | Sink or Float | `sink-float` | LTPKS | 6 | 4 | not started | — | — |
 | Sing-Along Barn | `sing-along-barn` | LTPK | 4 | 4 | not started (built: Old MacDonald, levels 1–3, [PR #219](https://github.com/rjdunlap/neo/pull/219); Hot Cross Buns, [PR #277](https://github.com/rjdunlap/neo/pull/277); level 4, [PR #278](https://github.com/rjdunlap/neo/pull/278); Mary Had a Little Lamb, 2026-10-13) | — | — |
