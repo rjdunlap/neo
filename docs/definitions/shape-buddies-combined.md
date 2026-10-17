@@ -8,7 +8,7 @@
 
 **Learning goal:** the game's own goal, that a shape's function depends on where it is used, now applied to parts of one whole. Two shapes combined make a tool neither makes alone. The order matters: the path comes first and the bowl at the end. The containing half of the goal stays visible, because the cup is part of the combination, not a separate station.
 
-**Why it is a real next decision.** At levels 1–2 each friend does a job on its own: one bridges and one catches. At level 3 neither friend can succeed alone, and the shape at each position matters. Flat followed by flat rolls the seed right across and away. A cup followed by flat traps nothing at the end. A slope in the near half dips into the water halfway. Only flat-then-cup works. The level-2 lesson also flips: level 2 needed Slope, and here Slope fails while Flat works. A child who learned "slope is the answer" has to look at the place again.
+**Why it is a real next decision.** The real step is against level 2, the level she arrives from. There only Slope reached the low bank. Here the banks are level again and the gap is wide, so a slope in the near half dips into the water halfway, and Flat works again. A child who learned "slope is the answer" has to look at the place again. The rule itself is level 1's (a flat bridge then a cup), so level 3's accepted constructions are a subset of level 1's. What is new is presentation that carries the idea: the two friends visibly join into one spoon over the water, and they carry it to the pot together. That shows two parts making one tool. Flat followed by flat still rolls the seed across and away, so the end of the spoon has to be a cup.
 
 **Overlap checked.** [GAMES](../GAMES.md#shape-buddies), the [idea notebook](../IDEAS.md#candidates) and the deep-dive tracker (Shape Buddies not started) were checked. Chain Reaction fills sockets with ramps to route a marble. Here the two positions need *different* shapes, and the joined pair is one object that holds the seed and is carried, so it is not socket routing. Bug Builder composes matching body parts with no function test. Two Friends (Fireboy and Watergirl, IDEAS) is a cooperative-seat proposal; this level stays solo with one player moving both friends. Silly Describer's shared scarf (IDEAS) is word play, not construction.
 
@@ -64,7 +64,7 @@ There are two accepted constructions: friend A flat in the near half with B cupp
 
 ## Ladder, IDs and description
 
-`LEVELS` becomes `prek: { min: 1, max: 3 }`, `school: { min: 1, max: 3 }`, with no `order`. Pre-K (about 4–5) gets it because it is one visible change with spoken support, as level 2 was. The usual two-smooth-rounds step-up applies. `describeLevel(3)`: "Two make one: a flat friend and a cup friend join into a spoon across a wide gap; test and plant one seed".
+`LEVELS` becomes `prek: { min: 1, max: 3 }`, `school: { min: 1, max: 3 }`, with no `order`. Pre-K (about 4–5) gets it because it is one visible change with spoken support, as level 2 was. The usual two-smooth-rounds step-up applies. `describeLevel(3)`: "Two make one: a flat friend and a cup friend make a spoon; test and plant one seed".
 
 ## Speech and how-to
 
@@ -77,7 +77,7 @@ New lines in `src/content/voice-script.ts`:
 - `buddies.joinCup`: "The seed rolled right across and away. Make the friend at the end a cup to hold it."
 - `buddies.together` (said once as the carry starts, through `ctx.say`): "Together you made a spoon!"
 
-In `src/content/howto.ts`, add the step `{ from: 3, to: 3, text: 'The gap is wide: drag one friend to the near half and the other to the far half. A flat path and a cup at the end make a spoon that catches the seed.' }` beside the existing level-1 and level-2 dock steps. The goal, the other steps, the finish and the note hold at all levels ("Either friend can do either job" stays true). The card must stay under the 840-character cap at level 3. If it does not, shorten only the level-3 line.
+In `src/content/howto.ts`, add the step `{ from: 3, to: 3, text: 'Drag one friend to each half of the wide gap. A flat path and a cup at the end make a spoon.' }` beside the existing level-1 and level-2 dock steps. The goal, the other steps, the finish and the note hold at all levels ("Either friend can do either job" stays true). Counted with `howto.test.ts`'s formula (`describeLevel` + goal + steps + finish + note), the level-3 card is **803** characters, under the 840 cap. Level 2 is 819. A first draft of the line and description came to 883, so keep these shorter wordings.
 
 Co-play prompt: "What did the two friends make together?" Off-screen activity: lay a flat book across two cushions with a bowl at the far end, and roll a large soft ball along it into the bowl. Use no small objects.
 
@@ -110,6 +110,7 @@ Device speech, iPad touch and a child's reaction stay human checks.
 ## Open developer decisions (none blocking; the build uses the defaults)
 
 1. **Pre-K window:** the default is pre-K and school both 1–3. The alternative is school only at level 3.
-2. **A level 4 "Down and catch":** combining level 2's step down with level 3's join (slope near half, cup far half at the low bank) stays a proposal, not part of this slice.
+2. **Is the join enough to count as "combined"?** The trace is level 1's rule. The new things are the joined drawing, the carry together and the flip from level 2. A stronger variant is defined only as level 4 below.
+3. **A level 4 "Down and catch":** combining level 2's step down with level 3's join (slope near half, cup far half at the low bank) stays a proposal, not part of this slice.
 
 **Excluded:** a third friend or tool, more than two halves, free placement or cutting, general physics, kept creations, save fields, controller or couch modes, and cooperative seats.
