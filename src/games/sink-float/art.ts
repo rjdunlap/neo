@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { starPoints } from '../../art/shapes';
-import type { Thing } from './logic';
+import type { ClayColor, ClayShape, Thing } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -84,4 +84,50 @@ export function sinkIcon(): Graphics {
   g.circle(-14, -6, 5).circle(-6, -14, 3).stroke(line(swatch.blue.fill, 3));
   g.moveTo(-44, 32).lineTo(44, 32).stroke(line(wood.line, 5));
   return g;
+}
+
+/**
+ * The clay for Make it float, redrawn in place as she changes its shape: a ball, a flat pancake, a hollow boat, or a boat
+ * with a hole and a crack. `water` (0 to 1) fills a leaky boat as it sinks. About 110 units across, centered on (0, 0).
+ */
+export function drawClay(g: Graphics, shape: ClayShape | 'ball', color: ClayColor, water = 0): Graphics {
+  const s = swatch[color];
+  g.clear();
+  switch (shape) {
+    case 'ball':
+      g.circle(0, 0, 34).fill(s.fill).stroke(line(s.line));
+      g.ellipse(-10, -12, 10, 6).fill({ color: s.light, alpha: 0.7 });
+      break;
+    case 'flat':
+      g.ellipse(0, 14, 60, 13).fill(s.fill).stroke(line(s.line));
+      g.ellipse(-16, 10, 18, 4).fill({ color: s.light, alpha: 0.7 });
+      break;
+    case 'boat':
+    case 'leaky':
+      // The hull, open at the top: the dark rim shows it is hollow.
+      g.moveTo(-58, -6).quadraticCurveTo(-52, 34, 0, 36).quadraticCurveTo(52, 34, 58, -6).closePath().fill(s.fill).stroke(line(s.line));
+      g.ellipse(0, -6, 58, 12).fill(s.line).ellipse(0, -4, 50, 8).fill({ color: ink, alpha: 0.25 });
+      if (water > 0) g.ellipse(0, -4, 50 * water, 8 * water).fill({ color: swatch.blue.fill, alpha: 0.8 });
+      if (shape === 'leaky') {
+        g.circle(14, 22, 7).fill(ink);
+        g.moveTo(14, 22).lineTo(26, 12).lineTo(32, 16).stroke(line(ink, 3));
+      }
+      break;
+  }
+  return g;
+}
+
+/** "Same clay, same weight": a level two-pan scale with the ball's outline on one pan and the boat on the other. */
+export function sameWeightIcon(color: ClayColor): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(0, 40).lineTo(0, -30).stroke(line(wood.line, 6)).moveTo(-30, 44).lineTo(30, 44).stroke(line(wood.line, 6));
+  g.moveTo(-70, -30).lineTo(70, -30).stroke(line(wood.line, 6)).circle(0, -30, 6).fill(wood.fill);
+  for (const x of [-56, 56]) g.moveTo(x, -30).lineTo(x - 22, 6).moveTo(x, -30).lineTo(x + 22, 6).stroke(line(wood.line, 3)).moveTo(x - 30, 6).quadraticCurveTo(x, 22, x + 30, 6).stroke(line(wood.line, 5));
+  g.circle(-56, -8, 14).stroke({ ...line(swatch[color].line, 4), alpha: 0.8 });
+  const boat = drawClay(new Graphics(), 'boat', color);
+  boat.scale.set(0.38);
+  boat.position.set(56, -6);
+  c.addChild(g, boat);
+  return c;
 }
