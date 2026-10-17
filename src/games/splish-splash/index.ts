@@ -11,7 +11,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { allowedParts, askedParts, MUD_H, MUD_W, nearestIndex, nearMud, nextToScrub, PATS_PER_PATCH, PART_SPOTS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part, type Plan } from './logic';
+import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_H, MUD_W, Namer, nearestIndex, nearMud, nextToScrub, PATS_PER_PATCH, PART_SPOTS, PHRASES, planFor, reach, scrubPath, wrongTouches, type Part, type Plan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -44,6 +44,7 @@ class Mud {
     x: number,
     y: number,
     readonly size: number,
+    private readonly brush: number,
     rng: Rng,
     private readonly renderer: Renderer,
   ) {
@@ -65,7 +66,7 @@ class Mud {
       this.points.push({ x: b.x + Math.cos(a) * r, y: b.y + Math.sin(a) * r });
     }
     this.total = this.points.length;
-    this.reach = SCRUB_R / size;
+    this.reach = reach(size, brush);
 
     this.sprite = new Sprite(this.rt);
     this.sprite.anchor.set(0.5);
@@ -79,7 +80,7 @@ class Mud {
 
   /** True if (lx, ly), in sprite-local coordinates, is near enough to scrub. */
   near(lx: number, ly: number): boolean {
-    return nearMud(lx, ly, this.size);
+    return nearMud(lx, ly, this.size, this.brush);
   }
 
   /** Erase around a sprite-local point. Returns how much is now gone (0..1). */
@@ -129,6 +130,10 @@ class SplishSplash implements Game {
   private bubbleIn = 0;
   private hinted = false;
   private finished = false;
+  /** The opening instruction is still being said: hold the parts' names until it ends. */
+  private opening = true;
+  private readonly namer = new Namer();
+  private readonly idle = new IdleNudge();
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   private readonly lift = (e: { pointerId: number }) => {
     this.last.delete(e.pointerId);
@@ -150,7 +155,7 @@ class SplishSplash implements Game {
     this.pip.scale.set(PIP_SCALE);
     for (const part of this.plan.parts) {
       for (const [x, y, size] of PART_SPOTS[part]) {
-        const mud = new Mud(part, x, y, size, ctx.rng, ctx.renderer);
+        const mud = new Mud(part, x, y, size, this.plan.brush ?? 1, ctx.rng, ctx.renderer);
         this.pip.attach(mud.glow);
         this.pip.attach(mud.sprite);
         this.muds.push(mud);
@@ -165,7 +170,11 @@ class SplishSplash implements Game {
     ctx.track(this.rubberDuck);
 
     this.scrubZone.eventMode = 'static';
-    this.scrubZone.on('pointerdown', (e) => (this.plan.mode === 'pat' ? this.patAt(e) : this.scrubAt(e)));
+    this.scrubZone.on('pointerdown', (e) => {
+      this.idle.touch();
+      if (this.plan.mode === 'pat') this.patAt(e);
+      else this.scrubAt(e);
+    });
     this.scrubZone.on('globalpointermove', (e) => this.plan.mode !== 'pat' && this.last.has(e.pointerId) && this.scrubAt(e));
     this.scrubZone.on('pointerup', this.lift);
     this.scrubZone.on('pointerupoutside', this.lift);
@@ -176,9 +185,8 @@ class SplishSplash implements Game {
   }
 
   start() {
-    if (this.plan.mode === 'pat') void this.instruct('bath.pat');
-    else if (this.plan.mode === 'free') void this.instruct('bath.free');
-    else void this.askForPart();
+    if (this.plan.mode === 'parts') void this.askForPart();
+    else void this.instruct(this.plan.mode === 'pat' ? 'bath.pat' : 'bath.free').then(() => (this.opening = false));
   }
 
   resize(v: View) {
@@ -219,6 +227,13 @@ class SplishSplash implements Game {
         for (const m of this.muds) if (this.allowed().includes(m.part) && !m.clean) m.glow.visible = true;
       }
     }
+    if (this.plan.mode === 'free' && !this.finished && this.idle.tick(dt)) {
+      // Quiet for a while: the next muddy spot sparkles and the pet wiggles (an invitation, never a hint).
+      const part = nextToScrub(this.plan, 0, (p) => this.partClean(p));
+      const m = part && this.muds.find((x) => x.part === part && !x.clean);
+      if (m) m.glow.visible = true;
+      this.pip.poke();
+    }
     if (this.plan.mode === 'pat' && !this.finished) {
       // Quiet for a while: sparkle the next patch (an invitation, not a hint).
       this.sinceProgress += dt;
@@ -241,7 +256,7 @@ class SplishSplash implements Game {
     const part = nextToScrub(this.plan, this.partIndex, (p) => this.partClean(p));
     const mud = part && this.muds.find((m) => m.part === part && !m.clean);
     if (!mud) return null;
-    const [start, ...via] = scrubPath(mud.size).map((p) => ({ on: mud.sprite, x: p.x, y: p.y }));
+    const [start, ...via] = scrubPath(mud.size, this.plan.brush).map((p) => ({ on: mud.sprite, x: p.x, y: p.y }));
     return { trace: start, via, receiver: this.scrubZone };
   }
 
@@ -280,12 +295,13 @@ class SplishSplash implements Game {
     this.sinceProgress = 0;
     this.hinted = false;
     const [a, b] = this.asked();
-    if (!b) await this.instruct('bath.part', { part: a });
-    else await this.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', { a, b });
+    if (!b) await this.instruct('bath.part', { part: askedPhrase([a]) });
+    else await this.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', { a: askedPhrase([a]), b: askedPhrase([b]) });
   }
 
   private scrubAt(e: FederatedPointerEvent) {
     if (this.finished) return;
+    this.idle.touch();
     const now = { x: e.global.x, y: e.global.y };
     const prev = this.last.get(e.pointerId) ?? now;
     this.last.set(e.pointerId, now);
@@ -325,6 +341,7 @@ class SplishSplash implements Game {
     const m = open[i];
     m.pats++;
     m.glow.visible = false;
+    this.nameAt(m.part);
     this.sinceProgress = 0;
     m.sprite.alpha = 1 - m.pats / PATS_PER_PATCH;
     const p = this.ctx.stage.toLocal(e.global);
@@ -361,6 +378,10 @@ class SplishSplash implements Game {
       if (!mine.includes(m)) this.scrubbed.set(pointerId, [...mine, m]);
       const gone = m.scrub(l.x, l.y, this.eraser);
       this.sinceProgress = 0;
+      if (!parts) {
+        m.glow.visible = false;
+        this.nameAt(m.part);
+      }
       if (gone >= CLEAN_ENOUGH) void this.cleaned(m);
     }
     return onPip;
@@ -371,8 +392,13 @@ class SplishSplash implements Game {
     this.lastNag = this.clock;
     this.misses++;
     const [a, b] = this.asked();
-    if (this.plan.ordered && touched === b) void this.ctx.say('bath.first', { a, b });
-    else void this.ctx.say('bath.notthat', { touched, part: b ? `${a} and my ${b}` : a });
+    if (this.plan.ordered && touched === b) void this.ctx.say('bath.first', { a: askedPhrase([a]), b: askedPhrase([b]) });
+    else void this.ctx.say(PHRASES[touched].plural ? 'bath.notthose' : 'bath.notthat', { touched: PHRASES[touched].word, part: askedPhrase(this.asked()) });
+  }
+
+  /** Free play and patting: say a part's name at its first touch, once a round, never over the opening or too soon after the last. */
+  private nameAt(part: Part) {
+    if (this.namer.touch(part, this.clock, this.opening)) void this.ctx.say('bath.named', { part: PHRASES[part].word });
   }
 
   private async cleaned(m: Mud) {
@@ -388,11 +414,17 @@ class SplishSplash implements Game {
       void this.finale();
       return;
     }
-    if (this.plan.mode === 'parts' && this.asked().every((p) => this.partClean(p))) {
-      this.partIndex += this.asked().length;
+    if (this.plan.mode === 'parts') {
+      if (!this.asked().every((p) => this.partClean(p))) return;
+      const done = this.asked();
+      this.partIndex += done.length;
       sfx.sparkle();
-      await this.ctx.say('praise');
+      await this.ctx.say('bath.cleanpart', { part: cleanPhrase(done) });
       await this.askForPart();
+    } else if (this.partClean(m.part)) {
+      // Named as it goes clean; the next first-touch name waits a moment so this one is heard.
+      this.namer.spoke(this.clock);
+      void this.ctx.say('bath.cleanpart', { part: PHRASES[m.part].word });
     }
   }
 

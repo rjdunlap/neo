@@ -9,11 +9,13 @@ export interface Plan {
   pairs?: boolean;
   /** With pairs: "first my nose, then my ears", in that order. */
   ordered?: boolean;
+  /** How much wider than `SCRUB_R` the brush is, so a palm-sized pat clears a palm-sized disc. */
+  brush?: number;
 }
 
 export const PLANS: Plan[] = [
-  { mode: 'free', parts: ['tummy', 'head', 'cheeks'] },
-  { mode: 'free', parts: ['tummy', 'head', 'cheeks', 'ears'] },
+  { mode: 'free', parts: ['tummy', 'head', 'cheeks'], brush: 1.6 },
+  { mode: 'free', parts: ['tummy', 'head', 'cheeks', 'ears'], brush: 1.6 },
   { mode: 'parts', parts: ['tummy', 'ears', 'head'] },
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks'] },
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'cheeks'], shuffle: true },
@@ -66,6 +68,78 @@ export const SCRUB_R = 26;
  */
 export const MUD_BOX = { x: 52, y: 44 };
 
+/** The brush's reach in a splotch's own texture units: the same on screen whatever the splotch's size. */
+export function reach(size: number, brush = 1): number {
+  return (SCRUB_R * brush) / size;
+}
+
+/** How each part is spoken: its word, and whether it is a pair, so the lines read naturally ("Those are my cheeks!", not "That's my cheeks!"). */
+export const PHRASES: Record<Part, { word: string; plural: boolean }> = {
+  tummy: { word: 'tummy', plural: false },
+  head: { word: 'head', plural: false },
+  cheeks: { word: 'cheeks', plural: true },
+  ears: { word: 'ears', plural: true },
+  nose: { word: 'nose', plural: false },
+};
+
+/** The parts as said after "Wash": "my ears", or "my ears and my nose". */
+export function askedPhrase(parts: Part[]): string {
+  return parts.map((p) => `my ${PHRASES[p].word}`).join(' and ');
+}
+
+/** The parts as said after "Clean": "ears", or "ears and nose". */
+export function cleanPhrase(parts: Part[]): string {
+  return parts.map((p) => PHRASES[p].word).join(' and ');
+}
+
+/** The least time between two spoken names, so a busy finger does not chatter. */
+export const NAME_GAP = 2.5;
+
+/**
+ * Names each part once a round at its first touch, in free play. A name that comes too soon after the last (or before the
+ * opening instruction has finished) is not said and not marked, so the next touch on that part tries again.
+ */
+export class Namer {
+  private readonly said = new Set<Part>();
+  private last = -Infinity;
+
+  /** The part to name now for a touch on `part` at `now` seconds, or null. `quiet` holds every name (the pet is still talking). */
+  touch(part: Part, now: number, quiet = false): Part | null {
+    if (quiet || this.said.has(part) || now - this.last < NAME_GAP) return null;
+    this.said.add(part);
+    this.last = now;
+    return part;
+  }
+
+  /** Something else was just said: wait a gap before the next name. */
+  spoke(now: number) {
+    this.last = now;
+  }
+
+  named(part: Part): boolean {
+    return this.said.has(part);
+  }
+}
+
+/** Seconds without a touch on a free level before a muddy spot sparkles and the pet wiggles: an invitation, never a hint. */
+export const NUDGE_AFTER = 8;
+
+/** Counts quiet time in free play; `tick` is true once each time NUDGE_AFTER seconds pass without a touch. */
+export class IdleNudge {
+  private quiet = 0;
+
+  touch() {
+    this.quiet = 0;
+  }
+
+  tick(dt: number): boolean {
+    this.quiet += dt;
+    if (this.quiet < NUDGE_AFTER) return false;
+    this.quiet = 0;
+    return true;
+  }
+}
+
 /** The part to scrub next: any muddy one when scrubbing freely, and otherwise the first the question allows. */
 export function nextToScrub(plan: Plan, index: number, clean: (p: Part) => boolean): Part | null {
   if (plan.mode !== 'parts') return plan.parts.find((p) => !clean(p)) ?? null;
@@ -77,10 +151,10 @@ export function nextToScrub(plan: Plan, index: number, clean: (p: Part) => boole
  * of the box mud can lie in is within the brush's reach of the path. Rows are 1.2 reaches apart and stop 0.55 of a reach short
  * of the box's sides, so the corners are still inside it.
  */
-export function scrubPath(size: number): { x: number; y: number }[] {
-  const reach = SCRUB_R / size;
-  const rows = Math.ceil((2 * MUD_BOX.y) / (1.2 * reach));
-  const half = Math.max(0, MUD_BOX.x - 0.55 * reach);
+export function scrubPath(size: number, brush = 1): { x: number; y: number }[] {
+  const r = reach(size, brush);
+  const rows = Math.ceil((2 * MUD_BOX.y) / (1.2 * r));
+  const half = Math.max(0, MUD_BOX.x - 0.55 * r);
   const path: { x: number; y: number }[] = [];
   for (let k = 0; k < rows; k++) {
     const y = -MUD_BOX.y + ((k + 0.5) * 2 * MUD_BOX.y) / rows;
@@ -91,9 +165,9 @@ export function scrubPath(size: number): { x: number; y: number }[] {
 }
 
 /** Whether a point in a splotch's own texture units is close enough to scrub it: on the texture, or within the brush's reach of it. */
-export function nearMud(lx: number, ly: number, size: number): boolean {
-  const reach = SCRUB_R / size;
-  return Math.abs(lx) < MUD_W / 2 + reach && Math.abs(ly) < MUD_H / 2 + reach;
+export function nearMud(lx: number, ly: number, size: number, brush = 1): boolean {
+  const r = reach(size, brush);
+  return Math.abs(lx) < MUD_W / 2 + r && Math.abs(ly) < MUD_H / 2 + r;
 }
 
 /**

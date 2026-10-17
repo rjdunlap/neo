@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { allowedParts, askedParts, MUD_BOX, nearMud, nearestIndex, nextToScrub, PART_SPOTS, PATS_PER_PATCH, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part } from './logic';
+import { SCRIPT } from '../../content/voice-script';
+import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_BOX, NAME_GAP, Namer, NUDGE_AFTER, PHRASES, nearMud, nearestIndex, nextToScrub, PART_SPOTS, PATS_PER_PATCH, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part } from './logic';
 
 describe('Splish Splash', () => {
   it('asks for every part exactly once, one or two at a time', () => {
@@ -58,9 +59,11 @@ describe('Splish Splash', () => {
   it('draws a scrub path that leaves no mud behind on any splotch, however the mud falls', () => {
     const sizes = new Set(Object.values(PART_SPOTS).flat().map(([, , size]) => size));
     expect(sizes.size).toBeGreaterThanOrEqual(4);
-    for (const size of sizes) {
-      const reach = SCRUB_R / size;
-      const path = scrubPath(size);
+    const brushes = new Set(PLANS.map((p) => p.brush ?? 1));
+    expect(brushes).toContain(1.6);
+    for (const brush of brushes) for (const size of sizes) {
+      const reach = (SCRUB_R * brush) / size;
+      const path = scrubPath(size, brush);
       expect(path.length).toBeGreaterThanOrEqual(2);
       const near = (x: number, y: number) =>
         path.slice(1).some((b, i) => {
@@ -71,7 +74,7 @@ describe('Splish Splash', () => {
           return Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy)) < reach;
         });
       // Every point of the box the mud can lie in is inside the brush's reach, so the whole splotch goes and the 75% that counts as clean is always met.
-      for (let x = -MUD_BOX.x; x <= MUD_BOX.x; x += 2) for (let y = -MUD_BOX.y; y <= MUD_BOX.y; y += 2) expect(near(x, y), `size ${size} at ${x},${y}`).toBe(true);
+      for (let x = -MUD_BOX.x; x <= MUD_BOX.x; x += 2) for (let y = -MUD_BOX.y; y <= MUD_BOX.y; y += 2) expect(near(x, y), `size ${size} brush ${brush} at ${x},${y}`).toBe(true);
       // And the path stays on the splotch's texture (120 by 96), where the game takes a touch as scrubbing it.
       for (const p of path) expect(Math.abs(p.x) <= 60 && Math.abs(p.y) <= 48).toBe(true);
     }
@@ -148,5 +151,73 @@ describe('Splish Splash', () => {
     }
     expect(pats.every((c) => c === PATS_PER_PATCH)).toBe(true);
     expect(nearestIndex([], 0, 0)).toBeNull();
+  });
+
+  it('has a spoken word for every part that reads naturally in every bath line', () => {
+    const parts = Object.keys(PART_SPOTS) as Part[];
+    for (const p of parts) {
+      expect(PHRASES[p].word.length).toBeGreaterThan(0);
+      // Pairs on the body are spoken as plurals: "Those are my ears", not "That's my ears".
+      expect(PHRASES[p].plural).toBe(PART_SPOTS[p].length === 2);
+    }
+    expect(askedPhrase(['ears', 'nose'])).toBe('my ears and my nose');
+    expect(cleanPhrase(['ears', 'nose'])).toBe('ears and nose');
+    // Every bath line fills in from the phrase table: no doubled "my", no part id or brace left behind.
+    const lines = (Object.keys(SCRIPT) as (keyof typeof SCRIPT)[]).filter((id) => id.startsWith('bath.'));
+    for (const id of lines)
+      for (const text of SCRIPT[id] as string[])
+        for (const p of parts) {
+          const filled = text
+            .replace('{touched}', PHRASES[p].word)
+            .replace(/\{(part|a|b)\}/g, id === 'bath.cleanpart' || id === 'bath.named' ? PHRASES[p].word : askedPhrase([p]))
+            .replace('{pet}', 'Pip');
+          expect(filled, id).not.toMatch(/[{}]|my my/);
+        }
+  });
+
+  it('names each part once a round, never over the opening instruction or straight after another name', () => {
+    const namer = new Namer();
+    const parts: Part[] = ['tummy', 'head', 'cheeks', 'ears'];
+    const said: [Part, number][] = [];
+    // A busy finger touches a part every tenth of a second for a minute; the opening instruction lasts the first two seconds.
+    for (let t = 0; t < 60; t += 0.1) {
+      const part = parts[Math.floor(t * 3) % parts.length];
+      const named = namer.touch(part, t, t < 2);
+      if (named) said.push([named, t]);
+    }
+    expect(said.map(([p]) => p).sort()).toEqual([...parts].sort());
+    expect(said[0][1]).toBeGreaterThanOrEqual(2);
+    for (let i = 1; i < said.length; i++) expect(said[i][1] - said[i - 1][1]).toBeGreaterThanOrEqual(NAME_GAP);
+    // A name held back is tried again at the next touch, not lost.
+    const fresh = new Namer();
+    expect(fresh.touch('nose', 0, true)).toBeNull();
+    expect(fresh.touch('nose', 0.1)).toBe('nose');
+    expect(fresh.touch('nose', 9)).toBeNull();
+    // Something else just said makes the next name wait.
+    fresh.spoke(10);
+    expect(fresh.touch('ears', 10 + NAME_GAP / 2)).toBeNull();
+    expect(fresh.touch('ears', 10 + NAME_GAP)).toBe('ears');
+  });
+
+  it('never nudges while she scrubs, and nudges once each quiet spell', () => {
+    const idle = new IdleNudge();
+    // Touches every few seconds, up to just under the limit: no nudge in ten minutes.
+    let fired = 0;
+    for (let t = 0, sinceTouch = 0; t < 600; t += 1 / 60, sinceTouch += 1 / 60) {
+      if (sinceTouch > NUDGE_AFTER - 0.5) {
+        idle.touch();
+        sinceTouch = 0;
+      }
+      if (idle.tick(1 / 60)) fired++;
+    }
+    expect(fired).toBe(0);
+    // Left alone for thirty seconds after a touch: once every NUDGE_AFTER seconds.
+    idle.touch();
+    for (let t = 0; t < 30; t += 1 / 60) if (idle.tick(1 / 60)) fired++;
+    expect(fired).toBe(Math.floor(30 / NUDGE_AFTER));
+  });
+
+  it('gives the free levels a palm-sized brush and keeps the asked-for levels precise', () => {
+    for (const plan of PLANS) expect(plan.brush ?? 1, plan.mode).toBe(plan.mode === 'free' ? 1.6 : 1);
   });
 });
