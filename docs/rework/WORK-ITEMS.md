@@ -62,6 +62,8 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 
 [Issue #487](https://github.com/rjdunlap/neo/issues/487)
 
+**Claim 2026-10-17:** worker `01a14afb-f60e-7f83-b0e7-8c049c4369a7`, branch `codex/rw03-home-navigation`; Home/Back, collection/dress, Explore/workshop and resume exploration only. Expected files: `docs/rework/HOME-NAVIGATION.md`, `docs/rework/home-navigation.html`, this index, roadmap, verification and queue. No runtime or creature-art edits. Draft PR pending.
+
 **Outcome:** an inspectable route/interaction design with fewer immediate choices and a clear place for the whole catalog.
 
 **First slice:** prototype Home (adventure/continue, creature play, Explore), collection/dress entry and one workshop/library path. Define Home versus Back, profile switching and project resume, including an interrupted game.
