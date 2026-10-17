@@ -79,7 +79,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Fill and Dump | `fill-dump` | LTP | 5 | 4 | designed (slices 1–5 ready: count sign, lap reach, level 6 Full and empty, level 7 Which holds more?, things to put away; pouring feel waits on V3, pre-K levels 8–9, toddler pour and Two jugs need decisions) | `claude/fill-dump-deep-dive` ([PR #513](https://github.com/rjdunlap/neo/pull/513)) | [fill-dump.md](fill-dump.md) |
 | Fluffy Salon | `fluffy-salon` | LTPK | 5 | 4 | not started | — | — |
 | Frog Hop | `frog-hop` | PKS | 7 | 3 | building (slice 1, guards, PR #162, and slice 3, level 8 Back over ten, PR #346, built) | `claude/roadmap-item-14-game-content-kg2ryl` ([PR 116](https://github.com/rjdunlap/neo/pull/116)) | [frog-hop.md](frog-hop.md) |
-| Garden Grow | `garden-grow` | LTP | 5 | 4 | not started | — | — |
+| Garden Grow | `garden-grow` | LTP | 5 | 4 | in progress | `claude/dive-garden-grow` | — |
 | Garden Rows | `garden-rows` | KS | 6 | 4 | not started | — | — |
 | Goodnight Room | `goodnight-room` | LTP | 4 | 1 | building (levels 1–9, tent and boat rooms (PR #403) and a note per friend (PR #333) built); level 10 and the yawn nudge next | `claude/sweet-babbage-zq5bz6` ([PR 84](https://github.com/rjdunlap/neo/pull/84)); level 9 ([PR #239](https://github.com/rjdunlap/neo/pull/239)); earlier build history in the write-up | [goodnight-room.md](goodnight-room.md) |
 | Habitat Helpers | `habitat-helpers` | PKS | 6 | 4 | not started | — | — |
