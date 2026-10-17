@@ -47,7 +47,7 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 Re-checked 2026-10-15 against each dive's build slices and `origin/main`: none of these had landed. Each line is one session. Lap and toddler work is near the top because she is one; cheap content comes before new interactions; a docs-only definition keeps the quality track moving; shell work comes last.
 
-17. **Woodland Picnic, the second Island Errand** (school, from Wonder Woods; Mail Carrier 6, Seesaw Balance 7, Beat Builder 3). Story/navigation/save tier. [Definition](definitions/woodland-picnic.md)
+17. **Woodland Picnic, the second Island Errand** (school, from Wonder Woods; Mail Carrier 6, Seesaw Balance 7, Beat Builder 3). Story/navigation/save tier. [Definition](definitions/woodland-picnic.md). *Claimed 2026-10-16 by branch `claude/woodland-picnic`.*
 18. **Discovery D1b, direct Next game**: build the pictured result control and reviewed lap/toddler touch selection as one complete flow. Shell/navigation tier. [Frozen packet](DISCOVERY.md#d1b-build-packet-one-direct-next-game)
 19. **`sink-float`, level 7 *Make it float*** (school; change the clay's shape, unscored trials). New-interaction tier, `fingerdemo` at 7. [Definition](definitions/make-it-float.md)
 20. **`shape-buddies`, level 2 *A step down*** (pre-K and school; only a slope bridge reaches the lower far bank). New-levels tier, `fingerdemo` at 2. [Definition](definitions/shape-buddies.md#level-2-a-step-down-defined-2026-10-16)
