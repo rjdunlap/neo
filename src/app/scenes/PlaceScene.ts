@@ -7,6 +7,9 @@ import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { placeFor, type Place } from '../../content/places';
+import { WOODLAND_BAND } from '../../content/woodland';
+import { woodlandLandmark } from '../../art/woodland';
+import { checkBadge } from '../../art/picnic';
 import { shelfFor } from '../../content/shelf';
 import { visibleGames } from '../../content/lands';
 import { REGION_IDS } from '../../content/world';
@@ -52,6 +55,31 @@ export function gamesFor(band: Band): GameModule[] {
     .map(({ g }) => g);
 }
 
+/** A story's spot on the path, like a game's landmark: the Woodland Picnic in Wonder Woods. */
+export interface StorySpot {
+  story: 'woodland';
+  node: Container;
+}
+
+/** The story spot for a place, if it has one: only Wonder Woods, so younger children keep the Windy Picnic and see nothing new. */
+function storySpot(band: Band): StorySpot | null {
+  if (band !== WOODLAND_BAND) return null;
+  const node = new Container();
+  const art = woodlandLandmark();
+  const name = label('Woodland Picnic', 22);
+  name.position.set(0, 52);
+  node.addChild(new Graphics().ellipse(0, 26, 100, 22).fill({ color: swatch.green.line, alpha: 0.18 }), art, name);
+  if (store.woodland.keepsake) {
+    const done = checkBadge(20);
+    done.position.set(76, -50);
+    node.addChild(done);
+  }
+  node.eventMode = 'static';
+  node.cursor = 'pointer';
+  node.hitArea = new Rectangle(-100, -110, 200, 185);
+  return { story: 'woodland', node };
+}
+
 class Flower extends Container {
   private readonly head: Graphics;
   private wiggle = 0;
@@ -95,6 +123,8 @@ class Flower extends Container {
 export class PlaceScene extends Scene {
   readonly place: Place;
   readonly landmarks: Landmark[] = [];
+  /** The story that starts here, first along the path (Wonder Woods' Woodland Picnic), or null. */
+  readonly story: StorySpot | null;
   /** The twinkles on games not yet played, by game ID. */
   readonly sparkles = new Map<string, Sparkle>();
   scroll = 0;
@@ -113,7 +143,7 @@ export class PlaceScene extends Scene {
   private readonly heading = label('', 36);
   /** The hearted games for this place, standing in the sky; absent until something is hearted. */
   shelf: Shelf | null = null;
-  private touch: { id: number; x0: number; scroll0: number; lastX: number; lastT: number; moved: boolean; target: Landmark | Flower | null } | null = null;
+  private touch: { id: number; x0: number; scroll0: number; lastX: number; lastT: number; moved: boolean; target: Landmark | StorySpot | Flower | null } | null = null;
   private velocity = 0;
   private leaving = false;
   private landWidth = 0;
@@ -124,6 +154,7 @@ export class PlaceScene extends Scene {
   ) {
     super(app);
     this.place = placeFor(band);
+    this.story = storySpot(band);
   }
 
   init() {
@@ -132,6 +163,7 @@ export class PlaceScene extends Scene {
     this.land.eventMode = 'static';
     this.land.addChild(this.path);
     this.content.addChild(this.backdrop, this.land);
+    if (this.story) this.land.addChild(this.story.node);
     for (const mod of gamesFor(this.band)) {
       const mark = makeLandmark(mod, { w: ICON_W, h: ICON_H }, store.isNew(mod.id));
       this.track(mark.icon);
@@ -171,14 +203,16 @@ export class PlaceScene extends Scene {
     const ground = this.backdrop.groundY;
     const backY = Math.max(ground + 95, v.h * 0.62);
     const frontY = v.h - 55;
-    const n = this.landmarks.length;
+    // A story spot stands first on the path, one step like a game, so no game's target shrinks.
+    const spots = [...(this.story ? [this.story] : []), ...this.landmarks];
+    const n = spots.length;
     // Games zigzag between a back and a front row, each a step further along. Neighbors in a row are
     // two steps apart. Spread out to fill the screen when everything fits; otherwise swipe.
     const first = 205;
     const last = v.w - ICON_W / 2 - 10;
     const fit = n > 1 ? (last - first) / (n - 1) : 0;
     const step = fit >= ICON_W / 2 + 5 ? fit : 122;
-    this.landmarks.forEach(({ node }, i) => node.position.set(first + step * i, i % 2 ? frontY : backY));
+    spots.forEach(({ node }, i) => node.position.set(first + step * i, i % 2 ? frontY : backY));
     this.landWidth = first + step * (n - 1) + ICON_W / 2 + 10;
     const cols = Math.ceil(n / 2);
     this.maxScroll = Math.max(0, this.landWidth - v.w);
@@ -219,8 +253,9 @@ export class PlaceScene extends Scene {
 
   // Touch: tap a game, poke a flower, plant a flower, or swipe the land ------------------------
 
-  private find(target: unknown): Landmark | Flower | null {
+  private find(target: unknown): Landmark | StorySpot | Flower | null {
     for (let t = target as Container | null; t && t !== this.land; t = t.parent) {
+      if (this.story && this.story.node === t) return this.story;
       const mark = this.landmarks.find((l) => l.node === t);
       if (mark) return mark;
       if (t instanceof Flower) return t;
@@ -270,6 +305,10 @@ export class PlaceScene extends Scene {
     this.touch = null;
     if (t.moved) return;
     if (t.target instanceof Flower) return;
+    if (t.target && 'story' in t.target) {
+      this.openStory(t.target);
+      return;
+    }
     if (t.target) {
       this.launch(t.target);
       return;
@@ -287,6 +326,17 @@ export class PlaceScene extends Scene {
     sfx.whoosh();
     const mod = mark.mod;
     void this.tw.to(mark.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 }).then(() => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { place: this.band }));
+  }
+
+  /** Into the story's own scene; its home comes back here. */
+  openStory(spot: StorySpot) {
+    if (this.leaving) return;
+    this.leaving = true;
+    lastScroll.set(this.band, this.scroll);
+    this.pip.cheer();
+    void voice.say('woodland.spot');
+    sfx.whoosh();
+    void this.tw.to(spot.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 }).then(() => this.app.go.woodland());
   }
 
   private leave(go: () => void) {

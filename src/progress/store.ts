@@ -24,7 +24,7 @@ import { flipItem, moveItem, tidy } from '../content/room';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
 import { isNew, toggleFavorite } from '../content/shelf';
-import { PICNIC_STEPS, type PicnicStep, type RoomItemId } from '../content/world';
+import { STORY_STEPS, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
 import { defaults, HISTORY_LENGTH, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
 
 export interface RestoreResult {
@@ -248,31 +248,36 @@ export class Store {
     return hasNew(this.data.journal);
   }
 
-  get picnic(): StoryProgress {
+  get picnic(): StoryProgress<'picnic'> {
     return this.data.stories.picnic;
   }
 
-  /** Marks a picnic request done. Doing it again changes nothing; returns whether it was new. */
-  completeStep(step: PicnicStep): boolean {
-    const p = this.picnic;
-    if (p.steps.includes(step)) return false;
-    p.steps = PICNIC_STEPS.filter((s) => s === step || p.steps.includes(s));
+  get woodland(): StoryProgress<'woodland'> {
+    return this.data.stories.woodland;
+  }
+
+  /** Marks a story's request done (the Windy Picnic's unless another story is named). Doing it again changes nothing; returns whether it was new. */
+  completeStep(step: StoryStep, story: StoryId = 'picnic'): boolean {
+    const p: StoryProgress = this.data.stories[story];
+    const all: readonly StoryStep[] = STORY_STEPS[story];
+    if (!all.includes(step) || p.steps.includes(step)) return false;
+    p.steps = all.filter((s) => s === step || p.steps.includes(s));
     this.save();
     return true;
   }
 
   /** The ending was shown: the telling is over and its keepsake is kept for good. */
-  endStory() {
-    const p = this.picnic;
-    if (p.steps.length < PICNIC_STEPS.length) return;
+  endStory(story: StoryId = 'picnic') {
+    const p = this.data.stories[story];
+    if (p.steps.length < STORY_STEPS[story].length) return;
     p.ended = true;
     p.keepsake = true;
     this.save();
   }
 
   /** Tell the story again from the start. The keepsake stays. */
-  retellStory() {
-    const p = this.picnic;
+  retellStory(story: StoryId = 'picnic') {
+    const p = this.data.stories[story];
     p.steps = [];
     p.ended = false;
     this.save();

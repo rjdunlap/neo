@@ -10,7 +10,7 @@ What's in it:
 
 - **97 small games** in eleven themed lands on one island map, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
 - **A pet** she hatches and names, a **sticker book**, and the pet's **treehouse**, where things she made hang on the wall and a discovery journal fills up.
-- **The Windy Picnic**, a short story that connects three activities.
+- **Two short stories** that connect three activities each: the Windy Picnic, and for early school the Woodland Picnic.
 - **Couch play** for two grown-ups with controllers or a keyboard on a computer: trips, face-offs and challenge courses, with its own save.
 - A **grown-up zone** behind a press-and-hold gear (or Esc in a game), and offline play once installed.
 
@@ -151,6 +151,10 @@ Each game moves up a level after two easy rounds and down after two hard ones, i
 
 Beside Daisy Meadow on the island map stands a picnic blanket: **the Windy Picnic**, the first island story (a pilot for roughly 4–8, open to every age). The wind has blown Juniper the gardener bunny's picnic into a muddle, and three picture requests along the top put it right, in any order: find the striped blanket the wind dropped in the tree, on the clothesline or on the bush (at early school two blankets are striped, so where it landed matters too); share the sandwiches fairly (a Pet Kitchen round); and play the invitation song (a Jelly Drums round) so the friends come. Each request changes the picnic, and when all three are done the friends eat to Juniper's song and she takes a photo to keep. The journal (top right) replays each request, shows what changed, and its green arrow goes straight to the next one; once the picnic is over it holds the photo and can tell the story again. Steps are saved as they're done, so the story picks up after a reload or a goodnight. The game rounds play at a level chosen for her age band, give their usual one sticker each, and leave those games' own levels where they were; the story adds no stickers. Help reaches the same ending.
 
+### The Woodland Picnic
+
+For the early-school home spot only, the first stop on **Wonder Woods**' path (and a card in its subject layout) is **the Woodland Picnic**, the second island story. Hazel the squirrel postkeeper asks three jobs in any order: send the invitations (a Mail Carrier round), pack the two baskets evenly (a Seesaw Balance round) and practise the picnic beat (a Beat Builder round). Each finished job changes the clearing; when all three are done the friends walk in along the stones, the beat plays and Hazel takes a photo to keep, which a button top-right opens large with a green **tell it again**. Like the Windy Picnic it saves each step, plays each round at its own story level, gives each round its usual sticker and adds none of its own. Home goes back to Wonder Woods.
+
 ## Your island friend and sticker book
 
 On the first visit, tap the egg four times, choose one of eight colors, then hear three pet names and pick one. A grown-up can type another name. The green arrow confirms each choice. The customized pet joins the map, the lands, games, bath time, celebrations, and goodnight.
@@ -209,7 +213,7 @@ src/
   couch/      grown-up couch play: the catalog of how-to data, trips, unlocks and face-off rules, its own save, the demo runner, the controller diagram
   parent/     the grown-up panel (plain HTML)
   ui/         buttons, icons, grown-ups gear, pause sheet, text
-  content/    voice script, how-to cards, the age-trail places, stable world IDs, the Windy Picnic's story rules, and the treehouse's room, creations and journal rules
+  content/    voice script, how-to cards, the age-trail places, stable world IDs, the two picnics' story rules, and the treehouse's room, creations and journal rules
 ```
 
 To add a minigame, follow the checklist in [AGENTS.md](AGENTS.md#adding-or-extending-a-minigame): a `GameModule` in `src/games/<id>/index.ts` with its rules in `logic.ts`, voice lines in `content/voice-script.ts`, a how-to card in `content/howto.ts`, and a registry entry. The shell handles transitions, the home button, the pet guide, saving, difficulty, stickers and the celebration; a game draws into `ctx.stage` and calls `ctx.finish({ misses, hints })`. Making a game playable on the couch, or adding a challenge course, is described in [DESIGN](docs/DESIGN.md#extending-couch-play).
@@ -251,6 +255,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `creations` | Stamp Studio pictures, a free Rainbow Fingers painting, Pixel Pictures designs and a free Song Maker song kept from the end-of-round screen, shown in the treehouse, swapped, taken down and brought back, kept through a reload | |
 | `journal` | Five source games fill the journal only with observations actually seen: all three pages, the twinkle, unfound and found cards, the green arrow, a reload, portrait | |
 | `picnic` | The Windy Picnic from the map: the blanket, story rounds, resuming, the journal, the finale and keepsake, retelling | |
+| `woodland` | The Woodland Picnic from Wonder Woods: entry only at school, story spot first, portrait, real Mail Carrier / Seesaw / Beat Builder story rounds at the story level, leaving a round, reload resume, ending and one photo, one sticker per round, retelling, Home (about 1.5 minutes) | |
 | `couch` | A full couch trip and a face-off trip: how-to screens, name cards, the finale, unlocks, NEW marks, shuffle, turns, reloads, ties and team stops, backup (about 8 minutes) | |
 | `couchgames` | Every couch game's how-to screen and a bot-played round, then the How to play guide and a name card's How to play (about 5 minutes) | `COUCH_ONLY=peg-garden,sudoku-garden` |
 | `couchcourse` | The challenge courses with controller presses: undone slides and missed launches counted, resume after a reload, hints, records and badges per player, one sticker per run (about 7 minutes) | |

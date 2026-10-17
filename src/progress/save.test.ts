@@ -100,7 +100,7 @@ describe('migrate', () => {
   });
 
   it('starts the Windy Picnic untold, and repairs story progress from untrusted backups', () => {
-    expect(migrate({}).stories).toEqual({ picnic: { steps: [], ended: false, keepsake: false } });
+    expect(migrate({}).stories).toEqual({ picnic: { steps: [], ended: false, keepsake: false }, woodland: { steps: [], ended: false, keepsake: false } });
     // Unknown and repeated steps drop out and the rest keep story order; an ending needs every step.
     const odd = migrate({ stories: { picnic: { steps: ['invitation', 'dragon', 'blanket', 'blanket', 7], ended: true, keepsake: 'yes' } } });
     expect(odd.stories.picnic).toEqual({ steps: ['blanket', 'invitation'], ended: false, keepsake: false });
@@ -110,11 +110,23 @@ describe('migrate', () => {
     expect(migrate({ stories: 'nope' }).stories).toEqual(defaults().stories);
   });
 
+  it('gives an older save an untold Woodland Picnic and leaves its Windy Picnic as it was', () => {
+    const picnic = { steps: ['blanket', 'sandwiches', 'invitation'], ended: true, keepsake: true };
+    const old = migrate({ version: 2, stories: { picnic } });
+    expect(old.stories.picnic).toEqual(picnic);
+    expect(old.stories.woodland).toEqual({ steps: [], ended: false, keepsake: false });
+    // Each story keeps only its own steps: a Windy Picnic step saved under the woodland drops out.
+    const mixed = migrate({ stories: { woodland: { steps: ['beat', 'blanket', 'invitations', 'beat'], ended: true, keepsake: false } } });
+    expect(mixed.stories.woodland).toEqual({ steps: ['invitations', 'beat'], ended: false, keepsake: false });
+    expect(migrate({ stories: { woodland: { steps: ['beat', 'baskets', 'invitations'], ended: true } } }).stories.woodland).toEqual({ steps: ['invitations', 'baskets', 'beat'], ended: true, keepsake: true });
+  });
+
   it('keeps picnic progress through a backup and restore, with older progress untouched', () => {
     const save = defaults();
     save.games['pet-kitchen'] = { plays: 2, level: 3, pinned: null, history: [] };
     save.stickers.push({ game: 'pet-kitchen', seed: 4, at: 1 });
     save.stories.picnic = { steps: ['sandwiches'], ended: false, keepsake: true };
+    save.stories.woodland = { steps: ['baskets'], ended: false, keepsake: true };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 

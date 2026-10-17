@@ -565,3 +565,31 @@ describe('an entry level carried into a band that does not list it', () => {
     expect(store.levelFor('bubble-pop', { min: 1, max: 15, order: [15, 1, 2, 3] }, [15])).toBe(15);
   });
 });
+
+describe('stories', () => {
+  it('keeps the Woodland Picnic apart from the Windy Picnic, each step done once and the keepsake kept', async () => {
+    const store = make();
+    await store.load();
+    expect(store.completeStep('baskets', 'woodland')).toBe(true);
+    expect(store.completeStep('baskets', 'woodland')).toBe(false);
+    // A step from another story, or with no story named, never lands in the woodland.
+    expect(store.completeStep('blanket', 'woodland')).toBe(false);
+    expect(store.completeStep('beat')).toBe(false);
+    expect(store.completeStep('blanket')).toBe(true);
+    expect(store.woodland.steps).toEqual(['baskets']);
+    expect(store.picnic.steps).toEqual(['blanket']);
+    // The ending needs all three of its own steps.
+    store.endStory('woodland');
+    expect(store.woodland.ended).toBe(false);
+    store.completeStep('beat', 'woodland');
+    store.completeStep('invitations', 'woodland');
+    expect(store.woodland.steps).toEqual(['invitations', 'baskets', 'beat']);
+    store.endStory('woodland');
+    expect(store.woodland).toEqual({ steps: ['invitations', 'baskets', 'beat'], ended: true, keepsake: true });
+    expect(store.picnic.ended).toBe(false);
+    // Telling it again clears this telling and keeps the photo; the Windy Picnic is untouched.
+    store.retellStory('woodland');
+    expect(store.woodland).toEqual({ steps: [], ended: false, keepsake: true });
+    expect(store.picnic.steps).toEqual(['blanket']);
+  });
+});

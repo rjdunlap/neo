@@ -6,6 +6,8 @@ import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { placeFor } from '../../content/places';
+import { WOODLAND_BAND } from '../../content/woodland';
+import { woodlandLandmark } from '../../art/woodland';
 import { anyNew, FAVORITES_MAX, shelfFor } from '../../content/shelf';
 import { SUBJECTS, type RegionId } from '../../content/world';
 import { onTap, palmOnGlass } from '../../engine/input';
@@ -27,6 +29,8 @@ import { gamesFor } from './PlaceScene';
 interface Card { node: Container; id: string; mod?: GameModule; sparkle?: Sparkle }
 /** The first "subject": the games she has hearted, only offered once there is a heart in this place. */
 export const FAVORITES = 'favorites';
+/** A story card among the subjects: Wonder Woods' Woodland Picnic, which opens its own scene. */
+export const WOODLAND = 'woodland';
 type Subject = RegionId | typeof FAVORITES;
 interface Position { subject: Subject | null; subjectsPage: number; gamesPage: number }
 const positions = new Map<Band, Position>();
@@ -39,6 +43,8 @@ const gridIcon = () => {
   for (const x of [-23, 5]) for (const y of [-23, 5]) g.roundRect(x, y, 18, 18, 4).fill(swatch.teal.line);
   return g;
 };
+
+const storyCard = (): HubIcon => Object.assign(woodlandLandmark(), { update() {} });
 
 const heartCard = (): HubIcon => {
   const heart = shapePath(new Graphics(), 'heart', 62).fill(swatch.pink.fill).stroke({ width: 6, color: swatch.pink.line });
@@ -92,7 +98,9 @@ export class SubjectPlaceScene extends Scene {
   }
 
   /** Subject cards on offer: Favorites first (only when there is a heart here), then the real subjects. */
-  get subjectCount() { return this.subjects.length + (this.hearted.length ? 1 : 0); }
+  get subjectCount() { return this.subjects.length + (this.hearted.length ? 1 : 0) + (this.hasStory ? 1 : 0); }
+  /** Only Wonder Woods offers the Woodland Picnic, so younger children see nothing new. */
+  get hasStory() { return this.band === WOODLAND_BAND; }
   private inSubject(subject: Subject | null): GameModule[] {
     return subject === FAVORITES ? this.hearted : this.games.filter(g => g.region === subject);
   }
@@ -162,6 +170,7 @@ export class SubjectPlaceScene extends Scene {
       ? this.inSubject(this.state.subject).map(mod => ({ id: mod.id, name: mod.name, mod, icon: () => mod.hubIcon(), fresh: store.isNew(mod.id) }))
       : [
         ...(this.hearted.length ? [{ id: FAVORITES, name: 'Favorites', mod: undefined, icon: heartCard, fresh: false }] : []),
+        ...(this.hasStory ? [{ id: WOODLAND, name: 'Woodland Picnic', mod: undefined, icon: storyCard, fresh: false }] : []),
         ...this.subjects.map(s => {
           const here = this.games.filter(g => g.region === s.id);
           return { id: s.id, name: s.name, mod: undefined, icon: () => here[0].hubIcon(), fresh: anyNew(store.data.games, here.map(g => g.id)) };
@@ -201,7 +210,12 @@ export class SubjectPlaceScene extends Scene {
   }
 
   private pick(card: Card) {
-    if (card.mod) {
+    if (card.id === WOODLAND) {
+      this.leaving = true;
+      this.remember();
+      void voice.say('woodland.spot');
+      this.app.go.woodland();
+    } else if (card.mod) {
       this.leaving = true;
       this.remember();
       void voice.say(card.mod.titleLine);

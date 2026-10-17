@@ -152,8 +152,8 @@ try {
   assert.deepEqual(save.world, { band: 'toddler' });
   await page.waitForTimeout(1700);
   await page.screenshot({ path: 'test-results/offline/reward.png' });
-  // The seeded save predates island stories: loading it added the Windy Picnic, untold.
-  assert.deepEqual(save.stories, { picnic: { steps: [], ended: false, keepsake: false } });
+  // The seeded save predates island stories: loading it added the Windy and Woodland Picnics, untold.
+  assert.deepEqual(save.stories, { picnic: { steps: [], ended: false, keepsake: false }, woodland: { steps: [], ended: false, keepsake: false } });
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('#app canvas').waitFor();
   assert.equal((await readSave()).stickers.length, 1, 'Offline progress survived reload');

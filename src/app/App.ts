@@ -15,14 +15,14 @@ import { escapeAction, PadSheet, padStart } from './pause';
 import type { Scene } from './Scene';
 import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
-import type { PicnicStep } from '../content/world';
+import type { PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 
-/** A game round played as one Windy Picnic request: at the story's level, coming home to the picnic. */
-export interface StoryRound {
-  step: PicnicStep;
-  level: number;
-}
+/**
+ * A game round played as one story request: at the story's level, coming home to the story's scene. Without a
+ * `story` it is a Windy Picnic request (as rounds were saved and scripted before the Woodland Picnic).
+ */
+export type StoryRound = { story?: 'picnic'; step: PicnicStep; level: number } | { story: 'woodland'; step: WoodlandStep; level: number };
 
 /** Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home. */
 export type Origin = { land: LandId } | { place: Band } | { journal: true };
@@ -47,11 +47,13 @@ export interface Routes {
   hatch(quick?: boolean): void;
   /**
    * Plays a game at the levels for `band` (her own band if omitted), resolved to a band the game has
-   * (`playBand`), or as a step of the picnic story. `origin` is where home goes afterwards; without one, her home spot. `level` plays that level (held inside her band's range) instead of her saved one, as the celebration's "next level" does.
+   * (`playBand`), or as a step of a story (the Windy or the Woodland Picnic). `origin` is where home goes afterwards; without one, her home spot. `level` plays that level (held inside her band's range) instead of her saved one, as the celebration's "next level" does.
    */
   game(id: string, band?: Band, story?: StoryRound, again?: boolean, origin?: Origin, level?: number): void;
   /** The Windy Picnic. `from` is the request whose round just finished, so the scene can show what changed. */
   picnic(from?: PicnicStep): void;
+  /** The Woodland Picnic, Hazel's story in Wonder Woods. `from` is the request whose round just finished. */
+  woodland(from?: WoodlandStep): void;
   stickers(): void;
   /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. */
   room(): void;
