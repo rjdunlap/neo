@@ -10,7 +10,7 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 
 | ID | Work item | Readiness | Depends on |
 | --- | --- | --- | --- |
-| [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | ready, docs exploration | None |
+| [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | packet written 2026-10-17 ([NAME-AND-STORY.md](NAME-AND-STORY.md)); final name is a developer decision | None |
 | [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | ready, bounded exploration | None; use provisional names |
 | [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | ready, docs/prototype exploration | Reconcile landed D1b work; RW01 informs language |
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | ready, docs definition | Existing game/source audit; coordinate RW01–RW03 |
@@ -36,6 +36,8 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 - Show lap/toddler shared play, a preschool adventure and an older-child investigation in the same world; no required reading for navigation.
 - Include pronunciation/recall/parent-understanding criteria and a practical name-conflict screen; record uncertainty, not a claim of legal clearance.
 - Record the chosen working recommendation and any final-brand decision in the existing decision ledger. Continue implementation with placeholders while the final name is unresolved.
+
+**Delivered 2026-10-17:** [name and story packet](NAME-AND-STORY.md). Human name/appeal checks are listed there and in device checks, not run.
 
 **Likely files:** a new packet under `docs/rework/`, this index and the affected roadmap/decision row. **Proof:** links and diff; any human name/appeal checks explicitly recorded as not run until observed.
 
