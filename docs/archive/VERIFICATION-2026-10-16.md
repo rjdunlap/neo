@@ -1,5 +1,10 @@
 # Verification 2026-10-16 (archived entries)
 
+## 2026-10-16 — Astronomy follow-up research brief
+
+- Recorded the requested astronomy follow-up as not started, linked to the completed Space study and roadmap. Scope: stars/life cycles, galaxies, telescopes/observational evidence, deeper eclipse/season models; existing Space candidate identities and overlaps retained.
+- Local Markdown links/anchors and `git diff --check` passed. Setup only: no external research, completed subject study, implementation, code/build/browser/device checks or scientific review claimed.
+
 ## 2026-10-16 — Chemistry follow-up research brief
 
 - Recorded the requested chemistry follow-up as not started, linked to the completed Matter study and roadmap. Brief covers atoms/molecules, reactions/conservation and possible acids/bases extension, audience/overlap questions, and SpaceChem as a requested reference.
