@@ -74,7 +74,7 @@ Parents: the family table (play together, chunk 16) is the natural home for the 
 
 ## Suggested order
 
-**Planet Hop is built** as Bouncy Launch’s school level 12 ([definition and closeout](definitions/planet-hop.md), [verification](VERIFICATION.md#2026-10-16--bouncy-launch-12-planet-hop)). Its younger and grown-up audience ideas above remain proposals. Remaining order:
+**Planet Hop is built** as Bouncy Launch’s school level 12 ([definition and closeout](definitions/planet-hop.md), [verification](archive/VERIFICATION-2026-10-16.md#2026-10-16--bouncy-launch-12-planet-hop)). Its younger and grown-up audience ideas above remain proposals. Remaining order:
 
 1. **Domino Run** (a tier-1 game for toddlers to school).
 2. **Swing Pals**, then **Lift It**.
