@@ -13,6 +13,13 @@ export type RoomItemId = (typeof ROOM_ITEMS)[number];
 /** The Windy Picnic's three requests, saved by these IDs; they can be done in any order. */
 export const PICNIC_STEPS = ['blanket', 'sandwiches', 'invitation'] as const;
 export type PicnicStep = (typeof PICNIC_STEPS)[number];
+/** The Woodland Picnic's three requests (Hazel's, in Wonder Woods), saved by these IDs; any order. */
+export const WOODLAND_STEPS = ['invitations', 'baskets', 'beat'] as const;
+export type WoodlandStep = (typeof WOODLAND_STEPS)[number];
+/** The island's stories, as saved under `stories`: the Windy Picnic and the Woodland Picnic. */
+export const STORY_STEPS = { picnic: PICNIC_STEPS, woodland: WOODLAND_STEPS } as const;
+export type StoryId = keyof typeof STORY_STEPS;
+export type StoryStep<S extends StoryId = StoryId> = (typeof STORY_STEPS)[S][number];
 
 /** Illustrated subject choices; IDs remain the existing catalog grouping IDs. */
 export const SUBJECTS = [

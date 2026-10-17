@@ -83,7 +83,7 @@ export class GameScene extends Scene {
     private readonly mod: GameModule,
     /** The band whose levels this round plays: one the game has, resolved by the route (`playBand`). */
     private readonly band: Band,
-    /** Set when the round is a picnic request: it plays the story's level and goes home to the picnic. */
+    /** Set when the round is a story request: it plays the story's level and goes home to the story. */
     readonly story?: StoryRound,
     /** She tapped "again" after a round: no card, she has just seen it. */
     private readonly again = false,
@@ -347,9 +347,10 @@ export class GameScene extends Scene {
     this.goHome();
   }
 
-  /** Back to where she came from (a land, a place, the journal), to the picnic for a story round, or else to her home spot. */
+  /** Back to where she came from (a land, a place, the journal), to its story's scene for a story round, or else to her home spot. */
   private goHome() {
-    if (this.story) this.app.go.picnic(this.story.step);
+    if (this.story?.story === 'woodland') this.app.go.woodland(this.story.step);
+    else if (this.story) this.app.go.picnic(this.story.step);
     else goToOrigin(this.app.go, this.origin, () => this.app.go.place(store.data.profile.band));
   }
 
@@ -368,7 +369,7 @@ export class GameScene extends Scene {
       !this.story,
     );
     // Finishing completes the request, however much help it took.
-    if (this.story) store.completeStep(this.story.step);
+    if (this.story) store.completeStep(this.story.step, this.story.story ?? 'picnic');
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
     // Save the round and its sticker now: a write that only starts as the page closes can be lost.

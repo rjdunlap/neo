@@ -1,5 +1,5 @@
 import type { Band } from './bands';
-import { PET_COLORS, PICNIC_STEPS, ROOM_ITEMS, STICKER_PAGES, type PetColor, type PicnicStep, type RoomItemId, type StickerPage } from '../content/world';
+import { PET_COLORS, ROOM_ITEMS, STICKER_PAGES, STORY_STEPS, type PetColor, type RoomItemId, type StickerPage, type StoryId, type StoryStep } from '../content/world';
 import { clampSpot, starterItem, starterRoom } from '../content/room';
 import { cleanCreations, emptyCreations, type CreationsSave } from '../content/creations';
 import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
@@ -37,11 +37,11 @@ export interface StickerRecord {
 }
 
 /** One island story: which requests are done in this telling, and whether its keepsake was earned. */
-export interface StoryProgress {
-  steps: PicnicStep[];
+export interface StoryProgress<S extends StoryId = StoryId> {
+  steps: StoryStep<S>[];
   /** This telling's ending has been shown. */
   ended: boolean;
-  /** The story's one known keepsake (the picnic photo). Telling the story again never takes it away or adds another. */
+  /** The story's one known keepsake (its picnic photo). Telling the story again never takes it away or adds another. */
   keepsake: boolean;
 }
 
@@ -74,7 +74,7 @@ export interface SaveData {
   settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: 0; coplayHints: boolean; howToCards: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
-  stories: { picnic: StoryProgress };
+  stories: { picnic: StoryProgress<'picnic'>; woodland: StoryProgress<'woodland'> };
   room: RoomSave;
   /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
   favorites: string[];
@@ -96,7 +96,7 @@ export function defaults(): SaveData {
     settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 0, coplayHints: true, howToCards: true },
     games: {},
     stickers: [],
-    stories: { picnic: { steps: [], ended: false, keepsake: false } },
+    stories: { picnic: { steps: [], ended: false, keepsake: false }, woodland: { steps: [], ended: false, keepsake: false } },
     room: starterRoom(),
     favorites: [],
     creations: emptyCreations(),
@@ -116,11 +116,13 @@ function placement(raw: unknown): StickerPlacement | undefined {
   return { page, x: Math.max(0, Math.min(1, raw.x)), y: Math.max(0, Math.min(1, raw.y)) };
 }
 
-function story(raw: unknown): StoryProgress {
+/** A story's saved telling, keeping only its own step IDs, in story order. An older save has no woodland telling: it starts empty. */
+function story<S extends StoryId>(id: S, raw: unknown): StoryProgress<S> {
   const r = isObj(raw) ? raw : {};
-  const steps = PICNIC_STEPS.filter((id) => Array.isArray(r.steps) && r.steps.includes(id));
+  const all: readonly StoryStep<S>[] = STORY_STEPS[id];
+  const steps = all.filter((step) => Array.isArray(r.steps) && r.steps.includes(step));
   // A telling can only have ended once every step is done; an ending always left its keepsake.
-  const ended = bool(r.ended, false) && steps.length === PICNIC_STEPS.length;
+  const ended = bool(r.ended, false) && steps.length === all.length;
   return { steps, ended, keepsake: bool(r.keepsake, false) || ended };
 }
 
@@ -203,7 +205,7 @@ export function migrate(raw: unknown): SaveData {
     },
     games,
     stickers,
-    stories: { picnic: story(stories.picnic) },
+    stories: { picnic: story('picnic', stories.picnic), woodland: story('woodland', stories.woodland) },
     room: room(raw.room),
     favorites: cleanFavorites(raw.favorites),
     creations: cleanCreations(raw.creations),

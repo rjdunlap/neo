@@ -7,6 +7,7 @@ import { GameScene } from './scenes/GameScene';
 import { HatchScene } from './scenes/HatchScene';
 import { MapScene } from './scenes/MapScene';
 import { PicnicScene } from './scenes/PicnicScene';
+import { WoodlandScene } from './scenes/WoodlandScene';
 import { SubjectPlaceScene } from './scenes/SubjectPlaceScene';
 import { PlaceScene } from './scenes/PlaceScene';
 import { ChooserScene } from './scenes/ChooserScene';
@@ -36,6 +37,7 @@ export function createRoutes(app: App): Routes {
       void app.show(new GameScene(app, mod, playBand(mod.bands, band), story, again, origin, level));
     },
     picnic: (from) => void app.show(new PicnicScene(app, from)),
+    woodland: (from) => void app.show(new WoodlandScene(app, from)),
     stickers: () => void app.show(new StickerBookScene(app)),
     room: () => void app.show(new RoomScene(app)),
     journal: () => void app.show(new JournalScene(app)),
