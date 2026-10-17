@@ -89,6 +89,13 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 45. **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
 46. **`fruit-slice`, build levels 1–8** (new-game tier): fruit hangs at the top of a slow arc and a swipe splits it; tap at 1, swipe at 2, then only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N and pieces by twos; no clock, missed fruit comes back; Bubble Beach. [Definition](definitions/fruit-slice.md)
 47. **`shape-buddies`, level 3 Two make one** (new levels on the existing interaction): a wide gap; a flat friend and a cup friend hold hands into a spoon that catches the seed; pre-K and school 1–3, misses stay 0. [Definition](definitions/shape-buddies-combined.md)
+48. **`garden-grow`, true how-to and spoken gaps** (existing-game bug fix): cap the level 5 and 7 how-to steps, fix level 3's take-out wording, say when the beds are full and recount after a seed is taken out, name the weather co-play seat. [Slice 1](deep-dives/garden-grow.md#build-slices-in-order)
+49. **`garden-grow`, growth stages and wet soil** (presentation): leaves unfold, a bud swells and opens; rain darkens the soil, which dries back. [Slice 2](deep-dives/garden-grow.md#experience-and-presentation)
+50. **`garden-grow`, flower kinds** (content, levels 1–7): daisy, tulip, sunflower and bell-flower; kind varies per request, color alone is judged. [Slice 3](deep-dives/garden-grow.md#fresh-content-inside-existing-levels)
+51. **`garden-grow`, level 8 Grow it up** (new level, after slice 2): one big bed, every touch grows the next stage, three flowers; lap `order: [8, 1, 2]`, `entryLevels: [8]`. [Slice 4](deep-dives/garden-grow.md#new-levels-on-top)
+52. **`garden-grow`, level 9 Rows of colors** (new interaction): choose a packet, then beds, to match a sign of two colored rows; judged by position; pre-K after 7. [Slice 5](deep-dives/garden-grow.md#new-levels-on-top)
+53. **`garden-grow`, level 10 Columns of colors** (new level, after 9): three columns in two or three colors. [Slice 6](deep-dives/garden-grow.md#new-levels-on-top)
+54. **`garden-grow`, level 11 Same in every row** (new level, after 9): n flowers in each row in any beds, every placement accepted. [Slice 7](deep-dives/garden-grow.md#new-levels-on-top)
 
 ### Chunks
 
