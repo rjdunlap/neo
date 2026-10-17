@@ -73,7 +73,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Dot Link | `dot-link` | LTPK | 5 | 4 | designed (slice 1, marks, built; slices 2–7 waiting; school window and always-on marks decided 2026-10-14) | `claude/dot-link-deep-dive` ([PR #342](https://github.com/rjdunlap/neo/pull/342)) | [dot-link.md](dot-link.md) |
 | Duck Pond | `duck-pond` | LTPKS | 11 | 3 | building (slice 1 guards and words, PR #171, and Bye-bye ducks as level 12, PR #334, built) | `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114)) | [duck-pond.md](duck-pond.md) |
 | Duckling Parade | `duckling-parade` | LTPKS | 10 | 4 | building (support, destination feedback, meadow art (PR #397) and ABB at 11 (PR #445) built; continuation, mapping, authoring and lap entry gated) | `codex/duckling-parade-support` ([PR #389](https://github.com/rjdunlap/neo/pull/389)) | [duckling-parade.md](duckling-parade.md) |
-| Egg Catch | `egg-catch` | LTPKS | 6 | 4 | not started | — | — |
+| Egg Catch | `egg-catch` | LTPKS | 6 | 4 | in progress | `claude/dive-egg-catch` | — |
 | Feelings Faces | `feelings-faces` | LTPK | 7 | 4 | not started | — | — |
 | Ferry Jam | `ferry-jam` | KS | 6 | 4 | not started | — | — |
 | Fill and Dump | `fill-dump` | LTP | 5 | 4 | designed (slices 1–5 ready: count sign, lap reach, level 6 Full and empty, level 7 Which holds more?, things to put away; pouring feel waits on V3, pre-K levels 8–9, toddler pour and Two jugs need decisions) | `claude/fill-dump-deep-dive` ([PR #513](https://github.com/rjdunlap/neo/pull/513)) | [fill-dump.md](fill-dump.md) |
