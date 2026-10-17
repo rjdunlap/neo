@@ -89,7 +89,7 @@ export class WoodlandScene extends Scene {
   }
 
   init() {
-    this.backdrop = this.track(new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.teal.light, swatch.green.light, 0xc8ecb0], horizon: 0.5, clouds: 2, sun: true, seed: 89 }, this.view));
+    this.backdrop = this.track(new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.teal.light, swatch.green.light, 0xc8ecb0], horizon: 0.5, clouds: 2, sun: false, seed: 89 }, this.view));
     for (let i = 0; i < STONES; i++) this.stones.push(this.stoneLayer.addChild(stoneArt(false)));
     for (const d of [...this.pines, ...this.houses, this.stoneLayer, this.blanket, this.pole, this.stump, this.friendLayer]) d.eventMode = 'none';
     this.content.addChild(this.backdrop, ...this.pines, ...this.houses, this.stoneLayer, this.blanket, this.pole, this.stump, this.friendLayer, this.hazel.node);
