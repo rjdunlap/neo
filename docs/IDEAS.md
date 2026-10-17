@@ -53,6 +53,8 @@ Examples use existing games: Little surprises (Bubble Pop, Sing-Along Barn, Fill
 
 ### What to borrow from JumpStart and Neopets
 
+**Direction update (2026-10-16):** [the creature-world rework](rework/README.md) now joins these references with collectible/customizable companions, authored unlocks and a learning-story exploration. It is the scope authority for the rework; the notebook remains supporting ideas rather than a second build queue.
+
 JumpStart 1st Grade put activities in recognizable school spaces with a recurring guide; its cafeteria used serving food to introduce fractions, a model for making a learning action belong in its setting ([gameplay reference](https://en.wikipedia.org/wiki/JumpStart_1st_Grade)). A contemporary review of JumpStart 3rd Grade describes exploring rooms, gathering clues and using an activity's answer in a later task, and also confusion about destinations and vocabulary: borrow the continuity and purpose, while making every destination and clue replayable and easy to find ([Leslie LaRose's 1999 review](https://people.potsdam.edu/betrusak/reviews/jumpstart3rdgrade.html)). Neopets connects a persistent companion with a broad world of activities; pet customization and Neohomes suggest a home and collection that matter beyond any one round ([customization help](https://classic.support.neopets.com/hc/en-us/articles/17705564361741-How-do-I-customize-my-pets), [Neohome Central](https://www.neopets.com/neohome/)). These are design judgments for this project, not claims that nostalgia proves educational effectiveness.
 
 | Design lesson | Puddle Island translation | What makes it educational and fun |
@@ -210,6 +212,8 @@ Scenes and modes worth keeping on the shelf; most belong inside an existing game
 | **Magnet Fishing** | Test a virtual magnet on explicitly pictured mild steel, aluminum, wood and shell; keep what each trial showed. Keys/spoons alone do not specify a magnetic material. | Magnetic and non-magnetic materials; 4–8. Resolve ownership within the proposed observation/fishing activity; no second fishing title. Guesses remain unscored predictions, as in Sink or Float. [Researched material/overlap packet](deep-dives/subjects/energy-waves.md#candidates-and-overlap-decisions). |
 
 ### Story episodes and the personal world
+
+**Rework overlap:** review new episode claims against [RW04/RW07](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet). The existing picnics and Missing Melody definition remain useful inputs; the next rework pilot is Welcome a New Friend, with an actual kept creation and a usable adoption reward.
 
 The Windy Picnic set the pattern: a friend has a concrete need, two or three actions help, and the scene remembers what changed. A story pilot needed no world framework (a route, a scene and one save field), and later episodes should reuse that pattern before any general story engine. Each Poptropica island, a self-contained story a child can finish and revisit, is the right size for an episode.
 
@@ -1005,6 +1009,8 @@ On Wii Party (pages 2 to 4):
 9. "In Mario Party: Island Tour's Paddle Skedaddle, how exactly is the canoe paddled with the stylus (strokes down each side, taps, drags) and what is the steering rule? Then list every touchscreen minigame in Mario Party DS, Island Tour and Star Rush not named here (for example Starring Artist, Tap Dash or Find It First, Cucumberjacks, Fast Food Frenzy and the DS bow-and-arrow game), one line each with the exact gesture and whether players interact."
 
 ## World variety: animals, pets and environments
+
+**Rework scope (2026-10-16):** [RW02/RW05/RW06/RW10](rework/WORK-ITEMS.md#sequence) supersede the single-pet implementation sketch and blanket “no unlocks” restriction below. Plan individual creatures, distinct species and permanent looks/items earned through supported play; old development saves may reset. The rows remain idea inputs, not requirements to preserve Pip-only saves or launch a separate species picker. Habitat kits inform the rework's visual/expansion work. No neglect or absence-based decay is introduced.
 
 Today the saved companion is Pip with a chosen color and name (`petSpecFor()` is `CRITTERS.pip` plus the saved color); profiles do not yet select a species. Other critter designs already exist as friends in games (cow, duck, pig, cat, bear, dog and bunny, in `src/art/critter.ts`), and the themed lands use code-drawn backdrops and props. More variety is cheap where it reuses those pieces and costly where it needs new anatomy. Everything here is a proposal; none of it may add care, decay or a currency.
 

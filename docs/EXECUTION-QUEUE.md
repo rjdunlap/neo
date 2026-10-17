@@ -19,6 +19,8 @@ This is the working queue for the Codex coordinator, authorized on 2026-10-11. [
 
 Inspect and resume the recorded worker's unfinished slice first. Otherwise revalidate the candidates below against current origin/main, the roadmap, claims and decisions; their presence here is **not a claim**. Remove completed or newly blocked candidates and refill from the next ready, bounded roadmap slice. A `define` item is eligible only for its docs-only definition; `sketch`, `decision` and `person` items do not authorize implementation.
 
+**Rework priority (2026-10-16):** after the coordinator reconciles the recorded Discovery D1b worker (merged in #483), select the next eligible [RW01–RW04 exploration](rework/WORK-ITEMS.md#sequence) from the roadmap before unclaimed content. Downstream RW05–RW12 require their upstream packets; an issue alone does not make a build ready. Preserve the current worker/checkpoint, admission rules and usage ledger. This policy update changes neither the automation nor the active claim.
+
 | Order | Candidate | Scope source | State |
 | --- | --- | --- | --- |
 | 1 | First unclaimed line of the roadmap’s ready list | [Ready to build now](ROADMAP.md#ready-to-build-now), then that game’s build slices | Rewritten 2026-10-15; a landed slice’s line is deleted at closeout |

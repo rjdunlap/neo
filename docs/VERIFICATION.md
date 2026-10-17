@@ -8,6 +8,14 @@
 - Reviewed `test-results/browser/discovery-direct-landscape.png` and `discovery-direct-portrait.png`: new tiles, sticker, Keep/Heart, discovery pill, Next level and pet stay clear; resize retains suggestion and settled progress. Synthetic results exercise optional creation/discovery branches; these are not new game rewards or discoveries.
 - Production offline passed at `http://localhost:4187` after confirming served `assets/index-BDgi7sWf.js` matched `dist/index.html`: reload, assets/fonts, routes, intro/Play, rewards/progress, picnic, treehouse/creations and journal. Final speech ordering and stale-announcement tests passed on `6890c8c` plus the speech diff; navigation passes reused because that diff only queues speech. Owned dev/preview servers stopped. Full couch/picnic/release sweep not run; device speech, iPad reach and child interpretation remain open in [DEVICE-CHECKS](DEVICE-CHECKS.md).
 
+## 2026-10-16 — Creature-world rework plan
+
+- Source/planning audit recorded the requested educational creature world, collection/customization, permanent unlocks and staged work in `docs/rework/`; name, story and art recommendations remain provisional.
+- Linked the initiative into the roadmap and coordinator selection policy after active Discovery D1b; retained current claims, content research, checkpoint and usage records. No automation or runtime behavior changed.
+- Recorded the developer's development-save reset exception; current-format validation, profile isolation and offline reliability still require proof when implemented. Existing source stays in place; only superseded documents will be archived as replacements ship.
+- Passed `node scripts/check-links.mjs` and `git diff --check`. Docs-only change; typecheck, unit, build, browser, offline, device/child and learning-transfer checks not run.
+- Publication resumed 2026-10-17 in [PR #497](https://github.com/rjdunlap/neo/pull/497): integrated D1b on `94d3bb2`, retained its verification and worker checkpoint, and removed its completed ready-list entry. Rechecked links/diff for the merged documentation; no runtime difference from that main commit.
+
 ## 2026-10-16 — Woodland Picnic
 
 - [PR #479](https://github.com/rjdunlap/neo/pull/479), `claude/woodland-picnic`, code at `f57b77c` on `origin/main` `2d7e623`: the second Island Errand (school, from Wonder Woods); new save field `stories.woodland`, story-ID store methods, `go.woodland`, `StoryRound` union.
@@ -96,12 +104,14 @@
 - `GAME_URL=http://localhost:5203 BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=5 npm run test:browser` passed two wrong same-place photos, hint/glow, album, saved `[2,1]`, sticker and no page errors. Reviewed `test-results/browser/photo-safari-5-portrait.png`: separated animals at two broad places; pet/corner controls clear.
 - Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=photo-safari FINGER_LEVELS=5` passed cleanly in 14.2 s with no page errors. Shared input receiver follows the target animal. Links/diff passed; owned Vite server stopped.
 - Not run: other browser games/levels, world/offline (no navigation, persistence or asset changes), iPad/device speech or child play; [device checks](DEVICE-CHECKS.md) remain open.
+
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Creature-world rework planning | 2026-10-16: source/planning audit, dependency-ordered work items, links/anchors and diff check | [Rework plan](#2026-10-16--creature-world-rework-plan) | Proposed direction only; runtime, name/appeal, device/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |

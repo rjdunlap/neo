@@ -196,7 +196,7 @@ The three recovered local builds are integrated; [the cleanup record](docs/archi
 
 ## Where it's going
 
-The [roadmap](docs/ROADMAP.md) says what comes next and where the island is heading: deeper modes for familiar games, a few new ones, the next story, and themed zones for elementary school (Wonder Woods first, then Maker Harbor, Storybook Square, Discovery Marsh and Skywatch Isles), with younger favorites always staying available.
+The [creature-world rework](docs/rework/README.md) proposes a learning adventure built around collectible, customizable companions, a personal home and permanent unlocks through play. Its [work items](docs/rework/WORK-ITEMS.md) start with name/story, art, navigation and a welcome-adventure exploration; these systems are not built yet. The app will change in place, reusing its games and research. The [roadmap](docs/ROADMAP.md) remains the execution order, including deeper modes and proposed elementary regions. Development saves may reset as the rework needs; no compatibility project is planned.
 
 ## How it's built
 
