@@ -4,7 +4,7 @@
 
 **Research and proposals only.** Recommend **Moon Window first**, developing the existing notebook seed into an observation toy and then a linked-view model. **Orbit Garden** and **Observatory Files** deserve separate definitions for older children and parents. Keep daylight records in Day by Day, scale exploration in Zoom Walk's existing proposal, and changed-gravity launches in Planet Hop/Bouncy Launch. No game, age band, zone or save format is added by this document.
 
-**Follow-up requested 2026-10-16:** [Astronomy](astronomy.md) will investigate stars/stellar life cycles, galaxies, telescopes and evidence, and deeper eclipse/season models. That session is **not started**; it should extend this study’s candidates wherever the meaningful action matches.
+**Follow-up requested 2026-10-16:** [Astronomy](astronomy.md) will investigate stars/stellar life cycles, galaxies, telescopes and evidence, and deeper eclipse/season models. Researched 2026-10-17: it proposes Far Lights (brightness and distance) as the one new identity, appends eclipse levels 8–9 to Moon Window, and adds season, cluster and two-view case types to Observatory Files.
 
 ## Anchors opened at their source
 
