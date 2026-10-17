@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Sprout Shuffle G1 definition
+
+- Defined Sprout Shuffle levels 1–3 in [the definition](definitions/sprout-shuffle.md): one-locus rules, four-route tables, Check/help/finish and layouts. Docs only; no code, registration, voice, save or band change. G2 stays blocked on four developer decisions (reviewer, school entry, level 1 accounting, home land), each with a proposal.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (both passed: links ok, no whitespace errors). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the developer decisions; biology/education model review; the G2 build.
+
 ## 2026-10-17 — Ramp Race support definition (Q1)
 
 - Defined the truthful Ramp Race support packet in [the definition](definitions/ramp-race-support.md): accurate level 1–4 goal, steps, finish and miss wording, plus an idempotent corrective glow and recovery demo after an unfair pair. Accounting unchanged.
