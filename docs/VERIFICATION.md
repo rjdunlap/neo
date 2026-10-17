@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Robots and automation subject research
+
+- Added the [robots-and-automation study](deep-dives/subjects/robots-automation.md): opened the CSTA 2026 PDF (EK/E1/E2-SOC-HU-15, E2-SYS-HW-11, E3-PRO-PD-04, E5-SYS-HW-12, MS-SYS-HW-31, MS-SOC-CE-45, S2-PHY-IO-02; printed pages), NGSS Appendix G, Levy and Mioduser (2010), Hallström (2021), the Hokayem et al. (2020) abstract, Treasureworld, and Autonauts, shapez, Opus Magnum, micro:bit, KIBO and CS Unplugged pages; Kempton (1986), KIBO sensors and Opus Magnum metrics marked recalled or secondhand. Helper House is the first ladder.
+- Updated the subject tracker, notebook row, roadmap [Robots and automation recommendations](ROADMAP.md#robots-and-automation-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: identity beside Sorting Machine, accounting, toddler entry, placement, older registration, model and card review; no reference game played.
+
 ## 2026-10-17 — Stop and Go deep dive
 
 - Docs only: [deep dive](deep-dives/stop-and-go.md) on `claude/dive-stop-and-go` ([PR #535](https://github.com/rjdunlap/neo/pull/535)). Audited levels 1–4; gaps: the lap car ignores taps, back cars silent, the hint rings the light instead of the car or feet, the walk hint never resets, "Great driving" at the walk level, colour the only state cue, one fixed rhythm, no help when idle at the crossing.
