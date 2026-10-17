@@ -4,7 +4,7 @@
 
 - Docs only: [deep dive](deep-dives/teddy-doctor.md) on `claude/dive-teddy-doctor` ([PR #525](https://github.com/rjdunlap/neo/pull/525)). Audited levels 1–6; gaps: level 1 taps dropped during the instruction and silent away from a boo-boo, how-to says "tap" for the level 2–3 drags, an unbounded level 6 step, lap's level 2 drag unwatched.
 - Opened Common Sense Media (Toca Doctor, Toca Pet Doctor, Dr. Panda's Hospital), the Daniel Tiger episode archive, the Teddybear Hospital cohort study and the CDC 18-month page; Doc McStuffins, BMJ review and others are search summaries; JumpStart's Dress Teddy and Pokémon Center recalled.
-- Four ready slices added to the roadmap; one decision row to WAITING (new ailments wait on the body/health practical-care review).
+- Four ready slices added to the roadmap; one decision row to WAITING (new ailments wait on the body/health practical-care review); level 1 taps during the spoken line wait on V2.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
 
 ## 2026-10-17 — Dot Link level 11, Find my buddy
