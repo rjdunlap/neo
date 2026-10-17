@@ -53,7 +53,7 @@ Opened pages are linked; *recalled* marks what was not re-checked at a source th
 
 Stop and Go is the one game where time passing *is* the mechanic: the light changes by itself and she waits. That makes three guardrails non-negotiable for every level: no phase ever shortens below the current 3 seconds of green and red, nothing speeds up as she improves, and waiting is never counted. Depth comes from *what* the cue is and *who* it is for, not from speed.
 
-The long-term arc: **lap** makes things go and stop by touch (cause and effect); **toddler** waits for a light that changes by itself; **preschool** moves her own body (the pet) on the cue and helps two roads take turns; **pre-K** (the window the roadmap already names, [Next up item 19](../ROADMAP.md#next-up)) reads *which* light is hers and runs a crossing where cars keep arriving; **school** only if a sensor/automation level is approved (the `robots-automation` subject names a traffic light) and only with the pedestrian signal after a safety review.
+The long-term arc: **lap** makes things go and stop by touch (cause and effect); **toddler** waits for a light that changes by itself; **preschool** moves her own body (the pet) on the cue and helps two roads take turns; **pre-K** (the window the roadmap's [More to play in every band](../ROADMAP.md#more-to-play-in-every-band) item 19 already names) reads *which* light is hers and runs a crossing where cars keep arriving; **school** only if a sensor/automation level is approved (the `robots-automation` subject names a traffic light) and only with the pedestrian signal after a safety review.
 
 Fits: fresh vehicles and varied (seeded, bounded) phase lengths, every touch acknowledged, a lap entry where the car itself is the toy, lanes with their own lights, arrivals at the crossing, two-person roles at the crossing. Does not fit: crashes, scores or throughput counts, rule switches where red means go (it teaches the opposite of a real cue, and Pet Says owns rule play with *Quiet dance*), dodging traffic (Frogger), and anything that tells a child it is safe to cross on a signal alone. Ducklings crossing behind a stop sign is the proposed [Crossing Guard](../IDEAS.md) idea; it stays separate.
 
@@ -99,7 +99,7 @@ Rework fit ([creature-world brief](../rework/README.md)): vehicles are a natural
 
 ### Younger-band openings
 
-- **Lap entry, level 9 *Go car, stop car*.** One car loops round an oval road without stopping on its own. Two huge lamps (each at least 150 across) sit low on screen: green makes it drive with puffs, red makes it brake with a squash and idle; tapping the car toots. No misses are possible; the round ends after 8 touches. Lap order `[9, 1]`; `entryLevels` not needed (toddler does not include 9). A rule test asserts the ladder's lap order and that every touch changes something. It is the toy level stripped to two states, the classic stop/go cause and effect a one-year-old can see.
+- **Lap entry, level 9 *Go car, stop car*.** One car loops round an oval road without stopping on its own. Two huge lamps (each at least 150 across) sit low on screen: green makes it drive with puffs, red makes it brake with a squash and idle; tapping the car toots. No misses are possible; the round ends after 8 touches. Lap order `[9, 1]` and `entryLevels: [9]`, so a lap child saved at 9 who turns toddler starts at toddler's easiest level, 1, not the send level 2 where red is a miss. A rule test asserts the ladder's lap order and that every touch changes something. It is the toy level stripped to two states, the classic stop/go cause and effect a one-year-old can see.
 
 ### Easier entries and levels between existing ones
 
@@ -125,7 +125,7 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
 2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
-3. **Lap entry 9 *Go car, stop car*** (new interaction): lap order `[9, 1]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
+3. **Lap entry 9 *Go car, stop car*** (new interaction): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
 4. **Level 5 *Whose light?* and the pre-K window** (new level): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
 5. **Level 6 *Busy crossing*** with the idle point that also helps level 4: pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
 6. *(Decision 3)* Toddler level 10 *Wait for green*.
