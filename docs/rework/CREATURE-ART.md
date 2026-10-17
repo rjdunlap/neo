@@ -2,6 +2,8 @@
 
 [Issue #486](https://github.com/rjdunlap/neo/issues/486), [work item](WORK-ITEMS.md#rw02-creature-art-and-animation-prototype), [PR #499](https://github.com/rjdunlap/neo/pull/499). Written 2026-10-17. Proposed: nothing here is approved production art, and the species and accessory names are provisional (RW01's "Puddlings" is optional and unused in code).
 
+**Follow-up:** [RW02b](GENERATED-CREATURE-PILOT.md) compares an illustrated, mesh-animated glider with this Graphics glider in the same preview (2026-10-17).
+
 ## What was built
 
 An isolated development preview, drawn with Pixi `Graphics` and the shared palette (`src/art/palette.ts`). It holds three creatures, two accessories, a small collection view and a scene that changes layout between landscape and portrait.
