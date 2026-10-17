@@ -173,7 +173,7 @@
 - Passed typecheck, 7 Photo Safari rules and all 1408 unit tests; after adding pin/range and overlapping-circle boundary assertions, 26 focused Photo Safari/registry tests passed. Across 300 seeds, two action and two place matches yield one conjunction; four views check 160-unit spacing, 100-unit target areas, overlapping nearest taps and draw-order independence. Build passed with existing chunk-size advisory.
 - `GAME_URL=http://localhost:5202 BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=4,7 npm run test:browser` passed: two wrong photos, automatic hint/glow, four-photo album, saved `[2,1]`, sticker, no page errors. Reviewed `test-results/browser/photo-safari-7-portrait.png`: two clear shared places, four separated animals, clear pet/corner controls.
 - Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=photo-safari FINGER_LEVELS=7` passed cleanly in 14.4 s. Initial stalled demo was interrupted; a small probe found no actor tap listener and one shared-layer listener. Added the shared receiver while keeping the target tap. A source-comment HMR interrupted the next run; the frozen-source run above passed. Typecheck/build repeated after the receiver fix.
-- Links/diff checked; owned server stopped after checking. Not run: other browser levels/suites, world/offline (navigation, persistence and assets unchanged), iPad speech/touch or child understanding. [Device checks](DEVICE-CHECKS.md) remain open.
+- Links/diff checked; owned server stopped after checking. Not run: other browser levels/suites, world/offline (navigation, persistence and assets unchanged), iPad speech/touch or child understanding. [Device checks](../DEVICE-CHECKS.md) remain open.
 
 ## 2026-10-16 — Photo Safari texture cleanup
 
@@ -189,14 +189,14 @@
 - Passed typecheck, 54 focused logic/course/registry/how-to tests, all 1405 unit tests and build. After adding explicit school order, younger-band/pin and top-level clamping assertions, registry's 18 tests passed. Course constants and landing mapping pinned; 300 seeds check distinct safe flags, both worlds, clear past/before separation and bot regions.
 - `GAME_URL=http://localhost:5199 BROWSER_SUITE=arcade ARCADE_ONLY=launch FROM_LEVEL=12 TO_LEVEL=12 npm run test:browser` passed: three pairs, first guess deliberately different, actual pause-sheet hint, zero misses/one hint, saved sticker and no page errors. Reviewed `test-results/browser/bouncy-launch-12-portrait.png`: spring/pet, numbered flag and clear planet scenery/regions. The first play proved the shell lacked a child-level hint label; optional `Game.hintLabel` connects this level only, and the same regression passed after repair.
 - Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=12` passed in 19.5 s without page errors. Sandbox Chromium launch failed before checking; elevated execution passed. Build ran because voice/how-to and the optional shell hint contract changed (existing chunk advisory).
-- Links and diff checked; owned Vite stopped after checking. Not run: other game plays, full couch/world/offline (no couch, navigation, persistence or asset changes), iPad speech/sound/touch or child play. [Device checks](DEVICE-CHECKS.md) stay open. Publication/deployment recorded separately in the queue.
+- Links and diff checked; owned Vite stopped after checking. Not run: other game plays, full couch/world/offline (no couch, navigation, persistence or asset changes), iPad speech/sound/touch or child play. [Device checks](../DEVICE-CHECKS.md) stay open. Publication/deployment recorded separately in the queue.
 
 ## 2026-10-16 — Zoo animals subject research
 
-- Docs only, base `ee89b32`, branch `claude/zoo-animals-subject`, [PR #462](https://github.com/rjdunlap/neo/pull/462): [study](deep-dives/subjects/zoo-animals.md), subject tracker row, three notebook candidates and the roadmap packet. No overlapping claim found by `scripts/overlap.sh`.
+- Docs only, base `ee89b32`, branch `claude/zoo-animals-subject`, [PR #462](https://github.com/rjdunlap/neo/pull/462): [study](../deep-dives/subjects/zoo-animals.md), subject tracker row, three notebook candidates and the roadmap packet. No overlapping claim found by `scripts/overlap.sh`.
 - Opened NGSS K-LS1-1, 2-LS4-1, 3-LS3-1, 3-LS4-3 and MS-LS2-5, the England science programmes of study, two Smithsonian National Zoo pages, an OSU teacher page and a study record; AZA pages (403) and SAFE figures are marked search-only and unused. No reference games played.
 - Passed relative Markdown links (`node scripts/check-links.mjs`) and `git diff --check`. No typecheck/unit/build/browser/offline checks (research-only tier); no code changed or servers started.
-- Follow-up after the developer's habitat-kit decision (no zoo land): a [kit order](deep-dives/subjects/zoo-animals.md#habitat-kits-order-lands-and-cast-swaps) with the lands each dresses and the games that swap cast; links and diff checked again.
+- Follow-up after the developer's habitat-kit decision (no zoo land): a [kit order](../deep-dives/subjects/zoo-animals.md#habitat-kits-order-lands-and-cast-swaps) with the lands each dresses and the games that swap cast; links and diff checked again.
 - Open: a named reviewer for the trait table and conservation lines, captivity/extinction framing, how a kit shows (variant, time of day or permanent), Species Comeback's band, and any child, device or older-family play.
 
 ## 2026-10-16 — Barnyard land identity V1
@@ -205,18 +205,18 @@
 - Typecheck and final production build passed (existing chunk-size advisory). Full units initially had 10 failures under default parallel load; `npm test -- --maxWorkers=4` passed 1400/1401, with only unchanged Penguin Slide level-8 generation exceeding 5 s. That test passed alone (`-t 'level 8 combines useful' --maxWorkers=1`); focused lands tests passed 14/14 including all bands/four views. No game rule changes.
 - `node test-results/barnyard-identity-probe.mjs`, isolated Chromium at `http://localhost:5198`: landscape/portrait reviewed, decorative event/layer order, real cow body touch, notes `[3,5,7]` on first entry only, repeat after session reset, other land unchanged and exit cancellation passed with no page errors. Earlier probes corrected a feet tap and HMR duplicate-module/reset interruption; final frozen-code run clean.
 - Reviewed `test-results/barnyard-landscape.png` and `barnyard-portrait.png`: subdued barn, fence/straw above game row, visible pail beside cow, pet and corner controls clear. Owned Vite stopped. Links and diff checked.
-- Not run: world/offline (no navigation/persistence/assets changes), game browser suites (no games changed), iPad/child recognition or audible device review; [device checks](DEVICE-CHECKS.md) stay open.
+- Not run: world/offline (no navigation/persistence/assets changes), game browser suites (no games changed), iPad/child recognition or audible device review; [device checks](../DEVICE-CHECKS.md) stay open.
 
 ## 2026-10-16 — Standards audit for new subject sessions
 
-- Docs only, base `bff537a`, branch `claude/educational-game-subjects-1da8ca`: [standards audit](deep-dives/subjects/standards-audit.md) and 20 new **not started** rows in the [subject tracker](deep-dives/subjects.md#mathematics) (mathematics, language and literacy, languages/arts/thinking/natural world, including `zoo-animals`).
+- Docs only, base `bff537a`, branch `claude/educational-game-subjects-1da8ca`: [standards audit](../deep-dives/subjects/standards-audit.md) and 20 new **not started** rows in the [subject tracker](../deep-dives/subjects.md#mathematics) (mathematics, language and literacy, languages/arts/thinking/natural world, including `zoo-animals`).
 - Opened the Common Core math domain navigation, 6.RP and the practice standards, the ELA strand index and the ACTFL goal areas. Head Start ELOF (403), EYFS, IB PYP, C3, Core Arts, Jump$tart and zoo-program NGSS alignments came from search summaries and are marked secondary.
 - Passed `node scripts/check-links.mjs` and `git diff --check`. No code changed; no typecheck, unit, build or browser runs (docs-only tier).
 - Open: every new row's anchors must be opened at source by its own session; language choice, sign-language review and a zoo destination are developer decisions.
 
 ## 2026-10-16 — Body and health subject research
 
-- Docs only, base `1fd4d39`, branch `codex/body-health-subject-research`, [PR #458](https://github.com/rjdunlap/neo/pull/458): [study](deep-dives/subjects/body-health.md), subject tracker, candidate notebook, roadmap packets and open developer decisions. Twenty subject studies now recorded; inquiry is the next unclaimed science row.
+- Docs only, base `1fd4d39`, branch `codex/body-health-subject-research`, [PR #458](https://github.com/rjdunlap/neo/pull/458): [study](../deep-dives/subjects/body-health.md), subject tracker, candidate notebook, roadmap packets and open developer decisions. Twenty subject studies now recorded; inquiry is the next unclaimed science row.
 - Opened Head Start/NGSS/NHES/NIH anchors, five first-party digital references and the PBS physical senses activity. Unopened BrainPOP/tactile-set pages remain leads; no reference games played. Practical care, sleep, food and hygiene advice remain explicit research/review gaps.
 - Passed `node scripts/check-links.mjs` and `git diff --check`. No code/assets/scripts changed, servers started, or typecheck/unit/build/browser/offline runs (docs-only tier).
 - Open: candidate identity/overlap, physiology/content and practical-card review, exact ranges/land capacity, exploration/adaptation, actual device/child/older-family experience and learning transfer. No game, new band or health guidance implemented.
