@@ -12,7 +12,7 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 | --- | --- | --- | --- |
 | [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | packet written 2026-10-17 ([NAME-AND-STORY.md](NAME-AND-STORY.md)); final name is a developer decision | None |
 | [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | prototype and packet done 2026-10-17 ([CREATURE-ART.md](CREATURE-ART.md)); production style is a developer decision | None; use provisional names |
-| [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | ready, docs/prototype exploration | Reconcile landed D1b work; RW01 informs language |
+| [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | packet and wireframe done 2026-10-17 ([HOME-NAVIGATION.md](HOME-NAVIGATION.md)); production cutover waits for RW08 | Reconciled D1b; RW01 informs language |
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | ready, docs definition | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | define after upstream packets | RW02, RW03 |
 | [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | define after upstream packets | RW03, RW05 |
@@ -62,6 +62,8 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 
 [Issue #487](https://github.com/rjdunlap/neo/issues/487)
 
+**Claim 2026-10-17:** worker `01a14afb-f60e-7f83-b0e7-8c049c4369a7`, branch `codex/rw03-home-navigation`; Home/Back, collection/dress, Explore/workshop and resume exploration only. Expected files: `docs/rework/HOME-NAVIGATION.md`, `docs/rework/home-navigation.html`, this index, roadmap, verification and queue. No runtime or creature-art edits. [PR #501](https://github.com/rjdunlap/neo/pull/501). Exploration complete; runtime unchanged.
+
 **Outcome:** an inspectable route/interaction design with fewer immediate choices and a clear place for the whole catalog.
 
 **First slice:** prototype Home (adventure/continue, creature play, Explore), collection/dress entry and one workshop/library path. Define Home versus Back, profile switching and project resume, including an interrupted game.
@@ -72,6 +74,8 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 - Reconcile [D1b #483](https://github.com/rjdunlap/neo/pull/483) and existing controller/couch work; do not duplicate or silently discard their behavior.
 - Specify one temporary preview entry, the default-route cutover and obsolete routes to delete in RW08. No permanent classic/v2 mode.
 - Give RW05–RW08 exact interaction/return-route acceptance and a short observed-play script.
+
+**Delivered 2026-10-17:** [route/interaction packet](HOME-NAVIGATION.md) and [standalone wireframe](home-navigation.html); Home/Back, collection/dress, workshop/library, full-index responsibilities, project interruption and RW05–RW08 route gates. Desktop prototype inspected; real-child/device and production integration checks remain open.
 
 **Likely files:** a packet/prototype under `docs/rework/`; no production routing change in this exploration. **Proof:** links/diff and inspection of any prototype; real-child/device usability stays an explicit observation gap.
 

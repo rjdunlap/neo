@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — RW03 home and navigation packet
+
+- Docs/prototype only, [PR #501](https://github.com/rjdunlap/neo/pull/501), `codex/rw03-home-navigation`, source audit `97efae1` plus queue-only integration `023d4c4`. [Packet](rework/HOME-NAVIGATION.md), [wireframe](rework/home-navigation.html); no production routes or creature-art files changed.
+- Chromium inspection at `http://127.0.0.1:5193/docs/rework/home-navigation.html`, 1024×768 and 768×1024: collection selection, interrupted/completed sample project, lap sample Next game → original workshop, index page return, couch caller return and profile reset passed; no page errors. One-off probe `test-results/rw03-probe.mjs` is ignored, not a committed suite.
+- Reviewed [landscape](rework/concepts/rw03-landscape.png) and [portrait](rework/concepts/rw03-portrait.png) document snapshots; visible buttons ≥104 px and no horizontal overflow in portrait. This is a scrolling wireframe, not proof of a production canvas layout or input cancellation. Real game/save/speech/controller behavior is simulated or described.
+- Passed Markdown links/anchors and `git diff --check`. Typecheck, unit tests, build, game/world/couch suites and offline not run: production code unchanged. Real-child/device navigation observations remain open in [device checks](DEVICE-CHECKS.md). Preview server stopped after inspection.
+
 ## 2026-10-17 — RW02 creature art prototype
 
 - [PR #499](https://github.com/rjdunlap/neo/pull/499), `claude/rw02-creature-art`, based on `1da1207`: three creatures, scarf and crown with slots/misfits, dev-only `/?creatures` preview ([packet](rework/CREATURE-ART.md)); `src/main.ts` gained only the dev-gated hook.
@@ -89,20 +96,13 @@
 - [PR #477](https://github.com/rjdunlap/neo/pull/477), `codex/daily-life-long-ago-subject-research`: added [study](deep-dives/subjects/daily-life-long-ago.md) with opened curriculum/developmental/material-culture sources, five first-party digital references and physical precedents, every audience, eight candidates, an Attic Finds ladder and ordered definition/build slices. Real-history/community review and access/coverage gaps remain explicit.
 - Updated tracker, notebook and roadmap; cross-linked the earlier Attic Finds proposal to prevent duplicate definitions. Initial tree clean; overlap found genetics claimed and this subject unclaimed. Integrated merged genetics research at `533437d`; preserved its proposals. Docs only: local relative links/anchors and `git diff --check` checked. No tests, build, browser suites, device/child/teen observations, practical-card review or learning-transfer claims.
 
-## 2026-10-16 — Genetics subject research
-
-- Docs only, base `2402c57`, branch `codex/genetics-subject-research`, [PR #476](https://github.com/rjdunlap/neo/pull/476): [study](deep-dives/subjects/genetics.md), subject tracker, three notebook candidates, roadmap definitions and developer decisions. Current origin showed inquiry already researched; overlap check found no genetics claim.
-- Opened four NGSS trait/inheritance anchors, NHGRI/NAEYC, six first-party digital descriptions/guides and Utah's paper activity. Developmental evidence is an indexed abstract only; game-shell/access failures are explicit. No reference games played.
-- Passed `node scripts/check-links.mjs` and `git diff --check`. No code changes; no typecheck, tests, build, browser/offline or servers (research-only tier).
-- Open: biology/wording review, exploration accounting, school/13+ entry and land fit; device/child/tween/parent understanding, demand and learning transfer unestablished. Nothing implemented.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Creature-world rework planning | 2026-10-17: RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW02 prototype](#2026-10-17--rw02-creature-art-prototype), [RW01 packet](#2026-10-17--rw01-name-and-story-packet), [rework plan](#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02 iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
+| Creature-world rework planning | 2026-10-17: RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW03 packet](#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](#2026-10-17--rw02-creature-art-prototype), [RW01 packet](#2026-10-17--rw01-name-and-story-packet), [rework plan](#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02 iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |

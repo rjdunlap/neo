@@ -256,3 +256,10 @@
 - Passed `npm run typecheck` and `npx vitest run src/games/tangram-town/logic.test.ts` (14 tests). Dedicated handle/brush contact, non-overlap, bounds and pool-membership proof; existing all-picture seeded tests prove hint/bot completion, valid turns and both placement orders.
 - `node test-results/tangram-broom-probe.mjs`, isolated Chromium at `http://localhost:5197`, forced a seeded broom in level 3: real quarter-turn taps and drags, no misses/hints, ordinary sticker and no page errors. Reviewed `test-results/tangram-broom-portrait.png`: joined shapes, pet, tray and controls clear. Sandbox initially prevented Chromium launch; elevated launch passed.
 - How-to remains accurate (picture-independent drag/turn instructions). No new levels or interaction, so broad suites, build/offline and separate ghost-finger browser run not run; seeded bot rule coverage passed. No iPad, actual device speech or child-recognition evidence; existing person checks stay open. Owned Vite stopped after checking; links and diff checked.
+
+## 2026-10-16 — Genetics subject research
+
+- Docs only, base `2402c57`, branch `codex/genetics-subject-research`, [PR #476](https://github.com/rjdunlap/neo/pull/476): [study](../deep-dives/subjects/genetics.md), subject tracker, three notebook candidates, roadmap definitions and developer decisions. Current origin showed inquiry already researched; overlap check found no genetics claim.
+- Opened four NGSS trait/inheritance anchors, NHGRI/NAEYC, six first-party digital descriptions/guides and Utah's paper activity. Developmental evidence is an indexed abstract only; game-shell/access failures are explicit. No reference games played.
+- Passed `node scripts/check-links.mjs` and `git diff --check`. No code changes; no typecheck, tests, build, browser/offline or servers (research-only tier).
+- Open: biology/wording review, exploration accounting, school/13+ entry and land fit; device/child/tween/parent understanding, demand and learning transfer unestablished. Nothing implemented.
