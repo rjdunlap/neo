@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Shape Buddies level 2, A step down (2026-10-17)
+
+[PR #504](https://github.com/rjdunlap/neo/pull/504): pre-K and school play levels 1–2. At level 2 the far bank is one step lower: only a Slope bridge reaches it, a Flat bridge falls short (`buddies.stepFlat`), and an empty, plain or scoop bridge says `buddies.stepBridge`; the cup role is unchanged. Misses stay 0, one hint per role, guidance suggests Slope; `PLANS` in `logic.ts` is keyed by level. As built, the bridge dock is at `y 250`, raised the full 50 units with the bank, and only the heading and caption lift at level 2; the stream shows two cushions, and a flat friend at the bridge dock is drawn narrower so its end stops over the stream. The level-2 how-to line was shortened to fit the 840-character card cap. Typecheck, 1459 tests, `buddies` level-2 play, `fingerdemo` at 2 and a portrait screenshot passed; see [verification](../VERIFICATION.md#2026-10-17--shape-buddies-level-2-a-step-down).
+
 ### RW03 home and navigation exploration (2026-10-17)
 
 [PR #501](https://github.com/rjdunlap/neo/pull/501): [packet](../rework/HOME-NAVIGATION.md) and standalone document wireframe cover age presentations, creature/collection/dress, Explore/workshop/library, full-catalog responsibilities, Home/Back, project interruption, profile/input boundaries and exact RW05–RW08 gates. Reconciles landed D1b; no production cutover or downstream implementation. Desktop route-state inspection and both layouts, links/diff passed; real-child/device and production integration remain open. [Proof](../VERIFICATION.md#2026-10-17--rw03-home-and-navigation-packet).
