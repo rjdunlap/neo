@@ -80,7 +80,7 @@ Chunk numbers are stable IDs that other documents cite; rows are sorted by what 
 | 27 | **Physics games** (the developer, 2026-10-14) | define | Define **Domino Run** next, then Swing Pals, Lift It; none needs a new engine | Docs only; then its tier | [PHYSICS-GAMES.md](PHYSICS-GAMES.md) |
 | 25 | **Dexterity: slice, cut and draw** (the developer, 2026-10-13) | define; **decision** for Vine Snip and Block Topple (the physics approach) | Define **Fruit Slice** (slow fruit, no bombs, lives or timer), then Cut Along, then Draw the Pattern. Vine Snip's [sketch](vine-snip.md) and Block Topple's [sketch](block-topple.md) wait on the physics decision | Docs only; then new-game tier | [Candidates](IDEAS.md#candidates) |
 | 14 | **Game deep dives**, one research session per game | ready (research only) | The first unstarted game in the tracker's lowest wave, unless the grown-up selects another | Docs only | [Tracker](deep-dives/README.md) |
-| 28 | **Subject deep research** | ready (research only) | The first unstarted, unclaimed subject in the tracker’s lowest wave (A–C researched; wave D ecosystems, earth materials and body/health researched; the [standards audit](deep-dives/subjects/standards-audit.md) adds wave E; `zoo-animals` researched) | Docs only | [Subject tracker](deep-dives/subjects.md), [recommendations](#subject-study-recommendations) |
+| 28 | **Subject deep research** | ready (research only) | The first unstarted, unclaimed subject in the tracker’s lowest wave (A–C and the original science rows researched; new astronomy/chemistry/cells follow-ups unstarted; wave D daily-life-long-ago/deep-time researched, other rows open as marked; wave E starts with researched zoo-animals) | Docs only | [Subject tracker](deep-dives/subjects.md), [recommendations](#subject-study-recommendations) |
 | 24 | **Range by experience** | research only, when the grown-up selects a game | Peg Garden, Fill and Dump, Shape Buddies, Read & Do, Photo Safari and Song Maker are the most useful next studies. Not a second dispatch queue | Docs only | [Catalog matrix](FAMILY-EXPERIENCE.md#a-catalog-with-many-reasons-to-play) |
 | 23 | **Useful family roles** | decision (with chunk 16) | After chunk 16's placement and seat-credit decisions: define one Secret Code maker/breaker or Buddy Delivery role-swapped round, with a solo fallback | Docs only | [W3](FAMILY-EXPERIENCE.md#w3-one-shared-job) |
 | 16 | **Family table: games two people play together** (the developer, 2026-10-11) | decision | After the placement and seat decisions: Secret Code's maker and breaker, or Row Together's lap level. Chunk 23 shares this decision | Docs only; then its tier | [Family table](IDEAS.md#mario-party-and-the-family-table-2026-10-11) |
@@ -293,7 +293,25 @@ For older players, combine **named project cards**, **child-chosen permanent unl
 
 ## Subject study recommendations
 
+The [further gap audit](deep-dives/subjects/further-gaps.md) adds unstarted measurement/units and cells/microbes sessions and identifies extensions within existing studies (decimals, connected-text reading, evolution, geography/history breadth and practical design). Research scope only; chunk 28’s selection order remains unchanged.
+
+The [follow-up gap review](deep-dives/subjects/additional-subjects.md) adds three unstarted research subjects (number structure, literature meaning, food/fiber systems) and broadens existing geometry/art/engineering scopes. These enter chunk 28’s tracker, not the build-ready list.
+
 Definition packets recommended by the [subject studies](deep-dives/subjects.md), kept in the roadmap (the developer asked for the movement study's to stay here, 2026-10-14; the later studies follow the same pattern). They are **proposals and docs-first definitions, not a dispatch queue**: a routine reaches one only through a `define` row in [Next up](#next-up) or when the grown-up selects it. A new subject study adds its section here, at this heading level.
+
+### Deep time recommendations
+
+**Recommended 2026-10-16:** [the deep-time study](deep-dives/subjects/deep-time.md), [PR #478](https://github.com/rjdunlap/neo/pull/478), answers for every audience with four opened NGSS anchors, NAEYC and museum/park sources, five first-party digital descriptions and physical-program references. **Define the shared Fossil Dig E5 first**, then Trackway Tales and Lost Layers. Younger trace play and dinosaur pictures stay in existing games. These are docs-first proposals; no implementation or ready-build line is added.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Fossil Dig: Find and Record** · pre-K first · D1/E5 | define shared seed now, docs only | One reviewed leaf impression, location marker and two contrasting references; explicit Check/help/supported finish, accounting, range, speech/how-to/ghost finger and 100-unit layout. Consolidate earth-materials E5 and audit Splish Splash/Puzzle Pals before registration |
+| **Trace Prints** · lap–pre-K · D3 | later existing-game definition | One broad fresh mark/two makers in Stamp Studio, voluntary finish and creative adaptation; younger input review, no ancient-time mastery or instant-fossil claim |
+| **Trackway Tales** · school–early teen, parent cases · D4 | define replay case | Two toy movement previews against alternating/paired contacts, every compatible answer, informative clue and uncertainty/support. Review real gait claims; no locomotion simulator |
+| **Lost Layers** · upper school–parent · D6 | define older case | Two sites/two compatible alignments, enumerated solutions and useful third observation; audit Outcrop Detective and choose school-top/13+ entry. Missing evidence is not proof of extinction |
+| **Dinosaur content / Deep Time Window / Trace Detectives** · D7–D9 | separate later definitions | Pictures/lengths/process strips remain existing-game content; honest dated zoom coordinates Timeline Trail. Optional original paper-trace plain-HTML card needs review; no museum collection system or excavation advice |
+
+[Ordered slices and developer decisions](deep-dives/subjects/deep-time.md#build-slices-in-order) keep model/reviewer selection, extinction wording, creative/uncertain adaptation, ranges/land capacity and any later persistence explicit. Bird/dinosaur wording needs review; no dinosaur/human co-occurrence. Actual child/device understanding and tween/parent appeal remain unestablished. Definitions can proceed; reviewed content and resolved implementation decisions precede builds.
 
 ### Genetics recommendations
 
@@ -380,13 +398,13 @@ Lap retains familiar cloud/munch cause-and-effect play; toddler cutaways are obs
 
 ### Earth materials recommendations
 
-**Recommended 2026-10-16:** [the subject study](deep-dives/subjects/earth-materials.md) covers lap through parents using opened NGSS/USGS/NRCS/NAEYC anchors, five digital precedents and physical references. Develop the existing **Sand Table** seed first as a dry material toy; define **Fossil Dig: Find and Record** and **Outcrop Detective** next. These are research proposals and docs-first packets, with no games, new bands or zones implemented. The ecosystems study is researched separately; deep time retains its own session.
+**Recommended 2026-10-16:** [the subject study](deep-dives/subjects/earth-materials.md) covers lap through parents using opened NGSS/USGS/NRCS/NAEYC anchors, five digital precedents and physical references. Develop the existing **Sand Table** seed first as a dry material toy; define **Fossil Dig: Find and Record** and **Outcrop Detective** next. These are research proposals and docs-first packets, with no games, new bands or zones implemented. The ecosystems study is researched separately; the [deep-time study](#deep-time-recommendations) develops the same Fossil Dig E5 seed.
 
 | Candidate | Status | Next complete definition |
 | --- | --- | --- |
 | **Sand Table** · lap–school first, older/parent horizon | define first · E1 | Freeze dry rungs 1–3: pour, scoop and show any landscape. Define bounded deterministic settling, conservation including return tray, overflow/reset/cancellation, broad 100-unit tap bays, creative adaptation, supported Finish, speech/how-to/ghost finger, layouts and land capacity. Distinct from Fill and Dump through persistent spatial reshaping; no fluid engine or saved sandbox |
 | **Sand Table: sediment evidence** · pre-K–school, older design horizon | define after dry packet · E3 | One reviewed breeze table, visible origin/arrival trace and replay; only explicit Check counts a miss. Later compare equal runs with one changed cover, accepting every valid outcome/plan. Sediment movement earns the scope; water routing remains Rain Garden. No measured rates or realistic erosion claim from invented tokens |
-| **Fossil Dig: Find and Record** · pre-K–school first | define existing seed · E5 | One reviewed leaf impression, location record and two comparison references, replay/support and ordinary finish. Audit Splish Splash/Puzzle Pals and coordinate extinct-life content with deep time; no collectible checklist or real excavation instructions |
+| **Fossil Dig: Find and Record** · pre-K–school first | define existing seed · E5 | One reviewed leaf impression, location record and two comparison references, replay/support and ordinary finish. Audit Splish Splash/Puzzle Pals; use the [shared deep-time D1 definition](#deep-time-recommendations), not a second seed; no collectible checklist or real excavation instructions |
 | **Outcrop Detective** · upper school–parent | define older case · E6 | Four-event deposition/intrusion case and a masked-contact ambiguity variant: freeze all accepted histories, geological preview, trace/undo/help and supported ending. Accept uncertainty when contact is hidden. Check Timeline Trail ownership, school/grownup routing and land capacity. No numerical ages, faults or general geology simulator initially |
 | **Rock Workshop / Plate Postcards / existing-game modes** | later, one definition each · E8 | Branching reviewed rock transformations; multi-evidence plate reconstruction; Rock Tray in Critter Sort, Rock Walk in Photo Safari and Soil Window in Garden Grow. Keep ordinary sorting/photos/root observations in their games. Landscape Stories is a later reviewed plain-HTML paper card |
 
@@ -501,6 +519,8 @@ The [study's ordered slices](deep-dives/subjects/life-science.md#build-slices-in
 
 ### Space science recommendations
 
+**Research follow-up requested 2026-10-16:** [Astronomy](deep-dives/subjects/astronomy.md), covering stars, galaxies, observational instruments/evidence and deeper eclipse/season models. Tracked as not started under chunk 28; no new build-ready item.
+
 **Recommended 2026-10-14:** [the space study](deep-dives/subjects/space.md), [PR #335](https://github.com/rjdunlap/neo/pull/335), covers lap through parents with opened NGSS/NASA anchors, developmental guidance, two research abstracts, six official digital precedents and a physical model reference. Develop the existing **Moon Window** seed first; define **Orbit Garden** and **Observatory Files** for older children and parents next. These are docs-first proposals; no games, bands or zones were built. The existing subject order remains intact.
 
 | Candidate | Status | Next complete definition |
@@ -513,6 +533,8 @@ The [study's ordered slices](deep-dives/subjects/life-science.md#build-slices-in
 Keep size/distance exploration in the existing Zoom Walk proposal and different-gravity launches in Planet Hop/Bouncy Launch. The [study's ordered slices](deep-dives/subjects/space.md#build-slices-in-order) separate definitions from implementation. Astronomy/model review, age/land placement and exploration accounting remain explicit; adapted lamp/ball or sky/equipment instructions need a named reviewer before release. Definitions use links/diff checks; later interactions use their actual game tier. No real-sky accuracy, iPad usability, tween/parent appeal or learning transfer is established by this study.
 
 ### Matter recommendations
+
+**Research follow-up requested 2026-10-16:** [Chemistry](deep-dives/subjects/chemistry.md), with SpaceChem as a reference to investigate. Tracked as not started under chunk 28; no new build-ready item.
 
 **Recommended 2026-10-14:** [the subject study](deep-dives/subjects/matter.md), [PR #324](https://github.com/rjdunlap/neo/pull/324), answers for lap through parents. Melt and Freeze is the first new-game candidate; floating stays in Sink or Float and colour mixing in Color Garden. Research proposals and docs-first packets, not registrations.
 

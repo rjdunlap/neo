@@ -2,7 +2,9 @@
 
 *Survey, not a subject study. Requested by the developer, 2026-10-16: "review Common Core and other popular learning objectives and standards to see if more subjects would make sense to have deep research sessions … feel free to push the envelope (zoo animals, for example)." Docs only; nothing here is built, scheduled or promised.*
 
-The [subject tracker](../subjects.md) holds science, history, technology and life-skill rows. This audit lays the main standards frameworks over that tracker and over the [game deep dives](../README.md#tracker), names what no row or game covers, and proposes new tracker rows. Each new row is **not started** and follows the tracker's [procedure](../subjects.md#the-procedure-one-session-one-subject): a session opens the standards at their source, so the codes below are a starting list, not a citation.
+The [subject tracker](../subjects.md) holds science, history, technology and life-skill rows. This audit lays the main standards frameworks over that tracker and over the [game deep dives](../README.md#tracker), names what no row or game covers, and proposes new tracker rows. The rows were added as **not started**; `zoo-animals` is now **designed** ([completed study](zoo-animals.md), 2026-10-16). Remaining sessions follow the tracker's [procedure](../subjects.md#the-procedure-one-session-one-subject): a session opens the standards at their source, so the codes below are a starting list, not a citation.
+
+Follow-up: [additional subjects](additional-subjects.md) adds number structure, literature meaning and food/fiber systems, and records scope additions within existing studies. Its source review is separate from this original survey.
 
 ## The headline finding
 
@@ -60,7 +62,7 @@ The second finding is that several popular frameworks name whole areas the track
 
 ## Proposed new rows
 
-All are **not started**. Audience and band codes are the tracker's. "Touches" lists built games unless marked *proposed*.
+These are the original candidate rows; `zoo-animals` is researched, and the [tracker](../subjects.md#tracker) holds current status. Audience and band codes are the tracker's. "Touches" lists built games unless marked *proposed*.
 
 ### Mathematics (later Common Core domains)
 
@@ -112,7 +114,7 @@ So the rows have something concrete, a few sketches. Each would need its own ses
 
 ## Order (non-binding)
 
-1. **`zoo-animals`** first: asked for by name, close to built games, and every audience has a fun action. Plan the cast cost before candidates.
+1. **`zoo-animals` — research complete**, 2026-10-16 ([study](zoo-animals.md)). Who Am I? and the habitat kits remain definition/build proposals; continue with the remaining subjects below.
 2. **`fractions`, `ratio-proportion`, `chance-statistics`**: the clearest Common Core gaps at U–M, where the catalog is thinnest.
 3. **`speaking-listening`, `vocabulary-word-parts`, `poetry-wordplay`**: language beyond phonics, from lap upward.
 4. **`strategy-games`, `estimation`, `algebra-balance`, `area-volume-space`, `integers`, `oceans`, `informational-reading`, `writing-composition`, `theatre-puppetry`, `philosophy-reasoning`, `media-literacy`** in any order.
@@ -120,8 +122,12 @@ So the rows have something concrete, a few sketches. Each would need its own ses
 
 ## Decisions for the developer
 
-- **Which second language, if any?** **Answered 2026-10-16: Portuguese, Arabic, French and Spanish, the languages the family speaks.** The `world-languages` session follows the roadmap's [Additional languages](../../ROADMAP.md#additional-languages) plan; order, variety and reviewers stay open in [Waiting on the developer](../../WAITING-ON-DEVELOPER.md). Sign language still needs a Deaf reviewer and accurate hand drawings.
+- **Language order, varieties and reviewers:** Portuguese, Arabic, French and Spanish are chosen. Order, varieties and reviewers remain open in [Waiting on the developer](../../WAITING-ON-DEVELOPER.md); the `world-languages` session follows [Additional languages](../../ROADMAP.md#additional-languages). Sign language still needs a Deaf reviewer and accurate hand drawings.
 - **How far up does math go?** The ratio, integer and algebra rows sit at 11–14; whether that belongs to `school`'s top levels or a future band is the tracker's open [middle-band decision](../subjects.md#decisions-for-the-developer).
+
+## Decisions already made
+
+- **Family languages:** Portuguese, Arabic, French and Spanish (2026-10-16).
 - **A zoo or habitat land?** **Answered 2026-10-16: dress the island with more diverse habitats** (the [habitat kits](../../IDEAS.md#world-variety-animals-pets-and-environments): savanna, reef, rainforest, desert, bamboo hill, night garden) and change up the scenery, rather than add a zoo land.
 
 ## Not run

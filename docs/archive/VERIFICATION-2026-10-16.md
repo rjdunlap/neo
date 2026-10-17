@@ -158,3 +158,11 @@
 - `GAME_URL=http://localhost:5195 BROWSER_SUITE=clap CLAP_LEVELS=8 npm run test:browser` passed: four comparisons, free replay, two misses/one correct answer glow, actual taps via finger target, saved result `[8,2,1]`, exactly one sticker and portrait target bounds. Reviewed `test-results/browser/clap-8-portrait.png`: pictures, pet and corner controls clear.
 - Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=clap-syllables FINGER_LEVELS=8` passed cleanly in 23.5 s. No page errors in either passing run. First attempt interrupted by a how-to HMR reload; repeated after source edits stopped. Owned Vite stopped after checks.
 - Not run: full unit suite, levels 1–6 browser replays (existing evidence retained), world/offline (no navigation/save/assets changes), device speech/touch or child observation; [device checks](../DEVICE-CHECKS.md) remain open. Level 9 and other exclusions remain unbuilt. Links and diff checked.
+
+## 2026-10-16 — Ecosystems subject research
+
+- Docs only, base `1dea66f`, branch `codex/ecosystems-subject-research`: [study](../deep-dives/subjects/ecosystems.md), subject tracker, candidate notebook and roadmap definition packets. Data/AI literacy already had an uncommitted study elsewhere; ecosystems had no overlapping claim.
+- Opened Head Start/NGSS anchors, NAEYC guidance, five digital and two physical references; unavailable research papers/PBS/LTER pages are marked as leads, redirects or failures, with no claimed effect estimates. No reference games played.
+- Passed relative Markdown links (`node scripts/check-links.mjs`) and `git diff --check`. No typecheck/unit/build/browser/offline checks (research-only tier); no code changed or servers started.
+- Pre-merge backlog refresh preserved the merged data/AI study, records 18 researched subjects and waves A–C researched, recognizes the independent earth-materials claim, and names body-health next. Integrated current main; links and diff checks passed again.
+- Open: biology/content review, destination/ranges, free-trace adaptation, practical-card review, actual device/child/older-family play and learning transfer. Remote push/draft PR was initially rejected by automatic approval review; the developer subsequently authorized publishing the research branch and draft PR.

@@ -4,6 +4,8 @@
 
 **Research and proposals only.** Recommend **Moon Window first**, developing the existing notebook seed into an observation toy and then a linked-view model. **Orbit Garden** and **Observatory Files** deserve separate definitions for older children and parents. Keep daylight records in Day by Day, scale exploration in Zoom Walk's existing proposal, and changed-gravity launches in Planet Hop/Bouncy Launch. No game, age band, zone or save format is added by this document.
 
+**Follow-up requested 2026-10-16:** [Astronomy](astronomy.md) will investigate stars/stellar life cycles, galaxies, telescopes and evidence, and deeper eclipse/season models. That session is **not started**; it should extend this study’s candidates wherever the meaningful action matches.
+
 ## Anchors opened at their source
 
 These are curriculum anchors, not age prerequisites or claims that a round teaches an entire standard. All links below were opened on 2026-10-14; some NGSS pages omit the main performance-expectation sentence in extracted text, but expose their clarification, practices and disciplinary ideas.
@@ -42,7 +44,7 @@ Inspected the current [game descriptions](../../GAMES.md), `src/content/lands.ts
 | Treasure Map / Peekaround Island | Spatial routes and viewpoints | Borrow accessible orientation cues; do not dress an ordinary route or overhead matching board as astronomy |
 | Moon Window, notebook seed | Advance pretend observations; later connect appearance and Sun direction | Develop this identity rather than add a competing Moon toy; replace the original “next night” wording with honestly spaced snapshots |
 | Zoom Walk, notebook proposal | Slide through scales | Keep planet size/distance comparisons in that proposal; define separate size and distance scales, not one misleading solar-system row |
-| Planet Hop, physics proposal | Bouncy Launch with different constant gravity | Keep it there. Orbit Garden needs central attraction; `ball.ts`'s constant downward gravity is not an orbital model |
+| Planet Hop, built 2026-10-16 at Bouncy Launch school level 12 ([definition](../../definitions/planet-hop.md)) | Same-pull predictions with a stated light/heavy toy gravity factor | Keep it there. Orbit Garden needs central attraction; `ball.ts`'s constant downward gravity is not an orbital model |
 
 Skywatch Isles is a [proposed zone](../../ROADMAP.md#zone-concepts), not an available destination. Tinker Lab currently has twelve registrations and Lantern Lake eleven; those raw counts do not prove spare room at any band. Any eventual new registration must pass the existing one-screen land layout checks without smaller targets. Provisional child home: Tinker Lab if it fits; provisional parent puzzle home: Lantern Lake. Placement is unresolved, not an excuse to build a zone first.
 

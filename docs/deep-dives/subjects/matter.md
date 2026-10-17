@@ -4,6 +4,8 @@
 
 **Research and proposals only. Nothing built.** Recommend **Melt and Freeze** first: warm and cool a tray of things, watch them change, and learn which changes can be undone. Follow with **Stir and See**, a mixing game where a spoon decides whether something dissolves, settles or floats, and an older **Particle Lens** mode that shows the same changes as moving dots. Keep floating and sinking in Sink or Float, fractions of food in Pet Kitchen and colour mixing in Color Garden. These are recommendations for docs-first definitions, not registrations, zones or a scheduled build. [Roadmap packets](../../ROADMAP.md#matter-recommendations).
 
+**Follow-up requested 2026-10-16:** a separate [chemistry deep-research session](chemistry.md) will investigate atoms/molecules, reactions/conservation and older extensions, with SpaceChem as a requested puzzle reference. That session is **not started**; this completed study remains the starting point for phase changes and mixtures.
+
 ## Anchors opened at their source
 
 These are curriculum destinations, not developmental deadlines, and none shows that a screen game teaches a standard. The NGSS pages opened for this session gave the performance expectation and, where present, its clarification statement and boundary; several pages carry no boundary text, so none is claimed for them.

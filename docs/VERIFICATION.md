@@ -8,6 +8,53 @@
 - Production offline check passed against the current build (`assets/index-gguiz4Kg.js` confirmed, preview `http://localhost:4173`) after its fixture was updated to expect the untold woodland telling.
 - Open: device speech and the picnic beat on an iPad, a child playing it ([device check](DEVICE-CHECKS.md)).
 
+## 2026-10-16 — Subject docs publication reconciliation
+
+- Reconciled with `origin/main` at `786889a`, retaining completed inquiry, genetics, daily-life-long-ago and deep-time studies. New research rows remain unstarted; broader evolution is a follow-up scope rather than a claim that genetics research is unfinished.
+- Recorded the final discussion’s acoustics/optics/wind, oceanography and other physics/cross-subject ideas as proposed scopes, not new build-ready work. Rechecked local Markdown links/anchors and diff whitespace after reconciliation; no code checks required.
+
+## 2026-10-16 — Further subject and progression gaps
+
+- Compared the expanded tracker, built catalog descriptions and family experience matrix; opened primary CCSS measurement/base-ten/reading and NGSS cell/natural-selection pages. Recorded source limits in the gap audit.
+- Added unstarted measurement-units and cells-microbes rows. Clarified decimals, evolution and everyday geography scope, plus connected-text reading and other expansions within existing research. No game or completed deep-research session implied; dispatch order retained.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code/build/browser/device checks, full developmental/competitor review or scientific validation.
+
+## 2026-10-16 — Astronomy follow-up research brief
+
+- Recorded the requested astronomy follow-up as not started, linked to the completed Space study and roadmap. Scope: stars/life cycles, galaxies, telescopes/observational evidence, deeper eclipse/season models; existing Space candidate identities and overlaps retained.
+- Local Markdown links/anchors and `git diff --check` passed. Setup only: no external research, completed subject study, implementation, code/build/browser/device checks or scientific review claimed.
+
+## 2026-10-16 — Chemistry follow-up research brief
+
+- Recorded the requested chemistry follow-up as not started, linked to the completed Matter study and roadmap. Brief covers atoms/molecules, reactions/conservation and possible acids/bases extension, audience/overlap questions, and SpaceChem as a requested reference.
+- Official SpaceChem description inspected through search output; educator guide only seen in search summary. No game played, curriculum anchors opened, full subject research or implementation claimed in this setup pass.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; code/build/browser/device checks not run.
+
+## 2026-10-16 — Writing and typing research gaps
+
+- Checked composition/Letter Trails coverage and opened primary CCSS W.3.6, W.4.6 and grade-1 Language text. Added unstarted keyboarding/editing and spelling/sentence research rows; clarified composition versus handwriting and touchscreen versus hardware input boundaries in the follow-up audit.
+- Local Markdown links/anchors and `git diff --check` passed. Docs only; no code, browser, device or learning-transfer checks. Full developmental/teaching research remains open.
+
+## 2026-10-16 — Additional subject gap review
+
+- Compared the current tracker, original standards audit and existing game coverage with opened primary CCSS, National Core Arts Standards and National Agriculture in the Classroom pages. Added three unstarted research rows and an overlap/source review; no subject study or build is claimed complete.
+- Explicit scope recommendations for geometry, visual art and engineering remain within their existing sessions. Research/build dispatch order unchanged.
+- Passed local Markdown links/anchors and `git diff --check`. Docs only; no code tests, build, browser or device checks run. Developmental/competitor research and detailed agriculture outcomes remain for full sessions.
+
+## 2026-10-16 — Subject docs completed-work cleanup
+
+- Clarified that designed subject rows mean completed research, removed researched waves from the suggested research backlog, and refreshed the standards audit after the zoo study and language/habitat decisions.
+- Updated space/physics references for built Planet Hop school level 12 and life-science/zoo references for Photo Safari’s built clues and actions. Other proposed modes, habitat kits and reviewer decisions remain open; dated research evidence is retained.
+- Passed local Markdown links/anchors (`node scripts/check-links.mjs`) and `git diff --check`. Docs only; no code tests, build, browser or device checks run.
+
+## 2026-10-16 — Deep time subject research
+
+- Docs only, base `2d7e623`, claim `2d53873`, `codex/deep-time-subject-research`, [PR #478](https://github.com/rjdunlap/neo/pull/478): [study](deep-dives/subjects/deep-time.md), tracker, candidate notebook, roadmap definitions and developer decisions. Initial tree clean; no overlapping deep-time work; daily-life research already complete in PR #477.
+- Opened four NGSS anchors, NAEYC, NPS/NHM/AMNH/Smithsonian sources, five first-party digital descriptions and NPS physical kit/program descriptions. Head Start and Identification Adventure access failures explicit; reference apps not played.
+- Shared Fossil Dig E5/D1 first; Trackway Tales/Lost Layers and existing-game packs remain proposals, answering every audience and all parent forms. No ready-build additions or source changes.
+- Passed `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser/offline; no servers (research-only tier).
+- Open: paleontology/model and practical-card review, extinction framing, creative/uncertain adaptation, exact ranges/land/identity, actual device/child use, older appeal and learning transfer. Publication is separate from local checks.
+
 ## 2026-10-16 — Everyday life long ago subject research
 
 - [PR #477](https://github.com/rjdunlap/neo/pull/477), `codex/daily-life-long-ago-subject-research`: added [study](deep-dives/subjects/daily-life-long-ago.md) with opened curriculum/developmental/material-culture sources, five first-party digital references and physical precedents, every audience, eight candidates, an Attic Finds ladder and ordered definition/build slices. Real-history/community review and access/coverage gaps remain explicit.
@@ -111,13 +158,6 @@
 - How-to remains accurate (picture-independent drag/turn instructions). No new levels or interaction, so broad suites, build/offline and separate ghost-finger browser run not run; seeded bot rule coverage passed. No iPad, actual device speech or child-recognition evidence; existing person checks stay open. Owned Vite stopped after checking; links and diff checked.
 
 
-## 2026-10-16 — Ecosystems subject research
-
-- Docs only, base `1dea66f`, branch `codex/ecosystems-subject-research`: [study](deep-dives/subjects/ecosystems.md), subject tracker, candidate notebook and roadmap definition packets. Data/AI literacy already had an uncommitted study elsewhere; ecosystems had no overlapping claim.
-- Opened Head Start/NGSS anchors, NAEYC guidance, five digital and two physical references; unavailable research papers/PBS/LTER pages are marked as leads, redirects or failures, with no claimed effect estimates. No reference games played.
-- Passed relative Markdown links (`node scripts/check-links.mjs`) and `git diff --check`. No typecheck/unit/build/browser/offline checks (research-only tier); no code changed or servers started.
-- Pre-merge backlog refresh preserved the merged data/AI study, records 18 researched subjects and waves A–C researched, recognizes the independent earth-materials claim, and names body-health next. Integrated current main; links and diff checks passed again.
-- Open: biology/content review, destination/ranges, free-trace adaptation, practical-card review, actual device/child/older-family play and learning transfer. Remote push/draft PR was initially rejected by automatic approval review; the developer subsequently authorized publishing the research branch and draft PR.
 
 ## Coverage summary
 
@@ -133,7 +173,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `marblejump` (`marble-jump`) | 2026-10-14: levels 1/6, invalid jump, hint recovery/repeated hint, portrait and land placement passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `logroll` (`log-roll`) | 2026-10-14: levels 1/3, invalid rolls, hint, Undo, portrait and Tinker Lab launch passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `snowball` (`snowball-merge`) | 2026-10-14: levels 1/3, inert press, hint once, Undo/Restart, portrait and Lantern Lake launch/leave passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
-| Subject research docs | 2026-10-16: genetics study, Sprout Shuffle ladder, Hidden Sprouts/Patchwork Conservatory cases and roadmap definitions; relative links/diff checked; earlier subject evidence retained | [Genetics entry](#2026-10-16--genetics-subject-research) | Research/proposals only; biology review, accounting, ranges/placement and person/device/transfer gaps explicit; no reference games played |
+| Subject research docs | 2026-10-16: deep-time study, shared Fossil Dig E5/D1, Trackway Tales/Lost Layers cases and roadmap definitions; relative links/anchors and diff checked; earlier subject evidence retained | [Deep-time entry](#2026-10-16--deep-time-subject-research) | Research/proposals only; science/model/card review, adaptation, ranges/identity/placement and person/device/transfer gaps explicit; reference games not played |
 | Critter Crossing level 7 (`critter-crossing`) | 2026-10-15: bank shelf: typecheck, 19 game tests, `fingerdemo` at levels 6 and 7 (27.8 s, 21.4 s), landscape and portrait shelf screenshots at level 5 ([entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-bank-shelf)); earlier: typecheck, 1026 game/content tests, `fingerdemo` at level 7 (21.7 s), one portrait scripted play (free same-answer tries, hint glow, splitter) | [Critter Crossing level 7 entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-level-7-settle-it) | landscape screenshot, how-to demo by eye, build, offline and device speech not run; level 6 entry: [archive](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--critter-crossing-level-6-either-one) |
 | Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-15: level 16 One door, typecheck, 1279 tests, `originals` peekaboo 16,2 and a clean 18.8 s level-16 demo ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--peekaboo-barn-level-16-one-door)); 2026-10-14: bedroom typecheck, 87 rules/content tests and one portrait screenshot (covers only) passed; earlier beach 92 tests and a landscape screenshot, garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Bedroom verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-bedroom-scene) / [Beach verification](archive/VERIFICATION-2026-10-14.md#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) | Bedroom, beach and garden full play/build/offline/fingerdemo not rerun; bedroom animals not screenshotted per cover, beach portrait not reviewed; iPad, speech and child play open |
 | `mossypath`, `fingerdemo` (`mossy-path`) | 2026-10-13: first/top gameplay, wrong taps/help/revision/dead-end recovery, rewards, clean 7.8/17.3 s demos, portrait/landscape; corrected filtered land launch/held Home return | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Full suite stopped on old tap-to-leave harness step; corrected navigation passed separately. iPad, speech and child play open |
