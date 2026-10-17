@@ -1,6 +1,6 @@
 # The Woodland Picnic: a second Island Errand (definition)
 
-Defined 2026-10-16 for [chunk 22](../ROADMAP.md#chunks), from [W1 in the family experience review](../FAMILY-EXPERIENCE.md#w1-one-more-connected-adventure). **Docs only: nothing here is built.** It is the second story after the Windy Picnic (`src/content/picnic.ts`, `PicnicScene`), built on the same step contract, and it owns chunk 7's Woodland Picnic, so chunk 7 stays for a *different* episode.
+Defined 2026-10-16 for [chunk 22](../ROADMAP.md#chunks), from [W1 in the family experience review](../FAMILY-EXPERIENCE.md#w1-one-more-connected-adventure). **Built 2026-10-16 ([PR #479](https://github.com/rjdunlap/neo/pull/479)); the rules below are what shipped, with no typed story result, no Robot Path and no younger version.** It is the second story after the Windy Picnic (`src/content/picnic.ts`, `PicnicScene`), built on the same step contract, and it owns chunk 7's Woodland Picnic, so chunk 7 stays for a *different* episode.
 
 **Fun action and purpose:** Hazel, the squirrel postkeeper, is throwing a picnic in Wonder Woods and asks for three jobs: send the invitations, pack the two baskets evenly, and practise the picnic beat. Each job is an ordinary round of a game she already knows, and each finished job visibly changes the clearing. When all three are done the friends walk in, the beat plays and the picnic happens. Learning purpose: the same as the three rounds (map reading, equal weights, copying a rhythm by ear), plus seeing that small jobs add up to one shared event. No new game rules.
 
