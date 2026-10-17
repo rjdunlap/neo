@@ -81,7 +81,7 @@ Chunk numbers are stable IDs that other documents cite; rows are sorted by what 
 | 27 | **Physics games** (the developer, 2026-10-14) | define | Define **Domino Run** next, then Swing Pals, Lift It; none needs a new engine | Docs only; then its tier | [PHYSICS-GAMES.md](PHYSICS-GAMES.md) |
 | 25 | **Dexterity: slice, cut and draw** (the developer, 2026-10-13) | define; **decision** for Vine Snip and Block Topple (the physics approach) | Define **Fruit Slice** (slow fruit, no bombs, lives or timer), then Cut Along, then Draw the Pattern. Vine Snip's [sketch](vine-snip.md) and Block Topple's [sketch](block-topple.md) wait on the physics decision | Docs only; then new-game tier | [Candidates](IDEAS.md#candidates) |
 | 14 | **Game deep dives**, one research session per game | ready (research only) | The first unstarted game in the tracker's lowest wave, unless the grown-up selects another | Docs only | [Tracker](deep-dives/README.md) |
-| 28 | **Subject deep research** | ready (research only) | The first unstarted, unclaimed subject in the tracker’s lowest wave (A–C and all science rows researched; wave D daily-life-long-ago/deep-time researched, other rows open as marked; wave E starts with researched zoo-animals) | Docs only | [Subject tracker](deep-dives/subjects.md), [recommendations](#subject-study-recommendations) |
+| 28 | **Subject deep research** | ready (research only) | The first unstarted, unclaimed subject in the tracker’s lowest wave (A–C and the original science rows researched; new astronomy/chemistry/cells follow-ups unstarted; wave D daily-life-long-ago/deep-time researched, other rows open as marked; wave E starts with researched zoo-animals) | Docs only | [Subject tracker](deep-dives/subjects.md), [recommendations](#subject-study-recommendations) |
 | 24 | **Range by experience** | research only, when the grown-up selects a game | Peg Garden, Fill and Dump, Shape Buddies, Read & Do, Photo Safari and Song Maker are the most useful next studies. Not a second dispatch queue | Docs only | [Catalog matrix](FAMILY-EXPERIENCE.md#a-catalog-with-many-reasons-to-play) |
 | 23 | **Useful family roles** | decision (with chunk 16) | After chunk 16's placement and seat-credit decisions: define one Secret Code maker/breaker or Buddy Delivery role-swapped round, with a solo fallback | Docs only | [W3](FAMILY-EXPERIENCE.md#w3-one-shared-job) |
 | 16 | **Family table: games two people play together** (the developer, 2026-10-11) | decision | After the placement and seat decisions: Secret Code's maker and breaker, or Row Together's lap level. Chunk 23 shares this decision | Docs only; then its tier | [Family table](IDEAS.md#mario-party-and-the-family-table-2026-10-11) |
@@ -293,6 +293,10 @@ Do not add a universal point balance to the first Lemonade Stand build. Puddle I
 For older players, combine **named project cards**, **child-chosen permanent unlocks** and a bounded Harbor balance. Prototype one reason to earn, one guaranteed reason to spend, one optional chance choice and one savings goal before widening the economy. Keep the amounts small enough to reason about; disclose every price and probability; let supported completion count; provide an everything-open grown-up switch; and never use real money, debt, upkeep, expiring offers, hidden odds or required grinding. Real elapsed time belongs only to a voluntary product whose stated lesson is waiting, such as the Harbor Bank certificate; ordinary games, rewards and projects remain available without waiting.
 
 ## Subject study recommendations
+
+The [further gap audit](deep-dives/subjects/further-gaps.md) adds unstarted measurement/units and cells/microbes sessions and identifies extensions within existing studies (decimals, connected-text reading, evolution, geography/history breadth and practical design). Research scope only; chunk 28’s selection order remains unchanged.
+
+The [follow-up gap review](deep-dives/subjects/additional-subjects.md) adds three unstarted research subjects (number structure, literature meaning, food/fiber systems) and broadens existing geometry/art/engineering scopes. These enter chunk 28’s tracker, not the build-ready list.
 
 Definition packets recommended by the [subject studies](deep-dives/subjects.md), kept in the roadmap (the developer asked for the movement study's to stay here, 2026-10-14; the later studies follow the same pattern). They are **proposals and docs-first definitions, not a dispatch queue**: a routine reaches one only through a `define` row in [Next up](#next-up) or when the grown-up selects it. A new subject study adds its section here, at this heading level.
 
@@ -516,6 +520,8 @@ The [study's ordered slices](deep-dives/subjects/life-science.md#build-slices-in
 
 ### Space science recommendations
 
+**Research follow-up requested 2026-10-16:** [Astronomy](deep-dives/subjects/astronomy.md), covering stars, galaxies, observational instruments/evidence and deeper eclipse/season models. Tracked as not started under chunk 28; no new build-ready item.
+
 **Recommended 2026-10-14:** [the space study](deep-dives/subjects/space.md), [PR #335](https://github.com/rjdunlap/neo/pull/335), covers lap through parents with opened NGSS/NASA anchors, developmental guidance, two research abstracts, six official digital precedents and a physical model reference. Develop the existing **Moon Window** seed first; define **Orbit Garden** and **Observatory Files** for older children and parents next. These are docs-first proposals; no games, bands or zones were built. The existing subject order remains intact.
 
 | Candidate | Status | Next complete definition |
@@ -528,6 +534,8 @@ The [study's ordered slices](deep-dives/subjects/life-science.md#build-slices-in
 Keep size/distance exploration in the existing Zoom Walk proposal and different-gravity launches in Planet Hop/Bouncy Launch. The [study's ordered slices](deep-dives/subjects/space.md#build-slices-in-order) separate definitions from implementation. Astronomy/model review, age/land placement and exploration accounting remain explicit; adapted lamp/ball or sky/equipment instructions need a named reviewer before release. Definitions use links/diff checks; later interactions use their actual game tier. No real-sky accuracy, iPad usability, tween/parent appeal or learning transfer is established by this study.
 
 ### Matter recommendations
+
+**Research follow-up requested 2026-10-16:** [Chemistry](deep-dives/subjects/chemistry.md), with SpaceChem as a reference to investigate. Tracked as not started under chunk 28; no new build-ready item.
 
 **Recommended 2026-10-14:** [the subject study](deep-dives/subjects/matter.md), [PR #324](https://github.com/rjdunlap/neo/pull/324), answers for lap through parents. Melt and Freeze is the first new-game candidate; floating stays in Sink or Float and colour mixing in Color Garden. Research proposals and docs-first packets, not registrations.
 
