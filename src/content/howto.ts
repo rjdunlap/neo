@@ -265,7 +265,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 9, text: 'The round ends when every tune has been copied.' },
       { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
     ],
-    note: [{ from: 4, to: 9, text: 'Replaying the tune is always available.' }],
+    note: [
+      { from: 1, to: 3, text: 'If nobody touches for a while, a jelly wiggles to invite another tap. It counts nothing.' },
+      { from: 4, to: 9, text: 'The yellow note button above the jellies plays the tune again whenever it is her turn. It counts no miss or hint. Some tunes are bits of real songs, named aloud.' },
+    ],
   },
   'peekaboo-barn': {
     goal: 'Find the animals hiding in the barnyard or garden.',

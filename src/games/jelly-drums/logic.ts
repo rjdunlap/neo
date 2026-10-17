@@ -1,3 +1,4 @@
+import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
 
 /** Jellies on the stage, biggest (lowest) first. */
@@ -40,20 +41,82 @@ export function nearestAwake(xs: readonly number[], awake: readonly number[], x:
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
+/** What a tune is: a shape (the same at every length) or a phrase of a real song. */
+export type TuneKind = 'up' | 'down' | 'hop' | 'wiggle' | SongId;
+
+export interface Tune {
+  notes: number[];
+  kind: TuneKind;
+  /** A song's spoken title, said before it first plays. */
+  title?: LineId;
+}
+
+export type SongId = 'hot-cross-buns' | 'mary' | 'jingle-bells';
+
 /**
- * A tune to copy, as jelly indexes. Short tunes never repeat a jelly back to back, so each note
- * is a new place to tap; and no tune is one jelly over and over, so there is always a tune to hear.
- * A tune already in `played` (the round's earlier tunes) is never drawn again.
+ * Song phrases on the five jellies (C D E G A = 0 1 2 3 4), traditional tunes in C major, checked 2026-10-17 against
+ * letter-note charts: Hot Cross Buns opens E D C; Mary Had a Little Lamb opens E D C D E (E E); Jingle Bells' chorus
+ * "jingle all the way" is E G C D E. Oh! Susanna's phrases are left out until a score confirms them.
  */
-export function makeTune(rng: Rng, length: number, played: readonly (readonly number[])[] = []): number[] {
-  for (;;) {
-    const tune: number[] = [];
-    while (tune.length < length) {
-      const i = rng.int(0, JELLIES - 1);
-      if (tune.length && i === tune[tune.length - 1] && length <= 3) continue;
-      tune.push(i);
+export const SONGS: readonly { id: SongId; notes: number[]; title: LineId }[] = [
+  { id: 'hot-cross-buns', notes: [2, 1, 0], title: 'jelly.song.hot-cross-buns' },
+  { id: 'mary', notes: [2, 1, 0, 1, 2], title: 'jelly.song.mary' },
+  { id: 'jingle-bells', notes: [2, 3, 0, 1, 2], title: 'jelly.song.jingle-bells' },
+];
+
+const alternate = (a: number, b: number, length: number) => Array.from({ length }, (_, k) => (k % 2 ? b : a));
+
+/**
+ * Every tune of a length: staircases up and down, hops (two jellies with at least one between, back and forth), wiggles
+ * (two neighbors back and forth, from three notes, since two would be a staircase) and the songs of that length.
+ */
+export function tunesOf(length: number): Tune[] {
+  const out: Tune[] = [];
+  for (let s = 0; s + length <= JELLIES; s++) {
+    const up = Array.from({ length }, (_, k) => s + k);
+    out.push({ notes: up, kind: 'up' }, { notes: [...up].reverse(), kind: 'down' });
+  }
+  for (let a = 0; a < JELLIES; a++) {
+    for (let b = 0; b < JELLIES; b++) {
+      const gap = Math.abs(a - b);
+      if (gap >= 2) out.push({ notes: alternate(a, b, length), kind: 'hop' });
+      if (gap === 1 && length >= 3) out.push({ notes: alternate(a, b, length), kind: 'wiggle' });
     }
-    if ((length < 2 || new Set(tune).size > 1) && !played.some((t) => t.length === tune.length && t.every((n, k) => n === tune[k]))) return tune;
+  }
+  for (const song of SONGS) if (song.notes.length === length) out.push({ notes: [...song.notes], kind: song.id, title: song.title });
+  return out;
+}
+
+const same = (a: readonly number[], b: readonly number[]) => a.length === b.length && a.every((n, k) => n === b[k]);
+
+/**
+ * The next tune to copy. A kind is picked first, so a song comes round as often as a shape; never the kind just
+ * played while another is left, and never a tune already in `played` (the round's earlier tunes).
+ */
+export function drawTune(rng: Rng, length: number, played: readonly Tune[] = []): Tune {
+  const fresh = tunesOf(length).filter((t) => !played.some((p) => same(p.notes, t.notes)));
+  const kinds = [...new Set(fresh.map((t) => t.kind))];
+  const last = played.at(-1)?.kind;
+  const choices = kinds.length > 1 ? kinds.filter((k) => k !== last) : kinds;
+  const kind = rng.pick(choices);
+  return rng.pick(fresh.filter((t) => t.kind === kind));
+}
+
+/** Seconds without a touch in free play before a jelly wiggles to invite her back. */
+export const NUDGE_AFTER = 8;
+
+/** Free play's idle clock: any touch resets it, and it nudges once every `NUDGE_AFTER` quiet seconds. It never counts anything. */
+export class IdleNudge {
+  private idle = 0;
+  touched() {
+    this.idle = 0;
+  }
+  /** True when a nudge is due this frame. */
+  tick(dt: number): boolean {
+    this.idle += dt;
+    if (this.idle < NUDGE_AFTER) return false;
+    this.idle = 0;
+    return true;
   }
 }
 

@@ -4349,6 +4349,9 @@ async function originals() {
       for (let t = 0; t < g.plan.goal; t++) {
         await turn();
         if (t === 0) {
+          // The listen-again button replays the tune for free: no miss, no hint.
+          kit.tapOn(g.again); await kit.until(() => g.phase === 'listen', 2000); await turn();
+          if (g.misses !== 0 || g.hints !== 0) throw new Error(`Jelly listen-again counted: ${g.misses} ${g.hints}`);
           for (let k = 0; k < 2; k++) { await turn(); await hit((g.tune[0] + 1) % 5); }
           await turn();
           if (g.misses !== 2 || g.hints !== 1 || g.jellies[g.tune[0]].glowLeft <= 0) throw new Error(`Jelly hint: ${g.misses} ${g.hints}`);

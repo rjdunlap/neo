@@ -1,19 +1,66 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { awakeJellies, nearestAwake, WAKE_AT, WAKE_ORDER, FREE_SONG, freeNote, JELLIES, jellyToTap, makeTune, PLANS } from './logic';
+import { SCRIPT } from '../../content/voice-script';
+import { awakeJellies, nearestAwake, WAKE_AT, WAKE_ORDER, FREE_SONG, freeNote, IdleNudge, JELLIES, jellyToTap, drawTune, NUDGE_AFTER, PLANS, SONGS, tunesOf, type Tune } from './logic';
+
+const echoPlans = () => PLANS.filter((p) => p.mode === 'echo');
+const round = (seed: number, length: number, goal: number) => {
+  const rng = new Rng(seed);
+  const played: Tune[] = [];
+  for (let n = 0; n < goal; n++) played.push(drawTune(rng, length, played));
+  return played;
+};
 
 describe('Jelly Drums', () => {
-  it('never repeats a tune within a round, at any echo level', () => {
-    for (const plan of PLANS.filter((p) => p.mode === 'echo')) {
-      for (let seed = 1; seed <= 100; seed++) {
-        const rng = new Rng(seed);
-        const played: number[][] = [];
-        for (let n = 0; n < plan.goal; n++) played.push(makeTune(rng, plan.length, played));
-        expect(new Set(played.map((t) => t.join())).size).toBe(plan.goal);
+  it('never repeats a tune or a kind back to back within a round, at any echo level', () => {
+    for (const plan of echoPlans()) {
+      expect(tunesOf(plan.length).length, `level pool ${plan.length}`).toBeGreaterThanOrEqual(plan.goal);
+      for (let seed = 1; seed <= 300; seed++) {
+        const played = round(seed, plan.length, plan.goal);
+        expect(new Set(played.map((t) => t.notes.join())).size).toBe(plan.goal);
+        for (let k = 1; k < played.length; k++) expect(played[k].kind).not.toBe(played[k - 1].kind);
       }
     }
   });
 
+  it('draws shapes only at level 4, Hot Cross Buns at 5–6, and the five-note songs at 9; every song is named aloud', () => {
+    const kinds = (level: number) => new Set(tunesOf(PLANS[level - 1].length).map((t) => t.kind));
+    expect([...kinds(4)].sort()).toEqual(['down', 'hop', 'up']);
+    for (const level of [5, 6]) expect(kinds(level)).toContain('hot-cross-buns');
+    expect([...kinds(7)].sort()).toEqual(['down', 'hop', 'up', 'wiggle']);
+    for (const id of ['mary', 'jingle-bells'] as const) expect(kinds(9)).toContain(id);
+    for (const song of SONGS) {
+      expect(SCRIPT[song.title], song.id).toBeTruthy();
+      expect(song.notes.length).toBeLessThanOrEqual(5);
+    }
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) for (const t of round(seed, 5, 5)) seen.add(t.kind);
+    expect(seen).toContain('mary');
+  });
+
+  it('keeps each shape true to its name', () => {
+    for (const length of [2, 3, 4, 5]) {
+      for (const t of tunesOf(length)) {
+        const steps = t.notes.slice(1).map((n, k) => n - t.notes[k]);
+        if (t.kind === 'up') expect(steps.every((d) => d === 1)).toBe(true);
+        if (t.kind === 'down') expect(steps.every((d) => d === -1)).toBe(true);
+        if (t.kind === 'hop') expect(steps.every((d, k) => Math.abs(d) >= 2 && (k === 0 || d === -steps[k - 1]))).toBe(true);
+        if (t.kind === 'wiggle') expect(steps.every((d, k) => Math.abs(d) === 1 && (k === 0 || d === -steps[k - 1]))).toBe(true);
+      }
+    }
+  });
+
+  it('nudges only after quiet time in free play, never while she taps', () => {
+    const nudge = new IdleNudge();
+    for (let f = 0; f < 60 * 30; f++) {
+      if (f % 60 === 0) nudge.touched(); // a tap every second
+      expect(nudge.tick(1 / 60)).toBe(false);
+    }
+    const quiet = new IdleNudge();
+    let fired = 0;
+    for (let f = 0; f < 60 * (NUDGE_AFTER * 2 + 1); f++) if (quiet.tick(1 / 60)) fired++;
+    expect(fired).toBe(2);
+  });
 
   it('grows from free play to longer tunes', () => {
     const echo = PLANS.filter((p) => p.mode === 'echo');
@@ -25,9 +72,8 @@ describe('Jelly Drums', () => {
 
   it('makes tunes on real jellies, never one note over and over, with no repeats in short tunes', () => {
     const used = new Set<number>();
-    for (const plan of PLANS.filter((p) => p.mode === 'echo')) {
-      for (let seed = 1; seed <= 300; seed++) {
-        const tune = makeTune(new Rng(seed), plan.length);
+    for (const plan of echoPlans()) {
+      for (const { notes: tune } of tunesOf(plan.length)) {
         expect(tune).toHaveLength(plan.length);
         for (const i of tune) {
           expect(i).toBeGreaterThanOrEqual(0);
@@ -83,7 +129,7 @@ describe('Jelly Drums', () => {
 
     it('waits through the first pause and the tune, then copies it note for note, with no wrong tap', () => {
       for (const plan of PLANS.filter((p) => p.mode === 'echo')) {
-        const tune = makeTune(new Rng(7), plan.length);
+        const tune = drawTune(new Rng(7), plan.length).notes;
         for (const phase of ['play', 'listen', 'done'] as const) expect(jellyToTap('echo', phase, tune, 0, 0)).toBeNull();
         const copy: number[] = [];
         for (let at = 0; at < tune.length; at++) copy.push(jellyToTap('echo', 'turn', tune, at, 0)!);

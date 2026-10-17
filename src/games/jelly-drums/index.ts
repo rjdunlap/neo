@@ -7,10 +7,12 @@ import { music, STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
+import { RoundButton } from '../../ui/buttons';
+import { replayArt } from '../shared';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
-import { awakeJellies, jellyToTap, makeTune, nearestAwake, planFor, type JellyPhase, type JellyPlan } from './logic';
+import { awakeJellies, drawTune, IdleNudge, jellyToTap, nearestAwake, planFor, type JellyPhase, type JellyPlan, type Tune } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Big jelly, low note: C D E G A from left to right. */
@@ -47,7 +49,12 @@ class JellyDrums implements Game {
   private at = 0;
   private tunesDone = 0;
   /** The tunes already played this round, so none comes round twice. */
-  private played: number[][] = [];
+  private played: Tune[] = [];
+  /** Tune levels: hear the tune again, free (no miss, no hint), whenever it is her turn. */
+  private readonly again: RoundButton;
+  /** Free play: a quiet jelly wiggles after a while without a touch. */
+  private readonly nudge = new IdleNudge();
+  private lastJelly = 2;
   private wrongThisTune = 0;
   private misses = 0;
   private hints = 0;
@@ -68,7 +75,9 @@ class JellyDrums implements Game {
       c.scale.set(0.3);
       return c;
     });
-    ctx.stage.addChild(this.sky, this.mountains, this.garland, this.stageG, ...this.jellies, ...this.fans);
+    this.again = new RoundButton(replayArt(), swatch.yellow, 56, () => void this.listenAgain());
+    this.again.visible = this.plan.mode === 'echo' && !ctx.couch;
+    ctx.stage.addChild(this.sky, this.mountains, this.garland, this.stageG, ...this.jellies, ...this.fans, this.again);
     if (this.plan.mode === 'wake') {
       this.jellies.forEach((j) => (j.eventMode = 'none'));
       onTap(this.anywhere, (e) => {
@@ -80,7 +89,7 @@ class JellyDrums implements Game {
   }
 
   start() {
-    void this.ctx.instruct('jelly.free');
+    void this.ctx.instruct(this.plan.mode === 'echo' ? 'jelly.echo' : 'jelly.free');
     if (this.plan.mode === 'echo') void this.ctx.tw.wait(2).then(() => this.nextTune());
   }
 
@@ -118,6 +127,8 @@ class JellyDrums implements Game {
     for (let i = 0; i < 8; i++) this.stageG.rect(cx - 452 + i * 113 + 54, top + 26, 5, v.h * 0.12).fill({ color: 0x000000, alpha: 0.12 });
 
     this.jellies.forEach((j, i) => j.position.set(cx + (i - 2) * 178, top + 10));
+    // Between the garland and the jellies' tops, clear of both.
+    this.again.position.set(cx, top - 250);
     if (this.plan.mode === 'wake') {
       this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
       this.wakeLayout();
@@ -130,6 +141,12 @@ class JellyDrums implements Game {
     this.clock += dt;
     const beat = music.beat();
     for (const j of this.jellies) j.update(dt, beat);
+    this.again.alpha = this.phase === 'turn' ? 1 : 0.5;
+    if (this.plan.mode === 'free' && this.phase === 'play' && this.nudge.tick(dt)) {
+      const j = this.jellies[this.lastJelly];
+      j.hit(0.5);
+      j.glow(1);
+    }
   }
 
   /** The ghost finger on the how-to card: play the scale in free play, and in a tune round wait for the tune, then copy it. */
@@ -145,6 +162,8 @@ class JellyDrums implements Game {
 
   private tapJelly(i: number) {
     if (this.phase === 'done') return;
+    this.nudge.touched();
+    this.lastJelly = i;
     this.sing(i);
     if (this.plan.mode !== 'echo') {
       const woke = this.plan.mode === 'wake' ? awakeJellies(this.notes + 1).length - awakeJellies(this.notes).length : 0;
@@ -234,8 +253,10 @@ class JellyDrums implements Game {
     this.phase = 'listen';
     this.at = 0;
     this.wrongThisTune = 0;
-    this.tune = makeTune(this.ctx.rng, this.plan.length, this.played);
-    this.played.push(this.tune);
+    const tune = drawTune(this.ctx.rng, this.plan.length, this.played);
+    this.played.push(tune);
+    this.tune = tune.notes;
+    if (tune.title) await this.ctx.say(tune.title);
     await this.playTune(false);
     this.phase = 'turn';
     void this.ctx.instruct('jelly.turn');
@@ -249,6 +270,17 @@ class JellyDrums implements Game {
       this.sing(i);
       await this.ctx.tw.wait(slow ? 0.85 : 0.6);
     }
+  }
+
+  /** The listen-again button: the whole tune again from the top, slowly once she has needed help. Nothing is counted. */
+  private async listenAgain() {
+    if (this.phase !== 'turn') return;
+    this.phase = 'listen';
+    this.at = 0;
+    const help = this.wrongThisTune >= 2;
+    await this.playTune(help);
+    this.phase = 'turn';
+    if (help) this.jellies[this.tune[0]].glow(1.5);
   }
 
   private async copied() {
