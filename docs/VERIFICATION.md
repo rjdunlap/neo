@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-16 — Fractions subject research
+
+- [PR #480](https://github.com/rjdunlap/neo/pull/480), `codex/fractions-subject-research`: docs only; [study](deep-dives/subjects/fractions.md), tracker/notebook and roadmap definition packets. Inquiry/genetics were claimed elsewhere; fractions had no overlapping claim. Base `d2963e0`; fetched origin was six commits ahead, so unmerged upstream content is not silently treated as local.
+- Opened CCSS 1.G/2.G, 3.NF–5.NF and 6.NS; IES guide/page; NAEYC guidance; six first-party digital references and Fraction Talks. Head Start failed; PhET exposed a shell, so detailed simulation rules remain unverified. No reference game was played.
+- Local Markdown links/anchors and `git diff --check` passed. Proposed Ribbon Workshop ladder, Whole Switch/Ribbon Cases and existing-game ownership are documented; no implementation, band, zone or save changes.
+- Not run: typecheck, tests, build or browser suites (docs-only tier); iPad, device speech, child/teen/parent appeal and learning transfer remain unestablished.
+
 ## 2026-10-16 — Photo Safari waving and swimming
 
 - [PR #474](https://github.com/rjdunlap/neo/pull/474), `codex/safari-actions`, dispatch `safari-actions-20261016T222436Z`; tested `ad09b31` plus implementation diff. Docs-only upstream integration `3c53157` changes no game dependencies.
