@@ -160,4 +160,4 @@ These are unresolved definition/review choices, not blockers to this docs-only s
 
 ## What was built and checked
 
-Nothing was implemented. The subject study, tracker, notebook, roadmap recommendations and verification entry are the deliverables. Relative-link and diff checks are recorded in [VERIFICATION](../../VERIFICATION.md#2026-10-16--ecosystems-subject-research). No typecheck, unit tests, build, browser suite, device checks, reference-game play or learning study was run. The developer authorized publishing the research branch and draft PR after the initial automatic review rejection.
+Nothing was implemented. The subject study, tracker, notebook, roadmap recommendations and verification entry are the deliverables. Relative-link and diff checks are recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-16.md#2026-10-16--ecosystems-subject-research). No typecheck, unit tests, build, browser suite, device checks, reference-game play or learning study was run. The developer authorized publishing the research branch and draft PR after the initial automatic review rejection.

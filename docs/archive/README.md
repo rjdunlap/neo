@@ -31,3 +31,5 @@ Earth-materials research closeout also rotated the oldest live verification entr
 Body/health research closeout also rotated the Shape Buddies level 2 definition and Critter Sort level 11 entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
 
 Genetics research closeout rotated the Clap the Syllables level 8 and 9 entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
+
+Deep-time research closeout rotated the oldest live Ecosystems subject-research entry into [Verification 2026-10-16](VERIFICATION-2026-10-16.md).
