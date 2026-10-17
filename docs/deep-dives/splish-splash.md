@@ -29,15 +29,15 @@ The ranges are lap 1–2, toddler 1–4, preschool 3–7 and pre-K 5–8 (`LEVEL
 
 **Known gaps** (read from the code and docs; none has been seen on a device unless said).
 
-1. **The how-to card has three unbounded lines.** The last step is `{ from: 8 }` and the finish line and note are `{ from: 3 }`, so a level 9 would inherit the ordered-pair text. `howto.test.ts` checks that every step is bounded for Bubble Pop only (Peekaboo Barn's gap 2 is the same).
+1. **(Fixed.)** ~~The how-to card has three unbounded lines.~~ The last step is `{ from: 8 }` and the finish line and note are `{ from: 3 }`, so a level 9 would inherit the ordered-pair text. `howto.test.ts` checks that every step is bounded for Bubble Pop only (Peekaboo Barn's gap 2 is the same).
 2. **The hint rule is not the one in AGENTS.md.** The glow comes after seven seconds with no progress, never after two misses, and it counts as a hint. The seven seconds start when the question is asked (`sinceProgress = 0` is set before the voice is awaited), so a toddler who pauses to listen or to look at the part gets about four quiet seconds after the words end. The question resets the hint, so pausing on two questions of one round gives two hints, which makes it a struggling round (two hints); two such rounds send her down a level.
-3. **Free play never nudges.** Levels 1 and 2 have no hint and no idle response, so a child who does nothing sees nothing change after the first instruction.
-4. **Naming happens only from level 3.** In free play the parts are never named: the voice says "scrub scrub", and the co-play line asks a grown-up to name the parts. The youngest bands, where body words are being learned, hear none.
-5. **A tap clears a small disc** (about 31 units radius), so patting a splotch takes several well-aimed pats. A palm is wider than that. **Needs a person.**
+3. **(Fixed in slice 1.)** Free play now nudges: after 8 s with no touch on levels 1–2 the next muddy splotch sparkles and the pet wiggles; it never counts a hint.
+4. **(Fixed in slice 1.)** Free levels 1–2 and pat level 9 name each part at its first touch ("My cheeks!", once per round, at least 2.5 s apart) and as it goes clean ("Clean tummy!"); parts levels 3–8 say "Clean ears!" before the next question.
+5. **A tap clears a small disc** (about 31 units radius on parts levels; levels 1–2 now use a brush of 1.6 times that). Whether the larger brush suits a palm **needs a person.** Level 9 (pat) and parts levels are unchanged.
 6. **Levels 7 and 8 are the shortest parts rounds:** four parts, so two questions, against five at level 6. They also drop the cheeks.
 7. **Body parts are limited by the art.** `CritterSpec` has no arms or hands, the feet sit behind `tubFront` (drawn above the pet), and the eyes and mouth carry the pet's reactions. The five parts in use are the whole set that Pip's blob can wear mud on without art changes.
-8. **Speech uses the raw part id.** `{part}` is the part's id and `notThatPart` composes "`a` and my `b`", so a new part must read naturally in "Wash my {part}", "That's my {touched}" and "Wash my {a} and my {b}".
-9. **Recorded flake and open question** ([VERIFICATION](../VERIFICATION.md)): `EARLY_ONLY=bath` failed at level 5 (`[2, 0]`) in one of three runs after the forgiveness rule was narrowed, and whether a later touch on a clean neighbour should be forgiven (it is not) is still open.
+8. **(Fixed in slice 1: `PHRASES` word and plural table; "Those are my cheeks!", `bath.notthose`.)** Was: speech used the raw part id. `{part}` is the part's id and `notThatPart` composes "`a` and my `b`", so a new part must read naturally in "Wash my {part}", "That's my {touched}" and "Wash my {a} and my {b}".
+9. **Recorded flake and open question** ([VERIFICATION](../VERIFICATION.md)): `EARLY_ONLY=bath` failed at level 5 (`[2, 0]`) in one of three runs after the forgiveness rule was narrowed, and whether a later touch on a clean neighbour should be forgiven (it is not) is still open. Slice 1 also saw `EARLY_ONLY=bath` fail at level 7 once: the harness picked `tummy` as the wrong part while `nose` was asked, and the nose splotch lies within the tummy's reach, so the game forgives it by design (a harness flake; the check should pick a wrong part that does not overlap an asked one).
 10. **Person checks open:** lap level 1 with a real child ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device)); and whether a one-year-old scrubs, pats or slaps (gap 5).
 
 ## Similar games
@@ -152,7 +152,7 @@ These are easier than levels that exist, or fall between them, so they are place
 
 Each is sized for one session. Slices that add a level are built in level order so saved ids stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (the `early` bath loop stops at level 8 and expects `[1, 0]` or `[0, 0]`), the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).
 
-1. **Words and guards** (ready, no decision). The bounded how-to lines and the generic test; the phrase table; naming the part as it goes clean; the free-play nudge; the larger brush on levels 1–2. Tier: typecheck, the game's rule tests and the how-to test; then `EARLY_ONLY=bath` once (it plays 1–8; one repeat is acceptable for the recorded level-5 flake).
+1. **Words and guards** (built 2026-10-17, branch `claude/splish-words-guards`). The bounded how-to lines and the generic test; the phrase table; naming the part as it goes clean; the free-play nudge; the larger brush on levels 1–2. Tier: typecheck, the game's rule tests and the how-to test; then `EARLY_ONLY=bath` once (it plays 1–8; one repeat is acceptable for the recorded level-5 flake).
 2. **Hint accounting** (decision 5). Tier: rule tests and the same `EARLY_ONLY=bath` run.
 3. **Foam, the shake and bath toys** (ready). Tier: rule tests, one landscape and one portrait screenshot, `fingerdemo` at level 1.
 4. **Rooms and messes** (ready; a sub-slice per room if needed). Tier: rule tests including the contrast rule, one screenshot per room.
@@ -167,6 +167,8 @@ Each is sized for one session. Slices that add a level are built in level order 
 ## Built since
 
 2026-10-15: **Pat the bubbles** as level 9 (lap entry, placed first). Passed typecheck, full vitest, `early` bath and `fingerdemo` at level 9 ([verification](../VERIFICATION.md)). Open: a person check.
+
+2026-10-17: **Slice 1, Words and guards.** Palm brush on levels 1–2, phrase table, naming at first touch and as parts go clean, free-play nudge, bounded how-to notes with the generic ladder test ([verification](../VERIFICATION.md)). Open: person checks.
 
 ## What was built in this session
 
