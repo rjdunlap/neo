@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Domino Run definition
+
+- Defined Domino Run levels 1–8 in [the definition](definitions/domino-run.md): a one-lane slot model with reach by size and a one-size-bigger push rule (a toy rule, labelled), forks with two bells, a gong only a giant rings, authored first lines with their solutions worked out, seeded generation with plan filters, stall-as-experiment accounting with a glow after two stalls, a drag bot, the how-to card and registration in Bubble Beach; six references cited (Whitehead via a secondary source).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the five defaulted decisions; layout numbers are computed, not measured; no child has played it.
+
 ## 2026-10-17 — Sound Garden deep dive
 
 - Docs only: [deep dive](deep-dives/sound-garden.md) on `claude/dive-sound-garden` ([PR #521](https://github.com/rjdunlap/neo/pull/521)). Audited levels 1–6; gaps: one fixed sound per answer, fast/slow confounded with count and length, answer creatures never heard (turtle absent, off-scale croak), silent busy taps (V2), a hidden echo rhythm, an unbounded how-to step.
