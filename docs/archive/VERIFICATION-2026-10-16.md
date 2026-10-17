@@ -1,5 +1,35 @@
 # Verification 2026-10-16 (archived entries)
 
+## 2026-10-17 — RW01 name and story packet
+
+- Docs only: [name and story packet](../rework/NAME-AND-STORY.md) on `claude/rw01-name-and-story` ([PR #498](https://github.com/rjdunlap/neo/pull/498)), based on `4daf52a`. Routed the working recommendation to the rework brief, the title decision to waiting-on-developer and the human checks to device checks; removed the RW01 ready line.
+- Name screen: six informal web searches on 2026-10-17, recorded in the packet; not USPTO/App Store/Google Play searches and not legal clearance.
+- Checked every game the packet names exists in `src/games/`. Passed `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit, build, browser, offline, device speech, child/parent name and appeal checks not run.
+
+## 2026-10-17 — Discovery D1b direct Next game
+
+- [PR #483](https://github.com/rjdunlap/neo/pull/483), `codex/discovery-direct-next`, dispatch `discovery-direct-20261017T013407Z`; tested base `4e5bd15` plus implementation diff. Fixed reviewed lap/toddler pool, pictured Next game/Another, live pin/band resolution, retained origins, transient profile guards and celebration resize; no saved fields.
+- Passed typecheck, all 158 unit files / 1,446 tests and production build; the final speech-only fix then passed typecheck, all 32 focused discovery tests and a rebuilt bundle. Native pointercancel failed a small real-event probe on the initial implementation (`navigating: true`); adding native cancellation/lost-capture cleanup made the same probe pass (`false`).
+- At `http://localhost:5187`, `BROWSER_SUITE=discovery DISCOVERY_ONLY=direct-next`: ordinary Bubble Pop lap 15 → Barn 1 → Bubble Beach, full intro, rewards, held/double/canceled presses, Another, Keep/Heart, live pins and invalid/empty recovery passed; the complete corrected flow passed with no page errors. `BROWSER_SUITE=world` also passed at that URL: all six bands in both orientations, hatching/reload, land/home returns, birthdays and parent settings. These runs exercised the code now published at `56385f1`; reuse them. One harness timeout used unregistered `peekaboo`; corrected to `peekaboo-barn` after the small exclusion probe passed older-profile/story/non-pool branches.
+- Reviewed `test-results/browser/discovery-direct-landscape.png` and `discovery-direct-portrait.png`: new tiles, sticker, Keep/Heart, discovery pill, Next level and pet stay clear; resize retains suggestion and settled progress. Synthetic results exercise optional creation/discovery branches; these are not new game rewards or discoveries.
+- Production offline passed at `http://localhost:4187` after confirming served `assets/index-BDgi7sWf.js` matched `dist/index.html`: reload, assets/fonts, routes, intro/Play, rewards/progress, picnic, treehouse/creations and journal. Final speech ordering and stale-announcement tests passed on `6890c8c` plus the speech diff; navigation passes reused because that diff only queues speech. Owned dev/preview servers stopped. Full couch/picnic/release sweep not run; device speech, iPad reach and child interpretation remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-16 — Creature-world rework plan
+
+- Source/planning audit recorded the requested educational creature world, collection/customization, permanent unlocks and staged work in `docs/rework/`; name, story and art recommendations remain provisional.
+- Linked the initiative into the roadmap and coordinator selection policy after active Discovery D1b; retained current claims, content research, checkpoint and usage records. No automation or runtime behavior changed.
+- Recorded the developer's development-save reset exception; current-format validation, profile isolation and offline reliability still require proof when implemented. Existing source stays in place; only superseded documents will be archived as replacements ship.
+- Passed `node scripts/check-links.mjs` and `git diff --check`. Docs-only change; typecheck, unit, build, browser, offline, device/child and learning-transfer checks not run.
+- Publication resumed 2026-10-17 in [PR #497](https://github.com/rjdunlap/neo/pull/497): integrated D1b on `94d3bb2`, retained its verification and worker checkpoint, and removed its completed ready-list entry. Rechecked links/diff for the merged documentation; no runtime difference from that main commit.
+
+## 2026-10-16 — Woodland Picnic
+
+- [PR #479](https://github.com/rjdunlap/neo/pull/479), `claude/woodland-picnic`, code at `f57b77c` on `origin/main` `2d7e623`: the second Island Errand (school, from Wonder Woods); new save field `stories.woodland`, story-ID store methods, `go.woodland`, `StoryRound` union.
+- Passed `npm run typecheck`, `npm test` (154 files, 1416 tests, including save migration, store story and woodland content tests with story levels inside each game's school range) and `npm run build`.
+- `BROWSER_SUITE=woodland` (new) passed at `http://localhost:5173`: entry only in Wonder Woods, story spot first, portrait cards, real Mail Carrier 6 round with a wrong house, Seesaw left mid-round and finished with help, Beat Builder 3 on `PicnicStage`, reload resume, ending and one photo, one sticker per round, retelling, Home; screenshots `woodland-start-portrait.png`, `woodland-finale.png`. `picnic` and `world` passed as regressions.
+- Production offline check passed against the current build (`assets/index-gguiz4Kg.js` confirmed, preview `http://localhost:4173`) after its fixture was updated to expect the untold woodland telling.
+- Open: device speech and the picnic beat on an iPad, a child playing it ([device check](../DEVICE-CHECKS.md)).
+
 ## 2026-10-16 — Subject docs publication reconciliation
 
 - Reconciled with `origin/main` at `786889a`, retaining completed inquiry, genetics, daily-life-long-ago and deep-time studies. New research rows remain unstarted; broader evolution is a follow-up scope rather than a claim that genetics research is unfinished.
