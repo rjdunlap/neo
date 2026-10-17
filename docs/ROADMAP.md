@@ -49,7 +49,7 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 The existing content slices were re-checked 2026-10-15 against their dives and `origin/main`. Added the rework explorations on 2026-10-16: after the recorded worker is closed out, take the first unclaimed eligible RW exploration before the retained content list. Each line is one bounded session; being ready for exploration does not authorize its downstream implementation.
 
-1. **RW01 — name and story** (docs exploration): compare naming structures and define a Discovery Club opening/invitation; current title remains usable. [Packet](rework/WORK-ITEMS.md#rw01-name-and-story)
+1. **RW01 — name and story** (docs exploration): compare naming structures and define a Discovery Club opening/invitation; current title remains usable. [Packet](rework/WORK-ITEMS.md#rw01-name-and-story) Claimed 2026-10-17: branch `claude/rw01-name-and-story`.
 2. **RW02 — creature art and animation** (bounded prototype exploration): three silhouettes, idle/touch reactions and shared accessories in the current renderer; no catalog reskin. [Packet and proof](rework/WORK-ITEMS.md#rw02-creature-art-and-animation-prototype)
 3. **RW03 — home and navigation** (docs/prototype exploration): define Home/Back, collection and Explore, reconciled with D1b; no production-route cutover. [Packet](rework/WORK-ITEMS.md#rw03-home-and-navigation-packet)
 4. **RW04 — welcome adventure and learning** (docs definition): audit concrete existing modes and define adoption, a kept creation and observed learning actions. [Packet](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet)
