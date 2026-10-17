@@ -276,3 +276,15 @@
 - Shared Fossil Dig E5/D1 first; Trackway Tales/Lost Layers and existing-game packs remain proposals, answering every audience and all parent forms. No ready-build additions or source changes.
 - Passed `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser/offline; no servers (research-only tier).
 - Open: paleontology/model and practical-card review, extinction framing, creative/uncertain adaptation, exact ranges/land/identity, actual device/child use, older appeal and learning transfer. Publication is separate from local checks.
+
+## 2026-10-16 — Additional subject gap review
+
+- Compared the current tracker, original standards audit and existing game coverage with opened primary CCSS, National Core Arts Standards and National Agriculture in the Classroom pages. Added three unstarted research rows and an overlap/source review; no subject study or build is claimed complete.
+- Explicit scope recommendations for geometry, visual art and engineering remain within their existing sessions. Research/build dispatch order unchanged.
+- Passed local Markdown links/anchors and `git diff --check`. Docs only; no code tests, build, browser or device checks run. Developmental/competitor research and detailed agriculture outcomes remain for full sessions.
+
+## 2026-10-16 — Subject docs completed-work cleanup
+
+- Clarified that designed subject rows mean completed research, removed researched waves from the suggested research backlog, and refreshed the standards audit after the zoo study and language/habitat decisions.
+- Updated space/physics references for built Planet Hop school level 12 and life-science/zoo references for Photo Safari’s built clues and actions. Other proposed modes, habitat kits and reviewer decisions remain open; dated research evidence is retained.
+- Passed local Markdown links/anchors (`node scripts/check-links.mjs`) and `git diff --check`. Docs only; no code tests, build, browser or device checks run.

@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Ramp Race truthful support definition, Q1 (2026-10-17)
+
+[PR #507](https://github.com/rjdunlap/neo/pull/507): docs only. [Definition](../definitions/ramp-race-support.md) freezes accurate level 1–4 goal, steps, finish and miss wording and specifies an idempotent corrective glow and recovery demo after an unfair pair; accounting unchanged. Q2 builds it.
+
 ### Shape Buddies level 2, A step down (2026-10-17)
 
 [PR #504](https://github.com/rjdunlap/neo/pull/504): pre-K and school play levels 1–2. At level 2 the far bank is one step lower: only a Slope bridge reaches it, a Flat bridge falls short (`buddies.stepFlat`), and an empty, plain or scoop bridge says `buddies.stepBridge`; the cup role is unchanged. Misses stay 0, one hint per role, guidance suggests Slope; `PLANS` in `logic.ts` is keyed by level. As built, the bridge dock is at `y 250`, raised the full 50 units with the bank, and only the heading and caption lift at level 2; the stream shows two cushions, and a flat friend at the bridge dock is drawn narrower so its end stops over the stream. The level-2 how-to line was shortened to fit the 840-character card cap. Typecheck, 1459 tests, `buddies` level-2 play, `fingerdemo` at 2 and a portrait screenshot passed; see [verification](../VERIFICATION.md#2026-10-17--shape-buddies-level-2-a-step-down).

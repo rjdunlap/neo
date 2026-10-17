@@ -39,3 +39,5 @@ Creature-world planning closeout rotated nine older entries (Photo Safari two-cl
 Sink or Float level 7 closeout rotated the oldest live verification entry (Everyday life long ago subject research) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
 
 Shape Buddies level 2 closeout rotated the oldest live verification entry (Deep time subject research) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
+
+Ramp Race support definition closeout rotated the two oldest live verification entries (Additional subject gap review, Subject docs completed-work cleanup) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
