@@ -42,4 +42,4 @@ Shape Buddies level 2 closeout rotated the oldest live verification entry (Deep 
 
 Ramp Race support definition closeout rotated the two oldest live verification entries (Additional subject gap review, Subject docs completed-work cleanup) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
 
-Song Maker deep-dive closeout rotated the Chemistry follow-up brief, Writing and typing gaps, Further subject and progression gaps, and Subject docs publication reconciliation entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
+Song Maker deep-dive closeout rotated the Further subject and progression gaps and Subject docs publication reconciliation entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
