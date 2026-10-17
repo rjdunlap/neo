@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Ramp Race Trial Shelf / One Change definition (Q3)
+
+- Defined Ramp Race levels 5–6 in [the definition](definitions/ramp-race-trial-shelf.md): stacked record cards, free paw guesses, a locked control lane with both-changed starts, once-per-question hints, a ghost-finger plan and a frozen layout. Not built; Q4 waits on Q2 and inquiry decisions 1–2 plus the lane policy.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser, offline and fingerdemo not run: no code changed.
+- Open: the build, and whether a child reads the cards as *her* runs and tells a guess from a record (device checks when Q4 builds).
+
 ## 2026-10-17 — Song Maker deep dive
 
 - Wrote [the Song Maker deep dive](deep-dives/song-maker.md): a source audit of levels 1–7 and their pools; computed gaps (levels 5–6 hit areas about 91–92 units, a free round that can end without a keepable song, creative rounds stepping up, the inline level table, no sol on any grid); nine precedents and NCAS references; proposed levels 8–13, including M4 *answer the phrase* as level 9; nine ordered slices. Three are ready (roadmap ready list 7–9); D1–D6 are added to WAITING-ON-DEVELOPER.
