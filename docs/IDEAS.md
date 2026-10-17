@@ -2008,7 +2008,7 @@ Prefer a mode of an existing game when the meaningful action is the same; make a
 | Sock Match / Shadow Match | Memory Match or Shape Sorter modes | Add attribute or silhouette reasoning if it is meaningfully new |
 | Lost and Found | A later Island Errands story | Keep one adventure system and a small authored cast |
 | Critter Friends / Piñata Garden / Puppy Pal | Habitat Helpers, journal, and pet treehouse | Befriending, inviting visitors, and pretend care share the persistent world |
-| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
+| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level (its sleepy-tree payoff is the [deep dive](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)'s level 5 slice) and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
 | Rhyme Picnic | Rhyme Time | Rhyme Time covers choosing a rhyme; a picnic scene is only worth it for its payoff |
 | Build-a-Bug counting | Bug Builder | A counting mode, not a second bug game |
 | Doghouse Directions / Bear Hunt Walk | Peekaround Island for positions; Bear Hunt Walk for movement along a route | Start as a Peekaround mode for in, on and under; build Bear Hunt Walk only if moving along a route proves to be the new decision |
@@ -2016,7 +2016,7 @@ Prefer a mode of an existing game when the meaningful action is the same; make a
 | Count the Peekers | Critter Spotter, or a Duck Pond mode (planned in its [deep dive](deep-dives/duck-pond.md)) | Counting in a busy scene, without Potato Counter's countdown |
 | Guess the Pumpkin / Box Balance | Seesaw Balance modes | Estimation as an unscored prediction; equations continue levels 8–9 |
 | Number Friends | Number Merge | Numberblocks and DragonBox Numbers become its references |
-| Sing Higher | Sound Garden | Sliding pitch as a high/low mode |
+| Sing Higher | Sound Garden | Sliding pitch as a high/low mode; planned as level 9 in the [deep dive](deep-dives/sound-garden.md#new-levels-on-top) |
 | Keepy Uppy | Bounce Back | A floatier one-player mode first |
 | Snail Walk | Follow the Leader | One slow walker instead of a crowd; choose one of the two |
 | Story Weaver | Story Theater and Stamp Studio | One creative-story system, built on the existing creation storage |

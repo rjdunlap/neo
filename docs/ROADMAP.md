@@ -76,13 +76,13 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 31. **`egg-catch`, level 10 Fix the run** (new interaction; after *roll when ready*): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 32. **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 33. **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); solvable gardens (built backward at 1–4, frozen at 5–8), free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
-34. **`sound-garden`, fair varied listening** (existing-game bug fix): seeded sound specs in `logic.ts`, equal-span fast/slow, bird and frog as heard pitch references, varied up/down tunes; level 2's rule kept for the Missing Melody. [Slice 1](deep-dives/sound-garden.md#build-slices-in-order)
+34. **`sound-garden`, fair varied listening** (existing-game bug fix): seeded sound specs in `logic.ts`, plans keyed by level ID and a capped how-to step, equal-span fast/slow, bird and frog as heard pitch references, varied up/down tunes; level 2's rule kept for the Missing Melody. [Slice 1](deep-dives/sound-garden.md#build-slices-in-order)
 35. **`sound-garden`, the whole cast sings** (level 1 content): the turtle joins, a pitched frog, a seeded cast of five from six. [Slice 2](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
-36. **`sound-garden`, level 7 Up, down or the same** (new level): three pictured tiles at pre-K top; cap the how-to's `from: 6` step. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
+36. **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
 37. **`sound-garden`, echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree answers. [Slice 4](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
 38. **`sound-garden`, level 8 One big friend** (new lap entry): one screen-filling singer, `entryLevels`, lap order 8, 1. [Slice 5](deep-dives/sound-garden.md#new-levels-on-top)
-39. **`sound-garden`, level 11 Sing Higher** (new interaction): drag a singer up to sing higher on pentatonic steps, creative finish; preschool order 2, 3, 4, 11. [Slice 6](deep-dives/sound-garden.md#new-levels-on-top)
-40. **`sound-garden`, level 12 Copy the shape** (new level; after item 38): sing back a two- then three-note direction; pre-K. [Slice 7](deep-dives/sound-garden.md#new-levels-on-top)
+39. **`sound-garden`, level 9 Sing Higher** (new interaction): drag a singer up to sing higher on pentatonic steps, creative finish; preschool order 2, 3, 4, 9, and pre-K. [Slice 6](deep-dives/sound-garden.md#new-levels-on-top)
+40. **`sound-garden`, level 10 Copy the shape** (new level; after *Sing Higher*): sing back a two- then three-note direction; pre-K. [Slice 7](deep-dives/sound-garden.md#new-levels-on-top)
 
 ### Chunks
 

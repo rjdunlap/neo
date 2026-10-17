@@ -92,10 +92,10 @@ Sound Garden owns **pure listening** (the [music](subjects/music-instruments.md)
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 7 | **Up, down or the same** | pre-K (3–7; appended top) | Three tiles: a climbing bunny, a sliding frog, a resting turtle on a flat log; the bush plays 3–4 notes | Which of three directions | Boing, replay; glow after two misses. Same tune is one repeated step | Each answer's tune matches its direction; "same" tunes have one step; no answer three times running; three tiles at least 100 units apart and clear of the pet | Three new tile pictures (Graphics); voice `sg.same`, `sg.updownsame`; how-to step and cap `{ from: 6 }` at `to: 6`; bot via `tileFor` for three |
-| 8 | **One big friend** | lap entry (`entryLevels: [8]`, lap order 8, 1) | One singer fills the middle of the screen; any touch makes it sing; after four taps it waves and the next walks in | Nothing to get wrong: tap, watch, listen | None (free play; 12 taps finish) | The cast cycles through all five; every touch inside the view is on the singer | Uses the existing singers scaled up; voice `sg.big`; ghost finger taps the middle; touches the V2 question only if it reuses level 1's busy rule |
-| 11 | **Sing Higher** | preschool (order 2, 3, 4, 11) | The bird sits on a tall flower stem; drag it up and it sings higher, down and lower, snapped to 6 steps; the bell, frog and bunny join in on the step below | Where to put each note: creative | None. Ends after 12 notes sung (a gentle finish); nothing counted as a miss | Every drag height maps to a pentatonic step in range (`stepFromUnit`); the step shown equals the step heard; no misses or hints recorded | New interaction: a custom vertical drag with cancel and palm rejection, a `via` drag bot, how-to, voice; mark as `music: silenced(STYLES.quiet)` already true |
-| 12 | **Copy the shape** | pre-K (appended after 7) | The bird sings two notes going up; she drags her own singer to sing two notes that go up too | The direction of each step she sings | Wrong direction: boing, the bird sings again with its stem lighting the way; glow on the right half of the stem after two misses. Any notes with the right directions count | The judge accepts every melody with the asked directions and refuses each wrong one; three-note shapes only after two-note ones | Reuses slice 6's drag; the bot drags to a target step; after level 11 lands |
+| 7 | **Up, down or the same** | pre-K (order 3, 4, 5, 6, 7, 9, 10) | Three tiles: today's rising and falling staircases and a new flat path (no creatures, so the bunny and turtle keep their level-3 meaning); the bush plays 3–4 notes | Which of three directions | Boing, replay; glow after two misses. Same tune is one repeated step | Each answer's tune matches its direction; "same" tunes have one step; no answer three times running; three tiles at least 100 units apart and clear of the pet | One new tile picture (the flat path, Graphics); voice `sg.same`, `sg.updownsame`; how-to step; bot via `tileFor` for three |
+| 8 | **One big friend** | lap entry (`entryLevels: [8]`, lap order 8, 1) | One singer fills the middle of the screen; any touch makes it sing; after four taps it waves and the next walks in | Nothing to get wrong: tap, watch, listen | None (free play; 12 taps finish) | The cast cycles through all five; every touch inside the view, outside the corner buttons and the pet's corner, is on the singer | Uses the existing singers scaled up; voice `sg.big`; ghost finger taps the middle; touches the V2 question only if it reuses level 1's busy rule |
+| 9 | **Sing Higher** | preschool (order 2, 3, 4, 9) and pre-K (before 10) | The bird sits on a tall flower stem; drag it up and it sings higher, down and lower, snapped to 6 steps; the bell, frog and bunny join in on the step below | Where to put each note: creative | None. Ends after 12 notes sung (a gentle finish); nothing counted as a miss | Every drag height maps to a pentatonic step in range (`stepFromUnit`); the step shown equals the step heard; no misses or hints recorded | New interaction: a custom vertical drag with cancel and palm rejection, a `via` drag bot, how-to, voice; the module's `silenced(STYLES.lullaby)` already keeps the loop out |
+| 10 | **Copy the shape** | pre-K (after 9) | The bird sings two notes going up; she drags her own singer to sing two notes that go up too | The direction of each step she sings | Wrong direction: boing, the bird sings again with its stem lighting the way; glow on the right half of the stem after two misses. Any notes with the right directions count | The judge accepts every melody with the asked directions and refuses each wrong one; three-note shapes only after two-note ones | Reuses slice 6's drag; the bot drags to a target step; after level 9 lands |
 
 ### Younger-band openings
 
@@ -105,8 +105,8 @@ Sound Garden owns **pure listening** (the [music](subjects/music-instruments.md)
 ### Easier entries and levels between existing ones
 
 - Level 8 is the appended lap entry (`entryLevels: [8]`, lap order 8, 1; toddler keeps 1–2).
-- Level 11 sits inside preschool by `order` (2, 3, 4, 11) and adds no saved-level renumbering.
-- Proposed but gated: **9 Who sang?** (toddler, between 1 and 2), **10 Loud or quiet** (pre-K, a relative pair at one step, no up/down words), **13 Two at once** ("high and fast": four tiles, school window).
+- Level 9 sits inside preschool by `order` (2, 3, 4, 9) and pre-K's order runs 3, 4, 5, 6, 7, 9, 10, so a pre-K child meets the drag before copying with it. No saved level is renumbered.
+- Proposed but gated: **11 Who sang?** (toddler, between 1 and 2), **12 Loud or quiet** (pre-K, a relative pair at one step, no up/down words), **13 Two at once** ("high and fast": four tiles, school window).
 
 ### Left out on purpose
 
@@ -114,22 +114,22 @@ Speed rounds, a Simon sequence that grows until a mistake, scored timing, a micr
 
 ## Decisions for the developer
 
-1. **Toddler *Who sang?* (9):** a Sound Garden level, or leave voice identification to Animal Snack's *Who's Calling?* and Peekaboo Barn? Lean: leave it there, and give Sound Garden's toddlers Sing Higher once watched.
-2. **Loud or quiet (10):** in Sound Garden as a heard relative pair, or wait for Little Conductor to own dynamics? Lean: wait for the Music row's Little Conductor decision; if Sound Garden gets it, a device check on the iPad speaker comes first.
+1. **Toddler *Who sang?* (11):** a Sound Garden level, or leave voice identification to Animal Snack's *Who's Calling?* and Peekaboo Barn? Lean: leave it there, and give Sound Garden's toddlers Sing Higher once watched.
+2. **Loud or quiet (12):** in Sound Garden as a heard relative pair, or wait for Little Conductor to own dynamics? Lean: wait for the Music row's Little Conductor decision; if Sound Garden gets it, a device check on the iPad speaker comes first.
 3. **School window:** *Two at once* (13) and rhythm cards (pick the card the woodpecker knocked) would open Sound Garden to school; they overlap Jelly Drums 11 *Same or different?* and the proposed Sour Note. Lean: no school window until Jelly Drums 11 lands.
 4. **Rework hook, the garden chorus:** after a listening round, the creature she listened to stays in her free-play garden for good and she can arrange the stage (Toca Band; IDEAS *Treehouse Chorus*), as the first step of the brief's concert project. Waits on the rework's home and collection slices.
 
 ## Build slices, in order
 
-1. **Fair, varied listening** (levels 2–4, 6; existing-game bug fix on an unchanged interaction): sound specs in `logic.ts` from the seeded RNG, equal-span fast/slow, varied register with the bird and frog as heard references, varied up/down tunes; level 2's rule unchanged for the Missing Melody. Checks: `npm run typecheck`, Sound Garden's rule tests, one filtered regression play of levels 2–4 and 6; `fingerdemo` only if the bot's wait changes.
+1. **Fair, varied listening** (levels 2–4, 6; existing-game bug fix on an unchanged interaction): sound specs in `logic.ts` from the seeded RNG, equal-span fast/slow, varied register with the bird and frog as heard references, varied up/down tunes; level 2's rule unchanged for the Missing Melody. Also two guards for every later slice: `PLANS` becomes a table keyed by stable level ID (today `planFor` indexes by array position, so 8 could not land before 7), and the how-to's last step is capped at `{ from: 6, to: 6 }`. Checks: `npm run typecheck`, Sound Garden's rule tests, one filtered regression play of levels 2–4 and 6; `fingerdemo` only if the bot's wait changes.
 2. **The whole cast sings** (level 1 content): the turtle joins, pitched frog, quick bunny, seeded cast of five from six; `singerToTap` reads the cast. Checks: typecheck, rule tests (every singer heard in 12 taps), one filtered play and `fingerdemo` at level 1.
-3. **Level 7 Up, down or the same** (new level on the existing tap interaction): three tiles, new pictures and voice, capped how-to step. Checks: typecheck, rule tests, one browser play at 7 and `fingerdemo` at 7, one portrait screenshot (three tiles).
+3. **Level 7 Up, down or the same** (new level on the existing tap interaction): three tiles, the flat-path picture and voice, a how-to step. Checks: typecheck, rule tests, one browser play at 7 and `fingerdemo` at 7, one portrait screenshot (three tiles).
 4. **Echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree's answer, a per-tap hint. Checks: typecheck, rule tests (dot spacing follows gaps, pool lengths), one filtered play at 5 and `fingerdemo` at 5.
 5. **Level 8 One big friend** (new lap entry): `entryLevels`, lap order 8, 1, the big-singer layout. Checks: typecheck, unit tests (order and entry), one play at 8, `fingerdemo` at 8, one portrait screenshot.
-6. **Level 11 Sing Higher** (new interaction): the vertical drag, snapped steps, creative finish, a drag bot, how-to and voice. Checks: the new-interaction tier (scripted play with first and last notes, a cancelled drag, one portrait screenshot, `fingerdemo`).
-7. **Level 12 Copy the shape** (new level on slice 6's interaction): the direction judge, two-then-three-note shapes, the stem hint. Checks: typecheck, rule tests, one play at 12, `fingerdemo` at 12.
+6. **Level 9 Sing Higher** (new interaction): the vertical drag, snapped steps, creative finish, a drag bot, how-to and voice. Checks: the new-interaction tier (scripted play with first and last notes, a cancelled drag, one portrait screenshot, `fingerdemo`).
+7. **Level 10 Copy the shape** (new level on slice 6's interaction): the direction judge, two-then-three-note shapes, the stem hint. Checks: typecheck, rule tests, one play at 10, `fingerdemo` at 10.
 
-Gated: level 1's every-touch retrofit (V2's person check); levels 9, 10 and 13 and the garden chorus (decisions above).
+Gated: level 1's every-touch retrofit (V2's person check); levels 11, 12 and 13 and the garden chorus (decisions above).
 
 ## What was built in this session
 
