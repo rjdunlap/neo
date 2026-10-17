@@ -75,7 +75,7 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 30. **`egg-catch`, level 9 One gate** (new level; after *roll when ready*): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
 31. **`egg-catch`, level 10 Fix the run** (new interaction; after *roll when ready*): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 32. **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
-33. **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); backward-built solvable gardens, free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
+33. **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); solvable gardens (built backward at 1–4, frozen at 5–8), free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
 
 ### Chunks
 
