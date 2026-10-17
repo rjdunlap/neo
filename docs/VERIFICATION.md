@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Fill and Dump deep dive
+
+- Docs only: [deep dive](deep-dives/fill-dump.md) on `claude/fill-dump-deep-dive` ([PR #513](https://github.com/rjdunlap/neo/pull/513)). Audited levels 1–5, pools and gaps (silent tip window, dead grass taps, spoken-only count, flat silent pour, open-ended level-5 how-to lines); opened IM K lesson 9, CDC milestones via Understood, Lovevery, Playvolution and *Where's My Water?*; others marked search summary or recalled.
+- Five ready slices added to the roadmap; four decisions to WAITING; V3 pour feel and the busy-window acknowledgment stay gated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — RW04 welcome adventure definition
 
 - Defined Welcome a New Friend in [the packet](rework/WELCOME-ADVENTURE.md) from a source audit at `84e1433`: Stamp Studio, Pet Kitchen and Song Maker ranges, which rounds report a creation, which Pet Kitchen levels fix their plates, and how a story round's creation is (not) kept today. Docs only; no code, save, voice or band change.
@@ -111,7 +117,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
-| Game deep-dive docs | 2026-10-15: Duckling Parade source audit, six precedents, ladder/experience/slices; links/anchors and diff check. Prior Memory Match clock definition evidence retained | [Duckling Parade](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
+| Game deep-dive docs | 2026-10-17: Fill and Dump source audit, eight references, ladder/experience/slices; links/anchors and diff check | [Fill and Dump](#2026-10-17--fill-and-dump-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `critternot` | 2026-10-15: stable entry 8, two misses/one hint, two rounds, one sticker and landscape/portrait passed; 54 focused tests and build | [Visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | Device speech, touch and child interpretation open |
 | `marblejump` (`marble-jump`) | 2026-10-14: levels 1/6, invalid jump, hint recovery/repeated hint, portrait and land placement passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `logroll` (`log-roll`) | 2026-10-14: levels 1/3, invalid rolls, hint, Undo, portrait and Tinker Lab launch passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
