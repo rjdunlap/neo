@@ -736,6 +736,22 @@ Docs links/diff only now; each eventual interaction uses its own verification ti
 
 The [ordered slices](deep-dives/subjects/engineering-design.md#build-slices-in-order) separate definitions from builds. Definitions use links and diff checks; each build uses its own tier. No learning transfer, device usability, child, tween or parent appeal, or accessibility review is established.
 
+### Making media recommendations
+
+**Recommended 2026-10-17:** [the making-media study](deep-dives/subjects/making-media.md), [PR #531](https://github.com/rjdunlap/neo/pull/531), covers every audience. It uses Media Arts pre-K, K and grade 5 (National Core Arts Standards, opened at a third-party mirror, trimmed quotes marked; grades 2 and 8 not opened), ISTE 1.6 Creative Communicator, Common Core SL.2.5 and W.K.6, EYFS expressive arts and Breyer's 2002 thesis on 9–14-year-olds and video effects; the film-comprehension studies of young children came from search summaries and set no ages. The island makes pictures and songs but never asks **what will someone watching understand?** **Define Movie Night 1–3 first**: creature friends watch a premiere of a three- or four-slot strip she makes, and react only to what it showed them. A friend who missed something asks the question the missing shot would answer. A "recorded song" stays Song Maker's kept tune; frame animation stays the **Pixel Flipbook** seed; stop-motion with real objects becomes a family card (no camera or microphone). Docs-first proposals, not implementations or a dispatch queue.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Movie Night 1–3** · preschool–school · new identity | define now, docs only (MM1) | 1 *Sound for the show* (any sound on any filmed shot; bow after one Watch; no misses), 2 *Right on time* (the event sound on its shot), 3 *Two moments*. Synthesized pads from `sfx.ts`, Watch free, a premiere is the check; accounting per the decision (lean Story Steps 11: first unmet premiere free). Audience reaction names the first unmet requirement; enumerated accepted strips; how-to, ghost finger, 100-unit slots in both orientations, island loop silenced, Paint Pier layout check. [Ladder](deep-dives/subjects/making-media.md#a-first-games-ladder-movie-night) |
+| **Movie Night 4–5** · school | define after 1–3 are built (MM3) | Shot facts (who, where, thing, event, feeling), pictured briefs, *Pick the shots* and *Keep the surprise*; overlap test: no level's accepted set is just the shots in time order (else Story Steps) |
+| **Movie Night 6–8** · school top | define after 4–5 (MM5) | A two-size viewfinder on a coarse grid: wide shows where, close shows a detail; keep a hiding friend out of frame; two audiences with different factual briefs from one footage set (no judged feelings). Overlap test with Photo Safari |
+| **Director's cases** (Movie Night 9, 13+) | define after the registration decision (MM6) | A three-fact brief with one surprise, four slots and a set to frame; optional fewer-shots comparison afterwards. Open Media Arts grade 8 first |
+| **Pixel Flipbook** · pre-K–grown-up, existing seed | define in the Pixel Pictures dive after the [Flipbook storage](WAITING-ON-DEVELOPER.md) decision (MM7) | Copy a frame, change a few cells, onion skin, Play/Stop; transient first |
+| **Make a movie at home** card · family | after the practical-card review (MM8) | Paper flipbook, sound-off cartoon, toy stop-motion on the grown-up's own phone; plain HTML |
+| **Picture Show** · toddler–pre-K | after the rework home cutover (MM9) | Her kept pictures play for the pet; reads existing creations, no storage change |
+
+The [ordered slices](deep-dives/subjects/making-media.md#build-slices-in-order) separate definitions from builds. Mood, music and style are never judged. No recording, camera, sharing, ratings or new save shape. Child, tween and parent appeal and any transfer to reading film are unestablished.
+
 ### Data and AI literacy recommendations
 
 **Recommended 2026-10-15:** [the subject study](deep-dives/subjects/data-ai-literacy.md) covers lap through parents with opened CSTA 2026, AI4K12 draft, ISTE and Head Start anchors, developmental/family research, six digital references and an unplugged activity. Define **Example Express** first: teach a toy parcel sorter using examples, test new parcels and repair its learned rule. These are research proposals and docs-first definitions, not registrations or a dispatch queue; existing priorities remain intact.
