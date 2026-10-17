@@ -188,6 +188,8 @@ The developer requested concrete roadmap actions on 2026-10-12. [ROADMAP’s dis
 
 ## D1b build packet: one direct next game
 
+Implementation claim: `codex/discovery-direct-next`, worker `01a1477f-58b2-7ca2-8607-1975042bf5eb`, dispatch `discovery-direct-20261017T013407Z`. Exactly this frozen packet: reviewed pool selector, transient profile generation, pictured GameScene result controls and voice, focused rules/route tests, filtered discovery browser flow, shell/navigation verification and documentation. Expected files: `src/content/discovery*`, `src/app/discovery*`, `src/app/scenes/GameScene.ts`, profile/reset hooks, `src/content/voice-script.ts`, browser harness/README and closeout docs. No mixes, new pools/settings, controller flow or save schema.
+
 *D1a frozen 2026-10-15 · docs only · source audit `cbf6391` · [PR #395](https://github.com/rjdunlap/neo/pull/395).* This is the complete first pilot specification. D1b implements it as a usable result-to-game flow; none of this UI exists yet. The broader research above remains proposals where it extends this packet.
 
 ### Entry and reviewed pool
