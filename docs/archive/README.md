@@ -45,3 +45,5 @@ Ramp Race support definition closeout rotated the two oldest live verification e
 Song Maker deep-dive closeout rotated the Further subject and progression gaps and Subject docs publication reconciliation entries into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
 
 Splish Splash slice 1 closeout rotated the oldest live verification entry (Woodland Picnic) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
+
+Dot Link level 11 closeout rotated the five oldest live verification entries (Shape Buddies level 2, RW02b, Sink or Float level 7, RW02) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md); the RW03 entry stays live because the execution queue links it, leaving sixteen dated entries live.

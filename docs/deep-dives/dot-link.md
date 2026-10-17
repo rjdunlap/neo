@@ -94,7 +94,7 @@ Both decided by the developer on 2026-10-14:
 ## Build slices, in order
 
 1. **Marks in the dots** (built 2026-10-15; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-marks-in-the-dots-2026-10-15)).
-2. **Level 11 Find my buddy** (toddler entry; `logic.ts` rule test, then new-level tier).
+2. **Level 11 Find my buddy** (built 2026-10-17; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-11-find-my-buddy-2026-10-17)). Readings: a full two-color 3×3 always has at least two same-color neighbor pairs, so "one pair" means exactly one pair lit (seeded `pickBuddy`), and the goal is 4 buddies (the dive gave none).
 3. **Level 7 Two colors** (a second count; new-level tier).
 4. **Level 8 Same, different** (a pattern line; new interaction tier: rules first, one scripted play, one portrait screenshot, `fingerdemo`).
 5. **Level 9 Make ten** (the school window is decided).
