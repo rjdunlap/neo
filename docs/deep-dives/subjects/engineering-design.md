@@ -60,10 +60,10 @@ Source audit of [GAMES](../../GAMES.md), the [notebook](../../IDEAS.md), the inv
 | Reference | Kind | How progression grows | Borrow | Leave out |
 | --- | --- | --- | --- | --- |
 | [Poly Bridge 2](https://store.steampowered.com/app/1062160/Poly_Bridge_2/) (Dry Cactus), store page opened | Bridge-building physics puzzle | New materials (springs), new vehicles and mechanics; a deterministic engine; a level editor and workshop campaigns | **The "First Break Indicator", which "highlights the first piece broken"**: Welcome Ways stops the first visitor at the first part that fails them. Deterministic replay. A make-your-own sandbox for older players | Budget as a score to beat; collapse spectacle as the fun |
-| World of Goo / Wobble Works | Structure toy | More reach, more load | Already referenced by Wobble Works | Timed or scarce goo |
-| [LEGO Builder's Journey](https://www.gamespew.com/2021/06/lego-builders-journey-review/) (reviews read) | Build a path from given pieces so a character crosses | New concepts (colour matching, darkness); "some freedom in how you assemble the pieces you're given" | A fixed tray, many valid assemblies, a character who walks the result | Reviewers' "punishing" fail states and unclear selected piece; timed placement |
-| The Incredible Machine / Chain Reaction | Contraption puzzle | More parts, more steps | Sockets and free runs (already built) | — |
-| Mini Motorways / Tram Lines (notebook) | Network under a budget | Growing demand | A finite budget of pieces | Endless growing pressure, timers |
+| World of Goo / Wobble Works (notebook reference; not opened this session) | Structure toy | More reach, more load | Already referenced by Wobble Works | Timed or scarce goo |
+| [LEGO Builder's Journey](https://www.gamespew.com/2021/06/lego-builders-journey-review/) (search summary of reviews) | Build a path from given pieces so a character crosses | New concepts (colour matching, darkness); "some freedom in how you assemble the pieces you're given" | A fixed tray, many valid assemblies, a character who walks the result | Reviewers' "punishing" fail states and unclear selected piece; timed placement |
+| The Incredible Machine / Chain Reaction (recalled; Chain Reaction is built) | Contraption puzzle | More parts, more steps | Sockets and free runs (already built) | — |
+| Mini Motorways / Tram Lines (notebook row; not opened this session) | Network under a budget | Growing demand | A finite budget of pieces | Endless growing pressure, timers |
 | [Ruff Ruffman ramp challenge](https://cms-assets.prod.pbskids.org/global/parents-mezzanines/Ruff_UpsDowns-1.pdf) (PBS KIDS, ages 4–8; search summary) | Unplugged build–test–improve | Change the design, test again | "How could you change it?" after a test | Its **15-minute build window** |
 | Ramps and Pathways (NSF-funded, ages 3–8; search summary) | Classroom ramp building with cove molding | Children's own structures | Ramps as a young child's first engineering material | — |
 | [Caine's Arcade / Global Cardboard Challenge](https://imagination.org/cardboard-challenge-faq/) (search summary) | A nine-year-old's cardboard arcade; a yearly building event | Free making for an audience | Making for other people to use, a celebration where friends come | Fundraising and event deadlines |
@@ -109,16 +109,18 @@ Working ID `welcome-ways`, **not registered**.
 
 ### The model, stated once
 
-An entrance is a short side-on path of **cells** from the ground to a door at height 0–3. Each cell holds at most one part: a **step** (rise 1, run 1), a **gentle ramp** (rise 1 over 2 cells), a **steep ramp** (rise 1 over 1 cell), a **landing** (flat, lets a path turn onto a second row), a **rail** (on the near or far side of a run), a **perch** (a ledge at door height). The door is **narrow** or **wide**. Each visitor has fixed rules, stated as body facts:
+An entrance is a short path of **cells** from the ground to a door at height 0–3, drawn side-on in a slight three-quarter view so that it has a front row and, from level 5, a back row; a landing at the end of the front row turns the path onto the back row going the other way (a switchback). Each cell holds at most one part: a **step** (rise 1, run 1), a **gentle ramp** (rise 1 over 2 cells), a **steep ramp** (rise 1 over 1 cell, introduced at level 5 as the part that fits a tight space), a **landing** (flat, turns the path), a **rail** (on the near or far side of a run), a **perch** (a ledge at door height). The door is **narrow** or **wide**. Each visitor has fixed rules, stated as body facts:
 
 | Visitor (provisional) | Moves by | Can use | Cannot use |
 | --- | --- | --- | --- |
 | **Sprout** (rework species) or Bunny | Hopping | Steps, either ramp | — (the easy friend) |
 | **Roly** (a round critter) | Rolling | Gentle ramps, landings | Steps; steep ramps (rolls back) |
 | **River** (rework species, long and low) | Sliding on its belly | Ramps, landings that are two cells long | Steps; a landing one cell long (it can't turn) |
-| **Wobble** (a young critter, slow and wobbly) | Walking | Anything with a rail beside it | A run of more than one ramp without a rail |
+| **Wobble** (a young critter, slow and wobbly) | Walking | Steps, landings, a single ramp, and a run of two or more ramps with a rail beside it | A run of two or more ramps without a rail |
 | **Cloud glider** (rework species) | Gliding | A perch at door height with no rail on its open side | Paths alone |
 | **Bear** (big) | Walking | Anything | A narrow door |
+
+**Early sockets.** In levels 1–4 every socket is a **two-cell slot** holding one rise-1 piece, so every choice shares a footprint: the gentle ramp, or a **step block** (a step at its front, a flat top). No steep ramp appears before level 5, so the first ramp a toddler places always lets Roly in.
 
 A Try walks the visitors in a fixed order. The first visitor who cannot pass a cell stops there; that cell flashes and the pet says the reason. A design is **accepted** when every visitor in the round reaches the door, within the round's cells and plank count.
 
@@ -126,11 +128,11 @@ A Try walks the visitors in a fixed order. The first visitor who cannot pass a c
 
 | Level | Bands | Round | What she decides | Standard touched |
 | --- | --- | --- | --- | --- |
-| 1 | toddler, preschool | One glowing gap, one ramp in the tray, Roly waiting | None: place it and watch (cause and effect) | — |
-| 2 | toddler (top), preschool, pre-K | One gap, a step and a ramp; Roly | Which part lets Roly in? Try both | K-2-ETS1-3 |
-| 3 | preschool, pre-K, school | Two cells, a door one up; Sprout and Roly; tray of steps and a ramp | One entrance for both (the ramp) | K-2-ETS1-2 |
-| 4 | pre-K, school | A door two up, four cells; Roly and Bear; door piece narrow or wide | Two gentle ramps and the wide door | 3-5-ETS1-1 (criteria) |
-| 5 | school | A door two up, only three cells straight plus a side row | Turn the ramp at a landing; River needs the two-cell landing | 3-5-ETS1-1 (constraints) |
+| 1 | toddler, preschool | One glowing two-cell slot, one gentle ramp in the tray, Roly waiting | None: place it and watch (cause and effect) | — |
+| 2 | toddler (top), preschool, pre-K | One slot, a step block and a gentle ramp; Roly | Which part lets Roly in? Try both | K-2-ETS1-3 |
+| 3 | preschool, pre-K, school | One slot, a door one up; Sprout and Roly; a step block and a gentle ramp | One entrance for both (the ramp) | K-2-ETS1-2 |
+| 4 | pre-K, school | A door two up, two slots; Roly and Bear; step blocks, gentle ramps, door piece narrow or wide | Two gentle ramps and the wide door | 3-5-ETS1-1 (criteria) |
+| 5 | school | A door two up, only three cells in the front row plus a back row; a steep ramp in the tray fits straight but blocks Roly | Turn the ramp at a landing; River needs the two-cell landing | 3-5-ETS1-1 (constraints) |
 | 6 | school | Wobble and the glider | A rail on one side only, a perch on the other; several accepted designs | 3-5-ETS1-2 |
 | 7 | school | **Fix it for a new friend:** a built entrance that welcomes two friends; a third arrives | Change as few parts as she likes; reuse is spoken about, never required | 3-5-ETS1-3; changed needs |
 | 8 | school (upper) | Three doors (house, slide, dock), one plank pile | Share a landing between two doors; plan before Try | 3-5-ETS1-2, MS-ETS1-1 |
@@ -142,7 +144,7 @@ A Try walks the visitors in a fixed order. The first visitor who cannot pass a c
 
 ### A rule test
 
-For every level plan and every seeded round: (1) an accepted design exists inside the cells and plank count; (2) every tray part is used by at least one accepted design or is a stated distractor with a named visitor it blocks; (3) a Try reports the **first** blocking cell along the visitors' order, and its reason line matches the rule that blocked; (4) from level 6, at least two distinct accepted designs exist, and the naive design (rails on both sides; steps everywhere) fails for a named visitor; (5) at level 7, the starting entrance welcomes exactly the two old friends and blocks the new one; (6) at levels 8–9, the plank budget is feasible and a design that ignores the shared landing is over budget; (7) the glow from a hint is a part of some accepted design that extends the current one. Enumeration is small (at most about 12 cells and 6 part kinds), so a brute-force solver in the test is enough.
+For every level plan and every seeded round: (1) an accepted design exists inside the cells and plank count; (2) every tray part is used by at least one accepted design or is a stated distractor with a named visitor it blocks; (3) a Try reports the **first** blocking cell along the visitors' order, and its reason line matches the rule that blocked; (4) from level 6, at least two distinct accepted designs exist, and the naive design (rails on both sides; steps everywhere) fails for a named visitor; (5) at level 7, the starting entrance welcomes exactly the two old friends and blocks the new one; (6) at levels 8–9, the plank budget is feasible and a design that ignores the shared landing is over budget; (7) the glow from a hint is a part of some accepted design that extends the current one. Levels 1–4 also check that every slot choice shares one footprint and that no steep ramp appears. Enumeration is small (at most about 12 cells and 6 part kinds), so a brute-force solver in the test is enough.
 
 ### Cost
 
