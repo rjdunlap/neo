@@ -13,7 +13,11 @@ import { howToFor, shouldExplain } from '../../content/howto';
 import { islandDemo } from '../../content/demos';
 import { COUCH_INFO, type CouchInfo } from '../../couch/catalog';
 import { Demo } from '../../couch/demo';
-import type { LineId } from '../../content/voice-script';
+import { SCRIPT, type LineId } from '../../content/voice-script';
+import { discoveryCandidates, suggestDiscovery } from '../../content/discovery';
+import { GAMES } from '../../games/registry';
+import { discoveryMemory, launchDiscovery } from '../discovery';
+import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
 import { CouchInput, type CouchControls } from '../../engine/controller';
 import { nextSpot } from '../../couch/focus';
 import { onTap } from '../../engine/input';
@@ -57,6 +61,19 @@ export class GameScene extends Scene {
   private made: Creation | null = null;
   /** Journal entries this round showed her for the first time. */
   private discovered: JournalEntry[] = [];
+  private readonly discoveryToken = discoveryMemory.token(store.data);
+  private discovery: { id: string; tile: DiscoveryTile; another: DiscoveryTile | null; anotherId?: string } | null = null;
+  private resultLayer: Container | null = null;
+  private resultVeil: Graphics | null = null;
+  private readonly resultPetOffset = { y: 300 };
+  private resultStar: ReturnType<typeof makePet> | null = null;
+  private resultSticker: Container | null = null;
+  private resultPill: Container | null = null;
+  private resultReady = false;
+  private navigating = false;
+  private returningTouch = false;
+  private speechSerial = 0;
+  private readonly touchUp = () => { this.returningTouch = false; };
   private level = 1;
   private seconds = 0;
   private finished = false;
@@ -67,6 +84,7 @@ export class GameScene extends Scene {
   /** A key or button has been pressed since the round began (or since the last touch): the Enter that pressed Play does not count. */
   private keyed = false;
   private readonly touchDown = () => {
+    if (this.inputInUse.kind === 'controller') this.returningTouch = true;
     this.inputInUse.touched();
     if (this.keyed && !this.finished) this.game?.touchReturned?.();
     this.keyed = false;
@@ -115,8 +133,15 @@ export class GameScene extends Scene {
     this.ui.addChild(this.pet, this.home, this.help);
     this.ring.visible = false;
     window.addEventListener('pointerdown', this.touchDown, true);
+    window.addEventListener('pointerup', this.touchUp);
+    window.addEventListener('pointercancel', this.touchUp);
+    window.addEventListener('blur', this.touchUp);
     this.keys = new CouchInput(
-      () => { audio.unlock(); voice.unlock(); },
+      () => {
+        audio.unlock(); voice.unlock();
+        // A key arriving between frames cancels a held discovery choice before its pointer can release.
+        this.discovery?.tile.cancel(); this.discovery?.another?.cancel();
+      },
       () => undefined,
       { listening: () => !this.app.paused && !isParentPanelOpen() },
     );
@@ -170,6 +195,7 @@ export class GameScene extends Scene {
     this.tip?.position.set(view.w / 2, 16);
     this.tip?.scale.set(textBoost(view.scale));
     this.helpCard?.layout(view);
+    this.layoutResult(view);
   }
 
   enter() {
@@ -182,6 +208,7 @@ export class GameScene extends Scene {
     const wasController = this.inputInUse.kind === 'controller';
     this.inputInUse.sample(keys);
     this.drive(keys, dt, wasController);
+    if (this.resultReady) this.syncDiscovery();
     // The how-to card holds the round still: nothing moves or counts while a grown-up reads (its demonstration, if any, plays on).
     if (this.helpCard) {
       this.helpCard.update(dt);
@@ -242,6 +269,9 @@ export class GameScene extends Scene {
   destroy() {
     this.gone = true;
     window.removeEventListener('pointerdown', this.touchDown, true);
+    window.removeEventListener('pointerup', this.touchUp);
+    window.removeEventListener('pointercancel', this.touchUp);
+    window.removeEventListener('blur', this.touchUp);
     this.keys?.destroy();
     this.closeHelp();
     this.game?.destroy();
@@ -329,7 +359,7 @@ export class GameScene extends Scene {
 
   /** Play: the card goes, and the round begins. */
   private playFromIntro() {
-    if (this.game || this.gone) return;
+    if (this.game || !this.liveResult() || this.navigating) return;
     voice.stop();
     this.closeHelp();
     this.build().resize(this.view);
@@ -343,8 +373,7 @@ export class GameScene extends Scene {
   }
 
   private leave() {
-    voice.stop();
-    this.goHome();
+    this.navigateResult(() => this.goHome());
   }
 
   /** Back to where she came from (a land, a place, the journal), to its story's scene for a story round, or else to her home spot. */
@@ -355,7 +384,7 @@ export class GameScene extends Scene {
   }
 
   private finish(result: RoundResult) {
-    if (this.finished) return;
+    if (this.finished || !this.liveResult() || this.navigating) return;
     this.finished = true;
     this.made = cleanCreation(result.creation);
     this.discovered = store.discover(result.discoveries).map((id) => entryById(id)).filter((e): e is JournalEntry => !!e);
@@ -380,14 +409,17 @@ export class GameScene extends Scene {
   /** Happy pet, confetti, a sticker, then "again?". */
   private async celebrate(seed: number) {
     const v = this.view;
-    const layer = new Container();
+    const layer = this.resultLayer = new Container();
     const veil = new Graphics().rect(0, 0, v.w, v.h).fill({ color: 0xfff4e3, alpha: 0.8 });
+    this.resultVeil = veil;
     veil.eventMode = 'static'; // nothing underneath can be tapped now
     veil.alpha = 0;
     const confetti = this.track(new Particles());
-    const star = this.track(makePet());
+    const star = this.resultStar = this.track(makePet());
     star.scale.set(0.8);
-    star.position.set(v.w / 2, v.h + 280);
+    const placeStar = () => star.position.set(this.view.w / 2, this.view.h - 20 + this.resultPetOffset.y);
+    placeStar();
+    this.track({ update: placeStar });
     layer.addChild(veil, star, confetti);
     this.ui.addChild(layer);
     this.home.visible = false;
@@ -397,7 +429,7 @@ export class GameScene extends Scene {
     this.tip = null;
 
     await this.tw.to(veil, { alpha: 1 }, { duration: 0.3 });
-    void this.tw.to(star, { y: v.h - 20 }, { duration: 0.6, ease: ease.outBack });
+    void this.tw.to(this.resultPetOffset, { y: 0 }, { duration: 0.6, ease: ease.outBack });
     const colors = RAINBOW.map((c) => swatch[c].fill);
     const cannon = { kind: 'confetti' as const, colors, count: 40, speed: [550, 950] as [number, number], spread: 0.5, gravity: 700, life: [1.6, 2.4] as [number, number] };
     confetti.burst(0, v.h, { ...cannon, angle: -Math.PI / 3 });
@@ -415,8 +447,8 @@ export class GameScene extends Scene {
     void hopLoop();
 
     await this.tw.wait(0.6);
-    const sticker = stickerize(this.mod.sticker(seed), 110);
-    sticker.position.set(v.w / 2, v.h * 0.33);
+    const sticker = this.resultSticker = stickerize(this.mod.sticker(seed), 110);
+    sticker.position.set(this.view.w / 2, this.view.h * 0.33);
     sticker.scale.set(0);
     sticker.rotation = -0.08;
     layer.addChild(sticker);
@@ -429,8 +461,8 @@ export class GameScene extends Scene {
 
     // A first look at something for her journal: a little card with what she found, then on to the buttons.
     if (this.discovered.length) {
-      const pill = discoveryPill(this.discovered);
-      pill.position.set(v.w / 2, v.h * 0.555);
+      const pill = this.resultPill = discoveryPill(this.discovered);
+      pill.position.set(this.view.w / 2, this.view.h * 0.555);
       pill.scale.set(0);
       layer.addChild(pill);
       void this.tw.to(pill.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
@@ -441,11 +473,11 @@ export class GameScene extends Scene {
     }
 
     // "Again" plays the level she just finished (a story round plays its own), so it means what it looks like; the map applies the step up or down.
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.app.go.game(this.mod.id, this.band, this.story, true, this.origin, this.story ? undefined : this.level));
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.navigateResult(() => this.app.go.game(this.mod.id, this.band, this.story, true, this.origin, this.story ? undefined : this.level)));
     // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
     const upTo = this.story ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
-    const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo));
-    const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.goHome());
+    const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.navigateResult(() => this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo)));
+    const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.navigateResult(() => this.goHome()));
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);
     const solid = heartIcon(0xffffff, true);
@@ -457,6 +489,8 @@ export class GameScene extends Scene {
     const heartIcons = new Container();
     heartIcons.addChild(outline, solid);
     const heart = new RoundButton(heartIcons, swatch.pink, 56, () => {
+      if (!this.liveResult() || this.navigating) return;
+      this.speechSerial++;
       const on = store.toggleFavorite(this.mod.id);
       show(on);
       if (on) {
@@ -476,7 +510,8 @@ export class GameScene extends Scene {
       icons.addChild(house, check);
       let kept = false;
       keep = new RoundButton(icons, swatch.white, 56, () => {
-        if (kept) return;
+        if (kept || !this.liveResult() || this.navigating) return;
+        this.speechSerial++;
         kept = true;
         store.keepCreation(made);
         house.visible = false;
@@ -499,7 +534,120 @@ export class GameScene extends Scene {
       void this.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
     }
     layer.addChild(this.ring);
-    void voice.say(keep ? 'keep.offer' : 'again');
+    this.layoutResult(this.view);
+    const serial = ++this.speechSerial;
+    const speech = this.whileHere(voice.say(keep ? 'keep.offer' : 'again'));
+    // Wait out the buttons' arrival. A finger already held over the new tile has never armed it.
+    await this.tw.wait(0.45);
+    if (!this.liveResult() || this.navigating) return;
+    this.resultReady = true;
+    this.syncDiscovery(false);
+    await speech;
+    if (this.speechSerial === serial && this.discovery?.tile.visible) this.sayDiscovery('discovery.offer');
+  }
+
+  /** Save identity plus epoch rejects reset/restore and switching away then back, even to the same profile ID. */
+  private liveResult(): boolean {
+    return !this.gone && this.app.scene === this && discoveryMemory.current(this.discoveryToken, store.data);
+  }
+
+  private navigateResult(run: () => void) {
+    if (!this.liveResult() || this.navigating) return;
+    this.navigating = true;
+    this.speechSerial++;
+    voice.stop();
+    run();
+  }
+
+  private candidates() {
+    return discoveryCandidates({ current: this.mod.id, band: store.data.profile.band, playedBand: this.band, story: !!this.story }, GAMES);
+  }
+
+  private canDiscover(): boolean {
+    return this.liveResult() && !this.navigating && this.resultReady && this.inputInUse.kind === 'touch' && !this.returningTouch && !this.app.paused && !isParentPanelOpen();
+  }
+
+  /** Only eligibility changes can replace a displayed offer. Frames/resize/Heart/Keep retain it. */
+  private syncDiscovery(speak = true) {
+    if (!this.resultReady) return;
+    const candidates = this.liveResult() ? this.candidates() : [];
+    if (this.discovery && !candidates.some(m => m.id === this.discovery!.id)) this.replaceDiscovery(candidates, speak);
+    else if (!this.discovery && candidates.length && this.canDiscover()) this.replaceDiscovery(candidates, speak);
+    const offer = this.discovery;
+    if (!offer) return;
+    const visible = this.canDiscover();
+    const other = candidates.find(m => m.id !== offer.id);
+    const mod = candidates.find(m => m.id === offer.id);
+    if (visible && mod && other?.id !== offer.anotherId) {
+      offer.another?.destroy({ children: true });
+      offer.another = other ? this.makeAnother(mod, other) : null;
+      offer.anotherId = other?.id;
+    }
+    offer.tile.visible = visible;
+    if (!visible) offer.tile.cancel();
+    if (offer.another) {
+      offer.another.visible = visible && candidates.length > 1;
+      if (!offer.another.visible) offer.another.cancel();
+    }
+  }
+
+  private replaceDiscovery(candidates = this.candidates(), speak = true, another = false) {
+    this.discovery?.tile.destroy({ children: true });
+    this.discovery?.another?.destroy({ children: true });
+    this.discovery = null;
+    const mod = suggestDiscovery(candidates, store.data.games, discoveryMemory.last);
+    if (!mod || !this.canDiscover()) {
+      if (!mod && speak && this.canDiscover()) { this.speechSerial++; void voice.say('discovery.empty'); }
+      return;
+    }
+    const tile = new DiscoveryTile(288, 112, nextGameArt(mod, SCRIPT[mod.titleLine][0].replace(/!$/, '')), () => this.chooseDiscovery(mod.id), () => this.canDiscover());
+    tile.position.set(32, 24);
+    const other = candidates.find(m => m.id !== mod.id);
+    this.resultLayer!.addChild(tile);
+    const cycle = other ? this.makeAnother(mod, other) : null;
+    this.discovery = { id: mod.id, tile, another: cycle, anotherId: other?.id };
+    discoveryMemory.displayed(this.discoveryToken, store.data, mod.id);
+    if (speak) this.sayDiscovery(another ? 'discovery.another' : 'discovery.offer');
+  }
+
+  private makeAnother(mod: GameModule, other: GameModule): DiscoveryTile {
+    const tile = new DiscoveryTile(112, 112, anotherGameArt(mod, other), () => {
+      if (this.canDiscover()) this.replaceDiscovery(this.candidates(), true, true);
+    }, () => this.canDiscover());
+    tile.position.set(32, 160);
+    this.resultLayer!.addChild(tile);
+    return tile;
+  }
+
+  private sayDiscovery(line: 'discovery.offer' | 'discovery.another') {
+    const mod = this.candidates().find(m => m.id === this.discovery?.id);
+    if (!mod || !this.canDiscover()) return;
+    this.speechSerial++;
+    void voice.say(line, { title: SCRIPT[mod.titleLine][0].replace(/!$/, '') });
+  }
+
+  private chooseDiscovery(id: string) {
+    if (!this.canDiscover() || id !== this.discovery?.id) return;
+    if (!this.candidates().some(m => m.id === id)) {
+      this.replaceDiscovery(); // Never launch a replacement behind the old picture.
+      return;
+    }
+    this.navigateResult(() => launchDiscovery(this.app.go, id, store.data.profile.band, this.origin));
+  }
+
+  /** Every existing result element keeps its original center formula when the usable view changes. */
+  private layoutResult(view: View) {
+    this.resultVeil?.clear().rect(0, 0, view.w, view.h).fill({ color: 0xfff4e3, alpha: 0.8 });
+    this.resultStar?.position.set(view.w / 2, view.h - 20 + this.resultPetOffset.y);
+    this.resultSticker?.position.set(view.w / 2, view.h * 0.33);
+    this.resultPill?.position.set(view.w / 2, view.h * 0.555);
+    const a = this.after;
+    if (!a) return;
+    a.again.position.set(view.w / 2 - 240, view.h * 0.72);
+    a.next?.position.set(view.w / 2 + 250, view.h * 0.525);
+    a.home.position.set(view.w / 2 + 240, view.h * 0.72);
+    a.heart.position.set(view.w / 2 + 195, view.h * 0.33);
+    a.keep?.position.set(view.w / 2 - 195, view.h * 0.33);
   }
 
   /** A small card for the grown-up, which fades after a few seconds or when tapped. */
