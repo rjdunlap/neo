@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Sound Garden deep dive
+
+- Docs only: [deep dive](deep-dives/sound-garden.md) on `claude/dive-sound-garden` ([PR #521](https://github.com/rjdunlap/neo/pull/521)). Audited levels 1–6; gaps: one fixed sound per answer, fast/slow confounded with count and length, answer creatures never heard (turtle absent, off-scale croak), silent busy taps (V2), a hidden echo rhythm, an unbounded how-to step.
+- Opened the Electroplankton, Loopimal, Toca Band (ACCM) and Blob Opera pages; Chrome Music Lab, Rhythm Heaven, classroom standards and the pitch-word, beat and relative-pitch studies are search summaries; JumpStart Music and Simon recalled.
+- Seven ready slices added to the roadmap; four decisions to WAITING; level 1's every-touch retrofit waits on V2.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Cells and microbes subject research
 
 - Added the [cells-and-microbes study](deep-dives/subjects/cells-microbes.md): opened NGSS MS-LS1-1/2, MS-LS2-3 and 5-PS1-1 (via page source), the England science programmes, Siegal et al. 2011, Timmis et al. 2020, the Riedel-Kruse biotic-games paper, Foldscope, NSTA pages and three digital references. Search-summary-only and recalled items are marked. Puddle Lens is the first ladder; Zoom Walk, Leaf Litter Window and Photo Safari take content borrows.

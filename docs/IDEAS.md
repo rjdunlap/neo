@@ -1375,7 +1375,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Bumper Garden (L–K · 5) ([deep dive](deep-dives/bumper-garden.md)) | More tables | **6, Count on / 7, Pattern bloom / 8, Not this color / 9, Count back / 10, Make five** (pre-K); Pond and Hive tables; Floaty garden and Anywhere flip as easier entries; make ten and a tune are proposals behind a school-window decision | — |
 | Jelly Drums (L–S · 9) ([deep dive](deep-dives/jelly-drums.md)) | Tunes with shapes and names (*Hot Cross Buns*, *Mary*, *Oh! Susanna*: songs on the jellies' five pitches), a replay target, color and size words, sound sets and stages; the deep dive supersedes this row | **10, Backwards, 11, Same or different?, 12, Lowest to highest** (the leave stands for length; the deep dive proposes these as a decision), and a couch memory duel for grown-ups | Between-level entries: echo jellies and one big jelly (lap), follow the glow and which jelly sang (toddler), finish the song (preschool); all wait on level order |
 | Song Maker (T–S · 7) ([deep dive](deep-dives/song-maker.md)) | More tunes to copy and patterns to continue; the dive defines ten spoken patterns and authored motifs | R1-later: *answer the phrase*; the dive proposes 8–13 (compose, answer, finish, ear entry, bring it home, change one thing) | — (no younger opening; level 1 serves lap) |
-| Sound Garden (L–K · 6) | More singer pairs (owl and mouse for high and low; snail and hare for slow and fast) | **7, Loud or quiet**, a new contrast. **8, Two at once:** "high and fast", a two-attribute listen | — |
+| Sound Garden (L–K · 6) ([deep dive](deep-dives/sound-garden.md), which supersedes this row) | More singer pairs (owl and mouse for high and low; snail and hare for slow and fast) | **7, Loud or quiet**, a new contrast. **8, Two at once:** "high and fast", a two-attribute listen | — |
 | Rhythm Neighbors (L–S · 6) | More frog voices and call shapes | — (audit: leave) | — |
 | Beat Builder (P–S · 5) | [Deep dive](deep-dives/beat-builder.md): authored phrase library after support fixes | Proposed 6 mend, 7 isolate, 8 A/B, 9 ABA; decision | Toddler single-hit finish and distinct lap pat-to-score opening; decision in the deep dive |
 
@@ -2008,7 +2008,7 @@ Prefer a mode of an existing game when the meaningful action is the same; make a
 | Sock Match / Shadow Match | Memory Match or Shape Sorter modes | Add attribute or silhouette reasoning if it is meaningfully new |
 | Lost and Found | A later Island Errands story | Keep one adventure system and a small authored cast |
 | Critter Friends / Piñata Garden / Puppy Pal | Habitat Helpers, journal, and pet treehouse | Befriending, inviting visitors, and pretend care share the persistent world |
-| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
+| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level (its sleepy-tree payoff is the [deep dive](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)'s level 5 slice) and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
 | Rhyme Picnic | Rhyme Time | Rhyme Time covers choosing a rhyme; a picnic scene is only worth it for its payoff |
 | Build-a-Bug counting | Bug Builder | A counting mode, not a second bug game |
 | Doghouse Directions / Bear Hunt Walk | Peekaround Island for positions; Bear Hunt Walk for movement along a route | Start as a Peekaround mode for in, on and under; build Bear Hunt Walk only if moving along a route proves to be the new decision |
@@ -2016,7 +2016,7 @@ Prefer a mode of an existing game when the meaningful action is the same; make a
 | Count the Peekers | Critter Spotter, or a Duck Pond mode (planned in its [deep dive](deep-dives/duck-pond.md)) | Counting in a busy scene, without Potato Counter's countdown |
 | Guess the Pumpkin / Box Balance | Seesaw Balance modes | Estimation as an unscored prediction; equations continue levels 8–9 |
 | Number Friends | Number Merge | Numberblocks and DragonBox Numbers become its references |
-| Sing Higher | Sound Garden | Sliding pitch as a high/low mode |
+| Sing Higher | Sound Garden | Sliding pitch as a high/low mode; planned as level 9 in the [deep dive](deep-dives/sound-garden.md#new-levels-on-top) |
 | Keepy Uppy | Bounce Back | A floatier one-player mode first |
 | Snail Walk | Follow the Leader | One slow walker instead of a crowd; choose one of the two |
 | Story Weaver | Story Theater and Stamp Studio | One creative-story system, built on the existing creation storage |
