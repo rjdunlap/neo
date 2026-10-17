@@ -93,7 +93,7 @@ An adventure requests a mode from an existing game; the game reports a bounded r
 - Keep current behavior in DESIGN and GAMES until replaced. Put future mechanics here or in their work-item packet. Do not rewrite current facts as if the rework shipped.
 - Keep game deep dives and subject research in place. They remain inputs for content and learning coverage, not a demand to implement every proposed game.
 - Archive only material that has actually been superseded; preserve an index and fix links. There is no reason to archive the whole existing plan or source before its replacement exists.
-- Finish already-claimed work. At planning time [Discovery D1b #483](https://github.com/rjdunlap/neo/pull/483) owns result navigation; RW03/RW08 must reconcile with its landed behavior. Do not implement another Next game flow in parallel.
+- Finish already-claimed work. [Discovery D1b #483](https://github.com/rjdunlap/neo/pull/483) landed before this plan merged; RW03/RW08 must build on its result navigation. Do not implement a competing Next game flow.
 - The built Windy Picnic and Woodland Picnic are references for resumable projects. Missing Melody and other standalone story proposals must be reviewed against RW04/RW07 before a new story framework is started. Existing visual-identity and habitat-kit studies inform RW02/RW12; they are not competing reskins to implement simultaneously.
 - After active claims, prioritize the ready rework exploration packets in the roadmap. Continue fixes and useful game/content work; reconcile unclaimed shell, pet, save and broad visual overhauls with this plan before scheduling them.
 

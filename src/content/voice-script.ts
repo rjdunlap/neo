@@ -4,6 +4,9 @@
  * This is also the script for recording parents' voices later.
  */
 export const SCRIPT = {
+  'discovery.offer': ['Next game: {title}. Or choose another.'],
+  'discovery.another': ['Another game. {title}.'],
+  'discovery.empty': ['You can play again, or go home.'],
   'game.snowball-merge': ['Snowball Merge!'],
   'snowball.go': ['Tap an arrow to slide the snowballs. Matching numbers join and double. Make one snowball with {target}!'],
   'snowball.still': ['Nothing moves that way. Try another arrow.'],

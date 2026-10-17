@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Discovery D1b direct Next game (2026-10-17)
+
+[PR #483](https://github.com/rjdunlap/neo/pull/483), `codex/discovery-direct-next`, dispatch `discovery-direct-20261017T013407Z`: pictured Next game/Another after eligible ordinary lap/toddler touch results, fixed Bubble Pop/Barn/Fill and Dump pool, completion-based selection and transient per-profile memory. Launch revalidates the pictured target and uses its normal current band/pin/intro with the original return context. Existing result controls, explicit Keep and single round settlement remain intact; result layout reflows in both orientations. Native pointer cancellation was reproduced and fixed. No mixes, new settings, controller discovery or save fields. [Verification](../VERIFICATION.md#2026-10-17--discovery-d1b-direct-next-game); iPad speech/reach and child interpretation remain open. D2a is the next definition.
+
+
 ### Photo Safari 7 Two clues, no name (2026-10-16)
 
 [PR #470](https://github.com/rjdunlap/neo/pull/470), `codex/safari-two-clues`, dispatch `safari-two-clues-20261016T201906Z`, worker `01a1465e-cadf-7402-8cd5-676524c857a6`: school range 4–7 appends a four-photo action/place conjunction without an animal name. Each clue fits two sightings, both fit exactly one. Two broad shared places, 160-unit actor spacing and nearest-body tap resolution; wrong photos name the actual animal/action/place, two misses glow the target and count one hint. Ghost finger sends the same target tap to the shared receiver. Level-specific how-to and speech; earlier IDs/pins, younger bands, level 5, journal and texture cleanup retained. [Proof](VERIFICATION-2026-10-16.md#2026-10-16--photo-safari-7-two-clues-no-name); iPad speech and child understanding remain open.

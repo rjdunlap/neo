@@ -184,11 +184,13 @@ The developer requested concrete roadmap actions on 2026-10-12. [ROADMAP’s dis
 | **D6 · Keep moving** | **D6** finite automatic-handoff choice | Later explicit opt-in, after deliberate Next and support behavior work; interruptions, changed input/mode and pending Keep return to a preview |
 | **Other discovery entrances** | **D7** scoped pick/shuffle; **D8** profile start preference; **D9** favorites/recent/library | Reuse working selection, planner and entry routes. Do not infer preferences, create endless refills, change favorites limits or promise saved sessions by adding a shortcut |
 
-**Next action:** build D1b from the [frozen D1a packet](#d1b-build-packet-one-direct-next-game); then D2a, D2b and D3. D1b/D2b each deliver a playable slice, including the pure rules they use, rather than release unused selector/session infrastructure. Further definitions or optional policy choices proceed under the roadmap’s explicit dependencies. These action IDs name scope, not a new dispatch queue or implementation claim.
+**Next action:** define D2a; D1b is built from the [frozen D1a packet](#d1b-build-packet-one-direct-next-game). D2b and D3 follow their definitions. D1b/D2b each deliver a playable slice, including the pure rules they use, rather than release unused selector/session infrastructure. Further definitions or optional policy choices proceed under the roadmap’s explicit dependencies. These action IDs name scope, not a new dispatch queue or implementation claim.
 
 ## D1b build packet: one direct next game
 
-*D1a frozen 2026-10-15 · docs only · source audit `cbf6391` · [PR #395](https://github.com/rjdunlap/neo/pull/395).* This is the complete first pilot specification. D1b implements it as a usable result-to-game flow; none of this UI exists yet. The broader research above remains proposals where it extends this packet.
+D1b implemented in [PR #483](https://github.com/rjdunlap/neo/pull/483); [verification](VERIFICATION.md#2026-10-17--discovery-d1b-direct-next-game). The frozen packet below remains the scope reference. Device/child checks remain open.
+
+*D1a frozen 2026-10-15 · docs only · source audit `cbf6391` · [PR #395](https://github.com/rjdunlap/neo/pull/395).* This is the complete first pilot specification. D1b implements it as a usable result-to-game flow. The broader research above remains proposals where it extends this packet.
 
 ### Entry and reviewed pool
 
@@ -266,7 +268,7 @@ D1b owns the smallest complete feature. Expected files:
 - `src/content/voice-script.ts` for offer/replacement/recovery speech, existing `RoundButton`/`onTap` and module icons for input/art. Change `routes.ts`/`origin.ts` only if tests expose a necessary preservation fix; their contracts above remain intact.
 - `scripts/browser-check.mjs` and README browser table for a **new filtered `discovery` flow** (`DISCOVERY_ONLY=direct-next`), plus ROADMAP, DESIGN if implemented behavior warrants it, and VERIFICATION closeout. No save schema, game rules, new game inventory row or new assets.
 
-Future acceptance (specified here, **not run by D1a**):
+Acceptance scope (specified by D1a; D1b results are recorded in [verification](VERIFICATION.md#2026-10-17--discovery-d1b-direct-next-game)):
 
 | Proof | Exact scope |
 | --- | --- |
@@ -276,7 +278,7 @@ Future acceptance (specified here, **not run by D1a**):
 | Layout and input | One landscape and one portrait result screenshot with all applicable controls/pill/Keep; inspect bounds, pet clearance and 100-unit targets. Resize must retain the same suggestion and settled result. Hold/cancel/release through transition cannot activate target Play |
 | Required shell/navigation tier | Typecheck, unit tests, build; `BROWSER_SUITE=discovery DISCOVERY_ONLY=direct-next` once at an explicit strict-port server URL; `BROWSER_SUITE=world`; production offline check after verifying the served hashed build matches `dist`. Add the new suite/filter before invoking it. No full couch/picnic/release sweep |
 
-Device speech, iPad reach and a child's ability to distinguish Next game/Another/Next level remain person checks; Chrome cannot close them. Mixes, autoplay, combined preview/intro, compact results, new pools, saved preferences and unresolved decisions are outside this packet. **Next action: admit and build D1b from this packet; do not implement it in the D1a session.**
+Device speech, iPad reach and a child's ability to distinguish Next game/Another/Next level remain person checks; Chrome cannot close them. Mixes, autoplay, combined preview/intro, compact results, new pools, saved preferences and unresolved decisions are outside this packet. **Next action: define D2a; do not expand the built D1b pool or add automatic handoff.**
 
 ### Important rule and lifecycle proof
 
@@ -308,4 +310,4 @@ Record selection actions, wrong destinations, support requests, understanding of
 
 ## Verification of this research
 
-Research, repository source review and documentation only. No game, route, save, policy or asset changed. Source links and local Markdown references/diff formatting are the appropriate checks; actual results are recorded in [VERIFICATION](VERIFICATION.md). Future implementation checks above were specified, not performed.
+The original study and D1a were research, repository source review and documentation only; they changed no runtime behavior. Their source/link checks and the later D1b implementation proof are recorded separately in [VERIFICATION](VERIFICATION.md). The acceptance table above preserves D1a’s specified scope; the dated D1b entry records what actually ran.

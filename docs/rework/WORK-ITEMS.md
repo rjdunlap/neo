@@ -12,7 +12,7 @@ Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#
 | --- | --- | --- | --- |
 | [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | ready, docs exploration | None |
 | [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | ready, bounded exploration | None; use provisional names |
-| [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | ready, docs/prototype exploration | Reconcile active D1b work; RW01 informs language |
+| [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | ready, docs/prototype exploration | Reconcile landed D1b work; RW01 informs language |
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | ready, docs definition | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | define after upstream packets | RW02, RW03 |
 | [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | define after upstream packets | RW03, RW05 |
