@@ -34,7 +34,7 @@ Put silhouettes, docks, legal placements, undo snapshots and a pure trace in the
 
 Future implementation tier: **new game/new interaction** from [AGENTS](../../AGENTS.md#verification-budget). Typecheck and meaningful unit tests: all accepted identity/shape arrangements; failure at each missing role; hint actions that lead to a solution; undo/replay preserving/restoring state; seeded presentation consistency; completion once and hint deduplication. One filtered scripted play at level 1 (first and last are the same), failed trial, hint, undo/replay, assisted finish and exactly one shell sticker; ghost finger must use the same touch actions. One portrait screenshot checks clearance/100-unit targets; build when shared registry/content files change. Add the normal module/land/voice/how-to/README/GAMES integration then, not now. Device speech, real iPad touch and child understanding remain human checks. This document originally recorded no implementation proof; see [verification](../archive/VERIFICATION-2026-10-07-13.md#2026-10-12--shape-buddies-solo-seed-journey) for the subsequent build checks.
 
-Future proposals only: two useful shapes combined. The different fixed dock arrangement is now defined as [level 2](#level-2-a-step-down-defined-2026-10-16). No developer decision blocks this bounded definition; the developer commissioned the solo implementation on 2026-10-12. Arbitrary cutting, general physics, cooperative seats and competitive modes stay excluded.
+Two useful shapes combined is now defined as [level 3, Two make one](shape-buddies-combined.md). The different fixed dock arrangement is now defined as [level 2](#level-2-a-step-down-defined-2026-10-16). No developer decision blocks this bounded definition; the developer commissioned the solo implementation on 2026-10-12. Arbitrary cutting, general physics, cooperative seats and competitive modes stay excluded.
 
 ## Level 2: a step down (defined 2026-10-16)
 
@@ -82,4 +82,4 @@ The level-1 `buddies.bridge` line stays for level 1 only. The caption's text has
 
 Device speech, iPad touch and a child's reaction stay human checks.
 
-**Excluded:** two shapes combined (still a proposal), a third friend or tool, new bands, kept creations, save fields, controller or couch modes, cutting, and general physics.
+**Excluded:** two shapes combined (since defined as [level 3](shape-buddies-combined.md)), a third friend or tool, new bands, kept creations, save fields, controller or couch modes, cutting, and general physics.

@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Shape Buddies level 3 definition
+
+- Defined Shape Buddies' two-shapes-combined level in [the definition](definitions/shape-buddies-combined.md): a wide gap where a flat friend (near half) and a cup friend (far half) hold hands into a spoon; the existing `bridge`/`receiver` docks move side by side, `PLANS[3]` accepts only Flat, a pure `failureLine` picks four new spoken failures, misses stay 0, per-role hints, the guidance-driven bot, how-to `LevelLine`, pre-K and school 1–3.
+- References: Snipperclips, Thinkrolls 1 (App Store), The Incredible Machine (MobyGames), Crayon Physics Deluxe (Steam), from search summaries.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: two defaulted decisions (pre-K window, a level 4); no child has played it.
+
 ## 2026-10-17 — Mirror Brush fold button definition
 
 - Defined Rainbow Fingers' fold page in [the definition](definitions/mirror-brush-fold.md): a seeded page type at level 2 (no new level ID), a 104-unit fold button after the first mark, a swing-press-open print through a wet layer, so only paint added since the last fold is mirrored, no misses or counted hints, a nudge wiggle, the bot, how-to lines and pure `mirrorX`/`foldMarks`/`pageKind` rules. Prediction stays with Bug Builder's *Fold a friend*.
