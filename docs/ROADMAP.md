@@ -49,7 +49,7 @@ Scheduled work uses the [execution queue](EXECUTION-QUEUE.md): one fresh session
 
 The existing content slices were re-checked 2026-10-15 against their dives and `origin/main`. Added the rework explorations on 2026-10-16: after the recorded worker is closed out, take the first unclaimed eligible RW exploration before the retained content list. Each line is one bounded session; being ready for exploration does not authorize its downstream implementation.
 
-2. **RW04 — welcome adventure and learning** (docs definition): audit concrete existing modes and define adoption, a kept creation and observed learning actions. [Packet](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet)
+2. **RW04 — welcome adventure and learning** (docs definition): audit concrete existing modes and define adoption, a kept creation and observed learning actions. [Packet](rework/WORK-ITEMS.md#rw04-welcome-adventure-and-learning-packet) *Claimed 2026-10-17: branch `claude/rw04-welcome-adventure`, expected file `docs/rework/WELCOME-ADVENTURE.md`.*
 5. **`ramp-race`, build the Q1 support correction Q2** (existing-game bug-fix tier): accurate level 1–4 card and miss wording, idempotent repair glow and recovery demo; accounting unchanged. [Definition](definitions/ramp-race-support.md)
 6. **`ramp-race`, Trial Shelf 5 / One Change 6 definition Q3** (docs only): two pictured records, prediction/Check distinction, layout and supported ending; implementation decisions stay explicit. [Inquiry ladder](deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions)
 
