@@ -296,7 +296,11 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 8, text: 'The round ends when everything asked for is clean.' },
       { from: 9, to: 9, text: 'The round ends when the mud is all gone.' },
     ],
-    note: [{ from: 3, to: 8, text: 'Washing the wrong part just makes the pet giggle and repeats the request.' }],
+    note: [
+      { to: 2, text: 'The pet names each part at its first touch and again when it is clean. After a quiet spell a muddy spot sparkles and the pet wiggles; that is an invitation, not help.' },
+      { from: 3, to: 8, text: 'Washing the wrong part just makes the pet giggle and repeats the request. Each part is named when it is clean.' },
+      { from: 9, to: 9, text: 'The pet names each part at its first pat and again when it is clean.' },
+    ],
   },
   'duck-pond': {
     goal: 'Count ducks and put the right number in the pond.',

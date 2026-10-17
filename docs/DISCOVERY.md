@@ -188,7 +188,7 @@ The developer requested concrete roadmap actions on 2026-10-12. [ROADMAP’s dis
 
 ## D1b build packet: one direct next game
 
-D1b implemented in [PR #483](https://github.com/rjdunlap/neo/pull/483); [verification](VERIFICATION.md#2026-10-17--discovery-d1b-direct-next-game). The frozen packet below remains the scope reference. Device/child checks remain open.
+D1b implemented in [PR #483](https://github.com/rjdunlap/neo/pull/483); [verification](archive/VERIFICATION-2026-10-16.md#2026-10-17--discovery-d1b-direct-next-game). The frozen packet below remains the scope reference. Device/child checks remain open.
 
 *D1a frozen 2026-10-15 · docs only · source audit `cbf6391` · [PR #395](https://github.com/rjdunlap/neo/pull/395).* This is the complete first pilot specification. D1b implements it as a usable result-to-game flow. The broader research above remains proposals where it extends this packet.
 
@@ -268,7 +268,7 @@ D1b owns the smallest complete feature. Expected files:
 - `src/content/voice-script.ts` for offer/replacement/recovery speech, existing `RoundButton`/`onTap` and module icons for input/art. Change `routes.ts`/`origin.ts` only if tests expose a necessary preservation fix; their contracts above remain intact.
 - `scripts/browser-check.mjs` and README browser table for a **new filtered `discovery` flow** (`DISCOVERY_ONLY=direct-next`), plus ROADMAP, DESIGN if implemented behavior warrants it, and VERIFICATION closeout. No save schema, game rules, new game inventory row or new assets.
 
-Acceptance scope (specified by D1a; D1b results are recorded in [verification](VERIFICATION.md#2026-10-17--discovery-d1b-direct-next-game)):
+Acceptance scope (specified by D1a; D1b results are recorded in [verification](archive/VERIFICATION-2026-10-16.md#2026-10-17--discovery-d1b-direct-next-game)):
 
 | Proof | Exact scope |
 | --- | --- |
