@@ -1266,7 +1266,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Size Parade** (8 · 7–8) | The school window only adds more friends, which is a bigger number rather than a new decision; measurement lives in Inchworm Measure |
 | **Scoop Shop** (6 · 5–6) | The top level is already "remember the order"; more would only add load |
 | **Stamp Studio** (6 · 5–6) | Open-ended; every story is welcome, so there is nothing to climb. **Its [deep dive](deep-dives/stamp-studio.md)** keeps that for answers (no checked puzzle, no score) but proposes five levels of invitations she cannot fail (place words, relations, her own pattern, a mirror, a repeating tile) as a decision that overrides this leave |
-| **Teddy Doctor** (6 · 5–6) | Care role-play whose top level already sequences a check-up |
+| **Teddy Doctor** (6 · 5–6) | Care role-play whose top level already sequences a check-up. **Its [deep dive](deep-dives/teddy-doctor.md)** keeps memory load where it is but proposes a toddler entry 7 *Who needs help?* and a school 8 *Before and after* (an order rule with several right answers), which overrides this leave |
 | **Rhythm Neighbors** (6 · 5–6) | A couch game; layered rhythms are a larger design for a music slice |
 | **Little Helpers** (6 · 5–6) | Equal groups is the right end; remainders are in Monster Munch and Lasso Loops, and rows and columns are Orchard Rows |
 | **Lasso Loops** (5 · 3–5) | Place value past 39 would mean forty or more fireflies, which is clutter; it needs a different representation, not a longer ladder |
@@ -1416,7 +1416,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Feelings Faces (L–K · 8) | More small events | **9, Two friends, one event:** the same thing happens and they feel differently (perspective), which opens a `school` window | — |
 | Weather Wardrobe (L–K · 7) | **New weathers: wind and fog**, with a kite and a bright coat | — | — |
 | Scoop Shop (L–S · 6) | Toppings and cones | — (audit: leave) | — |
-| Teddy Doctor (L–S · 6) | More patients (five today) and boo-boos | — (audit: leave) | — |
+| Teddy Doctor (L–S · 6) ([deep dive](deep-dives/teddy-doctor.md)) | More patients (five today) and boo-boos; the deep dive adds a scale and height chart to check-ups and keeps new ailments as a decision | **7 Who needs help?** (toddler entry), **8 Before and after** (school); the deep dive supersedes this row | Level 1 every touch counts, with the part named |
 | Stop and Go (L–P · 4) | Bikes and boats as well as cars | **5, Walk signal:** the walker crosses only on the little green figure, which opens a pre-K window | — |
 | Pet Says (L–K · 5) ([deep dive](deep-dives/pet-says.md)) | Moves in tiers (peekaboo, pat-a-cake, tiptoe, march, frog, cat, duck, bird), ten body words and a chant, counts, richer tricks, four tunes with named statue poses and five scenes; the deep dive supersedes this row | **6 Opposite day, 7 Quiet dance, 8 More opposites, 9 A walk in the woods, 10 Sun or moon** (pre-K 3–10), and as a decision a school window **6–12** with 11 Pet says, opposite and 12 This hand (nothing is judged: the pet reveals the opposite) | Pat the pet (lap) and Your turn! (toddler); both wait on level order |
 

@@ -83,6 +83,10 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 39. **`sound-garden`, level 9 Sing Higher** (new interaction): drag a singer up to sing higher on pentatonic steps, creative finish; preschool order 2, 3, 4, 9, and pre-K. [Slice 6](deep-dives/sound-garden.md#new-levels-on-top)
 40. **`sound-garden`, level 10 Copy the shape** (new level; after *Sing Higher*): sing back a two- then three-note direction; pre-K. [Slice 7](deep-dives/sound-garden.md#new-levels-on-top)
 41. **`domino-run`, build levels 1–8** (new-game tier): stand dominoes in a lane's gaps and tap the starter; a domino falls if the one before reaches it (reach = size) and it is at most one size bigger; forks ring two bells, only a giant rings the gong; a stall is never a miss, glow after two stalls; drag bot. [Definition](definitions/domino-run.md)
+42. **`teddy-doctor`, every touch counts, the part named, a true how-to** (existing-game bug fix): level 1 taps answer from when the patient lands, any touch bandages the nearest boo-boo and the part is spoken (the body/health B7 pick); levels 2–3 how-to says drag; level 6 step capped. [Slice 1](deep-dives/teddy-doctor.md#build-slices-in-order)
+43. **`teddy-doctor`, weigh and measure** (content, levels 5–6): a scale and a height chart join the check-up, three of five steps per round; no care claim. [Slice 2](deep-dives/teddy-doctor.md#fresh-content-inside-existing-levels)
+44. **`teddy-doctor`, level 7 Who needs help?** (new level): two friends, tap the one with a boo-boo, then bandage it; toddler order 1, 7, 2, 3, `entryLevels: [7]`. [Slice 3](deep-dives/teddy-doctor.md#new-levels-on-top)
+45. **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
 
 ### Chunks
 
