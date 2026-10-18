@@ -93,7 +93,7 @@ Status values as in the [game tracker](README.md#tracker): **not started**, **in
 | `medieval-life` | Castles, guilds, markets, monasteries (no battles) | C3; museum guides | Block Tower, Market Stall | Storybook Square | S–M | guild-market logic | not started |
 | `exploration-maps` | Navigation, maps, ships and trade (acknowledging, not depicting, colonization) | C3; museum guides | Mail Carrier, Treasure Map, Peekaround Island | Skywatch Isles | S–M | navigation puzzle | not started; **needs review** |
 | `inventions` | Inventors and the wheel, printing press, bulb, flight; how an idea spreads | C3; science and technology museums | Wobble Works, Gear Garden, Chain Reaction | Maker Harbor | P–M | build-the-invention puzzle | **designed** ([study](subjects/inventions.md), 2026-10-15, PR #392) |
-| `community-civics` | Community helpers, jobs, rules, voting, how a community runs, local history | C3 civics strand | Market Stall, Lemonade Stand, Little Helpers | Storybook Square | P–M | village-council cozy puzzle | not started |
+| `community-civics` | Community helpers, jobs, rules, voting, how a community runs, local history | C3 civics strand | Market Stall, Lemonade Stand, Little Helpers | Storybook Square | P–M | village-council cozy puzzle | in progress 2026-10-17: `claude/subject-community-civics` (research brief at `subjects/community-civics.md` when it lands) |
 
 ### Technology
 
