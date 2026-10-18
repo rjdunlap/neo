@@ -154,7 +154,7 @@ Generate by choosing a small authored history and masking observations, then enu
 
 Each line is one session, definitions before implementation. These do not supersede the roadmap's ready queue.
 
-1. **D1 — define shared Fossil Dig E5:** one reviewed leaf-impression case, reference feature key, location record, explicit Check/support/accounting, first K range, layout and overlap decision. Docs only; assign the reviewer and freeze the content before building.
+1. **D1 — define shared Fossil Dig E5:** **Defined 2026-10-18:** [definition](../../definitions/fossil-dig.md) (levels 1–2, three invented leaves, Where flag and feature Check, accounting, layout, tests, ghost finger, voice/how-to, defaulted decisions); D2's build is on the [ready list](../../READY.md#queued). Original scope: one reviewed leaf-impression case, reference feature key, location record, explicit Check/support/accounting, first K range, layout and overlap decision. Docs only; assign the reviewer and freeze the content before building.
 2. **D2 — build the first Find and Record round:** only after D1/model review, implement the single case, truthful how-to/voice, supported ending, bot and shell integration; new-game tier and capacity check. No dinosaur cast or saved museum.
 3. **D3 — define Trace Prints in Stamp Studio:** one broad mark and two fresh-print makers, younger input/band review, optional finish and creative accounting. Docs only; a separate existing-game slice builds it if worthwhile.
 4. **D4 — define Trackway Tales:** one toy replay case, all compatible motions, one discriminating clue, uncertainty/help/accounting, model limitations, touch layout and bot. Docs only; scientific review for any real trace.

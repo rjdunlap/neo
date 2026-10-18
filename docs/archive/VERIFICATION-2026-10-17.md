@@ -289,3 +289,10 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - Opened Wikipedia (Cookie Monster Munch), Feed the Monster listings, Moose Math (App Store, Common Sense), Toca Kitchen 2 (Toca Boca, Microsoft Store), My Very Hungry Caterpillar, Gracie & Friends Breakfast Time and Common Core K.CC and 3.OA; Atari modes, Moose Juice details and PhET are search summaries; Hungry Hungry Hippos and the Frydman and Bryant finding recalled.
 - Six ready slices queued in [READY.md](../READY.md); one decision row to WAITING.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
+## 2026-10-17 — Cut Along definition
+
+- Defined Cut Along levels 1–8 in [the definition](../definitions/cut-along.md): fringe snips, a thick line, straight, zigzag and wave, curves and a circle cut either way round, square and triangle with lead-ins, picture outlines, and the outline that fits a gap; Letter Trails' `sampleStroke`/`advanceTrace`/`offTrail`, a 30-unit corridor floor, one miss per stray drag from 3, a glow after two, the existing `trace` ghost intent, Paint Pier. Fold & Snip deferred (Bug Builder lean).
+- References: OT scissor progressions (Growing Hands-On Kids, Swansea Bay NHS, Oxfordshire) and the Common Sense Dexteria Jr. review from search summaries; the Sago Mini Toolbox review opened; Make-A-Flake only via Wikipedia. Skipped Lift It (sequenced after Gear Garden's packet) and W2 (overlaps RW06/RW11).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the five defaulted decisions; corridor widths are computed, not felt; no child has played it.
