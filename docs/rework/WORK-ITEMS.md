@@ -2,7 +2,7 @@
 
 [GitHub epic #484](https://github.com/rjdunlap/neo/issues/484) tracks the twelve work items.
 
-Scope source: [rework brief](README.md). The [roadmap ready list](../ROADMAP.md#ready-to-build-now) is the dispatch queue. GitHub issue links below record execution; dependency satisfaction and a defined packet, not issue age, make an implementation ready. One issue can have several small PRs: claim the first slice listed, report remaining acceptance criteria, and close only when the whole item is delivered.
+Scope source: [rework brief](README.md). The [ready list](../READY.md) is the dispatch queue; an eligible exploration goes at the top of its Next ten. GitHub issue links below record execution; dependency satisfaction and a defined packet, not issue age, make an implementation ready. One issue can have several small PRs: claim the first slice listed, report remaining acceptance criteria, and close only when the whole item is delivered.
 
 **Development saves may reset.** Do not add compatibility/migration work to any item. Validate the current schema and its writes/profile isolation. Title/cast/style names in exploration are provisional; no global rename is needed to begin.
 

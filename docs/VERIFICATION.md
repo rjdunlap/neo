@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Ready list moved to its own file
+
+- Docs only: the roadmap's 68-line numbered **Ready to build now** list became [READY.md](READY.md): a **Next ten** in priority order (the eligible RW05 definition first, then the slices the old list led with) and a **Queued** section grouped by game, unnumbered so a deleted line leaves no gap; every line keeps its wording, check tier and dive link, and the four lines that named other lines by number now name the slice instead.
+- The roadmap's section is a one-paragraph pointer and its pick steps read from Next ten, with the refill rule moving Queued lines up below five; the stale "lines 7–16 were added" sentence is gone. Repointed the execution queue's selection table, the deep-dive procedure's step 7, the rework brief and work items, the 2026-10-15 cleanup archive, AGENTS.md (document table row added) and the docs-keeper agent.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: nothing; the next closeout exercises the new delete-and-move-up rule.
+
 ## 2026-10-17 — Visual art subject research
 
 - Added the [visual-art study](deep-dives/subjects/visual-art.md) on `claude/subject-visual-art` ([PR #547](https://github.com/rjdunlap/neo/pull/547)): opened England art and design KS1–3, EYFS expressive arts, Core Arts visual arts K/2/4/7 (Washington's adoption on Common Planner), the NCAS anchors, NPS weaving patterns and MIT's weaving-in-Scratch page; Lowenfeld, Gardner, VTS, Jacquard and the reference games are search summaries; Head Start ELOF returned 403.
