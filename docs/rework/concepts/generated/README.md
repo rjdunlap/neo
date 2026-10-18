@@ -19,6 +19,13 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | sprout-sleepy-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [sleepy1](R02-PROMPTS.md#sleepy1) | yes |
 | sprout-sad-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad1](R02-PROMPTS.md#sad1) | yes |
 | sprout-portrait-2.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait2](R02-PROMPTS.md#portrait2) | yes |
+| river-base-4.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [base4](R03-PROMPTS.md#base4) | yes |
+| river-blink-1.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [blink1](R03-PROMPTS.md#blink1) | yes |
+| river-happy-1.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [happy1](R03-PROMPTS.md#happy1) | yes |
+| river-surprised-2.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [surprised2](R03-PROMPTS.md#surprised2) | yes |
+| river-sleepy-1.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [sleepy1](R03-PROMPTS.md#sleepy1) | yes |
+| river-sad-1.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad1](R03-PROMPTS.md#sad1) | yes |
+| river-portrait-2.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait2](R03-PROMPTS.md#portrait2) | yes |
 
 ## R01 review and preparation notes
 
@@ -39,6 +46,16 @@ Reviewed three base candidates at full size and 120 px canvas width. Candidate 2
 The entire base, including leaves and feet, occupies bounds `(307, 63, 1229, 961)` in its landscape canvas. Its body is wider than tall; the leaves make the overall character nearly square. Framing therefore fits about 88% of canvas height and 60% of width, rather than stretching the silhouette to the generic 85%-width target. The portrait's closed bust bounds are `(256, 152, 1056, 1105)`, leaving comfortable margins. Portrait 1 was rejected for clipping at the bottom edge; portrait 2 is retained.
 
 The expression silhouettes were compared to the base in both directions with a four-pixel tolerance: zero silhouette pixels exceeded it. Their outer bounds match exactly except sad and sleepy extend one pixel farther left. This inspection used temporary white-paper masks and thumbnails only; it did not prepare or modify the originals. Fine shading/edge differences are possible, so this is not a claim of pixel-identical non-face regions. The existing preparation alignment check, animation review and device checks are still outstanding. White backgrounds have faint near-white variation like R01; use the existing paper-keying pipeline later. No claim of iPad readability, child appeal or animation quality.
+
+## R03 review and preparation notes
+
+Seven untouched PNGs, 10,298,060 bytes total. Full-body files are 1536 × 1024; the portrait is 1254 × 1254, above the requested minimum. Retained variant copies were checked against the tool originals by SHA-256. No cutting, rigging, integration, pixel cleanup or recompression; service terms and undisclosed model caveat remain as below.
+
+Three independently prompted base candidates were reviewed at full size and 120 px canvas width. Candidate 1 had the clearest lifted neck and four-foot silhouette, with a broad paddle tail separated from the rear paw by a white wedge. Candidate 2's rear foot sits closer under the belly; candidate 3's smile/head proportions offered no useful alternative. Candidate 1 was refined through the image tool to add the second white eye highlights; the untouched refinement output, base 4, is chosen. No runner-up retained. The long caramel body, cream muzzle/chest/belly, dark tail and feet, plum outlines and upper-left shading match the cast; only a few small tufts suggest fur. The far eye is foreshortened by the side view.
+
+Base silhouette bounds are `(34, 195, 1500, 809)`, including whiskers. It occupies about 95% of canvas width rather than the requested 85%, with at least 34 pixels of side margin and no clipping. Retained after the three attempts kept that framing; the source remains unchanged. The portrait's outlined bust is fully inside bounds `(265, 196, 1157, 1083)` with a 97-pixel minimum margin. All contours and whisker tips stay inside the canvas; no cast shadow, props or ground.
+
+Expression silhouettes were compared in both directions against the base with a four-pixel tolerance: zero silhouette pixels exceeded it. Outer bounds match except happy extends two pixels upward and sleepy/surprised end one pixel higher at the bottom. First surprised was rejected for a brow outside the skull; the replacement keeps brows inside. First portrait was rejected for a missing ink line at the lower chest; portrait 2 closes it. Temporary inspection masks and thumbnails were used only for review and did not prepare or modify originals. Minor shading/edge differences may remain, so this is not pixel-perfect registration evidence. Paper-keying, preparation alignment, animation and device checks remain for a coding session; no iPad readability or child appeal is claimed.
 
 ## Generating service terms
 
