@@ -796,6 +796,22 @@ The [ordered slices](deep-dives/subjects/making-media.md#build-slices-in-order) 
 
 The [ordered slices](deep-dives/subjects/data-ai-literacy.md#build-slices-in-order) separate definitions from builds. No external AI service, new band, project persistence or game was built. Model explanations, destination/ranges and tween/parent appeal remain open; social classifications and generative AI need separate reviewed scope. Docs checks only; eventual builds use their actual verification tier.
 
+### Executive function recommendations
+
+**Recommended 2026-10-17:** [the executive-function study](deep-dives/subjects/executive-function.md), [PR #539](https://github.com/rjdunlap/neo/pull/539), covers every audience. It opened Diamond (2013) and Diamond and Lee (2011), the Kassai et al. (2019) abstract, Scionti et al. (2020), the FTC's Lumosity action and CASEL self-management; Head Start ELOF P-ATL 5–9 came from third-party alignments only (headstart.gov returned 403). Training gains are narrow: transfer among EFs is disputed and no effect on school or behaviour is established, so the island makes no benefit claim. Most EF ground is already held (Pet Says' HTKS ladder, Critter Sort's built re-sort, Scoop Shop's memory level, the built planners). The study's component × band map leaves three cells to fill: **working memory that changes what is held**, a **switch at pre-K**, and **goal-picture planning**. **Define Scoop Shop 7–9 first**, adding no speed and no longer lists.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Scoop Shop 7–9** · school · existing game | define now, docs only (EF1) | 7 *Two cones* (a one-scoop and a two-scoop order hide together; she chooses whom to serve: a new interaction, a second open cone), 8 *Change of mind* (one remembered scoop changes), 9 *Top first* (a spoken top-down order built bottom up). Three scoops held, as at 6; a wrong scoop is a miss and a peek a hint, as at 6; school window 5–9, pre-K unchanged. Rule tests: two different orders, exactly one change, no palindromes. [Ladder](deep-dives/subjects/executive-function.md#a-first-games-ladder-scoop-shop-79) |
+| **Brain Break 4 *Back and forth*** · grown-up · existing game | define and build (EF1c) after its decision | The same stones alternate numbers and pictured fruit in a spoken order (Trail Making B's shape, recalled; no clock or norms); misses and outline as at 1–3 |
+| **Critter Sort pre-K switch entry** · pre-K | define inside its dive (EF2) | A new stable level ID in pre-K's order after 6: three critters by colour, the whistle, the same three by ears; the first old-rule drop is a nudge restating the rule, the second a miss. Not the dive's preschool entry (3-year-olds fail the switch) |
+| **Pet Says school window** · pre-K–school | its dive's slice 5 once its decision 1 is made (EF3) | Nothing new here; this study adds the evidence for the window |
+| **Grown-up wording rule** · docs | decision, then one AGENTS line and a copy sweep (EF4) | Name the demand ("keep two orders in mind"); never "brain training" or an attention, school, behaviour or ADHD claim |
+| **Twist the game** card · family | after a light practical review (EF5) | Plain HTML: freeze dance with a switched cue, *I went to market*, opposite Simon Says, a whistle sort; nobody is out |
+| **Pancake Stack** · preschool–grown-up · new identity (notebook seed) | define after the identity decision (EF6, EF7) | Tower of London plates holding 1/2/3, only the top pancake moves, blocked moves a free boing; BFS-checked minimum moves per rung, *Plan it* move cards at school top, a size rule, grown-up levels in the same game; overlap test against Ferry Jam; Puzzle Peaks already lists 13 games |
+
+The [ordered slices](deep-dives/subjects/executive-function.md#build-slices-in-order) separate definitions from builds. No game, band, land or save change; no transfer, child, tween or parent appeal is established.
+
 ## Later horizons (elementary)
 
 The long-term plan: a familiar island that grows from early play through roughly ages 5–11, by extending favorite games, adding new interactions where they help, and connecting them through places, characters and projects. These are development horizons, not dates or grade locks. Ages are rough planning guides; learning ranges overlap; and the horizons are not a proposal for one runtime band per school grade. Apart from Wonder Woods (the `school` band's place) and the steps marked built, everything in this section is a **proposal**.

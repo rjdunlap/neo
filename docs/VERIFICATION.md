@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Executive function subject research
+
+- Added the [executive-function study](deep-dives/subjects/executive-function.md): opened Diamond (2013) and Diamond and Lee (2011) at PMC, the Kassai et al. (2019) abstract, Scionti et al. (2020), the FTC Lumosity release, CASEL self-management, Harvard's activities-guide landing page and Wikipedia's Simon and Tower of London pages. Not opened: Head Start ELOF (403; P-ATL codes from third-party alignments), EYFS (404), the Harvard chapter PDFs (no text extraction), Rush Hour's page (403).
+- Updated the subject tracker, roadmap [Executive function recommendations](ROADMAP.md#executive-function-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: wording rule, Scoop Shop window, Pancake Stack identity/accounting/placement, Critter Sort switch accounting; no reference game played; no transfer claimed.
+
 ## 2026-10-17 — Weather Wardrobe deep dive
 
 - Docs only: [deep dive](deep-dives/weather-wardrobe.md) on `claude/dive-weather-wardrobe` ([PR #538](https://github.com/rjdunlap/neo/pull/538)). Audited levels 1–7; gaps: the level-7 card still says pack for a trip, level 7 undressing is always everything, lap window holds a boing level, level 1 ignores most touches, a miss shows nothing, the trip never happens, sunny's "everything" is two, a dead undress voice line, the known `{name}` off-screen bug.

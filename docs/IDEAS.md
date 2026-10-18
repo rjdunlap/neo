@@ -1919,7 +1919,7 @@ Reading the sources in detail turned up evidence for the rules in [What not to b
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Pancake Stack | Tower of Hanoi | Move three pancakes to a friend's plate; a big pancake slides off a smaller one | Four pancakes; count moves as an optional challenge | Recursive planning for roughly 6–10. The rule is shown physically, not scored as a miss. S |
+| Pancake Stack | Tower of Hanoi | Move three pancakes to a friend's plate; a big pancake slides off a smaller one | Four pancakes; count moves as an optional challenge | Recursive planning for roughly 6–10. The rule is shown physically, not scored as a miss. Researched 2026-10-17 as a Tower of London form (plates holding 1/2/3, preschool–grown-up) in the [executive-function study](deep-dives/subjects/executive-function.md#pancake-stack-ladder-sketch-after-the-identity-decision); identity awaits a decision. S |
 | Snap Pairs | Spot It! (Dobble) | Two cards share exactly one picture; tap it on either card | Bigger cards; take turns with the pet | Visual search for roughly 4–9. No race: the pet waits for her. S |
 | Seed Bowls | Mancala | Scoop the seeds from a bowl and drop one in each bowl along the row | Predict where the last seed lands; fill the store together | One-to-one counting and prediction, preschool–school; a shared goal instead of capturing. S–M |
 | Flip Ten | Shut the Box | Roll two dice and flip down tiles that add up to the roll | Choose between ways to make the total; clear every tile | Number combinations, roughly 6–8. A stuck box simply resets. S |
