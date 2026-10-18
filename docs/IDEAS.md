@@ -1041,7 +1041,7 @@ Proposed modes, by the game they would extend. Steps already built are in [GAMES
 | --- | --- | --- |
 | Seesaw Balance | Two different unknown weights, solved by doing the same to both pans (Box Balance below); **Guess the Pumpkin** as an estimation mode (an unscored prediction); **Fairground Lift** for younger bands | 8–10: lever distance as a separate step, as in PhET's Balancing Act; **Mobile Maker** (hang objects on a mobile's arms so it balances, in eighths as Block Tower does; 2026-10-14) |
 | Robot Path | Step through and repair one wrong command; a reusable routine | 8–10: conditions, then nested loops, each with a visual trace |
-| Little Helpers / Monster Munch / Pet Kitchen | Split a visible group two ways; **Slice to Fit** fractions as measures | 8–10: remainders as friends or items to redistribute, never discarded; **Share Fairly** (the fair share as an average) |
+| Little Helpers / Monster Munch / Pet Kitchen | Split a visible group two ways; **Slice to Fit** fractions as measures | 8–10: remainders as friends or items to redistribute, never discarded; **Share Fairly** (the fair share as an average) Monster Munch: [deep dive](deep-dives/monster-munch.md) (11 *How many friends?*, gated 13 *Even it out*). |
 | Mail Carrier | Compare routes; dock routes for a future Maker Harbor | 8–10: several route constraints; shortest route as an optional puzzle |
 | Word Monsters ([deep dive](deep-dives/word-monsters.md)) / Letter Trails / Rhyme Time | Blend a small set of clear sounds into words; build a word that fits a spoken clue; the pet as a learner who reads the word back (after Teach Your Monster to Read) | 8–10: meaningful prefixes; content review before adding rules |
 | Song Maker / Sound Garden | **Song Maker: answer the phrase** stays an existing-game mode ([music study](deep-dives/subjects/music-instruments.md), [M4 definition](ROADMAP.md#music-and-instruments-recommendations)): four-note question plus editable answer, replay/revise, accept many melodies. Alternate parts with the pet; **Sing Higher** remains Sound Garden | Define structural versus aesthetic rules, preserve saved 1–7/tunes/pins; longer forms later, shared pentatonic pitches |
@@ -1336,7 +1336,7 @@ These games stop at pre-K, so appending a level only widens the pre-K range.
 
 | Game | Why |
 | --- | --- |
-| **Monster Munch** (8 · 6–8) | Fair shares with leftovers is the right end. An average (Share Fairly) is for ages 8–10 |
+| **Monster Munch** (8 · 6–8) | Fair shares with leftovers is the right end. An average (Share Fairly) is for ages 8–10 Its [deep dive](deep-dives/monster-munch.md) keeps partitive sharing at that end but adds 12 *Share two kinds* and 11 *How many friends?* (the other meaning of division, with the leftover visible) for school, plus lap 9 and toddler 10. |
 | **Habitat Helpers** (6 · 4–6) | The model is deliberately small. A third visitor would be more of the same, and real ecology needs a stated model first |
 | **Chain Reaction** (6 · 3–6) ([deep dive](deep-dives/chain-reaction.md)) | Bigger machines are only a size step; the deep dive adds prediction, tap-to-turn, two-marble, spring and gate levels (7–11) instead |
 | **Ferry Jam** (6 · 3–6) | The ladder is already a size ladder, and the couch course owns the hardest harbors |
@@ -1403,7 +1403,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
 | Duck Pond (L–S · 11) | Ponds at night, frogs in place of ducks; see its [deep dive](deep-dives/duck-pond.md), which supersedes this row (arrangements, zero, dotted pads, mixed ponds, real stopping) | R2: 11 *hiding ducks* (built). **12, Doubles** (the same number of ducks on each side of the bridge, so how many in all?; kept), **13, Ten and some more** and a to-define **14, Every way**, in a school window of 8–14 | Bye-bye ducks (lap and toddler), Count the peekers, Which pond has more?; all wait on level order |
-| Monster Munch (L–S · 8) | New monsters and foods | — (round two: leave) | — |
+| Monster Munch (L–S · 8) | New monsters and foods | — (round two: leave) | See its [deep dive](deep-dives/monster-munch.md), which supersedes this row. |
 | Little Helpers (L–S · 6) | Fruits and trees; see its [deep dive](deep-dives/little-helpers.md), which supersedes this row (things to carry, three places, a badge that fills) | — (audit: leave; the dive proposes 7–9) | — |
 | Pet Kitchen (T–S · 9) | Round wholes (a pizza, a pie) as well as the sandwich | **Built 2026-10-10:** level 9, *Thirds*: cut one pizza into three equal slices and share one with each friend | — |
 | Frog Hop (P–S · 7) | Lines in new places (stepping stones, a flower path, an evening pond), landing numerals said aloud, dots and landmark flowers; see its [deep dive](deep-dives/frog-hop.md), which supersedes this row | R2: 7 *hop to ten first* (built). **8, Back over ten**, **9, Count up to take away**, **10, Over ten, your way**, **11, Hop by tens**, and to define **12, Big hops and little hops** and **13, Where does it go?** (a school window of 3–13) | Hop along (lap and toddler), Hop to the dots (toddler), Which pad lost its number? and Who is further along? (pre-K); all wait on level order |
@@ -1619,7 +1619,7 @@ These references span preschool through elementary school. Preserve exploration 
 | Busy Picture | Living Books | A storybook page where everything does something when tapped | Words light up as they're read; tap a word to hear it | Story Grove literacy |
 | Lost and Found | Putt-Putt, Freddi Fish, Pajama Sam | Help a friend find a lost thing across three little screens | Give each thing to the right friend (a bone for the dog) | Problem solving; short quests |
 | Follow the Leader | Lemmings | Little critters march along; place signs to guide them to the door | Split them between two doors; compare plans | Roughly 5–8; nobody falls (they turn around) |
-| Munch Maze | Cookie Monster Munch (Atari), Pac-Man | Carry cookies one at a time through a simple maze to the jar | Bring exactly 4; the ghosts are friendly and wave | Merges the catalog's Maze Walk |
+| Munch Maze | Cookie Monster Munch (Atari), Pac-Man | Carry cookies one at a time through a simple maze to the jar | Bring exactly 4; the ghosts are friendly and wave | Merges the catalog's Maze Walk Left out of the Monster Munch [deep dive](deep-dives/monster-munch.md#left-out-on-purpose): navigation, not quantity. |
 
 #### Board games
 
@@ -1945,7 +1945,7 @@ Reading the sources in detail turned up evidence for the rules in [What not to b
 | Pour and Fill | Water-table play; Piaget's conservation tasks | Tilt a jug to pour juice into a cup until it reaches the line | Which holds more, the tall cup or the wide bowl? Count small cups to fill a big jug | Capacity and conservation, toddler–school, with a new pour gesture. Spills go into a tray and can be poured back. M |
 | Shape Rollers | Classroom 3D-shape ramp tests | Send a ball, a block, a can and a cone down a ramp; see which roll, slide or stack | Sort shapes by what they do; name sphere, cube, cylinder and cone | 3D shapes, preschool–pre-K, reusing Ramp Race's ramp. S–M |
 | Circuit Garden ([researched ladder](deep-dives/subjects/energy-waves.md#first-games-proposed-ladder-circuit-garden) supersedes this seed) | PhET's Circuit Construction Kit; snap-together circuit kits | Join both battery terminals through a toy firefly-shaped lamp, including a return connection | Switch comparison and repair; older four-state lantern workshop. Two-lamp brightness needs a separate electrical model | Pre-K/school first, older horizon; fixed sockets and a qualitative loop model. Proposed definitions, not built. M |
-| Share Fairly | PhET's Mean: Share and Balance | Move cookies between plates until everyone has the same | Leftovers; the fair share as an average | An 8–10 mode for Monster Munch or Pet Kitchen. S |
+| Share Fairly | PhET's Mean: Share and Balance | Move cookies between plates until everyone has the same | Leftovers; the fair share as an average | An 8–10 mode for Monster Munch or Pet Kitchen. S Proposed as Monster Munch 13 *Even it out* (gated) in its [deep dive](deep-dives/monster-munch.md). |
 
 ### Console and app references for new kinds of play
 
