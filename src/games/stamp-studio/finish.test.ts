@@ -17,7 +17,7 @@ vi.mock('../../ui/buttons', async () => {
   } };
 });
 vi.mock('../../engine/drag', () => ({ draggable: (node: object, _tw: unknown, opts: { onPick: () => void }) => { pick.set(node, opts.onPick); return { enabled: true, home: { x: 0, y: 0 }, destroy: vi.fn() }; } }));
-vi.mock('../../audio/sfx', () => ({ sfx: { sparkle: vi.fn(), pop: vi.fn(), tick: vi.fn() } }));
+vi.mock('../../audio/sfx', () => ({ sfx: { sparkle: vi.fn(), pop: vi.fn(), tick: vi.fn(), marimba: vi.fn() } }));
 
 /** Exercise the game's real editing/finish callbacks, holding its scene-owned celebration wait open. */
 function round(level: number) {
@@ -27,19 +27,49 @@ function round(level: number) {
   const say = vi.fn();
   const ctx = {
     level, stage, say, rng: new Rng(42),
-    tw: { wait: () => new Promise<void>(resolve => { wake = resolve; }), kill: vi.fn() },
+    tw: { wait: () => new Promise<void>(resolve => { wake = resolve; }), kill: vi.fn(), to: vi.fn(() => Promise.resolve()) },
     finish,
   } as unknown as GameContext;
   const game = stampStudio.create(ctx) as ReturnType<typeof stampStudio.create> & {
-    paper: Container; finish: Container; undo: Container; turn: Container; grow: Container; bin: Container;
+    paper: Container; finish: Container; undo: Container; turn: Container; grow: Container; bin: Container; play: Container; played: Stamp[];
     stamps: { data: Stamp; node: Container; drag?: { enabled: boolean; destroy: () => void } }[];
     done: boolean; plan: StampPlan; color: Stamp["color"]; choices: Container[]; colors: Container[];
   };
   game.resize({ w: 1024, h: 768 } as Parameters<typeof game.resize>[0]);
-  const stamp = () => press.get(game.paper.children[0])!({ global: new Point(400, 300) } as FederatedPointerEvent);
+  const stamp = (x = 400, y = 300) => press.get(game.paper.children[0])!({ global: new Point(x, y) } as FederatedPointerEvent);
   const cleanup = () => { game.destroy(); stage.destroy({ children: true }); };
   return { game, finish, say, kill: ctx.tw.kill, stamp, wake: () => wake(), cleanup };
 }
+
+describe('Stamp Studio play the picture', () => {
+  it('plays stamps left to right, skips one removed mid-play, and stops when the picture is finished', async () => {
+    const { sfx } = await import('../../audio/sfx');
+    const r = round(4);
+    r.stamp(700, 300); r.stamp(300, 500); r.stamp(500, 200); r.stamp(900, 400);
+    expect(r.game.play.visible).toBe(true);
+    press.get(r.game.play)!();
+    r.game.update(0.05);
+    expect(r.game.played.map(s => s.x)).toEqual([r.game.stamps[1].data.x]);
+    // The bin takes away the latest-picked stamp (the rightmost), which then never sounds.
+    press.get(r.game.bin)!();
+    for (let i = 0; i < 10; i++) r.game.update(0.1);
+    expect(r.game.played.map(s => s.x)).toEqual([1, 2, 0].map(i => r.game.stamps[i].data.x));
+    // Playing again starts over; finishing stops it, and play does nothing after the arrow.
+    press.get(r.game.play)!(); r.game.update(0.05);
+    press.get(r.game.finish)!();
+    const sounded = vi.mocked(sfx.marimba).mock.calls.length;
+    for (let i = 0; i < 10; i++) r.game.update(0.1);
+    press.get(r.game.play)!(); for (let i = 0; i < 10; i++) r.game.update(0.1);
+    expect(vi.mocked(sfx.marimba).mock.calls.length).toBe(sounded);
+    expect(r.game.play.visible).toBe(false);
+    r.wake(); await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledWith(expect.objectContaining({ misses: 0, hints: 0 }));
+    r.cleanup();
+  });
+  it('has no play button at levels 1, 2 and 7', () => {
+    for (const level of [1, 2, 7]) { const r = round(level); r.stamp(); expect(r.game.play.visible).toBe(false); r.cleanup(); }
+  });
+});
 
 describe('Stamp Studio finished picture', () => {
   it.each([1, 2, 3, 4, 5, 6])('ignores late Undo/Turn/Big and finishes exactly once at level %i', async level => {

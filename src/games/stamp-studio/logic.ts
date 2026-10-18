@@ -1,6 +1,7 @@
 import type { ColorName } from '../../art/palette';
 import { STAMP_KINDS, type StampKindId } from '../../content/creations';
 import { Rng } from '../../engine/random';
+import { stepFromUnit } from '../../audio/notes';
 export { STAMP_KINDS };
 export type StampKind = StampKindId;
 export const STAMP_NAMES: Record<StampKind, string> = { star: 'A star', flower: 'A flower', fish: 'A fish', cat: 'A cat' };
@@ -22,16 +23,18 @@ export interface StampPlan {
   name: string;
   /** Every stamp is pressed at this size, and this many of them finish the picture (the lap level). */
   pat?: { size: number; count: number };
+  /** A music-note button plays the picture back, left to right. */
+  play?: boolean;
 }
 /** Each pat is a stamp of 170 units across (the art's radius is 48 at size 1); the eighth finishes the picture. */
 export const PAT = { size: 85 / 48, count: 8 } as const;
 export const PLANS = [
   { kinds: ['star'], color: false, move: false, transform: false, prompt: 'stars', name: 'Press one kind of stamp onto a picture' },
   { kinds: ['cat', 'fish'], color: false, move: false, transform: false, prompt: 'friends', name: 'Make a picture with two kinds of stamps' },
-  { kinds: ['star', 'flower', 'fish'], color: true, move: true, transform: false, prompt: 'picture', name: 'Choose colors, stamp, and rearrange a picture' },
-  { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'sizes', name: 'Turn stamps and make them big or small' },
-  { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'garden', name: 'Make an imaginary garden, then tell its story' },
-  { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'story', name: 'Make two friends on an adventure; every story is welcome' },
+  { kinds: ['star', 'flower', 'fish'], color: true, move: true, transform: false, prompt: 'picture', play: true, name: 'Choose colors, stamp, and rearrange a picture' },
+  { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'sizes', play: true, name: 'Turn stamps and make them big or small' },
+  { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'garden', play: true, name: 'Make an imaginary garden, then tell its story' },
+  { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'story', play: true, name: 'Make two friends on an adventure; every story is welcome' },
   // Easiest of all: placed first for lap by `order`, so it has the highest ID.
   { kinds: ['star'], color: false, move: false, transform: false, prompt: 'pats', name: 'Pat the paper: eight big soft stamps make a picture', pat: PAT },
 ] as const satisfies readonly StampPlan[];
@@ -41,6 +44,20 @@ export function place(x: number, y: number, width: number, height: number) {
   return { x: Math.max(0, Math.min(1, (x - 70) / (width - 140))), y: Math.max(0, Math.min(1, (y - 70) / (height - 140))) };
 }
 export const pixel = (s: Pick<Stamp, 'x' | 'y'>, width: number, height: number) => ({ x: 70 + s.x * (width - 140), y: 70 + s.y * (height - 140) });
+
+/** Playing the picture: the lowest and highest scale steps (C4 to E5), and the longest gap between two notes. */
+export const PLAY = { from: 0, count: 8, gap: 0.4, longest: 5.5 } as const;
+export interface PlayNote { index: number; step: number; at: number }
+/**
+ * Play the picture: a scan from left to right, so stamps sound in x-order (ties, top first), each pitched by its height on the
+ * pentatonic scale (higher on the paper sounds higher). Notes are evenly spaced, at most 0.4 s apart and never longer than 5.5 s
+ * in all, so a full paper of 24 still plays in under 6 s. Nothing here is scored.
+ */
+export function playOrder(stamps: readonly Pick<Stamp, 'x' | 'y'>[]): PlayNote[] {
+  const order = stamps.map((s, index) => ({ s, index })).sort((a, b) => a.s.x - b.s.x || a.s.y - b.s.y);
+  const gap = order.length > 1 ? Math.min(PLAY.gap, PLAY.longest / (order.length - 1)) : 0;
+  return order.map(({ s, index }, i) => ({ index, step: stepFromUnit(1 - s.y, PLAY.from, PLAY.count), at: i * gap }));
+}
 
 /** The colors on the color buttons, in order. */
 export const STAMP_COLORS: ColorName[] = ['purple', 'blue', 'green', 'pink'];

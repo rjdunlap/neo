@@ -8,6 +8,8 @@ import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
 import { stampStudio } from './index';
 import { cleanPicture } from '../../content/creations';
+import { playOrder, planFor } from './logic';
+import { PENTATONIC, stepToMidi } from '../../audio/notes';
 describe('Stamp Studio', () => {
   it('keeps stamps on paper through resize, including edge drops', () => {
     for (const [w,h] of [[674,478],[674,1075],[1200,478]]) for (const x of [-300,0,300,2000]) for(const y of [-500,0,250,2000]) {
@@ -148,5 +150,26 @@ describe('seeded early stamp choices', () => {
     expect(stampDemo(plan, st)).toEqual({ do: 'finish' });
     expect(SCRIPT['stamp.pats']).toBeTruthy();
     expect(howToFor(stampStudio, 7)!.steps.length).toBeGreaterThan(0);
+  });
+  it('plays the picture left to right, on the pentatonic scale, higher on the paper sounding higher, in at most 6 s', () => {
+    const rng = new Rng(7);
+    for (let n = 0; n <= LIMIT; n++) {
+      const stamps = Array.from({ length: n }, () => ({ x: rng.next(), y: rng.next() }));
+      const notes = playOrder(stamps);
+      expect(notes.map(t => t.index).sort((a, b) => a - b)).toEqual(stamps.map((_, i) => i));
+      notes.forEach((t, i) => {
+        expect(PENTATONIC).toContain(stepToMidi(t.step) % 12);
+        if (i) { expect(stamps[t.index].x).toBeGreaterThanOrEqual(stamps[notes[i - 1].index].x); expect(t.at).toBeGreaterThan(notes[i - 1].at); }
+      });
+      expect(notes.at(-1)?.at ?? 0).toBeLessThanOrEqual(6);
+    }
+    expect(playOrder([{ x: 0.5, y: 0.5 }])).toEqual([{ index: 0, step: expect.any(Number), at: 0 }]);
+    const heights = [1, 0.75, 0.5, 0.25, 0].map(y => playOrder([{ x: 0, y }])[0].step);
+    heights.forEach((step, i) => i && expect(step).toBeGreaterThan(heights[i - 1]));
+    // Ties in x sound top first.
+    expect(playOrder([{ x: 0.3, y: 0.9 }, { x: 0.3, y: 0.1 }]).map(t => t.index)).toEqual([1, 0]);
+  });
+  it('offers play-back from level 3 to 6, never at the lap levels or Pat the paper', () => {
+    expect([1, 2, 3, 4, 5, 6, 7].map(l => !!(planFor(l) as { play?: boolean }).play)).toEqual([false, false, true, true, true, true, false]);
   });
 });

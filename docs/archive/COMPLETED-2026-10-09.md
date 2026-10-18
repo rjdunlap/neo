@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Stamp Studio slice 4, Play the picture (2026-10-17)
+
+[PR #545](https://github.com/rjdunlap/neo/pull/545): at levels 3–6 (plan field `play`; not 1, 2 or 7) a music-note button left of the paper appears once a stamp is down and scans the picture left to right. `playOrder` in `logic.ts` sorts stamps by x (ties top first) and pitches each with `stepFromUnit(1 - y, 0, 8)` (C4–E5 pentatonic, higher on the paper higher); stamps are spaced at most 0.4 s apart and never more than 5.5 s in total. Each sounds `sfx.marimba`, pops and shows a yellow scan bar, driven from `update(dt)`; pressing again restarts, a removed stamp is skipped, finishing stops play and hides the button. Nothing is scored, the saved picture and `stampDemo` are unchanged, and no voice lines were added. The how-to finish line at levels 3–6 names the music note. [Dive slice 4](../deep-dives/stamp-studio.md#build-slices-in-order).
+
 ### RW04 welcome adventure definition (2026-10-17)
 
 [PR #509](https://github.com/rjdunlap/neo/pull/509): [packet](../rework/WELCOME-ADVENTURE.md) defines Welcome a New Friend for preschool and pre-K: Stamp Studio 3/4 keeps her picture, Pet Kitchen 2/5 gives plates the round really guarantees, Song Maker 2's free loop keeps her tune (an out-of-range exception awaiting the developer). Typed step results stored with the project, once-only adoption and item, evidence classes, and an RW07a/RW07 slice with check filters. Source audit at `84e1433`, links/diff passed; no code. [Proof](../VERIFICATION.md#2026-10-17--rw04-welcome-adventure-definition).
