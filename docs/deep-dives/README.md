@@ -33,7 +33,7 @@ The [family experience review](../FAMILY-EXPERIENCE.md) adds a design lens: what
 7. **Update the docs and close the row.**
    - Set the row's status and link its deep dive.
    - Point the game's rows in the IDEAS ladder rounds at the deep dive.
-   - Add each slice that is ready (no decision or person gate) as one line in the roadmap's [Ready to build now](../ROADMAP.md#ready-to-build-now) list; gated slices stay only in the write-up.
+   - Add each slice that is ready (no decision or person gate) as one line in the ready list's [Queued](../READY.md#queued) section, grouped with the game's other lines and unnumbered; gated slices stay only in the write-up.
    - Add a short VERIFICATION entry (docs only: what changed and that links and `git diff --check` ran).
 
 **Status values:** **not started**; **in progress** (a branch is on it); **designed** (the write-up is merged and slices are waiting); **building** (slices are being built from the write-up); **done** (every slice the write-up calls ready is built, or deliberately left).

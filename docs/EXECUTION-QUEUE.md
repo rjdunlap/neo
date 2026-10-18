@@ -23,7 +23,7 @@ Inspect and resume the recorded worker's unfinished slice first. Otherwise reval
 
 | Order | Candidate | Scope source | State |
 | --- | --- | --- | --- |
-| 1 | First unclaimed line of the roadmap’s ready list | [Ready to build now](ROADMAP.md#ready-to-build-now), then that game’s build slices | Rewritten 2026-10-15; a landed slice’s line is deleted at closeout |
+| 1 | First unclaimed line of the ready list’s Next ten, then its Queued section | [READY.md](READY.md#next-ten), then that game’s build slices | Split from the roadmap 2026-10-17 as a capped, priority-ordered pick list; a landed slice’s line is deleted at closeout |
 | 2 | First `define` row, then a research row | [Chunks](ROADMAP.md#chunks) | Docs-only definitions or studies |
 
 Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or other decision-dependent scope merely because a write-up describes a lean.
