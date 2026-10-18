@@ -38,6 +38,9 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | home-day-3.png | R06 | 2026-10-17 | Built-in image_gen; model undisclosed | [day3](R06-PROMPTS.md#day3) | yes |
 | home-dusk-2.png | R06 | 2026-10-17 | Built-in image_gen; model undisclosed | [dusk2](R06-PROMPTS.md#dusk2) | yes |
 | card-paper-2.png | R07 | 2026-10-17 | Built-in image_gen; model undisclosed | [paper2](R07-PROMPTS.md#paper2) | yes |
+| egg-sprout-2.png | R08 | 2026-10-17 | Built-in image_gen; model undisclosed | [sprout2](R08-PROMPTS.md#sprout2) | yes |
+| egg-river-1.png | R08 | 2026-10-17 | Built-in image_gen; model undisclosed | [river1](R08-PROMPTS.md#river1) | yes |
+| egg-glider-1.png | R08 | 2026-10-17 | Built-in image_gen; model undisclosed | [glider1](R08-PROMPTS.md#glider1) | yes |
 
 ## R01 review and preparation notes
 
@@ -112,6 +115,16 @@ One untouched opaque RGB PNG, 1254 × 1254 (above the requested minimum), 1,103,
 Three candidates were reviewed at full size and about 120 px canvas width. Candidate 1's larger leafy corner clusters were more prominent; candidate 3's wandering vine had greater contrast. Candidate 2 has the faintest sparse pale-sage border, a quiet cream center, no separate corner decoration, text, character, shadow, bevel or strong pattern. Its vine turns at the corners, but the texture itself reaches all four square corners without a rounded cutout. Center sample is `(250, 232, 216)` (near the requested cream); central 80% per-channel standard deviations are approximately `(0.53, 0.56, 0.61)` on the 0–255 scale, consistent with a nearly flat center. Converted alpha is uniformly 255.
 
 Use this as an **opaque full-card texture**, not a creature cutout: do not run paper keying or trim away the cream. Stretching, species-color tinting, actual portrait contrast and card/UI padding remain for integration. No tiled-seam claim is made; this is a single bordered card background. Temporary inspection thumbnails did not alter the original. No code/build/browser/offline/device checks or claim of iPad readability were made for this source-art pass.
+
+## R08 review and preparation notes
+
+Three untouched PNGs, each 1254 × 1254, 4,158,392 bytes total. Repository copies match the tool originals by SHA-256. No cutting, rigging, cleanup, recompression or integration. Same service terms and undisclosed model caveat as below; [exact prompts and reference order](R08-PROMPTS.md) recorded.
+
+Three Sprout egg candidates were reviewed at full size and about 120 px canvas width. Candidate 2 has a balanced upright silhouette and five well-separated large spots, clearly readable when small. Candidate 1 is narrower and more asymmetric; candidate 3 groups its two left spots more closely. No runner-up kept. The selected egg has a closed plum outline, cream shell, upper-left shading, clear margins and no crack, face, ground, prop or cast shadow. Its shell has one main highlight plus a small secondary glint; the spots also carry soft cel highlights. This is a minor departure from the prompt's single-highlight wording, retained consistently across all three colors.
+
+River and Glider were generated as separate edits of the chosen Sprout egg, changing the spot colors to caramel and lavender. Full-size and 120 px review found the same five-spot layout, shell shading, outline and framing. All three silhouette bounds are `(205, 123, 1045, 1162)`; bidirectional silhouette comparison found zero pixels outside a four-pixel tolerance. This is inspection evidence, not proof of pixel-identical shell or spot edges. All parts stay inside the canvas, with at least 92 pixels of margin. No missing variants or rejected edits.
+
+The opaque white fallback has faint near-white variation; later preparation must key the surrounding paper while preserving the cream shell and closed outline. The proposed shared hatching rig, preparation alignment and device review remain unimplemented or unchecked here. No claim of animation quality, iPad readability or child appeal.
 
 ## Generating service terms
 
