@@ -1,0 +1,106 @@
+# Ready to build now
+
+The pick list for one bounded session each: **Next ten** is in priority order (eligible creature-world explorations first, then content slices), and **Queued** holds every other ready slice grouped by game or study, in the order its dive gives. Take the first line of Next ten that no open PR, branch or worktree claims (`scripts/overlap.sh <game-id> <path>…`), read its dive or definition before claiming, and at closeout delete the landed line here; when Next ten falls below about five lines, move the next lines up from Queued (eligible RW items first), and when Queued runs low, refill it from the dives' `## Build slices, in order` sections after checking each against `git log origin/main`.
+
+The content slices were re-checked 2026-10-15 against their dives and `origin/main`. Each line keeps its check tier in parentheses; being ready for a rework exploration does not authorize its downstream implementation (RW02b's candidate generation is the developer's step, and RW06–RW12 wait on the packets above them in the [sequence](rework/WORK-ITEMS.md#sequence)). Never number these lines by hand: a deleted line must leave no gap.
+
+## Next ten
+
+- **Rework RW05, define Creature collection and active companion** (docs only; its RW02 and RW03 packets are written): species versus individual identity, a fresh save with a reset/reseed path, a companion-selection surface for the three pilot species, and the pet, guide and hatching call sites to regress. Being defined does not authorize RW06–RW12. [Work item](rework/WORK-ITEMS.md#rw05-creature-collection-and-active-companion)
+- **`ramp-race`, build the Q1 support correction Q2** (existing-game bug-fix tier): accurate level 1–4 card and miss wording, idempotent repair glow and recovery demo; accounting unchanged. [Definition](definitions/ramp-race-support.md)
+- **`animal-snack`, slice 2 remainder: scenes** (rule tests, one screenshot per scene): seeded meadow, orchard, kitchen-garden and dusk backdrops, each with its feeding spot. The bites half is built. [Dive](deep-dives/animal-snack.md#build-slices-in-order)
+- **Music study M1: define Little Conductor 1–3** (docs only): tap first rounds, tempo semantics, heard gate, accounting, supported ending, voice/how-to/bot, both layouts and land fit. [Music study](deep-dives/subjects/music-instruments.md#build-slices-in-order)
+- **`goodnight-room`, slice 9 Level 10, goodnight everywhere** (new level on an existing interaction: rule tests, a level-10 `BROWSER_SUITE=night` play, `fingerdemo` at it): pre-K; a big arrow tours three distinct rooms, each asking for everyone, then the stars fill the sky; no wrong answers, one sticker for the tour. [Dive](deep-dives/goodnight-room.md#build-slices-in-order)
+- **`peekaboo-barn`, slice 3 first half: animals who name how they feel** (rule tests, `critter.test.ts`, one screenshot, `fingerdemo` at level 1). More animals stays with decision 4. [Dive](deep-dives/peekaboo-barn.md#build-slices-in-order)
+- **Zoo study Z1: define Who Am I? levels 1–4** (docs only): trait table for the existing cast plus penguin and bat, clue signs, rule tests, voice, how-to, land and bands; name the reviewer. [Zoo study](deep-dives/subjects/zoo-animals.md#build-slices-in-order)
+- **`fill-dump`, count sign** (existing-game change): a dot card that fills as fruit goes in at levels 3–4; extras show outside it. [Slice 1](deep-dives/fill-dump.md#build-slices-in-order)
+- **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
+- **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
+
+## Queued
+
+- **`fill-dump`, level 7 Which holds more?** (new interaction; after level 6 *Full and empty* lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
+- **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
+
+- **`song-maker`, support truth slice 1** (existing-game bug fix tier): full-cell hit areas so levels 5–6 reach 100 units (about 91–92 today, computed), a tested layout function, and a conditional how-to keep note for free play, which still always finishes. IDs and accounting unchanged. [Dive](deep-dives/song-maker.md#build-slices-in-order)
+- **`song-maker`, ten spoken patterns at level 6, slice 2** (content tier): five new pattern shapes, each named aloud before play. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
+- **`song-maker`, authored motifs for levels 3–5, slice 3** (content tier): short pentatonic motifs replace random rows; level 4's Missing Melody shape is frozen. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
+
+- **`jar-sort`, build levels 1–8** (new-game tier): tap a jar to lift its top fruit, drop it on the same fruit or an empty jar until each jar holds one kind; frozen solver-checked boards, free undo, lit targets at 1–2, refused moves count from 3; Rainbow Meadow. [Definition](definitions/jar-sort.md)
+
+- **`egg-catch`, roll when ready at levels 4–5** (new interaction, with the bot, how-to and browser case): the egg waits for the green arrow; no clock decides. [Slice 1](deep-dives/egg-catch.md#build-slices-in-order)
+- **`egg-catch`, a miss that teaches and hens that wait** (existing-game change): boing, line and next-lane glow at levels 2–3; no eggs laid while nobody plays. [Slice 2](deep-dives/egg-catch.md#build-slices-in-order)
+- **`egg-catch`, notes, egg colours and the hatching basket** (content): pentatonic hens, catchable colours at 1–2, chicks at the finish. [Slice 3](deep-dives/egg-catch.md#fresh-content-inside-existing-levels)
+- **`egg-catch`, level 8 Under the hen** (new interaction): tap a lane, the basket hops; toddler order 1, 8, 2. [Slice 4](deep-dives/egg-catch.md#new-levels-on-top)
+- **`egg-catch`, level 9 One gate** (new level; after *roll when ready*): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
+- **`egg-catch`, level 10 Fix the run** (new interaction; after *roll when ready*): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
+- **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
+
+- **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); solvable gardens (built backward at 1–4, frozen at 5–8), free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
+
+- **`sound-garden`, fair varied listening** (existing-game bug fix): seeded sound specs in `logic.ts`, plans keyed by level ID and a capped how-to step, equal-span fast/slow, bird and frog as heard pitch references, varied up/down tunes; level 2's rule kept for the Missing Melody. [Slice 1](deep-dives/sound-garden.md#build-slices-in-order)
+- **`sound-garden`, the whole cast sings** (level 1 content): the turtle joins, a pitched frog, a seeded cast of five from six. [Slice 2](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
+- **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
+- **`sound-garden`, echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree answers. [Slice 4](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
+- **`sound-garden`, level 8 One big friend** (new lap entry): one screen-filling singer, `entryLevels`, lap order 8, 1. [Slice 5](deep-dives/sound-garden.md#new-levels-on-top)
+- **`sound-garden`, level 9 Sing Higher** (new interaction): drag a singer up to sing higher on pentatonic steps, creative finish; preschool order 2, 3, 4, 9, and pre-K. [Slice 6](deep-dives/sound-garden.md#new-levels-on-top)
+- **`sound-garden`, level 10 Copy the shape** (new level; after *Sing Higher*): sing back a two- then three-note direction; pre-K. [Slice 7](deep-dives/sound-garden.md#new-levels-on-top)
+
+- **`domino-run`, build levels 1–8** (new-game tier): stand dominoes in a lane's gaps and tap the starter; a domino falls if the one before reaches it (reach = size) and it is at most one size bigger; forks ring two bells, only a giant rings the gong; a stall is never a miss, glow after two stalls; drag bot. [Definition](definitions/domino-run.md)
+
+- **`teddy-doctor`, the whole patient counts, the part named, a true how-to** (existing-game bug fix): at level 1 any touch on the patient bandages the nearest boo-boo and the part is spoken; taps during the spoken line wait on V2 (the body/health B7 pick); levels 2–3 how-to says drag; level 6 step capped. [Slice 1](deep-dives/teddy-doctor.md#build-slices-in-order)
+- **`teddy-doctor`, weigh and measure** (content, levels 5–6): a scale and a height chart join the check-up, three of five steps per round; no care claim. [Slice 2](deep-dives/teddy-doctor.md#fresh-content-inside-existing-levels)
+- **`teddy-doctor`, level 7 Who needs help?** (new level): two friends, tap the one with a boo-boo, then bandage it; toddler order 1, 7, 2, 3, `entryLevels: [7]`. [Slice 3](deep-dives/teddy-doctor.md#new-levels-on-top)
+- **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
+
+- **`fruit-slice`, build levels 1–8** (new-game tier): fruit hangs at the top of a slow arc and a swipe splits it; tap at 1, swipe at 2, then only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N and pieces by twos; no clock, missed fruit comes back; Bubble Beach. [Definition](definitions/fruit-slice.md)
+
+- **`shape-buddies`, level 3 Two make one** (new levels on the existing interaction): a wide gap; a flat friend and a cup friend hold hands into a spoon that catches the seed; pre-K and school 1–3, misses stay 0. [Definition](definitions/shape-buddies-combined.md)
+
+- **`garden-grow`, true how-to and spoken gaps** (existing-game bug fix): cap the level 5 and 7 how-to steps, fix level 3's take-out wording, say when the beds are full and recount after a seed is taken out, let other beds plant while one grows at level 1, name the weather co-play seat. [Slice 1](deep-dives/garden-grow.md#build-slices-in-order)
+- **`garden-grow`, growth stages and wet soil** (presentation): leaves unfold, a bud swells and opens; rain darkens the soil, which dries back. [Slice 2](deep-dives/garden-grow.md#experience-and-presentation)
+- **`garden-grow`, flower kinds** (content, levels 1–7): daisy, tulip, sunflower and bell-flower; kind varies per request, color alone is judged. [Slice 3](deep-dives/garden-grow.md#fresh-content-inside-existing-levels)
+- **`garden-grow`, level 8 Grow it up** (new level, after slice 2): one big bed, every touch grows the next stage, three flowers; lap `order: [8, 1, 2]`, `entryLevels: [8]`. [Slice 4](deep-dives/garden-grow.md#new-levels-on-top)
+- **`garden-grow`, level 9 Rows of colors** (new interaction): choose a packet, then beds, to match a sign of two colored rows; judged by position; pre-K after 7. [Slice 5](deep-dives/garden-grow.md#new-levels-on-top)
+- **`garden-grow`, level 10 Columns of colors** (new level, after level 9 *Rows of colors*): three columns in two or three colors. [Slice 6](deep-dives/garden-grow.md#new-levels-on-top)
+- **`garden-grow`, level 11 Same in every row** (new level, after level 9 *Rows of colors*): n flowers in each row in any beds, every placement accepted. [Slice 7](deep-dives/garden-grow.md#new-levels-on-top)
+
+- **Discovery D2b, play the Little surprises mix** (shell/navigation tier: unit tests, build, `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` and `direct-next`, `world`, offline): a lap/toddler home-spot mix spot, preview, Next stop/Skip in D1b's result rectangles, ending with no bonus; session/item/round tokens, in memory only. [Definition](definitions/little-surprises.md)
+
+- **`stop-and-go`, every touch counts and the hint on the car** (existing-game bug fix): the lap car toots and drives, back cars answer, the glow rings the car or feet on green, the walk hint resets, motion and sound per light state, a walk done line. [Slice 1](deep-dives/stop-and-go.md#fresh-content-inside-existing-levels)
+- **`stop-and-go`, varied phases and vehicles** (content, levels 2–4): seeded green and red of 3–4.2 s with a bounded-phase test, six code-drawn vehicles. [Slice 2](deep-dives/stop-and-go.md#fresh-content-inside-existing-levels)
+- **`stop-and-go`, lap entry 9 Go car, stop car** (new interaction): a looping car, two huge lamps, no misses; lap order 9, 1, `entryLevels: [9]`. [Slice 3](deep-dives/stop-and-go.md#younger-band-openings)
+- **`stop-and-go`, level 5 Whose light? and the pre-K window** (new level): two lanes with their own lights, send the one whose light is green; preschool 2–5, pre-K 3–5. [Slice 4](deep-dives/stop-and-go.md#new-levels-on-top)
+- **`stop-and-go`, level 6 Busy crossing** (new level): cars arrive on both roads, she hands over one road at a time; an idle point helps level 4 too; pre-K 3–6. [Slice 5](deep-dives/stop-and-go.md#new-levels-on-top)
+
+- **`pile-match`, build levels 1–8** (new-game tier): tap things on top of a layered heap into a tray; three of a kind pop into the basket until the grass is clear; asked kinds with a 3-slot basket at 1–2, a free 5-slot tray from 3 that can fill from 4, free put-back, kinds assigned along a clearing route so nothing dead-ends; Counting Cove. [Definition](definitions/pile-match.md)
+
+- **`bolt-boards`, build levels 1–7** (new-game tier): tap bolts out of boards on the barn wall; two bolts hold a board, one makes it swing and hang, none lets it slide down and free the fruit or friend behind; a covered bolt waits; exact analytic poses (no physics), levels 1–5 never dead-end, open-hole parking at 6–7 with a solver hint and free undo; covered taps count from 4; Barnyard. [Definition](definitions/bolt-boards.md)
+
+- **`weather-wardrobe`, every touch counts at level 1 and the level-7 card** (existing-game fix): the grass answers per weather, worn items wiggle and are named, the pack step stops at 6, the dead undress line goes. [Slice 1](deep-dives/weather-wardrobe.md#build-slices-in-order)
+- **`weather-wardrobe`, more items, one slot each** (content, levels 1–7): sandals, rain hat, earmuffs, puffy coat, a slot map so an outfit never doubles a slot, level 5 always three, sticker pool pinned. [Slice 2](deep-dives/weather-wardrobe.md#build-slices-in-order)
+- **`weather-wardrobe`, a miss that shows why** (existing-game change): a wrong item goes on for a moment, shows its cold, hot, wet or blown consequence and hops back; accounting unchanged. [Slice 3](deep-dives/weather-wardrobe.md#build-slices-in-order)
+- **`weather-wardrobe`, lap entry 8 Try it on** (new level, after *a miss that shows why*): anything goes on, the fitting item stops the weather, no misses; lap order 1, 8, 2, `entryLevels: [8]`. [Slice 4](deep-dives/weather-wardrobe.md#build-slices-in-order)
+- **`weather-wardrobe`, the trip happens** (level 6 payoff): the pet unpacks and wears each weather's things in forecast order. [Slice 5](deep-dives/weather-wardrobe.md#build-slices-in-order)
+- **`weather-wardrobe`, level 9 Which sky?** (new level, after *a miss that shows why*): the outfit is the clue, tap the weather it suits; toddler and preschool, placed after 3 and 4. [Slice 6](deep-dives/weather-wardrobe.md#build-slices-in-order)
+- **`weather-wardrobe`, wind** (content, after *more items* and *a miss that shows why*): a fourth weather with a kite and a windbreaker; a sun hat blows off; level-1 finish and trip pairs adjusted. [Slice 7](deep-dives/weather-wardrobe.md#build-slices-in-order)
+- **`weather-wardrobe`, level 10 Two friends, two places** (new drag interaction): drag each item to the friend whose weather it suits; pre-K. [Slice 8](deep-dives/weather-wardrobe.md#build-slices-in-order)
+
+- **`puddle-gobble`, build levels 1–8** (new-game tier): lead a rain puddle that soaks up beach things smaller than itself and grows every two or three; too-big things wobble and wait, never a miss; then smallest first, numbers up to its own, add to grow and land exactly on the pail with a free let-go; Bubble Beach. [Definition](definitions/puddle-gobble.md)
+
+- **`peg-garden`, every touch answers, a fair colour level and a true card** (existing-game bug fix): whole-screen touch, bubbles during a fall, a queued lap pearl, no drift at 3, the stall guard and a drop-spot ring at 3, the hint resets, `pointercancel`, level 1's finish line; the `pegs` batch case is the item-12 flake. [Slice 1](deep-dives/peg-garden.md#build-slices-in-order)
+- **`peg-garden`, numbered buds wait their turn and the last shot stays faint** (existing-game change, levels 4–5): only the asked numeral blooms; the previous path stays as faint dots. [Slice 2](deep-dives/peg-garden.md#build-slices-in-order)
+- **`peg-garden`, shell tray and board themes** (content): pearls collect in a tray and pour back; four simulated board shapes, three backdrops. [Slice 3](deep-dives/peg-garden.md#fresh-content-inside-existing-levels)
+- **`peg-garden`, level 8 Big buds** (new lap entry): four huge buds, every touch blooms one; lap order 8, 1, toddler 8, 1, 2, `entryLevels: [8]`; plans keyed by ID. [Slice 4](deep-dives/peg-garden.md#younger-band-openings)
+- **`peg-garden`, level 6 Into the cup** (new interaction): aim the pearl into the cup with that many dots; every cup reachable with margin; pre-K top. [Slice 5](deep-dives/peg-garden.md#new-levels-on-top)
+- **`peg-garden`, level 7 Plant a bud** (new interaction, after level 6 *Into the cup*): drag a bud onto a marked place so the pearl reaches the cup, run, revise; pre-K. [Slice 6](deep-dives/peg-garden.md#new-levels-on-top)
+
+- **`swing-pals`, build levels 1–6** (new-game tier): push a friend on a tree swing to ring the bell (pushes never lower height, the bell latches, no misses at 1–3), then two swings on short and long ropes, then tap the hook that makes her friend swing along with the pet's; weight and height never change the beat; Rainbow Meadow. [Definition](definitions/swing-pals.md)
+
+- **`little-helpers`, every touch answers and the empty crowd shrugs** (existing-game bug fix): level 1 whole-screen send, a hop while busy, a grass wave, a shrug not a boing, the whole bunch into the basket. [Slice 1](deep-dives/little-helpers.md#build-slices-in-order)
+- **`little-helpers`, the badge fills, needs vary, level 2 opens to lap** (existing-game change, levels 2–6): rings fill as helpers grab on, the gap named at 5, no 1, 2, 1, 2 rounds, lap window 1–2. [Slice 2](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
+- **`little-helpers`, things to carry and three places** (content): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods. [Slice 3](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
+- **`little-helpers`, level 6 teams she builds** (existing-game change): tap which fruit gets the helper, nearest-helper taps; uneven teams strain. [Slice 4](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
+- **`little-helpers`, level 9 Whistle when it's full** (new level, after *the badge fills*): rings say when, no misses; toddler order 1, 2, 9, preschool 2, 9, 3, 4; plans keyed by ID. [Slice 5](deep-dives/little-helpers.md#easier-entries-and-levels-between-existing-ones)
+- **`little-helpers`, level 7 Everyone helps** (new interaction): split a crowd of 4–7 between two fruits; pre-K top and school. [Slice 6](deep-dives/little-helpers.md#new-levels-on-top)
+- **`little-helpers`, level 8 Strong helpers** (new interaction): big helpers count two, every exact mix right; school. [Slice 7](deep-dives/little-helpers.md#new-levels-on-top)

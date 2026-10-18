@@ -5067,6 +5067,14 @@ async function creativeBatch() {
       if (!g.stamps.every((s, i) => s.data.color === (g.plan.color ? STAMP_COLORS[i % STAMP_COLORS.length] : g.color))) throw new Error('Chosen stamp colors did not reach the paper');
       if(g.plan.move){const s=g.stamps[0],p=g.paper.toGlobal({x:180,y:300+40});await kit.dragTo(s.node,p,16);await kit.sleep(450);}
       if(g.plan.transform){kit.tapOn(g.turn);await kit.sleep(450);kit.tapOn(g.grow);await kit.sleep(450);}
+      // Play the picture (levels 3–6): every stamp sounds once, left to right; nothing is scored.
+      if (!!g.plan.play !== g.play.visible) throw new Error(`Play button shown ${g.play.visible} at a level with play ${g.plan.play}`);
+      if (g.plan.play) {
+        kit.tapOn(g.play); await kit.until(() => g.played.length === g.stamps.length, 4000); await kit.sleep(600);
+        const xs = g.played.map(s => s.x);
+        if (g.played.length !== g.stamps.length || xs.some((x, i) => i && x < xs[i - 1])) throw new Error(`Play visited ${JSON.stringify(xs)}`);
+        if (g.done) throw new Error('Playing the picture finished it');
+      }
     });
     if(level===4){
       const before=await page.evaluate(()=>neo.scene.game.stamps.map(s=>({...s.data})));
