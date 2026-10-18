@@ -1284,7 +1284,7 @@ The 2600's Sesame Street titles (Children's Computer Workshop, 1983) were made f
 | Claw Catch | Claw machine | Move the claw over a toy and drop; it always grabs | "Get the small blue one": two or three attributes | Language for describing things |
 | Pop-up Pals | Whac-A-Mole (no whacking) | Friends pop up from holes; tap to boop hello | Boop only the ones with hats, or the numbers in order | Overlaps Peekaboo Barn; good lap game |
 | Roll Ball | Skee-Ball | Swipe a ball up a ramp into rings | Rings worth 1, 2 and 3; add your two rolls | Counting Cove |
-| Juice Bar | Tapper | Slide cups along counters to thirsty critters | Two counters; the right drink for each | Could be a Scoop Shop mode |
+| Juice Bar | Tapper | Slide cups along counters to thirsty critters | Two counters; the right drink for each | Could be a Scoop Shop mode; the [Scoop Shop deep dive](deep-dives/scoop-shop.md#left-out-on-purpose) leaves it out (sliding cups is a different action) |
 | Burger Stack | BurgerTime | Walk across ingredients to drop them onto the plate below | Build in the right order from a picture | Overlaps Pet Kitchen |
 | Ice Push | Pengo, Sokoban | Push ice blocks around; they slide until they bump | Push three blocks into a row, or build a bridge | Pre-K planning; undo button |
 | Garden Dig | Dig Dug (no enemies) | Dig tunnels to find buried carrots and treasure | Compare two routes; fewer tunnels is an optional puzzle | Lower priority |

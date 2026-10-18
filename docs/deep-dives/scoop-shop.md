@@ -1,0 +1,144 @@
+# Scoop Shop deep dive
+
+*ID `scoop-shop` · bands lap, toddler, preschool, pre-K, school · levels 1–6 on 2026-10-18 · session `claude/dive-scoop-shop` ([PR #576](https://github.com/rjdunlap/neo/pull/576))*
+
+Research and ideation only: nothing under `src/` changed. This write-up also answers item EF1 of the [executive-function study](subjects/executive-function.md#a-first-games-ladder-scoop-shop-79), which asked for Scoop Shop 7–9 to be defined in this file; their rows are carried into the ladder below unchanged in substance and stay behind that study's decision 2.
+
+## The game today
+
+A customer walks up to the counter and asks for a cone. She taps a flavour tub, a scoop arcs across the counter and lands on the cone with a squish and a burst of the flavour's colour; when the cone matches the order it slides over to the customer, who munches it scoop by scoop, cheers and leaves. Three customers a round (two at level 1), one sticker. The fun action is the scoop's flight and the munch; the learning is colour words, counting, stacking in a stated order and holding an order in mind.
+
+| Level | Plan (`ScoopMode`) | Bands whose window includes it | What she decides |
+| --- | --- | --- | --- |
+| 1 | *free*: four scoops, any flavours, two customers | lap (its only level), toddler | Nothing can be wrong: which tub to tap, four times |
+| 2 | *one*: one scoop in the colour asked | toddler, preschool | Match a spoken colour word and a one-scoop picture to a tub |
+| 3 | *pair*: two scoops as pictured, any order | toddler, preschool, pre-K | Two colours (or "two pink"), order free |
+| 4 | *count*: two to five scoops of one colour, a different number each customer | preschool, pre-K | How many: the card shows a numeral and one scoop; the voice says "three pink scoops, please" |
+| 5 | *stack*: three different flavours bottom to top as pictured | preschool, pre-K, school | Which scoop goes next; the order matters |
+| 6 | *memory*: as 5, but the picture hides 1.2 s after the order is spoken | pre-K, school | Hold three in order; tapping the customer shows the picture again (one hint per customer) |
+
+Windows: lap 1–1, toddler 1–3, preschool 2–5, pre-K 3–6, school 5–6. No `order` or `entryLevels` yet.
+
+**What each round draws from.** Six flavour colours (`FLAVORS`: pink, green, blue, yellow, brown, purple), of which a level shows four, five or six tubs in a seeded shuffle; six customer kinds (cat, dog, bear, bunny, pig, cow), shuffled; one shop (striped awning, beach window, wooden counter); one cone shape. Orders are seeded (`makeOrders`). Tubs play a pentatonic pop by counter position; the serve plays a munch per scoop.
+
+**Accounting today.** A scoop that does not belong (wrong colour, too many, out of order) flies, boings off the top and sails back to its tub: one miss, a spoken line at most every two seconds (`scoop.notthat`, `scoop.notyet`, `scoop.enough`). The second wrong scoop on one customer lights the needed tub (`nextNeeded`) and counts one hint. At level 6 the first peek per customer counts one hint; more peeks are free. Level 1 can record no miss. The ghost finger (`autotouch`) takes `scoopToTake`, a different flavour each scoop in free play, and waits for the picture to hide at level 6 so the demonstration never copies it.
+
+**Known gaps** (none fixed here; they go into slice 1):
+
+1. **Level 2's orders follow the counter left to right.** `makeOrders` gives customer *i* `flavors[i % flavors.length]`, and `resize` lays the tubs out in that same array order, so the three customers want the first, second and third tub from the left. A toddler who taps along the counter is never wrong, and the colour word does no work.
+2. **Taps during a flight vanish.** `busy` is true for about 0.9 s while a scoop flies; a lap child's second and third taps in that time do nothing visible. Tapping the customer or the cone (outside level 6) does nothing at all.
+3. **The count card is a numeral.** At level 4 the bubble shows "3" and one scoop. A three-year-old reads the spoken line, not the numeral; nothing on the card shows *three*.
+4. **No counting aloud.** Scoops land silently in number; Animal Snack and Fill and Dump count as pieces go in.
+5. **Small pools.** One shop, one cone, six customers, no reason a served cone looks different from the last.
+6. **Person checks never recorded.** Whether a one-year-old waits for the flight, whether the bubble reads as "what the customer wants", whether the hiding picture at 6 frustrates, and whether device speech says the colour words clearly (`{a}` is the raw colour name).
+
+No couch entry, no journal or creation hook, no story step. The how-to card has a step per level and `touchDemo` is on.
+
+## Similar games
+
+| Game | Kind | How its progression grows | What to borrow | What to leave out |
+| --- | --- | --- | --- | --- |
+| [Papa's Freezeria](https://www.flipline.com/games/papasfreezeria/index.html) (Flipline, 2011; the game's own reference; [the Gameria formula](https://en.wikipedia.org/wiki/Flipline_Studios), both opened) | restaurant sim | Four stations (order, build, mix, top); days bring new customers and ingredients; closers order the complex thing; accurate orders raise customers to bronze, silver and gold | A visible ticket she can look back at; a customer who comes back; orders whose *shape* grows (one more step), not just more of the same | Waiting customers, tips, ranks and grades; the long day; a critic |
+| [Ice Cream Machine](https://www.jellyneo.net/?go=ice_cream_machine) (Neopets; the game's other named reference, opened) | arcade dodger | Thirteen levels of more scoops to dodge, lives | Nothing but the setting: it is a dodging game, and the name misleads | Lives, speed, game over |
+| [Smart Scoops Math Activity Set](https://www.thedyslexiashop.co.uk/products/smart-scoops-math-activity-set) (Learning Resources, opened) | physical set, 3+ | Twenty scoops in four colours, cones, bowls and 23 cards for *Colour Sorting*, *Colour Patterns*, *Order Up*, *Counting Cones*, *Number Match*, *Ice Cream Operations*, *Scoop Away* (two players), *Stack It High* | Order cards that show the cone itself (a picture, not a numeral); counting cones; two-colour counts as a step towards operations; a two-player round | Symbols (+, −, >, <) belong to school and other games |
+| [Scoop & Serve Ice Cream Counter](https://www.melissaanddoug.com/collections/best-sellers/products/scoop-serve-ice-cream-counter) (Melissa & Doug, opened) | wooden pretend play, 3+ | Eight scoops, six toppings, two cones, a cup, a reusable menu card; the grown-up plays customer | The grown-up as customer, which the co-play tip already does; a cup beside the cone | Play money |
+| [88 Ice Cream](https://boardgamematcher.com/game/88-88-ice-cream) (Japanese stacking game; search summary, not opened) | board game | Customers' wanted flavours turn up one by one on cards; players build a tall cone; dropped scoops cost the dropper the cards | Orders that arrive one card at a time (level 7's two cones, 8's change of mind) | A physical fall-penalty; a winner |
+| [Dr. Panda's Ice Cream Truck](https://apps.apple.com/us/app/dr-pandas-ice-cream-truck/id950593464) (opened) | open-ended toddler app | No orders: hundreds of flavour mixes and dozens of toppings; animals eat what they are given and react each in their own way; no purchases or ads | The customer's reaction as the reward; piling scoops high for its own sake, which level 1 already is | Its no-goal design for the whole game: Puddle Island wants a learning purpose from level 2 up |
+| [Sago Mini Pet Cafe](https://sagomini.com/article/pet-cafe-letter-to-parents/) (opened) | toddler counting, shapes and colours, 2–4 | Drag ten foods to a tray, then feed three animals by matching food colour to the animal (pink for Robin, brown for Harvey, orange for Jinja); no timer or score | "Who wanted pink?": matching the colour to the *customer* instead of the tub (level 11); feeding as the reward | Device tilt |
+| [Toca Kitchen 2](https://www.commonsensemedia.org/app-reviews/toca-kitchen-2) (opened) | no-rules cooking, 4+ | Three guests, sixteen foods, several tools; guests like, sneeze at or steam over what they get; never ends | Guests who react differently; a flavour a customer loves (a later friend-favourites idea) | Multi-step tool sequences that Common Sense Media found hard for the youngest; a home-screen link to other apps |
+| [Ice Cream Truck for Toddlers](https://apps.apple.com/app/id6717595357) (KidloLand, opened) | toddler shop app, 2–5 | A shop mode where the child serves customers, scoops flavours and adds toppings, plus sorting and matching mini-games | Serving a stated customer at two; sorting scoops by colour as a mode | Subscription gates ("most features require a subscription") |
+| [Simon](https://en.wikipedia.org/wiki/Simon_(game)) (Milton Bradley, 1978; opened) | electronic memory toy | The sequence grows by one each success; a wrong press or running out of time ends the game | Each tub sings its own pentatonic step, so a remembered cone can be *heard* (the serve tune in slice 2); reproducing an order from memory, which level 6 is | The ever-longer list, the time-out, the game over |
+| [Overcooked](https://en.wikipedia.org/wiki/Overcooked) (Ghost Town Games; opened) | co-op kitchen | A queue of orders with short time windows; coins and stars | Two players with separate jobs (co-play roles below); several open orders at once (level 7, held to two) | Every timer, the star rating, the wrong-order penalty |
+
+**Learning references.** Counting out *n* from a request and answering "how many?" are [K.CC.B.4–5](https://www.thecorestandards.org/Math/Content/K/CC/) (opened): "given a number from 1–20, count out that many objects" is level 4 exactly, and level 12 (how many more) and 13 (three pink and two blue) move towards K.OA's composing and decomposing numbers to 10, which the roadmap's [elementary horizon row](../ROADMAP.md#how-familiar-games-keep-growing) already names for this game. The [CDC's three-year page](https://www.cdc.gov/ncbddd/actearly/milestones/milestones-3yr.html) (opened) lists no colour milestone; secondary milestone lists (search summaries) put "knows one colour" at about two to two and a half and sorting by colour at three to four, which fits level 2 in the toddler window and level 11 as a toddler level rather than a lap one. Working memory's school-age demands (reverse, update) are argued in the [executive-function study](subjects/executive-function.md) (Diamond 2013), which is why 7–9 are school-only.
+
+## What makes sense here
+
+The archived ladder audit said the top level is "already remember the order" and that more would only add load. That holds for the *length* of an order: every level below keeps three scoops as the most to hold in mind. Depth comes from what she does with the order (choose whom to serve, update one scoop, reverse a heard order, count on from scoops already there, split five into two colours), and from younger rungs that make the first two years of the game honest: a one-tap entry for a one-year-old, and a toddler level where the choice is *who* rather than *which*.
+
+Four of the references (Freezeria, Overcooked, 88 Ice Cream, Simon) draw their tension from time or from losing; none of that comes in. The toddler apps (Dr. Panda, Sago, KidloLand) show that the reward is the eating, which the game already has, and that a customer can carry the colour (Sago) as well as the picture.
+
+**Long arc across the bands.** Lap: one tap, one scoop, one munch (10), then four scoops of anything (1). Toddler: a colour word (2), who wanted it (11), two colours (3). Preschool: counting (4), stacking in order (5). Pre-K: counting on (12), two colours with counts (13), from memory (6). School: two cones (7), a change of mind (8), top first (9). Later elementary (not designed here): equal portions, doubling an order for two, a price per scoop with Lemonade Stand's coins; the [roadmap's E2/E3 row](../ROADMAP.md#how-familiar-games-keep-growing) holds those.
+
+**Rework fit.** Customers are the one role here, and the [pet-integration review](../rework/PET-INTEGRATION.md) already lists Scoop Shop under "a customer or guest" and "a meal that comes home". When the creature home exists, her creatures queue at the counter, a served cone is a feeding moment at home (no hunger, nothing if she never plays), and every flavour she has served sits on a shelf for good (the study's suggestion). Those are decisions below, not slices.
+
+## Experience and presentation
+
+- **First unsupported action.** Tap any tub. The tub lifts a scoop, it arcs across the counter, lands with a squish, a burst in its colour and a pentatonic pop. A one-year-old gets this from the first tap at level 10 or 1; nothing has to be understood.
+- **Touch-down and consequence.** Today the scoop appears at once and the tub does nothing. Slice 1 adds the tub squashing on touch and a pop for *every* tap, including taps during a flight (the tub wobbles, no second scoop), a giggle and the order spoken again for a tap on the customer, and a wobble for a tap on the cone, so no touch is silent. Readiness returns when the scoop lands (about 0.9 s), which is also the beat of the game; no queueing of taps, so a flurry never produces a cone she did not mean.
+- **Code-drawn art example.** `coneArt` is one triangle with a waffle lattice. A second kind, a paper cup (`roundRect` with a fluted rim drawn as a row of `arc`s, `moveTo` first), and a third, a waffle bowl (a wide shallow `ellipse` with the same lattice), are each under twenty lines in `index.ts`, chosen by seed per customer, and change no rule: `Cone.nextSpot` keeps its step. The finished cone's serve tune is already half there: tubs play `sfx.pop(5 + index)`; playing the cone's scoops bottom to top with the same steps as it slides over is a few lines in `serve()`.
+- **Variety on replay.** Which four to six flavours are out, who comes in, what each wants, which cone they get, which shop window scene sits behind the counter (slice 2: beach, village street, evening lanterns). The rule of a level never changes with any of these.
+- **Reasoning versus reading, memory and motor.** Nothing is read: the card is a picture (slice 1 makes the count a picture too) and every order is spoken. Memory enters only at 6 and 7–9, by design, with the replayable peek. Motor demand is one tap on a 112-unit tub with a 72-unit tap radius; the only precision is choosing.
+- **Supported completion and stopping.** The glow after two wrong scoops leads to the tub that works, every customer can be finished, and three customers is a short round; the sticker comes with help. Replay is the celebration's again; the orange next level steps up.
+- **Co-play roles.** The grown-up is the customer (the existing tip): they say the order before the critter does, or at 8 they *are* the change of mind ("Oh, make the top one blue!"). The child may also take the customer's chair: tapping the customer repeats the order, so she can "order" for a grown-up who scoops. Solo play is unchanged.
+- **Needs a person or a device.** Does a one-year-old tap again before the scoop lands, and does the wobble satisfy her? Does the bubble read as what the customer wants, or as decoration? At level 6, does the picture hiding feel like a trick? Does the iPad voice say "purple" and "brown" clearly, and is "three pink scoops" parsed as a count by a three-year-old? Is a cup or bowl as readable as a cone at the tubs' scale?
+
+## Proposed ladder
+
+### Fresh content inside existing levels
+
+1. **Honest colour choice at level 2** (rule fix, `logic.ts`): orders at *one* draw a seeded shuffle of the flavours, never the tub at the same counter position as the customer's index, and no two customers in a row want the same colour. A rule test asserts that over 200 seeds the wanted tub's position is not always the customer's index, and consecutive customers differ.
+2. **Every touch answers** (`index.ts`): the tub squashes on touch-down; a tap during a flight wobbles the tub and pops without a scoop; tapping the customer at levels 1–5 pokes them and repeats the order (`askOrder`), free, not a hint (a peek at 6 stays a hint because it reveals what hid); tapping the cone wobbles it. At level 1 a tap on the customer also counts as nothing wrong. Misses unchanged.
+3. **Counting aloud and a count picture**: at levels 1, 4 (and 10, 12, 13 when they exist) each landing scoop is counted (`scoop.n1`…`scoop.n5`, or the shared number lines if a game already has them). The count card shows *n* small scoops in a row beside the numeral, so the card can be read at three; at 12 the row shows the scoops already on the cone in colour and the rest as outlines.
+4. **Pools**: customers gain `pip` and `duck` (eight kinds); three cone kinds (cone, cup, waffle bowl) by seed per customer; three window scenes by seed per round; the served customer names the flavour ("Yum, strawberry!", `scoop.yum` gains flavour variants keyed by colour); the sticker pool draws a cone kind as well as flavours; the serve plays the cone bottom to top as a tune.
+5. **How-to card**: the card's level-1 step says tapping the customer repeats the order; level 4's says the card shows the number of scoops. `LevelLine`s for every new level below.
+
+### New levels on top
+
+| Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 7 | *Two cones* | school | Two friends order together, one scoop and two scoops in a stated order: three scoops in all, as at 6. Both pictures show and are spoken, then hide; two cones stand on the counter, each by its friend; she taps a friend (or their cone) to choose whom she is serving, in either order | Whom to serve, and keeping the two orders apart | A wrong scoop bounces and is a miss; tapping a friend re-shows *that friend's* picture and counts one hint (today's peek rule); two misses glow the right tub for the chosen cone | The two orders differ; scoops total 3; every order uses tubs on the counter; a four-scoop variant is not generated | New interaction: a second open cone and a chosen-customer tap (shared with level 11, which should land first); new voice lines; the bot reads two orders; `fingerdemo` at 7. From the [executive-function study](subjects/executive-function.md#a-first-games-ladder-scoop-shop-79), gated on its decision 2 |
+| 8 | *Change of mind* | school | One friend orders three; the picture hides; the friend says "Oh! Change the top one to yellow, please" (the picture is not re-shown with the change unless she peeks) | Update one remembered scoop, keep the other two | As at 6; the peek shows the **changed** order | The change alters exactly one scoop and differs from the original at that place; the final order has no three of one flavour | New level on 6's interaction: one new voice line with the changed place and colour; the bot builds the changed order; `fingerdemo` at 8. Gated with 7 |
+| 9 | *Top first* | school | The friend *says* the scoops top to bottom ("yellow on top, then green, then pink at the bottom") with no picture; she builds bottom up | Reverse the heard order | As at 6; the peek shows the picture as a cone, bottom up, so help is real | No order is a palindrome (else reversing is no decision); the spoken order is the reverse of the built one | New level on 6's interaction; one voice line; `fingerdemo` at 9. Gated with 7 |
+| 12 | *Fill it up* | pre-K, school | The cone already holds some scoops of one colour (one to three); the friend asks for a number (three to five) of that colour; she adds the rest | How many more: count on from what is there | A scoop past the number boings off the top ("That's enough!") and is a miss; a wrong colour is a miss; two misses glow the tub and count aloud from the scoops already there ("two… three, four, five") | 1 ≤ start < target ≤ 5; the needed amount differs between consecutive customers; the card's outlined row has target − start slots | New level on the existing interaction (a pre-filled `Cone`, `plan.start`); one voice line ("Make it five, please!"); the count card from fresh-content item 3; `fingerdemo` at 12 |
+| 13 | *Three pink and two blue* | pre-K, school | The friend asks for five scoops in two colours with a count each, any order; the card shows two short rows of small scoops | Two counts at once; which colour still needs more | Today's unordered rules: a third colour is a miss, a scoop past its count is "that's enough"; two misses glow a tub that still needs scoops | Two colours, counts 1–4 summing to 4 or 5, both colours on the counter, the two counts differ for at least two of the three customers | New level on the existing interaction (the `pair` rule generalised to counts, `makeOrders` only); one voice line ("Three pink and two blue, please!"); `fingerdemo` at 13 |
+
+Band windows after the ladder (saved levels and pins keep their IDs; only stepping follows `order`):
+
+| Band | Today | Proposed `order` |
+| --- | --- | --- |
+| lap | 1–1 | `[10, 1]`, `entryLevels: [10]` |
+| toddler | 1–3 | `[1, 2, 11, 3]` |
+| preschool | 2–5 | `[2, 11, 3, 4, 5]` |
+| pre-K | 3–6 | `[3, 4, 12, 13, 5, 6]` |
+| school | 5–6 | `[5, 12, 13, 6]`, then `[5, 12, 13, 6, 7, 8, 9]` once decision 2 of the executive-function row is yes |
+
+### Younger-band openings
+
+**Lap, level 10 *Any scoop*.** Three customers each want one scoop of anything; the bubble shows a cone with a pink blob and a heart. One tap: the scoop flies, lands, the cone slides straight over and is munched. Every tub works, so misses are always 0; a tap on the customer makes them open their mouth and giggle. It is the game's shortest loop (tap, flight, munch, about three seconds), placed before 1 in the lap order (`[10, 1]`) so a one-year-old meets the munch after one tap rather than four. `entryLevels: [10]` so a birthday into toddler, whose order does not list 10, lands at toddler's easiest (1) and a pin at 10 reads as easy. Rule test: `planFor(10)` is free with `max: 1` and `scoopToTake` finishes every seed in one scoop; the `landing` test as in Bubble Pop 15.
+
+### Easier entries and levels between existing ones
+
+**Toddler, level 11 *Who wanted pink?*** Two customers stand at the counter, each holding up a little picture: one wants pink, the other blue. The cone already holds one pink scoop (a kind hand put it there; the voice says "Here is a pink scoop. Who wanted pink?"). She taps the customer whose picture matches; the cone slides over and is munched, the other customer stays for the next cone, and a new customer joins. Three cones a round. The choice is the colour match of level 2 turned around, as Sago Mini feeds the pink smoothie to the pink animal: matching a colour to a *person* with a picture, no tub to choose, so a toddler who cannot yet pick from four tubs still practises the word. Mistakes: tapping the customer who wanted blue shakes their head ("Not me! I wanted blue") with a boing, one miss; after two misses the right customer's picture glows and counts one hint. Tubs are hidden at 11 (the interaction is the customer tap), so there is nothing to tap wrongly besides the other customer; a tap on the cone wobbles it. Toddler order `[1, 2, 11, 3]`, preschool `[2, 11, 3, 4, 5]`. Rule test: the two pictures differ, exactly one matches the scoop, the matching customer alternates sides across the round. **Cost:** a new interaction (customers that take taps outside level 6, two open customers, hidden tubs); it builds the chosen-customer tap that level 7 needs, so it lands first.
+
+### Left out on purpose
+
+- **Toppings and cone kinds as rules** (the archived audit row). A topping as a fourth ordered item is a longer order, which every level here avoids; cone kinds and toppings arrive as art variety (fresh content 4) and a cherry on every served cone, never as something to get right.
+- **Patterns** (Smart Scoops' *Colour Patterns*): Pattern Train owns extending a pattern; a patterned cone would be the same decision in a different costume.
+- **Juice Bar as a Scoop Shop mode** ([idea row](../IDEAS.md#arcade-cabinets)): sliding cups along a counter is a different action (Tapper's), not an order to build.
+- **Flavour names as the instruction.** Colour words are the skill at 2–3; "strawberry" comes only as the customer's thank-you.
+- **A four-scoop *Two cones***, queues of waiting customers, tips, grades, a day that ends, a critic: all pressure, none of it a new decision.
+- **Fractions, prices and doubling an order**: the roadmap's E2/E3 horizon, after the school rungs above exist.
+- **Couch play**: the tap-a-tub action has no controller shape worth a seeded face-off; the grown-up route does not need an ice-cream game.
+
+## Decisions for the developer
+
+1. **Levels 7–9 and a school window reaching 9** are already decision 2 of the executive-function row in [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) (lean: yes, school only, a peek still a hint). This dive adds nothing to it except that level 11 should land first so 7 reuses its chosen-customer tap.
+2. **Creature customers and what comes home** (rework, after RW05/RW08): her creatures as the customers, a served cone as a feeding moment at home with no hunger, and a permanent flavour shelf of everything she has served. Lean: yes, as a later slice of the pet-integration work, not of this game.
+3. **Spoken flavour names on the thank-you** ("Yum, strawberry!"). Lean: yes; it is vocabulary she hears, never a word she must know.
+
+## Build slices, in order
+
+1. **Honest level 2, every touch answers, counting aloud and the count picture** (existing-game bug fix tier; gaps 1–4): the level-2 shuffle rule and its test, tub squash and flight-time wobble, customer tap repeats the order, cone wobble, counted scoops at 1 and 4, the count card's row of scoops, how-to lines. Checks: typecheck, the rule tests, one filtered regression play (levels 1, 2 and 4, one wrong scoop, one hint), `fingerdemo` at 4.
+2. **Pools: customers, cone kinds, window scenes, flavour thank-yous and the serve tune** (content tier): eight customers, three cone kinds, three scenes, `scoop.yum` flavour variants (decision 3's lean), the sticker pool, the tune in `serve()`. Checks: typecheck, rule tests, one browser play of level 5 and `fingerdemo` at 5.
+3. **Lap entry 10 *Any scoop*** with the `order`/`entryLevels` conversion (new level on the existing interaction): lap `[10, 1]`, the landing test. Checks: typecheck, rule tests, one play of 10, `fingerdemo` at 10, one portrait screenshot.
+4. **Toddler 11 *Who wanted pink?*** (new interaction: the chosen-customer tap, two open customers, hidden tubs): toddler `[1, 2, 11, 3]`, preschool `[2, 11, 3, 4, 5]`. Checks: new-interaction tier (scripted play at 11, one wrong customer, one hint, one portrait screenshot, `fingerdemo` at 11).
+5. **Level 12 *Fill it up*** (new level on the existing interaction: a pre-filled cone): pre-K `[3, 4, 12, 5, 6]`, school `[5, 12, 6]`. Checks: typecheck, rule tests, one play of 12, `fingerdemo` at 12.
+6. **Level 13 *Three pink and two blue*** (new level, `makeOrders` only): pre-K `[3, 4, 12, 13, 5, 6]`, school `[5, 12, 13, 6]`. Checks: typecheck, rule tests, one play of 13, `fingerdemo` at 13.
+7. *(Decision 1)* **Levels 8 *Change of mind* and 9 *Top first*** (new levels on 6's interaction): school order gains 8 and 9 after 6. Checks: typecheck, rule tests (one change, no palindrome), one play of 9, `fingerdemo` at 8 and 9.
+8. *(Decision 1, after slice 4)* **Level 7 *Two cones*** (new interaction: a second open cone on slice 4's customer tap): school order `[5, 12, 13, 6, 7, 8, 9]`. Checks: new-interaction tier (scripted play at 7, a wrong scoop, a peek, one portrait screenshot, `fingerdemo` at 7).
+9. *(Decision 2)* Creature customers, the cone that comes home, the flavour shelf: with the rework's home, not here.
+
+## What was built in this session
+
+Nothing: a deep dive session is research and ideation only. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.
