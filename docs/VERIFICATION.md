@@ -105,13 +105,6 @@
 - Linked it from the rework README, the art-request README, CAST and GAME-FIT, and added the decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: all three calls; nothing proposed is built.
 
-## 2026-10-17 — Rhythm Neighbors deep dive
-
-- Docs only: [deep dive](deep-dives/rhythm-neighbors.md) on `claude/dive-rhythm-neighbors` ([PR #558](https://github.com/rjdunlap/neo/pull/558)). Audited levels 1–6; gaps: a pool of three replies and a fixed two-knock call, the teal frog is a bell, level 6's "duet" is the ordinary ending, no ending a lap child can reach, a 2.5 s mid-reply pause is a miss, silent extra taps, no journal entry, a `levels` function with no `order`.
-- Opened Wikipedia (Patapon, Rhythm Heaven, Simon, Bop It, clapping games, call and response, the Kodály method), Harvard's serve-and-return page, Yu et al. 2022 (PMC) and the Echo Canyon Band listing; Glee Club, Gordon's MLT, Zentner and Eerola 2010, Kirschner and Tomasello 2009, Provasi and Bobin-Bègue 2003, the Core Arts K standard and Bandimal are search summaries. Nothing was played.
-- Ladder: lap 7 *Knock, knock*, toddler 8 *My turn, your turn*, 9 *Knock a call*, then 10 *Copy or answer?*, 11 *Your own answer*, 12 *Longer calls*; five ready lines in [READY.md](READY.md), one decision row in WAITING, pointers at the archived ladder-audit rows.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
