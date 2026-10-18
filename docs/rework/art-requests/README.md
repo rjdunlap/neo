@@ -7,6 +7,7 @@ Written 2026-10-17. This folder is the work list for an **image-generating routi
 | [CAST.md](CAST.md) | The first collection: nine species (three pilot, six second wave) with silhouette, home land, signature interaction, wearable slots and possible later forms |
 | [QUEUE.md](QUEUE.md) | The ordered requests, one per run, each with its file names, sizes, prompts and a status the routine updates |
 | [GAME-FIT.md](GAME-FIT.md) | How the new companions fit the 97 games: what the corner guide and the ten large-pet games demand of a species, the misfit table, and what stays code-drawn |
+| [../PET-INTEGRATION.md](../PET-INTEGRATION.md) | The review of how the creatures go further into the games: cast, talents, what comes home, discovery; it names the poses a casting slice would add to the queue |
 | [../ART-BIBLE.md](../ART-BIBLE.md), [../ART-PROMPTS.md](../ART-PROMPTS.md) | The look every image must match, and the ready-to-paste prompts for the three pilot species |
 | [../concepts/generated/](../concepts/generated/README.md) | Where the originals go, with one manifest row per file |
 

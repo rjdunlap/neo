@@ -6,7 +6,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **Rework RW05, define Creature collection and active companion** (docs only; its RW02 and RW03 packets are written): species versus individual identity, a fresh save with a reset/reseed path, a companion-selection surface for the three pilot species, and the pet, guide and hatching call sites to regress. Being defined does not authorize RW06–RW12. [Work item](rework/WORK-ITEMS.md#rw05-creature-collection-and-active-companion)
 - **`ramp-race`, build the Q1 support correction Q2** (existing-game bug-fix tier): accurate level 1–4 card and miss wording, idempotent repair glow and recovery demo; accounting unchanged. [Definition](definitions/ramp-race-support.md)
 - **`animal-snack`, slice 2 remainder: scenes** (rule tests, one screenshot per scene): seeded meadow, orchard, kitchen-garden and dusk backdrops, each with its feeding spot. The bites half is built. [Dive](deep-dives/animal-snack.md#build-slices-in-order)
 - **Music study M1: define Little Conductor 1–3** (docs only): tap first rounds, tempo semantics, heard gate, accounting, supported ending, voice/how-to/bot, both layouts and land fit. [Music study](deep-dives/subjects/music-instruments.md#build-slices-in-order)
@@ -17,6 +16,8 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
 
 ## Queued
+
+- **Rework RW05 slice 1, the collection model and Friends** (shell/save tier: typecheck, units, build, `world`, two filtered game suites, offline): `SaveData` version 3 with a bounded `creatures` block, `store.meet()`, the hatch meeting a sprout, a Friends scene from the treehouse with Come with me, the guide, chooser, island scenes and grown-ups' page on the companion; the ten large-pet games stay on `Critter` until slice 2. [Packet](rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices)
 
 - **`fill-dump`, level 7 Which holds more?** (new interaction; after level 6 *Full and empty* lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
