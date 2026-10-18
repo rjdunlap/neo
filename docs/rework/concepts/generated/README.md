@@ -49,6 +49,13 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | tote-sad-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad1](R09-PROMPTS.md#sad1) | yes |
 | tote-alt-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [alt1](R09-PROMPTS.md#alt1) | yes |
 | tote-portrait-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait1](R09-PROMPTS.md#portrait1) | yes |
+| trill-base-3.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [base3](R10-PROMPTS.md#base3) | yes |
+| trill-blink-1.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [blink1](R10-PROMPTS.md#blink1) | yes |
+| trill-happy-1.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [happy1](R10-PROMPTS.md#happy1) | yes |
+| trill-surprised-1.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [surprised1](R10-PROMPTS.md#surprised1) | yes |
+| trill-sleepy-1.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy1](R10-PROMPTS.md#sleepy1) | yes |
+| trill-sad-1.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R10-PROMPTS.md#sad1) | yes |
+| trill-portrait-2.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait2](R10-PROMPTS.md#portrait2) | yes |
 
 ## R01 review and preparation notes
 
@@ -145,6 +152,16 @@ Base bounds `(177, 73, 1388, 941)` give about 79% canvas width, with every tip c
 The tucked-in alt preserves the visible upper/left spiral shell and upper pink lip in place, retracts all legs, and shows only the face and two claw tips. It reveals the previously occluded lower/right shell around the opening; that newly exposed region is generated, not copied from an unseen source. Its pose bounds are `(177, 73, 1116, 811)`. It needs its own preparation/pose handling, not the expression swap alignment rule. The portrait's closed bust includes claws and enough shell for recognition, no walking legs; bounds `(36, 103, 1225, 1169)` leave only 29–36 px at the sides, narrower than requested. Add card padding during preparation without changing this original.
 
 No missing assets. White fallback has faint near-white variation; use paper-keying later and preserve cream face/eye whites. Reviewed the cast on white and temporary pale sky blue. No claim of child appeal, iPad readability or animation quality. Slot/misfit policy and the replaceable-shell customization remain integration work.
+
+## R10 review and preparation notes
+
+Seven untouched PNGs, 10,270,379 bytes total. Full-body images are 1536 × 1024; portrait is 1254 × 1254. SHA-256 confirms repository copies match the tool originals. No pixel cleanup, cropping, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R10-PROMPTS.md) recorded.
+
+Three bases reviewed full size and at 120 px canvas width. Candidate 3 has three distinct rounded pink crest feathers, two long separated tail feathers and both white eye highlights. Candidate 1 lacks the smaller white highlights; candidate 2 adds a fourth crest feather. No runner-up retained. The long tail, crest and small nonwebbed feet distinguish the round fantasy songbird from a duck or plain chick. The short orange beak is closed in base; cream face/chest, blush, dark plum outline and mid-tone yellow/pink match the cast. The far wing is mostly hidden in the side view, with a small sliver at the far chest; the near wing lies against the body. Crest roots overlap naturally, with distinct rounded tips and white wedges between them. The forehead's small highlight sits toward the upper right, while crest/tail/wing highlights and underside shading give the overall upper-left lighting treatment; retained consistently as a minor lighting deviation.
+
+Base bounds `(115, 34, 1368, 991)` occupy about 82% canvas width. Crest and feet have only 33–34 px vertical margins, narrower than requested, but every part is inside the frame with a closed contour. Later preparation should add display padding rather than modify originals. Mood bounds vary by at most two pixels; bidirectional silhouette comparison against base found zero pixels outside a four-pixel tolerance. Full-size review found the crest, tail, wings, feet, framing and cream belly retained. Happy opens the beak for singing; surprised has a rounded open beak, sleepy lowers lids, and sad has a gentle beak frown and one tear. This inspection is not proof of pixel-identical shading/edges; preparation alignment and animation checks remain.
+
+Portrait 1 was rejected for narrow top/bottom margins. Portrait 2 retains the full three-feather crest and a closed head/chest bust without feet or tail; bounds `(238, 115, 1021, 1137)` leave at least 115 px around the image. Its height is about 82% of the square, close to the original 80% brief despite the stronger retry's padding request. No missing files. Reviewed the chosen set at 120 px on white and temporary pale-blue composites; QA masks/thumbnails were not saved as assets. White fallback has slight near-white variation; key surrounding paper later while preserving cream and eye whites. No iPad readability, child appeal or animation-quality claim. Trill's singing interaction and slot/misfit policy remain integration work.
 
 ## Generating service terms
 
