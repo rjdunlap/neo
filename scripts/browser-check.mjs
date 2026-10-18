@@ -3186,7 +3186,13 @@ async function early() {
     await launch('rainbow-fingers', level);
     await page.waitForTimeout(500);
     const coloring = await page.evaluate(() => neo.scene.game.pictures.length > 0);
-    if (!coloring) {
+    if (!coloring && level === 1) {
+      // Every touch counts: five pats alone, each a palm-sized splat, bring the frame.
+      await page.evaluate(async () => {
+        for (let i = 0; i < 5; i++) { kit.tap(...toScreen(220 + i * 130, 300)); await kit.sleep(250); }
+        if (neo.scene.game.touches.join() !== 'pat,pat,pat,pat,pat') throw new Error(`pats not counted: ${neo.scene.game.touches}`);
+      });
+    } else if (!coloring) {
       await page.evaluate(async () => {
         for (let i = 0; i < 5; i++) await kit.drag(kit.line(toScreen(150 + i * 120, 200), toScreen(250 + i * 120, 450), 10), 1, 10);
       });
