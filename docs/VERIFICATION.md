@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-18 — Networks and digital citizenship subject research
+
+- Added the [networks-and-digital-citizenship study](deep-dives/subjects/networks-citizenship.md): opened the CSTA 2017 and 2026 standards PDFs (text extracted locally), England's computing programmes, the UKCIS *Education for a Connected World* 2020 PDF, ISTE 1.2, Common Sense's K–5 lesson list, eSafety's early-years pages, UN CRC General Comment 25, Kumar et al. 2017 (PDF), Yan 2005 and Eskelä-Haapanen and Kiili 2019 abstracts, Interland, Digital Passport, NetSmartz Kids, Digiduck, Jessie & Friends and the Tablets of Stone PDF; the AAP 2016 statement, the Orange Game rules, Ofcom 2024 and the Children's Commissioner 2018 figure from search summaries. Relay Woods is the first ladder (ten levels, toddler–school); Relay Cases the grown-up/teen puzzle.
+- Updated the subject tracker, the roadmap's subject table, two notebook rows, [Networks and digital citizenship recommendations](deep-dives/subjects/RECOMMENDATIONS.md#networks-and-digital-citizenship-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: Relay Woods' land and the capacity test, Relay Cases' band, the `safety` review boundary, the family card's practical-card review, the Mixed-Up Invitations' home; no reference game played; Mertala 2019 and the Edwards 2018 full text not opened.
+
 ## 2026-10-18 — Scoop Shop deep dive
 
 - Docs only: [deep dive](deep-dives/scoop-shop.md) on `claude/dive-scoop-shop` ([PR #576](https://github.com/rjdunlap/neo/pull/576)). Audited levels 1–6; gaps: level-2 orders follow the counter left to right (customer *i* wants tub *i*), taps during a scoop's flight and on the customer or cone are silent, the count card is a numeral, no counting aloud, one shop, one cone, six customers, no recorded person checks.
