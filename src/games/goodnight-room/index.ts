@@ -436,7 +436,7 @@ class GoodnightRoom implements Game {
       if (this.stop + 1 >= this.tour.length) return void this.finale();
       // Everyone here is asleep: the big arrow leads on to the next room.
       this.arrow.visible = true;
-      await this.ctx.say('night.tourNext');
+      await this.ctx.instruct('night.tourNext');
       this.busy = false;
       return;
     }

@@ -3,8 +3,8 @@
 ## 2026-10-17 — Goodnight Room level 10, goodnight everywhere
 
 - Changed: `goodnight-room` level 10 (`claude/goodnight-everywhere`, [PR #554](https://github.com/rjdunlap/neo/pull/554)), a seeded three-room tour (bedroom first, then two of barn/tent/boat cabin) with a big arrow after each sleeping room and a star-filled finale; pre-K window now 5-10.
-- Ran: `npx tsc --noEmit` clean; `vitest` on `src/games/goodnight-room`, the registry test and `src/content` (120 passed, including the tour rule test across seeds); `BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=10 TO_LEVEL=10` (three distinct rooms, arrow only after each room sleeps, fresh awake room after it, score [0,0], portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=10` clean in 37.1 s.
-- Not run: night levels 1-9 (unchanged interaction; prior pass stands), build, offline, `world`.
+- Ran: `npm run typecheck` clean; `npm test` (160 files, 1485 tests, including the tour rule test across seeds); `BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=9 TO_LEVEL=10` on `http://localhost:5729` (level 9 regression after the friend layer change; level 10: three distinct rooms, arrow only after each room sleeps, fresh awake room after it, score [0,0], portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=10` clean in 36.2 s.
+- Not run: night levels 1-8 (unchanged interaction; prior pass stands), build, offline, `world`.
 - Open: device and child check of the arrow and a longer three-room round; the no-wrong-levels-climb-fast lean still applies.
 
 ## 2026-10-17 — Roadmap and process cleanup (docs only)
