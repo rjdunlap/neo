@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Monster Munch deep dive
+
+- Docs only: [deep dive](deep-dives/monster-munch.md) on `claude/dive-monster-munch` ([PR #549](https://github.com/rjdunlap/neo/pull/549)). Audited levels 1–8; gaps: the card says the monster counts aloud at 1 and 4–5 (it does not) and rings a bell at 7 (there is none), a wrong pad promises counting that never happens, one generic hint line, lap monster taps feed nothing, single rounds at 1–2, silent short drops.
+- Opened Wikipedia (Cookie Monster Munch), Feed the Monster listings, Moose Math (App Store, Common Sense), Toca Kitchen 2 (Toca Boca, Microsoft Store), My Very Hungry Caterpillar, Gracie & Friends Breakfast Time and Common Core K.CC and 3.OA; Atari modes, Moose Juice details and PhET are search summaries; Hungry Hungry Hippos and the Frydman and Bryant finding recalled.
+- Six ready slices queued in [READY.md](READY.md); one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Archive verification entries by script
 
 - Docs tooling only: `scripts/archive-verification.mjs` moves dated entries above the coverage summary into `docs/archive/VERIFICATION-<entry date>.md` (older than the newest date by default, `--before`, `--keep=N`, `--dry-run`), re-bases their relative links, spawns `check-links.mjs --fix-moved` per archive touched and ends with a full link check; it exits 2 on a parse problem and 1 on broken links.
