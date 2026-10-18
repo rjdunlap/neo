@@ -248,3 +248,9 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - Defined Swing Pals levels 1–6 in [the definition](../definitions/swing-pals.md): a small-swing pendulum on three hooks (beats 1.0, 1.5 and 2.0 s; weight and height never change the beat), pushes that never lower height with a latched bell (1–3, no misses), then pick the hook so her friend swings along with the pet's, with weight (5) and height (6) as tempting variables; accounting, bot, how-to, layout figures (computed) and registration (Rainbow Meadow); six references cited (NGSS 3-PS2-2, PhET Pendulum Lab, Galileo recalled, Case and Swanson citation only, STEMIE, Master of Swing).
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
 - Open: the five defaulted decisions; layout is computed, not measured; no child has played it.
+
+## 2026-10-17 — Stamp Studio slice 4, Play the picture
+
+- Changed: a music-note button at levels 3–6 plays the picture's stamps left to right (`playOrder`, pentatonic pitch by height, at most 5.5 s); nothing scored, saved picture unchanged.
+- Ran: `npm run typecheck`; `npx vitest run src/games/stamp-studio src/content` (117 passed, including the `playOrder` rule tests and a finish.test.ts lifecycle test that failed on the first version when the button stayed visible after finishing); `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=2,3,6` on http://localhost:5302 passed (presses play, every stamp sounds once in x-order, no button where the plan has no play); one portrait probe at level 4 (768×1024) showed the button clear of help and pet.
+- Not run: build (no shared files or assets changed), `fingerdemo` (bot unchanged). Open: device audio and whether a child links height to pitch ([device check](../DEVICE-CHECKS.md)).
