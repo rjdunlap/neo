@@ -140,7 +140,7 @@ Each line is one future session. **Definition ready** means research permits wri
 
 | Slice | Next complete deliverable | Dependencies / future checks |
 | --- | --- | --- |
-| **H1: Attic Finds definition** | Docs-only: settle steps 1–2 first, two invented objects, exact trials and evidence predicate, support/accounting, controls, spoken/how-to text and ghost-finger recovery | Ready to define now; settle decisions 1–2 in the packet. Replaces the earlier Attic Finds definition task rather than duplicating it. Links/diff only |
+| **H1: Attic Finds definition** | **Defined 2026-10-18:** [definition](../../definitions/attic-finds.md) with steps 1–2, the bird box and fish churn, the `{bob, roll}` trials, the `supports(clue, claim)` predicate, accounting, controls, how-to/voice lines and the ghost finger; decisions 1–2 settled as defaults there | Done; H2 is on the [ready list](../../READY.md#queued). Links/diff only |
 | **H2: First playable object round** | Build the H1 slice with two object encounters, supported ending and no save extension | H1 settled. New-game tier: typecheck, unit properties, first/last round with wrong evidence link and hint, one portrait screenshot, finger demo; build if shared registration/content files change |
 | **H3: Younger opening definition** | Docs-only A: giant handle, freely available finish after three activations, lap/toddler accounting and a demo | Can follow H1 without real-history review. Links/diff only; later build is new-interaction tier |
 | **H4: Same Job definition** | Docs-only steps 3–4, exact accepted alternatives and two scene needs | Reconcile the machines/tools boundary and H1's rules. Links/diff; eventual levels tier or new-interaction tier if manipulation changes |
