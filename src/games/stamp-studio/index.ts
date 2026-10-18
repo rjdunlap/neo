@@ -10,7 +10,7 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
-import { LIMIT, pixel, place, planFor, roundPlan, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
+import { LIMIT, pixel, place, planFor, playOrder, type PlayNote, roundPlan, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
 
 interface Mark { data: Stamp; node: Container; drag?: DragHandle }
 class StampStudio implements Game {
@@ -27,6 +27,12 @@ class StampStudio implements Game {
   readonly turn: RoundButton;
   readonly grow: RoundButton;
   readonly bin: RoundButton;
+  /** The music note (levels 3–6): plays the picture back, left to right. */
+  readonly play: RoundButton;
+  /** The stamps the latest play-back has sounded, in order (for checks). */
+  played: Stamp[] = [];
+  private scan: { notes: (PlayNote & { mark: Mark })[]; time: number } | null = null;
+  private readonly bar = new Graphics();
   private nudgeTime = 0;
   private selected: Mark | null = null;
   private readonly named = new Set<StampKind>();
@@ -39,8 +45,8 @@ class StampStudio implements Game {
   constructor(private readonly ctx: GameContext) {
     const round = roundPlan(ctx.level, ctx.rng);
     this.plan = round.plan; this.color = round.color; this.kind = this.plan.kinds[0];
-    this.paper.addChild(this.sheet, this.selection);
-    this.selection.eventMode = 'none';
+    this.paper.addChild(this.sheet, this.selection, this.bar);
+    this.selection.eventMode = 'none'; this.bar.eventMode = 'none';
     ctx.stage.addChild(this.background, this.paper);
     onTap(this.sheet, e => {
       if (this.done) return;
@@ -70,11 +76,25 @@ class StampStudio implements Game {
     this.bin = new RoundButton(binArt, swatch.white, 48, () => { if (this.plan.move) this.remove(this.selected); });
     this.turn = new RoundButton(againIcon(), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.turns = (this.selected.data.turns + 1) % 4; this.layoutStamp(this.selected); this.drawSelection(); } });
     this.grow = new RoundButton(new Graphics().circle(-13, 4, 12).circle(14, -4, 23).fill(swatch.purple.fill), swatch.white, 48, () => { if (!this.done && this.selected) { this.selected.data.size = this.selected.data.size === 1 ? 1.3 : 1; this.layoutStamp(this.selected); this.drawSelection(); } });
-    ctx.stage.addChild(this.finish, this.undo, this.turn, this.grow, this.bin);
+    const note = new Graphics().ellipse(-9, 15, 13, 10).fill(swatch.blue.line).rect(1, -24, 6, 40).fill(swatch.blue.line)
+      .moveTo(4, -24).quadraticCurveTo(26, -18, 20, 0).stroke({ width: 6, color: swatch.blue.line });
+    this.play = new RoundButton(note, swatch.white, 48, () => this.playBack());
+    ctx.stage.addChild(this.finish, this.undo, this.turn, this.grow, this.bin, this.play);
+  }
+  /** Play the picture: start (or start again) the left-to-right scan. Nothing is scored. */
+  private playBack() {
+    if (this.done || !this.plan.play || !this.stamps.length) return;
+    this.stopScan();
+    this.played = [];
+    this.scan = { notes: playOrder(this.stamps.map(s => s.data)).map(n => ({ ...n, mark: this.stamps[n.index] })), time: 0 };
+  }
+  private stopScan() {
+    this.scan = null; this.bar.clear();
+    for (const s of this.stamps) this.layoutStamp(s);
   }
   private complete() {
     if (this.done || !this.stamps.length) return;
-    this.done = true; this.finish.rotation = 0;
+    this.done = true; this.finish.rotation = 0; this.stopScan(); this.play.visible = false;
     // Freeze before the wake-up, including a stamp held by another finger.
     this.stamps.forEach(s => {
       if (s.drag) { s.drag.enabled = false; s.drag.destroy(); }
@@ -88,7 +108,7 @@ class StampStudio implements Game {
     if (this.done || !mark) return;
     const index = this.stamps.indexOf(mark); if (index < 0) return;
     this.stamps.splice(index, 1);
-    mark.drag?.destroy(); this.ctx.tw.kill(mark.node); this.ctx.tw.kill(mark.node.scale);
+    mark.drag?.destroy(); this.ctx.tw.kill(mark.node); this.ctx.tw.kill(mark.node.scale); this.ctx.tw.kill(mark.node.children[0].scale);
     mark.node.destroy({ children: true });
     if (this.selected === mark) this.selected = this.stamps.at(-1) ?? null;
     this.drawSelection();
@@ -119,7 +139,7 @@ class StampStudio implements Game {
     const p = pixel(s.data, this.width, this.height);
     this.ctx.tw.kill(s.node); s.node.position.set(p.x, p.y); s.node.rotation = s.data.turns * Math.PI / 2;
     // Transform only the drawing; drag hit areas remain at least 110 units.
-    s.node.children[0].scale.set(s.data.size);
+    this.ctx.tw.kill(s.node.children[0].scale); s.node.children[0].scale.set(s.data.size);
     if (s.drag) s.drag.home = p;
   }
   private drawSelection() {
@@ -127,6 +147,7 @@ class StampStudio implements Game {
     if (this.selected && this.plan.move) this.selection.circle(this.selected.node.x, this.selected.node.y, 70).stroke({ width: 5, color: swatch.yellow.line });
     this.finish.visible = this.stamps.length > 0; this.undo.visible = this.stamps.length > 0;
     this.bin.visible = this.plan.move && !!this.selected;
+    this.play.visible = !!this.plan.play && this.stamps.length > 0 && !this.done;
     if (this.stamps.length < 5) { this.nudgeTime = 0; this.finish.rotation = 0; }
     this.turn.visible = this.grow.visible = this.plan.transform && !!this.selected;
     this.choices.forEach((b, i) => b.alpha = this.plan.kinds[i] === this.kind ? 1 : 0.68);
@@ -145,14 +166,33 @@ class StampStudio implements Game {
     this.finish.position.set(v.w - 77, 65); this.undo.position.set(v.w - 77, v.h - 77);
     this.bin.position.set(v.w - 77, v.h / 2 - (this.plan.transform ? 130 : 0));
     this.turn.position.set(v.w - 77, v.h / 2); this.grow.position.set(v.w - 77, v.h / 2 + 130);
+    // Left of the paper, between the hold-to-open help (y 160) and the pet.
+    this.play.position.set(88, v.h / 2 + 20);
+    if (this.scan) this.stopScan();
     for (const s of this.stamps) this.layoutStamp(s);
     this.drawSelection();
   }
   update(dt: number) {
+    if (this.scan) this.stepScan(dt);
     if (!this.done && this.ctx.level <= 2 && this.stamps.length >= 5) {
       this.nudgeTime += dt;
       this.finish.rotation = Math.sin(this.nudgeTime * 4) * 0.12;
     }
+  }
+  private stepScan(dt: number) {
+    const scan = this.scan!;
+    scan.time += dt;
+    while (scan.notes.length && scan.notes[0].at <= scan.time) {
+      const { mark, step } = scan.notes.shift()!;
+      // A stamp removed since the scan began is skipped.
+      if (!this.stamps.includes(mark)) continue;
+      sfx.marimba(step); this.played.push({ ...mark.data });
+      const art = mark.node.children[0];
+      art.scale.set(mark.data.size * 1.25);
+      void this.ctx.tw.to(art.scale, { x: mark.data.size, y: mark.data.size }, { duration: 0.25 });
+      this.bar.clear().rect(mark.node.x - 4, 0, 8, this.height).fill({ color: swatch.yellow.line, alpha: 0.5 });
+    }
+    if (!scan.notes.length && scan.time > (this.played.length ? 0.5 : 0)) { this.scan = null; this.bar.clear(); }
   }
   /** The ghost finger: make a small picture with what this level offers (stamps, colors, a turn, a bigger stamp, a carried stamp), then press the green arrow. */
   autotouch(): TouchIntent | null {

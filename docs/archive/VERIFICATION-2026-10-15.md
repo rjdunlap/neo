@@ -424,3 +424,71 @@
 - Passed `GAME_URL=http://localhost:5188 BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=7 TO_LEVEL=7`: three diagrams, five sorted references/one drag each, free grass, two misses/one hint, saved result and one sticker, no page errors. Landscape and portrait hint screenshots reviewed.
 - Same URL: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-sort FINGER_LEVELS=7` clean in 9.0 s. Initial sandbox Chromium bootstrap blocked; escalated isolated play passed. Links and diff checked; owned Vite stopped after checks.
 - Not run: full unit/browser suites, world/offline/couch, other game levels, real iPad/device speech or child play (new-levels tier). [Device checks](../DEVICE-CHECKS.md#needs-a-person-or-a-device) remain open. No save or shared engine change.
+
+## Worker dispatch records (execution queue)
+
+Coordinator dispatch notes from [the execution queue](../EXECUTION-QUEUE.md), moved out of the live verification log on 2026-10-17.
+
+### Day by Day deep-dive worker dispatch (2026-10-15)
+
+Coordinator confirmed last-flight #275 merged and prior owned slice complete, reconciled its readings once; reset-crossing consumption remains unknown. Shared checkout/claims cleared; actual allowance admits fresh docs-only worker `01a13e85-b7aa-7ee1-8326-7a3291f02f23` for Day by Day research/planning. Queue records scope/admission/pending docs checks. Coordinator source links and `git diff --check` passed; worker owes research/docs validation only. No coordinator code checks or servers.
+
+### Day by Day week-art worker dispatch (2026-10-15)
+
+Coordinator confirmed dive #349 complete/merged/deployed and reconciled final aggregate usage once, raising future comparable docs estimates. Actual allowance admits fresh worker `01a13ebb-2cff-7890-9da4-df4baad3ca59` for slice 1 only; independent #350 level 4 already built, no duplicate. No active implementation/open PR/dirty overlap. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed; worker owes rules/filtered week play/portrait and conditional checks, no coordinator servers/code checks.
+
+### Day by Day record-bridge worker dispatch (2026-10-15)
+
+Coordinator confirmed week-art #353 complete/merged/deployed and reconciled final aggregate usage once. Actual allowance admits fresh worker `01a13ef1-c0bc-74f1-8f43-b814a4f3c96a` for source slice 3, level 10 only; no active implementation/open PR/dirty overlap found. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed. Worker owes focused rules/order/entry checks, level-10 play/demo and affected shared-content checks; no coordinator code checks or servers.
+
+### Day by Day other-weather worker dispatch (2026-10-15)
+
+Coordinator confirmed record bridge #357 complete/merged/deployed and reconciled final usage once. Actual allowance admits fresh worker `01a13f2c-3f09-76f3-bfd8-7768a9a63693` for level-5 source slice only; no active implementation/open PR/dirty overlap. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed; worker owes zero/nonzero/rule/order checks, filtered level-5 play/demo and affected shared-content build. No coordinator code checks/servers.
+
+### 2026-10-15 — Weather Window dispatch
+
+Coordinator reconciled completed Day by Day level 5 [#361](https://github.com/rjdunlap/neo/pull/361) using its final worker proof/usage, confirmed merge and released the slot. Fresh allowance and clean overlap checks admitted only level 6 from [the build slices](../deep-dives/day-by-day.md#build-slices-in-order) to worker `01a13f60-c5dd-7de1-89f2-2c5254f96483`. Queue records scope, estimate, resets and pending checks. Docs-only links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Memory Match clock-definition dispatch
+
+Reconciled completed Weather Window [#365](https://github.com/rjdunlap/neo/pull/365) from its final worker proof/usage and confirmed merge. Fresh allowance, session and clean-overlap checks admitted only the [clock-bridge definition](../ROADMAP.md#short-ladders-in-order) to worker `01a13f9a-cca2-7160-b0c5-dad091c65593`. Queue records scope, estimates, reset identities and pending proof. Docs-only source links/anchors and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Memory Match Same time dispatch
+
+Reconciled the completed [clock definition #369](https://github.com/rjdunlap/neo/pull/369), confirmed merge and released its worker slot. Fresh allowance and clean overlap admitted only [Same time level 12](../deep-dives/memory-match.md#level-12-definition-same-time) to worker `01a13fd4-cbd5-7ed0-9b55-7dec3a913ee4`. Queue records usage/reset identities, scope and pending proof. Docs-only source links/anchors and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Memory Match fraction-art dispatch
+
+Reconciled completed [Same time #373](https://github.com/rjdunlap/neo/pull/373), confirmed merge/deployment and released its slot. Fresh allowance and clean overlap admitted only [build slice 4 at level 11](../deep-dives/memory-match.md#build-slices-in-order) to worker `01a1400a-d444-7e70-8343-133fb2313c84`. Queue records scope, usage/reset identities and pending content proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Clock Tower appointment dispatch
+
+Reconciled completed [fraction-art #377](https://github.com/rjdunlap/neo/pull/377), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Clock Tower slice 2 at level 5](../deep-dives/clock-tower.md#build-slices-in-order) to worker `01a1403e-ed5f-7a73-a61e-cbae415731e0`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Clock Tower explanation dispatch
+
+Reconciled completed [appointments #381](https://github.com/rjdunlap/neo/pull/381), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [slice 3's remaining explanations](../deep-dives/clock-tower.md#build-slices-in-order) to worker `01a14077-2c25-7402-a0cf-36796d3cf1d7`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Duckling Parade research dispatch
+
+Reconciled completed [Clock Tower explanations #383](https://github.com/rjdunlap/neo/pull/383), confirmed merge and released its slot. Independent Tangram work completed in #384. Fresh allowance and clean overlap admitted only [Duckling Parade research](../deep-dives/README.md#one-session-one-game) to worker `01a140b3-2f8f-75c2-9995-b365abd3a91a`. Queue records scope, usage/reset identities, aggregate estimate adjustment and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Duckling Parade support dispatch
+
+Reconciled the completed [deep dive #387](https://github.com/rjdunlap/neo/pull/387), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [support slice 1](../deep-dives/duckling-parade.md#build-slices-in-order) to worker `01a140eb-497f-7df2-b83e-64f6f9253a42`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Duckling Parade steering dispatch
+
+Reconciled completed [support #389](https://github.com/rjdunlap/neo/pull/389), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [steering slice 2](../deep-dives/duckling-parade.md#build-slices-in-order) to worker `01a1411e-24fa-7b30-9214-8ffecd67319d`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Discovery D1a dispatch
+
+Reconciled completed [steering #391](https://github.com/rjdunlap/neo/pull/391), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [D1a's definition](../ROADMAP.md#discovery-actions) to worker `01a14157-9449-7e81-aaf9-b6d2f1d2daf3`; gameplay estimate exceeds the current five-hour remainder. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Color Garden tap-entry dispatch
+
+Reconciled completed [D1a #395](https://github.com/rjdunlap/neo/pull/395), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Color Garden slice 2](../deep-dives/color-garden.md#build-slices-in-order), first current ready-list line, to worker `01a14190-2e01-74e0-bcf9-fbf48fdf028d`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+### 2026-10-15 — Goodnight Room content dispatch
+
+Reconciled completed [Color Garden #399](https://github.com/rjdunlap/neo/pull/399), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Goodnight Room slice 8](../deep-dives/goodnight-room.md#build-slices-in-order), first current ready-list line, to worker `01a141c7-9808-76c0-929c-55901e818a9c`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.

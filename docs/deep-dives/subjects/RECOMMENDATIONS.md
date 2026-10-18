@@ -464,3 +464,37 @@ The [ordered slices](data-ai-literacy.md#build-slices-in-order) separate definit
 | **Pancake Stack** · preschool–grown-up · new identity (notebook seed) | define after the identity decision (EF6, EF7) | Tower of London plates holding 1/2/3, only the top pancake moves, blocked moves a free boing; BFS-checked minimum moves per rung, *Plan it* move cards at school top, a size rule, grown-up levels in the same game; overlap test against Ferry Jam; Puzzle Peaks already lists 13 games |
 
 The [ordered slices](executive-function.md#build-slices-in-order) separate definitions from builds. No game, band, land or save change; no transfer, child, tween or parent appeal is established.
+
+
+
+## Visual art recommendations
+
+**Recommended 2026-10-17:** [the visual-art study](visual-art.md), [PR #547](https://github.com/rjdunlap/neo/pull/547), covers every audience. It opened England art and design KS1–3, EYFS expressive arts, the Core Arts visual-arts standards for K, 2, 4 and 7 (Washington's adoption, read on an aggregator; no pre-K code opened) and the National Park Service's weaving page (Lowenfeld, Gardner and VTS from summaries only). The gaps are textiles and responding to art. Define **Little Loom** first: press a pedal, throw the shuttle, and alternate lifts make cloth that holds. Color mixing stays with Rainbow Fingers, symmetry with Mirror Brush and Fold a Friend, repeat tiles with Stamp Studio, bit-decoding with Picture Bytes, sequences with Pattern Train, function with engineering design. Lap gets none new unless a person check opens Loom 1.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Little Loom 1–3** · toddler–pre-K · new identity | define now, docs only (VA1), then build (VA2) | *Zoom the shuttle* (any touch weaves), *Pick the yarn* (free stripes, no sequence asked), *Two pedals* (the same pedal twice slips: one miss, the other pedal glows after two). Drawdown `lift ? warp : weft` and the island's holding rule in `logic.ts`; pedals 120 across, marked yarns with value contrast, pet clear in both orientations; how-to, voice, ghost finger; Paint Pier capacity check (4 games); kept cloth as a bounded grid |
+| **Picture Talk** card · family | define and build, plain HTML (VA3) | Three questions for any picture ("What's going on? What do you see that makes you say that? What more can we find?"); accept every answer that points at something |
+| **Little Loom 4–5** · pre-K–school | define and build after 1–3 (VA4) | *Checks* (weft colors over a striped warp match a sample; wrong-colored row woven, one miss, Undo free); *Diagonal* (three pedals in order make a twill line) |
+| **Little Loom 6–7** · upper school | define after 4–5 (VA5, VA6) | Lift cards on six striped threads with a striped weft weave a motif under the float rule (on solid colors the card is the picture: Picture Bytes' rung); then fixed cards with chosen yarn orders |
+| **Gallery Walk** · K–M · develops the JumpStart seed | define after the art-sample decision (VA7) | The seed's genre rooms first; then tap the evidence for a claim (several accepted); sort original technique pictures where subject and technique disagree; choose works for a show by a criterion. No reproductions; traditions need review |
+| **Cloth to creature** · rework hook | define after RW05 and RW10 (VA8) | A kept cloth becomes a creature's scarf or a home textile; no currency, nothing about RW02b rigs |
+| **Loom Logic** · grown-up | after registration and Lantern Lake capacity (VA9) | Fewest pedals and order to weave a shown cloth; several accepted answers by drawdown |
+
+The [ordered slices](visual-art.md#build-slices-in-order) separate definitions from builds. Clay Corner (sculpture) is a sketch needing a deformable mesh; the Paper Weaving card waits for a practical review. Child, tween and parent appeal are unestablished.
+
+## Money and economy recommendations
+
+**Recommended 2026-10-17:** [the money-and-economy study](money-economy.md), [PR #548](https://github.com/rjdunlap/neo/pull/548), covers every audience. It opened the C3 Framework's economics indicators (D2.Eco K-2, 3-5, 6-8), the 2021 National Standards for Personal Financial Education (grade 4 and 8 tables), CCSS 2.MD.C.8, England's mathematics and citizenship programmes and two CFPB pages; Jahoda (1979), Fehr et al. (2008), Watts et al. (2018), Moonlighter, the Animal Crossing stalk market and Sesame's jars came from search summaries. It begins as an overlap audit: Market Stall owns coins, Lemonade Stand owns demand and price, the [older-child progression](../../ROADMAP.md#older-child-progression-a-market-week-not-an-island-grind) proposals own tickets, wheels and the bank. Define **Swap Meet** first, the island's first trading action. Every amount stays inside one round (the rework brief wants no new currency); lap gets none new.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Swap Meet 1–4** · toddler–school · new identity | define now, docs only (ME1) | Friends hold one thing and picture one want; drag the wanted thing and both things cross (a trade is two-way). 1 *Give it* (toddler, no misses), 2 *Two friends*, 3 *Swap!* (two pairs among four friends), 4 *Chain of two* (she is the trader; the order of trades). An unacceptable offer is a miss from level 2; off-path trades and trading back are free; the hint lies on a BFS shortest path. Placement: Cozy Village (12) only after the capacity test, else Maker Harbor when it exists |
+| **Market Stall 12 *Pick one*** · pre-K–school · existing game | define inside its dive with its decision 7 (ME3) | A purse of 9 and wants at 6, 5 and 4; any affordable choice is accepted and the voice names what was given up (opportunity cost); "too dear" per decision 7 |
+| **Lemonade Stand 5 *Save for the awning*** · school · existing game | define after decision 6 (ME4) | A goal jar the purse cannot spend; every seeded week has a non-losing plan that fills it; no failed week |
+| **Swap Meet 5–6** · school | define after 1–4 are played (ME5) | 5 a three-step chain with a tempting side trade; 6 the Harbor stall buys and sells anything for 2 shells, so the goal takes strictly fewer trades (tested); the comparison is spoken, never a miss |
+| **Harbor Orders** · school top, 13+ · new identity | define after decision 4 and Lantern Lake capacity (ME6) | Two workshops make crates or boats at pictured rates; fill an order in the fewest mornings (comparative advantage), proved by enumeration; optional "fewer mornings?" after success. Lean over a household-budget puzzle |
+| **Spend, share, save** and **Play shop** cards · family | after a named practical review (ME7) | Plain HTML; no allowance amounts, brands or hardship framing |
+| **Lemonade Stand 6 *A rainy-day jar*** · upper school | after 5 is played (ME8) | A pictured, stated chance of a tipped jug; whether the captain's top-up stops is decision 6 |
+
+The [ordered slices](money-economy.md#build-slices-in-order) separate definitions from builds. Shared costs, taxes and jobs route to `community-civics`; advertising and product claims to `data-ai-literacy` and `networks-citizenship`. No spoiling goods, restock timers, hidden prices, debt or traded-away creatures. Child, tween and parent appeal and any transfer to real money habits are unestablished.

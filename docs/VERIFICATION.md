@@ -1,5 +1,67 @@
 # Puddle Island verification
 
+## 2026-10-17 — Roadmap and process cleanup (docs only)
+
+**What changed:** the 35 subject recommendation packets moved from the roadmap to [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md) behind a one-row-per-subject table; the chunk table is grouped by status, chunks 14 and 28 (research) are taken only when the grown-up selects one, chunk 19's check tier matches its D2b slice, and Next up names the execution queue as one dispatch path; [WAITING-ON-DEVELOPER](WAITING-ON-DEVELOPER.md) opens with the six calls that unblock the most work and keeps rows that block nothing in their own table; [DEVICE-CHECKS](DEVICE-CHECKS.md) opens with a fifteen-minute iPad session that covers most items; IDEAS.md's three ladder audits moved to [the archive](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md); the execution queue says it is the Codex coordinator's state file and its stale #501 checkpoint is closed. Companion slices the same day: [READY.md](READY.md) (PR #552) and the verification archiver (PR #553).
+
+**Checks:** `node scripts/check-links.mjs` (links ok after `--fix-moved` repointed about 160 links) and `git diff --check`. No code changed; no TypeScript, unit, build or browser run.
+
+**Open:** the roadmap's counts paragraph is still typed by hand (a script from the registry was proposed, not built); the one-game check command from the workflow review is still unbuilt.
+
+## 2026-10-17 — Money and economy subject research
+
+- Added the [money-and-economy study](deep-dives/subjects/money-economy.md): opened the C3 Framework's D2.Eco indicators, the 2021 National Standards for Personal Financial Education (grade 4 and 8 text), CCSS 2.MD.C.8, England mathematics and citizenship programmes and CFPB's building-blocks and Money as You Grow pages; Jahoda, Fehr et al., Watts et al., Moonlighter, Animal Crossing, Peter Pig and Sesame from search summaries. Overlap audit first; Swap Meet is the first ladder.
+- Updated the subject tracker, a notebook row, roadmap [Money and economy recommendations](deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: tickets versus no new currency, real coins, placement, Harbor Orders' registration; no reference game played.
+
+## 2026-10-17 — Cut Along definition
+
+- Defined Cut Along levels 1–8 in [the definition](definitions/cut-along.md): fringe snips, a thick line, straight, zigzag and wave, curves and a circle cut either way round, square and triangle with lead-ins, picture outlines, and the outline that fits a gap; Letter Trails' `sampleStroke`/`advanceTrace`/`offTrail`, a 30-unit corridor floor, one miss per stray drag from 3, a glow after two, the existing `trace` ghost intent, Paint Pier. Fold & Snip deferred (Bug Builder lean).
+- References: OT scissor progressions (Growing Hands-On Kids, Swansea Bay NHS, Oxfordshire) and the Common Sense Dexteria Jr. review from search summaries; the Sago Mini Toolbox review opened; Make-A-Flake only via Wikipedia. Skipped Lift It (sequenced after Gear Garden's packet) and W2 (overlaps RW06/RW11).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the five defaulted decisions; corridor widths are computed, not felt; no child has played it.
+
+## 2026-10-17 — Monster Munch deep dive
+
+- Docs only: [deep dive](deep-dives/monster-munch.md) on `claude/dive-monster-munch` ([PR #549](https://github.com/rjdunlap/neo/pull/549)). Audited levels 1–8; gaps: the card says the monster counts aloud at 1 and 4–5 (it does not) and rings a bell at 7 (there is none), a wrong pad promises counting that never happens, one generic hint line, lap monster taps feed nothing, single rounds at 1–2, silent short drops.
+- Opened Wikipedia (Cookie Monster Munch), Feed the Monster listings, Moose Math (App Store, Common Sense), Toca Kitchen 2 (Toca Boca, Microsoft Store), My Very Hungry Caterpillar, Gracie & Friends Breakfast Time and Common Core K.CC and 3.OA; Atari modes, Moose Juice details and PhET are search summaries; Hungry Hungry Hippos and the Frydman and Bryant finding recalled.
+- Six ready slices queued in [READY.md](READY.md); one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
+## 2026-10-17 — Archive verification entries by script
+
+- Docs tooling only: `scripts/archive-verification.mjs` moves dated entries above the coverage summary into `docs/archive/VERIFICATION-<entry date>.md` (older than the newest date by default, `--before`, `--keep=N`, `--dry-run`), re-bases their relative links, spawns `check-links.mjs --fix-moved` per archive touched and ends with a full link check; it exits 2 on a parse problem and 1 on broken links.
+- Ran it once on the merged tree with `--before=2026-10-17 --keep=15`: 27 entries moved into the new [Verification 2026-10-17](archive/VERIFICATION-2026-10-17.md), 15 stay live; links in the execution queue, the RW03 packet and a completed-work file were repointed.
+- Moved all 37 `###` worker dispatch sections (2026-10-13 to 2026-10-17; the brief named four) from below the summary into the dated archive files under a dispatch-records heading; nothing linked to their anchors. The coverage summary and the "Never established" paragraph stay.
+- Passed `node scripts/check-links.mjs` (links ok) and `git diff --check`; a second `--dry-run` reports nothing to move. AGENTS.md's "Checks run" bullet and the README now point at the script.
+- Not run: typecheck, unit tests, build and browser suites (no game code or shared TypeScript changed). Not covered: entries whose heading is not `## YYYY-MM-DD — title` fail the parse on purpose; two entries with the same heading in one archive file would shift an anchor (the script warns).
+
+## 2026-10-17 — Ready list moved to its own file
+
+- Docs only: the roadmap's 68-line numbered **Ready to build now** list became [READY.md](READY.md): a **Next ten** in priority order (the eligible RW05 definition first, then the slices the old list led with) and a **Queued** section grouped by game, unnumbered so a deleted line leaves no gap; every line keeps its wording, check tier and dive link, and the four lines that named other lines by number now name the slice instead.
+- The roadmap's section is a one-paragraph pointer and its pick steps read from Next ten, with the refill rule moving Queued lines up below five; the stale "lines 7–16 were added" sentence is gone. Repointed the execution queue's selection table, the deep-dive procedure's step 7, the rework brief and work items, the 2026-10-15 cleanup archive, AGENTS.md (document table row added) and the docs-keeper agent.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: nothing; the next closeout exercises the new delete-and-move-up rule.
+
+## 2026-10-17 — Visual art subject research
+
+- Added the [visual-art study](deep-dives/subjects/visual-art.md) on `claude/subject-visual-art` ([PR #547](https://github.com/rjdunlap/neo/pull/547)): opened England art and design KS1–3, EYFS expressive arts, Core Arts visual arts K/2/4/7 (Washington's adoption on Common Planner), the NCAS anchors, NPS weaving patterns and MIT's weaving-in-Scratch page; Lowenfeld, Gardner, VTS, Jacquard and the reference games are search summaries; Head Start ELOF returned 403.
+- Little Loom first; Picture Talk card; Gallery Walk later. Updated the tracker, notebook, roadmap [Visual art recommendations](deep-dives/subjects/RECOMMENDATIONS.md#visual-art-recommendations) and a decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+- Open: identity and Paint Pier capacity, accounting, kept cloth, styles/traditions review, Gallery Walk art; no reference game played.
+
+## 2026-10-17 — Little Helpers deep dive
+
+- Docs only: [deep dive](deep-dives/little-helpers.md) on `claude/dive-little-helpers` ([PR #546](https://github.com/rjdunlap/neo/pull/546)). Audited levels 1–6; gaps: taps while busy and on the grass or waiting helpers do nothing, level 6 teams are equal by construction (she only counts the total), level 5 shows the total not the gap, the dots never fill, level 2 alternates 1, 2, only one fruit of a bunch reaches the basket, an empty crowd plays the miss sound, helper hit areas overlap. Make ten is gated: Duck Pond 10 already does it.
+- Opened the Pikmin Wiki (Carry, Lift), Hi Ho! Cherry-O and Lemmings (Wikipedia), Common Sense Media's Moose Math review and Common Core K.OA and 3.OA; Pikmin Bloom, Count Your Chickens, the Montessori spindle box, Numberblocks World and Khan Academy Kids are search summaries.
+- Seven ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
+## 2026-10-17 — Stamp Studio slice 4, Play the picture
+
+- Changed: a music-note button at levels 3–6 plays the picture's stamps left to right (`playOrder`, pentatonic pitch by height, at most 5.5 s); nothing scored, saved picture unchanged.
+- Ran: `npm run typecheck`; `npx vitest run src/games/stamp-studio src/content` (117 passed, including the `playOrder` rule tests and a finish.test.ts lifecycle test that failed on the first version when the button stayed visible after finishing); `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=2,3,6` on http://localhost:5302 passed (presses play, every stamp sounds once in x-order, no button where the plan has no play); one portrait probe at level 4 (768×1024) showed the button clear of help and pet.
+- Not run: build (no shared files or assets changed), `fingerdemo` (bot unchanged). Open: device audio and whether a child links height to pitch ([device check](DEVICE-CHECKS.md)).
+
 ## 2026-10-17 — Swing Pals definition
 
 - Defined Swing Pals levels 1–6 in [the definition](definitions/swing-pals.md): a small-swing pendulum on three hooks (beats 1.0, 1.5 and 2.0 s; weight and height never change the beat), pushes that never lower height with a latched bell (1–3, no misses), then pick the hook so her friend swings along with the pet's, with weight (5) and height (6) as tempting variables; accounting, bot, how-to, layout figures (computed) and registration (Rainbow Meadow); six references cited (NGSS 3-PS2-2, PhET Pendulum Lab, Galileo recalled, Case and Swanson citation only, STEMIE, Master of Swing).
@@ -63,200 +125,22 @@
 - Updated the subject tracker, notebook row, roadmap [Robots and automation recommendations](deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: identity beside Sorting Machine, accounting, toddler entry, placement, older registration, model and card review; no reference game played.
 
-## 2026-10-17 — Stop and Go deep dive
-
-- Docs only: [deep dive](deep-dives/stop-and-go.md) on `claude/dive-stop-and-go` ([PR #535](https://github.com/rjdunlap/neo/pull/535)). Audited levels 1–4; gaps: the lap car ignores taps, back cars silent, the hint rings the light instead of the car or feet, the walk hint never resets, "Great driving" at the walk level, colour the only state cue, one fixed rhythm, no help when idle at the crossing.
-- Opened Common Sense Media (Traffic Rush), Wikipedia (Mini Motorways), iGameMom (Sago Mini Road Trip), the dance-mat go/no-go study (PMC6805719), the Red Light, Purple Light 2019 trial record and Maryland Zero Deaths' pedestrian page; LEGO DUPLO World, Horn Book, Crossy Crash and Traffic Jelly are search summaries; NHTSA refused the fetch; Red Light Green Light, Frogger/Crossy Road and toy traffic lights recalled.
-- Five ready slices added to the roadmap; one decision row to WAITING (walk signal waits on the safety reviewer).
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Discovery D2a Little surprises definition
-
-- Defined the three-game mix in [the definition](definitions/little-surprises.md): a lap/toddler home-spot mix spot (the story-spot slot), a preview sheet, Next stop/Skip/All done in D1b's result rectangles with D1b's offer suppressed, every route back to the home spot reopening the preview, a no-bonus ending, and a session/item/round token table reusing `DiscoveryMemory`'s owner + epoch guard. Source audited on `d0d5b65`.
-- References: Just Dance 2023 playlist help, WarioWare, Khan Academy Kids (search summary), YouTube Kids autoplay controls (Google support), Xbox AG 116.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build and browser not run: no code changed.
-- Open: four non-gating leans (name, no hide switch, post-RW08 placement, Home reopening the preview); a child's grasp of Next stop vs Next level is a person check.
-
-## 2026-10-17 — Jelly Drums slice 1 remainder, guards and tunes
-
-- Listen-again note button on echo levels 4–9 (counts no miss or hint), echo levels instruct `jelly.echo`, `tunesOf`/`drawTune` (shapes plus Hot Cross Buns, Mary, Jingle Bells; songs checked against letter-note charts found by web search; Oh! Susanna left out), idle nudge on levels 1–3, bounded how-to lines. Commit 435ba0a, PR #529.
-- Ran `npm run typecheck`; `npx vitest run src/games/jelly-drums src/content src/games/registry` (11 files, 118 tests); `BROWSER_SUITE=originals ORIGINALS_ONLY=jelly` on a Vite dev server (levels 1–10, no page errors; run was before the final 50-unit button move); one portrait 768×1024 screenshot at level 9 after the move.
-- Not run: `fingerdemo` (bot and `jellyToTap` untouched), build, offline.
-- Open: whether the button is found, device speech for song titles, whether the nudge is welcome ([DEVICE-CHECKS](DEVICE-CHECKS.md)); Oh! Susanna and the invitation tune unbuilt.
-
-## 2026-10-17 — Making media subject research
-
-- Added the [making-media study](deep-dives/subjects/making-media.md). Opened: Media Arts pre-K, K and grade 5 at a third-party mirror (trimmed quotes marked), ISTE 1.6, Common Core SL.2.5 and W.K.6, EYFS Development Matters, the Breyer (2002) thesis abstract, and the Flipnote Studio and Stop Motion Studio pages. Media Arts grades 2 and 8, Toontastic and the young-children film studies came from search summaries or citations only, or were not opened, and are marked. Movie Night is the first ladder. Pixel Flipbook, Song Maker's kept tune and a family card cover the tracker's flipbook, recorded song and stop-motion.
-- Updated the subject tracker, notebook row, roadmap [Making media recommendations](deep-dives/subjects/RECOMMENDATIONS.md#making-media-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: identity and placement, premiere accounting, 13+ registration, flipbook storage, cast. No reference game was played.
-
-## 2026-10-17 — Garden Grow deep dive
-
-- [PR #530](https://github.com/rjdunlap/neo/pull/530), `claude/dive-garden-grow`, docs only: [deep dive](deep-dives/garden-grow.md) with the ladder for levels 1–7 today, fresh content (true how-to, growth stages, flower kinds) and appended levels 8 *Grow it up* (lap) and 9–11 rows, columns and same in every row (pre-K).
-- Found reading the code: uncapped how-to steps at 5 and 7, level 3's untrue take-out step, level 7 always solved by filling every bed, no words for full beds or a seed taken out. Recorded, not fixed.
-- Opened Common Sense Media (Sago Mini Farm, Toca Nature, Toca Lab: Plants, Plants HD), GamePressure's Viva Piñata guide, the Nico & Nor App Store page, NGSS K-LS1-1 and the CDC 15-month page; the Viva Piñata wiki (402), Tenderleaf, First Orchard and 2-LS2-1 are search summaries; Stardew Valley/Harvest Moon recalled.
-- Seven ready slices added to the roadmap; one decision row to WAITING. Under the Soil and the other subject modes stay with their own definitions.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Shape Buddies level 3 definition
-
-- Defined Shape Buddies' two-shapes-combined level in [the definition](definitions/shape-buddies-combined.md): a wide gap where a flat friend (near half) and a cup friend (far half) hold hands into a spoon; the existing `bridge`/`receiver` docks move side by side, `PLANS[3]` accepts only Flat, a pure `failureLine` picks four new spoken failures, misses stay 0, per-role hints, the guidance-driven bot, how-to `LevelLine`, pre-K and school 1–3.
-- References: Snipperclips, Thinkrolls 1 (App Store), The Incredible Machine (MobyGames), Crayon Physics Deluxe (Steam), from search summaries.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: two defaulted decisions (pre-K window, a level 4); no child has played it.
-
-## 2026-10-17 — Mirror Brush fold button definition
-
-- Defined Rainbow Fingers' fold page in [the definition](definitions/mirror-brush-fold.md): a seeded page type at level 2 (no new level ID), a 104-unit fold button after the first mark, a swing-press-open print through a wet layer, so only paint added since the last fold is mirrored, no misses or counted hints, a nudge wiggle, the bot, how-to lines and pure `mirrorX`/`foldMarks`/`pageKind` rules. Prediction stays with Bug Builder's *Fold a friend*.
-- References: Tullet's *Mix It Up!* (Publishers Weekly and Kirkus reviews, from a search summary), butterfly blots (UGA), *Silk* (National Math Festival page, search summary), the dive's symmetry apps.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: decision 0 (a fold button in Rainbow Fingers reverses part of the approved no-button lean) gates the build; two defaulted decisions; no child has seen a fold.
-
-## 2026-10-17 — Engineering design subject research
-
-- Added the [engineering-design study](deep-dives/subjects/engineering-design.md): opened NGSS 3-5 and MS ETS1, the 7 Principles of Universal Design, the Johnson, Kelly and Cunningham (2021) abstract and the Poly Bridge 2 store page; K-2 ETS1, England D&T and Beck et al. reused from the inventions study; Lottero-Perdue, Bagiati and Evangelou, ITEEA STEL and several references from search summaries only, marked. Welcome Ways is the first ladder; Gadget Bench, Wobble Works and Sink or Float take levels.
-- Updated the subject tracker, notebook row, roadmap [Engineering design recommendations](deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: identity beside Habitat Helpers, accounting, placement, cast, access-representation review, 13+ registration; no reference game played.
-
-## 2026-10-17 — Fruit Slice definition
-
-- Defined Fruit Slice levels 1–8 in [the definition](definitions/fruit-slice.md): closed-form slow arcs (no engine), a swept-segment slice test, tap at 1 and swipe from 2, one kind, only fruit, stop-and-send counts, two kinds, a straight line through exactly N still fruit, pieces by twos; at most one miss per stroke, a glow after two, a trace bot, the how-to card and Bubble Beach. Fractions rungs deferred to the fractions study (#480).
-- References: Fruit Ninja (App Store 4+, Common Sense 7+), Math Master's press release and Toca Kitchen 2's parent page were opened; the Zen-mode clock is from a fan page and the Aziz gesture papers from a search summary only (403).
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the five defaulted decisions; arc and hang numbers are computed, not felt; no child has played it.
-
-## 2026-10-17 — Teddy Doctor deep dive
-
-- Docs only: [deep dive](deep-dives/teddy-doctor.md) on `claude/dive-teddy-doctor` ([PR #525](https://github.com/rjdunlap/neo/pull/525)). Audited levels 1–6; gaps: level 1 taps dropped during the instruction and silent away from a boo-boo, how-to says "tap" for the level 2–3 drags, an unbounded level 6 step, lap's level 2 drag unwatched.
-- Opened Common Sense Media (Toca Doctor, Toca Pet Doctor, Dr. Panda's Hospital), the Daniel Tiger episode archive, the Teddybear Hospital cohort study and the CDC 18-month page; Doc McStuffins, BMJ review and others are search summaries; JumpStart's Dress Teddy and Pokémon Center recalled.
-- Four ready slices added to the roadmap; one decision row to WAITING (new ailments wait on the body/health practical-care review); level 1 taps during the spoken line wait on V2.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Dot Link level 11, Find my buddy
-
-- [PR #524](https://github.com/rjdunlap/neo/pull/524), `claude/dot-link-buddy`, code commit `5d1bf4e` on `7a3bb6b`: toddler entry level 11 (3×3 two-color board, one lit adjacent pair that wiggles; four buddies; a wrong same-color line is one miss with `dots.buddyhint`, no hint mode). Toddler `order` `[1, 11, 2]`, `entryLevels: [11]`.
-- Ran `npm run typecheck` (pass); dot-link logic, registry and content tests (114 pass). Full `npm test` had 4 failures (ferry-jam, peg-garden, penguin-slide) under machine load that passed on an isolated rerun: timing flake on unchanged code.
-- `BROWSER_SUITE=batch BATCH_ONLY=dots DOTS_LEVELS=11` passed at `http://localhost:5490`: one wrong pair = 1 miss and no pop, then four buddies, saved [1, 0], sticker. `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=11` clean in 9.1 s. One portrait screenshot (768×1024) reviewed by eye.
-- Not run: `npm run build` (no shared assets), other dot-link levels, offline check. Open: a toddler's drag on device ([device checks](DEVICE-CHECKS.md)).
-
-## 2026-10-17 — Domino Run definition
-
-- Defined Domino Run levels 1–8 in [the definition](definitions/domino-run.md): a one-lane slot model with reach by size and a one-size-bigger push rule (a toy rule, labelled), forks with two bells, a gong only a giant rings, authored first lines with their solutions worked out, seeded generation with plan filters, stall-as-experiment accounting with a glow after two stalls, a drag bot, the how-to card and registration in Bubble Beach; six references cited (Whitehead via a secondary source).
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the five defaulted decisions; layout numbers are computed, not measured; no child has played it.
-
-## 2026-10-17 — Sound Garden deep dive
-
-- Docs only: [deep dive](deep-dives/sound-garden.md) on `claude/dive-sound-garden` ([PR #521](https://github.com/rjdunlap/neo/pull/521)). Audited levels 1–6; gaps: one fixed sound per answer, fast/slow confounded with count and length, answer creatures never heard (turtle absent, off-scale croak), silent busy taps (V2), a hidden echo rhythm, an unbounded how-to step.
-- Opened the Electroplankton, Loopimal, Toca Band (ACCM) and Blob Opera pages; Chrome Music Lab, Rhythm Heaven, classroom standards and the pitch-word, beat and relative-pitch studies are search summaries; JumpStart Music and Simon recalled.
-- Seven ready slices added to the roadmap; four decisions to WAITING; level 1's every-touch retrofit waits on V2.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Cells and microbes subject research
-
-- Added the [cells-and-microbes study](deep-dives/subjects/cells-microbes.md): opened NGSS MS-LS1-1/2, MS-LS2-3 and 5-PS1-1 (via page source), the England science programmes, Siegal et al. 2011, Timmis et al. 2020, the Riedel-Kruse biotic-games paper, Foldscope, NSTA pages and three digital references. Search-summary-only and recalled items are marked. Puddle Lens is the first ladder; Zoom Walk, Leaf Litter Window and Photo Safari take content borrows.
-- Updated the subject tracker, notebook row, roadmap [Cells and microbes recommendations](deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: biology/scale review, identity beside Zoom Walk, placement, exploration accounting, older entry; no reference app played.
-
-## 2026-10-17 — Block Garden definition
-
-- Defined Block Garden levels 1–8 in [the definition](definitions/block-garden.md): fixed-shape placement with row and column clears, every bud to bloom (level 8 empties the bed), gardens built backward at 1–4 and frozen at 5–8, all solver-checked, the computed layout with 100-unit squares (72 at the grown-up levels 7–8), refused-drop and wander accounting, bounded hint search with an undo fallback, a drag bot, the how-to card and registration; five references cited.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the six defaulted decisions; the layout numbers and hint time bound are computed, not measured; no child has played it.
-
-## 2026-10-17 — Splish Splash slice 1, words and guards
-
-- [PR #519](https://github.com/rjdunlap/neo/pull/519), `claude/splish-words-guards`, code at `80f8ce9` on `origin/main` `d35dad9`: palm brush (1.6) on levels 1–2, phrase table, naming at first touch and as parts go clean, free-play nudge after 8 s, bounded how-to notes; accounting and level ids unchanged.
-- Passed `npm run typecheck` and `npm test` (160 files, 1470 tests, including new phrase, namer, nudge, brush and scrub-path rule tests and the how-to guarded-ladder test); Vite at `http://localhost:5991`.
-- `BROWSER_SUITE=early EARLY_ONLY=bath`: run 1 passed levels 1–6 and failed level 7 ("wrong part not noticed"); run 2 passed 1–4 and failed level 5 `[2, 0]` (the recorded flake). A probe played level 5 three times (3/3 `[1, 0]`) and level 7 three times (2/3): the failure had the harness pick `tummy` as the wrong part while `nose` was asked, and the nose splotch lies within the tummy's reach, so the game forgives it by design (unchanged parts code; a harness flake).
-- `BROWSER_SUITE=fingerdemo FINGER_ONLY=splish-splash FINGER_LEVELS=1,2` passed (12.7 s, 16.0 s).
-- Not run: build, screenshots, offline. Open: device speech for the new lines, the brush on a small hand, the 8 s nudge ([device check](DEVICE-CHECKS.md)).
-
-## 2026-10-17 — Egg Catch deep dive
-
-- Docs only: [deep dive](deep-dives/egg-catch.md) on `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517)). Audited levels 1–7 and pools; gaps: levels 4–5 roll on a 3.5/2 s clock, a near-silent level-2 miss with no glow, hens laying while nobody plays, level 1's silent mid-fall taps, level 6's counted predictions, `Math.random` in `hatch`, the `eggs` browser loop stopping at 5.
-- Opened the Big Bird's Egg Catch manual, Mario Wiki's *Egg*, TechCrunch on Turing Tumble, CDC 1-year milestones and CSTA/NGSS sources; Kaboom!, Gravity Maze, GraviTrax and Pipe Mania marked search summary or recalled.
-- Seven ready slices added to the roadmap; five decisions to WAITING; level-1 every-touch waits on V2.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Ramp Race Trial Shelf / One Change definition (Q3)
-
-- Defined Ramp Race levels 5–6 in [the definition](definitions/ramp-race-trial-shelf.md): stacked record cards, free paw guesses, a locked control lane with both-changed starts, once-per-question hints, a ghost-finger plan and a frozen layout. Not built; Q4 waits on Q2 and inquiry decisions 1–2 plus the lane policy.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser, offline and fingerdemo not run: no code changed.
-- Open: the build, and whether a child reads the cards as *her* runs and tells a guess from a record (device checks when Q4 builds).
-
-## 2026-10-17 — Jar Sort definition
-
-- Defined Jar Sort levels 1–8 in [the definition](definitions/jar-sort.md): one-piece-per-move model, frozen solver-checked boards, computed jar layout, lit targets at 1–2, refused-move and wander accounting, bounded hint search with an undo fallback, bot, how-to and registration; five references cited.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the six defaulted decisions; the layout numbers and hint time bound are computed, not measured; no child has played it.
-
-## 2026-10-17 — Song Maker deep dive
-
-- Wrote [the Song Maker deep dive](deep-dives/song-maker.md): a source audit of levels 1–7 and their pools; computed gaps (levels 5–6 hit areas about 91–92 units, a free round that can end without a keepable song, creative rounds stepping up, the inline level table, no sol on any grid); nine precedents and NCAS references; proposed levels 8–13, including M4 *answer the phrase* as level 9; nine ordered slices. Three are ready (roadmap ready list 7–9); D1–D6 are added to WAITING-ON-DEVELOPER.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the developer decisions; the computed target sizes are unmeasured on a device; no child has heard a question-and-answer round.
-
-## 2026-10-17 — Chemistry subject research
-
-- Added the [chemistry study](deep-dives/subjects/chemistry.md) (Bond Beads ladder; Island Bridges molecule seas; review-gated Weigh It and Stir and See reaction modes).
-- Opened at source: NGSS 5-PS1-1 and MS-PS1-1/5/6, the NRC Appendix A progression (its grade columns were unclear), the SpaceChem educator guide (text extracted from the PDF) and an RSC Education conservation-of-mass article. Sokobond, Opus Magnum, PhET and the misconception papers come from search summaries only.
-- Updated the subject tracker, the Matter link, the notebook row, roadmap [Chemistry recommendations](deep-dives/subjects/RECOMMENDATIONS.md#chemistry-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-- Open: chemistry-educator review (molecule list, model limits, reaction art), placement, older entry, layout audit of the 9-bead case; no reference game played.
-
-## 2026-10-17 — Astronomy subject research
-
-- Added the [astronomy study](deep-dives/subjects/astronomy.md): opened NGSS 5-ESS1-1, MS-ESS1-1/2 and HS-ESS1-1/2/3 (via page source), NASA/OpenStax/Chandra/Webb/Space Place science pages, two full papers (Agan 2004, Starakis and Halkia 2014), two abstracts and eight references. Snippet-only items are marked. Far Lights is the first ladder; eclipses, seasons, clusters and two-view cases extend Moon Window and Observatory Files.
-- Updated the subject tracker, Space link, notebook rows, roadmap [Astronomy recommendations](deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations), developer decisions and device checks. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: astronomy-educator review (inverse-square toy, halo convention, toy parallax, tilt, season and cluster models), placement, exploration accounting, older entry; no reference app played.
-
-## 2026-10-17 — Fill and Dump deep dive
-
-- Docs only: [deep dive](deep-dives/fill-dump.md) on `claude/fill-dump-deep-dive` ([PR #513](https://github.com/rjdunlap/neo/pull/513)). Audited levels 1–5, pools and gaps (silent tip window, dead grass taps, spoken-only count, flat silent pour, open-ended level-5 how-to lines); opened IM K lesson 9, CDC milestones via Understood, Lovevery, Playvolution and *Where's My Water?*; others marked search summary or recalled.
-- Five ready slices added to the roadmap; four decisions to WAITING; V3 pour feel and the busy-window acknowledgment stay gated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — RW04 welcome adventure definition
-
-- Defined Welcome a New Friend in [the packet](rework/WELCOME-ADVENTURE.md) from a source audit at `84e1433`: Stamp Studio, Pet Kitchen and Song Maker ranges, which rounds report a creation, which Pet Kitchen levels fix their plates, and how a story round's creation is (not) kept today. Docs only; no code, save, voice or band change.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser, offline and fingerdemo not run: no code changed.
-- Open: the developer's hello-song level decision; RW05/RW06 before RW07; observed play and learning.
-
-## 2026-10-17 — Sprout Shuffle G1 definition
-
-- Defined Sprout Shuffle levels 1–3 in [the definition](definitions/sprout-shuffle.md): one-locus rules, four-route tables, Check/help/finish and layouts. Docs only; no code, registration, voice, save or band change. G2 stays blocked on four developer decisions (reviewer, school entry, level 1 accounting, home land), each with a proposal.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (both passed: links ok, no whitespace errors). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the developer decisions; biology/education model review; the G2 build.
-
-## 2026-10-17 — Ramp Race support definition (Q1)
-
-- Defined the truthful Ramp Race support packet in [the definition](definitions/ramp-race-support.md): accurate level 1–4 goal, steps, finish and miss wording, plus an idempotent corrective glow and recovery demo after an unfair pair. Accounting unchanged.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser, offline and fingerdemo not run: no code changed.
-- Open: the Q2 build; device speech for the half-marks; whether a child understands the glow. Neither is established by this docs-only entry.
-
-## 2026-10-17 — RW03 home and navigation packet
-
-- Docs/prototype only, [PR #501](https://github.com/rjdunlap/neo/pull/501), `codex/rw03-home-navigation`, source audit `97efae1` plus queue-only integration `023d4c4`. [Packet](rework/HOME-NAVIGATION.md), [wireframe](rework/home-navigation.html); no production routes or creature-art files changed.
-- Chromium inspection at `http://127.0.0.1:5193/docs/rework/home-navigation.html`, 1024×768 and 768×1024: collection selection, interrupted/completed sample project, lap sample Next game → original workshop, index page return, couch caller return and profile reset passed; no page errors. One-off probe `test-results/rw03-probe.mjs` is ignored, not a committed suite.
-- Reviewed [landscape](rework/concepts/rw03-landscape.png) and [portrait](rework/concepts/rw03-portrait.png) document snapshots; visible buttons ≥104 px and no horizontal overflow in portrait. This is a scrolling wireframe, not proof of a production canvas layout or input cancellation. Real game/save/speech/controller behavior is simulated or described.
-- Passed Markdown links/anchors and `git diff --check`. Typecheck, unit tests, build, game/world/couch suites and offline not run: production code unchanged. Real-child/device navigation observations remain open in [device checks](DEVICE-CHECKS.md). Preview server stopped after inspection.
-
 ## Coverage summary
 
-One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; older ones are in [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md), so a row's link may point there. Re-check this table before re-running a suite.
+One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02-creature-art-prototype), [RW01 packet](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw01-name-and-story-packet), [rework plan](archive/VERIFICATION-2026-10-16.md#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
+| Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02-creature-art-prototype), [RW01 packet](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw01-name-and-story-packet), [rework plan](archive/VERIFICATION-2026-10-16.md#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
-| Game deep-dive docs | 2026-10-17: Song Maker source audit (computed level 5–6 target sizes), nine precedents and NCAS references, ladder 8–13, experience and nine slices; links/anchors and diff check. Prior Fill and Dump (2026-10-17) and Duckling Parade evidence retained | [Song Maker](#2026-10-17--song-maker-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
+| Game deep-dive docs | 2026-10-17: Song Maker source audit (computed level 5–6 target sizes), nine precedents and NCAS references, ladder 8–13, experience and nine slices; links/anchors and diff check. Prior Fill and Dump (2026-10-17) and Duckling Parade evidence retained | [Song Maker](archive/VERIFICATION-2026-10-17.md#2026-10-17--song-maker-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `critternot` | 2026-10-15: stable entry 8, two misses/one hint, two rounds, one sticker and landscape/portrait passed; 54 focused tests and build | [Visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | Device speech, touch and child interpretation open |
 | `marblejump` (`marble-jump`) | 2026-10-14: levels 1/6, invalid jump, hint recovery/repeated hint, portrait and land placement passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `logroll` (`log-roll`) | 2026-10-14: levels 1/3, invalid rolls, hint, Undo, portrait and Tinker Lab launch passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
 | `snowball` (`snowball-merge`) | 2026-10-14: levels 1/3, inert press, hint once, Undo/Restart, portrait and Lantern Lake launch/leave passed | [Integration checks](archive/VERIFICATION-2026-10-15.md#2026-10-14--recovered-grown-up-games-and-session-cleanup) | Source first/top demos retained; device speech and enjoyment open |
-| Subject research docs | 2026-10-17: nature-and-sustainability study (Second Chance Shed ladder; Picnic/Festival Loop, Patch Change stray cup and family cards), the robots-and-automation study (Helper House ladder; Stop and Go Smart light, Robot Path bump-rule pointer and family cards), the making-media study (Movie Night ladder; Pixel Flipbook, Picture Show and a family card), the engineering-design study (Welcome Ways ladder; Fix-It Day, Wobble Works and Garden Raft levels), the cells-and-microbes study (Puddle Lens ladder; Zoom Walk, Leaf Litter Window and Photo Safari borrows) and the chemistry study (Bond Beads ladder; Island Bridges molecule seas; review-gated reaction modes), after the astronomy study; links and diff checked; earlier subject evidence retained | [Nature and sustainability entry](#2026-10-17--nature-and-sustainability-subject-research) / [Engineering design entry](#2026-10-17--engineering-design-subject-research) / [Cells and microbes entry](#2026-10-17--cells-and-microbes-subject-research) / [Chemistry entry](#2026-10-17--chemistry-subject-research) | Research/proposals only; science/model/card review, adaptation, ranges/identity/placement and person/device/transfer gaps explicit; reference games not played |
+| Subject research docs | 2026-10-17: money-and-economy study (overlap audit; Swap Meet ladder; Market Stall 12 *Pick one*, Lemonade Stand 5–6, Harbor Orders and family cards), the nature-and-sustainability study (Second Chance Shed ladder; Picnic/Festival Loop, Patch Change stray cup and family cards), the robots-and-automation study (Helper House ladder; Stop and Go Smart light, Robot Path bump-rule pointer and family cards), the making-media study (Movie Night ladder; Pixel Flipbook, Picture Show and a family card), the engineering-design study (Welcome Ways ladder; Fix-It Day, Wobble Works and Garden Raft levels), the cells-and-microbes study (Puddle Lens ladder; Zoom Walk, Leaf Litter Window and Photo Safari borrows) and the chemistry study (Bond Beads ladder; Island Bridges molecule seas; review-gated reaction modes), after the astronomy study; links and diff checked; earlier subject evidence retained | [Money and economy entry](#2026-10-17--money-and-economy-subject-research) / [Nature and sustainability entry](#2026-10-17--nature-and-sustainability-subject-research) / [Engineering design entry](archive/VERIFICATION-2026-10-17.md#2026-10-17--engineering-design-subject-research) / [Cells and microbes entry](archive/VERIFICATION-2026-10-17.md#2026-10-17--cells-and-microbes-subject-research) / [Chemistry entry](archive/VERIFICATION-2026-10-17.md#2026-10-17--chemistry-subject-research) | Research/proposals only; science/model/card review, adaptation, ranges/identity/placement and person/device/transfer gaps explicit; reference games not played |
 | Critter Crossing level 7 (`critter-crossing`) | 2026-10-15: bank shelf: typecheck, 19 game tests, `fingerdemo` at levels 6 and 7 (27.8 s, 21.4 s), landscape and portrait shelf screenshots at level 5 ([entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-bank-shelf)); earlier: typecheck, 1026 game/content tests, `fingerdemo` at level 7 (21.7 s), one portrait scripted play (free same-answer tries, hint glow, splitter) | [Critter Crossing level 7 entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-level-7-settle-it) | landscape screenshot, how-to demo by eye, build, offline and device speech not run; level 6 entry: [archive](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--critter-crossing-level-6-either-one) |
 | Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-15: level 16 One door, typecheck, 1279 tests, `originals` peekaboo 16,2 and a clean 18.8 s level-16 demo ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--peekaboo-barn-level-16-one-door)); 2026-10-14: bedroom typecheck, 87 rules/content tests and one portrait screenshot (covers only) passed; earlier beach 92 tests and a landscape screenshot, garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Bedroom verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-bedroom-scene) / [Beach verification](archive/VERIFICATION-2026-10-14.md#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) | Bedroom, beach and garden full play/build/offline/fingerdemo not rerun; bedroom animals not screenshotted per cover, beach portrait not reviewed; iPad, speech and child play open |
 | `mossypath`, `fingerdemo` (`mossy-path`) | 2026-10-13: first/top gameplay, wrong taps/help/revision/dead-end recovery, rewards, clean 7.8/17.3 s demos, portrait/landscape; corrected filtered land launch/held Home return | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--mossy-path-first-slice) | Full suite stopped on old tap-to-leave harness step; corrected navigation passed separately. iPad, speech and child play open |
@@ -303,7 +187,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Duckling Parade (`arcade`, `fingerdemo`) | 2026-10-16: level 11 ABB typecheck, 46 focused tests, build, filtered `arcade` parade 11 (refusals, 2 misses/1 hint, pond, sticker), clean 19.0 s finger ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--duckling-parade-abb-level-11)). 2026-10-15: meadow treatments (two seeded looks) typecheck, 11 rules, filtered `arcade` parade 1 and 10, portrait of both looks ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-meadow-treatments)); destination/cancel/lost-release/palm/portrait/destroy regression and level 10 [2,1]/sticker; clean 17.0s finger; typecheck/seven rules. Level-6 partial/extras support proof retained | [Steering proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-destination-and-cancellation) | Real iPad speech/touch/meadow look, ABB at 11 with a child, intended pickup and child understanding open; no portrait shot of level 11; `fingerdemo` not rerun for meadows |
 | Jelly Drums 10 (`originals`, `fingerdemo`) | 2026-10-17: `originals` levels 1–10 passed with the listen-again button and tunes (dev server, before the final button move), one portrait at level 9; `fingerdemo` last run 2026-10-13 (clean 34.6 s level-10 demo) | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--jelly-drums-level-10-one-big-jelly) | No build or offline run; iPad, speech and child play open |
 | Shape Sorter 8 (`originals`, `fingerdemo`) | 2026-10-10: levels 1–8 passed; level 8 included two wrong clue answers, hint glow, portrait completion, saved reward and a clean 18.5-second demo | Shape Sorter level 8 entry | Screenshot reviewed; iPad feel, device speech and child play remain open |
-| Dot Link 11 (`batch`, `fingerdemo`) | 2026-10-17: levels 1–6 and 11 in the filtered `dots` play (level 11: one wrong pair, then four buddies; saved [1, 0]); level 11 ghost finger clean in 9.1 s; levels 1–6 last passed 2026-10-15 | [Dot Link level 11 entry](#2026-10-17--dot-link-level-11-find-my-buddy) | Only `DOTS_LEVELS=11` re-run this pass; browser automation; iPad touch feel, device speech and child play remain open |
+| Dot Link 11 (`batch`, `fingerdemo`) | 2026-10-17: levels 1–6 and 11 in the filtered `dots` play (level 11: one wrong pair, then four buddies; saved [1, 0]); level 11 ghost finger clean in 9.1 s; levels 1–6 last passed 2026-10-15 | [Dot Link level 11 entry](archive/VERIFICATION-2026-10-17.md#2026-10-17--dot-link-level-11-find-my-buddy) | Only `DOTS_LEVELS=11` re-run this pass; browser automation; iPad touch feel, device speech and child play remain open |
 | Garden Grow 7 (`woods`, `fingerdemo`) | 2026-10-10: two-by-three array, two wrong rains, hint, saved round and sticker; clean ghost-finger demo in 38.8 s | Garden Grow levels 6–7 entry | Screenshot reviewed; iPad target feel, device speech and child play remain open |
 | Weather Wardrobe 7 (`wardrobe7`, `fingerdemo`) | 2026-10-10: removed the old outfit, dressed for three changing weathers, two wrong choices, hint and saved sticker; ghost finger clean in 20.7 s | Weather Wardrobe level 7 entry | Portrait screenshot reviewed; iPad touch feel, device speech and child play remain open |
 | Pixel Pictures 6 (`woods`, `fingerdemo`) | 2026-10-10: typecheck, six targeted logic tests, 15 how-to tests; two-color clues, empty-cell miss, hint, two authored pictures and saved reward; ghost finger clean in 59.1 s | Pixel Pictures level 6 entry | Browser automation; portrait/device feel and speech remain open |
@@ -353,189 +237,11 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `woods` | 2026-10-16: `sort` at level 11, both sort/count/compare diagrams, free counting/replay, two comparison misses/one hint, portrait and reward ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-11-how-many)); 2026-10-16: Critter Sort 9, both A/not-B diagrams, evidence categories, free grass, two misses/one hint, mat completion, portrait and reward ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-9-this-but-not-that)); 2026-10-16: Critter Sort 8, both sorts/same nodes/new rule, two misses/one hint, free grass, mat completion, portrait and reward ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-8-a-new-sign)); 2026-10-15: Critter Sort 7 three diagrams, two misses/one hint, free grass, result/sticker and portrait ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-sort-level-7-newcomer)); 2026-10-15: `WOODS_ONLY=sort FROM_LEVEL=3 TO_LEVEL=3` explicit mat, two rounds, two misses/one hint, free grass, reward and portrait; negative completion proof ([entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-sort-neither-mat)); 2026-10-16: `WOODS_ONLY=sort` levels 1–5, worked examples (level 5 after the loop fix; [proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-worked-example)); 2026-10-16: `WOODS_ONLY=shop FROM_LEVEL=2` levels 2–7, Market Stall pips at 1–3 and the teaching hint, with a level-3 portrait screenshot ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--market-stall-pips-and-a-teaching-hint)); 2026-10-15: name-the-coin at 2 and 3 (no device speech); 2026-10-15: `WOODS_ONLY=hop HOP_LEVELS=8`, Frog Hop 8 wrong answers, hint glow, score [4,1] ([proof](archive/VERIFICATION-2026-10-14.md#2026-10-15--frog-hop-level-8-back-over-ten)); 2026-10-12: Beat Builder 5 replay/input boundary, missing/excess repairs and reward passed;  2026-10-11: `WOODS_ONLY=shop FROM_LEVEL=5`, Market Stall 5–7, both-payment help charged once, supported completion and saved rewards; 2026-10-11: `WOODS_ONLY=hop HOP_LEVELS=5,7`, free card nudges, both make-ten hint stages, full/split sum, saved reward and portrait; 2026-10-10: `WOODS_ONLY=graph FROM_LEVEL=7`: Picture Graph level 7, wrong tally checks, hint, tally completion, graph build, comparison and saved reward; screenshot reviewed. Also 2026-10-10, `WOODS_ONLY=word-end`: Word Monsters 8, wrong drops, hint, all three words and saved reward; screenshot reviewed `mailmap` (Mail Carrier 8: wrong house and route, hint, four deliveries and completion) 2026-10-10; `code` level 7 (detective doors) 2026-10-10; `night` (Goodnight Room, levels 1 to 5) 2026-10-10 after barn/category play, plus seeded barn level 1 portrait; `penguin` level 6 (Ice Blocks) 2026-10-10; `mailmap` 2026-10-09 after Hazel's drawing moved to `src/art/lands.ts`; 2026-10-06 per game; `snack` and `penguin` again 2026-10-07; `lemon` (Lemonade Stand, levels 1 to 4) 2026-10-08; `map` (Treasure Map, levels 1 to 4) again 2026-10-09 and level 5 (two wrong digs, clue-line hint and completion) 2026-10-10; `shop` (Market Stall level 7, an extra-shell payment, nudge, hint and completion) 2026-10-10; `worm` (Inchworm Measure, levels 4 to 6) and `graph` (Picture Graph, levels 3 to 6) 2026-10-09 | Archived Wonder Woods, Pixel Pictures and Inchworm entries; discovery journal, couch play and Lemonade Stand entries; longer ladders entry | Run with a `WOODS_ONLY` filter |
 | Critter Sort rules/ladder | 2026-10-16: level 11 typecheck, 48 focused tests, build; 300-seed counts/unique comparison/target geometry, stable school order skips 10 ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-11-how-many)) | [Level 9 proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-9-this-but-not-that); [level 8 proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-8-a-new-sign) | Count badges and portrait reviewed; iPad/child untested |
 | `shortlist` | 2026-10-13: Block Tower 6 mirrored reaches in both seeded orders, topple/short-stack accounting, top recovery, cancellation/resize and one reward; clean demos at 15.5/15.6s and corrected portrait hint; 2026-10-13: Owl Walk Home 1–4 after the stone-tap rework (a wrong stone and a hint at 1, a free owl choice at 3, a wrong owl and a hint at 4, level 2 in portrait); 2026-10-12: Block Tower 5 passed frozen replay/resize, both predictions, three Continues and exactly one reward;  2026-10-12: Block Tower 4 filtered height-variety passed three heights, misses/help, three tasks/sticker and portrait; 2026-10-12: Block Tower 6 filtered reach passed landing/resize/top-lift/cancellation and existing two-task score after domain/settling fix;  2026-10-11: `SHORTLIST_ONLY=says`, Pet Says levels 1–5, repeats, quiet-wait nudge and saved rewards; other games retain prior coverage | Pet Says guards and words entry; archived Windy Picnic entry | |
-| `creative`, `next` | 2026-10-16: Tangram Town broom levels 1–3 fit/seeded rules and isolated level-3 real-turn/drag completion, portrait and sticker passed ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--tangram-town-broom-picture)); 2026-10-15: Bumper Garden seeded Pond/Hive level-5 plays, portraits, typecheck/16 rules/18 how-to tests/build passed ([tables proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-pond-and-hive-tables)); 2026-10-15: Bumper Garden `next` filtered levels 6/9, sequence/retries/hint/reward, landscape/portrait, typecheck/41 tests/build passed ([count-on/back proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-count-on-and-count-back)); 2026-10-15: Bumper Garden level-2 isolated cue/input/completion probe, portrait, typecheck/24 tests/build passed ([ring proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-flipper-ready-ring)); standard `next`/ghost finger not rerun. 2026-10-15: Tangram Town pine (level 6 pool) unit-tested only, no browser play or screenshot ([entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--tangram-town-pine-level-6)); bridge likewise, one SVG render only ([entry](archive/VERIFICATION-2026-10-14.md#2026-10-15--tangram-town-bridge-level-6)); 2026-10-14: Stamp Studio level 7 (eight pats finish, no miss or hint) in the stamps loop, landscape reviewed ([proof](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--stamp-studio-level-7-pat-the-paper)); 2026-10-12: Stamp Studio 1/2 automatic finish and 3/4/6 selected bin, survivor drag, frozen keep and one sticker passed; portrait reviewed; 2026-10-12: Stamp Studio level 3 choice words/colors, exact kept creation and one sticker, landscape reviewed; 2026-10-12: Stamp Studio level 4 late-edit and held-drag guards, exact kept picture, portrait and one sticker; other game coverage retained; 2026-10-11: Tangram Town tent 1 and barn 4/6 clean through pointer input; portrait art reviewed; 2026-10-11: Tangram Town lamp 1, bus 4, castle 5/6 clean through pointer input; new art and portrait reviewed; 2026-10-11: Tangram Town targeted pickup probe across toddler/preschool/pre-K/school passed once-per-piece speech and no accounting changes (prior completion coverage retained); 2026-10-10: `creative` filtered to Pet Kitchen level 9 (thirds; wrong serves, hint and completion), and Tangram Town levels 1–6 (picture pools); 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen thirds and fractions entries, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
+| `creative`, `next` | 2026-10-17: Stamp Studio levels 2, 3 and 6 stamps loop with Play the picture (every stamp sounds once in x-order, no button at level 2), level 4 portrait, typecheck/117 tests; no build or `fingerdemo` ([entry](#2026-10-17--stamp-studio-slice-4-play-the-picture)); 2026-10-16: Tangram Town broom levels 1–3 fit/seeded rules and isolated level-3 real-turn/drag completion, portrait and sticker passed ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--tangram-town-broom-picture)); 2026-10-15: Bumper Garden seeded Pond/Hive level-5 plays, portraits, typecheck/16 rules/18 how-to tests/build passed ([tables proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-pond-and-hive-tables)); 2026-10-15: Bumper Garden `next` filtered levels 6/9, sequence/retries/hint/reward, landscape/portrait, typecheck/41 tests/build passed ([count-on/back proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-count-on-and-count-back)); 2026-10-15: Bumper Garden level-2 isolated cue/input/completion probe, portrait, typecheck/24 tests/build passed ([ring proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bumper-garden-flipper-ready-ring)); standard `next`/ghost finger not rerun. 2026-10-15: Tangram Town pine (level 6 pool) unit-tested only, no browser play or screenshot ([entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--tangram-town-pine-level-6)); bridge likewise, one SVG render only ([entry](archive/VERIFICATION-2026-10-14.md#2026-10-15--tangram-town-bridge-level-6)); 2026-10-14: Stamp Studio level 7 (eight pats finish, no miss or hint) in the stamps loop, landscape reviewed ([proof](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--stamp-studio-level-7-pat-the-paper)); 2026-10-12: Stamp Studio 1/2 automatic finish and 3/4/6 selected bin, survivor drag, frozen keep and one sticker passed; portrait reviewed; 2026-10-12: Stamp Studio level 3 choice words/colors, exact kept creation and one sticker, landscape reviewed; 2026-10-12: Stamp Studio level 4 late-edit and held-drag guards, exact kept picture, portrait and one sticker; other game coverage retained; 2026-10-11: Tangram Town tent 1 and barn 4/6 clean through pointer input; portrait art reviewed; 2026-10-11: Tangram Town lamp 1, bus 4, castle 5/6 clean through pointer input; new art and portrait reviewed; 2026-10-11: Tangram Town targeted pickup probe across toddler/preschool/pre-K/school passed once-per-piece speech and no accounting changes (prior completion coverage retained); 2026-10-10: `creative` filtered to Pet Kitchen level 9 (thirds; wrong serves, hint and completion), and Tangram Town levels 1–6 (picture pools); 2026-10-09: `creative` filtered to Pet Kitchen levels 7–8 (fraction serving and recipe halving); 2026-10-09: `next` filtered to Teddy Doctor, levels 1 to 6 | Pet Kitchen thirds and fractions entries, Teddy Doctor boo-boo placement entry | `next` otherwise remains 2026-10-06 (Seesaw Balance, Bumper Garden, Quick Tricks) |
 | `originals`, `robot`, `third` | 2026-10-15: Color Garden 9 (`garden`, `GARDEN_LEVELS=9`, portrait; [proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--color-garden-tap-and-it-hops)); 2026-10-15: Color Garden 1-8 (`garden`, landscape; [proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--color-garden-level-8-color-or-kind)); 2026-10-15: Duck Pond 12 (`ducks`, `DUCK_LEVELS=12`, landscape and portrait; [proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--duck-pond-level-12-bye-bye-ducks)); 2026-10-11: Duck Pond 11 reveal, sentences, wrong answers, hint, five rounds, portrait and saved reward passed; 2026-10-10: Duck Pond 11 wrong answers, hint, five rounds and completion; 2026-10-06; `originals` Bubble Pop and Shape Sorter again 2026-10-08 | Archived combined-flow and longer-ladders entries (`robot` and `third` re-run for the new levels) | |
 | `batch` | 2026-10-16: Photo Safari 3 waving/swimming content, wrong photos/hint, album, saved score/sticker and both saved journal entries passed ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--photo-safari-waving-and-swimming)); 2026-10-16: Photo Safari 5 (`SAFARI_LEVELS=5`) wrong same-place photos/hint, album, saved reward and portrait passed ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--photo-safari-level-5-both-clues)); 2026-10-16: Photo Safari 4/7 (`BATCH_ONLY=safari SAFARI_LEVELS=4,7`) wrong photos/hint, album, saved reward and portrait passed ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--photo-safari-7-two-clues-no-name)); prior Photo Safari level 6 (`BATCH_ONLY=safari FROM_LEVEL=6`), wrong snaps/hint, album, saved reward and targeted exit texture/source cleanup passed; 2026-10-06 in the combined flow, with later per-game reruns; `BATCH_ONLY=salon` (Fluffy Salon with real strokes) 2026-10-09: levels 1 and 2 pass, level 3 times out on the unchanged game too | Archived combined-flow and follow-on batch entries | **`BATCH_ONLY=pegs` is flaky** on the development Mac, on unmodified code too |
 | `arcade` | 2026-10-16: Launch 12 passed (three pairs, different guess, pause hint, portrait and saved `[0,1]`/sticker; [proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--bouncy-launch-12-planet-hop)); 2026-10-16: Duckling Parade 11 ABB passed ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--duckling-parade-abb-level-11)); 2026-10-13: Launch 7 Feed the friend passed four times (two misses, one hint, every friend fed, portrait); [level 7 proof](archive/VERIFICATION-2026-10-13.md#2026-10-13--bouncy-launch-level-7-feed-the-friend). Launch 5/6 last-flight slice passed (ring, fade, resize, numbered flags, two misses/one hint); [slice 3 proof](archive/VERIFICATION-2026-10-13.md#2026-10-13--bouncy-launch-last-flight-slice-3). Launch 1–6 support passed, short/wrong-way feedback, cancel, target hint/retry, unscored prediction and portrait resize; [slice 1 proof](archive/VERIFICATION-2026-10-07-13.md#2026-10-13--bouncy-launch-support-slice-1). Other games: 2026-10-06 in the combined flow; `launch` again 2026-10-07; `parade` again 2026-10-08 | Archived combined-flow entry; couch play entries | |
-| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-17: `early` paint levels 1–2 (five pats alone finish level 1; marked pots, portrait screenshot); 2026-10-17: `fourth` filtered `sink7` (Sink or Float 7: flat/leaky trials, glow as one hint, boat, second experiment via direct `control()`, misses 0 hints 1, portrait; island key press not run); 2026-10-15: Bug Builder level 7 paired fold/reopen, two misses/one hint, saved result/sticker, portrait and fold reviewed ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bug-builder-paired-wing-finish)); earlier pool/hint levels 1–7 passed; `letters` 2026-10-16 (levels 1, 4, 7, 8: two wanders, exactly one hint, the firefly back at its checkpoint, shown way and start arrow screenshots; [proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--letter-trails-show-the-way-arrows-rising-tune-and-looks)); earlier the journal entry filed after a traced letter; 2026-10-14: `fourth` Puzzle Pals 5/7, exploration, two misses, one hint, reward and portrait ([proof](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--puzzle-pals-visible-cues-and-fairness)); 2026-10-10: `early` paint level 7 (two misses, one hint, reward); 2026-10-11: `pattern` filtered to levels 6, 9 and 12 (wrong answer, hint, reward; Pattern Train slice 1 entry); 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash) 2026-10-17 after slice 1 (levels 1–4 and 1–6 passed in two runs; failed once at level 7, a harness pick of `tummy` as the wrong part for `nose`, which the game forgives, and once at the recorded level-5 flake; probe 3/3 at level 5, 2/3 at level 7; [entry](#2026-10-17--splish-splash-slice-1-words-and-guards)); 2026-10-15 (levels 1 to 9, real touches; two earlier runs failed once each, at levels 6 and 9, undiagnosed timing flakes; the third passed; entry above) | Pattern Train seventh-car entry; archived combined-flow entry; Stop and Go to Splish Splash bots entry | Memory Match levels 1/8/9/10/11 checked 2026-10-11 (support entry); device speech and legibility remain open |
+| `early`, `fourth`, `expansion`, `pattern`, `memory`, `letters`, `stickers` | 2026-10-17: `early` paint levels 1–2 (five pats alone finish level 1; marked pots, portrait screenshot); 2026-10-17: `fourth` filtered `sink7` (Sink or Float 7: flat/leaky trials, glow as one hint, boat, second experiment via direct `control()`, misses 0 hints 1, portrait; island key press not run); 2026-10-15: Bug Builder level 7 paired fold/reopen, two misses/one hint, saved result/sticker, portrait and fold reviewed ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--bug-builder-paired-wing-finish)); earlier pool/hint levels 1–7 passed; `letters` 2026-10-16 (levels 1, 4, 7, 8: two wanders, exactly one hint, the firefly back at its checkpoint, shown way and start arrow screenshots; [proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--letter-trails-show-the-way-arrows-rising-tune-and-looks)); earlier the journal entry filed after a traced letter; 2026-10-14: `fourth` Puzzle Pals 5/7, exploration, two misses, one hint, reward and portrait ([proof](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--puzzle-pals-visible-cues-and-fairness)); 2026-10-10: `early` paint level 7 (two misses, one hint, reward); 2026-10-11: `pattern` filtered to levels 6, 9 and 12 (wrong answer, hint, reward; Pattern Train slice 1 entry); 2026-10-06 in the combined flow; `EARLY_ONLY=bath` (Splish Splash) 2026-10-17 after slice 1 (levels 1–4 and 1–6 passed in two runs; failed once at level 7, a harness pick of `tummy` as the wrong part for `nose`, which the game forgives, and once at the recorded level-5 flake; probe 3/3 at level 5, 2/3 at level 7; [entry](archive/VERIFICATION-2026-10-17.md#2026-10-17--splish-splash-slice-1-words-and-guards)); 2026-10-15 (levels 1 to 9, real touches; two earlier runs failed once each, at levels 6 and 9, undiagnosed timing flakes; the third passed; entry above) | Pattern Train seventh-car entry; archived combined-flow entry; Stop and Go to Splish Splash bots entry | Memory Match levels 1/8/9/10/11 checked 2026-10-11 (support entry); device speech and legibility remain open |
 | Combined flow (every suite that existed then) | 2026-10-06 at `da6860b`, about an hour | Archived combined-flow entry | Release checks only, when a grown-up asks; later suites were not part of it |
 
 Never established by any of these: physical iPad or phone touch, device speech, first-touch audio, orientation on a device, the safe areas of a real notched phone, the silent switch, Add to Home Screen, Guided Access (and a Guided Access or Screen Time limit ending play), a toddler's hand holding the gear, real controllers, a TV, and a child's reaction.
-
-### Bouncy Launch support worker dispatch (2026-10-13)
-
-Coordinator confirmed prior owned mirror definition #254 complete/merged and reconciled its final usage once; independently merged implementation #259 and other claims cleared. Fresh allowance admits worker `01a13677-fdf4-77b1-a4c9-a71de0b584f6` for Bouncy Launch slice 1 only. Queue records scope/admission/pending checks; unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Worker owes implementation/rules/filtered launch play/level-6 demo and affected shared-content checks; no coordinator code checks or servers.
-
-### Bouncy Launch last-flight worker dispatch (2026-10-13)
-
-Coordinator confirmed support #269 complete/merged/deployed and reconciled final usage once; estimate recalibrated for its aggregate overrun. Claims cleared and actual allowance admits fresh worker `01a136e9-ad64-7972-b23a-6a94841e4324` for slice 3 only; slice 2's listening decision remains open. Queue records scope/admission/pending focused checks; unrelated dirty repair preserved. Coordinator source link/anchor and `git diff --check` passed. Worker owes implementation/rules/filtered 5–6 play/demo and affected shared-content checks; no coordinator code checks/servers.
-
-### Day by Day deep-dive worker dispatch (2026-10-15)
-
-Coordinator confirmed last-flight #275 merged and prior owned slice complete, reconciled its readings once; reset-crossing consumption remains unknown. Shared checkout/claims cleared; actual allowance admits fresh docs-only worker `01a13e85-b7aa-7ee1-8326-7a3291f02f23` for Day by Day research/planning. Queue records scope/admission/pending docs checks. Coordinator source links and `git diff --check` passed; worker owes research/docs validation only. No coordinator code checks or servers.
-
-### Day by Day week-art worker dispatch (2026-10-15)
-
-Coordinator confirmed dive #349 complete/merged/deployed and reconciled final aggregate usage once, raising future comparable docs estimates. Actual allowance admits fresh worker `01a13ebb-2cff-7890-9da4-df4baad3ca59` for slice 1 only; independent #350 level 4 already built, no duplicate. No active implementation/open PR/dirty overlap. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed; worker owes rules/filtered week play/portrait and conditional checks, no coordinator servers/code checks.
-
-### Day by Day record-bridge worker dispatch (2026-10-15)
-
-Coordinator confirmed week-art #353 complete/merged/deployed and reconciled final aggregate usage once. Actual allowance admits fresh worker `01a13ef1-c0bc-74f1-8f43-b814a4f3c96a` for source slice 3, level 10 only; no active implementation/open PR/dirty overlap found. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed. Worker owes focused rules/order/entry checks, level-10 play/demo and affected shared-content checks; no coordinator code checks or servers.
-
-### Day by Day other-weather worker dispatch (2026-10-15)
-
-Coordinator confirmed record bridge #357 complete/merged/deployed and reconciled final usage once. Actual allowance admits fresh worker `01a13f2c-3f09-76f3-bfd8-7768a9a63693` for level-5 source slice only; no active implementation/open PR/dirty overlap. Queue records scope/admission/pending checks. Coordinator source link/anchor and `git diff --check` passed; worker owes zero/nonzero/rule/order checks, filtered level-5 play/demo and affected shared-content build. No coordinator code checks/servers.
-
-### 2026-10-15 — Weather Window dispatch
-
-Coordinator reconciled completed Day by Day level 5 [#361](https://github.com/rjdunlap/neo/pull/361) using its final worker proof/usage, confirmed merge and released the slot. Fresh allowance and clean overlap checks admitted only level 6 from [the build slices](deep-dives/day-by-day.md#build-slices-in-order) to worker `01a13f60-c5dd-7de1-89f2-2c5254f96483`. Queue records scope, estimate, resets and pending checks. Docs-only links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Memory Match clock-definition dispatch
-
-Reconciled completed Weather Window [#365](https://github.com/rjdunlap/neo/pull/365) from its final worker proof/usage and confirmed merge. Fresh allowance, session and clean-overlap checks admitted only the [clock-bridge definition](ROADMAP.md#short-ladders-in-order) to worker `01a13f9a-cca2-7160-b0c5-dad091c65593`. Queue records scope, estimates, reset identities and pending proof. Docs-only source links/anchors and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Memory Match Same time dispatch
-
-Reconciled the completed [clock definition #369](https://github.com/rjdunlap/neo/pull/369), confirmed merge and released its worker slot. Fresh allowance and clean overlap admitted only [Same time level 12](deep-dives/memory-match.md#level-12-definition-same-time) to worker `01a13fd4-cbd5-7ed0-9b55-7dec3a913ee4`. Queue records usage/reset identities, scope and pending proof. Docs-only source links/anchors and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Memory Match fraction-art dispatch
-
-Reconciled completed [Same time #373](https://github.com/rjdunlap/neo/pull/373), confirmed merge/deployment and released its slot. Fresh allowance and clean overlap admitted only [build slice 4 at level 11](deep-dives/memory-match.md#build-slices-in-order) to worker `01a1400a-d444-7e70-8343-133fb2313c84`. Queue records scope, usage/reset identities and pending content proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Clock Tower appointment dispatch
-
-Reconciled completed [fraction-art #377](https://github.com/rjdunlap/neo/pull/377), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Clock Tower slice 2 at level 5](deep-dives/clock-tower.md#build-slices-in-order) to worker `01a1403e-ed5f-7a73-a61e-cbae415731e0`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Clock Tower explanation dispatch
-
-Reconciled completed [appointments #381](https://github.com/rjdunlap/neo/pull/381), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [slice 3's remaining explanations](deep-dives/clock-tower.md#build-slices-in-order) to worker `01a14077-2c25-7402-a0cf-36796d3cf1d7`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Duckling Parade research dispatch
-
-Reconciled completed [Clock Tower explanations #383](https://github.com/rjdunlap/neo/pull/383), confirmed merge and released its slot. Independent Tangram work completed in #384. Fresh allowance and clean overlap admitted only [Duckling Parade research](deep-dives/README.md#one-session-one-game) to worker `01a140b3-2f8f-75c2-9995-b365abd3a91a`. Queue records scope, usage/reset identities, aggregate estimate adjustment and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Duckling Parade support dispatch
-
-Reconciled the completed [deep dive #387](https://github.com/rjdunlap/neo/pull/387), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [support slice 1](deep-dives/duckling-parade.md#build-slices-in-order) to worker `01a140eb-497f-7df2-b83e-64f6f9253a42`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Duckling Parade steering dispatch
-
-Reconciled completed [support #389](https://github.com/rjdunlap/neo/pull/389), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [steering slice 2](deep-dives/duckling-parade.md#build-slices-in-order) to worker `01a1411e-24fa-7b30-9214-8ffecd67319d`. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Discovery D1a dispatch
-
-Reconciled completed [steering #391](https://github.com/rjdunlap/neo/pull/391), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [D1a's definition](ROADMAP.md#discovery-actions) to worker `01a14157-9449-7e81-aaf9-b6d2f1d2daf3`; gameplay estimate exceeds the current five-hour remainder. Queue records scope, usage/reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Color Garden tap-entry dispatch
-
-Reconciled completed [D1a #395](https://github.com/rjdunlap/neo/pull/395), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Color Garden slice 2](deep-dives/color-garden.md#build-slices-in-order), first current ready-list line, to worker `01a14190-2e01-74e0-bcf9-fbf48fdf028d`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-15 — Goodnight Room content dispatch
-
-Reconciled completed [Color Garden #399](https://github.com/rjdunlap/neo/pull/399), confirmed merge and released its slot. Fresh allowance and clean overlap admitted only [Goodnight Room slice 8](deep-dives/goodnight-room.md#build-slices-in-order), first current ready-list line, to worker `01a141c7-9808-76c0-929c-55901e818a9c`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Bumper Garden table dispatch
-
-Reconciled completed [Goodnight rooms #403](https://github.com/rjdunlap/neo/pull/403), confirmed merge and released its slot. Dot Link #404 is merged; retained dirty code matches origin/main byte-for-byte. Fresh allowance and overlap admitted only [Bumper Garden slice 3](deep-dives/bumper-garden.md#build-slices-in-order) to worker `01a14275-5f44-70b2-afb4-0d962c698c1e`. Queue records recalculated estimate, scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Bug Builder flutter dispatch
-
-Reconciled completed Bumper Garden [#410](https://github.com/rjdunlap/neo/pull/410)/[#411](https://github.com/rjdunlap/neo/pull/411), confirmed merges and released its slot. Fresh allowance and overlap admitted only [Bug Builder slice 2](deep-dives/bug-builder.md#build-slices-in-order) to worker `01a142ae-a2cb-71e2-98b6-c0937479cdea`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Critter Crossing not-entry dispatch
-
-Reconciled completed [flutter #416](https://github.com/rjdunlap/neo/pull/416), confirmed merge and released its slot; Critter Sort #418 is merged. Fresh allowance and overlap admitted only [Critter Crossing slice 4](deep-dives/critter-crossing.md#build-slices-in-order) to worker `01a1431d-314b-7163-8fac-e54497cdcd77`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Critter Sort level-7 dispatch
-
-Reconciled completed [visible not #422](https://github.com/rjdunlap/neo/pull/422), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 4](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a14354-252d-7ee2-a076-513abb65a3af`; independent subject research has no implementation overlap. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Critter Sort level-8 dispatch
-
-Reconciled completed [level 7 #426](https://github.com/rjdunlap/neo/pull/426), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 5](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a1438c-7bb8-7aa3-bf27-b75caa6f890a`. Independent subject docs are preserved. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Critter Sort level-9 dispatch
-
-Reconciled completed [level 8 #428](https://github.com/rjdunlap/neo/pull/428), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 6](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a143f7-ff89-7560-8b89-30f08aa4e88a`; open ecosystems research has no runtime overlap. Queue records recalculated estimate, scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Critter Sort level-11 dispatch
-
-Reconciled completed [level 9 #436](https://github.com/rjdunlap/neo/pull/436), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Critter Sort slice 7](deep-dives/critter-sort.md#build-slices-in-order) to worker `01a14435-4fa4-75c2-bc0c-802e92b789e9`. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Market Stall content dispatch
-
-Reconciled completed [Critter Sort 11 #439](https://github.com/rjdunlap/neo/pull/439), confirmed merge and released its slot; Letter Trails #442 is merged. Fresh allowance and overlap admitted only [Market Stall slice 8](deep-dives/market-stall.md#build-slices-in-order) to worker `01a144a0-7198-7991-9aca-b368c1f69b7d`. Queue records recalculated estimate, scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Chain Reaction tap-to-turn dispatch
-
-Reconciled completed [Market stalls #444](https://github.com/rjdunlap/neo/pull/444), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Chain Reaction slice 3](deep-dives/chain-reaction.md#build-slices-in-order) to worker `01a144d8-e5df-75b1-acf4-e98706d91d69`, with younger-band decisions excluded. Queue records scope, reset identities and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Clap comparison dispatch
-
-Reconciled completed [Chain Reaction 7 #448](https://github.com/rjdunlap/neo/pull/448), confirmed merge and released its slot; Beat Train #449 landed independently. Fresh allowance and overlap admitted only [Clap level 8](deep-dives/clap-syllables.md#build-slices-in-order) to worker `01a14511-3cbe-7753-a007-323828dbf516`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Clap short-entry dispatch
-
-Reconciled completed [Clap level 8 #452](https://github.com/rjdunlap/neo/pull/452), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Clap level 9](deep-dives/clap-syllables.md#build-slices-in-order) to worker `01a14548-1785-7251-97f3-ca8b120b7d72`, with toddler/lap excluded. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Tangram picture dispatch
-
-Reconciled completed [Clap short #454](https://github.com/rjdunlap/neo/pull/454), confirmed merge and released its slot. Fresh allowance and overlap admitted only one new two-piece picture from [Tangram's content direction](deep-dives/tangram-town.md) to worker `01a14581-731a-7d50-96c7-c83872d9eaa9`. Independent subject research has no runtime overlap. Queue records scope, resets and pending proof. Docs-only source links and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Barnyard identity dispatch
-
-Reconciled completed [Tangram broom #456](https://github.com/rjdunlap/neo/pull/456), confirmed merge and released its slot. Fresh allowance and overlap admitted only [V1 land-scene slice 2](definitions/visual-identity.md#build-slices-in-order) to worker `01a145b5-14be-7a70-bf23-05834da67fa9`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Planet Hop dispatch
-
-Reconciled completed [Barnyard V1 #460](https://github.com/rjdunlap/neo/pull/460), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Planet Hop level 12](definitions/planet-hop.md) to worker `01a145f2-c677-7c62-a022-7bdf79702997`. Queue records scope, resets and pending proof; actual allowance fits the estimate with no reserve. Docs-only source links and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Photo Safari texture dispatch
-
-Reconciled completed [Planet Hop #466](https://github.com/rjdunlap/neo/pull/466), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 1](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1462b-8eb4-7363-b00e-202f80bdb205`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Photo Safari two-clue dispatch
-
-Reconciled completed [texture cleanup #468](https://github.com/rjdunlap/neo/pull/468), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 2](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1465e-cadf-7402-8cd5-676524c857a6`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Photo Safari level-5 dispatch
-
-Reconciled completed [two-clue #470](https://github.com/rjdunlap/neo/pull/470), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 3](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a1469d-e439-7542-b9df-31d1c33d9f42`. Queue records scope, resets and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-16 — Photo Safari action-content dispatch
-
-Reconciled completed [level-5 fix #472](https://github.com/rjdunlap/neo/pull/472), confirmed merge and released its slot. Fresh allowance and overlap admitted only [Photo Safari slice 4](deep-dives/photo-safari.md#build-slices-in-order) to worker `01a146d1-b6a0-7af3-a2af-43d4c6026520`. Queue records recalculated estimate, scope, resets and pending proof; actual weekly allowance fits with no reserve. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
-
-
-### 2026-10-17 — Discovery direct-next dispatch
-
-Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/474), confirmed merge and released its slot. Fresh allowance and overlap admitted only [D1b](DISCOVERY.md#d1b-build-packet-one-direct-next-game) to worker `01a1477f-58b2-7ca2-8607-1975042bf5eb`; existing named worktree is a clean placeholder at old main with no unique commits. Queue records changed reset identities, scope and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.

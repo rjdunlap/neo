@@ -1,6 +1,6 @@
 # Roadmap cleanup, 2026-10-15
 
-History, not instructions. On 2026-10-15 the roadmap's Next up table was rewritten into a short [ready-to-build list](../ROADMAP.md#ready-to-build-now) and one-sentence chunk rows, and the sections below were shortened. This file keeps the replaced text verbatim (links repointed from `docs/` to `docs/archive/`; headings inside each block demoted one level) so no build note, decision or reason is lost. Where it disagrees with the live [roadmap](../ROADMAP.md), the roadmap wins.
+History, not instructions. On 2026-10-15 the roadmap's Next up table was rewritten into a short [ready-to-build list](../READY.md) (moved to its own file 2026-10-17) and one-sentence chunk rows, and the sections below were shortened. This file keeps the replaced text verbatim (links repointed from `docs/` to `docs/archive/`; headings inside each block demoted one level) so no build note, decision or reason is lost. Where it disagrees with the live [roadmap](../ROADMAP.md), the roadmap wins.
 
 ## Next up as it stood
 

@@ -57,7 +57,7 @@ A new interaction, authored art, a stated model, or a precondition.
 | **Stamp Studio** (6 · 5–6) | Open-ended; every story is welcome, so there is nothing to climb. **Its [deep dive](../deep-dives/stamp-studio.md)** keeps that for answers (no checked puzzle, no score) but proposes five levels of invitations she cannot fail (place words, relations, her own pattern, a mirror, a repeating tile) as a decision that overrides this leave |
 | **Teddy Doctor** (6 · 5–6) | Care role-play whose top level already sequences a check-up. **Its [deep dive](../deep-dives/teddy-doctor.md)** keeps memory load where it is but proposes a toddler entry 7 *Who needs help?* and a school 8 *Before and after* (an order rule with several right answers), which overrides this leave |
 | **Rhythm Neighbors** (6 · 5–6) | A couch game; layered rhythms are a larger design for a music slice |
-| **Little Helpers** (6 · 5–6) | Equal groups is the right end; remainders are in Monster Munch and Lasso Loops, and rows and columns are Orchard Rows |
+| **Little Helpers** (6 · 5–6) | Equal groups is the right end; remainders are in Monster Munch and Lasso Loops, and rows and columns are Orchard Rows. **Its [deep dive](../deep-dives/little-helpers.md)** keeps those boundaries but proposes split-the-crowd and strong-helper levels, a toddler whistle step and level 2 for lap (make ten stays Duck Pond's unless decided), which overrides this leave |
 | **Lasso Loops** (5 · 3–5) | Place value past 39 would mean forty or more fireflies, which is clutter; it needs a different representation, not a longer ladder |
 | **Rhyme Time** (4 · 2–4) | Rhyming with printed words is Read & Do |
 | **Critter Crossing** (5 · 2–5) | Already holds "not" and two pictures; the next step is Rule Parade ([deep dive](../deep-dives/critter-crossing.md): Either one, Settle it, a visible "not" entry first) |
@@ -120,7 +120,7 @@ These games stop at pre-K, so appending a level only widens the pre-K range.
 
 | Game | Why |
 | --- | --- |
-| **Monster Munch** (8 · 6–8) | Fair shares with leftovers is the right end. An average (Share Fairly) is for ages 8–10 |
+| **Monster Munch** (8 · 6–8) | Fair shares with leftovers is the right end. An average (Share Fairly) is for ages 8–10 Its [deep dive](../deep-dives/monster-munch.md) keeps partitive sharing at that end but adds 12 *Share two kinds* and 11 *How many friends?* (the other meaning of division, with the leftover visible) for school, plus lap 9 and toddler 10. |
 | **Habitat Helpers** (6 · 4–6) | The model is deliberately small. A third visitor would be more of the same, and real ecology needs a stated model first |
 | **Chain Reaction** (6 · 3–6) ([deep dive](../deep-dives/chain-reaction.md)) | Bigger machines are only a size step; the deep dive adds prediction, tap-to-turn, two-marble, spring and gate levels (7–11) instead |
 | **Ferry Jam** (6 · 3–6) | The ladder is already a size ladder, and the couch course owns the hardest harbors |
@@ -187,8 +187,8 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
 | Duck Pond (L–S · 11) | Ponds at night, frogs in place of ducks; see its [deep dive](../deep-dives/duck-pond.md), which supersedes this row (arrangements, zero, dotted pads, mixed ponds, real stopping) | R2: 11 *hiding ducks* (built). **12, Doubles** (the same number of ducks on each side of the bridge, so how many in all?; kept), **13, Ten and some more** and a to-define **14, Every way**, in a school window of 8–14 | Bye-bye ducks (lap and toddler), Count the peekers, Which pond has more?; all wait on level order |
-| Monster Munch (L–S · 8) | New monsters and foods | — (round two: leave) | — |
-| Little Helpers (L–S · 6) | Fruits and trees | — (audit: leave) | — |
+| Monster Munch (L–S · 8) | New monsters and foods | — (round two: leave) | See its [deep dive](../deep-dives/monster-munch.md), which supersedes this row. |
+| Little Helpers (L–S · 6) | Fruits and trees; see its [deep dive](../deep-dives/little-helpers.md), which supersedes this row (things to carry, three places, a badge that fills) | — (audit: leave; the dive proposes 7–9) | — |
 | Pet Kitchen (T–S · 9) | Round wholes (a pizza, a pie) as well as the sandwich | **Built 2026-10-10:** level 9, *Thirds*: cut one pizza into three equal slices and share one with each friend | — |
 | Frog Hop (P–S · 7) | Lines in new places (stepping stones, a flower path, an evening pond), landing numerals said aloud, dots and landmark flowers; see its [deep dive](../deep-dives/frog-hop.md), which supersedes this row | R2: 7 *hop to ten first* (built). **8, Back over ten**, **9, Count up to take away**, **10, Over ten, your way**, **11, Hop by tens**, and to define **12, Big hops and little hops** and **13, Where does it go?** (a school window of 3–13) | Hop along (lap and toddler), Hop to the dots (toddler), Which pad lost its number? and Who is further along? (pre-K); all wait on level order |
 | Picture Graph (K–S · 7) | More critter kinds and meadows | **Built 2026-10-10:** one graph cycle: tally three counts in groups of five, then build the bars and compare | Preschool, at level 1 (two bars) |
