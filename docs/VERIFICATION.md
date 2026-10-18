@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Creature art request queue (docs only)
+
+- Added [docs/rework/art-requests/](rework/art-requests/README.md): the routine's brief (one request a run, originals into `concepts/generated/`, manifest, branch `codex/art-queue`), the [nine-species cast](rework/art-requests/CAST.md) (sprout, river and glider, then Tote, Trill, Dapple, Bramble, Mossback and Lumen, each with a shape family, home land, signature interaction, slots and misfits), the [queue](rework/art-requests/QUEUE.md) of sixteen requests with prompts (species sets with six expressions and a portrait, crown and scarf, Weather Wardrobe's seven other items, the home scene, card paper, three eggs, six looks; forms blocked on RW11) and the [game-fit review](rework/art-requests/GAME-FIT.md) of what the guide and the ten large-pet games (`Critter(ctx.petSpec)`) ask of a species.
+- Extended the art bible's creature and asset tables, pointed ART-PROMPTS, the pilot packet, the work items, the ready list, the roadmap row, the decision ledger and the generated manifest at the queue. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: no image has been generated; the cast's names and colours are provisional; iPad performance, child recognition and whether the raincoat and boots fit as images stay in the queue's and GAME-FIT's open lists.
+
 ## 2026-10-17 — Money and economy subject research
 
 - Added the [money-and-economy study](deep-dives/subjects/money-economy.md): opened the C3 Framework's D2.Eco indicators, the 2021 National Standards for Personal Financial Education (grade 4 and 8 text), CCSS 2.MD.C.8, England mathematics and citizenship programmes and CFPB's building-blocks and Money as You Grow pages; Jahoda, Fehr et al., Watts et al., Moonlighter, Animal Crossing, Peter Pig and Sesame from search summaries. Overlap audit first; Swap Meet is the first ladder.

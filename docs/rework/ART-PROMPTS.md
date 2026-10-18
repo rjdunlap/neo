@@ -1,6 +1,6 @@
 # Creature art prompts
 
-Ready-to-paste prompts for generating creature art in ChatGPT (or any image tool), following the [art bible](ART-BIBLE.md). Written 2026-10-17.
+Ready-to-paste prompts for generating creature art in ChatGPT (or any image tool), following the [art bible](ART-BIBLE.md). Written 2026-10-17. The three pilot species are here; the second-wave species, the mood variants, portraits, wearables, eggs, the home scene and the looks are in the [art request queue](art-requests/QUEUE.md), which a routine works through one request at a time.
 
 ## How to run a pass
 

@@ -2,7 +2,7 @@
 
 The pick list for one bounded session each: **Next ten** is in priority order (eligible creature-world explorations first, then content slices), and **Queued** holds every other ready slice grouped by game or study, in the order its dive gives. Take the first line of Next ten that no open PR, branch or worktree claims (`scripts/overlap.sh <game-id> <path>…`), read its dive or definition before claiming, and at closeout delete the landed line here; when Next ten falls below about five lines, move the next lines up from Queued (eligible RW items first), and when Queued runs low, refill it from the dives' `## Build slices, in order` sections after checking each against `git log origin/main`.
 
-The content slices were re-checked 2026-10-15 against their dives and `origin/main`. Each line keeps its check tier in parentheses; being ready for a rework exploration does not authorize its downstream implementation (RW02b's candidate generation is the developer's step, and RW06–RW12 wait on the packets above them in the [sequence](rework/WORK-ITEMS.md#sequence)). Never number these lines by hand: a deleted line must leave no gap.
+The content slices were re-checked 2026-10-15 against their dives and `origin/main`. Each line keeps its check tier in parentheses; being ready for a rework exploration does not authorize its downstream implementation (RW02b's candidate generation runs through the [art request queue](rework/art-requests/QUEUE.md), not a session slice, and RW06–RW12 wait on the packets above them in the [sequence](rework/WORK-ITEMS.md#sequence)). Never number these lines by hand: a deleted line must leave no gap.
 
 ## Next ten
 
