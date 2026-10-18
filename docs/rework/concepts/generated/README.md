@@ -41,6 +41,14 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | egg-sprout-2.png | R08 | 2026-10-17 | Built-in image_gen; model undisclosed | [sprout2](R08-PROMPTS.md#sprout2) | yes |
 | egg-river-1.png | R08 | 2026-10-17 | Built-in image_gen; model undisclosed | [river1](R08-PROMPTS.md#river1) | yes |
 | egg-glider-1.png | R08 | 2026-10-17 | Built-in image_gen; model undisclosed | [glider1](R08-PROMPTS.md#glider1) | yes |
+| tote-base-4.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [base4](R09-PROMPTS.md#base4) | yes |
+| tote-blink-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [blink1](R09-PROMPTS.md#blink1) | yes |
+| tote-happy-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [happy1](R09-PROMPTS.md#happy1) | yes |
+| tote-surprised-2.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [surprised2](R09-PROMPTS.md#surprised2) | yes |
+| tote-sleepy-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [sleepy1](R09-PROMPTS.md#sleepy1) | yes |
+| tote-sad-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad1](R09-PROMPTS.md#sad1) | yes |
+| tote-alt-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [alt1](R09-PROMPTS.md#alt1) | yes |
+| tote-portrait-1.png | R09 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait1](R09-PROMPTS.md#portrait1) | yes |
 
 ## R01 review and preparation notes
 
@@ -125,6 +133,18 @@ Three Sprout egg candidates were reviewed at full size and about 120 px canvas w
 River and Glider were generated as separate edits of the chosen Sprout egg, changing the spot colors to caramel and lavender. Full-size and 120 px review found the same five-spot layout, shell shading, outline and framing. All three silhouette bounds are `(205, 123, 1045, 1162)`; bidirectional silhouette comparison found zero pixels outside a four-pixel tolerance. This is inspection evidence, not proof of pixel-identical shell or spot edges. All parts stay inside the canvas, with at least 92 pixels of margin. No missing variants or rejected edits.
 
 The opaque white fallback has faint near-white variation; later preparation must key the surrounding paper while preserving the cream shell and closed outline. The proposed shared hatching rig, preparation alignment and device review remain unimplemented or unchecked here. No claim of animation quality, iPad readability or child appeal.
+
+## R09 review and preparation notes
+
+Eight untouched PNGs, 12,339,522 bytes total (11.77 MiB, approximately the brief's 12 MB budget). Full-body files are 1536 × 1024; portrait is 1254 × 1254. SHA-256 verifies repository copies match tool originals. No source cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and reference order](R09-PROMPTS.md) recorded.
+
+Three independent bases reviewed at full size and 120 px canvas width. Candidate 2 has the clearest four short walking legs and two rounded mitten claws; candidates 1 and 3 obscure a fourth walking leg. Candidate 2 was refined through imagegen to replace the triangular nose with a dot and add the small lower-right white highlight to each eye; that untouched refinement is chosen as base 4. No runner-up retained. The coral crab faces right, its cream face has eyes in the face (no stalks), the yellow spiral shell has a separate pink-rimmed opening, and limbs have blunt ends. Shell/body and arm roots overlap naturally; painted outlines separate them, and the four feet have intervening paper gaps. Preparation must preserve those seams rather than assume independently isolated body pixels.
+
+Base bounds `(177, 73, 1388, 941)` give about 79% canvas width, with every tip clear of the edge. Expression silhouettes compared bidirectionally against base with four-pixel tolerance: zero pixels outside tolerance. Bounds match except blink extends one pixel right. First surprised was rejected for dropping the nose; replacement retains it. Full-size and 120 px review confirmed the requested moods. Temporary white-paper masks and pale-blue composites were QA only; they did not modify originals. This does not prove pixel-identical shading or registration: later preparation alignment, animation and device checks remain.
+
+The tucked-in alt preserves the visible upper/left spiral shell and upper pink lip in place, retracts all legs, and shows only the face and two claw tips. It reveals the previously occluded lower/right shell around the opening; that newly exposed region is generated, not copied from an unseen source. Its pose bounds are `(177, 73, 1116, 811)`. It needs its own preparation/pose handling, not the expression swap alignment rule. The portrait's closed bust includes claws and enough shell for recognition, no walking legs; bounds `(36, 103, 1225, 1169)` leave only 29–36 px at the sides, narrower than requested. Add card padding during preparation without changing this original.
+
+No missing assets. White fallback has faint near-white variation; use paper-keying later and preserve cream face/eye whites. Reviewed the cast on white and temporary pale sky blue. No claim of child appeal, iPad readability or animation quality. Slot/misfit policy and the replaceable-shell customization remain integration work.
 
 ## Generating service terms
 
