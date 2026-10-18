@@ -5819,7 +5819,7 @@ async function woodsBatch() {
     log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
   }
 
-  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
+  if (!only || only === 'night') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 10); level++) {
     if (level === 1 || process.env.NIGHT_ROOM) await page.evaluate(async ({ level, room }) => {
       const { goodnightRoom } = await import('/src/games/goodnight-room/index.ts');
       const { Rng } = await import('/src/engine/random.ts');
@@ -5855,7 +5855,7 @@ async function woodsBatch() {
       await page.waitForTimeout(420);
     };
     await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 }); await page.waitForTimeout(150);
-    if (level === 5 || level === 6 || level === 7 || level === 8 || level === 9) {
+    if (level >= 5) {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(250);
       await screenshot(`goodnight-room-${process.env.NIGHT_ROOM || 'random'}-${level}-portrait`);
@@ -5892,6 +5892,26 @@ async function woodsBatch() {
       ]);
     } else if (mode === 'all') {
       for (const t of await page.evaluate(() => neo.scene.game.sleepers.map((s) => s.thing))) await touch(t);
+    } else if (mode === 'tour') {
+      // Three distinct rooms, the bedroom first; the big arrow appears only when a room is asleep and leads on.
+      const tour = await page.evaluate(() => neo.scene.game.tour.map(r => r.id));
+      assert.equal(tour.length, 3);
+      assert.equal(new Set(tour).size, 3);
+      assert.equal(tour[0], 'bedroom');
+      for (const [n, id] of tour.entries()) {
+        assert.equal(await page.evaluate(() => neo.scene.game.setting.id), id);
+        const things = await page.evaluate(() => neo.scene.game.sleepers.map((s) => s.thing));
+        for (const t of things.slice(0, -1)) await touch(t);
+        assert.equal(await page.evaluate(() => neo.scene.game.arrow.visible), false);
+        await touch(things.at(-1));
+        if (n === tour.length - 1) break;
+        assert.equal(await page.evaluate(() => neo.scene.game.arrow.visible), true);
+        if (n === 0) await screenshot('goodnight-room-10-arrow-portrait');
+        await page.evaluate(() => { const b = neo.scene.game.arrow.getBounds(); kit.tap(b.x + b.width / 2, b.y + b.height / 2); });
+        await page.waitForFunction((next) => neo.scene.game.setting.id === next && !neo.scene.game.busy, tour[n + 1], { timeout: 20000 });
+        await page.waitForTimeout(300);
+        assert.equal(await page.evaluate(() => neo.scene.game.sleepers.every(s => !s.asleep)), true);
+      }
     } else {
       const requests = await page.evaluate(() => neo.scene.game.requests);
       for (const [n, r] of requests.entries()) {
@@ -5922,9 +5942,9 @@ async function woodsBatch() {
     }
     if (level === 2) await page.waitForTimeout(400), await screenshot('goodnight-room-asleep');
     await finished('goodnight-room');
-    assert.deepEqual(await score('goodnight-room'), mode === 'all' || mode === 'count' ? [0, 0] : [2, 1]);
-    if (level === 1 || level === 5 || level === 6 || level === 7 || level === 8 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Goodnight Room ${level} (${mode}): goodnights by tapping, ${mode === 'count' ? 'free choices counted aloud with the others left awake briefly' : mode === 'all' ? 'the room going dark' : 'wrong friends and order as misses, glow hint'}, saved score and sticker passed`);
+    assert.deepEqual(await score('goodnight-room'), mode === 'all' || mode === 'count' || mode === 'tour' ? [0, 0] : [2, 1]);
+    if (level === 1 || level >= 5) await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Goodnight Room ${level} (${mode}): goodnights by tapping, ${mode === 'count' ? 'free choices counted aloud with the others left awake briefly' : mode === 'tour' ? 'three distinct rooms from the bedroom, the arrow only once a room sleeps' : mode === 'all' ? 'the room going dark' : 'wrong friends and order as misses, glow hint'}, saved score and sticker passed`);
   }
 
   if (!only || only === 'snack') for (let level = fromLevel; level <= 5; level++) {

@@ -52,4 +52,4 @@ Sounds are the existing pentatonic boing and landing, with the landing note a st
 
 **Check tier:** new level on an existing interaction. That means typecheck, the Bouncy Launch rule and course tests and the registry tests. Then one browser play of level 12 (a different guess, a hint, the finish) with one portrait screenshot, and `fingerdemo` at 12. Run `build` only if shared files change.
 
-**Left out:** aiming on a planet (decision 3's question); real planet names or ratios; moving or extra planets; a planet chooser; orbits, which belong to [Orbit Garden](../ROADMAP.md#space-science-recommendations); a journal entry ("same pull, farther on a light planet" is a later candidate that needs the journal's voice-line test).
+**Left out:** aiming on a planet (decision 3's question); real planet names or ratios; moving or extra planets; a planet chooser; orbits, which belong to [Orbit Garden](../deep-dives/subjects/RECOMMENDATIONS.md#space-science-recommendations); a journal entry ("same pull, farther on a light planet" is a later candidate that needs the journal's voice-line test).

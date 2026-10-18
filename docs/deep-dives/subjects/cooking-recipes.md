@@ -2,7 +2,7 @@
 
 **Subject:** `cooking-recipes` · **Audiences:** lap, toddler, preschool, pre-K, school, upper school, middle school and grown-ups · **Date:** 2026-10-14 · **Session:** `codex/cooking-recipes-subject`, [PR #320](https://github.com/rjdunlap/neo/pull/320). Research and proposals only; no game or real-world recipe was built.
 
-**Recommendation:** define **Recipe Workshop**, a tactile pretend kitchen, first; extend **Pet Kitchen** for equivalent measures and scaling; then define **Picnic Pantry**, an older-family menu puzzle. Their different pleasures are transforming ingredients, finding equivalent quantities, and choosing among feasible plans. Do not make three games about doubling. The [roadmap packets](../../ROADMAP.md#cooking-and-recipes-recommendations) hold the next actions.
+**Recommendation:** define **Recipe Workshop**, a tactile pretend kitchen, first; extend **Pet Kitchen** for equivalent measures and scaling; then define **Picnic Pantry**, an older-family menu puzzle. Their different pleasures are transforming ingredients, finding equivalent quantities, and choosing among feasible plans. Do not make three games about doubling. The [roadmap packets](RECOMMENDATIONS.md#cooking-and-recipes-recommendations) hold the next actions.
 
 ## Anchors opened and evidence limits
 

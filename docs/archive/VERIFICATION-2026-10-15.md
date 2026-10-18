@@ -96,14 +96,14 @@
 
 ## 2026-10-15 — How computers work subject research
 
-- Docs only, researched at `ee323ff` (base `3e68822` plus the claim) and docs diff on `codex/how-computers-work-research`, [PR #345](https://github.com/rjdunlap/neo/pull/345): [study](../deep-dives/subjects/how-computers-work.md), tracker, [roadmap packets](../ROADMAP.md#how-computers-work-recommendations), notebook and decision/device records. Sorting Machine first, Festival Signals older case, Picture Bytes in Pixel Pictures, then Memory Desk; fourteen subjects researched.
+- Docs only, researched at `ee323ff` (base `3e68822` plus the claim) and docs diff on `codex/how-computers-work-research`, [PR #345](https://github.com/rjdunlap/neo/pull/345): [study](../deep-dives/subjects/how-computers-work.md), tracker, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations), notebook and decision/device records. Sorting Machine first, Festival Signals older case, Picture Bytes in Pixel Pictures, then Memory Desk; fourteen subjects researched.
 - Opened CSTA 2026/historical 2017, ISTE, early-childhood/unplugged guidance, Boolean/memory technical references, five first-party digital descriptions and Turing Tumble. Rocky's Boots/Robot Odyssey originals, NandGame and Field Guide access gaps are explicit. No reference game played or learning/appeal/transfer result established.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); oldest live entry rotated with links repaired. No source, tests, assets, game, server or practical card.
 - Not run: typecheck, units, build, browser/offline, hardware/speech or child/parent play. Exploratory-round adaptation, model review, ranges/placement and independent use remain open; practical cards retain named review.
 
 ## 2026-10-14 — Energy and waves subject research
 
-- Docs only, researched at `d37faa2`, integrated upstream `69fcf4d` plus docs diff on `codex/energy-waves-subject-research`, [PR #343](https://github.com/rjdunlap/neo/pull/343): [study](../deep-dives/subjects/energy-waves.md), tracker, [roadmap packets](../ROADMAP.md#energy-and-waves-recommendations), notebook and decision/device records. Circuit Garden first, its older lantern workshop next, Wave Ribbon second new-game candidate; light/sound additions reuse existing identities. Thirteen subjects researched.
+- Docs only, researched at `d37faa2`, integrated upstream `69fcf4d` plus docs diff on `codex/energy-waves-subject-research`, [PR #343](https://github.com/rjdunlap/neo/pull/343): [study](../deep-dives/subjects/energy-waves.md), tracker, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations), notebook and decision/device records. Circuit Garden first, its older lantern workshop next, Wave Ribbon second new-game candidate; light/sound additions reuse existing identities. Thirteen subjects researched.
 - Opened NGSS/Head Start, NAEYC, ACS/Exploratorium, ASA wave guidance, a PhET author commentary and six digital descriptions with indexed/shell/failed-source limits explicit. No reference played, experiment run or learning/appeal/transfer result established.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); rotated the three oldest live entries with links repaired. No code, practical card or server.
 - Not run: typecheck, unit tests, build, browser/offline, hardware/speech or child/parent play. Model review, proposed ranges/placement and independent use remain open; practical electrical/magnet/string cards require named review.
@@ -232,7 +232,7 @@
 
 ## 2026-10-15 — Time and change subject research
 
-- [PR #385](https://github.com/rjdunlap/neo/pull/385), `claude/time-change-research`: [study](../deep-dives/subjects/time-change.md), tracker row, notebook rows (Timeline Trail, Island Archive, Attic Finds) and [roadmap packets](../ROADMAP.md#time-and-change-recommendations). Opened C3 D2.His (NCSS PDF pp. 45–48), England KS1–2, Colorado preschool History 1, Busby Grant and Suddendorf (abstract), Tillman (abstract), Barton (abstract), Major Fun's Timeline review, the Unpacking GDC report, Guidepost Montessori and the Pitt Rivers session sheet; Storyteller, toy sorts and StoryCorps from search excerpts only.
+- [PR #385](https://github.com/rjdunlap/neo/pull/385), `claude/time-change-research`: [study](../deep-dives/subjects/time-change.md), tracker row, notebook rows (Timeline Trail, Island Archive, Attic Finds) and [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations). Opened C3 D2.His (NCSS PDF pp. 45–48), England KS1–2, Colorado preschool History 1, Busby Grant and Suddendorf (abstract), Tillman (abstract), Barton (abstract), Major Fun's Timeline review, the Unpacking GDC report, Guidepost Montessori and the Pitt Rivers session sheet; Storyteller, toy sorts and StoryCorps from search excerpts only.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs only).
 - Not run or open: no reference game played; no study of under-fives learning historical sequence from a game; tween/parent appeal untested; real-object content and page cards need a named reviewer.
 
@@ -268,7 +268,7 @@
 
 ## 2026-10-15 — Inventions subject research
 
-- [PR #392](https://github.com/rjdunlap/neo/pull/392), `claude/inventions-research`: [study](../deep-dives/subjects/inventions.md), tracker row, notebook Gadget Bench and Workshop Cases rows and [roadmap packets](../ROADMAP.md#inventions-recommendations). Opened NGSS ETS1 (K-2, 3-5, MS), England D&T KS1–3 and history KS1, Beck et al. 2014 (*Frontiers*, full text), the Smithsonian's Wright brothers testing page, Inventioneers, and the Gizmos & Gadgets and Bad Piggies articles; Beck 2011, German and Defeyter, Spark!Lab, the Cardboard Challenge and printing history from search excerpts only. C3 cited from the time-change session, not reopened.
+- [PR #392](https://github.com/rjdunlap/neo/pull/392), `claude/inventions-research`: [study](../deep-dives/subjects/inventions.md), tracker row, notebook Gadget Bench and Workshop Cases rows and [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#inventions-recommendations). Opened NGSS ETS1 (K-2, 3-5, MS), England D&T KS1–3 and history KS1, Beck et al. 2014 (*Frontiers*, full text), the Smithsonian's Wright brothers testing page, Inventioneers, and the Gizmos & Gadgets and Bad Piggies articles; Beck 2011, German and Defeyter, Spark!Lab, the Cardboard Challenge and printing history from search excerpts only. C3 cited from the time-change session, not reopened.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs only).
 - Not run or open: no reference game played; EiE, Spark!Lab and Exploratorium pages failed to open; tween/parent appeal untested; real-invention content and page cards need a named reviewer.
 

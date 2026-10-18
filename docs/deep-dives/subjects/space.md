@@ -89,7 +89,7 @@ These are proposals, not runtime registrations. P and K are separate even though
 
 ## Candidates and recommended order
 
-Effort is relative (S small mode, M new bounded interaction, L solver/model-heavy work); not a time estimate. All entries are proposals. The [roadmap packets](../../ROADMAP.md#space-science-recommendations) state the immediate next scope.
+Effort is relative (S small mode, M new bounded interaction, L solver/model-heavy work); not a time estimate. All entries are proposals. The [roadmap packets](RECOMMENDATIONS.md#space-science-recommendations) state the immediate next scope.
 
 | Candidate | Fun action and learning purpose | Audiences / smallest useful version | Effort / new infrastructure |
 | --- | --- | --- | --- |

@@ -197,4 +197,4 @@ These are proposals only, against the [rework brief](../../rework/README.md).
 
 ## What was built and checked
 
-Nothing was built. This session wrote this study, the tracker row, a [roadmap section](../../ROADMAP.md#money-and-economy-recommendations), decisions in [WAITING-ON-DEVELOPER](../../WAITING-ON-DEVELOPER.md), a notebook candidate row and a [VERIFICATION](../../VERIFICATION.md) entry. The checks were the link checker and `git diff --check` only. No game, reference app or browser suite was run. Child, tween and parent appeal, and any transfer to real money habits, are unestablished.
+Nothing was built. This session wrote this study, the tracker row, a [roadmap section](RECOMMENDATIONS.md#money-and-economy-recommendations), decisions in [WAITING-ON-DEVELOPER](../../WAITING-ON-DEVELOPER.md), a notebook candidate row and a [VERIFICATION](../../VERIFICATION.md) entry. The checks were the link checker and `git diff --check` only. No game, reference app or browser suite was run. Child, tween and parent appeal, and any transfer to real money habits, are unestablished.

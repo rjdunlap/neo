@@ -2,7 +2,7 @@
 
 ## 2026-10-14 — Social-emotional subject research
 
-- Docs only, base `bf8117f` plus research diff, [PR #321](https://github.com/rjdunlap/neo/pull/321): [study](../deep-dives/subjects/social-emotional.md), every audience L–G, six opened digital precedents and a physical equivalent; synchronized tracker/notebook, [roadmap packets](../ROADMAP.md#social-emotional-play-recommendations), reviewer/device records. Pre-existing completed-work archive edit excluded.
+- Docs only, base `bf8117f` plus research diff, [PR #321](https://github.com/rjdunlap/neo/pull/321): [study](../deep-dives/subjects/social-emotional.md), every audience L–G, six opened digital precedents and a physical equivalent; synchronized tracker/notebook, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#social-emotional-play-recommendations), reviewer/device records. Pre-existing completed-work archive edit excluded.
 - Opened CASEL, Head Start, the facial-expression review and an adolescent randomized game trial; its lack of between-group empathic-accuracy improvement is explicit. Access gaps and unplayed references are named. Recommend Playdate Workshop first, Common Ground for older families, and Two Viewpoints/Ask First within existing games.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with local links repaired. No game or practical emotional-health advice built.
 - Not run: typecheck, unit tests, build, browser/offline/device/child checks. Content review, identity/band/land fit, older-family appeal and real-world transfer remain open; practical advice/physical calming requires named qualified review.
@@ -66,7 +66,7 @@
 
 ## 2026-10-14 — Routines and self-care subject research
 
-- Docs only: [study](../deep-dives/subjects/routines-self-care.md), subject tracker, notebook candidates and [roadmap definition packets](../ROADMAP.md#routines-and-self-care-recommendations): Ready for Adventure first, Toy Drawer and Village Planner for older families. Developer follow-up: [Toy Drawer: Make it Fit](../deep-dives/subjects/routines-self-care.md#toy-drawer-follow-up-make-it-fit) now leads with inventory packing; retrieval stays optional.
+- Docs only: [study](../deep-dives/subjects/routines-self-care.md), subject tracker, notebook candidates and [roadmap definition packets](../deep-dives/subjects/RECOMMENDATIONS.md#routines-and-self-care-recommendations): Ready for Adventure first, Toy Drawer and Village Planner for older families. Developer follow-up: [Toy Drawer: Make it Fit](../deep-dives/subjects/routines-self-care.md#toy-drawer-follow-up-make-it-fit) now leads with inventory packing; retrieval stays optional.
 - Read the existing routines-adjacent game plans; opened Head Start/AAP/Sesame/NCPMI/Harvard guidance and six first-party digital descriptions. Day & Night is explicitly search-excerpt-only (403); no reference game was played. Follow-up opened Blizzard's item guide, Backpack Hero's developer page and Save Room's publisher listing; compared Tangram Town rules and Block Garden's proposal. Opened Kabam 26.10.0/26.10.1 for the developer's Pharoway Caravan reference; added the later Pack the Wagon manifest/selection mode with exact stacking rules explicitly unverified. Event gameplay not run.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier). Older log entries rotated with relative links repaired.
 - Not run: typecheck, units, build, browser/device/child checks. No code or real-care instructions changed; practical-care review, audience appeal and real-world transfer remain open.
@@ -79,14 +79,14 @@
 
 ## 2026-10-14 — Cooking and recipes subject research
 
-- Docs only, base `ed9d888` plus research diff, [PR #320](https://github.com/rjdunlap/neo/pull/320): [study](../deep-dives/subjects/cooking-recipes.md), every audience L–G, five first-party digital precedents and a physical equivalent; synchronized tracker, notebook, [roadmap packets](../ROADMAP.md#cooking-and-recipes-recommendations), reviewer and future person/device records.
+- Docs only, base `ed9d888` plus research diff, [PR #320](https://github.com/rjdunlap/neo/pull/320): [study](../deep-dives/subjects/cooking-recipes.md), every audience L–G, five first-party digital precedents and a physical equivalent; synchronized tracker, notebook, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#cooking-and-recipes-recommendations), reviewer and future person/device records.
 - Opened Head Start, CCSS, Illinois Extension, NAEYC, CDC and FoodSafety.gov sources. USDA PDF/infant Head Start access gaps are explicit; reference games not played. Recommended Recipe Workshop first, equivalent measures/scaling inside Pet Kitchen, then Picnic Pantry's two-solution menu case. No games or real recipes built.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated two old dated entries with relative links repaired. Preserved the pre-existing edit in `docs/archive/COMPLETED-2026-10-09.md` outside this change.
 - Not run: typecheck, unit tests, build, browser/offline/device/child checks. Food-safety review, final identity/bands/destination fit, tween/parent appeal and real-kitchen transfer remain open.
 
 ## 2026-10-14 — Social-emotional subject research
 
-- Docs only, base `bf8117f` plus research diff, [PR #321](https://github.com/rjdunlap/neo/pull/321): [study](../deep-dives/subjects/social-emotional.md), every audience L–G, six opened digital precedents and a physical equivalent; synchronized tracker/notebook, [roadmap packets](../ROADMAP.md#social-emotional-play-recommendations), reviewer/device records. Pre-existing completed-work archive edit excluded.
+- Docs only, base `bf8117f` plus research diff, [PR #321](https://github.com/rjdunlap/neo/pull/321): [study](../deep-dives/subjects/social-emotional.md), every audience L–G, six opened digital precedents and a physical equivalent; synchronized tracker/notebook, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#social-emotional-play-recommendations), reviewer/device records. Pre-existing completed-work archive edit excluded.
 - Opened CASEL, Head Start, the facial-expression review and an adolescent randomized game trial; its lack of between-group empathic-accuracy improvement is explicit. Access gaps and unplayed references are named. Recommend Playdate Workshop first, Common Ground for older families, and Two Viewpoints/Ask First within existing games.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with local links repaired. No game or practical emotional-health advice built.
 - Not run: typecheck, unit tests, build, browser/offline/device/child checks. Content review, identity/band/land fit, older-family appeal and real-world transfer remain open; practical advice/physical calming requires named qualified review.
@@ -100,7 +100,7 @@
 
 ## 2026-10-14 — Off-screen companions subject research
 
-- Docs only, base `d840a77` plus research diff, [PR #322](https://github.com/rjdunlap/neo/pull/322): [study](../deep-dives/subjects/off-screen-companions.md), every audience L–G; tracker, [roadmap packet](../ROADMAP.md#off-screen-companions-recommendations), IDEAS and Waiting rows.
+- Docs only, base `d840a77` plus research diff, [PR #322](https://github.com/rjdunlap/neo/pull/322): [study](../deep-dives/subjects/off-screen-companions.md), every audience L–G; tracker, [roadmap packet](../deep-dives/subjects/RECOMMENDATIONS.md#off-screen-companions-recommendations), IDEAS and Waiting rows.
 - Read from source: Zero to Three's handout (PDF text extracted), AAP Power of Play and Choking Prevention, CPSC small parts, Camp Khan Kids, Vroom. Only summaries: WHO (PDF 403), Barr and Hirsh-Pasek, Cooney Center; Exploratorium (403) and Hoot Owl Hoot's maker page unread.
 - Found by reading `src/`: 93 of 94 games have an `offScreen`; the page shows at most two; at least five lap/toddler lines name small objects; Weather Wardrobe's `{name}` prints literally. Keyword audit, hand read; not a safety finding of record. Recommend a removal-only swap first. No code changed; `node scripts/check-links.mjs` and `git diff --check` below.
 
@@ -112,14 +112,14 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 
 ## 2026-10-14 — Machines and tools subject research
 
-- Docs only, base `6f4b57a`, research `2949bb7`, integrated `2eccd72`, plus docs diff on `codex/machines-tools-subject`: [study](../deep-dives/subjects/machines-tools.md), tracker, [roadmap definitions](../ROADMAP.md#machines-and-tools-recommendations), notebook, pulley clarification in PHYSICS-GAMES and review/device notes. Gear Garden first, Lift It and Puppet Workshop next; Mobile Maker stays in Seesaw Balance.
+- Docs only, base `6f4b57a`, research `2949bb7`, integrated `2eccd72`, plus docs diff on `codex/machines-tools-subject`: [study](../deep-dives/subjects/machines-tools.md), tracker, [roadmap definitions](../deep-dives/subjects/RECOMMENDATIONS.md#machines-and-tools-recommendations), notebook, pulley clarification in PHYSICS-GAMES and review/device notes. Gear Garden first, Lift It and Puppet Workshop next; Mobile Maker stays in Seesaw Balance.
 - Opened Head Start/NGSS/year 5 Forces, OpenStax, NWT gear section, six digital descriptions and Exploratorium automata PDF. No reference gameplay or intervention evidence; thin/failed pages are named. Exact-rule/geometry examples are proposals, not tested boards.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); rotated the oldest dated entry with relative links repaired. No code changed; no server started.
 - Not run: typecheck, unit tests, build, browser/offline/hardware/speech/family checks. Practical instructions need a named reviewer; identity/ranges/land fit, mechanism review and older appeal remain future work. Publication initially required explicit approval; the developer authorized publication and merge on 2026-10-14.
 
 ## 2026-10-14 — Commercial social-play roadmap follow-up
 
-- Docs only, base `38731a0`, integrated `924e3f8`, plus follow-up diff, [PR #325](https://github.com/rjdunlap/neo/pull/325): [seven additional references](../deep-dives/subjects/social-emotional.md#commercial-and-tabletop-follow-up-requested-2026-10-14), concrete [roadmap definitions](../ROADMAP.md#social-emotional-play-recommendations), existing notebook rows and subject tracker. A Place for You extends Common Ground; Dream Cards develops its existing seed; story/prop/role additions stay in their existing candidates.
+- Docs only, base `38731a0`, integrated `924e3f8`, plus follow-up diff, [PR #325](https://github.com/rjdunlap/neo/pull/325): [seven additional references](../deep-dives/subjects/social-emotional.md#commercial-and-tabletop-follow-up-requested-2026-10-14), concrete [roadmap definitions](../deep-dives/subjects/RECOMMENDATIONS.md#social-emotional-play-recommendations), existing notebook rows and subject tracker. A Place for You extends Common Ground; Dream Cards develops its existing seed; story/prop/role additions stay in their existing candidates.
 - Publisher/rules sources plus Common Sense Media, Games for Change, Apple and Spiel des Jahres context. Nintendo DLC mechanics are search-excerpt-only; complete Dixit scoring and reference gameplay unverified. Popularity/recognition and learning effectiveness remain separate; no games, new bands or practical advice built.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier). Rotated oldest dated entries with relative links repaired; fixed the baseline garden-verification archive link in this clean checkout, preserving the original checkout's pending correction.
 - Not run: typecheck, units, build, browser/offline/device/child checks. Proposed identity/ranges/placement, original content review, shared-device privacy, solo/co-play usability and real-world transfer remain future checks. No dev servers started.
@@ -138,21 +138,21 @@ Not run: browser play (rules-only slice, per the deep dive), iPad. Open: level 8
 
 ## 2026-10-14 — Space subject research
 
-- Docs only, base `1a10eba` plus research diff on `codex/space-subject-research`, [PR #335](https://github.com/rjdunlap/neo/pull/335): [study](../deep-dives/subjects/space.md), tracker, [roadmap definitions](../ROADMAP.md#space-science-recommendations), notebook and review/device notes. Moon Window first; Orbit Garden and Observatory Files follow; daylight/scale/gravity launches reuse existing identities.
+- Docs only, base `1a10eba` plus research diff on `codex/space-subject-research`, [PR #335](https://github.com/rjdunlap/neo/pull/335): [study](../deep-dives/subjects/space.md), tracker, [roadmap definitions](../deep-dives/subjects/RECOMMENDATIONS.md#space-science-recommendations), notebook and review/device notes. Moon Window first; Orbit Garden and Observatory Files follow; daylight/scale/gravity launches reuse existing identities.
 - Opened seven NGSS anchors, NASA science/physical-model references, developmental guidance, two primary research abstracts and six official digital precedents (PhET extraction limits recorded). Every audience L–G has an answer; no reference game played or gameplay built. Neopets activity failed to load and stays recalled inspiration.
 - Ran: relative Markdown links/anchors and `git diff --check`; oldest dated entries rotated to the existing archive with incoming links repaired.
 - Not run: typecheck, units, build, browser/offline, hardware, device speech or child/parent checks. Model review, registration/land fit, exploration adaptation, practical-card review and appeal/transfer remain open.
 
 ## 2026-10-14 — Life science subject research
 
-- Docs only, researched at `8dfea72`, integrated with `560352b` plus docs diff, [PR #330](https://github.com/rjdunlap/neo/pull/330): [study](../deep-dives/subjects/life-science.md), tracker, [roadmap packets](../ROADMAP.md#life-science-recommendations), notebook and review/device notes. Seed Travelers first; Life Story Lab develops Caterpillar Week; Field Notes and Under the Soil stay in Photo Safari/Garden Grow.
+- Docs only, researched at `8dfea72`, integrated with `560352b` plus docs diff, [PR #330](https://github.com/rjdunlap/neo/pull/330): [study](../deep-dives/subjects/life-science.md), tracker, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#life-science-recommendations), notebook and review/device notes. Seed Travelers first; Life Story Lab develops Caterpillar Week; Field Notes and Under the Soil stay in Photo Safari/Garden Grow.
 - Opened Head Start/NGSS/Kew/Smithsonian/NAEYC anchors, six digital precedents, publisher board rules and an unplugged reference. Every audience L–G has an answer; source/access/model limits and older appeal gaps are explicit. No reference game played or game built.
 - Ran: relative Markdown links/anchors and `git diff --check` (docs-only tier); oldest dated entries rotated to the existing archive and incoming links repaired.
 - Not run: typecheck, units, build, browser/offline, hardware or person/child checks. Biology/model review, proposed placement, practical-card review and transfer remain open.
 
 ## 2026-10-14 — Programming subject research
 
-- Docs only, researched at `5222d51`, integrated upstream `0ac9287` plus research diff on `codex/programming-subject-research`, [PR #338](https://github.com/rjdunlap/neo/pull/338): [study](../deep-dives/subjects/programming.md), subject tracker, [roadmap packets](../ROADMAP.md#programming-recommendations), candidate notebook and decision/device records. Cue Studio first, develop existing Machine Line, then Parcel Programs; route reuse stays in Robot Path.
+- Docs only, researched at `5222d51`, integrated upstream `0ac9287` plus research diff on `codex/programming-subject-research`, [PR #338](https://github.com/rjdunlap/neo/pull/338): [study](../deep-dives/subjects/programming.md), subject tracker, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations), candidate notebook and decision/device records. Cue Studio first, develop existing Machine Line, then Parcel Programs; route reuse stays in Robot Path.
 - Opened CSTA 2026 and historical 2017 PDFs, the second-grade CAL-ScratchJr trial, official ScratchJr guidance/lesson, six first-party digital precedents and Kidbots. No reference game played; access limits, toddler-readiness, transfer and older-appeal gaps are explicit.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (docs-only tier); rotated the oldest dated entry with links repaired. No code, game or practical card built.
 - Not run: typecheck, units, build, browser/offline, hardware, speech or child/parent play. Identity/ranges/placement, creation-versus-Check accounting and practical-card review remain open.
@@ -182,7 +182,7 @@ Docs only: `docs/deep-dives/dot-link.md` (levels 7–10, a toddler entry, fresh 
 
 ## 2026-10-14 — Music and instruments subject research
 
-- Docs only, researched at `c27478f` plus docs diff on `codex/music-instruments-subject-research`, [PR #340](https://github.com/rjdunlap/neo/pull/340): [study](../deep-dives/subjects/music-instruments.md), tracker, [roadmap packets](../ROADMAP.md#music-and-instruments-recommendations), notebook and decision/device records. Little Conductor first, Hat Band next; melodic answers remain in Song Maker, Sound Workshop later. Twelve subjects researched; waves A/B complete.
+- Docs only, researched at `c27478f` plus docs diff on `codex/music-instruments-subject-research`, [PR #340](https://github.com/rjdunlap/neo/pull/340): [study](../deep-dives/subjects/music-instruments.md), tracker, [roadmap packets](../deep-dives/subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations), notebook and decision/device records. Little Conductor first, Hat Band next; melodic answers remain in Song Maker, Sound Workshop later. Twelve subjects researched; waves A/B complete.
 - Opened arts standards, Carnegie Hall/NAEYC guidance, an LA Phil theme/variation program note and eight first-party digital descriptions. Infant study uses indexed abstract only; source failures/fallbacks are named. No reference played or heard; proposed musical rules are not tested activities.
 - Ran: local Markdown links/anchors and `git diff --check` (docs-only tier); rotated two oldest entries with local links repaired. No runtime code, game, imported audio or practical card built; no server started.
 - Not run: typecheck, units, build, browser/offline, hardware/speech or child/parent play. Identity/ranges/placement, musical-property audibility, independent use, tween/parent appeal, transfer and practical-card review remain open.

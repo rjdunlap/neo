@@ -34,14 +34,14 @@
 ## 2026-10-17 — Astronomy subject research
 
 - Added the [astronomy study](../deep-dives/subjects/astronomy.md): opened NGSS 5-ESS1-1, MS-ESS1-1/2 and HS-ESS1-1/2/3 (via page source), NASA/OpenStax/Chandra/Webb/Space Place science pages, two full papers (Agan 2004, Starakis and Halkia 2014), two abstracts and eight references. Snippet-only items are marked. Far Lights is the first ladder; eclipses, seasons, clusters and two-view cases extend Moon Window and Observatory Files.
-- Updated the subject tracker, Space link, notebook rows, roadmap [Astronomy recommendations](../ROADMAP.md#astronomy-recommendations), developer decisions and device checks. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Updated the subject tracker, Space link, notebook rows, roadmap [Astronomy recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations), developer decisions and device checks. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: astronomy-educator review (inverse-square toy, halo convention, toy parallax, tilt, season and cluster models), placement, exploration accounting, older entry; no reference app played.
 
 ## 2026-10-17 — Chemistry subject research
 
 - Added the [chemistry study](../deep-dives/subjects/chemistry.md) (Bond Beads ladder; Island Bridges molecule seas; review-gated Weigh It and Stir and See reaction modes).
 - Opened at source: NGSS 5-PS1-1 and MS-PS1-1/5/6, the NRC Appendix A progression (its grade columns were unclear), the SpaceChem educator guide (text extracted from the PDF) and an RSC Education conservation-of-mass article. Sokobond, Opus Magnum, PhET and the misconception papers come from search summaries only.
-- Updated the subject tracker, the Matter link, the notebook row, roadmap [Chemistry recommendations](../ROADMAP.md#chemistry-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+- Updated the subject tracker, the Matter link, the notebook row, roadmap [Chemistry recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#chemistry-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 - Open: chemistry-educator review (molecule list, model limits, reaction art), placement, older entry, layout audit of the 9-bead case; no reference game played.
 
 ## 2026-10-17 — Song Maker deep dive
@@ -86,7 +86,7 @@
 ## 2026-10-17 — Cells and microbes subject research
 
 - Added the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md): opened NGSS MS-LS1-1/2, MS-LS2-3 and 5-PS1-1 (via page source), the England science programmes, Siegal et al. 2011, Timmis et al. 2020, the Riedel-Kruse biotic-games paper, Foldscope, NSTA pages and three digital references. Search-summary-only and recalled items are marked. Puddle Lens is the first ladder; Zoom Walk, Leaf Litter Window and Photo Safari take content borrows.
-- Updated the subject tracker, notebook row, roadmap [Cells and microbes recommendations](../ROADMAP.md#cells-and-microbes-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Updated the subject tracker, notebook row, roadmap [Cells and microbes recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: biology/scale review, identity beside Zoom Walk, placement, exploration accounting, older entry; no reference app played.
 
 ## 2026-10-17 — Sound Garden deep dive
@@ -126,7 +126,7 @@
 ## 2026-10-17 — Engineering design subject research
 
 - Added the [engineering-design study](../deep-dives/subjects/engineering-design.md): opened NGSS 3-5 and MS ETS1, the 7 Principles of Universal Design, the Johnson, Kelly and Cunningham (2021) abstract and the Poly Bridge 2 store page; K-2 ETS1, England D&T and Beck et al. reused from the inventions study; Lottero-Perdue, Bagiati and Evangelou, ITEEA STEL and several references from search summaries only, marked. Welcome Ways is the first ladder; Gadget Bench, Wobble Works and Sink or Float take levels.
-- Updated the subject tracker, notebook row, roadmap [Engineering design recommendations](../ROADMAP.md#engineering-design-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Updated the subject tracker, notebook row, roadmap [Engineering design recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: identity beside Habitat Helpers, accounting, placement, cast, access-representation review, 13+ registration; no reference game played.
 
 ## 2026-10-17 — Mirror Brush fold button definition
@@ -154,7 +154,7 @@
 ## 2026-10-17 — Making media subject research
 
 - Added the [making-media study](../deep-dives/subjects/making-media.md). Opened: Media Arts pre-K, K and grade 5 at a third-party mirror (trimmed quotes marked), ISTE 1.6, Common Core SL.2.5 and W.K.6, EYFS Development Matters, the Breyer (2002) thesis abstract, and the Flipnote Studio and Stop Motion Studio pages. Media Arts grades 2 and 8, Toontastic and the young-children film studies came from search summaries or citations only, or were not opened, and are marked. Movie Night is the first ladder. Pixel Flipbook, Song Maker's kept tune and a family card cover the tracker's flipbook, recorded song and stop-motion.
-- Updated the subject tracker, notebook row, roadmap [Making media recommendations](../ROADMAP.md#making-media-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Updated the subject tracker, notebook row, roadmap [Making media recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#making-media-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: identity and placement, premiere accounting, 13+ registration, flipbook storage, cast. No reference game was played.
 
 ## 2026-10-17 — Jelly Drums slice 1 remainder, guards and tunes
@@ -185,3 +185,34 @@ Coordinator dispatch notes from [the execution queue](../EXECUTION-QUEUE.md), mo
 ### 2026-10-17 — Discovery direct-next dispatch
 
 Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/474), confirmed merge and released its slot. Fresh allowance and overlap admitted only [D1b](../DISCOVERY.md#d1b-build-packet-one-direct-next-game) to worker `01a1477f-58b2-7ca2-8607-1975042bf5eb`; existing named worktree is a clean placeholder at old main with no unique commits. Queue records changed reset identities, scope and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+## 2026-10-17 — Robots and automation subject research
+
+- Added the [robots-and-automation study](../deep-dives/subjects/robots-automation.md): opened the CSTA 2026 PDF (EK/E1/E2-SOC-HU-15, E2-SYS-HW-11, E3-PRO-PD-04, E5-SYS-HW-12, MS-SYS-HW-31, MS-SOC-CE-45, S2-PHY-IO-02; printed pages), NGSS Appendix G, Levy and Mioduser (2010), Hallström (2021), the Hokayem et al. (2020) abstract, Treasureworld, and Autonauts, shapez, Opus Magnum, micro:bit, KIBO and CS Unplugged pages; Kempton (1986), KIBO sensors and Opus Magnum metrics marked recalled or secondhand. Helper House is the first ladder.
+- Updated the subject tracker, notebook row, roadmap [Robots and automation recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: identity beside Sorting Machine, accounting, toddler entry, placement, older registration, model and card review; no reference game played.
+
+## 2026-10-17 — Pile Match definition
+
+- Defined Pile Match levels 1–8 in [the definition](../definitions/pile-match.md): 2D layered heap with a top-only freedom rule, a tray derived from the piece mask (3-slot asked basket at 1–2, 5 slots from 3), free put-back, kinds assigned in consecutive triples along a clearing route so no state dead-ends, computed portrait-fit layout, wrong-kind and full-tray accounting, hint order, bot, how-to and registration; six references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; layout numbers and the hint time bound are computed, not measured; no child has played it.
+
+## 2026-10-17 — Bolt Boards definition
+
+- Defined Bolt Boards levels 1–7 in [the definition](../definitions/bolt-boards.md): discrete pinned/hanging/down board poses computed exactly (a hanging center lies below its bolt), a covered-bolt rule, a toolbox model at 1–5 that provably never dead-ends, open-hole parking at 6–7 with a capped breadth-first hint, a layout test over every reachable pose, accounting, bot, how-to and registration (Barnyard); six references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; fit numbers are computed, not measured; no child has played it.
+
+## 2026-10-17 — Weather Wardrobe deep dive
+
+- Docs only: [deep dive](../deep-dives/weather-wardrobe.md) on `claude/dive-weather-wardrobe` ([PR #538](https://github.com/rjdunlap/neo/pull/538)). Audited levels 1–7; gaps: the level-7 card still says pack for a trip, level 7 undressing is always everything, lap window holds a boing level, level 1 ignores most touches, a miss shows nothing, the trip never happens, sunny's "everything" is two, a dead undress voice line, the known `{name}` off-screen bug.
+- Opened BridgingApps (Sago Mini Babies Dress Up), Kids Academy, Common Sense Media (Tinybop Weather), Easterseals (iDress for Weather), Pre-K Pages and NGSS K-ESS2-1/K-ESS3-2; Daniel Tiger (mirror 404), Pokémon GO weather (Bulbapedia 403) and Animal Crossing are search summaries; Dress Teddy and the felt weather bear recalled.
+- Eight ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
+## 2026-10-17 — Executive function subject research
+
+- Added the [executive-function study](../deep-dives/subjects/executive-function.md): opened Diamond (2013) and Diamond and Lee (2011) at PMC, the Kassai et al. (2019) abstract, Scionti et al. (2020), the FTC Lumosity release, CASEL self-management, Harvard's activities-guide landing page and Wikipedia's Simon and Tower of London pages. Not opened: Head Start ELOF (403; P-ATL codes from third-party alignments), EYFS (404), the Harvard chapter PDFs (no text extraction), Rush Hour's page (403).
+- Updated the subject tracker, roadmap [Executive function recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#executive-function-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: wording rule, Scoop Shop window, Pancake Stack identity/accounting/placement, Critter Sort switch accounting; no reference game played; no transfer claimed.
