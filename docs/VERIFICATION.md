@@ -7,6 +7,25 @@
 - Browser (http://localhost:5568, 5831): `early` paint levels 1–2 pass (level 1 finishes on five pats alone); `fingerdemo` `rainbow-fingers` levels 1,2 pass (25.9 s, 30.5 s) and 6,7 pass (25.5 s, 13.9 s). One portrait screenshot (view 1024×1365) of level 2: seven marked pots in one row, clear of the pet.
 - Not run: `npm run build`, `early` levels 3–7, device checks (a one-year-old's pat and the 104-unit pot stay open in [DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
+## 2026-10-17 — Executive function subject research
+
+- Added the [executive-function study](deep-dives/subjects/executive-function.md): opened Diamond (2013) and Diamond and Lee (2011) at PMC, the Kassai et al. (2019) abstract, Scionti et al. (2020), the FTC Lumosity release, CASEL self-management, Harvard's activities-guide landing page and Wikipedia's Simon and Tower of London pages. Not opened: Head Start ELOF (403; P-ATL codes from third-party alignments), EYFS (404), the Harvard chapter PDFs (no text extraction), Rush Hour's page (403).
+- Updated the subject tracker, roadmap [Executive function recommendations](ROADMAP.md#executive-function-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: wording rule, Scoop Shop window, Pancake Stack identity/accounting/placement, Critter Sort switch accounting; no reference game played; no transfer claimed.
+
+## 2026-10-17 — Weather Wardrobe deep dive
+
+- Docs only: [deep dive](deep-dives/weather-wardrobe.md) on `claude/dive-weather-wardrobe` ([PR #538](https://github.com/rjdunlap/neo/pull/538)). Audited levels 1–7; gaps: the level-7 card still says pack for a trip, level 7 undressing is always everything, lap window holds a boing level, level 1 ignores most touches, a miss shows nothing, the trip never happens, sunny's "everything" is two, a dead undress voice line, the known `{name}` off-screen bug.
+- Opened BridgingApps (Sago Mini Babies Dress Up), Kids Academy, Common Sense Media (Tinybop Weather), Easterseals (iDress for Weather), Pre-K Pages and NGSS K-ESS2-1/K-ESS3-2; Daniel Tiger (mirror 404), Pokémon GO weather (Bulbapedia 403) and Animal Crossing are search summaries; Dress Teddy and the felt weather bear recalled.
+- Eight ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
+## 2026-10-17 — Bolt Boards definition
+
+- Defined Bolt Boards levels 1–7 in [the definition](definitions/bolt-boards.md): discrete pinned/hanging/down board poses computed exactly (a hanging center lies below its bolt), a covered-bolt rule, a toolbox model at 1–5 that provably never dead-ends, open-hole parking at 6–7 with a capped breadth-first hint, a layout test over every reachable pose, accounting, bot, how-to and registration (Barnyard); six references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; fit numbers are computed, not measured; no child has played it.
+
 ## 2026-10-17 — Pile Match definition
 
 - Defined Pile Match levels 1–8 in [the definition](definitions/pile-match.md): 2D layered heap with a top-only freedom rule, a tray derived from the piece mask (3-slot asked basket at 1–2, 5 slots from 3), free put-back, kinds assigned in consecutive triples along a clearing route so no state dead-ends, computed portrait-fit layout, wrong-kind and full-tray accounting, hint order, bot, how-to and registration; six references cited.
