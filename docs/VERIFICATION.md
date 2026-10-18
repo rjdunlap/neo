@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-10-17 — Community and civics subject research
+
+- Added the [community-and-civics study](deep-dives/subjects/community-civics.md): opened the C3 Framework's D2.Civ.1–14 indicators and D2.His.2/14 (PDF text extracted locally), England's citizenship programmes (KS1–2 and KS3–4), the England history programme, the NCSS early-childhood statement PDF, the Kim dissertation record, the Cinamon and Yeshayahu summary, iCivics' games pages and the Animal Crossing: New Leaf and Democracy Wikipedia pages; Smetana, Vogelsang, Helwig, Corriveau, Kids Voting USA, Responsive Classroom and Toca Life World from search summaries. Takes the money study's routed jobs and shared costs; Village Vote is the first ladder, Count the Ballots the grown-up/teen puzzle.
+- Updated the subject tracker, two notebook rows, the roadmap's subject table, [Community and civics recommendations](deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: Village Vote's land and the capacity test, a losing pet, Count the Ballots' home, the helper cast (police and fire border `safety`), a persistent square; no reference game played.
 ## 2026-10-17 — Lift It definition
 
 - Defined Lift It levels 1–6 in [the definition](definitions/lift-it.md): haul a crate to a ledge friend by dragging the rope's end in strokes; four rigs from two hooks (direct, fixed, movable on two strands, both), paws as force and knots as travel under an ideal rule stated as a toy; free knot predictions at 4, pullers at 5, paws and knots cards at 6; no misses at 1–4; ghost finger hangs `bestRig` and hauls; Rainbow Meadow by default.

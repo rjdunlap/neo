@@ -338,6 +338,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Executive function | 2026-10-17 | [study](deep-dives/subjects/executive-function.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#executive-function-recommendations) |
 | Visual art | 2026-10-17 | [study](deep-dives/subjects/visual-art.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#visual-art-recommendations) |
 | Money and economy | 2026-10-17 | [study](deep-dives/subjects/money-economy.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) |
+| Community and civics | 2026-10-17 | [study](deep-dives/subjects/community-civics.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) |
 ## Later horizons (elementary)
 
 The long-term plan: a familiar island that grows from early play through roughly ages 5–11, by extending favorite games, adding new interactions where they help, and connecting them through places, characters and projects. These are development horizons, not dates or grade locks. Ages are rough planning guides; learning ranges overlap; and the horizons are not a proposal for one runtime band per school grade. Apart from Wonder Woods (the `school` band's place) and the steps marked built, everything in this section is a **proposal**.
