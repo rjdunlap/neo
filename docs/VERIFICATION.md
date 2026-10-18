@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Little Helpers deep dive
+
+- Docs only: [deep dive](deep-dives/little-helpers.md) on `claude/dive-little-helpers` ([PR #546](https://github.com/rjdunlap/neo/pull/546)). Audited levels 1–6; gaps: taps while busy and on the grass or waiting helpers do nothing, level 6 teams are equal by construction (she only counts the total), level 5 shows the total not the gap, the dots never fill, level 2 alternates 1, 2, only one fruit of a bunch reaches the basket, an empty crowd plays the miss sound, helper hit areas overlap. Make ten is gated: Duck Pond 10 already does it.
+- Opened the Pikmin Wiki (Carry, Lift), Hi Ho! Cherry-O and Lemmings (Wikipedia), Common Sense Media's Moose Math review and Common Core K.OA and 3.OA; Pikmin Bloom, Count Your Chickens, the Montessori spindle box, Numberblocks World and Khan Academy Kids are search summaries.
+- Seven ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Stamp Studio slice 4, Play the picture
 
 - Changed: a music-note button at levels 3–6 plays the picture's stamps left to right (`playOrder`, pentatonic pitch by height, at most 5.5 s); nothing scored, saved picture unchanged.

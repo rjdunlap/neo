@@ -117,6 +117,13 @@ The existing content slices were re-checked 2026-10-15 against their dives and `
 76. **`peg-garden`, level 6 Into the cup** (new interaction): aim the pearl into the cup with that many dots; every cup reachable with margin; pre-K top. [Slice 5](deep-dives/peg-garden.md#new-levels-on-top)
 77. **`peg-garden`, level 7 Plant a bud** (new interaction, after 76): drag a bud onto a marked place so the pearl reaches the cup, run, revise; pre-K. [Slice 6](deep-dives/peg-garden.md#new-levels-on-top)
 78. **`swing-pals`, build levels 1–6** (new-game tier): push a friend on a tree swing to ring the bell (pushes never lower height, the bell latches, no misses at 1–3), then two swings on short and long ropes, then tap the hook that makes her friend swing along with the pet's; weight and height never change the beat; Rainbow Meadow. [Definition](definitions/swing-pals.md)
+79. **`little-helpers`, every touch answers and the empty crowd shrugs** (existing-game bug fix): level 1 whole-screen send, a hop while busy, a grass wave, a shrug not a boing, the whole bunch into the basket. [Slice 1](deep-dives/little-helpers.md#build-slices-in-order)
+80. **`little-helpers`, the badge fills, needs vary, level 2 opens to lap** (existing-game change, levels 2–6): rings fill as helpers grab on, the gap named at 5, no 1, 2, 1, 2 rounds, lap window 1–2. [Slice 2](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
+81. **`little-helpers`, things to carry and three places** (content): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods. [Slice 3](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
+82. **`little-helpers`, level 6 teams she builds** (existing-game change): tap which fruit gets the helper, nearest-helper taps; uneven teams strain. [Slice 4](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
+83. **`little-helpers`, level 9 Whistle when it's full** (new level, after 79): rings say when, no misses; toddler order 1, 2, 9, preschool 2, 9, 3, 4; plans keyed by ID. [Slice 5](deep-dives/little-helpers.md#easier-entries-and-levels-between-existing-ones)
+84. **`little-helpers`, level 7 Everyone helps** (new interaction): split a crowd of 4–7 between two fruits; pre-K top and school. [Slice 6](deep-dives/little-helpers.md#new-levels-on-top)
+85. **`little-helpers`, level 8 Strong helpers** (new interaction): big helpers count two, every exact mix right; school. [Slice 7](deep-dives/little-helpers.md#new-levels-on-top)
 
 ### Chunks
 
