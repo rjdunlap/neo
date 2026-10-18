@@ -35,6 +35,8 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | wear-boots-4.png | R05 | 2026-10-17 | Built-in image_gen; model undisclosed | [boots4](R05-PROMPTS.md#boots4) | yes |
 | wear-beanie-1.png | R05 | 2026-10-17 | Built-in image_gen; model undisclosed | [beanie1](R05-PROMPTS.md#beanie1) | yes |
 | wear-mittens-1.png | R05 | 2026-10-17 | Built-in image_gen; model undisclosed | [mittens1](R05-PROMPTS.md#mittens1) | yes |
+| home-day-3.png | R06 | 2026-10-17 | Built-in image_gen; model undisclosed | [day3](R06-PROMPTS.md#day3) | yes |
+| home-dusk-2.png | R06 | 2026-10-17 | Built-in image_gen; model undisclosed | [dusk2](R06-PROMPTS.md#dusk2) | yes |
 
 ## R01 review and preparation notes
 
@@ -91,6 +93,16 @@ Three candidates per item were reviewed full size and at about 120 px canvas wid
 | wear-mittens-1.png | `(32, 257, 1222, 1000)` | About 95% of width; two distinct mittens with outward thumbs and a white gap. |
 
 Several items fill more than the generic 80% target despite explicit margin prompts; all contours remain inside the square. Source framing is recorded rather than corrected by resizing. Preparation must split paired boots/mittens into wearable parts, determine anchor points, handle occlusion and preserve intended fabric/shine whites. The raincoat, hat and other broad shapes have not been fitted to any species; the R05 brief explicitly leaves raincoat/boots as possible code-drawn fallbacks after fitting is tried. White backgrounds have faint near-white variation as in previous requests. Temporary review thumbnails and masks did not modify the originals. No browser/device checks, animation quality, iPad readability or cross-species fit are established here.
+
+## R06 review and preparation notes
+
+Two untouched 1536 × 1024 PNGs, 3,937,347 bytes total. SHA-256 checks confirm both copies match their tool originals. No missing files or runner-ups. No production cropping, preparation, rigging or integration; same service terms and undisclosed model caveat as below.
+
+Three daytime candidates were reviewed at full size and about 120 px canvas width. Candidate 1 had busier foreground grass tufts and more pond intrusion; candidate 2 opened the floor but omitted the separate small table. Candidate 3 keeps the round-window treehouse on the left, awning, rope ladder, separate table with pots, soft hills/sky, right-side pond and two lily pads. The ladder/table sit above the foreground floor; the bottom third is grass with flush stone slabs along its back edge, free of characters, toys, boats and loose objects. Broad cel-shaded grass/foliage patches remain as surface detail. The table also has a small stool and a pot with a few tool-like sticks; these are above the play area, not foreground rewards or interactive objects.
+
+Dusk attempt 1 was rejected because it redrew the cloud shapes and darkened the foreground heavily. Attempt 2 keeps the original cloud layout and the main scene landmarks in place while adding a peach/purple sky, warm window light and sparse firefly glows above the floor. Compared side-by-side at full/reduced size: window mullions, awning endpoints, ladder rungs, table edges, pots, stool, shore stones and lily pads stay visually aligned. This is visual registration review, not proof that every pixel outside the lighting edit is identical; pond reflections and surface shading necessarily change. Runtime crossfades and device contrast remain untested.
+
+A temporary centered 4:3 preview `(85, 0, 1451, 1024)` was inspected for both images. The treehouse window, ladder, table and broad empty floor remain visible; the far-right pond/lily-pad detail can be trimmed by that crop. Final crop/placement must be chosen with the actual home UI and companion scale. QA crops/thumbnails were temporary inspection images only; repository sources are uncropped. No code/build/browser/offline/device checks or claim of iPad readability were made for this source-art pass.
 
 ## Generating service terms
 
