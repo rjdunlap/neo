@@ -2,7 +2,7 @@
 
 **Subject:** `executive-function` · **Audiences:** L, T, P, K, S, U, M and G as [defined in the tracker](../subjects.md#the-audiences) · **Date:** 2026-10-17 · **Session:** `claude/subject-executive-function`, [PR #539](https://github.com/rjdunlap/neo/pull/539). The tracker row: "working memory, impulse control, flexible rules (evidence that these transfer to other skills is mixed, so say so)".
 
-**Research and proposals only.** Executive function (EF) is not a school subject with its own content. It is three core skills: **inhibition** (stopping the easy response), **working memory** (holding something in mind *and working with it*) and **cognitive flexibility** (switching rules or viewpoints), with **planning** built on top of them. They are exercised by games about something else. Most of that ground is already held by island games and their deep dives. Pet Says has a researched Head-Toes-Knees-Shoulders ladder, Critter Sort has a built card-sort switch, Scoop Shop has a built memory level, and Rule Parade is proposed. So this study is mostly a **map**: which component each game exercises at each band, and which cells are actually empty. It fills three of them: working memory that *changes* what is held (Scoop Shop 7–9), a rule switch at the age it develops (a pre-K Critter Sort entry) and goal-picture planning with only the top piece movable (**Pancake Stack**, the notebook's Tower of Hanoi seed recast as Shallice's Tower of London). It also proposes one rule for the grown-up page: **name what a game asks, never claim it trains the brain.** No game, band, zone, land registration or save format is added.
+**Research and proposals only.** Executive function (EF) is not a school subject with its own content. It is three core skills: **inhibition** (stopping the easy response), **working memory** (holding something in mind *and working with it*) and **cognitive flexibility** (switching rules or viewpoints), with **planning** built on top of them. They are exercised by games about something else. Most of that ground is already held by island games and their deep dives. Pet Says has a researched Head-Toes-Knees-Shoulders ladder, Critter Sort has a built card-sort switch, Scoop Shop has a built memory level, and Rule Parade is proposed. So this study is mostly a **map**: which component each game exercises at each band, and which cells are actually empty. It fills four of them: working memory that *changes* what is held (Scoop Shop 7–9), a rule switch at the age it develops (a pre-K Critter Sort entry), a grown-up switch (Brain Break 4, alternating numbers and pictures) and goal-picture planning with only the top piece movable (**Pancake Stack**, the notebook's Tower of Hanoi seed recast as Shallice's Tower of London). It also proposes one rule for the grown-up page: **name what a game asks, never claim it trains the brain.** No game, band, zone, land registration or save format is added.
 
 ## Anchors opened at their source, and what the evidence does not show
 
@@ -44,10 +44,10 @@ From [GAMES.md](../../GAMES.md), the games' `bands:` and level plans, and their 
 | **Inhibition** | — (Stop and Go lap 9 ◇) | Stop and Go 2 ✔ (red is a miss; toddler 10 ◇) | Pet Says 4 "Pet says" ✔ | Pet Says 6–8 Opposite day ◇ ([dive](../pet-says.md)) | Pet Says 10–12 ◇ (school window a decision) | — | — |
 | **Working memory (hold)** | Peekaboo Barn ✔ | Pet Says 3 two moves ✔; Scoop Shop 1–3 ✔ | Memory Match 1–3 ✔; Scoop Shop 5 ✔ | Scoop Shop 6 *from memory* ✔ (3 scoops; a peek counts as a hint) | Memory Match ✔ | — | — (Tile Pairs is planning, not memory) |
 | **Working memory (manipulate)** | — | — | — | — | **—** | **—** | — |
-| **Flexibility (switch)** | — | — | — | **—** (Critter Sort's preschool entry and level 10 are decisions in [its dive](../critter-sort.md)) | Critter Sort 8 re-sort ✔; Critter Crossing ✔ | Rule Parade ◇ ([notebook](../../IDEAS.md#candidates)) | — |
+| **Flexibility (switch)** | — | — | — | **—** (Critter Sort's preschool entry and level 10 are decisions in [its dive](../critter-sort.md)) | Critter Sort 8 re-sort ✔; Critter Crossing ✔ | Rule Parade ◇ ([notebook](../../IDEAS.md#candidates)) | **—** (Brain Break ✔ is number order only: hold the next target, visual search) |
 | **Planning** | — | — | Robot Path, Penguin Slide ✔ | Ferry Jam ✔ (pre-K–school) | Mossy Path, Robot Path ✔ | Robot Path top ✔ | Log Roll, Marble Jump, Island Bridges, Snowball Merge, Tile Pairs ✔ |
 
-Four cells are empty, and they shape the candidates. **Manipulating** what is held (all bands) is the clearest. The **switch at pre-K** comes next, where the DCCS says it develops. **Inhibition at U/M** stays empty on purpose: on an island with no timers, inhibition can only come from rule conflict, and Pet Says owns that. **Lap/toddler** EF needs nothing new. Planning is *not* empty: Robot Path and Ferry Jam already ask preschool and pre-K players to think ahead. So a planning game must earn its place with a different action (below).
+Five cells are empty, and they shape the candidates. The grown-up **switch** cell has an obvious answer in Brain Break (below). **Manipulating** what is held (all bands) is the clearest. The **switch at pre-K** comes next, where the DCCS says it develops. **Inhibition at U/M** stays empty on purpose: on an island with no timers, inhibition can only come from rule conflict, and Pet Says owns that. **Lap/toddler** EF needs nothing new. Planning is *not* empty: Robot Path and Ferry Jam already ask preschool and pre-K players to think ahead. So a planning game must earn its place with a different action (below).
 
 ## Similar games, apps and physical play
 
@@ -62,6 +62,7 @@ Four cells are empty, and they shape the candidates. **Manipulating** what is he
 | Lumosity (FTC action, opened) | adult brain-training app | Daily workouts and scores | — | Streaks, daily workouts, scores against others and every benefit claim |
 | Tools of the Mind (via Diamond and Lee, opened) | preschool curriculum built on pretend play | Planned pretend play, buddy roles | Co-play roles where one partner holds the rule (G with child) | — |
 | Papa's Freezeria (recalled; Scoop Shop's original reference) | restaurant sim | Orders lengthen, customers queue | Customers who order and later change their minds (Scoop Shop 8) | Patience meters, tips and grading |
+| Trail Making Test, parts A and B (**recalled**, not opened) | neuropsychological task | Part A joins numbers in order; part B alternates numbers and letters (1-A-2-B-3-C), a set-shifting demand | The alternating rule for **Brain Break 4** | Its timing, norms and clinical use |
 | Baba Is You (notebook row) | rule-rewriting puzzle | The rules are pieces | Rule Parade's identity (unchanged) | — |
 | *I went to market and bought…*, freeze dance, Simon Says with a switched cue (recalled) | unplugged family games | Each player adds an item; the freeze cue changes meaning | The page card (G) | Elimination: nobody is "out" |
 
@@ -82,7 +83,7 @@ Four cells are empty, and they shape the candidates. **Manipulating** what is he
 | **S**, 6–8 | **Scoop Shop 7 *Two cones*** (EF1): two friends order together, both pictures hide, serve each | Scoop Shop 8 *Change of mind* (update one scoop), 9 *Top first* (reverse); Critter Sort 8 ✔; Pancake Stack S1–S3 |
 | **U**, 9–12 (school top) | Pancake Stack **Plan it** (S4): lay out three or four move cards, then Watch the friend carry them out | Pancake Stack S5 with a size rule (a big pancake cannot sit on a small one); Rule Parade ◇ |
 | **M**, 11–14 | Pancake Stack **cases** at `school`'s top: four pancakes on three plates holding 1, 2 and 3, a plan entered whole before Watch | An optional comparison after success with the fewest-moves plan, never a grade. What a 12- or 13-year-old would choose: rule-rewriting and tower puzzles (Baba Is You, appeal recalled, not studied); the tween evidence asks for real challenge and autonomy. Belongs to `school`'s top levels, not a new band. Inhibition matures into adolescence, but rule-conflict play at this age is better as a family table game (the card) than a solo screen drill |
-| **G**, play for themselves | Pancake Stack rendered at `grownup` (five pancakes, peg limits, the fewest-moves comparison) beside the existing planners (Log Roll, Marble Jump); no new Lantern Lake title unless the developer wants one | — |
+| **G**, play for themselves | **Brain Break 4 *Back and forth*** (EF1c): the same pond stones carry numbers and pictured fruit in order, lit alternately (1, apple, 2, pear …), the sign naming the next. Then Pancake Stack rendered at `grownup` (five pancakes, peg limits, the fewest-moves comparison) beside the existing planners (Log Roll, Marble Jump); no new Lantern Lake title unless the developer wants one | — |
 | **G**, play with the child | **Opposite Day**: the grown-up is the caller in Pet Says (already co-play) and then swaps so the child calls the opposites. **Scoop Shop**: the grown-up is the customer who changes their mind (extends its existing "Be the customer!" tip) | Swap roles: the child changes their mind and the grown-up must keep up |
 | **G**, page card | **Twist the game** (plain HTML): freeze dance where the cue changes meaning, *I went to market* (and, for older players, backwards), Simon Says with "do the opposite", a sorting game with a whistle switch. No elimination; everyone stays in | The card says what the game asks of everyone ("keep the rule in mind, then switch it") and makes no benefit claim (decision 1) |
 
@@ -93,6 +94,7 @@ Four cells are empty, and they shape the candidates. **Manipulating** what is he
 | **Scoop Shop 7–9** (existing game, new levels) | Two friends' cones from memory; a friend changes their mind; a friend names the top scoop first | Working memory: hold two, update one, reverse | S (school window 5–9) | S per level | None: new `ScoopMode`s on the existing scoop/tub/peek machinery |
 | **Critter Sort switch entry** (existing game) | The same three critters re-sorted after the pet's whistle | Flexibility (DCCS) | K (pre-K order) | S | None; the decision is already open in Critter Sort's dive |
 | **Pet Says school window** (existing, ready) | Opposites and switched pairs | Inhibition, flexibility | K–S | per its dive | Its dive's slices 5–11 |
+| **Brain Break 4 *Back and forth*** (existing grown-up game) | Light the stones alternating a number and the next pictured item of a fixed, spoken sequence | Flexibility (set shifting, Trail Making B's shape) | G (`grownup`) | S | None: a new level on the same tap action; no clock, as today |
 | **Grown-up wording rule** | — | — | G | XS (docs) | A sentence in the how-to/grown-up copy guidance |
 | **Twist the game** card | Family rule-twist games | All three | G with child | S | Plain HTML on the grown-ups' page; light practical review |
 | **Pancake Stack** (new identity, notebook seed) | Slide pancakes between plates to match a friend's picture; only the top one moves | Planning | P–G | M | A small stack solver (BFS) in `logic.ts`; no engine change |
@@ -101,18 +103,18 @@ Four cells are empty, and they shape the candidates. **Manipulating** what is he
 
 ## A first game's ladder: Scoop Shop 7–9
 
-The first recommended work is in an existing game, because the action is the same: tap tubs to stack a cone. Today's levels 1–6 are unchanged and keep their IDs and pins. Each new level holds **at most four scoops in mind in total**, so challenge rises by what she does with the order, not by its length.
+The first recommended work is in an existing game, because the action is the same: tap tubs to stack a cone. Today's levels 1–6 are unchanged and keep their IDs and pins. Each new level holds **three scoops in mind, as level 6 does**, so challenge rises by what she does with the order (choose, update, reverse), not by its length, as AGENTS' *depth before pressure* asks.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts |
 | --- | --- | --- | --- | --- | --- | --- |
-| 7 | *Two cones* | school | Two friends order two scoops each (stack order matters); both pictures show, are spoken, then hide; she serves either friend first | Which friend to serve, and keeping both orders apart | A wrong scoop bounces back and is a miss, as at level 6; tapping a friend re-shows *that friend's* picture and counts one hint (today's rule); two misses glow the right tub | The two orders differ; total scoops = 4; every order uses tubs on the counter |
+| 7 | *Two cones* | school | Two friends order together, one scoop and two scoops (stack order matters): three scoops in all, as at level 6. Both pictures show, are spoken, then hide; she taps a friend's cone to choose whom she is serving, in either order | Whom to serve, and keeping the two orders apart | A wrong scoop bounces back and is a miss (today's `misses++` path); tapping a friend re-shows *that friend's* picture and counts one hint (today's rule); two misses glow the right tub | The two orders differ; total scoops = 3; every order uses tubs on the counter. A four-scoop variant (two and two) is an optional later level, not the first rung |
 | 8 | *Change of mind* | school | One friend orders three; the picture hides; the friend says "Oh! Change the top to lemon, please" (the picture is never re-shown with the change unless she peeks) | Update one remembered item, keep the other two | As at 7; the peek shows the **changed** order | The change alters exactly one scoop and differs from the original scoop at that place; the final order has no three-in-a-row same flavour |
 | 9 | *Top first* | school | The friend *says* the scoops top to bottom ("lemon on top, then mint, then pink at the bottom") with no picture; she builds bottom up | Reverse the heard order | As at 7; the peek shows the picture as a cone (bottom up), so help is real | No order is a palindrome (else reversing is no decision); the spoken order is the reverse of the built order |
 
 - **Band windows:** school becomes 5–9; pre-K stays 3–6 (Diamond: reversing and updating are school-age demands). This adds no band, so no registry band change.
 - **Voice:** new lines in `voice-script.ts` for the two-friend instruction, the change of mind and the top-first order. Each flavour already has a spoken name.
 - **Creature world (later):** the friends become her creatures; each order served lands on the creature home's flavour shelf for good. That hook waits for the rework's home (RW03/RW08), not this slice.
-- **Cost:** one session for the three levels (shared generation code), or one per level. The tier is *new levels on an existing interaction*: typecheck, rule tests, one browser play of level 9 and `fingerdemo` at it, plus the bot learning to read the two-order and spoken orders.
+- **Cost:** today's scene serves **one customer and one cone at a time**, so level 7 needs a second open cone and a tap to choose which one she serves: a **new interaction** (scripted play at 7, a wrong scoop, a peek, one portrait screenshot, `fingerdemo` at 7). Levels 8 and 9 reuse the one-cone flow: *new levels on an existing interaction* (a play of 9 and `fingerdemo` at it). Build 8–9 first if the developer prefers the cheaper slice.
 
 ### Pancake Stack ladder (sketch, after the identity decision)
 
@@ -140,25 +142,27 @@ Three plates hold up to 1, 2 and 3 pancakes (the Tower of London's peg heights);
 ## Decisions for the developer
 
 1. **The grown-up wording rule.** Grown-up text (how-to cards, `describeLevel`, the page) names what the game asks and never claims an EF, attention, behaviour or school benefit, and never says "brain training". Lean: adopt it as a line in AGENTS' rules once accepted, citing the FTC action and the transfer evidence above.
-2. **Scoop Shop 7–9 and a school window of 5–9.** Lean: yes, school only. A peek still counts as a hint.
+2. **Scoop Shop 7–9 and a school window of 5–9.** Lean: yes, school only. A peek still counts as a hint. The tension with *depth before pressure* is named: every new level holds three scoops, as level 6 does; a four-scoop *Two cones* stays an optional later variant.
 3. **Pancake Stack accounting.** Lean: blocked moves are free boings; hint requests count; on *Plan it* the first failed run is free and a repeated one counts a miss.
 4. **Pancake Stack identity.** A new game in Puzzle Peaks (it already lists 13 games, so check `landLayout` at every band; else Tinker Lab) or dropped as too close to Ferry Jam. Lean: keep it, defined after EF1 and EF2, with the overlap test above. Its G levels go to `grownup` in the same game, not a new Lantern Lake title.
-5. **Critter Sort pre-K switch entry.** It joins that dive's open preschool-entry decision. Lean: three critters, first by colour (a worked example in place), then the whistle and the same three by ears. The first drop by the *old* rule after the switch is a nudge that restates the new rule (labelling helps in DCCS research, per the search summary in that dive), and the second counts a miss.
-6. **Pet Says school window** (already its decision 1). This study adds evidence for it: inhibition matures into adolescence, and the HTKS is used from 4 to 8.
+5. **Critter Sort pre-K switch entry.** A **new stable level ID** placed in pre-K's order after level 6 (*Just a few*); it is *not* the dive's open preschool entry, since 3-year-olds fail the switch. Lean: three critters, first by colour (a worked example in place), then the whistle and the same three by ears. The first drop by the *old* rule after the switch is a nudge that restates the new rule (labelling helps in DCCS research, per the search summary in that dive), and the second counts a miss.
+6. **Brain Break 4 *Back and forth*.** Lean: yes, a picture sequence (fruit spoken by name) rather than letters, so no reading is needed; misses and the two-miss outline as at levels 1–3; the hint names *which kind* comes next.
+7. **Pet Says school window** (already its decision 1). This study adds evidence for it: inhibition matures into adolescence, and the HTKS is used from 4 to 8.
 
 ## Build slices, in order
 
 Each is sized for one session. Definitions are docs only (links and `git diff --check`); builds use their own tier.
 
-1. **EF1 — define Scoop Shop 7–9** (docs): level rows as above in a new Scoop Shop deep dive or its GAMES entry, voice lines named, bot reading two orders, how-to `LevelLine`s for 7–9.
-2. **EF1b — build Scoop Shop 7–9.** New levels on an existing interaction: typecheck, rule tests, a play of 9, `fingerdemo` at 9.
-3. **EF2 — Critter Sort pre-K switch entry** (definition inside its dive; decision 5), then its build at its tier.
-4. **EF3 — Pet Says school window and Opposite day**: its dive's slice 5 is ready once its decision 1 is made; nothing new here.
-5. **EF4 — the wording rule** (docs, decision 1): one line in AGENTS' rules and a sweep of existing how-to/`describeLevel` text for "memory training" style claims.
-6. **EF5 — Twist the game card**, after a light practical review: plain HTML in `src/parent/panel.ts`.
-7. **EF6 — define Pancake Stack P1–S3** (decision 4): solver, accepted plate limits, overlap test, Puzzle Peaks capacity check, how-to and ghost finger.
-8. **EF7 — Pancake Stack S4–S5 and G1–G3**, after EF6 is built.
-9. **Creature hooks:** the flavour shelf and café menu, after the rework home cutover.
+1. **EF1 — define Scoop Shop 7–9** (docs): level rows as above in a new `docs/deep-dives/scoop-shop.md` (its tracker row is still *not started*), voice lines named, bot reading two orders, how-to `LevelLine`s for 7–9.
+2. **EF1b — build Scoop Shop 8–9, then 7** (tiers as in the ladder's cost line).
+3. **EF1c — define and build Brain Break 4 *Back and forth*** (decision 6): new level on an existing interaction.
+4. **EF2 — Critter Sort pre-K switch entry** (a new level ID, defined inside its dive; decision 5), then its build at its tier.
+5. **EF3 — Pet Says school window and Opposite day**: its dive's slice 5 once its decision 1 is made; nothing new here.
+6. **EF4 — the wording rule** (docs, decision 1): one line in AGENTS' rules and a sweep of existing how-to/`describeLevel` text for "memory training" style claims.
+7. **EF5 — Twist the game card**, after a light practical review: plain HTML in `src/parent/panel.ts`.
+8. **EF6 — define Pancake Stack P1–S3** (decision 4): solver, accepted plate limits, overlap test, Puzzle Peaks capacity check, how-to and ghost finger.
+9. **EF7 — Pancake Stack S4–S5 and G1–G3**, after EF6 is built.
+10. **Creature hooks:** the flavour shelf and café menu, after the rework home cutover.
 
 ## What was built and what ran
 
