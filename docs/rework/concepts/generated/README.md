@@ -12,6 +12,13 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | glider-sad-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad2Prompt](R01-PROMPTS.md#sad2prompt) | yes |
 | glider-alt-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [alt2Prompt](R01-PROMPTS.md#alt2prompt) | yes |
 | glider-portrait-4.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait4Prompt](R01-PROMPTS.md#portrait4prompt) | yes |
+| sprout-base-2.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [base2](R02-PROMPTS.md#base2) | yes |
+| sprout-blink-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [blink1](R02-PROMPTS.md#blink1) | yes |
+| sprout-happy-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [happy1](R02-PROMPTS.md#happy1) | yes |
+| sprout-surprised-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [surprised1](R02-PROMPTS.md#surprised1) | yes |
+| sprout-sleepy-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [sleepy1](R02-PROMPTS.md#sleepy1) | yes |
+| sprout-sad-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad1](R02-PROMPTS.md#sad1) | yes |
+| sprout-portrait-2.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait2](R02-PROMPTS.md#portrait2) | yes |
 
 ## R01 review and preparation notes
 
@@ -22,6 +29,16 @@ Reviewed all originals at full size and reduced scale; the three base candidates
 Expression ink bounds (pixels darker than 220) match the base `(23, 188, 1513, 832)` exactly, except sleepy's right bound is 1512. This is a bounds check, not proof of pixel-perfect registration: faint edge/shading variation remains possible. The preparation pipeline's alignment check and device/animation review are still outstanding. The alt shows the cream raised wing; it is intentionally an independently prepared pose.
 
 The portrait keeps the face dominant with every tip inside the canvas; its horizontal margins are about 26 pixels, narrower than the requested 10%. Retained after the earlier three portrait attempts failed framing/style review. A preparation session should add card padding when sizing it; the source stays untouched. Background whites have slight near-white variation (sample 253–255), visually plain; use the existing paper-keying preparation. No claim of iPad readability or child appeal.
+
+## R02 review and preparation notes
+
+Seven untouched PNGs, 10,226,865 bytes total. Full-body files are 1536 × 1024; the portrait is 1254 × 1254, above the requested minimum. Files were copied byte-for-byte from the tool originals; no cutting, rigging, integration or source-image cleanup. Same service terms and undisclosed model caveat as R01 below.
+
+Reviewed three base candidates at full size and 120 px canvas width. Candidate 2 best retains Pip's squat teal body, cream belly, round ears, two distinct leaves and two glossy eye highlights. Candidate 1 has a longer stem and less distinct small eye highlights; candidate 3's face and leaf proportions offered no useful alternative. No runner-up kept. All chosen images face right, keep closed plum outlines and upper-left shading, and leave every tip inside the frame. Soft rounded cream fingertip markings echo the concept sheet; they are not sharp claws. Arms overlap the body in the seated pose; the preparation session must account for the nearer arm's painted seam rather than assume separate arm pixels.
+
+The entire base, including leaves and feet, occupies bounds `(307, 63, 1229, 961)` in its landscape canvas. Its body is wider than tall; the leaves make the overall character nearly square. Framing therefore fits about 88% of canvas height and 60% of width, rather than stretching the silhouette to the generic 85%-width target. The portrait's closed bust bounds are `(256, 152, 1056, 1105)`, leaving comfortable margins. Portrait 1 was rejected for clipping at the bottom edge; portrait 2 is retained.
+
+The expression silhouettes were compared to the base in both directions with a four-pixel tolerance: zero silhouette pixels exceeded it. Their outer bounds match exactly except sad and sleepy extend one pixel farther left. This inspection used temporary white-paper masks and thumbnails only; it did not prepare or modify the originals. Fine shading/edge differences are possible, so this is not a claim of pixel-identical non-face regions. The existing preparation alignment check, animation review and device checks are still outstanding. White backgrounds have faint near-white variation like R01; use the existing paper-keying pipeline later. No claim of iPad readability, child appeal or animation quality.
 
 ## Generating service terms
 
