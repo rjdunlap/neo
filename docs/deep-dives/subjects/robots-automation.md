@@ -57,8 +57,8 @@ Opened 2026-10-17 unless marked. Anchors are guides, not prerequisites or claims
 
 - **Stop and Go** (lap–preschool, Cozy Village; [GAMES](../../GAMES.md#stop-and-go)): the child *is* the controller, at the top level for two crossing lights. Its [deep dive](../stop-and-go.md) (PR #535, landed during this session) proposes level 7 **Smart light**, a school level where she picks the light's rule card ("green for the road with a car on the plate"), with its decision leaning to wait for this study; level 8 *Walk signal* waits on the safety reviewer.
 - **Robot Path** (preschool–school, Tinker Lab; [GAMES](../../GAMES.md#robot-path)): a robot with no sensors running a fixed program; conditions are "a later language definition" in its [dive](../robot-path.md).
-- **Sorting Machine** (proposed, [how-computers-work H1](../../ROADMAP.md#how-computers-work-recommendations)): sensors and gates, one critter at a time, no time or feedback.
-- **Machine Line** (proposed seed, [programming P5](../../ROADMAP.md#programming-recommendations)): an order of machines transforms a toy; factory automation in the shapez sense belongs there.
+- **Sorting Machine** (proposed, [how-computers-work H1](RECOMMENDATIONS.md#how-computers-work-recommendations)): sensors and gates, one critter at a time, no time or feedback.
+- **Machine Line** (proposed seed, [programming P5](RECOMMENDATIONS.md#programming-recommendations)): an order of machines transforms a toy; factory automation in the shapez sense belongs there.
 - **Garden Grow, Light Lab, Chain Reaction**: cause and effect, beams and contraptions; nothing senses and responds.
 - **Gap:** Stop and Go's light changes by itself on a fixed cycle, but nothing on the island senses and responds, re-checks a rule, or changes what it senses. The [rework](../../rework/README.md#learning-belongs-in-the-story) gives a natural home: the creature home base, and a new friend's comfort as the project.
 

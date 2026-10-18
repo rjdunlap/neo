@@ -2,7 +2,7 @@
 
 **Subject:** `weather-water` · **Audiences:** L, T, P, K, S, U, M and G, as defined in the [subject tracker](../subjects.md#the-audiences) · **Date:** 2026-10-14 · **Session:** `codex/weather-water-subject`, [PR #313](https://github.com/rjdunlap/neo/pull/313).
 
-**Research and proposals only. Nothing built.** Recommend **Rain Garden** first: make a little rain, change a patch of ground, and replay to see where the water goes. Follow with **Drop's Journey**, which explores several water-cycle pathways, and an older-player **Forecast Detective** evidence puzzle. Keep weather observations in Day by Day and clothing choices in Weather Wardrobe. These are recommendations for docs-first definitions, not new registrations, zones or scheduled builds. [Roadmap packets](../../ROADMAP.md#weather-and-water-recommendations).
+**Research and proposals only. Nothing built.** Recommend **Rain Garden** first: make a little rain, change a patch of ground, and replay to see where the water goes. Follow with **Drop's Journey**, which explores several water-cycle pathways, and an older-player **Forecast Detective** evidence puzzle. Keep weather observations in Day by Day and clothing choices in Weather Wardrobe. These are recommendations for docs-first definitions, not new registrations, zones or scheduled builds. [Roadmap packets](RECOMMENDATIONS.md#weather-and-water-recommendations).
 
 ## Anchors opened at their source
 

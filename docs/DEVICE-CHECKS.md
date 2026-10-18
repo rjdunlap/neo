@@ -1,5 +1,21 @@
 # Needs a person or a device
 
+
+## One iPad session (about fifteen minutes)
+
+The 111 items below are mostly the same five checks asked once per game: device speech, target size for a small hand, both orientations, frame rate, and what a child actually does. Most of them can be covered in one sitting with the iPad, in this order; tick every item a step covers, and write what was wrong in the item rather than here.
+
+1. **Sound and speech (2 min).** Open the installed app from the Home Screen with the silent switch on, then off. Does the first tap unlock sound, does the pet speak at all, and which voice is it? In Settings, is an Enhanced or Premium English voice downloaded (chunk 29's V0)? Say the names "Hazel", "trapezoid" and "pentatonic" through any game that uses them.
+2. **The front door (2 min).** On "Who's playing?", does a tap on a card open the island, and does a small hand's tap land? Hold the gear two seconds: does the grown-ups' page open and is nothing else reachable by accident?
+3. **The map and one land (3 min).** Find Barnyard with no label read aloud; open a game; press Home; is she back in Barnyard? Turn the iPad over mid-round: does the round survive, and do the bottom-left pet and the top corners stay clear? Can a two-year-old find the same land again?
+4. **A lap game and a school game (4 min).** Play Peekaboo Barn level 1 and Critter Sort level 8 at her level: does every touch answer, is a 100-unit target comfortable, and does the ghost-finger demonstration on the how-to card show the gesture clearly? For a music game (Jelly Drums or Song Maker), does the island loop stay quiet?
+5. **A controller and the pause sheet (2 min, if a pad is paired).** Press Start in a round: does the sheet open, can the pad move and press its buttons, and does Esc on a keyboard do the same?
+6. **The treehouse and the journal (2 min).** Open the pet's treehouse, place a sticker, open the journal: is anything asking her to come back or implying something was lost?
+
+Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) entry as a device check, and move ticked items below to the archive.
+
+## Open items
+
 - [ ] **Home/navigation RW03 (2026-10-17, #501):** run the [short observed-play script](rework/HOME-NAVIGATION.md#short-observed-play-script-and-open-observations) with lap/toddler co-play, preschool and school separately. Record Home/Back/Next-game interpretation, creature/dress discovery, younger-favorite retrieval, interrupted-project recovery and speech/reach on an iPad. Prototype only; real game/save/controller integration must first land in RW05–RW08. None run.
 
 - [ ] **Illustrated glider pilot (RW02b, 2026-10-17, #503):** on an iPad, open a dev build at `/?creatures` and compare the "Graphics" and "Illustrated" gliders side by side, in both orientations, dressed and bare. Check the following, none of which was run:

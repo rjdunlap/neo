@@ -2,7 +2,7 @@
 
 **Subject:** `how-computers-work` · **Audiences:** L, T, P, K, S, U, M, G ([definitions](../subjects.md#the-audiences)) · **Date:** 2026-10-15 · **Session:** `codex/how-computers-work-research`, [PR #345](https://github.com/rjdunlap/neo/pull/345).
 
-Research and proposals only; no implementation. Recommend developing the existing **Sorting Machine** candidate first: build an inspectable rule, test it on different inputs, and repair it from a visible counterexample. Its **Festival Signals** case gives older children and parents a complete design puzzle. Next define **Picture Bytes** inside Pixel Pictures for representation, then **Memory Desk** for a distinct storage interaction. Keep electrical loops in Circuit Garden and executable instruction sequences in the programming study. The [roadmap packets](../../ROADMAP.md#how-computers-work-recommendations) are definitions to write before builds, not a new scheduled queue.
+Research and proposals only; no implementation. Recommend developing the existing **Sorting Machine** candidate first: build an inspectable rule, test it on different inputs, and repair it from a visible counterexample. Its **Festival Signals** case gives older children and parents a complete design puzzle. Next define **Picture Bytes** inside Pixel Pictures for representation, then **Memory Desk** for a distinct storage interaction. Keep electrical loops in Circuit Garden and executable instruction sequences in the programming study. The [roadmap packets](RECOMMENDATIONS.md#how-computers-work-recommendations) are definitions to write before builds, not a new scheduled queue.
 
 ## Anchors and evidence limits
 

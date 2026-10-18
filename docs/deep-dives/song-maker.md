@@ -2,7 +2,7 @@
 
 *ID `song-maker` · bands lap–school · levels 1–7 on 2026-10-17 · session `claude/song-maker-deep-dive` ([PR #510](https://github.com/rjdunlap/neo/pull/510))*
 
-**Research and ideation only.** Nothing under `src/`, `scripts/` or `public/` changed. This answers the [family experience](../FAMILY-EXPERIENCE.md) catalog question for Song Maker: *can a player make and revise a phrase on purpose, answer a friend and perform it?* It also turns the music study's **M4, answer the phrase** ([subject study](subjects/music-instruments.md), [roadmap row](../ROADMAP.md#music-and-instruments-recommendations)) into a defined level.
+**Research and ideation only.** Nothing under `src/`, `scripts/` or `public/` changed. This answers the [family experience](../FAMILY-EXPERIENCE.md) catalog question for Song Maker: *can a player make and revise a phrase on purpose, answer a friend and perform it?* It also turns the music study's **M4, answer the phrase** ([subject study](subjects/music-instruments.md), [roadmap row](subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations)) into a defined level.
 
 ## The game today
 

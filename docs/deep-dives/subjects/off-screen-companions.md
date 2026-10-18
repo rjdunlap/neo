@@ -6,7 +6,7 @@ Research and proposals only, following the [subject procedure](../subjects.md#th
 
 **The finding that comes first.** Every game already has one `offScreen` line (93 of 94; the exception is grown-up-only Pond Conga), and the grown-ups' page shows two of them. The lines were written as ideas for the whole age range of a game, so a game that supports lap shows the same line to a one-year-old's parent as to a nine-year-old's. **At least five lines in games a lap or toddler parent sees name small loose objects** (a marble, coins, buttons, dry beans, a bean). The [audit](#on-the-island-today) lists them. They are the first build slice because a removal-only swap makes the page safer and needs no new advice. Separately, one line prints a literal `{name}` on the page. Neither is a design for the future; both are present state.
 
-**Recommend, after that:** make the line **per band** (so a lap parent and a school parent each see one that fits), show **three** on a small "At home" card with a "what to notice" and a "something to say" under each, and add a "things from around the house" list derived from the lines. All of it is plain HTML on the grown-ups' page. Nothing is tracked, nothing is due. [Roadmap recommendations](../../ROADMAP.md#off-screen-companions-recommendations).
+**Recommend, after that:** make the line **per band** (so a lap parent and a school parent each see one that fits), show **three** on a small "At home" card with a "what to notice" and a "something to say" under each, and add a "things from around the house" list derived from the lines. All of it is plain HTML on the grown-ups' page. Nothing is tracked, nothing is due. [Roadmap recommendations](RECOMMENDATIONS.md#off-screen-companions-recommendations).
 
 ## Anchors and evidence limits
 
