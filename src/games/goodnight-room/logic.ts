@@ -3,9 +3,9 @@ import type { Rng } from '../../engine/random';
 /**
  * Goodnight Room, after "Goodnight Moon": a cosy bedroom at bedtime. Tap each thing to say
  * goodnight and it falls asleep; when everyone is asleep the lights go down and the stars come
- * out. Later the voice names who to say goodnight to, then two in order.
+ * out. Later the voice names who to say goodnight to, then two in order; at the top a big arrow tours three rooms.
  */
-export type NightMode = 'all' | 'named' | 'two' | 'animals' | 'lightLast' | 'count' | 'color' | 'except';
+export type NightMode = 'all' | 'named' | 'two' | 'animals' | 'lightLast' | 'count' | 'color' | 'except' | 'tour';
 
 export interface NightPlan {
   mode: NightMode;
@@ -28,6 +28,7 @@ export const PLANS: NightPlan[] = [
   { mode: 'count', things: 6, requests: 0, asleep: 0, name: 'Count out goodnights for 2–4 friends, choosing any awake friends' },
   { mode: 'color', things: 4, requests: 1, asleep: 0, name: 'Say goodnight to the orange or brown friends, in any order' },
   { mode: 'except', things: 6, requests: 1, asleep: 0, name: 'Say goodnight to everyone except the lamp or lantern: keep a night-light awake' },
+  { mode: 'tour', things: 6, requests: 0, asleep: 0, name: 'Goodnight everywhere: follow the arrow through three rooms and say goodnight to everyone' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -76,6 +77,14 @@ export const ROOMS = [
   { id: 'boat', friends: ['duck', 'cat', 'anchor', 'clock', 'lamp', 'fish'] },
 ] as const;
 export type NightRoom = (typeof ROOMS)[number];
+/** The words spoken for each room on a tour. */
+export const ROOM_NAMES: Record<NightRoom['id'], string> = { bedroom: 'bedroom', barn: 'barn', tent: 'tent', boat: 'boat cabin' };
+/** Rooms on a level-10 tour: always the bedroom first, then two other rooms, so all three are distinct. */
+export const TOUR_ROOMS = 3;
+
+export function makeTour(rng: Rng): NightRoom[] {
+  return [ROOMS[0], ...rng.shuffle(ROOMS.slice(1)).slice(0, TOUR_ROOMS - 1)];
+}
 /** Keep the established rooms' notes; new casts separate friends that shared a note in different rooms. */
 const ROOM_NOTES: Partial<Record<NightRoom['id'], Partial<Record<Thing, number>>>> = {
   tent: { puppy: 8 },
@@ -94,12 +103,18 @@ export interface Night {
   /** Number of free-choice goodnights; counting rounds leave some friends awake. */
   targetCount: number;
   color: string | null;
+  /** The rooms of this round in the order she visits them; one room except on a tour. */
+  tour: NightRoom[];
 }
 
 export function makeNight(plan: NightPlan, rng: Rng): Night {
   if (plan.mode === 'color') {
     const choice = rng.pick([...COLOR_ROUNDS]);
-    return { setting: ROOMS[0], room: [...choice.friends], asleep: [], targetCount: 4, color: choice.color };
+    return { setting: ROOMS[0], room: [...choice.friends], asleep: [], targetCount: 4, color: choice.color, tour: [ROOMS[0]] };
+  }
+  if (plan.mode === 'tour') {
+    const tour = makeTour(rng);
+    return { setting: tour[0], room: [...tour[0].friends], asleep: [], targetCount: tour[0].friends.length, color: null, tour };
   }
   // Only these rooms have three unambiguous animals plus the clock and light.
   const setting = rng.pick(plan.mode === 'animals' ? [ROOMS[0], ROOMS[3]] : [...ROOMS]);
@@ -108,12 +123,12 @@ export function makeNight(plan: NightPlan, rng: Rng): Night {
   const room = rng.shuffle(pool).slice(0, plan.things).sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const most = Math.min(plan.asleep, room.length - 2);
   const asleep = most > 0 ? rng.shuffle([...room]).slice(0, rng.int(0, most)) : [];
-  return { setting, room, asleep, targetCount: plan.mode === 'count' ? rng.int(2, 4) : room.length, color: null };
+  return { setting, room, asleep, targetCount: plan.mode === 'count' ? rng.int(2, 4) : room.length, color: null, tour: [setting] };
 }
 
 /** Who to say goodnight to, as one or two things per request; every thing asked at most once per step. */
 export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[], color: string | null = null): Thing[][] {
-  if (plan.mode === 'all' || plan.mode === 'count') return [];
+  if (plan.mode === 'all' || plan.mode === 'count' || plan.mode === 'tour') return [];
   if (plan.mode === 'color') return [room.filter(t => COLORS[t].main === color)];
   if (plan.mode === 'except') return [room.filter(t => !isLight(t))];
   if (plan.mode === 'animals') return [room.filter(isAnimal)];
@@ -130,7 +145,7 @@ export function makeRequests(plan: NightPlan, rng: Rng, room: readonly Thing[], 
  */
 export function thingToTap(plan: NightPlan, request: readonly Thing[] | undefined, step: number, asleep: ReadonlySet<Thing>, room: readonly Thing[], targetCount = room.length): Thing | null {
   if (plan.mode === 'count') return asleep.size < targetCount ? room.find(t => !asleep.has(t)) ?? null : null;
-  if (plan.mode === 'all') return room.find((t) => !asleep.has(t)) ?? null;
+  if (plan.mode === 'all' || plan.mode === 'tour') return room.find((t) => !asleep.has(t)) ?? null;
   if (plan.mode === 'lightLast') return request?.find(t => !asleep.has(t) && (!isLight(t) || request.every(other => isLight(other) || asleep.has(other)))) ?? null;
   if (plan.mode === 'animals' || plan.mode === 'color' || plan.mode === 'except') return request?.find(t => !asleep.has(t)) ?? null;
   return request?.[step] ?? null;
@@ -141,5 +156,5 @@ export function acceptsTap(plan: NightPlan, request: readonly Thing[], step: num
   if (asleep.has(thing)) return false;
   if (plan.mode === 'count') return asleep.size < targetCount;
   if (plan.mode === 'lightLast') return request.includes(thing) && (!isLight(thing) || request.every(t => isLight(t) || asleep.has(t)));
-  return plan.mode === 'all' || ((plan.mode === 'animals' || plan.mode === 'color' || plan.mode === 'except') ? request.includes(thing) : request[step] === thing);
+  return plan.mode === 'all' || plan.mode === 'tour' || ((plan.mode === 'animals' || plan.mode === 'color' || plan.mode === 'except') ? request.includes(thing) : request[step] === thing);
 }

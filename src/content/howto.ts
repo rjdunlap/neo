@@ -1168,12 +1168,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Leave the lamp or lantern awake as the night-light. Tap every other friend in any order.' },
       { from: 8, to: 8, text: 'Listen for orange or brown, then tap every friend of that color in any order. The fish means the orange fish inside its blue bowl.' },
       { from: 7, to: 7, text: 'Listen for how many friends to say goodnight to, then tap that many awake friends. Any friends count; each goodnight is counted aloud.' },
+      { from: 10, to: 10, text: 'Tap everyone in the room to say goodnight, then tap the big arrow to walk to the next room. Three rooms in all.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the room is asleep.' },
       { from: 9, to: 9, text: 'The round ends when every other friend is asleep. The night-light keeps its warm glow.' },
       { from: 8, to: 8, text: 'After all the matching friends sleep, the others settle together and the round ends.' },
       { from: 7, to: 7, text: 'Reaching the requested count finishes your goodnights. The other friends stay awake briefly, then settle together for the finale.' },
+      { from: 10, to: 10, text: 'The round ends when all three rooms are asleep and the stars fill the sky.' },
     ],
   },
   'animal-snack': {
