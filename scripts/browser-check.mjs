@@ -5976,6 +5976,15 @@ async function woodsBatch() {
         return g.snacks.every((s, i) => i === 0 || s.node.x - g.snacks[i - 1].node.x >= 132);
       }), 'portrait snacks keep their full hit areas apart');
     }
+    if (level === 4) {
+      // The seed picks a scene; every scene keeps the animals and snacks placed and shows its own feeding spot.
+      for (const name of ['meadow', 'orchard', 'garden', 'dusk']) {
+        await page.evaluate((name) => neo.scene.game.showScene(name), name);
+        await page.waitForTimeout(250);
+        await screenshot(`animal-snack-scene-${name}`);
+        assert.ok(await page.evaluate(() => neo.scene.game.friends.every((f) => f.node.parent) && neo.scene.game.snacks.every((s) => s.node.parent)), `the ${name} keeps the animals and snacks placed`);
+      }
+    }
     if (level === 3) {
       // Put two bodies close enough that the later drawing receives a touch nearer the first.
       // Observe the recipient through the real Pixi event without answering a puzzle.
