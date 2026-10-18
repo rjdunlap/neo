@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { acceptsTap, makeNight, makeRequests, PLANS, COLORS, NAMES, NOTE_STEP, noteFor, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, makeTour, planFor, PLANS, ROOM_NAMES, TOUR_ROOMS, COLORS, NAMES, NOTE_STEP, noteFor, THINGS, ROOMS, SLOTS, isAnimal, isLight, thingToTap, type Thing } from './logic';
 
 describe('Goodnight Room', () => {
   it('gives every friend in a room its own note', () => {
@@ -92,7 +92,8 @@ describe('Goodnight Room', () => {
       const settings = new Set<string>();
       for (let seed = 1; seed <= 200; seed++) {
         const night = makeNight(plan, new Rng(seed));
-        settings.add(night.setting.id);
+        // A tour starts in the bedroom; its later rooms count as drawn too.
+        night.tour.forEach(r => settings.add(r.id));
         expect(night).toEqual(makeNight(plan, new Rng(seed)));
         if (plan.mode === 'animals') {
           expect(night.room.filter(isAnimal)).toHaveLength(3);
@@ -258,6 +259,38 @@ describe('Goodnight Room', () => {
     expect([...rooms].sort()).toEqual(['barn', 'bedroom', 'boat', 'tent']);
   });
 
+  it('tours three distinct rooms from the bedroom at level 10, every friend reachable and every tap right', () => {
+    const plan = planFor(10);
+    expect(plan.mode).toBe('tour');
+    const seconds = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const night = makeNight(plan, new Rng(seed));
+      expect(night.tour).toHaveLength(TOUR_ROOMS);
+      expect(new Set(night.tour.map(r => r.id)).size).toBe(TOUR_ROOMS);
+      expect(night.tour[0].id).toBe('bedroom');
+      expect(night.setting).toBe(night.tour[0]);
+      expect(night.room).toEqual([...night.tour[0].friends]);
+      expect(night.asleep).toEqual([]);
+      seconds.add(night.tour[1].id);
+      expect(makeRequests(plan, new Rng(seed), night.room)).toEqual([]);
+      for (const room of night.tour) {
+        expect(ROOM_NAMES[room.id]).toBeTruthy();
+        const friends: Thing[] = [...room.friends];
+        expect(friends).toHaveLength(SLOTS.length);
+        // No wrong answers: every awake friend is accepted, and the bot puts the whole room to sleep once each.
+        const asleep = new Set<Thing>();
+        for (const t of friends) expect(acceptsTap(plan, [], 0, asleep, t)).toBe(true);
+        for (let t = thingToTap(plan, undefined, 0, asleep, friends); t; t = thingToTap(plan, undefined, 0, asleep, friends)) {
+          expect(asleep.has(t)).toBe(false);
+          asleep.add(t);
+        }
+        expect([...asleep].sort()).toEqual([...friends].sort());
+      }
+    }
+    expect([...seconds].sort()).toEqual(['barn', 'boat', 'tent']);
+    expect(makeTour(new Rng(3))).toEqual(makeTour(new Rng(3)));
+  });
+
   it("gives the ghost finger's bot only right taps, until the room is asleep: everyone awake once, or each thing named in order", () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
@@ -265,7 +298,7 @@ describe('Goodnight Room', () => {
         const { room, color, asleep: start } = makeNight(plan, rng);
         const rs = makeRequests(plan, rng, room, color);
         const asleep = new Set<Thing>(start);
-        if (plan.mode === 'all') {
+        if (plan.mode === 'all' || plan.mode === 'tour') {
           const taps: Thing[] = [];
           for (let t = thingToTap(plan, undefined, 0, asleep, room); t; t = thingToTap(plan, undefined, 0, asleep, room)) {
             expect(asleep.has(t)).toBe(false);

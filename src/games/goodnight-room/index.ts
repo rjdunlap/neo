@@ -11,13 +11,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, noteFor, planFor, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
+import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, noteFor, planFor, ROOM_NAMES, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 9 },
+  prek: { min: 5, max: 10 },
 };
 
 const WALL = 0x9fb8e8;
@@ -123,15 +123,38 @@ class Sleeper extends Container {
   }
 }
 
+/** The big arrow that leads a tour on to the next room: no words, a tap anywhere on it. */
+class TourArrow extends Container {
+  private clock = 0;
+  constructor() {
+    super();
+    this.addChild(new Graphics()
+      .circle(0, 0, 95).fill({ color: swatch.yellow.light, alpha: 0.9 }).stroke({ width: 8, color: swatch.yellow.line })
+      .poly([-55, -22, 5, -22, 5, -55, 62, 0, 5, 55, 5, 22, -55, 22]).fill(swatch.yellow.fill).stroke({ width: 6, color: wood.line, join: 'round' }));
+    this.hitArea = new Circle(0, 0, 105);
+    this.visible = false;
+  }
+
+  update(dt: number) {
+    this.clock += dt;
+    this.scale.set(1 + 0.06 * Math.sin(this.clock * 4));
+  }
+}
+
 class GoodnightRoom implements Game {
   readonly plan: NightPlan;
   readonly requests: Thing[][];
   /** The friends in the room this round, in the order they are drawn. */
-  readonly friends: Thing[];
-  readonly setting: NightRoom;
+  friends: Thing[];
+  setting: NightRoom;
+  /** The rooms of this round; a level-10 tour visits three, one after another. */
+  readonly tour: NightRoom[];
+  /** Which room of the tour she is in. */
+  stop = 0;
   readonly targetCount: number;
   readonly color: string | null;
-  readonly sleepers: Sleeper[] = [];
+  sleepers: Sleeper[] = [];
+  readonly arrow = new TourArrow();
   index = -1;
   /** Within a two-step request, how many are done. */
   step = 0;
@@ -143,6 +166,9 @@ class GoodnightRoom implements Game {
   private readonly room = new Graphics();
   private readonly sky = new Graphics();
   private readonly dark = new Graphics();
+  private readonly friendLayer = new Container();
+  /** Darkens the whole screen while a tour walks to the next room. */
+  private readonly curtain = new Graphics();
   private readonly glow = new Graphics();
   private readonly tally = label('', 38, ink);
   private readonly dots = new Graphics();
@@ -158,26 +184,64 @@ class GoodnightRoom implements Game {
     const night = makeNight(this.plan, ctx.rng);
     this.friends = night.room;
     this.setting = night.setting;
+    this.tour = night.tour;
     this.targetCount = night.targetCount;
     this.color = night.color;
     this.requests = makeRequests(this.plan, ctx.rng, this.friends, this.color);
     this.dark.eventMode = 'none';
     this.glow.eventMode = 'none';
-    ctx.stage.addChild(this.room, this.sky);
-    for (const thing of this.friends) {
-      const s = new Sleeper(thing, this.plan.mode === 'color');
-      if (night.asleep.includes(thing)) s.sleep();
-      onTap(s, () => void this.tap(s), { cooldown: 400 });
-      ctx.track(s);
-      this.sleepers.push(s);
-      ctx.stage.addChild(s);
-    }
+    this.curtain.eventMode = 'none';
+    this.curtain.alpha = 0;
+    ctx.stage.addChild(this.room, this.sky, this.friendLayer);
+    this.placeFriends(night.asleep);
     ctx.stage.addChild(this.dark, this.glow);
     this.tally.eventMode = this.dots.eventMode = 'none';
     this.tally.visible = this.dots.visible = this.plan.mode === 'count';
-    ctx.stage.addChild(this.tally, this.dots);
+    ctx.stage.addChild(this.tally, this.dots, this.curtain, this.arrow);
+    onTap(this.arrow, () => void this.walkOn(), { cooldown: 600 });
+    ctx.track(this.arrow);
     this.drawCount();
     this.stars = night.asleep.length * 3;
+  }
+
+  /** Put this room's friends in their slots, replacing the last room's on a tour. */
+  private placeFriends(asleep: readonly Thing[] = []) {
+    for (const s of this.sleepers) {
+      this.ctx.untrack(s);
+      s.destroy({ children: true });
+    }
+    this.sleepers = [];
+    for (const thing of this.friends) {
+      const s = new Sleeper(thing, this.plan.mode === 'color');
+      if (asleep.includes(thing)) s.sleep();
+      onTap(s, () => void this.tap(s), { cooldown: 400 });
+      this.ctx.track(s);
+      this.sleepers.push(s);
+      this.friendLayer.addChild(s);
+    }
+  }
+
+  /** Friends asleep so far on the whole tour (or in the one room). */
+  private asleepSoFar() {
+    const before = this.tour.slice(0, this.stop).reduce((n, room) => n + room.friends.length, 0);
+    return before + this.sleepers.filter(x => x.asleep).length;
+  }
+
+  /** The arrow was tapped: the room goes dark, the next room's friends wait awake, and the voice names it. */
+  private async walkOn() {
+    if (!this.arrow.visible || this.busy || this.finished) return;
+    this.busy = true;
+    this.arrow.visible = false;
+    sfx.bell(6, 0.2);
+    await this.ctx.tw.to(this.curtain, { alpha: 1 }, { duration: 0.6 });
+    this.stop++;
+    this.setting = this.tour[this.stop];
+    this.friends = [...this.setting.friends];
+    this.placeFriends();
+    this.resize(this.view);
+    await this.ctx.tw.to(this.curtain, { alpha: 0 }, { duration: 0.6 });
+    this.busy = false;
+    return this.ctx.instruct('night.tourRoom', { room: ROOM_NAMES[this.setting.id] });
   }
 
   start() {
@@ -224,6 +288,8 @@ class GoodnightRoom implements Game {
       s.position.set(p.x, p.y);
     }
     this.drawDark();
+    this.curtain.clear().rect(0, 0, v.w, v.h).fill(NIGHT);
+    this.arrow.position.set(v.w * 0.5, v.h * 0.56);
     this.tally.position.set(v.w / 2, 65);
     this.dots.position.set(v.w / 2, 110);
   }
@@ -281,6 +347,7 @@ class GoodnightRoom implements Game {
   /** The ghost finger on the how-to card: say goodnight to each friend, or to the one named and then the next. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
+    if (this.arrow.visible) return { tap: { on: this.arrow } };
     const asleep = new Set(this.sleepers.filter((s) => s.asleep).map((s) => s.thing));
     const thing = thingToTap(this.plan, this.requests[this.index], this.step, asleep, this.friends, this.targetCount);
     const sleeper = this.sleepers.find((s) => s.thing === thing);
@@ -303,6 +370,10 @@ class GoodnightRoom implements Game {
       this.busy = false;
       return this.ctx.instruct('night.all');
     }
+    if (this.plan.mode === 'tour') {
+      this.busy = false;
+      return this.ctx.instruct('night.tour', { room: ROOM_NAMES[this.setting.id] });
+    }
     const r = this.requests[this.index];
     if (!r) {
       // Friends left settle together; an exception round keeps its night-light awake.
@@ -321,7 +392,7 @@ class GoodnightRoom implements Game {
   private async goodnight(s: Sleeper, speak = true) {
     s.sleep();
     sfx.bell(noteFor(s.thing, this.setting), 0.25);
-    this.stars = this.sleepers.filter((x) => x.asleep).length * 3;
+    this.stars = this.plan.mode === 'tour' ? this.asleepSoFar() * 2 : this.sleepers.filter((x) => x.asleep).length * 3;
     this.drawSky();
     this.drawDark();
     // A little "z" floats up.
@@ -358,11 +429,15 @@ class GoodnightRoom implements Game {
       this.busy = false;
       return;
     }
-    if (this.plan.mode === 'all') {
+    if (this.plan.mode === 'all' || this.plan.mode === 'tour') {
       this.busy = true;
       await this.goodnight(s);
+      if (!this.sleepers.every((x) => x.asleep)) return void (this.busy = false);
+      if (this.stop + 1 >= this.tour.length) return void this.finale();
+      // Everyone here is asleep: the big arrow leads on to the next room.
+      this.arrow.visible = true;
+      await this.ctx.instruct('night.tourNext');
       this.busy = false;
-      if (this.sleepers.every((x) => x.asleep)) void this.finale();
       return;
     }
     const r = this.requests[this.index];
@@ -398,7 +473,8 @@ class GoodnightRoom implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
-    this.stars = Math.max(this.stars, 12);
+    // A tour fills the sky; the stars never shrink.
+    this.stars = Math.max(this.stars, this.plan.mode === 'tour' ? 48 : 12);
     this.drawSky();
     for (const step of [7, 5, 4, 2]) {
       sfx.bell(step, 0.2);
@@ -406,6 +482,7 @@ class GoodnightRoom implements Game {
     }
     this.ctx.pet.setMood('sleepy', 4);
     if (this.plan.mode === 'except') await this.ctx.say('night.exceptDone', { light: NAMES[this.friends.find(isLight)!] });
+    else if (this.plan.mode === 'tour') await this.ctx.say('night.tourDone');
     else await this.ctx.say('night.done');
     await this.ctx.tw.wait(0.6);
     this.ctx.finish({ misses: this.misses, hints: this.hints });

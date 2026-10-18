@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Goodnight Room level 10, goodnight everywhere
+
+- Changed: `goodnight-room` level 10 (`claude/goodnight-everywhere`, [PR #554](https://github.com/rjdunlap/neo/pull/554)), a seeded three-room tour (bedroom first, then two of barn/tent/boat cabin) with a big arrow after each sleeping room and a star-filled finale; pre-K window now 5-10.
+- Ran: `npm run typecheck` clean; `npm test` (160 files, 1485 tests, including the tour rule test across seeds); `BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=9 TO_LEVEL=10` on `http://localhost:5729` (level 9 regression after the friend layer change; level 10: three distinct rooms, arrow only after each room sleeps, fresh awake room after it, score [0,0], portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=10` clean in 36.2 s.
+- Not run: night levels 1-8 (unchanged interaction; prior pass stands), build, offline, `world`.
+- Open: device and child check of the arrow and a longer three-room round; the no-wrong-levels-climb-fast lean still applies.
+
 ## 2026-10-17 — Roadmap and process cleanup (docs only)
 
 **What changed:** the 35 subject recommendation packets moved from the roadmap to [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md) behind a one-row-per-subject table; the chunk table is grouped by status, chunks 14 and 28 (research) are taken only when the grown-up selects one, chunk 19's check tier matches its D2b slice, and Next up names the execution queue as one dispatch path; [WAITING-ON-DEVELOPER](WAITING-ON-DEVELOPER.md) opens with the six calls that unblock the most work and keeps rows that block nothing in their own table; [DEVICE-CHECKS](DEVICE-CHECKS.md) opens with a fifteen-minute iPad session that covers most items; IDEAS.md's three ladder audits moved to [the archive](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md); the execution queue says it is the Codex coordinator's state file and its stale #501 checkpoint is closed. Companion slices the same day: [READY.md](READY.md) (PR #552) and the verification archiver (PR #553).
@@ -94,37 +101,6 @@
 - Browser (http://localhost:5568, 5831): `early` paint levels 1–2 pass (level 1 finishes on five pats alone); `fingerdemo` `rainbow-fingers` levels 1,2 pass (25.9 s, 30.5 s) and 6,7 pass (25.5 s, 13.9 s). One portrait screenshot (view 1024×1365) of level 2: seven marked pots in one row, clear of the pet.
 - Not run: `npm run build`, `early` levels 3–7, device checks (a one-year-old's pat and the 104-unit pot stay open in [DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
-## 2026-10-17 — Executive function subject research
-
-- Added the [executive-function study](deep-dives/subjects/executive-function.md): opened Diamond (2013) and Diamond and Lee (2011) at PMC, the Kassai et al. (2019) abstract, Scionti et al. (2020), the FTC Lumosity release, CASEL self-management, Harvard's activities-guide landing page and Wikipedia's Simon and Tower of London pages. Not opened: Head Start ELOF (403; P-ATL codes from third-party alignments), EYFS (404), the Harvard chapter PDFs (no text extraction), Rush Hour's page (403).
-- Updated the subject tracker, roadmap [Executive function recommendations](deep-dives/subjects/RECOMMENDATIONS.md#executive-function-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: wording rule, Scoop Shop window, Pancake Stack identity/accounting/placement, Critter Sort switch accounting; no reference game played; no transfer claimed.
-
-## 2026-10-17 — Weather Wardrobe deep dive
-
-- Docs only: [deep dive](deep-dives/weather-wardrobe.md) on `claude/dive-weather-wardrobe` ([PR #538](https://github.com/rjdunlap/neo/pull/538)). Audited levels 1–7; gaps: the level-7 card still says pack for a trip, level 7 undressing is always everything, lap window holds a boing level, level 1 ignores most touches, a miss shows nothing, the trip never happens, sunny's "everything" is two, a dead undress voice line, the known `{name}` off-screen bug.
-- Opened BridgingApps (Sago Mini Babies Dress Up), Kids Academy, Common Sense Media (Tinybop Weather), Easterseals (iDress for Weather), Pre-K Pages and NGSS K-ESS2-1/K-ESS3-2; Daniel Tiger (mirror 404), Pokémon GO weather (Bulbapedia 403) and Animal Crossing are search summaries; Dress Teddy and the felt weather bear recalled.
-- Eight ready slices added to the roadmap; one decision row to WAITING.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Bolt Boards definition
-
-- Defined Bolt Boards levels 1–7 in [the definition](definitions/bolt-boards.md): discrete pinned/hanging/down board poses computed exactly (a hanging center lies below its bolt), a covered-bolt rule, a toolbox model at 1–5 that provably never dead-ends, open-hole parking at 6–7 with a capped breadth-first hint, a layout test over every reachable pose, accounting, bot, how-to and registration (Barnyard); six references cited.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the six defaulted decisions; fit numbers are computed, not measured; no child has played it.
-
-## 2026-10-17 — Pile Match definition
-
-- Defined Pile Match levels 1–8 in [the definition](definitions/pile-match.md): 2D layered heap with a top-only freedom rule, a tray derived from the piece mask (3-slot asked basket at 1–2, 5 slots from 3), free put-back, kinds assigned in consecutive triples along a clearing route so no state dead-ends, computed portrait-fit layout, wrong-kind and full-tray accounting, hint order, bot, how-to and registration; six references cited.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the six defaulted decisions; layout numbers and the hint time bound are computed, not measured; no child has played it.
-
-## 2026-10-17 — Robots and automation subject research
-
-- Added the [robots-and-automation study](deep-dives/subjects/robots-automation.md): opened the CSTA 2026 PDF (EK/E1/E2-SOC-HU-15, E2-SYS-HW-11, E3-PRO-PD-04, E5-SYS-HW-12, MS-SYS-HW-31, MS-SOC-CE-45, S2-PHY-IO-02; printed pages), NGSS Appendix G, Levy and Mioduser (2010), Hallström (2021), the Hokayem et al. (2020) abstract, Treasureworld, and Autonauts, shapez, Opus Magnum, micro:bit, KIBO and CS Unplugged pages; Kempton (1986), KIBO sensors and Opus Magnum metrics marked recalled or secondhand. Helper House is the first ladder.
-- Updated the subject tracker, notebook row, roadmap [Robots and automation recommendations](deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: identity beside Sorting Machine, accounting, toddler entry, placement, older registration, model and card review; no reference game played.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -172,7 +148,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Beat Builder woodland stage | 2026-10-12: typecheck, ten rules, build; level-5 portrait and row-response probe | Woodland stage entry / [PR #197](https://github.com/rjdunlap/neo/pull/197) | Content/art only; no unchanged suite; device/child fit open |
 | Story Steps (`expansion`, `storytheater`, `fingerdemo`) | 2026-10-13: school theater 12/13 creative choices, revision/help/undo/replay/bow/reward and leaving during narration; clean 10.6/16.4 s demos; final art-only level-13 regression and portrait/landscape reviewed; typecheck, 1,253 tests/build. 2026-10-12: clue-ending level 11 filtered play and clean 3.4 s demo | [Theater entry](archive/VERIFICATION-2026-10-07-13.md#2026-10-13--story-theater-first-slice); Story Steps clue endings entry | Demos reused after art-only fixes; iPad touch, speech and child interpretation untested; world/offline/couch/unrelated suites not run |
 | Puzzle Pals spatial support (`fourth`, `fingerdemo`) | 2026-10-14: typecheck, fourteen game/eighteen how-to tests; filtered `fourth` levels 5/7, exploration, two misses/one hint, reward and portrait; 2026-10-11 level-7 demo retained (32.9 s) | [Visible cues and fairness](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--puzzle-pals-visible-cues-and-fairness) | box lid open; no demo rerun, iPad, device speech or child play |
-| Goodnight Room content (`woods`, prior `fingerdemo`) | 2026-10-15: typecheck and 13 focused rules; 13 rules, seeded tent/cabin level-6 play (wrong light, glow, completion, score/sticker), portraits reviewed. Prior 2026-10-11 level-8 color play and clean 5.7s demo retained | [Tent and cabin proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--goodnight-room-tent-and-boat-cabin) | Full suites/build/offline/fingerdemo not rerun for content; iPad speech/touch and child interpretation open |
+| Goodnight Room content (`woods`, `fingerdemo`) | 2026-10-17: level 10 tour: typecheck, 120 focused tests, `woods` filtered to `night` level 10 (three rooms, arrow, score [0,0]), `fingerdemo` clean in 37.1 s. Levels 1-9 last played 2026-10-15 (tent/cabin level 6) | [Level 10 entry](#2026-10-17--goodnight-room-level-10-goodnight-everywhere) | Levels 1-9, build and offline not rerun; iPad speech/touch, arrow and child interpretation open |
 | Animal Snack words and guards (`woods`, `fingerdemo`) | 2026-10-16: busy-touch poke/wiggle, typecheck, 10 animal-snack tests, `woods` filtered to snack levels 1–5 with mid-eat tap checks ([entry](archive/VERIFICATION-2026-10-16.md#2026-10-16--animal-snack-busy-touch-acknowledgment)); 2026-10-15: three-bite eating with a sound per food, typecheck, 9 animal-snack tests, `woods` filtered to snack levels 1–5 ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--animal-snack-bites)); 2026-10-14: level 3 two ways to ask (food or sound clue), typecheck, 87 animal-snack/content tests, `woods` filtered to snack levels 3–5 ([proof](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--animal-snack-level-3-two-ways-to-ask)); 2026-10-11: 34 focused tests, typecheck/build; levels 1–5, retries/hints, exact count and saved rewards; demos 1/5 clean; portraits 3/5 and nearest-body regression | Animal Snack words and guards entry | Full suites/offline not rerun; busy-touch: no `fingerdemo`, build or screenshot, wiggle reading as "wait" open; bites: no `fingerdemo` or portrait screenshot; iPad, speech, bite sounds and child play open |
 | Clock Tower support | 2026-10-15: typecheck, 29 focused tests, build, filtered 6/7 replay/explanation/misses/hint/sticker plays, portraits and clean 18.4s / 23.8s ghost finger; prior level-5 and setting/control evidence retained | [Hour-change and fives explanations](archive/VERIFICATION-2026-10-15.md#2026-10-15--clock-tower-hour-change-and-fives-explanations) | iPad speech/touch and child comprehension open; unchanged levels and broader suites not rerun |
 | Bubble Pop sign and levels 12–14 (`woods`, `originals`, `fingerdemo`, `howto`) | 2026-10-12: typecheck, 110 tests, sign on 10–11, levels 12–14 played with misses/hint/rainbow, demos 10–14 clean, cards at 11 and 14 | Bubble Pop target sign entry | No build or full ladder; iPad, speech and child play open |
