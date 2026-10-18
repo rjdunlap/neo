@@ -38,5 +38,6 @@ export default defineConfig({
       workbox: { maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'], clientsClaim: true },
     }),
   ],
-  test: { include: ['src/**/*.test.ts'] },
+  // `scripts/creature-art/*.test.mjs` checks the sprite preparation tool's pixel rules on synthetic images.
+  test: { include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'] },
 });

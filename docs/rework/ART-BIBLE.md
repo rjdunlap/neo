@@ -43,7 +43,7 @@ Sizes are in the game's logical units at scale 1, so images can be prepared to m
 
 ## Image requirements (so it can be cut and animated)
 
-These come from the RW02b pipeline (`scripts/creature-art/prepare-glider.mjs` and the mesh rig in `src/art/creatures/glider-illustrated.ts`).
+These come from the RW02b pipeline (`scripts/creature-art/prepare-sprite.mjs` and the mesh rig in `src/art/creatures/glider-illustrated.ts`).
 
 1. **One creature per image**, nothing else in it: no ground, props, other creatures or text.
 2. **Background:** transparent if the tool offers it. Otherwise a perfectly flat, plain white background (`#FFFFFF`) with no shadow, gradient, vignette or paper texture.
@@ -69,7 +69,7 @@ These come from the RW02b pipeline (`scripts/creature-art/prepare-glider.mjs` an
 2. **Choose:** pick one candidate against the checklist below at full size, and again shrunk to about 120 px wide (card size).
 3. **Variants:** generate `blink` and `happy` from the chosen image. Re-roll any variant that drifts.
 4. **Store:** put the originals, untouched (no screenshots, crops or resizes), in `docs/rework/concepts/generated/<species>-<asset>-<n>.png`. Record the date, tool and prompt in `docs/rework/concepts/generated/README.md`.
-5. **Prepare:** a session cuts and rigs them with the RW02b pipeline. The script needs a small change first: take the file, box and seed as arguments and handle a transparent input.
+5. **Prepare:** a session runs `node scripts/creature-art/prepare-sprite.mjs --set <species>` ([arguments and the alignment rule](../../src/art/creatures/illustrated/README.md#preparing-a-sprite)): it cuts every chosen file in the manifest with one shared box, keys out a flat background or passes a transparent one through, and refuses a variant whose outline drifted from the base by more than a few pixels. Then the session rigs the set.
 6. **Later creatures:** attach the approved glider as a second reference so each new creature matches it.
 
 ## Review checklist

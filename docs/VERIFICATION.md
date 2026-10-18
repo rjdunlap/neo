@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Sprite preparation script generalized
+
+- `scripts/creature-art/prepare-sprite.mjs` ([PR #562](https://github.com/rjdunlap/neo/pull/562)): `--in/--out`, `--box`, `--seed`, `--bg`, `--pad`, `--scale`, `--tolerance`, `--check`, and `--set <species>` reading the generated manifest's chosen files into `src/art/creatures/illustrated/<species>-<asset>.png` with one shared box, refusing a variant whose trimmed bounds drift more than 4 px (offsets printed, nothing written). A transparent input is passed through with edge de-fringing; flat white or cream is keyed out as before. The pixel rules are in `sprite-core.mjs`; `prepare-glider.mjs` is a thin wrapper. Documented in [the illustrated README](../src/art/creatures/illustrated/README.md#preparing-a-sprite); the art bible, the routine's brief and the manifest point at it.
+- Ran `node scripts/creature-art/prepare-glider.mjs --check`: byte-identical to the committed `glider.png` (sha256 b5ecc041…, size 458 × 206, origin 527,257), after matching the pilot's live-buffer edge distance. New `scripts/creature-art/prepare-sprite.test.mjs` (13 tests on synthetic images: paper keying and un-mix, transparent pass-through and halo de-fringe, cut, alignment, manifest, arguments, and an end-to-end `--set` refusal and run through real PNGs, skipped where no Chromium is installed) and the glider's 7 tests pass; `vite.config.ts` now includes `scripts/**/*.test.mjs`. `npm run typecheck` clean. Full `npm test`: 1490 passed, 8 timed out in unrelated game rule tests (Ferry Jam, Fluffy Salon, Peg Garden, Penguin Slide, Photo Safari, Secret Code) under 161-worker load; those files pass alone (62/62). `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: build, browser suites (no game or shell code changed). No generated image exists yet, so no real set was prepared; the de-fringe and alignment rules are proven only on synthetic pixels.
+
 ## 2026-10-17 — RW05 creature collection definition (docs only)
 
 - Docs only: the packet [CREATURE-COLLECTION.md](rework/CREATURE-COLLECTION.md) on `claude/define-rw05-collection` ([PR #560](https://github.com/rjdunlap/neo/pull/560)), the RW05 rows in [WORK-ITEMS.md](rework/WORK-ITEMS.md), [READY.md](READY.md) and [ROADMAP.md](ROADMAP.md), and a [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md) row.
