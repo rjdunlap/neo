@@ -4,7 +4,7 @@
 
 Research and proposals only, following the [subject procedure](../subjects.md#the-procedure-one-session-one-subject). Catalog read at `bf8117f`. No game, therapeutic exercise or family advice card was built. Cooking was already claimed (and landed during setup), so this takes the next unstarted wave-A subject.
 
-**Recommend defining Playdate Workshop first:** hear two friends' pictured requests, arrange a way to use the play materials, then operate the plan and see both creations. Define **Common Ground** separately for older children and parents: negotiate a small shared space with explicit constraints and preferences. Keep **Two Viewpoints** inside Story Steps' existing Story Theater and **Ask First** inside Feelings Faces. These are definition packets, not permission to register four new games. [Roadmap recommendations](../../ROADMAP.md#social-emotional-play-recommendations).
+**Recommend defining Playdate Workshop first:** hear two friends' pictured requests, arrange a way to use the play materials, then operate the plan and see both creations. Define **Common Ground** separately for older children and parents: negotiate a small shared space with explicit constraints and preferences. Keep **Two Viewpoints** inside Story Steps' existing Story Theater and **Ask First** inside Feelings Faces. These are definition packets, not permission to register four new games. [Roadmap recommendations](RECOMMENDATIONS.md#social-emotional-play-recommendations).
 
 ## Anchors and evidence limits
 

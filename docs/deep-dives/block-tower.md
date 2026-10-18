@@ -58,7 +58,7 @@ Learning references: [K.MD.A.1–2](https://www.thecorestandards.org/Math/Conten
 
 Lap play stays a few large actions with a rewarding tumble. Toddler play can notice a friend's height without stopping at a number independently. Preschool and pre-K build/check/undo with height as the meaningful quantity. School play predicts, observes support and revises a plan. Keep the existing first six IDs, and expand their content before inventing tools.
 
-The [audit](../IDEAS.md#short-ladder-audit-2026-10-09) wondered whether a counterweight changes the decision. It can, but a block behind the edge needs temporary support during construction: adding a farther star to the current immediate-settle mode is insufficient. Keep all weights equal; change the build/test sequence, show the whole group being supported, then release deliberately. A repair round prepares that interaction. An optional later removal round asks which support is essential. Shape copying, volume/packing and different masses stay with their own activities or a later definition.
+The [audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#short-ladder-audit-2026-10-09) wondered whether a counterweight changes the decision. It can, but a block behind the edge needs temporary support during construction: adding a farther star to the current immediate-settle mode is insufficient. Keep all weights equal; change the build/test sequence, show the whole group being supported, then release deliberately. A repair round prepares that interaction. An optional later removal round asks which support is essential. Shape copying, volume/packing and different masses stay with their own activities or a later definition.
 
 ## Proposed ladder
 

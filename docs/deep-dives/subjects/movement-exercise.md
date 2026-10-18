@@ -92,7 +92,7 @@ Effort: S = one small content/definition slice; M = a new complete interaction; 
 
 ## Recommended follow-ups, requested 2026-10-14
 
-**Developer preference to retain:** after discussing other movement ideas, the developer asked to add the recommendations to the roadmap and remember them. Prioritize **Adventure Walk** and **Animal Charades** for definition alongside Dance Workshop; keep **Mirror Partners** within Pet Says. This supplements the study's candidate list; it does not implement a game or schedule a worker. [Roadmap packets](../../ROADMAP.md#movement-and-family-play-recommendations), [PR #312](https://github.com/rjdunlap/neo/pull/312).
+**Developer preference to retain:** after discussing other movement ideas, the developer asked to add the recommendations to the roadmap and remember them. Prioritize **Adventure Walk** and **Animal Charades** for definition alongside Dance Workshop; keep **Mirror Partners** within Pet Says. This supplements the study's candidate list; it does not implement a game or schedule a worker. [Roadmap packets](RECOMMENDATIONS.md#movement-and-family-play-recommendations), [PR #312](https://github.com/rjdunlap/neo/pull/312).
 
 | Candidate | Fun action / purpose | Small complete experience and deeper play | Fit / unresolved work |
 | --- | --- | --- | --- |

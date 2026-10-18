@@ -34,7 +34,7 @@ Ranges (`LEVELS` in `index.ts`): lap 1–2, toddler 1–3, preschool 2–4, pre-
 10. **The "Pet says" tricks are always "no name".** A trick is only the move said without "{pet} says"; real Simon Says also tempts with the wrong name or with "do this / do that".
 11. **Person checks open:** whether a one-year-old copies at all or just taps the pet; whether the mittens read as hands; whether the tune and freeze feel like a game or a wait; whether grown-ups find the arrow ([roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device): "Pet Says as co-play").
 
-**Follow-up preference, developer-requested 2026-10-14:** keep **Mirror Partners** as a mode/extension here: two people alternate leading and copying, with a later change/opposite variation. Reconcile it with this plan's leader swap, opposite rules and This hand perspective before defining a slice; do not create another imitation game or silently allocate levels. [Roadmap packet](../ROADMAP.md#movement-and-family-play-recommendations). This adds no physical instruction approval, runtime band or family seat-credit decision.
+**Follow-up preference, developer-requested 2026-10-14:** keep **Mirror Partners** as a mode/extension here: two people alternate leading and copying, with a later change/opposite variation. Reconcile it with this plan's leader swap, opposite rules and This hand perspective before defining a slice; do not create another imitation game or silently allocate levels. [Roadmap packet](subjects/RECOMMENDATIONS.md#movement-and-family-play-recommendations). This adds no physical instruction approval, runtime band or family seat-credit decision.
 
 ## Similar games
 

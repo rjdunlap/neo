@@ -7,10 +7,18 @@
 - Not run: night levels 1-9 (unchanged interaction; prior pass stands), build, offline, `world`.
 - Open: device and child check of the arrow and a longer three-room round; the no-wrong-levels-climb-fast lean still applies.
 
+## 2026-10-17 — Roadmap and process cleanup (docs only)
+
+**What changed:** the 35 subject recommendation packets moved from the roadmap to [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md) behind a one-row-per-subject table; the chunk table is grouped by status, chunks 14 and 28 (research) are taken only when the grown-up selects one, chunk 19's check tier matches its D2b slice, and Next up names the execution queue as one dispatch path; [WAITING-ON-DEVELOPER](WAITING-ON-DEVELOPER.md) opens with the six calls that unblock the most work and keeps rows that block nothing in their own table; [DEVICE-CHECKS](DEVICE-CHECKS.md) opens with a fifteen-minute iPad session that covers most items; IDEAS.md's three ladder audits moved to [the archive](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md); the execution queue says it is the Codex coordinator's state file and its stale #501 checkpoint is closed. Companion slices the same day: [READY.md](READY.md) (PR #552) and the verification archiver (PR #553).
+
+**Checks:** `node scripts/check-links.mjs` (links ok after `--fix-moved` repointed about 160 links) and `git diff --check`. No code changed; no TypeScript, unit, build or browser run.
+
+**Open:** the roadmap's counts paragraph is still typed by hand (a script from the registry was proposed, not built); the one-game check command from the workflow review is still unbuilt.
+
 ## 2026-10-17 — Money and economy subject research
 
 - Added the [money-and-economy study](deep-dives/subjects/money-economy.md): opened the C3 Framework's D2.Eco indicators, the 2021 National Standards for Personal Financial Education (grade 4 and 8 text), CCSS 2.MD.C.8, England mathematics and citizenship programmes and CFPB's building-blocks and Money as You Grow pages; Jahoda, Fehr et al., Watts et al., Moonlighter, Animal Crossing, Peter Pig and Sesame from search summaries. Overlap audit first; Swap Meet is the first ladder.
-- Updated the subject tracker, a notebook row, roadmap [Money and economy recommendations](ROADMAP.md#money-and-economy-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Updated the subject tracker, a notebook row, roadmap [Money and economy recommendations](deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: tickets versus no new currency, real coins, placement, Harbor Orders' registration; no reference game played.
 
 ## 2026-10-17 — Cut Along definition
@@ -45,7 +53,7 @@
 ## 2026-10-17 — Visual art subject research
 
 - Added the [visual-art study](deep-dives/subjects/visual-art.md) on `claude/subject-visual-art` ([PR #547](https://github.com/rjdunlap/neo/pull/547)): opened England art and design KS1–3, EYFS expressive arts, Core Arts visual arts K/2/4/7 (Washington's adoption on Common Planner), the NCAS anchors, NPS weaving patterns and MIT's weaving-in-Scratch page; Lowenfeld, Gardner, VTS, Jacquard and the reference games are search summaries; Head Start ELOF returned 403.
-- Little Loom first; Picture Talk card; Gallery Walk later. Updated the tracker, notebook, roadmap [Visual art recommendations](ROADMAP.md#visual-art-recommendations) and a decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+- Little Loom first; Picture Talk card; Gallery Walk later. Updated the tracker, notebook, roadmap [Visual art recommendations](deep-dives/subjects/RECOMMENDATIONS.md#visual-art-recommendations) and a decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 - Open: identity and Paint Pier capacity, accounting, kept cloth, styles/traditions review, Gallery Walk art; no reference game played.
 
 ## 2026-10-17 — Little Helpers deep dive
@@ -70,7 +78,7 @@
 ## 2026-10-17 — Nature and sustainability subject research
 
 - Added the [nature-and-sustainability study](deep-dives/subjects/nature-sustainability.md): opened NGSS K-ESS3-3, 5-ESS3-1 and MS-ESS3-3, England science Y1/Y2/Y4, EPA's recycling, composting and waste-hierarchy pages, Sobel's essay page, Çoruhlu and Er Nas (2018), and Terra Nil, Alba, Eco and Animal Crossing sources; EYFS, NAAEE and Sesame Go Green marked recalled or from search summaries. Second Chance Shed (the Trash Sort seed) is the first ladder.
-- Updated the subject tracker, the notebook's Trash Sort row, roadmap [Nature and sustainability recommendations](ROADMAP.md#nature-and-sustainability-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Updated the subject tracker, the notebook's Trash Sort row, roadmap [Nature and sustainability recommendations](deep-dives/subjects/RECOMMENDATIONS.md#nature-and-sustainability-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: overlap with Critter Sort, item/card review, placement, older registration and framing; no reference game played.
 
 ## 2026-10-17 — Peg Garden deep dive
@@ -92,12 +100,6 @@
 - Ran: `npm run typecheck`; rainbow-fingers logic and how-to tests (5 new rule tests) pass. Full `npm test` had 3–4 five-second timeouts in unchanged solver tests under load (load average 7); rerun alone all passed except penguin-slide "level 8 combines useful snow stops…", a known load flake on unchanged code.
 - Browser (http://localhost:5568, 5831): `early` paint levels 1–2 pass (level 1 finishes on five pats alone); `fingerdemo` `rainbow-fingers` levels 1,2 pass (25.9 s, 30.5 s) and 6,7 pass (25.5 s, 13.9 s). One portrait screenshot (view 1024×1365) of level 2: seven marked pots in one row, clear of the pet.
 - Not run: `npm run build`, `early` levels 3–7, device checks (a one-year-old's pat and the 104-unit pot stay open in [DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
-## 2026-10-17 — Executive function subject research
-
-- Added the [executive-function study](deep-dives/subjects/executive-function.md): opened Diamond (2013) and Diamond and Lee (2011) at PMC, the Kassai et al. (2019) abstract, Scionti et al. (2020), the FTC Lumosity release, CASEL self-management, Harvard's activities-guide landing page and Wikipedia's Simon and Tower of London pages. Not opened: Head Start ELOF (403; P-ATL codes from third-party alignments), EYFS (404), the Harvard chapter PDFs (no text extraction), Rush Hour's page (403).
-- Updated the subject tracker, roadmap [Executive function recommendations](ROADMAP.md#executive-function-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: wording rule, Scoop Shop window, Pancake Stack identity/accounting/placement, Critter Sort switch accounting; no reference game played; no transfer claimed.
 
 ## Coverage summary
 

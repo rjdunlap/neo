@@ -1,6 +1,6 @@
 # Roadmap execution queue
 
-This is the working queue for the Codex coordinator, authorized on 2026-10-11. [ROADMAP.md](ROADMAP.md) and the [deep-dive tracker](deep-dives/README.md) remain the sources of scope and readiness. Follow [AGENTS.md](../AGENTS.md) for claims, implementation, publication and verification. Scheduling does not override an unresolved developer decision.
+This is the **state file of the Codex coordinator**, authorized on 2026-10-11: its policy, its current worker and its usage ledger. It is one dispatch path, not the only one: a session a person starts picks from the roadmap directly under [AGENTS.md](../AGENTS.md) and never edits this file (from 2026-10-11 to 2026-10-18 about ten of the roughly 470 merged pull requests came through this queue). [ROADMAP.md](ROADMAP.md) and the [deep-dive tracker](deep-dives/README.md) remain the sources of scope and readiness. Follow [AGENTS.md](../AGENTS.md) for claims, implementation, publication and verification. Scheduling does not override an unresolved developer decision.
 
 ## Policy
 
@@ -37,7 +37,7 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 - No other active implementation chat. Open #480 is fractions research. Idle creature-art review owns unpublished art/runtime edits in its separate checkout; preserve those and do not overlap them. No RW03 claim found before dispatch; worker rechecks.
 - D1b proof reused: typecheck, units, build, filtered discovery flow, full world and matched-build production offline passed; checkouts clean/servers stopped. Device speech/reach and child interpretation remain open. Final **34% / 52% used**, resets `1792273607` / `1792802478`. Full five-hour cost unknown across resets; weekly 11 → 52 is **41 points aggregate account usage**, including other work. Final resume segment 3 → 34 / 47 → 52 is aggregate 31 / 5, not an exact task cost.
 - RW03 exploration complete: [packet/proof](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw03-home-and-navigation-packet), standalone HTML, committed landscape/portrait snapshots, desktop route-state probe clean; links/diff passed. Production type/unit/build/browser/offline checks not run (no production changes); child/device usability open. Scope reading **77/59**, pre-implementation **80/59**, pre-inspection **81/59**, pre-publication **82/59** used, ordinary usage true, same reset identities as admission. These are aggregate account readings, not exact task cost. Preview server stopped; separate dirty creature-art worktree preserved.
-- Next: merge/publish this verified docs-only slice in #501, confirm deployment, report final post-commit usage in worker response and stop. Coordinator retrieves/reconciles completion once; RW04 is the next eligible definition, not assigned to this worker.
+- [#501](https://github.com/rjdunlap/neo/pull/501) merged and deployed 2026-10-17; the slot is released once the coordinator reconciles its final reading. RW04 was delivered by another session the same day ([packet](rework/WELCOME-ADVENTURE.md)), so the next admission follows the selection order above, not an assignment recorded here.
 
 ## Usage observations
 
