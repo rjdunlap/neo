@@ -87,6 +87,12 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | lumen-sad-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R14-PROMPTS.md#sad1) | yes |
 | lumen-alt-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [alt1](R14-PROMPTS.md#alt1) | yes |
 | lumen-portrait-2.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait2](R14-PROMPTS.md#portrait2) | yes |
+| sprout-look-blossom-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [blossom1](R15-PROMPTS.md#blossom1) | yes |
+| sprout-look-pond-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [pond1](R15-PROMPTS.md#pond1) | yes |
+| river-look-sunny-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [sunny1](R15-PROMPTS.md#sunny1) | yes |
+| river-look-stream-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [stream1](R15-PROMPTS.md#stream1) | yes |
+| glider-look-sunset-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [sunset1](R15-PROMPTS.md#sunset1) | yes |
+| glider-look-morning-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [morning1](R15-PROMPTS.md#morning1) | yes |
 
 ## R01 review and preparation notes
 
@@ -239,6 +245,16 @@ Base bounds `(206, 61, 1417, 941)` occupy about 79% canvas width, with at least 
 The alt folds the two round wings upright together while keeping visible body, face, antennae, ruff and feet visually in place. It reveals upper cream body previously hidden by the open near wing. Alt bounds `(515, 26, 1417, 941)` have only 26 px above the closed wings; add display padding during preparation. The wing contour/marking projection naturally changes with the pose, so it needs separate pose preparation rather than the expression swap alignment rule.
 
 Portrait 1 was rejected for an unoutlined lower ruff and tight framing. Portrait 2 has a closed outline around its cream bust and includes both antennae and rounded wing sections. Bounds `(112, 137, 1159, 1140)` leave at least 95 px margin, narrower than the stronger retry's 15% target but fully clear. No missing files. Reviewed at about 120 px on white and temporary pale-blue composites; QA masks/thumbnails are not assets. White fallback has faint near-white variation; paper-key later while preserving cream and eye whites. No claim of iPad readability, child appeal or animation quality. Glow behavior, wing motion, body anchors and wearable fitting remain integration work.
+
+## R15 review and preparation notes
+
+Six untouched PNGs, each 1536 × 1024, 9,108,983 bytes total. SHA-256 verifies repository copies match tool originals. No pixel cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R15-PROMPTS.md) recorded. This request edits the approved bases, so no new base candidates were made.
+
+Reviewed every look full size and at 120 px canvas width on white and temporary pale-blue composites. Sprout Blossom changes teal to pink; Pond changes teal to blue, preserving green leaves/stem, cream markings and pink pads. River Sunny changes caramel to golden yellow while retaining brown tail/feet; Stream changes caramel to blue and the paddle tail to deep blue, retaining brown feet. Glider Sunset changes lavender wing/body surfaces to peach with pale pink clouds; Morning changes them to mint with cream clouds. Both preserve the lavender/pink ribbons, cream face/underside and the cloud shapes. Face expressions, eye highlights and pose remain visually consistent with their respective bases. No retries or missing looks.
+
+All six silhouettes compared bidirectionally against their respective approved bases: zero pixels outside a four-pixel tolerance. Sprout bounds are `(307, 63, 1229, 961)`; River looks `(34, 195, 1500, 808)`; Glider Sunset `(23, 188, 1512, 832)` and Morning `(23, 188, 1513, 832)`. Bounds differ by at most one pixel from the corresponding base. This is inspection evidence, not pixel-identical shading/registration proof. Existing base framing caveats carry forward, especially the glider's narrow side margins; add display padding during preparation. White fallback has slight near-white variation; key surrounding paper later while preserving cream and eye whites.
+
+No expression/portrait variants for these looks were requested or generated; adopting a look requires those later requests as the queue specifies. Temporary QA masks/thumbnails are not assets. Preparation alignment, mesh fitting, animation, device readability and child appeal remain unchecked; unlock/earning behavior is not integrated here. All eligible requests R01–R15 now have production results. R16 remains blocked pending RW11's form definitions; do not generate it until that dependency is supplied.
 
 ## Generating service terms
 
