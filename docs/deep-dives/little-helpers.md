@@ -54,7 +54,7 @@ A fruit drops onto the meadow; tapping it sends the nearest of seven leaf-topped
 
 ## What makes sense here
 
-The [short-ladder audit](../IDEAS.md#short-ladder-audit-2026-10-09) left this game alone ("equal groups is the right end"), because remainders belong to Monster Munch and Lasso Loops and rows and columns to Orchard Rows. This dive keeps those boundaries and still proposes levels, as the Teddy Doctor dive did, because the documented horizon (compose, decompose, how many more) is exactly what a crowd of helpers models and nothing else on the island does it with a team you split yourself:
+The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#short-ladder-audit-2026-10-09) left this game alone ("equal groups is the right end"), because remainders belong to Monster Munch and Lasso Loops and rows and columns to Orchard Rows. This dive keeps those boundaries and still proposes levels, as the Teddy Doctor dive did, because the documented horizon (compose, decompose, how many more) is exactly what a crowd of helpers models and nothing else on the island does it with a team you split yourself:
 
 - **Fix what the top claims first.** Level 6 should be teams she builds (gap 2) and level 5 should show the empty places (gap 3) before anything is stacked on them.
 - **Decompose with the crowd.** Two fruits and exactly enough helpers for both: every helper goes, so "nobody left, nobody short" checks itself (K.OA.A.3, IDEAS' "split a visible group two ways").

@@ -25,7 +25,7 @@ Ranges are `lap 1–2, toddler 1–2, preschool 2–4, prek 3–5, school 4–6`
 
 **Known gaps (source audit):**
 
-- **Level 5 does not need both clues.** Every animal stands in its own spot, so the place word alone picks the target. The action word is decoration (already noted in [IDEAS](../IDEAS.md#round-two-the-longer-ladders-2026-10-10)). Level 4's name is likewise redundant (all three are the same animal), and level 3's distractor actions all differ from the target's, so the action alone suffices. Levels 3 and 4 still teach their one new word truthfully; level 5 does not teach "both".
+- **Level 5 does not need both clues.** Every animal stands in its own spot, so the place word alone picks the target. The action word is decoration (already noted in [IDEAS](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#round-two-the-longer-ladders-2026-10-10)). Level 4's name is likewise redundant (all three are the same animal), and level 3's distractor actions all differ from the target's, so the action alone suffices. Levels 3 and 4 still teach their one new word truthfully; level 5 does not teach "both".
 - **Polaroid textures were never freed (fixed in slice 1).** `polaroid()` calls `renderer.generateTexture` for every photo and `destroy()` is empty, so each round leaves four to six textures behind. AGENTS requires games to release their render textures.
 - **One spot per animal caps the evidence design.** Any two-clue level needs two animals able to share a spot, which means a layout with an offset per animal and nearest-target tap resolution (the hit circles are 95 units in radius).
 - Device speech for "behind the bush" and "not sleeping" is unchecked (already listed in [DEVICE-CHECKS](../DEVICE-CHECKS.md)).

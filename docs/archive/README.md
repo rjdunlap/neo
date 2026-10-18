@@ -48,3 +48,5 @@ Song Maker deep-dive closeout rotated the Further subject and progression gaps a
 Splish Splash slice 1 closeout rotated the oldest live verification entry (Woodland Picnic) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md), leaving fifteen dated entries live.
 
 Dot Link level 11 closeout rotated the five oldest live verification entries (Shape Buddies level 2, RW02b, Sink or Float level 7, RW02) into [Verification 2026-10-16](VERIFICATION-2026-10-16.md); the RW03 entry stays live because the execution queue links it, leaving sixteen dated entries live.
+
+IDEAS.md's short-ladder audit (2026-10-09), round two and round three moved to [IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md](IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md) on 2026-10-17; the game deep dives superseded them. The same day the subject recommendation packets left the roadmap for [deep-dives/subjects/RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md) (not an archive: they are live proposals).

@@ -168,4 +168,4 @@ Sketches not scheduled: Clay Corner; Paper Weaving card (after review); Picture 
 
 ## What was built and checked
 
-Nothing built. Docs only: this study, the tracker row, the notebook candidate row, the roadmap's [Visual art recommendations](../../ROADMAP.md#visual-art-recommendations), a decision row and a verification entry. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks; no reference game was played, and child, tween and parent appeal are unestablished.
+Nothing built. Docs only: this study, the tracker row, the notebook candidate row, the roadmap's [Visual art recommendations](RECOMMENDATIONS.md#visual-art-recommendations), a decision row and a verification entry. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks; no reference game was played, and child, tween and parent appeal are unestablished.
