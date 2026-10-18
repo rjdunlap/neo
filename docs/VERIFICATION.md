@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-18 — Roundup deep dive
+
+- Docs only: [deep dive](deep-dives/roundup.md) on `claude/dive-roundup` ([PR #580](https://github.com/rjdunlap/neo/pull/580)). Audited levels 1–6; gaps: the trot-home is uncounted, the numeral has no dots, the cast is a fixed pig and bunny, grass taps go unanswered at level 1, no toddler rung between tap and shoo, one pointer only, hard-coded sort lines, no journal or couch.
+- References were read through search summaries and listings, none played: Extreme Herder guides, Puffle Roundup fan wikis, Stampede's Wikipedia and manual notes, Flock! press, Sheep Control, Flock It! and Flockwork listings, Farmer's Market Color Sorting Set listings, the K.MD.B.3 and K.CC.B.5 pages, the Clements and Sarama counting trajectory table and two-attribute sorting summaries.
+- Ladder: levels 7–12 (toddler 10 *Shoo one*, lap/toddler 11 *Come along*, pre-K 7–9 and 12, 13 gated), nine ready lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived audit row and the IDEAS row.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
 ## 2026-10-18 — Ancient river civilizations subject research
 
 - Added the [ancient-river-civilizations study](deep-dives/subjects/ancient-river-civilizations.md): opened England's history programmes (gov.uk), extracted the California HSS standards and the LACOE K–2/3–5/6–8 C3 guides locally from their PDFs, read Solé 2019 (open-access PDF), the cuneiform, Schmandt-Besserat, hieroglyph, Egyptian and Babylonian numeral, Nile flood, Egyptian calendar, shadoof, Sumer, beveled-rim bowl, cylinder seal, Deir el-Medina, Giza, Rhind papyrus, Royal Game of Ur and Senet pages, Penn's cuneiform tool, Google's Fabricius post, Ubisoft's Discovery Tour page and the Pharaoh: A New Era store page; Hodkinson 2004, Jacobsen and Adams 1958 and ISAC's scribe activity book from search summaries. River Tablets is the first ladder (nine planning rungs, preschool–13+); Two Tablets the grown-up decipherment puzzle.

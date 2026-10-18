@@ -21,6 +21,16 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`fill-dump`, level 7 Which holds more?** (new interaction; after level 6 *Full and empty* lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 
+- **`roundup`, support truth, slice 1** (existing-game bug fix tier): the trot-home counts a hint, a dot count sign at 5–6, a lap tap on grass or sign answered without a miss, the total spoken at the bell, a seeded layout per round, a how-to note. [Dive](deep-dives/roundup.md#build-slices-in-order)
+- **`roundup`, kinds and pens, slice 2** (logic tier): duck and dog, pens drawn from a pool, `{a}`/`{b}` voice lines, varied casts at 4. [Dive](deep-dives/roundup.md#fresh-content-inside-existing-levels)
+- **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
+- **`roundup`, level 11 *Come along*, slice 4** (new interaction): the follow mode for lap and toddler, placed by `order`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
+- **`roundup`, level 7 *Leave the cows*, slice 5** (new levels): pre-K 3–7. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, level 8 *Make it fair*, slice 6** (new levels): pre-K 3–8, equal shares between two pens, with a seesaw sound. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, level 9 *Fill it up*, slice 7** (new levels): pre-K 3–9. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, level 12 *Big and little*, slice 8** (new levels, plus a portrait screenshot): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. [Dive](deep-dives/roundup.md#build-slices-in-order)
+
 - **`song-maker`, support truth slice 1** (existing-game bug fix tier): full-cell hit areas so levels 5–6 reach 100 units (about 91–92 today, computed), a tested layout function, and a conditional how-to keep note for free play, which still always finishes. IDs and accounting unchanged. [Dive](deep-dives/song-maker.md#build-slices-in-order)
 - **`song-maker`, ten spoken patterns at level 6, slice 2** (content tier): five new pattern shapes, each named aloud before play. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
 - **`song-maker`, authored motifs for levels 3–5, slice 3** (content tier): short pentatonic motifs replace random rows; level 4's Missing Melody shape is frozen. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)

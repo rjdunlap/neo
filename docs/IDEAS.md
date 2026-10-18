@@ -1124,7 +1124,7 @@ Grouping by the underlying mechanic shows overlaps and possible reuse. Inspect e
 
 | Family | Built | Candidates | Reuse to consider |
 | --- | --- | --- | --- |
-| Steer a leader or a crowd | Duckling Parade, Roundup, Little Helpers | Munch Maze, Lane Hop, Follow the Leader, Island Taxi | Trail-following and flee steering from Duckling Parade and Roundup |
+| Steer a leader or a crowd | Duckling Parade, Roundup (see its [deep dive](deep-dives/roundup.md)), Little Helpers | Munch Maze, Lane Hop, Follow the Leader, Island Taxi | Trail-following and flee steering from Duckling Parade and Roundup |
 | Catch what falls | Egg Catch | Juice Squish | Egg Catch's slow falls, held-finger basket and gates |
 | Aim and bounce (physics) | Bouncy Launch, Peg Garden, Bounce Back, Bumper Garden | Mini Golf, Pin Roll, Roll Ball, Block Topple, Snack Drop, Keepy Uppy | `engine/ball.ts`: ball, peg and wall physics with an optional ceiling and springy bumpers, and `simulate()` to preview or pick a shot |
 | Draw to control | Rainbow Fingers, Letter Trails, Number Trails, Dot Link, Lasso Loops | Cloud Path, Rainbow Road, Water Paths, Draw a Song | Lasso Loops' custom pointer handling; turning a drawn line into something a ball can ride |
