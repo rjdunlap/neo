@@ -136,7 +136,7 @@ Added 2026-10-16 from the [standards audit](subjects/standards-audit.md): Common
 | ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `fractions` | Fractions as numbers: unit fractions, equivalence, comparing, on a number line; decimal-fraction connections | CCSS 3.NF, 4.NF, 5.NF | Pet Kitchen, Memory Match, Frog Hop | Counting Cove | P–U; G | fraction-strip tiling puzzle | not started |
-| `ratio-proportion` | Ratios, rates, scaling, percent; mixing to the same taste or color | CCSS 6.RP, 7.RP | Pet Kitchen, Lemonade Stand, Rainbow Fingers | Counting Cove / Tinker Lab | U–M; G | mix-to-match puzzle | not started |
+| `ratio-proportion` | Ratios, rates, scaling, percent; mixing to the same taste or color | CCSS 6.RP, 7.RP | Pet Kitchen, Lemonade Stand, Rainbow Fingers | Counting Cove / Tinker Lab | U–M; G | mix-to-match puzzle | in progress 2026-10-18: `claude/subject-ratio-proportion` (claim) |
 | `integers` | Below zero: temperature, sea level, floors, owing and having | CCSS 6.NS.C, 7.NS.A | Frog Hop, Weather Wardrobe | Counting Cove / Bubble Beach | U–M | diving or elevator puzzle | not started |
 | `algebra-balance` | Unknowns, doing the same to both sides, growing patterns, a rule from a table | CCSS 6.EE, 7.EE, 8.EE, 8.F | Seesaw Balance, Pattern Train, Fruit Sums | Puzzle Peaks | S–M; G | Box Balance-style cozy puzzle | not started |
 | `area-volume-space` | Area and perimeter, filling boxes, nets, views and the coordinate grid | CCSS 3.MD.C, 4.MD.A, 5.MD.C, 5.G.A, 6.G | Garden Rows, Tangram Town, Shape Buddies, Fill and Dump; Skyline View (proposed) | Rainbow Meadow | P–M; G | packing or floor-plan puzzle | not started |
