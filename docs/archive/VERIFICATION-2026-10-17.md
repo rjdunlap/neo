@@ -216,3 +216,16 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - Added the [executive-function study](../deep-dives/subjects/executive-function.md): opened Diamond (2013) and Diamond and Lee (2011) at PMC, the Kassai et al. (2019) abstract, Scionti et al. (2020), the FTC Lumosity release, CASEL self-management, Harvard's activities-guide landing page and Wikipedia's Simon and Tower of London pages. Not opened: Head Start ELOF (403; P-ATL codes from third-party alignments), EYFS (404), the Harvard chapter PDFs (no text extraction), Rush Hour's page (403).
 - Updated the subject tracker, roadmap [Executive function recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#executive-function-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: wording rule, Scoop Shop window, Pancake Stack identity/accounting/placement, Critter Sort switch accounting; no reference game played; no transfer claimed.
+
+## 2026-10-17 — Rainbow Fingers slice 2, every touch counts, pots, nudge
+
+- Changed (`9dcc0257`): levels 1–2 count every lifted touch (pat, hold, drag) toward the frame, a pat splats a 100-across flower, pots are 104 across at 104 spacing with ink marks (`potLayout` keeps clear of the pet), and a blank spot sparkles after 8 quiet seconds. Hint accounting (decision 5) not built.
+- Ran: `npm run typecheck`; rainbow-fingers logic and how-to tests (5 new rule tests) pass. Full `npm test` had 3–4 five-second timeouts in unchanged solver tests under load (load average 7); rerun alone all passed except penguin-slide "level 8 combines useful snow stops…", a known load flake on unchanged code.
+- Browser (http://localhost:5568, 5831): `early` paint levels 1–2 pass (level 1 finishes on five pats alone); `fingerdemo` `rainbow-fingers` levels 1,2 pass (25.9 s, 30.5 s) and 6,7 pass (25.5 s, 13.9 s). One portrait screenshot (view 1024×1365) of level 2: seven marked pots in one row, clear of the pet.
+- Not run: `npm run build`, `early` levels 3–7, device checks (a one-year-old's pat and the 104-unit pot stay open in [DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-17 — Puddle Gobble definition
+
+- Defined Puddle Gobble levels 1–8 in [the definition](../definitions/puddle-gobble.md): a rain puddle on Bubble Beach soaks up things that fit (tiers 1–4, count-based growth, so levels 1–7 never dead-end), too-big things never block or count, smallest first at 5, numbers at 6, sums at 7 and an exact pail total with a free let-go at 8; accounting, bot, how-to and registration; five references cited (Hole.io, Donut County, Katamari Damacy, Feeding Frenzy recalled, Piaget/Pink Tower summaries).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the five defaulted decisions; sizes and fit are computed, not measured; no child has played it.
