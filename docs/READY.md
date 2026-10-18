@@ -97,6 +97,8 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 - **`swing-pals`, build levels 1–6** (new-game tier): push a friend on a tree swing to ring the bell (pushes never lower height, the bell latches, no misses at 1–3), then two swings on short and long ropes, then tap the hook that makes her friend swing along with the pet's; weight and height never change the beat; Rainbow Meadow. [Definition](definitions/swing-pals.md)
 
+- **`cut-along`, build levels 1–8** (new-game tier): follow a dashed line from the paper's edge with big scissors and the piece drops into the host's collage; snips at 1, a thick line at 2, then straight, zigzag and wave, curves and a circle (either way round), square and triangle, picture outlines, and choosing the outline that fits a gap; Letter Trails' tracer, one miss per stray drag from 3, a glow after two, Paint Pier. [Definition](definitions/cut-along.md)
+
 - **`little-helpers`, every touch answers and the empty crowd shrugs** (existing-game bug fix): level 1 whole-screen send, a hop while busy, a grass wave, a shrug not a boing, the whole bunch into the basket. [Slice 1](deep-dives/little-helpers.md#build-slices-in-order)
 - **`little-helpers`, the badge fills, needs vary, level 2 opens to lap** (existing-game change, levels 2–6): rings fill as helpers grab on, the gap named at 5, no 1, 2, 1, 2 rounds, lap window 1–2. [Slice 2](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
 - **`little-helpers`, things to carry and three places** (content): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods. [Slice 3](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
