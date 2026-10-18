@@ -79,6 +79,14 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | mossback-sad-1.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R13-PROMPTS.md#sad1) | yes |
 | mossback-alt-2.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [alt2](R13-PROMPTS.md#alt2) | yes |
 | mossback-portrait-1.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait1](R13-PROMPTS.md#portrait1) | yes |
+| lumen-base-4.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [base4](R14-PROMPTS.md#base4) | yes |
+| lumen-blink-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [blink1](R14-PROMPTS.md#blink1) | yes |
+| lumen-happy-2.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [happy2](R14-PROMPTS.md#happy2) | yes |
+| lumen-surprised-2.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [surprised2](R14-PROMPTS.md#surprised2) | yes |
+| lumen-sleepy-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy1](R14-PROMPTS.md#sleepy1) | yes |
+| lumen-sad-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R14-PROMPTS.md#sad1) | yes |
+| lumen-alt-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [alt1](R14-PROMPTS.md#alt1) | yes |
+| lumen-portrait-2.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait2](R14-PROMPTS.md#portrait2) | yes |
 
 ## R01 review and preparation notes
 
@@ -219,6 +227,18 @@ Base bounds `(120, 124, 1451, 917)` occupy about 87% of width, with at least 85 
 The tucked-in alt retracts the neck and legs, with the face and small blue leg stubs peeking beneath the shell rim. First alt shifted the left tail tip; alt 2 restores its leftmost position. Visible upper/left shell plates, moss and flower remain visually aligned. Previously occluded front/right shell rim and lower tail/body surfaces are newly generated as the anatomy retracts, not recovered from hidden source pixels. Alt bounds `(120, 124, 1185, 814)` reflect the retracted pose, and it needs separate pose preparation rather than expression swap alignment. Fine tail/shell edge differences may remain for that review.
 
 Portrait is a closed head/chest bust with shell, moss and the single flower, no feet or tail. Bounds `(58, 126, 1192, 1179)` leave at least 58 px margin, narrower at the sides than the prompt's 80%-frame target; add card padding later without modifying the original. No missing assets. Reviewed at about 120 px on white and temporary pale-blue composites; white fallback has faint near-white variation. Paper-key later, preserving cream and eye whites. No iPad readability, child appeal or animation-quality claim. Carrying behavior, body anchors and wearable fitting remain integration work.
+
+## R14 review and preparation notes
+
+Eight untouched PNGs, 12,192,864 bytes total (11.63 MiB, approximately the brief's 12 MB budget). Full-body images are 1536 × 1024; portrait is 1254 × 1254. SHA-256 verifies repository copies match tool originals. No pixel cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R14-PROMPTS.md) recorded.
+
+Three bases reviewed full size and at 120 px canvas width. Candidate 2 has the simplest two oval upright wings, clear antenna separation and cream tucked feet. Candidate 1 adds lower wing lobes, a longer striped abdomen and brown feet; candidate 3 has sharper antenna tips and an extra lower wing lobe. Candidate 2 was refined through imagegen to add the second white eye highlight; the untouched refinement is base 4. No runner-up retained. The round pink wings with purple edges and three yellow spots each distinguish Lumen from the swept glider. A chunky cream ruff, two feather antennae, blush and small closed smile match the moth brief; no nose, proboscis or realistic insect legs. Wing roots have painted seams against the ruff; preserve these in preparation.
+
+Base bounds `(206, 61, 1417, 941)` occupy about 79% canvas width, with at least 61 px margin. All parts remain inside the frame. Happy 1 and surprised 1 added stray far-brow marks outside the head; replacements omit that brow. All five chosen mood silhouettes compared bidirectionally against base: zero pixels outside a four-pixel tolerance. Bounds vary by at most one pixel per edge. Full-size review found wing spots, wings, antennae, ruff, feet and framing retained. Small local edge/shading changes may remain; this does not prove pixel-identical registration. Preparation alignment and animation checks remain.
+
+The alt folds the two round wings upright together while keeping visible body, face, antennae, ruff and feet visually in place. It reveals upper cream body previously hidden by the open near wing. Alt bounds `(515, 26, 1417, 941)` have only 26 px above the closed wings; add display padding during preparation. The wing contour/marking projection naturally changes with the pose, so it needs separate pose preparation rather than the expression swap alignment rule.
+
+Portrait 1 was rejected for an unoutlined lower ruff and tight framing. Portrait 2 has a closed outline around its cream bust and includes both antennae and rounded wing sections. Bounds `(112, 137, 1159, 1140)` leave at least 95 px margin, narrower than the stronger retry's 15% target but fully clear. No missing files. Reviewed at about 120 px on white and temporary pale-blue composites; QA masks/thumbnails are not assets. White fallback has faint near-white variation; paper-key later while preserving cream and eye whites. No claim of iPad readability, child appeal or animation quality. Glow behavior, wing motion, body anchors and wearable fitting remain integration work.
 
 ## Generating service terms
 
