@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Peg Garden deep dive
+
+- Docs only: [deep dive](deep-dives/peg-garden.md) on `claude/dive-peg-garden` ([PR #541](https://github.com/rjdunlap/neo/pull/541)). Audited levels 1–5; gaps: taps during a fall and beside the board do nothing, level 3 has no stall guard and counts drift as error, its hint marks the bud not the drop spot and never clears, any shot blooms numbered buds, no `pointercancel`, level 1's card finish is wrong.
+- Opened Peggle, Pachinko and Galton board (Wikipedia) and NGSS K-PS2-1; Peggle Blast reviews, Plinko, Sushi Cat, Hape Pound and Tap Bench, object permanence boxes and GraviTrax are search summaries; Gorillas recalled.
+- Six ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Puddle Gobble definition
 
 - Defined Puddle Gobble levels 1–8 in [the definition](definitions/puddle-gobble.md): a rain puddle on Bubble Beach soaks up things that fit (tiers 1–4, count-based growth, so levels 1–7 never dead-end), too-big things never block or count, smallest first at 5, numbers at 6, sums at 7 and an exact pail total with a free let-go at 8; accounting, bot, how-to and registration; five references cited (Hole.io, Donut County, Katamari Damacy, Feeding Frenzy recalled, Piaget/Pink Tower summaries).
