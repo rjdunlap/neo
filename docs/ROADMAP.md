@@ -780,6 +780,22 @@ The [ordered slices](deep-dives/subjects/data-ai-literacy.md#build-slices-in-ord
 
 The [ordered slices](deep-dives/subjects/executive-function.md#build-slices-in-order) separate definitions from builds. No game, band, land or save change; no transfer, child, tween or parent appeal is established.
 
+### Money and economy recommendations
+
+**Recommended 2026-10-17:** [the money-and-economy study](deep-dives/subjects/money-economy.md), [PR #548](https://github.com/rjdunlap/neo/pull/548), covers every audience. It opened the C3 Framework's economics indicators (D2.Eco K-2, 3-5, 6-8), the 2021 National Standards for Personal Financial Education (grade 4 and 8 tables), CCSS 2.MD.C.8, England's mathematics and citizenship programmes and two CFPB pages; Jahoda (1979), Fehr et al. (2008), Watts et al. (2018), Moonlighter, the Animal Crossing stalk market and Sesame's jars came from search summaries. It begins as an overlap audit: Market Stall owns coins, Lemonade Stand owns demand and price, the [older-child progression](#older-child-progression-a-market-week-not-an-island-grind) proposals own tickets, wheels and the bank. Define **Swap Meet** first, the island's first trading action. Every amount stays inside one round (the rework brief wants no new currency); lap gets none new.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Swap Meet 1–4** · toddler–school · new identity | define now, docs only (ME1) | Friends hold one thing and picture one want; drag the wanted thing and both things cross (a trade is two-way). 1 *Give it* (toddler, no misses), 2 *Two friends*, 3 *Swap!* (two pairs among four friends), 4 *Chain of two* (she is the trader; the order of trades). An unacceptable offer is a miss from level 2; off-path trades and trading back are free; the hint lies on a BFS shortest path. Placement: Cozy Village (12) only after the capacity test, else Maker Harbor when it exists |
+| **Market Stall 12 *Pick one*** · pre-K–school · existing game | define inside its dive with its decision 7 (ME3) | A purse of 9 and wants at 6, 5 and 4; any affordable choice is accepted and the voice names what was given up (opportunity cost); "too dear" per decision 7 |
+| **Lemonade Stand 5 *Save for the awning*** · school · existing game | define after decision 6 (ME4) | A goal jar the purse cannot spend; every seeded week has a non-losing plan that fills it; no failed week |
+| **Swap Meet 5–6** · school | define after 1–4 are played (ME5) | 5 a three-step chain with a tempting side trade; 6 the Harbor stall buys and sells anything for 2 shells, so the goal takes strictly fewer trades (tested); the comparison is spoken, never a miss |
+| **Harbor Orders** · school top, 13+ · new identity | define after decision 4 and Lantern Lake capacity (ME6) | Two workshops make crates or boats at pictured rates; fill an order in the fewest mornings (comparative advantage), proved by enumeration; optional "fewer mornings?" after success. Lean over a household-budget puzzle |
+| **Spend, share, save** and **Play shop** cards · family | after a named practical review (ME7) | Plain HTML; no allowance amounts, brands or hardship framing |
+| **Lemonade Stand 6 *A rainy-day jar*** · upper school | after 5 is played (ME8) | A pictured, stated chance of a tipped jug; whether the captain's top-up stops is decision 6 |
+
+The [ordered slices](deep-dives/subjects/money-economy.md#build-slices-in-order) separate definitions from builds. Shared costs, taxes and jobs route to `community-civics`; advertising and product claims to `data-ai-literacy` and `networks-citizenship`. No spoiling goods, restock timers, hidden prices, debt or traded-away creatures. Child, tween and parent appeal and any transfer to real money habits are unestablished.
+
 ## Later horizons (elementary)
 
 The long-term plan: a familiar island that grows from early play through roughly ages 5–11, by extending favorite games, adding new interactions where they help, and connecting them through places, characters and projects. These are development horizons, not dates or grade locks. Ages are rough planning guides; learning ranges overlap; and the horizons are not a proposal for one runtime band per school grade. Apart from Wonder Woods (the `school` band's place) and the steps marked built, everything in this section is a **proposal**.
