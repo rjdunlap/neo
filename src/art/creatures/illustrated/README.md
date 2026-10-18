@@ -19,3 +19,7 @@ Prepared sprites for the [generated creature pilot](../../../../docs/rework/GENE
 ## Usage terms
 
 The concept sheet was generated inside the developer's own design session for this project and is committed in the repository; no third-party stock art or traced character is used. The generating service's output terms apply to it as they did when it was committed; they were not re-checked here.
+
+## In progress
+
+Generalizing the preparation script into `prepare-sprite.mjs` (file, box, seed, transparent input, `--set <species>`) on `claude/prepare-sprite-tool`; `prepare-glider.mjs` stays as a thin wrapper.
