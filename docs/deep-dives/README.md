@@ -119,7 +119,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Rhyme Time | `rhyme-time` | KS | 4 | 4 | not started | — | — |
 | Rhythm Neighbors | `rhythm-neighbors` | LTPKS | 6 | 4 | designed; slices 1–4 and the journal page ready; levels 10–12, the new neighbor and the two-seat caller need decisions | `claude/dive-rhythm-neighbors` ([PR #558](https://github.com/rjdunlap/neo/pull/558)) | [rhythm-neighbors.md](rhythm-neighbors.md) |
 | Robot Path | `robot-path` | PKS | 13 | 1 | building (boards slice 2 and levels 11–13 built; preschool slice 3 built; next loop repair slice 7) | `codex/robot-path-level-12-fix-program` (level 11: `codex/robot-path-where-will-it-stop`, [PR 100](https://github.com/rjdunlap/neo/pull/100)); slice 2: `codex/robot-path-board-pool` ([PR #149](https://github.com/rjdunlap/neo/pull/149)); slice 3: `codex/robot-path-preschool` ([PR #154](https://github.com/rjdunlap/neo/pull/154)) | [robot-path.md](robot-path.md) |
-| Roundup | `roundup` | LTPK | 6 | 4 | not started | — | — |
+| Roundup | `roundup` | LTPK | 6 | 4 | in progress | `claude/dive-roundup` | — |
 | Scoop Shop | `scoop-shop` | LTPKS | 6 | 4 | designed (6 slices ready: honest level 2 with every touch answering and a count picture, pools and a serve tune, lap 10 *Any scoop*, toddler 11 *Who wanted pink?*, 12 *Fill it up*, 13 *Three pink and two blue*; 7–9 wait on the executive-function row, creature customers on the rework) | `claude/dive-scoop-shop` ([PR #576](https://github.com/rjdunlap/neo/pull/576)) | [scoop-shop.md](scoop-shop.md) |
 | Secret Code | `secret-code` | KS | 6 | 4 | not started | — | — |
 | Seesaw Balance | `seesaw-balance` | TPKS | 9 | 4 | not started | — | — |
