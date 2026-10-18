@@ -343,3 +343,9 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - Opened Wikipedia (Patapon, Rhythm Heaven, Simon, Bop It, clapping games, call and response, the Kodály method), Harvard's serve-and-return page, Yu et al. 2022 (PMC) and the Echo Canyon Band listing; Glee Club, Gordon's MLT, Zentner and Eerola 2010, Kirschner and Tomasello 2009, Provasi and Bobin-Bègue 2003, the Core Arts K standard and Bandimal are search summaries. Nothing was played.
 - Ladder: lap 7 *Knock, knock*, toddler 8 *My turn, your turn*, 9 *Knock a call*, then 10 *Copy or answer?*, 11 *Your own answer*, 12 *Longer calls*; five ready lines in [READY.md](../READY.md), one decision row in WAITING, pointers at the archived ladder-audit rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
+## 2026-10-17 — Pet integration review (docs only)
+
+- Added [PET-INTEGRATION.md](../rework/PET-INTEGRATION.md): what the guide does today (tap, giggle, repeat; no reaction to play), the twenty-seven games whose rules name friends, and six ways the creatures go further into the games (a guide with a job, owned creatures as the cast by role with the word roles kept, one visible talent per species, round results that come home, meeting a wild creature inside a game, two-creature co-play), favourites, the poses casting would add to the art queue, a recommended order and three developer calls.
+- Linked it from the rework README, the art-request README, CAST and GAME-FIT, and added the decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: all three calls; nothing proposed is built.
