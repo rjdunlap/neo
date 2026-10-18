@@ -45,6 +45,8 @@ For each prepared species, in sprite pixels, in the `*_ART` table beside its rig
 
 A species without a part does not break a game. Two policies are open for RW05: a **stand-in point** (the glider's "toes" are its lower ribbon root) or **inviting another friend** ("Lumen can't wear boots. Who else is home?"), which gives owning several creatures a reason. The companion table in [CAST.md](CAST.md#species-briefs) marks each species' misfits so either policy can be built.
 
+How the companions can go further than the guide and the ten games, as the cast, with talents and with what a round makes, is the [integration review](../PET-INTEGRATION.md).
+
 ## A companion contract, for RW05 to write
 
 What `ctx.pet`/`ctx.petSpec` become, in words, so the games above keep working with any species:
