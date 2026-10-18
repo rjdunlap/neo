@@ -56,6 +56,13 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | trill-sleepy-1.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy1](R10-PROMPTS.md#sleepy1) | yes |
 | trill-sad-1.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R10-PROMPTS.md#sad1) | yes |
 | trill-portrait-2.png | R10 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait2](R10-PROMPTS.md#portrait2) | yes |
+| dapple-base-2.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [base2](R11-PROMPTS.md#base2) | yes |
+| dapple-blink-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [blink1](R11-PROMPTS.md#blink1) | yes |
+| dapple-happy-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [happy1](R11-PROMPTS.md#happy1) | yes |
+| dapple-surprised-2.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [surprised2](R11-PROMPTS.md#surprised2) | yes |
+| dapple-sleepy-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy1](R11-PROMPTS.md#sleepy1) | yes |
+| dapple-sad-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R11-PROMPTS.md#sad1) | yes |
+| dapple-portrait-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait1](R11-PROMPTS.md#portrait1) | yes |
 
 ## R01 review and preparation notes
 
@@ -162,6 +169,16 @@ Three bases reviewed full size and at 120 px canvas width. Candidate 3 has three
 Base bounds `(115, 34, 1368, 991)` occupy about 82% canvas width. Crest and feet have only 33–34 px vertical margins, narrower than requested, but every part is inside the frame with a closed contour. Later preparation should add display padding rather than modify originals. Mood bounds vary by at most two pixels; bidirectional silhouette comparison against base found zero pixels outside a four-pixel tolerance. Full-size review found the crest, tail, wings, feet, framing and cream belly retained. Happy opens the beak for singing; surprised has a rounded open beak, sleepy lowers lids, and sad has a gentle beak frown and one tear. This inspection is not proof of pixel-identical shading/edges; preparation alignment and animation checks remain.
 
 Portrait 1 was rejected for narrow top/bottom margins. Portrait 2 retains the full three-feather crest and a closed head/chest bust without feet or tail; bounds `(238, 115, 1021, 1137)` leave at least 115 px around the image. Its height is about 82% of the square, close to the original 80% brief despite the stronger retry's padding request. No missing files. Reviewed the chosen set at 120 px on white and temporary pale-blue composites; QA masks/thumbnails were not saved as assets. White fallback has slight near-white variation; key surrounding paper later while preserving cream and eye whites. No iPad readability, child appeal or animation-quality claim. Trill's singing interaction and slot/misfit policy remain integration work.
+
+## R11 review and preparation notes
+
+Seven untouched PNGs, 10,606,220 bytes total. Full-body images are 1536 × 1024; portrait is 1254 × 1254. SHA-256 verifies repository copies match original tool output. No source cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R11-PROMPTS.md) recorded.
+
+Three bases reviewed full size and at 120 px canvas width. Candidate 2 has the clearest white crescent separating spiral tail from body, a softer crest than candidate 1 and the right bump-nose treatment. Candidate 3 adds cream toe markings and its eye highlights are less clearly white. No runner-up retained. The leaf-green chameleon has a domed head, four rounded grippy feet (far hind foot partly occluded below belly), cream underside, large pink/yellow/blue spots and closed plum outlines. The tail and rounded back crest read at small scale, without turrets, tongue or branch. There are more large spots than the prompt's approximate six, retained as a coherent sparse pattern rather than speckles. Legs overlap at roots; preparation must preserve their seams and tail gap rather than assume all parts are isolated.
+
+Base bounds `(50, 115, 1485, 933)` occupy about 93% canvas width, wider than the generic 85% target, with at least 50 px margin. All parts remain inside the frame. First surprised was rejected for drift around the far brow; replacement keeps it inside the original contour. Chosen expression bounds differ by at most one pixel, and bidirectional silhouette comparison found zero pixels outside a four-pixel tolerance. Full-size review found body spots, tail, legs, crest and framing retained; localized facial paint changes accompany the expressions. This is not pixel-identical shading/registration evidence. Preparation alignment and animation checks remain.
+
+Portrait shows the head and upper chest with the same crest, nose, eyes and visible body spots; no feet or tail. Closed bust bounds `(97, 103, 1185, 1176)` leave at least 69 px margin, narrower than the augmented 12% request but fully clear of every edge. Add display padding later if needed, without altering this source. No missing assets. The set was reviewed full size and at about 120 px on white and temporary pale-blue composites; QA masks/thumbnails are not assets. Opaque white fallback has slight near-white variation; paper-key later, preserving cream and eye whites. No claim of iPad readability, child appeal or animation quality. Live color-changing behavior and slot/misfit policies remain integration work.
 
 ## Generating service terms
 
