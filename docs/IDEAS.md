@@ -1532,7 +1532,7 @@ The 2600's Sesame Street titles (Children's Computer Workshop, 1983) were made f
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Trash Sort | Oscar's Trash Race | Toss each thing into the bin it goes in: paper, food scraps, bottles | Sort by two rules; count what's in each bin | Everyday life; merges the catalog's Tidy Up |
+| Trash Sort → **Second Chance Shed** (proposal, researched 2026-10-17) | Oscar's Trash Race | Carry a used thing to its next life on the island: the worm bin (a sprout appears), the reuse shelf, the mending table, the Remake machine; each place shows its consequence | A friend's request makes reuse first the choice (school); Picnic Loop / Festival Loop plans under capacities (upper school, 13+) | Everyday life; merges the catalog's Tidy Up. Island rules are fiction, never real bin rules; [study](deep-dives/subjects/nature-sustainability.md) |
 | Castle Keys | Adventure | Carry the gold key to the gold castle door, and it opens on a surprise | Three keys and doors; remember which room the key was in | Color matching plus exploring |
 | Fishing Pond | Fishing Derby | Lower a line and a fish nibbles; reel it in | Catch fish numbered 1 to 5 in order, or by color | Merges the catalog's Letter Fishing (letters on the fish) |
 | Snow Slalom | Skiing, SkiFree (no yeti) | Steer down a snowy hill through flag gates | "Go left of the red flags": left and right | Spatial language |

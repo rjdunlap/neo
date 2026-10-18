@@ -467,6 +467,21 @@ The [ordered slices](deep-dives/subjects/body-health.md#build-slices-in-order) s
 
 Lap retains familiar cloud/munch cause-and-effect play; toddler cutaways are observation proposals, without food-web mastery claims. Discovery Marsh remains proposed. The [ordered slices](deep-dives/subjects/ecosystems.md#build-slices-in-order) separate definitions from implementations. Name a biology reviewer for feeding/pollen/decomposer content; resolve exploration accounting before registering free trace modes, and review any practical nature card before publication. Sources support curriculum relevance, not tested teen/parent appeal, iPad usability or learning transfer. Definitions use links/diff checks; eventual builds use their actual activity tier.
 
+### Nature and sustainability recommendations
+
+**Recommended 2026-10-17:** [the nature-and-sustainability study](deep-dives/subjects/nature-sustainability.md), [PR #542](https://github.com/rjdunlap/neo/pull/542), covers every audience. It uses opened NGSS K-ESS3-3, 5-ESS3-1 and MS-ESS3-3, England science Y1/Y2/Y4, EPA's recycling, composting and waste-hierarchy pages and Sobel's *Beyond Ecophobia* summary (EYFS and NAAEE recalled). Define **Second Chance Shed** first: the notebook's Trash Sort seed, where each place visibly makes something. Seasons stay with Day by Day, weather/water and astronomy; gardening with Garden Grow; animal care with Enrichment Day, Habitat Helpers and the creature home. Lap gets none new.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Second Chance Shed 1–4** · toddler–pre-K · new identity (Trash Sort seed) | define now, docs only (N1) | Worm bin, reuse shelf, mending table and Remake machine, added one per level; a reviewed fictional item table (fruit/vegetable scraps and leaves only in the bin, no glass, meat, dairy or ambiguous items, paper never beside the bin); a consequence for each place; toddler level 1 counts no misses; how-to, voice, ghost finger, both layouts and the land capacity check (lean Rainbow Meadow). Overlap test: a rung that is only item-to-bin goes to Critter Sort |
+| **Second Chance Shed 5–6** · school | define after 1–4 are built (N3) | A friend's request makes reuse first the choice for an item Remake would also take; whole-plan check with the cart bell (one miss per ring); level 6 two requests where a greedy pairing fails |
+| **Picnic Loop** (Shed 7–8) · upper school | define after 5–6 (N4) | Cups and plates for four friends, a wash tub that holds two per wash, Remake; target none (then at most one) to the Last Heap; several accepted plans and a tempting failure, by enumeration. No prices or carbon numbers |
+| **Festival Loop** · 13+ / grown-up | define after Picnic Loop (N5) | Three stalls share a tub, bin and shelf; meet the target in two scenarios; `grownup` registration and Lantern Lake capacity decided first |
+| **Stray cup** · Patch Change content | inside ecosystems F3 (N6) | Move a cup off the pond so Duck can visit; tidying as help, no blame |
+| **Kitchen Sort** and **Our Tree** cards · family | after a named practical review (N7) | Sort household things by your own local rules (EPA: check the local program); visit one tree across seasons. Plain HTML |
+
+The [ordered slices](deep-dives/subjects/nature-sustainability.md#build-slices-in-order) separate definitions from builds. The island's rules are fiction, stated as the island's; no doom meter, sad creatures, chores or expiring seasonal collections. A later RW07 adventure could turn a filled request into a permanent home decoration (proposal). Child, tween and parent appeal and any transfer to home habits are unestablished.
+
 ### Earth materials recommendations
 
 **Recommended 2026-10-16:** [the subject study](deep-dives/subjects/earth-materials.md) covers lap through parents using opened NGSS/USGS/NRCS/NAEYC anchors, five digital precedents and physical references. Develop the existing **Sand Table** seed first as a dry material toy; define **Fossil Dig: Find and Record** and **Outcrop Detective** next. These are research proposals and docs-first packets, with no games, new bands or zones implemented. The ecosystems study is researched separately; the [deep-time study](#deep-time-recommendations) develops the same Fossil Dig E5 seed.
