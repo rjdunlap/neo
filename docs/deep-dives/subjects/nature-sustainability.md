@@ -10,7 +10,7 @@ This is research and proposals only, from [roadmap chunk 28](../../ROADMAP.md#ch
 - a loose-wheeled cart on the mending table comes back rolling;
 - a can in the island's Remake machine comes out as a new thing.
 
-From school age, a friend's request decides between two valid places, which is a "reuse first" decision rather than matching an item to a bin. Its older case, **Picnic Loop**, plans what a picnic uses so that little or nothing reaches the Last Heap under the island's stated rules. That is a monitor-and-minimize puzzle with several valid plans.
+From school age, a friend's request decides between two valid places, which is a "reuse first" decision rather than matching an item to a bin. Its older case, **Picnic Loop**, schedules cups across picnics so that few reach the Last Heap within a washing limit, under the island's stated rules. That is a monitor-and-minimize puzzle with several valid plans.
 
 The rest of the subject already has homes:
 - **gardening:** Garden Grow and its Under the Soil and Leaf Litter Window proposals;
@@ -54,7 +54,7 @@ These are starting points to observe, not age tests. U and M are planning audien
 | **P, about 3** | Level 2 or 3: the mending table joins (a teddy's loose button, a cart's lost wheel), and the mended toy comes back and the pet plays with it | Choose among three places from a pictured key. Habitat Helpers' Patch Change could let her move a stray cup off the pond so Duck can visit again: tidying shown as helping, with no blame |
 | **K, about 4–5** | Level 4: the island's Remake machine joins for cans and paper, and makes something new, such as a fresh drawing pad | All four places with a pictured key. Every item has one island place in this rung; reuse first starts at school age |
 | **S, about 6–8** | Level 5 *Someone needs it*: a friend asks for a planter. A jar could go to Remake or to the shelf; sending it to the friend is what fills the request | Several items, one request each round, and the cart bell checks the plan. Level 6 *Two friends, one jar*: two requests compete and a second suitable item exists, so she has to plan which item fills which request |
-| **U, about 9–12** | Level 7 *Picnic Loop*: choose cups and plates for four friends from washable cups (the wash tub holds two per wash) and paper cups (Remake). The stated target is "nothing reaches the Last Heap" | Level 8 adds a second constraint (the shelf holds three, the worm bin is full after four scraps) and the target "at most one thing reaches the Last Heap". Several valid plans; a tempting plan that fails |
+| **U, about 9–12** | Level 7 *Picnic Loop*: choose which cup each of four friends uses at a morning and an afternoon picnic: three washable cups and a shelf jar, a wash tub that washes two between picnics, and one-use cups that go to the Last Heap. Target: at most two to the heap | Level 8 adds an evening picnic and a second limit. Several valid plans; a tempting plan that fails |
 | **M, about 11–14** | Through 12: Picnic Loop 7–8 at the top of `school`. 13+: **Festival Loop** on `grownup` (Lantern Lake, after a capacity check) | Compare two valid plans by what each sends where, and choose one that still meets the target when a stall's wash tub is closed. Appeal is a hypothesis (the tween evidence in the [tracker](../subjects.md#what-the-search-found-about-the-older-range-2026-10-14) is about challenge and autonomy) |
 | **G, play** | **Festival Loop**: three stalls, a shared wash tub, worm bin and shelf, each with capacity, and a target count for the Last Heap. A cozy optimization with exact enumeration | A second scenario, such as rain closing the outdoor tub, and a plan that must meet the target in both. No timer, no score beyond the stated target, and every valid plan is accepted |
 | **G, play with** | **Shed keeper and courier**: on one device, the grown-up reads the friend's request card aloud while the child places and rings the bell; then they swap | The child explains why the jar went to the friend and not to Remake. No seat credit; ordinary single-player accounting |
@@ -84,8 +84,8 @@ Sources audited: [GAMES](../../GAMES.md), [IDEAS](../../IDEAS.md#candidates), th
 | --- | --- | --- | --- |
 | Sesame Street *Go Green: Trash Blast* (help Oscar sort trash, recyclables and compost in a park) and *Lights Out* (hidden-object conservation); known from a [search summary](https://reli.sh/games/project/sesame-street-go-green/) only, since the page returned 403 | Preschool sorting into three destinations | A familiar character asks, and three destinations | A "trash versus good" framing, any lights-off chore guilt, and any implication of universal bin rules |
 | *Oscar's Trash Race* (Atari 2600, 1983), [manual](https://discmaster.textfiles.com/file/1886/1000gamemanuals.iso/Atari%202600/Oscar's%20Trash%20Race.txt) found by search, not read in full | A racing/collecting game, not a sorting game | Nothing beyond the notebook's original seed name | Racing and time pressure |
-| [*Terra Nil*](https://en.wikipedia.org/wiki/Terra_Nil) (Free Lives, 2023), via the Wikipedia page and reviews | A "reverse city builder": restore a barren area in three phases, then recycle your own equipment and leave | The cleanup at the end is part of the puzzle; reviewers call it soothing and puzzle-like | Its later difficulty and resource fail-states, and abstract ecology at a scale she can't inspect |
-| *Alba: A Wildlife Adventure* (ustwo games, 2020), from reviews ([Game Informer](https://www.gameinformer.com/review/alba-a-wildlife-adventure/alba-a-wildlife-adventure-review-a-good-deed?amp), [TheSixthAxis](https://www.thesixthaxis.com/2020/12/11/alba-a-wildlife-adventure-review/)) | Clearing litter and fixing birdhouses draws animals out; a photo log of species | Tidying causes a visible arrival (the Patch Change stray cup); pleasure in the cleanup | Hard-to-photograph moving targets and a collection to grind |
+| [*Terra Nil*](https://en.wikipedia.org/wiki/Terra_Nil) (Free Lives, 2023), via the Wikipedia page and reviews | A "reverse city builder": restore a barren area in three phases, then recycle your own equipment and leave | The cleanup at the end is part of the puzzle; reviewers call it soothing and puzzle-like | The later stages Rock Paper Shotgun found less relaxing (from a search summary), and abstract ecology at a scale she can't inspect |
+| *Alba: A Wildlife Adventure* (2020; developer recalled), from reviews ([Game Informer](https://www.gameinformer.com/review/alba-a-wildlife-adventure/alba-a-wildlife-adventure-review-a-good-deed?amp), [TheSixthAxis](https://www.thesixthaxis.com/2020/12/11/alba-a-wildlife-adventure-review/)) | Clearing litter and fixing birdhouses draws animals out; a photo log of species | Tidying causes a visible arrival (the Patch Change stray cup); pleasure in the cleanup | Hard-to-photograph moving targets and a collection to grind |
 | *Eco* (Strange Loop Games), from the [IES award page](https://ies.ed.gov/funding/grantsearch/details.asp?ID=1551) and a [2019 Frontiers study](https://www.frontiersin.org/articles/10.3389/fpsyg.2019.02846/full) of seven respondents | A multiplayer middle/high-school ecosystem world: measure, model and argue for a plan while limiting pollution | Monitoring before minimizing; plans compared as a group | A doomsday meteor, an online world, an open simulation and a pilot sample too small to support transfer claims |
 | *Animal Crossing: New Horizons* (Nintendo), via [monthly departure guides](https://www.thumbsticks.com/animal-crossing-new-horizons-bugs-fish-sea-creatures-leaving-december/) | Seasonal creatures rotate monthly by hemisphere | Seasons give a world variety | **Catch-before-they-leave windows**, which the rework forbids as expiring collection |
 | **Unplugged:** a kitchen sort of clean, dry household things; a leaf-and-scrap jar or a worm bin watched over weeks; a sit-spot or one-tree visit across seasons (Nature's Notebook style, [USA-NPN](https://www.usanpn.org/nn)) | Real objects and slow time | Real materials, a grown-up's local rules and repeated observation | Handling broken glass, meat or dairy scraps, unsupervised handling of fungi or wildlife, and any duty to keep it going (all **need review**) |
@@ -97,7 +97,7 @@ Effort: S = bounded content or a mode; M = a new interaction; L = a substantial 
 | Candidate | Fun action and learning purpose | Audience | Effort / infrastructure | Next action |
 | --- | --- | --- | --- | --- |
 | **Second Chance Shed** (Trash Sort seed) | Carry a used thing to its next life and watch it become soil, a planter, a mended toy or a remade thing; material properties, then reuse first when someone needs it | T–S (levels 1–6) | M; shared object drags, a finite item/destination/request table in `logic.ts`, palette Graphics; no new save field | **Define first**, N1 |
-| **Picnic Loop** (Shed 7–8) | Plan what a picnic uses so little or nothing reaches the Last Heap under capacities; monitoring and minimizing within constraints | U (top of `school`) | M after the Shed; exact enumeration of assignments | Define after 1–4 are built, N3 |
+| **Picnic Loop** (Shed 7–8) | Schedule cups across picnics so few reach the Last Heap under a washing limit; monitoring and minimizing within constraints | U (top of `school`) | M after the Shed; exact enumeration of schedules | Define after 5–6, N4 |
 | **Festival Loop** (Shed case, `grownup`) | Three stalls share a tub, bin and shelf; meet the target in two scenarios; a cozy plan with trade-offs | 13+ / G | M; the same solver, larger board, 64-unit grown-up targets | Define after Picnic Loop, N5 |
 | **Stray cup** (Patch Change content) | Move a cup off the pond so Duck can visit | P/K–S | S; one cause in Patch Change's definition | Fold into ecosystems F3, N6 |
 | **Kitchen Sort** and **Our Tree** cards | Sort household things by local rules; visit one tree across seasons | family | S; plain HTML | After a named practical review, N7 |
@@ -110,7 +110,8 @@ A small shed yard. Used things arrive one at a time on a little cart at the top.
 - the **worm bin** (a friendly worm peeks out; a pot beside it);
 - the **reuse shelf** (two or three slots);
 - the **mending table** (a needle and a little hammer);
-- the **Remake machine** (a hopper with a chute).
+- the **Remake machine** (a hopper with a chute);
+- from level 7, the **wash tub** and the **Last Heap**, a neat, neutral pile.
 
 At school age a **friend's request bubble** (a picture: a planter, a drum, a pencil cup) sits by the friend at the side of the yard.
 
@@ -118,14 +119,15 @@ Items and places are at least 100 logical units after scaling. The pet sits clea
 
 **Fictional island rules, to freeze and review before building:**
 
-| Place | Takes (first content set) | Consequence shown |
-| --- | --- | --- |
-| Worm bin | Banana peel, apple core, carrot top, a dry leaf | The worm munches, the soil darkens, a sprout pops in the pot |
-| Reuse shelf | A whole jar, a sturdy box, a tin with a lid | It sits on the shelf. At school age a friend takes it and uses it (the jar becomes a planter and a flower appears) |
-| Mending table | A teddy with a loose button, a cart missing a wheel, a kite with a torn tail | One beat of mending, then the toy comes back working and the pet plays with it |
-| Remake machine | A flattened can, a sheet of drawn-on paper, a newspaper | It chugs and drops a new thing (a drawing pad, a little can-lid medal) |
+| Place | Takes (first content set) | From level 5, also accepted | Consequence shown |
+| --- | --- | --- | --- |
+| Worm bin | Banana peel, apple core, carrot top, a dry leaf | — | The worm munches, the soil darkens, a sprout pops in the pot |
+| Reuse shelf | A sturdy box, a whole jar, a tin with a lid | — | Used on the spot, at every level: Bunny hops into the box for a nap, a seedling is planted in the jar. At school age the use is a friend's request instead |
+| Mending table | A teddy with a loose button, a cart missing a wheel, a kite with a torn tail | — | One beat of mending, then the toy comes back working and the pet plays with it |
+| Remake machine | A flattened can, a sheet of drawn-on paper, a newspaper | The tin with a lid (it is metal, like the can) | It chugs and drops a new thing (a drawing pad, a little can-lid medal) |
+| Last Heap (level 7 on) | One-use picnic cups | — | They stack neatly; a counter beside the heap shows how many, with no sad face or smell |
 
-No glass that could look broken, no meat, dairy or oily food, no pizza box, glossy paper or compostable cup, and no battery. Each item has exactly one island place before level 5. Paper never appears with the worm bin in the same round. Every spoken line says "on our island".
+No glass that could look broken (the jar is drawn as a sturdy, unbroken pot-jar, and review may replace it with a tub), no meat, dairy or oily food, no pizza box, glossy paper, paper cup or compostable cup, and no battery. Each item has exactly one island place before level 5; from level 5 the tin with a lid is the item with two valid places. Paper never appears with the worm bin in the same round. Every spoken line says "on our island".
 
 | Proposed level | Starting band | Decision added | Completion |
 | --- | --- | --- | --- |
@@ -133,10 +135,10 @@ No glass that could look broken, no meat, dairy or oily food, no pizza box, glos
 | 2 · Two places | toddler–preschool | Food bits versus whole things | Four items placed |
 | 3 · Mend it | preschool | A third place for broken toys | Five items placed, at least one mended |
 | 4 · Remake | pre-K | All four places from the pictured key | Six items placed |
-| 5 · Someone needs it | school | A friend's request makes reuse the right choice for one item that Remake would also take; the plan is checked with the cart bell | The bell rings with every item in an accepted place and the request filled |
+| 5 · Someone needs it | school | A friend asks for a pencil pot: the tin with a lid could go to Remake or to the shelf, and the request makes the shelf (and the friend) the choice; the plan is checked with the cart bell | The bell rings with every item in an accepted place and the request filled |
 | 6 · Two friends, one jar | school | Two requests; two candidate items, one of which fits only one request; she plans the pairing | Both requests filled; any accepted pairing |
-| 7 · Picnic Loop | school, upper range | Choose cups and plates for four friends; washable things need the wash tub (two per wash), paper goes to Remake; target: none to the Last Heap | Every accepted plan |
-| 8 · Picnic Loop, two limits | school top | Add a shelf limit and a full worm bin; target: at most one to the Last Heap | Every accepted plan; a tempting plan exists that fails one limit |
+| 7 · Picnic Loop | school, upper range | Four friends drink at the morning and the afternoon picnic, one cup each time. There are three washable cups and a jar on the shelf; a used cup must be washed before reuse, and the wash tub washes two between the picnics; one-use cups go to the Last Heap. Target: at most two to the Last Heap | Every accepted plan. Using one-use cups in the morning to "save" the washables for later also meets the target; reaching for four one-use cups at the start fails it (four to the heap) |
+| 8 · Picnic Loop, three picnics | school top | Add an evening picnic and a second limit (the tub washes two each time, the jar is promised to a friend after lunch); target stated per case | Every accepted plan; enumeration proves a tempting plan fails one limit |
 
 **First three rounds.**
 1. Level 1: a peel waits on the cart and the worm bin wiggles. Any drop into the bin munches. A drop anywhere else floats the peel back to the cart with a soft pop, and no miss is counted at toddler level.
@@ -148,7 +150,8 @@ No glass that could look broken, no meat, dairy or oily food, no pizza box, glos
 ### Rules, mistakes, help and proof to define
 
 - **Finite rules.** An authored item table (item, island place, request tags), request cards and place capacities live in `logic.ts`. The seeded RNG chooses the order of items and which reviewed items appear. It never invents an item's place. Levels 5–8 are checked as a whole plan: an assignment satisfies every request, every capacity and the target.
-- **Exploration and accounting.** Levels 1–4 judge each drop at once. Level 1 counts nothing; from level 2 a drop in a wrong place is one miss. Levels 5–8 accept and rearrange placements freely, and **only the cart bell** is a claim: one miss per unsuccessful ring, never one per wrong item. The friend or the place first unmet says what is still missing (for example, "I still need something for my flower"). Undo is free.
+- **Accounting note for Picnic Loop.** The answer is a schedule (which cup is used at which picnic, which are washed), checked by the bell. Enumeration over the small cup set proves the target can be met and lists every accepted plan.
+- **Exploration and accounting.** Levels 1–4 judge each drop at once, and each correct drop plays its place's consequence. Level 1 counts nothing; from level 2 a drop in a wrong place is one miss. Levels 5–8 accept and rearrange placements freely, and **only the cart bell** is a claim: one miss per unsuccessful ring, never one per wrong item. The friend or the place first unmet says what is still missing (for example, "I still need something for my flower"). Undo is free.
 - **Help.** After two misses, glow the right place for the current item (levels 2–4) or the first unmet request and one item that fills it (levels 5–8). **Show me one** places one item correctly and counts one hint, and never moves a correct item. A supported finish stays available and counts its assistance.
 - **Completion.** A successful bell or the last placement plays the consequences in turn, then calls `ctx.finish({ misses, hints })` once. One sticker even with help. No timer, lives, score or optimality rating.
 - **Rule tests to write only when building:**
@@ -188,7 +191,7 @@ None of this has been observed: child appeal, whether consequences teach the pla
 
 ## Decisions for the developer
 
-- **First scope and home:** the lean is Second Chance Shed 1–4 in Rainbow Meadow after a capacity check. Alternatives are Cozy Village (twelve games) or waiting for a habitat kit or Discovery Marsh.
+- **First scope and home:** the lean is Second Chance Shed 1–4 in Rainbow Meadow after a capacity check, beside Garden Grow. The trade-off: Rainbow Meadow's subject is shapes, while Cozy Village (`subject.everyday`, twelve games) matches the seed's "everyday life" theme but is fuller. A habitat kit or Discovery Marsh are later alternatives.
 - **Content review:** a named reviewer for the item table, the compost list and the family cards (glass, food scraps, and outdoor plants and fungi). No real bin rule is ever spoken.
 - **How far to take "human impact":** the lean follows Sobel, with consequences and solutions only through `school` and monitoring/minimizing at the 13+ cases. Should climate change appear in any band? The lean is not without its own study and a reviewer.
 - **Rework hook:** whether the first RW07 adventure after Welcome a New Friend could be "What can we make from the shed?", with a permanent home decoration.
