@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BRUSH_RADIUS, Coverage, fillPath, inside, mix, paintStep, PAINTED, pickThings, PLANS, pours, RECIPES, scribble, scribbleArea, SPACING, THINGS, type PaintState, type Primary } from './logic';
+import { blankSpot, BRUSH_RADIUS, Coverage, fillPath, frameShows, inside, MARGIN, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, PET_CLEAR, pickThings, PLANS, POT_MARKS, POT_RADIUS, POT_SPACING, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, THINGS, touchKind, type PaintState, type Primary, type Touch } from './logic';
+import { RAINBOW } from '../../art/palette';
 import type { ColorName } from '../../art/palette';
 
 describe('Rainbow Fingers', () => {
@@ -125,5 +126,60 @@ describe('Rainbow Fingers', () => {
         expect(cov.covered, `${thing.id} at ${scale}`).toBeGreaterThanOrEqual(PAINTED + 0.15);
       }
     }
+  });
+  it('counts every kind of touch toward the frame: any five show it, and no touch never does', () => {
+    expect(touchKind(0, 0.1)).toBe('pat');
+    expect(touchKind(5, 2)).toBe('hold');
+    expect(touchKind(20, 0.3)).toBe('hold');
+    expect(touchKind(120, 0.8)).toBe('drag');
+    const kinds: Touch[] = ['pat', 'hold', 'drag'];
+    for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) for (let c = 0; c < 3; c++) {
+      const five: Touch[] = [kinds[a], kinds[b], kinds[c], kinds[a], kinds[b]];
+      expect(frameShows(strokesCounted(five), 0)).toBe(true);
+      expect(frameShows(strokesCounted(five.slice(0, 4)), 3)).toBe(false);
+    }
+    for (const seconds of [0, 25, 26, 600]) expect(frameShows(strokesCounted([]), seconds)).toBe(false);
+    expect(frameShows(strokesCounted(['pat']), 26)).toBe(true);
+  });
+
+  it('makes a pat splat at least 100 units across', () => {
+    expect(SPLAT_RADIUS * 2).toBeGreaterThanOrEqual(100);
+  });
+
+  it('lays the pots out 104 across and apart, clear of the pet and inside the view, in every view', () => {
+    expect(POT_RADIUS * 2).toBeGreaterThanOrEqual(104);
+    for (const [w, h] of [[1024, 768], [1024, 1365], [1366, 768], [1180, 820], [700, 900]]) {
+      for (const [n, bowl] of [[7, false], [3, true]] as const) {
+        const at = potLayout(n, w, h, bowl);
+        expect(at.pots).toHaveLength(n);
+        expect(!!at.bowl).toBe(bowl);
+        const all = [...at.pots, ...(at.bowl ? [at.bowl] : [])];
+        for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) expect(Math.hypot(all[i].x - all[j].x, all[i].y - all[j].y), `${w}x${h} ${i}-${j}`).toBeGreaterThanOrEqual(POT_SPACING - 10);
+        for (let i = 0; i < at.pots.length; i++) for (let j = i + 1; j < at.pots.length; j++) expect(Math.hypot(at.pots[i].x - at.pots[j].x, at.pots[i].y - at.pots[j].y)).toBeGreaterThanOrEqual(POT_SPACING);
+        for (const p of at.pots) {
+          expect(p.x - POT_RADIUS, `${w}x${h}`).toBeGreaterThanOrEqual(PET_CLEAR);
+          expect(p.x + POT_RADIUS).toBeLessThanOrEqual(w - MARGIN);
+          expect(p.y + POT_RADIUS).toBeLessThanOrEqual(h);
+          expect(p.y - POT_RADIUS).toBeGreaterThan(h / 2);
+        }
+      }
+    }
+    // Every real view is at least 1024 wide, so seven pots stay in one row; a narrower one wraps to two.
+    expect(new Set(potLayout(7, 1024, 1365).pots.map((p) => p.y)).size).toBe(1);
+    expect(new Set(potLayout(7, 700, 900).pots.map((p) => p.y)).size).toBe(2);
+  });
+
+  it('marks every color pot with its own sign, so color is never the only cue', () => {
+    const marks = RAINBOW.map((c) => POT_MARKS[c]);
+    expect(marks.every(Boolean)).toBe(true);
+    expect(new Set(marks).size).toBe(RAINBOW.length);
+  });
+
+  it('nudges only in free play, after eight quiet seconds, at the spot farthest from the paint', () => {
+    expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([true, true, false, false, false, false, false]);
+    expect(NUDGE_AFTER).toBe(8);
+    const spots = [{ x: 200, y: 200 }, { x: 800, y: 500 }, { x: 500, y: 300 }];
+    expect(blankSpot([{ x: 210, y: 210 }, { x: 520, y: 290 }], spots)).toEqual(spots[1]);
+    expect(blankSpot([], spots)).toEqual(spots[0]);
   });
 });

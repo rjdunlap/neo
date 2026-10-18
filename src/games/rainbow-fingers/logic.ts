@@ -148,6 +148,78 @@ export interface Pt {
   y: number;
 }
 
+/** What a lifted touch was: a quick pat (it splats a flower), a press held in place, or a drag that paints a line. */
+export type Touch = 'pat' | 'hold' | 'drag';
+
+export function touchKind(travelled: number, seconds: number): Touch {
+  if (travelled < 14 && seconds < 0.5) return 'pat';
+  return travelled > 40 ? 'drag' : 'hold';
+}
+
+/** Every kind of touch counts toward hanging the painting up, so a child who only pats, slaps or holds finishes too. */
+export function strokesCounted(touches: readonly Touch[]): number {
+  return touches.length;
+}
+
+/** The free levels show the hang-it-up button after five touches, or after one and a long look. */
+export function frameShows(counted: number, seconds: number): boolean {
+  return counted >= 5 || (counted >= 1 && seconds > 25);
+}
+
+/** A pat's splat: a flower on a round blot this far across from its centre, so it is at least 100 units wide. */
+export const SPLAT_RADIUS = 50;
+
+/** Pots are 104 across (hit circles of 52) and 104 apart; the mixing bowl takes 1.4 slots. */
+export const POT_RADIUS = 52;
+export const POT_SPACING = 104;
+const BOWL_SLOTS = 1.4;
+/** The bottom-left corner the pet stands in: nothing touchable sits left of this. */
+export const PET_CLEAR = 150;
+const ROW_GAP = 120;
+
+/**
+ * Centres for `n` pots (and the bowl after them, when mixing) along the bottom of a `w` × `h` view: one centred row clear of the pet,
+ * wrapping to two rows (the top row first, the longer one) when one would not fit between the pet and the right edge.
+ */
+export function potLayout(n: number, w: number, h: number, bowl = false): { pots: Pt[]; bowl?: Pt } {
+  const left = PET_CLEAR + POT_RADIUS;
+  const right = w - MARGIN - 22 - POT_RADIUS;
+  const slots = n + (bowl ? BOWL_SLOTS : 0);
+  const fits = (k: number) => (k - 1) * POT_SPACING <= right - left;
+  const rows = fits(slots) ? [n] : [Math.ceil(n / 2), Math.floor(n / 2)];
+  const pots: Pt[] = [];
+  let bowlAt: Pt | undefined;
+  rows.forEach((count, r) => {
+    const span = count + (bowl && r === rows.length - 1 ? BOWL_SLOTS : 0);
+    const width = (span - 1) * POT_SPACING;
+    const centre = Math.min(right - width / 2, Math.max(left + width / 2, w / 2));
+    const y = h - 58 - (rows.length - 1 - r) * ROW_GAP;
+    const x0 = centre - width / 2;
+    for (let i = 0; i < count; i++) pots.push({ x: x0 + i * POT_SPACING, y });
+    if (bowl && r === rows.length - 1) bowlAt = { x: x0 + (span - 1) * POT_SPACING - 10, y };
+  });
+  return bowlAt ? { pots, bowl: bowlAt } : { pots };
+}
+
+/** A mark on each color pot, so the color is not the only way to tell the pots apart. */
+export type PotMark = 'dot' | 'stripe' | 'star' | 'heart' | 'swirl' | 'ring';
+export const POT_MARKS: Record<string, PotMark> = { red: 'dot', orange: 'stripe', yellow: 'star', green: 'heart', blue: 'swirl', purple: 'ring' };
+
+/** The free levels nudge after this long without a touch: a sparkle on a blank spot and a wiggle from the pet. Never a hint. */
+export const NUDGE_AFTER = 8;
+export const nudges = (mode: PaintMode) => mode === 'free' || mode === 'pots';
+
+/** Of the candidate spots, the one farthest from any paint already on the page. */
+export function blankSpot(painted: readonly Pt[], candidates: readonly Pt[]): Pt {
+  let best = candidates[0];
+  let far = -1;
+  for (const c of candidates) {
+    const d = painted.length ? Math.min(...painted.map((p) => Math.hypot(p.x - c.x, p.y - c.y))) : Infinity;
+    if (d > far) [best, far] = [c, d];
+  }
+  return best;
+}
+
 /** The part of the paper free strokes stay in: clear of the home button, the pet, the pots below and the frame button above right. */
 export const scribbleArea = (w: number, h: number) => ({ x: 150, y: 140, w: Math.max(200, w - 150 - 130), h: Math.max(120, h - 140 - 180) });
 
