@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-18 — Hidden Sprouts definition (docs only)
+
+- Defined Sprout Shuffle levels 4–6 in [the definition](definitions/hidden-sprouts.md) (genetics study slice G5, the recommendations row "define older mode") on `claude/define-hidden-sprouts` ([PR #596](https://github.com/rjdunlap/neo/pull/596)): level 4 chooses every pair whose fan is all spotted, level 5 reads a hidden spotted plant's copies from a record of sprouts grown with a plain tester (an ambiguous all-spotted record, then a deciding plain sprout or six spotted sprouts that still cannot tell), level 6 picks the tester that could tell. Enumeration only; "both could" is an accepted answer.
+- References read, none played: Concord's GenScope test-cross worksheet and Geniventure page, Serendip's Dragon Genetics 1, a Nintendo Life Animal Crossing flower-breeding guide, Niche's store page and a PhET Natural Selection classroom guide.
+- Updated the genetics recommendations row and G5 build slice, the IDEAS row, the WAITING genetics row and a defaults row with seven defaulted calls. Not ready to build (levels 1–3 are not built), so no READY.md line.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the seven defaulted decisions; whether a child accepts "can't tell yet" as finished, whether face-down tiles read as hidden, and whether the all-spotted tester's explanation lands are device checks for the build.
+
 ## 2026-10-18 — China, India and the Silk Road subject research
 
 - Added the [china-india-silk-road study](deep-dives/subjects/china-india-silk-road.md): opened England's history programmes (gov.uk), extracted the California HSS standards and the LACOE 3–5/6–8 C3 guides locally from their PDFs (pypdf), read the Echelbarger, Good and Shaw 2020 abstract, UNESCO's Silk Roads programme page, the Silk Road, caravanserai, Bactrian camel, history of paper, woodblock printing, compass, suanpan, counting rods, Hindu–Arabic numerals, Indus Valley, Lothal, Edicts of Ashoka, Grand Canal, sericulture, kite, chaturanga, pachisi, snakes and ladders, tangram, Four Great Inventions and rangoli pages, Hamilton Trust's Year 4/5 unit, ActiveHistory's Silk Roads game and the Haifa Arrows activity; Berti and Bombi, the map studies, the Harappan weights, the AMNH, USC and British Museum material from search summaries. Caravan Days is the first ladder (nine planning rungs, toddler–13+); The Ledger the grown-up merchant's puzzle; six existing-game modes and three family cards.
@@ -97,13 +105,6 @@
 - `scripts/creature-art/prepare-sprite.mjs` ([PR #562](https://github.com/rjdunlap/neo/pull/562)): `--in/--out`, `--box`, `--seed`, `--bg`, `--pad`, `--scale`, `--tolerance`, `--check`, and `--set <species>` reading the generated manifest's chosen files into `src/art/creatures/illustrated/<species>-<asset>.png` with one shared box, refusing a variant whose trimmed bounds drift more than 4 px (offsets printed, nothing written). A transparent input is passed through with edge de-fringing; flat white or cream is keyed out as before. The pixel rules are in `sprite-core.mjs`; `prepare-glider.mjs` is a thin wrapper. Documented in [the illustrated README](../src/art/creatures/illustrated/README.md#preparing-a-sprite); the art bible, the routine's brief and the manifest point at it.
 - Ran `node scripts/creature-art/prepare-glider.mjs --check`: byte-identical to the committed `glider.png` (sha256 b5ecc041…, size 458 × 206, origin 527,257), after matching the pilot's live-buffer edge distance. New `scripts/creature-art/prepare-sprite.test.mjs` (13 tests on synthetic images: paper keying and un-mix, transparent pass-through and halo de-fringe, cut, alignment, manifest, arguments, and an end-to-end `--set` refusal and run through real PNGs, skipped where no Chromium is installed) and the glider's 7 tests pass; `vite.config.ts` now includes `scripts/**/*.test.mjs`. `npm run typecheck` clean. Full `npm test`: 1490 passed, 8 timed out in unrelated game rule tests (Ferry Jam, Fluffy Salon, Peg Garden, Penguin Slide, Photo Safari, Secret Code) under 161-worker load; those files pass alone (62/62). `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: build, browser suites (no game or shell code changed). No generated image exists yet, so no real set was prepared; the de-fringe and alignment rules are proven only on synthetic pixels.
-
-## 2026-10-17 — RW05 creature collection definition (docs only)
-
-- Docs only: the packet [CREATURE-COLLECTION.md](rework/CREATURE-COLLECTION.md) on `claude/define-rw05-collection` ([PR #560](https://github.com/rjdunlap/neo/pull/560)), the RW05 rows in [WORK-ITEMS.md](rework/WORK-ITEMS.md), [READY.md](READY.md) and [ROADMAP.md](ROADMAP.md), and a [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md) row.
-- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean) on the worktree at base `05e2366d`.
-- Not run: no code changed, so typecheck, unit tests, build and browser suites were not run.
-- Open: the child and device checks the packet lists (species recognition, device speech of the new lines, iPad frame rate with a live rig plus thumbnails, the basket entry's feel) belong to build time, not now.
 
 ## Coverage summary
 

@@ -349,3 +349,10 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - Added [PET-INTEGRATION.md](../rework/PET-INTEGRATION.md): what the guide does today (tap, giggle, repeat; no reaction to play), the twenty-seven games whose rules name friends, and six ways the creatures go further into the games (a guide with a job, owned creatures as the cast by role with the word roles kept, one visible talent per species, round results that come home, meeting a wild creature inside a game, two-creature co-play), favourites, the poses casting would add to the art queue, a recommended order and three developer calls.
 - Linked it from the rework README, the art-request README, CAST and GAME-FIT, and added the decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: all three calls; nothing proposed is built.
+
+## 2026-10-17 — RW05 creature collection definition (docs only)
+
+- Docs only: the packet [CREATURE-COLLECTION.md](../rework/CREATURE-COLLECTION.md) on `claude/define-rw05-collection` ([PR #560](https://github.com/rjdunlap/neo/pull/560)), the RW05 rows in [WORK-ITEMS.md](../rework/WORK-ITEMS.md), [READY.md](../READY.md) and [ROADMAP.md](../ROADMAP.md), and a [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) row.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean) on the worktree at base `05e2366d`.
+- Not run: no code changed, so typecheck, unit tests, build and browser suites were not run.
+- Open: the child and device checks the packet lists (species recognition, device speech of the new lines, iPad frame rate with a live rig plus thumbnails, the basket entry's feel) belong to build time, not now.
