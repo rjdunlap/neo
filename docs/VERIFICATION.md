@@ -103,13 +103,6 @@
 - Updated the subject tracker, two notebook rows, the roadmap's subject table, [Community and civics recommendations](deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: Village Vote's land and the capacity test, a losing pet, Count the Ballots' home, the helper cast (police and fire border `safety`), a persistent square; no reference game played.
 
-## 2026-10-17 — Lift It definition
-
-- Defined Lift It levels 1–6 in [the definition](definitions/lift-it.md): haul a crate to a ledge friend by dragging the rope's end in strokes; four rigs from two hooks (direct, fixed, movable on two strands, both), paws as force and knots as travel under an ideal rule stated as a toy; free knot predictions at 4, pullers at 5, paws and knots cards at 6; no misses at 1–4; ghost finger hangs `bestRig` and hauls; Rainbow Meadow by default.
-- References: Tinybop Simple Machines and its make-a-pulley experiment (opened), Sid the Science Kid "The Tree House" (summary), Science Buddies "Pulley'ing Your Own Weight" (403, search summary), ExploreLearning Pulleys Gizmo (summary), DUPLO Tower Crane (retail), OpenStax 9.3 and England year 5 (from the study). W2 skipped (overlaps RW06).
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the six defaulted decisions; the layout numbers are computed, not felt; whether two strands read as two on an iPad; no child has played it.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
