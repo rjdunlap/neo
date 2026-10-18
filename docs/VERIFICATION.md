@@ -7,6 +7,14 @@
 - Ladder: lap entry 9 *Poke a feeling*, toddler 10 *Hug or pillow*, pre-K/school 11 *Two friends, one happening*, school 12 *Ask first* and 13 *What happened?*; six ready lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived ladder-audit row, the IDEAS row and the roadmap's band-window line.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 
+## 2026-10-18 — Lost Layers definition (docs only)
+
+- Defined Lost Layers levels 1–2 in [the definition](definitions/lost-layers.md) (deep-time study slice D6, the recommendations row "define older case") on `claude/define-lost-layers` ([PR #588](https://github.com/rjdunlap/neo/pull/588)): Gull Cliff's six layers beside Shell Cove's three sliding pieces, three stated island rules, a two-alignment case where Can't tell is the right answer, a level-2 look whose dark stripe resolves it, with accounting, layout, rule tests, ghost finger, how-to lines, voice IDs, registration defaults and the Outcrop Detective audit.
+- References read, none played: AMNH *Layers of Time* (through the study; this session's fetch was refused), the Lab-Aids/SEPUP *Correlating Sedimentary Strata* kit and the Vanderbilt VSVS stratigraphy lesson (search summaries; the lesson PDF's text was not extractable here), NPS Grand Canyon *Layers in Time*, MorningMystery's App Store listing, a Central Bucks geologic-column lab (search summary).
+- Updated the deep-time recommendations row and build slice, the IDEAS row, a READY.md Queued line, the WAITING deep-time row and a defaults row with six defaulted calls.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the six defaulted decisions; the layout numbers are computed, not felt; whether the wavy line reads as "rock missing" and Can't tell reads as honest are device checks no child has made; Bubble Beach at five games is untested until the build.
+
 ## 2026-10-18 — Draw the Pattern definition (docs only)
 
 - Defined Draw the Pattern levels 1–8 in [the definition](definitions/draw-the-pattern.md) (chunk 25's last slice, cut and draw candidate) on `claude/define-draw-the-pattern` ([PR #579](https://github.com/rjdunlap/neo/pull/579)): the pet starts a stroke or pattern on a fixed-aspect strip and she continues it from a green ring, through Letter Trails' tracer (`sampleStroke`, `advanceTrace`, `traceWaypoints`, `offTrail`, `showTheWay`); free marks at 1, lines at 2, zigzag and wave at 3, circle either way and loops at 4, faded dashes with stepping stones at 5, cross, square and triangle at 6, AB and AAB/ABB stroke patterns with two faint candidates and a divergence rule at 7–8; lap 1–2, toddler 1–3, preschool 3–5, pre-K 5–8; one stray per drag a miss, the wrong candidate a miss four checkpoints past the divergence, glow after two.
@@ -93,14 +101,6 @@
 - Ran: `npm run typecheck` clean; `npm test` (160 files, 1485 tests, including the tour rule test across seeds); `BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=9 TO_LEVEL=10` on `http://localhost:5729` (level 9 regression after the friend layer change; level 10: three distinct rooms, arrow only after each room sleeps, fresh awake room after it, score [0,0], portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=10` clean in 36.2 s.
 - Not run: night levels 1-8 (unchanged interaction; prior pass stands), build, offline, `world`.
 - Open: device and child check of the arrow and a longer three-room round; the no-wrong-levels-climb-fast lean still applies.
-
-## 2026-10-17 — Roadmap and process cleanup (docs only)
-
-**What changed:** the 35 subject recommendation packets moved from the roadmap to [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md) behind a one-row-per-subject table; the chunk table is grouped by status, chunks 14 and 28 (research) are taken only when the grown-up selects one, chunk 19's check tier matches its D2b slice, and Next up names the execution queue as one dispatch path; [WAITING-ON-DEVELOPER](WAITING-ON-DEVELOPER.md) opens with the six calls that unblock the most work and keeps rows that block nothing in their own table; [DEVICE-CHECKS](DEVICE-CHECKS.md) opens with a fifteen-minute iPad session that covers most items; IDEAS.md's three ladder audits moved to [the archive](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md); the execution queue says it is the Codex coordinator's state file and its stale #501 checkpoint is closed. Companion slices the same day: [READY.md](READY.md) (PR #552) and the verification archiver (PR #553).
-
-**Checks:** `node scripts/check-links.mjs` (links ok after `--fix-moved` repointed about 160 links) and `git diff --check`. No code changed; no TypeScript, unit, build or browser run.
-
-**Open:** the roadmap's counts paragraph is still typed by hand (a script from the registry was proposed, not built); the one-game check command from the workflow review is still unbuilt.
 
 ## Coverage summary
 
