@@ -104,6 +104,7 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 - [ ] **Fill and Dump with a toddler** (added 2026-10-17, [dive](deep-dives/fill-dump.md#decisions-for-the-developer)): does a two-year-old pull the level-5 jug far enough without help (gates a toddler pour rung), and does a one-year-old notice that grass taps work once lap reach is built?
 
 - [ ] **Goodnight Room barn, animals and colors.** On an iPad, check target spacing, device speech for names and colors, whether preschool/pre-K players understand living animals among objects, and whether orange fish inside a blue bowl and brown puppy/teddy are clear color matches. No child or device judgment is established by browser play.
+- [ ] **Goodnight Room level 10, goodnight everywhere.** On an iPad, check that a pre-K player finds and taps the big arrow without reading, and whether a three-room round stays calm rather than long.
 
 Keep these open until someone actually does them. None of them blocks [Next up](ROADMAP.md#next-up).
 

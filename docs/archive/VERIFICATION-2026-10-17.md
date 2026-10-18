@@ -185,3 +185,28 @@ Coordinator dispatch notes from [the execution queue](../EXECUTION-QUEUE.md), mo
 ### 2026-10-17 — Discovery direct-next dispatch
 
 Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/474), confirmed merge and released its slot. Fresh allowance and overlap admitted only [D1b](../DISCOVERY.md#d1b-build-packet-one-direct-next-game) to worker `01a1477f-58b2-7ca2-8607-1975042bf5eb`; existing named worktree is a clean placeholder at old main with no unique commits. Queue records changed reset identities, scope and pending proof. Docs-only source links/anchor and `git diff --check` passed; no gameplay checks rerun.
+
+## 2026-10-17 — Robots and automation subject research
+
+- Added the [robots-and-automation study](../deep-dives/subjects/robots-automation.md): opened the CSTA 2026 PDF (EK/E1/E2-SOC-HU-15, E2-SYS-HW-11, E3-PRO-PD-04, E5-SYS-HW-12, MS-SYS-HW-31, MS-SOC-CE-45, S2-PHY-IO-02; printed pages), NGSS Appendix G, Levy and Mioduser (2010), Hallström (2021), the Hokayem et al. (2020) abstract, Treasureworld, and Autonauts, shapez, Opus Magnum, micro:bit, KIBO and CS Unplugged pages; Kempton (1986), KIBO sensors and Opus Magnum metrics marked recalled or secondhand. Helper House is the first ladder.
+- Updated the subject tracker, notebook row, roadmap [Robots and automation recommendations](../ROADMAP.md#robots-and-automation-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: identity beside Sorting Machine, accounting, toddler entry, placement, older registration, model and card review; no reference game played.
+
+## 2026-10-17 — Pile Match definition
+
+- Defined Pile Match levels 1–8 in [the definition](../definitions/pile-match.md): 2D layered heap with a top-only freedom rule, a tray derived from the piece mask (3-slot asked basket at 1–2, 5 slots from 3), free put-back, kinds assigned in consecutive triples along a clearing route so no state dead-ends, computed portrait-fit layout, wrong-kind and full-tray accounting, hint order, bot, how-to and registration; six references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; layout numbers and the hint time bound are computed, not measured; no child has played it.
+
+## 2026-10-17 — Bolt Boards definition
+
+- Defined Bolt Boards levels 1–7 in [the definition](../definitions/bolt-boards.md): discrete pinned/hanging/down board poses computed exactly (a hanging center lies below its bolt), a covered-bolt rule, a toolbox model at 1–5 that provably never dead-ends, open-hole parking at 6–7 with a capped breadth-first hint, a layout test over every reachable pose, accounting, bot, how-to and registration (Barnyard); six references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; fit numbers are computed, not measured; no child has played it.
+
+## 2026-10-17 — Weather Wardrobe deep dive
+
+- Docs only: [deep dive](../deep-dives/weather-wardrobe.md) on `claude/dive-weather-wardrobe` ([PR #538](https://github.com/rjdunlap/neo/pull/538)). Audited levels 1–7; gaps: the level-7 card still says pack for a trip, level 7 undressing is always everything, lap window holds a boing level, level 1 ignores most touches, a miss shows nothing, the trip never happens, sunny's "everything" is two, a dead undress voice line, the known `{name}` off-screen bug.
+- Opened BridgingApps (Sago Mini Babies Dress Up), Kids Academy, Common Sense Media (Tinybop Weather), Easterseals (iDress for Weather), Pre-K Pages and NGSS K-ESS2-1/K-ESS3-2; Daniel Tiger (mirror 404), Pokémon GO weather (Bulbapedia 403) and Animal Crossing are search summaries; Dress Teddy and the felt weather bear recalled.
+- Eight ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
