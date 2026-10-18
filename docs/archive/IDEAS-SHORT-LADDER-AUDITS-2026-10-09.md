@@ -213,7 +213,7 @@ Kinds A and C need no decision and reach the youngest bands. Kind B carries the 
 
 | Game (bands · top) | A. Fresh content | B. New levels on top | C. Younger band |
 | --- | --- | --- | --- |
-| Shape Sorter (T–K · 8) | New shapes (oval, heart, star) | **Built 2026-10-10:** level 8, *The feely bag*: a spoken property clue asks her to find the matching shape ([build note](COMPLETED-2026-10-09.md#shape-sorter-level-8-the-feely-bag-2026-10-10)) | — |
+| Shape Sorter (T–K · 8; see its [deep dive](../deep-dives/shape-sorter.md), which supersedes this row) | New shapes (oval, heart, star; the dive adds oval, rectangle, diamond, pentagon and trapezoid) | **Built 2026-10-10:** level 8, *The feely bag*: a spoken property clue asks her to find the matching shape ([build note](COMPLETED-2026-10-09.md#shape-sorter-level-8-the-feely-bag-2026-10-10)) | — |
 | Color Garden (T–K · 7) | More things to sort | **Built 2026-10-13:** 7, *Light and dark*, light blue and dark blue baskets. **8, Color and kind:** red fruit only | — |
 | Dot Link (L–K · 6) | More dot colors and boards | Researched: [deep dive](../deep-dives/dot-link.md) (levels 7–10, a toddler entry, empty-cell boards); level 6 and the marks in the dots built: (level 6 built; see [completed work](COMPLETED-2026-10-09.md#dot-link-level-6-exactly-five-2026-10-10)) | — |
 | Tangram Town (T–S · 6) | **Built 2026-10-10:** each level draws from a pool of 2–5 pictures (11 in all). More pictures, spoken shape names and the rest are in the [deep dive](../deep-dives/tangram-town.md) | R1-later: flip a piece (the deep dive's level 9; it needs a parallelogram) | — |

@@ -81,6 +81,15 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 - **`fruit-slice`, build levels 1–8** (new-game tier): fruit hangs at the top of a slow arc and a swipe splits it; tap at 1, swipe at 2, then only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N and pieces by twos; no clock, missed fruit comes back; Bubble Beach. [Definition](definitions/fruit-slice.md)
 
+- **`shape-sorter`, support truth, slice 1** (existing-game bug fix tier): every touch at level 1 answered (box giggle, floor wiggle, far-drop plop), a glow after two wrongs in a row anywhere, the level-8 line naming the dropped shape, `CLASSIC` pinning levels 7–8 with a lid-fits test, the how-to note. [Dive](deep-dives/shape-sorter.md#build-slices-in-order)
+- **`shape-sorter`, level 9 *Tap and in it goes* and the lap band, slice 2** (new interaction): a tap posts the piece itself; `bands` gains `lap`, lap `[9]`, toddler `order [9, 1, 2, 3, 4, 5]`, `entryLevels: [9]`. [Dive](deep-dives/shape-sorter.md#younger-band-openings)
+- **`shape-sorter`, level 10 *Round or square*, slice 3** (new levels on an existing interaction): two plain holes by outline alone; toddler `order [9, 1, 2, 10, 3, 4, 5]`. [Dive](deep-dives/shape-sorter.md#easier-entries-and-levels-between-existing-ones)
+- **`shape-sorter`, more shapes, sizes and colours, slice 4** (logic tier plus build): oval, rectangle, diamond, pentagon and trapezoid with lines, pool draws at 6–8, sizes at 6–7, a rainbow one colour, the box's property facts. [Dive](deep-dives/shape-sorter.md#fresh-content-inside-existing-levels)
+- **`shape-sorter`, level 11 *Big, middle, little*, slice 5** (new levels, plus a portrait screenshot): one shape in three sizes; preschool `order [3, 4, 5, 6, 7, 11]`, pre-K `order [5, 6, 7, 11, 8]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
+- **`shape-sorter`, level 12 *Turn it to fit*, slice 6** (new interaction): tap a piece to turn it a notch, then carry it to an upright hole; pre-K `order [5, 6, 7, 11, 8, 12]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
+- **`shape-sorter`, level 13 *Corners or curves*, slice 7** (new levels; after slice 4): two mouths, curves or corners; pre-K `order […, 12, 13]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
+- **`shape-sorter`, level 14 *Count the corners*, slice 8** (new levels; after slice 4): holes labelled 0, 3, 4, 5, 6 with dots; pre-K top by default. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
+
 - **`shape-buddies`, level 3 Two make one** (new levels on the existing interaction): a wide gap; a flat friend and a cup friend hold hands into a spoon that catches the seed; pre-K and school 1–3, misses stay 0. [Definition](definitions/shape-buddies-combined.md)
 
 - **`garden-grow`, true how-to and spoken gaps** (existing-game bug fix): cap the level 5 and 7 how-to steps, fix level 3's take-out wording, say when the beds are full and recount after a seed is taken out, let other beds plant while one grows at level 1, name the weather co-play seat. [Slice 1](deep-dives/garden-grow.md#build-slices-in-order)
