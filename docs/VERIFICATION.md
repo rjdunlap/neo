@@ -6,6 +6,14 @@
 - Updated the subject tracker, the roadmap's subject table, two notebook rows, [Ancient river civilizations recommendations](deep-dives/subjects/RECOMMENDATIONS.md#ancient-river-civilizations-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: placement and the capacity test, Two Tablets' home, a named historian reviewer, labor/enslavement depth, the rebus boundary with the literacy studies, practical review of the family cards; the NCSS, British Museum and Met pages were not readable this session; no reference game played.
 
+## 2026-10-18 — Little Conductor definition (docs only)
+
+- Defined Little Conductor levels 1–3 in [the definition](definitions/little-conductor.md) (music study slice M1, the recommendations row "define first") on `claude/define-little-conductor` ([PR #589](https://github.com/rjdunlap/neo/pull/589)): three friends on a bandstand, a turtle pad and a rabbit pad, a pure score clock the game owns (the island's `music.beats()` runs at a fixed bpm) with a next-beat pending change and no skipped or repeated events, heard gates for Done, a listener's sign with two pictured requests and Check at level 3, accounting, both layouts, rule tests, ghost finger, how-to lines, voice IDs, registration defaults and the Sound Garden/Beat Builder overlap audit.
+- References read, none played: GameSpot's E3 2006 Wii Music Orchestra hands-on, Carnegie Hall's Be the Conductor (through the study), Horn Book and Zooglobble on Toca Band, School Library Journal and AlternativeTo on BANDIMAL, the App Store and Common Sense Media on Musical Me!, and the abstract of Droit-Volet et al. 2005 on tempo discrimination in 3- and 4-year-olds.
+- Updated the music recommendations row and build slice, the IDEAS row, READY.md (the Next ten line removed, two Queued build lines), the WAITING music row and a defaults row with ten defaulted calls.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the ten defaulted decisions; whether 60 and 90 sound clearly different through an iPad speaker with these voices, whether a two-year-old reads the pending ring as "wait a moment" and whether the drum masks the melody are device checks no child has made; Music Mountain at seven games is untested until the build.
+
 ## 2026-10-18 — Feelings Faces deep dive
 
 - Docs only: [deep dive](deep-dives/feelings-faces.md) on `claude/dive-feelings-faces` ([PR #586](https://github.com/rjdunlap/neo/pull/586)). Audited levels 1–8; gaps: level 8 has two scenarios for four questions, levels 5–6 show their whole pool every round, the hug is stated as a universal truth, no anger or fear, lap's second rung is a two-card choice, the how-to finish line understates four questions, no recorded person checks.
@@ -94,12 +102,6 @@
 - References: Tinybop Simple Machines and its make-a-pulley experiment (opened), Sid the Science Kid "The Tree House" (summary), Science Buddies "Pulley'ing Your Own Weight" (403, search summary), ExploreLearning Pulleys Gizmo (summary), DUPLO Tower Crane (retail), OpenStax 9.3 and England year 5 (from the study). W2 skipped (overlaps RW06).
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
 - Open: the six defaulted decisions; the layout numbers are computed, not felt; whether two strands read as two on an iPad; no child has played it.
-
-## 2026-10-17 — Creature art request queue (docs only)
-
-- Added [docs/rework/art-requests/](rework/art-requests/README.md): the routine's brief (one request a run, originals into `concepts/generated/`, manifest, branch `codex/art-queue`), the [nine-species cast](rework/art-requests/CAST.md) (sprout, river and glider, then Tote, Trill, Dapple, Bramble, Mossback and Lumen, each with a shape family, home land, signature interaction, slots and misfits), the [queue](rework/art-requests/QUEUE.md) of sixteen requests with prompts (species sets with six expressions and a portrait, crown and scarf, Weather Wardrobe's seven other items, the home scene, card paper, three eggs, six looks; forms blocked on RW11) and the [game-fit review](rework/art-requests/GAME-FIT.md) of what the guide and the ten large-pet games (`Critter(ctx.petSpec)`) ask of a species.
-- Extended the art bible's creature and asset tables, pointed ART-PROMPTS, the pilot packet, the work items, the ready list, the roadmap row, the decision ledger and the generated manifest at the queue. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: no image has been generated; the cast's names and colours are provisional; iPad performance, child recognition and whether the raincoat and boots fit as images stay in the queue's and GAME-FIT's open lists.
 
 ## Coverage summary
 
