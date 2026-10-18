@@ -138,7 +138,7 @@ The developer asked on 2026-10-10 for "a lot more quantity to a lot of the diffe
 
 17. **Fresh content inside a level** (any band, no level change). Tangram Town's picture pools take more pictures; each item gets a rule test that it fits its level. Puzzle Pals' box lid is person-dependent.
 18. **Younger-band openings**, in batches: Beat Builder (lap), Memory Match and Habitat Helpers (toddler); Critter Sort, Picture Graph, Inchworm Measure, Treasure Map, Secret Code, Rhyme Time, Light Lab, Ramp Race and Chain Reaction (preschool). Each batch updates the band counts, checks the lands still fit (`lands.test.ts`) and adds its fit to [Needs a person or a device](DEVICE-CHECKS.md#needs-a-person-or-a-device).
-19. **New levels on top**, cheapest first, from [round three](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#round-three-more-to-play-in-every-band-2026-10-10) and the dives. Still to give a ladder a new band window: Feelings Faces to school; Animal Snack (see its [dive](deep-dives/animal-snack.md)), Stop and Go and Garden Grow to pre-K.
+19. **New levels on top**, cheapest first, from [round three](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#round-three-more-to-play-in-every-band-2026-10-10) and the dives. Still to give a ladder a new band window: Feelings Faces to school (its [dive](deep-dives/feelings-faces.md) proposes 11–13); Animal Snack (see its [dive](deep-dives/animal-snack.md)), Stop and Go and Garden Grow to pre-K.
 20. **More content for the rest**, game by game, as round three's tables list it (Memory Match's circle sectors remain an optional art slice).
 
 What is already built under this chunk is in [the 2026-10-15 cleanup archive](archive/ROADMAP-CLEANUP-2026-10-15.md#more-to-play-in-every-band-as-it-stood).

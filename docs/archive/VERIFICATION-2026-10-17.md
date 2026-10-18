@@ -296,3 +296,9 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - References: OT scissor progressions (Growing Hands-On Kids, Swansea Bay NHS, Oxfordshire) and the Common Sense Dexteria Jr. review from search summaries; the Sago Mini Toolbox review opened; Make-A-Flake only via Wikipedia. Skipped Lift It (sequenced after Gear Garden's packet) and W2 (overlaps RW06/RW11).
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
 - Open: the five defaulted decisions; corridor widths are computed, not felt; no child has played it.
+
+## 2026-10-17 — Money and economy subject research
+
+- Added the [money-and-economy study](../deep-dives/subjects/money-economy.md): opened the C3 Framework's D2.Eco indicators, the 2021 National Standards for Personal Financial Education (grade 4 and 8 text), CCSS 2.MD.C.8, England mathematics and citizenship programmes and CFPB's building-blocks and Money as You Grow pages; Jahoda, Fehr et al., Watts et al., Moonlighter, Animal Crossing, Peter Pig and Sesame from search summaries. Overlap audit first; Swap Meet is the first ladder.
+- Updated the subject tracker, a notebook row, roadmap [Money and economy recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: tickets versus no new currency, real coins, placement, Harbor Orders' registration; no reference game played.
