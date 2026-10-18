@@ -36,6 +36,13 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`egg-catch`, level 10 Fix the run** (new interaction; after *roll when ready*): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 
+- **`feelings-faces`, pools, the pet's own hug and scenery that answers** (existing-game content tier): eight happenings at level 6, four care scenarios at 8, all eight friends, the hug stated as the pet's own preference, props that wobble when tapped, the how-to finish line. [Slice 1](deep-dives/feelings-faces.md#build-slices-in-order)
+- **`feelings-faces`, lap entry 9 *Poke a feeling*** (new level, one-target interaction, with the `order`/`entryLevels` conversion): tap the pet, it shows the next feeling and says the word; a sad pet gets a hug; lap `[9, 1, 2]`. [Slice 2](deep-dives/feelings-faces.md#new-levels-on-top)
+- **`feelings-faces`, toddler 10 *Hug or pillow*** (new level on the help interaction): two helper cards for sad, sleepy or hungry; toddler `[2, 10, 3, 4]`. [Slice 3](deep-dives/feelings-faces.md#new-levels-on-top)
+- **`feelings-faces`, level 11 *Two friends, one happening*** (new interaction): one happening, two friends with two different faces, a question for each; pre-K top and the school entry. [Slice 4](deep-dives/feelings-faces.md#new-levels-on-top)
+- **`feelings-faces`, level 13 *What happened?*** (new level; after 11): a face and a leftover clue, three happening cards; school. [Slice 5](deep-dives/feelings-faces.md#new-levels-on-top)
+- **`feelings-faces`, level 12 *Ask first*** (new interaction; after 11): tap the friend to hear what it wants, then give that, quiet time included; school. [Slice 6](deep-dives/feelings-faces.md#new-levels-on-top)
+
 - **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); solvable gardens (built backward at 1–4, frozen at 5–8), free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
 
 - **`sound-garden`, fair varied listening** (existing-game bug fix): seeded sound specs in `logic.ts`, plans keyed by level ID and a capped how-to step, equal-span fast/slow, bird and frog as heard pitch references, varied up/down tunes; level 2's rule kept for the Missing Melody. [Slice 1](deep-dives/sound-garden.md#build-slices-in-order)
