@@ -1,10 +1,18 @@
 # Puddle Island verification
 
+## 2026-10-17 — Lift It definition
+
+- Defined Lift It levels 1–6 in [the definition](definitions/lift-it.md): haul a crate to a ledge friend by dragging the rope's end in strokes; four rigs from two hooks (direct, fixed, movable on two strands, both), paws as force and knots as travel under an ideal rule stated as a toy; free knot predictions at 4, pullers at 5, paws and knots cards at 6; no misses at 1–4; ghost finger hangs `bestRig` and hauls; Rainbow Meadow by default.
+- References: Tinybop Simple Machines and its make-a-pulley experiment (opened), Sid the Science Kid "The Tree House" (summary), Science Buddies "Pulley'ing Your Own Weight" (403, search summary), ExploreLearning Pulleys Gizmo (summary), DUPLO Tower Crane (retail), OpenStax 9.3 and England year 5 (from the study). W2 skipped (overlaps RW06).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; the layout numbers are computed, not felt; whether two strands read as two on an iPad; no child has played it.
+
 ## 2026-10-17 — Creature art request queue (docs only)
 
 - Added [docs/rework/art-requests/](rework/art-requests/README.md): the routine's brief (one request a run, originals into `concepts/generated/`, manifest, branch `codex/art-queue`), the [nine-species cast](rework/art-requests/CAST.md) (sprout, river and glider, then Tote, Trill, Dapple, Bramble, Mossback and Lumen, each with a shape family, home land, signature interaction, slots and misfits), the [queue](rework/art-requests/QUEUE.md) of sixteen requests with prompts (species sets with six expressions and a portrait, crown and scarf, Weather Wardrobe's seven other items, the home scene, card paper, three eggs, six looks; forms blocked on RW11) and the [game-fit review](rework/art-requests/GAME-FIT.md) of what the guide and the ten large-pet games (`Critter(ctx.petSpec)`) ask of a species.
 - Extended the art bible's creature and asset tables, pointed ART-PROMPTS, the pilot packet, the work items, the ready list, the roadmap row, the decision ledger and the generated manifest at the queue. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: no image has been generated; the cast's names and colours are provisional; iPad performance, child recognition and whether the raincoat and boots fit as images stay in the queue's and GAME-FIT's open lists.
+
 ## 2026-10-17 — Goodnight Room level 10, goodnight everywhere
 
 - Changed: `goodnight-room` level 10 (`claude/goodnight-everywhere`, [PR #554](https://github.com/rjdunlap/neo/pull/554)), a seeded three-room tour (bedroom first, then two of barn/tent/boat cabin) with a big arrow after each sleeping room and a star-filled finale; pre-K window now 5-10.
@@ -92,19 +100,6 @@
 - Opened Peggle, Pachinko and Galton board (Wikipedia) and NGSS K-PS2-1; Peggle Blast reviews, Plinko, Sushi Cat, Hape Pound and Tap Bench, object permanence boxes and GraviTrax are search summaries; Gorillas recalled.
 - Six ready slices added to the roadmap; one decision row to WAITING.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Puddle Gobble definition
-
-- Defined Puddle Gobble levels 1–8 in [the definition](definitions/puddle-gobble.md): a rain puddle on Bubble Beach soaks up things that fit (tiers 1–4, count-based growth, so levels 1–7 never dead-end), too-big things never block or count, smallest first at 5, numbers at 6, sums at 7 and an exact pail total with a free let-go at 8; accounting, bot, how-to and registration; five references cited (Hole.io, Donut County, Katamari Damacy, Feeding Frenzy recalled, Piaget/Pink Tower summaries).
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: the five defaulted decisions; sizes and fit are computed, not measured; no child has played it.
-
-## 2026-10-17 — Rainbow Fingers slice 2, every touch counts, pots, nudge
-
-- Changed (`9dcc0257`): levels 1–2 count every lifted touch (pat, hold, drag) toward the frame, a pat splats a 100-across flower, pots are 104 across at 104 spacing with ink marks (`potLayout` keeps clear of the pet), and a blank spot sparkles after 8 quiet seconds. Hint accounting (decision 5) not built.
-- Ran: `npm run typecheck`; rainbow-fingers logic and how-to tests (5 new rule tests) pass. Full `npm test` had 3–4 five-second timeouts in unchanged solver tests under load (load average 7); rerun alone all passed except penguin-slide "level 8 combines useful snow stops…", a known load flake on unchanged code.
-- Browser (http://localhost:5568, 5831): `early` paint levels 1–2 pass (level 1 finishes on five pats alone); `fingerdemo` `rainbow-fingers` levels 1,2 pass (25.9 s, 30.5 s) and 6,7 pass (25.5 s, 13.9 s). One portrait screenshot (view 1024×1365) of level 2: seven marked pots in one row, clear of the pet.
-- Not run: `npm run build`, `early` levels 3–7, device checks (a one-year-old's pat and the 104-unit pot stay open in [DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
 ## Coverage summary
 
