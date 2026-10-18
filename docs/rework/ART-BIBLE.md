@@ -2,7 +2,7 @@
 
 Written 2026-10-17 after the developer chose the illustrated direction ([RW02b result](GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)). Every generated creature image, and every session that prepares, rigs or judges one, follows this page. It sets one look for the cast and the rules an image must meet before it can be cut out and animated. Ready-to-paste prompts are in [ART-PROMPTS.md](ART-PROMPTS.md).
 
-Species, names and colours here are still provisional (see [waiting on the developer](../WAITING-ON-DEVELOPER.md)). Changing them is an edit to this page, made before new images are generated.
+Species, names and colours here are still provisional (see [waiting on the developer](../WAITING-ON-DEVELOPER.md)). Changing them is an edit to this page, made before new images are generated. The six second-wave rows come from the [cast](art-requests/CAST.md) and are generated after the three pilot species through the [request queue](art-requests/QUEUE.md).
 
 ## The look in one line
 
@@ -34,6 +34,12 @@ Sizes are in the game's logical units at scale 1, so images can be prepared to m
 | **Sprout** | Squat, round, a little wider than tall; small round ears; short stubby arms; short feet with pink paw pads; two-leaf sprout on top of the head with a short stem. Sitting or standing, three-quarter view facing right | Teal body ≈ `#5EC4C2` (shadow `#3A9A9B`); cream belly; leaf green ≈ `#7CC35A` with darker veins | About 200 tall |
 | **River** | Long, low, otter-like body; small head held up with forward-set eyes; cream muzzle; whiskers; four short legs; a broad, flat, dark paddle tail. Side view facing right, all four feet down | Caramel ≈ `#C8956A` (shadow `#8F6142`); cream belly and muzzle; tail dark brown ≈ `#6B4A36` | About 330 long |
 | **Cloud glider** | Manta-like ray: one great swept near wing, a smaller far wing tip above, a small round head at the front with two little ears, cream face and underside; pale cloud markings on the wing; two long flowing ribbon tails, one lavender and one pink. Side view gliding right | Lavender ≈ `#B79BE0` (shadow `#8C6CC8`, a step deeper than the pilot's); cloud marks `#F3E9F7`; ribbons `#C9B3F0` and `#FF9AC1` | About 380 across including ribbons |
+| **Tote** (second wave) | Round hermit crab: chubby body, cream face with the eyes in the face (no stalks), two big rounded claws held up like mittens, four short legs, a spiral shell on the back drawn as a separate shape. Three-quarter view facing right | Coral `#FF9A3C` (shadow `#D9731A`); shell sand-yellow `#FFD54A` (shadow `#D9A520`) with a pink lip | About 220 tall |
+| **Trill** (second wave) | Plump round songbird: fanned crest of three soft feathers, tiny wings at the sides, two long rounded tail feathers, small feet; not a duck. Side view facing right | Yellow `#FFD54A` (shadow `#D9A520`); crest `#FF9AC1`; beak and feet `#FF9A3C`; cream belly | About 230 tall |
+| **Dapple** (second wave) | Chubby chameleon on four grippy feet: big domed head, huge round eyes, soft back crest, short tail curled in a spiral with a gap from the body. Three-quarter view facing right, no branch | Leaf green `#7CCF5A` (shadow `#4A9A35`); cream belly; soft spots in `#FF9AC1`, `#FFD54A`, `#4FA3F7` | About 260 long |
+| **Bramble** (second wave) | Small round hedgehog whose spikes are soft rounded tufts over back and head; cream face and belly, small ears, tiny legs and hands, stub tail. Three-quarter view facing right | Berry purple `#9A6CF0` (shadow `#6C45C4`); cream `#F6E6D8` | About 190 tall |
+| **Mossback** (second wave) | Sturdy little tortoise: round head on a short neck, four stumpy legs, tiny tail; a high rounded shell with soft plates, a moss tuft and one tiny flower, flat enough on top to carry something. Side view facing right | Sky blue `#4FA3F7` (shadow `#2F78C9`); shell `#7CCF5A` (shadow `#4A9A35`); flower pink | About 300 long |
+| **Lumen** (second wave) | Plump fuzzy moth: round cream body with a big fluffy ruff, feathery antennae, two big round upright wings (never the glider's swept triangle), tiny tucked legs. Side view facing right, hovering | Wings `#FF9AC1` with `#9A6CF0` edges and `#FFD54A` glow spots; body cream `#F6E6D8` | About 280 across |
 
 ## Image requirements (so it can be cut and animated)
 
@@ -53,11 +59,13 @@ These come from the RW02b pipeline (`scripts/creature-art/prepare-glider.mjs` an
 | `base` | The approved neutral image; the rig deforms it | Yes |
 | `blink` | The same image with the eyes gently closed (curved lash lines); replaces the painted-lid trick | Yes |
 | `happy` | The same image with an open, happy mouth and slightly raised brows; shown during the touch reaction | Yes |
+| `surprised`, `sleepy`, `sad` | The same image with only the face changed; the moods Feelings Faces, Pet Says and the guide set ([game fit](art-requests/GAME-FIT.md#what-the-games-ask-of-a-companion)) | Yes |
+| `portrait` | A square head-and-shoulders view for the collection and chooser cards, where a full side view read too small | Yes |
 | `alt` | A specific pose a mesh cannot fake (for example the glider's wing fully raised, showing the pale underside) | Only if the rig needs it |
 
 ## Process
 
-1. **Generate:** use the developer's ChatGPT with [the prompts](ART-PROMPTS.md), the concept sheet attached and the glider first. Make three or four candidates per creature.
+1. **Generate:** an image-generating routine works through the [art request queue](art-requests/QUEUE.md) one request a run ([its brief](art-requests/README.md)), with [the prompts](ART-PROMPTS.md) and the queue's, the concept sheet attached and the glider first. Three candidates per base image.
 2. **Choose:** pick one candidate against the checklist below at full size, and again shrunk to about 120 px wide (card size).
 3. **Variants:** generate `blink` and `happy` from the chosen image. Re-roll any variant that drifts.
 4. **Store:** put the originals, untouched (no screenshots, crops or resizes), in `docs/rework/concepts/generated/<species>-<asset>-<n>.png`. Record the date, tool and prompt in `docs/rework/concepts/generated/README.md`.
