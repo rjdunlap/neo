@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Cut Along definition
+
+- Defined Cut Along levels 1–8 in [the definition](definitions/cut-along.md): fringe snips, a thick line, straight, zigzag and wave, curves and a circle cut either way round, square and triangle with lead-ins, picture outlines, and the outline that fits a gap; Letter Trails' `sampleStroke`/`advanceTrace`/`offTrail`, a 30-unit corridor floor, one miss per stray drag from 3, a glow after two, the existing `trace` ghost intent, Paint Pier. Fold & Snip deferred (Bug Builder lean).
+- References: OT scissor progressions (Growing Hands-On Kids, Swansea Bay NHS, Oxfordshire) and the Common Sense Dexteria Jr. review from search summaries; the Sago Mini Toolbox review opened; Make-A-Flake only via Wikipedia. Skipped Lift It (sequenced after Gear Garden's packet) and W2 (overlaps RW06/RW11).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the five defaulted decisions; corridor widths are computed, not felt; no child has played it.
+
 ## 2026-10-17 — Monster Munch deep dive
 
 - Docs only: [deep dive](deep-dives/monster-munch.md) on `claude/dive-monster-munch` ([PR #549](https://github.com/rjdunlap/neo/pull/549)). Audited levels 1–8; gaps: the card says the monster counts aloud at 1 and 4–5 (it does not) and rings a bell at 7 (there is none), a wrong pad promises counting that never happens, one generic hint line, lap monster taps feed nothing, single rounds at 1–2, silent short drops.
