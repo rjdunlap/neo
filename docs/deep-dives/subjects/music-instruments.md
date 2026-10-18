@@ -145,7 +145,7 @@ Each row is one bounded session; **definition** and **implementation** are separ
 
 | Slice | Complete outcome | Readiness / eventual checks |
 | --- | --- | --- |
-| **M1: define Little Conductor 1–3** | Freeze the tap first rounds, score/tempo semantics, heard gate, request truth table, accounting, supported ending, voice/how-to/bot and both layouts; inspect land fit | **Define first**, docs only |
+| **M1: define Little Conductor 1–3** | Freeze the tap first rounds, score/tempo semantics, heard gate, request truth table, accounting, supported ending, voice/how-to/bot and both layouts; inspect land fit | In progress on `claude/define-little-conductor`, docs only |
 | **M2: build Little Conductor 1–2** | One original band/motif, two pace pads, comparison/replay and creative Finish integrated with shell | After M1; new game tier: typecheck, rules/unit tests, one filtered first/top play and portrait; wrong/hint path is in M3, explicitly not applicable to all-valid creation. Build if shared files/assets change |
 | **M3: build the two-request round, level 3** | Waiting phrase boundaries, Check, local mismatch, glow/help and bot recovery, preserving free trials | After its M1 rules; new interaction tier with one wrong Check, hint, first/top and portrait; top ghost finger |
 | **M4: define Song Maker's answer** | One given four-note question plus four editable answer slots, original choices, replay/revision and all-valid musical authorship; explicit structural versus aesthetic rules | Existing mode definition; preserve levels 1–7, saved tunes and pins. Eventual build uses new interaction tier if input/finish changes |
