@@ -37,6 +37,7 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | wear-mittens-1.png | R05 | 2026-10-17 | Built-in image_gen; model undisclosed | [mittens1](R05-PROMPTS.md#mittens1) | yes |
 | home-day-3.png | R06 | 2026-10-17 | Built-in image_gen; model undisclosed | [day3](R06-PROMPTS.md#day3) | yes |
 | home-dusk-2.png | R06 | 2026-10-17 | Built-in image_gen; model undisclosed | [dusk2](R06-PROMPTS.md#dusk2) | yes |
+| card-paper-2.png | R07 | 2026-10-17 | Built-in image_gen; model undisclosed | [paper2](R07-PROMPTS.md#paper2) | yes |
 
 ## R01 review and preparation notes
 
@@ -103,6 +104,14 @@ Three daytime candidates were reviewed at full size and about 120 px canvas widt
 Dusk attempt 1 was rejected because it redrew the cloud shapes and darkened the foreground heavily. Attempt 2 keeps the original cloud layout and the main scene landmarks in place while adding a peach/purple sky, warm window light and sparse firefly glows above the floor. Compared side-by-side at full/reduced size: window mullions, awning endpoints, ladder rungs, table edges, pots, stool, shore stones and lily pads stay visually aligned. This is visual registration review, not proof that every pixel outside the lighting edit is identical; pond reflections and surface shading necessarily change. Runtime crossfades and device contrast remain untested.
 
 A temporary centered 4:3 preview `(85, 0, 1451, 1024)` was inspected for both images. The treehouse window, ladder, table and broad empty floor remain visible; the far-right pond/lily-pad detail can be trimmed by that crop. Final crop/placement must be chosen with the actual home UI and companion scale. QA crops/thumbnails were temporary inspection images only; repository sources are uncropped. No code/build/browser/offline/device checks or claim of iPad readability were made for this source-art pass.
+
+## R07 review and preparation notes
+
+One untouched opaque RGB PNG, 1254 × 1254 (above the requested minimum), 1,103,606 bytes. SHA-256 confirms the repository copy matches the tool original. No variants, runner-up or missing asset. No source cleanup, resizing or integration; same generating service terms and undisclosed model caveat as below.
+
+Three candidates were reviewed at full size and about 120 px canvas width. Candidate 1's larger leafy corner clusters were more prominent; candidate 3's wandering vine had greater contrast. Candidate 2 has the faintest sparse pale-sage border, a quiet cream center, no separate corner decoration, text, character, shadow, bevel or strong pattern. Its vine turns at the corners, but the texture itself reaches all four square corners without a rounded cutout. Center sample is `(250, 232, 216)` (near the requested cream); central 80% per-channel standard deviations are approximately `(0.53, 0.56, 0.61)` on the 0–255 scale, consistent with a nearly flat center. Converted alpha is uniformly 255.
+
+Use this as an **opaque full-card texture**, not a creature cutout: do not run paper keying or trim away the cream. Stretching, species-color tinting, actual portrait contrast and card/UI padding remain for integration. No tiled-seam claim is made; this is a single bordered card background. Temporary inspection thumbnails did not alter the original. No code/build/browser/offline/device checks or claim of iPad readability were made for this source-art pass.
 
 ## Generating service terms
 
