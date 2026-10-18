@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-18 — Draw the Pattern definition (docs only)
+
+- Defined Draw the Pattern levels 1–8 in [the definition](definitions/draw-the-pattern.md) (chunk 25's last slice, cut and draw candidate) on `claude/define-draw-the-pattern` ([PR #579](https://github.com/rjdunlap/neo/pull/579)): the pet starts a stroke or pattern on a fixed-aspect strip and she continues it from a green ring, through Letter Trails' tracer (`sampleStroke`, `advanceTrace`, `traceWaypoints`, `offTrail`, `showTheWay`); free marks at 1, lines at 2, zigzag and wave at 3, circle either way and loops at 4, faded dashes with stepping stones at 5, cross, square and triangle at 6, AB and AAB/ABB stroke patterns with two faint candidates and a divergence rule at 7–8; lap 1–2, toddler 1–3, preschool 3–5, pre-K 5–8; one stray per drag a miss, the wrong candidate a miss four checkpoints past the divergence, glow after two.
+- References read through search summaries and review pages, none played: the OT pre-writing sequence (Growing Hands-On Kids, Ambiki citing Feder and Majnemer 2007, a UHB NHS leaflet), the Beery VMI form order, UK early-years handwriting patterns (Thurnham Infant School, Early Impact Learning, naming Write Dance), Writing Wizard (Common Sense Media and Education), Dexteria Jr.'s Trace and Erase, LetterSchool's watch, trace, recall steps.
+- Updated the chunk 25 row (ready), the IDEAS row, a READY.md Queued line, a WAITING-ON-DEVELOPER defaults row with seven defaulted calls.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the seven defaulted decisions; whether Paint Pier at six games still fits every band (`lands.test.ts` at build time); the corridor floor, the crayon hiding the dashes, level 5's stepping stones and level 7's choice are device checks no child has made.
+
 ## 2026-10-18 — Networks and digital citizenship subject research
 
 - Added the [networks-and-digital-citizenship study](deep-dives/subjects/networks-citizenship.md): opened the CSTA 2017 and 2026 standards PDFs (text extracted locally), England's computing programmes, the UKCIS *Education for a Connected World* 2020 PDF, ISTE 1.2, Common Sense's K–5 lesson list, eSafety's early-years pages, UN CRC General Comment 25, Kumar et al. 2017 (PDF), Yan 2005 and Eskelä-Haapanen and Kiili 2019 abstracts, Interland, Digital Passport, NetSmartz Kids, Digiduck, Jessie & Friends and the Tablets of Stone PDF; the AAP 2016 statement, the Orange Game rules, Ofcom 2024 and the Children's Commissioner 2018 figure from search summaries. Relay Woods is the first ladder (ten levels, toddler–school); Relay Cases the grown-up/teen puzzle.
@@ -92,21 +100,6 @@
 - References: OT scissor progressions (Growing Hands-On Kids, Swansea Bay NHS, Oxfordshire) and the Common Sense Dexteria Jr. review from search summaries; the Sago Mini Toolbox review opened; Make-A-Flake only via Wikipedia. Skipped Lift It (sequenced after Gear Garden's packet) and W2 (overlaps RW06/RW11).
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
 - Open: the five defaulted decisions; corridor widths are computed, not felt; no child has played it.
-
-## 2026-10-17 — Monster Munch deep dive
-
-- Docs only: [deep dive](deep-dives/monster-munch.md) on `claude/dive-monster-munch` ([PR #549](https://github.com/rjdunlap/neo/pull/549)). Audited levels 1–8; gaps: the card says the monster counts aloud at 1 and 4–5 (it does not) and rings a bell at 7 (there is none), a wrong pad promises counting that never happens, one generic hint line, lap monster taps feed nothing, single rounds at 1–2, silent short drops.
-- Opened Wikipedia (Cookie Monster Munch), Feed the Monster listings, Moose Math (App Store, Common Sense), Toca Kitchen 2 (Toca Boca, Microsoft Store), My Very Hungry Caterpillar, Gracie & Friends Breakfast Time and Common Core K.CC and 3.OA; Atari modes, Moose Juice details and PhET are search summaries; Hungry Hungry Hippos and the Frydman and Bryant finding recalled.
-- Six ready slices queued in [READY.md](READY.md); one decision row to WAITING.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
-
-## 2026-10-17 — Archive verification entries by script
-
-- Docs tooling only: `scripts/archive-verification.mjs` moves dated entries above the coverage summary into `docs/archive/VERIFICATION-<entry date>.md` (older than the newest date by default, `--before`, `--keep=N`, `--dry-run`), re-bases their relative links, spawns `check-links.mjs --fix-moved` per archive touched and ends with a full link check; it exits 2 on a parse problem and 1 on broken links.
-- Ran it once on the merged tree with `--before=2026-10-17 --keep=15`: 27 entries moved into the new [Verification 2026-10-17](archive/VERIFICATION-2026-10-17.md), 15 stay live; links in the execution queue, the RW03 packet and a completed-work file were repointed.
-- Moved all 37 `###` worker dispatch sections (2026-10-13 to 2026-10-17; the brief named four) from below the summary into the dated archive files under a dispatch-records heading; nothing linked to their anchors. The coverage summary and the "Never established" paragraph stay.
-- Passed `node scripts/check-links.mjs` (links ok) and `git diff --check`; a second `--dry-run` reports nothing to move. AGENTS.md's "Checks run" bullet and the README now point at the script.
-- Not run: typecheck, unit tests, build and browser suites (no game code or shared TypeScript changed). Not covered: entries whose heading is not `## YYYY-MM-DD — title` fail the parse on purpose; two entries with the same heading in one archive file would shift an anchor (the script warns).
 
 ## Coverage summary
 
