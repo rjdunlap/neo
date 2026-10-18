@@ -198,7 +198,7 @@ None was played. "Opened" means the page itself was read.
 4. **Z4 · The bat and level 4**: a membrane-wing part (or bespoke art), the surprise rounds, its tests.
 5. **Z5 · Prove Night Garden**: dress Rainbow Meadow and swap the cast in Photo Safari and Peekaboo Barn (owl, bat, fireflies), per the notebook's two-game proof.
 6. **Z6 · Define Enrichment Day** on Bamboo Hill (decision 4), with its accepted-answer table and the sharing rung.
-7. **Z7 · Define Species Comeback**: the family-tree model, the pairing rule (no siblings, then no shared grandparent), several valid plans, a solver test, and the release-site match; decision 6.
+7. **Z7 · Define Species Comeback**: the family-tree model, the pairing rule (no siblings, then no shared grandparent), several valid plans, a solver test, and the release-site match; decision 6. In progress 2026-10-18 on `claude/define-species-comeback` (docs only).
 8. **Z8 · Zoo Detective and Who Am I? cards** for the grown-ups' page, after review.
 9. **Z9 · Who Am I? levels 5–7**, then the next kits in [order](#habitat-kits-order-lands-and-cast-swaps), each with its cast swaps (Who's Calling? among them).
 
