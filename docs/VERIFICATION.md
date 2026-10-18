@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Rhythm Neighbors deep dive
+
+- Docs only: [deep dive](deep-dives/rhythm-neighbors.md) on `claude/dive-rhythm-neighbors` ([PR #558](https://github.com/rjdunlap/neo/pull/558)). Audited levels 1–6; gaps: a pool of three replies and a fixed two-knock call, the teal frog is a bell, level 6's "duet" is the ordinary ending, no ending a lap child can reach, a 2.5 s mid-reply pause is a miss, silent extra taps, no journal entry, a `levels` function with no `order`.
+- Opened Wikipedia (Patapon, Rhythm Heaven, Simon, Bop It, clapping games, call and response, the Kodály method), Harvard's serve-and-return page, Yu et al. 2022 (PMC) and the Echo Canyon Band listing; Glee Club, Gordon's MLT, Zentner and Eerola 2010, Kirschner and Tomasello 2009, Provasi and Bobin-Bègue 2003, the Core Arts K standard and Bandimal are search summaries. Nothing was played.
+- Ladder: lap 7 *Knock, knock*, toddler 8 *My turn, your turn*, 9 *Knock a call*, then 10 *Copy or answer?*, 11 *Your own answer*, 12 *Longer calls*; five ready lines in [READY.md](READY.md), one decision row in WAITING, pointers at the archived ladder-audit rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
 ## 2026-10-17 — Community and civics subject research
 
 - Added the [community-and-civics study](deep-dives/subjects/community-civics.md): opened the C3 Framework's D2.Civ.1–14 indicators and D2.His.2/14 (PDF text extracted locally), England's citizenship programmes (KS1–2 and KS3–4), the England history programme, the NCSS early-childhood statement PDF, the Kim dissertation record, the Cinamon and Yeshayahu summary, iCivics' games pages and the Animal Crossing: New Leaf and Democracy Wikipedia pages; Smetana, Vogelsang, Helwig, Corriveau, Kids Voting USA, Responsive Classroom and Toca Life World from search summaries. Takes the money study's routed jobs and shared costs; Village Vote is the first ladder, Count the Ballots the grown-up/teen puzzle.
