@@ -115,4 +115,5 @@ Each brief follows the rework brief's list: silhouette, locomotion, personality,
 
 - **Starter:** the sprout hatches from today's egg. A lean, for RW05 to decide: let the chooser offer **three starter eggs** (sprout, river, glider) once all three are prepared, Pokémon's first choice; the other two are then met in later projects, so the collection still grows.
 - **Discovery:** each species has a home land and an adventure hook above. [Welcome a New Friend](../WELCOME-ADVENTURE.md) adopts the second species; later projects can adopt the rest. Supported completion adopts the same creature.
+- **Inside the games:** how the creatures become the cast, gain talents and receive what a round makes is the [integration review](../PET-INTEGRATION.md).
 - **Games:** a species that lacks a part a game needs (boots for the glider, a tummy for Tote) does not break the game. [GAME-FIT.md](GAME-FIT.md) lists the needs; RW05 decides between a stand-in point and inviting another friend from home, which is itself a reason to own several.

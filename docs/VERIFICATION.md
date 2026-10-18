@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Pet integration review (docs only)
+
+- Added [PET-INTEGRATION.md](rework/PET-INTEGRATION.md): what the guide does today (tap, giggle, repeat; no reaction to play), the twenty-seven games whose rules name friends, and six ways the creatures go further into the games (a guide with a job, owned creatures as the cast by role with the word roles kept, one visible talent per species, round results that come home, meeting a wild creature inside a game, two-creature co-play), favourites, the poses casting would add to the art queue, a recommended order and three developer calls.
+- Linked it from the rework README, the art-request README, CAST and GAME-FIT, and added the decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: all three calls; nothing proposed is built.
+
 ## 2026-10-17 — Rhythm Neighbors deep dive
 
 - Docs only: [deep dive](deep-dives/rhythm-neighbors.md) on `claude/dive-rhythm-neighbors` ([PR #558](https://github.com/rjdunlap/neo/pull/558)). Audited levels 1–6; gaps: a pool of three replies and a fixed two-knock call, the teal frog is a bell, level 6's "duet" is the ordinary ending, no ending a lap child can reach, a 2.5 s mid-reply pause is a miss, silent extra taps, no journal entry, a `levels` function with no `order`.
