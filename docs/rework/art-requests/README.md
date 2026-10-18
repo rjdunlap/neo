@@ -36,4 +36,4 @@ One run completes **one request** from [QUEUE.md](QUEUE.md): the first row whose
 
 ## What happens after the routine
 
-A coding session picks up a `done` request: it generalizes `scripts/creature-art/prepare-glider.mjs` to take a file, a box and a seed and to accept transparent input, prepares the sprite set, marks the anchor points listed in [GAME-FIT.md](GAME-FIT.md#anchor-points-a-rigging-session-records), reuses the weight-field mesh rig per species, and sets the request to `prepared`. RW05 then consumes the prepared species. None of that is the routine's job.
+A coding session picks up a `done` request: it prepares the sprite set with `node scripts/creature-art/prepare-sprite.mjs --set <species>` ([arguments](../../../src/art/creatures/illustrated/README.md#preparing-a-sprite); it takes a transparent or flat background and refuses a drifted variant), marks the anchor points listed in [GAME-FIT.md](GAME-FIT.md#anchor-points-a-rigging-session-records), reuses the weight-field mesh rig per species, and sets the request to `prepared`. RW05 then consumes the prepared species. None of that is the routine's job.
