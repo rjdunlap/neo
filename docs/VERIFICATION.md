@@ -7,6 +7,12 @@
 - Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
 - Open: nothing; the next closeout exercises the new delete-and-move-up rule.
 
+## 2026-10-17 — Visual art subject research
+
+- Added the [visual-art study](deep-dives/subjects/visual-art.md) on `claude/subject-visual-art` ([PR #547](https://github.com/rjdunlap/neo/pull/547)): opened England art and design KS1–3, EYFS expressive arts, Core Arts visual arts K/2/4/7 (Washington's adoption on Common Planner), the NCAS anchors, NPS weaving patterns and MIT's weaving-in-Scratch page; Lowenfeld, Gardner, VTS, Jacquard and the reference games are search summaries; Head Start ELOF returned 403.
+- Little Loom first; Picture Talk card; Gallery Walk later. Updated the tracker, notebook, roadmap [Visual art recommendations](ROADMAP.md#visual-art-recommendations) and a decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+- Open: identity and Paint Pier capacity, accounting, kept cloth, styles/traditions review, Gallery Walk art; no reference game played.
+
 ## 2026-10-17 — Little Helpers deep dive
 
 - Docs only: [deep dive](deep-dives/little-helpers.md) on `claude/dive-little-helpers` ([PR #546](https://github.com/rjdunlap/neo/pull/546)). Audited levels 1–6; gaps: taps while busy and on the grass or waiting helpers do nothing, level 6 teams are equal by construction (she only counts the total), level 5 shows the total not the gap, the dots never fill, level 2 alternates 1, 2, only one fruit of a bunch reaches the basket, an empty crowd plays the miss sound, helper hit areas overlap. Make ten is gated: Duck Pond 10 already does it.
