@@ -254,3 +254,23 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - Changed: a music-note button at levels 3–6 plays the picture's stamps left to right (`playOrder`, pentatonic pitch by height, at most 5.5 s); nothing scored, saved picture unchanged.
 - Ran: `npm run typecheck`; `npx vitest run src/games/stamp-studio src/content` (117 passed, including the `playOrder` rule tests and a finish.test.ts lifecycle test that failed on the first version when the button stayed visible after finishing); `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=2,3,6` on http://localhost:5302 passed (presses play, every stamp sounds once in x-order, no button where the plan has no play); one portrait probe at level 4 (768×1024) showed the button clear of help and pet.
 - Not run: build (no shared files or assets changed), `fingerdemo` (bot unchanged). Open: device audio and whether a child links height to pitch ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-10-17 — Little Helpers deep dive
+
+- Docs only: [deep dive](../deep-dives/little-helpers.md) on `claude/dive-little-helpers` ([PR #546](https://github.com/rjdunlap/neo/pull/546)). Audited levels 1–6; gaps: taps while busy and on the grass or waiting helpers do nothing, level 6 teams are equal by construction (she only counts the total), level 5 shows the total not the gap, the dots never fill, level 2 alternates 1, 2, only one fruit of a bunch reaches the basket, an empty crowd plays the miss sound, helper hit areas overlap. Make ten is gated: Duck Pond 10 already does it.
+- Opened the Pikmin Wiki (Carry, Lift), Hi Ho! Cherry-O and Lemmings (Wikipedia), Common Sense Media's Moose Math review and Common Core K.OA and 3.OA; Pikmin Bloom, Count Your Chickens, the Montessori spindle box, Numberblocks World and Khan Academy Kids are search summaries.
+- Seven ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
+## 2026-10-17 — Visual art subject research
+
+- Added the [visual-art study](../deep-dives/subjects/visual-art.md) on `claude/subject-visual-art` ([PR #547](https://github.com/rjdunlap/neo/pull/547)): opened England art and design KS1–3, EYFS expressive arts, Core Arts visual arts K/2/4/7 (Washington's adoption on Common Planner), the NCAS anchors, NPS weaving patterns and MIT's weaving-in-Scratch page; Lowenfeld, Gardner, VTS, Jacquard and the reference games are search summaries; Head Start ELOF returned 403.
+- Little Loom first; Picture Talk card; Gallery Walk later. Updated the tracker, notebook, roadmap [Visual art recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#visual-art-recommendations) and a decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+- Open: identity and Paint Pier capacity, accounting, kept cloth, styles/traditions review, Gallery Walk art; no reference game played.
+
+## 2026-10-17 — Ready list moved to its own file
+
+- Docs only: the roadmap's 68-line numbered **Ready to build now** list became [READY.md](../READY.md): a **Next ten** in priority order (the eligible RW05 definition first, then the slices the old list led with) and a **Queued** section grouped by game, unnumbered so a deleted line leaves no gap; every line keeps its wording, check tier and dive link, and the four lines that named other lines by number now name the slice instead.
+- The roadmap's section is a one-paragraph pointer and its pick steps read from Next ten, with the refill rule moving Queued lines up below five; the stale "lines 7–16 were added" sentence is gone. Repointed the execution queue's selection table, the deep-dive procedure's step 7, the rework brief and work items, the 2026-10-15 cleanup archive, AGENTS.md (document table row added) and the docs-keeper agent.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: nothing; the next closeout exercises the new delete-and-move-up rule.

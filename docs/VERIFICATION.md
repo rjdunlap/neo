@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-18 — Scoop Shop deep dive
+
+- Docs only: [deep dive](deep-dives/scoop-shop.md) on `claude/dive-scoop-shop` ([PR #576](https://github.com/rjdunlap/neo/pull/576)). Audited levels 1–6; gaps: level-2 orders follow the counter left to right (customer *i* wants tub *i*), taps during a scoop's flight and on the customer or cone are silent, the count card is a numeral, no counting aloud, one shop, one cone, six customers, no recorded person checks.
+- Opened Flipline's Freezeria page and the Flipline Studios Wikipedia article, Jellyneo's Ice Cream Machine guide, the Smart Scoops set listing, Melissa & Doug's counter, Dr. Panda's and KidloLand's App Store pages, Sago Mini's Pet Cafe letter, Common Sense Media on Toca Kitchen 2, Wikipedia's Simon and Overcooked, the CDC three-year page and the K.CC standards; 88 Ice Cream and the colour-milestone ages are search summaries. Nothing was played.
+- Ladder: lap 10 *Any scoop*, toddler 11 *Who wanted pink?*, pre-K/school 12 *Fill it up* and 13 *Three pink and two blue*, with the executive-function study's 7–9 carried in behind its decision; six ready lines in [READY.md](READY.md), one decision row in WAITING, pointers at the archived ladder-audit rows and the Juice Bar idea.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
 ## 2026-10-18 — Attic Finds definition (docs only)
 
 - Defined Attic Finds levels 1–2 in [the definition](definitions/attic-finds.md) (everyday-life study slice H1, consolidating time/change T5) on `claude/define-attic-finds` ([PR #578](https://github.com/rjdunlap/neo/pull/578)): two invented objects (bird box, fish churn) with front and back sides, a crank, three clue spots and a `supports(clue, claim)` predicate; level 1 *Try it* (free `{bob, roll}` predictions, then pick what happened, no misses) and level 2 *Show the clue* (drag the proving clue into the claim's slot, Check; unsupported Checks are misses, glow after two); rule tests, ghost finger, how-to lines, voice IDs, registration defaults and seven defaulted decisions. Updated the recommendation rows, the study's H1 row, the IDEAS rows, READY (queued build line) and WAITING-ON-DEVELOPER.
@@ -94,26 +101,6 @@
 - Moved all 37 `###` worker dispatch sections (2026-10-13 to 2026-10-17; the brief named four) from below the summary into the dated archive files under a dispatch-records heading; nothing linked to their anchors. The coverage summary and the "Never established" paragraph stay.
 - Passed `node scripts/check-links.mjs` (links ok) and `git diff --check`; a second `--dry-run` reports nothing to move. AGENTS.md's "Checks run" bullet and the README now point at the script.
 - Not run: typecheck, unit tests, build and browser suites (no game code or shared TypeScript changed). Not covered: entries whose heading is not `## YYYY-MM-DD — title` fail the parse on purpose; two entries with the same heading in one archive file would shift an anchor (the script warns).
-
-## 2026-10-17 — Ready list moved to its own file
-
-- Docs only: the roadmap's 68-line numbered **Ready to build now** list became [READY.md](READY.md): a **Next ten** in priority order (the eligible RW05 definition first, then the slices the old list led with) and a **Queued** section grouped by game, unnumbered so a deleted line leaves no gap; every line keeps its wording, check tier and dive link, and the four lines that named other lines by number now name the slice instead.
-- The roadmap's section is a one-paragraph pointer and its pick steps read from Next ten, with the refill rule moving Queued lines up below five; the stale "lines 7–16 were added" sentence is gone. Repointed the execution queue's selection table, the deep-dive procedure's step 7, the rework brief and work items, the 2026-10-15 cleanup archive, AGENTS.md (document table row added) and the docs-keeper agent.
-- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
-- Open: nothing; the next closeout exercises the new delete-and-move-up rule.
-
-## 2026-10-17 — Visual art subject research
-
-- Added the [visual-art study](deep-dives/subjects/visual-art.md) on `claude/subject-visual-art` ([PR #547](https://github.com/rjdunlap/neo/pull/547)): opened England art and design KS1–3, EYFS expressive arts, Core Arts visual arts K/2/4/7 (Washington's adoption on Common Planner), the NCAS anchors, NPS weaving patterns and MIT's weaving-in-Scratch page; Lowenfeld, Gardner, VTS, Jacquard and the reference games are search summaries; Head Start ELOF returned 403.
-- Little Loom first; Picture Talk card; Gallery Walk later. Updated the tracker, notebook, roadmap [Visual art recommendations](deep-dives/subjects/RECOMMENDATIONS.md#visual-art-recommendations) and a decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-- Open: identity and Paint Pier capacity, accounting, kept cloth, styles/traditions review, Gallery Walk art; no reference game played.
-
-## 2026-10-17 — Little Helpers deep dive
-
-- Docs only: [deep dive](deep-dives/little-helpers.md) on `claude/dive-little-helpers` ([PR #546](https://github.com/rjdunlap/neo/pull/546)). Audited levels 1–6; gaps: taps while busy and on the grass or waiting helpers do nothing, level 6 teams are equal by construction (she only counts the total), level 5 shows the total not the gap, the dots never fill, level 2 alternates 1, 2, only one fruit of a bunch reaches the basket, an empty crowd plays the miss sound, helper hit areas overlap. Make ten is gated: Duck Pond 10 already does it.
-- Opened the Pikmin Wiki (Carry, Lift), Hi Ho! Cherry-O and Lemmings (Wikipedia), Common Sense Media's Moose Math review and Common Core K.OA and 3.OA; Pikmin Bloom, Count Your Chickens, the Montessori spindle box, Numberblocks World and Khan Academy Kids are search summaries.
-- Seven ready slices added to the roadmap; one decision row to WAITING.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
 
 ## Coverage summary
 

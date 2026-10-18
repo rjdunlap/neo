@@ -53,6 +53,13 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`teddy-doctor`, level 7 Who needs help?** (new level): two friends, tap the one with a boo-boo, then bandage it; toddler order 1, 7, 2, 3, `entryLevels: [7]`. [Slice 3](deep-dives/teddy-doctor.md#new-levels-on-top)
 - **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
 
+- **`scoop-shop`, honest level 2, every touch answers, counting aloud and the count picture** (existing-game bug fix tier): level-2 orders no longer follow the counter left to right, taps during a flight and on the customer or cone answer, scoops counted aloud at 1 and 4, a row of scoops on the count card. [Slice 1](deep-dives/scoop-shop.md#build-slices-in-order)
+- **`scoop-shop`, pools and a serve tune** (content): eight customers, three cone kinds, three window scenes, flavour thank-yous, the cone played bottom to top. [Slice 2](deep-dives/scoop-shop.md#fresh-content-inside-existing-levels)
+- **`scoop-shop`, lap entry 10 Any scoop** (new level on the existing interaction, with `order`/`entryLevels`): one tap, one scoop, one munch; lap order 10, 1. [Slice 3](deep-dives/scoop-shop.md#younger-band-openings)
+- **`scoop-shop`, toddler 11 Who wanted pink?** (new interaction): tap the customer whose picture matches the scoop already on the cone; toddler order 1, 2, 11, 3. [Slice 4](deep-dives/scoop-shop.md#easier-entries-and-levels-between-existing-ones)
+- **`scoop-shop`, level 12 Fill it up** (new level on the existing interaction): count on from scoops already on the cone; pre-K and school. [Slice 5](deep-dives/scoop-shop.md#new-levels-on-top)
+- **`scoop-shop`, level 13 Three pink and two blue** (new level): two colours with a count each, any order; pre-K and school. [Slice 6](deep-dives/scoop-shop.md#new-levels-on-top)
+
 - **`fruit-slice`, build levels 1–8** (new-game tier): fruit hangs at the top of a slow arc and a swipe splits it; tap at 1, swipe at 2, then only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N and pieces by twos; no clock, missed fruit comes back; Bubble Beach. [Definition](definitions/fruit-slice.md)
 
 - **`shape-buddies`, level 3 Two make one** (new levels on the existing interaction): a wide gap; a flat friend and a cup friend hold hands into a spoon that catches the seed; pre-K and school 1–3, misses stay 0. [Definition](definitions/shape-buddies-combined.md)
