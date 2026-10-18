@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Puddle Gobble definition
+
+- Defined Puddle Gobble levels 1–8 in [the definition](definitions/puddle-gobble.md): a rain puddle on Bubble Beach soaks up things that fit (tiers 1–4, count-based growth, so levels 1–7 never dead-end), too-big things never block or count, smallest first at 5, numbers at 6, sums at 7 and an exact pail total with a free let-go at 8; accounting, bot, how-to and registration; five references cited (Hole.io, Donut County, Katamari Damacy, Feeding Frenzy recalled, Piaget/Pink Tower summaries).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the five defaulted decisions; sizes and fit are computed, not measured; no child has played it.
+
 ## 2026-10-17 — Rainbow Fingers slice 2, every touch counts, pots, nudge
 
 - Changed (`9dcc0257`): levels 1–2 count every lifted touch (pat, hold, drag) toward the frame, a pat splats a 100-across flower, pots are 104 across at 104 spacing with ink marks (`potLayout` keeps clear of the pet), and a blank spot sparkles after 8 quiet seconds. Hint accounting (decision 5) not built.
