@@ -26,6 +26,8 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | river-sleepy-1.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [sleepy1](R03-PROMPTS.md#sleepy1) | yes |
 | river-sad-1.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad1](R03-PROMPTS.md#sad1) | yes |
 | river-portrait-2.png | R03 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait2](R03-PROMPTS.md#portrait2) | yes |
+| wear-crown-3.png | R04 | 2026-10-17 | Built-in image_gen; model undisclosed | [crown3](R04-PROMPTS.md#crown3) | yes |
+| wear-scarf-3.png | R04 | 2026-10-17 | Built-in image_gen; model undisclosed | [scarf3](R04-PROMPTS.md#scarf3) | yes |
 
 ## R01 review and preparation notes
 
@@ -56,6 +58,14 @@ Three independently prompted base candidates were reviewed at full size and 120 
 Base silhouette bounds are `(34, 195, 1500, 809)`, including whiskers. It occupies about 95% of canvas width rather than the requested 85%, with at least 34 pixels of side margin and no clipping. Retained after the three attempts kept that framing; the source remains unchanged. The portrait's outlined bust is fully inside bounds `(265, 196, 1157, 1083)` with a 97-pixel minimum margin. All contours and whisker tips stay inside the canvas; no cast shadow, props or ground.
 
 Expression silhouettes were compared in both directions against the base with a four-pixel tolerance: zero silhouette pixels exceeded it. Outer bounds match except happy extends two pixels upward and sleepy/surprised end one pixel higher at the bottom. First surprised was rejected for a brow outside the skull; the replacement keeps brows inside. First portrait was rejected for a missing ink line at the lower chest; portrait 2 closes it. Temporary inspection masks and thumbnails were used only for review and did not prepare or modify originals. Minor shading/edge differences may remain, so this is not pixel-perfect registration evidence. Paper-keying, preparation alignment, animation and device checks remain for a coding session; no iPad readability or child appeal is claimed.
+
+## R04 review and preparation notes
+
+Two untouched PNGs, each 1254 × 1254 (above the requested minimum), 2,454,726 bytes total. SHA-256 checks confirm the repository copies match the tool originals. No cutting, rigging, fitting or integration; same service terms and undisclosed model caveat as below.
+
+Three independent candidates for each item were reviewed at full size and about 120 px canvas width. Crown 1 had too much small floral detail; crown 2 simplified it, but crown 3 offered the clearest open oval center with six rounded yellow/purple/pink flowers and small green leaves. Scarf 1's fringe adds detail and scarf 2 reads more like an extra fold/coil; scarf 3 has one oval wrap, an open neck hole, two separated rounded tails, broad red/orange stripes and only a few knit seam lines. No runner-ups kept and no missing assets. Both are unworn and seen from slightly above/front, posed for a right-facing creature; no creature, mannequin, text, ground or cast shadow is included. Closed plum contours and soft upper-left cel shading match the approved glider.
+
+Crown bounds are `(35, 270, 1221, 978)` and scarf bounds `(104, 184, 1162, 1110)` (pixels differing from near-white paper). All petals, leaves and tail tips remain inside the canvas. The crown occupies about 95% of width rather than the requested 80%; its narrowest side margin is 33 pixels. The scarf occupies about 84% of width with at least 92 pixels of side margin. Originals stay unchanged; card/slot padding is for preparation. The white paper contains faint near-white variation like earlier requests. **Preparation gap:** the crown center and scarf neck hole are enclosed white regions; the existing border-connected paper flood will not clear those interiors automatically. A preparation session must explicitly handle them while preserving the artwork. Front/back occlusion, scale and shape fitting to any species have not been tested. No claim of iPad readability or suitability across the cast is made by this generation pass.
 
 ## Generating service terms
 
