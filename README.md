@@ -313,6 +313,8 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 
 `scripts/abandon-cards.mjs` is not a suite: it opens each ghost-finger game's card and leaves it at a random moment (by the map, Back or Play), over and over, and fails on any page error; it found a rare fault where a game's `await` is ready in the frame its objects are destroyed (`GAME_URL=… GAME_ONLY=id,id ROUNDS=n`).
 
+Two Node-only docs scripts: `node scripts/check-links.mjs` checks every relative Markdown link and anchor in README, AGENTS and `docs/`, and `node scripts/archive-verification.mjs` (`--before=YYYY-MM-DD`, `--keep=N`, `--dry-run`) rotates older dated entries out of [the verification log](docs/VERIFICATION.md) into `docs/archive/VERIFICATION-<date>.md` and repoints their links.
+
 `FROM_LEVEL=n` starts `next`, `creative`, `woods`, `shortlist` and `robot` at a later level; `TO_LEVEL=n` limits the robot, paint, salon, Tangram Town, Penguin Slide Goodnight Room or Critter Sort loop for a targeted level check.
 
 With `npm run build-and-preview` running in another terminal:
