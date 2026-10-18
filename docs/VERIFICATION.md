@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-18 — Seesaw Balance level 11 definition (docs only)
+
+- Defined `seesaw-balance` level 11 *Two boxes* in [the definition](definitions/seesaw-two-boxes.md) (the short-ladders row *Seesaw Balance's unknowns*) on `claude/define-seesaw-two-boxes` ([PR #595](https://github.com/rjdunlap/neo/pull/595)): a square box read and tagged on the first seesaw, then square box, round box and blocks against blocks, take the same off both sides with the tagged box worth its number until the round box is alone (substitution); school 6–11, two pairs a round, only number pads miss, narrowing moves free, `pairHint` glow, `progress` classification, rule tests, ghost-finger order, voice IDs, how-to lines and the unchanged levels 1–10.
+- References read, none played: SolveMe Mobiles' store page, PhET's Equality Explorer: Two Variables teacher guide, the Hands-On Equations 1 store page, DragonBox Algebra 5+'s site, the National Math Festival's Imbalance Problems and Mobius Academy's three-beam balance page.
+- Updated the roadmap's short-ladders row (ready), a READY.md Queued line, a WAITING defaults row with five defaulted calls and two IDEAS pointers; Garden Rows' boxes stay undefined behind the couch-puzzles decision.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the five defaulted decisions; whether a child treats the tagged box as its number of blocks, reads the orange hatbox as a different box, and finds "Closer!" helpful are device checks for the build.
+
 ## 2026-10-18 — Roundup deep dive
 
 - Docs only: [deep dive](deep-dives/roundup.md) on `claude/dive-roundup` ([PR #580](https://github.com/rjdunlap/neo/pull/580)). Audited levels 1–6; gaps: the trot-home is uncounted, the numeral has no dots, the cast is a fixed pig and bunny, grass taps go unanswered at level 1, no toddler rung between tap and shoo, one pointer only, hard-coded sort lines, no journal or couch.
@@ -96,12 +104,6 @@
 - Opened Wikipedia (Patapon, Rhythm Heaven, Simon, Bop It, clapping games, call and response, the Kodály method), Harvard's serve-and-return page, Yu et al. 2022 (PMC) and the Echo Canyon Band listing; Glee Club, Gordon's MLT, Zentner and Eerola 2010, Kirschner and Tomasello 2009, Provasi and Bobin-Bègue 2003, the Core Arts K standard and Bandimal are search summaries. Nothing was played.
 - Ladder: lap 7 *Knock, knock*, toddler 8 *My turn, your turn*, 9 *Knock a call*, then 10 *Copy or answer?*, 11 *Your own answer*, 12 *Longer calls*; five ready lines in [READY.md](READY.md), one decision row in WAITING, pointers at the archived ladder-audit rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
-## 2026-10-17 — Community and civics subject research
-
-- Added the [community-and-civics study](deep-dives/subjects/community-civics.md): opened the C3 Framework's D2.Civ.1–14 indicators and D2.His.2/14 (PDF text extracted locally), England's citizenship programmes (KS1–2 and KS3–4), the England history programme, the NCSS early-childhood statement PDF, the Kim dissertation record, the Cinamon and Yeshayahu summary, iCivics' games pages and the Animal Crossing: New Leaf and Democracy Wikipedia pages; Smetana, Vogelsang, Helwig, Corriveau, Kids Voting USA, Responsive Classroom and Toca Life World from search summaries. Takes the money study's routed jobs and shared costs; Village Vote is the first ladder, Count the Ballots the grown-up/teen puzzle.
-- Updated the subject tracker, two notebook rows, the roadmap's subject table, [Community and civics recommendations](deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: Village Vote's land and the capacity test, a losing pet, Count the Ballots' home, the helper cast (police and fire border `safety`), a persistent square; no reference game played.
 
 ## Coverage summary
 
