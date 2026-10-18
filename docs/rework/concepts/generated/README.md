@@ -63,6 +63,14 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | dapple-sleepy-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy1](R11-PROMPTS.md#sleepy1) | yes |
 | dapple-sad-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R11-PROMPTS.md#sad1) | yes |
 | dapple-portrait-1.png | R11 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait1](R11-PROMPTS.md#portrait1) | yes |
+| bramble-base-4.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [base4](R12-PROMPTS.md#base4) | yes |
+| bramble-blink-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [blink1](R12-PROMPTS.md#blink1) | yes |
+| bramble-happy-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [happy1](R12-PROMPTS.md#happy1) | yes |
+| bramble-surprised-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [surprised1](R12-PROMPTS.md#surprised1) | yes |
+| bramble-sleepy-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy1](R12-PROMPTS.md#sleepy1) | yes |
+| bramble-sad-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R12-PROMPTS.md#sad1) | yes |
+| bramble-alt-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [alt1](R12-PROMPTS.md#alt1) | yes |
+| bramble-portrait-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait1](R12-PROMPTS.md#portrait1) | yes |
 
 ## R01 review and preparation notes
 
@@ -179,6 +187,18 @@ Three bases reviewed full size and at 120 px canvas width. Candidate 2 has the c
 Base bounds `(50, 115, 1485, 933)` occupy about 93% canvas width, wider than the generic 85% target, with at least 50 px margin. All parts remain inside the frame. First surprised was rejected for drift around the far brow; replacement keeps it inside the original contour. Chosen expression bounds differ by at most one pixel, and bidirectional silhouette comparison found zero pixels outside a four-pixel tolerance. Full-size review found body spots, tail, legs, crest and framing retained; localized facial paint changes accompany the expressions. This is not pixel-identical shading/registration evidence. Preparation alignment and animation checks remain.
 
 Portrait shows the head and upper chest with the same crest, nose, eyes and visible body spots; no feet or tail. Closed bust bounds `(97, 103, 1185, 1176)` leave at least 69 px margin, narrower than the augmented 12% request but fully clear of every edge. Add display padding later if needed, without altering this source. No missing assets. The set was reviewed full size and at about 120 px on white and temporary pale-blue composites; QA masks/thumbnails are not assets. Opaque white fallback has slight near-white variation; paper-key later, preserving cream and eye whites. No claim of iPad readability, child appeal or animation quality. Live color-changing behavior and slot/misfit policies remain integration work.
+
+## R12 review and preparation notes
+
+Eight untouched PNGs, 12,439,325 bytes total (11.86 MiB, approximately the brief's 12 MB budget). Full-body images are 1536 × 1024; portrait is 1254 × 1254. SHA-256 verifies repository copies match tool originals. No pixel cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R12-PROMPTS.md) recorded.
+
+Three bases reviewed at full size and 120 px canvas width. Candidate 3 has a compact rounded body and clearer spacing between the two hands. Candidate 1 has brown hands/feet and more elongated tufts; candidate 2's hands are closer together and its nose-to-mouth treatment more prominent. Candidate 3 was refined through imagegen to add the small second white highlight to each eye; the untouched refinement is base 4. No runner-up kept. Bramble faces right, with a cream face/belly, small round ears, blush, a small dark nose, two tiny hands/feet and a stub tail. Purple tufts have broad rounded ends with pointed inward seams, not sharp quills; sparse painted inner contours and cel highlights provide the tuft detail. Hands lie against the belly, so preparation must account for their painted seams rather than assume isolated arm pixels.
+
+Base bounds `(284, 44, 1246, 974)` are nearly square within the landscape image: 63% of width and 91% of height, rather than stretching the round body to the generic 85%-width target. Every tuft is inside the frame, with at least 44 px margin. Add display padding later. All five mood silhouettes compared bidirectionally against base: zero pixels outside a four-pixel tolerance. Bounds differ by at most one pixel. Full-size and 120 px review found tuft contours, hands, feet, ears, belly, framing and pose retained; eyes, brows and mouth convey the requested moods. This is not proof of pixel-identical shading or registration; preparation alignment and animation checks remain.
+
+The curled alt tucks hands/feet/tail away and gathers the purple tufts around a peeking face. Bounds `(285, 44, 1264, 966)` keep its overall scale and position close to base; the changed pose naturally changes the contour and tuft layout. It requires separate pose preparation rather than the expression swap alignment rule. Portrait is a closed head/chest bust with hands, no feet/tail; bounds `(59, 84, 1179, 1197)` leave at least 57 px margin, narrower than the augmented 15% request. Add card padding during preparation without changing the original. No missing files or rejected mood edits.
+
+Reviewed on white and temporary pale-blue composites at about 120 px; QA masks/thumbnails are not assets. White fallback has faint near-white variation; paper-key later while preserving cream and eye whites. No iPad readability, child appeal or animation-quality claim. Rolling behavior, body anchors and wearable fitting remain integration work.
 
 ## Generating service terms
 
