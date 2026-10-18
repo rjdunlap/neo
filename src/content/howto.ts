@@ -927,7 +927,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: [
       { from: 7, to: 7, text: 'The eighth pat finishes the picture by itself.' },
       { from: 1, to: 2, text: 'Tap the green arrow to finish; it wiggles after five stamps. A full paper finishes itself.' },
-      { from: 3, to: 6, text: 'Tap the green arrow when your picture is done.' },
+      { from: 3, to: 6, text: 'Tap the music note to hear the picture play, left to right; tap the green arrow when it is done.' },
     ],
     note: "Every picture is welcome. After the round, the tree house button hangs it up.",
   },
