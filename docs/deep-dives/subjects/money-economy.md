@@ -83,7 +83,7 @@ The collecting world already gives creatures things to hold and want, and the is
 | **P / K** | Market Stall 1–7 (built). **Swap Meet 3**: two friends who want each other's things; drag one across and the swap happens | Swap Meet 3's second pair; Market Stall's proposed **12 *Pick one*** (below) at the top of pre-K, if decided |
 | **S** | **Swap Meet 4**: a chain. She holds a leaf, and her pet wants a kite. Duck trades a shell for a leaf, and Frog trades the kite for a shell. Which trade first? Lemonade Stand 1–4 (built) | Swap Meet 5: a longer chain with a tempting side trade (trading back is always allowed, never a miss). **Market Stall 12 *Pick one***: a purse of 9 and three wants at 6, 5 and 4; any choice is accepted and the voice names what was given up |
 | **U** | **Swap Meet 6**: a Harbor stall buys anything for 2 shells and sells anything for 2; reach the goal again and compare the number of trades. **Lemonade Stand 5 *Save for the awning*** | **Lemonade Stand 6 *A rainy-day jar*** (to define after 5): a pictured, stated chance of a tipped jug, and a jar that covers it |
-| **M** | **Harbor Orders** at `school`'s top level: two workshops make crates or boats at different pictured rates; fill an order in the fewest mornings (specialization and comparative advantage, D2.Eco.4.3-5 toward 6-8). Lemonade 5–6 | Harbor Orders with three workshops and two orders; an optional "could it take fewer mornings?" after success. Unit pricing (KS3) goes to the `measurement-units` row |
+| **M** | **Harbor Orders** at `school`'s top level: two workshops make crates or boats at different pictured rates; fill an order in the fewest mornings (specialization, D2.Eco.4.3-5; comparative advantage is recalled, not named in the opened K-8 indicators). Lemonade 5–6 | Harbor Orders with three workshops and two orders; an optional "could it take fewer mornings?" after success. Unit pricing (KS3) goes to the `measurement-units` row |
 | **G, play** | **Harbor Orders cases** on `grownup` in Lantern Lake (capacity unverified) | Larger cases with several minimal plans, proved by enumeration |
 | **G, play with** | Market Stall's existing shopkeeper swap ([IDEAS two-seat row](../../IDEAS.md#seeds-and-two-seat-modes): the grown-up pays a shell short for her to catch); Swap Meet's two-seat mode: the grown-up holds one friend's basket and asks for a trade aloud | The grown-up "forgets" what Duck wants, and she reminds them from the picture |
 | **G, page card** | **Spend, share, save jars** (after Sesame's materials and CFPB's wait-and-save line; plain HTML; *needs a practical review*) | **Play shop at home**: a price tag, a purse of real or pretend coins, choose one treat, say what you gave up. No allowance advice, amounts or brand names |
@@ -126,14 +126,14 @@ The collecting world already gives creatures things to hold and want, and the is
 | **Market Stall 12 *Pick one*** | A purse that cannot buy everything; choose | Scarcity, opportunity cost (D2.Eco.1.K-2, Spending 4-1c, 4-3) | K–S | Level | A fixed purse (already in the dive's level 12 sketch) |
 | **Lemonade Stand 5 *Save for the awning*** | Drop shells in a goal jar each evening | Saving toward a goal; spending today versus later (Saving 4-1, 4-2a, D2.Eco.10.K-2) | S–M | Level | A jar the purse cannot spend, in `logic.ts` |
 | **Lemonade Stand 6 *A rainy-day jar*** | Keep some shells aside for a pictured, stated chance | Emergencies (Risk 4-3, Saving 4-2b) | U–M | Level | Seeded chance with visible odds, tested |
-| **Harbor Orders** (new) | Assign each workshop's morning to crates or boats; the order fills | Specialization and comparative advantage (D2.Eco.4.3-5 → 6-8); a plan with a provable best | M, G | New puzzle, moderate | Exhaustive enumeration in tests; `grownup` registration for 13+ |
+| **Harbor Orders** (new) | Assign each workshop's morning to crates or boats; the order fills | Specialization (D2.Eco.4.3-5); comparative advantage is recalled, not named in the K-8 indicators opened; a plan with a provable best | M, G | New puzzle, moderate | Exhaustive enumeration in tests; `grownup` registration for 13+ |
 | **Spend, share, save** and **Play shop** cards | Off-screen | Choices, waiting, giving | G with child | Docs and plain HTML | None (a practical review first) |
 
 **Priority:** Swap Meet first, because it fills the largest gap (trade and exchange, toddler to upper school) with a new action and fits the creature world. Then Market Stall 12 *Pick one*, which needs only the dive's decision 7. Then Lemonade 5, Harbor Orders and the cards.
 
 ## First game's proposed ladder: Swap Meet
 
-**The island rule (fiction, stated as the island's):** each friend holds one thing and shows a thought bubble of the one thing it wants. A friend trades only for the thing in its bubble; it then gives back what it held and is happy. From level 4, she is the trader with a basket: she can trade what she carries with any friend who wants it, and take that friend's thing. Trading back is always possible (the friend wants its old thing again), so no state is a dead end.
+**The island rule (fiction, stated as the island's):** each friend holds one thing and shows a thought bubble of the one thing it wants. A friend trades only for the thing in its bubble; it then gives back what it held and is happy. From level 4, she is the trader with a basket: she can trade what she carries with any friend who wants it, and take that friend's thing. Trading back is an undo: the same two friends swap back the things they just traded, so no state is a dead end (ME1 settles the exact rule).
 
 | Level | Band | First round | What she decides | Mistakes and help |
 | --- | --- | --- | --- | --- |
@@ -146,9 +146,9 @@ The collecting world already gives creatures things to hold and want, and the is
 
 **What a rule test proves.**
 
-- **Every round:** solvable by breadth-first search over basket states. Minimum trades of 1 at levels 1–3, exactly 2 at level 4 and exactly 3 at level 5. No round is trivially solvable by the first trade drawn on the left.
+- **Every round:** solvable by breadth-first search over basket states. Minimum trades of 1 per request at levels 1–3, exactly 2 at level 4 and exactly 3 at level 5. No round is trivially solvable by the first trade drawn on the left.
 - **Level 5:** at least one legal off-path trade, and the goal still reachable from every state, because trading back is allowed.
-- **Level 6:** the shell route is strictly shorter than the barter route.
+- **Level 6:** the shell route is always exactly 2 trades (sell, then buy), so a level-6 barter chain must need at least 3 trades for the shell route to be strictly shorter.
 - **Every bubble:** names a thing that exists in the round.
 - **The hint:** always lies on a shortest path from the current state.
 - **The ghost finger:** follows the solver's path.
