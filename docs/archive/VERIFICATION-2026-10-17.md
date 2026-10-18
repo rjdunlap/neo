@@ -274,3 +274,18 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - The roadmap's section is a one-paragraph pointer and its pick steps read from Next ten, with the refill rule moving Queued lines up below five; the stale "lines 7–16 were added" sentence is gone. Repointed the execution queue's selection table, the deep-dive procedure's step 7, the rework brief and work items, the 2026-10-15 cleanup archive, AGENTS.md (document table row added) and the docs-keeper agent.
 - Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
 - Open: nothing; the next closeout exercises the new delete-and-move-up rule.
+
+## 2026-10-17 — Archive verification entries by script
+
+- Docs tooling only: `scripts/archive-verification.mjs` moves dated entries above the coverage summary into `docs/archive/VERIFICATION-<entry date>.md` (older than the newest date by default, `--before`, `--keep=N`, `--dry-run`), re-bases their relative links, spawns `check-links.mjs --fix-moved` per archive touched and ends with a full link check; it exits 2 on a parse problem and 1 on broken links.
+- Ran it once on the merged tree with `--before=2026-10-17 --keep=15`: 27 entries moved into the new [Verification 2026-10-17](VERIFICATION-2026-10-17.md), 15 stay live; links in the execution queue, the RW03 packet and a completed-work file were repointed.
+- Moved all 37 `###` worker dispatch sections (2026-10-13 to 2026-10-17; the brief named four) from below the summary into the dated archive files under a dispatch-records heading; nothing linked to their anchors. The coverage summary and the "Never established" paragraph stay.
+- Passed `node scripts/check-links.mjs` (links ok) and `git diff --check`; a second `--dry-run` reports nothing to move. AGENTS.md's "Checks run" bullet and the README now point at the script.
+- Not run: typecheck, unit tests, build and browser suites (no game code or shared TypeScript changed). Not covered: entries whose heading is not `## YYYY-MM-DD — title` fail the parse on purpose; two entries with the same heading in one archive file would shift an anchor (the script warns).
+
+## 2026-10-17 — Monster Munch deep dive
+
+- Docs only: [deep dive](../deep-dives/monster-munch.md) on `claude/dive-monster-munch` ([PR #549](https://github.com/rjdunlap/neo/pull/549)). Audited levels 1–8; gaps: the card says the monster counts aloud at 1 and 4–5 (it does not) and rings a bell at 7 (there is none), a wrong pad promises counting that never happens, one generic hint line, lap monster taps feed nothing, single rounds at 1–2, silent short drops.
+- Opened Wikipedia (Cookie Monster Munch), Feed the Monster listings, Moose Math (App Store, Common Sense), Toca Kitchen 2 (Toca Boca, Microsoft Store), My Very Hungry Caterpillar, Gracie & Friends Breakfast Time and Common Core K.CC and 3.OA; Atari modes, Moose Juice details and PhET are search summaries; Hungry Hungry Hippos and the Frydman and Bryant finding recalled.
+- Six ready slices queued in [READY.md](../READY.md); one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
