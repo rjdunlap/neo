@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-17 — Bolt Boards definition
+
+- Defined Bolt Boards levels 1–7 in [the definition](definitions/bolt-boards.md): discrete pinned/hanging/down board poses computed exactly (a hanging center lies below its bolt), a covered-bolt rule, a toolbox model at 1–5 that provably never dead-ends, open-hole parking at 6–7 with a capped breadth-first hint, a layout test over every reachable pose, accounting, bot, how-to and registration (Barnyard); six references cited.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; fit numbers are computed, not measured; no child has played it.
+
 ## 2026-10-17 — Pile Match definition
 
 - Defined Pile Match levels 1–8 in [the definition](definitions/pile-match.md): 2D layered heap with a top-only freedom rule, a tray derived from the piece mask (3-slot asked basket at 1–2, 5 slots from 3), free put-back, kinds assigned in consecutive triples along a clearing route so no state dead-ends, computed portrait-fit layout, wrong-kind and full-tray accounting, hint order, bot, how-to and registration; six references cited.
