@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-17 — Weather Wardrobe deep dive
+
+- Docs only: [deep dive](deep-dives/weather-wardrobe.md) on `claude/dive-weather-wardrobe` ([PR #538](https://github.com/rjdunlap/neo/pull/538)). Audited levels 1–7; gaps: the level-7 card still says pack for a trip, level 7 undressing is always everything, lap window holds a boing level, level 1 ignores most touches, a miss shows nothing, the trip never happens, sunny's "everything" is two, a dead undress voice line, the known `{name}` off-screen bug.
+- Opened BridgingApps (Sago Mini Babies Dress Up), Kids Academy, Common Sense Media (Tinybop Weather), Easterseals (iDress for Weather), Pre-K Pages and NGSS K-ESS2-1/K-ESS3-2; Daniel Tiger (mirror 404), Pokémon GO weather (Bulbapedia 403) and Animal Crossing are search summaries; Dress Teddy and the felt weather bear recalled.
+- Eight ready slices added to the roadmap; one decision row to WAITING.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks.
+
 ## 2026-10-17 — Bolt Boards definition
 
 - Defined Bolt Boards levels 1–7 in [the definition](definitions/bolt-boards.md): discrete pinned/hanging/down board poses computed exactly (a hanging center lies below its bolt), a covered-bolt rule, a toolbox model at 1–5 that provably never dead-ends, open-hole parking at 6–7 with a capped breadth-first hint, a layout test over every reachable pose, accounting, bot, how-to and registration (Barnyard); six references cited.
