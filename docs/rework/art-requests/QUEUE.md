@@ -7,7 +7,7 @@ The routine's work list ([how a run works](README.md#what-a-run-does)). Take the
 | ID | Request | Files | After | Status | Result |
 | --- | --- | --- | --- | --- | --- |
 | R01 | [Cloud glider set](#r01-cloud-glider-set) | 8 | — | done | [Eight originals and review notes](../concepts/generated/README.md#r01-review-and-preparation-notes): base-3; blink/happy/surprised/sleepy/sad/alt-2; portrait-4. No missing files; portrait needs extra card padding. Not prepared. |
-| R02 | [Sprout set](#r02-sprout-set) | 7 | R01 | open | |
+| R02 | [Sprout set](#r02-sprout-set) | 7 | R01 | done | [Seven originals and review notes](../concepts/generated/README.md#r02-review-and-preparation-notes): base-2; blink/happy/surprised/sleepy/sad-1; portrait-2. No missing files. Not prepared. |
 | R03 | [River set](#r03-river-set) | 7 | R01 | open | |
 | R04 | [Crown and scarf](#r04-crown-and-scarf) | 2 | R01 | open | |
 | R05 | [Weather Wardrobe items](#r05-weather-wardrobe-items) | 7 | R04 | open | |
@@ -265,5 +265,6 @@ Optional branching forms (a blossom opening on the sprout, the glider's sunset w
 
 One line per run, newest first: date, request, tool and model, what was kept, what is missing, anything odd.
 
+- 2026-10-17, 21:28 PDT start · R02 · built-in image_gen.imagegen, model undisclosed · kept seven originals (10.23 MB), no missing variants. Three base candidates reviewed; candidate 2 chosen; first portrait rejected for bottom-edge clipping. Expression silhouettes within 4 px and bounds within 1 px; [prompts and preparation caveats](../concepts/generated/README.md#r02-review-and-preparation-notes) recorded. Links/diff checked; no code/build/browser/device checks, preparation or integration.
 - 2026-10-17, 21:07 PDT start · R01 · built-in image_gen.imagegen, model undisclosed · kept eight originals (10.05 MB), no missing variants; three base candidates, switched to white-background candidate 3 after transparent edits produced noisy alpha. Expression bounds within 1 px of base; portrait margin caveat and exact prompts recorded in the [manifest](../concepts/generated/README.md). Links/diff checked; no code/build/browser/device checks, preparation or integration.
 - 2026-10-17 · queue written; no run yet.
