@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-19 — Who Am I? definition (docs only)
+
+- Defined Who Am I? levels 1–4 in [the definition](definitions/who-am-i.md) (zoo-animals study slice Z1) on `claude/who-am-i-definition` ([PR #615](https://github.com/rjdunlap/neo/pull/615), resuming the stale claim in #592): a thirteen-friend, fourteen-feature trait table with four marked reviewer cells; level 1 one clue and she taps the friend it fits, level 2 she turns over the friends each clue rules out, level 3 groups by features, level 4 surprises with surprise steps; distinguishable-answer generation, accounting, rule tests, layout, ghost finger, voice `whoami.*`, registration `who-am-i` (region `barnyard`, Barnyard, pre-K 1–2 and school 2–4).
+- References: none newly opened; the study's anchors, plus recalled Guess Who? and Twenty Questions.
+- Updated the zoo-animals Z1 slice, recommendations row, IDEAS row, a WAITING row with nine defaulted decisions (the trait review is decision 1) and a READY.md line for the Z2/Z3 build; the Z1 line left Next ten.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the trait-table review (decision 1, gates Z3's merge), and the device checks listed in the definition's Check tier.
+
 ## 2026-10-19 — Fluffy Salon deep dive
 
 - Docs only: [deep dive](deep-dives/fluffy-salon.md) on `claude/dive-fluffy-salon-finish` ([PR #613](https://github.com/rjdunlap/neo/pull/613)), resuming the claim in [PR #591](https://github.com/rjdunlap/neo/pull/591) whose branch another worktree holds. Audited levels 1–5; gaps: the hint timer is a clock and not an idle timer, touches off the fur get nothing, free play has one exit and no invitation, "I want it pink" when it is mostly pink, one customer and one room with nothing kept, six buttons at lap, no journal, couch or picnic step.
@@ -102,12 +110,6 @@
 - References were read through search summaries and listings, none played: Extreme Herder guides, Puffle Roundup fan wikis, Stampede's Wikipedia and manual notes, Flock! press, Sheep Control, Flock It! and Flockwork listings, Farmer's Market Color Sorting Set listings, the K.MD.B.3 and K.CC.B.5 pages, the Clements and Sarama counting trajectory table and two-attribute sorting summaries.
 - Ladder: levels 7–12 (toddler 10 *Shoo one*, lap/toddler 11 *Come along*, pre-K 7–9 and 12, 13 gated), nine ready lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived audit row and the IDEAS row.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
-## 2026-10-18 — Ancient river civilizations subject research
-
-- Added the [ancient-river-civilizations study](deep-dives/subjects/ancient-river-civilizations.md): opened England's history programmes (gov.uk), extracted the California HSS standards and the LACOE K–2/3–5/6–8 C3 guides locally from their PDFs, read Solé 2019 (open-access PDF), the cuneiform, Schmandt-Besserat, hieroglyph, Egyptian and Babylonian numeral, Nile flood, Egyptian calendar, shadoof, Sumer, beveled-rim bowl, cylinder seal, Deir el-Medina, Giza, Rhind papyrus, Royal Game of Ur and Senet pages, Penn's cuneiform tool, Google's Fabricius post, Ubisoft's Discovery Tour page and the Pharaoh: A New Era store page; Hodkinson 2004, Jacobsen and Adams 1958 and ISAC's scribe activity book from search summaries. River Tablets is the first ladder (nine planning rungs, preschool–13+); Two Tablets the grown-up decipherment puzzle.
-- Updated the subject tracker, the roadmap's subject table, two notebook rows, [Ancient river civilizations recommendations](deep-dives/subjects/RECOMMENDATIONS.md#ancient-river-civilizations-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: placement and the capacity test, Two Tablets' home, a named historian reviewer, labor/enslavement depth, the rebus boundary with the literacy studies, practical review of the family cards; the NCSS, British Museum and Met pages were not readable this session; no reference game played.
 
 ## Coverage summary
 
