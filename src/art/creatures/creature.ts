@@ -57,6 +57,8 @@ export abstract class Creature extends Container {
   /** Seconds since the last touch; reactions read it. Large means idle. */
   protected sincePoke = 99;
   protected readonly eyes: Container[] = [];
+  /** How open the eyes are this frame: 1 open, down to 0.1 mid-blink. An illustrated rig swaps its blink texture on it. */
+  protected lid = 1;
   private blinkIn = 1 + Math.random() * 3;
   private blinkT = -1;
   private readonly worn = new Map<AccessoryKind, Accessory>();
@@ -112,6 +114,7 @@ export abstract class Creature extends Container {
         lid = 1;
       }
     }
+    this.lid = lid;
     for (const e of this.eyes) e.scale.y = lid;
     this.animate(dt);
     const ex = this.excite(this.reactionLength);

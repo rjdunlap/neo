@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { alignment, CLEAR, cut, detectMode, keyOut, parseManifest, union } from './sprite-core.mjs';
+import { alignment, CLEAR, cut, detectMode, keyOut, parseManifest, shrink, union } from './sprite-core.mjs';
 import { parseArgs, run } from './prepare-sprite.mjs';
 
 const PAPER = [252, 243, 225];
@@ -119,6 +119,22 @@ describe('cutting, aligning and the manifest', () => {
     expect(px(s, 5, 5)[3]).toBe(0); // beyond the 10 × 10 image
   });
 
+  it('shrinks by a whole factor, averaging in premultiplied alpha so a soft edge keeps the ink’s colour', () => {
+    // A 4 × 2 image: two opaque ink pixels, one half-alpha ink pixel, one clear pixel with a stray colour.
+    const data = new Uint8ClampedArray([
+      10, 20, 30, 255, 10, 20, 30, 255, 10, 20, 30, 128, 200, 200, 200, 0,
+      10, 20, 30, 255, 10, 20, 30, 255, 10, 20, 30, 128, 200, 200, 200, 0,
+    ]);
+    const s = shrink({ data, w: 4, h: 2 }, 2);
+    expect([s.w, s.h]).toEqual([2, 1]);
+    expect([...s.data.subarray(0, 4)]).toEqual([10, 20, 30, 255]);
+    // The right block holds two half-alpha ink pixels and two clear ones: the ink's colour at a quarter alpha.
+    expect([...s.data.subarray(4, 8)]).toEqual([10, 20, 30, 64]);
+    expect(shrink({ data, w: 4, h: 2 }, 1).data).toEqual(data);
+    expect(() => shrink({ data, w: 4, h: 2 }, 3)).toThrow(/evenly/);
+    expect(() => shrink({ data, w: 4, h: 2 }, 0)).toThrow(/whole/);
+  });
+
   it('accepts a variant within the tolerance and reports the offsets of one that drifted', () => {
     const base = { minX: 100, minY: 50, maxX: 400, maxY: 300 };
     expect(alignment(base, { minX: 102, minY: 48, maxX: 403, maxY: 300 }).ok).toBe(true);
@@ -154,6 +170,8 @@ describe('cutting, aligning and the manifest', () => {
     const o = parseArgs(['--in', 'a.png', '--out', 'b.png', '--box', '1,2,30,40', '--seed', '5,6', '--pad', '4', '--scale', '0.5', '--check']);
     expect(o).toMatchObject({ in: 'a.png', out: 'b.png', box: { x: 1, y: 2, w: 30, h: 40 }, seed: { x: 5, y: 6 }, pad: 4, scale: 0.5, check: true, bg: 'auto' });
     expect(parseArgs(['--set', 'glider']).set).toBe('glider');
+    expect(parseArgs(['--set', 'glider', '--shrink', '2']).shrink).toBe(2);
+    expect(() => parseArgs(['--set', 'glider', '--shrink', '1.5'])).toThrow(/whole/);
     expect(() => parseArgs(['--in', 'a.png'])).toThrow(/--out/);
     expect(() => parseArgs(['--set', 'glider', '--in', 'a.png'])).toThrow();
     expect(() => parseArgs(['--in', 'a.png', '--out', 'b.png', '--box', '1,2'])).toThrow(/4 numbers/);
