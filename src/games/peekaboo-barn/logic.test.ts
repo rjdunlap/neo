@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
-import { ANIMALS, STICKER_ANIMALS, SCENES, roundScene, COVER_NAMES, nearestSpot, shouldNudge, shouldSelfOpen, planFor, ONE_DOOR_LEVEL, SELF_OPEN_SECONDS, deal, newcomer, pickTarget, PLANS, spotToTap, type Animal } from './logic';
+import { ANIMALS, STICKER_ANIMALS, SCENES, roundScene, COVER_NAMES, FEELINGS, FEELING_WORDS, FEELING_CHANCE, nearestSpot, pickFeeling, shouldNudge, shouldSelfOpen, planFor, ONE_DOOR_LEVEL, SELF_OPEN_SECONDS, deal, newcomer, pickTarget, PLANS, spotToTap, type Animal, type Feeling } from './logic';
 
 describe('Peekaboo Barn', () => {
   it('preserves old sticker choices and supplies a distinct spoken name for each cover', () => {
@@ -108,6 +108,43 @@ describe('Peekaboo Barn', () => {
         expect(spotToTap(plan, poses.map((_, k) => (k === last ? 'hidden' : 'out')), animals, null, last)).toBe(last);
       }
     }
+  });
+
+  describe('Feelings in free play', () => {
+    it('names every feeling it shows, keeps sad out, and the spoken line carries the feeling word', () => {
+      expect([...FEELINGS]).not.toContain('sad');
+      for (const feeling of FEELINGS) expect(FEELING_WORDS[feeling]).toMatch(/^[a-z]+$/);
+      expect(new Set(Object.values(FEELING_WORDS)).size).toBe(FEELINGS.length);
+      for (const line of SCRIPT['peek.feel']) for (const key of ['{feeling}', '{animal}', '{word}']) expect(line).toContain(key);
+      expect(SCRIPT['peek.feel'].some((line) => line.includes('{cover}'))).toBe(true);
+    });
+
+    it('shows a feeling on some free-play reveals at levels 1–2 only, every feeling in turn and never the same twice running', () => {
+      for (const plan of PLANS.filter((p) => p.mode !== 'free')) for (let seed = 1; seed <= 50; seed++) expect(pickFeeling(new Rng(seed), plan, null)).toBeNull();
+      for (let seed = 1; seed <= 50; seed++) expect(pickFeeling(new Rng(seed), planFor(ONE_DOOR_LEVEL), null)).toBeNull();
+      for (const level of [1, 2]) {
+        const plan = planFor(level);
+        expect(plan.mode).toBe('free');
+        const seen = new Set<Feeling>();
+        let felt = 0;
+        let last: Feeling | null = null;
+        for (let seed = 1; seed <= 300; seed++) {
+          const feeling = pickFeeling(new Rng(seed), plan, last);
+          if (!feeling) continue;
+          expect(FEELINGS).toContain(feeling);
+          expect(feeling).not.toBe(last);
+          seen.add(feeling);
+          felt++;
+          last = feeling;
+        }
+        expect(seen.size).toBe(FEELINGS.length);
+        expect(felt / 300).toBeGreaterThan(FEELING_CHANCE - 0.1);
+        expect(felt / 300).toBeLessThan(FEELING_CHANCE + 0.1);
+      }
+      // Within one round the stream is seeded, so a replay shows the same faces.
+      const a = new Rng(7); const b = new Rng(7);
+      for (let i = 0; i < 40; i++) expect(pickFeeling(a, PLANS[0], null)).toBe(pickFeeling(b, PLANS[0], null));
+    });
   });
 
   describe('One door', () => {
