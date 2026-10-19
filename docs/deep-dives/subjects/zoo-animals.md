@@ -192,7 +192,7 @@ None was played. "Opened" means the page itself was read.
 
 ## Build slices, in order
 
-1. **Z1 · Define Who Am I? levels 1–4** (docs): the trait table for the existing cast plus penguin and bat, clue signs, the rule tests above, voice lines, how-to steps, land and bands. Name the reviewer.
+1. **Z1 · Define Who Am I? levels 1–4** (docs): the trait table for the existing cast plus penguin and bat, clue signs, the rule tests above, voice lines, how-to steps, land and bands. Name the reviewer. **Defined 2026-10-19:** [definition](../../definitions/who-am-i.md) (a fourteen-feature trait table over thirteen friends with four marked reviewer cells, levels 1–4 with surprise steps, accounting, rule tests, layout, ghost finger, voice/how-to, Barnyard and pre-K/school by default, nine defaulted decisions; the trait review is decision 1).
 2. **Z2 · Shared cast art**: move penguin, frog, turtle and one fish drawing into `src/art/` with no visual change, only as Z3 needs them.
 3. **Z3 · Build Who Am I? levels 1–3**: rules in `logic.ts`, tests, ghost finger, how-to card, one scripted play.
 4. **Z4 · The bat and level 4**: a membrane-wing part (or bespoke art), the surprise rounds, its tests.
