@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-19 — Species Comeback definition (docs only)
+
+- Defined Species Comeback levels 1–4 in [the definition](definitions/species-comeback.md) (zoo-animals study slice Z7) on `claude/define-species-comeback-finish` ([PR #618](https://github.com/rjdunlap/neo/pull/618), resuming the stale claim in #601): the kin rule, exact solver and two-plan guarantee, undo and blocking-nest hint, Spring, the level 3 site step, level 4 plans, note and reason cards, accounting, rule tests, layout with portrait scrolling at level 4, ghost finger, voice `comeback.*`, registration `species-comeback` (region `barnyard`, Lantern Lake, `grownup` 1–4).
+- References: none newly opened; the study's Smithsonian ferret page, Planet Zoo and the ecosystems study's Meadow Plans case.
+- Updated the Z7 slice line, recommendations row, IDEAS row, a WAITING row with eight defaulted decisions and a READY.md Queued line for the levels 1–3 build.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the needs/recovery review (decision 1, gates the first build's merge) and the device checks listed in the definition's Check tier.
+
 ## 2026-10-19 — Size Parade deep dive
 
 - Docs only: [deep dive](deep-dives/size-parade.md) on `claude/dive-size-parade-finish` ([PR #617](https://github.com/rjdunlap/neo/pull/617)), resuming the claim in [PR #600](https://github.com/rjdunlap/neo/pull/600) whose branch an idle worktree holds; that worktree's uncommitted draft was re-checked against `src/games/size-parade/` on `d6e7d15f`. Audited levels 1–8; gaps: no parade after a pick or a line, superlatives at two friends, pitch rising with size against Bubble Pop's plan, silent ground and off-spot touches, 154-wide tap rectangles overlapping at five in portrait, no test pinning the size steps, three friends and one ground, no lap band, journal, couch or story use.
@@ -102,14 +110,6 @@
 - Added the [china-india-silk-road study](deep-dives/subjects/china-india-silk-road.md): opened England's history programmes (gov.uk), extracted the California HSS standards and the LACOE 3–5/6–8 C3 guides locally from their PDFs (pypdf), read the Echelbarger, Good and Shaw 2020 abstract, UNESCO's Silk Roads programme page, the Silk Road, caravanserai, Bactrian camel, history of paper, woodblock printing, compass, suanpan, counting rods, Hindu–Arabic numerals, Indus Valley, Lothal, Edicts of Ashoka, Grand Canal, sericulture, kite, chaturanga, pachisi, snakes and ladders, tangram, Four Great Inventions and rangoli pages, Hamilton Trust's Year 4/5 unit, ActiveHistory's Silk Roads game and the Haifa Arrows activity; Berti and Bombi, the map studies, the Harappan weights, the AMNH, USC and British Museum material from search summaries. Caravan Days is the first ladder (nine planning rungs, toddler–13+); The Ledger the grown-up merchant's puzzle; six existing-game modes and three family cards.
 - Updated the subject tracker, the roadmap's subject table, two notebook rows, [China, India and the Silk Road recommendations](deep-dives/subjects/RECOMMENDATIONS.md#china-india-and-the-silk-road-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
 - Open: placement and the capacity test, the Swap Meet and Relay Woods boundary, The Ledger's home, a named historian and a cultural reviewer, labour/enslavement depth, religion's exclusion, the Baghdad c. 900 gap, the kite's owner; the AMNH, Penn Museum and harappa.com pages were not readable this session; no reference game played.
-
-## 2026-10-18 — Seesaw Balance level 11 definition (docs only)
-
-- Defined `seesaw-balance` level 11 *Two boxes* in [the definition](definitions/seesaw-two-boxes.md) (the short-ladders row *Seesaw Balance's unknowns*) on `claude/define-seesaw-two-boxes` ([PR #595](https://github.com/rjdunlap/neo/pull/595)): a square box read and tagged on the first seesaw, then square box, round box and blocks against blocks, take the same off both sides with the tagged box worth its number until the round box is alone (substitution); school 6–11, two pairs a round, only number pads miss, narrowing moves free, `pairHint` glow, `progress` classification, rule tests, ghost-finger order, voice IDs, how-to lines and the unchanged levels 1–10.
-- References read, none played: SolveMe Mobiles' store page, PhET's Equality Explorer: Two Variables teacher guide, the Hands-On Equations 1 store page, DragonBox Algebra 5+'s site, the National Math Festival's Imbalance Problems and Mobius Academy's three-beam balance page.
-- Updated the roadmap's short-ladders row (ready), a READY.md Queued line, a WAITING defaults row with five defaulted calls and two IDEAS pointers; Garden Rows' boxes stay undefined behind the couch-puzzles decision.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
-- Open: the five defaulted decisions; whether a child treats the tagged box as its number of blocks, reads the orange hatbox as a different box, and finds "Closer!" helpful are device checks for the build.
 
 ## Coverage summary
 
