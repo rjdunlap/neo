@@ -8,6 +8,7 @@
 - Ran `npm run build`: no sprite or preview code in `dist/` or the service worker precache (31 entries, 2.7 MB).
 - Not run: any game suite (no game changed), an iPad, a child; the real-time motion was checked from the probe's stills and the browser pane, not watched by a person.
 - Open: the device check for all three rigs; RW05 slice 1 takes the rigs; the wearables fit.
+
 ## 2026-10-19 — Peekaboo Barn animals who name how they feel
 
 - Built the feelings half of slice 3 ([PR #611](https://github.com/rjdunlap/neo/pull/611), commit bbd04d62): in free play at levels 1–2 about one reveal in three is sleepy, surprised or singing (`pickFeeling` in `logic.ts`), said by the new `peek.feel` voice line; how-to step and co-play hint updated.
@@ -107,14 +108,6 @@
 - Opened Sesame's Breathe, Think, Do App Store page, Avokiddo Emotions' developer page, Touch and Learn's App Store page and Common Sense review, the PBS announcement of Daniel Tiger's Grr-ific Feelings, Sago Mini Friends' parent letter, Maassarani et al. 2014 (Widen and Russell's label sequence) and the CDC 2-year checklist; Kimochis, Potato Head Expressions, the Mood Meter, The Color Monster and the Essex mirror study are search summaries. Nothing was played.
 - Ladder: lap entry 9 *Poke a feeling*, toddler 10 *Hug or pillow*, pre-K/school 11 *Two friends, one happening*, school 12 *Ask first* and 13 *What happened?*; six ready lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived ladder-audit row, the IDEAS row and the roadmap's band-window line.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
-## 2026-10-18 — Lost Layers definition (docs only)
-
-- Defined Lost Layers levels 1–2 in [the definition](definitions/lost-layers.md) (deep-time study slice D6, the recommendations row "define older case") on `claude/define-lost-layers` ([PR #588](https://github.com/rjdunlap/neo/pull/588)): Gull Cliff's six layers beside Shell Cove's three sliding pieces, three stated island rules, a two-alignment case where Can't tell is the right answer, a level-2 look whose dark stripe resolves it, with accounting, layout, rule tests, ghost finger, how-to lines, voice IDs, registration defaults and the Outcrop Detective audit.
-- References read, none played: AMNH *Layers of Time* (through the study; this session's fetch was refused), the Lab-Aids/SEPUP *Correlating Sedimentary Strata* kit and the Vanderbilt VSVS stratigraphy lesson (search summaries; the lesson PDF's text was not extractable here), NPS Grand Canyon *Layers in Time*, MorningMystery's App Store listing, a Central Bucks geologic-column lab (search summary).
-- Updated the deep-time recommendations row and build slice, the IDEAS row, a READY.md Queued line, the WAITING deep-time row and a defaults row with six defaulted calls.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
-- Open: the six defaulted decisions; the layout numbers are computed, not felt; whether the wavy line reads as "rock missing" and Can't tell reads as honest are device checks no child has made; Bubble Beach at five games is untested until the build.
 
 ## Coverage summary
 
