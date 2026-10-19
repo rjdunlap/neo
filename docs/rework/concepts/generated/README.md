@@ -270,6 +270,25 @@ Full-size review of candidate 8 found a continuous plum outline around the lower
 
 Bounds `(30, 111, 1240, 1137)` leave every tip inside the square, but the right margin is only 14 px and the left 30 px, narrower than the prompt's generic clear-margin target. Add display padding while preparing the card; keep this source unchanged. White fallback has faint near-white variation; later paper-keying must preserve cream and eye whites. Temporary thumbnail/mask composites were QA only, not delivered images. No claim of iPad readability, child appeal or runtime quality. Link and whitespace checks only; no code, build, browser, offline or device checks for this images/docs change.
 
+## R18 review and preparation notes
+
+| File | Request | Date | Tool and model | Prompt | Chosen |
+| --- | --- | --- | --- | --- | --- |
+| egg-sprout-crack-1.png | R18 | 2026-10-19 | Built-in image_gen; model undisclosed | [sproutCrack1](R18-PROMPTS.md#sproutcrack1) | yes |
+| egg-sprout-open-1.png | R18 | 2026-10-19 | Built-in image_gen; model undisclosed | [sproutOpen1](R18-PROMPTS.md#sproutopen1) | yes |
+| egg-river-crack-1.png | R18 | 2026-10-19 | Built-in image_gen; model undisclosed | [riverCrack1](R18-PROMPTS.md#rivercrack1) | yes |
+| egg-river-open-1.png | R18 | 2026-10-19 | Built-in image_gen; model undisclosed | [riverOpen1](R18-PROMPTS.md#riveropen1) | yes |
+| egg-glider-crack-1.png | R18 | 2026-10-19 | Built-in image_gen; model undisclosed | [gliderCrack1](R18-PROMPTS.md#glidercrack1) | yes |
+| egg-glider-open-1.png | R18 | 2026-10-19 | Built-in image_gen; model undisclosed | [gliderOpen1](R18-PROMPTS.md#glideropen1) | yes |
+
+Six untouched PNGs, each 1254 × 1254, totaling 8,823,952 bytes (8.82 MB). SHA-256 comparisons confirmed each repository copy matches its original tool output. [Exact prompts, reference order and original filenames](R18-PROMPTS.md) recorded. Sprout crack is an edit of approved R08 egg 2; Sprout open references that egg and its crack stage. River and Glider are caramel/lavender edits of the corresponding Sprout stage. These are variants of the approved egg, so no new base or three-base selection was needed. One call per stage, all chosen, no runner-up or missing variant.
+
+Full-size inspection found five spots, continuous plum shell outlines, upper-left light, a single zigzag with two branches in the crack stages, and a lifted gently tilted cap with warm dark interior in the open stages. The four lower spots stay visually registered. No creature, glow, debris, ground or cast shadow. The six images were also inspected on a temporary pale-blue comparison at 120 px canvas width: crack and opening remain distinct, and all three species colours remain recognizable.
+
+Lower-shell QA used flood-filled temporary silhouette masks and the R08 four-pixel bidirectional tolerance. The approved egg bounds are approximately (205,123)–(1045,1162), so the lower two-thirds region starts at y=469. Crack stages have zero silhouette pixels outside that tolerance throughout that region. Open stages intentionally change the cut boundary: the only uncovered source silhouette outside tolerance is at x=939–993, y=469–491, where the right cap edge lifted away. No added silhouette lies outside tolerance there. Below y=515 (beneath the jagged cut), all six stages have zero silhouette pixels outside tolerance in either direction. This distinguishes the opening from movement of the lower shell; it is not a claim of pixel-identical shading or completed rig registration. The open prompt called y=515 the lower two-thirds boundary; that wording was approximate, and the actual y=469 comparison is reported here.
+
+White fallback has faint near-white variation, as R08 does. Preserve cream and spot highlights when keying the background later; the interior should remain opaque. Keep the original canvas registration and add display padding rather than cropping the lifted cap. Temporary masks and thumbnails were inspection only, not delivered assets. No preparation, cutting, rigging, animation or game integration was performed. Device readability, child appeal and runtime swapping remain unchecked. Link and whitespace checks only; no code, build, browser, offline or device checks for this images/docs change.
+
 ## Generating service terms
 
 OpenAI built-in image generation, checked 2026-10-17. The [OpenAI Terms of Use, Content section](https://openai.com/policies/terms-of-use/#content) assign OpenAI's rights in output to the user to the extent permitted by law; output may be similar to others' output. These files are disclosed as AI-generated. This records the service's terms, not a claim of exclusive copyright. The tool did not expose its underlying model name, so none is inferred.
