@@ -18,8 +18,9 @@ async function boot() {
   // RW02's creature preview, development builds only, in place of the front door (removed at RW05).
   if (import.meta.env.DEV && new URLSearchParams(location.search).has('creatures')) {
     const { CreaturePreview } = await import('./dev/creature-preview');
-    const { loadGliderArt } = await import('./art/creatures/glider-illustrated');
-    void app.show(new CreaturePreview(app, await loadGliderArt()));
+    const { loadArt } = await import('./art/creatures/illustrated');
+    const [sprout, river, glider] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider')]);
+    void app.show(new CreaturePreview(app, { sprout, river, glider }));
   } else app.go.start();
   // A handle for poking at the running game from the browser console during development.
   if (import.meta.env.DEV) {

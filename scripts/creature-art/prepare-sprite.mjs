@@ -13,7 +13,9 @@
 //                      kept (default: everything that is not background)
 //   --bg auto|paper|transparent
 //                      what the background is (default auto: a mostly clear border means transparent)
-//   --pad <px>         clear pixels round the trimmed creature (default 8)
+//   --pad <px>         clear pixels round the trimmed creature, in the sprite's pixels (default 8)
+//   --shrink <n>       write the sprite at 1/n size (a whole number; default 1): the creature is keyed
+//                      out at full size, then each n × n block is averaged in premultiplied alpha
 //   --scale <units>    creature units per sprite pixel, reported with the sprite's size in units
 //   --tolerance <px>   how far a set's variant may differ from its base before refusing (default 4)
 //   --check            also write light, dark and checkerboard previews at 2× into test-results/
@@ -30,12 +32,12 @@ import { chromium } from 'playwright';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALIGNED, alignment, cut, keyOut, parseManifest, TOLERANCE, union } from './sprite-core.mjs';
+import { ALIGNED, alignment, cut, keyOut, parseManifest, shrink, TOLERANCE, union } from './sprite-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 export function parseArgs(argv) {
-  const o = { bg: 'auto', pad: 8, tolerance: TOLERANCE, check: false, generated: 'docs/rework/concepts/generated', outDir: 'src/art/creatures/illustrated' };
+  const o = { bg: 'auto', pad: 8, shrink: 1, tolerance: TOLERANCE, check: false, generated: 'docs/rework/concepts/generated', outDir: 'src/art/creatures/illustrated' };
   const num = (s, name) => {
     const v = Number(s);
     if (!Number.isFinite(v)) throw new Error(`--${name} needs a number, got ${s}`);
@@ -66,7 +68,10 @@ export function parseArgs(argv) {
       o.bg = next();
       if (!['auto', 'paper', 'transparent'].includes(o.bg)) throw new Error(`--bg is auto, paper or transparent, not ${o.bg}`);
     } else if (a === '--pad') o.pad = num(next(), 'pad');
-    else if (a === '--scale') o.scale = num(next(), 'scale');
+    else if (a === '--shrink') {
+      o.shrink = num(next(), 'shrink');
+      if (!Number.isInteger(o.shrink) || o.shrink < 1) throw new Error(`--shrink wants a whole number of 1 or more, got ${o.shrink}`);
+    }    else if (a === '--scale') o.scale = num(next(), 'scale');
     else if (a === '--tolerance') o.tolerance = num(next(), 'tolerance');
     else if (a === '--previews') o.previews = next();
     else if (a === '--generated') o.generated = next();
@@ -145,7 +150,12 @@ async function encode(page, { data, w, h }, check) {
 /** Writes one sprite and its previews; returns the summary line. */
 async function emit(page, o, job) {
   const { pixels, box, bounds, outPath, previews, mode, paper, source } = job;
-  const sprite = cut(pixels.data, pixels.w, pixels.h, { x: box.minX, y: box.minY, w: box.maxX - box.minX + 1, h: box.maxY - box.minY + 1 }, o.pad);
+  // The box grows to a multiple of the shrink factor (to the right and down, into clear or paper
+  // pixels) and the padding is counted in output pixels, so the sprite shrinks evenly.
+  const n = o.shrink;
+  const bw = Math.ceil((box.maxX - box.minX + 1) / n) * n;
+  const bh = Math.ceil((box.maxY - box.minY + 1) / n) * n;
+  const sprite = shrink(cut(pixels.data, pixels.w, pixels.h, { x: box.minX, y: box.minY, w: bw, h: bh }, o.pad * n), n);
   const { png, previews: pv } = await encode(page, sprite, o.check);
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, png);
@@ -158,10 +168,11 @@ async function emit(page, o, job) {
     out: relative(root, outPath),
     size: [sprite.w, sprite.h],
     // The source pixel under the sprite's top-left corner, padding included.
-    origin: [pixels.box.x + box.minX - o.pad, pixels.box.y + box.minY - o.pad],
+    origin: [pixels.box.x + box.minX - o.pad * n, pixels.box.y + box.minY - o.pad * n],
     bounds: [pixels.box.x + bounds.minX, pixels.box.y + bounds.minY, bounds.maxX - bounds.minX + 1, bounds.maxY - bounds.minY + 1],
     background: mode === 'paper' ? { paper } : 'transparent',
   };
+  if (n > 1) line.shrink = n;
   if (o.scale) line.units = [Math.round(sprite.w * o.scale), Math.round(sprite.h * o.scale)];
   return line;
 }
