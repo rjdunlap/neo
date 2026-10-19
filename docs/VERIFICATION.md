@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-19 — Ratio and proportion subject study (docs only)
+
+- Docs only: [study](deep-dives/subjects/ratio-proportion.md) on `claude/subject-ratio-proportion-finish` ([PR #616](https://github.com/rjdunlap/neo/pull/616)), resuming the claim in [PR #599](https://github.com/rjdunlap/neo/pull/599) whose branch an idle worktree holds. Anchors opened: CCSS 6.RP.A.1–3 and 7.RP.A.1–3, England's Year 5/6 and KS3 ratio statements; Boyer, Levine and Huttenlocher 2008 through its Europe PMC abstract (6–9-year-olds match counts instead of proportions when pieces are countable), which sets the design: colour judges the mix, counts appear when ratio is the lesson. Ratio Rumble, Thinking Blocks Ratios and MECC Lemonade Stand pages opened; PhET Ratio and Proportion gave only its title and the Common Core RP progression PDF did not extract; Lure of the Labyrinth, Blendoku, Piaget and Lamon recalled. No reference game played.
+- Proposes Paint Mixer (levels 1–8: copy, twice as much, fill the bucket with the ratio table, any amount, three pots, which jars match, per hundred, the painter's log), Mixing Room (13+, whole jars to a target with a fewest-jars par), Lemonade Stand best buy and a Pixel Pictures scale-factor mode; recipe scaling stays in the cooking packet and fractions in the fractions study. Packet in [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md#ratio-and-proportion-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the seven developer decisions (new game vs Rainbow Fingers, the shared table, land, 11–14 placement, Mixing Room's home, reviewer and art check, palette unlock); no child, parent, educator or device involved.
+
 ## 2026-10-19 — Who Am I? definition (docs only)
 
 - Defined Who Am I? levels 1–4 in [the definition](definitions/who-am-i.md) (zoo-animals study slice Z1) on `claude/who-am-i-definition` ([PR #615](https://github.com/rjdunlap/neo/pull/615), resuming the stale claim in #592): a thirteen-friend, fourteen-feature trait table with four marked reviewer cells; level 1 one clue and she taps the friend it fits, level 2 she turns over the friends each clue rules out, level 3 groups by features, level 4 surprises with surprise steps; distinguishable-answer generation, accounting, rule tests, layout, ghost finger, voice `whoami.*`, registration `who-am-i` (region `barnyard`, Barnyard, pre-K 1–2 and school 2–4).
@@ -102,13 +109,6 @@
 - Docs only: [deep dive](deep-dives/shape-sorter.md) on `claude/dive-shape-sorter` ([PR #594](https://github.com/rjdunlap/neo/pull/594)). Audited levels 1–8; gaps: a lap row in the levels table with no lap band, level 1 answers only a lifted piece, colour does the matching through level 4, the hint glow needs two wrongs on one piece so it can never come, size never varies, levels 7–8 are bound to the shared `SHAPES` constant, replay is a shuffle, level 8 bounces a shape that fits, no journal or couch, no recorded person checks.
 - References were read through search summaries, store listings and reviews, none played or handled: Fisher-Price Baby's First Blocks, Oombee Cube and Melissa & Doug cube listings, Montessori geometric cabinet lessons, Busy Shapes and Busy Shapes & Colors reviews, Perfection's Wikipedia and Hasbro sheet, Tiggly Shapes and Shape Builder reviews, the Clements and Sarama 2D shapes trajectory pages, K.G.A.2 and K.G.B.4, one shape-sorter age summary; JumpStart Pre-K's Airport is recalled from the IDEAS row.
 - Ladder: levels 9–14 (lap/toddler 9 *Tap and in it goes* with the lap band, toddler 10 *Round or square*, 11 *Big, middle, little*, pre-K 12 *Turn it to fit*, 13 *Corners or curves*, 14 *Count the corners*), eight queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived audit row and the IDEAS mechanic-families row.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
-## 2026-10-18 — Roundup deep dive
-
-- Docs only: [deep dive](deep-dives/roundup.md) on `claude/dive-roundup` ([PR #580](https://github.com/rjdunlap/neo/pull/580)). Audited levels 1–6; gaps: the trot-home is uncounted, the numeral has no dots, the cast is a fixed pig and bunny, grass taps go unanswered at level 1, no toddler rung between tap and shoo, one pointer only, hard-coded sort lines, no journal or couch.
-- References were read through search summaries and listings, none played: Extreme Herder guides, Puffle Roundup fan wikis, Stampede's Wikipedia and manual notes, Flock! press, Sheep Control, Flock It! and Flockwork listings, Farmer's Market Color Sorting Set listings, the K.MD.B.3 and K.CC.B.5 pages, the Clements and Sarama counting trajectory table and two-attribute sorting summaries.
-- Ladder: levels 7–12 (toddler 10 *Shoo one*, lap/toddler 11 *Come along*, pre-K 7–9 and 12, 13 gated), nine ready lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived audit row and the IDEAS row.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 
 ## Coverage summary
