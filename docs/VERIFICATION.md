@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-19 — Trackway Tales definition (docs only)
+
+- Defined Trackway Tales levels 1–3 in [the definition](definitions/trackway-tales.md) (deep-time study slice D4, the recommendations row "define replay case") on `claude/define-trackway-tales` ([PR #582](https://github.com/rjdunlap/neo/pull/582)): a strip of dried mud with footprints from one invented two-footed mud walker, two or three movement cards each replayed by a gray ghost creature on a practice strip, a study board and Check that compares the stamped marks column by column; level 1 walk or hop, level 2 which way from the toes with a magnifier, level 3 a puddle over the middle where Can't tell is right when two movements (walk, and walk-stop-walk, since standing still leaves no mark) stamp the same marks. The toy model (`stamp`, `fits`, `firstMismatch`, `accepted`) is stated on the card; six authored movements and six cases are tabled with their intended accepted sets.
+- References read, none played: an AMNH *Who Walked Here?* classroom activity, a University of Tennessee Extension footprint guide, an RSC *Tricky tracks* lesson, a BC Government fossil-footprint activity sheet, Live Science on the Paluxy chase reconstruction, an NPS trackway page and Return of the Obra Dinn.
+- Updated the deep-time D4 slice and recommendations row, the IDEAS row, a WAITING row with nine defaulted calls and a READY.md line for the D5 build (new-game tier, school 1–3, Bubble Beach by default). The draft was written in an earlier session's worktree and finished here after merging `origin/main`.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the nine defaulted decisions; whether a six-year-old reads the practice strip as hers and the mud as the record, whether 70-unit toe bumps read as direction before the magnifier, whether "can't tell" lands as a satisfying answer and device speech of "trackway" are device checks for the build.
+
 ## 2026-10-19 — RW02b step 2: the pilot three prepared and rigged
 
 - Built on `claude/rw02b-rig-pilot-three` ([PR #609](https://github.com/rjdunlap/neo/pull/609)): `prepare-sprite.mjs --shrink <n>` (premultiplied box average after keying at full size), the sprout, river and glider expression sets at half size in `src/art/creatures/illustrated/` (eighteen sprites, 4.3 MB) with manifest rows, `IllustratedCreature` (`illustrated.ts`) and one mesh rig per species with `SPROUT_ART`, `RIVER_ART` and a new `GLIDER_ART` (face, slots, pinned body, parts with root and tip, touch circle, misfits), whole-texture expressions replacing the painted lids, the six rigs and cards in `/?creatures`; the stand-in `glider.png`, `prepare-glider.mjs` and the old glider test deleted. [Step 2 result](rework/GENERATED-CREATURE-PILOT.md#step-2-result-2026-10-19).
@@ -101,13 +109,6 @@
 - Updated the music recommendations row and build slice, the IDEAS row, READY.md (the Next ten line removed, two Queued build lines), the WAITING music row and a defaults row with ten defaulted calls.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the ten defaulted decisions; whether 60 and 90 sound clearly different through an iPad speaker with these voices, whether a two-year-old reads the pending ring as "wait a moment" and whether the drum masks the melody are device checks no child has made; Music Mountain at seven games is untested until the build.
-
-## 2026-10-18 — Feelings Faces deep dive
-
-- Docs only: [deep dive](deep-dives/feelings-faces.md) on `claude/dive-feelings-faces` ([PR #586](https://github.com/rjdunlap/neo/pull/586)). Audited levels 1–8; gaps: level 8 has two scenarios for four questions, levels 5–6 show their whole pool every round, the hug is stated as a universal truth, no anger or fear, lap's second rung is a two-card choice, the how-to finish line understates four questions, no recorded person checks.
-- Opened Sesame's Breathe, Think, Do App Store page, Avokiddo Emotions' developer page, Touch and Learn's App Store page and Common Sense review, the PBS announcement of Daniel Tiger's Grr-ific Feelings, Sago Mini Friends' parent letter, Maassarani et al. 2014 (Widen and Russell's label sequence) and the CDC 2-year checklist; Kimochis, Potato Head Expressions, the Mood Meter, The Color Monster and the Essex mirror study are search summaries. Nothing was played.
-- Ladder: lap entry 9 *Poke a feeling*, toddler 10 *Hug or pillow*, pre-K/school 11 *Two friends, one happening*, school 12 *Ask first* and 13 *What happened?*; six ready lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived ladder-audit row, the IDEAS row and the roadmap's band-window line.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 
 ## Coverage summary
 
