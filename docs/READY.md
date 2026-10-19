@@ -7,7 +7,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 ## Next ten
 
 - **`ramp-race`, build the Q1 support correction Q2** (existing-game bug-fix tier): accurate level 1–4 card and miss wording, idempotent repair glow and recovery demo; accounting unchanged. [Definition](definitions/ramp-race-support.md)
-- **`peekaboo-barn`, slice 3 first half: animals who name how they feel** (rule tests, `critter.test.ts`, one screenshot, `fingerdemo` at level 1). More animals stays with decision 4. [Dive](deep-dives/peekaboo-barn.md#build-slices-in-order)
 - **Zoo study Z1: define Who Am I? levels 1–4** (docs only): trait table for the existing cast plus penguin and bat, clue signs, rule tests, voice, how-to, land and bands; name the reviewer. [Zoo study](deep-dives/subjects/zoo-animals.md#build-slices-in-order)
 - **`fill-dump`, count sign** (existing-game change): a dot card that fills as fruit goes in at levels 3–4; extras show outside it. [Slice 1](deep-dives/fill-dump.md#build-slices-in-order)
 - **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
