@@ -1,6 +1,6 @@
 # Fluffy Salon deep dive
 
-*ID `fluffy-salon` · bands lap, toddler, preschool, pre-K · levels 1–5 on 2026-10-18 · session `claude/dive-fluffy-salon` ([PR #591](https://github.com/rjdunlap/neo/pull/591))*
+*ID `fluffy-salon` · bands lap, toddler, preschool, pre-K · levels 1–5 on 2026-10-19 · session `claude/dive-fluffy-salon-finish` ([PR #613](https://github.com/rjdunlap/neo/pull/613), resuming the claim in [PR #591](https://github.com/rjdunlap/neo/pull/591))*
 
 Research and ideation only: nothing under `src/` changed. Fluffy Salon is the island's grooming game and its one "shape something with tools" activity (the [visual-art study](subjects/visual-art.md) calls it the nearest thing to sculpting). This dive keeps the free, satisfying fur play that Toca Hair Salon made the genre's standard and grows what the requests ask for: a single color word for a toddler, two customers, a comparison against a friend's hair, two colors at once, a customer who changes their mind, and two gentler rungs for the youngest hands. The creature-world rework's most concrete wish for this game, that the style **stays on the creature** when she goes home ([PET-INTEGRATION](../rework/PET-INTEGRATION.md#4-what-a-round-makes-comes-home-to-the-creature-rw06-rw07-rw10), its recommended step 3), is specified here and gated on the rework's collection model.
 
