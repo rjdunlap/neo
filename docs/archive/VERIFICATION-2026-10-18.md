@@ -42,3 +42,10 @@
 - Updated the deep-time recommendations row and build slice, the IDEAS row, a READY.md Queued line, the WAITING deep-time row and a defaults row with six defaulted calls.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the six defaulted decisions; the layout numbers are computed, not felt; whether the wavy line reads as "rock missing" and Can't tell reads as honest are device checks no child has made; Bubble Beach at five games is untested until the build.
+
+## 2026-10-18 — Feelings Faces deep dive
+
+- Docs only: [deep dive](../deep-dives/feelings-faces.md) on `claude/dive-feelings-faces` ([PR #586](https://github.com/rjdunlap/neo/pull/586)). Audited levels 1–8; gaps: level 8 has two scenarios for four questions, levels 5–6 show their whole pool every round, the hug is stated as a universal truth, no anger or fear, lap's second rung is a two-card choice, the how-to finish line understates four questions, no recorded person checks.
+- Opened Sesame's Breathe, Think, Do App Store page, Avokiddo Emotions' developer page, Touch and Learn's App Store page and Common Sense review, the PBS announcement of Daniel Tiger's Grr-ific Feelings, Sago Mini Friends' parent letter, Maassarani et al. 2014 (Widen and Russell's label sequence) and the CDC 2-year checklist; Kimochis, Potato Head Expressions, the Mood Meter, The Color Monster and the Essex mirror study are search summaries. Nothing was played.
+- Ladder: lap entry 9 *Poke a feeling*, toddler 10 *Hug or pillow*, pre-K/school 11 *Two friends, one happening*, school 12 *Ask first* and 13 *What happened?*; six ready lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the archived ladder-audit row, the IDEAS row and the roadmap's band-window line.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
