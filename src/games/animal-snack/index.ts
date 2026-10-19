@@ -16,7 +16,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { BITE, BITE_SIZES, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type SnackPlan, type SnackRound } from './logic';
+import { BITE, BITE_SIZES, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SCENE_SPECS, sceneFor, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type Scene, type SnackPlan, type SnackRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -93,8 +93,15 @@ class AnimalSnack implements Game {
   busy = true;
   finished = false;
 
-  private readonly backdrop: Backdrop;
-  private readonly blanket = new Graphics();
+  /** Where snack time is today, from the round's seed; `showScene` swaps it (the dev screenshots do). */
+  scene: Scene;
+  private backdrop: Backdrop | null = null;
+  /** The scene's furniture behind the animals: a tree, a fence and vegetable rows, or the moon and stars. */
+  private readonly decor = new Container();
+  private readonly stars = new Graphics();
+  private nextFall = 3;
+  /** The feeding spot the snacks sit in: blanket, trough, tub or bowl. */
+  private readonly spot = new Graphics();
   private readonly bubble = new Container();
   private readonly glow = new Graphics();
   private view: View;
@@ -108,15 +115,33 @@ class AnimalSnack implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.rounds = makeRounds(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 73 }, ctx.view);
+    // After the rounds, so the scene never changes which animals a seed deals.
+    this.scene = sceneFor(ctx.rng);
     this.glow.eventMode = 'none';
+    this.decor.eventMode = 'none';
+    this.spot.eventMode = 'none';
     // In a sound question the bubble is a speaker: tapping it plays the clue again (free, never a hint).
     onTap(this.bubble, () => { if (!this.busy && this.round?.by === 'sound') this.playClue(); }, { cooldown: 400 });
     this.bubble.hitArea = new Rectangle(-80, -60, 160, 120);
     this.bubble.eventMode = 'none';
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => void this.ring());
     this.bell.visible = this.plan.mode === 'count';
-    ctx.stage.addChild(this.backdrop, this.blanket, this.bubble, this.glow, this.bell);
+    ctx.stage.addChild(this.decor, this.spot, this.bubble, this.glow, this.bell);
+    this.showScene(this.scene);
+  }
+
+  /** Rebuild the sky, hills, furniture and feeding spot for a scene. Animals and snacks stay where they are. */
+  showScene(scene: Scene) {
+    this.scene = scene;
+    const old = this.backdrop;
+    this.backdrop = new Backdrop(SCENE_SPECS[scene].backdrop, this.view);
+    this.ctx.stage.addChildAt(this.backdrop, 0);
+    if (old) {
+      this.ctx.stage.removeChild(old);
+      old.destroy({ children: true });
+    }
+    this.nextFall = this.clock + 3;
+    this.resize(this.view);
   }
 
   get round() {
@@ -129,10 +154,11 @@ class AnimalSnack implements Game {
 
   resize(v: View) {
     this.view = v;
-    this.backdrop.resize(v);
+    this.backdrop?.resize(v);
+    this.drawDecor(v);
+    this.drawSpot(v);
     const xs = spread(this.friends.length, 200, v.w - 60, 270);
     this.friends.forEach((f, i) => f.node.position.set(xs[i], v.h * 0.64));
-    this.blanket.clear().roundRect(170, v.h - 150, v.w - 220, 130, 26).fill(swatch.red.light).stroke({ width: 5, color: swatch.red.fill });
     const loose = this.snacks.filter((s) => !s.eaten);
     const fx = spread(loose.length, 220, v.w - 80, 140);
     loose.forEach((s, i) => {
@@ -144,8 +170,105 @@ class AnimalSnack implements Game {
     this.bell.position.set(v.w - 80, 110);
   }
 
+  /** The snacks' place at the bottom: a picnic blanket in the meadow, a trough in the orchard, a tin tub in the garden, a big bowl at dusk. */
+  private drawSpot(v: View) {
+    const g = this.spot.clear();
+    const left = 170;
+    const right = v.w - 50;
+    const mid = (left + right) / 2;
+    switch (SCENE_SPECS[this.scene].spot) {
+      case 'blanket':
+        g.roundRect(left, v.h - 150, right - left, 130, 26).fill(swatch.red.light).stroke({ width: 5, color: swatch.red.fill });
+        break;
+      case 'trough':
+        for (const x of [left + 40, right - 40]) g.rect(x - 12, v.h - 60, 24, 45).fill(wood.line);
+        g.roundRect(left, v.h - 145, right - left, 110, 14).fill(wood.fill).stroke({ width: 5, color: wood.line });
+        g.rect(left + 8, v.h - 137, right - left - 16, 26).fill(wood.light);
+        for (const x of [left + 90, mid, right - 90]) g.moveTo(x, v.h - 105).lineTo(x, v.h - 48).stroke({ width: 4, color: wood.line, alpha: 0.5 });
+        break;
+      case 'tub': {
+        const tin = { fill: 0xc9d3de, line: 0x7f8a99, light: 0xe6ecf2 };
+        for (const x of [left - 6, right + 6]) g.circle(x, v.h - 100, 22).stroke({ width: 7, color: tin.line });
+        g.poly([left - 10, v.h - 145, right + 10, v.h - 145, right - 20, v.h - 25, left + 20, v.h - 25]).fill(tin.fill).stroke({ width: 5, color: tin.line, join: 'round' });
+        g.rect(left - 14, v.h - 152, right - left + 28, 16).fill(tin.light).stroke({ width: 5, color: tin.line });
+        for (const y of [v.h - 95, v.h - 55]) g.moveTo(left + 4 + (y - (v.h - 145)) * 0.25, y).lineTo(right - 4 - (y - (v.h - 145)) * 0.25, y).stroke({ width: 3, color: tin.line, alpha: 0.45 });
+        break;
+      }
+      case 'bowl':
+        g.moveTo(left, v.h - 130).lineTo(right, v.h - 130).quadraticCurveTo(right - 20, v.h - 30, right - 70, v.h - 25).lineTo(left + 70, v.h - 25).quadraticCurveTo(left + 20, v.h - 30, left, v.h - 130).fill(swatch.blue.fill).stroke({ width: 5, color: swatch.blue.line, join: 'round' });
+        g.ellipse(mid, v.h - 130, (right - left) / 2, 20).fill(swatch.blue.light).stroke({ width: 5, color: swatch.blue.line });
+        g.moveTo(left + 60, v.h - 60).quadraticCurveTo(mid, v.h - 40, right - 60, v.h - 60).stroke({ width: 6, color: swatch.blue.light, alpha: 0.6, cap: 'round' });
+        break;
+    }
+  }
+
+  /** The scene's furniture, behind the animals and out of their way: nothing here takes a touch. */
+  private drawDecor(v: View) {
+    for (const c of this.decor.removeChildren()) {
+      this.ctx.tw.kill(c);
+      if (c !== this.stars) c.destroy({ children: true });
+    }
+    this.stars.clear();
+    const ground = v.h * 0.5;
+    const g = new Graphics();
+    const fence = (color: number, rail: number) => {
+      for (let x = -10; x <= v.w + 10; x += 96) g.roundRect(x - 8, ground - 30, 16, 60, 5).fill(color).stroke({ width: 3, color: rail });
+      for (const y of [ground - 12, ground + 10]) g.rect(-20, y, v.w + 40, 8).fill(color).stroke({ width: 3, color: rail });
+    };
+    switch (this.scene) {
+      case 'orchard': {
+        g.rect(96, ground - 70, 36, 140).fill(wood.fill).stroke({ width: 5, color: wood.line });
+        for (const [x, y, r] of [[114, ground - 90, 72], [60, ground - 60, 50], [170, ground - 60, 50], [86, ground - 130, 46], [146, ground - 128, 46]] as const) g.circle(x, y, r).fill(swatch.green.fill);
+        for (const [x, y, r] of [[114, ground - 90, 60], [86, ground - 130, 34], [146, ground - 128, 34]] as const) g.circle(x, y, r).fill(0x8fdc6a);
+        for (const [x, y] of [[70, ground - 70], [118, ground - 130], [160, ground - 80], [100, ground - 100], [150, ground - 120]] as const) g.circle(x, y, 10).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+        for (const [x, y] of [[240, ground + 36], [300, ground + 50]] as const) g.circle(x, y, 10).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+        break;
+      }
+      case 'garden': {
+        fence(wood.light, wood.line);
+        for (let x = 40, i = 0; x <= v.w - 40; x += 58, i++) {
+          const y = ground + 58;
+          if (i % 2 === 0) g.circle(x, y, 17).fill(swatch.green.light).stroke({ width: 4, color: swatch.green.line }).circle(x, y, 8).fill(swatch.green.fill);
+          else {
+            g.poly([x - 9, y + 12, x + 9, y + 12, x, y + 30]).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
+            for (const dx of [-10, 0, 10]) g.moveTo(x, y + 12).quadraticCurveTo(x + dx, y - 6, x + dx * 1.6, y - 18).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+          }
+        }
+        break;
+      }
+      case 'dusk': {
+        const moonX = Math.min(v.w * 0.72, v.w - 170);
+        g.circle(moonX, 130, 38).fill(0xfff3c4).stroke({ width: 4, color: 0xe6cf8e });
+        g.circle(moonX - 12, 118, 7).circle(moonX + 10, 140, 5).circle(moonX + 14, 112, 4).fill(0xf1e3ad);
+        const rng = new Rng(19);
+        for (let i = 0; i < 16; i++) this.stars.circle(rng.range(20, v.w - 20), rng.range(40, ground - 90), rng.range(2.5, 4.5)).fill(0xffffff);
+        fence(0x3a4a3e, 0x2b3a30);
+        break;
+      }
+    }
+    this.decor.addChild(g, this.stars);
+  }
+
+  /** The orchard drops one apple from the tree now and then, a picture of where apples come from; it is never a snack. */
+  private dropApple(v: View) {
+    const apple = prop('apple', 'red');
+    apple.eventMode = 'none';
+    apple.position.set(150, v.h * 0.5 - 100);
+    apple.scale.set(0.7);
+    this.decor.addChild(apple);
+    void this.ctx.tw.to(apple, { y: v.h * 0.5 + 44, rotation: 0.6 }, { duration: 0.7, ease: ease.inQuad })
+      .then(() => this.ctx.tw.to(apple, { alpha: 0 }, { duration: 1.2, delay: 1.5 }))
+      .then(() => { if (!apple.destroyed) apple.destroy({ children: true }); });
+  }
+
   update(dt: number) {
     this.clock += dt;
+    this.backdrop?.update(dt);
+    if (this.scene === 'dusk') this.stars.alpha = 0.75 + 0.25 * Math.sin(this.clock * 2.2);
+    if (this.scene === 'orchard' && this.clock >= this.nextFall) {
+      this.nextFall = this.clock + 9;
+      this.dropApple(this.view);
+    }
     if (!this.busy && !this.finished) this.idle += dt;
     if (shouldNudge(this.plan.mode, this.idle, this.busy, this.finished) && this.friends.length) {
       this.idle = 0;
@@ -205,14 +328,14 @@ class AnimalSnack implements Game {
         if (i >= 0) void this.tapFriend(this.friends[i]);
       }, { cooldown: 350 });
       this.ctx.track(node);
-      this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.blanket));
+      this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.spot));
       this.friends.push(f);
     }
     // Animals made after the shell's resize (every round) would otherwise wait at the corner for a snack tray to place them.
     this.resize(this.view);
   }
 
-  /** Snacks on the blanket: tappable on the float and count levels, draggable for matching. */
+  /** Snacks at the feeding spot: tappable on the float and count levels, draggable for matching. */
   private setSnacks(foods: Food[]) {
     for (const s of this.snacks.splice(0)) {
       s.drag?.destroy();

@@ -1,4 +1,5 @@
 import type { CritterName } from '../../art/critter';
+import type { BackdropStyle } from '../../art/scenery';
 import type { AnimalSound, BiteKind } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 
@@ -65,6 +66,25 @@ export function busyTouch(busy: boolean, finished: boolean, target: BusyTarget):
   if ('friend' in target) return 'poke';
   return !target.snack.eaten && target.snack.visible ? 'wiggle' : null;
 }
+
+/** Where snack time happens: the round's seed picks one. The food, the animals and the rules are the same everywhere. */
+export type Scene = 'meadow' | 'orchard' | 'garden' | 'dusk';
+export const SCENES: Scene[] = ['meadow', 'orchard', 'garden', 'dusk'];
+/** What the snacks sit in: a picnic blanket, a wooden trough, a tin tub or a big bowl. */
+export type Spot = 'blanket' | 'trough' | 'tub' | 'bowl';
+export interface SceneSpec {
+  name: string;
+  backdrop: BackdropStyle;
+  spot: Spot;
+}
+export const SCENE_SPECS: Record<Scene, SceneSpec> = {
+  meadow: { name: 'the meadow', backdrop: { sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 73 }, spot: 'blanket' },
+  orchard: { name: 'the orchard', backdrop: { sky: [0xa4dcf2, 0xf6f9e4], hills: [0xbfe49c, 0x8fcf6c], horizon: 0.5, clouds: 1, sun: true, seed: 41 }, spot: 'trough' },
+  garden: { name: 'the kitchen garden', backdrop: { sky: [0xb3e0f7, 0xf0f8ff], hills: [0xcde6a6, 0xa6d27a], horizon: 0.5, clouds: 2, sun: true, seed: 58 }, spot: 'tub' },
+  dusk: { name: 'the yard at dusk', backdrop: { sky: [0x3d4a8c, 0xf4a96e], hills: [0x6c7f6c, 0x4b5f4d], horizon: 0.5, clouds: 1, sun: false, seed: 19 }, spot: 'bowl' },
+};
+/** Picked after the rounds are dealt, so a seed's animals and questions are the same in every scene. */
+export const sceneFor = (rng: Rng): Scene => rng.pick(SCENES);
 
 /** Who eats what: one food each, so every question has one answer. */
 export const FAVORITE: Partial<Record<CritterName, Food>> = { cow: 'hay', bunny: 'carrot', dog: 'bone', cat: 'fish', duck: 'seeds', pig: 'apple', bear: 'honey' };

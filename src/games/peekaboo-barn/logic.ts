@@ -43,6 +43,26 @@ export function pickTarget(rng: Rng, present: readonly Animal[], last: Animal | 
   return rng.pick(fresh.length ? fresh : present);
 }
 
+/**
+ * Free play sometimes shows how a friend feels, and the voice names it: three feeling words a lap child can hear, all
+ * drawn already by `Critter`. `sad` stays out of a lap toy.
+ */
+export const FEELINGS = ['sleepy', 'surprised', 'sing'] as const;
+export type Feeling = (typeof FEELINGS)[number];
+export const FEELING_WORDS: Record<Feeling, string> = { sleepy: 'sleepy', surprised: 'surprised', sing: 'singing' };
+/** About one reveal in three carries a feeling; the rest are simply happy. */
+export const FEELING_CHANCE = 1 / 3;
+
+/**
+ * How the animal popping out feels, or null when it is simply happy. Free play only (levels 1–2): One door keeps the
+ * lap entry simplest, and question levels name who, not how. Never the same feeling twice running.
+ */
+export function pickFeeling(rng: Rng, plan: PeekPlan, last: Feeling | null): Feeling | null {
+  if (plan.mode !== 'free' || plan.door) return null;
+  if (!rng.chance(FEELING_CHANCE)) return null;
+  return rng.pick(FEELINGS.filter((f) => f !== last));
+}
+
 /** Free play: someone new sneaks in, never the same as anyone already out. */
 export const newcomer = (rng: Rng, taken: readonly Animal[]): Animal => rng.pick(ANIMALS.filter((a) => !taken.includes(a)));
 

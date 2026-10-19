@@ -10,6 +10,7 @@ Written 2026-10-17. This folder is the work list for an **image-generating routi
 | [../PET-INTEGRATION.md](../PET-INTEGRATION.md) | The review of how the creatures go further into the games: cast, talents, what comes home, discovery; it names the poses a casting slice would add to the queue |
 | [../ART-BIBLE.md](../ART-BIBLE.md), [../ART-PROMPTS.md](../ART-PROMPTS.md) | The look every image must match, and the ready-to-paste prompts for the three pilot species |
 | [../concepts/generated/](../concepts/generated/README.md) | Where the originals go, with one manifest row per file |
+| [../ART-REVIEW-2026-10-19.md](../ART-REVIEW-2026-10-19.md) | The review of R01–R15: what holds up, what is wrong, the code slices that come next and the queue rows they add |
 
 ## What a run does
 

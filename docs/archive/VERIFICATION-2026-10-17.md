@@ -296,3 +296,69 @@ Reconciled completed [Safari actions #474](https://github.com/rjdunlap/neo/pull/
 - References: OT scissor progressions (Growing Hands-On Kids, Swansea Bay NHS, Oxfordshire) and the Common Sense Dexteria Jr. review from search summaries; the Sago Mini Toolbox review opened; Make-A-Flake only via Wikipedia. Skipped Lift It (sequenced after Gear Garden's packet) and W2 (overlaps RW06/RW11).
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
 - Open: the five defaulted decisions; corridor widths are computed, not felt; no child has played it.
+
+## 2026-10-17 — Money and economy subject research
+
+- Added the [money-and-economy study](../deep-dives/subjects/money-economy.md): opened the C3 Framework's D2.Eco indicators, the 2021 National Standards for Personal Financial Education (grade 4 and 8 text), CCSS 2.MD.C.8, England mathematics and citizenship programmes and CFPB's building-blocks and Money as You Grow pages; Jahoda, Fehr et al., Watts et al., Moonlighter, Animal Crossing, Peter Pig and Sesame from search summaries. Overlap audit first; Swap Meet is the first ladder.
+- Updated the subject tracker, a notebook row, roadmap [Money and economy recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: tickets versus no new currency, real coins, placement, Harbor Orders' registration; no reference game played.
+
+## 2026-10-17 — Roadmap and process cleanup (docs only)
+
+**What changed:** the 35 subject recommendation packets moved from the roadmap to [RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md) behind a one-row-per-subject table; the chunk table is grouped by status, chunks 14 and 28 (research) are taken only when the grown-up selects one, chunk 19's check tier matches its D2b slice, and Next up names the execution queue as one dispatch path; [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) opens with the six calls that unblock the most work and keeps rows that block nothing in their own table; [DEVICE-CHECKS](../DEVICE-CHECKS.md) opens with a fifteen-minute iPad session that covers most items; IDEAS.md's three ladder audits moved to [the archive](IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md); the execution queue says it is the Codex coordinator's state file and its stale #501 checkpoint is closed. Companion slices the same day: [READY.md](../READY.md) (PR #552) and the verification archiver (PR #553).
+
+**Checks:** `node scripts/check-links.mjs` (links ok after `--fix-moved` repointed about 160 links) and `git diff --check`. No code changed; no TypeScript, unit, build or browser run.
+
+**Open:** the roadmap's counts paragraph is still typed by hand (a script from the registry was proposed, not built); the one-game check command from the workflow review is still unbuilt.
+
+## 2026-10-17 — Goodnight Room level 10, goodnight everywhere
+
+- Changed: `goodnight-room` level 10 (`claude/goodnight-everywhere`, [PR #554](https://github.com/rjdunlap/neo/pull/554)), a seeded three-room tour (bedroom first, then two of barn/tent/boat cabin) with a big arrow after each sleeping room and a star-filled finale; pre-K window now 5-10.
+- Ran: `npm run typecheck` clean; `npm test` (160 files, 1485 tests, including the tour rule test across seeds); `BROWSER_SUITE=woods WOODS_ONLY=night FROM_LEVEL=9 TO_LEVEL=10` on `http://localhost:5729` (level 9 regression after the friend layer change; level 10: three distinct rooms, arrow only after each room sleeps, fresh awake room after it, score [0,0], portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=goodnight-room FINGER_LEVELS=10` clean in 36.2 s.
+- Not run: night levels 1-8 (unchanged interaction; prior pass stands), build, offline, `world`.
+- Open: device and child check of the arrow and a longer three-room round; the no-wrong-levels-climb-fast lean still applies.
+
+## 2026-10-17 — Creature art request queue (docs only)
+
+- Added [docs/rework/art-requests/](../rework/art-requests/README.md): the routine's brief (one request a run, originals into `concepts/generated/`, manifest, branch `codex/art-queue`), the [nine-species cast](../rework/art-requests/CAST.md) (sprout, river and glider, then Tote, Trill, Dapple, Bramble, Mossback and Lumen, each with a shape family, home land, signature interaction, slots and misfits), the [queue](../rework/art-requests/QUEUE.md) of sixteen requests with prompts (species sets with six expressions and a portrait, crown and scarf, Weather Wardrobe's seven other items, the home scene, card paper, three eggs, six looks; forms blocked on RW11) and the [game-fit review](../rework/art-requests/GAME-FIT.md) of what the guide and the ten large-pet games (`Critter(ctx.petSpec)`) ask of a species.
+- Extended the art bible's creature and asset tables, pointed ART-PROMPTS, the pilot packet, the work items, the ready list, the roadmap row, the decision ledger and the generated manifest at the queue. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: no image has been generated; the cast's names and colours are provisional; iPad performance, child recognition and whether the raincoat and boots fit as images stay in the queue's and GAME-FIT's open lists.
+
+## 2026-10-17 — Lift It definition
+
+- Defined Lift It levels 1–6 in [the definition](../definitions/lift-it.md): haul a crate to a ledge friend by dragging the rope's end in strokes; four rigs from two hooks (direct, fixed, movable on two strands, both), paws as force and knots as travel under an ideal rule stated as a toy; free knot predictions at 4, pullers at 5, paws and knots cards at 6; no misses at 1–4; ghost finger hangs `bestRig` and hauls; Rainbow Meadow by default.
+- References: Tinybop Simple Machines and its make-a-pulley experiment (opened), Sid the Science Kid "The Tree House" (summary), Science Buddies "Pulley'ing Your Own Weight" (403, search summary), ExploreLearning Pulleys Gizmo (summary), DUPLO Tower Crane (retail), OpenStax 9.3 and England year 5 (from the study). W2 skipped (overlaps RW06).
+- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser and fingerdemo not run: no code changed.
+- Open: the six defaulted decisions; the layout numbers are computed, not felt; whether two strands read as two on an iPad; no child has played it.
+
+## 2026-10-17 — Community and civics subject research
+
+- Added the [community-and-civics study](../deep-dives/subjects/community-civics.md): opened the C3 Framework's D2.Civ.1–14 indicators and D2.His.2/14 (PDF text extracted locally), England's citizenship programmes (KS1–2 and KS3–4), the England history programme, the NCSS early-childhood statement PDF, the Kim dissertation record, the Cinamon and Yeshayahu summary, iCivics' games pages and the Animal Crossing: New Leaf and Democracy Wikipedia pages; Smetana, Vogelsang, Helwig, Corriveau, Kids Voting USA, Responsive Classroom and Toca Life World from search summaries. Takes the money study's routed jobs and shared costs; Village Vote is the first ladder, Count the Ballots the grown-up/teen puzzle.
+- Updated the subject tracker, two notebook rows, the roadmap's subject table, [Community and civics recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: Village Vote's land and the capacity test, a losing pet, Count the Ballots' home, the helper cast (police and fire border `safety`), a persistent square; no reference game played.
+
+## 2026-10-17 — Rhythm Neighbors deep dive
+
+- Docs only: [deep dive](../deep-dives/rhythm-neighbors.md) on `claude/dive-rhythm-neighbors` ([PR #558](https://github.com/rjdunlap/neo/pull/558)). Audited levels 1–6; gaps: a pool of three replies and a fixed two-knock call, the teal frog is a bell, level 6's "duet" is the ordinary ending, no ending a lap child can reach, a 2.5 s mid-reply pause is a miss, silent extra taps, no journal entry, a `levels` function with no `order`.
+- Opened Wikipedia (Patapon, Rhythm Heaven, Simon, Bop It, clapping games, call and response, the Kodály method), Harvard's serve-and-return page, Yu et al. 2022 (PMC) and the Echo Canyon Band listing; Glee Club, Gordon's MLT, Zentner and Eerola 2010, Kirschner and Tomasello 2009, Provasi and Bobin-Bègue 2003, the Core Arts K standard and Bandimal are search summaries. Nothing was played.
+- Ladder: lap 7 *Knock, knock*, toddler 8 *My turn, your turn*, 9 *Knock a call*, then 10 *Copy or answer?*, 11 *Your own answer*, 12 *Longer calls*; five ready lines in [READY.md](../READY.md), one decision row in WAITING, pointers at the archived ladder-audit rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
+## 2026-10-17 — Pet integration review (docs only)
+
+- Added [PET-INTEGRATION.md](../rework/PET-INTEGRATION.md): what the guide does today (tap, giggle, repeat; no reaction to play), the twenty-seven games whose rules name friends, and six ways the creatures go further into the games (a guide with a job, owned creatures as the cast by role with the word roles kept, one visible talent per species, round results that come home, meeting a wild creature inside a game, two-creature co-play), favourites, the poses casting would add to the art queue, a recommended order and three developer calls.
+- Linked it from the rework README, the art-request README, CAST and GAME-FIT, and added the decision row. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
+- Open: all three calls; nothing proposed is built.
+
+## 2026-10-17 — RW05 creature collection definition (docs only)
+
+- Docs only: the packet [CREATURE-COLLECTION.md](../rework/CREATURE-COLLECTION.md) on `claude/define-rw05-collection` ([PR #560](https://github.com/rjdunlap/neo/pull/560)), the RW05 rows in [WORK-ITEMS.md](../rework/WORK-ITEMS.md), [READY.md](../READY.md) and [ROADMAP.md](../ROADMAP.md), and a [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) row.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean) on the worktree at base `05e2366d`.
+- Not run: no code changed, so typecheck, unit tests, build and browser suites were not run.
+- Open: the child and device checks the packet lists (species recognition, device speech of the new lines, iPad frame rate with a live rig plus thumbnails, the basket entry's feel) belong to build time, not now.
+
+## 2026-10-17 — Sprite preparation script generalized
+
+- `scripts/creature-art/prepare-sprite.mjs` ([PR #562](https://github.com/rjdunlap/neo/pull/562)): `--in/--out`, `--box`, `--seed`, `--bg`, `--pad`, `--scale`, `--tolerance`, `--check`, and `--set <species>` reading the generated manifest's chosen files into `src/art/creatures/illustrated/<species>-<asset>.png` with one shared box, refusing a variant whose trimmed bounds drift more than 4 px (offsets printed, nothing written). A transparent input is passed through with edge de-fringing; flat white or cream is keyed out as before. The pixel rules are in `sprite-core.mjs`; `prepare-glider.mjs` is a thin wrapper. Documented in [the illustrated README](../../src/art/creatures/illustrated/README.md#preparing-a-sprite); the art bible, the routine's brief and the manifest point at it.
+- Ran `node scripts/creature-art/prepare-glider.mjs --check`: byte-identical to the committed `glider.png` (sha256 b5ecc041…, size 458 × 206, origin 527,257), after matching the pilot's live-buffer edge distance. New `scripts/creature-art/prepare-sprite.test.mjs` (13 tests on synthetic images: paper keying and un-mix, transparent pass-through and halo de-fringe, cut, alignment, manifest, arguments, and an end-to-end `--set` refusal and run through real PNGs, skipped where no Chromium is installed) and the glider's 7 tests pass; `vite.config.ts` now includes `scripts/**/*.test.mjs`. `npm run typecheck` clean. Full `npm test`: 1490 passed, 8 timed out in unrelated game rule tests (Ferry Jam, Fluffy Salon, Peg Garden, Penguin Slide, Photo Safari, Secret Code) under 161-worker load; those files pass alone (62/62). `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: build, browser suites (no game or shell code changed). No generated image exists yet, so no real set was prepared; the de-fringe and alignment rules are proven only on synthetic pixels.

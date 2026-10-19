@@ -71,6 +71,28 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | bramble-sad-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R12-PROMPTS.md#sad1) | yes |
 | bramble-alt-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [alt1](R12-PROMPTS.md#alt1) | yes |
 | bramble-portrait-1.png | R12 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait1](R12-PROMPTS.md#portrait1) | yes |
+| mossback-base-4.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [base4](R13-PROMPTS.md#base4) | yes |
+| mossback-blink-1.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [blink1](R13-PROMPTS.md#blink1) | yes |
+| mossback-happy-1.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [happy1](R13-PROMPTS.md#happy1) | yes |
+| mossback-surprised-1.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [surprised1](R13-PROMPTS.md#surprised1) | yes |
+| mossback-sleepy-2.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy2](R13-PROMPTS.md#sleepy2) | yes |
+| mossback-sad-1.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R13-PROMPTS.md#sad1) | yes |
+| mossback-alt-2.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [alt2](R13-PROMPTS.md#alt2) | yes |
+| mossback-portrait-1.png | R13 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait1](R13-PROMPTS.md#portrait1) | yes |
+| lumen-base-4.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [base4](R14-PROMPTS.md#base4) | yes |
+| lumen-blink-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [blink1](R14-PROMPTS.md#blink1) | yes |
+| lumen-happy-2.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [happy2](R14-PROMPTS.md#happy2) | yes |
+| lumen-surprised-2.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [surprised2](R14-PROMPTS.md#surprised2) | yes |
+| lumen-sleepy-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [sleepy1](R14-PROMPTS.md#sleepy1) | yes |
+| lumen-sad-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [sad1](R14-PROMPTS.md#sad1) | yes |
+| lumen-alt-1.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [alt1](R14-PROMPTS.md#alt1) | yes |
+| lumen-portrait-2.png | R14 | 2026-10-18 | Built-in image_gen; model undisclosed | [portrait2](R14-PROMPTS.md#portrait2) | yes |
+| sprout-look-blossom-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [blossom1](R15-PROMPTS.md#blossom1) | yes |
+| sprout-look-pond-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [pond1](R15-PROMPTS.md#pond1) | yes |
+| river-look-sunny-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [sunny1](R15-PROMPTS.md#sunny1) | yes |
+| river-look-stream-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [stream1](R15-PROMPTS.md#stream1) | yes |
+| glider-look-sunset-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [sunset1](R15-PROMPTS.md#sunset1) | yes |
+| glider-look-morning-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [morning1](R15-PROMPTS.md#morning1) | yes |
 
 ## R01 review and preparation notes
 
@@ -199,6 +221,40 @@ Base bounds `(284, 44, 1246, 974)` are nearly square within the landscape image:
 The curled alt tucks hands/feet/tail away and gathers the purple tufts around a peeking face. Bounds `(285, 44, 1264, 966)` keep its overall scale and position close to base; the changed pose naturally changes the contour and tuft layout. It requires separate pose preparation rather than the expression swap alignment rule. Portrait is a closed head/chest bust with hands, no feet/tail; bounds `(59, 84, 1179, 1197)` leave at least 57 px margin, narrower than the augmented 15% request. Add card padding during preparation without changing the original. No missing files or rejected mood edits.
 
 Reviewed on white and temporary pale-blue composites at about 120 px; QA masks/thumbnails are not assets. White fallback has faint near-white variation; paper-key later while preserving cream and eye whites. No iPad readability, child appeal or animation-quality claim. Rolling behavior, body anchors and wearable fitting remain integration work.
+
+## R13 review and preparation notes
+
+Eight untouched PNGs, 12,466,615 bytes total (11.89 MiB, approximately the brief's 12 MB budget). Full-body images are 1536 × 1024; portrait is 1254 × 1254. SHA-256 verifies repository copies match tool originals. No pixel cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R13-PROMPTS.md) recorded.
+
+Three bases reviewed full size and at 120 px canvas width. Candidate 2 has the most compact neck and a flatter rounded shell crown; candidate 1 has a longer lifted neck and triangular dark nose, while candidate 3 has a larger moss patch and more extended silhouette. Candidate 2 was refined through imagegen to add the smaller white highlight in each eye; the untouched refinement is base 4. No runner-up retained. Mossback has four stumpy blue legs (far hind leg partly occluded), a cream chest/underside, rounded nose bump, closed smile, one pink flower and a small moss patch. Cream rounded toe caps are markings, not pointed claws. Shell plates have curved, soft boundaries, and the top retains a short broad crown beside the moss. Carrying anchors remain a rigging task.
+
+Base bounds `(120, 124, 1451, 917)` occupy about 87% of width, with at least 85 px margin. All outlines and flower tips remain inside the canvas. Sleepy 1 drifted around the far eyelid and was rejected; sleepy 2 keeps the lid short. All five chosen mood silhouettes compared bidirectionally against base: zero pixels outside a four-pixel tolerance. Bounds vary by at most two pixels. Full-size review found shell plates, moss, flower, tail, legs and framing retained. Temporary masks and thumbnails were QA only; this is not proof of pixel-identical shading or registration. Preparation alignment and animation checks remain.
+
+The tucked-in alt retracts the neck and legs, with the face and small blue leg stubs peeking beneath the shell rim. First alt shifted the left tail tip; alt 2 restores its leftmost position. Visible upper/left shell plates, moss and flower remain visually aligned. Previously occluded front/right shell rim and lower tail/body surfaces are newly generated as the anatomy retracts, not recovered from hidden source pixels. Alt bounds `(120, 124, 1185, 814)` reflect the retracted pose, and it needs separate pose preparation rather than expression swap alignment. Fine tail/shell edge differences may remain for that review.
+
+Portrait is a closed head/chest bust with shell, moss and the single flower, no feet or tail. Bounds `(58, 126, 1192, 1179)` leave at least 58 px margin, narrower at the sides than the prompt's 80%-frame target; add card padding later without modifying the original. No missing assets. Reviewed at about 120 px on white and temporary pale-blue composites; white fallback has faint near-white variation. Paper-key later, preserving cream and eye whites. No iPad readability, child appeal or animation-quality claim. Carrying behavior, body anchors and wearable fitting remain integration work.
+
+## R14 review and preparation notes
+
+Eight untouched PNGs, 12,192,864 bytes total (11.63 MiB, approximately the brief's 12 MB budget). Full-body images are 1536 × 1024; portrait is 1254 × 1254. SHA-256 verifies repository copies match tool originals. No pixel cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R14-PROMPTS.md) recorded.
+
+Three bases reviewed full size and at 120 px canvas width. Candidate 2 has the simplest two oval upright wings, clear antenna separation and cream tucked feet. Candidate 1 adds lower wing lobes, a longer striped abdomen and brown feet; candidate 3 has sharper antenna tips and an extra lower wing lobe. Candidate 2 was refined through imagegen to add the second white eye highlight; the untouched refinement is base 4. No runner-up retained. The round pink wings with purple edges and three yellow spots each distinguish Lumen from the swept glider. A chunky cream ruff, two feather antennae, blush and small closed smile match the moth brief; no nose, proboscis or realistic insect legs. Wing roots have painted seams against the ruff; preserve these in preparation.
+
+Base bounds `(206, 61, 1417, 941)` occupy about 79% canvas width, with at least 61 px margin. All parts remain inside the frame. Happy 1 and surprised 1 added stray far-brow marks outside the head; replacements omit that brow. All five chosen mood silhouettes compared bidirectionally against base: zero pixels outside a four-pixel tolerance. Bounds vary by at most one pixel per edge. Full-size review found wing spots, wings, antennae, ruff, feet and framing retained. Small local edge/shading changes may remain; this does not prove pixel-identical registration. Preparation alignment and animation checks remain.
+
+The alt folds the two round wings upright together while keeping visible body, face, antennae, ruff and feet visually in place. It reveals upper cream body previously hidden by the open near wing. Alt bounds `(515, 26, 1417, 941)` have only 26 px above the closed wings; add display padding during preparation. The wing contour/marking projection naturally changes with the pose, so it needs separate pose preparation rather than the expression swap alignment rule.
+
+Portrait 1 was rejected for an unoutlined lower ruff and tight framing. Portrait 2 has a closed outline around its cream bust and includes both antennae and rounded wing sections. Bounds `(112, 137, 1159, 1140)` leave at least 95 px margin, narrower than the stronger retry's 15% target but fully clear. No missing files. Reviewed at about 120 px on white and temporary pale-blue composites; QA masks/thumbnails are not assets. White fallback has faint near-white variation; paper-key later while preserving cream and eye whites. No claim of iPad readability, child appeal or animation quality. Glow behavior, wing motion, body anchors and wearable fitting remain integration work.
+
+## R15 review and preparation notes
+
+Six untouched PNGs, each 1536 × 1024, 9,108,983 bytes total. SHA-256 verifies repository copies match tool originals. No pixel cleanup, resizing, cutting, rigging or integration. Same service terms and undisclosed model caveat as below; [exact prompts and references](R15-PROMPTS.md) recorded. This request edits the approved bases, so no new base candidates were made.
+
+Reviewed every look full size and at 120 px canvas width on white and temporary pale-blue composites. Sprout Blossom changes teal to pink; Pond changes teal to blue, preserving green leaves/stem, cream markings and pink pads. River Sunny changes caramel to golden yellow while retaining brown tail/feet; Stream changes caramel to blue and the paddle tail to deep blue, retaining brown feet. Glider Sunset changes lavender wing/body surfaces to peach with pale pink clouds; Morning changes them to mint with cream clouds. Both preserve the lavender/pink ribbons, cream face/underside and the cloud shapes. Face expressions, eye highlights and pose remain visually consistent with their respective bases. No retries or missing looks.
+
+All six silhouettes compared bidirectionally against their respective approved bases: zero pixels outside a four-pixel tolerance. Sprout bounds are `(307, 63, 1229, 961)`; River looks `(34, 195, 1500, 808)`; Glider Sunset `(23, 188, 1512, 832)` and Morning `(23, 188, 1513, 832)`. Bounds differ by at most one pixel from the corresponding base. This is inspection evidence, not pixel-identical shading/registration proof. Existing base framing caveats carry forward, especially the glider's narrow side margins; add display padding during preparation. White fallback has slight near-white variation; key surrounding paper later while preserving cream and eye whites.
+
+No expression/portrait variants for these looks were requested or generated; adopting a look requires those later requests as the queue specifies. Temporary QA masks/thumbnails are not assets. Preparation alignment, mesh fitting, animation, device readability and child appeal remain unchecked; unlock/earning behavior is not integrated here. All eligible requests R01–R15 now have production results. R16 remains blocked pending RW11's form definitions; do not generate it until that dependency is supplied.
 
 ## Generating service terms
 

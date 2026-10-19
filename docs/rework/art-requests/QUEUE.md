@@ -18,12 +18,19 @@ The routine's work list ([how a run works](README.md#what-a-run-does)). Take the
 | R10 | [Trill set](#r10-trill-set) | 7 | R03 | done | [Seven originals and review notes](../concepts/generated/README.md#r10-review-and-preparation-notes): base-3; blink/happy/surprised/sleepy/sad-1; portrait-2. No missing files. Full-body needs display padding. Not prepared. |
 | R11 | [Dapple set](#r11-dapple-set) | 7 | R03 | done | [Seven originals and review notes](../concepts/generated/README.md#r11-review-and-preparation-notes): base-2; blink/happy/sleepy/sad/portrait-1; surprised-2. No missing files. Not prepared. |
 | R12 | [Bramble set](#r12-bramble-set) | 8 | R03 | done | [Eight originals and review notes](../concepts/generated/README.md#r12-review-and-preparation-notes): base-4; blink/happy/surprised/sleepy/sad/alt/portrait-1. No missing files. Needs display padding. Not prepared. |
-| R13 | [Mossback set](#r13-mossback-set) | 8 | R03 | open | |
-| R14 | [Lumen set](#r14-lumen-set) | 8 | R03 | open | |
-| R15 | [Pilot looks](#r15-pilot-looks) | 6 | R03 | open | |
+| R13 | [Mossback set](#r13-mossback-set) | 8 | R03 | done | [Eight originals and review notes](../concepts/generated/README.md#r13-review-and-preparation-notes): base-4; blink/happy/surprised/sad/portrait-1; sleepy/alt-2. No missing files. Portrait needs card padding. Not prepared. |
+| R14 | [Lumen set](#r14-lumen-set) | 8 | R03 | done | [Eight originals and review notes](../concepts/generated/README.md#r14-review-and-preparation-notes): base-4; blink/sleepy/sad/alt-1; happy/surprised/portrait-2. No missing files. Closed wings need display padding. Not prepared. |
+| R15 | [Pilot looks](#r15-pilot-looks) | 6 | R03 | done | [Six originals and review notes](../concepts/generated/README.md#r15-review-and-preparation-notes): sprout-look-blossom/pond-1, river-look-sunny/stream-1, glider-look-sunset/morning-1. No missing looks. Not prepared; moods would be later requests. |
 | R16 | [Forms](#r16-forms) | — | RW11's definition | blocked | |
+| R17 | [Glider portrait re-roll](#r17-glider-portrait-re-roll) | 1 | R01 | open | |
+| R18 | [Hatching egg stages](#r18-hatching-egg-stages) | 6 | R08 | open | |
+| R19 | [Wearables at the cast's angle](#r19-wearables-at-the-casts-angle) | up to 9 | the wearables test-fit on the pilot rigs ([review](../ART-REVIEW-2026-10-19.md#what-is-next)) | blocked | |
+| R20 | [Casting poses](#r20-casting-poses) | 3 per species | a casting proof slice ([integration review](../PET-INTEGRATION.md#what-this-asks-of-the-art)) | blocked | |
+| R21 | [Expression set for an adopted look](#r21-expression-set-for-an-adopted-look) | 6 per look | RW10 adopting a look | blocked | |
+| R22 | [The friends, duck first](#r22-the-friends-duck-first) | 2 | the [catalog-wide art decision](../../WAITING-ON-DEVELOPER.md) | blocked | |
+| R23 | [Land backdrops](#r23-land-backdrops) | 1 | the same decision, after R22 is seen on a device | blocked | |
 
-Priority is the row order: the three pilot species first (they are what RW05 integrates), then what dresses and houses them, then the second wave. The whole queue is about 90 kept images; at one request a day it runs two to three weeks.
+Priority is the row order: the three pilot species first (they are what RW05 integrates), then what dresses and houses them, then the second wave. R01–R15 were delivered 2026-10-17/18 and [reviewed 2026-10-19](../ART-REVIEW-2026-10-19.md): every set passes the preparation script's alignment rule, so the next work is cutting and rigging in code; R17 and R18 are the only open image requests, and the blocked rows wait on named code slices or decisions, not on the routine.
 
 ## Shared prompts
 
@@ -256,15 +263,64 @@ Only the `base` gets a look here. If a look is adopted, its `blink`/`happy`/mood
 
 Optional branching forms (a blossom opening on the sprout, the glider's sunset wing as a form, Tote's shell garden) are [RW11](../WORK-ITEMS.md#rw11-optional-forms-and-useful-talents) work and need its definition first. **Blocked:** do not generate.
 
+## R17: Glider portrait re-roll
+
+The chosen `glider-portrait-4` is the weakest of the nine cards: the smallest and palest at 110 px on sky blue, with a rounder, larger face than the base, so card and creature read as two designs ([review](../ART-REVIEW-2026-10-19.md#assessment)). **File (1):** `glider-portrait-<n>` (continue the candidate count from 5). Attach the chosen base `glider-base-3.png` and the chosen sprout portrait as the framing reference.
+
+```text
+Draw the same creature as in the first attached image as a portrait for a collection card, framed like the second attached image: the head large and dominant, turned a little toward the viewer in a gentle three-quarter view, the near wing sweeping behind the head and the far wing tip showing, one ribbon curling into the frame; looking at the viewer with the same calm happy expression, the same small eyes, cream face and blush as the first image. Keep the wing's lavender as deep as the first image (#B79BE0, shadow #8C6FC4), not paler. Exactly the same style, outline weight and eye treatment. Square 1024x1024; the portrait fills about 85% of the frame with a clear margin on every side; nothing else in the image; plain flat white background.
+```
+
+Reject a candidate whose face is bigger-eyed or rounder than the base's, or whose wing is paler than the base's. Shrink to 110 px on pale blue beside the sprout and river portraits before choosing.
+
+## R18: Hatching egg stages
+
+The kept hatch (RW05 slice 1) cracks the egg over four taps; `drawEgg` draws those cracks in code today. To use R08's eggs it needs the stages as pictures. **Files (6):** `egg-sprout-crack-<n>`, `egg-sprout-open-<n>`, then the caramel and lavender edits of each: `egg-river-crack`, `egg-river-open`, `egg-glider-crack`, `egg-glider-open`. Square 1254 × 1254 as R08. Make the sprout stages as edits of `egg-sprout-2.png`, then the colour edits exactly as R08 did.
+
+**`crack`**
+```text
+Edit this exact image. Add a single zigzag crack line in the same plum ink across the upper third of the shell, with two short branches, and nothing else: no pieces missing, no light inside. Keep the egg's shape, size, position, spots, outline, shading and background identical.
+```
+
+**`open`**
+```text
+Edit this exact image. The top of the shell has broken off along the crack and lifted a little, tilted, with a jagged edge, showing a dark warm interior; the lower shell, its spots, outline, shading, size and position stay identical, and the background stays plain white. No creature inside, no pieces on the ground.
+```
+
+Reject a stage whose lower shell moved (the hatching rig swaps the three pictures in place). The silhouette comparison R08 used applies to the lower two thirds of the shell.
+
+## R19: Wearables at the cast's angle
+
+**Blocked** until a session has test-fitted R04–R05's nine items on the three pilot rigs. The sunglasses, raincoat, mittens and boots were drawn front-on and the creatures are side-on three-quarter views ([review](../ART-REVIEW-2026-10-19.md#assessment)); the crown, sun hat, beanie and umbrella should fit as they are. When the fit names the items that fail, this request re-draws only those, each as a new image with the chosen sprout base attached as the angle reference, in the item's R04/R05 colours, seen from the same three-quarter right view: the raincoat as a side-on coat with its hood behind the head, the sunglasses as the near lens and a sliver of the far one, each mitten and boot as the pair seen from the side. Same style block, flat white ground, the item filling about 70% of a 1254 × 1254 square. Fill in the files and prompts when unblocked.
+
+## R20: Casting poses
+
+**Blocked** until a casting proof slice is chosen (the [integration review](../PET-INTEGRATION.md#what-this-asks-of-the-art) names Size Parade and Goodnight Room). Then, per owned species in that slice, three `alt` poses a mesh cannot fake, each an edit of the chosen base: `asleep` (eyes shut, curled or settled, the same framing), `peek` (looking out from behind the frame's left edge, only the head and one hand showing) and `carry` (the species' carrying posture: Mossback's shell, River's tummy, the glider's back). Files `<species>-<pose>-<n>`. Separate pose preparation, not the expression alignment rule.
+
+## R21: Expression set for an adopted look
+
+**Blocked** until RW10 adopts a look from R15. Then the five expressions (`blink`, `happy`, `surprised`, `sleepy`, `sad`) for that look, as edits of the look's base with the shared prompts, so the rig can swap them under the same mesh. Files `<species>-look-<name>-<expression>-<n>`.
+
+## R22: The friends, duck first
+
+**Blocked** on the [catalog-wide art decision](../../WAITING-ON-DEVELOPER.md): whether the code-drawn friends follow the companions onto the illustrated pipeline. The review's lean is one pilot pair first, the duck (the friend in fifteen games) and Rainbow Meadow's backdrop (R23), judged on a device beside the untouched lands. When unblocked: `duck-base-<n>` and `duck-portrait-<n>`, a new image each with the chosen sprout base attached, the art bible's style block, the duck as `src/art/critter.ts` draws it (yellow, orange bill and feet, side-on three-quarter right view, neutral pose), 1536 × 1024 on flat white; no expressions until a game needs them.
+
+## R23: Land backdrops
+
+**Blocked** on the same decision, after R22 is seen on a device. One backdrop, Rainbow Meadow, 1536 × 1024, in the home scene's palette but flatter: broad shapes, no painterly texture, the lower third an empty ground for the games' spots and the companion, no creatures, no text. Attach `home-day-3.png` as the style reference and the land's current screenshot for its landmarks. If adopted, the rest of the lands are one request each.
+
 ## Not requested
 
-- **The friends in the games** (the duck in fifteen games, the bunny in eight, the cow, cat, bear, pig and dog, the nine land hosts, the picnic cast): code-drawn today and staying so; reskinning them is a catalog-wide decision for after RW05 is seen on a device ([GAME-FIT.md](GAME-FIT.md#what-stays-code-drawn)).
-- **Hub icons, stickers, land backdrops, habitat kits, buttons and UI:** unchanged by the creature direction.
+- **The friends in the games** beyond the duck pilot above (the bunny in eight games, the cow, cat, bear, pig and dog, the nine land hosts, the picnic cast): code-drawn today and staying so until the catalog-wide decision ([GAME-FIT.md](GAME-FIT.md#what-stays-code-drawn)).
+- **Hub icons, stickers, habitat kits, buttons and UI:** unchanged by the creature direction; small, numerous and seeded, they should stay code-drawn.
 
 ## Run log
 
 One line per run, newest first: date, request, tool and model, what was kept, what is missing, anything odd.
 
+- 2026-10-18, 02:45 PDT start · R15 · built-in image_gen.imagegen, model undisclosed · six color edits of approved pilot bases, kept six originals (9.11 MB), no missing looks or retries. Full-size/120 px review and silhouettes within 4 px of respective bases; [exact prompts and preparation caveats](../concepts/generated/README.md#r15-review-and-preparation-notes) recorded. Links/diff checked; no code/build/browser/offline/device checks, cutting, rigging or integration. No eligible production requests remain; R16 awaits RW11's form definitions.
+- 2026-10-18, 02:15 PDT start · R14 · built-in image_gen.imagegen, model undisclosed · three bases reviewed; candidate 2 refined with second eye highlights as base 4. Kept eight originals (12.19 MB/11.63 MiB), no missing assets. Happy/surprised replaced for stray brows; portrait replaced for open lower contour. Five chosen expression silhouettes within 4 px; [exact prompts, closed-wing and padding caveats](../concepts/generated/README.md#r14-review-and-preparation-notes) recorded. Links/diff checked; no code/build/browser/offline/device checks, cutting, rigging or integration.
+- 2026-10-18, 00:43 PDT start, resumed 02:00 · R13 · built-in image_gen.imagegen, model undisclosed · three bases reviewed; candidate 2 refined with second eye highlights as base 4. Kept eight originals (12.47 MB/11.89 MiB), no missing assets. Sleepy 1 replaced for eyelid drift; alt 1 replaced for shifted tail. Five chosen expression silhouettes within 4 px; [exact prompts, tucked-pose and padding caveats](../concepts/generated/README.md#r13-review-and-preparation-notes) recorded. Links/diff checked; no code/build/browser/offline/device checks, cutting, rigging or integration.
 - 2026-10-18, 00:25 PDT start · R12 · built-in image_gen.imagegen, model undisclosed · three bases reviewed; candidate 3 refined with second eye highlights as base 4. Kept eight originals (12.44 MB/11.86 MiB), no missing assets or rejected mood edits. Five expression silhouettes within 4 px; [exact prompts, curled-pose and display-padding caveats](../concepts/generated/README.md#r12-review-and-preparation-notes) recorded. Links/diff checked; no code/build/browser/offline/device checks, cutting, rigging or integration.
 - 2026-10-18, 00:10 PDT start · R11 · built-in image_gen.imagegen, model undisclosed · three bases reviewed; base 2 chosen for tail separation and soft crest. Kept seven originals (10.61 MB), no missing assets. First surprised rejected for far-brow silhouette drift; replacement and other moods within 4 px. [Exact prompts, anatomy and padding caveats](../concepts/generated/README.md#r11-review-and-preparation-notes) recorded. Links/diff checked; no code/build/browser/offline/device checks, cutting, rigging or integration.
 - 2026-10-17, 23:55 PDT start (finished 2026-10-18) · R10 · built-in image_gen.imagegen, model undisclosed · three bases reviewed; base 3 chosen for three-feather crest and eye highlights. Kept seven originals (10.27 MB), no missing assets; portrait 1 replaced for narrow margins. Expressions within 4 px silhouette tolerance; [exact prompts, lighting and padding caveats](../concepts/generated/README.md#r10-review-and-preparation-notes) recorded. Links/diff checked; no code/build/browser/offline/device checks, cutting, rigging or integration.

@@ -1,8 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BITE, BITE_SIZES, ANIMALS, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
+import { BITE, BITE_SIZES, ANIMALS, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SCENE_SPECS, SCENES, sceneFor, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
 
 describe('Animal Snack', () => {
+  it('gives every scene a backdrop and its own feeding spot, and only the dusk yard loses the sun', () => {
+    expect(SCENES).toHaveLength(4);
+    expect(new Set(SCENES.map((s) => SCENE_SPECS[s].spot)).size).toBe(SCENES.length);
+    for (const s of SCENES) {
+      const { backdrop, name } = SCENE_SPECS[s];
+      expect(name).toBeTruthy();
+      expect(backdrop.sky).toHaveLength(2);
+      expect(backdrop.hills.length).toBeGreaterThanOrEqual(2);
+      expect(backdrop.horizon).toBe(0.5);
+      expect(backdrop.sun).toBe(s !== 'dusk');
+    }
+  });
+
+  it('picks every scene across seeds, the same one for the same seed, without changing the rounds a seed deals', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const a = new Rng(seed);
+      const b = new Rng(seed);
+      const rounds = makeRounds(PLANS[2], a);
+      expect(makeRounds(PLANS[2], b)).toEqual(rounds);
+      const scene = sceneFor(a);
+      seen.add(scene);
+      expect(sceneFor(b)).toBe(scene);
+    }
+    expect(seen.size).toBe(SCENES.length);
+  });
+
   it('gives every food a bite sound and three shrinking bites that end at nothing', () => {
     for (const a of ANIMALS) expect(BITE[FAVORITE[a]!]).toBeTruthy();
     expect(new Set(Object.values(BITE)).size).toBe(6);

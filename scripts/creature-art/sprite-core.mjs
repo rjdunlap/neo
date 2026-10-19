@@ -191,6 +191,40 @@ export function cut(data, w, h, box, pad) {
   return { data: out, w: tw, h: th };
 }
 
+/**
+ * Shrinks an image by a whole factor, averaging each n × n block in premultiplied alpha so a soft
+ * edge keeps its colour and no clear pixel bleeds its (meaningless) colour into the creature. The
+ * input's size must be a multiple of `n` (`cut()` with a box rounded up to one gives that).
+ */
+export function shrink({ data, w, h }, n) {
+  if (!Number.isInteger(n) || n < 1) throw new Error(`shrink wants a whole factor of 1 or more, got ${n}`);
+  if (n === 1) return { data: data.slice(), w, h };
+  if (w % n || h % n) throw new Error(`a ${w} × ${h} image does not shrink evenly by ${n}`);
+  const tw = w / n;
+  const th = h / n;
+  const out = new Uint8ClampedArray(tw * th * 4);
+  const count = n * n;
+  for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) {
+    let r = 0, g = 0, b = 0, a = 0;
+    for (let dy = 0; dy < n; dy++) for (let dx = 0; dx < n; dx++) {
+      const s = ((y * n + dy) * w + x * n + dx) * 4;
+      const sa = data[s + 3];
+      r += data[s] * sa;
+      g += data[s + 1] * sa;
+      b += data[s + 2] * sa;
+      a += sa;
+    }
+    const d = (y * tw + x) * 4;
+    if (a > 0) {
+      out[d] = Math.round(r / a);
+      out[d + 1] = Math.round(g / a);
+      out[d + 2] = Math.round(b / a);
+      out[d + 3] = Math.round(a / count);
+    }
+  }
+  return { data: out, w: tw, h: th };
+}
+
 /** The smallest box holding every bounds given. */
 export function union(list) {
   const b = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };

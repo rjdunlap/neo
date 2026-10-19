@@ -62,7 +62,7 @@ Built on `claude/rw02b-illustrated-glider` from merged `main` (`b6b2a68`). The u
 ![Graphics and illustrated gliders side by side, dressed](concepts/rw02b-glider-comparison.png)
 
 **The art is the concept sheet's glider, not a new generation.** This session had no image-generation tool. So the pilot cut the "Illustrated adventure" glider out of the committed concept sheet as a labelled stand-in, to prove preparation, rig and comparison.
-- **Rebuild:** run `node scripts/creature-art/prepare-glider.mjs`.
+- **Rebuild:** was `node scripts/creature-art/prepare-glider.mjs`; the stand-in and its wrapper were deleted at step 2 (below), which prepares the real sets with `prepare-sprite.mjs --set`.
 - **Manifest:** [`src/art/creatures/illustrated/README.md`](../../src/art/creatures/illustrated/README.md).
 - **Still open:** step 1's candidate set (several generated gliders, a chosen design, consistent re-generation for poses or layers). The next session with an image tool should start there, re-run the same preparation and keep the rig. The next-session instruction below still applies, starting at step 1.
 
@@ -84,7 +84,7 @@ The wing beats at 2.2 rad/s at idle and eases up to 9 rad/s during the touch loo
 | Headless preview, four gliders plus sprout and river | — | 7–10 fps in software rendering, against ≈21 fps for RW02's six creatures in the same kind of harness; says nothing about an iPad |
 
 **Proof.**
-- **Unit tests** (`glider-illustrated.test.ts`, 7 tests):
+- **Unit tests** (`glider-illustrated.test.ts`, 7 tests at the time; step 2 replaced them with a shared suite per species):
   - same species, slots and scarf misfit as the Graphics glider;
   - touch circle ≥ 100 units at stage scale;
   - the sprite's recorded size, a transparent border and opaque eyes;
@@ -133,3 +133,35 @@ Effort for this pilot: about an hour of preparation and tuning. Nearly all of it
 - whether anyone watching the real motion finds it convincing.
 
 These are in [device checks](../DEVICE-CHECKS.md).
+
+## Step 2 result (2026-10-19)
+
+Built on `claude/rw02b-rig-pilot-three` ([PR #609](https://github.com/rjdunlap/neo/pull/609)) from `main` dc7fb3b4, after the [art review](ART-REVIEW-2026-10-19.md). The three pilot species now stand as illustrated mesh rigs beside their Graphics rigs in `/?creatures`, with a card each; the concept-sheet stand-in and `prepare-glider.mjs` are gone.
+
+**Assets.** `prepare-sprite.mjs` gained `--shrink <n>` (box-averaged in premultiplied alpha after keying at full size). Each set was cut with `--set <species> --shrink 2`: sprout 478 × 465, river 749 × 324, glider 761 × 338 px, six expressions each from one shared box, 220–260 KB a file (4.3 MB for the eighteen in the repository), 4.4–5.1 MB a species as RGBA textures. About 2 sprite px per logical unit at stage scale, which fixes the pilot's soft-source defect. The manifest rows (size, origin, bounds, rebuild arguments) are in [the illustrated README](../../src/art/creatures/illustrated/README.md#the-pilot-three-rw02b-step-2-2026-10-19).
+
+**Rigs.** `IllustratedCreature` (`src/art/creatures/illustrated.ts`) holds what the three share: the mesh, the vertex loop, the texture swap and the loader; each species keeps its `*_ART` table (face, slots, the pinned body polygon, moving parts with root and tip, slot widths, misfits with reasons, per the [anchor list](art-requests/GAME-FIT.md#anchor-points-a-rigging-session-records)) and its weights. Measured in Node (dev, not an iPad):
+
+| | Sprout | River | Glider |
+| --- | --- | --- | --- |
+| Mesh | 24 × 24 (576 vertices) | 40 × 18 (720) | 40 × 18 (720) |
+| Display objects | 6 (Graphics 15) | 6 (Graphics 49) | 5 (Graphics 81) |
+| `update()` per frame | ≈9 µs (Graphics ≈0.2 µs) | ≈10 µs (Graphics ≈1 µs) | ≈19 µs (Graphics ≈1 µs) |
+| Moving parts | leaves (sway, a spin on a touch), arms | back wave neck → hips, tail | wing (root → tip wave), two fins, two ribbons |
+| Touch reaction | crouch, hop, squash (the craft) | rears about its hips | loop-the-loop |
+| Touch circle on the stage | 109 units (0.95) | 120 units (0.8; the preview shows the river pair at 0.8 so both fit a landscape row) | 120 units (0.8) |
+
+**Expressions** are whole textures: `surprised` for the first 0.22 s of a touch, then `happy`; `blink` when the base class blinks (calm or happy mood only, since the blink sprite carries the calm mouth); `sleepy` and `sad` as a set `mood`. The painted lids are gone. In the preview a tap on an illustrated card turns its mood calm → sleepy → sad.
+
+**Crown and scarf.** The crown fits all three (sprout 120 units around the stem; river 80 between the ears; glider 40 on the head behind the ear, which no longer covers the ear tip). The scarf fits the sprout (180 units under the chin, drawn over the resting arms) and the river (80 at the collar); the glider declines it as before (`misfit.scarf`). Slots sit in creature units beside the scaled art, so accessory strokes keep their weight.
+
+**Proof.** `npm run typecheck`; `npx vitest run src/art/creatures scripts/creature-art` (41 tests: the shared suite per species checks the recorded size, a transparent border, opaque eyes and six same-size expressions; the Graphics species' slots and misfits; face, nose, mouth, paws or belly pinned through idle and three taps while the tip travels and no painted pixel stretches past double; no vertex moving more than 12–14 px a frame; the texture swaps; the crown riding the reaction and settling; destroy freeing the geometry and not the textures; plus a weights test per species and the script's new shrink test); `test-results/rw02b-probe.mjs` at 1024 × 768 and 768 × 1024 (every stage creature reacts to a tap and a quick re-tap, the three moods cycle, scarf and crown toggle off and on with misfits honoured, cards and toggles fit without overlap, every creature inside the window, leaving to the chooser, no page errors; screenshots `rw02b-1024x768.png`, `rw02b-768x1024.png`); `npm run build` with no sprite or preview code in `dist/` or the precache.
+
+**Remaining defects and limits:**
+- **Not seen on a device.** Frame rate with six creatures, three of them meshes, and the 2× ink edge are in [device checks](../DEVICE-CHECKS.md).
+- **Arms and the scarf.** The sprout's scarf is drawn over its resting arms, and its arms wag only a little (a larger wag stretches the belly painted under them).
+- **The river's head is pinned.** Its idle look-around and head tilt from the Graphics rig are gone; the rear is a whole-body rotation about the hips. A head that turns needs a separate head layer or a second pose.
+- **Loop restart.** The glider's re-tap mid-reaction still restarts the loop with the small jump the Graphics glider has; the mesh itself never jumps (bounded by test).
+- **No underside view** for the glider's wing, as before.
+- **Card scale.** At 0.32–0.44 the illustrated cards read well on white; the glider's card still reads smallest (its portrait is R17's re-roll).
+- **Portraits not kept.** `--set` writes them; RW05 adds them to the repository with the card paper.
