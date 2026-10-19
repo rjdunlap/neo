@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-19 — Generated creature art review (docs only)
+
+- Reviewed the art request queue's R01–R15 (89 originals from [PR #564](https://github.com/rjdunlap/neo/pull/564) to [PR #585](https://github.com/rjdunlap/neo/pull/585)) in [ART-REVIEW-2026-10-19.md](rework/ART-REVIEW-2026-10-19.md): contact sheets of every chosen base, portrait, `alt`, the pilot expressions, wearables, scenes and looks, and the prepared sprites at guide size on dark and card size on sky blue (`docs/rework/concepts/art-review-2026-10-19.png`).
+- Ran `node scripts/creature-art/prepare-sprite.mjs --set <species> --check` for all nine species into a scratch folder (nothing written under `src/`): every set passed the 4 px alignment rule (widest drift 2 px), the paper key found flat white in every file, and no white fringe showed on dark at guide size.
+- Added queue rows R17–R23 (two open, five blocked on named slices or decisions), the RW02b step 2 slice at the top of READY's Next ten with the wearables fit and second-wave preparation queued, the RW02b status, the roadmap row and a catalog-wide art decision for the developer.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code changed; no code checks.
+- Not run: any rig or motion with the new sets, an iPad, 2× ink-edge quality, a child's reaction.
+- Open: the step 2 slice; the developer's catalog-wide art decision.
+
 ## 2026-10-18 — Animal Snack scenes
 
 - Built the seeded scenes ([PR #598](https://github.com/rjdunlap/neo/pull/598), commit e79b7278): `SCENES`, `SCENE_SPECS` and `sceneFor(rng)` in `logic.ts` (picked after the rounds, so a seed's animals and questions are unchanged) and `showScene()` in `index.ts` (meadow with a blanket, orchard with a falling apple and a trough, kitchen garden with a tin tub, dusk with a bowl).
@@ -100,13 +109,6 @@
 - Opened Flipline's Freezeria page and the Flipline Studios Wikipedia article, Jellyneo's Ice Cream Machine guide, the Smart Scoops set listing, Melissa & Doug's counter, Dr. Panda's and KidloLand's App Store pages, Sago Mini's Pet Cafe letter, Common Sense Media on Toca Kitchen 2, Wikipedia's Simon and Overcooked, the CDC three-year page and the K.CC standards; 88 Ice Cream and the colour-milestone ages are search summaries. Nothing was played.
 - Ladder: lap 10 *Any scoop*, toddler 11 *Who wanted pink?*, pre-K/school 12 *Fill it up* and 13 *Three pink and two blue*, with the executive-function study's 7–9 carried in behind its decision; six ready lines in [READY.md](READY.md), one decision row in WAITING, pointers at the archived ladder-audit rows and the Juice Bar idea.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
-## 2026-10-18 — Attic Finds definition (docs only)
-
-- Defined Attic Finds levels 1–2 in [the definition](definitions/attic-finds.md) (everyday-life study slice H1, consolidating time/change T5) on `claude/define-attic-finds` ([PR #578](https://github.com/rjdunlap/neo/pull/578)): two invented objects (bird box, fish churn) with front and back sides, a crank, three clue spots and a `supports(clue, claim)` predicate; level 1 *Try it* (free `{bob, roll}` predictions, then pick what happened, no misses) and level 2 *Show the clue* (drag the proving clue into the claim's slot, Check; unsupported Checks are misses, glow after two); rule tests, ghost finger, how-to lines, voice IDs, registration defaults and seven defaulted decisions. Updated the recommendation rows, the study's H1 row, the IDEAS rows, READY (queued build line) and WAITING-ON-DEVELOPER.
-- References read, none played: Pitt Rivers *Learning from Objects*, Kingston *ArtiFACT or Fiction*, Age of Revolution *Mystery objects*, Metamorphabet (App Store, SLJ), Sago Mini Toolbox (Common Sense), Tinybop Simple Machines (App Store, SLJ), NPS *What is that used for?* (from the study).
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
-- Open: the seven defaulted decisions; the layout numbers are computed, not felt; whether the back-side rod reads as connected at the drawn size; no child has played it.
 
 ## Coverage summary
 
