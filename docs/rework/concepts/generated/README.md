@@ -11,7 +11,7 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | glider-sleepy-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [sleepy2Prompt](R01-PROMPTS.md#sleepy2prompt) | yes |
 | glider-sad-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [sad2Prompt](R01-PROMPTS.md#sad2prompt) | yes |
 | glider-alt-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [alt2Prompt](R01-PROMPTS.md#alt2prompt) | yes |
-| glider-portrait-4.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait4Prompt](R01-PROMPTS.md#portrait4prompt) | yes |
+| glider-portrait-4.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait4Prompt](R01-PROMPTS.md#portrait4prompt) | no; superseded by R17 |
 | sprout-base-2.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [base2](R02-PROMPTS.md#base2) | yes |
 | sprout-blink-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [blink1](R02-PROMPTS.md#blink1) | yes |
 | sprout-happy-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [happy1](R02-PROMPTS.md#happy1) | yes |
@@ -255,6 +255,20 @@ Reviewed every look full size and at 120 px canvas width on white and temporary 
 All six silhouettes compared bidirectionally against their respective approved bases: zero pixels outside a four-pixel tolerance. Sprout bounds are `(307, 63, 1229, 961)`; River looks `(34, 195, 1500, 808)`; Glider Sunset `(23, 188, 1512, 832)` and Morning `(23, 188, 1513, 832)`. Bounds differ by at most one pixel from the corresponding base. This is inspection evidence, not pixel-identical shading/registration proof. Existing base framing caveats carry forward, especially the glider's narrow side margins; add display padding during preparation. White fallback has slight near-white variation; key surrounding paper later while preserving cream and eye whites.
 
 No expression/portrait variants for these looks were requested or generated; adopting a look requires those later requests as the queue specifies. Temporary QA masks/thumbnails are not assets. Preparation alignment, mesh fitting, animation, device readability and child appeal remain unchecked; unlock/earning behavior is not integrated here. All eligible requests R01–R15 now have production results. R16 remains blocked pending RW11's form definitions; do not generate it until that dependency is supplied.
+
+## R17 review and preparation notes
+
+| File | Request | Date | Tool and model | Prompt | Chosen |
+| --- | --- | --- | --- | --- | --- |
+| glider-portrait-8.png | R17 | 2026-10-19 | Built-in image_gen; model undisclosed | [portrait8](R17-PROMPTS.md#portrait8) | yes |
+
+One untouched PNG, 1254 × 1254, 1,322,243 bytes. SHA-256 confirms the repository copy matches the tool source. No cleanup, resizing, cutting, rigging or game integration. [Exact prompts and explicit reference order](R17-PROMPTS.md) recorded; model undisclosed as in earlier runs. Portrait 4 stays in the repository for history but its Chosen flag is now off. This updates the source-art selection only; runtime/prepared files were not changed.
+
+Candidates 5–7 were reviewed full size and at 110 px canvas width on pale sky blue beside the chosen Sprout and River portraits and old portrait 4. Candidates 5 and 6 still devote too much space to the great wing, with two ribbons rather than the requested single curl. Candidate 7 makes the face dominant but has a rounder forehead and an unoutlined lower bust. None was accepted as-is. Candidate 7 was refined through imagegen as candidate 8 to close the bust, lengthen/lower the muzzle and deepen lavender; that untouched output is chosen, with no runner-up or missing asset.
+
+Full-size review of candidate 8 found a continuous plum outline around the lower cream bust and wing, an elongated muzzle, calm closed smile, dark nose, blush and oval eyes; the near wing sweeps behind the head, far tip shows, and one lavender ribbon curls through the lower left. The lavender has stronger mid-tone/shadow coverage than portrait 4, and the face occupies more of the card. A second 110 px pale-blue comparison beside Sprout, River and old glider confirms the face reads more prominently without needing the full wing silhouette to identify it. Eye/face identity was judged visually against base 3, not established by a pixel registration test; the portrait is a new composition.
+
+Bounds `(30, 111, 1240, 1137)` leave every tip inside the square, but the right margin is only 14 px and the left 30 px, narrower than the prompt's generic clear-margin target. Add display padding while preparing the card; keep this source unchanged. White fallback has faint near-white variation; later paper-keying must preserve cream and eye whites. Temporary thumbnail/mask composites were QA only, not delivered images. No claim of iPad readability, child appeal or runtime quality. Link and whitespace checks only; no code, build, browser, offline or device checks for this images/docs change.
 
 ## Generating service terms
 
