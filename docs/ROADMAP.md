@@ -344,6 +344,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | China, India and the Silk Road | 2026-10-18 | [study](deep-dives/subjects/china-india-silk-road.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#china-india-and-the-silk-road-recommendations) |
 | Medieval life | 2026-10-19 | [study](deep-dives/subjects/medieval-life.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#medieval-life-recommendations) |
 | Greece and Rome | 2026-10-19 | [study](deep-dives/subjects/ancient-mediterranean.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#greece-and-rome-recommendations) |
+| Ratio and proportion | 2026-10-19 | [study](deep-dives/subjects/ratio-proportion.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#ratio-and-proportion-recommendations) |
 ## Later horizons (elementary)
 
 The long-term plan: a familiar island that grows from early play through roughly ages 5–11, by extending favorite games, adding new interactions where they help, and connecting them through places, characters and projects. These are development horizons, not dates or grade locks. Ages are rough planning guides; learning ranges overlap; and the horizons are not a proposal for one runtime band per school grade. Apart from Wonder Woods (the `school` band's place) and the steps marked built, everything in this section is a **proposal**.
