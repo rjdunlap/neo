@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-19 — Seesaw Balance deep dive
+
+- Docs only: [deep dive](deep-dives/seesaw-balance.md) on `claude/dive-seesaw-balance-finish` ([PR #619](https://github.com/rjdunlap/neo/pull/619)), resuming the claim in [PR #602](https://github.com/rjdunlap/neo/pull/602) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–10 on `4fd0dc8c`; gaps: the how-to says tap but every thing needs a drag, a silent hint after two overs at 3/5/6/7, one face per weight, no lap band, no couch.
+- References were read through search summaries, store pages and wiki pages, none played: Hasee Bounce, Learning Resources Primary Bucket Balance, Montessori baric tablets, PhET Equality Explorer Basics and Balancing Act, DragonBox Algebra 5+, SolveMe Mobiles, Guess the Weight of the Marrow, Siegler's balance-scale rule studies, CCSS K.MD.A.2.
+- Ladder: levels 12–17 (lap 12 *Wheee!* with the lap band, preschool 13 *Who is heavier?*, pre-K 14 *Line them up*, pre-K/school 15 *Guess the pumpkin*, school 16 *How much heavier?* and 17 *Which way will it tip?*), eight queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the notebook and the archived audit rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
 ## 2026-10-19 — Species Comeback definition (docs only)
 
 - Defined Species Comeback levels 1–4 in [the definition](definitions/species-comeback.md) (zoo-animals study slice Z7) on `claude/define-species-comeback-finish` ([PR #618](https://github.com/rjdunlap/neo/pull/618), resuming the stale claim in #601): the kin rule, exact solver and two-plan guarantee, undo and blocking-nest hint, Spring, the level 3 site step, level 4 plans, note and reason cards, accounting, rule tests, layout with portrait scrolling at level 4, ghost finger, voice `comeback.*`, registration `species-comeback` (region `barnyard`, Lantern Lake, `grownup` 1–4).
@@ -104,12 +111,6 @@
 - Updated the genetics recommendations row and G5 build slice, the IDEAS row, the WAITING genetics row and a defaults row with seven defaulted calls. Not ready to build (levels 1–3 are not built), so no READY.md line.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the seven defaulted decisions; whether a child accepts "can't tell yet" as finished, whether face-down tiles read as hidden, and whether the all-spotted tester's explanation lands are device checks for the build.
-
-## 2026-10-18 — China, India and the Silk Road subject research
-
-- Added the [china-india-silk-road study](deep-dives/subjects/china-india-silk-road.md): opened England's history programmes (gov.uk), extracted the California HSS standards and the LACOE 3–5/6–8 C3 guides locally from their PDFs (pypdf), read the Echelbarger, Good and Shaw 2020 abstract, UNESCO's Silk Roads programme page, the Silk Road, caravanserai, Bactrian camel, history of paper, woodblock printing, compass, suanpan, counting rods, Hindu–Arabic numerals, Indus Valley, Lothal, Edicts of Ashoka, Grand Canal, sericulture, kite, chaturanga, pachisi, snakes and ladders, tangram, Four Great Inventions and rangoli pages, Hamilton Trust's Year 4/5 unit, ActiveHistory's Silk Roads game and the Haifa Arrows activity; Berti and Bombi, the map studies, the Harappan weights, the AMNH, USC and British Museum material from search summaries. Caravan Days is the first ladder (nine planning rungs, toddler–13+); The Ledger the grown-up merchant's puzzle; six existing-game modes and three family cards.
-- Updated the subject tracker, the roadmap's subject table, two notebook rows, [China, India and the Silk Road recommendations](deep-dives/subjects/RECOMMENDATIONS.md#china-india-and-the-silk-road-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: placement and the capacity test, the Swap Meet and Relay Woods boundary, The Ledger's home, a named historian and a cultural reviewer, labour/enslavement depth, religion's exclusion, the Baghdad c. 900 gap, the kite's owner; the AMNH, Penn Museum and harappa.com pages were not readable this session; no reference game played.
 
 ## Coverage summary
 
