@@ -10,7 +10,7 @@ import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { STICKER_ANIMALS, COVER_NAMES, roundScene, type SceneId, nearestSpot, shouldNudge, shouldSelfOpen, deal, newcomer, pickTarget, planFor, spotToTap, type Animal, type PeekPlan, type CoverKind } from './logic';
+import { STICKER_ANIMALS, COVER_NAMES, FEELING_WORDS, roundScene, type SceneId, nearestSpot, shouldNudge, shouldSelfOpen, deal, newcomer, pickFeeling, pickTarget, planFor, spotToTap, type Animal, type Feeling, type PeekPlan, type CoverKind } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
@@ -218,7 +218,8 @@ class Spot extends Container {
     this.holder.addChild(this.critter);
   }
 
-  async go(pose: Pose) {
+  /** Moves the animal; popping `out` with a `feeling` shows that face (and keeps it) instead of a cheer. */
+  async go(pose: Pose, feeling: Feeling | null = null) {
     const c = this.critter;
     if (!c) return;
     const opens = pose === 'out' && this.pose !== 'out';
@@ -234,7 +235,12 @@ class Spot extends Container {
     if (pose === 'out') {
       c.poke();
       await this.tw.to(c, { y: POSE.out }, { duration: 0.35, ease: ease.outBack });
-      if (!c.destroyed && this.critter === c) c.cheer();
+      if (c.destroyed || this.critter !== c) return;
+      if (!feeling) c.cheer();
+      else {
+        if (feeling === 'sing') c.hop(0.8);
+        c.setMood(feeling);
+      }
     } else {
       await this.tw.to(c, { y: POSE[pose] }, { duration: pose === 'hidden' ? 0.3 : 0.45, ease: pose === 'hidden' ? ease.inQuad : ease.outCubic });
     }
@@ -282,6 +288,7 @@ class PeekabooBarn implements Game {
   private lastTouched = -1;
   private idle = 0;
   private nudgeCount = 0;
+  private lastFeeling: Feeling | null = null;
   private readonly input = new Container();
 
   constructor(private readonly ctx: GameContext) {
@@ -427,9 +434,15 @@ class PeekabooBarn implements Game {
       return;
     }
     const animal = spot.animal;
-    void spot.go('out');
+    const feeling = counts ? pickFeeling(this.ctx.rng, this.plan, this.lastFeeling) : null;
+    if (feeling) this.lastFeeling = feeling;
+    void spot.go('out', feeling);
     this.say(animal);
-    void this.ctx.say('peek.found', { word: VOICES[animal].word, animal, cover: COVER_NAMES[spot.kind] });
+    if (feeling === 'sleepy') sfx.yawn();
+    else if (feeling === 'sing') { sfx.marimba(4, 0.3); sfx.marimba(7, 0.3); }
+    const words = { word: VOICES[animal].word, animal, cover: COVER_NAMES[spot.kind] };
+    if (feeling) void this.ctx.say('peek.feel', { ...words, feeling: FEELING_WORDS[feeling] });
+    else void this.ctx.say('peek.found', words);
     if (counts) this.done++;
     if (counts && this.done % 4 === 0) this.ctx.pet.cheer();
     if (counts && this.done >= this.plan.goal) {
@@ -628,7 +641,7 @@ export const peekabooBarn: GameModule = {
     return `Remember who hid where, ${p.spots} hiding places`;
   },
   music: STYLES.hub,
-  coplayHint: 'Make the animal sounds together: "Moo!" Then say its name.',
+  coplayHint: 'Make the animal sounds together: "Moo!" Then say its name. When a friend is sleepy or singing, make that face together.',
   offScreen: 'Play peekaboo with stuffed animals under a blanket. Ask "Where did the cow go?"',
   entryLevels: [16],
   touchDemo: true,
