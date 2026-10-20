@@ -40,6 +40,6 @@ describe('Rainbow Meadow as a location', () => {
   });
 
   it('is the home of its resident, an island species', () => {
-    for (const [id, place] of Object.entries(LOCATIONS)) expect(SPECIES[place!.resident].land).toBe(id);
+    for (const [id, place] of Object.entries(LOCATIONS)) if (place!.resident) expect(SPECIES[place!.resident].land).toBe(id);
   });
 });

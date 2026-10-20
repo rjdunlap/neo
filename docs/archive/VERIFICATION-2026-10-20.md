@@ -21,3 +21,10 @@
 - Ran `npm run typecheck` (clean); `npx vitest run src/games/roundup src/content` (94 passed, new startSpots, signDots and singular-animals tests); `GAME_URL=http://localhost:5392 BROWSER_SUITE=arcade ARCADE_ONLY=roundup` on the working tree (all six levels passed; `test-results/browser/roundup-6.png` shows dot signs). Two script fixes were needed first (tap whichever animal is still loose; stop the overshoot loop when none is): earlier runs failed at levels 1 and 5 on the old fixed-layout assumptions.
 - Not run: `fingerdemo` (bot unchanged), build (no shared asset), device checks.
 - Open: whether a lap child notices the grass hop, and how the spoken totals sound on a device.
+
+## 2026-10-20 — Song Maker support truth (slice 1)
+
+- Built [slice 1](../deep-dives/song-maker.md#build-slices-in-order) ([PR #628](https://github.com/rjdunlap/neo/pull/628), commit 72d2b51f): each bead's hit area is its whole grid cell (levels 5–6 were about 91–92 units, now at least 101 in 1024×768), `songLayout(plan, view)` moved into `logic.ts`, and the levels 1–2 how-to note is conditional on two lit jellies. IDs and accounting unchanged.
+- Ran `npm run typecheck` (clean); `npx vitest run src/games/song-maker src/content` (10 files, 93 passed; new test: every level's cell at least 100 and the grid inside its margins in 1024×768, 1024×1365 portrait and 1660×768); `GAME_URL=http://localhost:5409 BROWSER_SUITE=fourth FOURTH_ONLY=song` (levels 1–7 passed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=song-maker FINGER_LEVELS=6` (clean, 10.0 s); a one-off probe tapping a level-6 song note 0.47 cell off-centre diagonally lit it with no miss (cell 101.1).
+- Not run: restoring the old rule to watch a check fail (the attempt errored from an HMR reload, inconclusive), build (no shared file or asset changed), device touch check.
+- Open: whether the larger beads feel right under a small finger on an iPad.

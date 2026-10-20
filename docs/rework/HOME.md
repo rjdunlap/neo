@@ -76,7 +76,7 @@ Both RW05 slice 2 and RW06 slice 1 edit `companion.ts`. **Do not build them in p
 | Lap, toddler | The companion (the play target), **one toy** (the ball, playable right here: the same toy as creature play, so the youngest never need the second scene) and the **Explore** picture |
 | Preschool and older | Three pictured 120-unit actions: **Continue** (absent until RW07: it is not drawn, rather than drawn and empty), **Play with {pet}** (a ball-and-basket picture, which opens creature play) and **Explore** |
 
-- **Explore until RW08** opens `ExploreScene`, a one-page picker of the built locations (built 2026-10-20, [PR #640](https://github.com/rjdunlap/neo/pull/640)): at most four 150-unit cards, each tapping to `go.land(id)`; Back returns Home. RW08 replaces it with the four entries. The page's DOM `.classic-link` to the island game keeps showing on Home, as it shows on the root's hub today.
+- **Explore until RW08** opens `ExploreScene`, a one-page picker of the built locations (built 2026-10-20, [PR #640](https://github.com/rjdunlap/neo/pull/640)): at most four 150-unit cards (`EXPLORE_MAX`; all four are taken since Bubble Beach, so the fifth location needs a higher cap or a page), each tapping to `go.land(id)`; Back returns Home. RW08 replaces it with the four entries. The page's DOM `.classic-link` to the island game keeps showing on Home, as it shows on the root's hub today.
 - **Who's playing**, a person picture at the top left (Home has no Back), which opens the chooser (`go.start()`).
 - **Voice**: `home.hello` ("{pet} is home!"), spoken on arrival once per visit; `home.play`, `home.explore` and `home.who` on each picture's touch. No reading is needed.
 
