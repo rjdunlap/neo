@@ -1,4 +1,4 @@
-import { SHAPES, type ShapeKind } from '../../art/shapes';
+import type { ShapeKind } from '../../art/shapes';
 import type { Rng } from '../../engine/random';
 
 export interface SorterPlan {
@@ -12,18 +12,22 @@ export interface SorterPlan {
   tilt: boolean;
   /** A spoken shape clue asks the player to find one matching shape. */
   clue?: boolean;
+  /** Nothing can go wrong and every touch is answered: the box giggles, the floor wiggles a piece, a far drop plops. */
+  everyTouch?: boolean;
 }
 
 const FOUR: ShapeKind[] = ['circle', 'square', 'triangle', 'star'];
+/** The six shapes levels 7 and 8 use, named here so a shape added to `SHAPES` cannot widen their lids. */
+export const CLASSIC: readonly ShapeKind[] = ['circle', 'square', 'triangle', 'star', 'heart', 'hexagon'];
 export const PLANS: SorterPlan[] = [
-  { holes: ['circle'], pieces: 3, coded: true, sameColor: false, tilt: false },
+  { holes: ['circle'], pieces: 3, coded: true, sameColor: false, tilt: false, everyTouch: true },
   { holes: ['circle', 'square'], pieces: 4, coded: true, sameColor: false, tilt: false },
   { holes: ['circle', 'square', 'triangle'], pieces: 6, coded: true, sameColor: false, tilt: false },
   { holes: FOUR, pieces: 6, coded: true, sameColor: false, tilt: false },
   { holes: FOUR, pieces: 6, coded: false, sameColor: false, tilt: false },
   { holes: [...FOUR, 'heart'], pieces: 7, coded: false, sameColor: true, tilt: false },
-  { holes: SHAPES, pieces: 8, coded: false, sameColor: true, tilt: true },
-  { holes: SHAPES, pieces: SHAPES.length, coded: false, sameColor: true, tilt: false, clue: true },
+  { holes: CLASSIC, pieces: 8, coded: false, sameColor: true, tilt: true },
+  { holes: CLASSIC, pieces: CLASSIC.length, coded: false, sameColor: true, tilt: false, clue: true },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -58,6 +62,14 @@ export function holeLayout(plan: SorterPlan) {
   return { holes, w: Math.max(300, perRow * HOLE_GAP_X + 40), lidH: rows * HOLE_GAP_Y + 24 };
 }
 
+/** The box's front hangs this far below the lid's bottom edge (the lid overlaps the front by 10). */
+export const BOX_FRONT = 110;
+/** The floor starts this far down the view. */
+export const FLOOR_AT = 0.66;
+
+/** Where the box's lid starts: standing on the floor, but never higher than 40 units from the top. */
+export const boxTopFor = (viewH: number, lidH: number) => Math.max(40, viewH * FLOOR_AT - lidH - BOX_FRONT);
+
 /** The hole a piece was dropped on: the nearest one within reach, or none. */
 export function holeAt<H extends { x: number; y: number }>(holes: readonly H[], x: number, y: number): H | undefined {
   let best: H | undefined;
@@ -74,3 +86,33 @@ export function holeAt<H extends { x: number; y: number }>(holes: readonly H[], 
  * shape. Every piece has one (`pieceKinds` only makes kinds the plan has holes for).
  */
 export const holeFor = <H extends { kind: ShapeKind }>(holes: readonly H[], kind: ShapeKind): H | undefined => holes.find((h) => h.kind === kind);
+
+/** The waiting thing nearest a touch, for a tap on the floor at level 1 to wiggle and name. */
+export function nearest<T extends { x: number; y: number }>(items: readonly T[], x: number, y: number): T | undefined {
+  let best: T | undefined;
+  let bestD = Infinity;
+  for (const it of items) {
+    const d = Math.hypot(it.x - x, it.y - y);
+    if (d < bestD) [best, bestD] = [it, d];
+  }
+  return best;
+}
+
+/** Misses since the last glow; a piece going in does not reset it, so a child who misses with a different piece each time still gets help. */
+export interface SorterHelp {
+  misses: number;
+  hints: number;
+  sinceGlow: number;
+}
+
+export const startHelp = (): SorterHelp => ({ misses: 0, hints: 0, sinceGlow: 0 });
+
+/** A wrong drop: one miss, and every second one since the last glow lights the right hole (one hint). True when it glows. */
+export function wrongDrop(h: SorterHelp): boolean {
+  h.misses++;
+  h.sinceGlow++;
+  if (h.sinceGlow < 2) return false;
+  h.sinceGlow = 0;
+  h.hints++;
+  return true;
+}
