@@ -141,7 +141,7 @@ class DominoRun implements Game {
   }
 
   resize(v: View) {
-    this.lay = dominoLayout(this.plan.fork ? 2 : 1, v);
+    this.lay = dominoLayout(this.plan.fork ? 2 : 1, v, this.line?.tray.length);
     if (!this.line) return;
     if (this.busy || this.pieces.some((p) => p.handle.dragging)) this.relayout = true;
     else this.build();
@@ -255,7 +255,12 @@ class DominoRun implements Game {
     for (const p of this.pieces) p.handle.destroy();
     this.laneLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.pieceLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.lay = dominoLayout(line.lanes.length, this.ctx.view);
+    this.lay = dominoLayout(line.lanes.length, this.ctx.view, line.tray.length);
+    for (const t of this.lay.tray.slice(0, line.tray.length)) {
+      const mat = new Graphics().roundRect(t.hit.x + 6, t.hit.y + 6, t.hit.w - 12, t.hit.h - 6, 16).fill({ color: wood.light, alpha: 0.45 });
+      mat.eventMode = 'none';
+      this.laneLayer.addChild(mat);
+    }
     this.nodes = [];
     this.ends = [];
     this.starters = [];

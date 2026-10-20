@@ -479,7 +479,7 @@ export function slotBox(l: { x0: number; base: number }, s: number): Box {
  * Lanes centred in the view; the tray a column to their right on a sideways screen and a row under them held upright.
  * Clear of the home and `?` buttons (top-left) and the pet's corner (bottom-left 150 × 220).
  */
-export function dominoLayout(lanes: number, v: View): DominoLayout {
+export function dominoLayout(lanes: number, v: View, pieces = 3): DominoLayout {
   const width = 7 * PITCH;
   const portrait = v.h > v.w * 1.1;
   const trayBox = (x: number, y: number) => ({ x, y, hit: { x: x - TRAY_W / 2, y: y - TRAY_H, w: TRAY_W, h: TRAY_H } });
@@ -499,7 +499,8 @@ export function dominoLayout(lanes: number, v: View): DominoLayout {
   const top = Math.max(200, (v.h - 900) / 2 + 120);
   const bases = lanes === 1 ? [top + SLOT_H] : [top + SLOT_H, top + 2 * SLOT_H + 80];
   const trayTop = bases[bases.length - 1] + 90;
-  const row = 3 * TRAY_W + 2 * TRAY_GAP;
+  const n = Math.max(1, Math.min(3, pieces));
+  const row = n * TRAY_W + (n - 1) * TRAY_GAP;
   const tx = (v.w - row) / 2 + TRAY_W / 2;
   return {
     lanes: bases.map((b) => ({ x0: left + PITCH / 2, base: b })),
