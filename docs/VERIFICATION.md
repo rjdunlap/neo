@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-19 — Chance and statistics subject study (docs only)
+
+- Docs only: [study](deep-dives/subjects/chance-statistics.md) on `claude/subject-chance-statistics-finish` ([PR #623](https://github.com/rjdunlap/neo/pull/623)), resuming the abandoned claim in [PR #605](https://github.com/rjdunlap/neo/pull/605). Anchors opened: CCSS 7.SP.C.5–8, 7.SP.A.1–2, 6.SP.A–B and HS S-CP.A; England's KS3 probability and Year 2–6 statistics (probability is first statutory at KS3); the Nuffield Bryant and Nunes review through its news summary (its summary PDF downloaded but did not extract); Xu and Garcia 2008 and Denison and Xu 2010 through secondary summaries; Can't Stop's Wikipedia rules and five spinner lessons through search excerpts; PhET Plinko gave only its title; the Galton board and NCTM spinner recalled. No reference game played.
+- Proposes Spinner Fair (levels 1–10), Peg Garden pearl bins, Lemonade Stand's typical day, Lucky Columns (13+), Spin Race and a family card. Packet in [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the seven developer decisions (new game vs Picture Graph, land, toddler on level 1, 11–14 placement, Lucky Columns' home, reviewer, chance never a reward); no child, parent, educator or device involved.
+
 ## 2026-10-19 — Pet Kitchen deep dive
 
 - Docs only: [deep dive](deep-dives/pet-kitchen.md) on `claude/dive-pet-kitchen-finish` ([PR #622](https://github.com/rjdunlap/neo/pull/622)), resuming the claim in [PR #606](https://github.com/rjdunlap/neo/pull/606) whose branch an idle worktree holds. Audited levels 1–9 on `24db4a79`; gaps: the how-to's open `from: 8` step and `from: 7`/`from: 8` notes show at the wrong levels, the first miss line is untrue when pieces are short or plates are empty, nothing answers a touch before the cut, no lap rung, the fraction at 7 is heard not seen.
@@ -103,12 +110,6 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code changed; no code checks.
 - Not run: any rig or motion with the new sets, an iPad, 2× ink-edge quality, a child's reaction.
 - Open: the step 2 slice; the developer's catalog-wide art decision.
-
-## 2026-10-19 — Medieval life subject research
-
-- Added the [medieval-life study](deep-dives/subjects/medieval-life.md) on `claude/subject-medieval-life` ([PR #581](https://github.com/rjdunlap/neo/pull/581), claimed 2026-10-18 and finished this session after a rebase onto `origin/main` 65734e65): opened England's history programmes (gov.uk), extracted the California HSS standards, the LACOE 6–8 C3 guide and the Nuffield *KS1 Castles: Homes in the Past* lesson locally from their PDFs (pypdf), read the Oldenburg release on the Bakenhus drawing study, the castle, arch, guild, market town, assize of bread and ale, tally stick, three-field system, canonical hours, Salisbury clock, scriptorium, stained glass, wool trade, Luttrell Psalter, Domesday, serfdom, rule of tincture, nine men's morris and Carcassonne pages, the Medievalists.net report on the Getty manuscript exhibition, English Heritage's medieval hub and the Townscaper, Foundation, Pentiment and Discovery Tour pages. Keep House is the first ladder (eight planning rungs, toddler–13+); Market Days the grown-up colouring puzzle; six existing-game modes, two records cases, a source case pack and two family cards.
-- Updated the subject tracker, the roadmap's subject table, two notebook rows, [Medieval life recommendations](deep-dives/subjects/RECOMMENDATIONS.md#medieval-life-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: placement and the capacity test, Market Days' home, a named medievalist, unfree-labour depth, the Church boundary, Keystone's physics; the Getty news page was not readable this session; no reference game played.
 
 ## Coverage summary
 
