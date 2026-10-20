@@ -2,7 +2,7 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { bodyBox, restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { anchors, describe, furFit, growFor, makeRequests, PIP_SCALP, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, makeRequests, PIP_SCALP, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
 
 const head = (length: number, curl: number, color: Strand['color'], n = 20): Strand[] => Array.from({ length: n }, () => ({ length, curl, color }));
 
@@ -188,6 +188,10 @@ group('Fluffy Salon', () => {
       // A small head is drawn larger, so its fur on screen is at least about two thirds of the pip's.
       expect(fit.scale * growFor(scalp), s).toBeGreaterThan(0.65);
       expect(growFor(scalp), s).toBeLessThanOrEqual(2);
+      // Free play's tap-the-face spot (the game draws the companion 1.15 × growFor times) never covers a root.
+      const scale = 1.15 * growFor(scalp);
+      const spot = faceSpot(scalp, restPoints(s, 'eyes')[0], scale);
+      for (const p of roots) expect(Math.hypot(p.x - spot.x, p.y - spot.y) * scale, `${s} face spot`).toBeGreaterThan(FACE_TAP);
     }
   });
 });

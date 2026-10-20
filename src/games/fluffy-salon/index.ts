@@ -14,7 +14,7 @@ import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, describe, furFit, growFor, HAIR_COLORS, scalpFor, makeRequests, needs, planFor, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, HAIR_COLORS, scalpFor, makeRequests, needs, planFor, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -175,7 +175,7 @@ class FluffySalon implements Game {
     this.card.hitArea = new Rectangle(-110, -130, 220, 250);
     onTap(this.card, () => this.repeatInstruction(), { cooldown: 500 });
     this.faceReplay.visible = this.plan.mode === 'play' || this.plan.mode === 'tools';
-    this.faceReplay.hitArea = new Circle(0, 0, 68);
+    this.faceReplay.hitArea = new Circle(0, 0, FACE_TAP);
     onTap(this.faceReplay, () => this.repeatInstruction(), { cooldown: 500 });
 
     const tools: Tool[] = this.plan.mode === 'play' ? ['grow'] : ['grow', 'cut', 'comb', 'curl'];
@@ -242,8 +242,8 @@ class FluffySalon implements Game {
     colors.forEach((b, i) => b.position.set(v.w - 64, 184 + i * 100));
     this.mirror.position.set(v.w - 64, 62);
     this.card.position.set(170, 190);
-    const eyes = this.pet.partPoints('eyes')[0] ?? this.scalp;
-    this.faceReplay.position.set(this.pet.x + eyes.x * this.pet.scale.x, this.pet.y + eyes.y * this.pet.scale.y);
+    const face = faceSpot(this.scalp, this.pet.partPoints('eyes')[0], this.pet.scale.x);
+    this.faceReplay.position.set(this.pet.x + face.x * this.pet.scale.x, this.pet.y + face.y * this.pet.scale.y);
   }
 
   update(dt: number) {

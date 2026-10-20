@@ -176,6 +176,23 @@ export function furFit(scalp: Scalp): { x: number; y: number; scale: number } {
 /** How much larger than the pip the salon draws a companion with a small head, so its fur is big enough to style (at most double). */
 export const growFor = (scalp: Scalp) => Math.min(2, Math.max(1, PIP_SCALP.r / scalp.r));
 
+/** The radius of free play's tap-the-face spot, in screen units. */
+export const FACE_TAP = 68;
+
+/**
+ * Where free play's tap-the-face spot goes, in the companion's units, when it is drawn `scale` times: toward the eyes from the scalp's
+ * centre, but never so far that its circle reaches the roots, so brushing the top of the head always styles.
+ */
+export function faceSpot(scalp: Scalp, eyes: Pt | undefined, scale: number): Pt {
+  if (!eyes) return { x: scalp.x, y: scalp.y };
+  const dx = eyes.x - scalp.x;
+  const dy = eyes.y - scalp.y;
+  const d = Math.hypot(dx, dy);
+  const room = Math.max(0, scalp.r * 0.97 - (FACE_TAP + 12) / scale);
+  const t = d > 0 ? Math.min(1, room / d) : 0;
+  return { x: scalp.x + dx * t, y: scalp.y + dy * t };
+}
+
 /** The points along one strand, in body units. */
 export function strandPoints(an: Anchor, s: Strand): Pt[] {
   const n = Math.max(1, Math.ceil(s.length / SEG));
