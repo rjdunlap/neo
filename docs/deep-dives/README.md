@@ -114,7 +114,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed; slice 2 built; slice 1 fairness built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292)); lid person-dependent | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |
 | Rainbow Fingers | `rainbow-fingers` | LTPKS | 7 | 2 | designed | `claude/roadmap-item-14-game-content-0zaz9u` ([PR 107](https://github.com/rjdunlap/neo/pull/107)) | [rainbow-fingers.md](rainbow-fingers.md) |
-| Ramp Race | `ramp-race` | KS | 4 | 4 | no game dive; the [inquiry study](subjects/inquiry.md#build-slices-in-order) defines its slices (Q1 support defined, [definition](../definitions/ramp-race-support.md); Q2 build and Q3 Trial Shelf definition ready) | — | — |
+| Ramp Race | `ramp-race` | KS | 4 | 4 | no game dive; the [inquiry study](subjects/inquiry.md#build-slices-in-order) defines its slices (Q1 support defined and Q2 built 2026-10-20, [definition](../definitions/ramp-race-support.md); Q3 Trial Shelf definition ready) | — | — |
 | Read & Do | `read-do` | KS | 3 | 4 | not started (levels 1–3 built) | — | — |
 | Rhyme Time | `rhyme-time` | KS | 4 | 4 | not started | — | — |
 | Rhythm Neighbors | `rhythm-neighbors` | LTPKS | 6 | 4 | designed; slices 1–4 and the journal page ready; levels 10–12, the new neighbor and the two-seat caller need decisions | `claude/dive-rhythm-neighbors` ([PR #558](https://github.com/rjdunlap/neo/pull/558)) | [rhythm-neighbors.md](rhythm-neighbors.md) |

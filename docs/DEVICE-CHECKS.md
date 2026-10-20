@@ -16,6 +16,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Ramp Race truthful support (inquiry Q2, 2026-10-20, #624):** on an iPad at the fair-test level, watch whether a child connects the orange glow (a ghost ramp, an outlined floor or a ring around go, after two unfair Checks on one question) to "change this part", and listen to whether device speech reads the half-marks ("two and a half") and the new `ramp.wrong.*` and `ramp.fairhint` lines well.
 - [ ] **Home/navigation RW03 (2026-10-17, #501):** run the [short observed-play script](rework/HOME-NAVIGATION.md#short-observed-play-script-and-open-observations) with lap/toddler co-play, preschool and school separately. Record Home/Back/Next-game interpretation, creature/dress discovery, younger-favorite retrieval, interrupted-project recovery and speech/reach on an iPad. Prototype only; real game/save/controller integration must first land in RW05–RW08. None run.
 
 - [ ] **Illustrated pilot three (RW02b step 2, 2026-10-19, #609; supersedes the glider-only check of #503):** on an iPad, open a dev build at `/?creatures` and compare the "Graphics" and "Illustrated" sprout, river and glider side by side, in both orientations, dressed and bare. Check the following, none of which was run:

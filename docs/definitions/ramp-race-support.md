@@ -1,6 +1,6 @@
 # Ramp Race: truthful support (definition)
 
-Defined 2026-10-17 as slice **Q1** of the [scientific inquiry study](../deep-dives/subjects/inquiry.md#build-slices-in-order), from its [recorded gaps](../deep-dives/subjects/inquiry.md#on-the-island-today). **Not built:** Q2 builds it, at the existing-game bug-fix tier. This is a correction to what Ramp Race (`src/games/ramp-race/`) already does. It adds no level, mode, band, land, save field or couch entry. Levels 1–4, pre-K 1–2, school 1–4, stable IDs and pins stay as they are. This is not a full game deep dive, so the `ramp-race` row in the [deep-dive tracker](../deep-dives/README.md) stays unclaimed.
+Defined 2026-10-17 as slice **Q1** of the [scientific inquiry study](../deep-dives/subjects/inquiry.md#build-slices-in-order), from its [recorded gaps](../deep-dives/subjects/inquiry.md#on-the-island-today). **Built 2026-10-20** ([PR #624](https://github.com/rjdunlap/neo/pull/624)) at the existing-game bug-fix tier. This is a correction to what Ramp Race (`src/games/ramp-race/`) already does. It adds no level, mode, band, land, save field or couch entry. Levels 1–4, pre-K 1–2, school 1–4, stable IDs and pins stay as they are. This is not a full game deep dive, so the `ramp-race` row in the [deep-dive tracker](../deep-dives/README.md) stays unclaimed.
 
 **Why:** the how-to card, some spoken lines and the fair-test help say things the game does not do.
 - The goal promises a star at levels 1 and 4, which have none.
