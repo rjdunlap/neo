@@ -137,6 +137,11 @@ class JarSort implements Game {
   /** The press that lifted the piece, so a drag can carry it and a release on the same jar keeps it up. */
   private press: { jar: number; lifted: boolean; x: number; y: number } | null = null;
   private botPlan: { key: string; path: Move[] | null } | null = null;
+  /** The screen changed size during a hop: the pieces are placed again when it lands (killing its tween would leave the round busy). */
+  private relayout = false;
+  /** The system took the touch away (a swipe from the edge): the drag that ends because of it puts the fruit back. */
+  private cancelled = false;
+  private readonly onCancel = () => { this.cancelled = true; };
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -149,6 +154,8 @@ class JarSort implements Game {
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
     this.undoButton.alpha = 0.35;
     ctx.stage.addChild(this.back, this.jarLayer, this.pieceLayer, this.glow, this.undoButton);
+    // Capture, so it runs before the drag's own window listener ends the drag.
+    window.addEventListener('pointercancel', this.onCancel, { capture: true });
   }
 
   start() {
@@ -163,7 +170,8 @@ class JarSort implements Game {
     this.setDown();
     const spots = jarLayout(this.plan.jars, this.plan.cap, v);
     this.jars.forEach((j, i) => this.placeJar(j, spots[i]));
-    this.placePieces();
+    if (this.busy) this.relayout = true;
+    else this.placePieces();
   }
 
   update(dt: number) {
@@ -193,6 +201,7 @@ class JarSort implements Game {
   }
 
   destroy() {
+    window.removeEventListener('pointercancel', this.onCancel, { capture: true });
     for (const j of this.jars) j.handle.destroy();
   }
 
@@ -232,6 +241,10 @@ class JarSort implements Game {
     this.jarLayer.alpha = this.pieceLayer.alpha = 0;
     await Promise.all([this.ctx.tw.to(this.jarLayer, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.pieceLayer, { alpha: 1 }, { duration: 0.3 })]);
     this.busy = false;
+    if (this.relayout) {
+      this.relayout = false;
+      this.placePieces();
+    }
     if (this.told) return;
     this.told = true;
     await this.ctx.instruct(this.plan.labels ? 'jar.instruct-labels' : 'jar.instruct');
@@ -335,6 +348,7 @@ class JarSort implements Game {
   /** Touch-down on a jar: lift its top piece, drop the lifted piece on it, or set its own lifted piece back down. */
   private pressJar(i: number) {
     this.press = null;
+    this.cancelled = false;
     if (this.busy || this.finished) return;
     if (this.lifted === null) {
       if (!this.board[i].length) return void sfx.tick();
@@ -375,8 +389,11 @@ class JarSort implements Game {
     if (!j || j.carrier.destroyed) return true;
     const dx = j.carrier.x - j.spot.x, dy = j.carrier.y - j.spot.y;
     const press = this.press;
+    const cancelled = this.cancelled;
     this.press = null;
+    this.cancelled = false;
     this.placeJar(j, j.spot);
+    if (cancelled) return this.setDown(), true;
     if (!press || this.busy || this.finished || this.lifted !== i || Math.hypot(dx, dy) < DRAG_START) return true;
     const finger = this.finger(press, dx, dy, i);
     const target = this.jarAt(finger.x, finger.y - 40);
@@ -458,6 +475,10 @@ class JarSort implements Game {
     this.drawLid(to, true);
     this.sinceHint++;
     this.busy = false;
+    if (this.relayout) {
+      this.relayout = false;
+      this.placePieces();
+    }
     if (solved(this.board, this.plan.cap, this.labels)) return void this.boardDone();
     this.checkStuck();
     if (this.sinceHint >= Math.max(8, 2 * this.par)) this.showHint();

@@ -167,6 +167,25 @@ describe('Jar Sort rules', () => {
     }
   });
 
+  it('keeps a hint quick from long wanders on the big boards', () => {
+    const rng = new Rng(23);
+    let slowest = 0, backs = 0;
+    for (const plan of PLANS.slice(4)) {
+      const labels = matLabels(plan);
+      for (const s of BOARDS[plan.id].slice(0, 4)) {
+        const { board, history } = walk(parse(s), plan.cap, 30 + rng.int(0, 10), rng);
+        if (solved(board, plan.cap, labels)) continue;
+        const t = performance.now();
+        const hint = hintMove(board, plan.cap, labels, history);
+        slowest = Math.max(slowest, performance.now() - t);
+        if (hint.kind === 'back') backs++;
+      }
+    }
+    console.log(`Jar Sort slowest hint after a long wander: ${slowest.toFixed(0)} ms, ${backs} fell back to undo`);
+    expect(backs).toBe(0);
+    expect(slowest).toBeLessThan(1500);
+  });
+
   it('calls a board with no move, or no way out, stuck; a move back from there can still finish', () => {
     const stuck = parse('01|10');
     expect(moves(stuck, 2)).toHaveLength(0);

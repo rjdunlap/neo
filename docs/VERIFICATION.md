@@ -5,6 +5,7 @@
 - Built on `claude/jar-sort-build` (PR #651, base `0e2677f5`): new game `jar-sort` in Rainbow Meadow, levels 1–8, new `jarsort` browser suite, frozen solver-checked boards, a one-board demonstration.
 - Ran `npm run typecheck` (clean) and `npm test` (all pass; four unrelated tests timed out under parallel load and pass alone: ferry-jam frozen harbors, peg-garden launcher, penguin-slide level 8, RW02b cast). The 10 jar-sort rule tests pass (slowest frozen-board search 93 ms). `npm run build` passed.
 - `BROWSER_SUITE=jarsort` (Vite http://localhost:5927) passed: level 1's authored boards solved by taps, a free refused move and a ground set-down, level 3 (two refused moves = 2 misses and 1 hint), a drag move, undo, level 7 portrait screenshot `test-results/browser/jar-sort-7-portrait.png`, level 8 mats solved by taps, one sticker per round.
+- After review, fixed a resize during a fruit's hop leaving the round busy (the pieces are placed again when it lands) and made a system `pointercancel` put a carried fruit back; added a long-wander hint timing test (11 rule tests; worst hint 10 ms, no undo fallback); `jarsort` re-passed on http://localhost:5612.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=jar-sort` at levels 1 and 8 (16.6 s, 49.8 s, before the one-board demonstration change) and at level 4 after it (25.1 s).
 - Not run: the offline check, `world`, the phone suites. Open on a device ([DEVICE-CHECKS](DEVICE-CHECKS.md)): fruit legibility at capacity 4, whether a preschooler reads lit jars, whether undo is found unprompted.
 
