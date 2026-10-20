@@ -32,8 +32,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 - **`little-conductor`, build level 3 *Two pictured requests* (music M3)** (new-interaction tier): a listener's sign asks for turtle or rabbit per half of the tune, a pad tap auditions, Check submits, a wrong Check names the requested pace, two misses glow the pad once per phrase. [Definition](definitions/little-conductor.md)
 
-- **`jar-sort`, build levels 1–8** (new-game tier): tap a jar to lift its top fruit, drop it on the same fruit or an empty jar until each jar holds one kind; frozen solver-checked boards, free undo, lit targets at 1–2, refused moves count from 3; Rainbow Meadow. [Definition](definitions/jar-sort.md) *In progress: branch `claude/jar-sort-build`.*
-
 - **`egg-catch`, roll when ready at levels 4–5** (new interaction, with the bot, how-to and browser case): the egg waits for the green arrow; no clock decides. [Slice 1](deep-dives/egg-catch.md#build-slices-in-order)
 - **`egg-catch`, a miss that teaches and hens that wait** (existing-game change): boing, line and next-lane glow at levels 2–3; no eggs laid while nobody plays. [Slice 2](deep-dives/egg-catch.md#build-slices-in-order)
 - **`egg-catch`, notes, egg colours and the hatching basket** (content): pentatonic hens, catchable colours at 1–2, chicks at the finish. [Slice 3](deep-dives/egg-catch.md#fresh-content-inside-existing-levels)

@@ -16,6 +16,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Jar Sort (levels 1–8, 2026-10-20, #651).** On an iPad: are the five fruits legible and distinct at capacity 4 (levels 4–8), including with color vision in mind; does a preschooler read the lit jars at levels 1–2 as "it can go here"; is the round undo arrow discovered unprompted; do the level 8 picture mats read as "this fruit lives here"; device speech of the `jar.*` lines.
 - [ ] **Little Conductor (levels 1-2, 2026-10-20).** On an iPad speaker, do 60 and 90 beats a minute sound clearly different? Does a two-year-old read the turtle and rabbit pads and the pending ring? Does the drum mask the melody? Does device speech say turtle and rabbit clearly? Does any child hear the fast pace as winning?
 - [ ] **Collection and Friends (RW05 slice 1, 2026-10-20, #630):** on an iPad, an existing version-2 profile should meet the egg again with stickers kept.
   - boot time and GPU memory with three mipmapped sets plus the collection pictures decoded before the first scene (about 20 MB);

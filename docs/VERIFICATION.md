@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-20 — Jar Sort levels 1–8
+
+- Built on `claude/jar-sort-build` (PR #651, base `0e2677f5`): new game `jar-sort` in Rainbow Meadow, levels 1–8, new `jarsort` browser suite, frozen solver-checked boards, a one-board demonstration.
+- Ran `npm run typecheck` (clean) and `npm test` (all pass; four unrelated tests timed out under parallel load and pass alone: ferry-jam frozen harbors, peg-garden launcher, penguin-slide level 8, RW02b cast). The 10 jar-sort rule tests pass (slowest frozen-board search 93 ms). `npm run build` passed.
+- `BROWSER_SUITE=jarsort` (Vite http://localhost:5927) passed: level 1's authored boards solved by taps, a free refused move and a ground set-down, level 3 (two refused moves = 2 misses and 1 hint), a drag move, undo, level 7 portrait screenshot `test-results/browser/jar-sort-7-portrait.png`, level 8 mats solved by taps, one sticker per round.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=jar-sort` at levels 1 and 8 (16.6 s, 49.8 s, before the one-board demonstration change) and at level 4 after it (25.1 s).
+- Not run: the offline check, `world`, the phone suites. Open on a device ([DEVICE-CHECKS](DEVICE-CHECKS.md)): fruit legibility at capacity 4, whether a preschooler reads lit jars, whether undo is found unprompted.
+
 ## 2026-10-20 — Little Conductor levels 1–2 (music M2)
 
 - Built on `claude/little-conductor-m2` (tested commit `2c76c4a4`, base `2ad76211`): new game `little-conductor` in Music Mountain, levels 1–2, new `conductor` browser suite, `sfx.pluck` and a gain on `sfx.drum`.
@@ -100,19 +108,13 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check` (results in the closeout report).
 - Open: nothing built; no code, browser or device checks. The four defaults await the developer in WAITING-ON-DEVELOPER.md.
 
-## 2026-10-20 — RW13 slice 2: Rainbow Meadow at the root
-
-- Built on `claude/rw13-rainbow-meadow` ([PR #635](https://github.com/rjdunlap/neo/pull/635), code `d608a0b1` on `da7e0876`): `LocationScene`, the `LandOptions` seam in `LandScene`, the meadow backdrop (`meadow.ts`), the root's `land`/`hub` routes in `src/rework.ts`, and a flower button on the creature preview. `classic/` is unchanged.
-- Ran `npm run typecheck` (clean), `npm test` (1606 of 1607; the one failure was the RW02b tote test in `src/art/creatures/cast.test.ts`, a load flake that passed alone, 44 of 44; the meadow test passed 2 of 2) and `npm run build` (99 precache entries).
-- Root probe (one-off Playwright script, dev server): entry, meadow button, resident and three games with the signpost, tap resident (suggested color-garden), launch it, held Home back to the location, Home back to the preview, in 1024×768 and 768×1024 with no page errors; the "Island games" link is hidden in the location. `BROWSER_SUITE=world` passed (classic, about 7 minutes); `npm run test:offline` passed on the preview, plus a root offline probe (cached, reload offline, meadow opens with the illustrated sprout).
-- Not run: an iPad or other device look, real speech, a child's reaction, the other locations.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `jarsort`, `fingerdemo` (`jar-sort`) | 2026-10-20: levels 1, 3, 7 (portrait) and 8 by taps (free and counted refused moves, drag, undo, mats, one sticker); ghost finger clean at levels 1, 8 and 4 (16.6, 49.8, 25.1 s; the last after the one-board demo); typecheck, 10 rule tests and build | [2026-10-20 entry](#2026-10-20--jar-sort-levels-18) | Offline, `world` and phone suites not run; the level 1 and 8 demos ran before the one-board change; device checks open |
 | `conductor`, `fingerdemo` (`little-conductor`) | 2026-10-20: levels 1 and 2 (early Done, change inside a beat, heard gate, bow, one sticker, portrait); clean 11.9 s ghost finger at both; typecheck, 20 rule tests and build | [2026-10-20 entry](#2026-10-20--little-conductor-levels-12-music-m2) | No `smoke`, `world` or offline run; iPad sound (60 vs 90), pad and pending-ring readability for a toddler, speech and child reaction open |
 | Dressing (RW06 slice 1), `dress`, `friends`, `world`, offline | 2026-10-20: typecheck, 1614 units, build, `dress` (new), `friends`, `world` and `test:offline` all passed at `c92a51d3` | [2026-10-20 entry](#2026-10-20--rw06-slice-1-the-saved-look-and-dressing) | Large-pet games and couch suites not run; no device, speech or child check |
 | Home and creature play (RW06 slice 2, Explore picker), `home` | 2026-10-20: Explore picker (RW13): typecheck, 1620 units, build, `home` (updated: picker, Back, Counting Cove card) and the offline check passed; slice 2: `home` (new, at the root), `world` and `test:offline` passed at `44633f94`; a production root probe | [Explore picker entry](#2026-10-20--rw13-the-explore-picker-of-built-locations); [slice 2 entry](#2026-10-20--rw06-slice-2-home-and-creature-play-at-the-root) | Couch, `friends` and `dress` suites and large-pet games not run; `world` not rerun for the picker; no device, speech or child check |
