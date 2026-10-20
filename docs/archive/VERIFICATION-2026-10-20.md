@@ -48,3 +48,10 @@
 - Tested at `199994ed`/`3da459ad` on dev port 5193 and a production preview on 4193: typecheck clean, `npm test` (165 files, 1547 tests), `npm run build`; `world` (after one harness fix: it read the old pip's `spec.color`); the new `friends` suite (hatch Mochi, river Pebble via `kit.store.meet`, basket, Friends, preview saves nothing, Come with me, reload, second profile, reset/undo; four screenshots); `early` filtered `EARLY_ONLY=bath` (Splish Splash 1-9, passed on the rerun; the first run hit the known level-7 harness flake); `shortlist` filtered `says` (Pet Says 1-5); `test:offline` (seeds a v3 save with two friends; sprites, portraits, card paper and egg precached).
 - Not run: couch suites (only constructor calls changed), `fingerdemo`, other game suites, any device check.
 - Open: [device checks](../DEVICE-CHECKS.md) (boot cost, hue filter, speech, recognition, basket, eight colours); slice 2 moves the ten large-pet games.
+
+## 2026-10-20 — RW06 prep: wearables fit
+
+- Cut the nine R04–R05 wearables at `--shrink 3` (new `--hole` option), added `wearables.ts`, per-species wear tables and `IllustratedCreature.pin/unpin`, and a root-preview button cycling items and outfits on the illustrated column ([PR #632](https://github.com/rjdunlap/neo/pull/632); verdict in [the fit](../../src/art/creatures/wearables/README.md#the-fit-on-the-pilot-three)).
+- Ran typecheck (clean), `npx vitest run src/art/creatures scripts/creature-art` (55 passed, new `wearables.test.ts`), the pilot sprites re-cut byte-identical, one preview probe of every look in landscape and portrait (no console errors) at `http://localhost:5731`, and `npm run build` (99 precache entries, 9.0 MB after merging RW05 slice 1, wearables about 1.0 MB); after the merge also full `npm test` (166 files, 1561 tests) and a preview re-probe.
+- Not run: browser suites (no island code changed), offline check, iPad look, a child's reaction.
+- Open: angle misfits go to queue row R19 for re-drawing.
