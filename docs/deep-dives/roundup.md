@@ -121,7 +121,7 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
-1. **Support truth** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 5): the trot-home counts a hint, a count sign with dots at 5–6, a lap tap on grass or sign answered without a miss, the total spoken at the bell, a seeded layout per round, and the how-to note. IDs and windows unchanged.
+1. **Support truth** (claimed by `claude/roundup-support-truth`; existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 5): the trot-home counts a hint, a count sign with dots at 5–6, a lap tap on grass or sign answered without a miss, the total spoken at the bell, a seeded layout per round, and the how-to note. IDs and windows unchanged.
 2. **Kinds and pens** (logic tier plus one filtered play of 4 and 6, `fingerdemo` at 6): duck and dog, pens drawn from the pool, `{a}`/`{b}` voice lines, varied casts at 4.
 3. **Level 10 *Shoo one*** (new levels on an existing interaction: typecheck, rule tests, one play of 10, `fingerdemo` at 10): toddler `order [1, 10, 2, 3]` and `entryLevels: [10]`.
 4. **Level 11 *Come along*** (new interaction tier: typecheck, units, one scripted play of 11 at lap and toddler, one portrait screenshot, `fingerdemo` at 11): the follow mode, lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`.
