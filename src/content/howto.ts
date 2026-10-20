@@ -1157,6 +1157,26 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 8, text: 'A chain that stops is never counted against her: the dominoes stand back up so she can fix the gap. After two stopped chains, the next domino to place glows; that counts as a hint. Reach and size are a game rule, not exact physics.' },
     ],
   },
+  'fruit-slice': {
+    goal: 'Slice the fruit as it floats up.',
+    steps: [
+      { from: 1, to: 1, text: 'Touch the fruit to slice it.' },
+      { from: 2, to: 6, text: 'Swipe a finger across the fruit.' },
+      { from: 8, to: 8, text: 'Swipe a finger across the fruit.' },
+      { from: 3, to: 6, text: 'The sign shows which ones to slice.' },
+      { from: 5, to: 6, text: 'When the bowl has enough, tap it to send it.' },
+      { from: 8, to: 8, text: 'When the bowl has enough, tap it to send it.' },
+      { from: 7, to: 7, text: 'Draw one straight line: it cuts every fruit it crosses. Make it cross the number on the sign.' },
+      { from: 8, to: 8, text: 'Each fruit makes two pieces. On the last sign the fruit hold still: draw a straight line through two.' },
+    ],
+    finish: 'The bowl is full.',
+    note: [
+      { from: 1, to: 2, text: 'Fruit that falls just comes back. Nothing is timed, and nothing she does is counted against her.' },
+      { from: 3, to: 6, text: 'Fruit that falls just comes back. Nothing is timed. Slicing something the sign does not ask for counts as a miss; after two misses the next right one glows, which counts as a hint.' },
+      { from: 7, to: 7, text: 'Nothing is timed, and a line through no fruit is free. A line through the wrong number counts as a miss; after two misses a dashed line shows one that works, which counts as a hint.' },
+      { from: 8, to: 8, text: 'Fruit that falls just comes back. Nothing is timed. A slice that would pass the sign counts as a miss; after two misses the next right one glows, which counts as a hint.' },
+    ],
+  },
   'block-garden': {
     goal: 'Plant shapes until every bud blooms.',
     steps: [
