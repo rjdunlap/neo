@@ -9,6 +9,8 @@ export const CARD_GAP = 24;
 export const PER_PAGE = 6;
 /** Come with me's radius: a 100-unit target and then some. */
 export const COME_RADIUS = 58;
+/** Dress's radius (RW06): a 100-unit target. */
+export const DRESS_RADIUS = 52;
 export const ARROW_RADIUS = 46;
 /** The back button's corner, kept clear. */
 export const BACK = { x: 64, y: 64, r: 64 };
@@ -22,6 +24,8 @@ export interface FriendsLayout {
   /** The stage friend's feet, and its scale. */
   stage: Spot & { scale: number };
   come: Spot;
+  /** Dress (RW06), above Come with me. */
+  dress: Spot;
   /** Card centres for this page, in order. */
   cards: Spot[];
   /** Previous and next page, only when there is more than one page. */
@@ -62,5 +66,6 @@ export function friendsLayout(v: { w: number; h: number }, count: number, page: 
     stage = { x: v.w / 2 - 70, y: Math.min(gridTop - 40, (BACK.y + BACK.r + gridTop) / 2 + 130), scale: 1.1 };
     come = { x: Math.min(v.w - 40 - COME_RADIUS, stage.x + 260), y: stage.y - 90 };
   }
-  return { stage, come, cards, arrows, pages };
+  const dress = { x: come.x, y: come.y - 2 * COME_RADIUS - 28 };
+  return { stage, come, dress, cards, arrows, pages };
 }

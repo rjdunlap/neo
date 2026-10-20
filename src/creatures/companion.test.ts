@@ -1,8 +1,9 @@
-import { Texture } from 'pixi.js';
+import { Texture, TextureSource } from 'pixi.js';
 import { describe, expect, it } from 'vitest';
 import { Critter, CRITTERS } from '../art/critter';
 import { IllustratedCreature, sameArt } from '../art/creatures/illustrated';
-import { Companion, companion, EGG, EGG_STAGES, GUIDE_SCALE, hueOf, hueTurn, makeCompanion } from './companion';
+import { ITEM_ART, SLOT, WEARABLES, type ItemTextures, type WearableId } from '../art/creatures/wearables';
+import { Companion, companion, EGG, EGG_STAGES, GUIDE_SCALE, GUIDE_LEAVES_OFF, hueOf, hueTurn, makeCompanion, useItems, wearableBy } from './companion';
 import { SPECIES, SPECIES_IDS } from './species';
 import eggWhole from './art/egg-sprout.png?inline';
 import eggCrack from './art/egg-sprout-crack.png?inline';
@@ -42,6 +43,65 @@ describe('the companion (RW05)', () => {
       expect(c.touch.y, species).toBeLessThan(0);
       expect(c.touch.r, species).toBeGreaterThan(70);
     }
+  });
+
+  // Each item as a texture of its prepared sprite's size, so a worn item takes the room it will on screen.
+  const items: ItemTextures = Object.fromEntries(WEARABLES.map((w) => [ITEM_ART[w].file, new Texture({ source: new TextureSource({ width: ITEM_ART[w].width, height: ITEM_ART[w].height }) })]));
+
+  /** Every fullest outfit a species can wear: each head item (or none) with every other item that fits it. */
+  const outfits = (species: (typeof SPECIES_IDS)[number]): WearableId[][] => {
+    const fit = wearableBy(species);
+    const rest = fit.filter((w) => SLOT[w] !== 'head');
+    return [rest, ...fit.filter((w) => SLOT[w] === 'head').map((h) => [h, ...rest])];
+  };
+
+  it('offers each species only what fits it: seven for the sprout, six for the river, four for the glider', () => {
+    expect(wearableBy('sprout')).toHaveLength(7);
+    expect(wearableBy('river')).toHaveLength(6);
+    expect(wearableBy('glider')).toHaveLength(4);
+  });
+
+  it('keeps every species in the guide’s corner in its fullest outfits (RW06)', () => {
+    useItems(items);
+    const pip = bounds(new Critter(CRITTERS.pip), GUIDE_SCALE);
+    for (const species of SPECIES_IDS) {
+      for (const worn of outfits(species)) {
+        const c = new Companion({ species, look: { color: SPECIES[species].color, worn } }, art, GUIDE_LEAVES_OFF);
+        const shown = c.rig.children.length;
+        const b = bounds(c, GUIDE_SCALE);
+        const what = `${species} in ${worn.join(', ')}`;
+        expect(c.worn, what).toEqual(worn);
+        expect(74 + b.minX, what).toBeGreaterThan(0);
+        expect(b.maxX, what).toBeLessThan(pip.maxX + 40);
+        expect(b.minY, what).toBeGreaterThan(pip.minY - 30);
+        expect(b.maxY, what).toBeLessThan(18);
+        expect(shown).toBeGreaterThan(0);
+      }
+    }
+    // Without leaving the umbrella off, the sprout would reach past the corner: the reason the guide drops `held`.
+    const held = bounds(new Companion({ species: 'sprout', look: { color: 'teal', worn: ['umbrella'] } }, art), GUIDE_SCALE);
+    expect(held.maxX).toBeGreaterThan(pip.maxX + 40);
+    useItems({});
+  });
+
+  it('dresses and undresses live, a new item in a slot taking the old one off', () => {
+    useItems(items);
+    const c = new Companion({ species: 'sprout', look: { color: 'teal', worn: ['crown', 'boots'] } }, art);
+    const craft = (c.rig as IllustratedCreature).children.length;
+    const parts = () => (c.rig as IllustratedCreature).children.reduce((n, ch) => n + ch.children.length, 0);
+    const bare = new Companion({ species: 'sprout', look: { color: 'teal' } }, art);
+    const bareParts = (bare.rig as IllustratedCreature).children.reduce((n, ch) => n + ch.children.length, 0);
+    // Boots are a sprout misfit: listed, not drawn. So one item shows.
+    expect(parts()).toBe(bareParts + 1);
+    c.wear('sunhat', true);
+    expect(c.worn).toEqual(['boots', 'sunhat']);
+    expect(parts()).toBe(bareParts + 1);
+    c.wear('mittens', true);
+    expect(parts()).toBe(bareParts + 3);
+    c.dress([]);
+    expect(parts()).toBe(bareParts);
+    expect((c.rig as IllustratedCreature).children.length).toBe(craft);
+    useItems({});
   });
 
   it('keeps a hop and a temporary mood, showing a song as happy', () => {

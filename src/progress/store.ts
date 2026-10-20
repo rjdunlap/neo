@@ -22,6 +22,7 @@ import {
 } from './profiles';
 import { flipItem, moveItem, tidy } from '../content/room';
 import type { SpeciesId } from '../creatures/species';
+import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
 import { isNew, toggleFavorite } from '../content/shelf';
@@ -505,6 +506,19 @@ export class Store {
   choose(id: string): boolean {
     if (!this.data.creatures.owned.some((o) => o.id === id)) return false;
     this.data.creatures.companion = id;
+    this.save();
+    this.flush();
+    return true;
+  }
+
+  /**
+   * Puts an item on an owned friend (replacing whatever shares its slot) or takes it off, and writes at once (RW06). False
+   * (and nothing changes) for an id she does not own. Nothing is used up: every item stays available to every friend.
+   */
+  wear(id: string, item: WearableId, on: boolean): boolean {
+    const who = this.data.creatures.owned.find((o) => o.id === id);
+    if (!who) return false;
+    who.look.worn = changeWorn(who.look.worn ?? [], item, on);
     this.save();
     this.flush();
     return true;

@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Text } from 'pixi.js';
-import { companionSpec, GUIDE_SCALE, makeCompanion } from '../../creatures/companion';
+import { companionSpec, GUIDE_SCALE, makeCompanion, makeGuide } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
@@ -48,7 +48,7 @@ export class GameScene extends Scene {
   /** Built when the round is about to start: after the intro, for a game that is opened for the first time. */
   private game: Game | null = null;
   private readonly stage = new Container();
-  private readonly pet = makeCompanion();
+  private readonly pet = makeGuide();
   private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave());
   /** For the grown-up: hold to open the how-to card. Quiet on purpose, and a long hold so a small hand does not open it. */
   private readonly help = new HoldButton(questionIcon(), swatch.white, 38, 0.9, () => this.openHelp());

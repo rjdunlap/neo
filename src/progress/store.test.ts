@@ -637,4 +637,36 @@ describe('her friends (RW05)', () => {
     expect(store.companion?.name).toBe('Mochi');
     expect(store.data.creatures.owned).toHaveLength(1);
   });
+
+  it('dresses only an owned friend, at once; reset, a backup and another profile keep their own looks (RW06)', async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    const mochi = store.meet('sprout', 'Mochi', 'pink', 'start')!;
+    expect(store.wear('nobody', 'crown', true)).toBe(false);
+    expect(store.wear(mochi.id, 'crown', true)).toBe(true);
+    expect(store.wear(mochi.id, 'scarf', true)).toBe(true);
+    expect(store.wear(mochi.id, 'sunhat', true)).toBe(true);
+    await Promise.resolve();
+    expect(savedAs('neo.save').creatures.owned[0].look.worn).toEqual(['scarf', 'sunhat']);
+    expect(store.wear(mochi.id, 'scarf', false)).toBe(true);
+    expect(store.companion?.look.worn).toEqual(['sunhat']);
+    store.reset();
+    expect(store.companion?.look.worn).toEqual(['sunhat']);
+    const text = await store.exportAll();
+    store.wear(mochi.id, 'sunhat', false);
+    expect(store.companion?.look.worn).toEqual([]);
+    const b = store.addProfile()!;
+    await store.switchTo(b);
+    const wisp = store.meet('glider', 'Wisp', 'purple', 'start')!;
+    // Another profile's ids are not hers: nothing changes.
+    expect(store.wear(mochi.id, 'crown', true)).toBe(false);
+    expect(store.companion?.look.worn).toEqual([]);
+    store.wear(wisp.id, 'crown', true);
+    await store.switchTo(a);
+    expect(store.companion?.look.worn).toEqual([]);
+    await store.restoreAll(text);
+    await store.switchTo(a);
+    expect(store.companion?.look.worn).toEqual(['sunhat']);
+  });
 });

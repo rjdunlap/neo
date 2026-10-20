@@ -5,6 +5,7 @@ import { cleanCreations, emptyCreations, type CreationsSave } from '../content/c
 import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
 import { cleanFavorites } from '../content/shelf';
 import { isSpecies, SPECIES, type SpeciesId } from '../creatures/species';
+import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -68,7 +69,8 @@ export interface Individual {
   id: string;
   species: SpeciesId;
   name: string;
-  look: { color: PetColor };
+  /** Its colour, and what it wears (RW06): wearable ids, one per slot, in the order put on (`cleanWorn`). */
+  look: { color: PetColor; worn: WearableId[] };
   metAt: string;
 }
 
@@ -180,7 +182,7 @@ export function cleanCreatures(raw: unknown): CreaturesSave {
       id: c.id,
       species: c.species,
       name: str(c.name, '').trim().slice(0, 40) || sp.names[0],
-      look: { color: PET_COLORS.find((p) => p === look.color) ?? sp.color },
+      look: { color: PET_COLORS.find((p) => p === look.color) ?? sp.color, worn: cleanWorn(look.worn) },
       metAt: str(c.metAt, '').slice(0, 60),
     });
   }
@@ -200,7 +202,7 @@ export function meetIn(c: CreaturesSave, species: SpeciesId, name: string, color
   let id = newId();
   while (c.owned.some((o) => o.id === id)) id = newId();
   const sp = SPECIES[species];
-  const met: Individual = { id, species, name: name.trim().slice(0, 40) || sp.names[0], look: { color: PET_COLORS.includes(color) ? color : sp.color }, metAt: token };
+  const met: Individual = { id, species, name: name.trim().slice(0, 40) || sp.names[0], look: { color: PET_COLORS.includes(color) ? color : sp.color, worn: [] }, metAt: token };
   c.owned.push(met);
   if (c.companion === null) c.companion = id;
   return met;
