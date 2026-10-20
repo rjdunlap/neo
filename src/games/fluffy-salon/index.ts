@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
-import { Critter, type CritterSpec } from '../../art/critter';
+import { Critter } from '../../art/critter';
 import { swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -10,10 +10,11 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
+import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, describe, HAIR_COLORS, makeRequests, needs, planFor, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Strand, type Tool } from './logic';
+import { anchors, describe, furFit, growFor, HAIR_COLORS, scalpFor, makeRequests, needs, planFor, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -24,6 +25,17 @@ const LEVELS: BandLevels = {
 };
 
 const PET_SCALE = 1.15;
+
+/** Hangs the fur (drawn in the pip's units) on the companion's head, riding the picture as it moves. */
+function wearFur(pet: CompanionRig, hair: Graphics, scalp: Scalp) {
+  const fit = furFit(scalp);
+  const [head] = pet.part('head');
+  const at = head ? pet.partPoints('head')[0] : { x: 0, y: 0 };
+  hair.position.set(fit.x - at.x, fit.y - at.y);
+  hair.scale.set(fit.scale);
+  if (head) head.addChild(hair);
+  else pet.attach(hair);
+}
 
 function drawHair(g: Graphics, an: Anchor[], strands: Strand[]) {
   g.clear();
@@ -110,7 +122,10 @@ class FluffySalon implements Game {
 
   private readonly wall = new Sprite(gradientTexture(0xfde2f0, 0xf6e7ff));
   private readonly room = new Graphics();
-  readonly pet: Critter;
+  readonly pet: CompanionRig;
+  /** The head the fur grows on, in the companion's units, and how much larger than the pip the chair draws it. */
+  readonly scalp: Scalp;
+  private readonly grow: number;
   private readonly hair = new Graphics();
   private readonly cape = new Graphics();
   private readonly touch = new Container();
@@ -135,12 +150,14 @@ class FluffySalon implements Game {
     this.requests = makeRequests(this.plan, ctx.rng);
     // The pet is in the chair, so the corner guide steps out (tapping the mirror repeats the ask).
     ctx.pet.visible = false;
-    this.pet = new Critter(ctx.petSpec);
-    this.pet.scale.set(PET_SCALE);
+    this.pet = ctx.companion();
+    this.scalp = scalpFor(this.pet.bodyBounds());
+    this.grow = growFor(this.scalp);
+    this.pet.scale.set(PET_SCALE * this.grow);
     ctx.track(this.pet);
-    this.drawCape(ctx.petSpec);
+    this.drawCape(this.pet);
     this.pet.attach(this.cape);
-    this.pet.attach(this.hair);
+    wearFur(this.pet, this.hair, this.scalp);
     ctx.stage.addChild(this.wall, this.room, this.pet, this.touch, this.card, this.faceReplay);
 
     this.touch.eventMode = 'static';
@@ -190,9 +207,18 @@ class FluffySalon implements Game {
     return new Graphics().ellipse(0, 0, 24, 30).fill(0xd6eefa).stroke({ width: 6, color: wood.line }).moveTo(-8, -12).lineTo(4, -20).stroke({ width: 4, color: 0xffffff, cap: 'round' });
   }
 
-  private drawCape(spec: CritterSpec) {
+  /** The pip's cape, from the companion's neck to the bottom of its pinned body; a friend with no neck (the glider) goes without. */
+  private drawCape(pet: CompanionRig) {
+    const box = pet.bodyBounds();
+    const neck = pet.partPoints('neck')[0];
     const c = this.cape.clear();
-    const stripe = spec.color === 'purple' ? swatch.teal : swatch.purple;
+    if (!neck) return;
+    const bottom = box.y + box.height + 6;
+    const kx = (box.width + 60) / 300;
+    const ky = Math.min(kx, Math.max(0.2, (bottom - neck.y) / 98));
+    this.cape.scale.set(kx, ky);
+    this.cape.position.set(box.x + box.width / 2, bottom - 6 * ky);
+    const stripe = pet.color === 'purple' ? swatch.teal : swatch.purple;
     c.moveTo(-150, 6).quadraticCurveTo(-140, -70, -70, -92).quadraticCurveTo(0, -80, 70, -92).quadraticCurveTo(140, -70, 150, 6).closePath().fill(0xffffff).stroke({ width: 6, color: 0xb9c6d1, join: 'round' });
     for (let x = -120; x <= 120; x += 40) c.moveTo(x, -70).lineTo(x * 1.15, 4).stroke({ width: 10, color: stripe.light });
   }
@@ -206,7 +232,8 @@ class FluffySalon implements Game {
     r.rect(0, v.h - 150, v.w, 150).fill(0xf3e3c8);
     for (let x = 0; x < v.w; x += 60) for (let y = v.h - 150; y < v.h; y += 60) if (((x + y) / 60) % 2 < 1) r.rect(x, y, 60, 60).fill(0xe8d3b0);
     r.roundRect(v.w * 0.5 - 170, v.h - 190, 340, 60, 20).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line });
-    this.pet.position.set(v.w * 0.5, v.h - 150);
+    // The head is centred in the mirror (a side-on friend's body reaches back from it).
+    this.pet.position.set(v.w * 0.5 - this.scalp.x * this.pet.scale.x, v.h - 150);
     this.touch.hitArea = new Rectangle(160, 0, v.w - 300, v.h - 130);
     // Tools along the bottom; colors in a column down the right.
     const tools = this.buttons.filter((b) => !HAIR_COLORS.includes(b.tool as ColorName));
@@ -215,7 +242,8 @@ class FluffySalon implements Game {
     colors.forEach((b, i) => b.position.set(v.w - 64, 184 + i * 100));
     this.mirror.position.set(v.w - 64, 62);
     this.card.position.set(170, 190);
-    this.faceReplay.position.set(this.pet.x, this.pet.y - 165);
+    const eyes = this.pet.partPoints('eyes')[0] ?? this.scalp;
+    this.faceReplay.position.set(this.pet.x + eyes.x * this.pet.scale.x, this.pet.y + eyes.y * this.pet.scale.y);
   }
 
   update(dt: number) {
@@ -272,7 +300,7 @@ class FluffySalon implements Game {
 
   private repeatInstruction() {
     if (!this.instruction || this.busy || this.finished) return;
-    this.pet.poke();
+    this.pet.poke(true);
     sfx.giggle();
     void this.ctx.say(this.instruction.id, this.instruction.vars);
   }
@@ -330,16 +358,21 @@ class FluffySalon implements Game {
     this.card.visible = true;
     this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
     const frame = new Graphics().roundRect(-100, -120, 200, 230, 26).fill(0xffffff).stroke({ width: 6, color: swatch.purple.line });
-    const head = new Critter(this.ctx.petSpec);
+    // A second companion, its head where the pip's sat on the card, clipped to the frame where a long friend reaches out of it.
+    const head = this.ctx.companion();
     head.alive = false;
-    head.scale.set(0.42);
-    head.y = 90;
+    const k = 0.42 * this.grow;
+    head.scale.set(k);
+    head.position.set(-this.scalp.x * k, 39 - this.scalp.y * k);
     const hair = new Graphics();
     const length = look.length === 'long' ? 190 : look.length === 'short' ? 30 : 95;
     const curl = look.curl === 'curly' ? 0.9 : look.curl === 'straight' ? 0 : 0.3;
     drawHair(hair, this.an, this.an.map(() => ({ length, curl, color: look.color ?? 'yellow' })));
-    head.attach(hair);
-    this.card.addChild(frame, head);
+    wearFur(head, hair, this.scalp);
+    head.update(0);
+    const clip = new Graphics().roundRect(-97, -117, 194, 224, 24).fill(0xffffff);
+    head.mask = clip;
+    this.card.addChild(frame, head, clip);
     this.card.scale.set(0);
     void this.ctx.tw.to(this.card.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
   }
@@ -370,7 +403,7 @@ class FluffySalon implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    this.pet.poke();
+    this.pet.poke(true);
     await this.ctx.say('salon.more', { fix });
     if (this.wrongs >= 2 && !this.hintTool) this.hint();
     this.busy = false;

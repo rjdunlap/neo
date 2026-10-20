@@ -149,6 +149,33 @@ export function anchors(): Anchor[] {
   });
 }
 
+/**
+ * The head the fur grows on, in the companion's units: a circle whose top is the top of the pinned head and body, as wide as it is
+ * (never taller than it), centred over it. The strands, strokes and reach stay in the old pip's units, where the scalp is `PIP_SCALP`,
+ * and `furFit` maps them onto this one, so a small side-on head gets a smaller wig and the bot's sweeps still cross every root.
+ */
+export interface Scalp {
+  x: number;
+  y: number;
+  r: number;
+}
+
+export const PIP_SCALP: Scalp = { x: 0, y: -122, r: 120 };
+
+export function scalpFor(box: { x: number; y: number; width: number; height: number }): Scalp {
+  const r = Math.min(box.width / 2, box.height * 0.9);
+  return { x: box.x + box.width / 2, y: box.y + r, r };
+}
+
+/** Where the fur's pip-unit drawing sits on the companion, and its scale. */
+export function furFit(scalp: Scalp): { x: number; y: number; scale: number } {
+  const scale = scalp.r / PIP_SCALP.r;
+  return { x: scalp.x - PIP_SCALP.x * scale, y: scalp.y - PIP_SCALP.y * scale, scale };
+}
+
+/** How much larger than the pip the salon draws a companion with a small head, so its fur is big enough to style (at most double). */
+export const growFor = (scalp: Scalp) => Math.min(2, Math.max(1, PIP_SCALP.r / scalp.r));
+
 /** The points along one strand, in body units. */
 export function strandPoints(an: Anchor, s: Strand): Pt[] {
   const n = Math.max(1, Math.ceil(s.length / SEG));
