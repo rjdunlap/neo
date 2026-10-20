@@ -122,10 +122,11 @@ class ScoopShop implements Game {
     this.plan = planFor(ctx.level);
     ({ flavors: this.flavors, orders: this.orders } = makeOrders(this.plan, ctx.rng));
     this.kinds = ctx.rng.shuffle([...CUSTOMERS]);
+    this.bubble.eventMode = 'none';
     ctx.stage.addChild(this.wall, this.room, this.people, this.counter, this.bubble, this.tubGlow);
     for (const color of this.flavors) {
       const tub = tubArt(color);
-      onTap(tub, () => void this.scoop(color), { radius: 72, cooldown: 200 });
+      onTap(tub, () => this.tapTub(color), { radius: 72, cooldown: 200 });
       this.tubs.set(color, tub);
       ctx.stage.addChild(tub);
     }
@@ -223,12 +224,13 @@ class ScoopShop implements Game {
     this.ctx.track(critter);
     this.people.addChild(critter);
     this.customer = critter;
-    if (this.plan.mode === 'memory') {
-      onTap(critter, () => void this.peek(), { cooldown: 600 });
-      critter.hitArea = new Circle(0, -150, 150);
-    }
+    // Tapping the customer: a peek on the last level (the picture hid), elsewhere the order said again, free.
+    onTap(critter, () => (this.plan.mode === 'memory' ? void this.peek() : this.tapCustomer(critter)), { cooldown: 600 });
+    critter.hitArea = new Circle(0, -150, 150);
 
     const cone = new Cone();
+    onTap(cone, () => this.wobble(cone, 0.12), { cooldown: 300 });
+    cone.hitArea = new Rectangle(-55, -230, 110, 330);
     const cs = this.coneSpot();
     cone.position.set(cs.x, cs.y);
     cone.scale.set(0);
@@ -268,7 +270,7 @@ class ScoopShop implements Game {
   private showBubble(order: Order) {
     this.bubble.removeChildren().forEach((x) => x.destroy({ children: true }));
     const count = this.plan.mode === 'count';
-    const h = this.plan.mode === 'free' ? 150 : count ? 150 : 110 + order.scoops.length * 40;
+    const h = this.plan.mode === 'free' ? 150 : count ? 190 : 110 + order.scoops.length * 40;
     const w = count ? 240 : 170;
     const card = new Graphics()
       .roundRect(-w / 2, -h, w, h, 30)
@@ -282,12 +284,17 @@ class ScoopShop implements Game {
       const heart = new Graphics().circle(-18, -86, 24).circle(18, -86, 24).poly([-40, -76, 40, -76, 0, -30]).fill(swatch.pink.fill);
       this.bubble.addChild(heart);
     } else if (count) {
-      const n = label(String(order.scoops.length), 84, ink);
-      n.anchor.set(0.5);
-      n.position.set(-50, -75);
-      const s = scoopArt(order.scoops[0], 32);
-      s.position.set(50, -75);
-      this.bubble.addChild(n, s);
+      // The numeral, and under it that many scoops in a row, so the card shows "three" to a child who cannot read 3.
+      const n = order.scoops.length;
+      const numeral = label(String(n), 72, ink);
+      numeral.anchor.set(0.5);
+      numeral.position.set(0, -140);
+      this.bubble.addChild(numeral);
+      order.scoops.forEach((c, i) => {
+        const s = scoopArt(c, 18);
+        s.position.set((i - (n - 1) / 2) * 42, -62);
+        this.bubble.addChild(s);
+      });
     } else {
       const mini = new Container();
       mini.addChild(coneArt(0.6));
@@ -312,7 +319,12 @@ class ScoopShop implements Game {
   /** Memory levels: tap the customer to see the order again (it counts as a hint). */
   private async peek() {
     const order = this.order;
-    if (!order || !this.hidden || this.busy) return;
+    if (!order || !this.hidden || this.busy) {
+      // The picture is still showing (or nobody is ordering): a giggle, never a hint.
+      this.customer?.poke();
+      sfx.giggle();
+      return;
+    }
     if (!this.peeked) this.hints++;
     this.peeked = true;
     this.hidden = false;
@@ -324,6 +336,39 @@ class ScoopShop implements Game {
   }
 
   // Scooping ---------------------------------------------------------------------------
+
+  /** Every tap on a tub answers: it squashes, and while a scoop is in the air (or nobody is ordering) it wobbles and pops. */
+  private tapTub(color: ColorName) {
+    const tub = this.tubs.get(color)!;
+    const tw = this.ctx.tw;
+    tw.kill(tub.scale);
+    tub.scale.set(1.08, 0.86);
+    void tw.to(tub.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    if (this.busy || this.finished || !this.order || !this.cone) {
+      sfx.pop(5 + this.flavors.indexOf(color));
+      this.wobble(tub, 0.1);
+      return;
+    }
+    void this.scoop(color);
+  }
+
+  /** A little side-to-side shake that settles; never fights a move already under way. */
+  private wobble(obj: Container, angle: number) {
+    const tw = this.ctx.tw;
+    if (tw.busy(obj)) return;
+    void tw
+      .to(obj, { rotation: angle }, { duration: 0.08 })
+      .then(() => tw.to(obj, { rotation: -angle }, { duration: 0.12 }))
+      .then(() => tw.to(obj, { rotation: 0 }, { duration: 0.1 }));
+  }
+
+  /** Levels 1–5: the customer giggles and says the order again. Free, never a hint: nothing was hidden. */
+  private tapCustomer(critter: Critter) {
+    critter.poke();
+    sfx.giggle();
+    const order = this.order;
+    if (order && this.customer === critter && !this.busy) void this.askOrder(order);
+  }
 
   private async scoop(color: ColorName) {
     const order = this.order;
@@ -349,6 +394,8 @@ class ScoopShop implements Game {
       s.destroy();
       cone.add(color);
       sfx.squish();
+      // Free play and counting count each scoop aloud as it lands.
+      if (this.plan.mode === 'free' || this.plan.mode === 'count') void this.ctx.say('count', { n: cone.colors.length });
       this.ctx.particles.burst(to.x, to.y, { colors: [swatch[color].fill, 0xffffff], count: 6, speed: [60, 140], gravity: 300, size: [0.2, 0.35] });
       this.busy = false;
       if (complete(this.plan, order, cone.colors)) await this.serve();
@@ -386,6 +433,9 @@ class ScoopShop implements Game {
     sfx.sparkle();
     const mouth = { x: critter.x + 70, y: critter.y - 70 };
     this.ctx.stage.addChild(cone);
+    // A wobble from a last tap stops here, and the cone stops taking touches so a poke at the eating customer reaches them.
+    tw.kill(cone);
+    cone.eventMode = 'none';
     await tw.to(cone, { x: mouth.x, y: mouth.y + 40, rotation: -0.3 }, { duration: 0.6, ease: ease.inOutSine });
     for (const s of [...cone.scoops.children].reverse()) {
       sfx.munch();

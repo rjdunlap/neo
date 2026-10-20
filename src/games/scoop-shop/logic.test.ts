@@ -21,6 +21,20 @@ describe('Scoop Shop', () => {
     }
   });
 
+  it('level 2 asks for a colour by name, not by its place on the counter', () => {
+    const plan = planFor(2);
+    for (let seed = 1; seed <= 200; seed++) {
+      const { flavors, orders } = makeOrders(plan, new Rng(seed));
+      orders.forEach((o, i) => {
+        const at = flavors.indexOf(o.scoops[0]);
+        expect(at, `seed ${seed}`).not.toBe(i);
+        if (i > 0) expect(o.scoops[0]).not.toBe(orders[i - 1].scoops[0]);
+      });
+      // Tapping along the counter from the left never serves the whole round.
+      expect(orders.every((o, i) => o.scoops[0] === flavors[i])).toBe(false);
+    }
+  });
+
   it('can always finish an order by following the hints', () => {
     for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
       for (let seed = 1; seed <= 100; seed++) {

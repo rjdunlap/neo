@@ -127,3 +127,10 @@
 - Ran `npm run typecheck` (clean), `npm test` (1622 of 1623; the known `cast.test.ts` tote flake passed alone, 44 of 44) and `npm run build` (passed). The peaks test fails if the host scale is raised.
 - Root probe (one-off script `test-results/peaks-probe.mjs`, http://localhost:5238, landscape and portrait): the Explore list holds rainbow-meadow, counting-cove and puzzle-peaks; `go.land('puzzle-peaks')` shows the glider resident; tap it; tap puzzle-pals into the game; leave back to the location; no page errors. Screenshots reviewed at preschool and school landscape.
 - Not run: `world`, the `home` suite, the offline check (no persistence, asset or navigation change beyond one location entry), an iPad look, real speech, a child's reaction.
+
+## 2026-10-20 — RW13 slice 5: Bubble Beach at the root
+
+- Built on `claude/rw13-bubble-beach` ([PR #643](https://github.com/rjdunlap/neo/pull/643), code `fec8e873`): `beach.ts`, `beach.test.ts`, one `LOCATIONS` entry (`bubble-beach`, no resident: the land's duck host) and an optional `Place.resident` in `LocationScene.ts` (a shared file). `classic/` is unchanged.
+- Ran `npm run typecheck` (clean), `npm test` (1625 of 1626; the known `cast.test.ts` tote flake passed alone, 44 of 44) and `npm run build` (passed).
+- Root probe (one-off `test-results/beach-probe.mjs`, http://localhost:5205, landscape and portrait): Explore lists four locations; `go.land('bubble-beach')` shows the duck host and 5 games; tap the host; tap bubble-pop into the game; leave back to the location; no page errors. Screenshots reviewed in both orientations (small pools overlapped at full size, fixed by scaling each to its box).
+- Open: Explore is full at `EXPLORE_MAX` 4. Not run: `world`, the `home` suite, the offline check (no persistence or asset change), an iPad look, real speech, a child's reaction.
