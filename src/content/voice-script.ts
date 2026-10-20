@@ -179,7 +179,7 @@ export const SCRIPT = {
   'place.subjects': ['Pick a picture to find games! Swipe or tap an arrow for more.'],
   'subject.senses': ['Bubble Beach! Popping, bouncing, and splashing.'],
   'subject.music': ['Music Mountain! Songs and sounds.'],
-  'subject.art': ['Paint Pier! Pictures and making.'],
+  'subject.art': ['Painted Canyon! Pictures and making.'],
   'subject.animals': ['Barnyard! Animal friends.'],
   'subject.numbers': ['Counting Cove! Counting and sharing.'],
   'subject.everyday': ['Cozy Village! Helping and pretend play.'],

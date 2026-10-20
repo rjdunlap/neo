@@ -25,7 +25,7 @@ export type StoryStep<S extends StoryId = StoryId> = (typeof STORY_STEPS)[S][num
 export const SUBJECTS = [
   { id: 'bubble-beach', name: 'Bubble Beach', line: 'subject.senses' },
   { id: 'music-mountain', name: 'Music Mountain', line: 'subject.music' },
-  { id: 'treehouse', name: 'Paint Pier', line: 'subject.art' },
+  { id: 'treehouse', name: 'Painted Canyon', line: 'subject.art' },
   { id: 'barnyard', name: 'Barnyard', line: 'subject.animals' },
   { id: 'counting-cove', name: 'Counting Cove', line: 'subject.numbers' },
   { id: 'cozy-village', name: 'Cozy Village', line: 'subject.everyday' },
