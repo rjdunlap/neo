@@ -26,6 +26,8 @@ import { drawBarnyard } from './barnyard';
 const BOX = { w: 170, h: 155 };
 /** The host stands about as tall as a game's box. */
 const HOST_HEIGHT = 0.95;
+/** The host's scale for a layout's drawing size (a host is about 250 units tall at scale 1). */
+export const hostScale = (box: { h: number }) => (box.h * HOST_HEIGHT) / 250;
 
 /** What the lands remember for this session: lands already greeted, open signposts, the last suggestion, the last land. */
 const greeted = new Set<LandId>();
@@ -191,7 +193,7 @@ export class LandScene extends Scene {
       mark.node.scale.set(this.scale0);
     });
     this.host.position.set(layout.host.x, layout.host.y);
-    this.host.scale.set((layout.box.h * HOST_HEIGHT) / 250);
+    this.host.scale.set(hostScale(layout.box));
     if (this.sign && layout.sign) {
       this.sign.position.set(layout.sign.x, layout.sign.y);
       this.sign.scale.set(layout.box.h / 155);

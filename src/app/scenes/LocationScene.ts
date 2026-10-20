@@ -7,6 +7,7 @@ import type { App } from '../App';
 import { LandScene } from './LandScene';
 import { drawCove } from './cove';
 import { drawMeadow } from './meadow';
+import { drawPeaks } from './peaks';
 
 /** A location's resident (an invented island creature, never her companion and never collected by being seen) and its scenery. */
 interface Place {
@@ -18,6 +19,7 @@ interface Place {
 export const LOCATIONS: Partial<Record<LandId, Place>> = {
   'rainbow-meadow': { resident: 'sprout', scenery: drawMeadow },
   'counting-cove': { resident: 'river', scenery: drawCove },
+  'puzzle-peaks': { resident: 'glider', scenery: drawPeaks },
 };
 
 export const isLocation = (id: LandId) => id in LOCATIONS;
