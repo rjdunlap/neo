@@ -23,8 +23,13 @@ async function boot() {
   const app = new App();
   await app.init(document.getElementById('app')!);
   app.go = createRoutes(app);
-  const [sprout, river, glider, items] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider'), loadWearables()]);
-  void app.show(new CreaturePreview(app, { sprout, river, glider }, items));
+  if (import.meta.env.DEV && new URLSearchParams(location.search).has('cast')) {
+    // RW02b step 3: the second-wave six, on the dev server only, so their sprites stay out of the build.
+    await (await import('./dev/cast-preview')).showCast(app);
+  } else {
+    const [sprout, river, glider, items] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider'), loadWearables()]);
+    void app.show(new CreaturePreview(app, { sprout, river, glider }, items));
+  }
   if (import.meta.env.DEV) Object.assign(window, { neo: app });
   registerSW({ immediate: true });
 }

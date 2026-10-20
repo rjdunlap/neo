@@ -96,8 +96,8 @@ export const TRILL_ART: CastArt = {
   ],
   hit: { x: 470, y: 290, r: 150 },
   reaction: 'hop',
-  slots: { head: { x: 520, y: 132 }, neck: { x: 560, y: 300 } },
-  widths: { head: 80, neck: 120 },
+  slots: { head: { x: 520, y: 132 }, neck: { x: 550, y: 330 } },
+  widths: { head: 80, neck: 105 },
   misfits: {},
   alt: false,
 };
@@ -122,8 +122,8 @@ export const DAPPLE_ART: CastArt = {
   ],
   hit: { x: 470, y: 230, r: 160 },
   reaction: 'creep',
-  slots: { head: { x: 580, y: 72 }, neck: { x: 470, y: 275 } },
-  widths: { head: 80, neck: 130 },
+  slots: { head: { x: 580, y: 72 }, neck: { x: 560, y: 290 } },
+  widths: { head: 80, neck: 105 },
   misfits: {},
   alt: false,
 };
@@ -147,8 +147,8 @@ export const BRAMBLE_ART: CastArt = {
   ],
   hit: { x: 280, y: 270, r: 170 },
   reaction: 'curl',
-  slots: { head: { x: 340, y: 150 }, neck: { x: 380, y: 310 } },
-  widths: { head: 110, neck: 150 },
+  slots: { head: { x: 340, y: 150 }, neck: { x: 375, y: 350 } },
+  widths: { head: 110, neck: 120 },
   misfits: {},
   alt: true,
 };
@@ -175,8 +175,8 @@ export const MOSSBACK_ART: CastArt = {
   ],
   hit: { x: 360, y: 220, r: 170 },
   reaction: 'plod',
-  slots: { head: { x: 560, y: 95 }, neck: { x: 480, y: 255 } },
-  widths: { head: 80, neck: 110 },
+  slots: { head: { x: 560, y: 95 }, neck: { x: 500, y: 285 } },
+  widths: { head: 80, neck: 100 },
   misfits: {},
   alt: true,
 };
