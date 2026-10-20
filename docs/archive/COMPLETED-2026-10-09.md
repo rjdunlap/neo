@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Fill and Dump slice 2, Lap reach and idle invitation (2026-10-20)
+
+[PR #666](https://github.com/rjdunlap/neo/pull/666): at levels 1–2, open ground tips a full basket or scoops the outside fruit nearest the touch. Six idle seconds while ready for input wiggle the basket or the fruit nearest it; touch, flight and teardown clear the motion. This never counts a miss or hint. Levels 3–5, tip-window behavior, content and pouring are unchanged. [Scope](../deep-dives/fill-dump.md#build-slices-in-order); [verification](../VERIFICATION.md#2026-10-20--fill-and-dump-lap-reach-and-idle-invitation-slice-2).
+
+
 ### Stamp Studio slice 4, Play the picture (2026-10-17)
 
 [PR #545](https://github.com/rjdunlap/neo/pull/545): at levels 3–6 (plan field `play`; not 1, 2 or 7) a music-note button left of the paper appears once a stamp is down and scans the picture left to right. `playOrder` in `logic.ts` sorts stamps by x (ties top first) and pitches each with `stepFromUnit(1 - y, 0, 8)` (C4–E5 pentatonic, higher on the paper higher); stamps are spaced at most 0.4 s apart and never more than 5.5 s in total. Each sounds `sfx.marimba`, pops and shows a yellow scan bar, driven from `update(dt)`; pressing again restarts, a removed stamp is skipped, finishing stops play and hides the button. Nothing is scored, the saved picture and `stampDemo` are unchanged, and no voice lines were added. The how-to finish line at levels 3–6 names the music note. [Dive slice 4](../deep-dives/stamp-studio.md#build-slices-in-order).

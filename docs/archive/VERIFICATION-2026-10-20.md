@@ -134,3 +134,10 @@
 - Ran `npm run typecheck` (clean), `npm test` (1625 of 1626; the known `cast.test.ts` tote flake passed alone, 44 of 44) and `npm run build` (passed).
 - Root probe (one-off `test-results/beach-probe.mjs`, http://localhost:5205, landscape and portrait): Explore lists four locations; `go.land('bubble-beach')` shows the duck host and 5 games; tap the host; tap bubble-pop into the game; leave back to the location; no page errors. Screenshots reviewed in both orientations (small pools overlapped at full size, fixed by scaling each to its box).
 - Open: Explore is full at `EXPLORE_MAX` 4. Not run: `world`, the `home` suite, the offline check (no persistence or asset change), an iPad look, real speech, a child's reaction.
+
+## 2026-10-20 — RW13 slice 6: Music Mountain at the root
+
+- Built on `claude/rw13-music-mountain` ([PR #644](https://github.com/rjdunlap/neo/pull/644), code `0db0b51e`): `mountain.ts`, `mountain.test.ts`, one `LOCATIONS` entry (`music-mountain`, no resident: the land's bear host), and the Explore picker in rows of up to four (`EXPLORE_MAX` 4 to 11, `exploreLayout` in `home-layout.ts`; `LocationScene.ts` also changed). `classic/` is unchanged.
+- Ran `npm run typecheck` (clean), `npm test` (174 files, 1629 tests pass; the home-layout test checks 1-11 cards in five views) and `npm run build` (passed).
+- Root probe (one-off `test-results/mm-probe.mjs`, http://localhost:5504, landscape and portrait): Explore lists five locations in two rows (3+2); the Music Mountain card opens the location (bear host, no resident); `go.game('jelly-drums', …)` into the game and leaving returns to the location; no page errors. Screenshots of the location in both orientations and of Explore reviewed.
+- Open: Explore holds every location now. Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.

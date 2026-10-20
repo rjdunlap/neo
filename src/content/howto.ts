@@ -372,7 +372,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'fill-dump': {
     goal: 'Fill, empty and refill: count fruit or pour water to a line.',
     steps: [
-      { to: 2, text: 'Tap the basket to tip the fruit out. Then tap each piece (or the basket) to put it back.' },
+      { to: 2, text: 'Tap the basket or grass to tip the fruit out. Then tap a piece, the basket or the grass to put fruit back.' },
       { from: 3, to: 4, text: 'Tap the fruit on the grass to put it in the basket, as many as the voice asks for. The card beside the basket has one dot for each; a dot fills as each piece goes in.' },
       { from: 3, to: 4, text: 'A piece beyond the number hangs below the card as an extra dot: too many.' },
       { from: 3, to: 4, text: 'Tap the basket to take the last one back out if there are too many.' },
@@ -388,7 +388,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, text: 'Fill three cups to their lines and check each one to finish the round.' },
     ],
     note: [
-      { to: 2, text: 'There is no wrong move here; every tap does something.' },
+      { to: 2, text: 'There is no wrong move here. Grass taps scoop the nearest fruit or tip a full basket. After six idle seconds the next thing wiggles; this is never a hint.' },
       { from: 3, to: 4, text: 'Tapping the check with the wrong number is a gentle miss. After two, a glow shows what to do next.' },
       { from: 5, text: 'Spills and empty checks are free. Other wrong checks count misses. Two misses glow the next move, once per cup.' },
     ],

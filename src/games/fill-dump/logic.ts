@@ -207,6 +207,15 @@ export function tap(s: FillState, t: FillTap): FillEvent {
   return put(i);
 }
 
+/** Ground is a free next-action target only in the tip-out levels. Pick the outside fruit nearest the touch. */
+export function groundTap(s: FillState, spots: readonly { x: number; y: number }[], at: { x: number; y: number }): FillTap | null {
+  if (s.target !== null || s.done) return null;
+  const out = outsideIndexes(s);
+  const pick = out.reduce<number | undefined>((best, i) =>
+    best === undefined || Math.hypot(spots[i].x - at.x, spots[i].y - at.y) < Math.hypot(spots[best].x - at.x, spots[best].y - at.y) ? i : best, undefined);
+  return { on: 'basket', pick };
+}
+
 /**
  * What a capable child touches next, for the ghost finger on the how-to card: tip a full basket, scoop up the pieces on
  * the ground, or in a counting level put in the number and then tap the check. Null once the round is done.
