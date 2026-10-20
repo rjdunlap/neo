@@ -116,3 +116,11 @@
 - Proposes Spinner Fair (levels 1–10), Peg Garden pearl bins, Lemonade Stand's typical day, Lucky Columns (13+), Spin Race and a family card. Packet in [RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the seven developer decisions (new game vs Picture Graph, land, toddler on level 1, 11–14 placement, Lucky Columns' home, reviewer, chance never a reward); no child, parent, educator or device involved.
+
+## 2026-10-19 — Generated creature art, second review (docs only)
+
+- Reviewed the routine's R17 (glider portrait 8) and R18 (six egg stages) and the step 2 result of [PR #609](https://github.com/rjdunlap/neo/pull/609) in the [second pass](../rework/ART-REVIEW-2026-10-19.md#second-pass-r17-r18-and-the-rigged-pilot-three-2026-10-19); a card-size and hatch-size sheet is `docs/rework/concepts/art-review-2026-10-19b.png`.
+- Ran `prepare-sprite.mjs` into a scratch folder: the three pilot portraits and the old glider portrait, and all nine egg stages at `--shrink 2`. The open stages trim 436 × 576–577 against 436 × 536 for whole and crack (same bottom edge), so the stages need one box per colour; recorded on RW05's READY line.
+- Added queue rows R24 (river head layer) and R25 (sprout arms layer), each with a rig follow-up in READY's Queued list, and moved RW05 slice 1, the wearables fit and the second-wave preparation into Next ten.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code changed.
+- Not run: the rigs on an iPad, the egg stages in a hatch, a child's reaction.
