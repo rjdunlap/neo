@@ -11,6 +11,7 @@ import { drawCove } from './cove';
 import { drawMeadow } from './meadow';
 import { drawMountain } from './mountain';
 import { drawPeaks } from './peaks';
+import { drawVillage } from './village';
 
 /**
  * A location's resident (an invented island creature, never her companion and never collected by being seen) and its
@@ -32,6 +33,8 @@ export const LOCATIONS: Partial<Record<LandId, Place>> = {
   'music-mountain': { scenery: drawMountain },
   // Dapple, the canyon's resident, waits on RW02b step 3 likewise; the land's cat greets her until then.
   treehouse: { scenery: drawCanyon },
+  // Bramble, the village's resident, waits on RW02b step 3 likewise; the land's squirrel greets her until then.
+  'cozy-village': { scenery: drawVillage },
 };
 
 export const isLocation = (id: LandId) => id in LOCATIONS;

@@ -41,3 +41,10 @@
 - Defined RW13 in [the packet](../rework/ISLAND-REVAMP.md) on `claude/rw13-island-revamp-packet` ([PR #631](https://github.com/rjdunlap/neo/pull/631)): the eleven land IDs kept with an ecosystem each, five proposed game moves (none made yet), residents, backdrop art queue R23/R26 and ordered build slices; WORK-ITEMS, READY and QUEUE updated.
 - Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build and browser suites not run: no code changed.
 - Open: slice 1 is next; the generated backdrops (R23, R26) stay blocked on the art decision.
+
+## 2026-10-20 — RW05 slice 1: the collection model and Friends
+
+- Built on `claude/rw05-collection-friends-400e40` ([PR #630](https://github.com/rjdunlap/neo/pull/630)): save v3 `creatures`, `store.meet/choose`, the species table and `Companion`, the R08/R18 egg hatch, Friends from the treehouse basket, the guide, chooser and island scenes on the companion. Differences from the packet (preview kept, no mood-follows-play, hue rotation not tint, portrait cards, Back only, v2 profiles meet the egg again) are in [the packet](../rework/CREATURE-COLLECTION.md#built-slice-1-2026-10-20).
+- Tested at `199994ed`/`3da459ad` on dev port 5193 and a production preview on 4193: typecheck clean, `npm test` (165 files, 1547 tests), `npm run build`; `world` (after one harness fix: it read the old pip's `spec.color`); the new `friends` suite (hatch Mochi, river Pebble via `kit.store.meet`, basket, Friends, preview saves nothing, Come with me, reload, second profile, reset/undo; four screenshots); `early` filtered `EARLY_ONLY=bath` (Splish Splash 1-9, passed on the rerun; the first run hit the known level-7 harness flake); `shortlist` filtered `says` (Pet Says 1-5); `test:offline` (seeds a v3 save with two friends; sprites, portraits, card paper and egg precached).
+- Not run: couch suites (only constructor calls changed), `fingerdemo`, other game suites, any device check.
+- Open: [device checks](../DEVICE-CHECKS.md) (boot cost, hue filter, speech, recognition, basket, eight colours); slice 2 moves the ten large-pet games.
