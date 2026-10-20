@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
+import type { CompanionRig } from '../../creatures/companion';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { prop } from '../../art/props';
@@ -61,7 +62,7 @@ class BouncyLaunch implements Game {
   private readonly planetInput = new Container();
   private readonly planetArt = new Graphics();
   private readonly planetBackdrops: Backdrop[] = [];
-  readonly pet: Critter;
+  readonly pet: CompanionRig;
   readonly pads: Container[] = [];
   shot = 0;
   misses = 0;
@@ -169,14 +170,14 @@ class BouncyLaunch implements Game {
       const pair = this.pairs[this.shot];
       return this.planetPhase === 'choose' && pair ? { tap: { on: this.planetInput, x: this.landX(planetBotLanding(pair)), y: this.strip.y - 160 } } : null;
     }
-    if (this.plan.mode === 'tap') return { tap: { on: this.pet, y: -125 } };
+    if (this.plan.mode === 'tap') return { tap: { on: this.pet, x: this.pet.touch.x, y: this.pet.touch.y } };
     if (this.plan.mode === 'predict') {
       const target = this.targets[this.shot];
       return target === undefined ? null : { tap: { on: this.pads[target] } };
     }
     const pull = pullToTake(this.plan, this.shot, this.targets, this.last, this.spots);
     // Back and down, the way the leash allows; the finger travels as far as the pet is to be pulled.
-    const from = { x: this.seat.x, y: this.seat.y - 125 * PET_SCALE };
+    const from = { x: this.seat.x + this.pet.touch.x * PET_SCALE, y: this.seat.y + this.pet.touch.y * PET_SCALE };
     const d = { x: -0.35, y: 0.94 };
     const len = Math.hypot(d.x, d.y);
     return {
@@ -288,9 +289,10 @@ class BouncyLaunch implements Game {
     this.stick = !!ctx.couch;
     // The pet is the one flying, so the corner guide steps out (as in Splish Splash).
     ctx.pet.visible = false;
-    this.pet = new Critter(ctx.petSpec);
+    this.pet = ctx.companion();
     this.pet.scale.set(PET_SCALE);
-    this.pet.hitArea = new Circle(0, -125, 190);
+    // Body-centred, and never smaller than the pip's old 190-unit circle, whatever the species.
+    this.pet.hitArea = this.pet.touchArea(Math.max(0, 190 - this.pet.touch.r));
     this.replay.hitArea = new Circle(0, 0, 68);
     onTap(this.replay, () => this.repeatInstruction(), { cooldown: 500 });
     ctx.track(this.pet);
