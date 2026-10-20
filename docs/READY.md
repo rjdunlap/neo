@@ -6,7 +6,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **Rework RW06 definition, playable home and customization** (docs only: links and `git diff --check`; its upstream packets RW03 and RW05 exist): define the home scene, toy interaction and saved look from the work item, with build slices added here. [Work item](rework/WORK-ITEMS.md#rw06-playable-home-and-customization)
+- **Rework RW06 definition, playable home and customization** (docs only: links and `git diff --check`; its upstream packets RW03 and RW05 exist): define the home scene, toy interaction and saved look from the work item, with build slices added here. [Work item](rework/WORK-ITEMS.md#rw06-playable-home-and-customization) *Claimed 2026-10-20 by `claude/rw06-definition`.*
 - **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
 - **Rework RW05 slice 2, `CompanionRig` for the ten large-pet games** (slice 1 landed 2026-10-20; shell tier plus one filtered regression per moved game and its `fingerdemo` where the bot touches the pet): named parts, moods and body bounds per species with recorded misfits and a unit test; Splish Splash, Weather Wardrobe and Pet Says move first. [Packet](rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices)
