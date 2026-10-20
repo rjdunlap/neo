@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -97,6 +97,8 @@ class EggCatch implements Game {
   pairReady = false;
   private pairNodes: Graphics[] = [];
   private pairSuccess = false;
+  /** Route and sort levels: the egg sitting at the top until she taps the green arrow. No clock rolls it. */
+  held: { node: Graphics; egg: Egg } | null = null;
   /** Route levels: how many gates the egg on its way has gone by (2 when nothing is waiting to be set). */
   private passed = 2;
 
@@ -136,10 +138,11 @@ class EggCatch implements Game {
       this.touch.on('pointerup', up);
       this.touch.on('pointerupoutside', up);
     }
-    if (this.plan.mode === 'pair') {
-      this.pairBoards = pairBoards(ctx.rng, this.plan.eggs);
+    if (this.plan.mode === 'pair') this.pairBoards = pairBoards(ctx.rng, this.plan.eggs);
+    if (this.arrowed) {
       this.goButton.circle(0, 0, 55).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line }).poly([-14, -25, 25, 0, -14, 25]).fill(0xffffff);
-      onTap(this.goButton, () => void this.sendPair());
+      this.goButton.alpha = 0.4;
+      onTap(this.goButton, () => void (this.plan.mode === 'pair' ? this.sendPair() : this.send()));
       ctx.stage.addChild(this.goButton);
     }
     if (routing) {
@@ -158,6 +161,11 @@ class EggCatch implements Game {
 
   get routing() {
     return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'predict' || this.plan.mode === 'pair';
+  }
+
+  /** Levels where the egg (or pair) waits for the green arrow. */
+  get arrowed() {
+    return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'pair';
   }
 
   /** Predict levels: the gates for each egg, and the egg waiting at the top for a guess. */
@@ -188,11 +196,11 @@ class EggCatch implements Game {
       this.hens[0].position.set(v.w / 2, 150);
       s.roundRect(v.w / 2 - 110, 150, 220, 24, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
       this.drawChutes();
+      if (this.arrowed) this.goButton.position.set(v.w - 95, 95);
       if (this.plan.mode === 'pair') {
         const o = this.geo();
         const b = this.pairBoards[this.routed]?.whiteBranch ?? 2;
         this.hens[1].position.set(o.gate[b].x + (b === 1 ? -100 : 100), 275);
-        this.goButton.position.set(v.w - 95, 95);
         if (this.pairReady) this.placePair();
       }
     } else {
@@ -213,6 +221,8 @@ class EggCatch implements Game {
     this.clock += dt;
     if (this.finished || this.routing) {
       this.drawGates();
+      // After two misses, the arrow pulses once the gates are set: now it can go.
+      if (this.arrowed) this.goButton.scale.set(this.hinting && this.setToGo() ? 1 + 0.1 * Math.sin(this.clock * 7) : 1);
       return;
     }
     // The basket glides toward the finger (or, at lap, toward the next egg).
@@ -267,7 +277,7 @@ class EggCatch implements Game {
 
   /**
    * The ghost finger on the how-to card: tap a hen (lap), touch under the next brown egg and let the basket slide there (it
-   * leaves white eggs alone), flip the gates the egg still has to pass, or tap the bin the set gates lead to.
+   * leaves white eggs alone), flip the gates the waiting egg needs and then tap the green arrow, or tap the bin the set gates lead to.
    */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
@@ -282,6 +292,10 @@ class EggCatch implements Game {
       if (!this.pairReady || this.rolling) return null;
       const gate = pairGateToFlip(this.pairBoards[this.routed], this.gates);
       return { tap: { on: gate === null ? this.goButton : this.gateHits[gate] }, pause: 0.25 };
+    }
+    if (this.held) {
+      const touch = routeTouch(this.gates, exitWanted(mode, this.held.egg.shell, this.target));
+      return { tap: { on: touch === 'go' ? this.goButton : this.gateHits[touch] }, pause: 0.25 };
     }
     if (mode === 'predict') return this.waiting ? { tap: { on: this.exits.children[exitFor(this.gates)], y: -20 } } : null;
     if (this.passed >= 2) return null;
@@ -501,8 +515,24 @@ class EggCatch implements Game {
       this.waiting = { node, egg };
       return;
     }
-    // A moment to set the gates before it rolls.
-    await this.ctx.tw.wait(this.routed === 0 ? 3.5 : 2);
+    // It waits at the top while she sets the gates, until she taps the green arrow.
+    this.held = { node, egg };
+    this.goButton.alpha = 1;
+  }
+
+  /** Whether the waiting egg (or pair) would arrive where it should with the gates as they are. */
+  private setToGo() {
+    if (this.plan.mode === 'pair') return this.pairReady && !this.rolling && pairGateToFlip(this.pairBoards[this.routed], this.gates) === null;
+    return !!this.held && gateToFlip(this.gates, exitWanted(this.plan.mode, this.held.egg.shell, this.target), 0) === null;
+  }
+
+  /** The green arrow at levels 4–5: the waiting egg rolls. Gates can still be flipped ahead of it as it goes. */
+  private async send() {
+    if (!this.held || this.finished) return;
+    const { node, egg } = this.held;
+    this.held = null;
+    this.goButton.alpha = 0.4;
+    sfx.pop(6);
     await this.roll(node, egg);
   }
 

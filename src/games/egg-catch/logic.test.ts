@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir } from './logic';
+import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -38,6 +38,24 @@ describe('Egg Catch', () => {
     for (let seed = 1; seed <= 200; seed++) {
       const gs = predictGates(new Rng(seed), 8);
       gs.slice(1).forEach((g, i) => expect(exitFor(g)).not.toBe(exitFor(gs[i])));
+    }
+  });
+
+  it('rolls a waiting egg only once its gates are set: the ghost finger flips at most two gates, then taps the green arrow', () => {
+    for (const exit of [0, 1, 2, 3]) {
+      for (let bits = 0; bits < 8; bits++) {
+        const g = [!!(bits & 1), !!(bits & 2), !!(bits & 4)];
+        let taps = 0;
+        for (let touch = routeTouch(g, exit); touch !== 'go'; touch = routeTouch(g, exit)) {
+          expect(++taps).toBeLessThanOrEqual(2);
+          g[touch] = !g[touch];
+        }
+        expect(exitFor(g as [boolean, boolean, boolean])).toBe(exit);
+      }
+      // Already set: straight to the arrow, with nothing flipped.
+      const set = [false, false, false];
+      for (const { gate, right } of gatesFor(exit)) set[gate] = right;
+      expect(routeTouch(set, exit)).toBe('go');
     }
   });
 

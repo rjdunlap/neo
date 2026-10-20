@@ -4336,7 +4336,7 @@ async function batch() {
   }
 
   // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 5 && (!only || only === 'eggs'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 5) && (!only || only === 'eggs'); level++) {
     await launch('egg-catch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -4372,21 +4372,25 @@ async function batch() {
         touch('pointerup', 10, y);
         return;
       }
-      // Routing: two eggs sent the wrong way (gates set away from the target), then the right way.
+      // Routing: two eggs sent the wrong way (gates set away from the target), then the right way. Each egg waits for the arrow.
       const { gatesFor } = await import('/src/games/egg-catch/logic.ts');
       const t0 = performance.now();
       let lastRouted = -1;
       while (!g.finished && performance.now() - t0 < 120000) {
         if (g.routed !== lastRouted) {
           lastRouted = g.routed;
-          // The next egg (and its basket) appears 0.8 s after the last one lands.
-          await kit.sleep(1300);
+          await kit.until(() => g.held || g.finished, 8000);
+          if (g.finished) break;
+          // No clock: after a long look the egg is still waiting at the top.
+          if (g.routed === 0) { await kit.sleep(4500); if (!g.held || g.passed !== 0) throw new Error('egg rolled without the arrow'); }
           const egg = g.eggs[g.routed % g.eggs.length];
           const exit = g.plan.mode === 'sort' && egg.shell === 'white' ? g.target.nest : g.target.basket;
           const want = [...g.gates];
           for (const { gate, right } of gatesFor(exit)) want[gate] = right;
           if (g.misses < 2 && g.hints === 0) want[0] = !want[0];
           for (let i = 0; i < 3; i++) if (g.gates[i] !== want[i]) { kit.tapOn(g.gateHits[i]); await kit.sleep(300); }
+          kit.tapOn(g.goButton);
+          await kit.until(() => !g.held, 3000);
         }
         await kit.sleep(100);
       }

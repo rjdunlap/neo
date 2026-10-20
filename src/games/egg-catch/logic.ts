@@ -106,6 +106,14 @@ export function gateToFlip(gates: readonly boolean[], exit: number, passed: numb
   return null;
 }
 
+/**
+ * Routing at levels 4–5, where the egg waits at the top until the green arrow: the ghost finger's next touch. A gate still
+ * set the wrong way for `exit`, else 'go' once every gate the egg will meet sends it there. The arrow never comes first.
+ */
+export function routeTouch(gates: readonly boolean[], exit: number): number | 'go' {
+  return gateToFlip(gates, exit, 0) ?? 'go';
+}
+
 /** An egg in the air, as a child watching sees it: the lane it will land in, and its shell. */
 export interface EggInAir {
   x: number;
