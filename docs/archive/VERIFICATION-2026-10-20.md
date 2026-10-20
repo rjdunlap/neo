@@ -141,3 +141,10 @@
 - Ran `npm run typecheck` (clean), `npm test` (174 files, 1629 tests pass; the home-layout test checks 1-11 cards in five views) and `npm run build` (passed).
 - Root probe (one-off `test-results/mm-probe.mjs`, http://localhost:5504, landscape and portrait): Explore lists five locations in two rows (3+2); the Music Mountain card opens the location (bear host, no resident); `go.game('jelly-drums', …)` into the game and leaving returns to the location; no page errors. Screenshots of the location in both orientations and of Explore reviewed.
 - Open: Explore holds every location now. Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.
+
+## 2026-10-20 — RW13 slice 7: Painted Canyon at the root
+
+- Built on `claude/rw13-painted-canyon` ([PR #645](https://github.com/rjdunlap/neo/pull/645), code `b36dc9ae`, base `70fcd86c`): `canyon.ts`, `canyon.test.ts`, one `LOCATIONS` entry (`treehouse`, no resident: the land's cat host); `LocationScene.ts` also changed. `classic/` is unchanged.
+- Ran `npm run typecheck` (clean), `npm test` (174 of 175 files, 1631 of 1632 tests; the one failure, the RW02b illustrated tote "never tears the picture" in `cast.test.ts`, worstStretch 2.109, is a known load-sensitive flake that passed twice alone), the canyon test (3/3 after the last edit) and `npm run build` (passed).
+- Root probe (one-off `test-results/pc-probe.mjs`, http://localhost:5647, landscape and portrait): Explore lists six locations; the Painted Canyon card opens the location (cat host, no resident); `go.game('stamp-studio', …)` into the game and leaving returns to the location; no page errors. Screenshots of both orientations reviewed.
+- Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.
