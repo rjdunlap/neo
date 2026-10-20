@@ -88,3 +88,10 @@
 - Updated the Z7 slice line, recommendations row, IDEAS row, a WAITING row with eight defaulted decisions and a READY.md Queued line for the levels 1–3 build.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the needs/recovery review (decision 1, gates the first build's merge) and the device checks listed in the definition's Check tier.
+
+## 2026-10-19 — Seesaw Balance deep dive
+
+- Docs only: [deep dive](../deep-dives/seesaw-balance.md) on `claude/dive-seesaw-balance-finish` ([PR #619](https://github.com/rjdunlap/neo/pull/619)), resuming the claim in [PR #602](https://github.com/rjdunlap/neo/pull/602) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–10 on `4fd0dc8c`; gaps: the how-to says tap but every thing needs a drag, a silent hint after two overs at 3/5/6/7, one face per weight, no lap band, no couch.
+- References were read through search summaries, store pages and wiki pages, none played: Hasee Bounce, Learning Resources Primary Bucket Balance, Montessori baric tablets, PhET Equality Explorer Basics and Balancing Act, DragonBox Algebra 5+, SolveMe Mobiles, Guess the Weight of the Marrow, Siegler's balance-scale rule studies, CCSS K.MD.A.2.
+- Ladder: levels 12–17 (lap 12 *Wheee!* with the lap band, preschool 13 *Who is heavier?*, pre-K 14 *Line them up*, pre-K/school 15 *Guess the pumpkin*, school 16 *How much heavier?* and 17 *Which way will it tip?*), eight queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the notebook and the archived audit rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
