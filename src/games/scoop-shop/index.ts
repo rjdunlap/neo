@@ -319,7 +319,12 @@ class ScoopShop implements Game {
   /** Memory levels: tap the customer to see the order again (it counts as a hint). */
   private async peek() {
     const order = this.order;
-    if (!order || !this.hidden || this.busy) return;
+    if (!order || !this.hidden || this.busy) {
+      // The picture is still showing (or nobody is ordering): a giggle, never a hint.
+      this.customer?.poke();
+      sfx.giggle();
+      return;
+    }
     if (!this.peeked) this.hints++;
     this.peeked = true;
     this.hidden = false;
@@ -428,7 +433,9 @@ class ScoopShop implements Game {
     sfx.sparkle();
     const mouth = { x: critter.x + 70, y: critter.y - 70 };
     this.ctx.stage.addChild(cone);
-    tw.kill(cone); // a wobble from a last tap stops here
+    // A wobble from a last tap stops here, and the cone stops taking touches so a poke at the eating customer reaches them.
+    tw.kill(cone);
+    cone.eventMode = 'none';
     await tw.to(cone, { x: mouth.x, y: mouth.y + 40, rotation: -0.3 }, { duration: 0.6, ease: ease.inOutSine });
     for (const s of [...cone.scoops.children].reverse()) {
       sfx.munch();
