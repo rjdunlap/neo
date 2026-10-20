@@ -164,7 +164,7 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
 
 ## Build slices, in order
 
-1. **Support truth (claimed by `claude/song-maker-support-truth`).**
+1. **Support truth (built).**
    - Full-cell hit areas, with a `logic.ts` layout function and a test that every level's cell is at least 100 in 1024×768, portrait 1024×1365 and a wide phone view (gap 1). Later compose slices extend the same test to their controls (the check and the before button).
    - The level 1–2 how-to note becomes conditional ("if at least two jellies are lit, a tree house button…"), so it matches the keep rule (gap 2). The round still always finishes on its tap count: a guard that waited for two lit jellies could strand a lap child tapping one jelly on and off.
    - IDs and accounting are unchanged.
@@ -183,4 +183,6 @@ Each slice updates the how-to card (`LevelLine`s), GAMES.md, the README row, voi
 
 ## What was built in this session
 
-Nothing: research and ideation only. `node scripts/check-links.mjs` and `git diff --check` ran on the docs.
+Deep dive session: research and ideation only (`node scripts/check-links.mjs`, `git diff --check`).
+
+**Slice 1, support truth** ([PR #628](https://github.com/rjdunlap/neo/pull/628), commit 72d2b51f): each bead's hit area is its whole grid cell (levels 5–6 were about 91–92 units, now at least 101 in 1024×768); `songLayout(plan, view)` in `logic.ts` holds the placement that `resize` used, and a test asserts every level's cell is at least 100 and the grid stays within its margins in 1024×768, 1024×1365 portrait and 1660×768; the levels 1–2 how-to note now says a tree house button hangs the song if at least two jellies are lit at the end (`TUNE_MIN_NOTES = 2`). The round still always finishes on its tap count. IDs, levels and miss/hint accounting unchanged. Checks in [VERIFICATION](../VERIFICATION.md#2026-10-20--song-maker-support-truth-slice-1); the old-rule failing proof and a device touch check were not run.
