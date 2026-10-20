@@ -21,11 +21,12 @@ import {
   type ProfileIndex,
 } from './profiles';
 import { flipItem, moveItem, tidy } from '../content/room';
+import type { SpeciesId } from '../creatures/species';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
 import { isNew, toggleFavorite } from '../content/shelf';
-import { STORY_STEPS, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
-import { defaults, HISTORY_LENGTH, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
+import { STORY_STEPS, type PetColor, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
+import { companionOf, defaults, HISTORY_LENGTH, meetIn, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type Individual, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
 
 export interface RestoreResult {
   replaced: number;
@@ -474,12 +475,39 @@ export class Store {
     }
   }
 
-  /** Starts her progress over (name, settings and pet stay). `undo` brings it back. */
+  /** Starts her progress over (name, settings and her friends stay: a named friend is not progress). `undo` brings it back. */
   reset() {
     this.keep();
-    const { profile, settings, pet } = this.data;
-    this.data = { ...defaults(), profile, settings, pet };
+    const { profile, settings, creatures } = this.data;
+    this.data = { ...defaults(), profile, settings, creatures };
     this.save();
+  }
+
+  // ---- Her friends (RW05) ---------------------------------------------------------------------------------------
+
+  /** The friend who travels with her, or null before the first is met. */
+  get companion(): Individual | null {
+    return companionOf(this.data.creatures);
+  }
+
+  /**
+   * Meets a creature: the hatch (`start`), a development seed (`dev:<species>`), later an adventure. Idempotent on `metAt`,
+   * refused when the collection is full, and written at once rather than batched, so a reload never loses a friend.
+   */
+  meet(species: SpeciesId, name: string, color: PetColor, metAt: string): Individual | null {
+    const met = meetIn(this.data.creatures, species, name, color, metAt, this.makeId);
+    this.save();
+    this.flush();
+    return met;
+  }
+
+  /** Makes an owned friend the companion and writes at once. False (and nothing changes) for an id she does not own. */
+  choose(id: string): boolean {
+    if (!this.data.creatures.owned.some((o) => o.id === id)) return false;
+    this.data.creatures.companion = id;
+    this.save();
+    this.flush();
+    return true;
   }
 
   /** When the save that `undo` would bring back was set aside, or null if there is none. */

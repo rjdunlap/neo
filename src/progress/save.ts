@@ -4,6 +4,7 @@ import { clampSpot, starterItem, starterRoom } from '../content/room';
 import { cleanCreations, emptyCreations, type CreationsSave } from '../content/creations';
 import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
 import { cleanFavorites } from '../content/shelf';
+import { isSpecies, SPECIES, type SpeciesId } from '../creatures/species';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -59,11 +60,32 @@ export interface RoomSave {
   frame: { game: string; seed: number } | null;
 }
 
+/**
+ * One creature she owns (RW05): its own id, species, name and look. `metAt` is the token that brought it, so a replayed
+ * meeting can never bring a second one (`start` for the first friend, `dev:<species>` for a development seed).
+ */
+export interface Individual {
+  id: string;
+  species: SpeciesId;
+  name: string;
+  look: { color: PetColor };
+  metAt: string;
+}
+
+/** The friends she has met, in the order met, and which one travels with her: null exactly when she has met none. */
+export interface CreaturesSave {
+  owned: Individual[];
+  companion: string | null;
+}
+
+export const MAX_CREATURES = 24;
+export const CREATURE_ID = /^[a-z0-9]{4,32}$/;
+
 /** Everything the app remembers, as one versioned record so a backup is a single file. */
 export interface SaveData {
-  version: 2;
+  version: 3;
   profile: { name: string; band: Band };
-  pet: { name: string; color: PetColor; hatched: boolean };
+  creatures: CreaturesSave;
   /** Highest band celebrated on the map; null before the first visit. */
   world: { band: Band | null };
   /**
@@ -89,9 +111,9 @@ const BAND_IDS: Band[] = ['lap', 'toddler', 'preschool', 'prek', 'school', 'grow
 
 export function defaults(): SaveData {
   return {
-    version: 2,
+    version: 3,
     profile: { name: '', band: 'lap' },
-    pet: { name: 'Pip', color: 'teal', hatched: false },
+    creatures: { owned: [], companion: null },
     world: { band: null },
     settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 0, coplayHints: true, howToCards: true },
     games: {},
@@ -141,6 +163,52 @@ function room(raw: unknown): RoomSave {
   return { items, frame };
 }
 
+/**
+ * Rebuilds the collection from a whitelist: an unknown species or a malformed id drops that creature, a duplicate id keeps
+ * the first, and the list keeps the earliest 24. An older save has no `creatures` block, so it owns no creature and meets its
+ * first friend again at the egg: the retired `pet` field is not read (the development-save exception, RW05).
+ */
+export function cleanCreatures(raw: unknown): CreaturesSave {
+  const r = isObj(raw) ? raw : {};
+  const owned: Individual[] = [];
+  for (const c of Array.isArray(r.owned) ? r.owned.filter(isObj) : []) {
+    if (owned.length >= MAX_CREATURES) break;
+    if (!isSpecies(c.species) || typeof c.id !== 'string' || !CREATURE_ID.test(c.id) || owned.some((o) => o.id === c.id)) continue;
+    const sp = SPECIES[c.species];
+    const look = isObj(c.look) ? c.look : {};
+    owned.push({
+      id: c.id,
+      species: c.species,
+      name: str(c.name, '').trim().slice(0, 40) || sp.names[0],
+      look: { color: PET_COLORS.find((p) => p === look.color) ?? sp.color },
+      metAt: str(c.metAt, '').slice(0, 60),
+    });
+  }
+  const companion = owned.find((o) => o.id === r.companion)?.id ?? owned[0]?.id ?? null;
+  return { owned, companion };
+}
+
+/**
+ * The one way a creature comes to exist. Idempotent on `metAt`: a token already met returns that creature and changes
+ * nothing. Null (and nothing changes) once the collection is full. The first friend met becomes the companion.
+ */
+export function meetIn(c: CreaturesSave, species: SpeciesId, name: string, color: PetColor, metAt: string, newId: () => string): Individual | null {
+  const token = metAt.slice(0, 60);
+  const known = c.owned.find((o) => o.metAt === token);
+  if (known) return known;
+  if (c.owned.length >= MAX_CREATURES) return null;
+  let id = newId();
+  while (c.owned.some((o) => o.id === id)) id = newId();
+  const sp = SPECIES[species];
+  const met: Individual = { id, species, name: name.trim().slice(0, 40) || sp.names[0], look: { color: PET_COLORS.includes(color) ? color : sp.color }, metAt: token };
+  c.owned.push(met);
+  if (c.companion === null) c.companion = id;
+  return met;
+}
+
+/** The friend who travels with her, or null before the first is met. */
+export const companionOf = (c: CreaturesSave): Individual | null => c.owned.find((o) => o.id === c.companion) ?? null;
+
 /** Accepts anything (old saves, hand-edited backups, garbage) and returns a valid save. */
 export function migrate(raw: unknown): SaveData {
   const d = defaults();
@@ -149,7 +217,6 @@ export function migrate(raw: unknown): SaveData {
   const profile = isObj(raw.profile) ? raw.profile : {};
   const band = BAND_IDS.find((b) => b === profile.band) ?? d.profile.band;
   const settings = isObj(raw.settings) ? raw.settings : {};
-  const pet = isObj(raw.pet) ? raw.pet : {};
   const world = isObj(raw.world) ? raw.world : {};
   const stories = isObj(raw.stories) ? raw.stories : {};
 
@@ -184,13 +251,9 @@ export function migrate(raw: unknown): SaveData {
     : [];
 
   return {
-    version: 2,
+    version: 3,
     profile: { name: str(profile.name, d.profile.name).slice(0, 40), band },
-    pet: {
-      name: str(pet.name, 'Pip').trim().slice(0, 40) || 'Pip',
-      color: PET_COLORS.find((c) => c === pet.color) ?? 'teal',
-      hatched: bool(pet.hatched, false),
-    },
+    creatures: cleanCreatures(raw.creatures),
     // Older saves also listed opened regions; the age trail has no closed places, so that is dropped.
     world: {
       band: BAND_IDS.find((b) => b === world.band) ?? null,

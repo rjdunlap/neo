@@ -49,7 +49,7 @@ export class MapScene extends Scene {
     onOpen: () => {
       if (this.leaving) return;
       voice.stop();
-      openParentPanel(() => (store.data.pet.hatched ? this.app.go.hub() : this.app.go.hatch()), () => this.app.go.start());
+      openParentPanel(() => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()), () => this.app.go.start());
     },
     onShort: () => void voice.say('parent.ask'),
   });

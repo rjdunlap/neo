@@ -234,7 +234,7 @@ export class App {
         // The scene stays frozen behind the page; closing it goes to the island map, which shows any change at once.
         this.closeSheet();
         voice.stop();
-        openParentPanel(() => (store.data.pet.hatched ? this.go.hub() : this.go.hatch()), () => this.go.start());
+        openParentPanel(() => (store.data.creatures.owned.length > 0 ? this.go.hub() : this.go.hatch()), () => this.go.start());
       },
     });
   }
