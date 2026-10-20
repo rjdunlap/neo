@@ -1,6 +1,7 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterSpec } from '../../art/critter';
-import { RAINBOW, swatch, ink } from '../../art/palette';
+import type { CompanionRig } from '../../creatures/companion';
+import { RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { musicNote } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -15,7 +16,7 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { BODY_TARGETS, danceSeconds, makeTurns, MOVE_CUES, MOVE_WORDS, shouldNudge, stickerRecipe, planFor, type Move, type SaysPlan, type Turn } from './logic';
+import { danceSeconds, saysFrame, type SaysFrame, makeTurns, MOVE_CUES, MOVE_WORDS, shouldNudge, stickerRecipe, planFor, type Move, type SaysPlan, type Turn } from './logic';
 
 const LEVELS: BandLevels = {
   // Level 13, Pat the pet, is the easiest, so lap plays it first, then 1 and 2 (see `order`).
@@ -27,33 +28,43 @@ const LEVELS: BandLevels = {
 
 /** The freeze dance's tune, in pentatonic steps. */
 const DANCE = [5, 7, 9, 7, 5, 4, 5, 7, 9, 10, 9, 7];
-const REST = { left: { x: -128, y: -95 }, right: { x: 128, y: -95 } };
+/** The pip's mittens at rest, for the hub icon and the stickers, which keep the original drawing. */
+const PIP_REST = { left: { x: -128, y: -95 }, right: { x: 128, y: -95 } };
+
+const mitten = (sw: { fill: number; line: number }) => new Graphics().circle(0, 0, 27).fill(sw.fill).stroke({ width: 6, color: sw.line }).circle(-9, -10, 7).fill({ color: 0xffffff, alpha: 0.35 });
 
 /** The big pet with two mitten hands riding on its body, so they hop and squash with it. */
-class Mover extends Container {
-  readonly pet: Critter;
+class Mover<P extends Container & { attach(child: Container): void }> extends Container {
   readonly left: Graphics;
   readonly right: Graphics;
 
-  constructor(spec: CritterSpec) {
+  constructor(
+    readonly pet: P,
+    sw: { fill: number; line: number },
+    rest: { left: { x: number; y: number }; right: { x: number; y: number } },
+  ) {
     super();
-    this.pet = new Critter(spec);
-    const sw = this.pet.sw;
-    const hand = () => new Graphics().circle(0, 0, 27).fill(sw.fill).stroke({ width: 6, color: sw.line }).circle(-9, -10, 7).fill({ color: 0xffffff, alpha: 0.35 });
-    this.left = hand();
-    this.right = hand();
-    this.left.position.copyFrom(REST.left);
-    this.right.position.copyFrom(REST.right);
+    this.left = mitten(sw);
+    this.right = mitten(sw);
+    this.left.position.copyFrom(rest.left);
+    this.right.position.copyFrom(rest.right);
     this.pet.attach(this.left);
     this.pet.attach(this.right);
     this.addChild(this.pet);
   }
 }
 
+const pipMover = (spec: CritterSpec) => {
+  const pet = new Critter(spec);
+  return new Mover(pet, pet.sw, PIP_REST);
+};
+
 class PetSays implements Game {
   readonly plan: SaysPlan;
   readonly turns: Turn[];
-  readonly mover: Mover;
+  readonly mover: Mover<CompanionRig>;
+  /** Where the mittens go on this friend. */
+  readonly frame: SaysFrame;
   readonly next = new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 62, () => void this.advance());
   index = -1;
   misses = 0;
@@ -78,12 +89,11 @@ class PetSays implements Game {
     this.plan = planFor(ctx.level);
     this.turns = makeTurns(this.plan, ctx.rng);
     this.backdrop = ctx.track(new Backdrop({ sky: [swatch.blue.light, 0xfff4e3], hills: [swatch.green.light, 0xc8ecb0, 0xddf2cf], horizon: 0.62, clouds: 3, sun: true, seed: 33 }, ctx.view));
-    this.mover = new Mover(ctx.petSpec);
-    // Pip has no nose in its usual drawing. Make the named part visible here,
-    // without changing the saved sticker or any other game's companion.
-    this.mover.pet.attach(new Graphics().ellipse(0, -106, 12, 9).fill(ink));
-    ctx.track(this.mover.pet);
-    this.mover.pet.hitArea = new Circle(0, -130, 170);
+    const star = ctx.companion();
+    this.frame = saysFrame((p) => star.partPoints(p), star.bounds());
+    this.mover = new Mover(star, swatch[star.color as ColorName], this.frame.rest);
+    ctx.track(star);
+    star.hitArea = star.touchArea(40);
     // A pat brings the next move, so a pat just after a move ends must not be swallowed.
     onTap(this.mover.pet, () => void this.again(), { cooldown: this.plan.mode === 'pat' ? 250 : 500 });
     this.next.visible = false;
@@ -140,7 +150,7 @@ class PetSays implements Game {
 
   /** The ghost finger on the how-to card: the grown-up's green arrow, tapped once the pet has finished its move (or its dance and freeze). */
   autotouch(): TouchIntent | null {
-    if (this.plan.mode === 'pat') return this.busy || this.finished ? null : { tap: { on: this.mover.pet, y: -130 } };
+    if (this.plan.mode === 'pat') return this.busy || this.finished ? null : { tap: { on: this.mover.pet, x: this.mover.pet.touch.x, y: this.mover.pet.touch.y } };
     return this.busy || this.finished || this.dancing || !this.next.visible ? null : { tap: { on: this.next } };
   }
 
@@ -257,8 +267,8 @@ class PetSays implements Game {
     const { left, right } = this.mover;
     this.ctx.tw.kill(left);
     this.ctx.tw.kill(right);
-    left.position.set(-150, -200);
-    right.position.set(140, -60);
+    left.position.copyFrom(this.frame.freeze.left);
+    right.position.copyFrom(this.frame.freeze.right);
     this.mover.pet.setMood('surprised');
     this.mover.pet.alive = false;
     sfx.squeak(9);
@@ -284,7 +294,7 @@ class PetSays implements Game {
   }
 
   private rest() {
-    return Promise.all([this.hands(REST.left, REST.right, 0.22), this.ctx.tw.to(this.mover.scale, { y: Math.abs(this.mover.scale.x) }, { duration: 0.2 })]);
+    return Promise.all([this.hands(this.frame.rest.left, this.frame.rest.right, 0.22), this.ctx.tw.to(this.mover.scale, { y: Math.abs(this.mover.scale.x) }, { duration: 0.2 })]);
   }
 
   private stretch(k: number) {
@@ -294,21 +304,22 @@ class PetSays implements Game {
   async perform(move: Move) {
     const tw = this.ctx.tw;
     const pet = this.mover.pet;
+    const f = this.frame;
     pet.setMood('happy', 2);
     switch (move) {
       case 'clap':
         for (let k = 0; k < 3; k++) {
-          await this.hands({ x: -20, y: -112 }, { x: 20, y: -112 }, 0.13);
+          await this.hands(f.clap.left, f.clap.right, 0.13);
           sfx.knock();
-          await this.hands(REST.left, REST.right, 0.13);
+          await this.hands(this.frame.rest.left, this.frame.rest.right, 0.13);
         }
         break;
       case 'wave':
-        await this.hands(REST.left, { x: 150, y: -210 });
+        await this.hands(f.rest.left, f.wave);
         for (let k = 0; k < 3; k++) {
           sfx.chirp(10 + k);
-          await tw.to(this.mover.right, { x: 180 }, { duration: 0.15 });
-          await tw.to(this.mover.right, { x: 130 }, { duration: 0.15 });
+          await tw.to(this.mover.right, { x: f.wave.x + 30 }, { duration: 0.15 });
+          await tw.to(this.mover.right, { x: f.wave.x - 20 }, { duration: 0.15 });
         }
         break;
       case 'stomp':
@@ -340,42 +351,43 @@ class PetSays implements Game {
         break;
       case 'up':
         sfx.sparkle();
-        await Promise.all([this.hands({ x: -70, y: -300 }, { x: 70, y: -300 }, 0.25), this.stretch(1.12)]);
+        await Promise.all([this.hands(f.up.left, f.up.right, 0.25), this.stretch(1.12)]);
         await tw.wait(0.7);
         break;
       case 'down':
         sfx.sigh();
-        await Promise.all([this.hands({ x: -140, y: -30 }, { x: 140, y: -30 }, 0.25), this.stretch(0.78)]);
+        await Promise.all([this.hands(f.down.left, f.down.right, 0.25), this.stretch(0.78)]);
         await tw.wait(0.7);
         break;
       case 'nose':
-        await this.hands(BODY_TARGETS.nose.left, BODY_TARGETS.nose.right, 0.25);
+        await this.hands(f.targets.nose.left, f.targets.nose.right, 0.25);
         sfx.squeak(10);
         await tw.wait(0.8);
         break;
       case 'tummy':
-        await this.hands(BODY_TARGETS.tummy.left, BODY_TARGETS.tummy.right, 0.22);
+        await this.hands(f.targets.tummy.left, f.targets.tummy.right, 0.22);
         for (let k = 0; k < 3; k++) {
           sfx.drum();
-          await this.hands({ x: -38, y: -65 }, { x: 38, y: -65 }, 0.1);
-          await this.hands({ x: -38, y: -50 }, { x: 38, y: -50 }, 0.1);
+          const { left: l, right: r } = f.targets.tummy;
+          await this.hands(l, r, 0.1);
+          await this.hands({ x: l.x, y: l.y + 15 }, { x: r.x, y: r.y + 15 }, 0.1);
         }
         break;
       case 'ears':
-        await this.hands(BODY_TARGETS.ears.left, BODY_TARGETS.ears.right, 0.25);
+        await this.hands(f.targets.ears.left, f.targets.ears.right, 0.25);
         sfx.squeak(8);
         await tw.wait(0.8);
         break;
       case 'head':
-        await this.hands(BODY_TARGETS.head.left, BODY_TARGETS.head.right, 0.25);
+        await this.hands(f.targets.head.left, f.targets.head.right, 0.25);
         for (let k = 0; k < 2; k++) {
           sfx.knock();
-          await tw.to(this.mover.right, { y: -250 }, { duration: 0.1 });
-          await tw.to(this.mover.right, { y: -264 }, { duration: 0.1 });
+          await tw.to(this.mover.right, { y: f.targets.head.right.y }, { duration: 0.1 });
+          await tw.to(this.mover.right, { y: f.targets.head.right.y - f.knock }, { duration: 0.1 });
         }
         break;
       case 'toes':
-        await Promise.all([this.hands(BODY_TARGETS.toes.left, BODY_TARGETS.toes.right, 0.3), this.stretch(0.8)]);
+        await Promise.all([this.hands(f.targets.toes.left, f.targets.toes.right, 0.3), this.stretch(0.8)]);
         sfx.squeak(6);
         await tw.wait(0.7);
         break;
@@ -398,7 +410,7 @@ class PetSays implements Game {
 class SaysIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const m = new Mover(CRITTERS.pip);
+    const m = pipMover(CRITTERS.pip);
     m.pet.alive = false;
     m.left.position.set(-70, -300);
     m.right.position.set(150, -210);
@@ -415,7 +427,7 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
   const { color, pose } = stickerRecipe(rng);
-  const m = new Mover({ ...CRITTERS.pip, color });
+  const m = pipMover({ ...CRITTERS.pip, color });
   m.pet.alive = false;
 
   if (pose === 0) { m.left.position.set(-70, -300); m.right.position.set(70, -300); }

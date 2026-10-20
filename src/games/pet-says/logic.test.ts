@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import stickerSeeds from './sticker-seeds.json';
 import { SCRIPT } from '../../content/voice-script';
-import { BODY_TARGETS, MOVE_CUES, shouldNudge, stickerRecipe, BODY, danceSeconds, ENTRY_PLANS, makeTurns, MOVE_WORDS, MOVES, PAT_MOVES, planFor, PLANS } from './logic';
+import { bodyBox, restPoints } from '../../creatures/companion';
+import { SPECIES_IDS } from '../../creatures/species';
+import { saysFrame, MOVE_CUES, shouldNudge, stickerRecipe, BODY, danceSeconds, ENTRY_PLANS, makeTurns, MOVE_WORDS, MOVES, PAT_MOVES, planFor, PLANS } from './logic';
 
 describe('Pet Says', () => {
   it('pins the original sticker color and pose draw for seeds 0–99', () => {
@@ -22,21 +24,24 @@ describe('Pet Says', () => {
     expect(new Set(Object.values(MOVE_CUES).map(c => c.line)).size).toBe(13);
   });
 
-  it('places mittens on the named pip shapes, including the game-only nose', () => {
-    const inEllipse = (p: { x: number; y: number }, x: number, y: number, rx: number, ry: number) =>
-      ((p.x - x) / rx) ** 2 + ((p.y - y) / ry) ** 2 <= 1;
-    // Shape measurements from Critter.buildEars/buildBody/buildFace, not the target table.
-    // A 27-radius mitten should fit inside the 34-radius round ear.
-    expect(inEllipse(BODY_TARGETS.nose.right, 0, -106, 12, 9)).toBe(true);
-    for (const side of ['left', 'right'] as const) {
-      const sign = side === 'left' ? -1 : 1;
-      expect(inEllipse(BODY_TARGETS.ears[side], sign * 72, -222, 34 - 27, 34 - 27)).toBe(true);
-      expect(inEllipse(BODY_TARGETS.tummy[side], 0, -65, 80, 54)).toBe(true);
-      expect(inEllipse(BODY_TARGETS.toes[side], sign * 40, 0, 30, 14)).toBe(true);
+  it('puts the mittens on each species’ own parts, and on the floor where it has no feet', () => {
+    for (const s of SPECIES_IDS) {
+      const box = bodyBox(s);
+      const f = saysFrame((p) => restPoints(s, p), box);
+      const near = (a: { x: number; y: number }, b: { x: number; y: number }, r: number) => Math.hypot(a.x - b.x, a.y - b.y) <= r;
+      expect(f.targets.nose.right, s).toEqual(restPoints(s, 'nose')[0]);
+      for (const ear of restPoints(s, 'ears')) expect(near(f.targets.ears.left, ear, 15) || near(f.targets.ears.right, ear, 15), s).toBe(true);
+      for (const side of ['left', 'right'] as const) expect(near(f.targets.tummy[side], restPoints(s, 'tummy')[0], 40), s).toBe(true);
+      const feet = restPoints(s, 'feet');
+      if (feet.length) for (const foot of feet) expect(near(f.targets.toes.left, foot, 1) || near(f.targets.toes.right, foot, 1), s).toBe(true);
+      else expect(f.targets.toes.left.y, s).toBe(Math.min(0, box.y + box.height));
+      // The head pat lands just above the head; at rest and reaching up the mittens are clear of the body's sides or top.
+      expect(f.targets.head.right.y, s).toBeLessThan(restPoints(s, 'head')[0].y);
+      expect(f.rest.left.x, s).toBeLessThan(box.x);
+      expect(f.rest.right.x, s).toBeGreaterThan(box.x + box.width);
+      expect(f.up.left.y, s).toBeLessThan(box.y);
+      for (const pair of [f.rest, f.clap, f.up, f.down, f.freeze, ...Object.values(f.targets)]) for (const p of [pair.left, pair.right]) expect(Number.isFinite(p.x) && Number.isFinite(p.y), s).toBe(true);
     }
-    expect(BODY_TARGETS.head.right.x).toBe(0);
-    expect(BODY_TARGETS.head.right.y).toBeGreaterThanOrEqual(-264);
-    expect(BODY_TARGETS.head.right.y).toBeLessThan(-220);
   });
 
   it('nudges only after a quiet wait, never during a move or after completion', () => {

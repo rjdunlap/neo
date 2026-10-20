@@ -32,14 +32,65 @@ export const MOVE_CUES = {
 
 export const MOVE_WORDS = Object.fromEntries(Object.entries(MOVE_CUES).map(([id, cue]) => [id, cue.word])) as Record<Move, string>;
 
-/** Mitten centers in pip body coordinates; the nose is drawn only on the playing pet. */
-export const BODY_TARGETS = {
-  nose: { left: { x: -128, y: -95 }, right: { x: 0, y: -106 } },
-  tummy: { left: { x: -38, y: -65 }, right: { x: 38, y: -65 } },
-  ears: { left: { x: -72, y: -222 }, right: { x: 72, y: -222 } },
-  head: { left: { x: -128, y: -95 }, right: { x: 0, y: -250 } },
-  toes: { left: { x: -40, y: 0 }, right: { x: 40, y: 0 } },
-} as const;
+interface Pt {
+  x: number;
+  y: number;
+}
+type Pair = { left: Pt; right: Pt };
+
+/**
+ * Where the mittens go on this friend (RW05 slice 2), in the companion's units: built from its named parts and its body
+ * box, so the sprout, the river and the glider each touch their own nose. The mittens float beside the body at rest
+ * (the glider has no hands, and the river walks on its paws); a part a species lacks (the glider's feet) falls back to
+ * the floor under it.
+ */
+export interface SaysFrame {
+  rest: Pair;
+  targets: Record<'nose' | 'tummy' | 'ears' | 'head' | 'toes', Pair>;
+  clap: Pair;
+  up: Pair;
+  down: Pair;
+  /** Where the right mitten waves, and how far it swings. */
+  wave: Pt;
+  freeze: Pair;
+  /** How high the head pat knocks, above its target. */
+  knock: number;
+}
+
+export function saysFrame(at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet') => readonly Pt[], box: { x: number; y: number; width: number; height: number }): SaysFrame {
+  const cx = box.x + box.width / 2;
+  const right = box.x + box.width;
+  const floor = Math.min(0, box.y + box.height);
+  const y = box.y + box.height * 0.62;
+  const rest = { left: { x: box.x - 10, y }, right: { x: right + 10, y } };
+  const one = (p: 'nose' | 'tummy' | 'head') => at(p)[0] ?? { x: cx, y };
+  const sorted = (list: readonly Pt[]) => [...list].sort((a, b) => a.x - b.x);
+  const pair = (list: readonly Pt[], spread: number, fallback: Pt): Pair => {
+    const s = sorted(list);
+    if (s.length >= 2) return { left: s[0], right: s[s.length - 1] };
+    const p = s[0] ?? fallback;
+    return { left: { x: p.x - spread, y: p.y }, right: { x: p.x + spread, y: p.y } };
+  };
+  const nose = one('nose');
+  const head = one('head');
+  const tummy = one('tummy');
+  return {
+    rest,
+    targets: {
+      nose: { left: rest.left, right: nose },
+      tummy: { left: { x: tummy.x - 38, y: tummy.y }, right: { x: tummy.x + 38, y: tummy.y } },
+      ears: pair(at('ears'), 14, head),
+      head: { left: rest.left, right: { x: head.x, y: head.y - 36 } },
+      toes: pair(at('feet'), 40, { x: cx, y: floor }),
+    },
+    clap: { left: { x: cx - 20, y: y - 17 }, right: { x: cx + 20, y: y - 17 } },
+    up: { left: { x: cx - 70, y: box.y - 50 }, right: { x: cx + 70, y: box.y - 50 } },
+    down: { left: { x: box.x - 22, y: floor - 30 }, right: { x: right + 22, y: floor - 30 } },
+    wave: { x: right + 22, y: box.y + 40 },
+    freeze: { left: { x: box.x - 32, y: box.y + 50 }, right: { x: right + 12, y: floor - 60 } },
+    knock: 14,
+  };
+}
 
 /** Waiting is co-play, never a missed answer or automatic advance. */
 export const shouldNudge = (idle: number, busy: boolean, finished: boolean) => idle >= 10 && !busy && !finished;
