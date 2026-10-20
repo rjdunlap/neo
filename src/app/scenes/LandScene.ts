@@ -2,7 +2,7 @@ import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { makeHost, Signpost } from '../../art/lands';
 import { swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
-import { Backdrop } from '../../art/scenery';
+import { Backdrop, type BackdropStyle } from '../../art/scenery';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
@@ -60,6 +60,9 @@ export interface LandOptions {
   home?: () => void;
   /** Scenery drawn over the backdrop and under the field on every resize, kept clear of the field's touch areas. */
   scenery?: (g: Graphics, layout: LandLayout, view: View, ground: number) => void;
+  /** A backdrop in place of the land's own (a location's night sky), and the heading's colour over it. */
+  backdrop?: BackdropStyle;
+  headingColor?: number;
   /** Whether tapping the host says the land's line before its suggestion. */
   hostSaysLine?: boolean;
 }
@@ -127,7 +130,8 @@ export class LandScene extends Scene {
   init() {
     lastLandId = this.id;
     this.heading.text = this.land.name;
-    this.backdrop = this.track(new Backdrop(this.land.backdrop, this.view));
+    if (this.options.headingColor !== undefined) this.heading.style.fill = this.options.headingColor;
+    this.backdrop = this.track(new Backdrop(this.options.backdrop ?? this.land.backdrop, this.view));
     this.glow.eventMode = 'none';
     this.content.addChild(this.backdrop);
     if (this.scenery) {
