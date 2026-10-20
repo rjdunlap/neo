@@ -148,3 +148,17 @@
 - Ran `npm run typecheck` (clean), `npm test` (174 of 175 files, 1631 of 1632 tests; the one failure, the RW02b illustrated tote "never tears the picture" in `cast.test.ts`, worstStretch 2.109, is a known load-sensitive flake that passed twice alone), the canyon test (3/3 after the last edit) and `npm run build` (passed).
 - Root probe (one-off `test-results/pc-probe.mjs`, http://localhost:5647, landscape and portrait): Explore lists six locations; the Painted Canyon card opens the location (cat host, no resident); `go.game('stamp-studio', …)` into the game and leaving returns to the location; no page errors. Screenshots of both orientations reviewed.
 - Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.
+
+## 2026-10-20 — RW13 slice 8: Cozy Village at the root
+
+- Built on `claude/rw13-cozy-village` ([PR #646](https://github.com/rjdunlap/neo/pull/646), code `c75e4687`, base `da6f32ee`): `village.ts`, `village.test.ts`, one `LOCATIONS` entry (`cozy-village`, no resident: the land's squirrel host); `LocationScene.ts` also changed. `classic/` is unchanged.
+- Ran `npm run typecheck` (clean), `npm test` (176 files, 1635 tests; one intermittent failure in unchanged creature-art code, "pins the face and body, moves the part's tip, and never tears the picture through idle and repeated taps" from `illustrated-suite.ts`, passed on 2 of 3 reruns of `src/art/creatures`: a known flake on unchanged code) and `npm run build` (passed).
+- Root probe (one-off `test-results/cv-probe.mjs`, http://localhost:5837, landscape and portrait): Explore lists seven locations; the Cozy Village card opens the location (squirrel host, no resident); `go.game('scoop-shop', …)` into the game and leaving returns to the location; no page errors. Screenshots of both orientations reviewed.
+- Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.
+
+## 2026-10-20 — RW13 slice 9: Story Grove at the root
+
+- Built on `claude/rw13-story-grove` ([PR #647](https://github.com/rjdunlap/neo/pull/647)): `grove.ts`, `grove.test.ts`, one `LOCATIONS` entry (`story-grove`, no resident: the land's purple bunny host), and the optional `LandOptions.backdrop`/`headingColor` seam in `LandScene.ts` and `LocationScene.ts` (night sky at the root only; `classic/` keeps its day backdrop).
+- Ran `npm run typecheck` (clean), `npm test` (1638 of 1639; the known RW02b tote flake in `src/art/creatures/cast.test.ts`, unchanged code, passed alone 44/44; a `peaks.test.ts` failure in one `src/app/scenes/` run passed alone and in the full run) and `npm run build` (passed; shared scene files changed).
+- Root probe (one-off `test-results/sg-probe.mjs`, http://localhost:5743, landscape and portrait): Explore lists eight locations; the Story Grove card opens the location (bunny host, no resident); `go.game('owl-walk', …)` with the land origin and leaving returns to the location; no page errors. Screenshots of both orientations reviewed (heading reads, spots and host clear).
+- Not run: `world`, the offline check, an iPad look, a child's reaction.

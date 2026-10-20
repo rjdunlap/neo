@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-20 — RW05 slice 2 in part: CompanionRig and eight large-pet games
+
+- Built on `claude/rw05-companion-rig` (PR #642, rebased on origin/main e87adad1): `CompanionRig`, `ctx.companion()`, `parts.ts` and its test; Pet Says, Stop and Go, Treasure Map, Bounce Back, Mail Carrier, Bouncy Launch, Fluffy Salon and Feelings Faces moved. Splish Splash and Weather Wardrobe wait on the misfit decision.
+- Ran `npm run typecheck` and `npm run build` (pass); `npm test` (185 files, 1786 tests): one failure, the `parts.test` riding-containers check, because the rig's clock starts at a random phase and a point can rest just over 8 units off; tolerance widened to 12, then 8 consecutive runs passed.
+- Browser (Vite http://localhost:5564): `BROWSER_SUITE=batch BATCH_ONLY=salon` passes levels 1-2; level 3 fails `salon 3 score` (one extra hint) on the branch twice, and on origin/main (http://localhost:5989) it times out instead, so it predates this branch. Earlier runs on the PR (woods go/map/mailmap, batch bounce, arcade launch, `fingerdemo` for pet-says, bouncy-launch, fluffy-salon, feelings-faces, `third`, `feelings8`, `couchgames` bounce-back/treasure-map/bouncy-launch, `shortlist` says) are reused: main moved since only in one line of `companion.ts` and unrelated games.
+- Open: Fluffy Salon's ask-mode quiet hint (`sinceProgress > 15`, `index.ts` ~line 262) resets only at a new request, not on strokes, so a long steady styling pass earns a hint; possibly a real bug for a slow child, not fixed here. Not run: `world`, the offline check, an iPad.
+
 ## 2026-10-20 — Shape Sorter: support truth (slice 1)
 
 - Built on `claude/shape-sorter-support-truth` (PR #669, base origin/main 40bbc0c3, code 3b42ff70): level 1 answers every touch (box giggle, floor wiggle, far-drop plop), a glow on every second miss since the last glow, level 8 names a fitting but unasked shape, `CLASSIC` pins levels 7–8, per-level how-to notes.
@@ -103,20 +110,6 @@
 - Ran `npm run typecheck` (clean), `npx vitest run src/app/scenes/lab.test.ts` (4 passed), `npm test` (1642 of 1643; a `peaks.test.ts` glider-loop-on-screen failure on untouched illustrated art, passed alone: a known flake) and `npm run build` (passed; a shared scene file changed).
 - Root probe (one-off `test-results/tl-probe.mjs`, http://localhost:5368, landscape and portrait): Explore lists nine locations; the Tinker Lab card opens the location (cat host, no resident); `go.game('light-lab', …)` with the land origin and leaving returns to the location; no page errors. Screenshots of both orientations reviewed (heading reads on the dark ceiling, spots and host clear).
 - Not run: `world`, the offline check, an iPad look, a child's reaction.
-
-## 2026-10-20 — RW13 slice 9: Story Grove at the root
-
-- Built on `claude/rw13-story-grove` ([PR #647](https://github.com/rjdunlap/neo/pull/647)): `grove.ts`, `grove.test.ts`, one `LOCATIONS` entry (`story-grove`, no resident: the land's purple bunny host), and the optional `LandOptions.backdrop`/`headingColor` seam in `LandScene.ts` and `LocationScene.ts` (night sky at the root only; `classic/` keeps its day backdrop).
-- Ran `npm run typecheck` (clean), `npm test` (1638 of 1639; the known RW02b tote flake in `src/art/creatures/cast.test.ts`, unchanged code, passed alone 44/44; a `peaks.test.ts` failure in one `src/app/scenes/` run passed alone and in the full run) and `npm run build` (passed; shared scene files changed).
-- Root probe (one-off `test-results/sg-probe.mjs`, http://localhost:5743, landscape and portrait): Explore lists eight locations; the Story Grove card opens the location (bunny host, no resident); `go.game('owl-walk', …)` with the land origin and leaving returns to the location; no page errors. Screenshots of both orientations reviewed (heading reads, spots and host clear).
-- Not run: `world`, the offline check, an iPad look, a child's reaction.
-
-## 2026-10-20 — RW13 slice 8: Cozy Village at the root
-
-- Built on `claude/rw13-cozy-village` ([PR #646](https://github.com/rjdunlap/neo/pull/646), code `c75e4687`, base `da6f32ee`): `village.ts`, `village.test.ts`, one `LOCATIONS` entry (`cozy-village`, no resident: the land's squirrel host); `LocationScene.ts` also changed. `classic/` is unchanged.
-- Ran `npm run typecheck` (clean), `npm test` (176 files, 1635 tests; one intermittent failure in unchanged creature-art code, "pins the face and body, moves the part's tip, and never tears the picture through idle and repeated taps" from `illustrated-suite.ts`, passed on 2 of 3 reruns of `src/art/creatures`: a known flake on unchanged code) and `npm run build` (passed).
-- Root probe (one-off `test-results/cv-probe.mjs`, http://localhost:5837, landscape and portrait): Explore lists seven locations; the Cozy Village card opens the location (squirrel host, no resident); `go.game('scoop-shop', …)` into the game and leaving returns to the location; no page errors. Screenshots of both orientations reviewed.
-- Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.
 
 ## Coverage summary
 
