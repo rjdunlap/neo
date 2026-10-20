@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
-import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_BOX, NAME_GAP, Namer, NUDGE_AFTER, PHRASES, nearMud, nearestIndex, nextToScrub, PART_SPOTS, PATS_PER_PATCH, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part } from './logic';
+import { restPoints } from '../../creatures/companion';
+import { SPECIES_IDS } from '../../creatures/species';
+import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_BOX, NAME_GAP, Namer, NUDGE_AFTER, PHRASES, nearMud, nearestIndex, nextToScrub, PATS_PER_PATCH, PLANS, spotsOn, STAR, type Spot, planFor, SCRUB_R, scrubPath, wrongTouches, type Part } from './logic';
+
+/** Each species' splotches, as the game lays them on its star. */
+const SPOTS: Spot[][] = SPECIES_IDS.map((s) => spotsOn((p) => restPoints(s, p), STAR[s].mud));
+const spotsOf = (spots: Spot[], part: Part) => spots.filter((m) => m.part === part);
 
 describe('Splish Splash', () => {
   it('asks for every part exactly once, one or two at a time', () => {
@@ -57,7 +63,7 @@ describe('Splish Splash', () => {
   });
 
   it('draws a scrub path that leaves no mud behind on any splotch, however the mud falls', () => {
-    const sizes = new Set(Object.values(PART_SPOTS).flat().map(([, , size]) => size));
+    const sizes = new Set(SPOTS.flat().map((m) => m.size));
     expect(sizes.size).toBeGreaterThanOrEqual(4);
     const brushes = new Set(PLANS.map((p) => p.brush ?? 1));
     expect(brushes).toContain(1.6);
@@ -90,15 +96,15 @@ describe('Splish Splash', () => {
     expect(wrongTouches(['ears'], ['head'], false)).toEqual(['head']);
     // The reaches really do overlap, so the rule matters: scrubbing the path of every splotch of every level, some point is also near another part.
     let overlaps = 0;
-    for (const plan of PLANS.filter((p) => p.mode === 'parts')) {
+    for (const spots of SPOTS) for (const plan of PLANS.filter((p) => p.mode === 'parts')) {
       for (let index = 0; index < plan.parts.length; index += askedParts(plan, index).length) {
         const asked = askedParts(plan, index);
         for (const part of asked) {
-          for (const [px, py, size] of PART_SPOTS[part]) {
+          for (const { x: px, y: py, size } of spotsOf(spots, part)) {
             for (const step of scrubPath(size)) {
               // The point in body units, then which splotches of the whole level it is near.
               const body = { x: px + step.x * size, y: py + step.y * size };
-              const near = plan.parts.filter((q) => PART_SPOTS[q].some(([qx, qy, qs]) => nearMud((body.x - qx) / qs, (body.y - qy) / qs, qs)));
+              const near = plan.parts.filter((q) => spotsOf(spots, q).some(({ x: qx, y: qy, size: qs }) => nearMud((body.x - qx) / qs, (body.y - qy) / qs, qs)));
               expect(near).toContain(part);
               if (near.some((q) => !asked.includes(q))) overlaps++;
               // Scrubbing the asked splotch is never "not that part", whatever neighbors are muddy.
@@ -113,34 +119,33 @@ describe('Splish Splash', () => {
   });
 
   it('forgives a stroke rubbing on past a splotch it cleaned, but not a slide on to another part', () => {
-    const spots = Object.entries(PART_SPOTS).flatMap(([part, list]) => list.map(([x, y, size]) => ({ part: part as Part, x, y, size })));
-    /** Whether a point on Pip is within the reach of a splotch, as the game measures it: in that splotch's own texture units. */
+    /** Whether a point on the star is within the reach of a splotch, as the game measures it: in that splotch's own texture units. */
     const within = (p: { x: number; y: number }, m: { x: number; y: number; size: number }) => nearMud((p.x - m.x) / m.size, (p.y - m.y) / m.size, m.size);
-    // The whole scrub path of a splotch lies within that splotch's own reach, so a stroke that goes on after it is clean stays forgiven.
-    for (const m of spots) for (const step of scrubPath(m.size)) expect(within({ x: m.x + step.x * m.size, y: m.y + step.y * m.size }, m)).toBe(true);
-    // A finger that scrubbed one part and slides to the middle of a splotch of another part, outside the first's reach, is still told off for it
-    // (the "first this, then that" levels keep their correction).
     let slides = 0;
-    for (const a of spots) {
-      for (const b of spots) {
-        if (a.part === b.part || within(b, a)) continue;
-        slides++;
-        expect(wrongTouches([a.part], [b.part], false)).toEqual([b.part]);
+    for (const spots of SPOTS) {
+      // The whole scrub path of a splotch lies within that splotch's own reach, so a stroke that goes on after it is clean stays forgiven.
+      for (const m of spots) for (const step of scrubPath(m.size)) expect(within({ x: m.x + step.x * m.size, y: m.y + step.y * m.size }, m)).toBe(true);
+      // A finger that scrubbed one part and slides to the middle of a splotch of another part, outside the first's reach, is still told off for it
+      // (the "first this, then that" levels keep their correction).
+      for (const a of spots) {
+        for (const b of spots) {
+          if (a.part === b.part || within(b, a)) continue;
+          slides++;
+          expect(wrongTouches([a.part], [b.part], false)).toEqual([b.part]);
+        }
       }
     }
     expect(slides).toBeGreaterThan(8);
-    // The overlap that needs forgiving is real: the far end of the second ear's stroke is near the head, and inside the first ear's own reach.
-    expect(within({ x: -74 + 22, y: -226 }, { x: -74, y: -226, size: 0.7 })).toBe(true);
-    expect(nearMud((-74 + 22 - 6) / 0.9, (-226 + 214) / 0.9, 0.9)).toBe(true);
   });
 
   it('Pat the bubbles (level 9): every touch makes progress, a round ends in few touches, and a touch anywhere reaches a patch', () => {
     const plan = planFor(9);
     expect(plan.mode).toBe('pat');
-    const patches = plan.parts.flatMap((p) => PART_SPOTS[p]);
+    for (const spots of SPOTS) {
+    const patches = plan.parts.flatMap((p) => spotsOf(spots, p));
     expect(patches.length * PATS_PER_PATCH).toBeLessThanOrEqual(12);
     // Pats anywhere on the screen (a grid, off the pet too) always pick a patch, and the same pats finish every patch.
-    const points = patches.map(([x, y]) => ({ x, y }));
+    const points = patches.map(({ x, y }) => ({ x, y }));
     const pats = patches.map(() => 0);
     for (let n = 0; n < patches.length * PATS_PER_PATCH * 4; n++) {
       const open = points.filter((_, i) => pats[i] < PATS_PER_PATCH);
@@ -150,15 +155,16 @@ describe('Splish Splash', () => {
       pats[points.indexOf(open[i!])]++;
     }
     expect(pats.every((c) => c === PATS_PER_PATCH)).toBe(true);
+    }
     expect(nearestIndex([], 0, 0)).toBeNull();
   });
 
   it('has a spoken word for every part that reads naturally in every bath line', () => {
-    const parts = Object.keys(PART_SPOTS) as Part[];
+    const parts: Part[] = ['tummy', 'head', 'cheeks', 'ears', 'nose'];
     for (const p of parts) {
       expect(PHRASES[p].word.length).toBeGreaterThan(0);
       // Pairs on the body are spoken as plurals: "Those are my ears", not "That's my ears".
-      expect(PHRASES[p].plural).toBe(PART_SPOTS[p].length === 2);
+      expect(PHRASES[p].plural).toBe(p === 'cheeks' || p === 'ears');
     }
     expect(askedPhrase(['ears', 'nose'])).toBe('my ears and my nose');
     expect(cleanPhrase(['ears', 'nose'])).toBe('ears and nose');
