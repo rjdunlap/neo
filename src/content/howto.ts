@@ -552,10 +552,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 4, text: 'Listen for the feeling named, then tap the face that shows it.' },
       { from: 5, to: 5, text: 'Listen to what the pet needs, then tap what helps.' },
       { from: 6, to: 6, text: 'Watch what happens, then tap how the pet feels.' },
-      { from: 7, text: 'Listen for the feeling named, then tap the friend who feels it.' },
+      { from: 7, to: 7, text: 'Listen for the feeling named, then tap the friend who feels it.' },
       { from: 8, text: 'Watch what happens, then choose what would help the pet feel better.' },
+      { from: 2, to: 6, text: 'Tap the pet to hear the question again.' },
+      { from: 8, text: 'Tap the pet to hear the question again.' },
     ],
-    finish: 'The round ends when the question is answered.',
+    finish: [
+      { to: 1, text: 'Free play ends by itself after a few taps, with a sticker.' },
+      { from: 2, text: 'Four questions, then a sticker.' },
+    ],
     note: [{ to: 1, text: 'Pure exploring: tap bubbles to see each feeling.' }],
   },
   'monster-munch': {

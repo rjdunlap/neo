@@ -10,15 +10,37 @@ export type Need = (typeof NEEDS)[number];
 export type Helper = 'hug' | 'pillow' | 'apple' | 'scarf';
 export const HELPERS: Record<Need, Helper> = { sad: 'hug', sleepy: 'pillow', hungry: 'apple', cold: 'scarf' };
 
-/** Little happenings, each with the feeling it causes. */
-export const EVENTS = { balloon: 'sad', present: 'happy', jack: 'surprised', moon: 'sleepy' } as const satisfies Record<string, Feeling>;
+/**
+ * Little happenings, each with the feeling it causes. Two may cause the same feeling (rain and the balloon are both
+ * sad); a round of four draws four different ones (`questions()` deals a pass before any repeat).
+ */
+export const EVENTS = {
+  balloon: 'sad',
+  present: 'happy',
+  jack: 'surprised',
+  moon: 'sleepy',
+  rain: 'sad',
+  butterfly: 'surprised',
+  lullaby: 'sleepy',
+  ball: 'happy',
+} as const satisfies Record<string, Feeling>;
 export type FeelingEvent = keyof typeof EVENTS;
 
-/** Events that naturally lead to an existing need and a useful helper. */
+/** Happenings only level 8 plays: each leaves a need rather than a feeling to name (snow leaves the pet cold). */
+export const CARE_ONLY = ['icecream', 'snow', 'basket'] as const;
+export type Happening = FeelingEvent | (typeof CARE_ONLY)[number];
+
+/**
+ * Happenings that leave a need, and the helper that answers it. Between them every helper is an answer, so a level-8
+ * round of four different happenings asks for at least three different helpers.
+ */
 export const CARE_SCENARIOS = {
-  balloon: { feeling: 'sad', need: 'sad', helper: 'hug' },
-  moon: { feeling: 'sleepy', need: 'sleepy', helper: 'pillow' },
-} as const satisfies Partial<Record<FeelingEvent, { feeling: Feeling; need: Need; helper: Helper }>>;
+  balloon: { need: 'sad', helper: 'hug' },
+  moon: { need: 'sleepy', helper: 'pillow' },
+  icecream: { need: 'sad', helper: 'hug' },
+  snow: { need: 'cold', helper: 'scarf' },
+  basket: { need: 'hungry', helper: 'apple' },
+} as const satisfies Partial<Record<Happening, { need: Need; helper: Helper }>>;
 export type CareEvent = keyof typeof CARE_SCENARIOS;
 
 export type FeelingMode = 'play' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care';

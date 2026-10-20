@@ -13,8 +13,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { drawSpring, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, jackBox, moonAndStars, present } from './art';
-import { bubbleToTap, CARE_SCENARIOS, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type CareEvent, type Feeling, type FeelingEvent, type FeelingPlan, type Helper, type Need, type Question } from './logic';
+import { bouncyBall, butterfly, drawSpring, emptyBasket, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, iceCream, jackBox, moonAndStars, musicNote, present, windowCloud } from './art';
+import { bubbleToTap, CARE_SCENARIOS, FACE_PARTS, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type CareEvent, type Feeling, type FeelingEvent, type FeelingPlan, type Happening, type Helper, type Need, type Question } from './logic';
 
 const PET_SCALE = 0.85;
 
@@ -52,9 +52,15 @@ class FeelingsFaces implements Game {
   private readonly background = new Graphics();
   /** Props for events and needs: a balloon, a bowl, snow and so on. */
   private readonly props = new Container();
+  /** Happening props, in front of the big pet so a tap reaches them (the butterfly lands on its nose). */
+  private readonly front = new Container();
+  /** Happening props wobbling from a tap, and for how long they have. */
+  private readonly wobbles = new Map<Container, number>();
   private readonly glow = new Graphics();
   private readonly night = new Graphics();
   private view: View;
+  /** The window's middle, where the rain cloud gathers. */
+  private window = { x: 0, y: 0 };
   private clock = 0;
   private shiver = 0;
   private snowIn = 0;
@@ -99,7 +105,7 @@ class FeelingsFaces implements Game {
       onTap(pet, () => this.tapPet());
       ctx.stage.addChild(this.pet);
     }
-    ctx.stage.addChild(this.glow);
+    ctx.stage.addChild(this.front, this.glow);
     if (this.plan.mode === 'play') {
       for (const feeling of FEELINGS) {
         const { node, critter } = feelingBubble(ctx.companion(), feeling);
@@ -220,7 +226,7 @@ class FeelingsFaces implements Game {
         pet!.setMood('calm');
         await this.playEvent(event);
         if (this.done) return;
-        this.showNeed(scenario.need);
+        this.showNeed(scenario.need, event !== 'basket');
         this.dealHelpers(q.options as Helper[]);
         this.instruct('feel.care');
         break;
@@ -351,13 +357,13 @@ class FeelingsFaces implements Game {
 
   // Needs and events --------------------------------------------------------
 
-  private showNeed(need: Need) {
+  private showNeed(need: Need, bowl = true) {
     const pet = this.pet!;
     pet.setMood(need === 'sleepy' ? 'sleepy' : 'sad');
     if (need === 'sad') sfx.sigh();
     if (need === 'sleepy') sfx.yawn();
-    if (need === 'hungry') {
-      sfx.rumble();
+    if (need === 'hungry') sfx.rumble();
+    if (need === 'hungry' && bowl) {
       const bowl = new Graphics()
         .moveTo(-60, -40)
         .quadraticCurveTo(0, 30, 60, -40)
@@ -378,7 +384,17 @@ class FeelingsFaces implements Game {
     if (this.pet) this.pet.x = this.petX;
   }
 
-  private async playEvent(event: FeelingEvent) {
+  /** A tap on a happening's prop wobbles it and plays its sound again; it is never an answer and never a miss. */
+  private answers(node: Container, sound: () => void, radius = 70) {
+    node.hitArea = new Circle(0, 0, radius);
+    onTap(node, () => {
+      if (node.destroyed) return;
+      sound();
+      this.wobbles.set(node, 0);
+    });
+  }
+
+  private async playEvent(event: Happening) {
     const pet = this.pet!;
     const tw = this.ctx.tw;
     const x = this.besidePet(110);
@@ -390,7 +406,8 @@ class FeelingsFaces implements Game {
         const string = new Graphics().moveTo(0, 46).quadraticCurveTo(-14, 110, 6, 170).stroke({ width: 3, color: swatch.white.line });
         balloon.addChild(string, prop('balloon', 'red'));
         balloon.position.set(this.besidePet(60), y - 300);
-        this.props.addChild(balloon);
+        this.answers(balloon, () => sfx.whoosh());
+        this.front.addChild(balloon);
         await tw.wait(1.2);
         sfx.whoosh();
         await tw.to(balloon, { x: balloon.x + 160, y: -260 }, { duration: 2.2, ease: ease.inQuad });
@@ -400,7 +417,9 @@ class FeelingsFaces implements Game {
         const { node, lid } = present();
         node.position.set(x, y);
         node.scale.set(0);
-        this.props.addChild(node);
+        this.answers(node, () => sfx.pop(9));
+        node.hitArea = new Circle(0, -60, 75);
+        this.front.addChild(node);
         await tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outBack });
         await tw.wait(0.8);
         sfx.pop(9);
@@ -412,12 +431,14 @@ class FeelingsFaces implements Game {
       case 'jack': {
         const { node, head, spring } = jackBox();
         node.position.set(x, y);
-        this.props.addChild(node);
+        this.answers(node, () => sfx.boing());
+        node.hitArea = new Circle(0, -60, 75);
+        this.front.addChild(node);
         await tw.wait(1.2);
         head.visible = true;
         sfx.boing();
         const s = { top: -80 };
-        const draw = () => { drawSpring(spring, s.top); head.y = s.top + 20; };
+        const draw = () => { if (spring.destroyed) return; drawSpring(spring, s.top); head.y = s.top + 20; };
         const ticker = { update: draw };
         this.ctx.track(ticker);
         await tw.to(s, { top: -200 }, { duration: 0.35, ease: ease.outElastic });
@@ -429,10 +450,130 @@ class FeelingsFaces implements Game {
         const moon = moonAndStars();
         moon.position.set(this.view.w * 0.78, 150);
         moon.alpha = 0;
-        this.props.addChild(moon);
+        this.answers(moon, () => sfx.bell(3, 0.25));
+        this.front.addChild(moon);
         void tw.to(this.night, { alpha: 0.45 }, { duration: 1.5 });
         await tw.to(moon, { alpha: 1, y: 130 }, { duration: 1.5 });
         sfx.yawn();
+        await tw.wait(1);
+        break;
+      }
+      case 'rain': {
+        // A cloud gathers over the window and drops patter on the glass.
+        const cloud = windowCloud();
+        cloud.position.set(this.window.x, this.window.y - 40);
+        cloud.alpha = 0;
+        const patter = () => sfx.tick();
+        this.answers(cloud, patter);
+        this.front.addChild(cloud);
+        sfx.whoosh();
+        await tw.to(cloud, { alpha: 1 }, { duration: 0.6 });
+        for (let i = 0; i < 4 && !cloud.destroyed; i++) {
+          patter();
+          for (let d = 0; d < 3; d++) {
+            this.ctx.particles.burst(cloud.x + this.ctx.rng.range(-70, 70), cloud.y + 40, { colors: [swatch.blue.fill], count: 1, speed: [80, 110], gravity: 500, angle: Math.PI / 2, spread: 0.1, size: [0.25, 0.35], life: [0.4, 0.5] });
+          }
+          await tw.wait(0.35);
+        }
+        await tw.wait(0.6);
+        break;
+      }
+      case 'butterfly': {
+        // A butterfly flutters in and lands on top of the pet's head, clear of the face she will read.
+        const { node, wings } = butterfly();
+        const land = this.headTop();
+        node.position.set(this.view.w + 60, land.y - 160);
+        const flap = { update: () => { wings.scale.x = 0.55 + 0.45 * Math.abs(Math.sin(this.clock * 14)); } };
+        this.ctx.track(flap);
+        this.answers(node, () => sfx.squeak(12), 60);
+        this.front.addChild(node);
+        await tw.to(node, { x: land.x, y: land.y - 10 }, { duration: 2, ease: ease.inOutSine });
+        this.ctx.untrack(flap);
+        if (!wings.destroyed) wings.scale.x = 1;
+        sfx.squeak(12);
+        await tw.wait(1);
+        break;
+      }
+      case 'lullaby': {
+        // Three soft notes fall down the scale and drift up beside the pet: one group, so a tap sings all three again.
+        const at = this.headAt();
+        const tune = new Container();
+        tune.position.set(at.x + 170, at.y - 110);
+        const sing = async () => {
+          for (const step of [7, 5, 3]) {
+            if (tune.destroyed) return;
+            sfx.bell(step, 0.25);
+            await tw.wait(0.3);
+          }
+        };
+        this.answers(tune, () => void sing(), 0);
+        tune.hitArea = new Rectangle(-90, -80, 180, 120);
+        this.front.addChild(tune);
+        for (const [i, step] of [7, 5, 3].entries()) {
+          const note = musicNote(swatch.purple.fill);
+          note.position.set((i - 1) * 50, 40);
+          note.alpha = 0;
+          tune.addChild(note);
+          sfx.bell(step, 0.25);
+          void tw.to(note, { alpha: 1, y: -30 }, { duration: 0.9, ease: ease.outQuad });
+          await tw.wait(0.7);
+        }
+        await tw.wait(1);
+        break;
+      }
+      case 'ball': {
+        // A ball bounces in from the side and stops beside the pet.
+        const ball = bouncyBall();
+        ball.position.set(this.view.w + 50, y - 34);
+        this.answers(ball, () => sfx.pop(10), 60);
+        this.front.addChild(ball);
+        const from = ball.x;
+        const span = (from - x) / 3;
+        for (let hop = 0; hop < 3; hop++) {
+          const land = from - span * (hop + 1);
+          void tw.to(ball, { x: land }, { duration: 0.5, ease: ease.linear });
+          await tw.to(ball, { y: y - 34 - (120 - hop * 35) }, { duration: 0.25, ease: ease.outQuad });
+          await tw.to(ball, { y: y - 34 }, { duration: 0.25, ease: ease.inQuad });
+          sfx.pop(10 - hop);
+        }
+        await tw.wait(0.6);
+        break;
+      }
+      case 'icecream': {
+        // The scoop topples off the cone and lands on the floor.
+        const { node, scoop } = iceCream();
+        node.position.set(x, y);
+        this.answers(node, () => sfx.squish());
+        node.hitArea = new Circle(0, -150, 75);
+        this.front.addChild(node);
+        await tw.wait(1);
+        void tw.to(scoop, { x: 60 }, { duration: 0.5 });
+        await tw.to(scoop, { y: 190 }, { duration: 0.5, ease: ease.inQuad });
+        sfx.squish();
+        await tw.wait(0.8);
+        break;
+      }
+      case 'snow': {
+        // Snow starts at the window; the pet's shiver and the falling flakes come with the need.
+        sfx.whoosh();
+        for (let i = 0; i < 8; i++) {
+          this.ctx.particles.burst(this.window.x + this.ctx.rng.range(-80, 80), this.window.y - 60, { colors: [swatch.white.fill], count: 1, speed: [20, 40], gravity: 40, angle: Math.PI / 2, spread: 0.4, life: [2, 3] });
+        }
+        await tw.wait(1.4);
+        break;
+      }
+      case 'basket': {
+        // The picnic basket opens, and there is nothing inside.
+        const basket = emptyBasket();
+        basket.position.set(x, y);
+        basket.scale.set(0);
+        this.answers(basket, () => sfx.knock());
+        basket.hitArea = new Circle(0, -50, 75);
+        this.front.addChild(basket);
+        await tw.to(basket.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outBack });
+        await tw.wait(0.4);
+        sfx.knock();
+        this.wobbles.set(basket, 0);
         await tw.wait(1);
         break;
       }
@@ -441,7 +582,15 @@ class FeelingsFaces implements Game {
 
   private clearProps() {
     this.endNeed();
-    this.props.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.wobbles.clear();
+    for (const layer of [this.props, this.front]) {
+      // A drifting rain cloud may still be fading; its tweens stop with it.
+      layer.removeChildren().forEach((c) => {
+        this.ctx.tw.kill(c);
+        this.ctx.tw.kill(c.scale);
+        c.destroy({ children: true });
+      });
+    }
     if (this.night.alpha > 0) void this.ctx.tw.to(this.night, { alpha: 0 }, { duration: 0.6 });
   }
 
@@ -449,9 +598,25 @@ class FeelingsFaces implements Game {
 
   /** The big pet's head on the stage, for hearts and bursts. */
   private headAt(): { x: number; y: number } {
+    const at = this.partAt('head');
+    return { x: at.x, y: at.y + 20 * this.pet!.scale.y };
+  }
+
+  /** A face part of the big pet on the stage. */
+  private partAt(part: 'head'): { x: number; y: number } {
     const pet = this.pet!;
-    const head = pet.partPoints('head')[0] ?? { x: this.middle, y: -150 };
-    return { x: pet.x + head.x * pet.scale.x, y: pet.y + (head.y + 20) * pet.scale.y };
+    const p = pet.partPoints(part)[0] ?? { x: this.middle, y: -150 };
+    return { x: pet.x + p.x * pet.scale.x, y: pet.y + p.y * pet.scale.y };
+  }
+
+  /** The highest of the big pet's face parts on the stage (an ear or the top of the head), above its nose. */
+  private headTop(): { x: number; y: number } {
+    const pet = this.pet!;
+    const points = FACE_PARTS.flatMap((p) => pet.partPoints(p));
+    const nose = pet.partPoints('nose')[0] ?? pet.partPoints('head')[0] ?? { x: this.middle, y: 0 };
+    if (!points.length) return this.partAt('head');
+    const top = Math.min(...points.map((p) => p.y));
+    return { x: pet.x + nose.x * pet.scale.x, y: pet.y + top * pet.scale.y };
   }
 
   /** A stage x `gap` units right of the big pet, for props. */
@@ -500,6 +665,7 @@ class FeelingsFaces implements Game {
     // A window, a floor, and a round rug for the pet to stand on.
     const wx = v.w * 0.12;
     const wy = Math.min(140, floor - 280);
+    this.window = { x: wx + 95, y: wy + 75 };
     g.roundRect(wx, wy, 190, 150, 16).fill(swatch.blue.light).stroke({ width: 10, color: wood.fill });
     g.moveTo(wx + 95, wy).lineTo(wx + 95, wy + 150).moveTo(wx, wy + 75).lineTo(wx + 190, wy + 75).stroke({ width: 8, color: wood.fill });
     g.rect(0, floor - 40, v.w, v.h - floor + 40).fill(wood.light).rect(0, floor - 44, v.w, 8).fill(wood.fill);
@@ -546,6 +712,16 @@ class FeelingsFaces implements Game {
     this.options.forEach((o) => o.critter?.update(dt));
     this.friends.forEach((f) => f.critter.update(dt));
     this.glow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 4);
+    for (const [node, t] of this.wobbles) {
+      const left = 0.5 - t - dt;
+      if (node.destroyed || left <= 0) {
+        if (!node.destroyed) node.rotation = 0;
+        this.wobbles.delete(node);
+      } else {
+        node.rotation = Math.sin((t + dt) * 30) * 0.22 * (left / 0.5);
+        this.wobbles.set(node, t + dt);
+      }
+    }
     if (this.shiver && this.pet) {
       this.pet.x = this.petX + Math.sin(this.clock * 40) * 4;
       this.snowIn -= dt;
