@@ -14,3 +14,10 @@
 - Ran `npm run typecheck` (clean); `npx vitest run src/games/fill-dump src/content` (105 passed, with the new count-sign rule test); `GAME_URL=http://localhost:5471 BROWSER_SUITE=originals ORIGINALS_ONLY=fill FILL_LEVELS=3,4 node scripts/browser-check.mjs` (levels 3 and 4, level 4 in portrait; `test-results/browser/fill-dump-4.png` reviewed: the sign sits clear of the corner buttons).
 - Not run: fill levels 1, 2 and 5 (unchanged code), `fingerdemo` (the bot's action is unchanged), build (no shared file or asset changed), any device check.
 - Open: a person has not watched a toddler read the sign.
+
+## 2026-10-20 — Roundup support truth (slice 1)
+
+- Built [slice 1](../deep-dives/roundup.md#build-slices-in-order) ([PR #627](https://github.com/rjdunlap/neo/pull/627), commit 7786d03e): the trot-home counts a hint, dot signs at levels 5-6, level 1 answers grass and sign taps without a miss, pens' totals spoken at a right bell, per-round seeded start layout, one how-to note.
+- Ran `npm run typecheck` (clean); `npx vitest run src/games/roundup src/content` (94 passed, new startSpots, signDots and singular-animals tests); `GAME_URL=http://localhost:5392 BROWSER_SUITE=arcade ARCADE_ONLY=roundup` on the working tree (all six levels passed; `test-results/browser/roundup-6.png` shows dot signs). Two script fixes were needed first (tap whichever animal is still loose; stop the overshoot loop when none is): earlier runs failed at levels 1 and 5 on the old fixed-layout assumptions.
+- Not run: `fingerdemo` (bot unchanged), build (no shared asset), device checks.
+- Open: whether a lap child notices the grass hop, and how the spoken totals sound on a device.
