@@ -1,4 +1,4 @@
-# Shape Buddies level 3: Two make one (defined 2026-10-17)
+# Shape Buddies level 3: Two make one (defined 2026-10-17; built 2026-10-20, [PR #670](https://github.com/rjdunlap/neo/pull/670))
 
 **Definition of ready, docs only.** Stable ID `shape-buddies`; roadmap [chunk 5](../ROADMAP.md#next-up); levels 1–2 are [defined and built](shape-buddies.md). This adds one appended level on the existing interaction: the "two useful shapes combined" proposal left open there. Nothing is renumbered.
 

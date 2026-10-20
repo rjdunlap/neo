@@ -162,3 +162,10 @@
 - Ran `npm run typecheck` (clean), `npm test` (1638 of 1639; the known RW02b tote flake in `src/art/creatures/cast.test.ts`, unchanged code, passed alone 44/44; a `peaks.test.ts` failure in one `src/app/scenes/` run passed alone and in the full run) and `npm run build` (passed; shared scene files changed).
 - Root probe (one-off `test-results/sg-probe.mjs`, http://localhost:5743, landscape and portrait): Explore lists eight locations; the Story Grove card opens the location (bunny host, no resident); `go.game('owl-walk', …)` with the land origin and leaving returns to the location; no page errors. Screenshots of both orientations reviewed (heading reads, spots and host clear).
 - Not run: `world`, the offline check, an iPad look, a child's reaction.
+
+## 2026-10-20 — RW13 slice 10: Tinker Lab at the root
+
+- Built on `claude/rw13-tinker-lab` ([PR #648](https://github.com/rjdunlap/neo/pull/648), code `0217222c`, base `3101e913`): `lab.ts`, `lab.test.ts`, one `LOCATIONS` entry (`tinker-lab`, no resident: the land's blue cat host); the cave backdrop and cream heading go through the existing `backdrop`/`headingColor` seam at the root only (`classic/` keeps its day); `LocationScene.ts` also changed.
+- Ran `npm run typecheck` (clean), `npx vitest run src/app/scenes/lab.test.ts` (4 passed), `npm test` (1642 of 1643; a `peaks.test.ts` glider-loop-on-screen failure on untouched illustrated art, passed alone: a known flake) and `npm run build` (passed; a shared scene file changed).
+- Root probe (one-off `test-results/tl-probe.mjs`, http://localhost:5368, landscape and portrait): Explore lists nine locations; the Tinker Lab card opens the location (cat host, no resident); `go.game('light-lab', …)` with the land origin and leaving returns to the location; no page errors. Screenshots of both orientations reviewed (heading reads on the dark ceiling, spots and host clear).
+- Not run: `world`, the offline check, an iPad look, a child's reaction.
