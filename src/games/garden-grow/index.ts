@@ -429,7 +429,7 @@ export const gardenGrow: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Take turns: one of you plants the seeds and the other is the weather, tapping the cloud to make it rain. Say it together: "Plant the seed... rain, rain... it grows!" and wiggle up like a flower.',
+  coplayHint: 'One of you plants, one is the weather: tap the cloud. Say "Rain, rain... it grows!"',
   offScreen: 'Plant a bean in a cup and water it together; look at it each morning.',
   hubIcon: () => new GardenIcon(),
   touchDemo: true,
