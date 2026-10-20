@@ -1158,6 +1158,7 @@ export const SCRIPT = {
   'grow.colors': ['Look at the colors again. Tap a seed to take it out.'],
   'grow.yay': ['Look how it grew!', 'Beautiful flowers!', 'Hooray, they bloomed!'],
   'grow.done': ['What a beautiful garden!'],
+  'grow.full': ['Every bed has a seed! Tap the cloud to make it rain, or tap a seed to take it out.'],
   'habitat.start': ['Help {visitor}! Put food, water and shelter in the garden. Then tap the green gate.'],
   'habitat.build': ['Build a garden for {visitor}. Find food, water and shelter, then tap the green gate.'],
   'habitat.compact': ['Only two spaces! Find pieces that give {visitor} food, water and shelter.'],

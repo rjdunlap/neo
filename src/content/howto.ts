@@ -1082,13 +1082,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'garden-grow': {
     goal: 'Plant seeds and watch them grow.',
     steps: [
-      { to: 1, text: 'Tap the soil: a seed goes in and grows into a flower.' },
+      { to: 1, text: 'Tap the soil: a seed goes in and grows into a flower. Each bed grows by itself, so tap as fast as you like.' },
       { from: 2, to: 2, text: 'Tap the soil to plant seeds, then tap the cloud to make it rain.' },
-      { from: 3, to: 3, text: 'Tap the seeds of the color asked for to plant them; tap a seed to take it out.' },
+      { from: 3, to: 3, text: 'Tap the seeds of the color asked for: the seed goes in and grows at once.' },
       { from: 4, to: 4, text: 'Plant exactly the number of seeds asked for, then tap the cloud to make it rain; tap a seed to take it out.' },
-      { from: 5, text: 'Plant the number of seeds of each color asked for, like "2 red and 3 yellow", then tap the cloud; tap a seed to take it out.' },
+      { from: 5, to: 5, text: 'Plant the number of seeds of each color asked for, like "2 red and 3 yellow", then tap the cloud; tap a seed to take it out.' },
       { from: 6, to: 6, text: 'Look at the flowers on the sign. Plant one more of that color than the sign shows, then tap the cloud; tap a seed to take it out.' },
-      { from: 7, text: 'Plant the flowers shown in two rows of three, then tap the cloud; tap a seed to take it out.' },
+      { from: 7, to: 7, text: 'Plant the flowers shown in two rows of three, then tap the cloud; tap a seed to take it out.' },
     ],
     finish: 'The round ends when the garden has grown as asked.',
   },

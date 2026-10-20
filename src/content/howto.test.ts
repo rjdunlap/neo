@@ -98,7 +98,7 @@ describe('touch how-to cards', () => {
   });
 
   it('keeps the guarded ladders bounded so new levels inherit no instructions or finish claims', () => {
-    for (const id of ['bubble-pop', 'animal-snack', 'clock-tower', 'block-tower', 'peekaboo-barn', 'splish-splash', 'jelly-drums']) {
+    for (const id of ['bubble-pop', 'animal-snack', 'clock-tower', 'block-tower', 'peekaboo-barn', 'splish-splash', 'jelly-drums', 'garden-grow']) {
       const game = GAMES.find((g) => g.id === id)!;
       const last = Math.max(...levelsOf(game));
       expect(howToFor(game, last + 1)!.steps, id).toEqual([]);
