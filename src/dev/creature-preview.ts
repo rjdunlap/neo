@@ -164,10 +164,12 @@ export class CreaturePreview extends Scene {
     }
     const look = LOOKS[this.look];
     for (const c of all) {
-      if (!(c instanceof IllustratedCreature)) continue;
+      // Only the pilot three stand here (the second wave is `/?cast`), and only they have wear tables.
+      if (!(c instanceof IllustratedCreature) || !(c.species in WEAR)) continue;
+      const table = WEAR[c.species as SpeciesId];
       for (const id of WEARABLES) {
         const on = look.items.includes(id);
-        if (on !== wearingItem(c, id)) wearItem(c, WEAR[c.species], id, on ? this.items[ITEM_ART[id].file] : null);
+        if (on !== wearingItem(c, id)) wearItem(c, table, id, on ? this.items[ITEM_ART[id].file] : null);
       }
     }
     for (const card of this.cards) if (card.kind === 'art' && look.items.some((id) => !fits(WEAR[card.species][id]))) card.nope.visible = true;

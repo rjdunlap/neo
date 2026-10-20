@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { cheek, ink } from '../palette';
+import type { CastId } from './cast';
 
 /**
  * RW02 prototype (docs/rework/CREATURE-ART.md): the shared shape of a creature-world species.
@@ -43,7 +44,8 @@ export function blush(g: Graphics, x: number, y: number, r: number) {
 
 /** Springs, clocks, blinking and the wearing of accessories; each species draws and animates its own parts. */
 export abstract class Creature extends Container {
-  abstract readonly species: SpeciesId;
+  /** A pilot species, or one of the second wave (RW02b step 3), which only the dev preview shows. */
+  abstract readonly species: SpeciesId | CastId;
   /** Body centre and radius in local units, for a body-centred hit area. */
   abstract readonly touch: { x: number; y: number; r: number };
   /** Slots this species has. A missing slot is a deliberate incompatibility (see `misfit`). */

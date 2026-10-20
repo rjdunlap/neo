@@ -1,6 +1,7 @@
 import { Texture } from 'pixi.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { ACCESSORIES, ACCESSORY_SLOT, dress, makeCreature } from '.';
+import type { CastId } from './cast';
 import type { SpeciesId } from './creature';
 import { type ArtBase, EXPRESSIONS, type Expression, type IllustratedCreature, type Point, sameArt, SURPRISE } from './illustrated';
 
@@ -42,7 +43,9 @@ export async function alphaOf(dataUrl: string) {
 type Alpha = Awaited<ReturnType<typeof alphaOf>>;
 
 export interface SuiteSpec<C extends IllustratedCreature> {
-  species: SpeciesId;
+  species: SpeciesId | CastId;
+  /** Whether a Graphics rig of the species exists to match slots and misfits against (the pilot three); the second wave checks its own table. */
+  twin?: boolean;
   A: ArtBase & { nose: Point; mouth: Point };
   /** The six prepared sprites as data URLs (`?inline` imports). */
   pngs: Record<Expression, string>;
@@ -58,7 +61,7 @@ export interface SuiteSpec<C extends IllustratedCreature> {
   maxStep: number;
 }
 
-export function illustratedSuite<C extends IllustratedCreature>({ species, A, pngs, make, stageScale, tip, minTravel, pinned, maxStep }: SuiteSpec<C>) {
+export function illustratedSuite<C extends IllustratedCreature>({ species, twin = true, A, pngs, make, stageScale, tip, minTravel, pinned, maxStep }: SuiteSpec<C>) {
   let art: Record<Expression, Alpha>;
   beforeAll(async () => {
     const entries = await Promise.all(EXPRESSIONS.map(async (e) => [e, await alphaOf(pngs[e])] as const));
@@ -90,9 +93,11 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, A, pn
       for (const e of A.eyes) expect(art.base.at(e.x, e.y)).toBe(255);
     });
 
-    it('keeps the Graphics species’ slots and misfits, and a touch circle of at least 100 units on the stage', () => {
-      const old = makeCreature(species);
+    it(twin ? 'keeps the Graphics species’ slots and misfits, and a touch circle of at least 100 units on the stage' : 'has a slot for every accessory it does not decline, and a touch circle of at least 100 units on the stage', () => {
       const c = build();
+      // The second wave has no Graphics twin: its own misfits are the reference, and each must have a reason.
+      const old = twin ? makeCreature(species as SpeciesId) : { slots: Object.fromEntries(ACCESSORIES.filter((k) => !c.misfit[k]).map((k) => [ACCESSORY_SLOT[k], true])), misfit: c.misfit };
+      for (const reason of Object.values(c.misfit)) expect(reason.length).toBeGreaterThan(10);
       expect(c.species).toBe(species);
       for (const kind of ACCESSORIES) {
         expect(!!c.slots[ACCESSORY_SLOT[kind]], kind).toBe(!!old.slots[ACCESSORY_SLOT[kind]]);
