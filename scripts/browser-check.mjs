@@ -1940,6 +1940,84 @@ async function dressFlow() {
   log('Dress: put on, a slot swap, back to Friends, the treehouse, reload, the guide, another profile undressed');
 }
 
+/** RW06 slice 2: the root boots to the chooser, then Home by band, creature play's ball, the RW03 chain and Explore. */
+async function homeFlow() {
+  await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href); await ready();
+  await scene('ChooserScene');
+  // A preschool person with a kept tune; a second, toddler profile with its own friend.
+  await page.evaluate(() => {
+    kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Clover', look: { color: 'pink', worn: ['scarf'] }, metAt: 'start' }, { id: 'gli0', species: 'glider', name: 'Breeze', look: { color: 'yellow', worn: [] }, metAt: 'dev:glider' }], companion: 'pip0' };
+    kit.store.data.profile.band = 'preschool';
+    kit.store.keepCreation({ kind: 'tune', cols: 4, rows: 3, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }, { col: 2, row: 2 }, { col: 3, row: 1 }] });
+    kit.store.save(); kit.store.flush(); neo.go.start();
+  });
+  await pickFirst(); await scene('HomeScene');
+  assert.deepEqual(await page.evaluate(() => ({ young: neo.scene.young, play: !!neo.scene.play, toy: !!neo.scene.toy, pet: neo.scene.pet.species, worn: neo.scene.pet.worn, link: !document.querySelector('.classic-link').hidden })), { young: false, play: true, toy: false, pet: 'sprout', worn: ['scarf'], link: true });
+  await page.waitForTimeout(400); await screenshot('home-landscape');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await screenshot('home-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  const before = await page.evaluate(() => JSON.stringify({ games: kit.store.data.games, stickers: kit.store.data.stickers, journal: kit.store.data.journal }));
+  // Play with Clover: creature play, the ball three times; it repeats and nothing is recorded.
+  await tap('neo.scene.play'); await scene('PlayScene');
+  assert.equal(await page.evaluate(() => document.querySelector('.classic-link').hidden), true);
+  for (let i = 1; i <= 3; i++) {
+    await tap('neo.scene.toy.ball');
+    await page.waitForFunction(() => !neo.scene.toy.flight && !neo.scene.toy.chasing, null, { timeout: 8000 });
+    assert.deepEqual(await page.evaluate(() => ({ throws: neo.scene.toy.throws, fetches: neo.scene.toy.fetches })), { throws: i, fetches: i });
+  }
+  assert.equal(await page.evaluate(() => JSON.stringify({ games: kit.store.data.games, stickers: kit.store.data.stickers, journal: kit.store.data.journal })), before, 'the ball records nothing');
+  await screenshot('play-landscape');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await screenshot('play-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  // The kept tune plays.
+  await tap('neo.scene.plaque');
+  await page.waitForFunction(() => neo.scene.singing, null, { timeout: 3000 });
+  await page.waitForFunction(() => !neo.scene.singing, null, { timeout: 8000 });
+  // Basket → Friends → Dress → Back → Friends (same friend) → Back → creature play.
+  await tap('neo.scene.basket'); await scene('FriendsScene');
+  await tap('neo.scene.cards.children[1]'); await page.waitForTimeout(300);
+  await tap('neo.scene.dress'); await scene('DressScene');
+  await tap('neo.scene.back'); await scene('FriendsScene');
+  assert.equal(await page.evaluate(() => neo.scene.previewed), 'gli0');
+  await tap('neo.scene.back'); await scene('PlayScene');
+  // Dress → Home → Home.
+  await tap('neo.scene.basket'); await scene('FriendsScene');
+  await tap('neo.scene.dress'); await scene('DressScene');
+  await tap('neo.scene.home'); await scene('HomeScene');
+  // Leaving mid-bounce is clean.
+  await tap('neo.scene.play'); await scene('PlayScene');
+  await tap('neo.scene.toy.ball'); await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(() => !!neo.scene.toy.flight), true);
+  await tap('neo.scene.home'); await scene('HomeScene');
+  await page.waitForTimeout(400);
+  // Explore → Rainbow Meadow → its Home → Home.
+  await tap('neo.scene.explore'); await scene('LocationScene');
+  await page.evaluate(() => neo.go.hub()); await scene('HomeScene');
+  // The youngest's Home: the ball right here, no Play picture.
+  await page.evaluate(() => { kit.store.data.profile.band = 'toddler'; neo.go.hub(); }); await scene('HomeScene');
+  assert.deepEqual(await page.evaluate(() => ({ young: neo.scene.young, play: !!neo.scene.play, toy: !!neo.scene.toy })), { young: true, play: false, toy: true });
+  await tap('neo.scene.toy.ball');
+  await page.waitForFunction(() => neo.scene.toy.fetches === 1, null, { timeout: 8000 });
+  await screenshot('home-toddler');
+  // Who's playing → a second profile → its own Home and companion.
+  await tap('neo.scene.who'); await scene('ChooserScene');
+  await page.evaluate(async () => {
+    const { selectPlayer } = await import('/src/app/players.ts');
+    await selectPlayer(kit.store.addProfile());
+    kit.store.meet('river', 'Pebble', 'blue', 'start');
+    neo.go.hub();
+  });
+  await scene('HomeScene');
+  assert.deepEqual(await page.evaluate(() => ({ pet: neo.scene.pet.species, worn: neo.scene.pet.worn })), { pet: 'river', worn: [] });
+  // Reload: the root begins at the chooser again.
+  await page.reload(); await ready();
+  await scene('ChooserScene');
+  assert.equal(errors.length, 0, errors.join('\n'));
+  log('Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore, second profile');
+}
+
 async function hatchingAndMap() {
   await ready();
   assert.equal(await page.evaluate(() => kit.store.data.creatures.owned.length), 0);
@@ -12092,6 +12170,7 @@ try {
   if (suite === 'all' || suite === 'world') { await hatchingAndMap(); await subjectPlaces(); }
   else if (suite === 'friends') await friendsFlow();
   else if (suite === 'dress') await dressFlow();
+  else if (suite === 'home') await homeFlow();
   else if (suite === 'profiles') { /* it starts from an empty device itself */ }
   else {
     // The chooser was built before the friend existed, so open it again: a hatched profile has a card to tap.

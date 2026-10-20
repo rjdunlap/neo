@@ -6,12 +6,13 @@ import { voice } from '../../audio/voice';
 import { itemTexture, makeIndividual, wearableBy, type Companion } from '../../creatures/companion';
 import { dressLayout, OFF_RADIUS } from '../../creatures/dress-layout';
 import { BACK, CARD } from '../../creatures/friends-layout';
+import { HOME_BUTTON } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import type { Individual } from '../../progress/save';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { arrowIcon, crossIcon } from '../../ui/icons';
+import { arrowIcon, crossIcon, houseIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 
@@ -26,6 +27,8 @@ type Card = Container & { item: WearableId };
 export class DressScene extends Scene {
   private readonly floor = new Graphics();
   private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () => this.app.go.friends(this.id));
+  /** At the root (RW06 slice 2): Home, to the right of Back. Classic's Dress keeps Back only. */
+  private readonly home = new RoundButton(houseIcon(), swatch.white, 50, () => this.app.go.hub());
   private readonly off = new RoundButton(crossIcon(), swatch.white, OFF_RADIUS, () => this.allOff());
   private readonly cards = new Container();
   private readonly rings = new Graphics();
@@ -46,6 +49,7 @@ export class DressScene extends Scene {
     this.rings.eventMode = 'none';
     this.content.addChild(this.floor, this.cards, this.rings);
     this.ui.addChild(this.back, this.off);
+    if (this.app.creatureWorld) this.ui.addChild(this.home);
     const who = this.who;
     if (!who) return;
     const c = (this.friend = this.track(makeIndividual(who)));
@@ -127,6 +131,7 @@ export class DressScene extends Scene {
     const l = dressLayout(v, this.cards.children.length);
     this.floor.clear().rect(0, 0, v.w, v.h).fill(cream).ellipse(l.stage.x, l.stage.y, 180, 32).fill(grass);
     this.back.position.set(BACK.x, BACK.y);
+    this.home.position.set(HOME_BUTTON.x, HOME_BUTTON.y);
     this.off.position.set(l.off.x, l.off.y);
     this.friend?.position.set(l.stage.x, l.stage.y);
     this.friend?.scale.set(l.stage.scale);

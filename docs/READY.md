@@ -6,11 +6,11 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **Rework RW06 slice 2, Home and creature play at the root** (shell/navigation tier: typecheck, units, build, `world`, offline): the R06 day backdrop under 1 MiB, `HomeScene` with RW03's per-band exits, `PlayScene` with the ball, the kept picture and tune and the basket, the root booting to the chooser, the preview moved to `?preview`, a `home` browser case through the RW03 chain. [Packet](rework/HOME.md#build-slices-in-order)
 - **Rework RW13 slice 3, Counting Cove** (RW13 slice 2 landed in #635; location tier: typecheck, units, one filtered root probe of arrive → launch → return; build only if shared files change): the marsh backdrop drawn in code and the illustrated River as resident. [Packet](rework/ISLAND-REVAMP.md#build-slices-in-order)
 - **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
 - **Rework RW05 slice 2, `CompanionRig` for the ten large-pet games** (slice 1 landed 2026-10-20; shell tier plus one filtered regression per moved game and its `fingerdemo` where the bot touches the pet): named parts, moods and body bounds per species with recorded misfits and a unit test; Splish Splash, Weather Wardrobe and Pet Says move first. [Packet](rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices)
+- **`roundup`, kinds and pens, slice 2** (logic tier): duck and dog, pens drawn from a pool, `{a}`/`{b}` voice lines, varied casts at 4. [Dive](deep-dives/roundup.md#fresh-content-inside-existing-levels)
 
 ## Queued
 
@@ -21,7 +21,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`fill-dump`, level 7 Which holds more?** (new interaction; after level 6 *Full and empty* lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 
-- **`roundup`, kinds and pens, slice 2** (logic tier): duck and dog, pens drawn from a pool, `{a}`/`{b}` voice lines, varied casts at 4. [Dive](deep-dives/roundup.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`roundup`, level 11 *Come along*, slice 4** (new interaction): the follow mode for lap and toddler, placed by `order`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`roundup`, level 7 *Leave the cows*, slice 5** (new levels): pre-K 3–7. [Dive](deep-dives/roundup.md#new-levels-on-top)

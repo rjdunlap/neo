@@ -155,3 +155,38 @@ export function peopleIcon(): Graphics {
     .circle(14, -8, 12).fill(swatch.yellow.fill).stroke(line(4, swatch.yellow.line))
     .roundRect(-1, 8, 30, 22, 12).fill(swatch.yellow.fill).stroke(line(4, swatch.yellow.line));
 }
+
+/** Three meadow flowers: Explore, and the preview's way to Rainbow Meadow. */
+export function meadowIcon(): Graphics {
+  const g = new Graphics();
+  for (const [x, color] of [[-20, swatch.red], [0, swatch.yellow], [20, swatch.pink]] as const) {
+    g.moveTo(x, 26).lineTo(x, -2).stroke({ color: swatch.green.line, width: 4, cap: 'round' });
+    for (let i = 0; i < 5; i++) {
+      const a = (i * 2 * Math.PI) / 5;
+      g.circle(x + Math.cos(a) * 8, -10 + Math.sin(a) * 8, 6.5).fill(color.fill);
+    }
+    g.circle(x, -10, 5).fill(swatch.yellow.light).stroke({ color: color.line, width: 2 });
+  }
+  return g;
+}
+
+/** Her friend's ball, `r` units in radius: a red and yellow beach ball. */
+export function ballIcon(r = 24): Graphics {
+  return new Graphics()
+    .circle(0, 0, r).fill(swatch.red.fill)
+    .moveTo(-r, 0).arc(0, 0, r, Math.PI, 0).lineTo(0, 0).closePath().fill(swatch.yellow.fill)
+    .moveTo(-r * 0.35, -r * 0.94).quadraticCurveTo(r * 0.15, 0, -r * 0.35, r * 0.94).stroke({ width: Math.max(3, r * 0.1), color: 0xffffff })
+    .circle(0, 0, r).stroke({ width: Math.max(4, r * 0.12), color: swatch.red.line })
+    .circle(-r * 0.4, -r * 0.45, r * 0.16).fill({ color: 0xffffff, alpha: 0.7 });
+}
+
+/** The ball beside the basket: "play with your friend". */
+export function playWithIcon(): Graphics {
+  const g = ballIcon(17);
+  g.position.set(-14, 8);
+  const all = new Graphics();
+  all.roundRect(4, -2, 34, 26, 6).fill(wood.light).stroke(line(4, wood.line)).moveTo(8, -2).quadraticCurveTo(21, -26, 34, -2).stroke(line(4, wood.line));
+  all.addChild(g);
+  all.x = -8;
+  return all;
+}

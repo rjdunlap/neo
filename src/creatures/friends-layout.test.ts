@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
+import { HOME_BUTTON } from './home-layout';
 import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, DRESS_RADIUS, friendsLayout, pageCount, PER_PAGE } from './friends-layout';
 
 /** The four views the land layouts are tested in (an iPad sideways and upright, a phone sideways, one with a notch), and a wide laptop. */
@@ -35,6 +36,7 @@ describe('the Friends layout', () => {
             square(l.come.x, l.come.y, COME_RADIUS + 6, 'come'),
             square(l.dress.x, l.dress.y, DRESS_RADIUS + 6, 'dress'),
             square(BACK.x, BACK.y, BACK.r - 6, 'back'),
+            square(HOME_BUTTON.x, HOME_BUTTON.y, 58, 'home at the root'),
             stage,
           ];
           if (l.arrows) boxes.push(square(l.arrows.previous.x, l.arrows.previous.y, ARROW_RADIUS, 'previous'), square(l.arrows.next.x, l.arrows.next.y, ARROW_RADIUS, 'next'));
