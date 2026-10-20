@@ -2,7 +2,7 @@ import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } fr
 import { Critter, CRITTERS } from '../../art/critter';
 import { blanketArt, bushArt, changeArt, checkBadge, clotheslineArt, FRIENDS, HangingBlanket, lineSag, makeGardener, picnicPhoto, plateArt, requestArt, treeArt } from '../../art/picnic';
 import { cream, ink, RAINBOW, swatch, wood } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { Backdrop } from '../../art/scenery';
 import { music, STYLES } from '../../audio/music';
 import { sfx, type AnimalSound } from '../../audio/sfx';
@@ -71,7 +71,7 @@ const crossIcon = () => new Graphics().moveTo(-16, -16).lineTo(16, 16).moveTo(16
 export class PicnicScene extends Scene {
   backdrop!: Backdrop;
   readonly gardener = makeGardener();
-  readonly pip = makePet();
+  readonly pip = makeCompanion();
   readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));
   readonly journalButton = new RoundButton(journalIcon(), swatch.white, 50, () => this.openJournal());
   readonly requests: Request[] = [];

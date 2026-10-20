@@ -1,7 +1,7 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, RAINBOW, swatch, wood } from '../../art/palette';
-import { petSpec } from '../../art/pet';
+import { companionSpec } from '../../creatures/companion';
 import { prop } from '../../art/props';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -568,7 +568,7 @@ export const feelingsFaces: GameModule = {
     c.addChild(strings, stand);
     for (const [feeling, x, y] of [['happy', -46, -128], ['sad', 48, -112]] as const) {
       strings.moveTo(0, -48).quadraticCurveTo(x * 0.3, (y - 48) / 2, x, y + 46).stroke({ width: 3, color: swatch.white.line });
-      const { node, critter } = feelingBubble(petSpec(), feeling);
+      const { node, critter } = feelingBubble(companionSpec(), feeling);
       critter.alive = false;
       node.scale.set(0.62);
       node.position.set(x, y);

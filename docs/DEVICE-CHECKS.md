@@ -16,6 +16,13 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Collection and Friends (RW05 slice 1, 2026-10-20, #630):** on an iPad, an existing version-2 profile should meet the egg again with stickers kept.
+  - boot time and GPU memory with three mipmapped sets plus the collection pictures decoded before the first scene (about 20 MB);
+  - the per-frame cost of the hue filter on a recoloured friend;
+  - device speech of the new lines (`friends.*`, `species.*`, `room.friends`, "Hello, little sprout!");
+  - whether she recognises the three species and wants to choose between them;
+  - the feel of the basket entry in the treehouse;
+  - whether the recoloured art looks right in all eight colours on a 2x screen.
 - [ ] **Ramp Race truthful support (inquiry Q2, 2026-10-20, #624):** on an iPad at the fair-test level, watch whether a child connects the orange glow (a ghost ramp, an outlined floor or a ring around go, after two unfair Checks on one question) to "change this part", and listen to whether device speech reads the half-marks ("two and a half") and the new `ramp.wrong.*` and `ramp.fairhint` lines well.
 - [ ] **Home/navigation RW03 (2026-10-17, #501):** run the [short observed-play script](rework/HOME-NAVIGATION.md#short-observed-play-script-and-open-observations) with lap/toddler co-play, preschool and school separately. Record Home/Back/Next-game interpretation, creature/dress discovery, younger-favorite retrieval, interrupted-project recovery and speech/reach on an iPad. Prototype only; real game/save/controller integration must first land in RW05–RW08. None run.
 

@@ -1,7 +1,6 @@
 import { Container, Graphics, type Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
-import type { Critter } from '../art/critter';
-import { makePet, petSpec } from '../art/pet';
+import { companionSpec, makeCompanion, type Companion } from '../creatures/companion';
 import { Particles } from '../art/particles';
 import { GhostFinger } from '../engine/ghost';
 import { Rng } from '../engine/random';
@@ -55,7 +54,7 @@ export class Demo {
   private readonly held = new Map<PadPart, number>();
   private fx: Particles | null = null;
   private finger: GhostFinger | null = null;
-  private pet: Critter | null = null;
+  private pet: Companion | null = null;
   private game: Game | null = null;
   private age = 0;
   private rest = 0;
@@ -200,7 +199,7 @@ export class Demo {
     this.rest = 0;
     this.done = false;
     // Every play of the demo is the same round, so what is shown is what is explained.
-    const pet = makePet();
+    const pet = makeCompanion();
     this.pet = pet;
     this.tracked.add(pet);
     const talk = () => this.tw.wait(0.5);
@@ -226,7 +225,7 @@ export class Demo {
       particles: fx,
       renderer: this.opts.renderer,
       pet,
-      petSpec: petSpec(),
+      petSpec: companionSpec(),
       childName: 'friend',
       track: (o) => (this.tracked.add(o), o),
       untrack: (o) => void this.tracked.delete(o),

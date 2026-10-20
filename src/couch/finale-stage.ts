@@ -1,8 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
-import type { Critter } from '../art/critter';
 import { RAINBOW, swatch, type Swatch } from '../art/palette';
-import { makePet } from '../art/pet';
+import { makeCompanion, type Companion } from '../creatures/companion';
 import { Particles } from '../art/particles';
 import { gradientTexture } from '../art/scenery';
 import { sfx } from '../audio/sfx';
@@ -80,7 +79,7 @@ export class FinaleStage extends Container implements Updatable {
   private readonly sky = new Sprite();
   private readonly stars = [new Graphics(), new Graphics(), new Graphics()];
   private readonly scenery = new Graphics();
-  private readonly pet: Critter = makePet();
+  private readonly pet: Companion = makeCompanion();
   private view: View;
   private clock = 0;
   private hopIn = 1.2;

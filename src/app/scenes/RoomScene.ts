@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { frameArt, ITEM_SIZE, roomItem, windowArt } from '../../art/room';
 import { flower } from '../../art/shapes';
 import { stickerize } from '../../art/sticker';
@@ -17,7 +17,7 @@ import type { View } from '../../engine/view';
 import { gameById } from '../../games/registry';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, arrowIcon, crossIcon, flipIcon, islandIcon, magnifierIcon } from '../../ui/icons';
+import { againIcon, arrowIcon, basketIcon, crossIcon, flipIcon, islandIcon, magnifierIcon } from '../../ui/icons';
 import { Sparkle } from '../../ui/sparkle';
 import { BOARD, PLAQUE, pictureBoard, TunePlaque } from '../../ui/creation-art';
 import { StickerPicker } from '../../ui/sticker-picker';
@@ -62,13 +62,15 @@ export class RoomScene extends Scene {
   private readonly takeTune = new RoundButton(crossIcon(), swatch.white, 36, () => this.takeDown('tune'));
   private readonly stage = new Container();
   private readonly dim = new Graphics();
-  private readonly pet = makePet();
+  private readonly pet = makeCompanion();
   private readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.app.go.hub());
   private readonly flip = new RoundButton(flipIcon(), swatch.white, 50, () => this.flipSelected());
   private readonly tidyButton = new RoundButton(againIcon(), swatch.white, 50, () => this.tidy());
   /** The discovery journal. It twinkles while there is something in it she has not looked at. */
   private readonly journalButton = new RoundButton(magnifierIcon(), swatch.white, 50, () => { void voice.say('journal.hello'); this.app.go.journal(); });
   private readonly ring = new Graphics();
+  /** Friends' way in until RW08's Home (RW05): her friend goes to look in the basket, then Friends opens. */
+  readonly basket = new Container();
   readonly pieces = new Map<RoomItemId, Piece>();
   private picker: StickerPicker | null = null;
   private selected: RoomItemId | null = null;
@@ -97,9 +99,33 @@ export class RoomScene extends Scene {
       this.journalButton.addChild(sparkle);
     }
     this.flip.alpha = 0.35;
+    if (store.data.creatures.owned.length > 0) this.makeBasket();
     onTap(this.frame, () => this.openPicker(), { cooldown: 400 });
     onTap(this.board, () => void this.viewPicture(), { cooldown: 400 });
     onTap(this.plaque, () => void this.playTune(), { cooldown: 400 });
+  }
+
+  private makeBasket() {
+    const art = basketIcon();
+    art.scale.set(2.2);
+    art.eventMode = 'none';
+    this.basket.addChild(new Graphics().ellipse(0, 34, 62, 14).fill({ color: 0x000000, alpha: 0.12 }), art);
+    this.basket.hitArea = new Rectangle(-62, -60, 124, 120);
+    onTap(this.basket, () => void this.openFriends(), { cooldown: 500 });
+    this.ui.addChild(this.basket);
+  }
+
+  /** A tap, not a move: her friend goes to see who is in the basket, then Friends opens. */
+  private async openFriends() {
+    if (this.acting) return;
+    this.acting = true;
+    this.basket.scale.set(0.9);
+    sfx.pop();
+    void voice.say('room.friends');
+    await this.walkTo(this.basket.x + 110, this.basket.y + 30);
+    this.pet.cheer();
+    await this.tw.wait(0.5);
+    this.app.go.friends();
   }
 
   private addPiece(id: RoomItemId) {
@@ -136,6 +162,7 @@ export class RoomScene extends Scene {
     this.flip.position.set(v.w - 190, v.h - 70);
     this.tidyButton.position.set(v.w - 75, v.h - 70);
     this.journalButton.position.set(v.w - 305, v.h - 70);
+    this.basket.position.set(84, v.h - 84);
     this.dim.clear().rect(0, 0, v.w, v.h).fill({ color: 0x1d2350, alpha: 1 });
     this.dim.alpha = this.lit ? 0 : 0.38;
     for (const piece of this.pieces.values()) this.place(piece, false);

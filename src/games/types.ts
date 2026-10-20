@@ -1,6 +1,7 @@
 import type { Container, Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
-import type { Critter, CritterSpec } from '../art/critter';
+import type { CritterSpec } from '../art/critter';
+import type { Companion } from '../creatures/companion';
 import type { Creation } from '../content/creations';
 import type { RegionId } from '../content/world';
 import type { Particles } from '../art/particles';
@@ -197,8 +198,9 @@ export interface GameContext {
   tw: Tweener;
   particles: Particles;
   renderer: Renderer;
-  /** The guide in the corner. It cheers, and tapping it repeats the last instruction. */
-  pet: Critter;
+  /** The guide in the corner: the companion (RW05). It cheers, and tapping it repeats the last instruction. */
+  pet: Companion;
+  /** The ten large-pet games' stand-in until RW05 slice 2: a pip in the companion's colour. */
   petSpec: CritterSpec;
   childName: string;
   track<T extends Updatable>(obj: T): T;

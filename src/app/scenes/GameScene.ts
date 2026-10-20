@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Text } from 'pixi.js';
-import { makePet, petSpec } from '../../art/pet';
+import { companionSpec, GUIDE_SCALE, makeCompanion } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
@@ -48,7 +48,7 @@ export class GameScene extends Scene {
   /** Built when the round is about to start: after the intro, for a game that is opened for the first time. */
   private game: Game | null = null;
   private readonly stage = new Container();
-  private readonly pet = makePet();
+  private readonly pet = makeCompanion();
   private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave());
   /** For the grown-up: hold to open the how-to card. Quiet on purpose, and a long hold so a small hand does not open it. */
   private readonly help = new HoldButton(questionIcon(), swatch.white, 38, 0.9, () => this.openHelp());
@@ -66,7 +66,7 @@ export class GameScene extends Scene {
   private resultLayer: Container | null = null;
   private resultVeil: Graphics | null = null;
   private readonly resultPetOffset = { y: 300 };
-  private resultStar: ReturnType<typeof makePet> | null = null;
+  private resultStar: ReturnType<typeof makeCompanion> | null = null;
   private resultSticker: Container | null = null;
   private resultPill: Container | null = null;
   private resultReady = false;
@@ -120,7 +120,7 @@ export class GameScene extends Scene {
     this.level = this.story?.level ?? (this.startLevel === undefined ? store.levelFor(this.mod.id, range, this.mod.entryLevels) : stepLevel(this.startLevel, 0, range));
     this.content.addChild(this.stage);
 
-    this.pet.scale.set(0.42);
+    this.pet.scale.set(GUIDE_SCALE);
     onTap(this.pet, () => {
       this.pet.poke();
       sfx.giggle();
@@ -166,7 +166,7 @@ export class GameScene extends Scene {
       particles: this.particles,
       renderer: this.app.renderer,
       pet: this.pet,
-      petSpec: petSpec(),
+      petSpec: companionSpec(),
       childName: store.data.profile.name,
       track: (o) => this.track(o),
       untrack: (o) => this.untrack(o),
@@ -416,7 +416,7 @@ export class GameScene extends Scene {
     veil.eventMode = 'static'; // nothing underneath can be tapped now
     veil.alpha = 0;
     const confetti = this.track(new Particles());
-    const star = this.resultStar = this.track(makePet());
+    const star = this.resultStar = this.track(makeCompanion());
     star.scale.set(0.8);
     const placeStar = () => star.position.set(this.view.w / 2, this.view.h - 20 + this.resultPetOffset.y);
     placeStar();
@@ -438,6 +438,8 @@ export class GameScene extends Scene {
     sfx.tada();
     void voice.say('praise');
     await this.tw.wait(0.5);
+    // The species' own move and chirp (the sprout's hop, the river's rear, the glider's loop), then a cheer.
+    star.poke();
     star.cheer();
     const hopLoop = async () => {
       for (;;) {

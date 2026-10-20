@@ -58,3 +58,11 @@
 - References were read through search summaries, store listings and reviews, none played: Toca Hair Salon 2, 3 and 4 reviews, Dr. Panda Beauty Salon, the two Play-Doh instruction pages, Pokémon Refresh, Nintendogs, Shampoodle, Neopets customisation, Avokiddo Emotions, the Fisher-Price vanity, and Common Core K.MD.A.2.
 - Ladder: levels 6–12 (lap/toddler 6 *Pat the fluff* and 7 *Snip snip*, toddler 8 *Pink, please*, 9 *Two customers*, pre-K 10 *Longer than Pip's*, 11 *Two colors*, 12 *Changed my mind*), nine queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the archived audit row.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
+## 2026-10-19 — Who Am I? definition (docs only)
+
+- Defined Who Am I? levels 1–4 in [the definition](../definitions/who-am-i.md) (zoo-animals study slice Z1) on `claude/who-am-i-definition` ([PR #615](https://github.com/rjdunlap/neo/pull/615), resuming the stale claim in #592): a thirteen-friend, fourteen-feature trait table with four marked reviewer cells; level 1 one clue and she taps the friend it fits, level 2 she turns over the friends each clue rules out, level 3 groups by features, level 4 surprises with surprise steps; distinguishable-answer generation, accounting, rule tests, layout, ghost finger, voice `whoami.*`, registration `who-am-i` (region `barnyard`, Barnyard, pre-K 1–2 and school 2–4).
+- References: none newly opened; the study's anchors, plus recalled Guess Who? and Twenty Questions.
+- Updated the zoo-animals Z1 slice, recommendations row, IDEAS row, a WAITING row with nine defaulted decisions (the trait review is decision 1) and a READY.md line for the Z2/Z3 build; the Z1 line left Next ten.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the trait-table review (decision 1, gates Z3's merge), and the device checks listed in the definition's Check tier.

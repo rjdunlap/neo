@@ -9,6 +9,7 @@ import { store } from '../progress/store';
 import { visibleGames } from '../content/lands';
 import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
+import { SPECIES, SPECIES_IDS } from '../creatures/species';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -73,13 +74,15 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
 
       <h2>Your island friend</h2>
       <div class="parent__row">
-        <label for="p-pet-name">Pet name</label>
+        <label for="p-pet-name">Your friend's name</label>
         <input id="p-pet-name" type="text" autocomplete="off" maxlength="40" />
       </div>
       <div class="parent__row">
-        <label for="p-pet-color">Pet color</label>
+        <label for="p-pet-color">Your friend's color</label>
         <select id="p-pet-color">${PET_COLORS.map((color) => `<option value="${color}">${color}</option>`).join('')}</select>
       </div>
+      <p class="muted" data-no-friend hidden>No friend yet: they meet one when their egg hatches.</p>
+      ${import.meta.env.DEV ? '<div class="parent__actions" style="margin-top:10px"><button class="btn" data-meet-all>Meet everyone (development)</button></div>' : ''}
       <h2>Playing</h2>
       <p class="muted">Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.</p>
       <div class="parent__row">
@@ -171,8 +174,11 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   const render = () => {
     const d = store.data;
     const { birth, startBand } = store.entry;
-    petName.value = d.pet.name;
-    petColor.value = d.pet.color;
+    const friend = store.companion;
+    petName.value = friend?.name ?? '';
+    petColor.value = friend?.look.color ?? 'teal';
+    petName.disabled = petColor.disabled = !friend;
+    $('[data-no-friend]').toggleAttribute('hidden', !!friend);
     name.value = d.profile.name;
     month.value = birth ? String(birth.month) : '';
     year.value = birth ? String(birth.year) : '';
@@ -206,12 +212,28 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     render();
   });
 
+  // These edit the companion: whichever friend travels with her now.
   petName.addEventListener('input', () => {
-    store.data.pet.name = petName.value.trim().slice(0, 40) || 'Pip';
+    const friend = store.companion;
+    if (!friend) return;
+    friend.name = petName.value.trim().slice(0, 40) || SPECIES[friend.species].names[0];
     applySettings();
     store.save();
   });
-  petColor.addEventListener('change', () => { store.data.pet.color = petColor.value as PetColor; store.save(); });
+  petColor.addEventListener('change', () => {
+    const friend = store.companion;
+    if (!friend) return;
+    friend.look.color = petColor.value as PetColor;
+    store.save();
+  });
+  // The reseed path at cutover (RW05): seeds the river and the glider so a developer sees three friends before adventures
+  // exist. Absent from a production build.
+  if (import.meta.env.DEV) {
+    root.querySelector('[data-meet-all]')?.addEventListener('click', () => {
+      for (const id of SPECIES_IDS) if (id !== 'sprout') store.meet(id, SPECIES[id].names[0], SPECIES[id].color, `dev:${id}`);
+      render();
+    });
+  }
 
   name.addEventListener('input', () => {
     store.data.profile.name = name.value.slice(0, 40);

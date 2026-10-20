@@ -1,5 +1,6 @@
 import { BANDS, type Band } from './bands';
-import { migrate, type SaveData } from './save';
+import { companionOf, migrate, type SaveData } from './save';
+import { SPECIES } from '../creatures/species';
 
 /**
  * Who has a save on this device. The first profile's save stays at `neo.save`, untouched, so an older cached build still
@@ -246,13 +247,13 @@ export function planRestore(index: ProfileIndex, backup: ParsedBackup): RestoreP
 // ---- What the chooser shows -------------------------------------------------------------------------------------
 
 /**
- * Nothing has happened in this profile: no name, no friend hatched, no birth, no round played. A fresh device's one profile
+ * Nothing has happened in this profile: no name, no friend met, no birth, no round played. A fresh device's one profile
  * is like this (the index is never empty), and the chooser hides it and lets "Add a player" fill it in.
  */
 export function isBlankProfile(save: SaveData, entry: Pick<ProfileEntry, 'birth' | 'startBand'>): boolean {
   return (
     save.profile.name.trim() === '' &&
-    !save.pet.hatched &&
+    save.creatures.owned.length === 0 &&
     entry.birth === null &&
     entry.startBand === null &&
     save.stickers.length === 0 &&
@@ -261,7 +262,8 @@ export function isBlankProfile(save: SaveData, entry: Pick<ProfileEntry, 'birth'
 }
 
 /** The name on a person's card. Only the grown-ups' page sets a name, so a save without one is labelled with the friend's. */
-export const cardName = (save: Pick<SaveData, 'profile' | 'pet'>): string => save.profile.name.trim() || save.pet.name;
+export const cardName = (save: Pick<SaveData, 'profile' | 'creatures'>): string =>
+  save.profile.name.trim() || (companionOf(save.creatures)?.name ?? SPECIES.sprout.names[0]);
 
 /**
  * The profile that "Add a player" fills in instead of creating a second one, so the first person stays at `neo.save`:

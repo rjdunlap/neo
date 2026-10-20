@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import { makePet, petSpec } from '../../art/pet';
+import { companionSpec, makeCompanion } from '../../creatures/companion';
 import { audio } from '../../audio/engine';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -57,7 +57,7 @@ export class CouchScene extends Scene {
   /** What "choose for me" looks at: standard controllers connected now, and how big the window is. */
   private controllers = 0;
   private readonly stage = new Container();
-  private readonly pet = makePet();
+  private readonly pet = makeCompanion();
   /** Sits above everything while a "how to play" screen is open: a paper backdrop and the demo. */
   private readonly introLayer = new Container();
   private readonly paper = new Graphics();
@@ -319,7 +319,7 @@ export class CouchScene extends Scene {
 
   /** The pet, drawn once into a canvas for the DOM screens. */
   private petCanvas(resolution = 1.5) {
-    const pet = makePet();
+    const pet = makeCompanion();
     const canvas = this.app.renderer.extract.canvas({ target: pet, resolution }) as HTMLCanvasElement;
     canvas.setAttribute('aria-hidden', 'true'); pet.destroy({ children: true });
     return canvas;
@@ -757,7 +757,7 @@ export class CouchScene extends Scene {
     const run = course && courseOf(this.couch.data, course.spec).run;
     const resume = { board: run?.slides.length ?? 0, done: run?.slides.slice() ?? [], attempts: run?.attempts ?? 0, assisted: run?.assisted ?? false };
     const couch = course ? { versus: false, course: { id: course.spec.id, resume, progress: (p: CourseProgress) => this.courseProgress(p) } } : { versus: party!.mode === 'faceoff' && info.faceoff === 'shared' };
-    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, petSpec: petSpec(), childName: 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
+    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, petSpec: companionSpec(), childName: 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
       instruct: (line, vars) => { const said = speak(line); this.instruction = { id: said, vars }; this.caption.textContent = voice.line(said, vars); return this.whileHere(voice.say(said, vars)); },
       say: (line, vars) => this.whileHere(voice.say(speak(line), vars)), finish: result => this.finish(result),
     });

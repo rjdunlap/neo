@@ -2,7 +2,7 @@ import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import type { Critter } from '../../art/critter';
 import { makeHost, Signpost } from '../../art/lands';
 import { swatch } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { Backdrop } from '../../art/scenery';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -71,7 +71,7 @@ export class LandScene extends Scene {
   private readonly field = new Container();
   private readonly glow = new Graphics();
   private glowLeft = 0;
-  readonly pip = makePet();
+  readonly pip = makeCompanion();
   readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));
   readonly book = new RoundButton(bookIcon(), swatch.white, 50, () => this.leave(() => this.app.go.stickers()));
   private readonly heading = label('', 36);
