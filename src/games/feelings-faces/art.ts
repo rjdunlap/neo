@@ -1,9 +1,9 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName, type CritterSpec } from '../../art/critter';
 import type { CompanionRig } from '../../creatures/companion';
-import { cream, ink, swatch, type ColorName } from '../../art/palette';
+import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { prop } from '../../art/props';
-import { shapePath, starPoints } from '../../art/shapes';
+import { puffs, shapePath, starPoints } from '../../art/shapes';
 import { Rng } from '../../engine/random';
 import { tile } from '../shared';
 import { FACE_PARTS, faceFrame, FEELINGS, type Feeling, type Helper } from './logic';
@@ -13,8 +13,8 @@ const line = (color: number, width = 5) => ({ width, color, join: 'round' as con
 /** Each feeling's bubble color in free play. */
 export const FEELING_COLOR: Record<Feeling, ColorName> = { happy: 'yellow', sad: 'blue', sleepy: 'purple', surprised: 'orange' };
 
-/** Friends for the last level; all have mouths, so every feeling reads. */
-export const FRIENDS: CritterName[] = ['cat', 'bunny', 'bear', 'pig', 'dog', 'cow'];
+/** Friends for the friends level, the whole cast; every face (the duck's brows over its bill too) shows each feeling. */
+export const FRIENDS: CritterName[] = ['cat', 'bunny', 'bear', 'pig', 'dog', 'cow', 'pip', 'duck'];
 
 /** A critter wearing a feeling. `alive` keeps it breathing and blinking; the caller updates it. */
 export function feelingCritter(spec: CritterSpec, feeling: Feeling | 'calm', scale: number): Critter {
@@ -181,6 +181,101 @@ export function moonAndStars(): Container {
   }
   c.addChild(g);
   return c;
+}
+
+/** A small orange butterfly, about 70 units across; `wings` flap by scaling x. */
+export function butterfly(): { node: Container; wings: Graphics } {
+  const node = new Container();
+  const wings = new Graphics()
+    .ellipse(-20, -10, 20, 16)
+    .ellipse(20, -10, 20, 16)
+    .ellipse(-15, 12, 13, 11)
+    .ellipse(15, 12, 13, 11)
+    .fill(swatch.orange.fill)
+    .stroke(line(swatch.orange.line, 4))
+    .circle(-20, -12, 6)
+    .circle(20, -12, 6)
+    .fill(swatch.yellow.light);
+  const body = new Graphics()
+    .roundRect(-4, -22, 8, 44, 4)
+    .fill(ink)
+    .moveTo(-2, -22)
+    .quadraticCurveTo(-8, -34, -14, -36)
+    .moveTo(2, -22)
+    .quadraticCurveTo(8, -34, 14, -36)
+    .stroke(line(ink, 3));
+  node.addChild(wings, body);
+  return { node, wings };
+}
+
+/** A striped ball, radius 34, centred on (0, 0). */
+export function bouncyBall(): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .circle(0, 0, 34)
+    .fill(swatch.red.fill)
+    .moveTo(-34, 0)
+    .quadraticCurveTo(0, 18, 34, 0)
+    .lineTo(30, 14)
+    .quadraticCurveTo(0, 30, -30, 14)
+    .closePath()
+    .fill(swatch.yellow.fill)
+    .circle(0, 0, 34)
+    .stroke(line(swatch.red.line, 5))
+    .ellipse(-12, -14, 8, 6)
+    .fill({ color: 0xffffff, alpha: 0.5 });
+  c.addChild(g);
+  return c;
+}
+
+/** An ice cream cone on a little table, its feet at (0, 0); `scoop` is drawn separately so it can fall off. */
+export function iceCream(): { node: Container; scoop: Graphics } {
+  const node = new Container();
+  const table = new Graphics()
+    .rect(-8, -110, 16, 110)
+    .fill(wood.fill)
+    .ellipse(0, 0, 36, 8)
+    .fill(wood.line)
+    .ellipse(0, -112, 54, 12)
+    .fill(wood.light)
+    .stroke(line(wood.fill, 5));
+  const cone = new Graphics().poly([-28, -190, 28, -190, 0, -120]).fill(wood.light).stroke(line(wood.fill, 5));
+  cone.moveTo(-16, -180).lineTo(6, -144).moveTo(16, -180).lineTo(-6, -144).stroke(line(wood.fill, 3));
+  const scoop = puffs(new Graphics(), [[-16, -202, 20], [16, -202, 20], [0, -218, 24]], swatch.pink.light, swatch.pink.line, 5);
+  node.addChild(table, cone, scoop);
+  return { node, scoop };
+}
+
+/** A picnic basket with its lid open, and nothing inside. */
+export function emptyBasket(): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .moveTo(-62, -60)
+    .quadraticCurveTo(0, -150, 62, -60)
+    .stroke(line(wood.fill, 8))
+    .roundRect(-66, -64, 132, 64, 12)
+    .fill(wood.light)
+    .stroke(line(wood.fill, 6));
+  for (const y of [-44, -22]) g.moveTo(-60, y).lineTo(60, y).stroke(line(wood.fill, 3));
+  g.ellipse(0, -64, 60, 10).fill(wood.line);
+  c.addChild(g);
+  return c;
+}
+
+/** One music note, about 50 units tall, for the lullaby. */
+export function musicNote(color: number): Graphics {
+  return new Graphics()
+    .ellipse(-8, 0, 13, 10)
+    .fill(color)
+    .moveTo(4, 0)
+    .lineTo(4, -44)
+    .quadraticCurveTo(14, -34, 22, -30)
+    .stroke(line(color, 5));
+}
+
+/** A grey rain cloud for the window. */
+export function windowCloud(): Graphics {
+  return puffs(new Graphics(), [[-46, 8, 34], [0, -14, 44], [46, 8, 34]], swatch.white.light, swatch.blue.line, 5);
 }
 
 /** A sticker: a friend wearing a feeling, with a heart. Rebuilt from its seed. */

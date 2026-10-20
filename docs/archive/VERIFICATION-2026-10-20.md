@@ -176,3 +176,19 @@
 - Ran `npm run typecheck` (clean), `npm test` (1647 of 1648; the known RW02b tote flake in `cast.test.ts` on untouched code, passed alone 44/44) and `npm run build` (passed; a shared scene file changed).
 - Root probe (one-off `test-results/loc-probe.mjs`, http://localhost:5329, landscape and portrait, both lands): Explore lists eleven locations; each card opens the location (land host, no resident); `go.game('orchard-rows')` and `go.game('tile-pairs', 'grownup')` with the land origin and leaving return to the location; no page errors. Screenshots reviewed (barnyard landscape: orchard, hay and hens clear of the spots; Lantern Lake portrait, full grown-up field: water strip, floating lanterns, garlands, posts, reeds).
 - Not run: `world`, the offline check, an iPad look, a child's reaction.
+
+## 2026-10-20 — Little Conductor levels 1–2 (music M2)
+
+- Built on `claude/little-conductor-m2` (tested commit `2c76c4a4`, base `2ad76211`): new game `little-conductor` in Music Mountain, levels 1–2, new `conductor` browser suite, `sfx.pluck` and a gain on `sfx.drum`.
+- Ran `npm run typecheck` (clean) and `npx vitest run src/games/little-conductor` (20 tests: motifs, pace-independent notes, 500 seeded random-tap runs with no skipped or repeated beat, change within one beat, call-off, listen again, both heard gates, bot reaches the gate, layout at four views and two levels). Full `npm test` passed except five known load timeouts in untouched games (ferry-jam, peg-garden, penguin-slide), which pass alone with a 30 s timeout.
+- `BROWSER_SUITE=conductor` (http://localhost:5213) passed at levels 1 and 2: early Done, a change inside a beat, the heard gate, the bow, one sticker, history `[level, 0, 0]`; portrait screenshot `test-results/browser/little-conductor-2-portrait.png`. `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-conductor` passed at levels 1 and 2 (11.9 s each). `npm run build` passed.
+- Not run: `smoke`, `world`, the offline check (no navigation or persistence change). Open on a device ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): 60 against 90 on an iPad speaker, a two-year-old reading the pads and pending ring, drum masking the melody, device speech, fast heard as winning.
+
+## 2026-10-20 — Jar Sort levels 1–8
+
+- Built on `claude/jar-sort-build` (PR #651, base `0e2677f5`): new game `jar-sort` in Rainbow Meadow, levels 1–8, new `jarsort` browser suite, frozen solver-checked boards, a one-board demonstration.
+- Ran `npm run typecheck` (clean) and `npm test` (all pass; four unrelated tests timed out under parallel load and pass alone: ferry-jam frozen harbors, peg-garden launcher, penguin-slide level 8, RW02b cast). The 10 jar-sort rule tests pass (slowest frozen-board search 93 ms). `npm run build` passed.
+- `BROWSER_SUITE=jarsort` (Vite http://localhost:5927) passed: level 1's authored boards solved by taps, a free refused move and a ground set-down, level 3 (two refused moves = 2 misses and 1 hint), a drag move, undo, level 7 portrait screenshot `test-results/browser/jar-sort-7-portrait.png`, level 8 mats solved by taps, one sticker per round.
+- After review, fixed a resize during a fruit's hop leaving the round busy (the pieces are placed again when it lands) and made a system `pointercancel` put a carried fruit back; added a long-wander hint timing test (11 rule tests; worst hint 10 ms, no undo fallback); `jarsort` re-passed on http://localhost:5612.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=jar-sort` at levels 1 and 8 (16.6 s, 49.8 s, before the one-board demonstration change) and at level 4 after it (25.1 s).
+- Not run: the offline check, `world`, the phone suites. Open on a device ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): fruit legibility at capacity 4, whether a preschooler reads lit jars, whether undo is found unprompted.

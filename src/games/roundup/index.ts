@@ -308,7 +308,12 @@ class Roundup implements Game {
     const a = this.autoAnimal;
     if (!a || a.state !== 'loose') return;
     const i = this.needs(a);
-    if (i < 0) return;
+    if (i < 0) {
+      // A counted spare stays in the meadow, clear of another animal's route to its gate.
+      const p = shooPoint({ x: a.critter.x, y: a.critter.y - 30 }, { x: this.field().x0 + 40, y: a.critter.y - 30 });
+      this.autoSpot.position.set(p.x, p.y);
+      return;
+    }
     const r = this.pens[i].rect;
     // Line up outside the correct gate before pushing across the fence line.
     const aligned = Math.abs(a.critter.y - (r.y + r.h / 2)) < r.h * 0.2;
@@ -325,7 +330,10 @@ class Roundup implements Game {
       const r = this.pens[this.needs(a)].rect;
       return Math.hypot(a.critter.x - r.x, a.critter.y - r.y - r.h / 2);
     };
-    const animal = candidates.sort((a, b) => distance(a) - distance(b))[0];
+    // A spare ahead of a needed animal would be swept into that animal's pen too.
+    // Use the same steering gesture to move it left first, rather than correcting an extra at the bell.
+    const spare = usesBell(this.plan) ? this.animals.find((a) => a.state === 'loose' && this.needs(a) < 0 && a.critter.x > this.field().x0 + 110) : undefined;
+    const animal = spare ?? candidates.sort((a, b) => distance(a) - distance(b))[0];
     if (this.plan.mode === 'tap') return animal ? { tap: { on: animal.critter, y: -120 }, pause: 0.1 } : null;
     if (animal) {
       this.autoAnimal = animal;

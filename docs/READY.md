@@ -7,7 +7,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 ## Next ten
 
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
-- **`roundup`, kinds and pens, slice 2** (claimed: `codex/roundup-kinds-pens`, [PR #672](https://github.com/rjdunlap/neo/pull/672); real-time level-6 demo still failing; logic tier): duck and dog, pens drawn from a pool, `{a}`/`{b}` voice lines, varied casts at 4. [Dive](deep-dives/roundup.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 11 *Come along*, slice 4** (new interaction): the follow mode for lap and toddler, placed by `order`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
@@ -36,7 +35,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`egg-catch`, level 10 Fix the run** (new interaction): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 
-- **`feelings-faces`, pools, the pet's own hug and scenery that answers** (existing-game content tier): eight happenings at level 6, four care scenarios at 8, all eight friends, the hug stated as the pet's own preference, props that wobble when tapped, the how-to finish line. [Slice 1](deep-dives/feelings-faces.md#build-slices-in-order)
 - **`feelings-faces`, lap entry 9 *Poke a feeling*** (new level, one-target interaction, with the `order`/`entryLevels` conversion): tap the pet, it shows the next feeling and says the word; a sad pet gets a hug; lap `[9, 1, 2]`. [Slice 2](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, toddler 10 *Hug or pillow*** (new level on the help interaction): two helper cards for sad, sleepy or hungry; toddler `[2, 10, 3, 4]`. [Slice 3](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 11 *Two friends, one happening*** (new interaction): one happening, two friends with two different faces, a question for each; pre-K top and the school entry. [Slice 4](deep-dives/feelings-faces.md#new-levels-on-top)
@@ -82,7 +80,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`mail-carrier`, level 15 *Make the key*, slice 9** (new interaction tier: typecheck, rule tests, one play of 15, a portrait screenshot of the wet key, `fingerdemo` at 15): match each sign row to its house to fill Hazel's key, then deliver two letters; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11, 14, 15]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
 
-- **`garden-grow`, true how-to and spoken gaps** (existing-game bug fix): cap the level 5 and 7 how-to steps, fix level 3's take-out wording, say when the beds are full and recount after a seed is taken out, let other beds plant while one grows at level 1, name the weather co-play seat. [Slice 1](deep-dives/garden-grow.md#build-slices-in-order)
 - **`garden-grow`, growth stages and wet soil** (presentation): leaves unfold, a bud swells and opens; rain darkens the soil, which dries back. [Slice 2](deep-dives/garden-grow.md#experience-and-presentation)
 - **`garden-grow`, flower kinds** (content, levels 1–7): daisy, tulip, sunflower and bell-flower; kind varies per request, color alone is judged. [Slice 3](deep-dives/garden-grow.md#fresh-content-inside-existing-levels)
 - **`garden-grow`, level 8 Grow it up** (new level, after slice 2): one big bed, every touch grows the next stage, three flowers; lap `order: [8, 1, 2]`, `entryLevels: [8]`. [Slice 4](deep-dives/garden-grow.md#new-levels-on-top)
