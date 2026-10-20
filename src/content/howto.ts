@@ -585,7 +585,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, text: 'The round ends when the song matches.' },
     ],
     note: [
-      { to: 2, text: "Any song is welcome. After it, a little tree house button hangs the song in the pet's room, where the pet sings it." },
+      { to: 2, text: "Any song is welcome. If at least two jellies are lit at the end, a little tree house button hangs the song in the pet's room, where the pet sings it." },
       { from: 3, text: 'A copied song is not hers, so it is not offered for the pet\'s room.' },
     ],
   },

@@ -94,3 +94,23 @@ export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string
   const notes = plan.mode === 'free' ? freeSong(plan) : song.notes;
   return notes.find((n) => !placed.has(key(n))) ?? null;
 }
+
+/** Where the grid sits in a view: its cell size and top-left corner. */
+export interface SongLayout {
+  cell: number;
+  x0: number;
+  y0: number;
+}
+
+/**
+ * The grid's place: clear of the pet on the left (and of the card at the card level), the replay button on the right at
+ * the listening level, and the top corner buttons. Cells grow to at most 150; every cell is a whole touch target.
+ */
+export function songLayout(plan: SongPlan, v: { w: number; h: number }): SongLayout {
+  const left = plan.mode === 'card' ? v.w * 0.36 : 175;
+  const right = v.w - (plan.mode === 'listen' ? 130 : 40);
+  const top = 130;
+  const bottom = v.h - 40;
+  const cell = Math.min((right - left) / plan.cols, (bottom - top) / plan.rows, 150);
+  return { cell, x0: left + (right - left - cell * plan.cols) / 2, y0: top + (bottom - top - cell * plan.rows) / 2 };
+}
