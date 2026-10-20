@@ -55,3 +55,10 @@
 - Ran typecheck (clean), `npx vitest run src/art/creatures scripts/creature-art` (55 passed, new `wearables.test.ts`), the pilot sprites re-cut byte-identical, one preview probe of every look in landscape and portrait (no console errors) at `http://localhost:5731`, and `npm run build` (99 precache entries, 9.0 MB after merging RW05 slice 1, wearables about 1.0 MB); after the merge also full `npm test` (166 files, 1561 tests) and a preview re-probe.
 - Not run: browser suites (no island code changed), offline check, iPad look, a child's reaction.
 - Open: angle misfits go to queue row R19 for re-drawing.
+
+## 2026-10-20 — RW02b step 3: the second-wave six
+
+- Prepared Tote, Trill, Dapple, Bramble, Mossback and Lumen (40 PNGs in `src/art/creatures/cast/`), rigged them in `src/art/creatures/cast.ts` and added the dev-only preview `/?cast` ([PR #633](https://github.com/rjdunlap/neo/pull/633); [result](../rework/GENERATED-CREATURE-PILOT.md#step-3-result-2026-10-20)).
+- Ran typecheck (clean), `npx vitest run src/art/creatures scripts/creature-art` (7 files, 99 tests), a preview probe at 1024 x 768 and 768 x 1024 on a dev server (every creature reacts to a real tap, touch radius 115-153 units, mood and dress buttons work, misfits marked, no page errors), and `npm run build` (99 precache entries, 9244 KiB, no cast assets or preview code in `dist/`).
+- Not run: full `npm test`, browser suites, offline check (no production asset or navigation change); no iPad look, frame rate with six meshes not measured, child appeal not established.
+- Open: the scarf on side-on species reads as a throat band (R19); alt poses are stills only; hit circles and slots read by eye.
