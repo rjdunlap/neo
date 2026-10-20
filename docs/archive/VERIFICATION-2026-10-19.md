@@ -26,3 +26,11 @@
 - Reviewed the sprint merges of the last four hours ([PR #581](https://github.com/rjdunlap/neo/pull/581), [#607](https://github.com/rjdunlap/neo/pull/607), [#608](https://github.com/rjdunlap/neo/pull/608)) for merge damage: no conflict markers, no lost or duplicated rows, every study and definition linked from a tracker or build note after this pass. Fixed the subject tracker's stale summary (forty-one researched; Greece and Rome added) and chunk 28's stale cell; cross-linked the arch proposed twice (Water Road level 1 owns it, medieval life's *Keystone* Block Tower mode reuses it) and the two Attic Finds notebook rows; linked the orphaned Brain Break, Mossy Path and Pyramid Solitaire definitions from their build notes; merged the four history studies' shared questions into one answerable row in [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md).
 - Ran `node scripts/check-links.mjs`, `git diff --check` and `node scripts/archive-verification.mjs --keep=15`. No code, tests, build or browser checks: docs only.
 - Open: eleven claim-only draft PRs (#582, #591, #592, #599–#606) have had no commit for over a day; their claims never reached `main`, so no tracker row was reset, and the developer may close them.
+
+## 2026-10-19 — Peekaboo Barn animals who name how they feel
+
+- Built the feelings half of slice 3 ([PR #611](https://github.com/rjdunlap/neo/pull/611), commit bbd04d62): in free play at levels 1–2 about one reveal in three is sleepy, surprised or singing (`pickFeeling` in `logic.ts`), said by the new `peek.feel` voice line; how-to step and co-play hint updated.
+- Ran `npm run typecheck` (clean) and `npx vitest run src/games/peekaboo-barn src/art/critter.test.ts src/content` (11 files, 102 tests, including two new feelings rule tests).
+- Ran `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaboo-barn FINGER_LEVELS=1` (clean, 17.1 s). A Playwright probe (Vite at `http://localhost:5471`) forced each feeling at level 1: all three showed, no misses, no page errors; one portrait screenshot (singing duck).
+- Not run: build, any other suite, device speech for the feeling words, an iPad.
+- Open: device speech and a child's reaction to the feeling words (the deep dive's decision 6 person check); more animals wait on decision 4.

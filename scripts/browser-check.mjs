@@ -3546,7 +3546,17 @@ async function arcade() {
       const g = neo.scene.game;
       const loose = () => g.animals.filter((a) => a.state === 'loose');
       if (g.plan.mode === 'tap') {
-        for (const a of [...g.animals]) { kit.tapOn(a.critter, 0, -40); await kit.until(() => a.state === 'penned', 4000); }
+        // A lap tap on the grass or the sign answers, and is never a miss or a hint.
+        const grass = g.touch.parent.toGlobal({ x: neo.view.w / 2, y: neo.view.h * 0.22 });
+        kit.tap(grass.x, grass.y); await kit.sleep(600);
+        kit.tapOn(g.pens[0].sign); await kit.sleep(600);
+        if (g.misses || g.hints || g.animals.some((a) => a.state !== 'loose')) throw new Error(`Lap grass/sign tap: ${g.misses} ${g.hints}`);
+        // Layouts vary per round, so neighbours' tap circles can overlap: either one hopping home is right.
+        for (let k = 0; k < 8 && loose().length; k++) {
+          const n = loose().length;
+          kit.tapOn(loose()[0].critter, 0, -40);
+          await kit.until(() => loose().length < n && g.animals.every((a) => a.state !== 'hopping'), 4000);
+        }
       } else {
         if (g.plan.mode === 'sort') {
           // Twice into the wrong pen: two gentle misses and a glow.
@@ -3560,7 +3570,7 @@ async function arcade() {
         }
         if (g.plan.mode === 'count') {
           // One too many, then the bell: the extra hops back out.
-          for (let k = 0; k <= g.pens[0].pen.target; k++) await herdInto(loose()[0], 0);
+          while (g.pens[0].inside <= g.pens[0].pen.target && loose().length) await herdInto(loose()[0], 0);
           kit.tapOn(g.bell); await kit.sleep(300);
           await kit.until(() => !g.busy, 8000);
           if (g.misses !== 1 || g.pens[0].inside !== g.pens[0].pen.target) throw new Error(`Extra not noticed: ${g.misses} ${g.pens[0].inside}`);

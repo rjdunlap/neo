@@ -27,14 +27,14 @@ Research and ideation only: nothing under `src/` changed. Roundup is the island'
 
 **Known gaps** (write-up findings, not fixes):
 
-1. **The uncounted helper.** The thirty-second trot-home finishes rounds that a hand could not, and the round's result does not say so; a struggling toddler can step up on help alone. It should count as a hint.
-2. **A numeral alone.** Level 5's sign shows "3" with no dots; the same child reads Animal Snack's and Bubble Pop's numeral-plus-dots signs. Spoken counts as each animal enters are the only support for the number.
+1. **The uncounted helper (fixed in slice 1).** The thirty-second trot-home finishes rounds that a hand could not, and the round's result does not say so; a struggling toddler can step up on help alone. It should count as a hint.
+2. **A numeral alone (fixed in slice 1).** Level 5's sign shows "3" with no dots; the same child reads Animal Snack's and Bubble Pop's numeral-plus-dots signs. Spoken counts as each animal enters are the only support for the number.
 3. **Fixed sorting cast.** Every sort is pigs and bunnies, two and two; replay varies the shuffle and little else, and the cow, who has a hay pen drawn for her, never meets a second pen.
-4. **Level 1 answers only its animals.** A lap tap on the grass, the pen or the sign does nothing (the stage's hit area is only set for shooing); a one-year-old's first touches mostly land there.
+4. **Level 1 answers only its animals (fixed in slice 1).** A lap tap on the grass, the pen or the sign does nothing (the stage's hit area is only set for shooing); a one-year-old's first touches mostly land there.
 5. **Toddler's second rung is the hard one.** Toddler's window is 1–3: after tapping, a toddler meets three animals that run from the finger, with the gate's half-open fence to find. There is no rung between "tap and it goes" and "shoo three".
 6. **One finger.** The flee logic follows one pointer (`pointer`), so a parent's second finger is ignored; co-play is advice on the card ("show her how to wiggle a finger behind the animals"), not a role.
 7. **Only "that's the pig pen" is spoken** for a wrong pen (`herd.wrongpen` names pig or bunny); the sort instruction is fixed text. Both need `{a}`/`{b}` arguments before any other kinds can be sorted.
-8. **No journal entries, no couch entry**, and the first layout of a level repeats across rounds.
+8. **No journal entries, no couch entry**, and the first layout of a level repeated across rounds (layout part fixed in slice 1: the start comes from the round's rng).
 9. **Person checks never recorded:** whether a one-year-old's tap on a wandering critter lands (the body-centred hit circle is 85 body units at 0.32 scale, about 54 on screen, larger than the drawn body), whether the flee radius feels like "they run from me" or like broken touch, whether the bell is understood as "I'm done" rather than another animal.
 
 Couch: none, and none proposed. A pad can move a dog that the herd runs from (Duckling Parade's couch steering), but the fun here is the finger on the grass; a couch version would be a new game.
@@ -121,7 +121,7 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
-1. **Support truth** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 5): the trot-home counts a hint, a count sign with dots at 5–6, a lap tap on grass or sign answered without a miss, the total spoken at the bell, a seeded layout per round, and the how-to note. IDs and windows unchanged.
+1. **Support truth** (built; existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 5): the trot-home counts a hint, a count sign with dots at 5–6, a lap tap on grass or sign answered without a miss, the total spoken at the bell, a seeded layout per round, and the how-to note. IDs and windows unchanged.
 2. **Kinds and pens** (logic tier plus one filtered play of 4 and 6, `fingerdemo` at 6): duck and dog, pens drawn from the pool, `{a}`/`{b}` voice lines, varied casts at 4.
 3. **Level 10 *Shoo one*** (new levels on an existing interaction: typecheck, rule tests, one play of 10, `fingerdemo` at 10): toddler `order [1, 10, 2, 3]` and `entryLevels: [10]`.
 4. **Level 11 *Come along*** (new interaction tier: typecheck, units, one scripted play of 11 at lap and toddler, one portrait screenshot, `fingerdemo` at 11): the follow mode, lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`.
@@ -135,4 +135,6 @@ Gated: 13 *Two things at once* and a school window (decision 1).
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`. A later session that builds a slice records its work here and in VERIFICATION.
+Deep dive session: research and ideation only (`node scripts/check-links.mjs`, `git diff --check`).
+
+**Slice 1, support truth** ([PR #627](https://github.com/rjdunlap/neo/pull/627), commit 7786d03e): the thirty-second trot-home adds one hint; counting pens (5-6) show the numeral plus that many dots (`signDots`, up to two a row); at level 1 a tap on grass or a pen makes the nearest loose animal cheer and speak (`nudge`) and a tap on a sign says "The {animals} live here!" (`herd.sign`), neither a miss nor a hint; a right bell has the pet say each pen's total ("3 pigs in the mud!", `herd.total`, singular for 1) before "Everyone is home"; the start layout comes from `ctx.rng` (`startSpots`); the how-to note says the trot-home counts a hint. IDs, windows and other accounting unchanged. The arcade browser case now taps whichever animal is still loose. Checks are in [VERIFICATION](../VERIFICATION.md).

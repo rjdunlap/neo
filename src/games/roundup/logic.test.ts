@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { enter, fleeSpeed, makeHerd, PLANS, ringBell, shooPoint, throughGate, wanted } from './logic';
+import { animalsFor, enter, fleeSpeed, makeHerd, PLANS, ringBell, shooPoint, signDots, startSpots, throughGate, wanted } from './logic';
 
 describe('Roundup', () => {
   it('always has enough animals for every pen, with a spare when counting', () => {
@@ -48,5 +48,42 @@ describe('Roundup', () => {
       expect(Math.hypot(finger.x - animal.x, finger.y - animal.y)).toBeCloseTo(105);
       expect((gate.x - animal.x) * (finger.x - animal.x) + (gate.y - animal.y) * (finger.y - animal.y)).toBeLessThan(0);
     }
+  });
+
+  it('starts each round somewhere new, always on the open meadow left of the pens', () => {
+    const field = { x0: 230, y0: 260, y1: 678 };
+    const left = 600;
+    const layouts = new Set<string>();
+    for (let seed = 1; seed <= 50; seed++) {
+      const spots = startSpots(5, field, left, new Rng(seed));
+      for (const p of spots) {
+        expect(p.x).toBeGreaterThanOrEqual(field.x0 + 40);
+        expect(p.x).toBeLessThanOrEqual(left);
+        expect(p.y).toBeGreaterThan(field.y0);
+        expect(p.y).toBeLessThan(field.y1);
+      }
+      layouts.add(spots.map((p) => Math.round(p.x)).join());
+    }
+    expect(layouts.size).toBeGreaterThan(40);
+  });
+
+  it('draws as many dots as the sign asks for, packed beside the numeral', () => {
+    for (let n = 1; n <= 4; n++) {
+      const dots = signDots(n);
+      expect(dots).toHaveLength(n);
+      expect(new Set(dots.map((d) => `${d.x},${d.y}`)).size).toBe(n);
+      // Inside the board's right part: 64 ± 26 across, within its 80-unit height.
+      for (const d of dots) {
+        expect(Math.abs(d.x)).toBeLessThanOrEqual(26);
+        expect(Math.abs(d.y)).toBeLessThanOrEqual(26);
+      }
+    }
+    // Every counting target fits the four the sign can show.
+    for (const plan of PLANS.filter((p) => p.max !== undefined)) expect(plan.max).toBeLessThanOrEqual(4);
+  });
+
+  it('says one pig, two pigs', () => {
+    expect(animalsFor('pig', 1)).toBe('pig');
+    expect(animalsFor('bunny', 3)).toBe('bunnies');
   });
 });

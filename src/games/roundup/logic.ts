@@ -29,6 +29,11 @@ export const PLANS: HerdPlan[] = [
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows' };
+/** What each pen's floor is, for "three pigs in the mud". */
+export const PLACE: Record<Kind, string> = { pig: 'mud', bunny: 'carrots', cow: 'hay' };
+
+/** The animal word for a count: "1 pig", "3 pigs". */
+export const animalsFor = (kind: Kind, n: number) => (n === 1 ? kind : PLURAL[kind]);
 
 export interface Pen {
   kind: Kind;
@@ -55,6 +60,27 @@ export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
   const pen: Pen = { kind };
   if (plan.mode === 'count') pen.target = rng.int(plan.min!, Math.min(plan.max!, n - 1));
   return { animals: Array(n).fill(kind), pens: [pen] };
+}
+
+/**
+ * Where a round's herd starts: spread down the meadow left of the pens, from the round's own seed,
+ * so replaying a level starts the herd somewhere new.
+ */
+export function startSpots(n: number, field: { x0: number; y0: number; y1: number }, left: number, rng: Rng): { x: number; y: number }[] {
+  return Array.from({ length: n }, (_, i) => ({
+    x: rng.range(field.x0 + 40, left),
+    y: field.y0 + 40 + ((field.y1 - field.y0 - 80) * (i + 0.5)) / n + rng.range(-20, 20),
+  }));
+}
+
+/** The counting sign's dots beside its numeral: up to two a row, centred on the origin. */
+export function signDots(n: number, gap = 26): { x: number; y: number }[] {
+  const rows = Math.ceil(n / 2);
+  return Array.from({ length: n }, (_, i) => {
+    const row = Math.floor(i / 2);
+    const inRow = Math.min(2, n - row * 2);
+    return { x: ((i % 2) - (inRow - 1) / 2) * gap, y: (row - (rows - 1) / 2) * gap };
+  });
 }
 
 export type EnterResult = 'in' | 'wrong-pen';
