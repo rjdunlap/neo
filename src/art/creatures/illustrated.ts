@@ -157,6 +157,40 @@ export abstract class IllustratedCreature extends Creature {
     this.craft.addChild(c);
     return c;
   }
+  /**
+   * Puts a node (a worn item, in creature units) on the picture at sprite point `at`, in front of
+   * the art or behind it. It rides the mesh vertex nearest `ride` (default `at`), following that
+   * vertex's offset and the turn of its row, so an item on an arm, the back or the tail moves with
+   * the part, and one resting on a pinned head stays put while the leaves above it sway.
+   */
+  pin(node: Container, at: Point, behind = false, ride: Point = at) {
+    const pos = this.rest;
+    let k = 0;
+    for (let i = 0; i < pos.length; i += 2) if (Math.hypot(pos[i] - ride.x, pos[i + 1] - ride.y) < Math.hypot(pos[k] - ride.x, pos[k + 1] - ride.y)) k = i;
+    const cols = this.mesh.geometry.verticesX;
+    // The row neighbour that gives the vertex's turn: the next one, or the previous at the row's end.
+    const j = (k / 2) % cols === cols - 1 ? k - 2 : k + 2;
+    this.riders.set(node, { k, j, at });
+    if (behind) this.craft.addChildAt(node, 0);
+    else this.craft.addChild(node);
+    this.ride(node);
+  }
+  /** Takes a pinned node off (the caller destroys it). */
+  unpin(node: Container) {
+    this.riders.delete(node);
+    node.removeFromParent();
+  }
+  private readonly riders = new Map<Container, { k: number; j: number; at: Point }>();
+  private ride(node: Container) {
+    const r = this.riders.get(node)!;
+    const pos = this.mesh.geometry.positions;
+    const rest = this.rest;
+    const p = this.px({ x: r.at.x + pos[r.k] - rest[r.k], y: r.at.y + pos[r.k + 1] - rest[r.k + 1] });
+    node.position.set(p.x, p.y);
+    node.rotation =
+      Math.atan2(pos[r.j + 1] - pos[r.k + 1], pos[r.j] - pos[r.k]) - Math.atan2(rest[r.j + 1] - rest[r.k + 1], rest[r.j] - rest[r.k]);
+  }
+
   /** A sprite pixel as a creature point. */
   px(p: Point): Point {
     return { x: (p.x - this.A.centre.x) * this.A.scale, y: (p.y - this.A.centre.y) * this.A.scale };
@@ -182,6 +216,7 @@ export abstract class IllustratedCreature extends Creature {
       pos[i + 1] = this.rest[i + 1] + d.y;
     }
     this.mesh.geometry.getBuffer('aPosition').update();
+    for (const node of this.riders.keys()) this.ride(node);
     const e = this.expression();
     if (e !== this.shown) {
       this.shown = e;

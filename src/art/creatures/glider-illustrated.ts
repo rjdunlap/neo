@@ -1,4 +1,5 @@
 import { type Point, bend, clamp01, IllustratedCreature, inside, reach, smooth, type ArtSet } from './illustrated';
+import type { WearTable } from './wearables';
 
 /**
  * The cloud glider as a prepared illustration (RW02b step 2; docs/rework/GENERATED-CREATURE-PILOT.md):
@@ -60,6 +61,19 @@ export const GLIDER_ART = {
     tummy: 'only the cream underside shows, under the wing',
   },
 } as const;
+
+/** RW06 prep: where the nine generated wearables sit, in sprite pixels (`wearables.ts`). Judged in the preview at rest and through a loop. */
+export const GLIDER_WEAR: WearTable = {
+  crown: { fits: [{ at: { x: 650, y: 112 }, width: 60 }] },
+  scarf: { misfit: GLIDER_ART.misfits.neck },
+  sunhat: { fits: [{ at: { x: 652, y: 108 }, width: 85 }] },
+  sunglasses: { fits: [{ at: { x: 700, y: 160 }, width: 70 }] },
+  raincoat: { misfit: 'a coat wants a body and arms; the glider is one wing, which a coat would hide' },
+  umbrella: { misfit: GLIDER_ART.misfits.hands },
+  beanie: { fits: [{ at: { x: 660, y: 120 }, width: 60 }] },
+  boots: { misfit: GLIDER_ART.misfits.feet },
+  mittens: { misfit: GLIDER_ART.misfits.hands },
+};
 
 const COLS = 40;
 const ROWS = 18;
