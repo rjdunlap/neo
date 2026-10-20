@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Teddy Doctor, after Toca Doctor and Dr. Panda: soft-toy patients visit the clinic and the child
@@ -25,6 +26,15 @@ export const PLANS: DoctorPlan[] = [
   { mode: 'card', patients: 2, choices: 3, name: 'A check-up in the order shown on a picture card' },
   { mode: 'told', patients: 2, choices: 3, name: 'A check-up in the order the patient says' },
 ];
+
+/** Each band's window; every level in it has a plan of its own (a test holds it). */
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 1, max: 3 },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: 6 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

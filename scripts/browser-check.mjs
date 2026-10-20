@@ -5318,6 +5318,12 @@ async function next() {
         await idle();
         const first = r === 0, round = g.round, mode = g.plan.mode;
         if (mode === 'play') {
+          // A touch on the patient far from every boo-boo (the side of the body) still bandages one.
+          if (first) {
+            const n = g.scrapes.length, side = g.patient.toGlobal({ x: -150, y: -130 });
+            kit.tap(side.x, side.y); await kit.sleep(350);
+            if (g.scrapes.length !== n - 1) throw new Error(`Doctor far tap left ${g.scrapes.length} of ${n}`);
+          }
           for (const s of [...g.scrapes]) { kit.tapOn(s.node); await kit.sleep(350); }
         } else if (mode === 'part') {
           if (first) {

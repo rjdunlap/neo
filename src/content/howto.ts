@@ -880,12 +880,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'teddy-doctor': {
     goal: 'Look after the teddy patient.',
     steps: [
-      { to: 1, text: 'Tap a boo-boo to put on a bandage.' },
-      { from: 2, to: 2, text: 'Listen to where the patient hurts, then tap that place to put on a bandage.' },
-      { from: 3, to: 3, text: 'Look at what is wrong, then tap what helps.' },
+      { to: 1, text: 'Tap the patient anywhere: the nearest boo-boo gets a bandage.' },
+      { from: 2, to: 2, text: 'Listen to where the patient hurts, then drag the bandage onto that place.' },
+      { from: 3, to: 3, text: 'Look at what is wrong, then drag what helps onto the patient.' },
       { from: 4, to: 4, text: 'Listen to what hurts, then use the right thing in the right place.' },
       { from: 5, to: 5, text: 'Do the check-up in the order shown on the picture card.' },
-      { from: 6, text: 'Do the check-up in the order the patient says.' },
+      { from: 6, to: 6, text: 'Do the check-up in the order the patient says.' },
     ],
     finish: 'The round ends when the patient is all better.',
   },

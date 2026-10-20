@@ -113,3 +113,10 @@
 - Root probe (one-off Playwright script, dev server, fresh profile): `go.land('counting-cove')` shows the cove with the River resident, tap the resident, launch the first game (duck-pond), Home back to the cove, `go.hub` to Home, in 1024×768 and 768×1024 with no page errors; both screenshots reviewed.
 - Not run: `npm run build` (no shared files), `world`, the offline check, an iPad look, real speech, a child's reaction.
 - Open: Home's Explore still opens Rainbow Meadow only, so the cove has no button entry until the Explore picker slice (see [READY.md](../READY.md)).
+
+## 2026-10-20 — RW13: the Explore picker of built locations
+
+- Built on `claude/rw13-explore-picker` ([PR #640](https://github.com/rjdunlap/neo/pull/640), code `e3339ea5`): `ExploreScene` at the root, `exploreLayout` in `home-layout.ts` with a unit test, voice line `explore.pick`, the `home` case updated; `classic/` navigation unchanged.
+- Ran `npm run typecheck`, `npm test` (171 files, 1620 tests passed) and `npm run build`.
+- Ran `BROWSER_SUITE=home` at the root (http://localhost:5571): Explore to the picker (rainbow-meadow and counting-cove, island link hidden, screenshot `explore`), Back to Home (link shown), Explore, Counting Cove card, location, Home; passed. Production offline check (http://localhost:5656, served build matched `dist` `main-BIDP_T3s.js`) passed.
+- Not run: `world` (classic navigation unchanged), an iPad touch or speech check, a child's reaction.

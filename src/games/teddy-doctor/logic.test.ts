@@ -1,8 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { AILMENTS, AIM_PARTS, CHECKS, CURE, doctorTouch, makeRounds, nearestPart, partSpot, PATIENTS, PLANS, SCRAPE_PARTS, wantedTool } from './logic';
+import { AILMENTS, AIM_PARTS, CHECKS, CURE, doctorTouch, LEVELS, makeRounds, nearestPart, partSpot, PATIENTS, planFor, PLANS, SCRAPE_PARTS, wantedTool, type Part } from './logic';
 
 describe('Teddy Doctor', () => {
+  it('gives every level in every band its own plan, never a clamped neighbour', () => {
+    for (const [band, range] of Object.entries(LEVELS)) {
+      if (!range) continue;
+      for (let level = range.min; level <= range.max; level++) {
+        expect(PLANS[level - 1], `${band} ${level}`).toBeDefined();
+        expect(planFor(level), `${band} ${level}`).toBe(PLANS[level - 1]);
+      }
+    }
+  });
+
+  it('at level 1 a touch anywhere on the patient finds a boo-boo still to bandage, and the one touched when on it', () => {
+    const subsets = (parts: Part[]): Part[][] => parts.flatMap((_, i) => [[parts[i]], ...subsets(parts.slice(i + 1)).map((rest) => [parts[i], ...rest])]);
+    for (const patient of PATIENTS) for (const left of subsets(SCRAPE_PARTS)) {
+      for (const part of left) {
+        const s = partSpot(patient, part);
+        expect(nearestPart(patient, s.x, s.y, left)).toBe(part);
+        expect(nearestPart(patient, -s.x, s.y, left)).toBe(part);
+      }
+      // Anywhere on the body, even far from every boo-boo, bandages one of those left.
+      for (let x = -170; x <= 170; x += 34) for (let y = -330; y <= 40; y += 37) expect(left).toContain(nearestPart(patient, x, y, left));
+    }
+  });
+
   it('demonstrates every patient with the right tool, place, and check-up order', () => {
     for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
       for (const round of makeRounds(plan, new Rng(seed))) {

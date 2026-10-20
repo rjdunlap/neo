@@ -670,6 +670,7 @@ export const SCRIPT = {
   'game.teddy-doctor': ['Teddy doctor!'],
   'doctor.play': ['Oh no, boo-boos! Tap them to put on bandages.'],
   'doctor.part': ['Ouch! Please put a bandage on my {part}.'],
+  'doctor.patched': ['My {part}! Thank you.', 'A bandage on my {part}!'],
   'doctor.notthat': ['That is my {touched}. Where is my {part}?'],
   'doctor.scrape': ['Ouch! I scraped my {part}.'],
   'doctor.bump': ['Ow! I bumped my head.'],

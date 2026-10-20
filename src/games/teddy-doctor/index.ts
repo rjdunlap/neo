@@ -14,6 +14,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   CHECK_PART,
   CURE,
+  LEVELS,
   doctorTouch,
   makeRounds,
   nearestPart,
@@ -27,15 +28,7 @@ import {
   type Part,
   type Tool,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 2, max: 5 },
-  prek: { min: 3, max: 6 },
-  school: { min: 5, max: 6 },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 /** Patients are big, so their body parts are easy to aim at. */
 const SCALE = 1.25;
@@ -381,21 +374,22 @@ class TeddyDoctor implements Game {
 
   // ----- the child's actions -----
 
+  /** Anywhere on the patient counts: the nearest boo-boo gets the bandage, and the patient names the part. */
   private async tapAt(at: { x: number; y: number }) {
-    if (this.busy || this.finished || !this.scrapes.length) return;
-    const dist = (s: { node: Container }) => {
-      const p = s.node.getGlobalPosition();
-      return Math.hypot(p.x - at.x, p.y - at.y);
-    };
-    const s = [...this.scrapes].sort((a, b) => dist(a) - dist(b))[0];
-    // getGlobalPosition is in screen pixels; reach about 90 of the patient's units.
-    if (dist(s) > 90 * SCALE * this.view.scale) return;
+    if (this.busy || this.finished || !this.scrapes.length || !this.patient) return;
+    const local = this.patient.toLocal(at);
+    if (!Number.isFinite(local.x) || !Number.isFinite(local.y)) return;
+    const part = nearestPart(this.round.patient, local.x, local.y, this.scrapes.map((s) => s.part));
+    const s = this.scrapes.find((k) => k.part === part)!;
     this.scrapes.splice(this.scrapes.indexOf(s), 1);
     this.cover(s.node);
     this.patch(s.part);
-    this.patient!.poke();
+    this.patient.poke();
     sfx.giggle();
-    if (!this.scrapes.length) await this.better();
+    if (this.scrapes.length) return void this.ctx.say('doctor.patched', { part });
+    this.busy = true;
+    await this.ctx.say('doctor.patched', { part });
+    await this.better();
   }
 
   /** In the patient's own units, or null when the tool landed off the patient. */
