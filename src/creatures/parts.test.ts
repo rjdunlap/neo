@@ -18,6 +18,8 @@ const GAME_PARTS: Record<string, { parts: readonly PartName[]; strict: boolean }
   'pet-says': { parts: ['nose', 'tummy', 'ears', 'head', 'feet', 'hands'], strict: false },
   // The fur rides the head; the cape hangs from the neck, and a friend with no neck goes without.
   'fluffy-salon': { parts: ['head'], strict: true },
+  // The cards and bubbles frame the face from these.
+  'feelings-faces': { parts: ['head', 'eyes', 'nose', 'cheeks', 'ears'], strict: true },
 };
 
 describe('the companion’s parts (RW05 slice 2)', () => {
