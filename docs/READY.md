@@ -7,7 +7,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 ## Next ten
 
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
-- **Rework RW05 slice 2, `CompanionRig` for the ten large-pet games** (slice 1 landed 2026-10-20; shell tier plus one filtered regression per moved game and its `fingerdemo` where the bot touches the pet): named parts, moods and body bounds per species with recorded misfits and a unit test; Splish Splash, Weather Wardrobe and Pet Says move first. [Packet](rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices)
+- **Rework RW05 slice 2, `CompanionRig` for the ten large-pet games** (slice 1 landed 2026-10-20; shell tier plus one filtered regression per moved game and its `fingerdemo` where the bot touches the pet): named parts, moods and body bounds per species with recorded misfits and a unit test; Splish Splash, Weather Wardrobe and Pet Says move first. [Packet](rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices) Claimed in `claude/rw05-companion-rig` (2026-10-20).
 - **`roundup`, kinds and pens, slice 2** (logic tier): duck and dog, pens drawn from a pool, `{a}`/`{b}` voice lines, varied casts at 4. [Dive](deep-dives/roundup.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 
