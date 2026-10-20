@@ -142,7 +142,7 @@ Each has a default the build uses; none blocks slices 1–7.
 
 ## Build slices, in order
 
-1. **Support truth** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 8): every touch at level 1 answered (box giggle, floor wiggle, far-drop plop), glow after two wrongs in a row anywhere, the level-8 line naming the dropped shape, `CLASSIC` pinning 7–8 with a lid-fits test, the how-to note. IDs and windows unchanged.
+1. **Support truth** (claimed 2026-10-20, branch `claude/shape-sorter-support-truth`; existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 8): every touch at level 1 answered (box giggle, floor wiggle, far-drop plop), glow after two wrongs in a row anywhere, the level-8 line naming the dropped shape, `CLASSIC` pinning 7–8 with a lid-fits test, the how-to note. IDs and windows unchanged.
 2. **Level 9 *Tap and in it goes* and the lap band** (new interaction tier: typecheck, units including the lands layout at lap, one scripted play of 9 at lap and toddler, one portrait screenshot, `fingerdemo` at 9): `bands` gains `lap`, `lap [9]`, toddler `order [9, 1, 2, 3, 4, 5]`, `entryLevels: [9]`, the tap path, card and voice.
 3. **Level 10 *Round or square*** (new levels on an existing interaction: typecheck, rule tests, one play of 10, `fingerdemo` at 10): toddler `order [9, 1, 2, 10, 3, 4, 5]`.
 4. **More shapes, sizes and colours** (logic tier plus `fingerdemo` at 8 and one play of 6): five new kinds with lines and colours, pool draws at 6–8, sizes at 6–7, the rainbow one colour, the box's property facts. Run `npm run build` (shared `src/art/shapes.ts` changes).
