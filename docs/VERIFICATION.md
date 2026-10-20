@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-20 — RW06 slice 1: the saved look and dressing
+
+- Built on `claude/rw06-dress` ([PR #637](https://github.com/rjdunlap/neo/pull/637), tested at `c92a51d3` on `797dd0c9`): `look.worn` with `cleanWorn` and `store.wear`, the dressed `Companion`, the guide leaving off the `held` slot, `DressScene`, `go.dress`, `go.friends(previewId?)` and Friends' Dress button. See [HOME.md](rework/HOME.md#built-slice-1-2026-10-20).
+- Ran `npm run typecheck`, `npm test` (169 files, 1614 tests, with save-repair, store, guide-footprint and `dressLayout` tests), `npm run build` (wearable PNGs in the precache); dev server on 5993, preview on 5285 (bundle confirmed current).
+- `BROWSER_SUITE=dress` passed (the new case, including the guide-only check on bubble-pop and a second profile undressed), `BROWSER_SUITE=world` and `BROWSER_SUITE=friends` passed, and `npm run test:offline` passed.
+- Not run: large-pet game regressions (unchanged, still a `Critter`), couch suites.
+- Open: [device checks](DEVICE-CHECKS.md) (the hanger icon, items on an iPad, speech, frame rate with a dressed rig, a child's reaction); Friends cards and chooser portraits stay undressed; the ten large-pet games wait for RW05 slice 2.
+
 ## 2026-10-20 — RW06 definition, playable home and customization
 
 - Docs only on `claude/rw06-definition` ([PR #636](https://github.com/rjdunlap/neo/pull/636)): the RW06 packet [HOME.md](rework/HOME.md), two slice lines in READY.md, the RW06 work-item row and a defaults row in WAITING-ON-DEVELOPER.md.
@@ -98,19 +106,13 @@
 - Not run: build (no shared asset changed), browser play of levels 1–3 (interaction unchanged; finish line and card text only), navigation, offline, device speech.
 - Open: whether a child connects the orange glow to "change this" and whether device speech reads half-marks ([DEVICE-CHECKS](DEVICE-CHECKS.md)); the level-4 hint count per question stays with [inquiry decision 1](deep-dives/subjects/inquiry.md#decisions-for-the-developer).
 
-## 2026-10-19 — Chance and statistics subject study (docs only)
-
-- Docs only: [study](deep-dives/subjects/chance-statistics.md) on `claude/subject-chance-statistics-finish` ([PR #623](https://github.com/rjdunlap/neo/pull/623)), resuming the abandoned claim in [PR #605](https://github.com/rjdunlap/neo/pull/605). Anchors opened: CCSS 7.SP.C.5–8, 7.SP.A.1–2, 6.SP.A–B and HS S-CP.A; England's KS3 probability and Year 2–6 statistics (probability is first statutory at KS3); the Nuffield Bryant and Nunes review through its news summary (its summary PDF downloaded but did not extract); Xu and Garcia 2008 and Denison and Xu 2010 through secondary summaries; Can't Stop's Wikipedia rules and five spinner lessons through search excerpts; PhET Plinko gave only its title; the Galton board and NCTM spinner recalled. No reference game played.
-- Proposes Spinner Fair (levels 1–10), Peg Garden pearl bins, Lemonade Stand's typical day, Lucky Columns (13+), Spin Race and a family card. Packet in [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
-- Open: the seven developer decisions (new game vs Picture Graph, land, toddler on level 1, 11–14 placement, Lucky Columns' home, reviewer, chance never a reward); no child, parent, educator or device involved.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Dressing (RW06 slice 1), `dress`, `friends`, `world`, offline | 2026-10-20: typecheck, 1614 units, build, `dress` (new), `friends`, `world` and `test:offline` all passed at `c92a51d3` | [2026-10-20 entry](#2026-10-20--rw06-slice-1-the-saved-look-and-dressing) | Large-pet games and couch suites not run; no device, speech or child check |
 | Root locations (RW13 slice 2), `world`, offline | 2026-10-20: typecheck, 1606 of 1607 units (tote flake passed alone), build, root probe in both orientations (entry, meadow, resident, color-garden, Home back), `world` and `test:offline` on classic, root offline probe | [2026-10-20 entry](#2026-10-20--rw13-slice-2-rainbow-meadow-at-the-root) | One-off probe scripts, not a registered suite; no device, speech or child check |
 | Illustrated creature rigs and wearables (RW02b steps 2-3, RW06 prep) | 2026-10-20: typecheck, 99 creature and script tests (the second-wave six included), preview probes in both orientations (wearables on the pilot three; `/?cast` for the six), build (99 precache entries, 9244 KiB, cast assets not shipped); full `npm test` last run after the wearables merge | [Second-wave six](#2026-10-20--rw02b-step-3-the-second-wave-six) | No iPad, no child, no game suites or offline check; six-mesh frame rate unmeasured; motion judged from stills; angle misfits open as R19 |
 | Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02-creature-art-prototype), [RW01 packet](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw01-name-and-story-packet), [rework plan](archive/VERIFICATION-2026-10-16.md#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
