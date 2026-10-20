@@ -1,7 +1,7 @@
 import type { Container, Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
 import type { CritterSpec } from '../art/critter';
-import type { Companion } from '../creatures/companion';
+import type { Companion, CompanionRig } from '../creatures/companion';
 import type { Creation } from '../content/creations';
 import type { RegionId } from '../content/world';
 import type { Particles } from '../art/particles';
@@ -200,8 +200,10 @@ export interface GameContext {
   renderer: Renderer;
   /** The guide in the corner: the companion (RW05). It cheers, and tapping it repeats the last instruction. */
   pet: Companion;
-  /** The ten large-pet games' stand-in until RW05 slice 2: a pip in the companion's colour. */
+  /** The large-pet games not yet on `companion()` (RW05 slice 2): a pip in the companion's colour. */
   petSpec: CritterSpec;
+  /** A large-pet game's star: the companion's own species rig, undressed, with named parts (`CompanionRig`). The game adds, tracks and destroys it. */
+  companion(): CompanionRig;
   childName: string;
   track<T extends Updatable>(obj: T): T;
   untrack(obj: Updatable): void;
