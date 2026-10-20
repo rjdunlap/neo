@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { bubbleToTap, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, NEEDS, playDone, type Feeling } from './logic';
+import { bubbleToTap, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, NEEDS, playDone, type Feeling } from './logic';
 
 describe('Feelings Faces questions', () => {
   it('always offer the answer once among distinct choices, without repeating a prompt back to back', () => {
@@ -22,22 +22,38 @@ describe('Feelings Faces questions', () => {
 
   it('matches each need and event to one unambiguous answer', () => {
     expect(new Set(Object.values(HELPERS)).size).toBe(NEEDS.length);
+    expect(Object.keys(EVENTS)).toHaveLength(8);
     for (const feeling of Object.values(EVENTS)) expect(FEELINGS).toContain(feeling);
-    expect(new Set(Object.values(EVENTS)).size).toBe(Object.keys(EVENTS).length);
+    // Every feeling has a happening that causes it, so a round can ask for each.
+    for (const feeling of FEELINGS) expect(Object.values(EVENTS)).toContain(feeling);
     const help = feelingRound(FEELING_PLANS.find((p) => p.mode === 'help')!, new Rng(3));
     for (const q of help) expect(q.answer).toBe(HELPERS[q.prompt as keyof typeof HELPERS]);
   });
 
-  it('pairs each level-8 event with the feeling it causes and a fitting helper', () => {
-    for (const [event, scenario] of Object.entries(CARE_SCENARIOS)) {
-      expect(EVENTS[event as keyof typeof EVENTS]).toBe(scenario.feeling);
-      expect(HELPERS[scenario.need]).toBe(scenario.helper);
+  it('shows four different happenings in a level-6 round, drawn from the whole pool', () => {
+    const plan = FEELING_PLANS.find((p) => p.mode === 'why')!;
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const qs = feelingRound(plan, new Rng(seed));
+      expect(new Set(qs.map((q) => q.prompt)).size).toBe(4);
+      for (const q of qs) expect(q.answer).toBe(EVENTS[q.prompt as keyof typeof EVENTS]);
+      qs.forEach((q) => seen.add(q.prompt));
     }
+    expect(seen).toEqual(new Set(Object.keys(EVENTS)));
+  });
+
+  it('pairs each level-8 happening with a need and its helper, four different happenings a round', () => {
+    for (const scenario of Object.values(CARE_SCENARIOS)) expect(HELPERS[scenario.need]).toBe(scenario.helper);
+    // Between them the happenings ask for every helper, and the care-only ones never reach level 6.
+    expect(new Set(Object.values(CARE_SCENARIOS).map((c) => c.helper))).toEqual(new Set(Object.values(HELPERS)));
+    for (const e of CARE_ONLY) expect(Object.keys(EVENTS)).not.toContain(e);
     const plan = FEELING_PLANS.find((p) => p.mode === 'care')!;
     for (let seed = 1; seed <= 200; seed++) {
       const qs = feelingRound(plan, new Rng(seed));
       expect(qs).toHaveLength(4);
-      expect(new Set(qs.map((q) => q.prompt))).toEqual(new Set(Object.keys(CARE_SCENARIOS)));
+      expect(new Set(qs.map((q) => q.prompt)).size).toBe(4);
+      // Four different happenings ask for at least three different helpers.
+      expect(new Set(qs.map((q) => q.answer)).size).toBeGreaterThanOrEqual(3);
       for (const q of qs) {
         const scenario = CARE_SCENARIOS[q.prompt as keyof typeof CARE_SCENARIOS];
         expect(q.answer).toBe(scenario.helper);
