@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-20 — Algebra and balance subject study (docs only)
+
+- Docs only: [study](deep-dives/subjects/algebra-balance.md) on `claude/subject-algebra-balance-finish` ([PR #621](https://github.com/rjdunlap/neo/pull/621)), superseding the claim in [PR #604](https://github.com/rjdunlap/neo/pull/604). Anchors opened as listed in the study (CCSS 1.OA–8.F, England's algebra statements, Knuth et al. 2006 through its abstract, DragonBox, Function Machine and Zoombinis pages); the PhET pages gave only titles and no reference game was played.
+- Proposes Rule Machine (levels 1–8), Box Balance (13+), Seesaw Balance 18, Pattern Train *Two trains* and Fruit Sums *Both trees*. Packet in [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the eight developer decisions (new game vs Pattern Train, plotted-log grid, land, 7–8 placement, Box Balance's home, first-prediction rule, reviewer, hat wearable); no child, parent, educator or device involved.
+
 ## 2026-10-20 — RW13 slice 1: catalog moves and Painted Canyon
 
 - Built on `claude/rw13-catalog-moves` ([PR #634](https://github.com/rjdunlap/neo/pull/634), code `5b33f8f3` on `a2d1613b`): five `LANDS` moves (owl-walk to Story Grove, habitat-helpers to Rainbow Meadow, sink-float to Bubble Beach, sing-along-barn and orchard-rows to Barnyard) and Paint Pier renamed Painted Canyon in `lands.ts`, `world.ts` and the `subject.art` line.
@@ -97,13 +104,6 @@
 - Docs only: [deep dive](deep-dives/mail-carrier.md) on `claude/dive-mail-carrier-finish` ([PR #620](https://github.com/rjdunlap/neo/pull/620)), resuming the claim in [PR #603](https://github.com/rjdunlap/neo/pull/603) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–8 on `15fcd906`; gaps: the how-to's level 7 step has no `to` so level 8's card shows both steps, a lap touch off a house does nothing, no carrier on the street, a fixed backdrop seed, no spoken count at 3 and 5.
 - References were read through search summaries and store, archive and curriculum pages, none played: Paperboy, Orchard Toys Post Box Game, Postman Pat: Special Delivery Service, Dora's Map, Blades & Spencer 1987, England KS1 geography, street numbering conventions, CCSS K.CC.A.3 and 2.OA.C.3.
 - Ladder: levels 9–15 (toddler 10 *Which door?*, pre-K/school 9 *Who can help?* and 12 *Numbers past ten*, school 13 *Hazel's clue*, 11 *Both sides of the street*, 14 *Three letters, your way* and 15 *Make the key*), nine queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the notebook and the civics study's CC2 slice.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
-## 2026-10-19 — Seesaw Balance deep dive
-
-- Docs only: [deep dive](deep-dives/seesaw-balance.md) on `claude/dive-seesaw-balance-finish` ([PR #619](https://github.com/rjdunlap/neo/pull/619)), resuming the claim in [PR #602](https://github.com/rjdunlap/neo/pull/602) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–10 on `4fd0dc8c`; gaps: the how-to says tap but every thing needs a drag, a silent hint after two overs at 3/5/6/7, one face per weight, no lap band, no couch.
-- References were read through search summaries, store pages and wiki pages, none played: Hasee Bounce, Learning Resources Primary Bucket Balance, Montessori baric tablets, PhET Equality Explorer Basics and Balancing Act, DragonBox Algebra 5+, SolveMe Mobiles, Guess the Weight of the Marrow, Siegler's balance-scale rule studies, CCSS K.MD.A.2.
-- Ladder: levels 12–17 (lap 12 *Wheee!* with the lap band, preschool 13 *Who is heavier?*, pre-K 14 *Line them up*, pre-K/school 15 *Guess the pumpkin*, school 16 *How much heavier?* and 17 *Which way will it tip?*), eight queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the notebook and the archived audit rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 
 ## Coverage summary
