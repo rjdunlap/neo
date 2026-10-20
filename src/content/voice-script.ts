@@ -1309,6 +1309,8 @@ export const SCRIPT = {
   'herd.short': ['We have {k}. We need {n}!'],
   'herd.wrongpen': ["Oops! That's the {pen} pen!"],
   'herd.extra': ["Oops, that's {count}! We need {n}."],
+  'herd.sign': ['The {animals} live here!'],
+  'herd.total': ['{n} {animals} in the {place}!'],
   'herd.done': ['Everyone is home!', 'All safe in their pens!'],
   'scoop.free': ['Make me a big ice cream!', 'Ice cream, please! Lots of scoops!'],
   'scoop.one': ['{a}, please!', 'One {a} scoop, please!'],

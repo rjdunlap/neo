@@ -678,6 +678,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, text: 'Sort the pigs and bunnies into their pens, putting in the number of each that was asked for, then ring the bell.' },
     ],
     finish: 'The round ends when every animal is where it was asked to go.',
+    note: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.',
   },
   'bouncy-launch': {
     goal: 'Launch the pet and see where it lands.',
