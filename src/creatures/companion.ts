@@ -1,4 +1,4 @@
-import { Assets, Circle, ColorMatrixFilter, Container, Graphics, Sprite, type Texture } from 'pixi.js';
+import { Assets, Circle, ColorMatrixFilter, Container, Graphics, Rectangle, Sprite, type Texture } from 'pixi.js';
 import { CRITTERS, type CritterSpec, type Mood } from '../art/critter';
 import { swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
@@ -13,13 +13,15 @@ import { sfx } from '../audio/sfx';
 import type { PetColor } from '../content/world';
 import type { Individual } from '../progress/save';
 import { store } from '../progress/store';
+import { ART_OF, creaturePoint, PARTS, type PartName } from './parts';
 import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
 
 /**
  * RW05 slice 1 (docs/rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices): the friend who travels
  * with her, drawn by its species' illustrated rig (RW02b, `src/art/creatures/<species>-illustrated.ts`). The shell, the
- * guide and the island build it with `makeCompanion()`; the ten large-pet games still build a `Critter` from
- * `companionSpec()` until slice 2.
+ * guide and the island build it with `makeCompanion()`. Slice 2 gives it the surface the large-pet games need
+ * (`CompanionRig`: named parts, `spin`, `wiggle`, a body bounds); a game builds one with `ctx.companion()`, and the games
+ * not yet moved still build a `Critter` from `companionSpec()`.
  *
  * The art is loaded once at boot (`loadCollectionArt()`), so building a companion never waits. Without it (a unit test,
  * or a load that failed) a species falls back to its Graphics rig, a portrait to a frozen rig and the egg to `drawEgg`.
@@ -158,15 +160,48 @@ export function chirp(species: SpeciesId) {
 }
 
 /**
+ * What a large-pet game asks of its star (RW05 slice 2, from docs/rework/art-requests/GAME-FIT.md): named parts to hang
+ * things on or aim at, the moods, the motions and a body bounds. Units are the companion's own: feet on (0, 0), about
+ * the old pip's size at scale 1, so a game's sizes still hold.
+ */
+export interface CompanionRig extends Container {
+  readonly species: SpeciesId;
+  readonly color: PetColor;
+  readonly touch: { x: number; y: number; r: number };
+  alive: boolean;
+  /** Containers riding a part, one per point (two ears, two hands); empty where the species lacks it (`PARTS[species].misfits`). */
+  part(name: PartName): readonly Container[];
+  /** Where a part's points are at rest, in companion units; empty for a misfit. */
+  partPoints(name: PartName): readonly { x: number; y: number }[];
+  /** The pinned body (head and torso), at rest, in companion units: for games that use the whole body. */
+  bodyBounds(): Rectangle;
+  touchArea(grow?: number): Circle;
+  attach(child: Container): void;
+  /** The touch reaction; `quiet` is a squash and a surprised face in place, with no chirp. */
+  poke(quiet?: boolean): void;
+  hop(power?: number): void;
+  cheer(): void;
+  /** A turn on the spot, about a second. */
+  spin(): void;
+  /** A side-to-side wiggle, about half a second. */
+  wiggle(): void;
+  setMood(mood: Mood, seconds?: number): void;
+  readonly currentMood: Mood;
+  update(dt: number): void;
+}
+
+/**
  * The companion as a scene draws it: feet on (0, 0), about pip-sized at scale 1, with the surface the shell and the
  * games' guide use (`poke`, `hop`, `cheer`, `setMood`, `currentMood`). The hop and its squash ride on an outer body,
  * because each rig poses its own craft every frame.
  */
-export class Companion extends Container {
+export class Companion extends Container implements CompanionRig {
   readonly species: SpeciesId;
   /** The individual drawn, or null for the stand-in sprout before her first friend. */
   readonly id: string | null;
   readonly rig: Creature;
+  /** Her chosen colour for it. */
+  readonly color: PetColor;
   /** Body-centred, in this container's units, for a hit area. */
   readonly touch: { x: number; y: number; r: number };
   alive = true;
@@ -179,6 +214,10 @@ export class Companion extends Container {
   private hopV = 0;
   private squash = 0;
   private squashV = 0;
+
+  private spinT = -1;
+  private wiggleT = -1;
+  private readonly parts = new Map<PartName, Container[]>();
 
   private shown: WearableId[] = [];
   /** Slots this companion never draws, though they stay listed in `worn` (the guide's `held`). */
@@ -193,6 +232,7 @@ export class Companion extends Container {
     this.leaveOff = leaveOff;
     this.species = who.species;
     this.id = who.id ?? null;
+    this.color = who.look.color;
     this.rig = art ? illustrated(who.species, art) : makeCreature(who.species);
     const fit = FIT[who.species];
     this.rig.scale.set(fit.scale);
@@ -242,11 +282,63 @@ export class Companion extends Container {
     this.body.addChild(child);
   }
 
-  /** The species' touch reaction, a surprised face and its chirp. */
-  poke() {
+  /**
+   * The species' touch reaction (the sprout's hop, the river's rear, the glider's flap) and its chirp. `quiet` is the old
+   * pip's poke instead: a squash and a surprised face, staying where it is, for a game that pokes it often or has hung
+   * things on its body (the bath's mud under a scrubbing finger, Pet Says' mittens).
+   */
+  poke(quiet = false) {
+    if (quiet) {
+      this.squashV += 4;
+      this.setMood('surprised', 0.6);
+      return;
+    }
     this.rig.poke();
     this.squashV += 3;
     chirp(this.species);
+  }
+
+  partPoints(name: PartName): { x: number; y: number }[] {
+    return restPoints(this.species, name);
+  }
+
+  /**
+   * Each container rides its point: on an illustrated rig it is pinned to the mesh (`IllustratedCreature.pin`), so it
+   * moves with a leaf, a tail or a hop; on the Graphics fallback it rides the body. Either way its units are the
+   * companion's, so something drawn for the old pip keeps its size.
+   */
+  part(name: PartName): readonly Container[] {
+    let list = this.parts.get(name);
+    if (list) return list;
+    const fit = FIT[this.species];
+    const rig = this.rig;
+    list = (PARTS[this.species].points[name] ?? []).map((p, i) => {
+      const c = new Container();
+      c.label = `${name}${i}`;
+      if (rig instanceof IllustratedCreature) {
+        c.scale.set(1 / fit.scale);
+        rig.pin(c, p);
+      } else {
+        c.position.copyFrom(this.partPoints(name)[i]);
+        this.body.addChild(c);
+      }
+      return c;
+    });
+    this.parts.set(name, list);
+    return list;
+  }
+
+  bodyBounds(): Rectangle {
+    const b = bodyBox(this.species);
+    return new Rectangle(b.x, b.y, b.width, b.height);
+  }
+
+  spin() {
+    this.spinT = 0;
+  }
+
+  wiggle() {
+    this.wiggleT = 0;
   }
 
   hop(power = 1) {
@@ -293,10 +385,44 @@ export class Companion extends Container {
       }
     }
     const s = Math.max(-0.25, Math.min(0.25, this.squash * 0.05));
+    // The spin turns it round on the spot (a squeeze through side-on and back); the wiggle rocks it on its feet.
+    let turn = 1;
+    if (this.spinT >= 0) {
+      this.spinT += dt;
+      turn = this.spinT >= 0.9 ? 1 : Math.cos((this.spinT / 0.9) * Math.PI * 2);
+      if (this.spinT >= 0.9) this.spinT = -1;
+    }
+    let rock = 0;
+    if (this.wiggleT >= 0) {
+      this.wiggleT += dt;
+      rock = this.wiggleT >= 0.5 ? 0 : 0.14 * Math.sin((this.wiggleT / 0.5) * Math.PI * 4);
+      if (this.wiggleT >= 0.5) this.wiggleT = -1;
+    }
     this.body.y = this.hopY;
-    this.body.scale.set(1 + s, 1 - s);
+    this.body.rotation = rock;
+    this.body.scale.set((1 + s) * turn, 1 - s);
     this.rig.update(dt);
   }
+}
+
+/** A part's points on a species at rest, in companion units (feet on (0, 0), about pip-sized); empty for a misfit. */
+export function restPoints(species: SpeciesId, name: PartName): { x: number; y: number }[] {
+  const fit = FIT[species];
+  return (PARTS[species].points[name] ?? []).map((p) => {
+    const c = creaturePoint(species, p);
+    return { x: c.x * fit.scale, y: c.y * fit.scale - fit.lift };
+  });
+}
+
+/** A species' pinned body (head and torso) at rest, in companion units. */
+export function bodyBox(species: SpeciesId): { x: number; y: number; width: number; height: number } {
+  const fit = FIT[species];
+  const pts = ART_OF[species].body.map((p) => creaturePoint(species, p));
+  const xs = pts.map((p) => p.x * fit.scale);
+  const ys = pts.map((p) => p.y * fit.scale - fit.lift);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
 }
 
 function illustrated(species: SpeciesId, art: ArtSet): IllustratedCreature {
@@ -319,6 +445,15 @@ export function makeCompanion(): Companion {
 /** The companion as the corner guide in a round: dressed, leaving off what would reach past the corner. */
 export function makeGuide(): Companion {
   return new Companion(companion() ?? STAND_IN, undefined, GUIDE_LEAVES_OFF);
+}
+
+/**
+ * A large-pet game's star (`ctx.companion()`): the companion, undressed, since the game puts its own things on (mud,
+ * clothes, mittens) and a saved hat would cover a part it names.
+ */
+export function makeStar(): Companion {
+  const who = companion() ?? STAND_IN;
+  return new Companion({ ...who, look: { color: who.look.color, worn: [] } });
 }
 
 /** Draws one individual, for Friends and for another profile's card. */

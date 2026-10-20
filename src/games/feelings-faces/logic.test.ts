@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bubbleToTap, CARE_SCENARIOS, choiceToTap, EVENTS, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, NEEDS, playDone, type Feeling } from './logic';
+import { restPoints } from '../../creatures/companion';
+import { SPECIES_IDS } from '../../creatures/species';
+import { bubbleToTap, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, NEEDS, playDone, type Feeling } from './logic';
 
 describe('Feelings Faces questions', () => {
   it('always offer the answer once among distinct choices, without repeating a prompt back to back', () => {
@@ -89,5 +91,24 @@ describe('Feelings Faces questions', () => {
     expect(taps).toBe(6);
     // The first four taps show four different feelings; only then does it repeat.
     expect(new Set(order.slice(0, 4)).size).toBe(4);
+  });
+});
+
+describe('Feelings Faces cards frame the companion’s face (RW05 slice 2)', () => {
+  it('grows every species’ face to fill the card, its parts inside the window, without blurring past the cap', () => {
+    for (const s of SPECIES_IDS) {
+      const points = FACE_PARTS.flatMap((p) => restPoints(s, p));
+      expect(points.length, s).toBeGreaterThanOrEqual(5);
+      for (const size of [150, 128]) {
+        const f = faceFrame(points, size);
+        expect(f.scale, s).toBeLessThanOrEqual(FACE_MAX_GROW);
+        const on = points.map((p) => ({ x: p.x * f.scale + f.x, y: p.y * f.scale + f.y }));
+        // Every part sits well inside the window (the bubble's is a circle of 74).
+        for (const p of on) expect(Math.hypot(p.x, p.y), `${s} ${size}`).toBeLessThan(size / 2);
+        // The face is at least a third of the card across: the pip's whole-body card gave the river's about 18 units.
+        const span = Math.max(Math.max(...on.map((p) => p.x)) - Math.min(...on.map((p) => p.x)), Math.max(...on.map((p) => p.y)) - Math.min(...on.map((p) => p.y)));
+        expect(span, `${s} ${size}`).toBeGreaterThan(size / 3);
+      }
+    }
   });
 });

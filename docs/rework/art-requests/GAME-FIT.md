@@ -26,10 +26,12 @@ The ten games that build a large pet, and what each needs from it. "Parts" are p
 | Pet Says | nose, tummy, ears, head, toes (touch targets); clap, stomp, wave, jump, spin, wiggle, up, down (moves) | happy, surprised, sing | hop, spin, wiggle | — |
 | Bouncy Launch | the whole body | happy | flies in an arc, lands | — |
 | Bounce Back | the whole body (holds a paddle on the far side) | happy | slides | — |
-| Fluffy Salon | the body's fur region (strands grow out of it) | happy | — | fur strands |
+| Fluffy Salon | the body's fur region (strands grow out of it); built on the head's scalp instead (see the note below) | happy | — | fur strands |
 | Stop and Go | the whole body | happy, sleepy | hop | — |
 | Mail Carrier | the whole body (walks between mailboxes) | happy | hop | — |
 | Treasure Map | the whole body | happy | hop | — |
+
+**Fluffy Salon routing note (RW05 slice 2, 2026-10-20).** The fur is built on the head's scalp (`scalpFor(bodyBounds())`, pinned to `part('head')`), not the whole-body fur region this row first named, because only the head is pinned on the river and glider.
 
 Across the catalog the moods set on the pet are happy, surprised, sleepy, sad, calm and sing. Every species set therefore carries `base` (calm), `blink`, `happy` (also the singing face), `surprised`, `sleepy` and `sad`; nothing else is asked for.
 

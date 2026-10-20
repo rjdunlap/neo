@@ -98,7 +98,7 @@ Every reader of the pet today, from `grep petSpec|makePet|petSpecFor|pet\.name|p
 | `src/app/settings.ts` | `voice.pet = pet.name` | the companion's name | Unit |
 | `src/parent/panel.ts` | pet name and colour | the companion's name and look; the dev-only seed button | A scripted rename, reload, guide spoken name |
 | `src/couch/demo.ts`, `finale-stage.ts`, `CouchScene` | `makePet()` for the demo's pet and the finale's cheering pet | companion rig, cosmetic only; couch unlocks and scores still never touch the child's save | `BROWSER_SUITE=couch` only if the finale stage's code changes beyond the constructor call; otherwise the demo's unit test |
-| The ten large-pet games | `new Critter(ctx.petSpec)` | Unchanged in slice 1 (stand-in); `CompanionRig` in slice 2 | Slice 2: one filtered regression per game as it moves, and its `fingerdemo` where the bot touches the pet |
+| The ten large-pet games | `new Critter(ctx.petSpec)` | Unchanged in slice 1 (stand-in); `CompanionRig` in slice 2 (eight moved in PR #642; Splish Splash and Weather Wardrobe wait) | Slice 2: one filtered regression per game as it moves, and its `fingerdemo` where the bot touches the pet |
 | `src/content/voice-script.ts` | 46 `{pet}` lines | Unchanged; `friends.*` and `species.*` added | The voice test that every line id is known |
 | `src/art/creatures/*`, `src/dev/creature-preview.ts`, `src/main.ts` | RW02 preview | The Graphics glider, the preview and the dev hook deleted; rigs gain moods | `creatures.test.ts` extended to moods and the guide footprint |
 
@@ -117,7 +117,7 @@ Not established by any of this: a child's recognition of the three species or he
 
 ## Built: slice 1 (2026-10-20)
 
-Slice 1 landed in [PR #630](https://github.com/rjdunlap/neo/pull/630): save version 3 with `creatures` (`src/progress/save.ts`, `store.meet/choose`), the species table and `Companion` (`src/creatures/`), the hatch meeting a sprout, `FriendsScene` (`go.friends()`) from a treehouse basket, and the guide, result star, chooser, treehouse, map, lands, places, both picnics and the couch scene on the companion. `src/art/pet.ts` is deleted; the ten large-pet games stay on `Critter` through `ctx.petSpec`. The dev-only "Meet everyone (development)" button on the grown-ups' page is the reseed path. **Slice 2 (`CompanionRig`) is next.** Differences from this packet:
+Slice 1 landed in [PR #630](https://github.com/rjdunlap/neo/pull/630): save version 3 with `creatures` (`src/progress/save.ts`, `store.meet/choose`), the species table and `Companion` (`src/creatures/`), the hatch meeting a sprout, `FriendsScene` (`go.friends()`) from a treehouse basket, and the guide, result star, chooser, treehouse, map, lands, places, both picnics and the couch scene on the companion. `src/art/pet.ts` is deleted; the ten large-pet games stay on `Critter` through `ctx.petSpec`. The dev-only "Meet everyone (development)" button on the grown-ups' page is the reseed path. **Slice 2 (`CompanionRig`) landed in part; see below.** Differences from this packet:
 
 1. `src/dev/creature-preview.ts`, the Graphics glider and the root's preview are kept, because the site root has served the rework preview since 2026-10-19; the deletion list predates that.
 2. The guide's mood following play (happy on a right answer, surprised on a miss, sleepy when idle) is not built: the shell sees misses only at `finish`, so it needs game hooks. Only the celebration move and chirp landed.
@@ -127,6 +127,10 @@ Slice 1 landed in [PR #630](https://github.com/rjdunlap/neo/pull/630): save vers
 6. **Live effect at deploy:** every existing version-2 profile loses its pet and meets the egg again. Stickers, levels, room, creations and journal are kept.
 
 Checks are in the [2026-10-20 entry](../archive/VERIFICATION-2026-10-20.md#2026-10-20--rw05-slice-1-the-collection-model-and-friends).
+
+## Built: slice 2 in part (2026-10-20)
+
+Landed in part in [PR #642](https://github.com/rjdunlap/neo/pull/642). **On the rig:** `CompanionRig` (`src/creatures/companion.ts`: `part(name)`, `partPoints(name)`, `bodyBounds()` (renamed from `bounds()`, which shadowed Pixi's), `spin()`, `wiggle()`, `poke(quiet)`, `color`), `ctx.companion()` in `GameScene`, `CouchScene` and the couch demo, and the per-species parts table `src/creatures/parts.ts` with its recorded misfits (the glider has no neck, hands or feet; its tummy is its cream underside) and `parts.test.ts`. Pet Says, Stop and Go, Treasure Map, Bounce Back, Mail Carrier, Bouncy Launch, Fluffy Salon and Feelings Faces are moved. Fluffy Salon's fur sits on the head's scalp (`scalpFor(bodyBounds())`, pinned to `part('head')`), not the whole-body fur region [GAME-FIT](art-requests/GAME-FIT.md) names, because only the head is pinned on the river and glider. **Waiting:** Splish Splash and Weather Wardrobe stay on the pip stand-in through `ctx.petSpec`/`companionSpec()`, blocked on the developer's [misfit decision](../WAITING-ON-DEVELOPER.md#decisions-that-block-work) (a friend whose body cannot host a game's parts). The RW03 gate (the guide and the pet-sensitive games agree) is therefore **not yet fully met**: two games remain. Checks are in the [2026-10-20 entry](../VERIFICATION.md#2026-10-20--rw05-slice-2-in-part-companionrig-and-eight-large-pet-games).
 
 ## Not in this packet
 

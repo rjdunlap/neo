@@ -111,3 +111,28 @@ export const bubbleToTap = (tried: ReadonlySet<Feeling>, taps: number): Feeling 
  * are dealt). Options are distinct, so there is exactly one.
  */
 export const choiceToTap = (q: Question<string, string>) => q.options.indexOf(q.answer);
+
+/** The face parts a card or bubble frames (RW05 slice 2); every species has all five (`GAME_PARTS` in parts.test). */
+export const FACE_PARTS = ['head', 'eyes', 'nose', 'cheeks', 'ears'] as const;
+
+/** Room around the face's points, which are anchors on the picture rather than its outline. */
+const FACE_PAD = 44;
+/** The most a card grows a face: past this the picture blurs. */
+export const FACE_MAX_GROW = 2.4;
+
+/**
+ * Where to put the companion on a card or bubble so its face fills `size` units centred on (0, 0): the scale, and the
+ * companion's position. The points are the face parts at rest, in companion units. The river's and glider's faces are a
+ * fifth of the sprout's across, so a whole-body card at the pip's 0.48 left their feelings too small to tell apart.
+ */
+export function faceFrame(points: readonly { x: number; y: number }[], size: number): { scale: number; x: number; y: number } {
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const left = Math.min(...xs);
+  const top = Math.min(...ys);
+  const span = Math.max(Math.max(...xs) - left, Math.max(...ys) - top) + FACE_PAD;
+  const scale = Math.min(FACE_MAX_GROW, size / span);
+  const cx = (left + Math.max(...xs)) / 2;
+  const cy = (top + Math.max(...ys)) / 2;
+  return { scale, x: -cx * scale, y: -cy * scale };
+}

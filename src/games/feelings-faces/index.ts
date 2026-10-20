@@ -1,7 +1,7 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, RAINBOW, swatch, wood } from '../../art/palette';
-import { companionSpec } from '../../creatures/companion';
+import { makeStar, type CompanionRig } from '../../creatures/companion';
 import { prop } from '../../art/props';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -21,7 +21,7 @@ const PET_SCALE = 0.85;
 interface Option {
   value: string;
   node: Container;
-  critter?: Critter;
+  critter?: CompanionRig;
 }
 
 /** How each feeling sounds when a face shows it. */
@@ -36,7 +36,7 @@ class FeelingsFaces implements Game {
   readonly plan: FeelingPlan;
   readonly questions: Question<string, string>[];
   /** The big pet in the middle; the friends level has a row of friends instead. */
-  readonly pet: Critter | null;
+  readonly pet: CompanionRig | null;
   readonly options: Option[] = [];
   readonly friends: { critter: Critter; feeling: Feeling }[] = [];
   /** Free play: which feelings have been shown, and how many taps. */
@@ -59,6 +59,13 @@ class FeelingsFaces implements Game {
   private shiver = 0;
   private snowIn = 0;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /** The big pet's growth over the pip's scale, so a long, low friend fills the pip's space (as in Pet Says). */
+  private grow = 1;
+  /** The big pet's middle, and its right edge, in its own units: the river and glider stand off its origin. */
+  private middle = 0;
+  private edge = 0;
+  /** Where the big pet stands: its feet at the rug's centre. */
+  private petX = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -79,15 +86,23 @@ class FeelingsFaces implements Game {
     } else {
       // The pet is the star here, so the corner guide steps out; tapping the big pet repeats instead.
       ctx.pet.visible = false;
-      this.pet = feelingCritter(ctx.petSpec, this.plan.mode === 'why' ? 'calm' : 'happy', PET_SCALE);
-      this.pet.hitArea = new Circle(0, -125, 150);
-      onTap(this.pet, () => this.tapPet());
+      const pet = ctx.companion();
+      pet.setMood(this.plan.mode === 'why' ? 'calm' : 'happy');
+      const b = pet.getLocalBounds();
+      this.grow = Math.max(1, Math.min(2.2, 270 / b.height, 440 / b.width));
+      this.middle = b.x + b.width / 2;
+      this.edge = b.x + b.width;
+      // Body-centred, and never smaller than the pip's 150-unit circle.
+      const t = pet.touch;
+      pet.hitArea = new Circle(t.x, t.y, Math.max(150 / this.grow, t.r + 30));
+      this.pet = pet;
+      onTap(pet, () => this.tapPet());
       ctx.stage.addChild(this.pet);
     }
     ctx.stage.addChild(this.glow);
     if (this.plan.mode === 'play') {
       for (const feeling of FEELINGS) {
-        const { node, critter } = feelingBubble(ctx.petSpec, feeling);
+        const { node, critter } = feelingBubble(ctx.companion(), feeling);
         onTap(node, () => this.showFeeling(feeling, node), { radius: 85 });
         this.options.push({ value: feeling, node, critter });
         ctx.stage.addChild(node);
@@ -139,7 +154,8 @@ class FeelingsFaces implements Game {
       this.clearProps();
       pet.setMood('happy');
       sfx.giggle();
-      this.hearts(pet.x, pet.y - 130);
+      const at = this.headAt();
+      this.hearts(at.x, at.y);
       void this.ctx.say('feel.hug');
     } else {
       sfx.giggle();
@@ -223,7 +239,7 @@ class FeelingsFaces implements Game {
 
   private dealFaces(feelings: Feeling[]) {
     for (const feeling of feelings) {
-      const { node, critter } = faceCard(this.ctx.petSpec, feeling);
+      const { node, critter } = faceCard(this.ctx.companion(), feeling);
       this.addOption({ value: feeling, node, critter });
     }
   }
@@ -290,14 +306,15 @@ class FeelingsFaces implements Game {
       case 'help':
       case 'care': {
         // The helper floats over to the pet, and the need goes away.
-        void this.ctx.tw.to(node, { x: pet!.x, y: pet!.y - 110 }, { duration: 0.5, ease: ease.inOutSine });
+        const at = this.headAt();
+        void this.ctx.tw.to(node, { x: at.x, y: at.y + 20 }, { duration: 0.5, ease: ease.inOutSine });
         await this.ctx.tw.to(node.scale, { x: 0.5, y: 0.5 }, { duration: 0.5 });
         node.visible = false;
         this.endNeed();
         pet!.setMood('happy');
         pet!.cheer();
-        if (value === 'hug') this.hearts(pet!.x, pet!.y - 130);
-        else this.ctx.particles.burst(pet!.x, pet!.y - 130, { kind: 'star', colors: [swatch.yellow.fill], count: 18, speed: [120, 300] });
+        if (value === 'hug') this.hearts(at.x, at.y);
+        else this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [swatch.yellow.fill], count: 18, speed: [120, 300] });
         await this.ctx.say('feel.helped');
         break;
       }
@@ -347,7 +364,7 @@ class FeelingsFaces implements Game {
         .closePath()
         .fill(swatch.white.fill)
         .stroke({ width: 6, color: swatch.blue.line, join: 'round' });
-      bowl.position.set(pet.x + 190, pet.y);
+      bowl.position.set(this.besidePet(100), pet.y);
       this.props.addChild(bowl);
     }
     if (need === 'cold') {
@@ -358,13 +375,13 @@ class FeelingsFaces implements Game {
 
   private endNeed() {
     this.shiver = 0;
-    if (this.pet) this.pet.x = this.view.w / 2;
+    if (this.pet) this.pet.x = this.petX;
   }
 
   private async playEvent(event: FeelingEvent) {
     const pet = this.pet!;
     const tw = this.ctx.tw;
-    const x = pet.x + 200;
+    const x = this.besidePet(110);
     const y = pet.y;
     void this.ctx.say(`feel.event-${event}`);
     switch (event) {
@@ -372,7 +389,7 @@ class FeelingsFaces implements Game {
         const balloon = new Container();
         const string = new Graphics().moveTo(0, 46).quadraticCurveTo(-14, 110, 6, 170).stroke({ width: 3, color: swatch.white.line });
         balloon.addChild(string, prop('balloon', 'red'));
-        balloon.position.set(pet.x + 150, y - 300);
+        balloon.position.set(this.besidePet(60), y - 300);
         this.props.addChild(balloon);
         await tw.wait(1.2);
         sfx.whoosh();
@@ -430,15 +447,26 @@ class FeelingsFaces implements Game {
 
   // Effects -----------------------------------------------------------------
 
+  /** The big pet's head on the stage, for hearts and bursts. */
+  private headAt(): { x: number; y: number } {
+    const pet = this.pet!;
+    const head = pet.partPoints('head')[0] ?? { x: this.middle, y: -150 };
+    return { x: pet.x + head.x * pet.scale.x, y: pet.y + (head.y + 20) * pet.scale.y };
+  }
+
+  /** A stage x `gap` units right of the big pet, for props. */
+  private besidePet(gap: number): number {
+    const pet = this.pet!;
+    return Math.min(this.view.w - 90, pet.x + this.edge * pet.scale.x + gap);
+  }
+
   private hearts(x: number, y: number) {
     this.ctx.particles.burst(x, y, { kind: 'heart', colors: [swatch.pink.fill, swatch.red.fill], count: 16, speed: [120, 300], gravity: -60, size: [0.8, 1.3] });
   }
 
   private feelingBurst(feeling: Feeling) {
-    const pet = this.pet;
-    if (!pet) return;
-    const x = pet.x;
-    const y = pet.y - 150;
+    if (!this.pet) return;
+    const { x, y } = this.headAt();
     if (feeling === 'happy') this.ctx.particles.burst(x, y, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 30, speed: [200, 420], gravity: 300 });
     if (feeling === 'sad') void this.rainCloud(x, y - 150);
     if (feeling === 'sleepy') this.ctx.particles.burst(x + 60, y - 40, { kind: 'ring', colors: [swatch.purple.light], count: 5, speed: [30, 70], gravity: -40, angle: -Math.PI / 3, spread: 0.6, life: [1.2, 1.8] });
@@ -467,7 +495,7 @@ class FeelingsFaces implements Game {
     this.view = v;
     const floor = v.h * 0.6;
     // A rug in a color the pet isn't, so any pet stands out.
-    const rug = swatch[this.ctx.petSpec.color === 'blue' ? 'green' : 'blue'];
+    const rug = swatch[this.pet?.color === 'blue' ? 'green' : 'blue'];
     const g = this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
     // A window, a floor, and a round rug for the pet to stand on.
     const wx = v.w * 0.12;
@@ -477,7 +505,12 @@ class FeelingsFaces implements Game {
     g.rect(0, floor - 40, v.w, v.h - floor + 40).fill(wood.light).rect(0, floor - 44, v.w, 8).fill(wood.fill);
     g.ellipse(v.w / 2, floor + 5, 190, 38).fill(rug.light).stroke({ width: 6, color: rug.fill });
     this.night.clear().rect(0, 0, v.w, v.h).fill(swatch.purple.line);
-    this.pet?.position.set(v.w / 2, floor);
+    if (this.pet) {
+      const s = PET_SCALE * this.grow;
+      this.pet.scale.set(s);
+      this.petX = v.w / 2 - this.middle * s;
+      this.pet.position.set(this.petX, floor);
+    }
 
     if (this.plan.mode === 'play') {
       const xs = spread(this.options.length, 160, v.w - 40, 200);
@@ -514,7 +547,7 @@ class FeelingsFaces implements Game {
     this.friends.forEach((f) => f.critter.update(dt));
     this.glow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 4);
     if (this.shiver && this.pet) {
-      this.pet.x = this.view.w / 2 + Math.sin(this.clock * 40) * 4;
+      this.pet.x = this.petX + Math.sin(this.clock * 40) * 4;
       this.snowIn -= dt;
       if (this.snowIn <= 0) {
         this.snowIn = 0.12;
@@ -568,7 +601,8 @@ export const feelingsFaces: GameModule = {
     c.addChild(strings, stand);
     for (const [feeling, x, y] of [['happy', -46, -128], ['sad', 48, -112]] as const) {
       strings.moveTo(0, -48).quadraticCurveTo(x * 0.3, (y - 48) / 2, x, y + 46).stroke({ width: 3, color: swatch.white.line });
-      const { node, critter } = feelingBubble(companionSpec(), feeling);
+      const { node, critter } = feelingBubble(makeStar(), feeling);
+      critter.update(0);
       critter.alive = false;
       node.scale.set(0.62);
       node.position.set(x, y);

@@ -1,11 +1,12 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName, type CritterSpec } from '../../art/critter';
+import type { CompanionRig } from '../../creatures/companion';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { prop } from '../../art/props';
 import { shapePath, starPoints } from '../../art/shapes';
 import { Rng } from '../../engine/random';
 import { tile } from '../shared';
-import { FEELINGS, type Feeling, type Helper } from './logic';
+import { FACE_PARTS, faceFrame, FEELINGS, type Feeling, type Helper } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -23,26 +24,40 @@ export function feelingCritter(spec: CritterSpec, feeling: Feeling | 'calm', sca
   return c;
 }
 
-/** A face card: the critter's feet sit low on a white tile, about 170 by 190 units. */
-export function faceCard(spec: CritterSpec, feeling: Feeling): { node: Container; critter: Critter } {
-  const node = new Container();
-  const critter = feelingCritter(spec, feeling, 0.48);
-  critter.y = 72;
-  node.addChild(tile(170, 190), critter);
-  return { node, critter };
+/**
+ * Puts the companion, wearing a feeling, behind `window` so its face fills `size` units round (0, 0): the cards and
+ * bubbles show the face, grown from its parts (`faceFrame`), not the whole body.
+ */
+function framedFace(star: CompanionRig, feeling: Feeling, size: number, window: Graphics): Container {
+  const holder = new Container();
+  const frame = faceFrame(FACE_PARTS.flatMap((p) => star.partPoints(p)), size);
+  star.setMood(feeling);
+  star.scale.set(frame.scale);
+  star.position.set(frame.x, frame.y);
+  holder.addChild(star, window);
+  holder.mask = window;
+  return holder;
 }
 
-/** A round feeling bubble for free play, holding a small face. */
-export function feelingBubble(spec: CritterSpec, feeling: Feeling): { node: Container; critter: Critter } {
+/** A face card on a white tile, 170 by 190 units: the companion's face wearing a feeling. */
+export function faceCard(star: CompanionRig, feeling: Feeling): { node: Container; critter: CompanionRig } {
+  const node = new Container();
+  const face = framedFace(star, feeling, 150, new Graphics().roundRect(-79, -89, 158, 178, 14).fill(0xffffff));
+  node.addChild(tile(170, 190), face);
+  return { node, critter: star };
+}
+
+/** A round feeling bubble for free play, holding the companion's face. */
+export function feelingBubble(star: CompanionRig, feeling: Feeling): { node: Container; critter: CompanionRig } {
   const sw = swatch[FEELING_COLOR[feeling]];
   const node = new Container();
-  const critter = feelingCritter(spec, feeling, 0.4);
-  critter.y = 55;
+  const face = framedFace(star, feeling, 128, new Graphics().circle(0, 0, 74).fill(0xffffff));
   node.addChild(
-    new Graphics().circle(0, 6, 78).fill({ color: ink, alpha: 0.12 }).circle(0, 0, 78).fill(sw.light).stroke({ width: 7, color: sw.fill }),
-    critter,
+    new Graphics().circle(0, 6, 78).fill({ color: ink, alpha: 0.12 }).circle(0, 0, 78).fill(sw.light),
+    face,
+    new Graphics().circle(0, 0, 78).stroke({ width: 7, color: sw.fill }),
   );
-  return { node, critter };
+  return { node, critter: star };
 }
 
 /** A helper drawn about 110 units across, centered on (0, 0). */

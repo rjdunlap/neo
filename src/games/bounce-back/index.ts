@@ -1,9 +1,9 @@
 import { Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from 'pixi.js';
-import { Critter } from '../../art/critter';
 import { ink, swatch } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import type { CompanionRig } from '../../creatures/companion';
 import { palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -98,7 +98,7 @@ class BounceBack implements Game {
   private readonly ballNode: Graphics;
   private readonly leftNode = new Paddle(swatch.pink);
   private readonly rightNode = new Paddle(swatch.blue);
-  private readonly petFace: Critter;
+  private readonly petFace: CompanionRig;
   private readonly marker = new Graphics();
   private readonly star = new Graphics();
   private readonly touch = new Container();
@@ -187,7 +187,7 @@ class BounceBack implements Game {
     this.serveDir = this.versus && ctx.rng.next() < 0.5 ? -1 : 1;
     this.court = courtFor(ctx.rng.next());
     this.ballNode = ballArt(this.court.ball);
-    this.petFace = new Critter(ctx.petSpec);
+    this.petFace = ctx.companion();
     this.petFace.scale.set(0.28);
     this.petFace.position.set(-56, 34);
     ctx.track(this.petFace);

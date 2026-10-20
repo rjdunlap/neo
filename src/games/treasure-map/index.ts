@@ -1,10 +1,10 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { Critter } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { flower, puffs, starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import type { CompanionRig } from '../../creatures/companion';
 import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -76,7 +76,7 @@ class TreasureMap implements Game {
   hints = 0;
   busy = true;
   finished = false;
-  pirate: Critter | null = null;
+  pirate: CompanionRig | null = null;
 
   private readonly paper = new Graphics();
   private readonly headers = new Container();
@@ -107,7 +107,7 @@ class TreasureMap implements Game {
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => void this.tapGrid(e), { cooldown: 250 });
     if (this.plan.mode === 'steps') {
-      this.pirate = new Critter(ctx.petSpec);
+      this.pirate = ctx.companion();
       this.pirate.scale.set(0.3);
       this.pirate.eventMode = 'none';
       ctx.track(this.pirate);

@@ -4,6 +4,7 @@ import { makeHazel } from '../../art/lands';
 import { cream, grass, swatch, wood } from '../../art/palette';
 import { flower, starPoints } from '../../art/shapes';
 import { sfx } from '../../audio/sfx';
+import type { CompanionRig } from '../../creatures/companion';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -134,7 +135,7 @@ export class WoodsMail implements Game {
   private readonly routeChoicesLayer = new Container();
   private readonly routeChoiceButtons: { node: Container; glow: Graphics }[] = [];
   private shorterHouse: number | null = null;
-  private readonly walker: Critter;
+  private readonly walker: CompanionRig;
   private readonly hazel = makeHazel();
   private wrongs = 0;
   private rect = { x: 0, y: 0, w: 0, h: 0 };
@@ -146,7 +147,7 @@ export class WoodsMail implements Game {
     this.plan = planFor(ctx.level);
     this.woods = makeWoods(ctx.rng);
     this.trips = makeTrips(this.plan, ctx.rng);
-    this.walker = new Critter(ctx.petSpec);
+    this.walker = ctx.companion();
     this.walker.scale.set(0.2);
     ctx.track(this.walker);
     this.decor.eventMode = 'none';
