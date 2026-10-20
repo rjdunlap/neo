@@ -1990,7 +1990,8 @@ async function hatchingAndMap() {
   await page.locator('#p-pet-name').fill('Clover');
   await page.locator('#p-pet-color').selectOption('pink');
   await page.locator('[data-done]').click(); await scene('MapScene');
-  assert.equal(await page.evaluate(() => neo.scene.pip.spec.color), 'pink');
+  // The grown-ups' page edits the companion: its name, its colour, and the map's friend turned to that colour.
+  assert.deepEqual(await page.evaluate(() => ({ name: kit.store.companion.name, color: kit.store.companion.look.color, recolored: neo.scene.pip.rig.mesh.filters.length })), { name: 'Clover', color: 'pink', recolored: 1 });
   assert.deepEqual(await page.evaluate(() => kit.store.data.world), { band: 'prek' });
   await page.waitForTimeout(3000);
   await screenshot('map-prek');

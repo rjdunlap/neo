@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Text } from 'pixi.js';
-import { companionSpec, makeCompanion } from '../../creatures/companion';
+import { companionSpec, GUIDE_SCALE, makeCompanion } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
@@ -120,7 +120,7 @@ export class GameScene extends Scene {
     this.level = this.story?.level ?? (this.startLevel === undefined ? store.levelFor(this.mod.id, range, this.mod.entryLevels) : stepLevel(this.startLevel, 0, range));
     this.content.addChild(this.stage);
 
-    this.pet.scale.set(0.42);
+    this.pet.scale.set(GUIDE_SCALE);
     onTap(this.pet, () => {
       this.pet.poke();
       sfx.giggle();
@@ -438,6 +438,8 @@ export class GameScene extends Scene {
     sfx.tada();
     void voice.say('praise');
     await this.tw.wait(0.5);
+    // The species' own move and chirp (the sprout's hop, the river's rear, the glider's loop), then a cheer.
+    star.poke();
     star.cheer();
     const hopLoop = async () => {
       for (;;) {
