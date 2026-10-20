@@ -110,7 +110,7 @@ describe('the river’s head turns over the no-head plate (RW02b step 2 follow-u
         // A plate pixel the head covers at rest (the neck's cap, the throat) must stay covered.
         if (plate.at(x, y) < 20 || art.at(x, y) < 250 || headWeight(x, y) === 0) continue;
         // Where the head layer's picture lands on this plate pixel: turn back about the throat (twice, as the weight varies).
-        let p = { x, y };
+        let p: { x: number; y: number } = { x, y };
         for (let n = 0; n < 3; n++) {
           const a = -turn * headWeight(p.x, p.y);
           const ox = x - RIVER_ART.nape.x;
