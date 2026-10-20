@@ -10,6 +10,7 @@ import { drawBeach } from './beach';
 import { drawCanyon } from './canyon';
 import { drawCove } from './cove';
 import { drawGrove, GROVE_BACKDROP, GROVE_HEADING } from './grove';
+import { drawLab, LAB_BACKDROP, LAB_HEADING } from './lab';
 import { drawMeadow } from './meadow';
 import { drawMountain } from './mountain';
 import { drawPeaks } from './peaks';
@@ -43,6 +44,9 @@ export const LOCATIONS: Partial<Record<LandId, Place>> = {
   // Lumen, the grove's resident, waits on RW02b step 3 likewise; the land's bunny greets her until then. Night falls
   // here only: the grove's own sky replaces the land's day one, which the classic island keeps.
   'story-grove': { scenery: drawGrove, backdrop: GROVE_BACKDROP, headingColor: GROVE_HEADING },
+  // Mossback, the lab's resident, waits on RW02b step 3 likewise; the land's cat greets her until then. The lab is in a
+  // cave's mouth, so the cave's rock replaces the land's day sky here only.
+  'tinker-lab': { scenery: drawLab, backdrop: LAB_BACKDROP, headingColor: LAB_HEADING },
 };
 
 export const isLocation = (id: LandId) => id in LOCATIONS;
