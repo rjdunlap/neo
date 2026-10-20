@@ -1940,7 +1940,7 @@ async function dressFlow() {
   log('Dress: put on, a slot swap, back to Friends, the treehouse, reload, the guide, another profile undressed');
 }
 
-/** RW06 slice 2: the root boots to the chooser, then Home by band, creature play's ball, the RW03 chain and Explore. */
+/** RW06 slice 2: the root boots to the chooser, then Home by band, creature play's ball, the RW03 chain and Explore's picker. */
 async function homeFlow() {
   await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href); await ready();
   await scene('ChooserScene');
@@ -1992,8 +1992,17 @@ async function homeFlow() {
   assert.equal(await page.evaluate(() => !!neo.scene.toy.flight), true);
   await tap('neo.scene.home'); await scene('HomeScene');
   await page.waitForTimeout(400);
-  // Explore → Rainbow Meadow → its Home → Home.
-  await tap('neo.scene.explore'); await scene('LocationScene');
+  // Explore → the picker of built locations → Back → Home; Explore → Counting Cove → its Home → Home.
+  await tap('neo.scene.explore'); await scene('ExploreScene');
+  assert.deepEqual(await page.evaluate(() => neo.scene.ids), ['rainbow-meadow', 'counting-cove']);
+  assert.equal(await page.evaluate(() => document.querySelector('.classic-link')?.hidden), true);
+  await screenshot('explore');
+  await tap('neo.scene.back'); await scene('HomeScene');
+  assert.equal(await page.evaluate(() => document.querySelector('.classic-link')?.hidden), false);
+  await page.waitForTimeout(400);
+  await tap('neo.scene.explore'); await scene('ExploreScene');
+  await tap('neo.scene.cards[1]'); await scene('LocationScene');
+  assert.equal(await page.evaluate(() => neo.scene.id), 'counting-cove');
   await page.evaluate(() => neo.go.hub()); await scene('HomeScene');
   // The youngest's Home: the ball right here, no Play picture.
   await page.evaluate(() => { kit.store.data.profile.band = 'toddler'; neo.go.hub(); }); await scene('HomeScene');
@@ -2015,7 +2024,7 @@ async function homeFlow() {
   await page.reload(); await ready();
   await scene('ChooserScene');
   assert.equal(errors.length, 0, errors.join('\n'));
-  log('Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore, second profile');
+  log('Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore picker → Back and → Counting Cove, second profile');
 }
 
 async function hatchingAndMap() {

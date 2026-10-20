@@ -14,6 +14,7 @@ import { meadowIcon, peopleIcon, playWithIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 import { BallPlay } from './ball-play';
+import { ExploreScene } from './ExploreScene';
 
 /** Lap and toddler get the ball right here; preschool and older get Play with {pet}, which opens creature play. */
 export const youngHome = () => store.data.profile.band === 'lap' || store.data.profile.band === 'toddler';
@@ -22,8 +23,8 @@ export const youngHome = () => store.data.profile.band === 'lap' || store.data.p
  * The root's Home (RW06 slice 2, docs/rework/HOME.md#home-homescene-the-roots-hub): her companion on the R06 day
  * backdrop and RW03's per-band exits. Lap and toddler: the companion, the ball and Explore. Preschool and older: Play
  * with {pet} and Explore (Continue waits for RW07 and is not drawn). Who's playing sits top left; Home has no Back. The
- * companion only idles and never asks for anything. Explore opens Rainbow Meadow, the root's one built location, until
- * RW08's Explore. Nothing here is a round: no sticker, no stats.
+ * companion only idles and never asks for anything. Explore opens the picker of the built locations (RW13,
+ * `ExploreScene`) until RW08's Explore. Nothing here is a round: no sticker, no stats.
  */
 export class HomeScene extends Scene {
   private readonly backdrop = homeBackdrop();
@@ -31,7 +32,7 @@ export class HomeScene extends Scene {
   readonly pet: Companion = this.track(makeCompanion());
   readonly who = new RoundButton(peopleIcon(), swatch.white, CORNER_RADIUS, () => this.leave('home.who', () => this.app.go.start()));
   readonly play: RoundButton | null = this.young ? null : new RoundButton(playWithIcon(), swatch.yellow, ACTION_RADIUS, () => this.leave('home.play', () => this.app.go.room()));
-  readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () => this.leave('home.explore', () => this.app.go.land('rainbow-meadow')));
+  readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () => this.leave('home.explore', () => void this.app.show(new ExploreScene(this.app))));
   readonly toy: BallPlay | null = this.young ? this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch'))) : null;
   private leaving = false;
 

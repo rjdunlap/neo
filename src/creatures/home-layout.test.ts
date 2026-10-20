@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { BACK } from './friends-layout';
-import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, playLayout, type Floor } from './home-layout';
+import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreLayout, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, playLayout, type Floor } from './home-layout';
 
 /** An iPad sideways and upright, a phone sideways, one with a notch, and a wide laptop. */
 const VIEWS = [
@@ -89,5 +89,24 @@ describe('the creature play layout', () => {
       expect(l.stage.y, where).toBeGreaterThan(l.backdrop.floorTop);
       expect(l.floor.y0, where).toBeGreaterThan(l.backdrop.floorTop);
     }
+  });
+});
+
+describe('the Explore picker layout', () => {
+  it('fits one to four 150-unit cards and Back apart, clear of the guide and link corners', () => {
+    expect(EXPLORE_CARD).toBeGreaterThanOrEqual(150);
+    // A card's name sits under it, inside this much.
+    const NAME = 50;
+    for (const v of VIEWS) {
+      for (let n = 1; n <= EXPLORE_MAX; n++) {
+        const l = exploreLayout(v, n);
+        const where = `${v.w}×${v.h}, ${n} cards`;
+        const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
+        check(v, [disc(l.back, CORNER_RADIUS, 'back'), ...cards], [], where);
+        const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
+        for (const c of cards) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
+      }
+    }
+    expect(() => exploreLayout(VIEWS[0], EXPLORE_MAX + 1)).toThrow();
   });
 });
