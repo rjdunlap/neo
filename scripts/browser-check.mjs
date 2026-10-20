@@ -989,6 +989,13 @@ async function blockGardenPlay() {
   await page.setViewportSize({ width: 768, height: 1024 });
   await launch('block-garden', 6); await idle(); await page.waitForTimeout(500);
   await screenshot('block-garden-6-portrait');
+  // A tap on a tall piece's slot (upright, the tray sits right under the bed) puts it back for free.
+  const tall = await page.evaluate(async () => { const L = await import('/src/games/block-garden/logic.ts'), g = neo.scene.game; const s = g.slots.find((s) => s.piece !== null && L.SHAPES[g.garden.pieces[s.piece]].h >= 2); return s ? s.carrier.toGlobal({ x: 0, y: 0 }) : null; });
+  if (tall) {
+    const was = await state();
+    await page.evaluate(({ x, y }) => kit.tap(x, y), { x: tall.x, y: tall.y }); await page.waitForTimeout(500);
+    const now = await state(); assert.deepEqual([now.misses, now.used], [was.misses, was.used], 'a tap on a slot is never a miss');
+  }
   await page.setViewportSize({ width: 1024, height: 768 });
   // Level 8 (grown-up): the whole bed emptied by drags, no misses or hints, one more sticker.
   const stickers8 = await page.evaluate(() => kit.store.data.stickers.length);

@@ -367,7 +367,11 @@ class BlockGarden implements Game {
     const shadow = this.shadow;
     this.shadow = null;
     const over = this.overBed(slot.carrier.x, slot.carrier.y);
-    if (cancelled || this.busy || this.finished) return this.home(slot), true;
+    // The finger rides `lift` below the piece: let go inside its own slot and the piece just goes back, free.
+    const r = this.lay.slots[i];
+    const fx = slot.carrier.x, fy = slot.carrier.y + this.liftFor(slot.piece);
+    const inSlot = fx >= r.x && fx <= r.x + r.w && fy >= r.y && fy <= r.y + r.h;
+    if (cancelled || inSlot || this.busy || this.finished) return this.home(slot), true;
     if (shadow) {
       void this.plant({ piece: shadow.piece, ...shadow.at });
       return true;
