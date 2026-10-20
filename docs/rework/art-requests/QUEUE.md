@@ -24,7 +24,7 @@ The routine's work list ([how a run works](README.md#what-a-run-does)). Take the
 | R16 | [Forms](#r16-forms) | — | RW11's definition | blocked | |
 | R17 | [Glider portrait re-roll](#r17-glider-portrait-re-roll) | 1 | R01 | done | [Chosen portrait and review notes](../concepts/generated/README.md#r17-review-and-preparation-notes): glider-portrait-8 replaces portrait-4 as chosen source. No missing file. Narrow side margins need card padding; not prepared or integrated. |
 | R18 | [Hatching egg stages](#r18-hatching-egg-stages) | 6 | R08 | done | [Six originals and review notes](../concepts/generated/README.md#r18-review-and-preparation-notes): egg-sprout/river/glider-crack/open-1. No missing stages. Lower shell aligned below the cut; opening-boundary caveat recorded. Not prepared or integrated. |
-| R19 | [Wearables at the cast's angle](#r19-wearables-at-the-casts-angle) | up to 9 | the wearables test-fit on the pilot rigs ([review](../ART-REVIEW-2026-10-19.md#what-is-next)) | blocked | |
+| R19 | [Wearables at the cast's angle](#r19-wearables-at-the-casts-angle) | 3 | the wearables test-fit on the pilot rigs (done 2026-10-20, [fit](../../../src/art/creatures/wearables/README.md#the-fit-on-the-pilot-three)) | open | |
 | R20 | [Casting poses](#r20-casting-poses) | 3 per species | a casting proof slice ([integration review](../PET-INTEGRATION.md#what-this-asks-of-the-art)) | blocked | |
 | R21 | [Expression set for an adopted look](#r21-expression-set-for-an-adopted-look) | 6 per look | RW10 adopting a look | blocked | |
 | R22 | [The friends, duck first](#r22-the-friends-duck-first) | 2 | the [catalog-wide art decision](../../WAITING-ON-DEVELOPER.md) | blocked | |
@@ -294,7 +294,17 @@ Reject a stage whose lower shell moved (the hatching rig swaps the three picture
 
 ## R19: Wearables at the cast's angle
 
-**Blocked** until a session has test-fitted R04–R05's nine items on the three pilot rigs. The sunglasses, raincoat, mittens and boots were drawn front-on and the creatures are side-on three-quarter views ([review](../ART-REVIEW-2026-10-19.md#assessment)); the crown, sun hat, beanie and umbrella should fit as they are. When the fit names the items that fail, this request re-draws only those, each as a new image with the chosen sprout base attached as the angle reference, in the item's R04/R05 colours, seen from the same three-quarter right view: the raincoat as a side-on coat with its hood behind the head, the sunglasses as the near lens and a sliver of the far one, each mitten and boot as the pair seen from the side. Same style block, flat white ground, the item filling about 70% of a 1254 × 1254 square. Fill in the files and prompts when unblocked.
+**Open** since the RW06 prep fit (2026-10-20) tried R04–R05's nine items on the three pilot rigs in code ([the fit](../../../src/art/creatures/wearables/README.md#the-fit-on-the-pilot-three)). The review expected the sunglasses, raincoat, mittens and boots to fail; the fit kept the sunglasses (three-quarter already, they sit on all three), the mittens (on the sprout's paws) and the boots (side-on, on the river's four paws). Only three placements failed for the angle, so this request re-draws only those. The glider's missing scarf, mittens, boots, umbrella and coat and the river's missing umbrella and mittens are the species' body plans, not the art, and are not asked for.
+
+Each is a new image in the item's R04/R05 colours (the R05 raincoat's yellow with two brown buttons, the R05 boots' glossy red), with the named base attached as the angle reference, worn by nobody, using R04's prompt shape ("A single … and nothing else, in the same style as the attached creature …"), flat white ground, the item filling about 70% of a 1254 × 1254 square. **Files (3):**
+
+| File | Reference | Subject |
+| --- | --- | --- |
+| `wear-raincoat-sitter` | `sprout-base-2.png` | a short yellow rain cape with the hood fallen behind, cut for a round, sitting creature with very short arms: a bell-shaped cape that would cover the shoulders and the top of a round tummy, with two short sleeve cuffs at its sides rather than long sleeves, seen from the same three-quarter front-right view as the attached creature, no body inside |
+| `wear-raincoat-walker` | `river-base-4.png` | a yellow dog-style rain coat for a long, low creature walking on four legs, facing right: a coat that lies along the back from the neck to the hips with the hood down at the neck end and two buttons under the chest, seen from the side exactly as the attached creature is, no body inside |
+| `wear-boots-sitter` | `sprout-base-2.png` | a pair of short red rain boots seen from the front-below, soles and round toe caps facing the viewer, as they would look on a sitting creature's feet held out toward the viewer, the two boots separate with a white gap |
+
+Reject a candidate that shows a creature or mannequin, or that changes the item's colours. Fill in the prompts and results when done; a coding session cuts them with `--hole` where an opening is enclosed (`src/art/creatures/wearables/README.md`).
 
 ## R20: Casting poses
 

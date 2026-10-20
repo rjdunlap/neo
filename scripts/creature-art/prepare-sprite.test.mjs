@@ -71,6 +71,26 @@ describe('keying a creature off flat paper', () => {
     expect(r.bounds).toEqual({ minX: 3, minY: 3, maxX: 30, maxY: 22 });
     expect(() => keyOut(sheet().data, 40, 30, { seed: { x: 0, y: 0 } })).toThrow(/seed/);
   });
+
+  it('clears an enclosed hole only when told where it is, so a painted white dot stays', () => {
+    /** A ring: an ink-outlined band of fur round an enclosed patch of paper. */
+    const ring = () => {
+      const img = sheet();
+      for (let y = 12; y <= 17; y++) for (let x = 16; x <= 23; x++) put(img, x, y, x === 16 || x === 23 || y === 12 || y === 17 ? INK : PAPER);
+      return img;
+    };
+    const kept = ring();
+    keyOut(kept.data, kept.w, kept.h, { seed: { x: 12, y: 10 } });
+    expect(px(kept, 19, 14)).toEqual([...PAPER, 255]);
+    const cut = ring();
+    const r = keyOut(cut.data, cut.w, cut.h, { seed: { x: 12, y: 10 }, holes: [{ x: 19, y: 14 }] });
+    expect(px(cut, 19, 14)[3]).toBe(0);
+    expect(px(cut, 17, 13)[3]).toBe(0);
+    // The hole's own ink rim stays, and the outer bounds do not change.
+    expect(px(cut, 16, 14)[3]).toBeGreaterThan(0);
+    expect(r.bounds).toEqual({ minX: 9, minY: 7, maxX: 30, maxY: 22 });
+    expect(() => keyOut(ring().data, 40, 30, { holes: [{ x: 12, y: 10 }] })).toThrow(/hole/);
+  });
 });
 
 describe('passing a transparent cut-out through', () => {
@@ -167,8 +187,8 @@ describe('cutting, aligning and the manifest', () => {
   });
 
   it('parses the arguments the README documents', () => {
-    const o = parseArgs(['--in', 'a.png', '--out', 'b.png', '--box', '1,2,30,40', '--seed', '5,6', '--pad', '4', '--scale', '0.5', '--check']);
-    expect(o).toMatchObject({ in: 'a.png', out: 'b.png', box: { x: 1, y: 2, w: 30, h: 40 }, seed: { x: 5, y: 6 }, pad: 4, scale: 0.5, check: true, bg: 'auto' });
+    const o = parseArgs(['--in', 'a.png', '--out', 'b.png', '--box', '1,2,30,40', '--seed', '5,6', '--hole', '7,8', '--hole', '9,10', '--pad', '4', '--scale', '0.5', '--check']);
+    expect(o).toMatchObject({ in: 'a.png', out: 'b.png', box: { x: 1, y: 2, w: 30, h: 40 }, seed: { x: 5, y: 6 }, holes: [{ x: 7, y: 8 }, { x: 9, y: 10 }], pad: 4, scale: 0.5, check: true, bg: 'auto' });
     expect(parseArgs(['--set', 'glider']).set).toBe('glider');
     expect(parseArgs(['--set', 'glider', '--shrink', '2']).shrink).toBe(2);
     expect(() => parseArgs(['--set', 'glider', '--shrink', '1.5'])).toThrow(/whole/);

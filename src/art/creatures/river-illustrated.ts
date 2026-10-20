@@ -1,4 +1,5 @@
 import { type Point, bend, IllustratedCreature, inside, reach, smooth, type ArtSet } from './illustrated';
+import type { WearTable } from './wearables';
 
 /**
  * The long river creature as a prepared illustration (RW02b step 2): the R03 set on one deformable
@@ -53,6 +54,26 @@ export const RIVER_ART = {
   widths: { head: 80, neck: 80 },
   misfits: {},
 } as const;
+
+/** RW06 prep: where the nine generated wearables sit, in sprite pixels (`wearables.ts`). Judged in the preview at rest and through a touch. */
+export const RIVER_WEAR: WearTable = {
+  crown: { fits: [{ at: { x: 592, y: 2 }, width: 65 }] },
+  scarf: { fits: [{ at: { x: 535, y: 128 }, width: 85 }] },
+  sunhat: { fits: [{ at: { x: 595, y: 0 }, width: 110 }] },
+  sunglasses: { fits: [{ at: { x: 632, y: 52 }, width: 95 }], note: 'the far lens sits on the brow above the hidden eye' },
+  raincoat: { misfit: 'the coat is drawn upright from the front, and its body runs level from the neck to the tail, so it hangs off the back like a flag', redraw: true },
+  umbrella: { misfit: 'it walks on all four paws, so none is free to hold a handle' },
+  beanie: { fits: [{ at: { x: 600, y: 30 }, width: 85 }] },
+  boots: {
+    fits: [
+      { at: { x: 215, y: 300 }, width: 50, behind: true },
+      { at: { x: 330, y: 300 }, width: 50 },
+      { at: { x: 555, y: 305 }, width: 50, behind: true },
+      { at: { x: 610, y: 300 }, width: 50 },
+    ],
+  },
+  mittens: { misfit: 'its front paws walk; the boots go on them, and mittens would be a second pair of shoes' },
+};
 
 const COLS = 40;
 const ROWS = 18;

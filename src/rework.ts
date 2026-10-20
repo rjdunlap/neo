@@ -6,6 +6,7 @@ import { App } from './app/App';
 import { createRoutes } from './app/routes';
 import { applySettings } from './app/settings';
 import { loadArt } from './art/creatures/illustrated';
+import { loadWearables } from './art/creatures/wearables';
 import { CreaturePreview } from './dev/creature-preview';
 import { store } from './progress/store';
 
@@ -22,8 +23,8 @@ async function boot() {
   const app = new App();
   await app.init(document.getElementById('app')!);
   app.go = createRoutes(app);
-  const [sprout, river, glider] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider')]);
-  void app.show(new CreaturePreview(app, { sprout, river, glider }));
+  const [sprout, river, glider, items] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider'), loadWearables()]);
+  void app.show(new CreaturePreview(app, { sprout, river, glider }, items));
   if (import.meta.env.DEV) Object.assign(window, { neo: app });
   registerSW({ immediate: true });
 }

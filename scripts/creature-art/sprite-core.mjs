@@ -49,11 +49,15 @@ export function detectMode(data, w, h) {
  * alpha from how far it lies toward the strongest colour just inside it, and that colour, so no
  * cream fringe shows on a dark ground.
  *
+ * `holes` are paper points the border cannot reach (a crown's open middle, a scarf's neck hole):
+ * paper floods from each as it does from the border. Without them nothing enclosed is cleared, so
+ * a white dot painted on the item stays.
+ *
  * Transparent: alpha below `CLEAR` is background; the rest is kept (or the shape holding `seed`).
  * Only the edge changes: a partly transparent pixel takes the colour of the nearest opaque pixel
  * within two, keeping its own alpha, so a generator's white or black halo disappears.
  */
-export function keyOut(data, w, h, { mode = 'auto', seed = null } = {}) {
+export function keyOut(data, w, h, { mode = 'auto', seed = null, holes = [] } = {}) {
   if (mode === 'auto') mode = detectMode(data, w, h);
   const n = w * h;
   const bg = new Uint8Array(n);
@@ -64,6 +68,11 @@ export function keyOut(data, w, h, { mode = 'auto', seed = null } = {}) {
     paper = [med(0), med(1), med(2)];
     const dist = (i) => Math.hypot(data[i * 4] - paper[0], data[i * 4 + 1] - paper[1], data[i * 4 + 2] - paper[2]);
     const stack = border.filter((i) => dist(i) < PAPER);
+    for (const h0 of holes) {
+      const i = h0.y * w + h0.x;
+      if (h0.x < 0 || h0.y < 0 || h0.x >= w || h0.y >= h || dist(i) >= PAPER) throw new Error(`hole ${h0.x},${h0.y} is not on the paper`);
+      stack.push(i);
+    }
     for (const i of stack) bg[i] = 1;
     while (stack.length) {
       const i = stack.pop();

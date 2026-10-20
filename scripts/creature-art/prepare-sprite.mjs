@@ -11,6 +11,8 @@
 //                      trimmed to the creature inside it
 //   --seed x,y         a pixel on the creature, in the image's pixels; only the shape holding it is
 //                      kept (default: everything that is not background)
+//   --hole x,y         a paper pixel the border cannot reach (an item's enclosed middle), in the
+//                      image's pixels; paper floods from it too. Repeat for each hole
 //   --bg auto|paper|transparent
 //                      what the background is (default auto: a mostly clear border means transparent)
 //   --pad <px>         clear pixels round the trimmed creature, in the sprite's pixels (default 8)
@@ -37,7 +39,7 @@ import { ALIGNED, alignment, cut, keyOut, parseManifest, shrink, TOLERANCE, unio
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 export function parseArgs(argv) {
-  const o = { bg: 'auto', pad: 8, shrink: 1, tolerance: TOLERANCE, check: false, generated: 'docs/rework/concepts/generated', outDir: 'src/art/creatures/illustrated' };
+  const o = { holes: [], bg: 'auto', pad: 8, shrink: 1, tolerance: TOLERANCE, check: false, generated: 'docs/rework/concepts/generated', outDir: 'src/art/creatures/illustrated' };
   const num = (s, name) => {
     const v = Number(s);
     if (!Number.isFinite(v)) throw new Error(`--${name} needs a number, got ${s}`);
@@ -64,6 +66,9 @@ export function parseArgs(argv) {
     } else if (a === '--seed') {
       const [x, y] = list(next(), 'seed', 2);
       o.seed = { x, y };
+    } else if (a === '--hole') {
+      const [x, y] = list(next(), 'hole', 2);
+      o.holes.push({ x, y });
     } else if (a === '--bg') {
       o.bg = next();
       if (!['auto', 'paper', 'transparent'].includes(o.bg)) throw new Error(`--bg is auto, paper or transparent, not ${o.bg}`);
@@ -181,7 +186,8 @@ async function emit(page, o, job) {
 async function analyse(page, o, file) {
   const pixels = await decode(page, file, o.box);
   const seed = o.seed ? { x: o.seed.x - pixels.box.x, y: o.seed.y - pixels.box.y } : null;
-  const { mode, paper, bounds } = keyOut(pixels.data, pixels.w, pixels.h, { mode: o.bg, seed });
+  const holes = o.holes.map((p) => ({ x: p.x - pixels.box.x, y: p.y - pixels.box.y }));
+  const { mode, paper, bounds } = keyOut(pixels.data, pixels.w, pixels.h, { mode: o.bg, seed, holes });
   if (!bounds) throw new Error(`${relative(root, file)}: nothing but background in the box`);
   return { pixels, mode, paper, bounds, source: file };
 }

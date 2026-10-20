@@ -1,4 +1,5 @@
 import { type Point, bend, IllustratedCreature, inside, smooth, type ArtSet } from './illustrated';
+import type { WearTable } from './wearables';
 
 /**
  * The squat sprout as a prepared illustration (RW02b step 2): the R02 set on one deformable mesh.
@@ -61,6 +62,19 @@ export const SPROUT_ART = {
     tail: 'none shows: it sits on it',
   },
 } as const;
+
+/** RW06 prep: where the nine generated wearables sit, in sprite pixels (`wearables.ts`). Judged in the preview at rest and through a touch. */
+export const SPROUT_WEAR: WearTable = {
+  crown: { fits: [{ at: { x: 245, y: 118 }, width: 150, ride: { x: 245, y: 150 } }] },
+  scarf: { fits: [{ at: { x: 262, y: 318 }, width: 140 }], note: 'drawn from a little above, so its open middle shows on the chest' },
+  sunhat: { fits: [{ at: { x: 250, y: 128 }, width: 200, ride: { x: 250, y: 150 } }] },
+  sunglasses: { fits: [{ at: { x: 300, y: 218 }, width: 140 }] },
+  raincoat: { misfit: 'drawn for an upright body with long arms: on the round sitter the sleeves stand off its stubby arms and the coat sits on its belly like a bib', redraw: true },
+  umbrella: { fits: [{ at: { x: 445, y: 320 }, width: 260, rotation: 0.35, behind: true }], note: 'held behind the paw like a parasol; the paw does not close round the handle' },
+  beanie: { fits: [{ at: { x: 245, y: 160 }, width: 160 }] },
+  boots: { misfit: 'its feet face the viewer, soles out, so a side-on boot stands beside the foot instead of on it', redraw: true },
+  mittens: { fits: [{ at: { x: 95, y: 320 }, width: 55, flip: true }, { at: { x: 445, y: 320 }, width: 55 }] },
+};
 
 const COLS = 24;
 const ROWS = 24;

@@ -1,6 +1,6 @@
 # Illustrated creature assets
 
-Prepared sprites for the [generated creature pilot](../../../../docs/rework/GENERATED-CREATURE-PILOT.md): the pilot three species' expression sets, cut from what the [art request queue](../../../../docs/rework/art-requests/QUEUE.md) delivered (R01–R03). Used by the preview and, since RW05 slice 1 (2026-10-20), by the shipped companion and Friends (precached; production precache 81 entries, 8.2 MB). The rigs that draw them are `../illustrated.ts` (shared) and `../<species>-illustrated.ts`.
+Prepared sprites for the [generated creature pilot](../../../../docs/rework/GENERATED-CREATURE-PILOT.md): the pilot three species' expression sets, cut from what the [art request queue](../../../../docs/rework/art-requests/QUEUE.md) delivered (R01–R03). Used by the preview and, since RW05 slice 1 (2026-10-20), by the shipped companion and Friends (precached; production precache 81 entries, 8.2 MB, before the [prepared wearables](../wearables/README.md) joined them). The rigs that draw them are `../illustrated.ts` (shared) and `../<species>-illustrated.ts`.
 
 ## Preparing a sprite
 
@@ -16,6 +16,7 @@ node scripts/creature-art/prepare-sprite.mjs --set <species> [--shrink 2] [--pad
 | `--in`, `--out` | One image in, one sprite out. Paths are relative to the repository root |
 | `--box x,y,w,h` | The part of the image to cut, in its pixels (default: the whole image). The sprite is then trimmed to the creature inside the box, so a generated image that holds one creature on a plain background needs no box |
 | `--seed x,y` | A pixel on the creature, in the image's pixels (not the box's). Only the shape connected to it is kept, which drops a neighbour's parts on a shared sheet. Without it everything that is not background is kept |
+| `--hole x,y` | A paper pixel the border cannot reach, in the image's pixels (a crown's open middle, a scarf's neck hole); paper floods from it too. Repeat for each hole. Without it nothing enclosed is cleared, so a painted white dot stays |
 | `--bg auto\|paper\|transparent` | What the background is. `auto` (default) calls a border that is mostly clear transparent, anything else paper |
 | `--pad <px>` | Clear pixels round the trimmed creature, in the sprite's pixels (default 8) |
 | `--shrink <n>` | Write the sprite at 1/n size (a whole number; default 1). The creature is keyed out and trimmed at full size, the box grows to a multiple of n (to the right and down, into clear pixels), and each n × n block is averaged in premultiplied alpha, so a soft edge keeps the ink's colour and no clear pixel bleeds into it. The summary's `origin` and `bounds` stay in the source's pixels; `size` and `units` are the sprite's |
