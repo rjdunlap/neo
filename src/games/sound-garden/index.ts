@@ -13,7 +13,7 @@ import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, planFor, SINGERS, singerToTap, tileFor, tune, type Answer, type Gap, type GardenPlan, type Question } from './logic';
+import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, planFor, SINGERS, singerToTap, tileFor, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -114,6 +114,14 @@ class Tile extends Container {
     this.picture.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.picture.addChild(art(kind));
   }
+}
+
+/** One note in its instrument. */
+function voice(n: Note) {
+  if (n.voice === 'drum') sfx.drum();
+  else if (n.voice === 'bell') sfx.bell(n.step, 0.4);
+  else if (n.voice === 'pluck') sfx.pluck(n.step, 0.4);
+  else sfx.marimba(n.step, 0.5);
 }
 
 const PICTURE: Record<Answer, Kind> = { high: 'bird', low: 'frog', fast: 'bunny', slow: 'turtle', up: 'up', down: 'down' };
@@ -318,6 +326,15 @@ class SoundGarden implements Game {
       t.scale.set(0);
       void this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     }
+    if (q.ask === 'highlow') {
+      // The bird sings the high note and the frog the low one as they appear, so the pictures are heard before the bush asks.
+      await this.ctx.tw.wait(0.35);
+      for (const t of this.tiles) {
+        voice(q.sounds[t.answer].notes[0]);
+        void this.ctx.tw.to(t.scale, { x: 1.1, y: 0.92 }, { duration: 0.08 }).then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+        await this.ctx.tw.wait(0.55);
+      }
+    }
     await this.ctx.instruct(`sg.${q.ask}` as LineId);
     await this.playSound();
     this.busy = false;
@@ -345,24 +362,18 @@ class SoundGarden implements Game {
     }
     const q = this.question!;
     this.wiggle = 1.4;
-    if (q.ask === 'highlow') {
-      const step = q.answer === 'high' ? 12 : -4;
-      for (let i = 0; i < 3; i++) {
-        sfx.marimba(step, 0.5);
-        await tw.wait(0.38);
-      }
-    } else if (q.ask === 'fastslow') {
-      const fast = q.answer === 'fast';
-      for (let i = 0; i < (fast ? 8 : 3); i++) {
-        sfx.drum();
-        await tw.wait(fast ? 0.16 : 0.62);
-      }
-    } else {
-      for (const step of tune(q.answer as 'up' | 'down')) {
-        sfx.marimba(step, 0.5);
-        await tw.wait(0.34);
-      }
+    await this.playNotes(q.sounds[q.answer]);
+  }
+
+  /** Plays a sound's notes at their times, then waits out the rest of its span. */
+  private async playNotes(sound: Sound) {
+    let t = 0;
+    for (const n of sound.notes) {
+      if (n.at > t) await this.ctx.tw.wait(n.at - t);
+      t = n.at;
+      voice(n);
     }
+    await this.ctx.tw.wait(sound.span - t);
   }
 
   private async replay() {

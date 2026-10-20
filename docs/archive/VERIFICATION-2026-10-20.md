@@ -97,3 +97,11 @@
 - `BROWSER_SUITE=dress` passed (the new case, including the guide-only check on bubble-pop and a second profile undressed), `BROWSER_SUITE=world` and `BROWSER_SUITE=friends` passed, and `npm run test:offline` passed.
 - Not run: large-pet game regressions (unchanged, still a `Critter`), couch suites.
 - Open: [device checks](../DEVICE-CHECKS.md) (the hanger icon, items on an iPad, speech, frame rate with a dressed rig, a child's reaction); Friends cards and chooser portraits stay undressed; the ten large-pet games wait for RW05 slice 2.
+
+## 2026-10-20 — RW06 slice 2: Home and creature play at the root
+
+- Built on `claude/rw06-home` ([PR #638](https://github.com/rjdunlap/neo/pull/638), tested at `44633f94` on `f787f736`): the root boots to the chooser, `HomeScene`, `PlayScene` with the ball, the Home backdrop (webp, precached), `App.creatureWorld`, the preview at `?preview`. See [HOME.md](../rework/HOME.md#built-slice-2-2026-10-20).
+- Ran `npm run typecheck`, `npm test` (170 files, 1617 tests, with `homeLayout` in five views; run before the last ball-play tweak, which typecheck and the `home` case then covered), `npm run build` (100 precache entries, 9414.81 KiB, includes `home-day-*.webp`); dev server on 5232, preview on 5233.
+- `BROWSER_SUITE=home` passed (new), `BROWSER_SUITE=world` passed (classic unaffected), `npm run test:offline` passed against the matched production preview (classic); a one-off production probe of the root: the service worker cached the webp, an offline reload shows the chooser, no page errors.
+- Not run: couch suites, `friends` and `dress` suites (changed only by the root-only Home button; the `home` case covers it), large-pet regressions.
+- Open: [device checks](../DEVICE-CHECKS.md) (the ball, the people and house pictures, speech, frame rate with a dressed rig on the backdrop).

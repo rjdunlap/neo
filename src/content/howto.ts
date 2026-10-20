@@ -750,7 +750,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Listen to the bunny and the turtle, then tap the one that is fast (or slow), as asked.' },
       { from: 4, to: 4, text: 'Listen to the tune, then tap whether it goes up or down.' },
       { from: 5, to: 5, text: "Listen to the woodpecker's rhythm, then tap it back on the drum." },
-      { from: 6, text: 'Listen closely, then answer: high or low, fast or slow, up or down.' },
+      { from: 6, to: 6, text: 'Listen closely, then answer: high or low, fast or slow, up or down.' },
     ],
     finish: 'The round ends when the listening questions are answered.',
   },

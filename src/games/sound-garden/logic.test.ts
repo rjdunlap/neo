@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, PLANS, RHYTHMS, SINGERS, singerToTap, tileFor, tune, type Gap } from './logic';
+import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, RHYTHMS, SINGERS, singerToTap, tileFor, type Gap, type Question, type Sound } from './logic';
 
 /** Tap times for a rhythm, with each gap stretched by a factor (a child's wobble). */
 const play = (r: Gap[], wobble: number[] = []) => {
@@ -11,7 +11,7 @@ const play = (r: Gap[], wobble: number[] = []) => {
 
 describe('Sound Garden', () => {
   it('asks balanced questions with the right answers, never three alike in a row', () => {
-    for (const plan of PLANS) {
+    for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 200; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
         if (plan.mode === 'play' || plan.mode === 'echo') {
@@ -40,14 +40,13 @@ describe('Sound Garden', () => {
     const r = makeRhythms(4, new Rng(3));
     expect(r).toHaveLength(4);
     expect(r[0].length).toBeLessThanOrEqual(2);
-    expect(tune('up')).toEqual([...tune('down')].reverse());
   });
 
   it('touches every singer in free play, and the tile that shows the answer in the listening levels', () => {
-    const free = PLANS[0];
+    const free = PLANS[1];
     const heard = new Set(Array.from({ length: free.rounds }, (_, i) => singerToTap(i)));
     expect([...heard].sort()).toEqual([...SINGERS].sort());
-    for (const plan of PLANS) {
+    for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) expect(CHOICES[q.ask][tileFor(q)]).toBe(q.answer);
       }
@@ -66,5 +65,76 @@ describe('Sound Garden', () => {
       }
     }
     expect(echoRest('S', 0.87)).toBeLessThan(echoRest('L', 0.87));
+  });
+
+  it('keys plans by level ID and clamps unknown levels to the ladder', () => {
+    expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6]);
+    for (const id of LEVEL_IDS) expect(planFor(id)).toBe(PLANS[id]);
+    expect(planFor(0)).toBe(PLANS[1]);
+    expect(planFor(99)).toBe(PLANS[6]);
+    expect(planFor(2).mode).toBe('highlow');
+  });
+
+  const questions = (seeds = 300) => {
+    const out: Question[] = [];
+    for (const plan of Object.values(PLANS)) for (let seed = 1; seed <= seeds; seed++) out.push(...makeQuestions(plan, new Rng(seed)));
+    return out;
+  };
+  const steps = (s: Sound) => s.notes.map((n) => n.step);
+  const voices = (s: Sound) => new Set(s.notes.map((n) => n.voice));
+
+  it('plays every note on the pentatonic scale, in order, inside its span', () => {
+    for (const q of questions()) {
+      for (const s of Object.values(q.sounds)) {
+        expect(s.notes.length).toBeGreaterThan(0);
+        for (const n of s.notes) expect(Number.isInteger(n.step)).toBe(true);
+        s.notes.slice(1).forEach((n, i) => expect(n.at).toBeGreaterThan(s.notes[i].at));
+        expect(s.notes[0].at).toBe(0);
+        expect(s.notes.at(-1)!.at).toBeLessThan(s.span);
+      }
+    }
+  });
+
+  it('makes the two answers of a question differ only in what is asked', () => {
+    for (const q of questions()) {
+      const [a, b] = CHOICES[q.ask].map((c) => q.sounds[c]);
+      expect(Object.keys(q.sounds).sort()).toEqual([...CHOICES[q.ask]].sort());
+      // One instrument for the whole question, and the same span for both answers.
+      expect(voices(a).size).toBe(1);
+      expect([...voices(a)]).toEqual([...voices(b)]);
+      expect(a.span).toBeCloseTo(b.span, 9);
+      if (q.ask === 'highlow') {
+        expect(a.notes.map((n) => n.at)).toEqual(b.notes.map((n) => n.at));
+        expect(new Set(steps(a)).size).toBe(1);
+        expect(new Set(steps(b)).size).toBe(1);
+        // High is higher than low, by at least MIN_APART scale steps.
+        expect(steps(a)[0] - steps(b)[0]).toBeGreaterThanOrEqual(MIN_APART);
+      } else if (q.ask === 'fastslow') {
+        // The same note; only the beat changes, fast twice as quick as slow.
+        expect(new Set([...steps(a), ...steps(b)]).size).toBe(1);
+        expect(a.notes.length).toBe(2 * b.notes.length);
+        expect(a.notes[1].at * 2).toBeCloseTo(b.notes[1].at, 9);
+      } else {
+        expect(a.notes.map((n) => n.at)).toEqual(b.notes.map((n) => n.at));
+        expect(steps(b)).toEqual([...steps(a)].reverse());
+        expect(a.notes.length).toBeGreaterThanOrEqual(3);
+        expect(a.notes.length).toBeLessThanOrEqual(5);
+        steps(a).slice(1).forEach((s, i) => expect(s).toBeGreaterThan(steps(a)[i]));
+      }
+    }
+  });
+
+  it('varies the sounds from question to question, and a replay plays the same notes', () => {
+    const qs = questions(60);
+    for (const ask of ['highlow', 'fastslow', 'updown'] as const) {
+      const heard = new Set(qs.filter((q) => q.ask === ask).map((q) => JSON.stringify(q.sounds[q.answer])));
+      expect(heard.size, ask).toBeGreaterThan(10);
+    }
+    // The sound is data on the question: the same seed builds the same notes.
+    for (const plan of Object.values(PLANS)) expect(makeQuestions(plan, new Rng(7))).toEqual(makeQuestions(plan, new Rng(7)));
+    const highs = new Set(qs.filter((q) => q.ask === 'highlow').map((q) => q.sounds.high.notes[0].step));
+    const lows = new Set(qs.filter((q) => q.ask === 'highlow').map((q) => q.sounds.low.notes[0].step));
+    expect(highs.size).toBeGreaterThan(3);
+    expect(lows.size).toBeGreaterThan(3);
   });
 });
