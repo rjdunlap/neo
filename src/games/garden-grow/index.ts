@@ -72,6 +72,8 @@ class GardenGrow implements Game {
   private glowColor: ColorName | null = null;
   private glowBeds = 0;
   private clock = 0;
+  /** Beds whose flower is still coming up: at level 1 each bed grows by itself, so the garden is full only when none is. */
+  private growing = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -254,10 +256,11 @@ class GardenGrow implements Game {
       if (bed.seed) return;
       this.plantIn(bed, this.ctx.rng.pick(['red', 'yellow', 'pink', 'purple', 'orange', 'blue'] as ColorName[]));
       if (mode === 'plant') {
-        this.busy = true;
+        // No lock: another empty bed can be planted while this one comes up.
         this.drops(bed.node.x);
+        this.growing++;
         await this.growBed(bed);
-        this.busy = false;
+        this.growing--;
         await this.checkFull();
       }
       return;
@@ -268,6 +271,8 @@ class GardenGrow implements Game {
       bed.seedArt?.destroy({ children: true });
       bed.seedArt = null;
       sfx.pop(3);
+      // Count again, so the last number she heard is what is in the beds.
+      void this.ctx.say('count', { n: this.beds.filter((b) => b.seed && !b.bloom).length });
     }
   }
 
@@ -276,6 +281,7 @@ class GardenGrow implements Game {
     const bed = this.beds.find((b) => !b.seed);
     if (!bed) {
       sfx.boing();
+      void this.ctx.say('grow.full');
       return;
     }
     if (this.plan.mode === 'color') {
@@ -348,7 +354,7 @@ class GardenGrow implements Game {
   }
 
   private async checkFull() {
-    if (this.beds.every((b) => b.bloom)) {
+    if (!this.growing && this.beds.every((b) => b.bloom)) {
       this.busy = true;
       await this.ctx.tw.wait(0.4);
       return void this.finale();
@@ -423,7 +429,7 @@ export const gardenGrow: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Say it together: "Plant the seed... rain, rain... it grows!" and wiggle up like a flower.',
+  coplayHint: 'One of you plants, one is the weather: tap the cloud. Say "Rain, rain... it grows!"',
   offScreen: 'Plant a bean in a cup and water it together; look at it each morning.',
   hubIcon: () => new GardenIcon(),
   touchDemo: true,
