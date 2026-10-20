@@ -288,7 +288,6 @@ class BlockGarden implements Game {
     const handle = draggable(carrier, this.ctx.tw, {
       lift: 0,
       onPick: () => this.pick(i),
-      onMove: () => this.carry(i),
       onDrop: () => this.drop(i),
     });
     return { carrier, art, handle, piece: null };
@@ -337,6 +336,7 @@ class BlockGarden implements Game {
       if (this.carrying === null || this.slots[this.carrying] !== slot) return void c.off('globalpointermove', onMove);
       const p = this.root.toLocal(e.global);
       c.position.set(p.x, p.y - lift);
+      this.carry(this.slots.indexOf(slot));
     };
     c.on('globalpointermove', onMove);
   }
@@ -362,8 +362,8 @@ class BlockGarden implements Game {
     const cancelled = this.cancelled;
     this.cancelled = false;
     if (this.carrying !== i || slot.piece === null) return this.home(slot), true;
-    this.carrying = null;
     this.carry(i);
+    this.carrying = null;
     const shadow = this.shadow;
     this.shadow = null;
     const over = this.overBed(slot.carrier.x, slot.carrier.y);
@@ -588,6 +588,11 @@ class BlockGarden implements Game {
   private drawPackets() {
     const g = this.packets.clear();
     if (!this.garden) return;
+    // The seed-tray cards: each whole slot is the touch target.
+    this.slots.forEach((slot, i) => {
+      const r = this.lay.slots[i];
+      g.roundRect(r.x + 8, r.y + 8, r.w - 16, r.h - 16, 22).fill({ color: swatch.brown.light, alpha: slot.piece === null ? 0.25 : 0.6 }).stroke({ width: 3, color: swatch.brown.line, alpha: 0.4 });
+    });
     const later = this.garden.pieces.length - (trayIndex(this.garden, this.state.used) + 1) * this.garden.traySize;
     if (later <= 0) return;
     const last = this.lay.slots[2];

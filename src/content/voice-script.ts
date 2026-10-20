@@ -1060,7 +1060,6 @@ export const SCRIPT = {
   'jar.stuck': ['Stuck! Let\'s take one back. Tap the round arrow.'],
   'jar.hint': ['Try moving the fruit from the glowing jar to the other bright jar.'],
   'jar.done': ['Every jar is one fruit. Jam time!', 'All sorted! Yummy jam.'],
-  'block-garden.intro': ['A garden full of sleeping buds. Plant the seed trays to wake them!'],
   'block-garden.instruct': ['Drag a seed tray onto the garden. Fill a whole row or a whole column, and the buds in it bloom. Wake every bud!'],
   'block-garden.instruct-clear': ['Drag a seed tray onto the garden. A full row or column blooms and gets picked. Empty the whole garden!'],
   'block-garden.two-lines': ['One piece can finish two lines.'],
