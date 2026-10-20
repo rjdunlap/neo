@@ -169,3 +169,10 @@
 - Ran `npm run typecheck` (clean), `npx vitest run src/app/scenes/lab.test.ts` (4 passed), `npm test` (1642 of 1643; a `peaks.test.ts` glider-loop-on-screen failure on untouched illustrated art, passed alone: a known flake) and `npm run build` (passed; a shared scene file changed).
 - Root probe (one-off `test-results/tl-probe.mjs`, http://localhost:5368, landscape and portrait): Explore lists nine locations; the Tinker Lab card opens the location (cat host, no resident); `go.game('light-lab', …)` with the land origin and leaving returns to the location; no page errors. Screenshots of both orientations reviewed (heading reads on the dark ceiling, spots and host clear).
 - Not run: `world`, the offline check, an iPad look, a child's reaction.
+
+## 2026-10-20 — RW13 slice 11: Barnyard and Lantern Lake at the root
+
+- Built on `claude/rw13-barnyard-lake` ([PR #649](https://github.com/rjdunlap/neo/pull/649), code `0dc10208`, base `bac7435b`): `farm.ts`, `lakeside.ts`, `farm.test.ts`, two `LOCATIONS` entries (`barnyard`, `lantern-lake`, no resident: the land's cow and purple cat hosts); `barnyardFence` is now exported from `barnyard.ts`; `LocationScene.ts` also changed. The last slice of the RW13 packet.
+- Ran `npm run typecheck` (clean), `npm test` (1647 of 1648; the known RW02b tote flake in `cast.test.ts` on untouched code, passed alone 44/44) and `npm run build` (passed; a shared scene file changed).
+- Root probe (one-off `test-results/loc-probe.mjs`, http://localhost:5329, landscape and portrait, both lands): Explore lists eleven locations; each card opens the location (land host, no resident); `go.game('orchard-rows')` and `go.game('tile-pairs', 'grownup')` with the land origin and leaving return to the location; no page errors. Screenshots reviewed (barnyard landscape: orchard, hay and hens clear of the spots; Lantern Lake portrait, full grown-up field: water strip, floating lanterns, garlands, posts, reeds).
+- Not run: `world`, the offline check, an iPad look, a child's reaction.

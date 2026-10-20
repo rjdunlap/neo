@@ -320,7 +320,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `week` | Day by Day: free card naming, day confirmation, weather records, tomorrow/yesterday, weather tally, retries, hint, reward, portrait and interrupted speech | `WEEK_LEVELS=1,3` (default; `2`, `4`, other-weather `5`, Weather Window `6` or supplied-record bridge `10` for the others) |
 | `orchard` | Orchard Rows: plant and count rows, count by columns, missing row, replay, wrong answers, hint, saved reward, portrait and interrupted speech | `ORCHARD_LEVELS=1,3` (default; use `2` for the middle level) |
 | `readdo` | Read & Do levels 1–3: word and whole-sign replay, wrong pictures, hint, saved reward, portrait and leaving during an action | `READ_LEVELS=1,3` for first and last only |
-| `feelings8` | Feelings Faces level 8: both event scenarios, a wrong helper, a hint, completion and reward | `BROWSER_SUITE=feelings8` |
+| `feelings8` | Feelings Faces level 8 (or 6 with `FEELINGS_LEVEL=6`): four different happenings, a prop wobble that is no miss, a wrong helper, a hint, completion and reward | `BROWSER_SUITE=feelings8` (`FEELINGS_LEVEL=6\|8`, default 8) |
 | `wardrobe7` | Weather Wardrobe level 7: take off the old outfit, dress for three changing weathers, one wrong choice and a hint | `BROWSER_SUITE=wardrobe7` |
 | `pattern`, `memory`, `letters`, `robot`, `stickers` | Pattern Train; Memory Match; all 26 letter trails and the word and name modes; Robot Path 1–13; sticker placement, removal, paging and portrait | `MEMORY_LEVELS=1,8,9,10,11,12` |
 
