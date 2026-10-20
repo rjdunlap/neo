@@ -94,9 +94,15 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, floor };
 }
 
-/** Explore's location cards (RW13, docs/rework/HOME.md#home-homescene-the-roots-hub): 150 units, at most four, one page. */
+/**
+ * Explore's location cards (RW13, docs/rework/HOME.md#home-homescene-the-roots-hub): 150 units, one page holding every
+ * location there will be (eleven), in rows of at most four.
+ */
 export const EXPLORE_CARD = 150;
-export const EXPLORE_MAX = 4;
+export const EXPLORE_MAX = 11;
+/** Cards to a row, and the distance from one row's centre to the next (a card, its name and a gap). */
+const EXPLORE_ROW = 4;
+const EXPLORE_PITCH = 220;
 
 export interface ExploreLayout {
   backdrop: Backdrop;
@@ -105,12 +111,22 @@ export interface ExploreLayout {
   cards: Spot[];
 }
 
-/** One row of up to four cards across the middle, Back top-left, clear of the guide and link corners. */
+/**
+ * Rows of up to four cards, the fuller rows on top (so the narrower last row is the one that comes down beside the
+ * guide corner), Back top-left, clear of the guide and link corners. One row sits across the middle, as it always has.
+ */
 export function exploreLayout(v: { w: number; h: number }, n: number): ExploreLayout {
   if (n < 1 || n > EXPLORE_MAX) throw new Error(`Explore holds one to ${EXPLORE_MAX} locations, not ${n}`);
   const gap = 80;
   const step = EXPLORE_CARD + gap;
-  const x0 = v.w / 2 - ((n - 1) * step) / 2;
-  const y = Math.round(v.h * 0.45);
-  return { backdrop: backdropFit(v), back: { x: BACK.x, y: BACK.y }, cards: Array.from({ length: n }, (_, i) => ({ x: Math.round(x0 + i * step), y })) };
+  const rows = Math.ceil(n / EXPLORE_ROW);
+  const y0 = rows === 1 ? Math.round(v.h * 0.45) : Math.max(200, Math.round(v.h * 0.42 - ((rows - 1) * EXPLORE_PITCH) / 2));
+  const cards: Spot[] = [];
+  for (let r = 0, left = n; r < rows; r++) {
+    const inRow = Math.ceil(left / (rows - r));
+    const x0 = v.w / 2 - ((inRow - 1) * step) / 2;
+    for (let i = 0; i < inRow; i++) cards.push({ x: Math.round(x0 + i * step), y: y0 + r * EXPLORE_PITCH });
+    left -= inRow;
+  }
+  return { backdrop: backdropFit(v), back: { x: BACK.x, y: BACK.y }, cards };
 }
