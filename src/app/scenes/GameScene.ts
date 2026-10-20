@@ -16,7 +16,10 @@ import { Demo } from '../../couch/demo';
 import { SCRIPT, type LineId } from '../../content/voice-script';
 import { discoveryCandidates, suggestDiscovery } from '../../content/discovery';
 import { GAMES } from '../../games/registry';
-import { discoveryMemory, launchDiscovery } from '../discovery';
+import { discoveryMemory, launchDiscovery, mixMemory, type MixRound } from '../discovery';
+import { mixGames, nextUp } from '../../content/mix';
+import { titleOf } from '../mix';
+import { allDoneArt, hopIcon, nextStopArt } from '../../ui/mix';
 import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
 import { CouchInput, type CouchControls } from '../../engine/controller';
 import { nextSpot } from '../../couch/focus';
@@ -63,6 +66,10 @@ export class GameScene extends Scene {
   private discovered: JournalEntry[] = [];
   private readonly discoveryToken = discoveryMemory.token(store.data);
   private discovery: { id: string; tile: DiscoveryTile; another: DiscoveryTile | null; anotherId?: string } | null = null;
+  /** The Little surprises round this scene plays, claimed as it is built; a game opened any other way is never in a mix. */
+  readonly mixRound: MixRound | undefined = mixMemory.claim(store.data);
+  /** Next stop (or All done) and Skip on a mix's result, in D1b's rectangles. */
+  private mixControls: { tile: DiscoveryTile; skip: DiscoveryTile | null; next: number | null } | null = null;
   private resultLayer: Container | null = null;
   private resultVeil: Graphics | null = null;
   private readonly resultPetOffset = { y: 300 };
@@ -142,6 +149,7 @@ export class GameScene extends Scene {
         audio.unlock(); voice.unlock();
         // A key arriving between frames cancels a held discovery choice before its pointer can release.
         this.discovery?.tile.cancel(); this.discovery?.another?.cancel();
+        this.mixControls?.tile.cancel(); this.mixControls?.skip?.cancel();
       },
       () => undefined,
       { listening: () => !this.app.paused && !isParentPanelOpen() },
@@ -210,7 +218,7 @@ export class GameScene extends Scene {
     const wasController = this.inputInUse.kind === 'controller';
     this.inputInUse.sample(keys);
     this.drive(keys, dt, wasController);
-    if (this.resultReady) this.syncDiscovery();
+    if (this.resultReady) { this.syncDiscovery(); this.syncMix(); }
     // The how-to card holds the round still: nothing moves or counts while a grown-up reads (its demonstration, if any, plays on).
     if (this.helpCard) {
       this.helpCard.update(dt);
@@ -301,6 +309,7 @@ export class GameScene extends Scene {
     const actions: PauseAction[] = [];
     if (labels.restart) actions.push({ label: labels.restart, run: () => game.restart?.() });
     if (labels.hint) actions.push({ label: labels.hint, run: () => game.askForHint?.() });
+    if (this.inMix()) actions.push({ label: 'Skip this game', run: () => this.skipFromPause() });
     return actions;
   }
 
@@ -403,6 +412,8 @@ export class GameScene extends Scene {
     if (this.story) store.completeStep(this.story.step, this.story.story ?? 'picnic');
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
+    // A mix stop is settled once, by its first completed round; the round itself is settled above, as always.
+    if (this.mixRound) mixMemory.finish(this.mixRound, store.data, seed);
     // Save the round and its sticker now: a write that only starts as the page closes can be lost.
     store.flush();
     void this.celebrate(seed);
@@ -477,10 +488,10 @@ export class GameScene extends Scene {
     }
 
     // "Again" plays the level she just finished (a story round plays its own), so it means what it looks like; the map applies the step up or down.
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.navigateResult(() => this.app.go.game(this.mod.id, this.band, this.story, true, this.origin, this.story ? undefined : this.level)));
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.navigateResult(() => { this.relaunchMix(); this.app.go.game(this.mod.id, this.band, this.story, true, this.origin, this.story ? undefined : this.level); }));
     // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
     const upTo = this.story ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
-    const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.navigateResult(() => this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo)));
+    const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.navigateResult(() => { this.relaunchMix(); this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo); }));
     const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.navigateResult(() => this.goHome()));
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);
@@ -546,8 +557,10 @@ export class GameScene extends Scene {
     if (!this.liveResult() || this.navigating) return;
     this.resultReady = true;
     this.syncDiscovery(false);
+    this.syncMix();
     await speech;
     if (this.speechSerial === serial && this.discovery?.tile.visible) this.sayDiscovery('discovery.offer');
+    if (this.speechSerial === serial && this.mixControls?.tile.visible) this.sayMix();
   }
 
   /** Save identity plus epoch rejects reset/restore and switching away then back, even to the same profile ID. */
@@ -564,6 +577,8 @@ export class GameScene extends Scene {
   }
 
   private candidates() {
+    // Inside a mix the mix's own controls take D1b's rectangles, so two "next" pictures never compete.
+    if (this.mixRound) return [];
     return discoveryCandidates({ current: this.mod.id, band: store.data.profile.band, playedBand: this.band, story: !!this.story }, GAMES);
   }
 
@@ -649,6 +664,121 @@ export class GameScene extends Scene {
       return;
     }
     this.navigateResult(() => launchDiscovery(this.app.go, id, store.data.profile.band, this.origin));
+  }
+
+  // Little surprises (D2b) ------------------------------------------------------------------
+
+  override holdsMix(): boolean {
+    return this.inMix();
+  }
+
+  private inMix(): boolean {
+    return !!this.mixRound && mixMemory.current(this.mixRound, store.data);
+  }
+
+  /** The live mix's home spot, stops and state, or nothing once it has ended or the save changed. */
+  private mixSession() {
+    if (!this.mixRound || !this.inMix()) return undefined;
+    const session = mixMemory.live(store.data)!;
+    const mods = mixGames(store.data.profile.band, session.place, GAMES);
+    return { place: session.place, state: session.state, mods };
+  }
+
+  /** Again and Next level replay the same stop: a new round there, and the stops to come stay as they were. */
+  private relaunchMix() {
+    if (this.mixRound && this.inMix()) mixMemory.launch(store.data, this.mixRound.p);
+  }
+
+  /** Shown with the result's buttons, only to touch, like D1b's offer; rebuilt only when the next stop changes. */
+  private syncMix() {
+    if (!this.resultReady || !this.resultLayer) return;
+    const session = this.mixSession();
+    const visible = !!session && this.canDiscover();
+    const next = session ? nextUp(session.state) : null;
+    if (session && session.mods && (!this.mixControls || this.mixControls.next !== next)) this.buildMix(session.mods, next);
+    const c = this.mixControls;
+    if (!c) return;
+    c.tile.visible = visible;
+    if (!visible) c.tile.cancel();
+    if (c.skip) { c.skip.visible = visible; if (!visible) c.skip.cancel(); }
+  }
+
+  private buildMix(mods: GameModule[], next: number | null) {
+    this.mixControls?.tile.destroy({ children: true });
+    this.mixControls?.skip?.destroy({ children: true });
+    const state = this.mixSession()!.state;
+    const art = next === null ? allDoneArt(mods) : nextStopArt(mods[next], titleOf(mods[next]), state);
+    const tile = new DiscoveryTile(288, 112, art, () => this.chooseMixNext(), () => this.canDiscover(), swatch.yellow);
+    tile.position.set(32, 24);
+    const hop = new Container();
+    const icon = hopIcon(swatch.yellow.line);
+    icon.position.set(56, 60);
+    hop.addChild(icon);
+    const skip = next === null ? null : new DiscoveryTile(112, 112, hop, () => this.skipMixNext(), () => this.canDiscover(), swatch.yellow);
+    skip?.position.set(32, 160);
+    this.resultLayer!.addChild(tile, ...(skip ? [skip] : []));
+    this.mixControls = { tile, skip, next };
+  }
+
+  private sayMix() {
+    const session = this.mixSession();
+    if (!session?.mods || !this.canDiscover()) return;
+    const next = nextUp(session.state);
+    void this.queueMix(next === null ? 'mix.last' : 'mix.next', next === null ? undefined : titleOf(session.mods[next]));
+  }
+
+  private async queueMix(line: LineId, title?: string) {
+    const serial = ++this.speechSerial;
+    await this.resultSpeech;
+    if (serial !== this.speechSerial || !this.canDiscover()) return;
+    await voice.say(line, title ? { title } : undefined);
+  }
+
+  /** Next stop: a new round at the next stop, latched once; All done goes to the ending on her home spot. */
+  private chooseMixNext() {
+    const session = this.mixSession();
+    if (!session || !this.canDiscover()) return;
+    const next = nextUp(session.state);
+    if (next === null) {
+      this.navigateResult(() => this.app.go.place(session.place));
+      return;
+    }
+    this.launchMixStop(session.place, next);
+  }
+
+  /** Checked again at the press: never a different game behind its picture. */
+  private launchMixStop(place: Band, p: number) {
+    const session = this.mixSession();
+    const mod = session?.mods?.[p];
+    if (!session || !mod) {
+      mixMemory.apply(store.data, { type: 'unavailable', p });
+      this.syncMix();
+      void this.queueMix('mix.changed');
+      return;
+    }
+    this.navigateResult(() => {
+      mixMemory.launch(store.data, p);
+      this.app.go.game(mod.id, store.data.profile.band, undefined, false, { place });
+    });
+  }
+
+  private skipMixNext() {
+    const session = this.mixSession();
+    const next = session ? nextUp(session.state) : null;
+    if (!session || next === null || !this.canDiscover()) return;
+    mixMemory.apply(store.data, { type: 'skip', p: next });
+    this.syncMix();
+    void this.queueMix('mix.skip').then(() => this.sayMix());
+  }
+
+  /** The pause sheet's Skip this game: an unfinished stop is hopped over (a played one stays played), then the next stop or the ending. */
+  private skipFromPause() {
+    const session = this.mixSession();
+    if (!session || this.finished) return;
+    mixMemory.apply(store.data, { type: 'skip', p: this.mixRound!.p });
+    const next = nextUp(mixMemory.live(store.data)!.state);
+    if (next === null || !session.mods) this.navigateResult(() => this.app.go.place(session.place));
+    else this.launchMixStop(session.place, next);
   }
 
   /** Every existing result element keeps its original center formula when the usable view changes. */
