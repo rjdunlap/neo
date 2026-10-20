@@ -32,12 +32,11 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 - **`little-conductor`, build level 3 *Two pictured requests* (music M3)** (new-interaction tier): a listener's sign asks for turtle or rabbit per half of the tune, a pad tap auditions, Check submits, a wrong Check names the requested pace, two misses glow the pad once per phrase. [Definition](definitions/little-conductor.md)
 
-- **`egg-catch`, roll when ready at levels 4–5** (new interaction, with the bot, how-to and browser case): the egg waits for the green arrow; no clock decides. [Slice 1](deep-dives/egg-catch.md#build-slices-in-order)
 - **`egg-catch`, a miss that teaches and hens that wait** (existing-game change): boing, line and next-lane glow at levels 2–3; no eggs laid while nobody plays. [Slice 2](deep-dives/egg-catch.md#build-slices-in-order)
 - **`egg-catch`, notes, egg colours and the hatching basket** (content): pentatonic hens, catchable colours at 1–2, chicks at the finish. [Slice 3](deep-dives/egg-catch.md#fresh-content-inside-existing-levels)
 - **`egg-catch`, level 8 Under the hen** (new interaction): tap a lane, the basket hops; toddler order 1, 8, 2. [Slice 4](deep-dives/egg-catch.md#new-levels-on-top)
-- **`egg-catch`, level 9 One gate** (new level; after *roll when ready*): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
-- **`egg-catch`, level 10 Fix the run** (new interaction; after *roll when ready*): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
+- **`egg-catch`, level 9 One gate** (new level): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
+- **`egg-catch`, level 10 Fix the run** (new interaction): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 
 - **`feelings-faces`, pools, the pet's own hug and scenery that answers** (existing-game content tier): eight happenings at level 6, four care scenarios at 8, all eight friends, the hug stated as the pet's own preference, props that wobble when tapped, the how-to finish line. [Slice 1](deep-dives/feelings-faces.md#build-slices-in-order)
