@@ -373,7 +373,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Fill, empty and refill: count fruit or pour water to a line.',
     steps: [
       { to: 2, text: 'Tap the basket to tip the fruit out. Then tap each piece (or the basket) to put it back.' },
-      { from: 3, to: 4, text: 'Tap the fruit on the grass to put it in the basket, as many as the voice asks for.' },
+      { from: 3, to: 4, text: 'Tap the fruit on the grass to put it in the basket, as many as the voice asks for. The card beside the basket has one dot for each; a dot fills as each piece goes in.' },
+      { from: 3, to: 4, text: 'A piece beyond the number hangs below the card as an extra dot: too many.' },
       { from: 3, to: 4, text: 'Tap the basket to take the last one back out if there are too many.' },
       { from: 3, to: 4, text: 'Tap the green check when the basket has the right number.' },
       { from: 5, text: 'Pull the jug right to pour. Pull farther for more water; lift at the purple line.' },

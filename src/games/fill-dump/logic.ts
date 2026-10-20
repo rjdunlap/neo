@@ -136,6 +136,20 @@ export const hintFor = (have: number, target: number): Hint => (have < target ? 
 export const insideCount = (s: FillState) => s.order.length;
 export const outsideIndexes = (s: FillState) => s.inside.flatMap((v, i) => (v ? [] : [i]));
 
+/** The count sign beside the basket in the counting levels: a card of `slots` dots (the number asked for), `filled` of them full, and `extras` dots hanging outside the card for every piece beyond the number. */
+export interface CountSign {
+  slots: number;
+  filled: number;
+  extras: number;
+}
+
+/** What the sign shows now: every piece in the basket fills a slot until the card is full, then hangs below it. Null in the tip-out levels, which ask for no number. */
+export function countSign(s: FillState): CountSign | null {
+  if (s.target === null) return null;
+  const inside = insideCount(s);
+  return { slots: s.target, filled: Math.min(inside, s.target), extras: Math.max(0, inside - s.target) };
+}
+
 /**
  * Apply one tap. The tip-out levels cannot go wrong: the basket tips when it is full and scoops one piece when it is not, a
  * piece goes in when tapped, and the round is done when everything is back in after the last tip. The counting levels have
