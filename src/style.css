@@ -420,3 +420,17 @@ html.turning .pet-name-form {
   color: var(--ink);
 }
 .pet-name-form input { width: 170px; user-select: text; -webkit-user-select: text; }
+
+/* The root page's way to the island game at classic/ (src/rework.ts), plain HTML over the canvas. */
+.classic-link {
+  position: fixed;
+  top: calc(var(--safe-top) + 12px);
+  left: calc(var(--safe-left) + 12px);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
+}

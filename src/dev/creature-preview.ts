@@ -12,9 +12,8 @@ import { onTap } from '../engine/input';
 import type { View } from '../engine/view';
 
 /**
- * RW02's development-only creature preview (docs/rework/CREATURE-ART.md), opened with `?creatures`
- * in a dev build. Not a route: nothing on the island reaches it, and a production build leaves it out.
- * RW05 replaces it with the real collection and removes this file and its hook in `main.ts`.
+ * RW02's creature preview (docs/rework/CREATURE-ART.md), served at the site root by `src/rework.ts` since 2026-10-19
+ * (the island game is at `classic/`). Not an island route. RW05 onward replaces it with the real collection and home.
  *
  * RW02b (docs/rework/GENERATED-CREATURE-PILOT.md) shows each species twice at the same sizes: the
  * Graphics rig on the left and the illustrated mesh rig on the right, with a collection card for
@@ -58,7 +57,7 @@ export class CreaturePreview extends Scene {
   selected = key(ENTRIES[0]);
   readonly worn = new Set<AccessoryKind>(ACCESSORIES);
   private readonly bg = new Graphics();
-  private readonly label = new Text({ text: 'RW02 creature preview · dev only', style: { fontFamily: 'Fredoka', fontSize: 18, fontWeight: '500', fill: ink } });
+  private readonly label = new Text({ text: 'Creature preview · the island games are behind the top-left link', style: { fontFamily: 'Fredoka', fontSize: 18, fontWeight: '500', fill: ink } });
 
   constructor(app: App, art: Art) {
     super(app);

@@ -1,7 +1,6 @@
 import '@fontsource/fredoka/latin-500.css';
 import '@fontsource/fredoka/latin-600.css';
 import './style.css';
-import { registerSW } from 'virtual:pwa-register';
 import { App } from './app/App';
 import { createRoutes } from './app/routes';
 import { applySettings } from './app/settings';
@@ -15,22 +14,16 @@ async function boot() {
   const app = new App();
   await app.init(document.getElementById('app')!);
   app.go = createRoutes(app);
-  // RW02's creature preview, development builds only, in place of the front door (removed at RW05).
-  if (import.meta.env.DEV && new URLSearchParams(location.search).has('creatures')) {
-    const { CreaturePreview } = await import('./dev/creature-preview');
-    const { loadArt } = await import('./art/creatures/illustrated');
-    const [sprout, river, glider] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider')]);
-    void app.show(new CreaturePreview(app, { sprout, river, glider }));
-  } else app.go.start();
+  // This is the island game, served at `classic/`; the site root boots the rework (`src/rework.ts`).
+  app.go.start();
   // A handle for poking at the running game from the browser console during development.
   if (import.meta.env.DEV) {
     Object.assign(window, { neo: app });
     void import('./dev/testkit');
   }
-  // With the prompt update policy this installs fresh assets in the background, but
-  // deliberately supplies no refresh callback: the waiting worker takes over only
-  // after the app is closed, so play is never interrupted by an automatic reload.
-  registerSW({ immediate: true });
+  // The offline worker sits at the site root, one level up from `classic/` (where `registerSW` would look). An update
+  // waits until every copy of the app has closed (vite.config.ts), so play is never interrupted by a reload.
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) void navigator.serviceWorker.register(new URL('../sw.js', location.href), { scope: '../' }).catch(() => {});
 }
 
 void boot();

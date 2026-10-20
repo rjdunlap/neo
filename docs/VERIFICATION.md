@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-20 — Rework at the site root, island game at `classic/`
+
+- Two-page build (`claude/routines-art-rework-deploy-90743f`, base `c54308f3`): the root boots the creature preview (`src/rework.ts`) with an "Island games" link; `classic/` boots the island (`src/main.ts`) with its own manifest and an explicit root service worker. Harnesses add `classic/` to a bare `GAME_URL`. READY gains RW13 (island revamp location packet) and RW06 definitions and RW05 slice 2.
+- Ran typecheck, `npm test` (163 files, 1528 passed), `npm run build`, `test:offline` against the production preview on port 4391 (bare origin, so `classic/`; passed twice, before and after the manifest change), `BROWSER_SUITE=world` on dev port 5391 (passed, 7:57), and one root screenshot in the browser pane.
+- Not run: other suites (no game changed), an iPad home-screen install from `classic/`.
+- Open: on the iPad, a copy saved from the old root URL now opens the preview; re-add it from `classic/`.
+
 ## 2026-10-20 — Song Maker support truth (slice 1)
 
 - Built [slice 1](deep-dives/song-maker.md#build-slices-in-order) ([PR #628](https://github.com/rjdunlap/neo/pull/628), commit 72d2b51f): each bead's hit area is its whole grid cell (levels 5–6 were about 91–92 units, now at least 101 in 1024×768), `songLayout(plan, view)` moved into `logic.ts`, and the levels 1–2 how-to note is conditional on two lit jellies. IDs and accounting unchanged.
@@ -101,14 +108,6 @@
 - References were read through search summaries, store listings and reviews, none played: Toca Hair Salon 2, 3 and 4 reviews, Dr. Panda Beauty Salon, the two Play-Doh instruction pages, Pokémon Refresh, Nintendogs, Shampoodle, Neopets customisation, Avokiddo Emotions, the Fisher-Price vanity, and Common Core K.MD.A.2.
 - Ladder: levels 6–12 (lap/toddler 6 *Pat the fluff* and 7 *Snip snip*, toddler 8 *Pink, please*, 9 *Two customers*, pre-K 10 *Longer than Pip's*, 11 *Two colors*, 12 *Changed my mind*), nine queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived audit row.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
-## 2026-10-19 — Trackway Tales definition (docs only)
-
-- Defined Trackway Tales levels 1–3 in [the definition](definitions/trackway-tales.md) (deep-time study slice D4, the recommendations row "define replay case") on `claude/define-trackway-tales` ([PR #582](https://github.com/rjdunlap/neo/pull/582)): a strip of dried mud with footprints from one invented two-footed mud walker, two or three movement cards each replayed by a gray ghost creature on a practice strip, a study board and Check that compares the stamped marks column by column; level 1 walk or hop, level 2 which way from the toes with a magnifier, level 3 a puddle over the middle where Can't tell is right when two movements (walk, and walk-stop-walk, since standing still leaves no mark) stamp the same marks. The toy model (`stamp`, `fits`, `firstMismatch`, `accepted`) is stated on the card; six authored movements and six cases are tabled with their intended accepted sets.
-- References read, none played: an AMNH *Who Walked Here?* classroom activity, a University of Tennessee Extension footprint guide, an RSC *Tricky tracks* lesson, a BC Government fossil-footprint activity sheet, Live Science on the Paluxy chase reconstruction, an NPS trackway page and Return of the Obra Dinn.
-- Updated the deep-time D4 slice and recommendations row, the IDEAS row, a WAITING row with nine defaulted calls and a READY.md line for the D5 build (new-game tier, school 1–3, Bubble Beach by default). The draft was written in an earlier session's worktree and finished here after merging `origin/main`.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
-- Open: the nine defaulted decisions; whether a six-year-old reads the practice strip as hers and the mud as the record, whether 70-unit toe bumps read as direction before the magnifier, whether "can't tell" lands as a satisfying answer and device speech of "trackway" are device checks for the build.
 
 ## Coverage summary
 

@@ -23,6 +23,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW10](https://github.com/rjdunlap/neo/issues/494) | Collection book and chosen unlock goals | define after upstream packets | RW05, RW07, RW08 |
 | [RW11](https://github.com/rjdunlap/neo/issues/495) | Optional forms and useful talents | sketch, definition first | RW02, RW10 |
 | [RW12](https://github.com/rjdunlap/neo/issues/496) | First expansion and later-school coverage | sketch, definition first | RW08, RW09, RW10; RW11 only if used |
+| [RW13](#rw13-island-revamp-ecosystems-as-locations) | Island revamp: ecosystems as locations | define (docs-only definition is ready, 2026-10-19); building waits on its packet | RW03 packet, the land catalog; informs RW06, RW08 and the backdrop art (R23) |
 
 ## RW01: Name and story
 
@@ -244,3 +245,19 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 - Define content review, supported completion, unlocks, actual learning evidence and observations before implementing; split into complete claims/PRs with appropriate checks.
 
 **Likely files:** expansion packet and relevant subject/game definitions first; actual content modules later. **Proof:** docs audit first; each delivered game/project/art/navigation slice uses its own tier. No whole-release check merely for adding the plan.
+
+## RW13: Island revamp: ecosystems as locations
+
+Requested by the developer 2026-10-19 (see the [rework brief](README.md#decisions-and-working-recommendations)). No GitHub issue yet.
+
+**Outcome:** the root experience (today the creature preview) becomes the whole revamped game: a nicer-looking island whose locations are diverse ecosystems and environments, each with its own backdrop, resident creatures/pets and games, reached through the RW03 navigation, so `classic/` can retire at RW08.
+
+**First slice (docs only):** a location packet. Audit the eleven lands in `src/content/lands.ts` and every registered game; propose the new set of locations as ecosystems/environments (for example meadow, pond and wetland, beach and reef, rainforest, desert, snowy peak, night garden, cave, town and workshop), keeping subject spread and the one-screen layout rule; assign every game a home location, naming games whose scenery or cast changes and any that fit nowhere; say which illustrated species live where and which second-wave creatures (Tote, Trill, Dapple, Bramble, Mossback, Lumen) fit which ecosystem; define the backdrop set and write its art requests in the [art request queue](art-requests/QUEUE.md) format (reuse or replace R23); reconcile the habitat kits ([IDEAS.md](../IDEAS.md)) and RW03's Home/Explore; and split the build into ordered, bounded slices (first: one complete location in the new shell with its backdrop, a resident creature and its games launching and returning), each with its check tier, added to [READY.md](../READY.md).
+
+**Acceptance:**
+- Every game keeps a reachable home; no target shrinks; navigation never needs reading; nothing gates by grade.
+- Ecosystems are factual where they teach (real habitats, plants and animals) and fantasy only where labelled.
+- Backdrops follow the [art bible](ART-BIBLE.md); the packet states what is generated and what stays code-drawn.
+- Lists what the `classic/` island keeps until cutover and what each build slice removes.
+
+**Likely files:** a new `docs/rework/ISLAND-REVAMP.md`, this index, READY.md and the art queue. **Proof:** links and `git diff --check`.

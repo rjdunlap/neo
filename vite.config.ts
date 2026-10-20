@@ -7,7 +7,8 @@ export default defineConfig({
   cacheDir: (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.VITE_CACHE_DIR || 'node_modules/.vite',
   // Relative paths so the build works from any static host or sub-folder (e.g. GitHub Pages).
   base: './',
-  build: { chunkSizeWarningLimit: 1500 },
+  // Two pages: the root is the creature-world rework (`src/rework.ts`), `classic/` the island game (`src/main.ts`).
+  build: { chunkSizeWarningLimit: 1500, rollupOptions: { input: { main: 'index.html', classic: 'classic/index.html' } } },
   plugins: [
     VitePWA({
       // Let a new build take over after the current play session closes. Auto-update
@@ -24,6 +25,7 @@ export default defineConfig({
         background_color: '#FFF4E3',
         theme_color: '#FFF4E3',
         start_url: './',
+        // `classic/` (the island game) links its own copy, public/classic/manifest.webmanifest, which starts there.
         scope: './',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
