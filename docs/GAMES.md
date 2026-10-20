@@ -78,7 +78,7 @@ Each seeded round chooses a Meadow arch, Pond columns or Hive ring. Pond bumpers
 
 ### Roundup
 
-*lap–pre-K · after Extreme Herder (Neopets), Puffle Roundup (Club Penguin) and Stampede (Atari 2600).* Tap an animal and it hops into its pen; later, shoo animals through the gate with a finger (guide a crowd), sort pigs and bunnies, and put exactly N in and ring the bell.
+*lap–pre-K · after Extreme Herder (Neopets), Puffle Roundup (Club Penguin) and Stampede (Atari 2600).* Tap an animal and it hops into its pen; later, shoo animals through the gate with a finger (guide a crowd), sort pigs and bunnies, and put exactly N in and ring the bell. At level 1 a tap on the grass or a pen makes the nearest loose animal cheer and speak, and a tap on a pen's sign says who lives there; neither is a miss or a hint. Counting pens (levels 5-6) show the numeral and that many dots, and a right bell has the pet say each pen's total ("3 pigs in the mud!") before "Everyone is home". Each round's starting layout comes from the round's rng, so replay starts somewhere new. A wrong pen or a wrong bell counts a miss; the thirty-second trot-home finishes the round for her and counts one hint.
 
 ### Egg Catch
 
