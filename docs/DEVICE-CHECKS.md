@@ -16,6 +16,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Little Conductor (levels 1-2, 2026-10-20).** On an iPad speaker, do 60 and 90 beats a minute sound clearly different? Does a two-year-old read the turtle and rabbit pads and the pending ring? Does the drum mask the melody? Does device speech say turtle and rabbit clearly? Does any child hear the fast pace as winning?
 - [ ] **Collection and Friends (RW05 slice 1, 2026-10-20, #630):** on an iPad, an existing version-2 profile should meet the egg again with stickers kept.
   - boot time and GPU memory with three mipmapped sets plus the collection pictures decoded before the first scene (about 20 MB);
   - the per-frame cost of the hue filter on a recoloured friend;

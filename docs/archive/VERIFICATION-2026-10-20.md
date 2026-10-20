@@ -69,3 +69,10 @@
 - Ran `npm run typecheck` (clean), `npm test` (1604 of 1605; every lands and registry test passed, including the layout at every band) and `npm run build`. The one failure was the RW02b illustrated tote "never tears the picture" test in `src/art/creatures/cast.test.ts` (expected 2.225 < 2), unchanged code from #633; it passed once and failed on two isolated reruns, so it is recorded as a known flake.
 - Not run: browser suites (no membership expectation broke, so the conditional `world` visit was not needed), offline check, any device look.
 - Open: the map still draws a pier landmark for the Painted Canyon land (`pier()` in `src/art/lands.ts`) until the backdrop slices; the tote flake is undiagnosed.
+
+## 2026-10-20 — Algebra and balance subject study (docs only)
+
+- Docs only: [study](../deep-dives/subjects/algebra-balance.md) on `claude/subject-algebra-balance-finish` ([PR #621](https://github.com/rjdunlap/neo/pull/621)), superseding the claim in [PR #604](https://github.com/rjdunlap/neo/pull/604). Anchors opened as listed in the study (CCSS 1.OA–8.F, England's algebra statements, Knuth et al. 2006 through its abstract, DragonBox, Function Machine and Zoombinis pages); the PhET pages gave only titles and no reference game was played.
+- Proposes Rule Machine (levels 1–8), Box Balance (13+), Seesaw Balance 18, Pattern Train *Two trains* and Fruit Sums *Both trees*. Packet in [RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the eight developer decisions (new game vs Pattern Train, plotted-log grid, land, 7–8 placement, Box Balance's home, first-prediction rule, reviewer, hat wearable); no child, parent, educator or device involved.

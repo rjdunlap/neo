@@ -1,5 +1,5 @@
 import { audio } from './engine';
-import { bell, marimba, noise, tone, voiced } from './instruments';
+import { bell, marimba, noise, pluck, tone, voiced } from './instruments';
 import { stepHz } from './notes';
 
 export type AnimalSound = 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop';
@@ -33,6 +33,12 @@ export const sfx = {
   marimba(step: number, gain = 0.45) {
     const o = out();
     if (o) marimba(o.ctx, o.dest, o.t, stepHz(step), gain);
+  },
+
+  /** A plucked string on the scale, like the island music's pluck lead. */
+  pluck(step: number, gain = 0.25) {
+    const o = out();
+    if (o) pluck(o.ctx, o.dest, o.t, stepHz(step), gain);
   },
 
   /** A hand clap: two quick, slightly different bursts of filtered noise. */
@@ -237,11 +243,11 @@ export const sfx = {
   },
 
   /** A soft hand drum. */
-  drum() {
+  drum(gain = 0.6) {
     const o = out();
     if (!o) return;
-    tone(o.ctx, o.dest, 'sine', 130 * jitter(), o.t, 0.6, 0.004, 0.28, 55);
-    noise(o.ctx, o.dest, o.t, 0.05, 0.12, { type: 'lowpass', hz: 700 });
+    tone(o.ctx, o.dest, 'sine', 130 * jitter(), o.t, gain, 0.004, 0.28, 55);
+    noise(o.ctx, o.dest, o.t, 0.05, gain / 5, { type: 'lowpass', hz: 700 });
   },
 
   /** A woodpecker's knock on hollow wood. */

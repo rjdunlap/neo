@@ -61,6 +61,7 @@ import { pixelPictures } from './pixel-pictures';
 import { goodnightRoom } from './goodnight-room';
 import { animalSnack } from './animal-snack';
 import { beatBuilder } from './beat-builder';
+import { littleConductor } from './little-conductor';
 import { clapSyllables } from './clap-syllables';
 import { chainReaction } from './chain-reaction';
 import { rhymeTime } from './rhyme-time';
@@ -158,6 +159,7 @@ export const GAMES: GameModule[] = [
   goodnightRoom,
   animalSnack,
   beatBuilder,
+  littleConductor,
   rhymeTime,
   stopAndGo,
   rampRace,
