@@ -126,7 +126,7 @@ Slice 1 landed in [PR #630](https://github.com/rjdunlap/neo/pull/630): save vers
 5. Friends has Back (to the treehouse) only, as the Journal does; Home is not on it.
 6. **Live effect at deploy:** every existing version-2 profile loses its pet and meets the egg again. Stickers, levels, room, creations and journal are kept.
 
-Checks are in the [2026-10-20 entry](../VERIFICATION.md#2026-10-20--rw05-slice-1-the-collection-model-and-friends).
+Checks are in the [2026-10-20 entry](../archive/VERIFICATION-2026-10-20.md#2026-10-20--rw05-slice-1-the-collection-model-and-friends).
 
 ## Not in this packet
 
