@@ -34,3 +34,12 @@
 - Ran `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaboo-barn FINGER_LEVELS=1` (clean, 17.1 s). A Playwright probe (Vite at `http://localhost:5471`) forced each feeling at level 1: all three showed, no misses, no page errors; one portrait screenshot (singing duck).
 - Not run: build, any other suite, device speech for the feeling words, an iPad.
 - Open: device speech and a child's reaction to the feeling words (the deep dive's decision 6 person check); more animals wait on decision 4.
+
+## 2026-10-19 — RW02b step 2: the pilot three prepared and rigged
+
+- Built on `claude/rw02b-rig-pilot-three` ([PR #609](https://github.com/rjdunlap/neo/pull/609)): `prepare-sprite.mjs --shrink <n>` (premultiplied box average after keying at full size), the sprout, river and glider expression sets at half size in `src/art/creatures/illustrated/` (eighteen sprites, 4.3 MB) with manifest rows, `IllustratedCreature` (`illustrated.ts`) and one mesh rig per species with `SPROUT_ART`, `RIVER_ART` and a new `GLIDER_ART` (face, slots, pinned body, parts with root and tip, touch circle, misfits), whole-texture expressions replacing the painted lids, the six rigs and cards in `/?creatures`; the stand-in `glider.png`, `prepare-glider.mjs` and the old glider test deleted. [Step 2 result](../rework/GENERATED-CREATURE-PILOT.md#step-2-result-2026-10-19).
+- Ran `npm run typecheck` (clean) and `npx vitest run src/art/creatures scripts/creature-art` (41 passed: the shared suite per species, a weights test per species, the creature and script tests), eight times for the glider and four for all after tuning the fin and ribbon ramps, since the suite starts each creature at a random clock.
+- Ran `test-results/rw02b-probe.mjs` (Chromium headless, Vite at `http://localhost:5173`) at 1024 × 768 and 768 × 1024: taps and quick re-taps on all six, the three moods, scarf and crown off and on, cards and toggles fitting without overlap, every creature inside the window, leaving to the chooser; no page errors; one screenshot per orientation.
+- Ran `npm run build`: no sprite or preview code in `dist/` or the service worker precache (31 entries, 2.7 MB).
+- Not run: any game suite (no game changed), an iPad, a child; the real-time motion was checked from the probe's stills and the browser pane, not watched by a person.
+- Open: the device check for all three rigs; RW05 slice 1 takes the rigs; the wearables fit.

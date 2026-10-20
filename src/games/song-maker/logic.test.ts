@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beadToTap, freeSong, key, makeSong, PATTERNS, ROW_STEPS, SONG_PLANS } from './logic';
+import { beadToTap, freeSong, key, makeSong, PATTERNS, ROW_STEPS, SONG_PLANS, songLayout } from './logic';
 
 describe('Song Maker songs', () => {
   it('fit the grid, use one note per beat, and never sit on a single pitch', () => {
@@ -64,5 +64,19 @@ describe('Song Maker songs', () => {
         }
       }
     });
+  });
+
+  it('gives every level a whole cell of at least 100 to touch, on the screen, in landscape, portrait and a wide phone', () => {
+    const views = [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1660, h: 768 }];
+    for (const plan of SONG_PLANS) {
+      for (const v of views) {
+        const { cell, x0, y0 } = songLayout(plan, v);
+        expect(cell, `${plan.name} in ${v.w}×${v.h}`).toBeGreaterThanOrEqual(100);
+        expect(x0).toBeGreaterThanOrEqual(175);
+        expect(x0 + cell * plan.cols).toBeLessThanOrEqual(v.w - 40);
+        expect(y0).toBeGreaterThanOrEqual(130);
+        expect(y0 + cell * plan.rows).toBeLessThanOrEqual(v.h - 40);
+      }
+    }
   });
 });
