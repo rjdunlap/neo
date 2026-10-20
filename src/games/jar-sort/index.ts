@@ -141,7 +141,9 @@ class JarSort implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     const list = BOARDS[this.plan.id];
-    this.puzzles = this.plan.id === 1 ? list.slice(0, this.plan.boards) : ctx.rng.shuffle([...list]).slice(0, this.plan.boards);
+    // The how-to card's demonstration shows one board, so two-board levels stay inside its time.
+    const boards = ctx.demo ? 1 : this.plan.boards;
+    this.puzzles = this.plan.id === 1 ? list.slice(0, boards) : ctx.rng.shuffle([...list]).slice(0, boards);
     onTap(this.back, () => this.setDown());
     this.glow.eventMode = 'none';
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
