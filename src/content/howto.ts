@@ -1197,6 +1197,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
   },
+  'little-conductor': {
+    goal: 'Lead a little band: tap the turtle to play the tune slowly or the rabbit to play it fast.',
+    steps: [
+      'Tap the turtle or the rabbit; the band changes pace at the next beat.',
+      { from: 1, to: 1, text: 'Hear the whole tune at your pace, then tap the green check.' },
+      { from: 2, to: 2, text: 'Hear it both ways, then pick the way to finish with and tap the green check.' },
+    ],
+    finish: [{ from: 1, to: 2, text: 'The band plays your tune once more and takes a bow.' }],
+    note: [
+      { text: 'Tapping, switching and listening again are never counted; the notes never change, only how quickly they come, and fast is not better than slow.' },
+      { from: 1, to: 2, text: 'Moving up a level here means she is ready for the next thing to try, not that she can tell tempos apart.' },
+    ],
+  },
   'beat-builder': {
     goal: 'Arrange percussion sounds in a repeating beat.',
     steps: [
