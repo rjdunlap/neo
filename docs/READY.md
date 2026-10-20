@@ -6,7 +6,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **Rework RW13 slice 2, the first location: Rainbow Meadow** (shell/navigation tier: typecheck, units, build, one filtered root probe of arrive → resident → game → Home back in both orientations, offline check; after RW05 slice 1): a root `LocationScene` for `rainbow-meadow` with a code-drawn meadow backdrop, the illustrated Sprout as resident (poke and line), its games and signpost from `landLayout`, `go.land` routed to it in the root entry, an entry from the root's entry scene after RW05 slice 1 (which deletes the creature preview). [Packet](rework/ISLAND-REVAMP.md#the-location-in-the-new-shell)
 - **Rework RW06 definition, playable home and customization** (docs only: links and `git diff --check`; its upstream packets RW03 and RW05 exist): define the home scene, toy interaction and saved look from the work item, with build slices added here. [Work item](rework/WORK-ITEMS.md#rw06-playable-home-and-customization)
 - **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)

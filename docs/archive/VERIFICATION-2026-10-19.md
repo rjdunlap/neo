@@ -95,3 +95,10 @@
 - References were read through search summaries, store pages and wiki pages, none played: Hasee Bounce, Learning Resources Primary Bucket Balance, Montessori baric tablets, PhET Equality Explorer Basics and Balancing Act, DragonBox Algebra 5+, SolveMe Mobiles, Guess the Weight of the Marrow, Siegler's balance-scale rule studies, CCSS K.MD.A.2.
 - Ladder: levels 12–17 (lap 12 *Wheee!* with the lap band, preschool 13 *Who is heavier?*, pre-K 14 *Line them up*, pre-K/school 15 *Guess the pumpkin*, school 16 *How much heavier?* and 17 *Which way will it tip?*), eight queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the notebook and the archived audit rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
+## 2026-10-19 — Mail Carrier deep dive
+
+- Docs only: [deep dive](../deep-dives/mail-carrier.md) on `claude/dive-mail-carrier-finish` ([PR #620](https://github.com/rjdunlap/neo/pull/620)), resuming the claim in [PR #603](https://github.com/rjdunlap/neo/pull/603) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–8 on `15fcd906`; gaps: the how-to's level 7 step has no `to` so level 8's card shows both steps, a lap touch off a house does nothing, no carrier on the street, a fixed backdrop seed, no spoken count at 3 and 5.
+- References were read through search summaries and store, archive and curriculum pages, none played: Paperboy, Orchard Toys Post Box Game, Postman Pat: Special Delivery Service, Dora's Map, Blades & Spencer 1987, England KS1 geography, street numbering conventions, CCSS K.CC.A.3 and 2.OA.C.3.
+- Ladder: levels 9–15 (toddler 10 *Which door?*, pre-K/school 9 *Who can help?* and 12 *Numbers past ten*, school 13 *Hazel's clue*, 11 *Both sides of the street*, 14 *Three letters, your way* and 15 *Make the key*), nine queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the notebook and the civics study's CC2 slice.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.

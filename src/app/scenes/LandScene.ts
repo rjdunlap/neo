@@ -1,5 +1,4 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
-import type { Critter } from '../../art/critter';
 import { makeHost, Signpost } from '../../art/lands';
 import { swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
@@ -20,7 +19,7 @@ import { makeLandmark, type Landmark } from '../../ui/landmark';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { ScreenKeys, type FocusSpot } from '../screen-keys';
-import { Scene } from '../Scene';
+import { Scene, type Updatable } from '../Scene';
 import { drawBarnyard } from './barnyard';
 
 /** Landmarks are drawn at the largest size a land uses and scaled down when a crowded land needs smaller ones. */
@@ -43,6 +42,26 @@ export function forgetLands() {
   lastLandId = null;
 }
 
+/** Who stands where the host stands: feet on (0, 0), about 250 units tall at scale 1, with a body-centred hit area. */
+export interface LandHost {
+  node: Container;
+  /** Its touch reaction; it is updated with the scene. */
+  critter: Updatable & { poke(): void };
+  hitArea: Circle;
+}
+
+/** What a scene built on a land may change; without them it is the island's land (`classic/`). */
+export interface LandOptions {
+  /** Who greets her here: the land's code-drawn host by default. */
+  host?: () => LandHost;
+  /** Where Home (and Backspace or B) goes: the island map by default. */
+  home?: () => void;
+  /** Scenery drawn over the backdrop and under the field on every resize, kept clear of the field's touch areas. */
+  scenery?: (g: Graphics, layout: LandLayout, view: View, ground: number) => void;
+  /** Whether tapping the host says the land's line before its suggestion. */
+  hostSaysLine?: boolean;
+}
+
 /**
  * One themed land on the island: its backdrop, its host, and its games for her age and younger on one screen.
  * When the land has games for bigger kids, a signpost turns the land to show those (played at their easiest
@@ -57,14 +76,16 @@ export class LandScene extends Scene {
   readonly older: Landmark[] = [];
   showingOlder = false;
   readonly host: Container;
-  readonly hostCritter: Critter;
+  readonly hostCritter: LandHost['critter'];
+  private readonly hostHit: Circle;
   readonly sign: Signpost | null;
   /** The game the host suggested last, if any. */
   suggested: string | null = null;
   layout: LandLayout | null = null;
 
   private backdrop!: Backdrop;
-  private readonly barnyard: Graphics | null;
+  private readonly scenery: Graphics | null;
+  private readonly drawScenery: LandOptions['scenery'] | null;
   /** Greeting notes advance on scene time, so leaving or pausing cannot leave a timer behind. */
   private motifStep = -1;
   private motifTime = 0;
@@ -72,7 +93,7 @@ export class LandScene extends Scene {
   private readonly glow = new Graphics();
   private glowLeft = 0;
   readonly pip = makeCompanion();
-  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));
+  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(this.goHome));
   readonly book = new RoundButton(bookIcon(), swatch.white, 50, () => this.leave(() => this.app.go.stickers()));
   private readonly heading = label('', 36);
   private leaving = false;
@@ -80,21 +101,24 @@ export class LandScene extends Scene {
   /** Keys and a pad: a ring over the games standing here, the host, the signpost and the two buttons. Backspace or B goes back to the map. */
   private readonly keys = new ScreenKeys(this.app, {
     spots: () => this.focusSpots(),
-    back: () => this.leave(() => this.app.go.hub()),
+    back: () => this.leave(this.goHome),
     active: () => !this.leaving,
   });
 
   constructor(
     app: App,
     readonly id: LandId,
+    private readonly options: LandOptions = {},
   ) {
     super(app);
     this.land = landFor(id);
-    this.barnyard = id === 'barnyard' ? new Graphics() : null;
+    this.drawScenery = options.scenery ?? (id === 'barnyard' ? drawBarnyard : null);
+    this.scenery = this.drawScenery ? new Graphics() : null;
     this.band = store.data.profile.band;
-    const host = makeHost(this.land);
+    const host = options.host ? options.host() : { ...makeHost(this.land), hitArea: new Circle(0, -125, 115) };
     this.host = host.node;
     this.hostCritter = host.critter;
+    this.hostHit = host.hitArea;
     this.sign = olderIn(this.land, this.band, GAMES).length ? new Signpost() : null;
   }
 
@@ -104,9 +128,9 @@ export class LandScene extends Scene {
     this.backdrop = this.track(new Backdrop(this.land.backdrop, this.view));
     this.glow.eventMode = 'none';
     this.content.addChild(this.backdrop);
-    if (this.barnyard) {
-      this.barnyard.eventMode = 'none';
-      this.content.addChild(this.barnyard);
+    if (this.scenery) {
+      this.scenery.eventMode = 'none';
+      this.content.addChild(this.scenery);
     }
     this.content.addChild(this.glow, this.field);
     const build = (mods: typeof GAMES, into: Landmark[]) => {
@@ -126,7 +150,7 @@ export class LandScene extends Scene {
 
     // The host greets her and suggests a game; its touch area is round its body, not its feet.
     this.track(this.hostCritter);
-    this.host.hitArea = new Circle(0, -125, 115);
+    this.host.hitArea = this.hostHit;
     onTap(this.host, () => this.suggestGame());
     this.field.addChild(this.host);
     if (this.sign) {
@@ -158,7 +182,7 @@ export class LandScene extends Scene {
     this.heading.position.set(v.w / 2, 65);
     this.pip.position.set(92, v.h - 12);
     if (!layout) return;
-    if (this.barnyard) drawBarnyard(this.barnyard, layout, v, this.backdrop.groundY);
+    if (this.scenery && this.drawScenery) this.drawScenery(this.scenery, layout, v, this.backdrop.groundY);
     this.scale0 = layout.box.w / BOX.w;
     for (const mark of [...this.mine, ...this.older]) mark.node.visible = false;
     this.showing.forEach((mark, i) => {
@@ -178,7 +202,7 @@ export class LandScene extends Scene {
     music.play(this.land.music);
     const first = !greeted.has(this.id);
     greeted.add(this.id);
-    if (first && this.barnyard) {
+    if (first && this.id === 'barnyard') {
       sfx.marimba(this.land.music.range[0], 0.24);
       this.motifStep = 1;
       this.motifTime = 0;
@@ -196,7 +220,7 @@ export class LandScene extends Scene {
     const s = this.scale0;
     const spots: FocusSpot[] = this.showing.map((m) => ({ id: m.mod.id, x: m.node.x, y: m.node.y - 55 * s, r: 85 * s, press: () => this.launch(m) }));
     const hs = this.host.scale.x;
-    spots.push({ id: 'host', x: this.host.x, y: this.host.y - 125 * hs, r: 115 * hs, press: () => this.suggestGame() });
+    spots.push({ id: 'host', x: this.host.x + this.hostHit.x * hs, y: this.host.y + this.hostHit.y * hs, r: this.hostHit.radius * hs, press: () => this.suggestGame() });
     if (this.sign && layout.sign) {
       const ss = this.sign.scale.x;
       spots.push({ id: 'sign', x: this.sign.x, y: this.sign.y - 70 * ss, r: 85 * ss, press: () => this.turnSign() });
@@ -239,9 +263,13 @@ export class LandScene extends Scene {
     this.tw.kill(mark.node.scale);
     const s = this.scale0;
     void this.tw.to(mark.node.scale, { x: s * 1.14, y: s * 1.14 }, { duration: 0.18 }).then(() => this.tw.to(mark.node.scale, { x: s, y: s }, { duration: 0.3, ease: ease.outBack }));
-    void voice.say('land.try').then(() => {
+    const tip = () => voice.say('land.try').then(() => {
       if (!this.leaving && this.suggested === mod.id) return voice.say(mod.titleLine);
     });
+    if (this.options.hostSaysLine) void voice.say(this.land.line).then(() => {
+      if (!this.leaving && this.suggested === mod.id) return tip();
+    });
+    else void tip();
   }
 
   private launch(mark: Landmark) {
@@ -256,6 +284,8 @@ export class LandScene extends Scene {
       .to(mark.node.scale, { x: this.scale0 * 1.15, y: this.scale0 * 1.15 }, { duration: 0.2 })
       .then(() => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { land: this.id }));
   }
+
+  private readonly goHome = () => (this.options.home ?? this.app.go.hub)();
 
   private leave(go: () => void) {
     if (this.leaving) return;
