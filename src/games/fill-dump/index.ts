@@ -14,6 +14,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   PIECE_HIT,
   basketSlot,
+  countSign,
   describeFill,
   landingSpots,
   nextTouch,
@@ -22,6 +23,7 @@ import {
   startState,
   tap,
   targetFor,
+  type CountSign,
   type FillEvent,
   type FillState,
   type Hint,
@@ -154,6 +156,59 @@ function drawTick(): Container {
   return c;
 }
 
+/** Dots on the count sign sit this far apart, up to three to a row. */
+const DOT_GAP = 46;
+const DOT_R = 17;
+const DOTS_PER_ROW = 3;
+const SIGN_PAD = 14;
+
+/**
+ * The count sign beside the basket in the counting levels: a card with one hollow dot for each fruit asked for, filled
+ * as fruit goes in, and a filled dot hanging below the card for each fruit beyond the number, so "too many" shows
+ * without a word or a color. Decoration only: it takes no touches.
+ */
+class CountSignCard extends Container {
+  private readonly card = new Graphics();
+  private readonly dots = new Graphics();
+  private readonly extras = new Graphics();
+  /** The sign's card, as drawn: its half width and height, for placing it. */
+  halfW = 0;
+  halfH = 0;
+
+  constructor(private readonly color: ColorName) {
+    super();
+    this.addChild(this.card, this.dots, this.extras);
+    this.eventMode = 'none';
+  }
+
+  /** Redraw for what the basket holds now. */
+  show(sign: CountSign) {
+    const cols = Math.min(DOTS_PER_ROW, sign.slots);
+    const rows = Math.ceil(sign.slots / DOTS_PER_ROW);
+    this.halfW = (cols * DOT_GAP) / 2 + SIGN_PAD;
+    this.halfH = (rows * DOT_GAP) / 2 + SIGN_PAD;
+    this.card.clear().roundRect(-this.halfW, -this.halfH, this.halfW * 2, this.halfH * 2, 18).fill(0xfffaf0).stroke(line(wood.line, 5));
+    const d = this.dots.clear();
+    const fill = swatch[this.color].fill;
+    const edge = swatch[this.color].line;
+    for (let i = 0; i < sign.slots; i++) {
+      const row = Math.floor(i / DOTS_PER_ROW);
+      const inRow = Math.min(DOTS_PER_ROW, sign.slots - row * DOTS_PER_ROW);
+      const col = i % DOTS_PER_ROW;
+      const x = (col - (inRow - 1) / 2) * DOT_GAP;
+      const y = (row - (rows - 1) / 2) * DOT_GAP;
+      d.circle(x, y, DOT_R);
+      if (i < sign.filled) d.fill(fill).stroke(line(edge, 4));
+      else d.fill(0xffffff).stroke({ width: 4, color: ink, alpha: 0.45 });
+    }
+    const e = this.extras.clear();
+    for (let i = 0; i < sign.extras; i++) {
+      const x = (i - (sign.extras - 1) / 2) * DOT_GAP;
+      e.circle(x, this.halfH + DOT_R + 12, DOT_R).fill(fill).stroke(line(edge, 4));
+    }
+  }
+}
+
 interface Piece {
   view: Container;
   i: number;
@@ -167,6 +222,8 @@ class FillDump implements Game {
   private readonly layer = new Container();
   private readonly basket = new Basket();
   private readonly tick = drawTick();
+  /** The count sign, in the counting levels only. */
+  private readonly sign: CountSignCard | null;
   private readonly pieces: Piece[] = [];
   private spots: { x: number; y: number }[] = [];
   private readonly spotSeed: number;
@@ -209,8 +266,20 @@ class FillDump implements Game {
       this.layer.addChild(view);
       this.pieces.push({ view, i });
     }
+    // The count sign shows the number asked for, in the fruit's own color.
+    this.sign = this.state.target === null ? null : new CountSignCard(one.color);
+    if (this.sign) {
+      ctx.stage.addChild(this.sign);
+      this.showSign();
+    }
     this.layout(ctx.view);
     this.snapAll();
+  }
+
+  /** The sign redrawn for what the basket holds now. */
+  private showSign() {
+    const sign = countSign(this.state);
+    if (this.sign && sign) this.sign.show(sign);
   }
 
   start() {
@@ -268,6 +337,8 @@ class FillDump implements Game {
     this.rimY = v.h * 0.27;
     this.basket.place(this.bx, this.rimY + BODY_H);
     this.tick.position.set(this.bx + 240, this.rimY + BODY_H - 60);
+    // The sign stands to the left of the basket, its dots level with the basket's middle and its extras hanging below.
+    this.sign?.position.set(this.bx - 240, this.rimY + BODY_H / 2 - 20);
     this.rect = { x: 170, y: v.h * 0.52, w: v.w - 170 - 50, h: v.h * 0.48 - 100 };
     this.deal();
   }
@@ -380,6 +451,7 @@ class FillDump implements Game {
       if (this.gone) return;
       this.flying--;
       this.basket.squish();
+      this.showSign();
       this.settle();
     });
   }
@@ -388,6 +460,7 @@ class FillDump implements Game {
     const p = this.pieces[i];
     this.flying++;
     sfx.bell(3, 0.25);
+    this.showSign();
     void this.hop(p, this.spots[i], GROUND_SCALE, 80, 0.42).then(() => {
       if (this.gone) return;
       this.flying--;

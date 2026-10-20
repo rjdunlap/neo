@@ -4619,12 +4619,16 @@ async function originals() {
         const n = g.state.target;
         await hit(g.tick); // nothing in yet: said again, no miss
         if (g.state.misses) throw new Error('Fill: an empty check is not a miss');
+        const extrasShown = () => g.sign.extras.getLocalBounds().width > 0;
+        if (!g.sign || g.sign.x === 0 || extrasShown()) throw new Error('Fill: the count sign starts beside the basket with no extras');
         for (let k = 0; k <= n; k++) { await idle(); await hit(outside().view); }
         await idle();
+        if (!extrasShown()) throw new Error('Fill: one piece too many hangs below the count sign');
         await hit(g.tick); await hit(g.tick);
         if (g.state.misses !== 2 || g.state.hints !== 1 || g.glow?.target !== 'basket') throw new Error(`Fill hint: ${g.state.misses} ${g.state.hints} ${g.glow?.target}`);
         await basket(); await idle();
         if (g.state.order.length !== n) throw new Error('Fill: the basket takes one back out');
+        if (extrasShown()) throw new Error('Fill: the extra dot leaves with the piece');
         await hit(g.tick);
       }
     });

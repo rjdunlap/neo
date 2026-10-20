@@ -7,8 +7,10 @@ import {
   MAX_PIECES,
   SPOT_GAP,
   basketSlot,
+  countSign,
   describeFill,
   hintFor,
+  insideCount,
   landingSpots,
   nextTouch,
   planFor,
@@ -134,6 +136,30 @@ describe('Fill and Dump counting levels', () => {
     expect(tap(s, { on: 'tick' })).toEqual({ kind: 'done' });
     expect(s.done).toBe(true);
     expect([s.misses, s.hints]).toEqual([0, 0]);
+  });
+
+  it('the count sign fills one dot per piece in the basket and hangs the rest outside the card', () => {
+    for (const level of [3, 4]) {
+      for (let seed = 1; seed <= 20; seed++) {
+        const s = fresh(level, seed);
+        const n = s.target!;
+        expect(countSign(s)).toEqual({ slots: n, filled: 0, extras: 0 });
+        for (let i = 0; i < s.plan.pieces; i++) {
+          tap(s, { on: 'piece', i });
+          const sign = countSign(s)!;
+          expect(sign.slots).toBe(n);
+          expect(sign.filled).toBe(Math.min(insideCount(s), n));
+          expect(sign.extras).toBe(Math.max(0, insideCount(s) - n));
+          expect(sign.filled + sign.extras).toBe(insideCount(s));
+        }
+        expect(countSign(s)!.extras).toBe(s.plan.pieces - n);
+        while (insideCount(s) > n) tap(s, { on: 'basket' });
+        expect(countSign(s)).toEqual({ slots: n, filled: n, extras: 0 });
+        expect(tap(s, { on: 'tick' }).kind).toBe('done');
+      }
+    }
+    expect(countSign(fresh(1))).toBeNull();
+    expect(countSign(fresh(2))).toBeNull();
   });
 
   it('a wrong check is a miss; every second miss brings a hint that leads to the answer', () => {
