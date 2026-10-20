@@ -17,6 +17,7 @@ import {
   countSign,
   describeFill,
   landingSpots,
+  groundTap,
   nextTouch,
   outsideIndexes,
   planFor,
@@ -239,6 +240,8 @@ class FillDump implements Game {
   private finished = false;
   private gone = false;
   private clock = 0;
+  private idle = 0;
+  private invitation: { target: 'basket' | number; elapsed: number } | null = null;
   private glow: { target: 'tick' | 'basket' | number; left: number } | null = null;
 
   constructor(private readonly ctx: GameContext) {
@@ -253,6 +256,15 @@ class FillDump implements Game {
     onTap(this.basket.front, () => this.touchBasket(), { cooldown: 60 });
     this.basket.back.hitArea = this.basket.front.hitArea;
     onTap(this.tick, () => this.touchTick(), { cooldown: 250 });
+
+    if (this.state.target === null) onTap(this.floor, (e) => {
+      const action = groundTap(this.state, this.spots, this.ctx.stage.toLocal(e.global));
+      if (!action || this.finished || this.busy) return;
+      this.resetInvitation();
+      this.basket.squish();
+      sfx.tick();
+      this.handle(tap(this.state, action));
+    }, { cooldown: 80 });
 
     // Fruit: a different one for each piece in a tip-out level, all one kind when she is counting.
     const rng = new Rng(this.spotSeed);
@@ -295,6 +307,26 @@ class FillDump implements Game {
   update(dt: number) {
     this.clock += dt;
     this.basket.update(dt);
+    // Lap invitation only: no speech, halo or accounting, and no motion over an active flight.
+    if (this.state.target === null && !this.finished && !this.gone) {
+      if (this.busy || this.flying > 0) this.resetInvitation();
+      else {
+        this.idle += dt;
+        if (this.idle >= 6 && !this.invitation) {
+          const next = groundTap(this.state, this.spots, { x: this.bx, y: this.rimY });
+          this.invitation = { target: next?.on === 'basket' && next.pick !== undefined ? next.pick : 'basket', elapsed: 0 };
+          this.idle = 0;
+        }
+        if (this.invitation) {
+          const invite = this.invitation;
+          invite.elapsed += dt;
+          const rotation = Math.sin(invite.elapsed * Math.PI * 6) * 0.12 * Math.max(0, 1 - invite.elapsed / 0.7);
+          if (invite.target === 'basket') this.basket.lean = rotation;
+          else this.pieces[invite.target].view.rotation = rotation;
+          if (invite.elapsed >= 0.7) this.resetInvitation();
+        }
+      }
+    }
     if (this.glow) {
       this.glow.left -= dt;
       if (this.glow.left <= 0) {
@@ -308,6 +340,7 @@ class FillDump implements Game {
   }
 
   destroy() {
+    this.resetInvitation();
     this.gone = true;
   }
 
@@ -371,9 +404,17 @@ class FillDump implements Game {
     }
   }
 
+  private resetInvitation() {
+    if (this.invitation?.target === 'basket') this.basket.lean = 0;
+    else if (this.invitation) this.pieces[this.invitation.target].view.rotation = 0;
+    this.invitation = null;
+    this.idle = 0;
+  }
+
   // ---- Touches --------------------------------------------------------------------------------------------------
 
   private touchBasket() {
+    this.resetInvitation();
     if (this.finished || this.busy) return;
     this.basket.squish();
     sfx.tick();
@@ -389,6 +430,7 @@ class FillDump implements Game {
   }
 
   private touchPiece(i: number) {
+    this.resetInvitation();
     if (this.finished || this.busy) return;
     this.handle(tap(this.state, { on: 'piece', i }));
   }

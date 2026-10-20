@@ -5109,15 +5109,32 @@ async function originals() {
       const hit = async (obj, dy = 0) => { kit.tapOn(obj, 0, dy); await kit.sleep(250); };
       const basket = () => hit(g.basket.front, -75);
       const outside = () => g.pieces.find((p) => !g.state.inside[p.i]);
+      const ground = () => kit.tapOn(g.floor, neo.view.w - 15, neo.view.h - 15);
       if (g.state.target === null) {
+        const before = JSON.stringify(g.state);
+        await kit.until(() => g.invitation?.target === 'basket', 7500);
+        if (JSON.stringify(g.state) !== before) throw new Error('Idle basket invitation must be unscored');
+        ground(); await idle();
+        if (g.state.dumps !== 1 || g.invitation) throw new Error('Ground tips the full basket and clears its invitation');
+        await kit.until(() => typeof g.invitation?.target === 'number', 7500);
+        if (g.state.misses || g.state.hints) throw new Error('Idle fruit invitation must be unscored');
+        const at = { x: neo.view.w - 15, y: neo.view.h - 15 };
+        const nearest = g.pieces.filter((p) => !g.state.inside[p.i]).sort((a, b) =>
+          Math.hypot(g.spots[a.i].x - at.x, g.spots[a.i].y - at.y) - Math.hypot(g.spots[b.i].x - at.x, g.spots[b.i].y - at.y))[0].i;
+        ground();
+        if (!g.state.inside[nearest] || g.invitation) throw new Error('Ground scoops nearest fruit and clears its invitation');
         for (let guard = 0; guard < 60 && !g.state.done; guard++) {
           await idle();
-          if (g.state.order.length === g.state.plan.pieces) await basket();
+          if (guard % 2 === 0) { ground(); await kit.sleep(250); }
+          else if (g.state.order.length === g.state.plan.pieces) await basket();
           else await hit(outside().view);
         }
         if (!g.state.done || g.state.misses || g.state.hints) throw new Error(`Fill tip-out: ${JSON.stringify(g.state)}`);
       } else {
         const n = g.state.target;
+        const before = JSON.stringify(g.state);
+        ground();
+        if (JSON.stringify(g.state) !== before || g.floor.eventMode === 'static') throw new Error('Counting ignores ground taps');
         await hit(g.tick); // nothing in yet: said again, no miss
         if (g.state.misses) throw new Error('Fill: an empty check is not a miss');
         const extrasShown = () => g.sign.extras.getLocalBounds().width > 0;

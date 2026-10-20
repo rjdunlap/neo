@@ -12,6 +12,7 @@ import {
   hintFor,
   insideCount,
   landingSpots,
+  groundTap,
   nextTouch,
   planFor,
   startState,
@@ -70,10 +71,12 @@ describe('Fill and Dump tip-out levels', () => {
         const rng = new Rng(seed);
         const s = fresh(level, seed);
         let taps = 0;
-        // Random taps on live targets; the bound is the most a round could take (every tip, then every piece, plus slack).
+        // Random taps on live targets and open ground; the bound is the most a round could take (every tip, then every piece, plus slack).
         const bound = s.plan.dumps * (1 + s.plan.pieces) + 1;
         while (!s.done && taps < bound * 4) {
-          tap(s, rng.pick(liveTaps(s)));
+          const spots = Array.from({ length: s.plan.pieces }, (_, x) => ({ x: x * 128, y: 500 }));
+          const action = rng.chance(0.5) ? groundTap(s, spots, { x: rng.range(0, 1024), y: rng.range(384, 768) })! : rng.pick(liveTaps(s));
+          tap(s, action);
           taps++;
         }
         expect(s.done, `level ${level} seed ${seed}`).toBe(true);
@@ -82,6 +85,23 @@ describe('Fill and Dump tip-out levels', () => {
         expect(s.hints).toBe(0);
         expect(s.dumps).toBe(s.plan.dumps);
       }
+    }
+  });
+
+  it('ground tips a full basket, scoops the nearest outside fruit, and ignores counting and done states', () => {
+    const spots = [{ x: 200, y: 500 }, { x: 400, y: 600 }, { x: 600, y: 500 }];
+    const s = fresh(1);
+    expect(tap(s, groundTap(s, spots, spots[2])!)).toEqual({ kind: 'dump' });
+    expect(tap(s, groundTap(s, spots, spots[2])!)).toMatchObject({ kind: 'in', i: 2 });
+    expect(tap(s, groundTap(s, spots, spots[2])!)).toMatchObject({ kind: 'in', i: 1 });
+    tap(s, groundTap(s, spots, spots[0])!);
+    expect(s.done).toBe(true);
+    expect(groundTap(s, spots, spots[0])).toBeNull();
+    for (const level of [3, 4]) {
+      const count = fresh(level);
+      const before = structuredClone(count);
+      expect(groundTap(count, spots, spots[0])).toBeNull();
+      expect(count).toEqual(before);
     }
   });
 

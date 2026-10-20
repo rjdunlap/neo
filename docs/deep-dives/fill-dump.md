@@ -21,10 +21,10 @@ Ranges: lap 1–2, toddler 1–4, preschool 1–5 (no `order`). `create` sends `
 **Known gaps** (written down, not fixed; this session changes no code):
 
 - **Taps during the tip are silent.** `touchBasket` returns before `squish()` while `busy`, so for about 1.5 s of the tip-out animation a touch gets no response. This is the problem [V2](../definitions/visual-identity.md#v2--animal-snack-an-answer-to-every-touch) solved in Animal Snack; its rule says to apply the lesson to one other tap game only after a person has played that pilot.
-- **Open grass does nothing.** In levels 1–2 a tap that misses the basket and the fruit gets nothing, though no tap there can be wrong. Lap entries elsewhere (Bubble Pop's anywhere entry, Splish Splash's *Pat the bubbles*) answer every touch.
+- **Open grass now scoops or tips** (closed 2026-10-20, [PR #666](https://github.com/rjdunlap/neo/pull/666)). In levels 1–2 it scoops the outside fruit nearest the touch or tips a full basket. Lap entries elsewhere (Bubble Pop's anywhere entry, Splish Splash's *Pat the bubbles*) answer every touch.
 - **The count was spoken only** (closed 2026-10-20 by the count sign, [PR #626](https://github.com/rjdunlap/neo/pull/626)): levels 3–4 now show a card of dots for the asked number, filled as fruit goes in, with extras hanging below it.
 - **Pouring is nearly silent and flat.** One tick when the jug is grabbed; no sound while water moves, no ripple, the cup's water is a flat rectangle, and the stream is a fixed-width line. The line is purple with a triangle marker, but the spoken instruction names only the color.
-- **No idle invitation** in any level.
+- **Idle invitation built at levels 1–2** (2026-10-20, PR #666): after six idle seconds the basket or the outside fruit nearest it wiggles, unscored. Levels 3–5 are unchanged.
 - **Coupling traps for any appended level:** the `>= 5` routing and `describeFill`; `planFor`'s array index; the how-to card's level-5 `LevelLine`s are open-ended (`{ from: 5 }`) and would silently describe every new level (the how-to test will not catch it); the `originals` browser case and `fingerdemo` levels.
 
 Person checks already open: pouring on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md), "Fill and Dump pouring on an iPad"). No couch entry, journal entry or story step uses this game.
@@ -117,7 +117,7 @@ Not developer decisions but gates: item 4 (pouring feel) waits on chunk 21's V3 
 Build one Fill and Dump slice at a time, in this order: slices 3 and 4 both rewrite the level routing, `LEVELS`/`order` and the how-to lines, and level 7 assumes 6 exists. Each slice that adds a level updates `describeFill`, the how-to card (bounding level-5 lines to `to: 5`), the README row, [GAMES.md](../GAMES.md), the `originals` fill case in `scripts/browser-check.mjs` and the `fingerdemo` levels.
 
 1. **Count sign** (built 2026-10-20, [PR #626](https://github.com/rjdunlap/neo/pull/626)). Tier: existing-game change on an unchanged interaction: typecheck, the game's rule tests, one filtered regression play (`ORIGINALS_ONLY=fill`) and one portrait screenshot of level 4.
-2. **Lap reach and idle invitation** (ready). Tier: typecheck, rule tests (ground taps in the any-taps test), `ORIGINALS_ONLY=fill` once and `fingerdemo` at level 1.
+2. **Lap reach and idle invitation** (built 2026-10-20, [PR #666](https://github.com/rjdunlap/neo/pull/666)). Levels 1–2 only; ground tips or scoops the nearest fruit and six idle seconds invite an unscored wiggle. Tier: typecheck, rule tests (ground taps in the any-taps test), `ORIGINALS_ONLY=fill` once and `fingerdemo` at level 1.
 3. **Level 6, Full and empty**, with the plan table keyed by ID (ready). Tier: new level on an existing interaction: typecheck, rule tests, the how-to and difficulty tests, one browser play of level 6 and `fingerdemo` at 6.
 4. **Level 7, Which holds more?** (ready). Tier: new interaction: typecheck, unit tests, one scripted play of level 7 (one wrong answer, one hint), one portrait screenshot, `fingerdemo` at 7.
 5. **Things to put away** (ready). Tier: content: typecheck, rule tests, one screenshot per new set.
