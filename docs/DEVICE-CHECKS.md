@@ -37,7 +37,8 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
   - whether the leaf sway and spin, the back wave and tail, and the wingbeat and loop look convincing in real time;
   - whether the half-size sprites (about 2 px a unit) look crisp at 2× and whether any white fringe shows at the ink edge;
   - whether the whole-texture blink, surprise and happy swaps read as one creature (a card tap turns the mood: calm, sleepy, sad);
-  - whether the three illustrated cards read well at card size.
+  - whether the three illustrated cards read well at card size;
+  - the river's turning head (RW02b follow-up, 2026-10-20, #663): whether the head's idle look and lift on a touch read as one creature, whether any seam shows at the neck (the cream/caramel edge and the chest contour are the known weak spots), and the frame rate with the second mesh.
 
   Ask a child which of each pair they would rather touch and dress.
 - [ ] **Creature art prototype (RW02, 2026-10-17, #499):** on an iPad, open the site root (formerly a dev build's `/?creatures`) in both orientations; watch the frame rate with all six creatures moving (headless software rendering gave ≈21 fps, which says nothing about the device), tap each creature and card, and check the hop, rear-up and loop feel right under a finger. Show a child the three creatures with and without the scarf and crown: do they tell them apart, want to touch and dress them, and mind that the glider wears no scarf? None of this was run.

@@ -120,3 +120,10 @@
 - Ran `npm run typecheck`, `npm test` (171 files, 1620 tests passed) and `npm run build`.
 - Ran `BROWSER_SUITE=home` at the root (http://localhost:5571): Explore to the picker (rainbow-meadow and counting-cove, island link hidden, screenshot `explore`), Back to Home (link shown), Explore, Counting Cove card, location, Home; passed. Production offline check (http://localhost:5656, served build matched `dist` `main-BIDP_T3s.js`) passed.
 - Not run: `world` (classic navigation unchanged), an iPad touch or speech check, a child's reaction.
+
+## 2026-10-20 — RW13 slice 4: Puzzle Peaks at the root
+
+- Built on `claude/rw13-puzzle-peaks` ([PR #641](https://github.com/rjdunlap/neo/pull/641), code `403ad277`): `peaks.ts`, `peaks.test.ts`, one `LOCATIONS` entry (`puzzle-peaks`, resident the illustrated glider) and a `hostScale(box)` export in `LandScene.ts` (a shared file). `classic/` is unchanged.
+- Ran `npm run typecheck` (clean), `npm test` (1622 of 1623; the known `cast.test.ts` tote flake passed alone, 44 of 44) and `npm run build` (passed). The peaks test fails if the host scale is raised.
+- Root probe (one-off script `test-results/peaks-probe.mjs`, http://localhost:5238, landscape and portrait): the Explore list holds rainbow-meadow, counting-cove and puzzle-peaks; `go.land('puzzle-peaks')` shows the glider resident; tap it; tap puzzle-pals into the game; leave back to the location; no page errors. Screenshots reviewed at preschool and school landscape.
+- Not run: `world`, the `home` suite, the offline check (no persistence, asset or navigation change beyond one location entry), an iPad look, real speech, a child's reaction.

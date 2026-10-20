@@ -278,6 +278,19 @@ describe.skipIf(!browser)('preparing a set from PNGs on disk', () => {
     expect(readdirSync(dir).filter((f) => f.startsWith('previews-'))).toHaveLength(9);
   });
 
+  it('cuts a plate in the shared box, however far it drifted', async () => {
+    writeFileSync(join(gen, 'README.md'), rows([['testling-base-1.png', 'yes'], ['testling-blink-1.png', 'yes'], ['testling-nohead-1.png', 'yes']]));
+    // Its "head" painted out: smaller and 8 px off the base, which would refuse an expression.
+    const img = image(64, 48, PAPER);
+    creature(img, 28, 20, 43, 31);
+    writeFileSync(join(gen, 'testling-nohead-1.png'), encodePng(img));
+    const lines = await run(['--set', 'testling', '--generated', gen, '--out-dir', out, '--pad', '2']);
+    const plate = lines.find((l) => l.asset === 'nohead');
+    expect(plate.sharedBox).toBe(true);
+    expect(plate.origin).toEqual(lines[0].origin);
+    expect(sizeOf(join(out, 'testling-nohead.png'))).toEqual(sizeOf(join(out, 'testling-base.png')));
+  });
+
   it('cuts one file with a box and a seed and reports its size in units', async () => {
     const img = image(64, 48, PAPER);
     creature(img, 8, 8, 31, 23);

@@ -255,6 +255,12 @@ export function alignment(base, variant, tolerance = TOLERANCE) {
 
 /** Assets a species set swaps under one mesh; they share a box. Other assets (portrait, alt) are cut alone. */
 export const ALIGNED = ['base', 'blink', 'happy', 'surprised', 'sleepy', 'sad'];
+/**
+ * Plates: the base with a part painted out (R24's `nohead`), for a rig that layers that part from
+ * the expressions over it. Cut in the expressions' shared box so the two line up pixel for pixel,
+ * but never checked for drift: a plate's bounds shrink where the part was.
+ */
+export const PLATES = ['nohead', 'noarms'];
 
 const CHOSEN = /^(yes|y|x|✓|✔|chosen|true)$/i;
 

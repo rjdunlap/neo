@@ -15,8 +15,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Queued
 
-- **Rework RW02b step 2 follow-up, a turning river head and free sprout arms** (creature tier, after queue rows R24 and R25 are done): prepare `river-nohead` and `sprout-noarms` with the expression set's shared box; layer the river's head (each expression's head region cut by a mask polygon from its expression texture) over the no-head plate so it turns and tilts again, as the Graphics rig's look-around did; cut the sprout's arms from the base by mask over the no-arms plate so they wag freely and the scarf sits under them; the existing unit suite plus a head-rotation and an arm-wag bound; one preview probe in both orientations. [Step 2 defects](rework/GENERATED-CREATURE-PILOT.md#step-2-result-2026-10-19), [queue](rework/art-requests/QUEUE.md#r24-river-head-layer)
-
 - **`fill-dump`, level 7 Which holds more?** (new interaction; after level 6 *Full and empty* lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 

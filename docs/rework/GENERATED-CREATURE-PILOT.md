@@ -159,8 +159,8 @@ Built on `claude/rw02b-rig-pilot-three` ([PR #609](https://github.com/rjdunlap/n
 
 **Remaining defects and limits:**
 - **Not seen on a device.** Frame rate with six creatures, three of them meshes, and the 2× ink edge are in [device checks](../DEVICE-CHECKS.md).
-- **Arms and the scarf.** The sprout's scarf is drawn over its resting arms, and its arms wag only a little (a larger wag stretches the belly painted under them).
-- **The river's head is pinned.** Its idle look-around and head tilt from the Graphics rig are gone; the rear is a whole-body rotation about the hips. A head that turns needs a separate head layer or a second pose.
+- **Arms and the scarf.** The sprout's scarf is drawn over its resting arms, and its arms wag only a little (a larger wag stretches the belly painted under them). R25 ended missing (no `sprout-noarms` plate after three tries, [PR #662](https://github.com/rjdunlap/neo/pull/662)), so the small wag stays.
+- **The river's head is pinned.** Fixed 2026-10-20: the head is now its own layer and turns ([River head layer](#river-head-layer-2026-10-20)).
 - **Loop restart.** The glider's re-tap mid-reaction still restarts the loop with the small jump the Graphics glider has; the mesh itself never jumps (bounded by test).
 - **No underside view** for the glider's wing, as before.
 - **Card scale.** At 0.32–0.44 the illustrated cards read well on white; the glider's card still reads smallest (its portrait is R17's re-roll).
@@ -179,3 +179,12 @@ Built 2026-10-20 ([PR #633](https://github.com/rjdunlap/neo/pull/633)): Tote, Tr
 - **Preview.** `/?cast` on the dev server only (`src/dev/cast-preview.ts`): the six at one scale, tap to poke, a mood button, a dress button, alt stills in the corners.
 - **Checks.** Typecheck; `npx vitest run src/art/creatures scripts/creature-art` (7 files, 99 tests, including the shared `illustratedSuite` on all six with a new `twin: false` option, weight tests and the alt-file check); a preview probe at 1024 x 768 and 768 x 1024 (every creature reacts to a real tap, touch radius 115-153 units, mood and dress work, no page errors); `npm run build`.
 - **Limits.** The scarf on side-on species reads as a band across the throat (the R19 angle question applies). Deformations are small bends because a single-layer picture has nothing painted under a moving part. Dapple's colour change, Bramble's curl and Tote's and Mossback's retracting appear only as the alt still, not as a swap under the mesh. Hit circles and slots were read by eye off a 25 px grid. Not measured or seen: frame rate with six meshes, an iPad, a child's reaction.
+
+## River head layer (2026-10-20)
+
+Built 2026-10-20 ([PR #663](https://github.com/rjdunlap/neo/pull/663)), the river half of the step 2 follow-up; the arm half does not apply because R25 ended missing, so the sprout keeps its small wag.
+
+- **Plate.** `prepare-sprite.mjs` gained `PLATES` (`nohead`, `noarms`): a plate is cut in the set's shared expression box without the drift check. `--set river --shrink 2 --scale 0.45` re-cut the six expressions byte-identical and wrote `river-nohead.png` (749 x 324, 191 KB) from R24's `river-nohead-1.png`.
+- **Rig.** The body mesh shows the plate in every mood. A second 24 x 14 mesh over the head box (sprite x 452-749, y 0-156) shows the expression and bends about the throat by a weight that is 0 along the cut and rises over 88 px behind the ear and 66 px up the throat. The turn is the idle look (about +-0.1 rad) plus 0.1 rad lift on a touch; cut vertices also carry the back wave so the seam never opens. Head and neck slots and items pinned inside the head box (crown, sunhat, sunglasses, beanie, scarf) ride the head layer. `illustrated.ts` gained optional hooks (`faceMesh`, `skin`, `carrier()`, `layers()`); the other species are unchanged.
+- **Tests.** Plate size and head painted out inside the base outline within 4 px; head and face travel while cut vertices move only with the back wave (no frame step of 4 px or more); at the furthest look either way every plate pixel the head covers at rest stays covered (the first weights exposed 204 outline pixels behind the ear).
+- **Limits.** A minor seam where the cut crosses the cream/caramel edge and the front-of-chest contour (not visible at 1.8x in the probe). Not seen on an iPad. RW05's CompanionRig ([#642](https://github.com/rjdunlap/neo/pull/642), open draft) should pin `part('head')` through `pin()` so it rides the head layer once both land.

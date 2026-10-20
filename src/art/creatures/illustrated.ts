@@ -20,7 +20,11 @@ export const EXPRESSIONS = ['base', 'blink', 'happy', 'surprised', 'sleepy', 'sa
 export type Expression = (typeof EXPRESSIONS)[number];
 /** A mood a game or scene sets; a touch and a blink show over it. */
 export type Mood = 'calm' | 'happy' | 'surprised' | 'sleepy' | 'sad';
-export type ArtSet = Readonly<Record<Expression, Texture>>;
+/**
+ * A species' textures: the six expressions, and for a rig that layers its head over the body (the
+ * river), `nohead`, the base with the head painted out (R24), cut in the same box.
+ */
+export type ArtSet = Readonly<Record<Expression, Texture>> & { readonly nohead?: Texture };
 
 export interface Point {
   x: number;
@@ -59,17 +63,21 @@ export function loadArt(species: SpeciesId): Promise<ArtSet> {
   let p = sets.get(species);
   if (!p) {
     p = (async () => {
+      const one = async (load: () => Promise<string>) => {
+        const t = await Assets.load<Texture>(await load());
+        t.source.autoGenerateMipmaps = true;
+        t.source.updateMipmaps();
+        return t;
+      };
       const entries = await Promise.all(
         EXPRESSIONS.map(async (e) => {
           const load = files[`./illustrated/${species}-${e}.png`];
           if (!load) throw new Error(`no prepared sprite for ${species} ${e}`);
-          const t = await Assets.load<Texture>(await load());
-          t.source.autoGenerateMipmaps = true;
-          t.source.updateMipmaps();
-          return [e, t] as const;
+          return [e, await one(load)] as const;
         }),
       );
-      return Object.fromEntries(entries) as Record<Expression, Texture>;
+      const plate = files[`./illustrated/${species}-nohead.png`];
+      return { ...(Object.fromEntries(entries) as Record<Expression, Texture>), ...(plate ? { nohead: await one(plate) } : {}) };
     })();
     sets.set(species, p);
   }
@@ -164,13 +172,13 @@ export abstract class IllustratedCreature extends Creature {
    * the part, and one resting on a pinned head stays put while the leaves above it sway.
    */
   pin(node: Container, at: Point, behind = false, ride: Point = at) {
-    const pos = this.rest;
+    const { mesh, rest: pos } = this.carrier(ride);
     let k = 0;
     for (let i = 0; i < pos.length; i += 2) if (Math.hypot(pos[i] - ride.x, pos[i + 1] - ride.y) < Math.hypot(pos[k] - ride.x, pos[k + 1] - ride.y)) k = i;
-    const cols = this.mesh.geometry.verticesX;
+    const cols = mesh.geometry.verticesX;
     // The row neighbour that gives the vertex's turn: the next one, or the previous at the row's end.
     const j = (k / 2) % cols === cols - 1 ? k - 2 : k + 2;
-    this.riders.set(node, { k, j, at });
+    this.riders.set(node, { mesh, rest: pos, k, j, at });
     if (behind) this.craft.addChildAt(node, 0);
     else this.craft.addChild(node);
     this.ride(node);
@@ -180,15 +188,28 @@ export abstract class IllustratedCreature extends Creature {
     this.riders.delete(node);
     node.removeFromParent();
   }
-  private readonly riders = new Map<Container, { k: number; j: number; at: Point }>();
+  /** The mesh a node pinned at sprite point `ride` follows: the body, unless a species layers that part (the river's head). */
+  protected carrier(_ride: Point): { mesh: Mesh<PlaneGeometry>; rest: Float32Array } {
+    return { mesh: this.mesh, rest: this.rest };
+  }
+  private readonly riders = new Map<Container, { mesh: Mesh<PlaneGeometry>; rest: Float32Array; k: number; j: number; at: Point }>();
   private ride(node: Container) {
     const r = this.riders.get(node)!;
-    const pos = this.mesh.geometry.positions;
-    const rest = this.rest;
+    const pos = r.mesh.geometry.positions;
+    const rest = r.rest;
     const p = this.px({ x: r.at.x + pos[r.k] - rest[r.k], y: r.at.y + pos[r.k + 1] - rest[r.k + 1] });
     node.position.set(p.x, p.y);
     node.rotation =
       Math.atan2(pos[r.j + 1] - pos[r.k + 1], pos[r.j] - pos[r.k]) - Math.atan2(rest[r.j + 1] - rest[r.k + 1], rest[r.j] - rest[r.k]);
+  }
+
+  /** The mesh that shows the expression: the whole picture, or the head layer on a rig that has one. */
+  get faceMesh(): Mesh<PlaneGeometry> {
+    return this.mesh;
+  }
+  /** The painted layers (not the worn items), for a scene's colour filter. */
+  get skin(): Container {
+    return this.art;
   }
 
   /** A sprite pixel as a creature point. */
@@ -216,16 +237,19 @@ export abstract class IllustratedCreature extends Creature {
       pos[i + 1] = this.rest[i + 1] + d.y;
     }
     this.mesh.geometry.getBuffer('aPosition').update();
+    this.layers(dt);
     for (const node of this.riders.keys()) this.ride(node);
     const e = this.expression();
     if (e !== this.shown) {
       this.shown = e;
-      this.mesh.texture = this.textures[e];
+      this.faceMesh.texture = this.textures[e];
     }
   }
 
   /** Moves the craft as a whole and advances the species' phases; runs before the vertices. */
   protected abstract pose(dt: number): void;
+  /** Moves any layer drawn over the body (the river's head), after the body's vertices and before the pinned items. */
+  protected layers(_dt: number) {}
   /** Adds vertex `k`'s offset from its rest position (x, y) to `out`, in sprite pixels. */
   protected abstract displace(k: number, x: number, y: number, dt: number, out: Point): void;
 
