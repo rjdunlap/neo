@@ -164,7 +164,7 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
 
 ## Build slices, in order
 
-1. **Support truth (ready).**
+1. **Support truth (claimed by `claude/song-maker-support-truth`).**
    - Full-cell hit areas, with a `logic.ts` layout function and a test that every level's cell is at least 100 in 1024×768, portrait 1024×1365 and a wide phone view (gap 1). Later compose slices extend the same test to their controls (the check and the before button).
    - The level 1–2 how-to note becomes conditional ("if at least two jellies are lit, a tree house button…"), so it matches the keep rule (gap 2). The round still always finishes on its tap count: a guard that waited for two lit jellies could strand a lap child tapping one jelly on and off.
    - IDs and accounting are unchanged.
