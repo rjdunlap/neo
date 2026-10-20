@@ -23,7 +23,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW10](https://github.com/rjdunlap/neo/issues/494) | Collection book and chosen unlock goals | define after upstream packets | RW05, RW07, RW08 |
 | [RW11](https://github.com/rjdunlap/neo/issues/495) | Optional forms and useful talents | sketch, definition first | RW02, RW10 |
 | [RW12](https://github.com/rjdunlap/neo/issues/496) | First expansion and later-school coverage | sketch, definition first | RW08, RW09, RW10; RW11 only if used |
-| [RW13](#rw13-island-revamp-ecosystems-as-locations) | Island revamp: ecosystems as locations | defined 2026-10-20 ([ISLAND-REVAMP.md](ISLAND-REVAMP.md)): eleven land IDs kept as ecosystems, five game moves, residents and backdrop requests (R23, R26); build slice 1 (catalog moves) is ready, slice 2 (Rainbow Meadow in the new shell) after RW05 slice 1 | RW03 packet, the land catalog; informs RW06, RW08 and the backdrop art (R23) |
+| [RW13](#rw13-island-revamp-ecosystems-as-locations) | Island revamp: ecosystems as locations | defined 2026-10-20 ([ISLAND-REVAMP.md](ISLAND-REVAMP.md)): eleven land IDs kept as ecosystems, five game moves, residents and backdrop requests (R23, R26); build slices 1 (catalog moves, PR #634) and 2 (Rainbow Meadow at the root, PR #635) built 2026-10-20; slice 3 (Counting Cove) is next | RW03 packet, the land catalog; informs RW06, RW08 and the backdrop art (R23) |
 
 ## RW01: Name and story
 

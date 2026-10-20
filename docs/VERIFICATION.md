@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-20 — RW13 slice 2: Rainbow Meadow at the root
+
+- Built on `claude/rw13-rainbow-meadow` ([PR #635](https://github.com/rjdunlap/neo/pull/635), code `d608a0b1` on `da7e0876`): `LocationScene`, the `LandOptions` seam in `LandScene`, the meadow backdrop (`meadow.ts`), the root's `land`/`hub` routes in `src/rework.ts`, and a flower button on the creature preview. `classic/` is unchanged.
+- Ran `npm run typecheck` (clean), `npm test` (1606 of 1607; the one failure was the RW02b tote test in `src/art/creatures/cast.test.ts`, a load flake that passed alone, 44 of 44; the meadow test passed 2 of 2) and `npm run build` (99 precache entries).
+- Root probe (one-off Playwright script, dev server): entry, meadow button, resident and three games with the signpost, tap resident (suggested color-garden), launch it, held Home back to the location, Home back to the preview, in 1024×768 and 768×1024 with no page errors; the "Island games" link is hidden in the location. `BROWSER_SUITE=world` passed (classic, about 7 minutes); `npm run test:offline` passed on the preview, plus a root offline probe (cached, reload offline, meadow opens with the illustrated sprout).
+- Not run: an iPad or other device look, real speech, a child's reaction, the other locations.
+
 ## 2026-10-20 — Algebra and balance subject study (docs only)
 
 - Docs only: [study](deep-dives/subjects/algebra-balance.md) on `claude/subject-algebra-balance-finish` ([PR #621](https://github.com/rjdunlap/neo/pull/621)), superseding the claim in [PR #604](https://github.com/rjdunlap/neo/pull/604). Anchors opened as listed in the study (CCSS 1.OA–8.F, England's algebra statements, Knuth et al. 2006 through its abstract, DragonBox, Function Machine and Zoombinis pages); the PhET pages gave only titles and no reference game was played.
@@ -99,19 +106,13 @@
 - Ladder: levels 10–15, eight queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from three notebook rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 
-## 2026-10-19 — Mail Carrier deep dive
-
-- Docs only: [deep dive](deep-dives/mail-carrier.md) on `claude/dive-mail-carrier-finish` ([PR #620](https://github.com/rjdunlap/neo/pull/620)), resuming the claim in [PR #603](https://github.com/rjdunlap/neo/pull/603) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–8 on `15fcd906`; gaps: the how-to's level 7 step has no `to` so level 8's card shows both steps, a lap touch off a house does nothing, no carrier on the street, a fixed backdrop seed, no spoken count at 3 and 5.
-- References were read through search summaries and store, archive and curriculum pages, none played: Paperboy, Orchard Toys Post Box Game, Postman Pat: Special Delivery Service, Dora's Map, Blades & Spencer 1987, England KS1 geography, street numbering conventions, CCSS K.CC.A.3 and 2.OA.C.3.
-- Ladder: levels 9–15 (toddler 10 *Which door?*, pre-K/school 9 *Who can help?* and 12 *Numbers past ten*, school 13 *Hazel's clue*, 11 *Both sides of the street*, 14 *Three letters, your way* and 15 *Make the key*), nine queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the notebook and the civics study's CC2 slice.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Root locations (RW13 slice 2), `world`, offline | 2026-10-20: typecheck, 1606 of 1607 units (tote flake passed alone), build, root probe in both orientations (entry, meadow, resident, color-garden, Home back), `world` and `test:offline` on classic, root offline probe | [2026-10-20 entry](#2026-10-20--rw13-slice-2-rainbow-meadow-at-the-root) | One-off probe scripts, not a registered suite; no device, speech or child check |
 | Illustrated creature rigs and wearables (RW02b steps 2-3, RW06 prep) | 2026-10-20: typecheck, 99 creature and script tests (the second-wave six included), preview probes in both orientations (wearables on the pilot three; `/?cast` for the six), build (99 precache entries, 9244 KiB, cast assets not shipped); full `npm test` last run after the wearables merge | [Second-wave six](#2026-10-20--rw02b-step-3-the-second-wave-six) | No iPad, no child, no game suites or offline check; six-mesh frame rate unmeasured; motion judged from stills; angle misfits open as R19 |
 | Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02-creature-art-prototype), [RW01 packet](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw01-name-and-story-packet), [rework plan](archive/VERIFICATION-2026-10-16.md#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
