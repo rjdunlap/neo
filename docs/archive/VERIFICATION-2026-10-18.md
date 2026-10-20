@@ -99,3 +99,11 @@
 - Updated the genetics recommendations row and G5 build slice, the IDEAS row, the WAITING genetics row and a defaults row with seven defaulted calls. Not ready to build (levels 1–3 are not built), so no READY.md line.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the seven defaulted decisions; whether a child accepts "can't tell yet" as finished, whether face-down tiles read as hidden, and whether the all-spotted tester's explanation lands are device checks for the build.
+
+## 2026-10-18 — Animal Snack scenes
+
+- Built the seeded scenes ([PR #598](https://github.com/rjdunlap/neo/pull/598), commit e79b7278): `SCENES`, `SCENE_SPECS` and `sceneFor(rng)` in `logic.ts` (picked after the rounds, so a seed's animals and questions are unchanged) and `showScene()` in `index.ts` (meadow with a blanket, orchard with a falling apple and a trough, kitchen garden with a tin tub, dusk with a bowl).
+- Ran `npm run typecheck` (clean) and `npx vitest run src/games/animal-snack` (12 passed, including scene rule tests: distinct spots, only dusk without a sun, forty seeds reach every scene deterministically).
+- A one-off Playwright probe (Vite at `http://localhost:5487`) opened level 4 (toddler) at 1024×768 and called `showScene` for each scene with a screenshot each, and level 5 (preschool) in portrait 768×1024 for dusk and garden: animals and snacks stayed placed, no page errors.
+- Not run: the `WOODS_ONLY=snack` suite (its new scene screenshots in `scripts/browser-check.mjs` are untested by the suite itself), `fingerdemo`, device speech, an iPad.
+- Open: whether the scenes read well and the falling apple stays calm on a device.
