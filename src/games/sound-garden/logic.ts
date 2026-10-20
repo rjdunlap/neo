@@ -15,16 +15,19 @@ export interface GardenPlan {
   name: string;
 }
 
-export const PLANS: GardenPlan[] = [
-  { mode: 'play', rounds: 12, name: 'Tap the garden friends to hear them sing' },
-  { mode: 'highlow', rounds: 5, name: 'High or low? Bird or frog' },
-  { mode: 'fastslow', rounds: 5, name: 'Fast or slow? Bunny or turtle' },
-  { mode: 'updown', rounds: 5, name: 'Does the tune go up or down?' },
-  { mode: 'echo', rounds: 4, name: 'Echo the woodpecker\'s rhythm on the drum' },
-  { mode: 'mix', rounds: 6, name: 'Mixed listening: high or low, fast or slow, up or down' },
-];
+/** Plans keyed by stable level ID, so a new level can be placed anywhere in a band's order without renumbering. */
+export const PLANS: Record<number, GardenPlan> = {
+  1: { mode: 'play', rounds: 12, name: 'Tap the garden friends to hear them sing' },
+  2: { mode: 'highlow', rounds: 5, name: 'High or low? Bird or frog' },
+  3: { mode: 'fastslow', rounds: 5, name: 'Fast or slow? Bunny or turtle' },
+  4: { mode: 'updown', rounds: 5, name: 'Does the tune go up or down?' },
+  5: { mode: 'echo', rounds: 4, name: 'Echo the woodpecker\'s rhythm on the drum' },
+  6: { mode: 'mix', rounds: 6, name: 'Mixed listening: high or low, fast or slow, up or down' },
+};
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const LEVEL_IDS = Object.keys(PLANS).map(Number);
+
+export const planFor = (level: number) => PLANS[level] ?? PLANS[Math.min(Math.max(...LEVEL_IDS), Math.max(1, Math.round(level)))];
 
 export const CHOICES: Record<Ask, [Answer, Answer]> = {
   highlow: ['high', 'low'],
@@ -32,9 +35,79 @@ export const CHOICES: Record<Ask, [Answer, Answer]> = {
   updown: ['up', 'down'],
 };
 
+/** An instrument the bush can sing with; the drum has no pitch, so its step is only kept for the record. */
+export type Voice = 'marimba' | 'bell' | 'pluck' | 'drum';
+
+/** One note of a sound: seconds from the start, a pentatonic scale step (`src/audio/notes.ts`) and the instrument. */
+export interface Note {
+  at: number;
+  step: number;
+  voice: Voice;
+}
+
+/** A sound and the seconds it lasts, measured to where the next note would fall (so fast and slow fill the same span). */
+export interface Sound {
+  notes: Note[];
+  span: number;
+}
+
 export interface Question {
   ask: Ask;
   answer: Answer;
+  /**
+   * The sound for each of the two choices, built together so they differ only in what is asked: the same instrument and span, and for
+   * fast or slow the same step. The bush plays `sounds[answer]`; a replay plays the same notes again.
+   */
+  sounds: Record<Answer, Sound>;
+}
+
+/** The pitched voices a question can use; fast or slow may also use the drum, the bunny's own patter. */
+export const PITCHED: Voice[] = ['marimba', 'bell', 'pluck'];
+/** Lowest and highest steps a low or high note can take, and the least distance between a question's two notes. */
+export const LOW_STEPS = [-4, 2] as const;
+export const HIGH_STEPS = [6, 12] as const;
+export const MIN_APART = 5;
+/** High or low: three repeats of the note. */
+export const HIGHLOW_GAP = 0.38;
+/** Fast or slow: both fill the same two seconds, fast with twice the beats. */
+export const TEMPO_SPAN = 2;
+export const FAST_BEATS = 8;
+export const SLOW_BEATS = 4;
+/** Up or down: 3 to 5 notes, each one or two scale steps from the last, within these steps. */
+export const TUNE_STEPS = [-2, 12] as const;
+export const TUNE_GAP = 0.34;
+
+const repeat = (step: number, voice: Voice, count: number, gap: number): Sound => ({
+  notes: Array.from({ length: count }, (_, i) => ({ at: i * gap, step, voice })),
+  span: count * gap,
+});
+
+/** The pair of sounds for a question, from the seeded RNG. */
+export function makeSounds(ask: Ask, rng: Rng): Record<Answer, Sound> {
+  const out = {} as Record<Answer, Sound>;
+  if (ask === 'highlow') {
+    const voice = rng.pick(PITCHED);
+    const low = rng.int(LOW_STEPS[0], LOW_STEPS[1]);
+    const high = rng.int(Math.max(HIGH_STEPS[0], low + MIN_APART), HIGH_STEPS[1]);
+    out.high = repeat(high, voice, 3, HIGHLOW_GAP);
+    out.low = repeat(low, voice, 3, HIGHLOW_GAP);
+  } else if (ask === 'fastslow') {
+    const voice = rng.pick([...PITCHED, 'drum'] as Voice[]);
+    const step = rng.int(0, 7);
+    out.fast = repeat(step, voice, FAST_BEATS, TEMPO_SPAN / FAST_BEATS);
+    out.slow = repeat(step, voice, SLOW_BEATS, TEMPO_SPAN / SLOW_BEATS);
+  } else {
+    const voice = rng.pick(PITCHED);
+    const length = rng.int(3, 5);
+    const rises = Array.from({ length: length - 1 }, () => rng.int(1, 2));
+    const climb = rises.reduce((a, b) => a + b, 0);
+    let step = rng.int(TUNE_STEPS[0], TUNE_STEPS[1] - climb);
+    const steps = [step, ...rises.map((r) => (step += r))];
+    const at = (i: number) => i * TUNE_GAP;
+    out.up = { notes: steps.map((s, i) => ({ at: at(i), step: s, voice })), span: length * TUNE_GAP };
+    out.down = { notes: [...steps].reverse().map((s, i) => ({ at: at(i), step: s, voice })), span: length * TUNE_GAP };
+  }
+  return out;
 }
 
 /** Listening questions: balanced answers, never the same answer three times running. */
@@ -47,7 +120,7 @@ export function makeQuestions(plan: GardenPlan, rng: Rng): Question[] {
     const lastTwo = out.slice(-2).map((q) => q.answer);
     let answer = rng.pick([a, b]);
     if (lastTwo.length === 2 && lastTwo.every((x) => x === answer)) answer = answer === a ? b : a;
-    out.push({ ask, answer });
+    out.push({ ask, answer, sounds: makeSounds(ask, rng) });
   }
   return out;
 }
@@ -83,9 +156,6 @@ export function judgeEcho(pattern: Gap[], taps: number[]): boolean {
   }
   return true;
 }
-
-/** Scale steps for an up or down tune. */
-export const tune = (answer: 'up' | 'down') => (answer === 'up' ? [1, 3, 5, 7] : [7, 5, 3, 1]);
 
 /** The singers in free play, in the order they stand. */
 export const SINGERS = ['bird', 'frog', 'bunny', 'bell', 'woodpecker'] as const;
