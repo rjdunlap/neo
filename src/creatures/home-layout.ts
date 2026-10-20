@@ -93,3 +93,24 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
   return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, floor };
 }
+
+/** Explore's location cards (RW13, docs/rework/HOME.md#home-homescene-the-roots-hub): 150 units, at most four, one page. */
+export const EXPLORE_CARD = 150;
+export const EXPLORE_MAX = 4;
+
+export interface ExploreLayout {
+  backdrop: Backdrop;
+  back: Spot;
+  /** Each card's centre, in the order given. */
+  cards: Spot[];
+}
+
+/** One row of up to four cards across the middle, Back top-left, clear of the guide and link corners. */
+export function exploreLayout(v: { w: number; h: number }, n: number): ExploreLayout {
+  if (n < 1 || n > EXPLORE_MAX) throw new Error(`Explore holds one to ${EXPLORE_MAX} locations, not ${n}`);
+  const gap = 80;
+  const step = EXPLORE_CARD + gap;
+  const x0 = v.w / 2 - ((n - 1) * step) / 2;
+  const y = Math.round(v.h * 0.45);
+  return { backdrop: backdropFit(v), back: { x: BACK.x, y: BACK.y }, cards: Array.from({ length: n }, (_, i) => ({ x: Math.round(x0 + i * step), y })) };
+}

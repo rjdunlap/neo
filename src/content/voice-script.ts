@@ -343,6 +343,7 @@ export const SCRIPT = {
   'home.play': ['Let’s play with {pet}!'],
   'home.explore': ['Let’s explore!'],
   'home.who': ['Who’s playing?'],
+  'explore.pick': ['Where shall we go? Tap a place!'],
   'play.ball': ['Throw the ball for {pet}! Tap the ball.'],
   'play.fetch': ['Got it!', '{pet} found the ball!', 'Again, again!', 'Fetch!'],
   'species.sprout': ['A sprout!'],
