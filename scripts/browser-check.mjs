@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
+// The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
+const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', url).href : url);
 
 const output = 'test-results/browser';
 await mkdir(output, { recursive: true });
@@ -2067,7 +2069,7 @@ async function grownUps() {
   try {
     const finger = await touchContext.newPage();
     finger.on('pageerror', (error) => errors.push(error.message));
-    await finger.goto(process.env.GAME_URL || 'http://127.0.0.1:5173');
+    await finger.goto(islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173'));
     await finger.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
     await finger.evaluate(() => { kit.store.data.pet = { name: 'Clover', color: 'pink', hatched: true }; kit.store.data.settings.howToCards = false; neo.go.hub(); });
     await finger.waitForFunction(() => neo.scene.constructor.name === 'MapScene' && !neo.switching);
@@ -9909,7 +9911,7 @@ async function phoneFit() {
   const phoneErrors = [];
   p.on('pageerror', (error) => phoneErrors.push(error.message));
   try {
-    await p.goto(process.env.GAME_URL || 'http://127.0.0.1:5173');
+    await p.goto(islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173'));
     await p.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
     await p.evaluate(async () => {
       kit.store.data.settings.howToCards = false; kit.store.data.pet = { name: 'Mia', color: 'pink', hatched: true }; kit.store.data.profile.band = 'toddler';
@@ -11963,7 +11965,7 @@ async function discoveryDirectNext() {
 }
 
 try {
-  await page.goto(process.env.GAME_URL || 'http://127.0.0.1:5173'); await ready();
+  await page.goto(islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173')); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
   if (suite === 'all' || suite === 'world') { await hatchingAndMap(); await subjectPlaces(); }
   else if (suite === 'profiles') { /* it starts from an empty device itself */ }

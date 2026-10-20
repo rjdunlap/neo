@@ -2,7 +2,7 @@
 
 A home-made iPad learning game in the spirit of JumpStart and Neopets: playful learning, a familiar pet, and an island to explore. Current age bands run from lap play through early school (ages 6–8); the long-term plan grows through elementary school, roughly grade 5 / age eleven. Every picture and sound is generated in code: no sprites, no audio files.
 
-**Play it:** <https://rjdunlap.github.io/neo/> (every push to `main` redeploys via GitHub Actions)
+**Play it:** <https://rjdunlap.github.io/neo/classic/> is the island game; the site root <https://rjdunlap.github.io/neo/> is the creature-world rework as it grows (today the creature preview, with a link to the island). Every push to `main` redeploys via GitHub Actions
 
 [Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md) · [Development workflow review](docs/DEVELOPMENT-WORKFLOW.md)
 
@@ -26,7 +26,7 @@ npm run build      # type-check + production build into dist/
 ## Try it on the iPad
 
 - **Quick look, same Wi-Fi:** `npm run dev:lan`, then open the "Network" URL it prints in Safari on the iPad. Fine for playing; offline mode and "Add to Home Screen" as a full app need HTTPS (below).
-- **The real thing:** open <https://rjdunlap.github.io/neo/> in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
+- **The real thing:** open <https://rjdunlap.github.io/neo/classic/> (the island game; the root is the rework preview) in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
 - **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app. Guided Access can also set a time limit.
 - **Limit her time:** the app has no timer of its own. Use Screen Time → App Limits (check Screen Time → See All Activity after a few minutes of play to see where the Home Screen app is listed) or a Guided Access time limit.
 
@@ -41,7 +41,7 @@ A phone is a good way to look at the island before the iPad arrives. It differs 
 
 To get it there:
 
-- **Live site (the merged `main`):** open <https://rjdunlap.github.io/neo/> in Safari (iPhone) or Chrome (Android). Share → Add to Home Screen on iPhone, or ⋮ → Install app on Android, runs it full screen and offline; in a plain Safari or Chrome tab the browser's own bars take some of the screen.
+- **Live site (the merged `main`):** open <https://rjdunlap.github.io/neo/classic/> in Safari (iPhone) or Chrome (Android). Share → Add to Home Screen on iPhone, or ⋮ → Install app on Android, runs it full screen and offline; in a plain Safari or Chrome tab the browser's own bars take some of the screen.
 - **A branch not yet merged:** with the phone on the same Wi-Fi, run `npm run dev:lan` and open the "Network" address it prints. That page is plain HTTP, so there is no install and no offline mode; it is for looking and playing.
 - **On the computer:** Chrome's device toolbar (⌥⌘I, then ⇧⌘M) with an iPhone preset, rotated sideways, shows the layout. It does not fake a notch: to see the safe-area handling, set `--safe-left`, `--safe-right` and `--safe-bottom` on `<html>` in the console (for example `document.documentElement.style.setProperty('--safe-left', '47px')`).
 

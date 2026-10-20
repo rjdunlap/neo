@@ -7,6 +7,8 @@
 //
 // ROUNDS (default 3) is how many times every game is opened; 13 games at 9 rounds takes about 20 minutes.
 import { chromium } from 'playwright';
+// The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
+const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', url).href : url);
 
 const only = process.env.GAME_ONLY?.split(',');
 const rounds = Number(process.env.ROUNDS || 3);
@@ -17,7 +19,7 @@ page.on('pageerror', (e) => {
   errors.push(e.stack || e.message);
   console.log('PAGE ERROR', (e.stack || e.message).split('\n').slice(0, 8).join('\n'));
 });
-await page.goto(process.env.GAME_URL || 'http://localhost:5173');
+await page.goto(islandUrl(process.env.GAME_URL || 'http://localhost:5173'));
 await page.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
 const games = await page.evaluate(async () => (await import('/src/games/registry.ts')).GAMES.map((g) => ({ id: g.id, band: g.bands.at(-1), levels: g.levels(g.bands.at(-1)), demo: !!g.touchDemo })));
 const picked = games.filter((g) => (only ? only.includes(g.id) : g.demo));

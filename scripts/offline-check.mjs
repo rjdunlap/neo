@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
+// The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
+const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', url).href : url);
 
 await mkdir('test-results/offline', { recursive: true });
 const browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_EXECUTABLE ? { executablePath: process.env.BROWSER_EXECUTABLE } : {}) });
@@ -73,7 +75,7 @@ const openRoomAndJournalOffline = async (roomShot, journalShot) => {
 };
 
 try {
-  await page.goto(process.env.GAME_URL || 'http://127.0.0.1:4173');
+  await page.goto(islandUrl(process.env.GAME_URL || 'http://127.0.0.1:4173'));
   await page.locator('#app canvas').waitFor();
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);

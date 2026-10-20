@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-20 — Rework at the site root, island game at `classic/`
+
+- Two-page build (`claude/routines-art-rework-deploy-90743f`, base `c54308f3`): the root boots the creature preview (`src/rework.ts`) with an "Island games" link; `classic/` boots the island (`src/main.ts`) with its own manifest and an explicit root service worker. Harnesses add `classic/` to a bare `GAME_URL`. READY gains RW13 (island revamp location packet) and RW06 definitions and RW05 slice 2.
+- Ran typecheck, `npm test` (163 files, 1528 passed), `npm run build`, `test:offline` against the production preview on port 4391 (bare origin, so `classic/`; passed twice, before and after the manifest change), `BROWSER_SUITE=world` on dev port 5391 (passed, 7:57), and one root screenshot in the browser pane.
+- Not run: other suites (no game changed), an iPad home-screen install from `classic/`.
+- Open: on the iPad, a copy saved from the old root URL now opens the preview; re-add it from `classic/`.
+
 ## 2026-10-20 — Roundup support truth (slice 1)
 
 - Built [slice 1](deep-dives/roundup.md#build-slices-in-order) ([PR #627](https://github.com/rjdunlap/neo/pull/627), commit 7786d03e): the trot-home counts a hint, dot signs at levels 5-6, level 1 answers grass and sign taps without a miss, pens' totals spoken at a right bell, per-round seeded start layout, one how-to note.
@@ -103,22 +110,13 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the nine defaulted decisions; whether a six-year-old reads the practice strip as hers and the mud as the record, whether 70-unit toe bumps read as direction before the magnifier, whether "can't tell" lands as a satisfying answer and device speech of "trackway" are device checks for the build.
 
-## 2026-10-19 — RW02b step 2: the pilot three prepared and rigged
-
-- Built on `claude/rw02b-rig-pilot-three` ([PR #609](https://github.com/rjdunlap/neo/pull/609)): `prepare-sprite.mjs --shrink <n>` (premultiplied box average after keying at full size), the sprout, river and glider expression sets at half size in `src/art/creatures/illustrated/` (eighteen sprites, 4.3 MB) with manifest rows, `IllustratedCreature` (`illustrated.ts`) and one mesh rig per species with `SPROUT_ART`, `RIVER_ART` and a new `GLIDER_ART` (face, slots, pinned body, parts with root and tip, touch circle, misfits), whole-texture expressions replacing the painted lids, the six rigs and cards in `/?creatures`; the stand-in `glider.png`, `prepare-glider.mjs` and the old glider test deleted. [Step 2 result](rework/GENERATED-CREATURE-PILOT.md#step-2-result-2026-10-19).
-- Ran `npm run typecheck` (clean) and `npx vitest run src/art/creatures scripts/creature-art` (41 passed: the shared suite per species, a weights test per species, the creature and script tests), eight times for the glider and four for all after tuning the fin and ribbon ramps, since the suite starts each creature at a random clock.
-- Ran `test-results/rw02b-probe.mjs` (Chromium headless, Vite at `http://localhost:5173`) at 1024 × 768 and 768 × 1024: taps and quick re-taps on all six, the three moods, scarf and crown off and on, cards and toggles fitting without overlap, every creature inside the window, leaving to the chooser; no page errors; one screenshot per orientation.
-- Ran `npm run build`: no sprite or preview code in `dist/` or the service worker precache (31 entries, 2.7 MB).
-- Not run: any game suite (no game changed), an iPad, a child; the real-time motion was checked from the probe's stills and the browser pane, not watched by a person.
-- Open: the device check for all three rigs; RW05 slice 1 takes the rigs; the wearables fit.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Illustrated creature rigs (RW02b step 2) | 2026-10-19: typecheck, 41 creature and script tests (repeated), `/?creatures` probe in both orientations (taps, moods, scarf/crown, card fit, leaving), build isolation | [Step 2 entry](#2026-10-19--rw02b-step-2-the-pilot-three-prepared-and-rigged) | No iPad, no child, no game suites; motion judged from stills |
+| Illustrated creature rigs (RW02b step 2) | 2026-10-19: typecheck, 41 creature and script tests (repeated), `/?creatures` probe in both orientations (taps, moods, scarf/crown, card fit, leaving), build isolation | [Step 2 entry](archive/VERIFICATION-2026-10-19.md#2026-10-19--rw02b-step-2-the-pilot-three-prepared-and-rigged) | No iPad, no child, no game suites; motion judged from stills |
 | Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02-creature-art-prototype), [RW01 packet](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw01-name-and-story-packet), [rework plan](archive/VERIFICATION-2026-10-16.md#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
