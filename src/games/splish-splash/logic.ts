@@ -1,5 +1,3 @@
-import type { SpeciesId } from '../../creatures/species';
-
 export type Part = 'tummy' | 'head' | 'cheeks' | 'ears' | 'nose';
 
 export interface Plan {
@@ -45,34 +43,20 @@ export function allowedParts(plan: Plan, index: number, clean: (p: Part) => bool
   return plan.ordered ? left.slice(0, 1) : left;
 }
 
-/** The parts the bath names, for the companion's part table (`src/creatures/parts.ts`): every species has each one. */
-export const BATH_PARTS: readonly Part[] = ['tummy', 'head', 'cheeks', 'ears', 'nose'];
-
-/** Each part's splotch size, against a 120 × 96 texture: the face's are smaller than the tummy's. */
-export const PART_SIZE: Record<Part, number> = { tummy: 1, head: 0.9, cheeks: 0.62, ears: 0.7, nose: 0.42 };
-
-/**
- * How each species sits in the tub (RW05 slice 2): its scale, and its splotches' share of `PART_SIZE`. The sprout stands
- * where the old pip did; the river and the glider are side on, with their whole face in a small corner of the picture, so
- * they sit larger and their face's splotches are smaller, or the five would pile into one.
- */
-export const STAR: Record<SpeciesId, { scale: number; mud: number }> = {
-  sprout: { scale: 1.2, mud: 1 },
-  river: { scale: 1.7, mud: 0.6 },
-  glider: { scale: 1.6, mud: 0.6 },
+/** Where each part's mud sits on Pip (x, y, size), in Pip's own units. */
+export const PART_SPOTS: Record<Part, [number, number, number][]> = {
+  tummy: [[0, -72, 1]],
+  head: [[6, -214, 0.9]],
+  cheeks: [
+    [-98, -100, 0.62],
+    [98, -100, 0.62],
+  ],
+  ears: [
+    [-74, -226, 0.7],
+    [74, -226, 0.7],
+  ],
+  nose: [[0, -112, 0.42]],
 };
-
-export interface Spot {
-  part: Part;
-  x: number;
-  y: number;
-  size: number;
-}
-
-/** The splotches on a star whose part points (in its own units) are `points`: one on each point, the tummy's kept full size. */
-export function spotsOn(points: (p: Part) => readonly { x: number; y: number }[], mud = 1): Spot[] {
-  return BATH_PARTS.flatMap((part) => points(part).map(({ x, y }) => ({ part, x, y, size: PART_SIZE[part] * (part === 'tummy' ? 1 : mud) })));
-}
 
 /** A splotch's texture, and the scrub radius in Pip body units: the brush reaches `SCRUB_R / size` texture units. */
 export const MUD_W = 120;

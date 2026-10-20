@@ -1,7 +1,6 @@
 import { Container, Texture } from 'pixi.js';
 import { describe, expect, it } from 'vitest';
 import { IllustratedCreature, inside, sameArt } from '../art/creatures/illustrated';
-import { BATH_PARTS } from '../games/splish-splash/logic';
 import { Companion, restPoints } from './companion';
 import { ART_OF, PART_NAMES, PARTS, type PartName } from './parts';
 import { SPECIES, SPECIES_IDS } from './species';
@@ -13,7 +12,8 @@ const art = sameArt(Texture.WHITE);
  * so every species must have each one; the others skip a misfit (Weather Wardrobe sets the item down beside the friend).
  */
 const GAME_PARTS: Record<string, { parts: readonly PartName[]; strict: boolean }> = {
-  'splish-splash': { parts: BATH_PARTS, strict: true },
+  // Still on the stand-in pip: the side-on faces cannot keep five splotches apart (docs/WAITING-ON-DEVELOPER.md).
+  'splish-splash': { parts: ['tummy', 'head', 'cheeks', 'ears', 'nose'], strict: true },
   'weather-wardrobe': { parts: ['head', 'eyes', 'neck', 'tummy', 'hands', 'feet'], strict: false },
   'pet-says': { parts: ['nose', 'tummy', 'ears', 'head', 'feet', 'hands'], strict: false },
 };

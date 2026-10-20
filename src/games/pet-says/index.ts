@@ -65,6 +65,10 @@ class PetSays implements Game {
   readonly mover: Mover<CompanionRig>;
   /** Where the mittens go on this friend. */
   readonly frame: SaysFrame;
+  /** How much larger than pip-size this friend stands: a long, low river or glider is grown to fill the room the pip took. */
+  private readonly grow: number;
+  /** The middle of the friend's picture, in its own units, so a long friend stands centred. */
+  private readonly middle: number;
   readonly next = new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 62, () => void this.advance());
   index = -1;
   misses = 0;
@@ -90,8 +94,13 @@ class PetSays implements Game {
     this.turns = makeTurns(this.plan, ctx.rng);
     this.backdrop = ctx.track(new Backdrop({ sky: [swatch.blue.light, 0xfff4e3], hills: [swatch.green.light, 0xc8ecb0, 0xddf2cf], horizon: 0.62, clouds: 3, sun: true, seed: 33 }, ctx.view));
     const star = ctx.companion();
+    const b = star.getLocalBounds();
+    this.grow = Math.max(1, Math.min(2.2, 270 / b.height, 520 / b.width));
+    this.middle = b.x + b.width / 2;
     this.frame = saysFrame((p) => star.partPoints(p), star.bounds());
     this.mover = new Mover(star, swatch[star.color as ColorName], this.frame.rest);
+    // The mittens stay the pip's size however large the friend stands.
+    for (const m of [this.mover.left, this.mover.right]) m.scale.set(1 / this.grow);
     ctx.track(star);
     star.hitArea = star.touchArea(40);
     // A pat brings the next move, so a pat just after a move ends must not be swallowed.
@@ -113,9 +122,9 @@ class PetSays implements Game {
 
   resize(v: View) {
     this.backdrop.resize(v);
-    const s = Math.min(1.15, (v.h - 200) / 330);
+    const s = Math.min(1.15, (v.h - 200) / 330) * this.grow;
     this.mover.scale.set(Math.sign(this.mover.scale.x || 1) * s, s);
-    this.mover.position.set(v.w / 2, v.h - 50);
+    this.mover.position.set(v.w / 2 - this.middle * s, v.h - 50);
     this.next.position.set(v.w - 110, v.h - 110);
   }
 
