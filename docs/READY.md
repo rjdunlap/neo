@@ -7,7 +7,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 ## Next ten
 
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
-- **`roundup`, kinds and pens, slice 2** (logic tier): duck and dog, pens drawn from a pool, `{a}`/`{b}` voice lines, varied casts at 4. [Dive](deep-dives/roundup.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 11 *Come along*, slice 4** (new interaction): the follow mode for lap and toddler, placed by `order`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)

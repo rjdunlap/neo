@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, enter, fleeSpeed, makeHerd, PLANS, ringBell, shooPoint, signDots, startSpots, throughGate, wanted } from './logic';
+import { animalsFor, enter, fleeSpeed, KINDS, makeHerd, PLACE, PLANS, PLURAL, ringBell, shooPoint, signDots, startSpots, throughGate, wanted } from './logic';
 
 describe('Roundup', () => {
   it('always has enough animals for every pen, with a spare when counting', () => {
@@ -18,6 +18,49 @@ describe('Roundup', () => {
         expect(herd.pens.length).toBe(plan.mode.startsWith('sort') ? 2 : 1);
       }
     }
+  });
+
+  it('uses every kind in one-pen rounds and every distinct pen pair in sorting rounds', () => {
+    for (const plan of PLANS) {
+      const pairs = new Set<string>();
+      const kinds = new Set<string>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const herd = makeHerd(plan, new Rng(seed));
+        expect(makeHerd(plan, new Rng(seed))).toEqual(herd);
+        expect(new Set(herd.pens.map((p) => p.kind)).size).toBe(herd.pens.length);
+        for (const kind of herd.animals) {
+          expect(herd.pens.some((p) => p.kind === kind)).toBe(true);
+          kinds.add(kind);
+        }
+        pairs.add(herd.pens.map((p) => p.kind).sort().join(','));
+        for (const pen of herd.pens) {
+          expect(PLURAL[pen.kind]).toBeTruthy();
+          expect(PLACE[pen.kind]).toBeTruthy();
+          for (const kind of KINDS) expect(enter(pen, kind)).toBe(kind === pen.kind ? 'in' : 'wrong-pen');
+          const have = herd.animals.filter((k) => k === pen.kind).length;
+          if (plan.mode === 'sortCount') {
+            expect(have).toBe(pen.target! + 1);
+            expect(pen.target).toBeLessThanOrEqual(plan.max!);
+          }
+        }
+        expect(ringBell(herd, herd.pens.map((p) => wanted(herd, p))).every((r) => r.extra === 0 && r.short === 0)).toBe(true);
+      }
+      expect([...kinds].sort()).toEqual([...KINDS].sort());
+      expect(pairs.size).toBe(plan.mode.startsWith('sort') ? 10 : 5);
+    }
+  });
+
+  it('varies level 4 between four and five animals, with every nonempty split possible', () => {
+    const casts = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const herd = makeHerd(PLANS[3], new Rng(seed));
+      expect(herd.animals.length).toBeGreaterThanOrEqual(4);
+      expect(herd.animals.length).toBeLessThanOrEqual(5);
+      const counts = herd.pens.map((p) => herd.animals.filter((k) => k === p.kind).length);
+      expect(counts.every((n) => n >= 1)).toBe(true);
+      casts.add(counts.join('+'));
+    }
+    expect([...casts].sort()).toEqual(['1+3', '1+4', '2+2', '2+3', '3+1', '3+2', '4+1']);
   });
 
   it('lets animals into their own pen, and the bell finds too many or too few', () => {

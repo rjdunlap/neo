@@ -681,9 +681,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Tap an animal to hop it into the pen.' },
       { from: 2, to: 3, text: 'Wiggle a finger behind the animals to shoo them through the gate into the pen.' },
-      { from: 4, to: 4, text: 'Shoo the pigs into the mud and the bunnies into the carrots.' },
+      { from: 4, to: 4, text: 'Shoo each kind into the pen with its picture on the sign.' },
       { from: 5, to: 5, text: 'Put exactly the number asked for in the pen, then ring the bell.' },
-      { from: 6, text: 'Sort the pigs and bunnies into their pens, putting in the number of each that was asked for, then ring the bell.' },
+      { from: 6, text: 'Sort the two kinds into their pictured pens, putting in the number of each that was asked for, then ring the bell.' },
     ],
     finish: 'The round ends when every animal is where it was asked to go.',
     note: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.',
