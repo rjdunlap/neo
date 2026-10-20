@@ -35,3 +35,9 @@
 - Ran typecheck, `npm test` (163 files, 1528 passed), `npm run build`, `test:offline` against the production preview on port 4391 (bare origin, so `classic/`; passed twice, before and after the manifest change), `BROWSER_SUITE=world` on dev port 5391 (passed, 7:57), and one root screenshot in the browser pane.
 - Not run: other suites (no game changed), an iPad home-screen install from `classic/`.
 - Open: on the iPad, a copy saved from the old root URL now opens the preview; re-add it from `classic/`.
+
+## 2026-10-20 — RW13 island revamp location packet (docs only)
+
+- Defined RW13 in [the packet](../rework/ISLAND-REVAMP.md) on `claude/rw13-island-revamp-packet` ([PR #631](https://github.com/rjdunlap/neo/pull/631)): the eleven land IDs kept with an ecosystem each, five proposed game moves (none made yet), residents, backdrop art queue R23/R26 and ordered build slices; WORK-ITEMS, READY and QUEUE updated.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build and browser suites not run: no code changed.
+- Open: slice 1 is next; the generated backdrops (R23, R26) stay blocked on the art decision.
