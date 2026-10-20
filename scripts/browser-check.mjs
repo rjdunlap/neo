@@ -4141,13 +4141,27 @@ async function arcade() {
       await kit.sleep(200);
     };
   });
-  for (let level = 1; level <= 6 && (!only || only === 'roundup'); level++) {
+  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 2, 3, 4, 5, 6];
+  for (const level of (!only || only === 'roundup') ? roundupLevels : []) {
     await launch('roundup', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const loose = () => g.animals.filter((a) => a.state === 'loose');
+      const speech = [];
+      const say = g.ctx.say.bind(g.ctx), instruct = g.ctx.instruct.bind(g.ctx);
+      g.ctx.say = (id, values) => { speech.push({ id, values }); return say(id, values); };
+      g.ctx.instruct = (id, values) => { speech.push({ id, values }); return instruct(id, values); };
+      g.start();
+      const { SCRIPT } = await import('/src/content/voice-script.ts');
+      const instruction = speech.at(-1);
+      const spoken = SCRIPT[instruction.id][0].replace(/\{(\w+)\}/g, (_, key) => instruction.values[key]);
+      const { PLURAL, PLACE, animalsFor } = await import('/src/games/roundup/logic.ts');
+      for (const { pen } of g.pens) {
+        const word = pen.target === undefined ? PLURAL[pen.kind] : animalsFor(pen.kind, pen.target);
+        if (!spoken.includes(word) || (g.pens.length === 2 && !spoken.includes(PLACE[pen.kind]))) throw new Error(`Wrong instruction: ${spoken}`);
+      }
       if (g.plan.mode === 'tap') {
         // A lap tap on the grass or the sign answers, and is never a miss or a hint.
         const grass = g.touch.parent.toGlobal({ x: neo.view.w / 2, y: neo.view.h * 0.22 });
@@ -4164,12 +4178,13 @@ async function arcade() {
         if (g.plan.mode === 'sort') {
           // Twice into the wrong pen: two gentle misses and a glow.
           for (let k = 0; k < 2; k++) {
-            const a = loose().find((x) => x.kind === 'pig');
+            const a = loose().find((x) => x.kind === g.pens[0].pen.kind);
             await herdInto(a, 1);
             await kit.until(() => a.state === 'loose', 3000);
             await kit.sleep(2100);
           }
           if (g.misses !== 2 || g.hints < 1) throw new Error(`Wrong pens: ${g.misses} ${g.hints}`);
+          if (speech.find((s) => s.id === 'herd.wrongpen')?.values.pen !== g.pens[1].pen.kind) throw new Error('Wrong-pen speech names another kind');
         }
         if (g.plan.mode === 'count') {
           // One too many, then the bell: the extra hops back out.

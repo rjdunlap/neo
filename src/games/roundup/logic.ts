@@ -6,11 +6,14 @@ import type { Rng } from '../../engine/random';
  * and a wrong pen just means a hop back out.
  */
 export type HerdMode = 'tap' | 'shoo' | 'sort' | 'count' | 'sortCount';
-export type Kind = 'pig' | 'bunny' | 'cow';
+export const KINDS = ['pig', 'bunny', 'cow', 'duck', 'dog'] as const;
+export type Kind = (typeof KINDS)[number];
 
 export interface HerdPlan {
   mode: HerdMode;
   animals: number;
+  /** Optional upper bound for a varied cast. */
+  maxAnimals?: number;
   /** count/sortCount: how many each pen wants (a range). */
   min?: number;
   max?: number;
@@ -21,16 +24,16 @@ export const PLANS: HerdPlan[] = [
   { mode: 'tap', animals: 3, name: 'Tap an animal and it hops into its pen' },
   { mode: 'shoo', animals: 3, name: 'Shoo three animals into the pen with a finger' },
   { mode: 'shoo', animals: 5, name: 'Shoo five animals into the pen' },
-  { mode: 'sort', animals: 4, name: 'Sort pigs and bunnies into their own pens' },
+  { mode: 'sort', animals: 4, maxAnimals: 5, name: 'Sort four or five animals of two kinds into their own pens' },
   { mode: 'count', animals: 6, min: 2, max: 4, name: 'Put an exact number in the pen (2 to 4)' },
-  { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort and count: "three pigs in the mud, two bunnies in the carrots"' },
+  { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort two kinds and put the requested number in each pen' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows' };
+export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
 /** What each pen's floor is, for "three pigs in the mud". */
-export const PLACE: Record<Kind, string> = { pig: 'mud', bunny: 'carrots', cow: 'hay' };
+export const PLACE: Record<Kind, string> = { pig: 'mud', bunny: 'carrots', cow: 'hay', duck: 'pond', dog: 'kennel' };
 
 /** The animal word for a count: "1 pig", "3 pigs". */
 export const animalsFor = (kind: Kind, n: number) => (n === 1 ? kind : PLURAL[kind]);
@@ -47,16 +50,16 @@ export interface Herd {
 }
 
 export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
-  const n = plan.animals;
+  const n = plan.maxAnimals === undefined ? plan.animals : rng.int(plan.animals, plan.maxAnimals);
   if (plan.mode === 'sort' || plan.mode === 'sortCount') {
-    const pens: Pen[] = [{ kind: 'pig' }, { kind: 'bunny' }];
+    const pens: Pen[] = rng.shuffle([...KINDS]).slice(0, 2).map((kind) => ({ kind }));
     if (plan.mode === 'sortCount') for (const p of pens) p.target = rng.int(plan.min!, plan.max!);
     // At least one of each, and for counting at least one spare of each.
-    const pigs = plan.mode === 'sortCount' ? pens[0].target! + 1 : Math.ceil(n / 2);
-    const bunnies = plan.mode === 'sortCount' ? pens[1].target! + 1 : n - pigs;
-    return { animals: rng.shuffle([...Array(pigs).fill('pig'), ...Array(bunnies).fill('bunny')]), pens };
+    const first = plan.mode === 'sortCount' ? pens[0].target! + 1 : rng.int(1, n - 1);
+    const second = plan.mode === 'sortCount' ? pens[1].target! + 1 : n - first;
+    return { animals: rng.shuffle([...Array<Kind>(first).fill(pens[0].kind), ...Array<Kind>(second).fill(pens[1].kind)]), pens };
   }
-  const kind = rng.pick<Kind>(['pig', 'bunny', 'cow']);
+  const kind = rng.pick(KINDS);
   const pen: Pen = { kind };
   if (plan.mode === 'count') pen.target = rng.int(plan.min!, Math.min(plan.max!, n - 1));
   return { animals: Array(n).fill(kind), pens: [pen] };

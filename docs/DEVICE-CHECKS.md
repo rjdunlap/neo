@@ -16,6 +16,8 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Roundup kinds and pens (slice 2, 2026-10-20, #672).** On an iPad, are duck/pond and dog/kennel pens recognized from their picture signs and floors; does device speech clearly name both kinds, their places and singular/plural targets? Child play remains unobserved.
+
 - [ ] **Block Garden (levels 1–8, 2026-10-20, #655).** On an iPad: can a pre-K child carry a piece with the 40-unit lift; are the 72-unit squares at levels 7–8 usable for a grown-up on a phone; is the landing shadow read without being explained; how long does the off-plan hint search take at level 8 (about 320 ms on Node; the definition aimed under 150 ms); device speech of the `block-garden.*` lines.
 - [ ] **Fruit Slice (levels 1–8, 2026-10-20, #667).** On an iPad: does a toddler's swipe register with palm and wrist contact on the glass; does the 1.6 s hang feel calm or slow; does the level 7 straight line read to a six-year-old.
 - [ ] **Domino Run (levels 1–8, 2026-10-20, #659).** On an iPad: does a toddler find tap-to-hop at level 2 without help; is the stall ring read as "here is the gap"; are three dot faces enough to tell sizes apart.

@@ -3,7 +3,7 @@ import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
-import { sfx } from '../../audio/sfx';
+import { sfx, type AnimalSound } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -34,6 +34,8 @@ const FLOORS: Record<Kind, { fill: number; dot: number }> = {
   pig: { fill: 0xa8743f, dot: 0x8b5a2b },
   bunny: { fill: 0x9edb86, dot: swatch.orange.fill },
   cow: { fill: 0xf3dc8a, dot: 0xd9b95a },
+  duck: { fill: 0x8fd3f7, dot: 0x60b5d9 },
+  dog: { fill: 0xe5c59a, dot: wood.line },
 };
 
 interface Animal {
@@ -56,7 +58,8 @@ interface PenView {
   glow: Graphics;
 }
 
-const voiceOf = (kind: Kind) => (kind === 'pig' ? 'oink' : kind === 'cow' ? 'moo' : 'hop');
+const VOICES: Record<Kind, AnimalSound> = { pig: 'oink', bunny: 'hop', cow: 'moo', duck: 'quack', dog: 'woof' };
+const voiceOf = (kind: Kind) => VOICES[kind];
 
 class Roundup implements Game {
   readonly plan: HerdPlan;
@@ -169,11 +172,11 @@ class Roundup implements Game {
       case 'shoo':
         return void this.ctx.instruct('herd.shoo', { animals });
       case 'sort':
-        return void this.ctx.instruct('herd.sort');
+        return void this.ctx.instruct('herd.sort', { a: PLURAL[a.kind], b: PLURAL[b.kind], placeA: PLACE[a.kind], placeB: PLACE[b.kind] });
       case 'count':
         return void this.ctx.instruct('herd.count', { n: a.target!, animals });
       case 'sortCount':
-        return void this.ctx.instruct('herd.sortcount', { a: a.target!, b: b.target! });
+        return void this.ctx.instruct('herd.sortcount', { a: `${a.target!} ${animalsFor(a.kind, a.target!)} in the ${PLACE[a.kind]}`, b: `${b.target!} ${animalsFor(b.kind, b.target!)} in the ${PLACE[b.kind]}` });
     }
   }
 
@@ -225,7 +228,12 @@ class Roundup implements Game {
     for (let i = 0; i < 10; i++) {
       const [dx, dy] = [rng.range(30, w - 30), rng.range(30, h - 30)];
       if (p.pen.kind === 'bunny') g.poly([x + dx - 7, y + dy - 8, x + dx + 7, y + dy - 8, x + dx, y + dy + 16]).fill(floor.dot);
-      else g.circle(x + dx, y + dy, rng.range(6, 12)).fill(floor.dot);
+      else if (p.pen.kind === 'duck') g.ellipse(x + dx, y + dy, 14, 5).stroke({ width: 3, color: floor.dot });
+      else if (p.pen.kind === 'dog') {
+        // Little kennels mark the yard without hiding the sign or narrowing the gate.
+        g.poly([x + dx - 12, y + dy, x + dx, y + dy - 13, x + dx + 12, y + dy, x + dx + 12, y + dy + 13, x + dx - 12, y + dy + 13]).fill(wood.fill);
+        g.roundRect(x + dx - 5, y + dy + 2, 10, 11, 4).fill(floor.dot);
+      } else g.circle(x + dx, y + dy, rng.range(6, 12)).fill(floor.dot);
     }
     const gateTop = y + (h * (1 - GATE)) / 2;
     const gateBottom = y + h - (h * (1 - GATE)) / 2;
@@ -302,13 +310,22 @@ class Roundup implements Game {
     const i = this.needs(a);
     if (i < 0) return;
     const r = this.pens[i].rect;
-    const p = shooPoint({ x: a.critter.x, y: a.critter.y - 30 }, { x: r.x + 20, y: r.y + r.h / 2 - 30 });
+    // Line up outside the correct gate before pushing across the fence line.
+    const aligned = Math.abs(a.critter.y - (r.y + r.h / 2)) < r.h * 0.2;
+    const goal = { x: aligned && a.critter.x > r.x - 70 ? r.x + 80 : r.x - 60, y: r.y + r.h / 2 - 30 };
+    const p = shooPoint({ x: a.critter.x, y: a.critter.y - 30 }, goal);
     this.autoSpot.position.set(p.x, p.y);
   }
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
-    const animal = this.animals.find((a) => a.state === 'loose' && this.needs(a) >= 0);
+    // Start with the animal nearest its gate so the finger does not sweep a nearer spare in first.
+    const candidates = this.animals.filter((a) => a.state === 'loose' && this.needs(a) >= 0);
+    const distance = (a: Animal) => {
+      const r = this.pens[this.needs(a)].rect;
+      return Math.hypot(a.critter.x - r.x, a.critter.y - r.y - r.h / 2);
+    };
+    const animal = candidates.sort((a, b) => distance(a) - distance(b))[0];
     if (this.plan.mode === 'tap') return animal ? { tap: { on: animal.critter, y: -120 }, pause: 0.1 } : null;
     if (animal) {
       this.autoAnimal = animal;
@@ -499,7 +516,7 @@ class Roundup implements Game {
     this.lastMiss = this.clock;
     this.misses++;
     this.wrongs++;
-    if (why === 'wrong-pen') void this.ctx.say('herd.wrongpen', { pen: p.pen.kind === 'pig' ? 'pig' : 'bunny' });
+    if (why === 'wrong-pen') void this.ctx.say('herd.wrongpen', { pen: p.pen.kind });
     if (this.wrongs >= 2 && !this.hinting) this.showHint();
   }
 

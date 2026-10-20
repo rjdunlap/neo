@@ -122,7 +122,7 @@ Each has a default below; the build proceeds on it.
 ## Build slices, in order
 
 1. **Support truth** (built; existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 5): the trot-home counts a hint, a count sign with dots at 5–6, a lap tap on grass or sign answered without a miss, the total spoken at the bell, a seeded layout per round, and the how-to note. IDs and windows unchanged.
-2. **Kinds and pens** (claimed by `01a15b6b-38ee-78a2-9b61-1ead8fbe1789` on `codex/roundup-kinds-pens`; PR pending; expected files: `src/games/roundup/{logic.ts,logic.test.ts,index.ts}`, voice script, how-to, filtered browser harness and closeout docs; logic tier plus one filtered play of 4 and 6, `fingerdemo` at 6): duck and dog, pens drawn from the pool, `{a}`/`{b}` voice lines, varied casts at 4.
+2. **Kinds and pens** (checkpointed, incomplete: `01a15b6b-38ee-78a2-9b61-1ead8fbe1789`, `codex/roundup-kinds-pens`; real-time level-6 demo still fails; [PR #672](https://github.com/rjdunlap/neo/pull/672); logic tier plus one filtered play of 4 and 6, `fingerdemo` at 6): duck and dog, pens drawn from the pool, dynamic voice lines, varied casts at 4; level 6 retains exactly one spare per pen.
 3. **Level 10 *Shoo one*** (new levels on an existing interaction: typecheck, rule tests, one play of 10, `fingerdemo` at 10): toddler `order [1, 10, 2, 3]` and `entryLevels: [10]`.
 4. **Level 11 *Come along*** (new interaction tier: typecheck, units, one scripted play of 11 at lap and toddler, one portrait screenshot, `fingerdemo` at 11): the follow mode, lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`.
 5. **Level 7 *Leave the cows*** (new levels tier): pre-K 3–7.
