@@ -22,8 +22,7 @@ Ranges (`LEVELS` in `index.ts`): lap 1–2, toddler 1–3, preschool 2–5, pre-
 **Mistakes and hints:** a boing, a surprised face and a spoken hint. The second mistake on a patient counts one hint and lights the wanted tool and, at levels 2 and 4, the body part. Rule tests (`logic.test.ts`) cover the demonstration at every level, one cure per ailment, the variety guarantees, boo-boo places on the body, mirrored feet and ears, and that parts are distinct.
 
 **Known gaps found reading the code:**
-- **The first touch can be dead.** `tapAt` ignores a tap more than about 90 units from a boo-boo, with no sound or motion. `busy` stays true until the instruction finishes, so every tap during "Oh no, boo-boos! Tap them…" is dropped. At level 3 both a `say` and an `instruct` are awaited before she can act. A one-year-old's first taps are exactly these.
-- **The how-to card says "tap" at levels 2 and 3**, but both are drags (`onTap` is attached only in `play` mode). The last step, `{ from: 6 }`, has no `to`, so it would claim any level appended above 6.
+- **Fixed in slice 1 (PR #660):** the dead first touch (any touch on the patient now bandages the nearest boo-boo and names the part), the how-to's "tap" wording at levels 2 and 3, and the open-ended `{ from: 6 }` step. **Still open:** taps during the spoken instruction (and at level 3 the awaited `say` plus `instruct`) are dropped, gated on V2's person check; on the last boo-boo two thank-yous can run back to back ("...Thank you.", then "All better! Thank you, doctor!").
 - **Lap includes level 2, which is a drag.** No person has checked whether a lap player can make it. Not changed silently here (see decisions).
 - The [IDEAS](../IDEAS.md) audit rows say "leave": the ladder already ends in a sequenced check-up. This dive overrides that with two appended levels that add new decisions, not more load.
 
@@ -112,7 +111,7 @@ Level 7 is the easier entry (between 1 and 2 for toddlers), placed by `order` an
 
 ## Build slices, in order
 
-1. **The whole patient counts, the part named, a true how-to** (existing-game bug fix on an unchanged interaction; in progress on `claude/teddy-doctor-support-truth`): at level 1 any touch on the patient, once the line is spoken, bandages the nearest boo-boo; the pet says the part (B7's body word; voice lines); levels 2–3 how-to wording says drag; level 6's step capped `{ from: 6, to: 6 }`; a rule test that every band's levels map to their own plan. Checks: `npm run typecheck`, Teddy Doctor's rule tests and the how-to test, `BROWSER_SUITE=next NEXT_ONLY=doctor FROM_LEVEL=1` (runs 1–6), `fingerdemo` at 1.
+1. **The whole patient counts, the part named, a true how-to** (existing-game bug fix on an unchanged interaction; **built**, [PR #660](https://github.com/rjdunlap/neo/pull/660)): at level 1 any touch on the patient, once the line is spoken, bandages the nearest boo-boo; the pet says the part (B7's body word; voice lines); levels 2–3 how-to wording says drag; level 6's step capped `{ from: 6, to: 6 }`; a rule test that every band's levels map to their own plan. Checks: `npm run typecheck`, Teddy Doctor's rule tests and the how-to test, `BROWSER_SUITE=next NEXT_ONLY=doctor FROM_LEVEL=1` (runs 1–6), `fingerdemo` at 1.
 2. **Weigh and measure** (content in levels 5–6): a scale and a height chart join the check-up, three of five per round. Checks: typecheck, rule tests (distinct steps, demonstration parts, variety), `BROWSER_SUITE=next NEXT_ONLY=doctor FROM_LEVEL=5`, `fingerdemo` at 5.
 3. **Level 7 Who needs help?** (new level, two-patient layout): `PLANS`, `LEVELS` with toddler `order: [1, 7, 2, 3]`, `entryLevels: [7]`, voice, how-to, bot, the `next` browser case extended past 6. Checks: the new-interaction tier (one scripted play with a wrong friend and a hint, `fingerdemo` at 7, one portrait screenshot).
 4. **Level 8 Before and after** (new level on the existing drag; after slice 2 if it uses five steps, otherwise on three): rule shapes in `logic.ts`, a judge that accepts every valid order, hint and bot that agree with it, school `order: [5, 6, 8]`. Checks: typecheck, rule tests, one browser play at 8, `fingerdemo` at 8.
@@ -121,4 +120,4 @@ Gated: level 1 taps during the spoken line and a poke for busy touches (V2's per
 
 ## What was built in this session
 
-Nothing: research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.
+Research and ideation only, then slice 1 built on 2026-10-20 ([PR #660](https://github.com/rjdunlap/neo/pull/660); build note in the [archive](../archive/COMPLETED-2026-10-09.md#teddy-doctor-slice-1-the-whole-patient-counts-2026-10-20)). The research session ran `node scripts/check-links.mjs` and `git diff --check`.
