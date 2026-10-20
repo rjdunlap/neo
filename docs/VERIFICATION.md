@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-20 — RW13 island revamp location packet (docs only)
+
+- Defined RW13 in [the packet](rework/ISLAND-REVAMP.md) on `claude/rw13-island-revamp-packet` ([PR #631](https://github.com/rjdunlap/neo/pull/631)): the eleven land IDs kept with an ecosystem each, five proposed game moves (none made yet), residents, backdrop art queue R23/R26 and ordered build slices; WORK-ITEMS, READY and QUEUE updated.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). Typecheck, unit tests, build and browser suites not run: no code changed.
+- Open: slice 1 is next; the generated backdrops (R23, R26) stay blocked on the art decision.
+
 ## 2026-10-20 — Rework at the site root, island game at `classic/`
 
 - Two-page build (`claude/routines-art-rework-deploy-90743f`, base `c54308f3`): the root boots the creature preview (`src/rework.ts`) with an "Island games" link; `classic/` boots the island (`src/main.ts`) with its own manifest and an explicit root service worker. Harnesses add `classic/` to a bare `GAME_URL`. READY gains RW13 (island revamp location packet) and RW06 definitions and RW05 slice 2.
@@ -101,13 +107,6 @@
 - Updated the zoo-animals Z1 slice, recommendations row, IDEAS row, a WAITING row with nine defaulted decisions (the trait review is decision 1) and a READY.md line for the Z2/Z3 build; the Z1 line left Next ten.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the trait-table review (decision 1, gates Z3's merge), and the device checks listed in the definition's Check tier.
-
-## 2026-10-19 — Fluffy Salon deep dive
-
-- Docs only: [deep dive](deep-dives/fluffy-salon.md) on `claude/dive-fluffy-salon-finish` ([PR #613](https://github.com/rjdunlap/neo/pull/613)), resuming the claim in [PR #591](https://github.com/rjdunlap/neo/pull/591) whose branch another worktree holds. Audited levels 1–5; gaps: the hint timer is a clock and not an idle timer, touches off the fur get nothing, free play has one exit and no invitation, "I want it pink" when it is mostly pink, one customer and one room with nothing kept, six buttons at lap, no journal, couch or picnic step.
-- References were read through search summaries, store listings and reviews, none played: Toca Hair Salon 2, 3 and 4 reviews, Dr. Panda Beauty Salon, the two Play-Doh instruction pages, Pokémon Refresh, Nintendogs, Shampoodle, Neopets customisation, Avokiddo Emotions, the Fisher-Price vanity, and Common Core K.MD.A.2.
-- Ladder: levels 6–12 (lap/toddler 6 *Pat the fluff* and 7 *Snip snip*, toddler 8 *Pink, please*, 9 *Two customers*, pre-K 10 *Longer than Pip's*, 11 *Two colors*, 12 *Changed my mind*), nine queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the archived audit row.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 
 ## Coverage summary
 
