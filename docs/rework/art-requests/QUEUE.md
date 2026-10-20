@@ -29,6 +29,7 @@ The routine's work list ([how a run works](README.md#what-a-run-does)). Take the
 | R21 | [Expression set for an adopted look](#r21-expression-set-for-an-adopted-look) | 6 per look | RW10 adopting a look | blocked | |
 | R22 | [The friends, duck first](#r22-the-friends-duck-first) | 2 | the [catalog-wide art decision](../../WAITING-ON-DEVELOPER.md) | blocked | |
 | R23 | [Land backdrops](#r23-land-backdrops) | 1 | the same decision, after R22 is seen on a device | blocked | |
+| R26 | [Location backdrops](#r26-location-backdrops) | 10 | R23 accepted on a device | blocked | |
 | R24 | [River head layer](#r24-river-head-layer) | 1 | R03 | open | |
 | R25 | [Sprout arms layer](#r25-sprout-arms-layer) | 1 | R02 | open | |
 
@@ -309,7 +310,7 @@ Reject a stage whose lower shell moved (the hatching rig swaps the three picture
 
 ## R23: Land backdrops
 
-**Blocked** on the same decision, after R22 is seen on a device. One backdrop, Rainbow Meadow, 1536 × 1024, in the home scene's palette but flatter: broad shapes, no painterly texture, the lower third an empty ground for the games' spots and the companion, no creatures, no text. Attach `home-day-3.png` as the style reference and the land's current screenshot for its landmarks. If adopted, the rest of the lands are one request each.
+**Blocked** on the same decision, after R22 is seen on a device. The pilot location backdrop, **Rainbow Meadow** as the [RW13 packet](../ISLAND-REVAMP.md#the-eleven-locations) defines it: a wildflower meadow (clover, daisies, poppies, tall grass, bees, butterflies, a rabbit at the edge, open sky). **File (1):** `land-meadow-<n>`, 1536 × 1024, in the home scene's palette but flatter: broad shapes, no painterly texture, the lower third an empty, even ground for the game spots, the signpost and the resident, no creatures in the foreground, no text. Attach `home-day-3.png` as the style reference. Check at 1024 × 768 and in portrait (the view expands the spare dimension): nothing the eye lands on sits where the spots stand, and the 100-unit spots read against it. The code-drawn meadow from RW13 slice 2 stays until this is accepted.
 
 ## R24: River head layer
 
@@ -330,6 +331,10 @@ Edit this exact image. Remove both arms completely, as if they were drawn on a s
 ```
 
 Check: outside the arm areas the silhouette stays within 4 px of the base; inside them the body is closed and round with no ghost of a hand. Reject a candidate that changes the face or belly shape. If three tries fail, record it `missing`; the rig keeps the small wag.
+
+## R26: Location backdrops
+
+**Blocked** until R23 is accepted on a device. The other ten locations of the [RW13 packet](../ISLAND-REVAMP.md#the-eleven-locations), one image each, with R23's frame, palette and empty lower third, attaching `home-day-3.png` and the accepted `land-meadow` as references. Only real plants and animals, and only those the packet lists for the place; no resident creatures, no text. **Files (10), in this order:** `land-cove` (a marsh where a river meets the sea: reeds, cattails, lily pads upstream, a mudflat, a heron), `land-peaks` (bamboo and conifers on the lower slopes, a snowline, rocky peaks, high cloud; no penguins), `land-beach` (a rocky shore with tide pools: sea stars, anemones, barnacles, kelp, gulls; no coral), `land-music` (a misty tropical cloud forest: mossy trunks, tree ferns, orchids, bromeliads, a hummingbird), `land-canyon` (layered red and orange desert rock, saguaro, prickly pear, cottonwoods at a spring), `land-village` (cottages, a lane and a hawthorn hedge with blackberries), `land-grove` (a woodland garden at night: moon, stars, fireflies, evening primrose; the ground lit enough to read the spots), `land-tinker` (a cave mouth with stalactites and glow-worm lights, workbenches inside), `land-barnyard` (barn, fence, orchard trees), `land-lake` (a lake at dusk with lanterns; grown-up land, last). Check each as R23. A location keeps its code-drawn backdrop until its image is accepted.
 
 ## Not requested
 
