@@ -10,7 +10,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
 - **Rework RW05 slice 2, `CompanionRig` for the ten large-pet games** (slice 1 landed 2026-10-20; shell tier plus one filtered regression per moved game and its `fingerdemo` where the bot touches the pet): named parts, moods and body bounds per species with recorded misfits and a unit test; Splish Splash, Weather Wardrobe and Pet Says move first. [Packet](rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices)
 - **`roundup`, kinds and pens, slice 2** (logic tier): duck and dog, pens drawn from a pool, `{a}`/`{b}` voice lines, varied casts at 4. [Dive](deep-dives/roundup.md#fresh-content-inside-existing-levels)
-- **Rework RW13 slice 11, Barnyard with Lantern Lake** (claimed 2026-10-20 by `claude/rw13-barnyard-lake`; slice 10, Tinker Lab, landed in #648 with the code-drawn blue cat host; Mossback swaps in after RW02b step 3; one session, with code-drawn hosts, no resident species; location tier): the Barnyard and Lantern Lake backdrops and their `LOCATIONS` entries. The last slice of the packet. [Packet](rework/ISLAND-REVAMP.md#build-slices-in-order)
+- **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 
 
 ## Queued
@@ -20,7 +20,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`fill-dump`, level 7 Which holds more?** (new interaction; after level 6 *Full and empty* lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 
-- **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`roundup`, level 11 *Come along*, slice 4** (new interaction): the follow mode for lap and toddler, placed by `order`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`roundup`, level 7 *Leave the cows*, slice 5** (new levels): pre-K 3–7. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 8 *Make it fair*, slice 6** (new levels): pre-K 3–8, equal shares between two pens, with a seesaw sound. [Dive](deep-dives/roundup.md#new-levels-on-top)

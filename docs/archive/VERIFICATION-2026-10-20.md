@@ -62,3 +62,10 @@
 - Ran typecheck (clean), `npx vitest run src/art/creatures scripts/creature-art` (7 files, 99 tests), a preview probe at 1024 x 768 and 768 x 1024 on a dev server (every creature reacts to a real tap, touch radius 115-153 units, mood and dress buttons work, misfits marked, no page errors), and `npm run build` (99 precache entries, 9244 KiB, no cast assets or preview code in `dist/`).
 - Not run: full `npm test`, browser suites, offline check (no production asset or navigation change); no iPad look, frame rate with six meshes not measured, child appeal not established.
 - Open: the scarf on side-on species reads as a throat band (R19); alt poses are stills only; hit circles and slots read by eye.
+
+## 2026-10-20 — RW13 slice 1: catalog moves and Painted Canyon
+
+- Built on `claude/rw13-catalog-moves` ([PR #634](https://github.com/rjdunlap/neo/pull/634), code `5b33f8f3` on `a2d1613b`): five `LANDS` moves (owl-walk to Story Grove, habitat-helpers to Rainbow Meadow, sink-float to Bubble Beach, sing-along-barn and orchard-rows to Barnyard) and Paint Pier renamed Painted Canyon in `lands.ts`, `world.ts` and the `subject.art` line.
+- Ran `npm run typecheck` (clean), `npm test` (1604 of 1605; every lands and registry test passed, including the layout at every band) and `npm run build`. The one failure was the RW02b illustrated tote "never tears the picture" test in `src/art/creatures/cast.test.ts` (expected 2.225 < 2), unchanged code from #633; it passed once and failed on two isolated reruns, so it is recorded as a known flake.
+- Not run: browser suites (no membership expectation broke, so the conditional `world` visit was not needed), offline check, any device look.
+- Open: the map still draws a pier landmark for the Painted Canyon land (`pier()` in `src/art/lands.ts`) until the backdrop slices; the tote flake is undiagnosed.
