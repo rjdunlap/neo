@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+
+### Discovery D2b, the Little surprises mix (2026-10-20)
+
+Built on `claude/little-surprises-mix` from the [definition](../definitions/little-surprises.md): `src/content/mix.ts` (frozen pool, eligibility, pure `step()` reducer, 11 tests), `MixMemory` in `src/app/discovery.ts` bound to the save object, `Scene.holdsMix()` with `App.show` ending the mix, `src/app/mix.ts` `MixHost` and `src/ui/mix.ts` `MixSheet` (preview and ending), the mix entry in both home-spot layouts, `GameScene` Next stop/Skip/All done and a pause-sheet skip, eight `mix.*` voice lines, and `mix-flow.test.ts` (5 tests). Deviation recorded: All done goes to the home spot where the ending sheet opens. Browser flow `DISCOVERY_ONLY=mix`; offline harness follows the Little surprises card leading toddler page one.
+
 ### Fill and Dump slice 2, Lap reach and idle invitation (2026-10-20)
 
 [PR #666](https://github.com/rjdunlap/neo/pull/666): at levels 1–2, open ground tips a full basket or scoops the outside fruit nearest the touch. Six idle seconds while ready for input wiggle the basket or the fruit nearest it; touch, flight and teardown clear the motion. This never counts a miss or hint. Levels 3–5, tip-window behavior, content and pouring are unchanged. [Scope](../deep-dives/fill-dump.md#build-slices-in-order); [verification](../VERIFICATION.md#2026-10-20--fill-and-dump-lap-reach-and-idle-invitation-slice-2).
@@ -1167,7 +1172,7 @@ Idea row moved here from the notebook's candidates:
 
 ## Egg Catch, roll when ready at levels 4–5 (2026-10-20)
 
-Levels 4 (route) and 5 (sort) no longer roll the egg on a clock (it was 3.5 s for the first egg, 2 s after). The egg waits at the top (`held`) until she taps the green arrow, the same top-right button level 7 uses; gates can still be flipped while it rolls, a wrong-way egg is still a miss (`egg.wrongway`), and after two misses the needed gates glow as before and the arrow now also pulses once the gates are set (levels 4, 5 and 7). `routeTouch(gates, exit)` in `logic.ts` gives the ghost finger its moves: flip the needed gates, then tap the arrow; a rule test checks at most two flips and then 'go', with the egg reaching the exit. Voice: `egg.route` and `egg.sort` end with "then tap the green arrow". How-to: steps 4 and 5 name the arrow, with a new note for levels 4–5. The `eggs` case in `scripts/browser-check.mjs` honours `TO_LEVEL`, waits for the held egg, checks it is still waiting after 4.5 s, sets the gates and taps the arrow. Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--egg-catch-roll-when-ready-at-levels-45).
+Levels 4 (route) and 5 (sort) no longer roll the egg on a clock (it was 3.5 s for the first egg, 2 s after). The egg waits at the top (`held`) until she taps the green arrow, the same top-right button level 7 uses; gates can still be flipped while it rolls, a wrong-way egg is still a miss (`egg.wrongway`), and after two misses the needed gates glow as before and the arrow now also pulses once the gates are set (levels 4, 5 and 7). `routeTouch(gates, exit)` in `logic.ts` gives the ghost finger its moves: flip the needed gates, then tap the arrow; a rule test checks at most two flips and then 'go', with the egg reaching the exit. Voice: `egg.route` and `egg.sort` end with "then tap the green arrow". How-to: steps 4 and 5 name the arrow, with a new note for levels 4–5. The `eggs` case in `scripts/browser-check.mjs` honours `TO_LEVEL`, waits for the held egg, checks it is still waiting after 4.5 s, sets the gates and taps the arrow. Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--egg-catch-roll-when-ready-at-levels-45).
 
 ## Block Garden levels 1–8 (2026-10-20)
 
@@ -1181,7 +1186,7 @@ Idea row moved here from the notebook's candidates:
 
 | **Block Garden** (the calm side of block-placement puzzles; the set-aside Tetris item, revisited; opened 2026-10-14: Block Blast, this exact genre, was the most-downloaded mobile game of 2025 with about 356 million installs, AppMagic via [PocketGamer.biz](https://www.pocketgamer.biz/the-most-downloaded-mobile-games-of-2025)) | *Fun action:* drag shaped pieces onto a 10 by 10 board and clear full rows and columns, with nothing falling and no clock. *Skill:* spatial planning | **Defined, ready (now built):** [definition](../definitions/block-garden.md), pre-K to grown-up. Finite solvable gardens (built backward at 1–4, a frozen solver-checked list at 5–8), fixed shapes with no rotation, every bud blooms (or the bed is emptied), free undo instead of a reshuffle; a controller cursor, box clears and an opt-in endless run stay later modes | M |
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--block-garden-levels-18).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--block-garden-levels-18).
 
 ## Domino Run levels 1–8 (2026-10-20)
 
