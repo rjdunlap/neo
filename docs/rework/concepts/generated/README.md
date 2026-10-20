@@ -13,6 +13,9 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | glider-alt-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [alt2Prompt](R01-PROMPTS.md#alt2prompt) | yes |
 | glider-portrait-4.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [portrait4Prompt](R01-PROMPTS.md#portrait4prompt) | no; superseded by R17 |
 | sprout-base-2.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [base2](R02-PROMPTS.md#base2) | yes |
+| sprout-noarms-1.png | R25 | 2026-10-20 | Built-in image_gen; model undisclosed | [noarms1](R25-PROMPTS.md#noarms1) | no; rejected shading drift |
+| sprout-noarms-2.png | R25 | 2026-10-20 | Built-in image_gen; model undisclosed | [noarms2](R25-PROMPTS.md#noarms2) | no; rejected shading drift |
+| sprout-noarms-3.png | R25 | 2026-10-20 | Built-in image_gen; model undisclosed | [noarms3](R25-PROMPTS.md#noarms3) | no; rejected shading drift |
 | sprout-blink-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [blink1](R02-PROMPTS.md#blink1) | yes |
 | sprout-happy-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [happy1](R02-PROMPTS.md#happy1) | yes |
 | sprout-surprised-1.png | R02 | 2026-10-17 | Built-in image_gen; model undisclosed | [surprised1](R02-PROMPTS.md#surprised1) | yes |
@@ -312,3 +315,11 @@ One untouched original, `river-nohead-1.png`, 1536 × 1024, 1,454,269 bytes. Cho
 Full-size and 120 px review found complete head removal, a closed rounded caramel/cream neck end inside the old head, and the original four-foot, shoulder, belly, back and paddle-tail geometry. Outside the documented editable head polygon, bidirectional Euclidean-radius-four-pixel silhouette comparison found zero pixels beyond tolerance. The cap is contained in the original silhouette without tolerance; the whole candidate has zero silhouette pixels beyond four pixels of the base. Minor shading and edge differences remain; this is not pixel-identical color registration. White-paper masks and thumbnails were temporary QA only.
 
 No cutting, preparation, rigging, integration or source-image cleanup. A separate rig session must choose the head cut boundary, test coverage during motion and validate on a device; this asset alone does not establish animation or iPad quality.
+
+## R25 review and preparation notes
+
+**Missing: `sprout-noarms`.** Three generated edits of chosen `sprout-base-2.png` reviewed at full size and 120 px; none preserves all invariants. Retained `sprout-noarms-1.png`, `sprout-noarms-2.png` and `sprout-noarms-3.png` as untouched rejected evidence (4,474,154 bytes total), no chosen layer or runner-up. [Exact prompts, ordered references, source paths/hashes and inspection proof](R25-PROMPTS.md). Same generating service terms and undisclosed model caveat as above. Source/repository hash equality passed for all three.
+
+All remove both arms cleanly with closed rounded body contours and no ghost hands; face and cream belly shape remain visually aligned. Bidirectional silhouette comparison outside documented arm areas finds zero pixels beyond 4 px for each. Candidate 1 changes leaf saturation and broad shading; 2 and 3 improve color fidelity but still redraw teal side shading outside the arm area. Unchanged shading fails despite passing geometry. No cleanup or compositing to conceal drift.
+
+The three-try fallback applies: keep the rig's existing small wag. No approved plate for cutting, preparation, rigging or integration. Reopen only in a separately authorized follow-up. No animation/device quality claim; masks/thumbnails were inspection only, no code/build/browser/offline/device checks.
