@@ -8,6 +8,7 @@ import { LandScene } from './LandScene';
 import { drawBeach } from './beach';
 import { drawCove } from './cove';
 import { drawMeadow } from './meadow';
+import { drawMountain } from './mountain';
 import { drawPeaks } from './peaks';
 
 /**
@@ -26,6 +27,8 @@ export const LOCATIONS: Partial<Record<LandId, Place>> = {
   'puzzle-peaks': { resident: 'glider', scenery: drawPeaks },
   // Tote, the beach's resident, waits on RW02b step 3; the land's duck greets her until then.
   'bubble-beach': { scenery: drawBeach },
+  // Trill, the cloud forest's resident, waits on RW02b step 3 likewise; the land's bear greets her until then.
+  'music-mountain': { scenery: drawMountain },
 };
 
 export const isLocation = (id: LandId) => id in LOCATIONS;

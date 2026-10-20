@@ -93,7 +93,7 @@ describe('the creature play layout', () => {
 });
 
 describe('the Explore picker layout', () => {
-  it('fits one to four 150-unit cards and Back apart, clear of the guide and link corners', () => {
+  it('fits one to eleven 150-unit cards and Back apart, clear of the guide and link corners', () => {
     expect(EXPLORE_CARD).toBeGreaterThanOrEqual(150);
     // A card's name sits under it, inside this much.
     const NAME = 50;

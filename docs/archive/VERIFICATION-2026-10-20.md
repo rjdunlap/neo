@@ -28,3 +28,10 @@
 - Ran `npm run typecheck` (clean); `npx vitest run src/games/song-maker src/content` (10 files, 93 passed; new test: every level's cell at least 100 and the grid inside its margins in 1024×768, 1024×1365 portrait and 1660×768); `GAME_URL=http://localhost:5409 BROWSER_SUITE=fourth FOURTH_ONLY=song` (levels 1–7 passed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=song-maker FINGER_LEVELS=6` (clean, 10.0 s); a one-off probe tapping a level-6 song note 0.47 cell off-centre diagonally lit it with no miss (cell 101.1).
 - Not run: restoring the old rule to watch a check fail (the attempt errored from an HMR reload, inconclusive), build (no shared file or asset changed), device touch check.
 - Open: whether the larger beads feel right under a small finger on an iPad.
+
+## 2026-10-20 — Rework at the site root, island game at `classic/`
+
+- Two-page build (`claude/routines-art-rework-deploy-90743f`, base `c54308f3`): the root boots the creature preview (`src/rework.ts`) with an "Island games" link; `classic/` boots the island (`src/main.ts`) with its own manifest and an explicit root service worker. Harnesses add `classic/` to a bare `GAME_URL`. READY gains RW13 (island revamp location packet) and RW06 definitions and RW05 slice 2.
+- Ran typecheck, `npm test` (163 files, 1528 passed), `npm run build`, `test:offline` against the production preview on port 4391 (bare origin, so `classic/`; passed twice, before and after the manifest change), `BROWSER_SUITE=world` on dev port 5391 (passed, 7:57), and one root screenshot in the browser pane.
+- Not run: other suites (no game changed), an iPad home-screen install from `classic/`.
+- Open: on the iPad, a copy saved from the old root URL now opens the preview; re-add it from `classic/`.

@@ -16,11 +16,11 @@ import type { App } from '../App';
 import { Scene } from '../Scene';
 import { LOCATIONS } from './LocationScene';
 
-/** The built locations, in the order RW13 built them, at most a page of them. */
+/** The built locations, in the order RW13 built them (the page holds every one there will be). */
 export const exploreIds = (): LandId[] => (Object.keys(LOCATIONS) as LandId[]).slice(0, EXPLORE_MAX);
 
 /**
- * Explore at the root (RW13, docs/rework/HOME.md#home-homescene-the-roots-hub): one page of the built locations, each a
+ * Explore at the root (RW13, docs/rework/HOME.md#home-homescene-the-roots-hub): one page of the built locations in rows, each a
  * 150-unit card with the land's landmark and its name under it. Tapping a card goes there at once (the location greets
  * her); Back returns Home, as does the location's Home. Looking changes nothing; nothing here is a round. RW08's Explore
  * replaces this page.
