@@ -116,7 +116,7 @@ Not developer decisions but gates: item 4 (pouring feel) waits on chunk 21's V3 
 
 Build one Fill and Dump slice at a time, in this order: slices 3 and 4 both rewrite the level routing, `LEVELS`/`order` and the how-to lines, and level 7 assumes 6 exists. Each slice that adds a level updates `describeFill`, the how-to card (bounding level-5 lines to `to: 5`), the README row, [GAMES.md](../GAMES.md), the `originals` fill case in `scripts/browser-check.mjs` and the `fingerdemo` levels.
 
-1. **Count sign** (ready). Tier: existing-game change on an unchanged interaction: typecheck, the game's rule tests, one filtered regression play (`ORIGINALS_ONLY=fill`) and one portrait screenshot of level 4.
+1. **Count sign** (claimed 2026-10-20 on branch `claude/fill-dump-count-sign`: `src/games/fill-dump/logic.ts`, `index.ts`, `logic.test.ts`, the how-to card and the `originals` fill case). Tier: existing-game change on an unchanged interaction: typecheck, the game's rule tests, one filtered regression play (`ORIGINALS_ONLY=fill`) and one portrait screenshot of level 4.
 2. **Lap reach and idle invitation** (ready). Tier: typecheck, rule tests (ground taps in the any-taps test), `ORIGINALS_ONLY=fill` once and `fingerdemo` at level 1.
 3. **Level 6, Full and empty**, with the plan table keyed by ID (ready). Tier: new level on an existing interaction: typecheck, rule tests, the how-to and difficulty tests, one browser play of level 6 and `fingerdemo` at 6.
 4. **Level 7, Which holds more?** (ready). Tier: new interaction: typecheck, unit tests, one scripted play of level 7 (one wrong answer, one hint), one portrait screenshot, `fingerdemo` at 7.
