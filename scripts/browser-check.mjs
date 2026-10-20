@@ -5124,7 +5124,10 @@ async function originals() {
           if (g.finished) break;
           if (!checkedHint) {
             const wrong = g.pieces.find((p) => p.kind !== g.asked);
-            for (let k = 0; k < 2; k++) await into(wrong, holeFor(g.asked));
+            // Its own hole first: it fits but is not the one asked for, so it is named and comes back (a miss); then the asked hole.
+            await into(wrong, holeFor(wrong.kind));
+            if (g.misses !== 1 || !g.pieces.includes(wrong)) throw new Error('Shape clue: a fitting but unasked shape comes back as one miss');
+            await into(wrong, holeFor(g.asked));
             if (g.misses !== 2 || g.hints !== 1 || !holeFor(g.asked).glow.visible) throw new Error(`Shape clue hint: ${g.misses} ${g.hints}`);
             checkedHint = true;
           }
@@ -5133,6 +5136,18 @@ async function originals() {
           await kit.until(() => g.clueReady || g.finished, 10000);
         }
         return g.box.holes.length;
+      }
+      if (g.plan.everyTouch) {
+        // Every touch answers and none counts: the box giggles, the floor wiggles the nearest piece, a far drop plops and the box leans.
+        kit.tapOn(g.box, 0, 40); await kit.sleep(300);
+        if (!(g.box.yum > 0)) throw new Error('Shape 1: a tap on the box gulps');
+        const p0 = g.pieces[0];
+        const at = g.layer.toGlobal({ x: p0.view.x + 30, y: p0.view.y - 60 }); kit.tap(at.x, at.y); await kit.sleep(100);
+        if (!g.pieces.some((p) => p.wiggle > 0)) throw new Error('Shape 1: a floor tap wiggles a piece');
+        await kit.dragTo(p0.view, g.box.toGlobal({ x: -g.box.w, y: g.box.lidH + 200 }), 12); await kit.sleep(150);
+        if (!(g.box.leanLeft > 0)) throw new Error('Shape 1: a far drop leans the box');
+        await kit.sleep(500);
+        if (g.misses || g.hints || g.pieces.length !== 3) throw new Error(`Shape 1: touches are free: ${g.misses} ${g.hints} ${g.pieces.length}`);
       }
       if (g.box.holes.length > 1) {
         const piece = g.pieces[0];

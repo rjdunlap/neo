@@ -63,7 +63,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`scoop-shop`, level 13 Three pink and two blue** (new level): two colours with a count each, any order; pre-K and school. [Slice 6](deep-dives/scoop-shop.md#new-levels-on-top)
 
 
-- **`shape-sorter`, support truth, slice 1** (existing-game bug fix tier): every touch at level 1 answered (box giggle, floor wiggle, far-drop plop), a glow after two wrongs in a row anywhere, the level-8 line naming the dropped shape, `CLASSIC` pinning levels 7–8 with a lid-fits test, the how-to note. [Dive](deep-dives/shape-sorter.md#build-slices-in-order)
 - **`shape-sorter`, level 9 *Tap and in it goes* and the lap band, slice 2** (new interaction): a tap posts the piece itself; `bands` gains `lap`, lap `[9]`, toddler `order [9, 1, 2, 3, 4, 5]`, `entryLevels: [9]`. [Dive](deep-dives/shape-sorter.md#younger-band-openings)
 - **`shape-sorter`, level 10 *Round or square*, slice 3** (new levels on an existing interaction): two plain holes by outline alone; toddler `order [9, 1, 2, 10, 3, 4, 5]`. [Dive](deep-dives/shape-sorter.md#easier-entries-and-levels-between-existing-ones)
 - **`shape-sorter`, more shapes, sizes and colours, slice 4** (logic tier plus build): oval, rectangle, diamond, pentagon and trapezoid with lines, pool draws at 6–8, sizes at 6–7, a rainbow one colour, the box's property facts. [Dive](deep-dives/shape-sorter.md#fresh-content-inside-existing-levels)

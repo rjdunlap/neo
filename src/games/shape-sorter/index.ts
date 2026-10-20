@@ -1,15 +1,31 @@
-import { Container, Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { cheek, ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { shapePath, SHAPES, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { HOLE_R, clueKinds, holeAt, holeFor, holeLayout, pieceKinds, planFor, type SorterPlan } from './logic';
+import {
+  BOX_FRONT,
+  FLOOR_AT,
+  HOLE_R,
+  boxTopFor,
+  clueKinds,
+  holeAt,
+  holeFor,
+  holeLayout,
+  nearest,
+  pieceKinds,
+  planFor,
+  startHelp,
+  wrongDrop,
+  type SorterPlan,
+} from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Each shape's own color, used while colors still help. */
@@ -42,7 +58,8 @@ interface Piece {
   view: Container;
   kind: ShapeKind;
   drag: DragHandle;
-  wrongs: number;
+  /** Seconds left on a "here I am" wiggle after a floor tap. */
+  wiggle: number;
 }
 
 interface Hole {
@@ -59,6 +76,9 @@ class Box extends Container {
   private readonly face = new Container();
   private yum = 0;
   private shake = 0;
+  /** A lean toward a far drop: its side (-1 or 1) and how much is left. */
+  private leanDir = 0;
+  private leanLeft = 0;
   private clock = 0;
   /** Seconds left on a hole's hint glow. */
   private glowFor = 0;
@@ -70,7 +90,7 @@ class Box extends Container {
     const layout = holeLayout(plan);
     this.w = layout.w;
     this.lidH = layout.lidH;
-    const frontH = 120;
+    const frontH = BOX_FRONT + 10;
     const body = new Graphics()
       .roundRect(-this.w / 2, this.lidH - 10, this.w, frontH, 18)
       .fill(wood.fill)
@@ -106,6 +126,7 @@ class Box extends Container {
     this.face.position.set(0, this.lidH + 40);
     this.addChild(this.face);
     this.drawMouth();
+    this.hitArea = new Rectangle(-this.w / 2 - 12, 0, this.w + 24, this.lidH + BOX_FRONT);
   }
 
   /** A happy gulp. */
@@ -119,6 +140,12 @@ class Box extends Container {
     this.shake = 1;
   }
 
+  /** Lean toward a piece let go out of reach, as if to look at it. */
+  lean(dir: number) {
+    this.leanDir = Math.sign(dir) || 1;
+    this.leanLeft = 1;
+  }
+
   hint(kind: ShapeKind, seconds: number) {
     for (const h of this.holes) h.glow.visible = h.kind === kind;
     this.glowFor = seconds;
@@ -130,7 +157,9 @@ class Box extends Container {
     this.yum = Math.max(0, this.yum - dt * 1.5);
     if (was && this.yum === 0) this.drawMouth();
     this.shake = Math.max(0, this.shake - dt * 2.5);
-    this.face.x = 10 * Math.sin(this.shake * 22) * this.shake;
+    this.face.x = 10 * Math.sin(this.shake * 22) * this.shake + 16 * this.leanDir * Math.sin(this.leanLeft * Math.PI);
+    this.leanLeft = Math.max(0, this.leanLeft - dt * 1.6);
+    this.rotation = 0.05 * this.leanDir * Math.sin(this.leanLeft * Math.PI);
     this.scale.set(1 + 0.04 * Math.sin(this.yum * Math.PI), 1 - 0.04 * Math.sin(this.yum * Math.PI));
     if (this.glowFor > 0) {
       this.glowFor -= dt;
@@ -154,21 +183,24 @@ class ShapeSorter implements Game {
   private readonly box: Box;
   private pieces: Piece[] = [];
   private placed = 0;
-  private misses = 0;
-  private hints = 0;
+  private readonly help = startHelp();
   private lastNag = -10;
   private clock = 0;
   private finished = false;
   private clueQueue: ShapeKind[] = [];
   private asked: ShapeKind | null = null;
   private clueReady = false;
-  private clueMisses = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.box = ctx.track(new Box(this.plan));
     this.layer.addChild(this.box);
     ctx.stage.addChild(this.bg, this.floor, this.layer);
+    // Level 1 answers every touch: the box giggles, and the floor or the wall wiggles the nearest piece and names it.
+    if (this.plan.everyTouch) {
+      onTap(this.box, () => this.tickle(), { cooldown: 250 });
+      for (const ground of [this.bg, this.floor]) onTap(ground, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 200 });
+    }
 
     const kinds = pieceKinds(ctx.rng, this.plan);
     if (this.plan.clue) this.clueQueue = clueKinds(ctx.rng, this.plan);
@@ -177,7 +209,7 @@ class ShapeSorter implements Game {
       const view = new Container();
       view.addChild(drawPiece(kind, this.plan.sameColor ? one : SHAPE_COLOR[kind]));
       if (this.plan.tilt) view.rotation = ctx.rng.range(-0.7, 0.7);
-      const piece: Piece = { view, kind, wrongs: 0, drag: null! };
+      const piece: Piece = { view, kind, wiggle: 0, drag: null! };
       piece.drag = draggable(view, ctx.tw, {
         onPick: () => {
           sfx.tick();
@@ -199,13 +231,13 @@ class ShapeSorter implements Game {
   resize(v: View) {
     this.bg.width = v.w;
     this.bg.height = v.h;
-    const floorY = v.h * 0.66;
+    const floorY = v.h * FLOOR_AT;
     this.floor
       .clear()
       .rect(0, floorY, v.w, v.h - floorY)
       .fill(0xe3b583);
     for (let y = floorY + 40; y < v.h; y += 46) this.floor.moveTo(0, y).lineTo(v.w, y).stroke({ width: 3, color: 0xcf9f6c });
-    const boxTop = Math.max(40, floorY - this.box.lidH - 110);
+    const boxTop = boxTopFor(v.h, this.box.lidH);
     this.box.position.set(v.w / 2, boxTop);
 
     // Waiting pieces sit on the floor, in one row or two.
@@ -222,6 +254,19 @@ class ShapeSorter implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    for (const p of this.pieces) {
+      if (p.wiggle <= 0 || p.drag.dragging) continue;
+      p.wiggle = Math.max(0, p.wiggle - dt);
+      p.view.rotation = 0.25 * Math.sin(p.wiggle * Math.PI * 6) * (p.wiggle / 0.6);
+    }
+  }
+
+  /** For the browser check: misses and hints, as the shell will be told. */
+  get misses() {
+    return this.help.misses;
+  }
+  get hints() {
+    return this.help.hints;
   }
 
   /** The ghost finger on the how-to card: carry the next waiting piece to its matching hole. */
@@ -242,30 +287,50 @@ class ShapeSorter implements Game {
     if (this.finished) return false;
     if (this.plan.clue && !this.clueReady) return false;
     const near = holeAt(this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })), x, y);
-    if (!near) return false;
+    if (!near) {
+      // Out of reach: the piece floats home. At level 1 that is answered too, with a plop and the box leaning to look.
+      if (this.plan.everyTouch) {
+        sfx.pop(5);
+        this.box.lean(x - this.box.x);
+      }
+      return false;
+    }
 
     if (near.h.kind === piece.kind && (!this.plan.clue || (this.clueReady && this.asked === piece.kind))) {
-      if (this.plan.clue) {
-        this.clueReady = false;
-        this.clueMisses = 0;
-      }
+      if (this.plan.clue) this.clueReady = false;
       void this.swallow(piece, near.x, near.y);
       return true;
     }
-    this.misses++;
-    if (this.plan.clue) this.clueMisses++;
-    else piece.wrongs++;
+    const glow = wrongDrop(this.help);
     sfx.boing();
     this.box.nope();
-    if (this.clock - this.lastNag > 3) {
+    // At the clue level a shape in its own hole fits but is not the one asked for: say what she did right, every time.
+    const asked = this.plan.clue ? this.asked : null;
+    const fitted = asked !== null && near.h.kind === piece.kind;
+    if (fitted || this.clock - this.lastNag > 3) {
       this.lastNag = this.clock;
-      void this.ctx.say(this.plan.clue && this.asked ? `shape.find.hint.${this.asked}` : 'shape.wrong', { hole: near.h.kind });
+      if (asked && fitted) void this.ctx.say(`shape.find.notyet.${asked}`, { shape: piece.kind });
+      else void this.ctx.say(this.plan.clue && this.asked ? `shape.find.hint.${this.asked}` : 'shape.wrong', { hole: near.h.kind });
     }
-    if (this.plan.clue ? this.clueMisses === 2 : piece.wrongs === 2) {
-      this.hints++;
-      this.box.hint(this.plan.clue && this.asked ? this.asked : piece.kind, 4);
-    }
+    if (glow) this.box.hint(this.plan.clue && this.asked ? this.asked : piece.kind, 4);
     return false;
+  }
+
+  /** A tap on the box at level 1: a gulp and a giggle. */
+  private tickle() {
+    if (this.finished) return;
+    this.box.gulp();
+    sfx.giggle();
+  }
+
+  /** A tap on the floor or the wall at level 1: the nearest waiting piece wiggles and says its name. */
+  private nudge(at: { x: number; y: number }) {
+    if (this.finished) return;
+    const near = nearest(this.pieces.filter((p) => !p.drag.dragging).map((p) => ({ p, x: p.view.x, y: p.view.y })), at.x, at.y);
+    if (!near) return;
+    near.p.wiggle = 0.6;
+    sfx.tick();
+    void this.ctx.say(`shape.${near.p.kind}`);
   }
 
   /** In it goes: snap to the hole, shrink down out of sight, and the box says thank you. */
@@ -291,7 +356,6 @@ class ShapeSorter implements Game {
     const next = this.clueQueue.shift();
     if (!next || this.finished) return;
     this.asked = next;
-    this.clueMisses = 0;
     this.clueReady = true;
     await this.ctx.say(`shape.find.clue.${next}`);
     if (this.finished) this.clueReady = false;
@@ -309,7 +373,7 @@ class ShapeSorter implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     await this.ctx.tw.wait(1.6);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.help.misses, hints: this.help.hints });
   }
 }
 

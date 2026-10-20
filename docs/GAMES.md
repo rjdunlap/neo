@@ -214,7 +214,7 @@ Level 1 explicitly names the next day and finishes after seven weather records. 
 
 ### Shape Sorter
 
-*toddler–pre-K.* One circle hole, growing to six plain holes, one color, and tilted pieces. At pre-K level 8, she listens for a shape's properties—such as three corners—and finds that shape among the holes. A wrong shape slides back with the clue repeated; after two misses, its hole glows.
+*toddler–pre-K.* One circle hole, growing to six plain holes, one color, and tilted pieces. At level 1 every touch answers and nothing can be wrong: a tap on the box makes it gulp and giggle, a tap on the floor or the wall wiggles the nearest waiting piece and names it, and a piece let go far from the hole plops while the box leans toward it. From level 2 a wrong hole boings with a head shake and one spoken hint (at most once every three seconds); every second miss since the last glow lights the right hole for four seconds (one hint), whichever pieces were tried. At pre-K level 8, she listens for a shape's properties, such as three corners, and finds that shape among the holes. A shape dropped in its own hole that is not the one asked for is named ("That's the square! We're looking for the shape with three corners"), then bounces back as one miss. Levels 7 and 8 use the six classic shapes.
 
 ### Color Garden
 

@@ -400,13 +400,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 4, text: 'Each hole is the color of the shape that fits it.' },
       { from: 5, to: 5, text: 'The holes are plain, so match by shape alone.' },
       { from: 6, to: 6, text: 'Every shape is the same color, so match by shape alone.' },
-      { from: 7, text: 'Every shape is the same color and tilted: match by shape, however it leans.' },
-      { from: 8, text: 'Listen to the shape clue, then drag that shape into the box.' },
+      { from: 7, to: 7, text: 'Every shape is the same color and tilted: match by shape, however it leans.' },
+      { from: 8, to: 8, text: 'Every shape is the same color. Listen to the shape clue, then drag that shape into the box.' },
     ],
     finish: 'The round ends when every shape is in a hole.',
     note: [
-      { to: 7, text: 'A shape that does not fit slides back with a hint.' },
-      { from: 8, text: 'A shape that does not fit the clue slides back. After two misses, its hole glows.' },
+      { to: 1, text: 'There is no wrong move here. A tap on the box makes it giggle, a tap on the floor wiggles the nearest shape and names it, and a shape let go far from the hole plops and slides home.' },
+      { from: 2, to: 7, text: 'A shape in the wrong hole slides back with a boing, a miss. Every second miss makes the right hole glow, whichever shapes were tried.' },
+      { from: 8, to: 8, text: 'A shape that is not the one asked for slides back, a miss; if it fits its own hole, the voice names it and repeats the clue. Every second miss makes the asked hole glow.' },
     ],
   },
   'color-garden': {
