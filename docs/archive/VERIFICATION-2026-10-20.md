@@ -105,3 +105,11 @@
 - `BROWSER_SUITE=home` passed (new), `BROWSER_SUITE=world` passed (classic unaffected), `npm run test:offline` passed against the matched production preview (classic); a one-off production probe of the root: the service worker cached the webp, an offline reload shows the chooser, no page errors.
 - Not run: couch suites, `friends` and `dress` suites (changed only by the root-only Home button; the `home` case covers it), large-pet regressions.
 - Open: [device checks](../DEVICE-CHECKS.md) (the ball, the people and house pictures, speech, frame rate with a dressed rig on the backdrop).
+
+## 2026-10-20 — RW13 slice 3: Counting Cove at the root
+
+- Built on `claude/rw13-counting-cove` ([PR #639](https://github.com/rjdunlap/neo/pull/639), code `f48ee8da` on `f8f85164`): `cove.ts` (`covePlan`/`drawCove`), `cove.test.ts` and one `LOCATIONS` entry (`counting-cove`, resident the illustrated River). `classic/` and shared files are unchanged.
+- Ran `npm run typecheck` (clean) and `npm test` (171 files, 1619 tests passed; a later placement tweak re-ran the scenes tests, 4 of 4, and typecheck, both passing).
+- Root probe (one-off Playwright script, dev server, fresh profile): `go.land('counting-cove')` shows the cove with the River resident, tap the resident, launch the first game (duck-pond), Home back to the cove, `go.hub` to Home, in 1024×768 and 768×1024 with no page errors; both screenshots reviewed.
+- Not run: `npm run build` (no shared files), `world`, the offline check, an iPad look, real speech, a child's reaction.
+- Open: Home's Explore still opens Rainbow Meadow only, so the cove has no button entry until the Explore picker slice (see [READY.md](../READY.md)).
