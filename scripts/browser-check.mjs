@@ -1819,9 +1819,74 @@ async function readDoPlay() {
   assert.equal(errors.length, 0, errors.join('\n'));
 }
 
+/** RW05 slice 1: the hatch meets a sprout, Friends changes the companion, and the choice follows reload, profiles and reset. */
+async function friendsFlow() {
+  await ready();
+  await addFirstPlayer();
+  await scene('HatchScene');
+  for (let i = 0; i < 4; i++) { await tap('neo.scene.egg'); await page.waitForTimeout(180); }
+  await tap('neo.scene.next'); await page.waitForTimeout(300);
+  await tap('neo.scene.choices.children[2]'); await page.waitForTimeout(300); // Mochi, the sprout's second name
+  await tap('neo.scene.next');
+  await scene('MapScene');
+  const mochi = await page.evaluate(() => kit.store.companion);
+  assert.deepEqual({ species: mochi.species, name: mochi.name, metAt: mochi.metAt }, { species: 'sprout', name: 'Mochi', metAt: 'start' });
+  // 1. The guide in a guide-only game is a sprout, and {pet} is Mochi.
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; neo.go.game('bubble-pop'); });
+  await scene('GameScene');
+  assert.deepEqual(await page.evaluate(async () => ({ species: neo.scene.pet.species, pet: (await import('/src/audio/voice.ts')).voice.pet })), { species: 'sprout', pet: 'Mochi' });
+  // 2. A development seed meets a river; the treehouse's basket opens Friends with both cards, Mochi ringed.
+  const pebble = await page.evaluate(() => kit.store.meet('river', 'Pebble', 'blue', 'dev:river').id);
+  assert.equal(await page.evaluate(() => kit.store.meet('river', 'Again', 'red', 'dev:river').name), 'Pebble', 'meeting is idempotent on its token');
+  await page.evaluate(() => neo.go.room()); await scene('RoomScene');
+  await tap('neo.scene.basket'); await scene('FriendsScene');
+  assert.deepEqual(await page.evaluate(() => ({ cards: neo.scene.cards.children.length, previewed: neo.scene.previewed, stage: neo.scene.stageFriend.species })), { cards: 2, previewed: mochi.id, stage: 'sprout' });
+  await screenshot('friends-landscape');
+  // Tapping Pebble's card previews her and saves nothing.
+  await tap('neo.scene.cards.children[1]');
+  assert.deepEqual(await page.evaluate(() => ({ stage: neo.scene.stageFriend.species, companion: kit.store.data.creatures.companion })), { stage: 'river', companion: mochi.id });
+  // Come with me on the current companion would only say so; on Pebble it chooses her, at once, and returns to the treehouse.
+  await tap('neo.scene.come'); await scene('RoomScene');
+  assert.deepEqual(await page.evaluate(() => ({ room: neo.scene.pet.species, companion: kit.store.data.creatures.companion })), { room: 'river', companion: pebble });
+  // Choosing is not mastery: no sticker, no round recorded.
+  assert.deepEqual(await page.evaluate(() => ({ stickers: kit.store.data.stickers.length, plays: Object.values(kit.store.data.games).reduce((n, g) => n + g.plays, 0) })), { stickers: 0, plays: 0 });
+  // 3. Reload: the chooser's card shows the river portrait; the guide is a river named Pebble; a large-pet game builds the stand-in pip.
+  await page.waitForTimeout(400);
+  await page.reload(); await ready();
+  await scene('ChooserScene'); await page.locator('.chooser__play canvas').first().waitFor();
+  await screenshot('friends-chooser');
+  await pickFirst(); await scene('MapScene');
+  assert.equal(await page.evaluate(() => kit.store.companion.name), 'Pebble');
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; neo.go.game('splish-splash'); });
+  await scene('GameScene');
+  assert.deepEqual(await page.evaluate(async () => ({ guide: neo.scene.pet.species, pet: (await import('/src/audio/voice.ts')).voice.pet })), { guide: 'river', pet: 'Pebble' });
+  // 4. Another profile has its own collection, never Pebble.
+  await page.evaluate(async () => {
+    const { selectPlayer } = await import('/src/app/players.ts');
+    const other = kit.store.addProfile();
+    await selectPlayer(other);
+  });
+  assert.equal(await page.evaluate(() => kit.store.companion), null);
+  await page.evaluate(async () => { const { selectPlayer } = await import('/src/app/players.ts'); await selectPlayer(kit.store.profiles[0].id); });
+  assert.equal(await page.evaluate(() => kit.store.companion?.name), 'Pebble');
+  // 5. Start over keeps her friends and her choice; undo brings back the save whole.
+  await page.evaluate(() => kit.store.addSticker('bubble-pop', 3));
+  await page.evaluate(() => kit.store.reset());
+  assert.deepEqual(await page.evaluate(() => ({ stickers: kit.store.data.stickers.length, friend: kit.store.companion.name, owned: kit.store.data.creatures.owned.length })), { stickers: 0, friend: 'Pebble', owned: 2 });
+  await page.evaluate(() => kit.store.undo());
+  assert.deepEqual(await page.evaluate(() => ({ stickers: kit.store.data.stickers.length, friend: kit.store.companion.name })), { stickers: 1, friend: 'Pebble' });
+  // 6. Friends in portrait.
+  await page.evaluate(() => neo.go.friends()); await scene('FriendsScene');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await screenshot('friends-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  assert.equal(errors.length, 0, errors.join('\n'));
+  log('Friends: hatch meets a sprout, Friends previews and chooses, reload, profiles and reset keep the companion');
+}
+
 async function hatchingAndMap() {
   await ready();
-  assert.equal(await page.evaluate(() => kit.store.data.pet.hatched), false);
+  assert.equal(await page.evaluate(() => kit.store.data.creatures.owned.length), 0);
   await addFirstPlayer();
   await scene('HatchScene');
   for (let i = 0; i < 4; i++) { await tap('neo.scene.egg'); await page.waitForTimeout(180); }
@@ -1836,11 +1901,11 @@ async function hatchingAndMap() {
   await screenshot('hatch-name');
   await tap('neo.scene.next');
   await scene('MapScene');
-  assert.deepEqual(await page.evaluate(() => kit.store.data.pet), { name: 'Mochi', color: 'purple', hatched: true });
+  assert.deepEqual(await page.evaluate(() => { const c = kit.store.companion; return { species: c.species, name: c.name, color: c.look.color, metAt: c.metAt }; }), { species: 'sprout', name: 'Mochi', color: 'purple', metAt: 'start' });
   await screenshot('map-lap');
   await page.waitForTimeout(600);
   await page.reload(); await ready();
-  assert.equal(await page.evaluate(() => kit.store.data.pet.hatched), true);
+  assert.equal(await page.evaluate(() => kit.store.data.creatures.owned.length), 1);
   // "Who's playing?" opens the island map: eleven lands, her home spot (her age place) and the picnic.
   await pickFirst(); await scene('MapScene');
   assert.deepEqual(await page.evaluate(() => ({ lands: neo.scene.lands.length, home: neo.scene.homeBand })), { lands: 11, home: 'lap' });
@@ -2071,7 +2136,7 @@ async function grownUps() {
     finger.on('pageerror', (error) => errors.push(error.message));
     await finger.goto(islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173'));
     await finger.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
-    await finger.evaluate(() => { kit.store.data.pet = { name: 'Clover', color: 'pink', hatched: true }; kit.store.data.settings.howToCards = false; neo.go.hub(); });
+    await finger.evaluate(() => { kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Clover', look: { color: 'pink' }, metAt: 'start' }], companion: 'pip0' }; kit.store.data.settings.howToCards = false; neo.go.hub(); });
     await finger.waitForFunction(() => neo.scene.constructor.name === 'MapScene' && !neo.switching);
     await finger.waitForTimeout(500);
     const cdp = await touchContext.newCDPSession(finger);
@@ -9839,7 +9904,7 @@ async function smoke() {
  * and the scene waits; a phone held sideways, every tablet shape and a mouse are never asked. About 15 seconds.
  */
 async function phoneFit() {
-  await page.evaluate(() => { kit.store.data.settings.howToCards = false; kit.store.data.pet = { name: 'Mia', color: 'pink', hatched: true }; kit.store.data.profile.band = 'toddler'; });
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Mia', look: { color: 'pink' }, metAt: 'start' }], companion: 'pip0' }; kit.store.data.profile.band = 'toddler'; });
   /** UI-layer things she can touch that lie outside the usable rectangle (window minus insets), in CSS pixels. */
   const uncovered = () => page.evaluate(() => {
     const k = neo.insets, out = [];
@@ -9914,7 +9979,7 @@ async function phoneFit() {
     await p.goto(islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173'));
     await p.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
     await p.evaluate(async () => {
-      kit.store.data.settings.howToCards = false; kit.store.data.pet = { name: 'Mia', color: 'pink', hatched: true }; kit.store.data.profile.band = 'toddler';
+      kit.store.data.settings.howToCards = false; kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Mia', look: { color: 'pink' }, metAt: 'start' }], companion: 'pip0' }; kit.store.data.profile.band = 'toddler';
       kit.store.save(); neo.go.start();
     });
     await p.waitForFunction(() => neo.scene.constructor.name === 'ChooserScene' && !neo.switching && document.querySelector('.chooser__play'));
@@ -11599,7 +11664,7 @@ async function profiles() {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down(); await page.waitForTimeout(2400); await page.mouse.up();
     await page.locator('.parent').waitFor(); await page.locator('#p-who option').first().waitFor({ state: 'attached' });
   };
-  const hatched = (color) => page.evaluate((color) => { kit.store.data.pet = { name: 'Pip', color, hatched: true }; kit.store.data.settings.howToCards = false; kit.store.save(); neo.go.start(); }, color);
+  const hatched = (color) => page.evaluate((color) => { kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Pip', look: { color }, metAt: 'start' }], companion: 'pip0' }; kit.store.data.settings.howToCards = false; kit.store.save(); neo.go.start(); }, color);
 
   // A device with nothing on it shows only "Add a player".
   // A save still waiting to be written would otherwise land again after the wipe.
@@ -11968,10 +12033,11 @@ try {
   await page.goto(islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173')); await ready();
   const suite = process.env.BROWSER_SUITE || 'all';
   if (suite === 'all' || suite === 'world') { await hatchingAndMap(); await subjectPlaces(); }
+  else if (suite === 'friends') await friendsFlow();
   else if (suite === 'profiles') { /* it starts from an empty device itself */ }
   else {
     // The chooser was built before the friend existed, so open it again: a hatched profile has a card to tap.
-    await page.evaluate(() => { kit.store.data.pet = { name: 'Clover', color: 'pink', hatched: true }; kit.store.save(); kit.store.flush(); neo.go.start(); });
+    await page.evaluate(() => { kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Clover', look: { color: 'pink' }, metAt: 'start' }], companion: 'pip0' }; kit.store.save(); kit.store.flush(); neo.go.start(); });
     await pickFirst(); await scene('MapScene');
   }
   if (suite === 'discovery') await discoveryDirectNext();

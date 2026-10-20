@@ -45,6 +45,8 @@ export interface Routes {
   place(band: Band): void;
   /** The new friend's egg; `quick` skips the egg for someone old enough to choose a friend straight away. */
   hatch(quick?: boolean): void;
+  /** Friends: every friend she has met, and Come with me (RW05). Reached from the treehouse's basket; back returns there. */
+  friends(): void;
   /**
    * Plays a game at the levels for `band` (her own band if omitted), resolved to a band the game has
    * (`playBand`), or as a step of a story (the Windy or the Woodland Picnic). `origin` is where home goes afterwards; without one, her home spot. `level` plays that level (held inside her band's range) instead of her saved one, as the celebration's "next level" does.

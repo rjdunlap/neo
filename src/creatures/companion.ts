@@ -1,4 +1,4 @@
-import { Assets, Circle, Container, Graphics, Sprite, type Texture } from 'pixi.js';
+import { Assets, Circle, ColorMatrixFilter, Container, Graphics, Sprite, type Texture } from 'pixi.js';
 import { CRITTERS, type CritterSpec, type Mood } from '../art/critter';
 import { swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
@@ -82,13 +82,43 @@ export const GUIDE_SCALE = 0.42;
 /** The mood a scene asks for, as a rig shows it: the rigs have no singing face, so a song shows as happy. */
 const RIG_MOOD: Record<Mood, RigMood> = { happy: 'happy', surprised: 'surprised', sing: 'happy', sleepy: 'sleepy', sad: 'sad', calm: 'calm' };
 
-/** A pale wash of her chosen colour over the illustration, none when it is the species' own colour. */
-export function tintFor(species: SpeciesId, color: PetColor): number {
-  if (color === SPECIES[species].color) return 0xffffff;
-  const c = swatch[color as ColorName].fill;
-  const mix = (shift: number) => Math.round(255 + (((c >> shift) & 0xff) - 255) * 0.4);
-  return (mix(16) << 16) | (mix(8) << 8) | mix(0);
+/** A colour's hue, in degrees. */
+export function hueOf(rgb: number): number {
+  const r = ((rgb >> 16) & 0xff) / 255;
+  const g = ((rgb >> 8) & 0xff) / 255;
+  const b = (rgb & 0xff) / 255;
+  const max = Math.max(r, g, b);
+  const d = max - Math.min(r, g, b);
+  if (d === 0) return 0;
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
 }
+
+/**
+ * How far her chosen colour turns the illustration's hue, in degrees: 0 for the species' own colour. A multiply tint
+ * cannot make a teal picture pink, so a chosen colour turns the whole picture round the colour wheel (the sprout's
+ * leaves and belly turn with it).
+ */
+export function hueTurn(species: SpeciesId, color: PetColor): number {
+  if (color === SPECIES[species].color) return 0;
+  const turn = hueOf(swatch[color as ColorName].fill) - hueOf(swatch[SPECIES[species].color as ColorName].fill);
+  return ((turn % 360) + 540) % 360 - 180;
+}
+
+/** Turns a picture to her chosen colour; nothing (and no filter) for the species' own. */
+export function recolor(node: Container, species: SpeciesId, color: PetColor) {
+  const turn = hueTurn(species, color);
+  if (turn === 0) {
+    node.filters = [];
+    return;
+  }
+  const f = new ColorMatrixFilter();
+  f.hue(turn, false);
+  node.filters = [f];
+}
+
+/** Half way from white to a colour. */
+const halfway = (rgb: number) => [16, 8, 0].reduce((n, shift) => n | (Math.round((255 + ((rgb >> shift) & 0xff)) / 2) << shift), 0);
 
 /** Plays a species' chirp: its two or three pentatonic steps, one after another. */
 export function chirp(species: SpeciesId) {
@@ -129,7 +159,7 @@ export class Companion extends Container {
     const fit = FIT[who.species];
     this.rig.scale.set(fit.scale);
     this.rig.y = -fit.lift;
-    if (this.rig instanceof IllustratedCreature) this.rig.mesh.tint = tintFor(who.species, who.look.color);
+    if (this.rig instanceof IllustratedCreature) recolor(this.rig.mesh, who.species, who.look.color);
     const t = this.rig.touch;
     this.touch = { x: t.x * fit.scale, y: t.y * fit.scale - fit.lift, r: t.r * fit.scale };
     this.body.addChild(this.rig);
@@ -243,7 +273,8 @@ export function makePortrait(who: Pick<Individual, 'species' | 'look'>, size: nu
     const p = new Sprite(paper);
     p.anchor.set(0.5);
     p.width = p.height = size;
-    p.tint = tone.light;
+    // Half way from white to her colour's light shade: a wash on the cream, not a grey.
+    p.tint = halfway(tone.light);
     card.addChild(p);
   } else {
     card.addChild(new Graphics().roundRect(-size / 2, -size / 2, size, size, size * 0.16).fill(tone.light).stroke({ width: 5, color: tone.line }));
@@ -254,7 +285,7 @@ export function makePortrait(who: Pick<Individual, 'species' | 'look'>, size: nu
     f.anchor.set(0.5);
     const room = size * 0.8;
     f.scale.set(Math.min(room / face.width, room / face.height));
-    f.tint = tintFor(who.species, who.look.color);
+    recolor(f, who.species, who.look.color);
     card.addChild(f);
   } else {
     const c = new Companion(who, undefined);
