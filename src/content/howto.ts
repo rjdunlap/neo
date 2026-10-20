@@ -72,6 +72,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap a friend to select it, then tap Flat, Cup or Slope to replace its shape.',
       { from: 1, to: 1, text: 'Drag one friend to the bridge dock and the other to the catching dock. A flat or sloped bridge works; a cup catches the seed.' },
       { from: 2, to: 2, text: 'Drag one friend to the bridge dock and one to the catching dock. The far bank is lower: only a slope reaches it.' },
+      { from: 3, to: 3, text: 'Drag one friend to each half of the wide gap. A flat path and a cup at the end make a spoon.' },
       'Tap Try to release the seed. After it is caught, tap the pot to carry and plant it.',
       'Use Replay to return a caught seed to the chute. Undo restores the last shape or placement edit. Drag a friend to its own parking spot to free a dock.',
     ],
