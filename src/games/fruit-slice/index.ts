@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { prop } from '../../art/props';
+import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
@@ -14,7 +15,7 @@ import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  arcAt, basketAt, boardOrigin, boardsFor, bowlAt, BOWL_R, GAP, HANG, hanging, hintLineFor, HIT_R, inBowl, insideLength, judgeStroke,
+  arcAt, basketAt, boardOrigin, boardsFor, bowlAt, BOWL_R, distToSegment, GAP, HANG, hanging, hintLineFor, HIT_R, inBowl, insideLength, judgeStroke,
   left, LINE_CANCEL, lineHits, makeToss, met, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, RISE, signAt, SIGN_W, signsFor,
   type Board, type Kind, type Line, type Plan, type Pt, type Refusal, type Sign, type Toss,
 } from './logic';
@@ -114,7 +115,7 @@ class FruitSlice implements Game {
   private shownSwipe = false;
   private arrowFor: { at: Pt; t: number } | null = null;
 
-  private readonly back = new Container();
+  private readonly back: Backdrop;
   private readonly fruitLayer = new Container();
   private readonly layer = new Container();
   private readonly trailG = new Graphics();
@@ -128,6 +129,7 @@ class FruitSlice implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
+    this.back = ctx.track(new Backdrop({ sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.78, clouds: 3, sun: true, seed: 131 }, ctx.view));
     this.plan = planFor(ctx.level);
     this.signs = signsFor(this.plan, ctx.rng);
     if (this.plan.mode === 'line') this.boards = boardsFor(ctx.rng);
@@ -164,6 +166,7 @@ class FruitSlice implements Game {
 
   resize(v: View) {
     this.view = v;
+    this.back.resize(v);
     this.layer.hitArea = new Rectangle(0, 0, v.w, v.h);
     const b = basketAt(v);
     this.basket.position.set(b.x, b.y);
@@ -216,12 +219,16 @@ class FruitSlice implements Game {
     const f = this.flyers.find((q) => !q.gone && q.t < RISE + 0.5 && sign && this.rightNow(q.toss.kind));
     if (!f) return null;
     const ax = f.toss.ax * this.view.w, ay = f.toss.ay * this.view.h;
-    const when = () => (f.gone || f.t > RISE + HANG - 0.9 ? 'cancel' as const : hanging(f.t) && f.t > RISE + 0.1);
-    if (this.plan.mode === 'touch') return { tap: { on: this.ctx.stage, x: ax, y: ay + 6 }, receiver: this.layer, when };
     const dir = ax < this.view.w / 2 ? 1 : -1;
+    const A = { x: ax - 90 * dir, y: ay + 6 }, B = { x: ax + 90 * dir, y: ay + 6 };
+    // It presses once the fruit hangs and nothing else is near its path (a capable child does not slice two by accident).
+    const clear = () => this.flyers.every((q) => q === f || q.gone
+      || (hanging(q.t) ? distToSegment(q.node.position, A, B) > HIT_R + 30 : Math.hypot(q.node.x - ax, q.node.y - ay) > 360));
+    const when = () => (f.gone || f.t > RISE + HANG - 0.9 ? 'cancel' as const : hanging(f.t) && f.t > RISE + 0.1 && clear());
+    if (this.plan.mode === 'touch') return { tap: { on: this.ctx.stage, x: ax, y: ay + 6 }, receiver: this.layer, when };
     return {
-      trace: { on: this.ctx.stage, x: ax - 120 * dir, y: ay + 6 },
-      via: [{ on: this.ctx.stage, x: ax + 120 * dir, y: ay + 6 }],
+      trace: { on: this.ctx.stage, ...A },
+      via: [{ on: this.ctx.stage, ...B }],
       receiver: this.layer,
       when,
       pause: 0.2,
