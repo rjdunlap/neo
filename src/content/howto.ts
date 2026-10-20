@@ -1318,17 +1318,23 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the cars or the pet have reached the end.',
   },
   'ramp-race': {
-    goal: 'Make a car roll to the star.',
+    goal: 'Roll a toy car down a ramp and see how far it goes across the floor.',
     steps: [
-      { to: 2, text: 'Tap the ramp to make it taller or shorter, then press go.' },
-      { from: 3, to: 3, text: 'Tap the ramp to change its height and the floor for carpet, wood or ice, then press go.' },
-      { from: 4, text: 'Compare two lanes, changing only one thing between them, then press go.' },
+      { to: 1, text: 'Tap the ramp to make it taller or shorter, then press go and watch how far the car rolls. The floor stays wood.' },
+      { from: 2, to: 2, text: 'Tap the ramp to make it taller or shorter, then press go. Stop the car on the star; the floor stays wood.' },
+      { from: 3, to: 3, text: 'Tap the ramp to change its height and the floor for carpet, wood or ice, then press go. Stop the car on the star.' },
+      { from: 4, text: 'The sign shows what to test: floors or ramps. Change only that on one lane, keep everything else the same, then press go to race both cars.' },
     ],
     finish: [
-      { to: 3, text: 'The round ends when the car stops on the star.' },
-      { from: 4, text: 'The round ends when the fair test is done.' },
+      { to: 1, text: 'The round ends after four rolls.' },
+      { from: 2, to: 3, text: 'The round ends after the car stops on three stars.' },
+      { from: 4, text: 'The round ends after three fair tests.' },
     ],
-    note: 'A run that goes too far or not far enough is a free try.',
+    note: [
+      { to: 1, text: 'Every roll is free: there is no star and nothing to get wrong.' },
+      { from: 2, to: 3, text: 'A roll that stops short of the star or past it is a miss, and the pet says which way to change. After two on one star, the setup to try glows.' },
+      { from: 4, text: 'Two lanes that are just the same get a reminder, not a miss. Pressing go when anything besides the thing on the sign differs is a miss; after two on one test, the part of the orange lane to change glows.' },
+    ],
   },
   'critter-sort': {
     goal: 'Sort critters by pictured rules and explore the groups you made.',

@@ -13,7 +13,7 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { distance, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, MAX_DISTANCE, onStar, planFor, rampTouch, waysTo, type FairQuestion, type RampPlan, type Setup } from './logic';
+import { classifyFair, distance, fairLine, fairRepair, FLOORS, HEIGHTS, makeQuestions, makeStars, MAX_DISTANCE, onStar, planFor, rampTouch, waysTo, type FairQuestion, type RampPlan, type Setup } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
@@ -118,6 +118,8 @@ class RampRace implements Game {
   private view: View;
   private wrongs = 0;
   private hint: Setup | null = null;
+  /** Fair mode: the corrective glow is on for this question (from the second unfair Check until `next()`). */
+  private fairGlow = false;
   private clock = 0;
 
   constructor(private readonly ctx: GameContext) {
@@ -168,6 +170,29 @@ class RampRace implements Game {
       g.poly([x0, l.floorY, l.rampEnd, l.floorY, x0, l.floorY - this.hint.height * HEIGHT_PX]).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.5 + pulse });
       if (this.hint.floor !== l.setup.floor) g.roundRect(l.rampEnd, l.floorY - 6, MAX_DISTANCE * l.unit, 46, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.4 + pulse });
     }
+    if (this.fairGlow && !this.busy) this.drawFairGlow(g);
+  }
+
+  /**
+   * The part of the orange lane to change next, worked out from the lanes as they are now (nothing is frozen in a
+   * remembered target, so editing either lane is fine): a ghost ramp at the height to match, the floor strip, or a ring
+   * around go once the pair is fair.
+   */
+  private drawFairGlow(g: Graphics) {
+    const q = this.questions[this.index];
+    const [a, b] = this.lanes;
+    if (!q || !b) return;
+    const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
+    const fix = fairRepair(q, a.setup, b.setup);
+    if (fix === 'ramp') {
+      const x0 = b.rampEnd - RAMP_W;
+      const height = b.setup.height !== a.setup.height ? a.setup.height : HEIGHTS[(HEIGHTS.indexOf(b.setup.height as 2 | 3 | 4) + 1) % HEIGHTS.length];
+      g.poly([x0, b.floorY, b.rampEnd, b.floorY, x0, b.floorY - height * HEIGHT_PX]).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+    } else if (fix === 'floor') {
+      g.roundRect(b.rampEnd, b.floorY - 6, MAX_DISTANCE * b.unit, 46, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.4 + pulse });
+    } else {
+      g.circle(this.go.x, this.go.y, 74).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+    }
   }
 
   /** The ghost finger: change the ramp (and the floor where it can change) to what the question needs, then press go. */
@@ -213,6 +238,7 @@ class RampRace implements Game {
     this.index++;
     this.wrongs = 0;
     this.hint = null;
+    this.fairGlow = false;
     for (const l of this.lanes) l.reset();
     const mode = this.plan.mode;
     if (mode !== 'explore' && this.index >= (mode === 'fair' ? this.questions.length : this.stars.length)) return void this.finale();
@@ -282,18 +308,25 @@ class RampRace implements Game {
   private async fairTest() {
     const q = this.questions[this.index];
     const [a, b] = this.lanes;
-    const verdict = judgeFair(q, a.setup, b.setup);
-    if (verdict === 'same') {
-      await this.ctx.say(q.compare === 'floor' ? 'ramp.same.floor' : 'ramp.same.height');
+    const kind = classifyFair(q, a.setup, b.setup);
+    const line = fairLine(q, kind);
+    if (kind === 'same') {
+      // Identical lanes get a nudge, not a miss.
+      await this.ctx.say(line!);
       this.busy = false;
       return;
     }
-    if (verdict === 'unfair') {
+    if (line) {
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      await this.ctx.say(q.compare === 'floor' ? 'ramp.unfair.floor' : 'ramp.unfair.height');
+      await this.ctx.say(line);
       if (this.wrongs >= 2) this.hints++;
+      if (this.wrongs >= 2 && !this.fairGlow) {
+        // The glow turns on once per question and is never restarted or re-announced.
+        this.fairGlow = true;
+        await this.ctx.say('ramp.fairhint');
+      }
       this.busy = false;
       return;
     }
@@ -314,7 +347,8 @@ class RampRace implements Game {
     this.finished = true;
     this.busy = true;
     sfx.tada();
-    await this.ctx.say('ramp.done');
+    const mode = this.plan.mode;
+    await this.ctx.say(mode === 'explore' ? 'ramp.done.explore' : mode === 'fair' ? 'ramp.done' : 'ramp.done.stars');
     await this.ctx.tw.wait(0.4);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
@@ -352,7 +386,7 @@ export const rampRace: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Guess together before each roll: "Will it reach the star? Too far? Too short?"',
+  coplayHint: 'Guess together before each roll: how far will the car go, and why?',
   offScreen: 'Roll a toy car down a book propped up at different heights. Does a carpet or the kitchen floor let it roll farther?',
   hubIcon: () => new RampIcon(),
   touchDemo: true,

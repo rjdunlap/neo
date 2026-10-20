@@ -83,6 +83,41 @@ export function judgeFair(q: FairQuestion, a: Setup, b: Setup): 'fair' | 'same' 
   return heightDiffers && !floorDiffers ? 'fair' : 'unfair';
 }
 
+/** Which kind of pair this is for the question; `judgeFair` is the collapsed form ('wrong-only' and 'both-changed' → 'unfair'). */
+export type FairKind = 'fair' | 'same' | 'wrong-only' | 'both-changed';
+
+export function classifyFair(q: FairQuestion, a: Setup, b: Setup): FairKind {
+  const verdict = judgeFair(q, a, b);
+  if (verdict !== 'unfair') return verdict;
+  const namedDiffers = q.compare === 'floor' ? a.floor !== b.floor : a.height !== b.height;
+  return namedDiffers ? 'both-changed' : 'wrong-only';
+}
+
+/** The control that changes the thing a question names, and the one that changes the other thing. */
+const control = (compare: FairQuestion['compare']): 'ramp' | 'floor' => (compare === 'floor' ? 'floor' : 'ramp');
+const other = (compare: FairQuestion['compare']): FairQuestion['compare'] => (compare === 'floor' ? 'height' : 'floor');
+const same = (what: FairQuestion['compare'], a: Setup, b: Setup) => (what === 'floor' ? a.floor === b.floor : a.height === b.height);
+
+/**
+ * The next touch on the orange lane B that makes the pair fair, holding blue lane A: first make B's other control
+ * match A's (the thing the question does not name), then, if the lanes are now identical, change B's named control
+ * once. Null when the pair is already fair. Each tap moves one step through a three-long cycle, so matching takes at
+ * most two taps and an identical pair one more: never more than three.
+ */
+export function fairRepair(q: FairQuestion, a: Setup, b: Setup): 'ramp' | 'floor' | null {
+  if (!same(other(q.compare), a, b)) return control(other(q.compare));
+  return same(q.compare, a, b) ? control(q.compare) : null;
+}
+
+/** The line the pet says for a pair that is not fair: what actually changed, or that nothing did. Null for a fair pair. */
+export type FairLine = `ramp.${'same' | 'wrong' | 'unfair'}.${FairQuestion['compare']}`;
+
+export function fairLine(q: FairQuestion, kind: FairKind): FairLine | null {
+  if (kind === 'fair') return null;
+  const key = kind === 'same' ? 'same' : kind === 'wrong-only' ? 'wrong' : 'unfair';
+  return `ramp.${key}.${q.compare}`;
+}
+
 /** The explore level's ramp heights, one per roll, low to high, so each roll beside the last shows that higher goes farther. */
 export const EXPLORE_HEIGHTS = [2, 3, 4, 2] as const;
 
@@ -95,8 +130,9 @@ const turns = <T>(list: readonly T[], from: T, to: T) => (list.indexOf(to) - lis
 /**
  * What a capable child touches next: on the explore level a new ramp height before every roll; on the star levels the
  * way to the star that takes the fewest taps (only the ramp on the wood-floor level, where the floor is not changeable);
- * on the fair-test level the second lane changed in only the thing the question names. It never presses go on a
- * setup that would miss the star or an unfair test, so a demonstration makes no wrong move.
+ * on the fair-test level the orange lane repaired until only the thing the question names differs (`fairRepair`, so it
+ * recovers from any pair a person leaves behind). It never presses go on a setup that would miss the star or an unfair
+ * test, so a demonstration makes no wrong move.
  */
 export function rampTouch(plan: RampPlan, lanes: Setup[], goal: { star?: number; question?: FairQuestion; rolls: number }): RampTouch | null {
   const [a, b] = lanes;
@@ -105,9 +141,8 @@ export function rampTouch(plan: RampPlan, lanes: Setup[], goal: { star?: number;
   }
   if (plan.mode === 'fair') {
     if (!goal.question || !b) return null;
-    const verdict = judgeFair(goal.question, a, b);
-    if (verdict === 'fair') return 'go';
-    return verdict === 'same' ? { lane: 1, change: goal.question.compare === 'floor' ? 'floor' : 'ramp' } : null;
+    const fix = fairRepair(goal.question, a, b);
+    return fix ? { lane: 1, change: fix } : 'go';
   }
   if (goal.star === undefined) return null;
   const ways = waysTo(goal.star, plan.mode === 'height' ? ['wood'] : FLOORS);

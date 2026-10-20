@@ -6271,19 +6271,29 @@ async function woodsBatch() {
         await idle(n);
         const compare = await page.evaluate(() => neo.scene.game.questions[neo.scene.game.index].compare);
         if (n === 0) {
-          // Change both things on the second lane: not a fair test, twice.
+          await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; });
+          // Change both things on the second lane: not a fair test. Then only the wrong thing: a miss that names what
+          // actually changed, and the second unfair Check turns on the corrective glow (lane B's part to change).
           await setTo(1, { height: 4, floor: 'ice' }); await go();
-          await setTo(1, { height: 2, floor: 'carpet' }); await go();
+          await setTo(1, compare === 'floor' ? { height: 2, floor: 'wood' } : { height: 3, floor: 'carpet' }); await go();
           assert.deepEqual(await counts(), [2, 1]);
+          assert.deepEqual(await page.evaluate(() => neo.scene.game.spoken.slice(-3)), [`ramp.unfair.${compare}`, `ramp.wrong.${compare}`, 'ramp.fairhint'], 'the kind lines, then the glow announced once');
+          assert.deepEqual(await page.evaluate(async () => { const R = await import('/src/games/ramp-race/logic.ts'); const g = neo.scene.game; return [g.fairGlow, R.fairRepair(g.questions[g.index], g.lanes[0].setup, g.lanes[1].setup)]; }), [true, compare === 'floor' ? 'ramp' : 'floor'], 'the glow points at the thing to match');
           await screenshot('ramp-race-4');
+          // A third unfair Check counts a hint but never re-announces the glow.
+          await go();
+          assert.deepEqual(await counts(), [3, 2]);
+          assert.equal(await page.evaluate(() => neo.scene.game.spoken.at(-1)), `ramp.wrong.${compare}`);
         }
         await setTo(0, { height: 3, floor: 'wood' });
         await setTo(1, compare === 'floor' ? { height: 3, floor: 'ice' } : { height: 4, floor: 'wood' });
+        if (n === 0) assert.deepEqual(await page.evaluate(async () => { const R = await import('/src/games/ramp-race/logic.ts'); const g = neo.scene.game; return [g.fairGlow, R.fairRepair(g.questions[g.index], g.lanes[0].setup, g.lanes[1].setup)]; }), [true, null], 'a repaired pair rings the go button');
         await go();
+        if (n === 0) assert.equal(await page.evaluate(() => neo.scene.game.fairGlow), false, 'next question clears the glow');
       }
     }
     await finished('ramp-race');
-    assert.deepEqual(await score('ramp-race'), mode === 'explore' ? [0, 0] : [2, 1]);
+    assert.deepEqual(await score('ramp-race'), mode === 'explore' ? [0, 0] : mode === 'fair' ? [3, 2] : [2, 1]);
     log(`Ramp Race ${level} (${mode}): ramps and floors changed by tapping, rolls, ${mode === 'fair' ? 'unfair tests as misses' : mode === 'explore' ? 'free exploring' : 'short and long rolls as misses, ghost-ramp hint'}, saved score and sticker passed`);
   }
 
