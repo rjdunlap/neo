@@ -166,6 +166,7 @@ export function chirp(species: SpeciesId) {
  */
 export interface CompanionRig extends Container {
   readonly species: SpeciesId;
+  readonly color: PetColor;
   readonly touch: { x: number; y: number; r: number };
   alive: boolean;
   /** Containers riding a part, one per point (two ears, two hands); empty where the species lacks it (`PARTS[species].misfits`). */
@@ -199,6 +200,8 @@ export class Companion extends Container implements CompanionRig {
   /** The individual drawn, or null for the stand-in sprout before her first friend. */
   readonly id: string | null;
   readonly rig: Creature;
+  /** Her chosen colour for it. */
+  readonly color: PetColor;
   /** Body-centred, in this container's units, for a hit area. */
   readonly touch: { x: number; y: number; r: number };
   alive = true;
@@ -229,6 +232,7 @@ export class Companion extends Container implements CompanionRig {
     this.leaveOff = leaveOff;
     this.species = who.species;
     this.id = who.id ?? null;
+    this.color = who.look.color;
     this.rig = art ? illustrated(who.species, art) : makeCreature(who.species);
     const fit = FIT[who.species];
     this.rig.scale.set(fit.scale);
@@ -316,13 +320,8 @@ export class Companion extends Container implements CompanionRig {
   }
 
   bounds(): Rectangle {
-    const fit = FIT[this.species];
-    const pts = ART_OF[this.species].body.map((p) => creaturePoint(this.species, p));
-    const xs = pts.map((p) => p.x * fit.scale);
-    const ys = pts.map((p) => p.y * fit.scale - fit.lift);
-    const x = Math.min(...xs);
-    const y = Math.min(...ys);
-    return new Rectangle(x, y, Math.max(...xs) - x, Math.max(...ys) - y);
+    const b = bodyBox(this.species);
+    return new Rectangle(b.x, b.y, b.width, b.height);
   }
 
   spin() {
@@ -404,6 +403,17 @@ export function restPoints(species: SpeciesId, name: PartName): { x: number; y: 
     const c = creaturePoint(species, p);
     return { x: c.x * fit.scale, y: c.y * fit.scale - fit.lift };
   });
+}
+
+/** A species' pinned body (head and torso) at rest, in companion units. */
+export function bodyBox(species: SpeciesId): { x: number; y: number; width: number; height: number } {
+  const fit = FIT[species];
+  const pts = ART_OF[species].body.map((p) => creaturePoint(species, p));
+  const xs = pts.map((p) => p.x * fit.scale);
+  const ys = pts.map((p) => p.y * fit.scale - fit.lift);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
 }
 
 function illustrated(species: SpeciesId, art: ArtSet): IllustratedCreature {
