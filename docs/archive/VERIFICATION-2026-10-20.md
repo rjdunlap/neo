@@ -89,3 +89,11 @@
 - Docs only on `claude/rw06-definition` ([PR #636](https://github.com/rjdunlap/neo/pull/636)): the RW06 packet [HOME.md](../rework/HOME.md), two slice lines in READY.md, the RW06 work-item row and a defaults row in WAITING-ON-DEVELOPER.md.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (results in the closeout report).
 - Open: nothing built; no code, browser or device checks. The four defaults await the developer in WAITING-ON-DEVELOPER.md.
+
+## 2026-10-20 — RW06 slice 1: the saved look and dressing
+
+- Built on `claude/rw06-dress` ([PR #637](https://github.com/rjdunlap/neo/pull/637), tested at `c92a51d3` on `797dd0c9`): `look.worn` with `cleanWorn` and `store.wear`, the dressed `Companion`, the guide leaving off the `held` slot, `DressScene`, `go.dress`, `go.friends(previewId?)` and Friends' Dress button. See [HOME.md](../rework/HOME.md#built-slice-1-2026-10-20).
+- Ran `npm run typecheck`, `npm test` (169 files, 1614 tests, with save-repair, store, guide-footprint and `dressLayout` tests), `npm run build` (wearable PNGs in the precache); dev server on 5993, preview on 5285 (bundle confirmed current).
+- `BROWSER_SUITE=dress` passed (the new case, including the guide-only check on bubble-pop and a second profile undressed), `BROWSER_SUITE=world` and `BROWSER_SUITE=friends` passed, and `npm run test:offline` passed.
+- Not run: large-pet game regressions (unchanged, still a `Critter`), couch suites.
+- Open: [device checks](../DEVICE-CHECKS.md) (the hanger icon, items on an iPad, speech, frame rate with a dressed rig, a child's reaction); Friends cards and chooser portraits stay undressed; the ten large-pet games wait for RW05 slice 2.
