@@ -110,8 +110,15 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, twin 
       expect(c.touch.r * stageScale).toBeGreaterThanOrEqual(100);
     });
 
-    it('pins the face and body, moves the part’s tip, and never tears the picture through idle and repeated taps', () => {
-      const c = build();
+    it.each(Array.from({ length: 21 }, (_, i) => i / 21))('pins the face and body, moves the part’s tip, and never tears the picture through idle and repeated taps (phase %s)', (phase) => {
+      // Cover the randomized initial clock deliberately, including both ends of its range.
+      const random = vi.spyOn(Math, 'random').mockReturnValue(phase);
+      let c: C;
+      try {
+        c = build();
+      } finally {
+        random.mockRestore();
+      }
       const fixed = still.map((p) => near(c, p));
       const moving = near(c, tip);
       const cols = c.mesh.geometry.verticesX;
@@ -132,6 +139,7 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, twin 
       }
       expect(travel).toBeGreaterThan(minTravel);
       expect(worstStretch).toBeLessThan(2);
+      c.destroy({ children: true });
     });
 
     it('never jumps between frames, at the start or end of a reaction or on a re-tap', () => {

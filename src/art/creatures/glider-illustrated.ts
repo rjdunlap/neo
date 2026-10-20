@@ -127,10 +127,11 @@ export class IllustratedGlider extends IllustratedCreature {
     const p = this.sincePoke;
     const looping = p < this.reactionLength;
     const u = looping ? p / this.reactionLength : 1;
-    // The same loop-the-loop as the Graphics glider, so the two compare fairly.
+    // Ease the loop-the-loop out and back, as the Graphics glider does.
     const turn = looping ? (1 - Math.cos(u * Math.PI)) / 2 : 0;
     const a = turn * Math.PI * 2;
-    this.craft.position.set(70 * Math.sin(a), -70 * (1 - Math.cos(a)) + 8 * Math.sin(t * 1.3));
+    // Keep the horizontal loop inside a sparse land’s leftmost host spot at every idle phase.
+    this.craft.position.set(60 * Math.sin(a), -70 * (1 - Math.cos(a)) + 8 * Math.sin(t * 1.3));
     this.craft.rotation = -a + 0.05 * Math.sin(t * 1.1);
     // The beat quickens and slows with the reaction; its phase accumulates, so nothing snaps.
     this.phase += dt * (2.2 + 6.8 * this.stir);
