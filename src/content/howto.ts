@@ -1123,6 +1123,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the ferry has sailed out of every harbor.',
     note: 'Nothing is a mistake here: slide as much as you like. After many slides without getting closer, the glowing boat shows a next slide.',
   },
+  'jar-sort': {
+    goal: 'Move the fruit one at a time until every jar holds one kind.',
+    steps: [
+      'Tap a jar to lift its top fruit, then tap another jar to drop it there.',
+      'A fruit can go on the same fruit or into an empty jar.',
+      { from: 1, to: 2, text: 'Bright jars show where it can go.' },
+      { from: 8, to: 8, text: 'Each fruit has its own labelled jar.' },
+    ],
+    finish: 'Every jar is one kind of fruit.',
+    note: [
+      { from: 3, text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her; a fruit dropped where it cannot go counts as a mistake.' },
+      { to: 2, text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her.' },
+    ],
+  },
   'critter-crossing': {
     goal: 'Work out which critters the bridge gate lets across.',
     steps: [

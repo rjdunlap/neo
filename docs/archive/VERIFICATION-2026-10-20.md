@@ -76,3 +76,10 @@
 - Proposes Rule Machine (levels 1–8), Box Balance (13+), Seesaw Balance 18, Pattern Train *Two trains* and Fruit Sums *Both trees*. Packet in [RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the eight developer decisions (new game vs Pattern Train, plotted-log grid, land, 7–8 placement, Box Balance's home, first-prediction rule, reviewer, hat wearable); no child, parent, educator or device involved.
+
+## 2026-10-20 — RW13 slice 2: Rainbow Meadow at the root
+
+- Built on `claude/rw13-rainbow-meadow` ([PR #635](https://github.com/rjdunlap/neo/pull/635), code `d608a0b1` on `da7e0876`): `LocationScene`, the `LandOptions` seam in `LandScene`, the meadow backdrop (`meadow.ts`), the root's `land`/`hub` routes in `src/rework.ts`, and a flower button on the creature preview. `classic/` is unchanged.
+- Ran `npm run typecheck` (clean), `npm test` (1606 of 1607; the one failure was the RW02b tote test in `src/art/creatures/cast.test.ts`, a load flake that passed alone, 44 of 44; the meadow test passed 2 of 2) and `npm run build` (99 precache entries).
+- Root probe (one-off Playwright script, dev server): entry, meadow button, resident and three games with the signpost, tap resident (suggested color-garden), launch it, held Home back to the location, Home back to the preview, in 1024×768 and 768×1024 with no page errors; the "Island games" link is hidden in the location. `BROWSER_SUITE=world` passed (classic, about 7 minutes); `npm run test:offline` passed on the preview, plus a root offline probe (cached, reload offline, meadow opens with the illustrated sprout).
+- Not run: an iPad or other device look, real speech, a child's reaction, the other locations.
