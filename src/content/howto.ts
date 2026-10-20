@@ -660,9 +660,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Build ice cream cones for customers.',
     steps: [
       'Tap a tub to put a scoop on the cone.',
+      { to: 5, text: 'Tap the customer to hear the order again.' },
       { from: 2, to: 2, text: 'Choose the color the customer asks for.' },
       { from: 3, to: 3, text: 'Make the two scoops in the picture, in any order.' },
-      { from: 4, to: 4, text: 'Stack the number and color of scoops the customer asks for.' },
+      { from: 4, to: 4, text: 'Stack the number and color of scoops the customer asks for. The picture shows that many scoops, and each one is counted aloud as it lands.' },
       { from: 5, to: 5, text: 'Stack the three flavors in the order of the picture, bottom to top.' },
       { from: 6, text: 'Look at the picture, then stack the flavors in the same order after it hides.' },
     ],

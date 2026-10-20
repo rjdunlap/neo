@@ -3959,6 +3959,20 @@ async function arcade() {
       for (let c = 0; c < g.orders.length; c++) {
         await kit.until(() => g.customerIndex === c && !g.busy && g.cone, 8000);
         const order = g.order;
+        if (c === 0 && g.plan.mode !== 'memory') {
+          // Tapping the customer says the order again: free, never a miss or a hint.
+          kit.tapOn(g.customer, 0, -80);
+          await kit.sleep(300);
+          if (g.misses || g.hints) throw new Error(`Scoop customer tap counted: ${g.misses} ${g.hints}`);
+        }
+        if (c === 0 && g.plan.mode === 'free') {
+          // A second tap while a scoop is in the air wobbles its tub and adds nothing.
+          kit.tapOn(g.tubs.get(g.flavors[0]), 0, -20);
+          await kit.sleep(250);
+          kit.tapOn(g.tubs.get(g.flavors[1]), 0, -20);
+          await kit.until(() => !g.busy, 8000);
+          if (g.cone.colors.length !== 1) throw new Error(`Scoop tap during flight: ${g.cone.colors.length} scoops`);
+        }
         if (c === 0 && g.plan.mode !== 'free') {
           const wrong = g.flavors.find((f) => !order.scoops.includes(f)) ?? g.flavors.find((f) => f !== order.scoops[0]);
           await tap(wrong); await tap(wrong);

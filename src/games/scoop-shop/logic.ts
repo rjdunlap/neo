@@ -44,14 +44,20 @@ export function makeOrders(plan: ScoopPlan, rng: Rng): { flavors: ColorName[]; o
   const flavors = rng.shuffle([...FLAVORS]).slice(0, plan.flavors);
   const orders: Order[] = [];
   let lastCount = 0;
+  let lastColor: ColorName | undefined;
   for (let i = 0; i < plan.customers; i++) {
     let scoops: ColorName[] = [];
     switch (plan.mode) {
       case 'free':
         break;
-      case 'one':
-        scoops = [flavors[i % flavors.length]];
+      case 'one': {
+        // Never the tub at the customer's own place on the counter, and never the last customer's colour, so tapping
+        // along the counter is not an answer and the colour word does the work.
+        const color = rng.pick(flavors.filter((c, k) => k !== i % flavors.length && c !== lastColor));
+        lastColor = color;
+        scoops = [color];
         break;
+      }
       case 'pair':
         scoops = [rng.pick(flavors), rng.pick(flavors)];
         break;
