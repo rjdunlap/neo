@@ -125,7 +125,7 @@ class PetSays implements Game {
       this.nudged = true;
       if (this.plan.mode === 'pat') {
         // No arrow here: the pet itself asks for a pat.
-        this.mover.pet.poke();
+        this.mover.pet.poke(true);
         void this.ctx.say('says.pat-again');
         return;
       }
@@ -189,12 +189,12 @@ class PetSays implements Game {
   private async again() {
     if (this.plan.mode === 'pat') {
       // A pat brings the next move; a pat during a move only squishes the pet, and is not saved up for later.
-      if (this.busy || this.finished) this.mover.pet.poke();
+      if (this.busy || this.finished) this.mover.pet.poke(true);
       else await this.advance();
       return;
     }
     if (this.busy || this.finished || !this.turn || this.plan.mode === 'freeze') {
-      this.mover.pet.poke();
+      this.mover.pet.poke(true);
       return;
     }
     this.busy = true;

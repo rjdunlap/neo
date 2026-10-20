@@ -177,7 +177,7 @@ export interface CompanionRig extends Container {
   bounds(): Rectangle;
   touchArea(grow?: number): Circle;
   attach(child: Container): void;
-  /** The touch reaction; `quiet` leaves out the chirp, for a game that pokes it often. */
+  /** The touch reaction; `quiet` is a squash and a surprised face in place, with no chirp. */
   poke(quiet?: boolean): void;
   hop(power?: number): void;
   cheer(): void;
@@ -282,11 +282,20 @@ export class Companion extends Container implements CompanionRig {
     this.body.addChild(child);
   }
 
-  /** The species' touch reaction, a surprised face and (unless `quiet`) its chirp. */
+  /**
+   * The species' touch reaction (the sprout's hop, the river's rear, the glider's flap) and its chirp. `quiet` is the old
+   * pip's poke instead: a squash and a surprised face, staying where it is, for a game that pokes it often or has hung
+   * things on its body (the bath's mud under a scrubbing finger, Pet Says' mittens).
+   */
   poke(quiet = false) {
+    if (quiet) {
+      this.squashV += 4;
+      this.setMood('surprised', 0.6);
+      return;
+    }
     this.rig.poke();
     this.squashV += 3;
-    if (!quiet) chirp(this.species);
+    chirp(this.species);
   }
 
   partPoints(name: PartName): { x: number; y: number }[] {
