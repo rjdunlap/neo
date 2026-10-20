@@ -1,9 +1,9 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { Critter } from '../../art/critter';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import type { CompanionRig } from '../../creatures/companion';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -70,7 +70,7 @@ class StopAndGo implements Game {
   hints = 0;
   busy = true;
   finished = false;
-  pet: Critter | null = null;
+  pet: CompanionRig | null = null;
 
   private readonly backdrop: Backdrop;
   private readonly road = new Graphics();
@@ -98,7 +98,7 @@ class StopAndGo implements Game {
     onTap(this.light2, () => this.tapLight(this.light2), { cooldown: 300 });
     this.light2.visible = this.plan.mode === 'cross';
     if (this.plan.mode === 'walk') {
-      this.pet = new Critter(ctx.petSpec);
+      this.pet = ctx.companion();
       this.pet.scale.set(0.5);
       ctx.track(this.pet);
       ctx.stage.addChild(this.pet);

@@ -82,12 +82,16 @@ describe('the companion’s parts (RW05 slice 2)', () => {
   it('gives a body bounds above the feet that holds the face, and every head above every tummy', () => {
     for (const s of SPECIES_IDS) {
       const c = new Companion({ species: s, look: { color: SPECIES[s].color } }, art);
-      const b = c.bounds();
+      const b = c.bodyBounds();
       expect(b.width, s).toBeGreaterThan(60);
       expect(b.height, s).toBeGreaterThan(60);
       expect(b.bottom, s).toBeLessThanOrEqual(2);
       for (const p of [...restPoints(s, 'nose'), ...restPoints(s, 'eyes')]) expect(b.contains(p.x, p.y), s).toBe(true);
       expect(restPoints(s, 'head')[0].y, s).toBeLessThan(restPoints(s, 'tummy')[0].y);
+      // Pixi reads a container's `bounds` while measuring its parent, so the body box must not take that name.
+      const holder = new Container();
+      holder.addChild(c);
+      expect(() => holder.getBounds(), s).not.toThrow();
     }
   });
 

@@ -97,7 +97,7 @@ class PetSays implements Game {
     const b = star.getLocalBounds();
     this.grow = Math.max(1, Math.min(2.2, 270 / b.height, 520 / b.width));
     this.middle = b.x + b.width / 2;
-    this.frame = saysFrame((p) => star.partPoints(p), star.bounds());
+    this.frame = saysFrame((p) => star.partPoints(p), star.bodyBounds());
     this.mover = new Mover(star, swatch[star.color as ColorName], this.frame.rest);
     // The mittens stay the pip's size however large the friend stands.
     for (const m of [this.mover.left, this.mover.right]) m.scale.set(1 / this.grow);

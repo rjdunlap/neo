@@ -174,7 +174,7 @@ export interface CompanionRig extends Container {
   /** Where a part's points are at rest, in companion units; empty for a misfit. */
   partPoints(name: PartName): readonly { x: number; y: number }[];
   /** The pinned body (head and torso), at rest, in companion units: for games that use the whole body. */
-  bounds(): Rectangle;
+  bodyBounds(): Rectangle;
   touchArea(grow?: number): Circle;
   attach(child: Container): void;
   /** The touch reaction; `quiet` is a squash and a surprised face in place, with no chirp. */
@@ -328,7 +328,7 @@ export class Companion extends Container implements CompanionRig {
     return list;
   }
 
-  bounds(): Rectangle {
+  bodyBounds(): Rectangle {
     const b = bodyBox(this.species);
     return new Rectangle(b.x, b.y, b.width, b.height);
   }
