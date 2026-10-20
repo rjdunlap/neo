@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-20 — RW06 definition, playable home and customization
+
+- Docs only on `claude/rw06-definition` ([PR #636](https://github.com/rjdunlap/neo/pull/636)): the RW06 packet [HOME.md](rework/HOME.md), two slice lines in READY.md, the RW06 work-item row and a defaults row in WAITING-ON-DEVELOPER.md.
+- Ran `node scripts/check-links.mjs` and `git diff --check` (results in the closeout report).
+- Open: nothing built; no code, browser or device checks. The four defaults await the developer in WAITING-ON-DEVELOPER.md.
+
 ## 2026-10-20 — RW13 slice 2: Rainbow Meadow at the root
 
 - Built on `claude/rw13-rainbow-meadow` ([PR #635](https://github.com/rjdunlap/neo/pull/635), code `d608a0b1` on `da7e0876`): `LocationScene`, the `LandOptions` seam in `LandScene`, the meadow backdrop (`meadow.ts`), the root's `land`/`hub` routes in `src/rework.ts`, and a flower button on the creature preview. `classic/` is unchanged.
@@ -98,13 +104,6 @@
 - Proposes Spinner Fair (levels 1–10), Peg Garden pearl bins, Lemonade Stand's typical day, Lucky Columns (13+), Spin Race and a family card. Packet in [RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the seven developer decisions (new game vs Picture Graph, land, toddler on level 1, 11–14 placement, Lucky Columns' home, reviewer, chance never a reward); no child, parent, educator or device involved.
-
-## 2026-10-19 — Pet Kitchen deep dive
-
-- Docs only: [deep dive](deep-dives/pet-kitchen.md) on `claude/dive-pet-kitchen-finish` ([PR #622](https://github.com/rjdunlap/neo/pull/622)), resuming the claim in [PR #606](https://github.com/rjdunlap/neo/pull/606) whose branch an idle worktree holds. Audited levels 1–9 on `24db4a79`; gaps: the how-to's open `from: 8` step and `from: 7`/`from: 8` notes show at the wrong levels, the first miss line is untrue when pieces are short or plates are empty, nothing answers a touch before the cut, no lap rung, the fraction at 7 is heard not seen.
-- References were read through search summaries and store, archive and curriculum pages, none played: Cooking Mama, Toca Kitchen 2, Learning Resources Pizza Fraction Fun, PhET Fractions Intro and Build a Fraction, Slice Fractions, Empson & Levi, Hunting & Sharpley, Frydman & Bryant, CCSS 1.G.A.3, 2.G.A.3 and 3.NF, England Year 1–2.
-- Ladder: levels 10–15, eight queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from three notebook rows.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
 
 ## Coverage summary
 

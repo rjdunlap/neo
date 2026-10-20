@@ -102,3 +102,10 @@
 - References were read through search summaries and store, archive and curriculum pages, none played: Paperboy, Orchard Toys Post Box Game, Postman Pat: Special Delivery Service, Dora's Map, Blades & Spencer 1987, England KS1 geography, street numbering conventions, CCSS K.CC.A.3 and 2.OA.C.3.
 - Ladder: levels 9–15 (toddler 10 *Which door?*, pre-K/school 9 *Who can help?* and 12 *Numbers past ten*, school 13 *Hazel's clue*, 11 *Both sides of the street*, 14 *Three letters, your way* and 15 *Make the key*), nine queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the notebook and the civics study's CC2 slice.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
+## 2026-10-19 — Pet Kitchen deep dive
+
+- Docs only: [deep dive](../deep-dives/pet-kitchen.md) on `claude/dive-pet-kitchen-finish` ([PR #622](https://github.com/rjdunlap/neo/pull/622)), resuming the claim in [PR #606](https://github.com/rjdunlap/neo/pull/606) whose branch an idle worktree holds. Audited levels 1–9 on `24db4a79`; gaps: the how-to's open `from: 8` step and `from: 7`/`from: 8` notes show at the wrong levels, the first miss line is untrue when pieces are short or plates are empty, nothing answers a touch before the cut, no lap rung, the fraction at 7 is heard not seen.
+- References were read through search summaries and store, archive and curriculum pages, none played: Cooking Mama, Toca Kitchen 2, Learning Resources Pizza Fraction Fun, PhET Fractions Intro and Build a Fraction, Slice Fractions, Empson & Levi, Hunting & Sharpley, Frydman & Bryant, CCSS 1.G.A.3, 2.G.A.3 and 3.NF, England Year 1–2.
+- Ladder: levels 10–15, eight queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from three notebook rows.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
