@@ -80,3 +80,11 @@
 - References were read through search summaries, listings and reviews, none played: Montessori Red Rods, Pink Tower and Brown Stair, nesting cups with Fragaszy et al. 2002, JumpStart Kindergarten's stacking dolls, Intro to Math by Montessorium, Monkey Preschool Lunchbox, Goldilocks sorting plans, Piaget's stick seriation and the Yang–Thompson–Kidd hidden-height study, Tower of Hanoi with preschoolers, CCSS K.MD.A.2 and 1.MD.A.1, the Clements–Sarama length trajectory.
 - Ladder: levels 9–17 (lap 16 *Big duck, little duck* and 9 *Big one, little one*, toddler 17 *Two in a line*, preschool 10 *Big, middle, little* and 11 *Who fits?*, pre-K 12 *Where does this one go?* and 15 *Darkest first*, school 13 *Hidden heights* and 14 *The measuring ribbon*), ten queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the archived audit rows and the notebook's Shade Lineup row.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
+## 2026-10-19 — Species Comeback definition (docs only)
+
+- Defined Species Comeback levels 1–4 in [the definition](../definitions/species-comeback.md) (zoo-animals study slice Z7) on `claude/define-species-comeback-finish` ([PR #618](https://github.com/rjdunlap/neo/pull/618), resuming the stale claim in #601): the kin rule, exact solver and two-plan guarantee, undo and blocking-nest hint, Spring, the level 3 site step, level 4 plans, note and reason cards, accounting, rule tests, layout with portrait scrolling at level 4, ghost finger, voice `comeback.*`, registration `species-comeback` (region `barnyard`, Lantern Lake, `grownup` 1–4).
+- References: none newly opened; the study's Smithsonian ferret page, Planet Zoo and the ecosystems study's Meadow Plans case.
+- Updated the Z7 slice line, recommendations row, IDEAS row, a WAITING row with eight defaulted decisions and a READY.md Queued line for the levels 1–3 build.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the needs/recovery review (decision 1, gates the first build's merge) and the device checks listed in the definition's Check tier.
