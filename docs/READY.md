@@ -6,7 +6,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **Rework RW13, Explore picker of built locations** (shell/navigation tier: typecheck, units, build, the `home` suite filtered, and the offline check because root navigation changes): Home's Explore opens Rainbow Meadow only, so Counting Cove (reachable today only through `go.land('counting-cove')`) has no entry; make Explore a one-page picker of the built locations, at most four 150-unit cards, as Home's definition says. [Explore paragraph](rework/HOME.md#home-homescene-the-roots-hub)
+- **Rework RW13, Explore picker of built locations** (shell/navigation tier: typecheck, units, build, the `home` suite filtered, and the offline check because root navigation changes): Home's Explore opens Rainbow Meadow only, so Counting Cove (reachable today only through `go.land('counting-cove')`) has no entry; make Explore a one-page picker of the built locations, at most four 150-unit cards, as Home's definition says. [Explore paragraph](rework/HOME.md#home-homescene-the-roots-hub) Claimed 2026-10-20 by `claude/rw13-explore-picker`.
 - **Rework RW13 slice 4, Puzzle Peaks** (slice 3 landed in #639; location tier): the mountain backdrop and the illustrated glider, its span checked against the spots at every band. [Packet](rework/ISLAND-REVAMP.md#build-slices-in-order)
 - **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
