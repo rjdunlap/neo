@@ -1824,6 +1824,31 @@ async function buddiesPlay() {
     }, { friend, target });
     await page.waitForTimeout(500);
   };
+  // Level 3, two make one: a flat-then-flat spoon rolls right across, Help glows the far half, a cup there catches.
+  const joined = async () => {
+    await launch('shape-buddies', 3); await wait();
+    const before = await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; return kit.store.data.stickers.length; });
+    await tap('neo.scene.game.tools[0]'); await drag(0, 'bridge');
+    await tap('neo.scene.game.friends[1]'); await tap('neo.scene.game.tools[0]'); await drag(1, 'receiver');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.round.state.friends.map(f => f.place)), ['bridge', 'receiver'], 'both halves take a friend');
+    await tap('neo.scene.game.tryButton'); await wait();
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.phase, neo.scene.game.spoken.includes('buddies.joinCup'), neo.scene.game.misses]), ['edit', true, 0], 'flat then flat rolls across and is explained');
+    await tap('neo.scene.game.helpButton');
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.hints, neo.scene.game.round.shown.has('receiver'), neo.scene.game.round.state.selected]), [1, true, 1], 'Help glows the far half');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+    await screenshot('shape-buddies-3-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    await tap('neo.scene.game.tools[1]');
+    await tap('neo.scene.game.tryButton'); await wait();
+    assert.equal(await page.evaluate(() => neo.scene.game.round.phase), 'caught', 'a cup at the end catches');
+    await tap('neo.scene.game.pot'); await finished('shape-buddies');
+    assert.equal(await page.evaluate(() => neo.scene.game.spoken.includes('buddies.together')), true);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('shape-buddies').history.at(-1); return [r.level, r.misses, r.hints]; }), [3, 0, 1]);
+    assert.deepEqual(errors, []);
+    log('Shape Buddies level 3: flat-then-flat explained with joinCup, Help glows the far half, a cup catches, carried together, one sticker, misses 0 and hints 1, portrait passed');
+  };
+  if (process.env.BUDDIES_ONLY === '3') return joined();
   await launch('shape-buddies', 1); await wait();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
   for (let n = 0; n < 2; n++) { await tap('neo.scene.game.tryButton'); await wait(); }
@@ -1882,6 +1907,7 @@ async function buddiesPlay() {
   await launch('shape-buddies', 1); await tap('neo.scene.game.tryButton');
   await page.evaluate(() => neo.go.land('tinker-lab')); await scene('LandScene'); await page.waitForTimeout(700);
   assert.deepEqual(errors, []);
+  await joined();
   log('Shape Buddies: experiments, role hints, both bridge shapes/identities/bands, occupied dock, replay, caught-seed undo, portrait, one sticker, level 2 flat-falls-short then slope, and interrupted run passed');
 }
 
