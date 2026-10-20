@@ -11,6 +11,7 @@ import { fits, ITEM_ART, itemNode, OUTFITS, WEARABLES, type WearableId, wearingI
 import { cream, grass, ink, swatch } from '../art/palette';
 import { onTap } from '../engine/input';
 import type { View } from '../engine/view';
+import { RoundButton } from '../ui/buttons';
 
 /**
  * RW02's creature preview (docs/rework/CREATURE-ART.md), served at the site root by `src/rework.ts` since 2026-10-19
@@ -24,6 +25,8 @@ import type { View } from '../engine/view';
  * RW06 prep: the third button dresses the illustrated rigs in the generated wearables, one item at
  * a time and then three weather outfits; the line at the bottom names the look and what the
  * selected species leaves off (the reasons are in its `*_WEAR` table).
+ *
+ * RW13 slice 2: the flower button between the captions opens the first location, Rainbow Meadow (`go.land`).
  */
 export type Items = Awaited<ReturnType<typeof import('../art/creatures/wearables').loadWearables>>;
 const WEAR: WearTables = { sprout: SPROUT_WEAR, river: RIVER_WEAR, glider: GLIDER_WEAR };
@@ -41,6 +44,20 @@ const STAGE_SCALE: Record<SpeciesId, number> = { sprout: 0.95, river: 0.8, glide
 const THUMB_SCALE: Record<SpeciesId, number> = { sprout: 0.44, river: 0.36, glider: 0.32 };
 const MOODS: Mood[] = ['calm', 'sleepy', 'sad'];
 const CARD = 150;
+
+/** Three meadow flowers, for the button to Rainbow Meadow. */
+function meadowIcon(): Graphics {
+  const g = new Graphics();
+  for (const [x, color] of [[-20, swatch.red], [0, swatch.yellow], [20, swatch.pink]] as const) {
+    g.moveTo(x, 26).lineTo(x, -2).stroke({ color: swatch.green.line, width: 4, cap: 'round' });
+    for (let i = 0; i < 5; i++) {
+      const a = (i * 2 * Math.PI) / 5;
+      g.circle(x + Math.cos(a) * 8, -10 + Math.sin(a) * 8, 6.5).fill(color.fill);
+    }
+    g.circle(x, -10, 5).fill(swatch.yellow.light).stroke({ color: color.line, width: 2 });
+  }
+  return g;
+}
 
 interface Card extends Entry {
   box: Container;
@@ -70,6 +87,8 @@ export class CreaturePreview extends Scene {
   private readonly lookButton = new Container();
   private readonly lookFrame = new Graphics();
   private readonly lookIcon = new Container();
+  /** To the first location (RW13). */
+  readonly meadow = new RoundButton(meadowIcon(), swatch.green, 55, () => this.app.go.land('rainbow-meadow'));
   private readonly label = new Text({ text: 'Creature preview · the island games are behind the top-left link', style: { fontFamily: 'Fredoka', fontSize: 18, fontWeight: '500', fill: ink } });
 
   constructor(
@@ -147,7 +166,7 @@ export class CreaturePreview extends Scene {
       this.look = (this.look + 1) % LOOKS.length;
       this.refresh();
     });
-    this.ui.addChild(this.lookButton, this.label);
+    this.ui.addChild(this.lookButton, this.label, this.meadow);
     this.refresh();
   }
 
@@ -214,6 +233,7 @@ export class CreaturePreview extends Scene {
     const rows: Record<SpeciesId, number> = { glider: row(0), sprout: row(1) + area.h / 6 - 20, river: row(2) + area.h / 6 - 12 };
     for (const e of ENTRIES) this.stage.get(key(e))!.position.set(columns[e.kind], rows[e.species]);
     this.captions.forEach((t, i) => t.position.set(i ? columns.art : columns.graphics, 30));
+    this.meadow.position.set((columns.graphics + columns.art) / 2, 75);
     // The toggles share the panel with the cards: above them in landscape, beside them in portrait.
     this.cards.forEach((c, i) => {
       const col = i % 2;
