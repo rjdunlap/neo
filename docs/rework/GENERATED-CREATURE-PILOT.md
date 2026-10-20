@@ -165,3 +165,7 @@ Built on `claude/rw02b-rig-pilot-three` ([PR #609](https://github.com/rjdunlap/n
 - **No underside view** for the glider's wing, as before.
 - **Card scale.** At 0.32–0.44 the illustrated cards read well on white; the glider's card still reads smallest (its portrait is R17's re-roll).
 - **Portraits not kept.** `--set` writes them; RW05 adds them to the repository with the card paper.
+
+## Wearables fit (2026-10-20)
+
+Built 2026-10-20 ([PR #632](https://github.com/rjdunlap/neo/pull/632)): the nine wearables cut and dressed on the three pilot rigs; verdict, commands and sizes are in [the fit](../../src/art/creatures/wearables/README.md#the-fit-on-the-pilot-three). Angle misfits are queue row R19.

@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-20 — RW06 prep: wearables fit
+
+- Cut the nine R04–R05 wearables at `--shrink 3` (new `--hole` option), added `wearables.ts`, per-species wear tables and `IllustratedCreature.pin/unpin`, and a root-preview button cycling items and outfits on the illustrated column ([PR #632](https://github.com/rjdunlap/neo/pull/632); verdict in [the fit](../src/art/creatures/wearables/README.md#the-fit-on-the-pilot-three)).
+- Ran typecheck (clean), `npx vitest run src/art/creatures scripts/creature-art` (55 passed, new `wearables.test.ts`), the pilot sprites re-cut byte-identical, one preview probe of every look in landscape and portrait (no console errors) at `http://localhost:5731`, and `npm run build` (92 precache entries, 8.06 MB, wearables about 1.0 MB).
+- Not run: full `npm test`, browser suites (no island code changed), offline check, iPad look, a child's reaction.
+- Open: angle misfits go to queue row R19 for re-drawing.
+
 ## 2026-10-20 — RW13 island revamp location packet (docs only)
 
 - Defined RW13 in [the packet](rework/ISLAND-REVAMP.md) on `claude/rw13-island-revamp-packet` ([PR #631](https://github.com/rjdunlap/neo/pull/631)): the eleven land IDs kept with an ecosystem each, five proposed game moves (none made yet), residents, backdrop art queue R23/R26 and ordered build slices; WORK-ITEMS, READY and QUEUE updated.
@@ -100,21 +107,13 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the seven developer decisions (new game vs Rainbow Fingers, the shared table, land, 11–14 placement, Mixing Room's home, reviewer and art check, palette unlock); no child, parent, educator or device involved.
 
-## 2026-10-19 — Who Am I? definition (docs only)
-
-- Defined Who Am I? levels 1–4 in [the definition](definitions/who-am-i.md) (zoo-animals study slice Z1) on `claude/who-am-i-definition` ([PR #615](https://github.com/rjdunlap/neo/pull/615), resuming the stale claim in #592): a thirteen-friend, fourteen-feature trait table with four marked reviewer cells; level 1 one clue and she taps the friend it fits, level 2 she turns over the friends each clue rules out, level 3 groups by features, level 4 surprises with surprise steps; distinguishable-answer generation, accounting, rule tests, layout, ghost finger, voice `whoami.*`, registration `who-am-i` (region `barnyard`, Barnyard, pre-K 1–2 and school 2–4).
-- References: none newly opened; the study's anchors, plus recalled Guess Who? and Twenty Questions.
-- Updated the zoo-animals Z1 slice, recommendations row, IDEAS row, a WAITING row with nine defaulted decisions (the trait review is decision 1) and a READY.md line for the Z2/Z3 build; the Z1 line left Next ten.
-- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
-- Open: the trait-table review (decision 1, gates Z3's merge), and the device checks listed in the definition's Check tier.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Illustrated creature rigs (RW02b step 2) | 2026-10-19: typecheck, 41 creature and script tests (repeated), `/?creatures` probe in both orientations (taps, moods, scarf/crown, card fit, leaving), build isolation | [Step 2 entry](archive/VERIFICATION-2026-10-19.md#2026-10-19--rw02b-step-2-the-pilot-three-prepared-and-rigged) | No iPad, no child, no game suites; motion judged from stills |
+| Illustrated creature rigs and wearables (RW02b step 2, RW06 prep) | 2026-10-20: typecheck, 55 creature and script tests, pilot sprites re-cut byte-identical, preview probe of every wearable look in both orientations, build (92 precache entries, 8.06 MB) | [Wearables fit](#2026-10-20--rw06-prep-wearables-fit) | No iPad, no child, no game suites or offline check; motion judged from stills; angle misfits open as R19 |
 | Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02-creature-art-prototype), [RW01 packet](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw01-name-and-story-packet), [rework plan](archive/VERIFICATION-2026-10-16.md#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
