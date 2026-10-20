@@ -62,9 +62,9 @@ export const TOTE_ART: CastArt = {
     { x: 500, y: 150 }, { x: 512, y: 235 }, { x: 495, y: 270 }, { x: 440, y: 300 }, { x: 300, y: 310 }, { x: 150, y: 330 },
     { x: 40, y: 300 },
   ],
-  /** The far claw waves about the wrist; the two back legs shuffle. */
+  /** The far claw waves about the wrist; cap its touch bend so the pinned shell seam never stretches double. The two back legs shuffle. */
   parts: [
-    { root: { x: 505, y: 265 }, tip: { x: 585, y: 330 }, region: { x: 560, y: 310, rx: 80, ry: 90 }, swing: 0.06, speed: 2.2, phase: 0, poke: 0.35 },
+    { root: { x: 505, y: 265 }, tip: { x: 585, y: 330 }, region: { x: 560, y: 310, rx: 80, ry: 90 }, swing: 0.06, speed: 2.2, phase: 0, poke: 0.24 },
     { root: { x: 150, y: 330 }, tip: { x: 135, y: 400 }, region: { x: 145, y: 370, rx: 55, ry: 60 }, swing: 0.05, speed: 3, phase: 1, poke: 0.2 },
     { root: { x: 220, y: 335 }, tip: { x: 215, y: 420 }, region: { x: 215, y: 380, rx: 45, ry: 60 }, swing: 0.05, speed: 3, phase: 2.5, poke: 0.2 },
   ],
