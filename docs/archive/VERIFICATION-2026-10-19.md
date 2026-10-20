@@ -51,3 +51,10 @@
 - Updated the deep-time D4 slice and recommendations row, the IDEAS row, a WAITING row with nine defaulted calls and a READY.md line for the D5 build (new-game tier, school 1–3, Bubble Beach by default). The draft was written in an earlier session's worktree and finished here after merging `origin/main`.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
 - Open: the nine defaulted decisions; whether a six-year-old reads the practice strip as hers and the mud as the record, whether 70-unit toe bumps read as direction before the magnifier, whether "can't tell" lands as a satisfying answer and device speech of "trackway" are device checks for the build.
+
+## 2026-10-19 — Fluffy Salon deep dive
+
+- Docs only: [deep dive](../deep-dives/fluffy-salon.md) on `claude/dive-fluffy-salon-finish` ([PR #613](https://github.com/rjdunlap/neo/pull/613)), resuming the claim in [PR #591](https://github.com/rjdunlap/neo/pull/591) whose branch another worktree holds. Audited levels 1–5; gaps: the hint timer is a clock and not an idle timer, touches off the fur get nothing, free play has one exit and no invitation, "I want it pink" when it is mostly pink, one customer and one room with nothing kept, six buttons at lap, no journal, couch or picnic step.
+- References were read through search summaries, store listings and reviews, none played: Toca Hair Salon 2, 3 and 4 reviews, Dr. Panda Beauty Salon, the two Play-Doh instruction pages, Pokémon Refresh, Nintendogs, Shampoodle, Neopets customisation, Avokiddo Emotions, the Fisher-Price vanity, and Common Core K.MD.A.2.
+- Ladder: levels 6–12 (lap/toddler 6 *Pat the fluff* and 7 *Snip snip*, toddler 8 *Pink, please*, 9 *Two customers*, pre-K 10 *Longer than Pip's*, 11 *Two colors*, 12 *Changed my mind*), nine queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from the archived audit row.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
