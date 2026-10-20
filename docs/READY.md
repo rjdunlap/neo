@@ -6,7 +6,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **Rework RW06 slice 2, Home and creature play at the root** (shell/navigation tier: typecheck, units, build, `world`, offline): the R06 day backdrop under 1 MiB, `HomeScene` with RW03's per-band exits, `PlayScene` with the ball, the kept picture and tune and the basket, the root booting to the chooser, the preview moved to `?preview`, a `home` browser case through the RW03 chain. [Packet](rework/HOME.md#build-slices-in-order)
+- **Rework RW06 slice 2, Home and creature play at the root** (shell/navigation tier: typecheck, units, build, `world`, offline): the R06 day backdrop under 1 MiB, `HomeScene` with RW03's per-band exits, `PlayScene` with the ball, the kept picture and tune and the basket, the root booting to the chooser, the preview moved to `?preview`, a `home` browser case through the RW03 chain. [Packet](rework/HOME.md#build-slices-in-order) Claimed 2026-10-20 on `claude/rw06-home`.
 - **Rework RW13 slice 3, Counting Cove** (RW13 slice 2 landed in #635; location tier: typecheck, units, one filtered root probe of arrive → launch → return; build only if shared files change): the marsh backdrop drawn in code and the illustrated River as resident. [Packet](rework/ISLAND-REVAMP.md#build-slices-in-order)
 - **`fill-dump`, lap reach and idle invitation** (existing-game change): ground taps in levels 1–2 scoop or tip; a six-second wiggle that is never a hint. [Slice 2](deep-dives/fill-dump.md#build-slices-in-order)
 - **`fill-dump`, level 6 Full and empty** (new level): two baskets, toddler and preschool, placed after 2 by `order`; plan table keyed by ID. [Slice 3](deep-dives/fill-dump.md#new-levels-on-top)
