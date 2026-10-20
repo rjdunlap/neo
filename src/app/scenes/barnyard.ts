@@ -3,12 +3,16 @@ import { swatch, wood } from '../../art/palette';
 import { spotRect, type LandLayout } from '../../content/lands';
 import type { View } from '../../engine/view';
 
+/** Where the fence's rails run: above the first row's reserved drawing/touch rectangles. Its straw edge ends 22 below. */
+export function barnyardFence(layout: LandLayout, ground: number) {
+  const top = Math.min(...[layout.host, ...layout.games, ...(layout.sign ? [layout.sign] : [])].map((s) => spotRect(s, layout.box).y));
+  return Math.min(ground + 20, top - 24);
+}
+
 /** Scenery for this land only. The field and all its touch areas keep their existing layout. */
 export function drawBarnyard(g: Graphics, layout: LandLayout, view: View, ground: number) {
   g.clear();
-  // Keep the whole fence above the first row's reserved drawing/touch rectangles.
-  const top = Math.min(...[layout.host, ...layout.games, ...(layout.sign ? [layout.sign] : [])].map((s) => spotRect(s, layout.box).y));
-  const edge = Math.min(ground + 20, top - 24);
+  const edge = barnyardFence(layout, ground);
   const base = edge - 20;
   const height = Math.min(100, base - 112);
   const x = layout.host.x;
