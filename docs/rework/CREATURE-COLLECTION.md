@@ -1,6 +1,6 @@
 # RW05: Creature collection and active companion (definition)
 
-Defined 2026-10-17 for [RW05](WORK-ITEMS.md#rw05-creature-collection-and-active-companion) ([issue #489](https://github.com/rjdunlap/neo/issues/489)). **Docs only: nothing here is built**, and being defined does not authorize RW06–RW12. It is the model, save and selection authority the collection builds from; the [RW02 art packet](CREATURE-ART.md) and [RW02b pilot](GENERATED-CREATURE-PILOT.md) own how a creature is drawn and rigged, the [RW03 navigation packet](HOME-NAVIGATION.md#routes-and-meaning) owns routes and return rules, the [cast](art-requests/CAST.md) and [game fit](art-requests/GAME-FIT.md) own what each species is and what the games ask of it. Every source claim below was checked at `05e2366d` (`origin/main`, 2026-10-17).
+Defined 2026-10-17 for [RW05](WORK-ITEMS.md#rw05-creature-collection-and-active-companion) ([issue #489](https://github.com/rjdunlap/neo/issues/489)). **Slice 1 is built (2026-10-20, [PR #630](https://github.com/rjdunlap/neo/pull/630); see [Built: slice 1](#built-slice-1-2026-10-20)); slice 2 is not**, and being defined does not authorize RW06–RW12. It is the model, save and selection authority the collection builds from; the [RW02 art packet](CREATURE-ART.md) and [RW02b pilot](GENERATED-CREATURE-PILOT.md) own how a creature is drawn and rigged, the [RW03 navigation packet](HOME-NAVIGATION.md#routes-and-meaning) owns routes and return rules, the [cast](art-requests/CAST.md) and [game fit](art-requests/GAME-FIT.md) own what each species is and what the games ask of it. Every source claim below was checked at `05e2366d` (`origin/main`, 2026-10-17).
 
 ## Summary
 
@@ -114,6 +114,19 @@ Shell/save tier, as the work item says: typecheck, unit tests, build, `world` (a
 6. A portrait and a landscape screenshot of Friends.
 
 Not established by any of this: a child's recognition of the three species or her wish to choose between them, device speech of the new lines, iPad frame rate with a live rig plus thumbnails, and the feel of the basket entry. Those go to [device checks](../DEVICE-CHECKS.md) at build time.
+
+## Built: slice 1 (2026-10-20)
+
+Slice 1 landed in [PR #630](https://github.com/rjdunlap/neo/pull/630): save version 3 with `creatures` (`src/progress/save.ts`, `store.meet/choose`), the species table and `Companion` (`src/creatures/`), the hatch meeting a sprout, `FriendsScene` (`go.friends()`) from a treehouse basket, and the guide, result star, chooser, treehouse, map, lands, places, both picnics and the couch scene on the companion. `src/art/pet.ts` is deleted; the ten large-pet games stay on `Critter` through `ctx.petSpec`. The dev-only "Meet everyone (development)" button on the grown-ups' page is the reseed path. **Slice 2 (`CompanionRig`) is next.** Differences from this packet:
+
+1. `src/dev/creature-preview.ts`, the Graphics glider and the root's preview are kept, because the site root has served the rework preview since 2026-10-19; the deletion list predates that.
+2. The guide's mood following play (happy on a right answer, surprised on a miss, sleepy when idle) is not built: the shell sees misses only at `finish`, so it needs game hooks. Only the celebration move and chirp landed.
+3. A chosen colour is a hue rotation (`recolor()`, a `ColorMatrixFilter` at the screen's resolution), not a tint; the species' own colour gets no filter.
+4. Cards show the prepared portraits over the card paper, not frozen-rig `RenderTexture` thumbnails.
+5. Friends has Back (to the treehouse) only, as the Journal does; Home is not on it.
+6. **Live effect at deploy:** every existing version-2 profile loses its pet and meets the egg again. Stickers, levels, room, creations and journal are kept.
+
+Checks are in the [2026-10-20 entry](../VERIFICATION.md#2026-10-20--rw05-slice-1-the-collection-model-and-friends).
 
 ## Not in this packet
 
