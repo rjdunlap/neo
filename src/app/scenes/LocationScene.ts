@@ -6,6 +6,7 @@ import type { View } from '../../engine/view';
 import type { App } from '../App';
 import { LandScene } from './LandScene';
 import { drawBeach } from './beach';
+import { drawCanyon } from './canyon';
 import { drawCove } from './cove';
 import { drawMeadow } from './meadow';
 import { drawMountain } from './mountain';
@@ -29,6 +30,8 @@ export const LOCATIONS: Partial<Record<LandId, Place>> = {
   'bubble-beach': { scenery: drawBeach },
   // Trill, the cloud forest's resident, waits on RW02b step 3 likewise; the land's bear greets her until then.
   'music-mountain': { scenery: drawMountain },
+  // Dapple, the canyon's resident, waits on RW02b step 3 likewise; the land's cat greets her until then.
+  treehouse: { scenery: drawCanyon },
 };
 
 export const isLocation = (id: LandId) => id in LOCATIONS;
