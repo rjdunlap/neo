@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
+import { HOME_BUTTON } from './home-layout';
 import { OFF_RADIUS, dressLayout } from './dress-layout';
 import { BACK, CARD } from './friends-layout';
 import { SPECIES_IDS } from './species';
@@ -34,7 +35,7 @@ describe('the dressing layout', () => {
         // The stage friend, wearing a sun hat or holding an umbrella, at up to 1.15 scale.
         const r = 150 * l.stage.scale;
         const stage: Box = { x0: l.stage.x - r, y0: l.stage.y - 280 * l.stage.scale, x1: l.stage.x + r, y1: l.stage.y + 10, what: 'stage' };
-        const boxes: Box[] = [...l.cards.map((c, i) => square(c.x, c.y, CARD / 2, `card ${i}`)), square(l.off.x, l.off.y, OFF_RADIUS + 6, 'off'), square(BACK.x, BACK.y, BACK.r - 6, 'back'), stage];
+        const boxes: Box[] = [...l.cards.map((c, i) => square(c.x, c.y, CARD / 2, `card ${i}`)), square(l.off.x, l.off.y, OFF_RADIUS + 6, 'off'), square(BACK.x, BACK.y, BACK.r - 6, 'back'), square(HOME_BUTTON.x, HOME_BUTTON.y, 58, 'home at the root'), stage];
         const where = `${v.w}×${v.h}, ${count} items`;
         expect(OFF_RADIUS * 2).toBeGreaterThanOrEqual(100);
         for (const b of boxes) {

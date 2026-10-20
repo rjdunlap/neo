@@ -12,6 +12,7 @@ import { cream, grass, ink, swatch } from '../art/palette';
 import { onTap } from '../engine/input';
 import type { View } from '../engine/view';
 import { RoundButton } from '../ui/buttons';
+import { meadowIcon } from '../ui/icons';
 
 /**
  * RW02's creature preview (docs/rework/CREATURE-ART.md), served at the site root by `src/rework.ts` since 2026-10-19
@@ -45,20 +46,6 @@ const THUMB_SCALE: Record<SpeciesId, number> = { sprout: 0.44, river: 0.36, glid
 const MOODS: Mood[] = ['calm', 'sleepy', 'sad'];
 const CARD = 150;
 
-/** Three meadow flowers, for the button to Rainbow Meadow. */
-function meadowIcon(): Graphics {
-  const g = new Graphics();
-  for (const [x, color] of [[-20, swatch.red], [0, swatch.yellow], [20, swatch.pink]] as const) {
-    g.moveTo(x, 26).lineTo(x, -2).stroke({ color: swatch.green.line, width: 4, cap: 'round' });
-    for (let i = 0; i < 5; i++) {
-      const a = (i * 2 * Math.PI) / 5;
-      g.circle(x + Math.cos(a) * 8, -10 + Math.sin(a) * 8, 6.5).fill(color.fill);
-    }
-    g.circle(x, -10, 5).fill(swatch.yellow.light).stroke({ color: color.line, width: 2 });
-  }
-  return g;
-}
-
 interface Card extends Entry {
   box: Container;
   frame: Graphics;
@@ -89,7 +76,7 @@ export class CreaturePreview extends Scene {
   private readonly lookIcon = new Container();
   /** To the first location (RW13). */
   readonly meadow = new RoundButton(meadowIcon(), swatch.green, 55, () => this.app.go.land('rainbow-meadow'));
-  private readonly label = new Text({ text: 'Creature preview · the island games are behind the top-left link', style: { fontFamily: 'Fredoka', fontSize: 18, fontWeight: '500', fill: ink } });
+  private readonly label = new Text({ text: 'Creature preview · the island games are behind the top-right link', style: { fontFamily: 'Fredoka', fontSize: 18, fontWeight: '500', fill: ink } });
 
   constructor(
     app: App,

@@ -425,7 +425,7 @@ html.turning .pet-name-form {
 .classic-link {
   position: fixed;
   top: calc(var(--safe-top) + 12px);
-  left: calc(var(--safe-left) + 12px);
+  right: calc(var(--safe-right) + 12px);
   padding: 10px 16px;
   border-radius: 999px;
   background: var(--card);

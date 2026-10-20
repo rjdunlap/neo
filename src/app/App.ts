@@ -59,7 +59,7 @@ export interface Routes {
   /** The Woodland Picnic, Hazel's story in Wonder Woods. `from` is the request whose round just finished. */
   woodland(from?: WoodlandStep): void;
   stickers(): void;
-  /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. */
+  /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. At the root, creature play (RW06). */
   room(): void;
   journal(): void;
 }
@@ -73,6 +73,8 @@ export class App {
   /** What a notch, rounded corner or home indicator covers, in CSS pixels; the root sits inside it. */
   insets: Insets = NO_INSETS;
   go!: Routes;
+  /** The site root's creature world (`src/rework.ts`): Friends and Dress add a Home button there (RW06 slice 2). Classic leaves it false. */
+  creatureWorld = false;
 
   /** The scene on screen. */
   scene: Scene | null = null;

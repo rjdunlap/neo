@@ -4,12 +4,13 @@ import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { makeIndividual, makePortrait, type Companion } from '../../creatures/companion';
 import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, DRESS_RADIUS, friendsLayout, PER_PAGE } from '../../creatures/friends-layout';
+import { HOME_BUTTON } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import type { Individual } from '../../progress/save';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
-import { arrowIcon, checkIcon, hangerIcon, heartIcon, treehouseIcon } from '../../ui/icons';
+import { arrowIcon, checkIcon, hangerIcon, heartIcon, houseIcon, treehouseIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -24,7 +25,9 @@ import { applySettings } from '../settings';
  */
 export class FriendsScene extends Scene {
   private readonly floor = new Graphics();
-  private readonly back = new RoundButton(treehouseIcon(), swatch.white, 50, () => this.app.go.room());
+  private readonly back = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(), swatch.white, 50, () => this.app.go.room());
+  /** At the root (RW06 slice 2): Home, to the right of Back. Classic's Friends keeps Back only. */
+  private readonly home = new RoundButton(houseIcon(), swatch.white, 50, () => this.app.go.hub());
   private readonly come = new RoundButton(checkIcon(), swatch.green, COME_RADIUS, () => void this.comeWithMe());
   private readonly dress = new RoundButton(hangerIcon(), swatch.yellow, DRESS_RADIUS, () => this.dressUp());
   private readonly cards = new Container();
@@ -47,6 +50,7 @@ export class FriendsScene extends Scene {
     this.ring.eventMode = 'none';
     this.content.addChild(this.floor, this.cards, this.ring);
     this.ui.addChild(this.back, this.come, this.dress, this.track(this.previous), this.track(this.next));
+    if (this.app.creatureWorld) this.ui.addChild(this.home);
     const at = store.data.creatures.owned.findIndex((o) => o.id === this.previewed);
     this.page = Math.max(0, Math.floor(at / PER_PAGE));
     this.showStage();
@@ -167,6 +171,7 @@ export class FriendsScene extends Scene {
     const l = friendsLayout(v, this.owned.length, this.page);
     this.floor.clear().rect(0, 0, v.w, v.h).fill(cream).ellipse(l.stage.x, l.stage.y, 170, 30).fill(grass);
     this.back.position.set(BACK.x, BACK.y);
+    this.home.position.set(HOME_BUTTON.x, HOME_BUTTON.y);
     this.come.position.set(l.come.x, l.come.y);
     this.dress.position.set(l.dress.x, l.dress.y);
     this.stageFriend?.position.set(l.stage.x, l.stage.y);
