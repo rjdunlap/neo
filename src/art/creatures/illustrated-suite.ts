@@ -153,21 +153,21 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, twin 
       const textures = Object.fromEntries(EXPRESSIONS.map((e) => [e, new Texture()])) as Record<Expression, Texture>;
       const c = make(textures);
       c.update(1 / 60);
-      expect(c.mesh.texture).toBe(textures.base);
+      expect(c.faceMesh.texture).toBe(textures.base);
       c.poke();
       c.update(1 / 60);
       expect(c.expression()).toBe('surprised');
-      expect(c.mesh.texture).toBe(textures.surprised);
+      expect(c.faceMesh.texture).toBe(textures.surprised);
       for (let i = 0; i < Math.ceil(SURPRISE * 60) + 1; i++) c.update(1 / 60);
-      expect(c.mesh.texture).toBe(textures.happy);
+      expect(c.faceMesh.texture).toBe(textures.happy);
       for (let i = 0; i < 120; i++) c.update(1 / 60);
       // Back to the calm face (a blink may be passing).
-      expect([textures.base, textures.blink]).toContain(c.mesh.texture);
+      expect([textures.base, textures.blink]).toContain(c.faceMesh.texture);
       // Blinks come by themselves within a few seconds while calm, and show the blink texture.
       let blinked = false;
       for (let i = 0; i < 600 && !blinked; i++) {
         c.update(1 / 60);
-        blinked = c.mesh.texture === textures.blink;
+        blinked = c.faceMesh.texture === textures.blink;
       }
       expect(blinked).toBe(true);
       for (const mood of ['sleepy', 'sad'] as const) {
@@ -175,14 +175,14 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, twin 
         const seen = new Set<Texture>();
         for (let i = 0; i < 600; i++) {
           c.update(1 / 60);
-          seen.add(c.mesh.texture);
+          seen.add(c.faceMesh.texture);
         }
         // A sleepy or sad face never blinks: the blink sprite has the calm mouth.
         expect([...seen]).toEqual([textures[mood]]);
       }
       c.mood = 'calm';
       c.update(1 / 60);
-      expect([textures.base, textures.blink]).toContain(c.mesh.texture);
+      expect([textures.base, textures.blink]).toContain(c.faceMesh.texture);
     });
 
     it('carries the crown with the body through the reaction and settles it back', () => {

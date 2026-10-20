@@ -197,7 +197,7 @@ export class Companion extends Container {
     const fit = FIT[who.species];
     this.rig.scale.set(fit.scale);
     this.rig.y = -fit.lift;
-    if (this.rig instanceof IllustratedCreature) recolor(this.rig.mesh, who.species, who.look.color);
+    if (this.rig instanceof IllustratedCreature) recolor(this.rig.skin, who.species, who.look.color);
     const t = this.rig.touch;
     this.touch = { x: t.x * fit.scale, y: t.y * fit.scale - fit.lift, r: t.r * fit.scale };
     this.body.addChild(this.rig);

@@ -27,14 +27,15 @@
 //
 // `--set` prepares every `<species>-<asset>-<n>.png` the manifest marks chosen into
 // `<out-dir>/<species>-<asset>.png`. The expression variants (base, blink, happy, surprised, sleepy,
-// sad) share one box, the union of their trimmed bounds, so they stay aligned under the mesh; a
+// sad) share one box, the union of their trimmed bounds, so they stay aligned under the mesh, and a
+// plate (`nohead`, the base with its head painted out) is cut in that box without the drift check; a
 // variant whose bounds differ from the base's by more than the tolerance stops the run, with the
 // offsets printed, and nothing is written. Portraits and alt poses are cut on their own.
 import { chromium } from 'playwright';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALIGNED, alignment, cut, keyOut, parseManifest, shrink, TOLERANCE, union } from './sprite-core.mjs';
+import { ALIGNED, alignment, PLATES, cut, keyOut, parseManifest, shrink, TOLERANCE, union } from './sprite-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -225,9 +226,9 @@ export async function run(argv) {
       for (const j of jobs) {
         const outPath = at(join(o.outDir, `${o.set}-${j.asset}.png`));
         const previews = `${o.previews ? at(o.previews) : at(join('test-results', o.set))}-${j.asset}`;
-        const line = await emit(page, o, { ...j, box: ALIGNED.includes(j.asset) ? shared : j.bounds, outPath, previews });
+        const line = await emit(page, o, { ...j, box: ALIGNED.includes(j.asset) || (shared && PLATES.includes(j.asset)) ? shared : j.bounds, outPath, previews });
         line.asset = j.asset;
-        if (ALIGNED.includes(j.asset)) line.sharedBox = true;
+        if (ALIGNED.includes(j.asset) || (shared && PLATES.includes(j.asset))) line.sharedBox = true;
         lines.push(line);
       }
     }
