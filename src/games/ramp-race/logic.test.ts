@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { distance, EXPLORE_HEIGHTS, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, onStar, PLANS, rampTouch, waysTo, type Setup } from './logic';
+import { classifyFair, distance, EXPLORE_HEIGHTS, fairLine, fairRepair, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, onStar, PLANS, rampTouch, waysTo, type FairKind, type FairQuestion, type Setup } from './logic';
 
 describe('Ramp Race', () => {
   it('higher ramps and slipperier floors always go farther', () => {
@@ -74,5 +74,79 @@ describe('Ramp Race', () => {
         if (plan.mode === 'explore') expect(heights).toEqual([...EXPLORE_HEIGHTS].slice(0, plan.rounds));
       }
     }
+  });
+});
+
+const QUESTIONS: FairQuestion[] = [{ compare: 'floor' }, { compare: 'height' }];
+const SETUPS: Setup[] = HEIGHTS.flatMap((height) => FLOORS.map((floor) => ({ height, floor })));
+/** All 81 ordered pairs of blue lane A and orange lane B. */
+const PAIRS = SETUPS.flatMap((a) => SETUPS.map((b) => [a, b] as const));
+const tap = (lane: Setup, change: 'ramp' | 'floor'): Setup =>
+  change === 'ramp' ? { ...lane, height: HEIGHTS[(HEIGHTS.indexOf(lane.height as 2 | 3 | 4) + 1) % HEIGHTS.length] } : { ...lane, floor: FLOORS[(FLOORS.indexOf(lane.floor) + 1) % FLOORS.length] };
+
+describe('Ramp Race fair-test support', () => {
+  it('sorts the 81 pairs into 9 same, 18 fair, 18 wrong-only and 36 both-changed for each question, agreeing with judgeFair', () => {
+    for (const q of QUESTIONS) {
+      const counts: Record<FairKind, number> = { same: 0, fair: 0, 'wrong-only': 0, 'both-changed': 0 };
+      for (const [a, b] of PAIRS) {
+        const kind = classifyFair(q, a, b);
+        counts[kind]++;
+        expect(judgeFair(q, a, b)).toBe(kind === 'wrong-only' || kind === 'both-changed' ? 'unfair' : kind);
+      }
+      expect(counts).toEqual({ same: 9, fair: 18, 'wrong-only': 18, 'both-changed': 36 });
+    }
+  });
+
+  it('every fair pair has two different distances, and the slipperier floor or taller ramp goes farther', () => {
+    for (const q of QUESTIONS) {
+      for (const [a, b] of PAIRS) {
+        if (classifyFair(q, a, b) !== 'fair') continue;
+        const [da, db] = [distance(a.height, a.floor), distance(b.height, b.floor)];
+        expect(da).not.toBe(db);
+        const winner = da > db ? a : b;
+        const loser = da > db ? b : a;
+        if (q.compare === 'floor') expect(FLOORS.indexOf(winner.floor)).toBeGreaterThan(FLOORS.indexOf(loser.floor));
+        else expect(winner.height).toBeGreaterThan(loser.height);
+      }
+    }
+  });
+
+  it('the ghost finger repairs every non-fair pair on the orange lane within three taps and never presses go early', () => {
+    const plan = PLANS[3];
+    let starts = 0;
+    for (const q of QUESTIONS) {
+      for (const [a, b0] of PAIRS) {
+        if (classifyFair(q, a, b0) === 'fair') continue;
+        starts++;
+        let b = b0;
+        let taps = 0;
+        for (;;) {
+          const move = rampTouch(plan, [a, b], { question: q, rolls: 0 });
+          expect(move, `${q.compare} from ${JSON.stringify([a, b0])}`).not.toBeNull();
+          if (move === 'go') {
+            expect(classifyFair(q, a, b)).toBe('fair');
+            break;
+          }
+          expect(move!.lane).toBe(1);
+          expect(fairRepair(q, a, b)).toBe(move!.change);
+          b = tap(b, move!.change);
+          expect(++taps, `${q.compare} from ${JSON.stringify([a, b0])}`).toBeLessThanOrEqual(3);
+        }
+        expect(fairRepair(q, a, b)).toBeNull();
+      }
+    }
+    expect(starts).toBe(126);
+  });
+
+  it('maps each non-fair kind to the line that names what actually changed', () => {
+    expect(fairLine({ compare: 'floor' }, 'wrong-only')).toBe('ramp.wrong.floor');
+    expect(fairLine({ compare: 'height' }, 'wrong-only')).toBe('ramp.wrong.height');
+    expect(fairLine({ compare: 'floor' }, 'both-changed')).toBe('ramp.unfair.floor');
+    expect(fairLine({ compare: 'height' }, 'both-changed')).toBe('ramp.unfair.height');
+    expect(fairLine({ compare: 'floor' }, 'same')).toBe('ramp.same.floor');
+    expect(fairLine({ compare: 'height' }, 'same')).toBe('ramp.same.height');
+    expect(fairLine({ compare: 'floor' }, 'fair')).toBeNull();
+    // A pair where only the wrong thing differs is told so, not that the named thing differs "too".
+    expect(fairLine({ compare: 'floor' }, classifyFair({ compare: 'floor' }, { height: 2, floor: 'wood' }, { height: 4, floor: 'wood' }))).toBe('ramp.wrong.floor');
   });
 });
