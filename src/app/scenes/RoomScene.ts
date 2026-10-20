@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { frameArt, ITEM_SIZE, roomItem, windowArt } from '../../art/room';
 import { flower } from '../../art/shapes';
 import { stickerize } from '../../art/sticker';
@@ -62,7 +62,7 @@ export class RoomScene extends Scene {
   private readonly takeTune = new RoundButton(crossIcon(), swatch.white, 36, () => this.takeDown('tune'));
   private readonly stage = new Container();
   private readonly dim = new Graphics();
-  private readonly pet = makePet();
+  private readonly pet = makeCompanion();
   private readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.app.go.hub());
   private readonly flip = new RoundButton(flipIcon(), swatch.white, 50, () => this.flipSelected());
   private readonly tidyButton = new RoundButton(againIcon(), swatch.white, 50, () => this.tidy());

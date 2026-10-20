@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { landmarkFor } from '../../art/lands';
 import { cream, grass, ink, RAINBOW, swatch } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { checkBadge, picnicLandmark } from '../../art/picnic';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -38,7 +38,7 @@ export class MapScene extends Scene {
   private readonly island = new Graphics();
   private readonly glow = new Graphics();
   private readonly map = new Container();
-  readonly pip = makePet();
+  readonly pip = makeCompanion();
   private readonly title = label('Puddle Island', 42, ink);
   private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () => this.leave(() => this.app.go.stickers()));
   private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => this.leave(() => { void voice.say('map.room'); this.app.go.room(); }));

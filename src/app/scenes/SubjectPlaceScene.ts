@@ -1,6 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { swatch } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { Backdrop } from '../../art/scenery';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -65,7 +65,7 @@ export class SubjectPlaceScene extends Scene {
   readonly state: Position;
   private backdrop!: Backdrop;
   private readonly choices = new Container();
-  private readonly pip = makePet();
+  private readonly pip = makeCompanion();
   private readonly heading = label('', 32);
   private readonly dots = new Graphics();
   readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));

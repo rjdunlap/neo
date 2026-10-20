@@ -1,6 +1,5 @@
-import { Graphics } from 'pixi.js';
-import { Critter } from '../../art/critter';
-import { drawEgg, petSpecFor } from '../../art/pet';
+import { makeEgg, makePortrait } from '../../creatures/companion';
+import { companionOf } from '../../progress/save';
 import { Backdrop } from '../../art/scenery';
 import { audio } from '../../audio/engine';
 import { sfx } from '../../audio/sfx';
@@ -162,9 +161,10 @@ export class ChooserScene extends Scene {
     this.setFocus(mine >= 0 ? mine : 0);
   }
 
-  /** A person's friend, drawn once into a picture for the card. An egg until it has hatched. */
+  /** A person's companion, drawn once into a picture for the card: its portrait on card paper, or an egg before the first friend. */
   private friend(save: SaveData): HTMLCanvasElement {
-    const art = save.pet.hatched ? new Critter(petSpecFor(save.pet)) : drawEgg(new Graphics());
+    const friend = companionOf(save.creatures);
+    const art = friend ? makePortrait(friend, 230) : makeEgg('whole');
     const canvas = this.app.renderer.extract.canvas({ target: art, resolution: 1.5 }) as HTMLCanvasElement;
     canvas.setAttribute('aria-hidden', 'true');
     art.destroy({ children: true });
@@ -260,7 +260,7 @@ export class ChooserScene extends Scene {
     await this.tw.wait(1.3);
     if (this.closed) return;
     // To the island map: the lands, their home spot and the picnic, with their friend waiting where they were last.
-    if (store.data.pet.hatched) this.app.go.hub();
+    if (store.data.creatures.owned.length > 0) this.app.go.hub();
     else this.app.go.hatch(skipsEgg(store.entry.birth, new Date()));
   }
 
