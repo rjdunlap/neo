@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-19 — Mail Carrier deep dive
+
+- Docs only: [deep dive](deep-dives/mail-carrier.md) on `claude/dive-mail-carrier-finish` ([PR #620](https://github.com/rjdunlap/neo/pull/620)), resuming the claim in [PR #603](https://github.com/rjdunlap/neo/pull/603) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–8 on `15fcd906`; gaps: the how-to's level 7 step has no `to` so level 8's card shows both steps, a lap touch off a house does nothing, no carrier on the street, a fixed backdrop seed, no spoken count at 3 and 5.
+- References were read through search summaries and store, archive and curriculum pages, none played: Paperboy, Orchard Toys Post Box Game, Postman Pat: Special Delivery Service, Dora's Map, Blades & Spencer 1987, England KS1 geography, street numbering conventions, CCSS K.CC.A.3 and 2.OA.C.3.
+- Ladder: levels 9–15 (toddler 10 *Which door?*, pre-K/school 9 *Who can help?* and 12 *Numbers past ten*, school 13 *Hazel's clue*, 11 *Both sides of the street*, 14 *Three letters, your way* and 15 *Make the key*), nine queued lines in [READY.md](READY.md), one defaults row in WAITING, pointers from the notebook and the civics study's CC2 slice.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
 ## 2026-10-19 — Seesaw Balance deep dive
 
 - Docs only: [deep dive](deep-dives/seesaw-balance.md) on `claude/dive-seesaw-balance-finish` ([PR #619](https://github.com/rjdunlap/neo/pull/619)), resuming the claim in [PR #602](https://github.com/rjdunlap/neo/pull/602) whose branch an idle worktree holds (no uncommitted draft there). Audited levels 1–10 on `4fd0dc8c`; gaps: the how-to says tap but every thing needs a drag, a silent hint after two overs at 3/5/6/7, one face per weight, no lap band, no couch.
@@ -103,14 +110,6 @@
 - A one-off Playwright probe (Vite at `http://localhost:5487`) opened level 4 (toddler) at 1024×768 and called `showScene` for each scene with a screenshot each, and level 5 (preschool) in portrait 768×1024 for dusk and garden: animals and snacks stayed placed, no page errors.
 - Not run: the `WOODS_ONLY=snack` suite (its new scene screenshots in `scripts/browser-check.mjs` are untested by the suite itself), `fingerdemo`, device speech, an iPad.
 - Open: whether the scenes read well and the falling apple stays calm on a device.
-
-## 2026-10-18 — Hidden Sprouts definition (docs only)
-
-- Defined Sprout Shuffle levels 4–6 in [the definition](definitions/hidden-sprouts.md) (genetics study slice G5, the recommendations row "define older mode") on `claude/define-hidden-sprouts` ([PR #596](https://github.com/rjdunlap/neo/pull/596)): level 4 chooses every pair whose fan is all spotted, level 5 reads a hidden spotted plant's copies from a record of sprouts grown with a plain tester (an ambiguous all-spotted record, then a deciding plain sprout or six spotted sprouts that still cannot tell), level 6 picks the tester that could tell. Enumeration only; "both could" is an accepted answer.
-- References read, none played: Concord's GenScope test-cross worksheet and Geniventure page, Serendip's Dragon Genetics 1, a Nintendo Life Animal Crossing flower-breeding guide, Niche's store page and a PhET Natural Selection classroom guide.
-- Updated the genetics recommendations row and G5 build slice, the IDEAS row, the WAITING genetics row and a defaults row with seven defaulted calls. Not ready to build (levels 1–3 are not built), so no READY.md line.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (docs only). Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
-- Open: the seven defaulted decisions; whether a child accepts "can't tell yet" as finished, whether face-down tiles read as hidden, and whether the all-spotted tester's explanation lands are device checks for the build.
 
 ## Coverage summary
 
