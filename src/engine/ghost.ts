@@ -11,9 +11,9 @@ type Pt = { x: number; y: number };
 type Phase = 'idle' | 'travel' | 'hover' | 'press' | 'carry' | 'release' | 'rest';
 
 /** The seconds each part of a gesture takes, slow enough for a grown-up to see what was touched. */
-const TRAVEL = { min: 0.45, max: 0.95, speed: 560 };
-const CARRY = { min: 0.5, speed: 420 };
-const PRESS = 0.22;
+export const TRAVEL = { min: 0.45, max: 0.95, speed: 560 };
+export const CARRY = { min: 0.5, speed: 420 };
+export const PRESS = 0.22;
 const RELEASE = 0.2;
 /** The longest a hand waits over its spot for the moment to press (`when`) before it gives the touch up. */
 const HOVER_MAX = 6;

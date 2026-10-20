@@ -62,7 +62,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`scoop-shop`, level 12 Fill it up** (new level on the existing interaction): count on from scoops already on the cone; pre-K and school. [Slice 5](deep-dives/scoop-shop.md#new-levels-on-top)
 - **`scoop-shop`, level 13 Three pink and two blue** (new level): two colours with a count each, any order; pre-K and school. [Slice 6](deep-dives/scoop-shop.md#new-levels-on-top)
 
-- **`fruit-slice`, build levels 1–8** (new-game tier): fruit hangs at the top of a slow arc and a swipe splits it; tap at 1, swipe at 2, then only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N and pieces by twos; no clock, missed fruit comes back; Bubble Beach. [Definition](definitions/fruit-slice.md)
 
 - **`shape-sorter`, support truth, slice 1** (existing-game bug fix tier): every touch at level 1 answered (box giggle, floor wiggle, far-drop plop), a glow after two wrongs in a row anywhere, the level-8 line naming the dropped shape, `CLASSIC` pinning levels 7–8 with a lid-fits test, the how-to note. [Dive](deep-dives/shape-sorter.md#build-slices-in-order)
 - **`shape-sorter`, level 9 *Tap and in it goes* and the lap band, slice 2** (new interaction): a tap posts the piece itself; `bands` gains `lap`, lap `[9]`, toddler `order [9, 1, 2, 3, 4, 5]`, `entryLevels: [9]`. [Dive](deep-dives/shape-sorter.md#younger-band-openings)

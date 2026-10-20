@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-20 — Fruit Slice levels 1–8
+
+- Built on `claude/fruit-slice` (PR #667): new game `fruit-slice` in Bubble Beach, levels 1–8 (swept slice, one miss per stroke, straight-line cut at 7, pieces by twos at 8), new `fruitslice` browser suite, a ghost-finger bot that waits for a clear path.
+- Ran `npm run typecheck` (clean) and full `npm test` (184 files, 1772 tests pass; 34 new fruit-slice rule tests: arcs on screen in four views, 180-unit apex spacing, hang of at least 1.6 s and longer than the ghost's press and carry, swept hits, judging, choice exists at 3–6 and 8, level 7 boards, same seed same board; boards checked across 500 seeds separately). `npm run build` passed (102 precache entries).
+- `BROWSER_SUITE=fruitslice` (Vite http://localhost:5743) passed, and again after the backdrop: level 1 by taps (0 misses, 0 hints, sticker), level 3 two wrong-kind swipes (2 misses, glow, 1 hint), level 7 upright by the hint lines (`test-results/browser/fruit-slice-7-portrait.png`, reviewed), level 8 two signs by swipes and the bowl, then the pair board by lines. `BROWSER_SUITE=fingerdemo FINGER_ONLY=fruit-slice FINGER_LEVELS=1,2,3,4,5,6,7,8` passed all eight (a first run failed at 8 when the stroke crossed a second fruit; fixed by the clear-path wait).
+- Review fix after the closeout: level 6's sign now ticks down as rows are cut, and the bowl shows one piece per fruit (two at 8) so it matches the spoken count. Typecheck, the 34 rule tests and `fingerdemo` `FINGER_LEVELS=5,6` (http://localhost:5862) passed; `fruitslice` does not cover 5–6 and was not rerun.
+- Not run: `world`, the offline check, an iPad, a child. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether a toddler's swipe registers with palm and wrist contact, whether the 1.6 s hang feels calm or slow, whether the straight line reads to a six-year-old.
+
 ## 2026-10-20 — Fill and Dump lap reach and idle invitation (slice 2)
 
 - [PR #666](https://github.com/rjdunlap/neo/pull/666), tested `659bbfa6` plus the slice working diff, base `c4585d7a`: levels 1–2 ground taps tip or scoop the nearest outside fruit; six ready/idle seconds invite a basket or fruit wiggle without scoring. Levels 3–5 and busy-tip behavior unchanged.
@@ -103,13 +111,6 @@
 - Root probe (one-off `test-results/cv-probe.mjs`, http://localhost:5837, landscape and portrait): Explore lists seven locations; the Cozy Village card opens the location (squirrel host, no resident); `go.game('scoop-shop', …)` into the game and leaving returns to the location; no page errors. Screenshots of both orientations reviewed.
 - Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.
 
-## 2026-10-20 — RW13 slice 7: Painted Canyon at the root
-
-- Built on `claude/rw13-painted-canyon` ([PR #645](https://github.com/rjdunlap/neo/pull/645), code `b36dc9ae`, base `70fcd86c`): `canyon.ts`, `canyon.test.ts`, one `LOCATIONS` entry (`treehouse`, no resident: the land's cat host); `LocationScene.ts` also changed. `classic/` is unchanged.
-- Ran `npm run typecheck` (clean), `npm test` (174 of 175 files, 1631 of 1632 tests; the one failure, the RW02b illustrated tote "never tears the picture" in `cast.test.ts`, worstStretch 2.109, is a known load-sensitive flake that passed twice alone), the canyon test (3/3 after the last edit) and `npm run build` (passed).
-- Root probe (one-off `test-results/pc-probe.mjs`, http://localhost:5647, landscape and portrait): Explore lists six locations; the Painted Canyon card opens the location (cat host, no resident); `go.game('stamp-studio', …)` into the game and leaving returns to the location; no page errors. Screenshots of both orientations reviewed.
-- Not run: `world`, the offline check, an iPad look, real speech, a child's reaction.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -117,6 +118,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | `blockgarden`, `fingerdemo` (`block-garden`) | 2026-10-20: levels 1 and 8 by drags (no misses or hints, a sticker each), level 3 (two refused drops = 2 misses and 1 hint), hinted piece, undo, a free tap on a tall piece's slot upright, level 6 portrait; ghost finger clean at levels 1 and 8 (3.9, 23.2 s); typecheck, 33 rule tests, full `npm test` (1713), build | commit `0448a289`, http://localhost:5856 | No world or offline run; iPad drag lift, phone squares, shadow and level 8 hint time open; one creature-rig test flaked once in the full run |
+| `fruitslice`, `fingerdemo` (`fruit-slice`) | 2026-10-20: level 1 by taps, level 3 two wrong-kind swipes (glow, 1 hint), level 7 portrait by hint lines, level 8 signs and pair board; ghost finger clean at levels 1–8; typecheck, 34 rule tests, full `npm test` (1772), build | `453b530a`, http://localhost:5743 | No world, offline or couch run; iPad swipe, hang pace and straight line open |
 | `dominorun`, `fingerdemo` (`domino-run`) | 2026-10-20: level 1 by taps, level 8 with a stalled run (0 misses), one requested hint, drags, level 5 portrait; ghost finger clean at levels 1 and 8 (5.0, 13.6 s); typecheck, 13 rule tests, full `npm test` (1730), build | commit `cd11a6f7`, http://localhost:5209 | No world, offline or couch run; iPad tap-to-hop, stall ring and dot faces open |
 | `jarsort`, `fingerdemo` (`jar-sort`) | 2026-10-20: levels 1, 3, 7 (portrait) and 8 by taps (free and counted refused moves, drag, undo, mats, one sticker); ghost finger clean at levels 1, 8 and 4 (16.6, 49.8, 25.1 s; the last after the one-board demo); typecheck, 10 rule tests and build | [2026-10-20 entry](#2026-10-20--jar-sort-levels-18) | Offline, `world` and phone suites not run; the level 1 and 8 demos ran before the one-board change; device checks open |
 | `conductor`, `fingerdemo` (`little-conductor`) | 2026-10-20: levels 1 and 2 (early Done, change inside a beat, heard gate, bow, one sticker, portrait); clean 11.9 s ghost finger at both; typecheck, 20 rule tests and build | [2026-10-20 entry](#2026-10-20--little-conductor-levels-12-music-m2) | No `smoke`, `world` or offline run; iPad sound (60 vs 90), pad and pending-ring readability for a toddler, speech and child reaction open |
