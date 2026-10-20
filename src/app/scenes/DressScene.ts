@@ -31,6 +31,8 @@ export class DressScene extends Scene {
   private readonly rings = new Graphics();
   /** The friend on the stage. */
   friend: Companion | null = null;
+  /** Taps since the scene opened: once she has started dressing, the opening instruction stays quiet. */
+  private touched = 0;
 
   constructor(app: App, private readonly id: string) {
     super(app);
@@ -50,6 +52,7 @@ export class DressScene extends Scene {
     c.hitArea = c.touchArea(20);
     // A large friend instead of the corner guide, so a tap on it repeats the instruction.
     onTap(c, () => {
+      this.touched++;
       c.poke();
       void voice.say('dress.pick', { pet: this.who?.name ?? who.name });
     }, { cooldown: 300 });
@@ -80,6 +83,7 @@ export class DressScene extends Scene {
   toggle(item: WearableId) {
     const who = this.who;
     if (!who) return;
+    this.touched++;
     const on = !who.look.worn.includes(item);
     if (!store.wear(who.id, item, on)) return;
     this.friend?.dress(this.worn);
@@ -104,6 +108,7 @@ export class DressScene extends Scene {
   allOff() {
     const who = this.who;
     if (!who) return;
+    this.touched++;
     for (const w of [...who.look.worn]) store.wear(who.id, w, false);
     this.friend?.dress(this.worn);
     sfx.pop(4);
@@ -139,7 +144,8 @@ export class DressScene extends Scene {
       return;
     }
     await voice.say('friends.dress', { pet: who.name });
-    if (this.app.scene !== this) return;
+    // A tap during the opening line cancels it; its own line must not be cut off by the instruction.
+    if (this.app.scene !== this || this.touched > 0) return;
     void voice.say('dress.pick', { pet: who.name });
   }
 }
