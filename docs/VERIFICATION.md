@@ -5,7 +5,7 @@
 - Built on `claude/shape-sorter-support-truth` (PR #669, base origin/main 40bbc0c3, code 3b42ff70): level 1 answers every touch (box giggle, floor wiggle, far-drop plop), a glow on every second miss since the last glow, level 8 names a fitting but unasked shape, `CLASSIC` pins levels 7–8, per-level how-to notes.
 - Ran `npm run typecheck` (clean); `npx vitest run src/games/shape-sorter src/content/howto` (27 tests pass, including the lid-stands-on-the-floor check in four views); `npx vitest run src/content src/games/registry` (10 files, 106 tests pass).
 - `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=1,2,8` (Vite http://localhost:5564) passed with no page errors: level 1 box tap, floor wiggle and far drop free; level 8 (portrait) fitting-but-unasked drop is one miss, then the asked hole and its glow.
-- Not run: full `npm test`, `npm run build` (only content files changed outside the game), `fingerdemo` (the bot's drag to the hole is unchanged), an iPad or a child. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether the giggle, wiggle and lean read to a one-year-old.
+- `npm run build` passed. Not run: full `npm test`, `fingerdemo` (the bot's drag to the hole is unchanged), an iPad or a child. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether the giggle, wiggle and lean read to a one-year-old.
 
 ## 2026-10-20 — Fruit Slice levels 1–8
 
