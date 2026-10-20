@@ -17,6 +17,7 @@ import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
 import type { PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
+import { mixMemory } from './discovery';
 
 /**
  * A game round played as one story request: at the story's level, coming home to the story's scene. Without a
@@ -133,6 +134,8 @@ export class App {
   async show(next: Scene) {
     if (this.switching) return;
     this.switching = true;
+    // Any scene other than the mix's own round or its home spot ends the mix.
+    if (!next.holdsMix()) mixMemory.end();
     this.unpause();
     this.curtain.eventMode = 'static'; // swallow taps mid-transition
     const old = this.scene;
