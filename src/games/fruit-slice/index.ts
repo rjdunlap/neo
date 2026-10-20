@@ -470,7 +470,7 @@ class FruitSlice implements Game {
       s?.done.add(f);
       if (r.cut[i]) {
         if (s) s.cutAny = true;
-        this.cutFruit(f.node, f.toss.kind, angle);
+        this.cutFruit(f.node, f.toss.kind, angle, sign.per);
         f.gone = true;
         f.node.destroy({ children: true });
         this.wait[f.toss.column] = GAP + 0.3;
@@ -515,7 +515,7 @@ class FruitSlice implements Game {
     hit.forEach((s, i) => {
       if (r.cut[i]) {
         s.cut = true;
-        this.cutFruit(s.node, s.kind, angle);
+        this.cutFruit(s.node, s.kind, angle, sign.per);
       } else s.wobble = 0.6;
     });
     this.afterCut(r.cut.some(Boolean), r.miss, r.reasons.find((x) => x) ?? null);
@@ -527,6 +527,8 @@ class FruitSlice implements Game {
     if (anyCut) {
       this.glow = null;
       if (this.sends) void this.say('count', { n: inBowl(sign) });
+      // Level 6's rows tick down as she cuts.
+      if (this.plan.mode === 'two') this.drawSign();
     }
     if (miss) {
       this.misses++;
@@ -562,7 +564,7 @@ class FruitSlice implements Game {
   }
 
   /** Split a fruit along the stroke: two halves part and tumble into the bowl, with juice and a rising note. */
-  private cutFruit(node: Container, kind: Kind, angle: number) {
+  private cutFruit(node: Container, kind: Kind, angle: number, per = 1) {
     const at = { x: node.x, y: node.y };
     node.visible = false;
     this.slices++;
@@ -580,7 +582,8 @@ class FruitSlice implements Game {
         await this.ctx.tw.to(h, { x: at.x + nx * side * 40, y: at.y + ny * side * 40, rotation: side * 0.5 }, { duration: 0.25, ease: ease.outQuad });
         await this.ctx.tw.to(h, { x: bowl.x + side * 20, y: bowl.y - 20, rotation: side * 1.4 }, { duration: 0.45, ease: ease.inQuad });
         h.destroy({ children: true });
-        this.addToBowl(kind);
+        // One piece shows per fruit, two at level 8, so the bowl matches the count she hears.
+        if (per > 1 || side === 1) this.addToBowl(kind);
       })();
     }
   }
