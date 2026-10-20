@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-19 — Generated creature art, second review (docs only)
+
+- Reviewed the routine's R17 (glider portrait 8) and R18 (six egg stages) and the step 2 result of [PR #609](https://github.com/rjdunlap/neo/pull/609) in the [second pass](rework/ART-REVIEW-2026-10-19.md#second-pass-r17-r18-and-the-rigged-pilot-three-2026-10-19); a card-size and hatch-size sheet is `docs/rework/concepts/art-review-2026-10-19b.png`.
+- Ran `prepare-sprite.mjs` into a scratch folder: the three pilot portraits and the old glider portrait, and all nine egg stages at `--shrink 2`. The open stages trim 436 × 576–577 against 436 × 536 for whole and crack (same bottom edge), so the stages need one box per colour; recorded on RW05's READY line.
+- Added queue rows R24 (river head layer) and R25 (sprout arms layer), each with a rig follow-up in READY's Queued list, and moved RW05 slice 1, the wearables fit and the second-wave preparation into Next ten.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. No code changed.
+- Not run: the rigs on an iPad, the egg stages in a hatch, a child's reaction.
+
 ## 2026-10-20 — Ramp Race truthful support (inquiry Q2)
 
 - Built the [Q1 definition](definitions/ramp-race-support.md) ([PR #624](https://github.com/rjdunlap/neo/pull/624), commit cca1599b): `classifyFair`, `fairRepair` and `fairLine` in `logic.ts`; `rampTouch` in fair mode never returns null, so the ghost finger repairs any unfair pair within three taps; at level 4 the second unfair Check turns on a corrective glow on the orange lane (`ramp.fairhint`), a wrong-only pair hears `ramp.wrong.*`, and the finish lines, how-to card and co-play tip are truthful. Accounting is unchanged (level 4's hint on every unfair Check from the second is recorded, not fixed).
@@ -103,12 +111,6 @@
 - Reviewed the sprint merges of the last four hours ([PR #581](https://github.com/rjdunlap/neo/pull/581), [#607](https://github.com/rjdunlap/neo/pull/607), [#608](https://github.com/rjdunlap/neo/pull/608)) for merge damage: no conflict markers, no lost or duplicated rows, every study and definition linked from a tracker or build note after this pass. Fixed the subject tracker's stale summary (forty-one researched; Greece and Rome added) and chunk 28's stale cell; cross-linked the arch proposed twice (Water Road level 1 owns it, medieval life's *Keystone* Block Tower mode reuses it) and the two Attic Finds notebook rows; linked the orphaned Brain Break, Mossy Path and Pyramid Solitaire definitions from their build notes; merged the four history studies' shared questions into one answerable row in [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md).
 - Ran `node scripts/check-links.mjs`, `git diff --check` and `node scripts/archive-verification.mjs --keep=15`. No code, tests, build or browser checks: docs only.
 - Open: eleven claim-only draft PRs (#582, #591, #592, #599–#606) have had no commit for over a day; their claims never reached `main`, so no tracker row was reset, and the developer may close them.
-
-## 2026-10-19 — Greece and Rome subject research
-
-- Added the [ancient-mediterranean study](deep-dives/subjects/ancient-mediterranean.md): opened England's history and mathematics programmes (gov.uk), extracted the California HSS standards and the LACOE 3–5/6–8 C3 guides locally from their PDFs (pypdf), read the Grocke, Rossano and Tomasello 2015 publication page, the Athenian democracy, kleroterion, ostracism, Roman aqueduct, arch, Pantheon, Roman roads, Roman numerals, Roman abacus, Ancient Greek coinage, Monte Testaccio, Roman mosaic, meander, Ancient Olympic Games, Heraean Games, knucklebones, Vindolanda tablets and Assassin's Creed Odyssey pages, Hamilton Trust's Ancient Greece topic and its trade unit, and the Vindolanda app's App Store page; Concordia, Rota, the quiz apps and the TES activity from search summaries. Water Road is the first ladder (nine rungs, toddler–13+: keystone, which one stands, hold it up, downhill all the way, over the valley, round or through the hill, the siphon, the fountains first, The Water Commissioner); three Village Vote procedures, six existing-game modes, three provenance lines and five family cards.
-- Updated the subject tracker, the roadmap's subject table, two notebook rows, [Greece and Rome recommendations](deep-dives/subjects/RECOMMENDATIONS.md#greece-and-rome-recommendations) and developer decisions. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks: docs only.
-- Open: placement and the capacity test, the Village Vote boundary, The Water Commissioner's home, a classicist reviewer, exclusion/enslavement depth, Roman Britain's treatment, Rota's form; BBC Bitesize, the British Museum schools page, the Roman Army Museum and Getty game sheets (image-only PDFs) and the Concordia and Terni lapilli Wikipedia pages (404) were not readable this session; no reference game played.
 
 ## Coverage summary
 

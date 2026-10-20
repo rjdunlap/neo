@@ -72,6 +72,18 @@ The companions will be the best-drawn things on screen. Everything around them, 
 
 This is a [developer decision](../WAITING-ON-DEVELOPER.md) now, with that lean recorded, so the routine cannot start R22 or R23 on its own.
 
+## Second pass: R17, R18 and the rigged pilot three (2026-10-19)
+
+After the first review the routine ran the two open rows and stopped, as it should: no eligible request was left. In the same afternoon [PR #609](https://github.com/rjdunlap/neo/pull/609) prepared the pilot three at half size and rigged them in `/?creatures` ([step 2 result](GENERATED-CREATURE-PILOT.md#step-2-result-2026-10-19)).
+
+![The pilot portraits at card size on sky blue, the glider's old and new portraits side by side; the three eggs whole, cracked and open at hatch size on white and smaller on dark](concepts/art-review-2026-10-19b.png)
+
+- **R17, the glider portrait, is accepted.** `glider-portrait-8` puts the face forward, closes the lower bust and deepens the lavender, so at 110 px it now reads as the same creature as its base. It is still the busiest of the three cards: the wing tip and the far fin stack above the head and could read as horns to a small child. Not worth a re-roll before the iPad look; prepare it with extra card padding (its right margin is 14 px).
+- **R18, the egg stages, are accepted.** Whole, crack and open read as three distinct steps at hatch size in all three colours, and the lower shell holds still. The crack is faint at 80 px on dark, which is below where the hatch shows it. One preparation catch for RW05, now on its READY line: the open stage's cap rises 81 px above the whole egg, so the stages must be cut with one box per colour or placed by origin. No separate cap or shell-half pictures are queued; RW05 should first try masking the open stage in code and ask for them only if that fails.
+- **The rigged pilot three.** The step 2 session reports 41 passing creature tests, two orientations probed and a clean production build; not seen on an iPad. Two of its recorded defects need art, and they are the only new rows: **R24**, the river with its head removed so a head layer can turn again, and **R25**, the sprout with its arms removed so they can wag and the scarf can sit under them. Each has a rig follow-up in READY's Queued list.
+- **What the rework does next is code.** READY's Next ten now opens with RW05 slice 1 (the collection model and Friends on the illustrated rigs), then the wearables fit (which decides R19), then the second-wave six. The wearables fit is what unblocks R19; the iPad look, already in [device checks](../DEVICE-CHECKS.md), is what the catalog-wide uplift decision waits on.
+- **Considered and not queued**, for lack of a consuming slice: Dapple colour plates for its colour-change talent (RW11 is a sketch), hatch cap and shell pieces (above), more egg colours (only the three starters hatch), a duck candidate ahead of the developer's decision.
+
 ## Not established
 
 Motion on any of the nine; frame rate with six expression textures resident; whether a two-year-old tells the species apart or prefers them to Pip; whether the painterly home reads as the same world as the flat lands; the exact ink-edge quality at 2×; child appeal of any of it.

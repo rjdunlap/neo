@@ -29,8 +29,10 @@ The routine's work list ([how a run works](README.md#what-a-run-does)). Take the
 | R21 | [Expression set for an adopted look](#r21-expression-set-for-an-adopted-look) | 6 per look | RW10 adopting a look | blocked | |
 | R22 | [The friends, duck first](#r22-the-friends-duck-first) | 2 | the [catalog-wide art decision](../../WAITING-ON-DEVELOPER.md) | blocked | |
 | R23 | [Land backdrops](#r23-land-backdrops) | 1 | the same decision, after R22 is seen on a device | blocked | |
+| R24 | [River head layer](#r24-river-head-layer) | 1 | R03 | open | |
+| R25 | [Sprout arms layer](#r25-sprout-arms-layer) | 1 | R02 | open | |
 
-Priority is the row order: the three pilot species first (they are what RW05 integrates), then what dresses and houses them, then the second wave. R01–R15 were delivered 2026-10-17/18 and [reviewed 2026-10-19](../ART-REVIEW-2026-10-19.md): every set passes the preparation script's alignment rule, so the next work is cutting and rigging in code. R17 and R18 were delivered 2026-10-19. No eligible open image requests remain; the blocked rows wait on named code slices or decisions, not on the routine.
+Priority is the row order: the three pilot species first (they are what RW05 integrates), then what dresses and houses them, then the second wave. R01–R15 were delivered 2026-10-17/18 and [reviewed 2026-10-19](../ART-REVIEW-2026-10-19.md): every set passes the preparation script's alignment rule, so the next work is cutting and rigging in code. R17 and R18 were delivered 2026-10-19 and [reviewed the same day](../ART-REVIEW-2026-10-19.md#second-pass-r17-r18-and-the-rigged-pilot-three-2026-10-19); R24 and R25 (open) answer two defects the rigging session recorded and each has a rig follow-up waiting in [READY.md](../../READY.md). The rest wait on named code slices or decisions; the bottleneck is code and an iPad look, not images. Add a row only when a named slice will consume it.
 
 ## Shared prompts
 
@@ -308,6 +310,26 @@ Reject a stage whose lower shell moved (the hatching rig swaps the three picture
 ## R23: Land backdrops
 
 **Blocked** on the same decision, after R22 is seen on a device. One backdrop, Rainbow Meadow, 1536 × 1024, in the home scene's palette but flatter: broad shapes, no painterly texture, the lower third an empty ground for the games' spots and the companion, no creatures, no text. Attach `home-day-3.png` as the style reference and the land's current screenshot for its landmarks. If adopted, the rest of the lands are one request each.
+
+## R24: River head layer
+
+The rigged river ([step 2](../GENERATED-CREATURE-PILOT.md#step-2-result-2026-10-19)) pins its head, so the Graphics rig's look-around and head tilt are gone: the head is painted on the same picture as the neck, and moving it would tear the neck. A body plate with the head removed lets the rig lay each expression's head over it and turn it. **File (1):** `river-nohead-<n>`, an edit of the chosen `river-base-4.png` (attach it).
+
+```text
+Edit this exact image. Remove the head completely (ears, face, muzzle, whiskers and the top of the head) as if it were drawn on a separate layer above. Continue the neck upward and forward a little past where the head joined it, ending in a soft rounded end that is fully painted in the same caramel with the cream throat continuing, with the same plum outline closed around it. Keep everything else identical: the body, back, cream belly, legs, paws, the dark paddle tail, colours, shading, outline weight, pose, framing, size and position in the frame, and the plain white background.
+```
+
+Check: below and behind the neck the silhouette stays within the 4 px tolerance of the base (as R03's variants did); the neck end sits fully inside the base's old head area, so the head layer covers it at rest. Reject a candidate that moves the shoulder, invents a new head, or leaves an open outline. If three tries fail, record it `missing`; the rig keeps the pinned head.
+
+## R25: Sprout arms layer
+
+The rigged sprout paints its belly under its arms, so the arms barely wag (a bigger wag stretches the belly) and the scarf is drawn over them. A body plate with the arms removed lets the rig cut the arms from the base and move them freely. **File (1):** `sprout-noarms-<n>`, an edit of the chosen `sprout-base-2.png` (attach it).
+
+```text
+Edit this exact image. Remove both arms completely, as if they were drawn on a separate layer above. Paint the teal body side and the cream belly continuously where the arms were, with the same soft shading and the same plum outline following the body's round side. Keep everything else identical: the face, ears, leaves and stem, the feet and their pink pads, colours, shading, outline weight, pose, framing, size and position in the frame, and the plain white background.
+```
+
+Check: outside the arm areas the silhouette stays within 4 px of the base; inside them the body is closed and round with no ghost of a hand. Reject a candidate that changes the face or belly shape. If three tries fail, record it `missing`; the rig keeps the small wag.
 
 ## Not requested
 
