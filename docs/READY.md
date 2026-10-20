@@ -48,7 +48,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 - **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); solvable gardens (built backward at 1–4, frozen at 5–8), free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
 
-- **`sound-garden`, fair varied listening** (existing-game bug fix): seeded sound specs in `logic.ts`, plans keyed by level ID and a capped how-to step, equal-span fast/slow, bird and frog as heard pitch references, varied up/down tunes; level 2's rule kept for the Missing Melody. [Slice 1](deep-dives/sound-garden.md#build-slices-in-order)
 - **`sound-garden`, the whole cast sings** (level 1 content): the turtle joins, a pitched frog, a seeded cast of five from six. [Slice 2](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
 - **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
 - **`sound-garden`, echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree answers. [Slice 4](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
