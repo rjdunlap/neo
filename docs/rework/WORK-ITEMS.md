@@ -16,7 +16,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | packet and wireframe done 2026-10-17 ([HOME-NAVIGATION.md](HOME-NAVIGATION.md)); production cutover waits for RW08 | Reconciled D1b; RW01 informs language |
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | done 2026-10-17: [packet](WELCOME-ADVENTURE.md) | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | defined 2026-10-17 ([CREATURE-COLLECTION.md](CREATURE-COLLECTION.md)); slice 1 built 2026-10-20 ([PR #630](https://github.com/rjdunlap/neo/pull/630)), slice 2 next | RW02, RW03 |
-| [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | define after upstream packets | RW03, RW05 |
+| [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | defined 2026-10-20 ([HOME.md](HOME.md)): `look.worn` with slots, dressing from Friends, then a root Home and creature play with one ball toy; slice 1 (the saved look and dressing) is next | RW03, RW05 |
 | [RW07](https://github.com/rjdunlap/neo/issues/491) | Welcome adventure and visible reward | define after upstream packets | RW04, RW06 |
 | [RW08](https://github.com/rjdunlap/neo/issues/492) | Explore and default-home cutover | define after upstream packets | RW03, RW07; reconcile D1b |
 | [RW09](https://github.com/rjdunlap/neo/issues/493) | Learning evidence and family recap | define after upstream packets | RW04, RW07 |
@@ -132,6 +132,8 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 ## RW06: Playable home and customization
 
 [Issue #490](https://github.com/rjdunlap/neo/issues/490)
+
+**Defined 2026-10-20:** [HOME.md](HOME.md) is the build packet (two slices); the text below is the original scope.
 
 **Outcome:** creatures visibly play in a personal home, and the child can use customization earned or made through play.
 
