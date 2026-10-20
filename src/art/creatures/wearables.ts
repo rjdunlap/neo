@@ -1,6 +1,7 @@
 import { Assets, Container, Sprite, type Texture } from 'pixi.js';
 import type { SpeciesId } from './creature';
 import type { IllustratedCreature, Point } from './illustrated';
+import { WEARABLES, type WearableId } from './wear-slots';
 
 /**
  * RW06 prep (docs/rework/WORK-ITEMS.md#rw06-playable-home-and-customization): the nine generated
@@ -11,8 +12,7 @@ import type { IllustratedCreature, Point } from './illustrated';
  * item was drawn at the wrong angle for that species and is asked for again (queue R19), otherwise
  * the species has no place for it. Separate from the Graphics `Accessory` kinds the RW02 rigs share.
  */
-export const WEARABLES = ['crown', 'scarf', 'sunhat', 'sunglasses', 'raincoat', 'umbrella', 'beanie', 'boots', 'mittens'] as const;
-export type WearableId = (typeof WEARABLES)[number];
+export { MAX_WORN, SLOT, WEARABLES, type WearableId, type WearSlot } from './wear-slots';
 type File = 'crown' | 'scarf' | 'sunhat' | 'sunglasses' | 'raincoat' | 'umbrella' | 'beanie' | 'boot' | 'mitten';
 
 /** A prepared item sprite, in its own pixels: its size and the point that goes on the creature. */
@@ -113,6 +113,11 @@ export function wearItem(c: IllustratedCreature, table: WearTable, id: WearableI
 }
 
 export const wearingItem = (c: IllustratedCreature, id: WearableId) => !!worn.get(c)?.has(id);
+
+/** The prepared sprite an item is drawn from (boots and mittens share one picture each). */
+export const fileOf = (id: WearableId): File => ITEM_ART[id].file;
+/** Loaded item sprites by file; a missing one is simply not drawn. */
+export type ItemTextures = Partial<Record<File, Texture>>;
 
 /** Looks shown together in the preview, as Weather Wardrobe dresses for the weather. */
 export const OUTFITS: { name: string; items: WearableId[] }[] = [

@@ -90,7 +90,7 @@ describe('the profile nobody has used', () => {
     named.profile.name = 'Mia';
     expect(isBlankProfile(named, entry)).toBe(false);
     const hatched = defaults();
-    hatched.creatures = { owned: [{ id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal' }, metAt: 'start' }], companion: 'abcd' };
+    hatched.creatures = { owned: [{ id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal', worn: [] }, metAt: 'start' }], companion: 'abcd' };
     expect(isBlankProfile(hatched, entry)).toBe(false);
     const stickered = defaults();
     stickered.stickers.push({ game: 'bubble-pop', seed: 1, at: 1 });
@@ -127,7 +127,7 @@ describe('the name on a card', () => {
   it('is the person’s, else their companion’s, else the first friend’s name to come', () => {
     const save = defaults();
     expect(cardName(save)).toBe('Pip');
-    save.creatures = { owned: [{ id: 'abcd', species: 'river', name: 'Clover', look: { color: 'teal' }, metAt: 'start' }], companion: 'abcd' };
+    save.creatures = { owned: [{ id: 'abcd', species: 'river', name: 'Clover', look: { color: 'teal', worn: [] }, metAt: 'start' }], companion: 'abcd' };
     expect(cardName(save)).toBe('Clover');
     save.profile.name = '  Mia ';
     expect(cardName(save)).toBe('Mia');

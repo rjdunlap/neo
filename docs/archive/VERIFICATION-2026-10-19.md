@@ -109,3 +109,10 @@
 - References were read through search summaries and store, archive and curriculum pages, none played: Cooking Mama, Toca Kitchen 2, Learning Resources Pizza Fraction Fun, PhET Fractions Intro and Build a Fraction, Slice Fractions, Empson & Levi, Hunting & Sharpley, Frydman & Bryant, CCSS 1.G.A.3, 2.G.A.3 and 3.NF, England Year 1–2.
 - Ladder: levels 10–15, eight queued lines in [READY.md](../READY.md), one defaults row in WAITING, pointers from three notebook rows.
 - Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+
+## 2026-10-19 — Chance and statistics subject study (docs only)
+
+- Docs only: [study](../deep-dives/subjects/chance-statistics.md) on `claude/subject-chance-statistics-finish` ([PR #623](https://github.com/rjdunlap/neo/pull/623)), resuming the abandoned claim in [PR #605](https://github.com/rjdunlap/neo/pull/605). Anchors opened: CCSS 7.SP.C.5–8, 7.SP.A.1–2, 6.SP.A–B and HS S-CP.A; England's KS3 probability and Year 2–6 statistics (probability is first statutory at KS3); the Nuffield Bryant and Nunes review through its news summary (its summary PDF downloaded but did not extract); Xu and Garcia 2008 and Denison and Xu 2010 through secondary summaries; Can't Stop's Wikipedia rules and five spinner lessons through search excerpts; PhET Plinko gave only its title; the Galton board and NCTM spinner recalled. No reference game played.
+- Proposes Spinner Fair (levels 1–10), Peg Garden pearl bins, Lemonade Stand's typical day, Lucky Columns (13+), Spin Race and a family card. Packet in [RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations); tracker, roadmap, IDEAS and WAITING rows updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`. Typecheck, unit tests, build, browser suites and `fingerdemo` not run: no code changed.
+- Open: the seven developer decisions (new game vs Picture Graph, land, toddler on level 1, 11–14 placement, Lucky Columns' home, reviewer, chance never a reward); no child, parent, educator or device involved.

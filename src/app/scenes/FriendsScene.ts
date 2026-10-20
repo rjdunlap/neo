@@ -3,14 +3,15 @@ import { cream, grass, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { makeIndividual, makePortrait, type Companion } from '../../creatures/companion';
-import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, friendsLayout, PER_PAGE } from '../../creatures/friends-layout';
+import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, DRESS_RADIUS, friendsLayout, PER_PAGE } from '../../creatures/friends-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import type { Individual } from '../../progress/save';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
-import { arrowIcon, checkIcon, heartIcon, treehouseIcon } from '../../ui/icons';
+import { arrowIcon, checkIcon, hangerIcon, heartIcon, treehouseIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
+import type { App } from '../App';
 import { Scene } from '../Scene';
 import { applySettings } from '../settings';
 
@@ -18,12 +19,14 @@ import { applySettings } from '../settings';
  * Friends (RW05, docs/rework/CREATURE-COLLECTION.md#friends-the-selection-surface): every friend she has met, from the
  * treehouse's basket. Tapping a card shows that friend on the stage and says its name; only Come with me changes who
  * travels with her, saving at once. Looking changes nothing, and nothing here is a round: no sticker, no stats, no miss.
- * Callbacks hold a friend's id, never the friend, and look it up in the current save.
+ * Callbacks hold a friend's id, never the friend, and look it up in the current save. Dress (RW06) opens dressing for
+ * the friend on the stage, and coming back puts that friend on the stage again.
  */
 export class FriendsScene extends Scene {
   private readonly floor = new Graphics();
   private readonly back = new RoundButton(treehouseIcon(), swatch.white, 50, () => this.app.go.room());
   private readonly come = new RoundButton(checkIcon(), swatch.green, COME_RADIUS, () => void this.comeWithMe());
+  private readonly dress = new RoundButton(hangerIcon(), swatch.yellow, DRESS_RADIUS, () => this.dressUp());
   private readonly cards = new Container();
   private readonly ring = new Graphics();
   private readonly previous = new HoldButton(arrowIcon(-1), swatch.white, ARROW_RADIUS, 0.35, () => this.turn(-1), swatch.teal.line);
@@ -31,14 +34,19 @@ export class FriendsScene extends Scene {
   /** The friend on the stage. */
   stageFriend: Companion | null = null;
   /** Whose card was tapped last: the friend on the stage. */
-  previewed: string | null = store.data.creatures.companion;
+  previewed: string | null;
   page = 0;
   private leaving = false;
+
+  constructor(app: App, previewId?: string) {
+    super(app);
+    this.previewed = previewId ?? store.data.creatures.companion;
+  }
 
   init() {
     this.ring.eventMode = 'none';
     this.content.addChild(this.floor, this.cards, this.ring);
-    this.ui.addChild(this.back, this.come, this.track(this.previous), this.track(this.next));
+    this.ui.addChild(this.back, this.come, this.dress, this.track(this.previous), this.track(this.next));
     const at = store.data.creatures.owned.findIndex((o) => o.id === this.previewed);
     this.page = Math.max(0, Math.floor(at / PER_PAGE));
     this.showStage();
@@ -125,6 +133,15 @@ export class FriendsScene extends Scene {
     this.buildCards();
   }
 
+  /** Opens dressing for the friend on the stage. */
+  private dressUp() {
+    const who = this.friend(this.previewed);
+    if (!who || this.leaving) return;
+    this.leaving = true;
+    // Dressing opens with `friends.dress`, then its instruction.
+    this.app.go.dress(who.id);
+  }
+
   /** The only thing here that changes anything: the previewed friend travels with her from now on. */
   async comeWithMe() {
     const who = this.friend(this.previewed);
@@ -151,6 +168,7 @@ export class FriendsScene extends Scene {
     this.floor.clear().rect(0, 0, v.w, v.h).fill(cream).ellipse(l.stage.x, l.stage.y, 170, 30).fill(grass);
     this.back.position.set(BACK.x, BACK.y);
     this.come.position.set(l.come.x, l.come.y);
+    this.dress.position.set(l.dress.x, l.dress.y);
     this.stageFriend?.position.set(l.stage.x, l.stage.y);
     this.stageFriend?.scale.set(l.stage.scale);
     this.cards.children.forEach((c, i) => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FLOOR, starterItem } from '../content/room';
 import { ROOM_ITEMS } from '../content/world';
 import { cleanCreatures, companionOf, defaults, MAX_CREATURES, meetIn, migrate, remember, repairPrevious, swapWithPrevious } from './save';
+import { changeWorn, cleanWorn } from '../art/creatures/wear-slots';
 
 describe('migrate', () => {
   it('turns nonsense into defaults', () => {
@@ -85,10 +86,10 @@ describe('migrate', () => {
     expect('pet' in save).toBe(false);
   });
 
-  const friend = (id: string, extra: Record<string, unknown> = {}) => ({ id, species: 'sprout', name: 'Mochi', look: { color: 'pink' }, metAt: 'start', ...extra });
+  const friend = (id: string, extra: Record<string, unknown> = {}) => ({ id, species: 'sprout', name: 'Mochi', look: { color: 'pink', worn: [] as string[] }, metAt: 'start', ...extra });
 
   it('round-trips a valid creature collection unchanged', () => {
-    const c = { owned: [friend('abcd'), friend('riv1', { species: 'river', name: 'Pebble', look: { color: 'blue' }, metAt: 'dev:river' })], companion: 'riv1' };
+    const c = { owned: [friend('abcd'), friend('riv1', { species: 'river', name: 'Pebble', look: { color: 'blue', worn: ['crown', 'scarf'] }, metAt: 'dev:river' })], companion: 'riv1' };
     expect(cleanCreatures(JSON.parse(JSON.stringify(c)))).toEqual(c);
   });
 
@@ -103,10 +104,34 @@ describe('migrate', () => {
 
   it('repairs a name, a colour and a token, falling back to the species\' own', () => {
     const [a, b] = cleanCreatures({ owned: [friend('abcd', { name: '   ', look: { color: 'ultraviolet' }, metAt: 7 }), friend('efgh', { species: 'glider', name: 'x'.repeat(80), look: null, metAt: 'y'.repeat(90) })] }).owned;
-    expect(a).toEqual({ id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal' }, metAt: '' });
+    expect(a).toEqual({ id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal', worn: [] }, metAt: '' });
     expect(b.name).toHaveLength(40);
     expect(b.look.color).toBe('purple');
     expect(b.metAt).toHaveLength(60);
+  });
+
+  it('repairs what a friend wears: unknown ids, repeats, two in a slot, seven at most, misfits kept (RW06)', () => {
+    const worn = (w: unknown) => cleanCreatures({ owned: [friend('abcd', { look: { color: 'pink', worn: w } })] }).owned[0].look.worn;
+    expect(worn(undefined)).toEqual([]);
+    expect(worn('crown')).toEqual([]);
+    expect(worn(['crown', 'cape', 7, null, 'scarf'])).toEqual(['crown', 'scarf']);
+    expect(worn(['scarf', 'crown', 'scarf'])).toEqual(['scarf', 'crown']);
+    // A crown then a sun hat: the hat went on last and stays.
+    expect(worn(['crown', 'scarf', 'sunhat'])).toEqual(['scarf', 'sunhat']);
+    // Boots on a sprout are a misfit, kept and simply not drawn.
+    expect(worn(['boots', 'raincoat'])).toEqual(['boots', 'raincoat']);
+    const all = ['crown', 'sunglasses', 'scarf', 'raincoat', 'umbrella', 'mittens', 'boots', 'beanie', 'sunhat'];
+    expect(worn(all)).toEqual(['sunglasses', 'scarf', 'raincoat', 'umbrella', 'mittens', 'boots', 'sunhat']);
+    expect(worn(all).length).toBeLessThanOrEqual(7);
+  });
+
+  it('puts on in a slot by replacing, and takes off only the item (RW06)', () => {
+    expect(changeWorn([], 'crown', true)).toEqual(['crown']);
+    expect(changeWorn(['crown', 'scarf'], 'sunhat', true)).toEqual(['scarf', 'sunhat']);
+    expect(changeWorn(['crown', 'scarf'], 'crown', true)).toEqual(['scarf', 'crown']);
+    expect(changeWorn(['crown', 'scarf'], 'crown', false)).toEqual(['scarf']);
+    expect(changeWorn(['scarf'], 'beanie', false)).toEqual(['scarf']);
+    for (const w of [['crown'], ['scarf', 'sunhat', 'boots']] as const) expect(cleanWorn(changeWorn(w, 'beanie', true))).toEqual(changeWorn(w, 'beanie', true));
   });
 
   it('keeps the earliest 24', () => {
@@ -129,7 +154,7 @@ describe('migrate', () => {
     let n = 0;
     const ids = () => `id${n++}aa`;
     const first = meetIn(c, 'sprout', ' Mochi ', 'pink', 'start', ids)!;
-    expect(first).toEqual({ id: 'id0aa', species: 'sprout', name: 'Mochi', look: { color: 'pink' }, metAt: 'start' });
+    expect(first).toEqual({ id: 'id0aa', species: 'sprout', name: 'Mochi', look: { color: 'pink', worn: [] }, metAt: 'start' });
     expect(c.companion).toBe('id0aa');
     expect(meetIn(c, 'sprout', 'Other', 'blue', 'start', ids)).toBe(first);
     const river = meetIn(c, 'river', '', 'blue', 'dev:river', ids)!;

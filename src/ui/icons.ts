@@ -106,6 +106,13 @@ export function treehouseIcon(): Graphics {
     .roundRect(-4, -2, 8, 14, 2).fill(wood.line);
 }
 
+/** A clothes hanger: dress a friend (RW06). */
+export function hangerIcon(color = ink): Graphics {
+  return new Graphics()
+    .moveTo(-6, -22).bezierCurveTo(-6, -34, 10, -34, 10, -24).bezierCurveTo(10, -16, 0, -16, 0, -8).stroke(line(6, color))
+    .poly([0, -8, 30, 16, -30, 16]).stroke(line(7, color));
+}
+
 /** Two arrows facing each other: turn a thing round. */
 export function flipIcon(color = ink): Graphics {
   return new Graphics()

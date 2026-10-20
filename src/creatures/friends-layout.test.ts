@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
-import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, friendsLayout, pageCount, PER_PAGE } from './friends-layout';
+import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, DRESS_RADIUS, friendsLayout, pageCount, PER_PAGE } from './friends-layout';
 
 /** The four views the land layouts are tested in (an iPad sideways and upright, a phone sideways, one with a notch), and a wide laptop. */
 const VIEWS = [
@@ -33,6 +33,7 @@ describe('the Friends layout', () => {
           const boxes: Box[] = [
             ...l.cards.map((c, i) => square(c.x, c.y, CARD / 2, `card ${i}`)),
             square(l.come.x, l.come.y, COME_RADIUS + 6, 'come'),
+            square(l.dress.x, l.dress.y, DRESS_RADIUS + 6, 'dress'),
             square(BACK.x, BACK.y, BACK.r - 6, 'back'),
             stage,
           ];

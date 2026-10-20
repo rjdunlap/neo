@@ -4,9 +4,11 @@ import { swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
 import type { Creature } from '../art/creatures/creature';
 import { IllustratedCreature, loadArt, type ArtSet, type Mood as RigMood } from '../art/creatures/illustrated';
-import { IllustratedGlider } from '../art/creatures/glider-illustrated';
-import { IllustratedRiver } from '../art/creatures/river-illustrated';
-import { IllustratedSprout } from '../art/creatures/sprout-illustrated';
+import { GLIDER_WEAR, IllustratedGlider } from '../art/creatures/glider-illustrated';
+import { IllustratedRiver, RIVER_WEAR } from '../art/creatures/river-illustrated';
+import { IllustratedSprout, SPROUT_WEAR } from '../art/creatures/sprout-illustrated';
+import { changeWorn, SLOT, type WearSlot } from '../art/creatures/wear-slots';
+import { fileOf, fits, loadWearables, wearItem, WEARABLES, type ItemTextures, type WearableId, type WearTables } from '../art/creatures/wearables';
 import { sfx } from '../audio/sfx';
 import type { PetColor } from '../content/world';
 import type { Individual } from '../progress/save';
@@ -27,16 +29,26 @@ import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
 const files = import.meta.glob<string>('./art/*.png', { query: '?url', import: 'default', eager: true });
 const fileUrl = (name: string) => files[`./art/${name}.png`];
 
-const loaded: { sets: Partial<Record<SpeciesId, ArtSet>>; pictures: Map<string, Texture> } = { sets: {}, pictures: new Map() };
+const loaded: { sets: Partial<Record<SpeciesId, ArtSet>>; pictures: Map<string, Texture>; items: ItemTextures } = { sets: {}, pictures: new Map(), items: {} };
+
+/** Where each wearable sits on each species (RW06), from the rigs' own tables. */
+export const WEAR: WearTables = { sprout: SPROUT_WEAR, river: RIVER_WEAR, glider: GLIDER_WEAR };
+
+/** The items a species can wear, in the wardrobe's order: its misfits are never offered. */
+export const wearableBy = (species: SpeciesId): WearableId[] => WEARABLES.filter((w) => fits(WEAR[species][w]));
 
 export const EGG_STAGES = ['whole', 'crack', 'open'] as const;
 export type EggStage = (typeof EGG_STAGES)[number];
 const EGG_FILE: Record<EggStage, string> = { whole: 'egg-sprout', crack: 'egg-sprout-crack', open: 'egg-sprout-open' };
 
-/** Loads every species' rig art, the portraits, the card paper and the sprout's egg. Never throws: what fails falls back. */
+/** Loads every species' rig art, the portraits, the card paper, the sprout's egg and the wearables. Never throws: what fails falls back (an item that failed is not drawn). */
 export async function loadCollectionArt(): Promise<void> {
   const pictures = [...SPECIES_IDS.map((s) => `${s}-portrait`), 'card-paper', ...Object.values(EGG_FILE)];
   await Promise.all([
+    loadWearables().then(
+      (items) => void (loaded.items = items),
+      (e) => console.warn('Could not load the wearables', e),
+    ),
     ...SPECIES_IDS.map(async (s) => {
       try {
         loaded.sets[s] = await loadArt(s);
@@ -64,6 +76,14 @@ export function useArt(species: SpeciesId, art: ArtSet | undefined) {
   loaded.sets[species] = art;
 }
 
+/** An item's loaded sprite, for a wardrobe card; null if it failed to load. */
+export const itemTexture = (id: WearableId): Texture | null => loaded.items[fileOf(id)] ?? null;
+
+/** For tests: draws the wearables with these textures. */
+export function useItems(items: ItemTextures) {
+  loaded.items = items;
+}
+
 /**
  * Each species at a common size: the rigs are drawn at their natural sizes (the sprout ≈ 230 units tall, the river
  * ≈ 340 long, the glider ≈ 380 across), and a companion at scale 1 should take about the room the old pip did (≈ 250
@@ -78,6 +98,13 @@ export const FIT: Record<SpeciesId, { scale: number; lift: number }> = {
 
 /** The guide in a round stands at (74, view.h − 18) at this scale, inside the pip's old bottom-left clearance. */
 export const GUIDE_SCALE = 0.42;
+
+/**
+ * What the guide leaves off (RW06): the sprout's umbrella, held out beside it, reaches about 25 units past the corner's
+ * clearance at guide size (the footprint test), so the guide drops the `held` slot rather than shrink every species. It
+ * is still saved and still shows everywhere else.
+ */
+export const GUIDE_LEAVES_OFF: readonly WearSlot[] = ['held'];
 
 /** The mood a scene asks for, as a rig shows it: the rigs have no singing face, so a song shows as happy. */
 const RIG_MOOD: Record<Mood, RigMood> = { happy: 'happy', surprised: 'surprised', sing: 'happy', sleepy: 'sleepy', sad: 'sad', calm: 'calm' };
@@ -153,8 +180,17 @@ export class Companion extends Container {
   private squash = 0;
   private squashV = 0;
 
-  constructor(who: Pick<Individual, 'species' | 'look'> & { id?: string | null }, art: ArtSet | undefined = loaded.sets[who.species]) {
+  private shown: WearableId[] = [];
+  /** Slots this companion never draws, though they stay listed in `worn` (the guide's `held`). */
+  private readonly leaveOff: readonly WearSlot[];
+
+  constructor(
+    who: { species: SpeciesId; look: { color: PetColor; worn?: readonly WearableId[] }; id?: string | null },
+    art: ArtSet | undefined = loaded.sets[who.species],
+    leaveOff: readonly WearSlot[] = [],
+  ) {
     super();
+    this.leaveOff = leaveOff;
     this.species = who.species;
     this.id = who.id ?? null;
     this.rig = art ? illustrated(who.species, art) : makeCreature(who.species);
@@ -166,6 +202,34 @@ export class Companion extends Container {
     this.touch = { x: t.x * fit.scale, y: t.y * fit.scale - fit.lift, r: t.r * fit.scale };
     this.body.addChild(this.rig);
     this.addChild(this.body);
+    this.dress(who.look.worn ?? []);
+  }
+
+  /** What it has on, as saved (RW06), in the order put on. A misfit for its species is listed but not drawn. */
+  get worn(): readonly WearableId[] {
+    return this.shown;
+  }
+
+  /**
+   * Changes what it wears to `worn`: what is no longer listed comes off first, then what is new goes on. The Graphics
+   * fallback rig wears nothing (`wearItem` dresses illustrated rigs only), nor does an item whose texture failed.
+   */
+  dress(worn: readonly WearableId[]) {
+    const next = [...worn];
+    if (this.rig instanceof IllustratedCreature) {
+      const table = WEAR[this.species];
+      for (const w of this.shown) if (!next.includes(w)) wearItem(this.rig, table, w, null);
+      for (const w of next) {
+        const t = loaded.items[fileOf(w)];
+        if (!this.shown.includes(w) && t && !this.leaveOff.includes(SLOT[w])) wearItem(this.rig, table, w, t);
+      }
+    }
+    this.shown = next;
+  }
+
+  /** Puts one item on (taking off whatever shares its slot) or takes it off. */
+  wear(item: WearableId, on: boolean) {
+    this.dress(changeWorn(this.shown, item, on));
   }
 
   /** A body-centred hit circle, `grow` units larger than the body. */
@@ -242,7 +306,7 @@ function illustrated(species: SpeciesId, art: ArtSet): IllustratedCreature {
 }
 
 /** Who stands in before her first friend: a teal sprout, which is what the egg hatches. */
-const STAND_IN = { species: 'sprout', look: { color: SPECIES.sprout.color } } as const;
+const STAND_IN = { species: 'sprout', look: { color: SPECIES.sprout.color, worn: [] } } as const;
 
 /** The active profile's companion, or null before the first friend hatches. */
 export const companion = (): Individual | null => store.companion;
@@ -250,6 +314,11 @@ export const companion = (): Individual | null => store.companion;
 /** Draws the companion (or the stand-in sprout before her first friend). */
 export function makeCompanion(): Companion {
   return new Companion(companion() ?? STAND_IN);
+}
+
+/** The companion as the corner guide in a round: dressed, leaving off what would reach past the corner. */
+export function makeGuide(): Companion {
+  return new Companion(companion() ?? STAND_IN, undefined, GUIDE_LEAVES_OFF);
 }
 
 /** Draws one individual, for Friends and for another profile's card. */
@@ -267,7 +336,7 @@ export function companionSpec(): CritterSpec {
  * A collection card's picture: the species' portrait over the card paper, the paper washed with her colour. `size` is
  * the card's side in units. A still picture, so a card never keeps a live rig. Without the art, a frozen rig.
  */
-export function makePortrait(who: Pick<Individual, 'species' | 'look'>, size: number): Container {
+export function makePortrait(who: Pick<Individual, 'species'> & { look: { color: PetColor } }, size: number): Container {
   const card = new Container();
   const paper = loaded.pictures.get('card-paper');
   const tone = swatch[who.look.color as ColorName];

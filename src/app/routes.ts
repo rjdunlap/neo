@@ -15,6 +15,7 @@ import { JournalScene } from './scenes/JournalScene';
 import { LandScene } from './scenes/LandScene';
 import { RoomScene } from './scenes/RoomScene';
 import { FriendsScene } from './scenes/FriendsScene';
+import { DressScene } from './scenes/DressScene';
 import { StickerBookScene } from './scenes/StickerBookScene';
 import { CouchScene } from './scenes/CouchScene';
 
@@ -41,7 +42,8 @@ export function createRoutes(app: App): Routes {
     woodland: (from) => void app.show(new WoodlandScene(app, from)),
     stickers: () => void app.show(new StickerBookScene(app)),
     room: () => void app.show(new RoomScene(app)),
-    friends: () => void app.show(new FriendsScene(app)),
+    friends: (previewId) => void app.show(new FriendsScene(app, previewId)),
+    dress: (id) => void app.show(new DressScene(app, id)),
     journal: () => void app.show(new JournalScene(app)),
   };
 }
