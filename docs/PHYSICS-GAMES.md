@@ -46,7 +46,7 @@ All names are generic. "Tier" is the list above. Effort is relative (S / M / L).
 | Candidate | After | Fun action and learning | Bands | Tier | Effort |
 | --- | --- | --- | --- | --- | --- |
 | **Planet Hop** (a mode of Bouncy Launch) | Moon jumps, Kerbal-style planets | The same pull flies farther on the moon and shorter on a heavy planet; predict, then compare. Gravity as a stronger or weaker pull (not the 5-PS2-1 anchor, which is gravity directed down) | school | 1 (a stated reach rule: reach divided by a toy gravity factor; not `ball.ts`) | S; [built at school level 12](definitions/planet-hop.md), 2026-10-16 |
-| **Domino Run** | Domino toppling videos, Incredible Machine | Stand dominoes so the chain reaches the bell; a gap that is too wide stops it, a branch lights two bells, a pattern of colors sets the order. Spacing, cause and effect, counting. No fall to harm; a stalled chain just stands up again | toddler–school | 1 (a 1D tipping rule) | S–M; [defined, ready](definitions/domino-run.md), 2026-10-17 |
+| **Domino Run** | Domino toppling videos, Incredible Machine | Stand dominoes so the chain reaches the bell; a gap that is too wide stops it, a branch lights two bells, a pattern of colors sets the order. Spacing, cause and effect, counting. No fall to harm; a stalled chain just stands up again | toddler–school | 1 (a 1D tipping rule) | S–M; [built 2026-10-20](definitions/domino-run.md) as levels 1–8 |
 | **Swing Pals** | Playground swings; a pendulum | Tap in time to swing a friend higher (any rhythm works, a steady one swings higher); a longer rope swings slower. Patterns of motion (3-PS2-2) | lap–school | 1 (analytic pendulum) | S–M; [defined, ready](definitions/swing-pals.md), 2026-10-17 |
 | **Lift It** ([machines/tools study](deep-dives/subjects/machines-tools.md), which refines this seed) | Tinybop Simple Machines; Physics Playground's agents | Get a heavy crate up to the treehouse with a lever, a ramp, a pulley or a wedge; a movable load pulley with two supporting strands takes twice the rope travel in the ideal model, a ramp a longer push. Simple machines and trade-offs; several machines work | preschool–school | 1 (stated rules) | M; [defined, ready](definitions/lift-it.md), 2026-10-17 (pulleys only; ramps and levers later) |
 | **Build a Boat** (a mode of Sink or Float; Raft Delivery in the notebook is the nearby game) | the classic foil-boat challenge | Shape a hull wide or deep to carry more cargo before it sinks; compare two boats; the model is stated, not full fluid physics. *Same material, change the shape* belongs to Make it float (Sink or Float level 7, [definition](definitions/make-it-float.md)); Build a Boat keeps cargo and hull capacity | school | 1 (a stated buoyancy rule) | M |
@@ -74,9 +74,9 @@ Parents: the family table (play together, chunk 16) is the natural home for the 
 
 ## Suggested order
 
-**Planet Hop is built** as Bouncy Launch’s school level 12 ([definition and closeout](definitions/planet-hop.md), [verification](archive/VERIFICATION-2026-10-16.md#2026-10-16--bouncy-launch-12-planet-hop)). Its younger and grown-up audience ideas above remain proposals. Remaining order:
+**Planet Hop is built** as Bouncy Launch’s school level 12 ([definition and closeout](definitions/planet-hop.md), [verification](archive/VERIFICATION-2026-10-16.md#2026-10-16--bouncy-launch-12-planet-hop)). Its younger and grown-up audience ideas above remain proposals. Remaining order (Domino Run has since been built):
 
-1. **Domino Run** (a tier-1 game for toddlers to school; [definition](definitions/domino-run.md), ready to build).
+1. **Domino Run** is built (2026-10-20, a tier-1 game for toddlers to school; [definition](definitions/domino-run.md)).
 2. **Swing Pals** ([definition](definitions/swing-pals.md), ready to build), then **Lift It** ([definition](definitions/lift-it.md), ready to build).
 3. Make the physics-engine decision before **Vine Snip**, **Block Topple**, **Draw a Ramp** and **Pond Merge**.
 

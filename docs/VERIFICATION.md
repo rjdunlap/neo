@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-20 — Domino Run levels 1–8
+
+- Built on `claude/domino-run` (PR #659, tested commit `cd11a6f7`): new game `domino-run` in Bubble Beach, levels 1–8 (tipping rule, tray, stalls never a miss, glow hint after the second stall), new `dominorun` browser suite, a ghost-finger bot.
+- Ran `npm run typecheck` (clean) and full `npm test` (183 files, 1730 tests pass; 13 new domino-run rule tests: the tipping rule, the authored first lines' exact solutions, 500 seeds across the 8 plans never using the fallback, hint-following from every placement state, layout at four views). `npm run build` passed.
+- `BROWSER_SUITE=dominorun` (Vite http://localhost:5209) passed: level 1 by taps, level 8 with a stalled run (0 misses), one requested hint, drags, and a level 5 portrait screenshot (`test-results/browser/domino-run-5-portrait.png`). `BROWSER_SUITE=fingerdemo FINGER_ONLY=domino-run` passed at level 1 (toddler, 5.0 s) and level 8 (school, 13.6 s).
+- Not run: `world`, the offline check, an iPad. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether a toddler finds tap-to-hop at level 2, whether the stall ring reads as "here is the gap", and whether three dot faces tell sizes apart on an iPad.
+
 ## 2026-10-20 — Sound Garden: fair, varied listening (slice 1)
 
 - Built on `claude/sound-garden-fair-listening` (PR #656, code commit `21e35c01`): seeded sounds for levels 2–4 and 6 (`makeSounds`), equal-span fast/slow, varied high/low and up/down, `PLANS` keyed by level ID, how-to level-6 step capped.
@@ -101,14 +108,6 @@
 - Ran `BROWSER_SUITE=home` at the root (http://localhost:5571): Explore to the picker (rainbow-meadow and counting-cove, island link hidden, screenshot `explore`), Back to Home (link shown), Explore, Counting Cove card, location, Home; passed. Production offline check (http://localhost:5656, served build matched `dist` `main-BIDP_T3s.js`) passed.
 - Not run: `world` (classic navigation unchanged), an iPad touch or speech check, a child's reaction.
 
-## 2026-10-20 — RW13 slice 3: Counting Cove at the root
-
-- Built on `claude/rw13-counting-cove` ([PR #639](https://github.com/rjdunlap/neo/pull/639), code `f48ee8da` on `f8f85164`): `cove.ts` (`covePlan`/`drawCove`), `cove.test.ts` and one `LOCATIONS` entry (`counting-cove`, resident the illustrated River). `classic/` and shared files are unchanged.
-- Ran `npm run typecheck` (clean) and `npm test` (171 files, 1619 tests passed; a later placement tweak re-ran the scenes tests, 4 of 4, and typecheck, both passing).
-- Root probe (one-off Playwright script, dev server, fresh profile): `go.land('counting-cove')` shows the cove with the River resident, tap the resident, launch the first game (duck-pond), Home back to the cove, `go.hub` to Home, in 1024×768 and 768×1024 with no page errors; both screenshots reviewed.
-- Not run: `npm run build` (no shared files), `world`, the offline check, an iPad look, real speech, a child's reaction.
-- Open: Home's Explore still opens Rainbow Meadow only, so the cove has no button entry until the Explore picker slice (see [READY.md](READY.md)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -116,6 +115,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | `blockgarden`, `fingerdemo` (`block-garden`) | 2026-10-20: levels 1 and 8 by drags (no misses or hints, a sticker each), level 3 (two refused drops = 2 misses and 1 hint), hinted piece, undo, a free tap on a tall piece's slot upright, level 6 portrait; ghost finger clean at levels 1 and 8 (3.9, 23.2 s); typecheck, 33 rule tests, full `npm test` (1713), build | commit `0448a289`, http://localhost:5856 | No world or offline run; iPad drag lift, phone squares, shadow and level 8 hint time open; one creature-rig test flaked once in the full run |
+| `dominorun`, `fingerdemo` (`domino-run`) | 2026-10-20: level 1 by taps, level 8 with a stalled run (0 misses), one requested hint, drags, level 5 portrait; ghost finger clean at levels 1 and 8 (5.0, 13.6 s); typecheck, 13 rule tests, full `npm test` (1730), build | commit `cd11a6f7`, http://localhost:5209 | No world, offline or couch run; iPad tap-to-hop, stall ring and dot faces open |
 | `jarsort`, `fingerdemo` (`jar-sort`) | 2026-10-20: levels 1, 3, 7 (portrait) and 8 by taps (free and counted refused moves, drag, undo, mats, one sticker); ghost finger clean at levels 1, 8 and 4 (16.6, 49.8, 25.1 s; the last after the one-board demo); typecheck, 10 rule tests and build | [2026-10-20 entry](#2026-10-20--jar-sort-levels-18) | Offline, `world` and phone suites not run; the level 1 and 8 demos ran before the one-board change; device checks open |
 | `conductor`, `fingerdemo` (`little-conductor`) | 2026-10-20: levels 1 and 2 (early Done, change inside a beat, heard gate, bow, one sticker, portrait); clean 11.9 s ghost finger at both; typecheck, 20 rule tests and build | [2026-10-20 entry](#2026-10-20--little-conductor-levels-12-music-m2) | No `smoke`, `world` or offline run; iPad sound (60 vs 90), pad and pending-ring readability for a toddler, speech and child reaction open |
 | Dressing (RW06 slice 1), `dress`, `friends`, `world`, offline | 2026-10-20: typecheck, 1614 units, build, `dress` (new), `friends`, `world` and `test:offline` all passed at `c92a51d3` | [2026-10-20 entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--rw06-slice-1-the-saved-look-and-dressing) | Large-pet games and couch suites not run; no device, speech or child check |

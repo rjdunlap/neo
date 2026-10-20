@@ -1173,3 +1173,13 @@ Idea row moved here from the notebook's candidates:
 | **Block Garden** (the calm side of block-placement puzzles; the set-aside Tetris item, revisited; opened 2026-10-14: Block Blast, this exact genre, was the most-downloaded mobile game of 2025 with about 356 million installs, AppMagic via [PocketGamer.biz](https://www.pocketgamer.biz/the-most-downloaded-mobile-games-of-2025)) | *Fun action:* drag shaped pieces onto a 10 by 10 board and clear full rows and columns, with nothing falling and no clock. *Skill:* spatial planning | **Defined, ready (now built):** [definition](../definitions/block-garden.md), pre-K to grown-up. Finite solvable gardens (built backward at 1–4, a frozen solver-checked list at 5–8), fixed shapes with no rotation, every bud blooms (or the bed is emptied), free undo instead of a reshuffle; a controller cursor, box clears and an opt-in endless run stay later modes | M |
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--block-garden-levels-18).
+
+## Domino Run levels 1–8 (2026-10-20)
+
+[PR #659](https://github.com/rjdunlap/neo/pull/659), `claude/domino-run`, built from its [definition](../definitions/domino-run.md) with every default taken. New game `domino-run` in Bubble Beach (6 games), region tinker-lab, music `STYLES.paint`; toddler 1–2, preschool 2–4, pre-K 3–5, school 4–8. Stand dominoes from a tray into a lane's sockets and tap the green starter; a domino falls if the one before reaches it (reach = size) and it is at most one size bigger; a bell is size 1 and a gong size 4 (only a giant). Levels: 1 Tip the line, 2 One missing, 3 Fill the gaps, 4 Tall ones reach farther, 5 Two bells, 6 Growing dominoes, 7 Just enough, 8 Two bells, one tray. A stall is never a miss; the second stall on a line (levels 3–8) glows the next placement and counts one hint, as does the pause sheet's "Show a hint". Extra voice lines beyond the definition: `domino-run.instruct-gap` (level 2) and `domino-run.too-heavy-giant` (level 6). No couch, journal, creation or save field. Rules in `src/games/domino-run/logic.ts`; ghost-finger bot drags the hint placement then taps the starter.
+
+Idea row moved here from the notebook's candidates:
+
+| **Domino Run** (dominoes; The Incredible Machine; **recalled**) | Stand dominoes so the chain reaches the bell; a gap too wide stops it, a branch lights two bells, color patterns set an order. Spacing, cause and effect, counting. A stalled chain stands up again | **Defined, ready (now built):** a 1D tipping rule, exactly testable, no physics engine; color patterns stay a proposal (Pattern Train owns patterns) | S–M |
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--domino-run-levels-18).

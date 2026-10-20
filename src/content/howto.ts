@@ -1138,6 +1138,24 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 2, text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her.' },
     ],
   },
+  'domino-run': {
+    goal: 'Stand the dominoes so the chain rings the bell.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap a domino and the line falls.' },
+      { from: 2, to: 2, text: 'Drag the domino from the side into the glowing gap, or just tap it.' },
+      { from: 3, to: 8, text: 'Drag a domino from the side into a gap. Tap one in a gap to send it back.' },
+      { from: 2, to: 8, text: 'Tap the green domino to start the chain.' },
+      { from: 4, to: 5, text: 'A tall domino reaches over one empty space.' },
+      { from: 6, to: 8, text: 'A tall domino reaches over one empty space. A domino can push one size bigger, not two, and only a giant rings the gong.' },
+      { from: 5, to: 5, text: 'The split block starts two lines.' },
+      { from: 8, to: 8, text: 'The split block starts two lines.' },
+    ],
+    finish: 'Every bell rings.',
+    note: [
+      { from: 1, to: 2, text: 'A chain that stops is never counted against her: the dominoes stand back up so she can fix the gap. Reach and size are a game rule, not exact physics.' },
+      { from: 3, to: 8, text: 'A chain that stops is never counted against her: the dominoes stand back up so she can fix the gap. After two stopped chains, the next domino to place glows; that counts as a hint. Reach and size are a game rule, not exact physics.' },
+    ],
+  },
   'block-garden': {
     goal: 'Plant shapes until every bud blooms.',
     steps: [

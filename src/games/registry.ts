@@ -83,6 +83,7 @@ import { gardenRows } from './garden-rows';
 import { ferryJam } from './ferry-jam';
 import { jarSort } from './jar-sort';
 import { blockGarden } from './block-garden';
+import { dominoRun } from './domino-run';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
@@ -181,6 +182,7 @@ export const GAMES: GameModule[] = [
   ferryJam,
   jarSort,
   blockGarden,
+  dominoRun,
   critterCrossing,
   clapSyllables,
   chainReaction,
