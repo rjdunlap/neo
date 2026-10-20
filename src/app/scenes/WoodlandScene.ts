@@ -2,7 +2,7 @@ import { Circle, Container, Graphics } from 'pixi.js';
 import type { Critter } from '../../art/critter';
 import { makeHazel } from '../../art/lands';
 import { cream, ink, RAINBOW, swatch } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { blanketArt, checkBadge } from '../../art/picnic';
 import { Backdrop } from '../../art/scenery';
 import { basketPoleArt, friendCritter, HOUSE_COLORS, pineArt, stoneArt, stumpArt, WoodHouse, woodlandPhoto, woodlandRequestArt } from '../../art/woodland';
@@ -53,7 +53,7 @@ export interface PhotoView {
 export class WoodlandScene extends Scene {
   backdrop!: Backdrop;
   readonly hazel = makeHazel();
-  readonly pip = makePet();
+  readonly pip = makeCompanion();
   readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.place(WOODLAND_BAND)));
   /** The kept photo, in the top-right corner once the story has ended once. */
   readonly photoButton = new RoundButton(woodlandPhoto(78), swatch.white, 50, () => this.openPhoto());

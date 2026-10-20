@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
-import { Critter } from '../../art/critter';
 import { cream, swatch } from '../../art/palette';
-import { drawEgg, petSpec } from '../../art/pet';
+import { Companion, makeEgg, type EggStage } from '../../creatures/companion';
+import { SPECIES } from '../../creatures/species';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { PET_COLORS, type PetColor } from '../../content/world';
@@ -19,16 +19,19 @@ export class HatchScene extends Scene {
   /** It has a name field, and nothing here has started yet. */
   canPause = false;
   private readonly background = new Graphics();
-  private readonly egg = drawEgg(new Graphics());
+  /** The sprout's egg: whole, cracked after the first taps, open on the last (R08 and R18). */
+  private readonly egg = new Container();
+  private eggStage: EggStage | null = null;
   private readonly choices = new Container();
-  private pip: Critter | null = null;
+  private pip: Companion | null = null;
   private taps = 0;
   private step: 'egg' | 'color' | 'name' = 'egg';
   private readonly selected = new Graphics();
   private readonly nameLabel = label('', 42, swatch.teal.line);
-  private color: PetColor = store.data.pet.color;
-  private name = 'Pip';
-  private readonly names = ['Pip', 'Mochi', 'Clover'];
+  /** The egg hatches a sprout (RW05): the river and the glider are met later. */
+  private color: PetColor = SPECIES.sprout.color;
+  private name: string = SPECIES.sprout.names[0];
+  private readonly names = SPECIES.sprout.names;
   private form: HTMLFormElement | null = null;
   private leaving = false;
   private readonly next = new RoundButton(playIcon(), swatch.green, 58, () => this.advance());
@@ -37,7 +40,17 @@ export class HatchScene extends Scene {
     super(app);
   }
 
+  /** Four taps: whole, cracked at the first and second, open at the third, hatched at the fourth. */
+  private showEgg(taps: number) {
+    const stage: EggStage = taps === 0 ? 'whole' : taps < 3 ? 'crack' : 'open';
+    if (stage === this.eggStage) return;
+    this.eggStage = stage;
+    this.egg.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.egg.addChild(makeEgg(stage));
+  }
+
   init() {
+    this.showEgg(0);
     this.content.addChild(this.background, this.egg, this.choices);
     this.ui.addChild(this.next, this.nameLabel);
     this.next.visible = false;
@@ -52,7 +65,7 @@ export class HatchScene extends Scene {
       if (this.step !== 'egg') return;
       this.taps++;
       sfx.pop();
-      drawEgg(this.egg, this.taps);
+      this.showEgg(this.taps);
       this.egg.rotation = (this.taps % 2 ? 1 : -1) * 0.1;
       if (this.taps === 4) {
         this.egg.visible = false;
@@ -67,7 +80,7 @@ export class HatchScene extends Scene {
 
   private setPet() {
     if (this.pip) { this.untrack(this.pip); this.pip.destroy({ children: true }); }
-    this.pip = this.track(new Critter({ ...petSpec(), color: this.color }));
+    this.pip = this.track(new Companion({ species: 'sprout', look: { color: this.color } }));
     this.content.addChild(this.pip);
     this.resize(this.view);
     this.pip.cheer();
@@ -119,8 +132,8 @@ export class HatchScene extends Scene {
       void voice.say('hatch.name');
     } else if (this.step === 'name') {
       this.leaving = true;
-      store.data.pet = { color: this.color, name: this.name, hatched: true };
-      store.save();
+      // The first friend; meeting it again (a second tap, a replay) changes nothing.
+      store.meet('sprout', this.name, this.color, 'start');
       applySettings();
       void voice.say('hatch.hello');
       this.form?.remove();

@@ -4,6 +4,7 @@ import './style.css';
 import { App } from './app/App';
 import { createRoutes } from './app/routes';
 import { applySettings } from './app/settings';
+import { loadCollectionArt } from './creatures/companion';
 import { store } from './progress/store';
 
 async function boot() {
@@ -13,6 +14,8 @@ async function boot() {
   await Promise.all([document.fonts.load('600 40px Fredoka'), document.fonts.load('500 20px Fredoka')]).catch(() => {});
   const app = new App();
   await app.init(document.getElementById('app')!);
+  // The companions' illustrated art, once, so every scene builds its friend without waiting (RW05).
+  await loadCollectionArt();
   app.go = createRoutes(app);
   // This is the island game, served at `classic/`; the site root boots the rework (`src/rework.ts`).
   app.go.start();

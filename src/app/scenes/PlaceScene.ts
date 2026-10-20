@@ -1,6 +1,6 @@
 import { Circle, Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
-import { makePet } from '../../art/pet';
+import { makeCompanion } from '../../creatures/companion';
 import { Backdrop } from '../../art/scenery';
 import { flower } from '../../art/shapes';
 import { music, STYLES } from '../../audio/music';
@@ -135,7 +135,7 @@ export class PlaceScene extends Scene {
   private readonly land = new Container();
   private readonly path = new Graphics();
   private readonly flowers: Flower[] = [];
-  private readonly pip = makePet();
+  private readonly pip = makeCompanion();
   private readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));
   private readonly book = new RoundButton(bookIcon(), swatch.white, 50, () => this.leave(() => this.app.go.stickers()));
   readonly previous = new RoundButton(arrowIcon(-1), swatch.white, 46, () => this.page(-1));

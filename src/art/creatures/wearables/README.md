@@ -1,6 +1,6 @@
 # Prepared wearables
 
-The nine generated wearables (art requests R04–R05, [manifest](../../../../docs/rework/concepts/generated/README.md#r04-review-and-preparation-notes)) cut for the illustrated rigs, RW06 prep (2026-10-20). Sizes and anchors are in `ITEM_ART` (`../wearables.ts`); where each sits on a species is that rig's `*_WEAR` table (`SPROUT_WEAR`, `RIVER_WEAR`, `GLIDER_WEAR`). The root's creature preview dresses the illustrated column through its third button: nothing, each item, then a sunny, a rainy and a snowy outfit. Served at the site root, so the sprites are in the production build and the service worker's precache (nine files, about 1.0 MB; the precache was 92 entries, 8.06 MB, after this slice).
+The nine generated wearables (art requests R04–R05, [manifest](../../../../docs/rework/concepts/generated/README.md#r04-review-and-preparation-notes)) cut for the illustrated rigs, RW06 prep (2026-10-20). Sizes and anchors are in `ITEM_ART` (`../wearables.ts`); where each sits on a species is that rig's `*_WEAR` table (`SPROUT_WEAR`, `RIVER_WEAR`, `GLIDER_WEAR`). The root's creature preview dresses the illustrated column through its third button: nothing, each item, then a sunny, a rainy and a snowy outfit. Served at the site root, so the sprites are in the production build and the service worker's precache (nine files, about 1.0 MB; the precache was 99 entries, 9.0 MB, after merging RW05 slice 1, after this slice).
 
 ## How they were cut
 

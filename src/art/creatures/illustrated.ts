@@ -12,8 +12,8 @@ import { Creature, type SpeciesId } from './creature';
  * `craft` as a whole (a hop, a rear, a loop) and writes each vertex's offset in `displace()`.
  *
  * Not a universal rig framework: three species share a texture swap, a vertex loop and a loader.
- * RW05 takes these as the species' renderers; until then only the dev preview reaches them, so
- * nothing here, and no sprite, is in a production build.
+ * RW05 takes these as the species' renderers: `src/creatures/companion.ts` loads every set at boot
+ * and draws the companion with them, in the island and in the root's preview alike.
  */
 
 export const EXPRESSIONS = ['base', 'blink', 'happy', 'surprised', 'sleepy', 'sad'] as const;
@@ -49,7 +49,7 @@ export interface ArtBase {
   body: readonly Point[];
 }
 
-/** The sprite files, by species and expression, loaded only when a rig is asked for (never in a production build). */
+/** The sprite files, by species and expression, loaded once per species (at boot, by `loadCollectionArt()`). */
 const files = import.meta.glob<string>('./illustrated/*-*.png', { query: '?url', import: 'default' });
 
 const sets = new Map<SpeciesId, Promise<ArtSet>>();

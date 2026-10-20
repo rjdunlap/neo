@@ -593,3 +593,48 @@ describe('stories', () => {
     expect(store.picnic.steps).toEqual(['blanket']);
   });
 });
+
+describe('her friends (RW05)', () => {
+  it('meets a friend once per token and writes at once, without waiting for the batch', async () => {
+    const store = make();
+    await store.load();
+    const mochi = store.meet('sprout', 'Mochi', 'pink', 'start')!;
+    await Promise.resolve();
+    expect(savedAs('neo.save').creatures.owned).toEqual([mochi]);
+    expect(store.companion).toEqual(mochi);
+    expect(store.meet('sprout', 'Again', 'blue', 'start')).toBe(mochi);
+    expect(store.data.creatures.owned).toHaveLength(1);
+  });
+
+  it('chooses only an owned friend, at once, and reset keeps the friends and the choice', async () => {
+    const store = make();
+    await store.load();
+    store.meet('sprout', 'Mochi', 'pink', 'start');
+    const pebble = store.meet('river', 'Pebble', 'blue', 'dev:river')!;
+    expect(store.choose('nobody')).toBe(false);
+    expect(store.choose(pebble.id)).toBe(true);
+    await Promise.resolve();
+    expect(savedAs('neo.save').creatures.companion).toBe(pebble.id);
+    store.addSticker('bubble-pop', 1);
+    store.reset();
+    expect(store.data.stickers).toHaveLength(0);
+    expect(store.companion?.name).toBe('Pebble');
+    expect(store.undo()).toBe(true);
+    expect(store.data.stickers).toHaveLength(1);
+    expect(store.companion?.name).toBe('Pebble');
+  });
+
+  it('keeps each profile\'s friends to itself', async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    store.meet('sprout', 'Mochi', 'pink', 'start');
+    const b = store.addProfile()!;
+    await store.switchTo(b);
+    expect(store.companion).toBeNull();
+    store.meet('glider', 'Wisp', 'purple', 'start');
+    await store.switchTo(a);
+    expect(store.companion?.name).toBe('Mochi');
+    expect(store.data.creatures.owned).toHaveLength(1);
+  });
+});

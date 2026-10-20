@@ -1,6 +1,6 @@
 # Illustrated creature assets
 
-Prepared sprites for the [generated creature pilot](../../../../docs/rework/GENERATED-CREATURE-PILOT.md): the pilot three species' expression sets, cut from what the [art request queue](../../../../docs/rework/art-requests/QUEUE.md) delivered (R01–R03). Since the site root became the creature preview (2026-10-19, `src/rework.ts`) they are in the production build and the service worker's precache, as are the [prepared wearables](../wearables/README.md). The rigs that draw them are `../illustrated.ts` (shared) and `../<species>-illustrated.ts`.
+Prepared sprites for the [generated creature pilot](../../../../docs/rework/GENERATED-CREATURE-PILOT.md): the pilot three species' expression sets, cut from what the [art request queue](../../../../docs/rework/art-requests/QUEUE.md) delivered (R01–R03). Used by the preview and, since RW05 slice 1 (2026-10-20), by the shipped companion and Friends (precached; production precache 81 entries, 8.2 MB, before the [prepared wearables](../wearables/README.md) joined them). The rigs that draw them are `../illustrated.ts` (shared) and `../<species>-illustrated.ts`.
 
 ## Preparing a sprite
 

@@ -255,6 +255,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `room` | The treehouse: moving, flipping and using furnishings, hanging a sticker, tidy, a reload | |
 | `creations` | Stamp Studio pictures, a free Rainbow Fingers painting, Pixel Pictures designs and a free Song Maker song kept from the end-of-round screen, shown in the treehouse, swapped, taken down and brought back, kept through a reload | |
 | `journal` | Five source games fill the journal only with observations actually seen: all three pages, the twinkle, unfound and found cards, the green arrow, a reload, portrait | |
+| `friends` | Hatch a named sprout; the guide and `{pet}` follow it; a second friend, the treehouse basket, Friends (preview saves nothing, Come with me sets the companion), reload, a second profile, reset and undo; four screenshots | |
 | `picnic` | The Windy Picnic from the map: the blanket, story rounds, resuming, the journal, the finale and keepsake, retelling | |
 | `woodland` | The Woodland Picnic from Wonder Woods: entry only at school, story spot first, portrait, real Mail Carrier / Seesaw / Beat Builder story rounds at the story level, leaving a round, reload resume, ending and one photo, one sticker per round, retelling, Home (about 1.5 minutes) | |
 | `couch` | A full couch trip and a face-off trip: how-to screens, name cards, the finale, unlocks, NEW marks, shuffle, turns, reloads, ties and team stops, backup (about 8 minutes) | |

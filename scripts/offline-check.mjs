@@ -86,9 +86,9 @@ try {
     open.onsuccess = () => {
       const db = open.result, tx = db.transaction('keyval', 'readwrite');
       tx.objectStore('keyval').put({
-        version: 2,
+        version: 3,
         profile: { name: 'Mia', band: 'toddler' },
-        pet: { name: 'Clover', color: 'pink', hatched: true },
+        creatures: { owned: [{ id: 'clvr', species: 'sprout', name: 'Clover', look: { color: 'pink' }, metAt: 'start' }, { id: 'pbbl', species: 'river', name: 'Pebble', look: { color: 'orange' }, metAt: 'dev:river' }], companion: 'pbbl' },
         world: { band: 'toddler' },
         settings: { placeLayout: 'subjects', volume: 0.2, music: false, coplayHints: false },
         games: { 'monster-munch': { plays: 0, level: 2, pinned: 2, history: [] } },
@@ -116,6 +116,8 @@ try {
   const assets = await page.evaluate(async () => (await Promise.all((await caches.keys()).map(async (name) => (await (await caches.open(name)).keys()).map((r) => r.url)))).flat());
   assert.ok(assets.some((url) => url.includes('.woff2')), 'Font cached');
   assert.ok(assets.some((url) => url.includes('.js')), 'Game bundle cached');
+  // The companions' illustrated art (RW05): every species' rig, the portraits and the egg work offline.
+  for (const art of ['sprout-base', 'river-base', 'glider-base', 'river-portrait', 'card-paper', 'egg-sprout-open']) assert.ok(assets.some((url) => url.includes(art)), `${art} cached`);
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('#app canvas').waitFor();
@@ -148,7 +150,8 @@ try {
   const save = await readSave();
   assert.equal(save?.stickers?.[0]?.game, 'monster-munch', 'Finished a new minigame while offline');
   assert.equal(save.games['monster-munch'].plays, 1);
-  assert.equal(save.pet.name, 'Clover');
+  assert.deepEqual(save.creatures.owned.map((c) => c.name), ['Clover', 'Pebble'], 'Both friends kept offline');
+  assert.equal(save.creatures.companion, 'pbbl');
   assert.equal(save.settings.howToCards, true, 'An older save gets the cards on');
   assert.equal(save.settings.placeLayout, 'subjects');
   assert.deepEqual(save.world, { band: 'toddler' });

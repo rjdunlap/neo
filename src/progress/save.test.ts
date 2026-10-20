@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FLOOR, starterItem } from '../content/room';
 import { ROOM_ITEMS } from '../content/world';
-import { defaults, migrate, remember, repairPrevious, swapWithPrevious } from './save';
+import { cleanCreatures, companionOf, defaults, MAX_CREATURES, meetIn, migrate, remember, repairPrevious, swapWithPrevious } from './save';
 
 describe('migrate', () => {
   it('turns nonsense into defaults', () => {
@@ -61,21 +61,93 @@ describe('migrate', () => {
   it('upgrades a version-one save without losing progress or earned stickers', () => {
     const legacy = { version: 1, profile: { name: 'Mia', band: 'preschool' }, games: { 'bubble-pop': { plays: 7, level: 3, pinned: 2, history: [] } }, stickers: [{ game: 'bubble-pop', seed: 42, at: 10 }] };
     const save = migrate(legacy);
-    expect(save.version).toBe(2);
+    expect(save.version).toBe(3);
     expect(save.profile).toEqual(legacy.profile);
     expect(save.games).toEqual(legacy.games);
     expect(save.stickers).toEqual(legacy.stickers);
-    expect(save.pet).toEqual({ name: 'Pip', color: 'teal', hatched: false });
+    expect(save.creatures).toEqual({ owned: [], companion: null });
     expect(save.world).toEqual({ band: null });
   });
 
-  it('repairs pet settings and the celebrated band from untrusted backups, dropping retired region lists', () => {
-    const save = migrate({ pet: { name: '   ', color: 'ultraviolet', hatched: 'yes' }, world: { opened: ['treehouse', 'treehouse', 'missing', 4], band: 'not-a-band' } });
-    expect(save.pet).toEqual(defaults().pet);
+  it('repairs the celebrated band from untrusted backups, dropping retired region lists', () => {
+    const save = migrate({ world: { opened: ['treehouse', 'treehouse', 'missing', 4], band: 'not-a-band' } });
     expect(save.world).toEqual({ band: null });
-    const valid = migrate({ pet: { name: ' Clover ', color: 'purple', hatched: true }, world: { opened: ['story-grove'], band: 'preschool' } });
-    expect(valid.pet).toEqual({ name: 'Clover', color: 'purple', hatched: true });
+    const valid = migrate({ world: { opened: ['story-grove'], band: 'preschool' } });
     expect(valid.world).toEqual({ band: 'preschool' });
+  });
+
+  it('keeps a version-two save\'s progress but not its pet: that profile meets its first friend again at the egg', () => {
+    const old = { version: 2, profile: { name: 'Mia', band: 'prek' }, pet: { name: 'Clover', color: 'purple', hatched: true }, stickers: [{ game: 'pet-kitchen', seed: 4, at: 1 }] };
+    const save = migrate(old);
+    expect(save.version).toBe(3);
+    expect(save.stickers).toEqual(old.stickers);
+    expect(save.creatures).toEqual({ owned: [], companion: null });
+    expect('pet' in save).toBe(false);
+  });
+
+  const friend = (id: string, extra: Record<string, unknown> = {}) => ({ id, species: 'sprout', name: 'Mochi', look: { color: 'pink' }, metAt: 'start', ...extra });
+
+  it('round-trips a valid creature collection unchanged', () => {
+    const c = { owned: [friend('abcd'), friend('riv1', { species: 'river', name: 'Pebble', look: { color: 'blue' }, metAt: 'dev:river' })], companion: 'riv1' };
+    expect(cleanCreatures(JSON.parse(JSON.stringify(c)))).toEqual(c);
+  });
+
+  it('drops unknown species, malformed and duplicate ids, keeping the first', () => {
+    const c = cleanCreatures({
+      owned: [friend('abcd'), friend('ABCD'), friend('ab'), friend('dino', { species: 'dragon' }), friend('abcd', { name: 'Second' }), 'x', null, friend('efgh')],
+      companion: 'abcd',
+    });
+    expect(c.owned.map((o) => o.id)).toEqual(['abcd', 'efgh']);
+    expect(c.owned[0].name).toBe('Mochi');
+  });
+
+  it('repairs a name, a colour and a token, falling back to the species\' own', () => {
+    const [a, b] = cleanCreatures({ owned: [friend('abcd', { name: '   ', look: { color: 'ultraviolet' }, metAt: 7 }), friend('efgh', { species: 'glider', name: 'x'.repeat(80), look: null, metAt: 'y'.repeat(90) })] }).owned;
+    expect(a).toEqual({ id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal' }, metAt: '' });
+    expect(b.name).toHaveLength(40);
+    expect(b.look.color).toBe('purple');
+    expect(b.metAt).toHaveLength(60);
+  });
+
+  it('keeps the earliest 24', () => {
+    const owned = Array.from({ length: 30 }, (_, i) => friend(`id${String(i).padStart(2, '0')}`, { metAt: `dev:${i}` }));
+    const c = cleanCreatures({ owned, companion: 'id29' });
+    expect(c.owned).toHaveLength(MAX_CREATURES);
+    expect(c.owned.at(-1)!.id).toBe('id23');
+    expect(c.companion).toBe('id00');
+  });
+
+  it('points the companion at an owned friend, else the first, else nobody', () => {
+    expect(cleanCreatures({ owned: [friend('abcd'), friend('efgh')], companion: 'efgh' }).companion).toBe('efgh');
+    expect(cleanCreatures({ owned: [friend('abcd'), friend('efgh')], companion: 'gone' }).companion).toBe('abcd');
+    expect(cleanCreatures({ owned: [], companion: 'abcd' }).companion).toBeNull();
+    expect(cleanCreatures('garbage')).toEqual({ owned: [], companion: null });
+  });
+
+  it('meets a friend once per token, making the first one the companion', () => {
+    const c = defaults().creatures;
+    let n = 0;
+    const ids = () => `id${n++}aa`;
+    const first = meetIn(c, 'sprout', ' Mochi ', 'pink', 'start', ids)!;
+    expect(first).toEqual({ id: 'id0aa', species: 'sprout', name: 'Mochi', look: { color: 'pink' }, metAt: 'start' });
+    expect(c.companion).toBe('id0aa');
+    expect(meetIn(c, 'sprout', 'Other', 'blue', 'start', ids)).toBe(first);
+    const river = meetIn(c, 'river', '', 'blue', 'dev:river', ids)!;
+    expect(river.name).toBe('Pebble');
+    expect(c.owned).toHaveLength(2);
+    expect(companionOf(c)).toBe(first);
+    expect(cleanCreatures(JSON.parse(JSON.stringify(c)))).toEqual(c);
+  });
+
+  it('never reuses an id and refuses beyond the cap', () => {
+    const c = defaults().creatures;
+    meetIn(c, 'sprout', 'A', 'teal', 'start', () => 'same');
+    let calls = 0;
+    const b = meetIn(c, 'river', 'B', 'teal', 'dev:river', () => (calls++ ? 'other' : 'same'))!;
+    expect(b.id).toBe('other');
+    for (let i = 0; c.owned.length < MAX_CREATURES; i++) meetIn(c, 'glider', 'G', 'teal', `t${i}`, () => `g${i}xxx`);
+    expect(meetIn(c, 'glider', 'G', 'teal', 'one-more', () => 'zzzzzz')).toBeNull();
+    expect(c.owned).toHaveLength(MAX_CREATURES);
   });
 
   it('keeps the early-school band (Wonder Woods) for the child and the celebrated trail position', () => {
@@ -305,7 +377,7 @@ describe('undo for a reset or restore', () => {
   it('brings the stickers back, and a second undo is a redo', () => {
     const before = played();
     const snap = remember(before, 1);
-    const afterReset = { ...defaults(), profile: before.profile, settings: before.settings, pet: before.pet };
+    const afterReset = { ...defaults(), profile: before.profile, settings: before.settings, creatures: before.creatures };
     const undone = swapWithPrevious(afterReset, snap, 2);
     expect(undone.data).toEqual(before);
     expect(undone.previous.at).toBe(2);
