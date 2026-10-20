@@ -139,7 +139,10 @@ export class FriendsScene extends Scene {
     this.buildCards();
     sfx.sparkle();
     this.stageFriend?.cheer();
-    await voice.say('friends.come', { pet: who.name });
+    // The line, or a scene-owned moment at most: a destroyed scene's wait never resolves, and a line that ends after
+    // she has left (Back during it) must not pull her out of wherever she is now.
+    await Promise.race([voice.say('friends.come', { pet: who.name }), this.tw.wait(4)]);
+    if (this.app.scene !== this) return;
     this.app.go.room();
   }
 

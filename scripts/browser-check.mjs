@@ -1839,6 +1839,7 @@ async function friendsFlow() {
   const pebble = await page.evaluate(() => kit.store.meet('river', 'Pebble', 'blue', 'dev:river').id);
   assert.equal(await page.evaluate(() => kit.store.meet('river', 'Again', 'red', 'dev:river').name), 'Pebble', 'meeting is idempotent on its token');
   await page.evaluate(() => neo.go.room()); await scene('RoomScene');
+  await page.waitForTimeout(400); await screenshot('friends-treehouse');
   await tap('neo.scene.basket'); await scene('FriendsScene');
   assert.deepEqual(await page.evaluate(() => ({ cards: neo.scene.cards.children.length, previewed: neo.scene.previewed, stage: neo.scene.stageFriend.species })), { cards: 2, previewed: mochi.id, stage: 'sprout' });
   await screenshot('friends-landscape');

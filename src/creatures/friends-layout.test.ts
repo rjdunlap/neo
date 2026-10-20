@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { computeView } from '../engine/view';
 import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, friendsLayout, pageCount, PER_PAGE } from './friends-layout';
 
-/** The four views the land layouts are tested in: the iPad both ways, a wide laptop and a tall phone. */
+/** The four views the land layouts are tested in (an iPad sideways and upright, a phone sideways, one with a notch), and a wide laptop. */
 const VIEWS = [
-  { w: 1024, h: 768 },
-  { w: 768, h: 1024 },
-  { w: 1366, h: 768 },
-  { w: 768, h: 1400 },
+  computeView(1024, 768),
+  computeView(768, 1024),
+  computeView(844, 390),
+  computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  computeView(1366, 768),
 ];
 
 interface Box {

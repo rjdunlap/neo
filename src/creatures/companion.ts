@@ -112,9 +112,11 @@ export function recolor(node: Container, species: SpeciesId, color: PetColor) {
     node.filters = [];
     return;
   }
-  const f = new ColorMatrixFilter();
+  // At the screen's own resolution: a filter's default of 1 would soften the art on a 2× iPad.
+  const f = new ColorMatrixFilter({ resolution: 'inherit', antialias: 'inherit' });
   f.hue(turn, false);
   node.filters = [f];
+  node.once('destroyed', () => f.destroy());
 }
 
 /** Half way from white to a colour. */
