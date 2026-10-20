@@ -93,6 +93,9 @@ Original, untouched images from the creature art passes (see the [art bible](../
 | river-look-stream-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [stream1](R15-PROMPTS.md#stream1) | yes |
 | glider-look-sunset-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [sunset1](R15-PROMPTS.md#sunset1) | yes |
 | glider-look-morning-1.png | R15 | 2026-10-18 | Built-in image_gen; model undisclosed | [morning1](R15-PROMPTS.md#morning1) | yes |
+| wear-boots-sitter-3.png | R19 | 2026-10-20 | Built-in image_gen; model undisclosed | [boots-sitter3](R19-PROMPTS.md#boots-sitter1) | yes |
+| wear-raincoat-sitter-4.png | R19 | 2026-10-20 | Built-in image_gen; model undisclosed | [raincoat-sitter4](R19-PROMPTS.md#raincoat-sitter4) | yes |
+| wear-raincoat-walker-4.png | R19 | 2026-10-20 | Built-in image_gen; model undisclosed | [raincoat-walker4](R19-PROMPTS.md#raincoat-walker4) | yes |
 
 ## R01 review and preparation notes
 
@@ -292,3 +295,11 @@ White fallback has faint near-white variation, as R08 does. Preserve cream and s
 ## Generating service terms
 
 OpenAI built-in image generation, checked 2026-10-17. The [OpenAI Terms of Use, Content section](https://openai.com/policies/terms-of-use/#content) assign OpenAI's rights in output to the user to the extent permitted by law; output may be similar to others' output. These files are disclosed as AI-generated. This records the service's terms, not a claim of exclusive copyright. The tool did not expose its underlying model name, so none is inferred.
+
+## R19 review and preparation notes
+
+Selected `wear-raincoat-sitter-4.png`, `wear-raincoat-walker-4.png`, and `wear-boots-sitter-3.png`: three untouched RGB PNG originals, each 1254 × 1254. [Exact prompts, reference order, candidate disposition, byte counts and source hashes](R19-PROMPTS.md). Same generating service terms and undisclosed model caveat as above. No missing assets or retained runner-ups. Originals have not been resized, cropped, recompressed or cleaned.
+
+Full-size review and a temporary 120 px canvas-width contact sheet compared all eleven candidates. Sitter 1–3 kept the R05 jacket's long sleeves; 4 has a broader bell hem and short cuff rims, with the hood behind and two brown buttons at the right-facing front. Walker 1–3 invented leg tubes; 4 replaces them with one long draped back and open lower hem, neck/hood and two brown buttons at the right. Boots 3 has broad round soles, simpler tread and round toes; 1's tread is busier and 2 has longer shafts. Both boots are separate, with white space throughout the gap. Selected items have closed plum outer contours, yellow/brown or glossy red R05 colors, upper-left highlights, no character/mannequin, no cast shadow, no edge contact or text. At thumbnail size the two coats remain distinct by silhouette and the paired soles remain legible. The review sheet used white image squares on a pale-blue surround; it was not a keyed-background or in-game test.
+
+Framing caveat: despite repeated 70% instructions, retained images occupy roughly 85–92% of the width, with clear but narrower margins; no production padding added. The sitter is still a soft draped garment with a sloping near shoulder, rather than a flat schematic, and the walker hood/chest retains a little depth while the back follows the side view. These are art candidates for the named body plans, not proof of fit. A separate coding session must check the collar/cuff openings with the existing `--hole` preparation workflow and test the overlay on each rig. No cutting, rigging, runtime integration, build/unit/browser/offline or device checks were performed. Device readability and fit remain open.
