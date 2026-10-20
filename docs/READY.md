@@ -46,7 +46,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`feelings-faces`, level 13 *What happened?*** (new level; after 11): a face and a leftover clue, three happening cards; school. [Slice 5](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 12 *Ask first*** (new interaction; after 11): tap the friend to hear what it wants, then give that, quiet time included; school. [Slice 6](deep-dives/feelings-faces.md#new-levels-on-top)
 
-- **`block-garden`, build levels 1–8** (new-game tier): drag fixed seed-tray shapes onto a bed; full rows and columns bloom and empty until every bud blooms (level 8 empties the bed); solvable gardens (built backward at 1–4, frozen at 5–8), free undo, tinted bud lines at 1–2, refused drops count from 3; pre-K–grown-up, Rainbow Meadow. [Definition](definitions/block-garden.md)
 
 - **`sound-garden`, the whole cast sings** (level 1 content): the turtle joins, a pitched frog, a seeded cast of five from six. [Slice 2](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
 - **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
