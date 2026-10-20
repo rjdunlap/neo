@@ -349,8 +349,10 @@ class ConductorIcon extends WigglyIcon {
       .rect(86, -190, 14, 120).fill(wood.fill).stroke(line(wood.line, 4))
       .poly([-120, -180, 0, -230, 120, -180]).fill(swatch.red.fill).stroke(line(swatch.red.line, 5))
       .roundRect(-115, -80, 230, 30, 10).fill(wood.light).stroke(line(wood.line, 5));
-    musicNote(g, 46, ink).position.set(0, -140);
     c.addChild(g);
+    const note = musicNote(new Graphics(), 46, ink);
+    note.position.set(0, -140);
+    c.addChild(note);
     const turtle = paceArt('turtle');
     turtle.scale.set(0.42);
     turtle.position.set(-56, -24);
