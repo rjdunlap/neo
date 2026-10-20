@@ -43,6 +43,21 @@ Each file is 220–260 KB (about 4.3 MB for the eighteen); as RGBA textures a se
 
 **Rigs.** One `PlaneGeometry` mesh per creature (sprout 24 × 24 vertices, river and glider 40 × 18) on the shared `IllustratedCreature` base (`../illustrated.ts`): per-vertex weights pin the face and the body polygon and bend each moving part about its root with a weight that grows toward its tip, so a root never parts from the body: the sprout's two leaves (sway, and a spin on a touch) and arms; a wave down the river's back from the neck to the hips and its tail swishing; the glider's wing as a root-to-tip wave, the dorsal and ventral fins against it and the two ribbons behind the trailing edge. Touch reactions move the whole craft as the Graphics rigs do (the sprout's crouch-hop-squash, the river rearing about its hips, the glider's loop). Expressions are whole textures swapped under the mesh: `surprised` for the first 0.22 s of a touch, then `happy`; `blink` when the base class blinks, while the mood is calm or happy; otherwise the set mood (`calm` shows `base`, or `sleepy`/`sad`). Slots sit in creature units in the craft, so an accessory's strokes are not scaled with the sprite. The textures are loaded once per species by `loadArt()` (mipmapped for the collection card) and shared; a creature frees only its geometry.
 
+## The second wave (RW02b step 3, 2026-10-20)
+
+Tote, Trill, Dapple, Bramble, Mossback and Lumen (queue rows R09-R14) were cut with `node scripts/creature-art/prepare-sprite.mjs --set <species> --shrink 2 --scale 0.5 --out-dir src/art/creatures/cast` into **`src/art/creatures/cast/`**, not this folder. Six expressions per species share one box (all variants within the 4 px tolerance); Tote, Bramble, Mossback and Lumen also keep an `alt` still. Portraits were cut but not kept; RW10's collection book prepares them. 40 PNGs, about 12 MB.
+
+| Species | Base size (px) | `alt` size (px) |
+| --- | --- | --- |
+| Tote | 623 x 450 | 486 x 386 |
+| Trill | 644 x 496 | none |
+| Dapple | 734 x 426 | none |
+| Bramble | 498 x 482 | 506 x 477 |
+| Mossback | 683 x 413 | 549 x 361 |
+| Lumen | 623 x 457 | 467 x 474 |
+
+**Why a separate folder.** `illustrated.ts` loads `./illustrated/*-*.png` with a glob, so anything here ships in the production build and the precache. The six are not in the game yet (only the dev preview `/?cast` shows them), so they stay out of the build until RW10 or a species slice moves them. The rigs are in `../cast.ts`; the result and its limits are in [the pilot document](../../../../docs/rework/GENERATED-CREATURE-PILOT.md#step-3-result-2026-10-20).
+
 ## Usage terms
 
 The concept sheet was generated inside the developer's own design session for this project and is committed in the repository; no third-party stock art or traced character is used. The generating service's output terms apply to it as they did when it was committed; they were not re-checked here.
