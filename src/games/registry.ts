@@ -81,6 +81,7 @@ import { petSays } from './pet-says';
 import { owlWalk } from './owl-walk';
 import { gardenRows } from './garden-rows';
 import { ferryJam } from './ferry-jam';
+import { jarSort } from './jar-sort';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
@@ -177,6 +178,7 @@ export const GAMES: GameModule[] = [
   owlWalk,
   gardenRows,
   ferryJam,
+  jarSort,
   critterCrossing,
   clapSyllables,
   chainReaction,
