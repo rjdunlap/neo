@@ -166,8 +166,8 @@ function bramble(g: Graphics, x: number, y: number) {
   }
 }
 
-/** A hedgehog: a round brown body of spines, a pale pointed face and a black nose. */
-function hedgehog(g: Graphics, x: number, y: number, face: 1 | -1) {
+/** A hedgehog: a round brown body of spines, a pale pointed face and a black nose. Story Grove's night lawn has one too. */
+export function hedgehog(g: Graphics, x: number, y: number, face: 1 | -1) {
   const spines = 0x8a6a4a;
   const line = 0x5a4030;
   for (let k = 0; k <= 8; k++) {
