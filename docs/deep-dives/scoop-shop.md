@@ -23,7 +23,7 @@ Windows: lap 1–1, toddler 1–3, preschool 2–5, pre-K 3–6, school 5–6. N
 
 **Accounting today.** A scoop that does not belong (wrong colour, too many, out of order) flies, boings off the top and sails back to its tub: one miss, a spoken line at most every two seconds (`scoop.notthat`, `scoop.notyet`, `scoop.enough`). The second wrong scoop on one customer lights the needed tub (`nextNeeded`) and counts one hint. At level 6 the first peek per customer counts one hint; more peeks are free. Level 1 can record no miss. The ghost finger (`autotouch`) takes `scoopToTake`, a different flavour each scoop in free play, and waits for the picture to hide at level 6 so the demonstration never copies it.
 
-**Known gaps** (none fixed here; they go into slice 1):
+**Known gaps** (1–4 fixed by slice 1, built 2026-10-20; 5 and 6 remain, 5 for slice 2):
 
 1. **Level 2's orders follow the counter left to right.** `makeOrders` gives customer *i* `flavors[i % flavors.length]`, and `resize` lays the tubs out in that same array order, so the three customers want the first, second and third tub from the left. A toddler who taps along the counter is never wrong, and the colour word does no work.
 2. **Taps during a flight vanish.** `busy` is true for about 0.9 s while a scoop flies; a lap child's second and third taps in that time do nothing visible. Tapping the customer or the cone (outside level 6) does nothing at all.
@@ -129,7 +129,7 @@ Band windows after the ladder (saved levels and pins keep their IDs; only steppi
 
 ## Build slices, in order
 
-1. **Honest level 2, every touch answers, counting aloud and the count picture** (existing-game bug fix tier; gaps 1–4): the level-2 shuffle rule and its test, tub squash and flight-time wobble, customer tap repeats the order, cone wobble, counted scoops at 1 and 4, the count card's row of scoops, how-to lines. Checks: typecheck, the rule tests, one filtered regression play (levels 1, 2 and 4, one wrong scoop, one hint), `fingerdemo` at 4.
+1. **Built 2026-10-20 (`claude/scoop-shop-support-truth`, PR #664).** **Honest level 2, every touch answers, counting aloud and the count picture** (existing-game bug fix tier; gaps 1–4): the level-2 shuffle rule and its test, tub squash and flight-time wobble, customer tap repeats the order, cone wobble, counted scoops at 1 and 4, the count card's row of scoops, how-to lines. Checks: typecheck, the rule tests, one filtered regression play (levels 1, 2 and 4, one wrong scoop, one hint), `fingerdemo` at 4.
 2. **Pools: customers, cone kinds, window scenes, flavour thank-yous and the serve tune** (content tier): eight customers, three cone kinds, three scenes, `scoop.yum` flavour variants (decision 3's lean), the sticker pool, the tune in `serve()`. Checks: typecheck, rule tests, one browser play of level 5 and `fingerdemo` at 5.
 3. **Lap entry 10 *Any scoop*** with the `order`/`entryLevels` conversion (new level on the existing interaction): lap `[10, 1]`, the landing test. Checks: typecheck, rule tests, one play of 10, `fingerdemo` at 10, one portrait screenshot.
 4. **Toddler 11 *Who wanted pink?*** (new interaction: the chosen-customer tap, two open customers, hidden tubs): toddler `[1, 2, 11, 3]`, preschool `[2, 11, 3, 4, 5]`. Checks: new-interaction tier (scripted play at 11, one wrong customer, one hint, one portrait screenshot, `fingerdemo` at 11).
@@ -141,4 +141,4 @@ Band windows after the ladder (saved levels and pins keep their IDs; only steppi
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.
+Slice 1 (2026-10-20, PR #664; gaps 1–4): `makeOrders` at level 2 picks each customer's colour from the counter, never the tub at its own index and never the previous customer's colour (rule test over 200 seeds); every touch answers (tub squash on touch-down; a tap while busy wobbles the tub and pops with no second scoop and no queue; a customer tap at levels 1–5 giggles and repeats the order, free; at level 6 the peek stays a hint and a tap while the picture shows just giggles; the cone wobbles and stops taking touches once served); scoops counted aloud at levels 1 and 4; the level-4 count card shows the numeral over a row of that many scoops; two how-to lines. Build notes: [archive](../archive/COMPLETED-2026-10-09.md#scoop-shop-slice-1-honest-level-2-and-every-touch-answers-2026-10-20). Earlier text: a deep dive session is research and ideation only.

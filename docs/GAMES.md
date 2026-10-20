@@ -162,7 +162,7 @@ Each seeded round chooses a Meadow arch, Pond columns or Hive ring. Pond bumpers
 
 ### Scoop Shop
 
-*lap–school · after Papa's Freezeria and Neopets' Ice Cream Machine.* Tap tubs to pile scoops on a cone for a customer (build an order); then one color, two scoops, "four blue scoops", three flavors stacked in order, then from memory.
+*lap–school · after Papa's Freezeria and Neopets' Ice Cream Machine.* Tap tubs to pile scoops on a cone for a customer (build an order); then one color, two scoops, "four blue scoops", three flavors stacked in order, then from memory. Level 2 asks for one scoop of a colour the counter has, never the tub at the customer's own place along the counter and never the previous customer's colour, so the colour word does the work. Every touch answers: a tub squashes on touch-down, and a tap while a scoop is in flight or a customer is walking in or being served wobbles the tub and pops, with no second scoop and no queue. Tapping the customer at levels 1–5 pokes them; they giggle and say the order again (free, never a miss or hint); at level 6 that tap is still the peek hint, and a tap while the picture shows just giggles. Tapping the cone wobbles it; once served it takes no touches. At levels 1 (free) and 4 (count) each landing scoop is counted aloud ("1!", "2!"). The level-4 count card shows the numeral and, under it, a row of that many scoops in the order's colour.
 
 ### Mail Carrier
 
