@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-10-20 — Investigating intermittent deployment failures
+
+Claim: `codex/fix-intermittent-ci` repairs the Tote mesh-stretch and Puzzle Peaks glider bounds failures seen in recent GitHub Actions runs. Expected files: creature animation tables, deterministic animation regression tests, and this verification record. No checks claimed yet.
+
 ## 2026-10-20 — Garden Grow: true how-to and spoken gaps (slice 1)
 
 - Built on `claude/garden-grow-true-howto` ([PR #674](https://github.com/rjdunlap/neo/pull/674), commit 9890fd1a): capped and corrected how-to steps (levels 1, 3, 5, 7), `grow.full` for full beds, recount after a take-out, level 1 beds growing independently, the weather seat in the co-play tip.
