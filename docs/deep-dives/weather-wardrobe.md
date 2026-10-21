@@ -123,7 +123,7 @@ Fog (its clothing rule is "be seen", a safety claim the subject studies keep out
 
 ## Build slices, in order
 
-1. **Every touch counts at level 1, and the level-7 card** (existing-game fix): grass per weather, worn items named, `{ from: 6, to: 6 }` on the pack step, the dead remove-phase line dropped or wired (gap 9). Checks: typecheck, the rule and how-to tests, one filtered play (`BROWSER_SUITE=fourth FOURTH_ONLY=weather`), `fingerdemo` at 1.
+1. **Every touch counts at level 1, and the level-7 card** (existing-game fix): grass per weather, worn items named, `{ from: 6, to: 6 }` on the pack step, the dead remove-phase line dropped or wired (gap 9). Checks: typecheck, the rule and how-to tests, one filtered play (`BROWSER_SUITE=fourth FOURTH_ONLY=weather`), `fingerdemo` at 1. *(Claimed 2026-10-21 by `claude/weather-wardrobe-every-touch`.)*
 2. **More items, one slot each, sticker pinned** (content in existing levels): sandals, rain hat, earmuffs, puffy coat, `SLOTS`, level 5 always three. Checks: typecheck, rule tests, one screenshot of each new item worn, `fingerdemo` at 5.
 3. **A miss that shows why** (existing-game change on the same interaction): misfit consequences, the item hops back; accounting unchanged. Checks: typecheck, rule tests, one filtered play with one wrong answer at 2 and 7 (`wardrobe7`).
 4. **Lap entry 8 *Try it on*** (new level, needs 3): order `[1, 8, 2]`, `entryLevels: [8]`. Checks: new-interaction tier (scripted play at 8 and 1, one portrait screenshot), `fingerdemo` at 8.
