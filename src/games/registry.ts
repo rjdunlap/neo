@@ -86,6 +86,7 @@ import { jarSort } from './jar-sort';
 import { blockGarden } from './block-garden';
 import { dominoRun } from './domino-run';
 import { fruitSlice } from './fruit-slice';
+import { puddleGobble } from './puddle-gobble';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
@@ -188,6 +189,7 @@ export const GAMES: GameModule[] = [
   blockGarden,
   dominoRun,
   fruitSlice,
+  puddleGobble,
   critterCrossing,
   clapSyllables,
   chainReaction,
