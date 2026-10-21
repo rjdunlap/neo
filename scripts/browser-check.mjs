@@ -5630,8 +5630,10 @@ async function batch() {
       async pick(tool) { const g = neo.scene.game; kit.tapOn(g.buttons.find((b) => b.tool === tool)); await kit.sleep(250); },
       /** Brush back and forth across the whole head of fur. */
       async zigzag() {
-        const b = neo.scene.game.hair.getBounds();
-        for (let y = b.y + 10; y < b.y + b.height; y += 26) {
+        const g = neo.scene.game;
+        const b = g.hair.getBounds();
+        const request = g.request;
+        for (let y = b.y + 10; y < b.y + b.height && g.request === request && !g.busy; y += 26) {
           const row = [];
           for (let x = b.x; x <= b.x + b.width; x += 18) row.push([x, y]);
           await kit.drag(row, 1, 6);
@@ -5640,7 +5642,9 @@ async function batch() {
       /** Snip close to the head, following its curve. */
       async cutShort() {
         const g = neo.scene.game;
+        const request = g.request;
         for (const r of [150, 140]) {
+          if (g.request !== request || g.busy) return;
           const pts = [];
           for (let a = -Math.PI; a <= 0; a += 0.08) { const p = g.hair.toGlobal({ x: Math.cos(a) * r, y: -122 + Math.sin(a) * r }); pts.push([p.x, p.y]); }
           await kit.drag(pts, 1, 8);
@@ -5649,9 +5653,11 @@ async function batch() {
       async style(look) {
         const g = neo.scene.game;
         const { needs, toolFor } = await import('/src/games/fluffy-salon/logic.ts');
+        // Stop when the request moves on, or the next request's fur gets this one's tool (no progress, so the quiet-time hint).
+        const request = g.request;
         for (let i = 0; i < 12; i++) {
           const fix = needs(look, g.strands);
-          if (!fix || g.busy) return;
+          if (!fix || g.busy || g.request !== request) return;
           const tool = toolFor(fix);
           if (g.tool !== tool) await salon.pick(tool);
           if (tool === 'cut') await salon.cutShort(); else await salon.zigzag();
@@ -5691,6 +5697,8 @@ async function batch() {
           if (g.misses !== 2 || g.hints !== 1 || !g.buttons.some((b) => b.glow.visible)) throw new Error(`Salon hint: ${g.misses} ${g.hints}`);
         }
         await salon.style(look);
+        // One request at a time has no mirror: it never appears, so it never invites a miss.
+        if (g.plan.mode === 'ask' && g.mirror.visible) throw new Error('The mirror showed at a one-at-a-time request');
         if (g.plan.mode !== 'ask') { await kit.until(() => !g.busy, 8000); kit.tapOn(g.mirror); }
         await kit.until(() => g.request > r || g.finished, 15000);
       }

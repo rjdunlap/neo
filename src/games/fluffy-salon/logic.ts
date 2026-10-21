@@ -76,8 +76,14 @@ export function needs(look: Look, strands: Strand[]): Fix | null {
   return null;
 }
 
-/** Seconds of quiet (no touch on the fur, no tool picked) before a one-at-a-time request lights the tool that would help. */
+/** Seconds without progress (no stroke with the tool that helps) before a one-at-a-time request lights the tool that would help. */
 export const QUIET_HINT = 15;
+
+/** Whether this tool works on what the look still needs, so a touch with it counts as progress for the quiet-time hint. */
+export function helps(look: Look, strands: Strand[], tool: Tool): boolean {
+  const fix = needs(look, strands);
+  return fix !== null && toolFor(fix) === tool;
+}
 
 /**
  * The line for a mirror check that is not done yet: when the asked colour is already on at least half the strands, "a little more pink"

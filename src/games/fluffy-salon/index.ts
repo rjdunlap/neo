@@ -14,7 +14,7 @@ import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, HAIR_COLORS, scalpFor, makeRequests, moreLine, needs, oldStrands, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, HAIR_COLORS, helps, scalpFor, makeRequests, moreLine, needs, oldStrands, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -172,7 +172,6 @@ class FluffySalon implements Game {
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
       if (palmOnGlass() || this.busy || this.finished) return;
       this.pointer = e.pointerId;
-      this.sinceProgress = 0;
       // A touch that lands off the fur (the cape, the chair, the pet's body) is answered too: a giggle and a wobble.
       if (!this.work1(e) && this.clock - this.lastPat > 0.4) {
         this.lastPat = this.clock;
@@ -275,7 +274,9 @@ class FluffySalon implements Game {
     this.sinceProgress += dt;
     // One-at-a-time requests: after a quiet while (no touch, no tool picked), light the tool that would help.
     if (this.plan.mode === 'ask' && this.sinceProgress > QUIET_HINT && !this.hintTool) this.hint();
-    if (!this.mirror.visible && (this.work > 40 || this.clock > 25)) {
+    // Free play's mirror appears once there is something to see; at one-at-a-time requests there is no mirror.
+    const free = this.plan.mode === 'play' || this.plan.mode === 'tools';
+    if (free && !this.mirror.visible && (this.work > 40 || this.clock > 25)) {
       this.mirror.visible = true;
       this.mirror.scale.set(0);
       void this.ctx.tw.to(this.mirror.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
@@ -329,7 +330,7 @@ class FluffySalon implements Game {
 
   private choose(tool: Tool, quiet = false) {
     this.tool = tool;
-    this.sinceProgress = 0;
+    if (this.look && helps(this.look, this.strands, tool)) this.sinceProgress = 0;
     for (const b of this.buttons) b.setChosen(b.tool === tool);
     if (quiet) return;
     sfx.pop(6);
@@ -339,10 +340,11 @@ class FluffySalon implements Game {
   /** The finger is in the fur: whichever strands it touches get the current tool. Returns how many it touched. */
   private work1(e: FederatedPointerEvent): number {
     const p = this.hair.toLocal(e.global);
+    const progress = !!this.look && helps(this.look, this.strands, this.tool);
     const { touched, snipped } = touchStrands(this.tool, this.strands, this.an, p);
     for (const s of snipped) this.snipped(s.tip, s.color);
     if (!touched) return 0;
-    this.sinceProgress = 0;
+    if (progress) this.sinceProgress = 0;
     this.dirty = true;
     this.work += touched;
     if (this.clock - this.lastSound > 0.12) {

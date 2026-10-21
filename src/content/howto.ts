@@ -774,7 +774,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: [
       { to: 2, text: 'Any look is welcome in free play and nothing counts as a miss; a touch off the fur makes the pet giggle.' },
-      { from: 3, to: 3, text: 'Nothing counts as a miss. After 15 seconds with no touch, the tool that helps glows, which counts as a hint.' },
+      { from: 3, to: 3, text: 'Nothing counts as a miss. After 15 seconds without working on what was asked, the tool that helps glows, which counts as a hint.' },
       { from: 4, text: 'Looking in the mirror too early counts as a miss, and the pet says what is still missing (when the color is nearly there, the strands still the old color glow); after two, the tool that helps glows, which counts as a hint.' },
     ],
   },

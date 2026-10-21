@@ -2,7 +2,7 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { bodyBox, restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, makeRequests, moreLine, oldStrands, PIP_SCALP, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, helps, makeRequests, moreLine, oldStrands, PIP_SCALP, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
 
 const head = (length: number, curl: number, color: Strand['color'], n = 20): Strand[] => Array.from({ length: n }, () => ({ length, curl, color }));
 
@@ -34,6 +34,15 @@ group('Fluffy Salon', () => {
     // When the length still needs work, the colour line waits for the colour to be what is missing.
     expect(moreLine({ length: 'long', color: 'pink' }, mixed(15))).toBe('salon.more');
     expect(moreLine({ length: 'long', color: 'pink' }, [...head(200, 0.3, 'pink', 15), ...head(200, 0.3, 'blue', 5)])).toBe('salon.more-color');
+  });
+
+  it('counts only a stroke with the tool that helps as progress for the quiet-time hint', () => {
+    const look = { length: 'long' as const, color: 'pink' as const };
+    expect(helps(look, head(60, 0.3, 'blue'), 'grow')).toBe(true);
+    for (const tool of ['cut', 'comb', 'curl', 'pink', 'blue'] as Tool[]) expect(helps(look, head(60, 0.3, 'blue'), tool), tool).toBe(false);
+    expect(helps(look, head(200, 0.3, 'blue'), 'pink')).toBe(true);
+    expect(helps(look, head(200, 0.3, 'blue'), 'grow')).toBe(false);
+    expect(helps(look, head(200, 0.3, 'pink'), 'pink')).toBe(false);
   });
 
   it('says what to fix first, and which tool fixes it', () => {
