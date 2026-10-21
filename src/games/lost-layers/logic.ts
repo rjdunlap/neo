@@ -390,7 +390,7 @@ export function layersLayout(v: View, level: number): LayersLayout {
     const top = 150, bottom = top + ROWS * ROW_H;
     const t1 = bottom + 30 + BTN_H / 2;
     const t2 = t1 + BTN_H / 2 + 20 + CARD_H / 2;
-    const lx = gullX - 40 - LOOK_W / 2;
+    const lx = gullX - 60 - LOOK_W / 2;
     return {
       portrait, gullX, coveX, bottom,
       action: { x: mid - 120, y: t1 },
